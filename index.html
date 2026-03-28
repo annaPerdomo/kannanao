@@ -834,8 +834,6 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
 const UNSPLASH_KEY='pebCbGHApxWqoFDGGaJa3sJMsC03eMHhNE4nYFjwYic';
 
 // ── SUPABASE CONFIG ──
-// Replace these two values with your project's URL and anon key from:
-// Supabase Dashboard → Project Settings → API
 const SUPABASE_URL = 'https://lnbxmmazadaqwcmwjeiu.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_02MpdyIT8nTbwZXtg8QDPw_Jvm3_QgF';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1083,9 +1081,9 @@ async function generateCards(){
 Each object: "word","reading"(hiragana/katakana, empty if already kana),"meaning"(English 1-5 words),"image_query"(vivid 2-4 word English phrase for photo search),"example_jp","example_en".
 Words: ${pendingWords.join(', ')}`}]})
     });
-    const data=await res.json();
-    const raw=data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
-    const newCards=JSON.parse(raw);
+    const data = await res.json();
+    const raw = data.candidates[0].content.parts[0].text;
+    const newCards = JSON.parse(raw);
 
     document.getElementById('loadingTxt').textContent='FETCHING IMAGES...';
     await Promise.all(newCards.map(async c=>{

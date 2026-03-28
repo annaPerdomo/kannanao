@@ -1,20 +1,30 @@
- 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
- 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
+
+  const response = fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: `You are a Japanese language teacher. For each word, return ONLY a JSON array, no markdown.
+Each object: "word","reading"(hiragana/katakana, empty if already kana),"meaning"(English 1-5 words),"image_query"(vivid 2-4 word English phrase for photo search),"example_jp","example_en".
+Words: ${pendingWords.join(", ")}`,
+              },
+            ],
+          },
+        ],
+        generationConfig: { maxOutputTokens: 1200 },
+      }),
     },
-    body: JSON.stringify(req.body),
-  });
- 
+  );
+
   const data = await response.json();
   return res.status(response.status).json(data);
 }
- 
