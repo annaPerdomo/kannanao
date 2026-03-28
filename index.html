@@ -1,0 +1,884 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a1008;--rice:#faf6ef;--verm:#c0392b;--verm-light:#fff0ee;--gold:#c8962a;
+  --muted:#8a7a6a;--card:#fffdf8;--sh:rgba(26,16,8,0.09);
+  --green:#2e7d52;--green-bg:#eef7f2;--red-bg:#fdf0ee;
+  --border:rgba(26,16,8,.1);
+}
+body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',serif;min-height:100vh}
+.mono{font-family:'DM Mono',monospace}
+.noto{font-family:'Noto Serif JP',serif}
+.serif{font-family:'DM Serif Display',serif}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+
+/* ── TOP BAR ── */
+.topbar{display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
+.topbar-back{background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;padding:4px 8px 4px 0;line-height:1;font-family:'DM Mono',monospace}
+.topbar-back:hover{color:var(--ink)}
+.topbar-title{font-family:'DM Serif Display',serif;font-size:1.1rem;font-style:italic;color:var(--ink);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-action{background:none;border:1px solid var(--border);border-radius:3px;padding:6px 12px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--ink);cursor:pointer;white-space:nowrap}
+.topbar-action:hover{background:rgba(26,16,8,.05)}
+.topbar-action.primary{background:var(--verm);color:#fff;border-color:var(--verm)}
+.topbar-action.primary:hover{background:#a93226}
+
+/* ══════════════════════════════
+   HOME SCREEN
+══════════════════════════════ */
+#screen-home{background:var(--rice)}
+.home-hero{padding:32px 20px 24px;text-align:center;border-bottom:1px solid var(--border);background:var(--card)}
+.home-jp{font-family:'Noto Serif JP',serif;font-size:11px;letter-spacing:.35em;color:var(--verm);opacity:.7;margin-bottom:6px}
+.home-title{font-size:clamp(1.8rem,5vw,2.6rem);font-style:italic;margin-bottom:4px}
+.home-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.15em}
+.home-body{padding:20px;flex:1}
+.section-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.decks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:24px}
+.deck-card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+.deck-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px var(--sh)}
+.deck-card-img{height:80px;background:#e8e0d5;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.deck-card-img img{width:100%;height:100%;object-fit:cover}
+.deck-card-placeholder{font-family:'Noto Serif JP',serif;font-size:2rem;color:rgba(26,16,8,.2)}
+.deck-card-body{padding:12px 14px}
+.deck-card-name{font-family:'DM Serif Display',serif;font-size:1rem;font-style:italic;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.deck-card-meta{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.06em}
+.deck-card-del{position:absolute;top:7px;right:8px;background:rgba(255,255,255,.85);border:none;border-radius:3px;width:22px;height:22px;cursor:pointer;font-size:13px;display:none;align-items:center;justify-content:center;color:var(--verm)}
+.deck-card:hover .deck-card-del{display:flex}
+.new-deck-card{background:none;border:1.5px dashed rgba(26,16,8,.18);border-radius:6px;cursor:pointer;padding:28px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border-color .15s,background .15s}
+.new-deck-card:hover{border-color:var(--verm);background:var(--verm-light)}
+.new-deck-icon{width:32px;height:32px;border-radius:50%;background:rgba(26,16,8,.07);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--muted)}
+.new-deck-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--muted)}
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty-jp{font-family:'Noto Serif JP',serif;font-size:3rem;opacity:.25;margin-bottom:12px}
+.empty-text{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;margin-bottom:20px}
+.empty-btn{padding:11px 24px;background:var(--verm);color:#fff;border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;cursor:pointer}
+
+/* ══════════════════════════════
+   NEW DECK MODAL (inline)
+══════════════════════════════ */
+.modal-overlay{display:none;position:absolute;inset:0;background:rgba(26,16,8,.35);z-index:100;align-items:flex-start;justify-content:center;padding-top:80px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border-radius:6px;padding:24px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(26,16,8,.2)}
+.modal-title{font-size:1.2rem;font-style:italic;margin-bottom:18px}
+.modal-field{margin-bottom:14px}
+.modal-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--muted);display:block;margin-bottom:6px}
+.modal-input{width:100%;padding:10px 13px;font-family:'Noto Serif JP',serif;font-size:14px;border:1.5px solid var(--border);border-radius:3px;background:var(--rice);color:var(--ink);outline:none;transition:border-color .2s}
+.modal-input:focus{border-color:var(--verm)}
+.modal-row{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.modal-cancel{padding:10px 18px;background:none;border:1px solid var(--border);border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;color:var(--ink)}
+.modal-save{padding:10px 20px;background:var(--verm);color:#fff;border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;cursor:pointer}
+.modal-save:hover{background:#a93226}
+
+/* ══════════════════════════════
+   DECK SCREEN (hub)
+══════════════════════════════ */
+#screen-deck{background:var(--rice)}
+.deck-hero{padding:20px;background:var(--card);border-bottom:1px solid var(--border)}
+.deck-hero-name{font-size:clamp(1.4rem,4vw,2rem);font-style:italic;margin-bottom:4px}
+.deck-hero-meta{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px}
+.mode-tile{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 16px;cursor:pointer;transition:transform .15s,box-shadow .15s;text-align:center}
+.mode-tile:hover{transform:translateY(-2px);box-shadow:0 6px 20px var(--sh)}
+.mode-icon{font-family:'Noto Serif JP',serif;font-size:2rem;margin-bottom:10px;display:block}
+.mode-name{font-size:1rem;font-style:italic;margin-bottom:4px}
+.mode-desc{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--muted);letter-spacing:.06em;line-height:1.5}
+.mode-tile.study{border-top:3px solid var(--gold)}
+.mode-tile.match{border-top:3px solid #4a90d9}
+.mode-tile.blank{border-top:3px solid var(--green)}
+.mode-tile.recall{border-top:3px solid var(--verm)}
+.deck-add-section{padding:0 20px 20px}
+.add-words-box{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:18px}
+.add-words-title{font-size:.95rem;font-style:italic;margin-bottom:14px}
+.word-row{display:flex;gap:8px;margin-bottom:10px}
+.word-input{flex:1;padding:10px 13px;font-family:'Noto Serif JP',serif;font-size:14px;border:1.5px solid var(--border);border-radius:3px;background:var(--rice);color:var(--ink);outline:none;transition:border-color .2s}
+.word-input:focus{border-color:var(--verm)}
+.word-input::placeholder{color:var(--muted);font-size:12px;font-family:'DM Mono',monospace}
+.add-btn{padding:10px 16px;background:var(--ink);color:var(--rice);border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;white-space:nowrap}
+.add-btn:hover{background:#2d1e0f}
+.word-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;min-height:28px}
+.word-tag{display:flex;align-items:center;gap:4px;padding:3px 10px;background:var(--rice);border:1px solid var(--border);border-radius:20px;font-family:'Noto Serif JP',serif;font-size:12px;animation:tagIn .2s}
+@keyframes tagIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.word-tag button{background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;line-height:1;padding:0}
+.word-tag button:hover{color:var(--verm)}
+.gen-btn{width:100%;padding:13px;background:var(--verm);color:#fff;border:none;border-radius:3px;font-family:'DM Serif Display',serif;font-size:15px;font-style:italic;cursor:pointer;transition:all .2s}
+.gen-btn:hover:not(:disabled){background:#a93226}
+.gen-btn:disabled{opacity:.5;cursor:not-allowed}
+.error-msg{background:var(--verm-light);border:1px solid rgba(192,57,43,.2);border-radius:3px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:10px;color:var(--verm);display:none;margin-top:8px}
+.error-msg.show{display:block}
+.loading-bar{display:none;text-align:center;padding:20px}
+.loading-bar.show{display:block}
+.loading-jp{font-family:'Noto Serif JP',serif;font-size:36px;color:var(--verm);animation:float 1.4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(-8px);opacity:.5}}
+.loading-txt{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px;letter-spacing:.12em}
+.existing-cards{padding:0 20px 20px}
+.existing-title{font-size:.95rem;font-style:italic;margin-bottom:12px}
+.card-list{display:flex;flex-direction:column;gap:8px}
+.card-list-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:5px;overflow:hidden;padding:0}
+.cli-img{width:52px;height:52px;object-fit:cover;flex-shrink:0;background:#e8e0d5;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:1.3rem;color:rgba(26,16,8,.25)}
+.cli-img img{width:52px;height:52px;object-fit:cover}
+.cli-body{flex:1;padding:10px 4px}
+.cli-word{font-family:'Noto Serif JP',serif;font-size:1.1rem;margin-bottom:1px}
+.cli-meaning{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em}
+.cli-del{background:none;border:none;cursor:pointer;color:rgba(26,16,8,.2);font-size:15px;padding:8px 12px;flex-shrink:0}
+.cli-del:hover{color:var(--verm)}
+
+/* ══════════════════════════════
+   STUDY SCREEN
+══════════════════════════════ */
+#screen-study{background:var(--rice)}
+.study-body{flex:1;padding:16px 16px 24px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.study-prog{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.1em}
+.stage{perspective:1100px;width:100%;max-width:480px}
+.card-inner{transition:transform .65s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;cursor:pointer;position:relative;min-height:340px}
+.card-inner.flipped{transform:rotateY(180deg)}
+.face{background:var(--card);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 24px var(--sh);backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;min-height:340px;display:flex;flex-direction:column}
+.face.back{position:absolute;top:0;left:0;width:100%;transform:rotateY(180deg)}
+.card-img-wrap{position:relative;height:220px;background:#e8e0d5;flex-shrink:0;overflow:hidden}
+.card-img-wrap img{width:100%;height:100%;object-fit:cover;transition:opacity .4s}
+.card-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(26,16,8,.7));padding:24px 16px 14px;display:flex;flex-direction:column;gap:3px}
+.overlay-word{font-family:'Noto Serif JP',serif;font-size:2.2rem;color:#fff}
+.overlay-reading{font-family:'Noto Serif JP',serif;font-size:12px;color:rgba(255,255,255,.8);font-weight:300}
+.card-front-foot{padding:14px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.14em}
+.card-back-thumb{height:100px;overflow:hidden;flex-shrink:0;background:#e8e0d5}
+.card-back-thumb img{width:100%;height:100%;object-fit:cover;filter:brightness(.8)}
+.card-back-body{padding:20px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;flex:1;justify-content:center}
+.back-reading{font-family:'Noto Serif JP',serif;font-size:.95rem;color:var(--verm);font-weight:300}
+.back-meaning{font-size:1.6rem;font-style:italic}
+.back-example{font-family:'Noto Serif JP',serif;font-size:12px;color:var(--muted);line-height:1.8;border-top:1px solid var(--border);padding-top:10px;max-width:320px}
+.back-ex-en{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);font-style:italic;margin-top:3px}
+.back-credit{font-family:'DM Mono',monospace;font-size:9px;color:rgba(26,16,8,.25);margin-top:auto}
+.nav-row{display:flex;gap:12px;justify-content:center;width:100%;max-width:480px}
+.nav-btn{flex:1;padding:12px;border:1.5px solid var(--border);background:var(--card);border-radius:4px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;cursor:pointer;color:var(--ink);transition:all .15s;max-width:140px}
+.nav-btn:hover:not(:disabled){background:var(--ink);color:var(--rice);border-color:var(--ink)}
+.nav-btn:disabled{opacity:.28;cursor:not-allowed}
+
+/* ══════════════════════════════
+   PRACTICE SCREENS
+══════════════════════════════ */
+.practice-body{flex:1;padding:16px 16px 32px}
+.score-pill{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:18px}
+.score-num{font-family:'DM Serif Display',serif;font-size:1.1rem;font-style:italic;color:var(--ink)}
+
+/* match */
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match-col{display:flex;flex-direction:column;gap:8px}
+.match-card{border:1.5px solid var(--border);border-radius:6px;cursor:pointer;transition:all .18s;overflow:hidden;background:var(--card)}
+.match-jp{display:flex;flex-direction:column;align-items:center}
+.match-thumb{width:100%;height:64px;object-fit:cover;background:#e8e0d5;display:block}
+.match-thumb-ph{width:100%;height:64px;background:#e8e0d5;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:1.5rem;color:rgba(26,16,8,.2)}
+.match-jp-word{font-family:'Noto Serif JP',serif;font-size:1.2rem;padding:9px 8px;text-align:center;color:var(--ink)}
+.match-en{display:flex;align-items:center;justify-content:center;padding:14px 10px;min-height:58px;font-family:'DM Serif Display',serif;font-size:.95rem;font-style:italic;color:var(--ink);text-align:center}
+.match-card:hover:not(.matched):not(.wrong){border-color:var(--verm);background:var(--verm-light)}
+.match-card.selected{border-color:var(--verm);box-shadow:0 0 0 2px rgba(192,57,43,.15)}
+.match-card.matched{border-color:var(--green);opacity:.6;cursor:default}
+.match-card.wrong{border-color:var(--verm);background:var(--red-bg);animation:shake .3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+/* blank */
+.blank-card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px}
+.blank-img{width:100%;height:130px;object-fit:cover;background:#e8e0d5;display:block}
+.blank-img-ph{width:100%;height:130px;background:#e8e0d5;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:2.5rem;color:rgba(26,16,8,.15)}
+.blank-body{padding:18px}
+.prompt-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.15em;margin-bottom:12px}
+.blank-sent{font-family:'Noto Serif JP',serif;font-size:1.05rem;line-height:2;margin-bottom:4px}
+.blank-en{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);font-style:italic;margin-bottom:16px}
+.choices{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.choice-btn{padding:9px 16px;border:1.5px solid var(--border);background:var(--card);border-radius:3px;font-family:'Noto Serif JP',serif;font-size:1rem;cursor:pointer;color:var(--ink);transition:all .18s}
+.choice-btn:hover:not(:disabled){border-color:var(--verm);background:var(--verm-light)}
+.choice-btn.correct{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.choice-btn.incorrect{border-color:var(--verm);background:var(--red-bg);color:var(--verm)}
+.choice-btn:disabled{cursor:default}
+.feedback{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.07em;margin-top:12px;min-height:18px;text-align:center}
+.fb-ok{color:var(--green)}.fb-no{color:var(--verm)}
+.next-btn{padding:10px 24px;background:var(--ink);color:var(--rice);border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;cursor:pointer;margin-top:12px;display:none}
+.next-btn.show{display:inline-block}
+
+/* recall */
+.recall-card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px}
+.recall-img{width:100%;height:150px;object-fit:cover;background:#e8e0d5;display:block}
+.recall-img-ph{width:100%;height:150px;background:#e8e0d5;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:3rem;color:rgba(26,16,8,.15)}
+.recall-body{padding:20px;text-align:center}
+.recall-meaning{font-size:1.7rem;font-style:italic;margin-bottom:4px}
+.recall-hint{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:16px}
+.recall-input{padding:11px 14px;font-family:'Noto Serif JP',serif;font-size:1.1rem;border:1.5px solid var(--border);border-radius:3px;background:var(--rice);color:var(--ink);outline:none;text-align:center;width:100%;max-width:240px;transition:border-color .2s}
+.recall-input:focus{border-color:var(--verm)}
+.recall-input.ok{border-color:var(--green);background:var(--green-bg)}
+.recall-input.no{border-color:var(--verm);background:var(--red-bg)}
+.recall-submit{padding:10px 20px;background:var(--verm);color:#fff;border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;margin-top:10px}
+.recall-submit:hover{background:#a93226}
+.recall-answer{font-family:'Noto Serif JP',serif;font-size:.95rem;color:var(--verm);margin-top:6px;display:none}
+
+/* completion */
+.completion{text-align:center;padding:40px 20px}
+.comp-kanji{font-family:'Noto Serif JP',serif;font-size:52px;color:var(--gold);margin-bottom:8px}
+.comp-title{font-size:1.7rem;font-style:italic;margin-bottom:6px}
+.comp-score{font-size:2.2rem;font-style:italic;color:var(--verm);margin-bottom:6px}
+.comp-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em;margin-bottom:22px}
+.try-btn{padding:11px 28px;background:var(--ink);color:var(--rice);border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;cursor:pointer}
+.try-btn:hover{background:#2d1e0f}
+</style>
+
+<!-- ═══ HOME ═══ -->
+<div class="screen active" id="screen-home" style="position:relative">
+  <div class="home-hero">
+    <div class="home-jp">フラッシュカード</div>
+    <div class="home-title">Japanese Flashcards</div>
+    <div class="home-sub mono">YOUR DECKS</div>
+  </div>
+  <div class="home-body">
+    <div class="section-label">My decks</div>
+    <div class="decks-grid" id="decksGrid">
+      <div class="empty-state" id="emptyState" style="grid-column:1/-1">
+        <div class="empty-jp">学</div>
+        <div class="empty-text">No decks yet — create your first one!</div>
+        <button class="empty-btn" onclick="showNewDeckModal()">+ New Deck</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- modal -->
+  <div class="modal-overlay" id="newDeckOverlay">
+    <div class="modal">
+      <div class="modal-title">Create a new deck</div>
+      <div class="modal-field">
+        <label class="modal-label">Deck name</label>
+        <input class="modal-input noto" id="newDeckName" placeholder="e.g. Chapter 3 — Animals" />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Description (optional)</label>
+        <input class="modal-input mono" id="newDeckDesc" placeholder="e.g. Week 4 class vocab" style="font-size:12px" />
+      </div>
+      <div class="modal-row">
+        <button class="modal-cancel" onclick="hideNewDeckModal()">Cancel</button>
+        <button class="modal-save" onclick="createDeck()">Create Deck</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DECK HUB ═══ -->
+<div class="screen" id="screen-deck">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goHome()">← Decks</button>
+    <div class="topbar-title" id="deckHubName"></div>
+    <button class="topbar-action primary" onclick="showNewDeckModal2()" id="addMoreBtn">+ Add Words</button>
+  </div>
+  <div class="deck-hero">
+    <div class="deck-hero-name" id="deckHubName2"></div>
+    <div class="deck-hero-meta mono" id="deckHubMeta"></div>
+  </div>
+  <div style="padding:16px 20px 0">
+    <div class="section-label">What do you want to do?</div>
+    <div class="mode-grid" id="modeGrid">
+      <div class="mode-tile study" onclick="goStudy()">
+        <span class="mode-icon">本</span>
+        <div class="mode-name">Study</div>
+        <div class="mode-desc mono">Flip cards · see images · learn at your own pace</div>
+      </div>
+      <div class="mode-tile match" onclick="goPractice('match')">
+        <span class="mode-icon">合</span>
+        <div class="mode-name">Match</div>
+        <div class="mode-desc mono">Match Japanese words to their meanings</div>
+      </div>
+      <div class="mode-tile blank" onclick="goPractice('blank')">
+        <span class="mode-icon">穴</span>
+        <div class="mode-name">Fill in the Blank</div>
+        <div class="mode-desc mono">Pick the missing word from a sentence</div>
+      </div>
+      <div class="mode-tile recall" onclick="goPractice('recall')">
+        <span class="mode-icon">書</span>
+        <div class="mode-name">Recall</div>
+        <div class="mode-desc mono">See the meaning · type the Japanese word</div>
+      </div>
+    </div>
+  </div>
+  <div class="existing-cards" id="existingCardsSection" style="margin-top:16px">
+    <div class="section-label" style="padding:0 0 0 0">Cards in this deck</div>
+    <div class="card-list" id="cardList"></div>
+  </div>
+
+  <!-- add words modal inline -->
+  <div class="modal-overlay" id="addWordsOverlay">
+    <div class="modal" style="max-width:460px">
+      <div class="modal-title">Add vocabulary words</div>
+      <div class="word-row">
+        <input class="word-input noto" id="wordInput2" placeholder="e.g. 猫, ありがとう, kawaii..." />
+        <button class="add-btn" onclick="addWord()">+ Add</button>
+      </div>
+      <div class="word-tags" id="wordTags2"></div>
+      <div class="loading-bar" id="loadingBar">
+        <div class="loading-jp">学</div>
+        <div class="loading-txt" id="loadingTxt">GENERATING...</div>
+      </div>
+      <div class="error-msg" id="errorMsg2"></div>
+      <div class="modal-row">
+        <button class="modal-cancel" onclick="hideAddWords()">Cancel</button>
+        <button class="modal-save" id="genBtn" onclick="generateCards()" style="opacity:.5;cursor:not-allowed" disabled>✦ Generate</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STUDY ═══ -->
+<div class="screen" id="screen-study">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goDeck()">← Back</button>
+    <div class="topbar-title">Study</div>
+    <button class="topbar-action" onclick="toggleStudyView()" id="studyViewBtn">Overview</button>
+  </div>
+  <div class="study-body" id="studyFlashView">
+    <div class="study-prog" id="studyProg"></div>
+    <div class="stage">
+      <div class="card-inner" id="cardInner" onclick="flipCard()">
+        <div class="face front" id="cardFront"></div>
+        <div class="face back" id="cardBack"></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="nav-btn" id="prevBtn" onclick="navigate(-1)">← Prev</button>
+      <button class="nav-btn" id="nextBtn" onclick="navigate(1)">Next →</button>
+    </div>
+  </div>
+  <!-- overview grid (hidden by default) -->
+  <div style="display:none;padding:16px;gap:12px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))" id="studyGridView">
+  </div>
+</div>
+
+<!-- ═══ MATCH ═══ -->
+<div class="screen" id="screen-match">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goDeck()">← Back</button>
+    <div class="topbar-title">Match</div>
+    <button class="topbar-action" onclick="initMatch()">Restart ↺</button>
+  </div>
+  <div class="practice-body">
+    <div class="score-pill"><span class="mono">Matched</span><span class="score-num" id="matchScore">0 / 0</span></div>
+    <div class="match-grid"><div class="match-col" id="matchJp"></div><div class="match-col" id="matchEn"></div></div>
+    <div class="completion" id="matchComp" style="display:none">
+      <div class="comp-kanji">合</div>
+      <div class="comp-title">All matched!</div>
+      <div class="comp-sub mono" id="matchCompSub"></div>
+      <button class="try-btn" onclick="initMatch()">Play Again ↺</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BLANK ═══ -->
+<div class="screen" id="screen-blank">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goDeck()">← Back</button>
+    <div class="topbar-title">Fill in the Blank</div>
+    <button class="topbar-action" onclick="initBlank()">Restart ↺</button>
+  </div>
+  <div class="practice-body">
+    <div class="score-pill"><span class="mono">Score</span><span class="score-num" id="blankScore">0 / 0</span></div>
+    <div id="blankGame">
+      <div id="blankCardWrap"></div>
+      <div style="text-align:center">
+        <div class="feedback" id="blankFb"></div>
+        <button class="next-btn" id="blankNext" onclick="nextBlank()">Next →</button>
+      </div>
+    </div>
+    <div class="completion" id="blankComp" style="display:none">
+      <div class="comp-kanji">正</div><div class="comp-title">Round complete!</div>
+      <div class="comp-score" id="blankFinal"></div>
+      <div class="comp-sub mono">Keep practicing!</div>
+      <button class="try-btn" onclick="initBlank()">Try Again ↺</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RECALL ═══ -->
+<div class="screen" id="screen-recall">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goDeck()">← Back</button>
+    <div class="topbar-title">Recall</div>
+    <button class="topbar-action" onclick="initRecall()">Restart ↺</button>
+  </div>
+  <div class="practice-body">
+    <div class="score-pill"><span class="mono">Score</span><span class="score-num" id="recallScore">0 / 0</span></div>
+    <div id="recallGame">
+      <div id="recallCardWrap"></div>
+      <div style="text-align:center">
+        <div class="feedback" id="recallFb"></div>
+        <div class="recall-answer" id="recallAnswer"></div>
+        <button class="next-btn" id="recallNext" onclick="nextRecall()">Next →</button>
+      </div>
+    </div>
+    <div class="completion" id="recallComp" style="display:none">
+      <div class="comp-kanji">完</div><div class="comp-title">Round complete!</div>
+      <div class="comp-score" id="recallFinal"></div>
+      <div class="comp-sub mono">Typing builds real memory!</div>
+      <button class="try-btn" onclick="initRecall()">Try Again ↺</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const UNSPLASH_KEY='pebCbGHApxWqoFDGGaJa3sJMsC03eMHhNE4nYFjwYic';
+
+// ── SUPABASE CONFIG ──
+// Replace these two values with your project's URL and anon key from:
+// Supabase Dashboard → Project Settings → API
+const SUPABASE_URL = 'https://lnbxmmazadaqwcmwjeiu.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_02MpdyIT8nTbwZXtg8QDPw_Jvm3_QgF';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── STATE ──
+// decks is now a local cache hydrated from Supabase on load / after mutations
+let decks=[];
+let currentDeckId=null;
+let pendingWords=[];
+let studyCards=[], studyIdx=0, studyFlipped=false, studyViewMode='flash';
+let matchSel=null, matchCorrect=0;
+let blankQ=[], blankIdx=0, blankCorrect=0, blankAnswered=false;
+let recallQ=[], recallIdx=0, recallCorrect=0, recallAnswered=false;
+
+// ── CONFIG CHECK ──
+function isConfigured(){
+  return SUPABASE_URL!=='YOUR_SUPABASE_URL'&&SUPABASE_ANON_KEY!=='YOUR_SUPABASE_ANON_KEY';
+}
+
+// ── DB HELPERS ──
+async function loadDecks(){
+  if(!isConfigured()){showConfigBanner();return}
+  const{data:deckRows,error:de}=await sb.from('decks').select('*').order('created_at',{ascending:true});
+  if(de){console.error('Error loading decks',de);return}
+  const{data:cardRows,error:ce}=await sb.from('cards').select('*').order('created_at',{ascending:true});
+  if(ce){console.error('Error loading cards',ce);return}
+  // stitch cards into decks, mapping DB snake_case → app camelCase
+  decks=deckRows.map(d=>({
+    id:d.id,
+    name:d.name,
+    description:d.description||'',
+    createdAt:d.created_at,
+    cards:(cardRows||[]).filter(c=>c.deck_id===d.id).map(dbCardToApp)
+  }));
+}
+
+function dbCardToApp(c){
+  return{
+    word:c.word,
+    reading:c.reading||'',
+    meaning:c.meaning||'',
+    imageUrl:c.image_url||'',
+    imageCredit:c.image_credit||'',
+    example_jp:c.example_jp||'',
+    example_en:c.example_en||'',
+    _id:c.id,
+    _deck_id:c.deck_id
+  };
+}
+
+async function dbCreateDeck(name,description){
+  const{data,error}=await sb.from('decks').insert({name,description}).select().single();
+  if(error)throw error;
+  return data;
+}
+
+async function dbDeleteDeck(id){
+  const{error}=await sb.from('decks').delete().eq('id',id);
+  if(error)throw error;
+}
+
+async function dbInsertCards(deckId, newCards){
+  const rows=newCards.map(c=>({
+    deck_id:deckId,
+    word:c.word,
+    reading:c.reading||'',
+    meaning:c.meaning||'',
+    image_url:c.imageUrl||'',
+    image_credit:c.imageCredit||'',
+    example_jp:c.example_jp||'',
+    example_en:c.example_en||''
+  }));
+  const{error}=await sb.from('cards').insert(rows);
+  if(error)throw error;
+}
+
+async function dbDeleteCard(cardId){
+  const{error}=await sb.from('cards').delete().eq('id',cardId);
+  if(error)throw error;
+}
+
+function getDeck(){return decks.find(d=>d.id===currentDeckId)}
+
+// ── CONFIG BANNER ──
+function showConfigBanner(){
+  const b=document.createElement('div');
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:#c0392b;color:#fff;font-family:DM Mono,monospace;font-size:11px;letter-spacing:.08em;padding:12px 20px;text-align:center;line-height:1.7';
+  b.innerHTML='⚠ Open the HTML file and replace <strong>YOUR_SUPABASE_URL</strong> and <strong>YOUR_SUPABASE_ANON_KEY</strong> with your project credentials from <a href="https://supabase.com/dashboard" target="_blank" style="color:#ffd;text-underline-offset:2px">Supabase Dashboard → Project Settings → API</a>';
+  document.body.prepend(b);
+}
+
+// ── LOADING OVERLAY ──
+function showLoading(msg='LOADING...'){
+  let el=document.getElementById('globalLoading');
+  if(!el){
+    el=document.createElement('div');
+    el.id='globalLoading';
+    el.style.cssText='position:fixed;inset:0;background:var(--rice);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px';
+    el.innerHTML=`<div style="font-family:\'Noto Serif JP\',serif;font-size:48px;color:var(--verm);animation:float 1.4s ease-in-out infinite">学</div><div id="globalLoadingTxt" style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);letter-spacing:.12em">${msg}</div>`;
+    document.body.appendChild(el);
+  }else{document.getElementById('globalLoadingTxt').textContent=msg}
+  el.style.display='flex';
+}
+function hideLoading(){const el=document.getElementById('globalLoading');if(el)el.style.display='none'}
+function shuffle(a){return[...a].sort(()=>Math.random()-.5)}
+
+// ── SCREENS ──
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+
+// ── HOME ──
+function renderHome(){
+  const grid=document.getElementById('decksGrid');
+  const empty=document.getElementById('emptyState');
+  if(!decks.length){empty.style.display='block';grid.innerHTML='';grid.appendChild(empty);return}
+  empty.style.display='none';
+  const newBtn=`<div class="new-deck-card" onclick="showNewDeckModal()"><div class="new-deck-icon">+</div><div class="new-deck-label mono">New Deck</div></div>`;
+  grid.innerHTML=decks.map(d=>{
+    const firstImg=d.cards&&d.cards[0]&&d.cards[0].imageUrl?`<img src="${d.cards[0].imageUrl}" alt="">`:`<div class="deck-card-placeholder">${d.cards&&d.cards[0]?d.cards[0].word:'学'}</div>`;
+    return`<div class="deck-card" onclick="openDeck('${d.id}')">
+      <div class="deck-card-img">${firstImg}</div>
+      <div class="deck-card-body">
+        <div class="deck-card-name serif">${d.name}</div>
+        <div class="deck-card-meta mono">${(d.cards||[]).length} card${(d.cards||[]).length!==1?'s':''}</div>
+      </div>
+      <button class="deck-card-del" onclick="event.stopPropagation();deleteDeck('${d.id}')">×</button>
+    </div>`;
+  }).join('')+newBtn;
+}
+
+async function goHome(){
+  showLoading('LOADING DECKS...');
+  await loadDecks();
+  hideLoading();
+  showScreen('home');
+  renderHome();
+}
+function showNewDeckModal(){document.getElementById('newDeckOverlay').classList.add('show');document.getElementById('newDeckName').focus()}
+function hideNewDeckModal(){document.getElementById('newDeckOverlay').classList.remove('show');document.getElementById('newDeckName').value='';document.getElementById('newDeckDesc').value=''}
+async function createDeck(){
+  const name=document.getElementById('newDeckName').value.trim();
+  if(!name)return;
+  const desc=document.getElementById('newDeckDesc').value.trim();
+  hideNewDeckModal();
+  showLoading('CREATING DECK...');
+  try{
+    const row=await dbCreateDeck(name,desc);
+    const deck={id:row.id,name:row.name,description:row.description||'',createdAt:row.created_at,cards:[]};
+    decks.push(deck);
+    hideLoading();
+    openDeck(deck.id);
+  }catch(e){hideLoading();alert('Error creating deck: '+e.message)}
+}
+async function deleteDeck(id){
+  if(!confirm('Delete this deck and all its cards?'))return;
+  showLoading('DELETING...');
+  try{
+    await dbDeleteDeck(id);
+    decks=decks.filter(d=>d.id!==id);
+    hideLoading();
+    renderHome();
+  }catch(e){hideLoading();alert('Error deleting deck: '+e.message)}
+}
+
+// ── DECK HUB ──
+function openDeck(id){
+  currentDeckId=id;pendingWords=[];
+  const deck=getDeck();
+  document.getElementById('deckHubName').textContent=deck.name;
+  document.getElementById('deckHubName2').textContent=deck.name;
+  document.getElementById('deckHubMeta').textContent=`${(deck.cards||[]).length} cards${deck.description?' · '+deck.description:''}`;
+  renderCardList();
+  showScreen('deck');
+}
+function goDeck(){
+  pendingWords=[];
+  document.getElementById('addWordsOverlay').classList.remove('show');
+  openDeck(currentDeckId);
+}
+function renderCardList(){
+  const deck=getDeck();
+  const list=document.getElementById('cardList');
+  if(!deck.cards||!deck.cards.length){list.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding:12px 0;letter-spacing:.08em">No cards yet — add some words above!</div>`;return}
+  list.innerHTML=deck.cards.map((c)=>`
+    <div class="card-list-item">
+      <div class="cli-img">${c.imageUrl?`<img src="${c.imageUrl}" alt="">`:`${c.word}`}</div>
+      <div class="cli-body">
+        <div class="cli-word noto">${c.word}</div>
+        <div class="cli-meaning mono">${c.meaning}</div>
+      </div>
+      <button class="cli-del" onclick="deleteCard('${c._id}')">×</button>
+    </div>`).join('');
+  document.getElementById('deckHubMeta').textContent=`${deck.cards.length} cards${deck.description?' · '+deck.description:''}`;
+}
+async function deleteCard(cardId){
+  const deck=getDeck();
+  showLoading('REMOVING...');
+  try{
+    await dbDeleteCard(cardId);
+    deck.cards=deck.cards.filter(c=>c._id!==cardId);
+    hideLoading();
+    renderCardList();
+  }catch(e){hideLoading();alert('Error deleting card: '+e.message)}
+}
+
+// add words modal
+function showNewDeckModal2(){
+  pendingWords=[];renderTags2();
+  document.getElementById('addWordsOverlay').classList.add('show');
+  document.getElementById('wordInput2').value='';
+  document.getElementById('errorMsg2').classList.remove('show');
+  setTimeout(()=>document.getElementById('wordInput2').focus(),100);
+}
+function hideAddWords(){document.getElementById('addWordsOverlay').classList.remove('show');pendingWords=[];renderTags2()}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('wordInput2').addEventListener('keydown',e=>{if(e.key==='Enter')addWord()});
+});
+function addWord(){
+  const v=document.getElementById('wordInput2').value.trim();
+  if(!v||pendingWords.includes(v)){document.getElementById('wordInput2').value='';return}
+  pendingWords.push(v);document.getElementById('wordInput2').value='';renderTags2();
+  const btn=document.getElementById('genBtn');btn.disabled=false;btn.style.opacity='1';btn.style.cursor='pointer';
+}
+function removeWord(w){pendingWords=pendingWords.filter(x=>x!==w);renderTags2();const btn=document.getElementById('genBtn');btn.disabled=!pendingWords.length;btn.style.opacity=pendingWords.length?'1':'.5';btn.style.cursor=pendingWords.length?'pointer':'not-allowed'}
+function renderTags2(){
+  document.getElementById('wordTags2').innerHTML=pendingWords.map(w=>`<div class="word-tag"><span class="noto">${w}</span><button onclick="removeWord('${w.replace(/'/g,"\\'")}')">×</button></div>`).join('');
+}
+
+async function generateCards(){
+  if(!pendingWords.length)return;
+  const lb=document.getElementById('loadingBar');
+  const em=document.getElementById('errorMsg2');
+  em.classList.remove('show');lb.classList.add('show');
+  document.getElementById('loadingTxt').textContent='GENERATING CARDS...';
+  document.getElementById('genBtn').disabled=true;
+
+  try{
+    const res=await fetch('/api/generate',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,
+        messages:[{role:'user',content:`You are a Japanese language teacher. For each word, return ONLY a JSON array, no markdown.
+Each object: "word","reading"(hiragana/katakana, empty if already kana),"meaning"(English 1-5 words),"image_query"(vivid 2-4 word English phrase for photo search),"example_jp","example_en".
+Words: ${pendingWords.join(', ')}`}]})
+    });
+    const data=await res.json();
+    const raw=data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    const newCards=JSON.parse(raw);
+
+    document.getElementById('loadingTxt').textContent='FETCHING IMAGES...';
+    await Promise.all(newCards.map(async c=>{
+      try{
+        const r=await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(c.image_query||c.meaning)}&per_page=1&orientation=landscape&client_id=${UNSPLASH_KEY}`);
+        const d=await r.json();
+        if(d.results&&d.results[0]){c.imageUrl=d.results[0].urls.small;c.imageCredit=d.results[0].user.name}
+      }catch(e){}
+    }));
+
+    document.getElementById('loadingTxt').textContent='SAVING TO DATABASE...';
+    await dbInsertCards(currentDeckId, newCards);
+
+    // reload cards from DB so we get the real UUIDs back
+    const{data:freshCards,error:ce}=await sb.from('cards').select('*').eq('deck_id',currentDeckId).order('created_at',{ascending:true});
+    if(ce)throw ce;
+    const deck=getDeck();
+    deck.cards=(freshCards||[]).map(dbCardToApp);
+
+    lb.classList.remove('show');hideAddWords();renderCardList();
+  }catch(e){
+    lb.classList.remove('show');document.getElementById('genBtn').disabled=false;
+    em.textContent='Something went wrong: '+(e.message||e);em.classList.add('show');
+  }
+}
+
+// ── STUDY ──
+function goStudy(){
+  const deck=getDeck();
+  if(!deck.cards||!deck.cards.length){alert('Add some words to this deck first!');return}
+  studyCards=deck.cards;studyIdx=0;studyFlipped=false;studyViewMode='flash';
+  document.getElementById('studyViewBtn').textContent='Overview';
+  document.getElementById('studyFlashView').style.display='flex';
+  document.getElementById('studyGridView').style.display='none';
+  renderStudyCard();showScreen('study');
+}
+function renderStudyCard(){
+  const c=studyCards[studyIdx];
+  document.getElementById('cardInner').classList.remove('flipped');studyFlipped=false;
+  document.getElementById('cardFront').innerHTML=`
+    <div class="card-img-wrap">
+      ${c.imageUrl?`<img src="${c.imageUrl}" alt="${c.meaning}" style="opacity:0" onload="this.style.opacity=1">`:''}
+      <div class="card-overlay">
+        <div class="overlay-word">${c.word}</div>
+        ${c.reading?`<div class="overlay-reading">${c.reading}</div>`:''}
+      </div>
+    </div>
+    <div class="card-front-foot">tap to reveal meaning</div>`;
+  document.getElementById('cardBack').innerHTML=`
+    ${c.imageUrl?`<div class="card-back-thumb"><img src="${c.imageUrl}" alt="" style="width:100%;height:100%;object-fit:cover;filter:brightness(.8)"></div>`:''}
+    <div class="card-back-body">
+      ${c.reading?`<div class="back-reading">${c.reading}</div>`:''}
+      <div class="back-meaning">${c.meaning}</div>
+      <div class="back-example noto">${c.example_jp}<div class="back-ex-en">${c.example_en}</div></div>
+      ${c.imageCredit?`<div class="back-credit mono">Photo: ${c.imageCredit} / Unsplash</div>`:''}
+    </div>`;
+  document.getElementById('studyProg').textContent=`${studyIdx+1} of ${studyCards.length}`;
+  document.getElementById('prevBtn').disabled=studyIdx===0;
+  document.getElementById('nextBtn').disabled=studyIdx===studyCards.length-1;
+}
+function flipCard(){studyFlipped=!studyFlipped;document.getElementById('cardInner').classList.toggle('flipped',studyFlipped)}
+function navigate(d){studyIdx=Math.max(0,Math.min(studyCards.length-1,studyIdx+d));renderStudyCard()}
+function toggleStudyView(){
+  studyViewMode=studyViewMode==='flash'?'grid':'flash';
+  const fv=document.getElementById('studyFlashView');
+  const gv=document.getElementById('studyGridView');
+  document.getElementById('studyViewBtn').textContent=studyViewMode==='flash'?'Overview':'Flashcards';
+  fv.style.display=studyViewMode==='flash'?'flex':'none';
+  if(studyViewMode==='grid'){
+    gv.style.display='grid';
+    gv.innerHTML=studyCards.map((c,i)=>`
+      <div onclick="studyIdx=${i};studyViewMode='flash';document.getElementById('studyFlashView').style.display='flex';document.getElementById('studyGridView').style.display='none';document.getElementById('studyViewBtn').textContent='Overview';renderStudyCard()"
+        style="background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+        ${c.imageUrl?`<img src="${c.imageUrl}" alt="" style="width:100%;height:80px;object-fit:cover">`:`<div style="height:80px;background:#e8e0d5;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:1.8rem;color:rgba(26,16,8,.2)">${c.word}</div>`}
+        <div style="padding:10px 10px">
+          <div class="noto" style="font-size:1.2rem">${c.word}</div>
+          <div class="mono" style="font-size:10px;color:var(--muted)">${c.meaning}</div>
+        </div>
+      </div>`).join('');
+  }else{gv.style.display='none'}
+}
+
+// ── PRACTICE ROUTER ──
+function goPractice(mode){
+  const deck=getDeck();
+  if(!deck.cards||deck.cards.length<2){alert('Add at least 2 cards to practice!');return}
+  if(mode==='match')initMatch();
+  if(mode==='blank')initBlank();
+  if(mode==='recall')initRecall();
+  showScreen(mode);
+}
+
+// ── MATCH ──
+function initMatch(){
+  const cards=getDeck().cards;
+  matchSel=null;matchCorrect=0;
+  document.getElementById('matchComp').style.display='none';
+  document.getElementById('matchScore').textContent=`0 / ${cards.length}`;
+  const jpS=shuffle(cards),enS=shuffle(cards);
+  document.getElementById('matchJp').innerHTML=jpS.map(c=>`
+    <div class="match-card match-jp" data-word="${c.word}" onclick="selectMatch(this,'jp')">
+      ${c.imageUrl?`<img class="match-thumb" src="${c.imageUrl}" alt="">`:`<div class="match-thumb-ph">${c.word}</div>`}
+      <div class="match-jp-word">${c.word}</div>
+    </div>`).join('');
+  document.getElementById('matchEn').innerHTML=enS.map(c=>`
+    <div class="match-card match-en" data-word="${c.word}" onclick="selectMatch(this,'en')">${c.meaning}</div>`).join('');
+}
+function selectMatch(el,side){
+  if(el.classList.contains('matched')||el.classList.contains('wrong'))return;
+  if(!matchSel){el.classList.add('selected');matchSel={el,side};return}
+  if(matchSel.side===side){matchSel.el.classList.remove('selected');matchSel={el,side};el.classList.add('selected');return}
+  const a=matchSel.el,b=el;a.classList.remove('selected');
+  const cards=getDeck().cards;
+  if(a.dataset.word===b.dataset.word){
+    a.classList.add('matched');b.classList.add('matched');matchCorrect++;
+    document.getElementById('matchScore').textContent=`${matchCorrect} / ${cards.length}`;
+    matchSel=null;
+    if(matchCorrect===cards.length)setTimeout(()=>{document.getElementById('matchComp').style.display='block';document.getElementById('matchCompSub').textContent=`All ${cards.length} pairs matched!`},400);
+  }else{
+    a.classList.add('wrong');b.classList.add('wrong');
+    setTimeout(()=>{a.classList.remove('wrong');b.classList.remove('wrong')},700);matchSel=null;
+  }
+}
+
+// ── BLANK ──
+function initBlank(){
+  blankQ=shuffle(getDeck().cards);blankIdx=0;blankCorrect=0;blankAnswered=false;
+  document.getElementById('blankComp').style.display='none';
+  document.getElementById('blankGame').style.display='block';
+  updateBlankScore();renderBlank();
+}
+function updateBlankScore(){document.getElementById('blankScore').textContent=`${blankCorrect} / ${blankQ.length}`}
+function renderBlank(){
+  if(blankIdx>=blankQ.length){document.getElementById('blankGame').style.display='none';document.getElementById('blankComp').style.display='block';document.getElementById('blankFinal').textContent=`${blankCorrect} / ${blankQ.length}`;return}
+  const c=blankQ[blankIdx];blankAnswered=false;
+  document.getElementById('blankFb').textContent='';document.getElementById('blankNext').classList.remove('show');
+  const allCards=getDeck().cards;
+  const wrong=shuffle(allCards.filter(x=>x.word!==c.word)).slice(0,3);
+  const choices=shuffle([c,...wrong]);
+  const blanked=c.example_jp.replace(c.word,'＿＿＿');
+  document.getElementById('blankCardWrap').innerHTML=`
+    <div class="blank-card">
+      ${c.imageUrl?`<img class="blank-img" src="${c.imageUrl}" alt="">`:`<div class="blank-img-ph">${c.word}</div>`}
+      <div class="blank-body">
+        <div class="prompt-label mono">Fill in the blank</div>
+        <div class="blank-sent noto">${blanked}</div>
+        <div class="blank-en mono">${c.example_en}</div>
+        <div class="choices">${choices.map(ch=>`<button class="choice-btn noto" onclick="checkBlank(this,'${ch.word.replace(/'/g,"\\'")}','${c.word.replace(/'/g,"\\'")}')">${ch.word}</button>`).join('')}</div>
+      </div>
+    </div>`;
+}
+function checkBlank(el,chosen,correct){
+  if(blankAnswered)return;blankAnswered=true;
+  document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=true);
+  if(chosen===correct){el.classList.add('correct');document.getElementById('blankFb').innerHTML=`<span class="fb-ok">✓ Correct!</span>`;blankCorrect++;updateBlankScore()}
+  else{el.classList.add('incorrect');document.querySelectorAll('.choice-btn').forEach(b=>{if(b.textContent===correct)b.classList.add('correct')});document.getElementById('blankFb').innerHTML=`<span class="fb-no">✗ Answer: ${correct}</span>`}
+  document.getElementById('blankNext').classList.add('show');
+}
+function nextBlank(){blankIdx++;renderBlank()}
+
+// ── RECALL ──
+function initRecall(){
+  recallQ=shuffle(getDeck().cards);recallIdx=0;recallCorrect=0;recallAnswered=false;
+  document.getElementById('recallComp').style.display='none';
+  document.getElementById('recallGame').style.display='block';
+  updateRecallScore();renderRecall();
+}
+function updateRecallScore(){document.getElementById('recallScore').textContent=`${recallCorrect} / ${recallQ.length}`}
+function renderRecall(){
+  if(recallIdx>=recallQ.length){document.getElementById('recallGame').style.display='none';document.getElementById('recallComp').style.display='block';document.getElementById('recallFinal').textContent=`${recallCorrect} / ${recallQ.length}`;return}
+  const c=recallQ[recallIdx];recallAnswered=false;
+  document.getElementById('recallFb').textContent='';document.getElementById('recallAnswer').style.display='none';document.getElementById('recallNext').classList.remove('show');
+  document.getElementById('recallCardWrap').innerHTML=`
+    <div class="recall-card">
+      ${c.imageUrl?`<img class="recall-img" src="${c.imageUrl}" alt="">`:`<div class="recall-img-ph">${c.word}</div>`}
+      <div class="recall-body">
+        <div class="prompt-label mono">Type the Japanese word</div>
+        <div class="recall-meaning">${c.meaning}</div>
+        ${c.reading?`<div class="recall-hint mono">Hint: ${c.reading}</div>`:'<div style="height:18px"></div>'}
+        <input class="recall-input noto" id="recallInp" placeholder="Type here..." autocomplete="off" autocorrect="off" spellcheck="false">
+        <br><button class="recall-submit" onclick="checkRecall('${c.word.replace(/'/g,"\\'")}')">Check ✓</button>
+      </div>
+    </div>`;
+  const inp=document.getElementById('recallInp');
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')checkRecall(c.word)});
+  setTimeout(()=>inp.focus(),60);
+}
+function checkRecall(correct){
+  if(recallAnswered)return;recallAnswered=true;
+  const inp=document.getElementById('recallInp');
+  const ok=inp.value.trim()===correct;
+  inp.disabled=true;inp.classList.add(ok?'ok':'no');
+  document.querySelector('.recall-submit').disabled=true;
+  if(ok){document.getElementById('recallFb').innerHTML=`<span class="fb-ok">✓ Perfect!</span>`;recallCorrect++}
+  else{document.getElementById('recallFb').innerHTML=`<span class="fb-no">✗ Not quite</span>`;const a=document.getElementById('recallAnswer');a.textContent=`Answer: ${correct}`;a.style.display='block'}
+  updateRecallScore();document.getElementById('recallNext').classList.add('show');
+}
+function nextRecall(){recallIdx++;renderRecall()}
+
+// ── INIT ──
+(async()=>{
+  showLoading('LOADING...');
+  await loadDecks();
+  hideLoading();
+  showScreen('home');
+  renderHome();
+})();
+</script>
