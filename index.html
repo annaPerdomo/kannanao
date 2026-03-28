@@ -1,4 +1,11 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Japanese Flashcards</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>" />
+</head>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -313,16 +320,149 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
 .card-list-search{flex:1;min-width:120px;padding:5px 10px;font-family:'DM Mono',monospace;font-size:11px;border:1px solid var(--border);border-radius:3px;background:var(--rice);color:var(--ink);outline:none}
 .card-list-search:focus{border-color:var(--verm)}
 
-/* ── MOBILE FIXES ── */
-@media(max-width:480px){
-  .mode-grid{grid-template-columns:1fr 1fr}
-  .decks-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+/* ── MOBILE & TABLET FIRST ── */
+
+/* Larger tap targets globally on touch devices */
+@media(hover:none){
+  .topbar-back{padding:10px 12px 10px 0;font-size:20px}
+  .topbar-action{padding:10px 16px;font-size:11px}
+  .deck-action-btn{padding:12px 14px}
+  .choice-btn{padding:13px 20px}
+  .nav-btn{padding:15px}
+  .gen-btn{padding:16px}
+  .modal-cancel,.modal-save{padding:13px 22px;font-size:12px}
+  .add-btn{padding:13px 18px}
+  .word-input{padding:13px 14px;font-size:16px} /* prevent zoom on iOS */
+  .modal-input{font-size:16px} /* prevent zoom on iOS */
+  .recall-input{font-size:16px}
+  .home-search{font-size:16px}
+  .cdb-search-inp{font-size:16px}
+}
+
+@media(max-width:600px){
+  /* Hero */
+  .home-hero{padding:20px 16px 16px}
+  .home-title{font-size:1.7rem}
+  .home-jp{font-size:10px}
+
+  /* Deck grid — 2 columns always on mobile */
+  .decks-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .deck-card-img{height:70px}
+  .deck-card-body{padding:10px 12px}
+  .deck-card-name{font-size:.9rem}
+
+  /* Home body padding */
+  .home-body{padding:16px}
+
+  /* Streak bar wraps nicely */
+  .streak-bar{padding:10px 16px 0;gap:6px}
+
+  /* Deck hub mode grid */
+  .mode-grid{grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px}
+  .mode-tile{padding:16px 12px}
+  .mode-icon{font-size:1.6rem;margin-bottom:7px}
+  .mode-name{font-size:.9rem}
+  .mode-desc{font-size:9px}
+
+  /* Deck actions — stacked nicely */
+  .deck-actions{gap:6px;padding:10px 16px;flex-wrap:wrap}
+  .deck-action-btn{font-size:10px;padding:10px 10px;flex:1 1 calc(33% - 6px);min-width:80px}
+
+  /* Deck hero */
+  .deck-hero{padding:16px}
+  .deck-hero-name{font-size:1.4rem}
+
+  /* Topbar — prevent overflow */
+  .topbar{padding:12px 14px;gap:8px}
+  .topbar-title{font-size:1rem}
+  .topbar-action{padding:8px 12px;font-size:10px}
+
+  /* Study card */
+  .stage{max-width:100%}
+  .card-inner{min-height:300px}
+  .face{min-height:300px}
+  .card-img-wrap{height:180px}
+  .overlay-word{font-size:1.8rem}
+  .back-meaning{font-size:1.4rem}
+  .nav-row{gap:8px}
+  .nav-btn{padding:14px;font-size:11px;max-width:none}
+
+  /* Add words box */
+  .add-words-box{padding:14px}
+  .word-row{flex-direction:column;gap:8px}
+  .add-btn{width:100%;text-align:center}
+
+  /* Existing cards section */
+  .existing-cards{padding:0 16px 20px}
+
+  /* Modals — full width friendly */
+  .modal{padding:20px;border-radius:8px}
+  .modal-overlay{padding:16px;align-items:flex-end;padding-bottom:env(safe-area-inset-bottom, 16px)}
+  .modal-row{flex-direction:row;gap:8px}
+
+  /* Stats grid */
   .stats-grid{grid-template-columns:1fr 1fr}
+  .stats-sheet{padding:20px 16px 28px}
+  .stats-title{font-size:1.1rem}
+
+  /* CDB */
   .cdb-panel{max-width:100%}
-  .deck-actions{gap:6px}
-  .deck-action-btn{font-size:9px;padding:8px 8px}
-  .home-hero{padding:24px 16px 18px}
-  .home-title{font-size:1.6rem}
+  .cdb-topbar{padding:12px 14px}
+  .cdb-body{padding:12px 16px}
+
+  /* Blank/Recall practice */
+  .blank-body{padding:14px}
+  .recall-body{padding:16px}
+  .blank-img{height:110px}
+  .recall-img{height:120px}
+
+  /* Match grid */
+  .match-grid{gap:8px}
+  .match-jp-word{font-size:1.1rem;padding:7px 6px}
+  .match-thumb{height:54px}
+  .match-thumb-ph{height:54px;font-size:1.2rem}
+  .match-en{padding:10px 8px;min-height:50px;font-size:.85rem}
+
+  /* Section labels */
+  .section-label{font-size:9.5px}
+
+  /* Completion screen */
+  .completion{padding:28px 16px}
+  .comp-kanji{font-size:42px}
+  .comp-title{font-size:1.4rem}
+  .comp-score{font-size:1.8rem}
+
+  /* Toast — above mobile browser chrome */
+  .toast{bottom:max(20px, env(safe-area-inset-bottom, 20px));font-size:11px;max-width:calc(100% - 32px);text-align:center;white-space:normal}
+
+  /* Card list item - slightly larger for touch */
+  .card-list-item{padding:2px 0}
+  .cli-img{width:48px;height:48px}
+  .cli-body{padding:12px 4px}
+  .cli-del{padding:12px 14px}
+
+  /* PDF preview row - allow wrapping on tiny screens */
+  .ppc-reading{display:none}
+  .ppc-lesson{min-width:28px}
+
+  /* Home search */
+  .home-search-wrap{padding:10px 16px}
+}
+
+/* Very small phones */
+@media(max-width:360px){
+  .mode-tile{padding:12px 8px}
+  .mode-icon{font-size:1.4rem}
+  .mode-name{font-size:.85rem}
+  .decks-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .deck-actions{flex-direction:column}
+  .deck-action-btn{flex:none;width:100%}
+}
+
+/* Safe area for notched phones (bottom) */
+@supports(padding-bottom: env(safe-area-inset-bottom)){
+  .screen{padding-bottom:env(safe-area-inset-bottom)}
+  .cdb-footer,.stats-sheet{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
 }
 
 /* ── CONFETTI ── */
