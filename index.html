@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Japanese Flashcards</title>
+  <title>Kannanao: Japanese Flashcards</title>
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>" />
 </head>
@@ -3074,14 +3074,24 @@
     document.getElementById('genBtn').disabled = true;
 
     try {
+
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pendingWords })
       });
+
       const data = await res.json();
-      const raw = data.candidates[0].content.parts[0].text;
-      const newCards = JSON.parse(raw);
+      let newCards;
+      // Check if the response actually contains the candidates
+      if (data.candidates && data.candidates[0].content.parts[0].text) {
+        const raw = data.candidates[0].content.parts[0].text;
+        newCards = JSON.parse(raw);
+        console.log({raw, newCards})
+        // Do something with newCards
+      } else if (data.error) {
+        alert(`Error: ${data.error.message}`);
+      }
 
       document.getElementById('loadingTxt').textContent = 'FETCHING IMAGES...';
       await Promise.all(newCards.map(async c => {
