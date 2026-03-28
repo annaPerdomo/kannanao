@@ -220,7 +220,19 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
 .comp-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em;margin-bottom:22px}
 .try-btn{padding:11px 28px;background:var(--ink);color:var(--rice);border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;cursor:pointer}
 .try-btn:hover{background:#2d1e0f}
+/* ── PDF PREVIEW CARDS ── */
+.pdf-preview-card{display:flex;align-items:center;gap:10px;background:var(--rice);border:1px solid var(--border);border-radius:4px;padding:8px 12px;cursor:pointer;transition:border-color .15s}
+.pdf-preview-card.selected{border-color:var(--verm);background:var(--verm-light)}
+.pdf-preview-card.selected .ppc-check{background:var(--verm);border-color:var(--verm);color:#fff}
+.ppc-check{width:16px;height:16px;border:1.5px solid var(--border);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s}
+.ppc-lesson{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.06em;flex-shrink:0;min-width:36px}
+.ppc-word{font-family:'Noto Serif JP',serif;font-size:1rem;flex-shrink:0;min-width:80px}
+.ppc-reading{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);flex-shrink:0;min-width:80px}
+.ppc-meaning{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink);flex:1}
+.lesson-btn{padding:4px 10px;border:1px solid var(--border);border-radius:20px;background:var(--card);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all .15s;color:var(--muted)}
+.lesson-btn.active{background:var(--verm);border-color:var(--verm);color:#fff}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
 
 <!-- ═══ HOME ═══ -->
 <div class="screen active" id="screen-home" style="position:relative">
@@ -265,8 +277,11 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
   <div class="topbar">
     <button class="topbar-back" onclick="goHome()">← Decks</button>
     <div class="topbar-title" id="deckHubName"></div>
+    <button class="topbar-action" onclick="triggerPdfUpload()" style="margin-left:auto">📄 PDF</button>
     <button class="topbar-action primary" onclick="showNewDeckModal2()" id="addMoreBtn">+ Add Words</button>
   </div>
+  <!-- hidden file input -->
+  <input type="file" id="pdfFileInput" accept=".pdf" style="display:none" onchange="handlePdfUpload(event)">
   <div class="deck-hero">
     <div class="deck-hero-name" id="deckHubName2"></div>
     <div class="deck-hero-meta mono" id="deckHubMeta"></div>
@@ -299,6 +314,29 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
   <div class="existing-cards" id="existingCardsSection" style="margin-top:16px">
     <div class="section-label" style="padding:0 0 0 0">Cards in this deck</div>
     <div class="card-list" id="cardList"></div>
+  </div>
+
+  <!-- ── PDF PREVIEW MODAL ── -->
+  <div class="modal-overlay" id="pdfPreviewOverlay" style="overflow-y:auto;align-items:flex-start;padding:20px">
+    <div class="modal" style="max-width:520px;width:100%;margin:auto">
+      <div class="modal-title">Cards from PDF</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.08em;margin-bottom:14px" id="pdfPreviewMeta"></div>
+      <!-- filter by lesson -->
+      <div id="pdfLessonFilter" style="margin-bottom:14px;display:none">
+        <div class="modal-label">Filter by lesson</div>
+        <div id="pdfLessonButtons" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
+      <!-- card preview list -->
+      <div id="pdfCardPreviewList" style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:14px;padding-right:4px"></div>
+      <div class="error-msg" id="pdfError"></div>
+      <div class="modal-row">
+        <button class="modal-cancel" onclick="closePdfPreview()">Cancel</button>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)" id="pdfSelectedCount"></span>
+          <button class="modal-save" id="pdfImportBtn" onclick="importPdfCards()">Import Selected</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- add words modal inline -->
@@ -425,8 +463,8 @@ const UNSPLASH_KEY='pebCbGHApxWqoFDGGaJa3sJMsC03eMHhNE4nYFjwYic';
 // ── SUPABASE CONFIG ──
 // Replace these two values with your project's URL and anon key from:
 // Supabase Dashboard → Project Settings → API
-const SUPABASE_URL = 'https://lnbxmmazadaqwcmwjeiu.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_02MpdyIT8nTbwZXtg8QDPw_Jvm3_QgF';
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── STATE ──
@@ -664,7 +702,7 @@ async function generateCards(){
   document.getElementById('genBtn').disabled=true;
 
   try{
-    const res=await fetch('/api/generate',{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,
         messages:[{role:'user',content:`You are a Japanese language teacher. For each word, return ONLY a JSON array, no markdown.
@@ -873,7 +911,267 @@ function checkRecall(correct){
 }
 function nextRecall(){recallIdx++;renderRecall()}
 
-// ── INIT ──
+// ── PDF IMPORT ──
+let pdfParsedCards = [];    // all cards parsed from PDF
+let pdfSelectedIds = new Set(); // indices of selected cards
+let pdfActiveLessons = new Set(); // lesson filters
+
+function triggerPdfUpload(){
+  document.getElementById('pdfFileInput').value='';
+  document.getElementById('pdfFileInput').click();
+}
+
+async function handlePdfUpload(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  showLoading('READING PDF...');
+
+  try {
+    const text = await extractPdfText(file);
+    pdfParsedCards = parseVocabPdf(text);
+
+    if(!pdfParsedCards.length){
+      hideLoading();
+      alert('No vocabulary cards could be found in this PDF. Make sure it matches the Adventures in Japanese format.');
+      return;
+    }
+
+    hideLoading();
+    showPdfPreview();
+  } catch(err) {
+    hideLoading();
+    console.error(err);
+    alert('Could not read PDF: ' + err.message);
+  }
+}
+
+async function extractPdfText(file){
+  // Dynamically import pdf.js as an ES module
+  const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+  let fullText = '';
+
+  for(let i = 1; i <= pdf.numPages; i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    // Join items with newline when y position changes significantly
+    let lastY = null;
+    for(const item of content.items){
+      if(lastY !== null && Math.abs(item.transform[5] - lastY) > 3){
+        fullText += '\n';
+      }
+      fullText += item.str;
+      lastY = item.transform[5];
+    }
+    fullText += '\n';
+  }
+  return fullText;
+}
+
+function parseVocabPdf(text){
+  const cards = [];
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+
+  // Detect current lesson heading, e.g. "1か1", "2か3"
+  const lessonHeadingRe = /^(\d+か\d+)$/;
+  // A vocab line starts with a number+dot or just has Japanese
+  // Strategy: collect runs of lines between lesson headings and parse triples
+  let currentLesson = '';
+
+  // We'll collect all non-heading lines and try to extract triples:
+  // [Japanese word/phrase] [romanization] [English meaning]
+  // The PDF text extraction gives us these interleaved — we detect by character type.
+
+  const isJapanese = s => /[\u3040-\u30FF\u4E00-\u9FFF]/.test(s);
+  const isRomaji   = s => /^[a-zA-Zāīūēōâîûôê\s\(\)\.\,\/\-\*~]+$/.test(s) && s.length > 0;
+  const isEnglish  = s => /^[a-zA-Z\s\(\)\.\,\/\-\*~'"!?0-9\[\]]+$/.test(s) && s.length > 1;
+
+  // Strip leading list numbers like "1.", "12."
+  const stripNum = s => s.replace(/^\d+\.\s*/, '').trim();
+
+  let i = 0;
+  while(i < lines.length){
+    const line = stripNum(lines[i]);
+
+    // Track lesson headings
+    if(lessonHeadingRe.test(lines[i])){
+      currentLesson = lines[i];
+      i++; continue;
+    }
+
+    // Skip section titles (all caps English like "Self Introduction", "Numbers")
+    if(/^[A-Z][a-zA-Z\s~]+$/.test(line) && !isJapanese(line)){
+      i++; continue;
+    }
+
+    // Skip pure number lines and copyright/page lines
+    if(/^[\d\s]+$/.test(line) || line.includes('©') || line.includes('Adventures in Japanese')){
+      i++; continue;
+    }
+
+    // If this line has Japanese, try to form a card
+    if(isJapanese(line)){
+      const word = line;
+      let reading = '';
+      let meaning = '';
+
+      // Look ahead for romaji
+      if(i+1 < lines.length){
+        const next = stripNum(lines[i+1]);
+        if(isRomaji(next) && !isJapanese(next)){
+          reading = next;
+          // Look ahead for English meaning
+          if(i+2 < lines.length){
+            const next2 = stripNum(lines[i+2]);
+            if(!isJapanese(next2) && !lessonHeadingRe.test(lines[i+2])){
+              // Collect multi-line meanings until we hit Japanese or lesson heading
+              let meaningLines = [next2];
+              let j = i+3;
+              while(j < lines.length){
+                const peek = stripNum(lines[j]);
+                if(isJapanese(peek) || lessonHeadingRe.test(lines[j]) || /^\d+か\d+/.test(lines[j])) break;
+                // Stop if it looks like a new romaji line following Japanese (next card)
+                if(isRomaji(peek) && j > i+3) break;
+                meaningLines.push(peek);
+                j++;
+              }
+              meaning = meaningLines.join(' ').trim();
+              i = j;
+            } else { i += 2; }
+          } else { i += 2; }
+        } else { i++; }
+      } else { i++; }
+
+      // Clean up meaning — strip trailing asterisks and parenthetical usage notes that are very long
+      meaning = meaning.replace(/\*+$/, '').trim();
+      if(meaning.length > 120) meaning = meaning.substring(0, 120).replace(/\s\S*$/, '') + '…';
+
+      if(word && meaning){
+        cards.push({
+          word,
+          reading: reading.replace(/\*+/, '').trim(),
+          meaning,
+          lesson: currentLesson,
+          example_jp: '',
+          example_en: '',
+          imageUrl: '',
+          imageCredit: ''
+        });
+      }
+    } else {
+      i++;
+    }
+  }
+
+  return cards;
+}
+
+function showPdfPreview(){
+  pdfSelectedIds = new Set(pdfParsedCards.map((_,i) => i)); // select all by default
+  pdfActiveLessons = new Set();
+
+  // Build lesson list
+  const lessons = [...new Set(pdfParsedCards.map(c => c.lesson).filter(Boolean))];
+  const filterDiv = document.getElementById('pdfLessonFilter');
+  const btnDiv = document.getElementById('pdfLessonButtons');
+
+  if(lessons.length > 1){
+    filterDiv.style.display = 'block';
+    btnDiv.innerHTML = `<button class="lesson-btn active" onclick="filterPdfLesson('all', this)">All</button>` +
+      lessons.map(l => `<button class="lesson-btn" onclick="filterPdfLesson('${l}', this)">${l}</button>`).join('');
+  } else {
+    filterDiv.style.display = 'none';
+  }
+
+  renderPdfCardList();
+  updatePdfCount();
+  document.getElementById('pdfPreviewOverlay').classList.add('show');
+}
+
+function filterPdfLesson(lesson, btn){
+  document.querySelectorAll('.lesson-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  if(lesson === 'all'){
+    pdfActiveLessons = new Set();
+    pdfSelectedIds = new Set(pdfParsedCards.map((_,i) => i));
+  } else {
+    pdfActiveLessons = new Set([lesson]);
+    pdfSelectedIds = new Set(
+      pdfParsedCards.map((_,i) => i).filter(i => pdfParsedCards[i].lesson === lesson)
+    );
+  }
+  renderPdfCardList();
+  updatePdfCount();
+}
+
+function renderPdfCardList(){
+  const list = document.getElementById('pdfCardPreviewList');
+  const visibleCards = pdfActiveLessons.size === 0
+    ? pdfParsedCards.map((_,i) => i)
+    : pdfParsedCards.map((_,i) => i).filter(i => pdfActiveLessons.has(pdfParsedCards[i].lesson));
+
+  list.innerHTML = visibleCards.map(i => {
+    const c = pdfParsedCards[i];
+    const sel = pdfSelectedIds.has(i);
+    return `<div class="pdf-preview-card ${sel?'selected':''}" onclick="togglePdfCard(${i})">
+      <div class="ppc-check">${sel?'✓':''}</div>
+      <div class="ppc-lesson">${c.lesson||''}</div>
+      <div class="ppc-word">${c.word}</div>
+      <div class="ppc-reading">${c.reading}</div>
+      <div class="ppc-meaning">${c.meaning}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('pdfPreviewMeta').textContent =
+    `${pdfParsedCards.length} cards found · click to deselect any you don't want`;
+}
+
+function togglePdfCard(i){
+  if(pdfSelectedIds.has(i)) pdfSelectedIds.delete(i);
+  else pdfSelectedIds.add(i);
+  renderPdfCardList();
+  updatePdfCount();
+}
+
+function updatePdfCount(){
+  document.getElementById('pdfSelectedCount').textContent = `${pdfSelectedIds.size} selected`;
+  document.getElementById('pdfImportBtn').disabled = pdfSelectedIds.size === 0;
+}
+
+function closePdfPreview(){
+  document.getElementById('pdfPreviewOverlay').classList.remove('show');
+  pdfParsedCards = [];
+  pdfSelectedIds = new Set();
+}
+
+async function importPdfCards(){
+  if(!pdfSelectedIds.size) return;
+  const toImport = [...pdfSelectedIds].sort((a,b) => a-b).map(i => pdfParsedCards[i]);
+
+  closePdfPreview();
+  showLoading('SAVING TO DATABASE...');
+
+  try {
+    await dbInsertCards(currentDeckId, toImport);
+
+    // Reload cards from DB to get real UUIDs
+    const {data: freshCards, error} = await sb.from('cards').select('*').eq('deck_id', currentDeckId).order('created_at', {ascending: true});
+    if(error) throw error;
+    getDeck().cards = (freshCards || []).map(dbCardToApp);
+
+    hideLoading();
+    renderCardList();
+  } catch(err) {
+    hideLoading();
+    alert('Error saving cards: ' + err.message);
+  }
+}
+
+
 (async()=>{
   showLoading('LOADING...');
   await loadDecks();
