@@ -463,8 +463,8 @@ const UNSPLASH_KEY='pebCbGHApxWqoFDGGaJa3sJMsC03eMHhNE4nYFjwYic';
 // ── SUPABASE CONFIG ──
 // Replace these two values with your project's URL and anon key from:
 // Supabase Dashboard → Project Settings → API
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://lnbxmmazadaqwcmwjeiu.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_02MpdyIT8nTbwZXtg8QDPw_Jvm3_QgF';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── STATE ──
@@ -702,7 +702,7 @@ async function generateCards(){
   document.getElementById('genBtn').disabled=true;
 
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch('/api/generate',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,
         messages:[{role:'user',content:`You are a Japanese language teacher. For each word, return ONLY a JSON array, no markdown.
