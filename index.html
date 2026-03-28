@@ -346,6 +346,37 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
     <div class="card-list" id="cardList"></div>
   </div>
 
+  <!-- ── EDIT CARD MODAL ── -->
+  <div class="modal-overlay" id="editCardOverlay">
+    <div class="modal" style="max-width:460px">
+      <div class="modal-title">Edit card</div>
+      <div class="modal-field">
+        <label class="modal-label">Japanese word</label>
+        <input class="modal-input noto" id="editWord" style="font-size:1.2rem" />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Reading (hiragana/katakana)</label>
+        <input class="modal-input noto" id="editReading" />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Meaning (English)</label>
+        <input class="modal-input" id="editMeaning" />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Example sentence (Japanese)</label>
+        <input class="modal-input noto" id="editExampleJp" />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Example sentence (English)</label>
+        <input class="modal-input" id="editExampleEn" />
+      </div>
+      <div class="modal-row">
+        <button class="modal-cancel" onclick="closeEditCard()">Cancel</button>
+        <button class="modal-save" onclick="saveEditCard()">Save</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── PDF PREVIEW MODAL ── -->
   <div class="modal-overlay" id="pdfPreviewOverlay" style="overflow-y:auto;align-items:flex-start;padding:20px">
     <div class="modal" style="max-width:520px;width:100%;margin:auto">
@@ -685,6 +716,7 @@ function renderCardList(){
         <div class="cli-word noto">${c.word}</div>
         <div class="cli-meaning mono">${c.meaning}</div>
       </div>
+      <button class="cli-del" style="color:var(--muted);font-size:12px;padding:8px 8px" onclick="openEditCard('${c._id}')">✎</button>
       <button class="cli-del" onclick="deleteCard('${c._id}')">×</button>
     </div>`).join('');
   document.getElementById('deckHubMeta').textContent=`${deck.cards.length} cards${deck.description?' · '+deck.description:''}`;
@@ -1039,127 +1071,168 @@ async function handlePdfUpload(e){
 }
 
 async function extractPdfText(file){
-  // Dynamically import pdf.js as an ES module
   const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
 
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
-  let fullText = '';
 
-  for(let i = 1; i <= pdf.numPages; i++){
-    const page = await pdf.getPage(i);
+  // Return structured items with position info instead of flat text
+  // so we can group by row and column properly
+  const allItems = [];
+  for(let p = 1; p <= pdf.numPages; p++){
+    const page = await pdf.getPage(p);
     const content = await page.getTextContent();
-    // Join items with newline when y position changes significantly
-    let lastY = null;
+    const viewport = page.getViewport({scale:1});
     for(const item of content.items){
-      if(lastY !== null && Math.abs(item.transform[5] - lastY) > 3){
-        fullText += '\n';
-      }
-      fullText += item.str;
-      lastY = item.transform[5];
+      if(!item.str.trim()) continue;
+      allItems.push({
+        str: item.str,
+        x: Math.round(item.transform[4]),
+        y: Math.round(viewport.height - item.transform[5]), // flip to top-down
+        page: p
+      });
     }
-    fullText += '\n';
   }
-  return fullText;
+  return allItems;
 }
 
-function parseVocabPdf(text){
+function parseVocabPdf(items){
   const cards = [];
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-
-  // Detect current lesson heading, e.g. "1か1", "2か3"
-  const lessonHeadingRe = /^(\d+か\d+)$/;
-  // A vocab line starts with a number+dot or just has Japanese
-  // Strategy: collect runs of lines between lesson headings and parse triples
-  let currentLesson = '';
-
-  // We'll collect all non-heading lines and try to extract triples:
-  // [Japanese word/phrase] [romanization] [English meaning]
-  // The PDF text extraction gives us these interleaved — we detect by character type.
-
+  const lessonHeadingRe = /^\d+か\d+$/;
   const isJapanese = s => /[\u3040-\u30FF\u4E00-\u9FFF]/.test(s);
-  const isRomaji   = s => /^[a-zA-Zāīūēōâîûôê\s\(\)\.\,\/\-\*~]+$/.test(s) && s.length > 0;
-  const isEnglish  = s => /^[a-zA-Z\s\(\)\.\,\/\-\*~'"!?0-9\[\]]+$/.test(s) && s.length > 1;
 
-  // Strip leading list numbers like "1.", "12."
-  const stripNum = s => s.replace(/^\d+\.\s*/, '').trim();
+  // Group items into rows by page+y (within 4px tolerance)
+  const rows = [];
+  for(const item of items){
+    const key = `${item.page}-${Math.round(item.y/4)*4}`;
+    let row = rows.find(r => r.key === key);
+    if(!row){ row = {key, y: item.y, page: item.page, items:[]}; rows.push(row); }
+    row.items.push(item);
+  }
+  // Sort rows top-to-bottom, items left-to-right within each row
+  rows.sort((a,b) => a.page !== b.page ? a.page-b.page : a.y-b.y);
+  rows.forEach(r => r.items.sort((a,b) => a.x-b.x));
 
-  let i = 0;
-  while(i < lines.length){
-    const line = stripNum(lines[i]);
+  // Determine column boundaries from the data
+  // In this PDF: col1=Japanese (x~30-150), col2=Romaji (x~160-300), col3=English (x~310+)
+  // We'll detect dynamically: first Japanese-containing item is col1,
+  // then the next cluster is col2, then col3.
+  // Simpler: just use x thresholds relative to page width.
+  // From the PDF structure, col splits are roughly at x=160 and x=310 (out of ~595pt page)
 
-    // Track lesson headings
-    if(lessonHeadingRe.test(lines[i])){
-      currentLesson = lines[i];
-      i++; continue;
+  let currentLesson = '';
+  const rowTexts = rows.map(r => ({
+    text: r.items.map(i=>i.str).join(' ').trim(),
+    cols: r.items, // keep for column analysis
+    y: r.y,
+    page: r.page
+  }));
+
+  // Find column split points dynamically from rows that have 3 clusters
+  // Fallback: use fixed thresholds
+  let col1End = 155, col2End = 305;
+  const multiColRows = rowTexts.filter(r => {
+    const xs = r.cols.map(i=>i.x);
+    return Math.max(...xs) - Math.min(...xs) > 200;
+  });
+  if(multiColRows.length > 3){
+    // Find natural gaps in x positions
+    const allX = multiColRows.flatMap(r => r.cols.map(i=>i.x)).sort((a,b)=>a-b);
+    const gaps = [];
+    for(let i=1;i<allX.length;i++){
+      const gap = allX[i]-allX[i-1];
+      if(gap > 30) gaps.push({x: allX[i-1]+gap/2, size: gap});
     }
-
-    // Skip section titles (all caps English like "Self Introduction", "Numbers")
-    if(/^[A-Z][a-zA-Z\s~]+$/.test(line) && !isJapanese(line)){
-      i++; continue;
-    }
-
-    // Skip pure number lines and copyright/page lines
-    if(/^[\d\s]+$/.test(line) || line.includes('©') || line.includes('Adventures in Japanese')){
-      i++; continue;
-    }
-
-    // If this line has Japanese, try to form a card
-    if(isJapanese(line)){
-      const word = line;
-      let reading = '';
-      let meaning = '';
-
-      // Look ahead for romaji
-      if(i+1 < lines.length){
-        const next = stripNum(lines[i+1]);
-        if(isRomaji(next) && !isJapanese(next)){
-          reading = next;
-          // Look ahead for English meaning
-          if(i+2 < lines.length){
-            const next2 = stripNum(lines[i+2]);
-            if(!isJapanese(next2) && !lessonHeadingRe.test(lines[i+2])){
-              // Collect multi-line meanings until we hit Japanese or lesson heading
-              let meaningLines = [next2];
-              let j = i+3;
-              while(j < lines.length){
-                const peek = stripNum(lines[j]);
-                if(isJapanese(peek) || lessonHeadingRe.test(lines[j]) || /^\d+か\d+/.test(lines[j])) break;
-                // Stop if it looks like a new romaji line following Japanese (next card)
-                if(isRomaji(peek) && j > i+3) break;
-                meaningLines.push(peek);
-                j++;
-              }
-              meaning = meaningLines.join(' ').trim();
-              i = j;
-            } else { i += 2; }
-          } else { i += 2; }
-        } else { i++; }
-      } else { i++; }
-
-      // Clean up meaning — strip trailing asterisks and parenthetical usage notes that are very long
-      meaning = meaning.replace(/\*+$/, '').trim();
-      if(meaning.length > 120) meaning = meaning.substring(0, 120).replace(/\s\S*$/, '') + '…';
-
-      if(word && meaning){
-        cards.push({
-          word,
-          reading: reading.replace(/\*+/, '').trim(),
-          meaning,
-          lesson: currentLesson,
-          example_jp: '',
-          example_en: '',
-          imageUrl: '',
-          imageCredit: ''
-        });
-      }
-    } else {
-      i++;
+    gaps.sort((a,b)=>b.size-a.size);
+    if(gaps.length >= 2){
+      const splits = gaps.slice(0,2).map(g=>g.x).sort((a,b)=>a-b);
+      col1End = splits[0];
+      col2End = splits[1];
     }
   }
 
-  return cards;
+  const getCol = (item) => {
+    if(item.x <= col1End) return 1;
+    if(item.x <= col2End) return 2;
+    return 3;
+  };
+
+  // Now group rows into cards
+  // A card row has Japanese in col1, romaji in col2, English in col3
+  // Some entries span multiple rows (long meanings, multi-reading words)
+  let pendingCard = null;
+
+  for(const row of rowTexts){
+    const text = row.text;
+    if(!text) continue;
+
+    // Skip page numbers, copyright, book title lines
+    if(/©/.test(text) || /Adventures in Japanese \d/.test(text) ||
+       /Vocabulary Lists/.test(text) || /Reproducible/.test(text)) continue;
+    if(/^\d+\s*$/.test(text)) continue;
+
+    // Detect lesson heading
+    const lessonMatch = text.match(/^(\d+か\d+)$/);
+    if(lessonMatch){ currentLesson = lessonMatch[1]; continue; }
+    // Also catch "1か1" embedded at start of section title rows
+    const embeddedLesson = text.match(/^(\d+か\d+)\s/);
+    if(embeddedLesson){ currentLesson = embeddedLesson[1]; continue; }
+
+    // Detect section title rows (e.g. "Self Introduction", "Greetings")
+    if(/^[A-Z][a-zA-Z\s~\d]+$/.test(text) && !isJapanese(text)) continue;
+
+    // Split this row into columns
+    const col1Items = row.cols.filter(i => getCol(i) === 1);
+    const col2Items = row.cols.filter(i => getCol(i) === 2);
+    const col3Items = row.cols.filter(i => getCol(i) === 3);
+
+    const col1Text = col1Items.map(i=>i.str).join('').trim();
+    const col2Text = col2Items.map(i=>i.str).join(' ').trim();
+    const col3Text = col3Items.map(i=>i.str).join(' ').trim();
+
+    // Strip leading list numbers from col1
+    const wordRaw = col1Text.replace(/^\d+\.\s*/, '').trim();
+
+    if(isJapanese(wordRaw) && wordRaw){
+      // Save previous pending card
+      if(pendingCard) cards.push(pendingCard);
+
+      // Clean up romaji: remove trailing asterisks and dots that are just punctuation markers
+      const reading = col2Text.replace(/\*+$/, '').replace(/\.$/, '').trim();
+      // Clean meaning: remove trailing asterisks
+      let meaning = col3Text.replace(/\*+/g, '').trim();
+      // Truncate very long meanings (parenthetical grammar notes)
+      if(meaning.length > 100) meaning = meaning.substring(0, meaning.lastIndexOf(' ', 100)) + '…';
+
+      pendingCard = {
+        word: wordRaw,
+        reading,
+        meaning,
+        lesson: currentLesson,
+        example_jp: '',
+        example_en: '',
+        imageUrl: '',
+        imageCredit: ''
+      };
+    } else if(pendingCard && !isJapanese(wordRaw)){
+      // Continuation row — append to meaning of previous card
+      if(col3Text && pendingCard.meaning.length < 100){
+        pendingCard.meaning += ' ' + col3Text.replace(/\*+/g,'').trim();
+        pendingCard.meaning = pendingCard.meaning.trim();
+      }
+    }
+  }
+  if(pendingCard) cards.push(pendingCard);
+
+  // De-duplicate: same word + reading = keep first
+  const seen = new Set();
+  return cards.filter(c => {
+    const key = c.word + '|' + c.reading;
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function showPdfPreview(){
@@ -1264,6 +1337,54 @@ async function importPdfCards(){
   }
 }
 
+// ── EDIT CARD ──
+let editingCardId = null;
+
+function openEditCard(cardId){
+  const deck = getDeck();
+  const card = deck.cards.find(c => c._id === cardId);
+  if(!card) return;
+  editingCardId = cardId;
+  document.getElementById('editWord').value = card.word;
+  document.getElementById('editReading').value = card.reading || '';
+  document.getElementById('editMeaning').value = card.meaning || '';
+  document.getElementById('editExampleJp').value = card.example_jp || '';
+  document.getElementById('editExampleEn').value = card.example_en || '';
+  document.getElementById('editCardOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('editWord').focus(), 100);
+}
+
+function closeEditCard(){
+  document.getElementById('editCardOverlay').classList.remove('show');
+}
+
+async function saveEditCard(){
+  if(!editingCardId) return;
+  const id = editingCardId;
+  const updates = {
+    word:       document.getElementById('editWord').value.trim(),
+    reading:    document.getElementById('editReading').value.trim(),
+    meaning:    document.getElementById('editMeaning').value.trim(),
+    example_jp: document.getElementById('editExampleJp').value.trim(),
+    example_en: document.getElementById('editExampleEn').value.trim(),
+  };
+  if(!updates.word || !updates.meaning){ alert('Word and meaning are required.'); return; }
+  closeEditCard();
+  editingCardId = null;
+  showLoading('SAVING...');
+  try {
+    const { error } = await sb.from('cards').update(updates).eq('id', id);
+    if(error) throw error;
+    // Update local cache
+    const card = getDeck().cards.find(c => c._id === id);
+    if(card) Object.assign(card, { word: updates.word, reading: updates.reading, meaning: updates.meaning, example_jp: updates.example_jp, example_en: updates.example_en });
+    hideLoading();
+    renderCardList();
+  } catch(e) {
+    hideLoading();
+    alert('Error saving: ' + e.message);
+  }
+}
 
 (async()=>{
   showLoading('LOADING...');
