@@ -3082,17 +3082,9 @@
       });
 
       const data = await res.json();
-      let newCards;
-      // Check if the response actually contains the candidates
-      if (data.candidates && data.candidates[0].content.parts[0].text) {
-        const raw = data.candidates[0].content.parts[0].text;
-        newCards = JSON.parse(raw);
-        console.log({raw, newCards})
-        // Do something with newCards
-      } else if (data.error) {
-        alert(`Error: ${data.error.message}`);
-      }
-
+      const rawText = data.candidates[0].content.parts[0].text;
+      const newCards = JSON.parse(rawText);
+      console.log({data, rawText, newCards});
       document.getElementById('loadingTxt').textContent = 'FETCHING IMAGES...';
       await Promise.all(newCards.map(async c => {
         try {

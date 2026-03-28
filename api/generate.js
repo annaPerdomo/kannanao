@@ -7,36 +7,21 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `You are a Japanese language teacher. Create flashcards for these words: ${pendingWords.join(", ")}. 
-              For the "reading" field: use hiragana/katakana. If the word is already kana, leave "reading" empty.
-              For "image_query": provide a vivid 2-4 word English phrase for a photo search.`,
+              text: `You are a Japanese teacher. Return a JSON array of objects for: ${pendingWords.join(", ")}.
+              Fields: "word", "reading" (hiragana), "meaning" (English), "image_query" (vivid search phrase), "example_jp", "example_en".`,
             }],
           }],
           generationConfig: {
-            maxOutputTokens: 2000,
-            // 2. This forces the model to return valid JSON without markdown backticks
+            // 2. This forces the model to return valid JSON (no markdown backticks)
             response_mime_type: "application/json",
-            response_schema: {
-              type: "ARRAY",
-              items: {
-                type: "OBJECT",
-                properties: {
-                  word: { type: "STRING" },
-                  reading: { type: "STRING" },
-                  meaning: { type: "STRING" },
-                  image_query: { type: "STRING" },
-                  example_jp: { type: "STRING" },
-                  example_en: { type: "STRING" }
-                }
-              }
-            }
+            maxOutputTokens: 1000,
           },
         }),
       }
@@ -45,14 +30,14 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Gemini Error:", data);
-      return res.status(response.status).json(data);
+      console.error("Gemini API Error:", data.error);
+      return res.status(response.status).json({ error: data.error.message });
     }
 
+    // With JSON mode enabled, you don't need to strip markdown
     return res.status(200).json(data);
 
   } catch (err) {
-    console.error("Handler error:", err);
     return res.status(500).json({ error: err.message });
   }
 }
