@@ -1077,8 +1077,6 @@ async function extractPdfText(file){
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
 
-  // Return structured items with position info instead of flat text
-  // so we can group by row and column properly
   const allItems = [];
   for(let p = 1; p <= pdf.numPages; p++){
     const page = await pdf.getPage(p);
@@ -1088,8 +1086,8 @@ async function extractPdfText(file){
       if(!item.str.trim()) continue;
       allItems.push({
         str: item.str,
-        x: Math.round(item.transform[4]),
-        y: Math.round(viewport.height - item.transform[5]), // flip to top-down
+        x: item.transform[4],
+        y: Math.round(viewport.height - item.transform[5]),
         page: p
       });
     }
@@ -1098,116 +1096,82 @@ async function extractPdfText(file){
 }
 
 function parseVocabPdf(items){
-  const cards = [];
-  const lessonHeadingRe = /^\d+か\d+$/;
   const isJapanese = s => /[\u3040-\u30FF\u4E00-\u9FFF]/.test(s);
 
-  // Group items into rows by page+y (within 4px tolerance)
-  const rows = [];
+  // Group into rows by page + y (within 5px)
+  const rowMap = new Map();
   for(const item of items){
-    const key = `${item.page}-${Math.round(item.y/4)*4}`;
-    let row = rows.find(r => r.key === key);
-    if(!row){ row = {key, y: item.y, page: item.page, items:[]}; rows.push(row); }
-    row.items.push(item);
+    const key = `${item.page}-${Math.round(item.y / 5) * 5}`;
+    if(!rowMap.has(key)) rowMap.set(key, {y: item.y, page: item.page, items: []});
+    rowMap.get(key).items.push(item);
   }
-  // Sort rows top-to-bottom, items left-to-right within each row
-  rows.sort((a,b) => a.page !== b.page ? a.page-b.page : a.y-b.y);
-  rows.forEach(r => r.items.sort((a,b) => a.x-b.x));
+  const rows = [...rowMap.values()]
+    .sort((a,b) => a.page !== b.page ? a.page - b.page : a.y - b.y);
+  rows.forEach(r => r.items.sort((a,b) => a.x - b.x));
 
-  // Determine column boundaries from the data
-  // In this PDF: col1=Japanese (x~30-150), col2=Romaji (x~160-300), col3=English (x~310+)
-  // We'll detect dynamically: first Japanese-containing item is col1,
-  // then the next cluster is col2, then col3.
-  // Simpler: just use x thresholds relative to page width.
-  // From the PDF structure, col splits are roughly at x=160 and x=310 (out of ~595pt page)
+  // Find the x boundary between the Japanese column and the English column.
+  // The romaji column sits in between — we skip it entirely.
+  // In this PDF, Japanese is left-aligned (x < ~160), English is right (x > ~310).
+  // We detect this by finding the largest x-gap across all rows.
+  const allX = rows.flatMap(r => r.items.map(i => Math.round(i.x)));
+  const xCounts = {};
+  for(const x of allX) xCounts[Math.round(x/10)*10] = (xCounts[Math.round(x/10)*10]||0)+1;
+  // The Japanese column starts near x=30-50, English near x=300-350
+  // Use fixed split: anything x < 160 = Japanese, x > 280 = English, middle = romaji (skip)
+  const JP_MAX_X  = 160;
+  const EN_MIN_X  = 280;
+
+  const lessonRe = /^\d+か\d+$/;
+  const skipPatterns = [
+    /©/, /Adventures in Japanese/, /Vocabulary Lists/, /Reproducible/,
+    /^\d+\s*$/, // bare page numbers
+  ];
 
   let currentLesson = '';
-  const rowTexts = rows.map(r => ({
-    text: r.items.map(i=>i.str).join(' ').trim(),
-    cols: r.items, // keep for column analysis
-    y: r.y,
-    page: r.page
-  }));
-
-  // Find column split points dynamically from rows that have 3 clusters
-  // Fallback: use fixed thresholds
-  let col1End = 155, col2End = 305;
-  const multiColRows = rowTexts.filter(r => {
-    const xs = r.cols.map(i=>i.x);
-    return Math.max(...xs) - Math.min(...xs) > 200;
-  });
-  if(multiColRows.length > 3){
-    // Find natural gaps in x positions
-    const allX = multiColRows.flatMap(r => r.cols.map(i=>i.x)).sort((a,b)=>a-b);
-    const gaps = [];
-    for(let i=1;i<allX.length;i++){
-      const gap = allX[i]-allX[i-1];
-      if(gap > 30) gaps.push({x: allX[i-1]+gap/2, size: gap});
-    }
-    gaps.sort((a,b)=>b.size-a.size);
-    if(gaps.length >= 2){
-      const splits = gaps.slice(0,2).map(g=>g.x).sort((a,b)=>a-b);
-      col1End = splits[0];
-      col2End = splits[1];
-    }
-  }
-
-  const getCol = (item) => {
-    if(item.x <= col1End) return 1;
-    if(item.x <= col2End) return 2;
-    return 3;
-  };
-
-  // Now group rows into cards
-  // A card row has Japanese in col1, romaji in col2, English in col3
-  // Some entries span multiple rows (long meanings, multi-reading words)
+  const cards = [];
   let pendingCard = null;
 
-  for(const row of rowTexts){
-    const text = row.text;
-    if(!text) continue;
+  for(const row of rows){
+    const jpItems  = row.items.filter(i => i.x < JP_MAX_X);
+    const enItems  = row.items.filter(i => i.x > EN_MIN_X);
+    const fullText = row.items.map(i => i.str).join(' ').trim();
 
-    // Skip page numbers, copyright, book title lines
-    if(/©/.test(text) || /Adventures in Japanese \d/.test(text) ||
-       /Vocabulary Lists/.test(text) || /Reproducible/.test(text)) continue;
-    if(/^\d+\s*$/.test(text)) continue;
+    // Skip noise lines
+    if(skipPatterns.some(p => p.test(fullText))) continue;
 
-    // Detect lesson heading
-    const lessonMatch = text.match(/^(\d+か\d+)$/);
-    if(lessonMatch){ currentLesson = lessonMatch[1]; continue; }
-    // Also catch "1か1" embedded at start of section title rows
-    const embeddedLesson = text.match(/^(\d+か\d+)\s/);
-    if(embeddedLesson){ currentLesson = embeddedLesson[1]; continue; }
+    // Detect lesson heading like "1か1"
+    if(lessonRe.test(fullText.trim())){
+      currentLesson = fullText.trim();
+      if(pendingCard){ cards.push(pendingCard); pendingCard = null; }
+      continue;
+    }
 
-    // Detect section title rows (e.g. "Self Introduction", "Greetings")
-    if(/^[A-Z][a-zA-Z\s~\d]+$/.test(text) && !isJapanese(text)) continue;
+    // Skip section title rows (e.g. "Self Introduction", "Greetings", "Numbers")
+    // These are English-only rows that appear right after a lesson heading
+    if(!isJapanese(fullText) && /^[A-Z]/.test(fullText) && enItems.length === 0){
+      continue;
+    }
 
-    // Split this row into columns
-    const col1Items = row.cols.filter(i => getCol(i) === 1);
-    const col2Items = row.cols.filter(i => getCol(i) === 2);
-    const col3Items = row.cols.filter(i => getCol(i) === 3);
+    // Skip rows that are purely romaji/English with no Japanese and no English column content
+    // (these are the standalone romaji continuation lines)
+    if(!isJapanese(fullText) && enItems.length === 0) continue;
 
-    const col1Text = col1Items.map(i=>i.str).join('').trim();
-    const col2Text = col2Items.map(i=>i.str).join(' ').trim();
-    const col3Text = col3Items.map(i=>i.str).join(' ').trim();
+    const jpText = jpItems.map(i => i.str).join('').trim()
+      .replace(/^\d+\.\s*/, '') // strip list numbers like "1."
+      .trim();
+    const enText = enItems.map(i => i.str).join(' ').trim()
+      .replace(/\*+/g, '')      // strip asterisks
+      .trim();
 
-    // Strip leading list numbers from col1
-    const wordRaw = col1Text.replace(/^\d+\.\s*/, '').trim();
-
-    if(isJapanese(wordRaw) && wordRaw){
-      // Save previous pending card
+    if(isJapanese(jpText)){
+      // New card row
       if(pendingCard) cards.push(pendingCard);
-
-      // Clean up romaji: remove trailing asterisks and dots that are just punctuation markers
-      const reading = col2Text.replace(/\*+$/, '').replace(/\.$/, '').trim();
-      // Clean meaning: remove trailing asterisks
-      let meaning = col3Text.replace(/\*+/g, '').trim();
-      // Truncate very long meanings (parenthetical grammar notes)
+      let meaning = enText;
+      // Truncate very long parenthetical notes
       if(meaning.length > 100) meaning = meaning.substring(0, meaning.lastIndexOf(' ', 100)) + '…';
-
       pendingCard = {
-        word: wordRaw,
-        reading,
+        word: jpText,
+        reading: '',   // omitted — daughter can read hiragana
         meaning,
         lesson: currentLesson,
         example_jp: '',
@@ -1215,20 +1179,22 @@ function parseVocabPdf(items){
         imageUrl: '',
         imageCredit: ''
       };
-    } else if(pendingCard && !isJapanese(wordRaw)){
-      // Continuation row — append to meaning of previous card
-      if(col3Text && pendingCard.meaning.length < 100){
-        pendingCard.meaning += ' ' + col3Text.replace(/\*+/g,'').trim();
-        pendingCard.meaning = pendingCard.meaning.trim();
+    } else if(pendingCard && enText){
+      // Continuation row — append extra meaning text
+      if(pendingCard.meaning.length < 100){
+        pendingCard.meaning = (pendingCard.meaning + ' ' + enText).trim();
       }
     }
   }
   if(pendingCard) cards.push(pendingCard);
 
-  // De-duplicate: same word + reading = keep first
+  // Remove entries where the "word" is actually a lesson heading that slipped through
+  // and deduplicate
   const seen = new Set();
   return cards.filter(c => {
-    const key = c.word + '|' + c.reading;
+    if(lessonRe.test(c.word)) return false;
+    if(!c.meaning) return false;
+    const key = c.word;
     if(seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -1287,7 +1253,6 @@ function renderPdfCardList(){
       <div class="ppc-check">${sel?'✓':''}</div>
       <div class="ppc-lesson">${c.lesson||''}</div>
       <div class="ppc-word">${c.word}</div>
-      <div class="ppc-reading">${c.reading}</div>
       <div class="ppc-meaning">${c.meaning}</div>
     </div>`;
   }).join('');
