@@ -231,6 +231,103 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
 .ppc-meaning{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink);flex:1}
 .lesson-btn{padding:4px 10px;border:1px solid var(--border);border-radius:20px;background:var(--card);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all .15s;color:var(--muted)}
 .lesson-btn.active{background:var(--verm);border-color:var(--verm);color:#fff}
+
+/* ── CUSTOM DECK BUILDER ── */
+.cdb-overlay{display:none;position:fixed;inset:0;background:rgba(26,16,8,.45);z-index:200;overflow-y:auto}
+.cdb-overlay.show{display:block}
+.cdb-panel{background:var(--card);min-height:100vh;max-width:600px;margin:0 auto;display:flex;flex-direction:column}
+.cdb-topbar{display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.cdb-title{font-family:'DM Serif Display',serif;font-size:1.1rem;font-style:italic;flex:1}
+.cdb-save{padding:8px 18px;background:var(--verm);color:#fff;border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer}
+.cdb-save:hover{background:#a93226}
+.cdb-search{padding:14px 20px;border-bottom:1px solid var(--border)}
+.cdb-search-inp{width:100%;padding:10px 14px;font-family:'Noto Serif JP',serif;font-size:14px;border:1.5px solid var(--border);border-radius:3px;background:var(--rice);color:var(--ink);outline:none;transition:border-color .2s}
+.cdb-search-inp:focus{border-color:var(--verm)}
+.cdb-filters{padding:10px 20px;display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--border)}
+.cdb-body{padding:16px 20px;flex:1}
+.cdb-deck-group{margin-bottom:20px}
+.cdb-deck-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.cdb-select-all{background:none;border:1px solid var(--border);border-radius:20px;padding:2px 8px;font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;color:var(--muted);transition:all .15s}
+.cdb-select-all:hover{border-color:var(--verm);color:var(--verm)}
+.cdb-card-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:4px;cursor:pointer;transition:background .12s;margin-bottom:4px}
+.cdb-card-row:hover{background:rgba(26,16,8,.04)}
+.cdb-card-row.selected{background:var(--verm-light)}
+.cdb-checkbox{width:16px;height:16px;border:1.5px solid var(--border);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s;background:var(--card)}
+.cdb-card-row.selected .cdb-checkbox{background:var(--verm);border-color:var(--verm);color:#fff}
+.cdb-card-thumb{width:32px;height:32px;border-radius:3px;object-fit:cover;background:#e8e0d5;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:.85rem;color:rgba(26,16,8,.25);overflow:hidden}
+.cdb-card-thumb img{width:100%;height:100%;object-fit:cover}
+.cdb-card-info{flex:1;min-width:0}
+.cdb-card-word{font-family:'Noto Serif JP',serif;font-size:1rem}
+.cdb-card-meaning{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cdb-footer{padding:14px 20px;background:var(--card);border-top:1px solid var(--border);position:sticky;bottom:0;display:flex;align-items:center;justify-content:space-between}
+.cdb-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
+
+/* ── PROGRESS / STREAK ── */
+.streak-bar{display:flex;align-items:center;gap:8px;padding:10px 20px 0;flex-wrap:wrap}
+.streak-badge{display:inline-flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)}
+.streak-badge.hot{border-color:var(--gold);color:var(--gold);background:#fffbf0}
+.streak-num{font-family:'DM Serif Display',serif;font-size:1rem;font-style:italic;color:var(--ink)}
+.streak-badge.hot .streak-num{color:var(--gold)}
+.progress-ring-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.progress-mini{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.08em}
+
+/* ── DECK STATS PANEL ── */
+.stats-overlay{display:none;position:fixed;inset:0;background:rgba(26,16,8,.45);z-index:200;align-items:flex-end;justify-content:center}
+.stats-overlay.show{display:flex}
+.stats-sheet{background:var(--card);border-radius:12px 12px 0 0;padding:24px 20px 32px;width:100%;max-width:540px;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.stats-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px}
+.stats-title{font-size:1.3rem;font-style:italic;margin-bottom:18px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.stat-box{background:var(--rice);border-radius:6px;padding:14px;text-align:center}
+.stat-num{font-size:1.8rem;font-style:italic;color:var(--verm)}
+.stat-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--muted);margin-top:2px}
+.heatmap-row{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px}
+.heatmap-cell{width:12px;height:12px;border-radius:2px;background:var(--border)}
+.heatmap-cell.d1{background:#f5c0bb}.heatmap-cell.d2{background:#e07070}.heatmap-cell.d3{background:var(--verm)}
+.heatmap-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.08em}
+
+/* ── SEARCH ON HOME ── */
+.home-search-wrap{padding:12px 20px;border-bottom:1px solid var(--border)}
+.home-search{width:100%;padding:9px 14px;font-family:'DM Mono',monospace;font-size:12px;border:1.5px solid var(--border);border-radius:3px;background:var(--card);color:var(--ink);outline:none;transition:border-color .2s;letter-spacing:.04em}
+.home-search:focus{border-color:var(--verm)}
+
+/* ── DECK ACTIONS ROW ── */
+.deck-actions{display:flex;gap:8px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--card);flex-wrap:wrap}
+.deck-action-btn{flex:1;min-width:100px;padding:9px 12px;background:none;border:1px solid var(--border);border-radius:3px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.06em;cursor:pointer;color:var(--ink);transition:all .15s;white-space:nowrap;text-align:center}
+.deck-action-btn:hover{background:rgba(26,16,8,.05)}
+.deck-action-btn.danger{color:var(--verm)}
+.deck-action-btn.danger:hover{background:var(--verm-light);border-color:var(--verm)}
+
+/* ── RENAME DECK MODAL ── */
+#renameDeckOverlay .modal-title{font-style:italic}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--rice);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;padding:10px 20px;border-radius:20px;z-index:9999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── CARD SORT / FILTER ── */
+.card-list-controls{display:flex;align-items:center;gap:8px;padding:0 0 10px;flex-wrap:wrap}
+.card-sort-btn{padding:4px 10px;border:1px solid var(--border);border-radius:20px;background:var(--card);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;transition:all .15s;color:var(--muted)}
+.card-sort-btn.active{background:var(--ink);border-color:var(--ink);color:var(--rice)}
+.card-list-search{flex:1;min-width:120px;padding:5px 10px;font-family:'DM Mono',monospace;font-size:11px;border:1px solid var(--border);border-radius:3px;background:var(--rice);color:var(--ink);outline:none}
+.card-list-search:focus{border-color:var(--verm)}
+
+/* ── MOBILE FIXES ── */
+@media(max-width:480px){
+  .mode-grid{grid-template-columns:1fr 1fr}
+  .decks-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .cdb-panel{max-width:100%}
+  .deck-actions{gap:6px}
+  .deck-action-btn{font-size:9px;padding:8px 8px}
+  .home-hero{padding:24px 16px 18px}
+  .home-title{font-size:1.6rem}
+}
+
+/* ── CONFETTI ── */
+.confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;pointer-events:none;z-index:9999;animation:confettiFall linear forwards}
+@keyframes confettiFall{0%{opacity:1;transform:translateY(0) rotate(0deg)}100%{opacity:0;transform:translateY(100vh) rotate(720deg)}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
 
@@ -241,8 +338,15 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
     <div class="home-title">Japanese Flashcards</div>
     <div class="home-sub mono">YOUR DECKS</div>
   </div>
+  <div class="home-search-wrap">
+    <input class="home-search" id="deckSearch" placeholder="Search decks…" oninput="filterDecks(this.value)" />
+  </div>
+  <div class="streak-bar" id="streakBar"></div>
   <div class="home-body">
-    <div class="section-label">My decks</div>
+    <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <span>My decks</span>
+      <button onclick="openCustomDeckBuilder()" style="background:none;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;cursor:pointer;color:var(--muted)">✦ Custom Deck</button>
+    </div>
     <div class="decks-grid" id="decksGrid">
       <div class="empty-state" id="emptyState" style="grid-column:1/-1">
         <div class="empty-jp">学</div>
@@ -302,8 +406,14 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
   <div class="topbar">
     <button class="topbar-back" onclick="goHome()">← Decks</button>
     <div class="topbar-title" id="deckHubName"></div>
+    <button class="topbar-action" onclick="openStatsSheet()" title="View stats">📊</button>
     <button class="topbar-action" onclick="triggerPdfUpload()">📄 PDF</button>
     <button class="topbar-action primary" onclick="showNewDeckModal2()" id="addMoreBtn">+ Words</button>
+  </div>
+  <div class="deck-actions">
+    <button class="deck-action-btn" onclick="openRenameDeck()">✎ Rename</button>
+    <button class="deck-action-btn" onclick="openCustomDeckBuilder()">✦ Build from All Cards</button>
+    <button class="deck-action-btn danger" onclick="confirmDeleteCurrentDeck()">🗑 Delete Deck</button>
   </div>
   <!-- hidden file input -->
   <input type="file" id="pdfFileInput" accept=".pdf" style="display:none" onchange="handlePdfUpload(event)">
@@ -343,6 +453,11 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
   </div>
   <div class="existing-cards" id="existingCardsSection" style="margin-top:16px">
     <div class="section-label" style="padding:0 0 0 0">Cards in this deck</div>
+    <div class="card-list-controls" id="cardListControls">
+      <input class="card-list-search" id="cardListSearch" placeholder="Search cards…" oninput="filterCardList(this.value)" />
+      <button class="card-sort-btn active" id="sortAZ" onclick="sortCardList('alpha')">A–Z</button>
+      <button class="card-sort-btn" id="sortNew" onclick="sortCardList('newest')">Newest</button>
+    </div>
     <div class="card-list" id="cardList"></div>
   </div>
 
@@ -373,6 +488,25 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
       <div class="modal-row">
         <button class="modal-cancel" onclick="closeEditCard()">Cancel</button>
         <button class="modal-save" onclick="saveEditCard()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RENAME DECK MODAL ── -->
+  <div class="modal-overlay" id="renameDeckOverlay">
+    <div class="modal">
+      <div class="modal-title">Rename deck</div>
+      <div class="modal-field">
+        <label class="modal-label">Deck name</label>
+        <input class="modal-input noto" id="renameDeckInput" />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Description (optional)</label>
+        <input class="modal-input mono" id="renameDeckDesc" style="font-size:12px" />
+      </div>
+      <div class="modal-row">
+        <button class="modal-cancel" onclick="document.getElementById('renameDeckOverlay').classList.remove('show')">Cancel</button>
+        <button class="modal-save" onclick="saveRenameDeck()">Save</button>
       </div>
     </div>
   </div>
@@ -516,6 +650,45 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
     </div>
   </div>
 </div>
+
+<!-- ═══ CUSTOM DECK BUILDER ═══ -->
+<div class="cdb-overlay" id="cdbOverlay">
+  <div class="cdb-panel">
+    <div class="cdb-topbar">
+      <button class="topbar-back" onclick="closeCDB()">← Back</button>
+      <div class="cdb-title">Build a Custom Deck</div>
+      <button class="cdb-save" onclick="saveCDB()">Create ✦</button>
+    </div>
+    <div style="padding:14px 20px;border-bottom:1px solid var(--border)">
+      <div class="modal-label">New deck name</div>
+      <input class="modal-input noto" id="cdbDeckName" placeholder="e.g. Midterm Review" style="margin-top:4px" />
+    </div>
+    <div class="cdb-search">
+      <input class="cdb-search-inp" id="cdbSearch" placeholder="Search all cards…" oninput="renderCDB()" />
+    </div>
+    <div class="cdb-filters" id="cdbFilters"></div>
+    <div class="cdb-body" id="cdbBody"></div>
+    <div class="cdb-footer">
+      <span class="cdb-count" id="cdbCount">0 selected</span>
+      <button onclick="cdbSelectAll()" style="background:none;border:1px solid var(--border);border-radius:3px;padding:6px 14px;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;color:var(--muted)">Select All</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STATS SHEET ═══ -->
+<div class="stats-overlay" id="statsOverlay" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="stats-sheet">
+    <div class="stats-handle"></div>
+    <div class="stats-title" id="statsTitle">Deck Stats</div>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="section-label" style="margin-bottom:10px">Study activity (last 4 weeks)</div>
+    <div class="heatmap-row" id="statsHeatmap"></div>
+    <div class="heatmap-label" id="statsHeatLabel"></div>
+  </div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -1366,6 +1539,320 @@ async function saveEditCard(){
   }
 }
 
+// ── TOAST ──
+function showToast(msg, dur=2200){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+// ── CONFETTI ──
+function popConfetti(){
+  const colors=['#c0392b','#c8962a','#2e7d52','#4a90d9','#9b59b6'];
+  for(let i=0;i<30;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.cssText=`left:${Math.random()*100}vw;top:-10px;background:${colors[i%colors.length]};animation-duration:${1+Math.random()*2}s;animation-delay:${Math.random()*.5}s;width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;border-radius:${Math.random()>0.5?'50%':'2px'}`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),(3000));
+  }
+}
+
+// ── ACTIVITY / STREAK TRACKING ──
+function getActivity(){
+  try{return JSON.parse(localStorage.getItem('jp_activity')||'{}')}catch{return{}}
+}
+function recordActivity(){
+  const a=getActivity();
+  const today=new Date().toISOString().slice(0,10);
+  a[today]=(a[today]||0)+1;
+  localStorage.setItem('jp_activity',JSON.stringify(a));
+}
+function getStreak(){
+  const a=getActivity();
+  const today=new Date();
+  let streak=0;
+  for(let i=0;i<365;i++){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    const k=d.toISOString().slice(0,10);
+    if(a[k])streak++;
+    else if(i>0)break;
+  }
+  return streak;
+}
+function renderStreakBar(){
+  const streak=getStreak();
+  const totalSessions=Object.values(getActivity()).reduce((a,b)=>a+b,0);
+  const bar=document.getElementById('streakBar');
+  bar.innerHTML=`
+    <div class="streak-badge ${streak>=2?'hot':''}">
+      <span>${streak>=2?'🔥':'📅'}</span>
+      <span class="streak-num">${streak}</span>
+      <span>day streak</span>
+    </div>
+    <div class="streak-badge">
+      <span>✦</span>
+      <span class="streak-num">${totalSessions}</span>
+      <span>sessions total</span>
+    </div>
+    <div class="streak-badge">
+      <span>📚</span>
+      <span class="streak-num">${decks.length}</span>
+      <span>deck${decks.length!==1?'s':''}</span>
+    </div>`;
+}
+
+// ── HOME DECK SEARCH ──
+function filterDecks(q){
+  const grid=document.getElementById('decksGrid');
+  const cards=grid.querySelectorAll('.deck-card');
+  cards.forEach(c=>{
+    const name=c.querySelector('.deck-card-name')?.textContent?.toLowerCase()||'';
+    c.style.display=name.includes(q.toLowerCase())||!q?'':'none';
+  });
+}
+
+// ── CARD LIST SORT & SEARCH ──
+let cardSortMode='alpha';
+function sortCardList(mode){
+  cardSortMode=mode;
+  document.querySelectorAll('.card-sort-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(mode==='alpha'?'sortAZ':'sortNew').classList.add('active');
+  renderCardList();
+}
+function filterCardList(q){renderCardList(q)}
+
+// Override renderCardList to support sort + search
+const _origRenderCardList = renderCardList;
+renderCardList = function(searchQ){
+  const deck=getDeck();
+  const list=document.getElementById('cardList');
+  if(!deck||!deck.cards||!deck.cards.length){
+    list.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding:12px 0;letter-spacing:.08em">No cards yet — add some words above!</div>`;
+    return;
+  }
+  const q=(searchQ!==undefined?searchQ:(document.getElementById('cardListSearch')||{}).value||'').toLowerCase();
+  let cards=[...deck.cards];
+  if(cardSortMode==='alpha') cards.sort((a,b)=>a.word.localeCompare(b.word,'ja'));
+  // newest: default order (as-is)
+  if(q) cards=cards.filter(c=>c.word.includes(q)||c.meaning.toLowerCase().includes(q)||(c.reading&&c.reading.includes(q)));
+  if(!cards.length){
+    list.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding:12px 0">No cards match your search.</div>`;
+    return;
+  }
+  list.innerHTML=cards.map((c)=>`
+    <div class="card-list-item">
+      <div class="cli-img">${c.imageUrl?`<img src="${c.imageUrl}" alt="">`:`${c.word}`}</div>
+      <div class="cli-body">
+        <div class="cli-word noto">${c.word}${c.reading?`<span style="font-size:.75rem;color:var(--muted);margin-left:6px">${c.reading}</span>`:''}</div>
+        <div class="cli-meaning mono">${c.meaning}</div>
+      </div>
+      <button class="cli-del" style="color:var(--muted);font-size:12px;padding:8px 8px" onclick="openEditCard('${c._id}')">✎</button>
+      <button class="cli-del" onclick="deleteCard('${c._id}')">×</button>
+    </div>`).join('');
+  document.getElementById('deckHubMeta').textContent=`${deck.cards.length} card${deck.cards.length!==1?'s':''}${deck.description?' · '+deck.description:''}`;
+};
+
+// ── RENAME DECK ──
+function openRenameDeck(){
+  const d=getDeck();
+  document.getElementById('renameDeckInput').value=d.name;
+  document.getElementById('renameDeckDesc').value=d.description||'';
+  document.getElementById('renameDeckOverlay').classList.add('show');
+  setTimeout(()=>document.getElementById('renameDeckInput').focus(),100);
+}
+async function saveRenameDeck(){
+  const name=document.getElementById('renameDeckInput').value.trim();
+  if(!name){showToast('Name cannot be empty');return}
+  const desc=document.getElementById('renameDeckDesc').value.trim();
+  document.getElementById('renameDeckOverlay').classList.remove('show');
+  showLoading('SAVING...');
+  try{
+    const{error}=await sb.from('decks').update({name,description:desc}).eq('id',currentDeckId);
+    if(error)throw error;
+    const d=getDeck();d.name=name;d.description=desc;
+    document.getElementById('deckHubName').textContent=name;
+    document.getElementById('deckHubName2').textContent=name;
+    hideLoading();
+    renderCardList();
+    showToast('Deck renamed ✓');
+  }catch(e){hideLoading();alert('Error: '+e.message)}
+}
+
+// ── DELETE CURRENT DECK (from deck screen) ──
+async function confirmDeleteCurrentDeck(){
+  const d=getDeck();
+  if(!confirm(`Delete "${d.name}" and all its cards? This cannot be undone.`))return;
+  showLoading('DELETING...');
+  try{
+    await dbDeleteDeck(currentDeckId);
+    decks=decks.filter(x=>x.id!==currentDeckId);
+    currentDeckId=null;
+    hideLoading();
+    showToast('Deck deleted');
+    await goHome();
+  }catch(e){hideLoading();alert('Error: '+e.message)}
+}
+
+// ── STATS SHEET ──
+function openStatsSheet(){
+  const deck=getDeck();
+  if(!deck)return;
+  document.getElementById('statsTitle').textContent=deck.name+' — Stats';
+  const totalCards=deck.cards.length;
+  const withImg=deck.cards.filter(c=>c.imageUrl).length;
+  const withEx=deck.cards.filter(c=>c.example_jp).length;
+  const a=getActivity();
+  const today=new Date().toISOString().slice(0,10);
+  const todaySessions=a[today]||0;
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="stat-box"><div class="stat-num">${totalCards}</div><div class="stat-label">TOTAL CARDS</div></div>
+    <div class="stat-box"><div class="stat-num">${withImg}</div><div class="stat-label">WITH IMAGES</div></div>
+    <div class="stat-box"><div class="stat-num">${withEx}</div><div class="stat-label">WITH EXAMPLES</div></div>
+    <div class="stat-box"><div class="stat-num">${todaySessions}</div><div class="stat-label">TODAY'S SESSIONS</div></div>`;
+  // Heatmap: last 28 days
+  const max=Math.max(1,...Object.values(a));
+  const cells=[];
+  const labels=[];
+  for(let i=27;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const k=d.toISOString().slice(0,10);
+    const count=a[k]||0;
+    const level=count===0?0:count<max*.33?1:count<max*.66?2:3;
+    cells.push(`<div class="heatmap-cell d${level}" title="${k}: ${count} session${count!==1?'s':''}" style="flex-shrink:0"></div>`);
+    if(i===27||i===13||i===0)labels.push(d.toLocaleDateString('en',{month:'short',day:'numeric'}));
+  }
+  document.getElementById('statsHeatmap').innerHTML=cells.join('');
+  document.getElementById('statsHeatLabel').textContent=`${labels[0]} → ${labels[2]}`;
+  document.getElementById('statsOverlay').classList.add('show');
+}
+
+// ── CUSTOM DECK BUILDER ──
+let cdbSelected=new Set();
+let cdbDeckFilter='all';
+
+function openCustomDeckBuilder(){
+  cdbSelected=new Set();
+  cdbDeckFilter='all';
+  document.getElementById('cdbSearch').value='';
+  document.getElementById('cdbDeckName').value='';
+  renderCDBFilters();
+  renderCDB();
+  document.getElementById('cdbOverlay').classList.add('show');
+  setTimeout(()=>document.getElementById('cdbDeckName').focus(),200);
+}
+function closeCDB(){
+  document.getElementById('cdbOverlay').classList.remove('show');
+}
+function renderCDBFilters(){
+  const filtersEl=document.getElementById('cdbFilters');
+  const allDecks=decks.filter(d=>d.cards&&d.cards.length);
+  if(allDecks.length<=1){filtersEl.innerHTML='';return}
+  filtersEl.innerHTML=`<button class="lesson-btn ${cdbDeckFilter==='all'?'active':''}" onclick="cdbSetFilter('all',this)">All Decks</button>`+
+    allDecks.map(d=>`<button class="lesson-btn ${cdbDeckFilter===d.id?'active':''}" onclick="cdbSetFilter('${d.id}',this)">${d.name}</button>`).join('');
+}
+function cdbSetFilter(id, btn){
+  cdbDeckFilter=id;
+  document.querySelectorAll('#cdbFilters .lesson-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCDB();
+}
+function renderCDB(){
+  const q=document.getElementById('cdbSearch').value.toLowerCase();
+  const body=document.getElementById('cdbBody');
+  const filteredDecks=decks.filter(d=>{
+    if(!d.cards||!d.cards.length)return false;
+    if(cdbDeckFilter!=='all'&&d.id!==cdbDeckFilter)return false;
+    return true;
+  });
+  if(!filteredDecks.length){body.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-align:center;padding:32px">No cards yet — create some decks first!</div>`;return}
+  body.innerHTML=filteredDecks.map(d=>{
+    const cards=d.cards.filter(c=>
+      !q||(c.word.toLowerCase().includes(q)||c.meaning.toLowerCase().includes(q)||(c.reading&&c.reading.toLowerCase().includes(q)))
+    );
+    if(!cards.length)return'';
+    const allSelected=cards.every(c=>cdbSelected.has(c._id));
+    return`<div class="cdb-deck-group">
+      <div class="cdb-deck-label">
+        ${d.name}
+        <button class="cdb-select-all" onclick="cdbToggleDeck('${d.id}',${!allSelected})">${allSelected?'Deselect all':'Select all'}</button>
+      </div>
+      ${cards.map(c=>`
+        <div class="cdb-card-row ${cdbSelected.has(c._id)?'selected':''}" onclick="cdbToggleCard('${c._id}')">
+          <div class="cdb-checkbox">${cdbSelected.has(c._id)?'✓':''}</div>
+          <div class="cdb-card-thumb">${c.imageUrl?`<img src="${c.imageUrl}" alt="">`:`${c.word.slice(0,2)}`}</div>
+          <div class="cdb-card-info">
+            <div class="cdb-card-word">${c.word}${c.reading?` <span style="font-size:.8rem;color:var(--muted)">${c.reading}</span>`:''}</div>
+            <div class="cdb-card-meaning">${c.meaning}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+  updateCDBCount();
+}
+function cdbToggleCard(id){
+  if(cdbSelected.has(id))cdbSelected.delete(id);
+  else cdbSelected.add(id);
+  renderCDB();
+}
+function cdbToggleDeck(deckId, select){
+  const d=decks.find(x=>x.id===deckId);
+  if(!d)return;
+  d.cards.forEach(c=>select?cdbSelected.add(c._id):cdbSelected.delete(c._id));
+  renderCDB();
+}
+function cdbSelectAll(){
+  decks.forEach(d=>(d.cards||[]).forEach(c=>cdbSelected.add(c._id)));
+  renderCDB();
+}
+function updateCDBCount(){
+  document.getElementById('cdbCount').textContent=`${cdbSelected.size} card${cdbSelected.size!==1?'s':''} selected`;
+}
+async function saveCDB(){
+  const name=document.getElementById('cdbDeckName').value.trim();
+  if(!name){showToast('Please give your deck a name');document.getElementById('cdbDeckName').focus();return}
+  if(!cdbSelected.size){showToast('Select at least one card');return}
+  // Gather cards
+  const allCards=decks.flatMap(d=>d.cards||[]);
+  const toAdd=allCards.filter(c=>cdbSelected.has(c._id));
+  closeCDB();
+  showLoading('CREATING CUSTOM DECK...');
+  try{
+    const row=await dbCreateDeck(name,'Custom deck');
+    const deck={id:row.id,name:row.name,description:'Custom deck',createdAt:row.created_at,cards:[]};
+    decks.push(deck);
+    currentDeckId=deck.id;
+    await dbInsertCards(deck.id,toAdd);
+    const{data:freshCards,error}=await sb.from('cards').select('*').eq('deck_id',deck.id).order('created_at',{ascending:true});
+    if(error)throw error;
+    deck.cards=(freshCards||[]).map(dbCardToApp);
+    hideLoading();
+    popConfetti();
+    openDeck(deck.id);
+    showToast(`"${name}" created with ${toAdd.length} cards! ✦`);
+  }catch(e){hideLoading();alert('Error: '+e.message)}
+}
+
+// ── RECORD ACTIVITY WHEN STUDYING ──
+const _origGoStudy=goStudy;
+goStudy=function(){
+  recordActivity();
+  _origGoStudy();
+};
+const _origGoPractice=goPractice;
+goPractice=function(mode){
+  recordActivity();
+  _origGoPractice(mode);
+};
+
+// ── RENDER STREAK ON HOME ──
+const _origRenderHome=renderHome;
+renderHome=function(){
+  _origRenderHome();
+  renderStreakBar();
+};
+
 (async()=>{
   showLoading('LOADING...');
   await loadDecks();
@@ -1373,4 +1860,5 @@ async function saveEditCard(){
   showScreen('home');
   renderHome();
 })();
+
 </script>
