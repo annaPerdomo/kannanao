@@ -407,19 +407,18 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
     <button class="topbar-back" onclick="goHome()">← Decks</button>
     <div class="topbar-title" id="deckHubName"></div>
     <button class="topbar-action" onclick="openStatsSheet()" title="View stats">📊</button>
-    <button class="topbar-action" onclick="triggerPdfUpload()">📄 PDF</button>
     <button class="topbar-action primary" onclick="showNewDeckModal2()" id="addMoreBtn">+ Words</button>
-  </div>
-  <div class="deck-actions">
-    <button class="deck-action-btn" onclick="openRenameDeck()">✎ Rename</button>
-    <button class="deck-action-btn" onclick="openCustomDeckBuilder()">✦ Build from All Cards</button>
-    <button class="deck-action-btn danger" onclick="confirmDeleteCurrentDeck()">🗑 Delete Deck</button>
   </div>
   <!-- hidden file input -->
   <input type="file" id="pdfFileInput" accept=".pdf" style="display:none" onchange="handlePdfUpload(event)">
   <div class="deck-hero">
     <div class="deck-hero-name" id="deckHubName2"></div>
     <div class="deck-hero-meta mono" id="deckHubMeta"></div>
+  </div>
+    <div class="deck-actions">
+    <button class="deck-action-btn" onclick="openRenameDeck()">✎ Rename</button>
+    <button class="deck-action-btn" onclick="openCustomDeckBuilder()">✦ Build from All Cards</button>
+    <button class="deck-action-btn danger" onclick="confirmDeleteCurrentDeck()">🗑 Delete Deck</button>
   </div>
   <div style="padding:16px 20px 0">
     <div class="section-label">What do you want to do?</div>
