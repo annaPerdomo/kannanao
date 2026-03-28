@@ -14,14 +14,29 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `You are a Japanese teacher. Return a JSON array of objects for: ${pendingWords.join(", ")}.
-              Fields: "word", "reading" (hiragana), "meaning" (English), "image_query" (vivid search phrase), "example_jp", "example_en".`,
+              text: `You are a Japanese language teacher. Create flashcards for these words: ${pendingWords.join(", ")}. 
+              For the "reading" field: use hiragana/katakana. If the word is already kana, leave "reading" empty.
+              For "image_query": provide a vivid 2-4 word English phrase for a photo search.`,
             }],
           }],
           generationConfig: {
-            // 2. This forces the model to return valid JSON (no markdown backticks)
-            response_mime_type: "application/json",
-            maxOutputTokens: 1000,
+            maxOutputTokens: 2000,
+            responseMimeType: "application/json", 
+            responseSchema: {
+              type: "ARRAY",
+              items: {
+                type: "OBJECT",
+                properties: {
+                  word: { type: "STRING" },
+                  reading: { type: "STRING" },
+                  meaning: { type: "STRING" },
+                  image_query: { type: "STRING" },
+                  example_jp: { type: "STRING" },
+                  example_en: { type: "STRING" }
+                },
+                required: ["word", "reading", "meaning", "image_query", "example_jp", "example_en"]
+              }
+            }
           },
         }),
       }
@@ -30,14 +45,15 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Gemini API Error:", data.error);
-      return res.status(response.status).json({ error: data.error.message });
+      console.error("Gemini Error Detail:", data);
+      return res.status(response.status).json(data);
     }
 
-    // With JSON mode enabled, you don't need to strip markdown
+    // Success! Return the full data to your frontend
     return res.status(200).json(data);
 
   } catch (err) {
+    console.error("Handler error:", err);
     return res.status(500).json({ error: err.message });
   }
 }
