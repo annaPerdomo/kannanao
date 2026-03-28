@@ -6,39 +6,28 @@ export default async function handler(req, res) {
   const { pendingWords } = req.body;
 
   try {
-    // 1. MUST use v1beta for JSON Schema features
-    // 2. We use gemini-1.5-flash-latest to ensure the model is found
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `You are a Japanese language teacher. Create flashcards for these words: ${pendingWords.join(", ")}. 
-              For the "reading" field: use hiragana/katakana. If the word is already kana, leave "reading" empty.
-              For "image_query": provide a vivid 2-4 word English phrase for a photo search.`,
+              text: `You are a Japanese teacher. Return ONLY a valid JSON array of objects (no markdown, no backticks) for: ${pendingWords.join(", ")}.
+              
+              Each object MUST have:
+              "word": the word,
+              "reading": hiragana (empty if already kana),
+              "meaning": English meaning,
+              "image_query": 2-4 word English phrase for photos,
+              "example_jp": Japanese sentence,
+              "example_en": English translation.`,
             }],
           }],
           generationConfig: {
-            // REST API expects snake_case for these specific fields in v1beta
-            response_mime_type: "application/json", 
-            response_schema: {
-              type: "array", // Note: some versions prefer lowercase "array"
-              items: {
-                type: "object",
-                properties: {
-                  word: { type: "string" },
-                  reading: { type: "string" },
-                  meaning: { type: "string" },
-                  image_query: { type: "string" },
-                  example_jp: { type: "string" },
-                  example_en: { type: "string" }
-                },
-                required: ["word", "reading", "meaning", "image_query", "example_jp", "example_en"]
-              }
-            }
+            maxOutputTokens: 1000,
+            temperature: 0.1, // Lower temperature makes it follow formatting better
           },
         }),
       }
@@ -47,13 +36,21 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Gemini Error:", JSON.stringify(data, null, 2));
-      return res.status(response.status).json(data);
+      console.error("Gemini Error:", data);
+      return res.status(response.status).json({ error: data.error?.message || "API Error" });
     }
+    
+    let rawText = data.candidates[0].content.parts[0].text;
+    
+    // Remove markdown backticks if the model ignores our 'no markdown' instruction
+    const cleanedJson = rawText.replace(/```json|```/g, "").trim();
+    
+    const parsedData = JSON.parse(cleanedJson);
 
-    return res.status(200).json(data);
+    return res.status(200).json(parsedData);
 
   } catch (err) {
+    console.error("Handler error:", err);
     return res.status(500).json({ error: err.message });
   }
 }
