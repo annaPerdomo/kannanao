@@ -1,473 +1,2453 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Japanese Flashcards</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>" />
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>" />
 </head>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400&display=swap');
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --ink:#1a1008;--rice:#faf6ef;--verm:#c0392b;--verm-light:#fff0ee;--gold:#c8962a;
-  --muted:#8a7a6a;--card:#fffdf8;--sh:rgba(26,16,8,0.09);
-  --green:#2e7d52;--green-bg:#eef7f2;--red-bg:#fdf0ee;
-  --border:rgba(26,16,8,.1);
-}
-body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',serif;min-height:100vh}
-.mono{font-family:'DM Mono',monospace}
-.noto{font-family:'Noto Serif JP',serif}
-.serif{font-family:'DM Serif Display',serif}
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400&display=swap');
 
-/* ── SCREENS ── */
-.screen{display:none;min-height:100vh;flex-direction:column}
-.screen.active{display:flex}
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0
+  }
 
-/* ── TOP BAR ── */
-.topbar{display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
-.topbar-back{background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;padding:4px 8px 4px 0;line-height:1;font-family:'DM Mono',monospace}
-.topbar-back:hover{color:var(--ink)}
-.topbar-title{font-family:'DM Serif Display',serif;font-size:1.1rem;font-style:italic;color:var(--ink);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.topbar-action{background:none;border:1px solid var(--border);border-radius:3px;padding:6px 12px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--ink);cursor:pointer;white-space:nowrap}
-.topbar-action:hover{background:rgba(26,16,8,.05)}
-.topbar-action.primary{background:var(--verm);color:#fff;border-color:var(--verm)}
-.topbar-action.primary:hover{background:#a93226}
+  :root {
+    --ink: #1a1008;
+    --rice: #faf6ef;
+    --verm: #c0392b;
+    --verm-light: #fff0ee;
+    --gold: #c8962a;
+    --muted: #8a7a6a;
+    --card: #fffdf8;
+    --sh: rgba(26, 16, 8, 0.09);
+    --green: #2e7d52;
+    --green-bg: #eef7f2;
+    --red-bg: #fdf0ee;
+    --border: rgba(26, 16, 8, .1);
+  }
 
-/* ══════════════════════════════
+  body {
+    background: var(--rice);
+    color: var(--ink);
+    font-family: 'DM Serif Display', serif;
+    min-height: 100vh
+  }
+
+  .mono {
+    font-family: 'DM Mono', monospace
+  }
+
+  .noto {
+    font-family: 'Noto Serif JP', serif
+  }
+
+  .serif {
+    font-family: 'DM Serif Display', serif
+  }
+
+  /* ── SCREENS ── */
+  .screen {
+    display: none;
+    min-height: 100vh;
+    flex-direction: column
+  }
+
+  .screen.active {
+    display: flex
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0
+  }
+
+  .topbar-back {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 18px;
+    padding: 4px 8px 4px 0;
+    line-height: 1;
+    font-family: 'DM Mono', monospace
+  }
+
+  .topbar-back:hover {
+    color: var(--ink)
+  }
+
+  .topbar-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--ink);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+  }
+
+  .topbar-action {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 6px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .08em;
+    color: var(--ink);
+    cursor: pointer;
+    white-space: nowrap
+  }
+
+  .topbar-action:hover {
+    background: rgba(26, 16, 8, .05)
+  }
+
+  .topbar-action.primary {
+    background: var(--verm);
+    color: #fff;
+    border-color: var(--verm)
+  }
+
+  .topbar-action.primary:hover {
+    background: #a93226
+  }
+
+  /* ══════════════════════════════
    HOME SCREEN
 ══════════════════════════════ */
-#screen-home{background:var(--rice)}
-.home-hero{padding:32px 20px 24px;text-align:center;border-bottom:1px solid var(--border);background:var(--card)}
-.home-jp{font-family:'Noto Serif JP',serif;font-size:11px;letter-spacing:.35em;color:var(--verm);opacity:.7;margin-bottom:6px}
-.home-title{font-size:clamp(1.8rem,5vw,2.6rem);font-style:italic;margin-bottom:4px}
-.home-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.15em}
-.home-body{padding:20px;flex:1}
-.section-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
-.decks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:24px}
-.deck-card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
-.deck-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px var(--sh)}
-.deck-card-img{height:80px;background:#e8e0d5;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.deck-card-img img{width:100%;height:100%;object-fit:cover}
-.deck-card-placeholder{font-family:'Noto Serif JP',serif;font-size:2rem;color:rgba(26,16,8,.2)}
-.deck-card-body{padding:12px 14px}
-.deck-card-name{font-family:'DM Serif Display',serif;font-size:1rem;font-style:italic;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.deck-card-meta{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.06em}
-.deck-card-del{position:absolute;top:7px;right:8px;background:rgba(255,255,255,.85);border:none;border-radius:3px;width:22px;height:22px;cursor:pointer;font-size:13px;display:none;align-items:center;justify-content:center;color:var(--verm)}
-.deck-card:hover .deck-card-del{display:flex}
-.new-deck-card{background:none;border:1.5px dashed rgba(26,16,8,.18);border-radius:6px;cursor:pointer;padding:28px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border-color .15s,background .15s}
-.new-deck-card:hover{border-color:var(--verm);background:var(--verm-light)}
-.new-deck-icon{width:32px;height:32px;border-radius:50%;background:rgba(26,16,8,.07);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--muted)}
-.new-deck-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--muted)}
-.empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
-.empty-jp{font-family:'Noto Serif JP',serif;font-size:3rem;opacity:.25;margin-bottom:12px}
-.empty-text{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;margin-bottom:20px}
-.empty-btn{padding:11px 24px;background:var(--verm);color:#fff;border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;cursor:pointer}
+  #screen-home {
+    background: var(--rice)
+  }
 
-/* ══════════════════════════════
+  .home-hero {
+    padding: 32px 20px 24px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--card)
+  }
+
+  .home-jp {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 11px;
+    letter-spacing: .35em;
+    color: var(--verm);
+    opacity: .7;
+    margin-bottom: 6px
+  }
+
+  .home-title {
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-style: italic;
+    margin-bottom: 4px
+  }
+
+  .home-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .15em
+  }
+
+  .home-body {
+    padding: 20px;
+    flex: 1
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 12px
+  }
+
+  .decks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px
+  }
+
+  .deck-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+    position: relative
+  }
+
+  .deck-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--sh)
+  }
+
+  .deck-card-img {
+    height: 80px;
+    background: #e8e0d5;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center
+  }
+
+  .deck-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover
+  }
+
+  .deck-card-placeholder {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 2rem;
+    color: rgba(26, 16, 8, .2)
+  }
+
+  .deck-card-body {
+    padding: 12px 14px
+  }
+
+  .deck-card-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    font-style: italic;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+  }
+
+  .deck-card-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .06em
+  }
+
+  .deck-card-del {
+    position: absolute;
+    top: 7px;
+    right: 8px;
+    background: rgba(255, 255, 255, .85);
+    border: none;
+    border-radius: 3px;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    font-size: 13px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: var(--verm)
+  }
+
+  .deck-card:hover .deck-card-del {
+    display: flex
+  }
+
+  .new-deck-card {
+    background: none;
+    border: 1.5px dashed rgba(26, 16, 8, .18);
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 28px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: border-color .15s, background .15s
+  }
+
+  .new-deck-card:hover {
+    border-color: var(--verm);
+    background: var(--verm-light)
+  }
+
+  .new-deck-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(26, 16, 8, .07);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--muted)
+  }
+
+  .new-deck-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .1em;
+    color: var(--muted)
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--muted)
+  }
+
+  .empty-jp {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 3rem;
+    opacity: .25;
+    margin-bottom: 12px
+  }
+
+  .empty-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .1em;
+    margin-bottom: 20px
+  }
+
+  .empty-btn {
+    padding: 11px 24px;
+    background: var(--verm);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    cursor: pointer
+  }
+
+  /* ══════════════════════════════
    NEW DECK MODAL (inline)
 ══════════════════════════════ */
-.modal-overlay{display:none;position:absolute;inset:0;background:rgba(26,16,8,.35);z-index:100;align-items:flex-start;justify-content:center;padding-top:80px}
-.modal-overlay.show{display:flex}
-.modal{background:var(--card);border-radius:6px;padding:24px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(26,16,8,.2)}
-.modal-title{font-size:1.2rem;font-style:italic;margin-bottom:18px}
-.modal-field{margin-bottom:14px}
-.modal-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--muted);display:block;margin-bottom:6px}
-.modal-input{width:100%;padding:10px 13px;font-family:'Noto Serif JP',serif;font-size:14px;border:1.5px solid var(--border);border-radius:3px;background:var(--rice);color:var(--ink);outline:none;transition:border-color .2s}
-.modal-input:focus{border-color:var(--verm)}
-.modal-row{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
-.modal-cancel{padding:10px 18px;background:none;border:1px solid var(--border);border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;color:var(--ink)}
-.modal-save{padding:10px 20px;background:var(--verm);color:#fff;border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;cursor:pointer}
-.modal-save:hover{background:#a93226}
+  .modal-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(26, 16, 8, .35);
+    z-index: 100;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 80px
+  }
 
-/* ══════════════════════════════
+  .modal-overlay.show {
+    display: flex
+  }
+
+  .modal {
+    background: var(--card);
+    border-radius: 6px;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 8px 40px rgba(26, 16, 8, .2)
+  }
+
+  .modal-title {
+    font-size: 1.2rem;
+    font-style: italic;
+    margin-bottom: 18px
+  }
+
+  .modal-field {
+    margin-bottom: 14px
+  }
+
+  .modal-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .15em;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px
+  }
+
+  .modal-input {
+    width: 100%;
+    padding: 10px 13px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    background: var(--rice);
+    color: var(--ink);
+    outline: none;
+    transition: border-color .2s
+  }
+
+  .modal-input:focus {
+    border-color: var(--verm)
+  }
+
+  .modal-row {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px
+  }
+
+  .modal-cancel {
+    padding: 10px 18px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    color: var(--ink)
+  }
+
+  .modal-save {
+    padding: 10px 20px;
+    background: var(--verm);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .06em;
+    cursor: pointer
+  }
+
+  .modal-save:hover {
+    background: #a93226
+  }
+
+  /* ══════════════════════════════
    DECK SCREEN (hub)
 ══════════════════════════════ */
-#screen-deck{background:var(--rice)}
-.deck-hero{padding:20px;background:var(--card);border-bottom:1px solid var(--border)}
-.deck-hero-name{font-size:clamp(1.4rem,4vw,2rem);font-style:italic;margin-bottom:4px}
-.deck-hero-meta{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em}
-.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px}
-.mode-tile{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 16px;cursor:pointer;transition:transform .15s,box-shadow .15s;text-align:center}
-.mode-tile:hover{transform:translateY(-2px);box-shadow:0 6px 20px var(--sh)}
-.mode-icon{font-family:'Noto Serif JP',serif;font-size:2rem;margin-bottom:10px;display:block}
-.mode-name{font-size:1rem;font-style:italic;margin-bottom:4px}
-.mode-desc{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--muted);letter-spacing:.06em;line-height:1.5}
-.mode-tile.study{border-top:3px solid var(--gold)}
-.mode-tile.match{border-top:3px solid #4a90d9}
-.mode-tile.blank{border-top:3px solid var(--green)}
-.mode-tile.recall{border-top:3px solid var(--verm)}
-.deck-add-section{padding:0 20px 20px}
-.add-words-box{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:18px}
-.add-words-title{font-size:.95rem;font-style:italic;margin-bottom:14px}
-.word-row{display:flex;gap:8px;margin-bottom:10px}
-.word-input{flex:1;padding:10px 13px;font-family:'Noto Serif JP',serif;font-size:14px;border:1.5px solid var(--border);border-radius:3px;background:var(--rice);color:var(--ink);outline:none;transition:border-color .2s}
-.word-input:focus{border-color:var(--verm)}
-.word-input::placeholder{color:var(--muted);font-size:12px;font-family:'DM Mono',monospace}
-.add-btn{padding:10px 16px;background:var(--ink);color:var(--rice);border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;white-space:nowrap}
-.add-btn:hover{background:#2d1e0f}
-.word-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;min-height:28px}
-.word-tag{display:flex;align-items:center;gap:4px;padding:3px 10px;background:var(--rice);border:1px solid var(--border);border-radius:20px;font-family:'Noto Serif JP',serif;font-size:12px;animation:tagIn .2s}
-@keyframes tagIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
-.word-tag button{background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;line-height:1;padding:0}
-.word-tag button:hover{color:var(--verm)}
-.gen-btn{width:100%;padding:13px;background:var(--verm);color:#fff;border:none;border-radius:3px;font-family:'DM Serif Display',serif;font-size:15px;font-style:italic;cursor:pointer;transition:all .2s}
-.gen-btn:hover:not(:disabled){background:#a93226}
-.gen-btn:disabled{opacity:.5;cursor:not-allowed}
-.error-msg{background:var(--verm-light);border:1px solid rgba(192,57,43,.2);border-radius:3px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:10px;color:var(--verm);display:none;margin-top:8px}
-.error-msg.show{display:block}
-.loading-bar{display:none;text-align:center;padding:20px}
-.loading-bar.show{display:block}
-.loading-jp{font-family:'Noto Serif JP',serif;font-size:36px;color:var(--verm);animation:float 1.4s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(-8px);opacity:.5}}
-.loading-txt{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px;letter-spacing:.12em}
-.existing-cards{padding:0 20px 20px}
-.existing-title{font-size:.95rem;font-style:italic;margin-bottom:12px}
-.card-list{display:flex;flex-direction:column;gap:8px}
-.card-list-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:5px;overflow:hidden;padding:0}
-.cli-img{width:52px;height:52px;object-fit:cover;flex-shrink:0;background:#e8e0d5;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:1.3rem;color:rgba(26,16,8,.25)}
-.cli-img img{width:52px;height:52px;object-fit:cover}
-.cli-body{flex:1;padding:10px 4px}
-.cli-word{font-family:'Noto Serif JP',serif;font-size:1.1rem;margin-bottom:1px}
-.cli-meaning{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em}
-.cli-del{background:none;border:none;cursor:pointer;color:rgba(26,16,8,.2);font-size:15px;padding:8px 12px;flex-shrink:0}
-.cli-del:hover{color:var(--verm)}
+  #screen-deck {
+    background: var(--rice)
+  }
 
-/* ══════════════════════════════
+  .deck-hero {
+    padding: 20px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border)
+  }
+
+  .deck-hero-name {
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-style: italic;
+    margin-bottom: 4px
+  }
+
+  .deck-hero-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .1em
+  }
+
+  .mode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 20px
+  }
+
+  .mode-tile {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 16px;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+    text-align: center
+  }
+
+  .mode-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--sh)
+  }
+
+  .mode-icon {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 2rem;
+    margin-bottom: 10px;
+    display: block
+  }
+
+  .mode-name {
+    font-size: 1rem;
+    font-style: italic;
+    margin-bottom: 4px
+  }
+
+  .mode-desc {
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px;
+    color: var(--muted);
+    letter-spacing: .06em;
+    line-height: 1.5
+  }
+
+  .mode-tile.study {
+    border-top: 3px solid var(--gold)
+  }
+
+  .mode-tile.match {
+    border-top: 3px solid #4a90d9
+  }
+
+  .mode-tile.blank {
+    border-top: 3px solid var(--green)
+  }
+
+  .mode-tile.recall {
+    border-top: 3px solid var(--verm)
+  }
+
+  .deck-add-section {
+    padding: 0 20px 20px
+  }
+
+  .add-words-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px
+  }
+
+  .add-words-title {
+    font-size: .95rem;
+    font-style: italic;
+    margin-bottom: 14px
+  }
+
+  .word-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px
+  }
+
+  .word-input {
+    flex: 1;
+    padding: 10px 13px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    background: var(--rice);
+    color: var(--ink);
+    outline: none;
+    transition: border-color .2s
+  }
+
+  .word-input:focus {
+    border-color: var(--verm)
+  }
+
+  .word-input::placeholder {
+    color: var(--muted);
+    font-size: 12px;
+    font-family: 'DM Mono', monospace
+  }
+
+  .add-btn {
+    padding: 10px 16px;
+    background: var(--ink);
+    color: var(--rice);
+    border: none;
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    white-space: nowrap
+  }
+
+  .add-btn:hover {
+    background: #2d1e0f
+  }
+
+  .word-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+    min-height: 28px
+  }
+
+  .word-tag {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    background: var(--rice);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 12px;
+    animation: tagIn .2s
+  }
+
+  @keyframes tagIn {
+    from {
+      transform: scale(.8);
+      opacity: 0
+    }
+
+    to {
+      transform: scale(1);
+      opacity: 1
+    }
+  }
+
+  .word-tag button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1;
+    padding: 0
+  }
+
+  .word-tag button:hover {
+    color: var(--verm)
+  }
+
+  .gen-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--verm);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    font-family: 'DM Serif Display', serif;
+    font-size: 15px;
+    font-style: italic;
+    cursor: pointer;
+    transition: all .2s
+  }
+
+  .gen-btn:hover:not(:disabled) {
+    background: #a93226
+  }
+
+  .gen-btn:disabled {
+    opacity: .5;
+    cursor: not-allowed
+  }
+
+  .error-msg {
+    background: var(--verm-light);
+    border: 1px solid rgba(192, 57, 43, .2);
+    border-radius: 3px;
+    padding: 10px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--verm);
+    display: none;
+    margin-top: 8px
+  }
+
+  .error-msg.show {
+    display: block
+  }
+
+  .loading-bar {
+    display: none;
+    text-align: center;
+    padding: 20px
+  }
+
+  .loading-bar.show {
+    display: block
+  }
+
+  .loading-jp {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 36px;
+    color: var(--verm);
+    animation: float 1.4s ease-in-out infinite
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+      opacity: 1
+    }
+
+    50% {
+      transform: translateY(-8px);
+      opacity: .5
+    }
+  }
+
+  .loading-txt {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 8px;
+    letter-spacing: .12em
+  }
+
+  .existing-cards {
+    padding: 0 20px 20px
+  }
+
+  .existing-title {
+    font-size: .95rem;
+    font-style: italic;
+    margin-bottom: 12px
+  }
+
+  .card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px
+  }
+
+  .card-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    padding: 0
+  }
+
+  .cli-img {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #e8e0d5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.3rem;
+    color: rgba(26, 16, 8, .25)
+  }
+
+  .cli-img img {
+    width: 52px;
+    height: 52px;
+    object-fit: cover
+  }
+
+  .cli-body {
+    flex: 1;
+    padding: 10px 4px
+  }
+
+  .cli-word {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.1rem;
+    margin-bottom: 1px
+  }
+
+  .cli-meaning {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .04em
+  }
+
+  .cli-del {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(26, 16, 8, .2);
+    font-size: 15px;
+    padding: 8px 12px;
+    flex-shrink: 0
+  }
+
+  .cli-del:hover {
+    color: var(--verm)
+  }
+
+  /* ══════════════════════════════
    STUDY SCREEN
 ══════════════════════════════ */
-#screen-study{background:var(--rice)}
-.study-body{flex:1;padding:16px 16px 24px;display:flex;flex-direction:column;align-items:center;gap:16px}
-.study-prog{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.1em}
-.stage{perspective:1100px;width:100%;max-width:480px}
-.card-inner{transition:transform .65s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;cursor:pointer;position:relative;min-height:340px}
-.card-inner.flipped{transform:rotateY(180deg)}
-.face{background:var(--card);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 24px var(--sh);backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;min-height:340px;display:flex;flex-direction:column}
-.face.back{position:absolute;top:0;left:0;width:100%;transform:rotateY(180deg)}
-.card-img-wrap{position:relative;height:220px;background:#e8e0d5;flex-shrink:0;overflow:hidden}
-.card-img-wrap img{width:100%;height:100%;object-fit:cover;transition:opacity .4s}
-.card-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(26,16,8,.7));padding:24px 16px 14px;display:flex;flex-direction:column;gap:3px}
-.overlay-word{font-family:'Noto Serif JP',serif;font-size:2.2rem;color:#fff}
-.overlay-reading{font-family:'Noto Serif JP',serif;font-size:12px;color:rgba(255,255,255,.8);font-weight:300}
-.card-front-foot{padding:14px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.14em}
-.card-back-thumb{height:100px;overflow:hidden;flex-shrink:0;background:#e8e0d5}
-.card-back-thumb img{width:100%;height:100%;object-fit:cover;filter:brightness(.8)}
-.card-back-body{padding:20px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;flex:1;justify-content:center}
-.back-reading{font-family:'Noto Serif JP',serif;font-size:.95rem;color:var(--verm);font-weight:300}
-.back-meaning{font-size:1.6rem;font-style:italic}
-.back-example{font-family:'Noto Serif JP',serif;font-size:12px;color:var(--muted);line-height:1.8;border-top:1px solid var(--border);padding-top:10px;max-width:320px}
-.back-ex-en{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);font-style:italic;margin-top:3px}
-.back-credit{font-family:'DM Mono',monospace;font-size:9px;color:rgba(26,16,8,.25);margin-top:auto}
-.nav-row{display:flex;gap:12px;justify-content:center;width:100%;max-width:480px}
-.nav-btn{flex:1;padding:12px;border:1.5px solid var(--border);background:var(--card);border-radius:4px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;cursor:pointer;color:var(--ink);transition:all .15s;max-width:140px}
-.nav-btn:hover:not(:disabled){background:var(--ink);color:var(--rice);border-color:var(--ink)}
-.nav-btn:disabled{opacity:.28;cursor:not-allowed}
+  #screen-study {
+    background: var(--rice)
+  }
 
-/* ══════════════════════════════
+  .study-body {
+    flex: 1;
+    padding: 16px 16px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px
+  }
+
+  .study-prog {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .1em
+  }
+
+  .stage {
+    perspective: 1100px;
+    width: 100%;
+    max-width: 480px
+  }
+
+  .card-inner {
+    transition: transform .65s cubic-bezier(.4, 0, .2, 1);
+    transform-style: preserve-3d;
+    cursor: pointer;
+    position: relative;
+    min-height: 340px
+  }
+
+  .card-inner.flipped {
+    transform: rotateY(180deg)
+  }
+
+  .face {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 4px 24px var(--sh);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+    min-height: 340px;
+    display: flex;
+    flex-direction: column
+  }
+
+  .face.back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    transform: rotateY(180deg)
+  }
+
+  .card-img-wrap {
+    position: relative;
+    height: 220px;
+    background: #e8e0d5;
+    flex-shrink: 0;
+    overflow: hidden
+  }
+
+  .card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity .4s
+  }
+
+  .card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(26, 16, 8, .7));
+    padding: 24px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px
+  }
+
+  .overlay-word {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 2.2rem;
+    color: #fff
+  }
+
+  .overlay-reading {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 12px;
+    color: rgba(255, 255, 255, .8);
+    font-weight: 300
+  }
+
+  .card-front-foot {
+    padding: 14px;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .14em
+  }
+
+  .card-back-thumb {
+    height: 100px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #e8e0d5
+  }
+
+  .card-back-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(.8)
+  }
+
+  .card-back-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+    flex: 1;
+    justify-content: center
+  }
+
+  .back-reading {
+    font-family: 'Noto Serif JP', serif;
+    font-size: .95rem;
+    color: var(--verm);
+    font-weight: 300
+  }
+
+  .back-meaning {
+    font-size: 1.6rem;
+    font-style: italic
+  }
+
+  .back-example {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.8;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    max-width: 320px
+  }
+
+  .back-ex-en {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 3px
+  }
+
+  .back-credit {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: rgba(26, 16, 8, .25);
+    margin-top: auto
+  }
+
+  .nav-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    width: 100%;
+    max-width: 480px
+  }
+
+  .nav-btn {
+    flex: 1;
+    padding: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    cursor: pointer;
+    color: var(--ink);
+    transition: all .15s;
+    max-width: 140px
+  }
+
+  .nav-btn:hover:not(:disabled) {
+    background: var(--ink);
+    color: var(--rice);
+    border-color: var(--ink)
+  }
+
+  .nav-btn:disabled {
+    opacity: .28;
+    cursor: not-allowed
+  }
+
+  /* ══════════════════════════════
    PRACTICE SCREENS
 ══════════════════════════════ */
-.practice-body{flex:1;padding:16px 16px 32px}
-.score-pill{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:18px}
-.score-num{font-family:'DM Serif Display',serif;font-size:1.1rem;font-style:italic;color:var(--ink)}
+  .practice-body {
+    flex: 1;
+    padding: 16px 16px 32px
+  }
 
-/* match */
-.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.match-col{display:flex;flex-direction:column;gap:8px}
-.match-card{border:1.5px solid var(--border);border-radius:6px;cursor:pointer;transition:all .18s;overflow:hidden;background:var(--card)}
-.match-jp{display:flex;flex-direction:column;align-items:center}
-.match-thumb{width:100%;height:64px;object-fit:cover;background:#e8e0d5;display:block}
-.match-thumb-ph{width:100%;height:64px;background:#e8e0d5;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:1.5rem;color:rgba(26,16,8,.2)}
-.match-jp-word{font-family:'Noto Serif JP',serif;font-size:1.2rem;padding:9px 8px;text-align:center;color:var(--ink)}
-.match-en{display:flex;align-items:center;justify-content:center;padding:14px 10px;min-height:58px;font-family:'DM Serif Display',serif;font-size:.95rem;font-style:italic;color:var(--ink);text-align:center}
-.match-card:hover:not(.matched):not(.wrong){border-color:var(--verm);background:var(--verm-light)}
-.match-card.selected{border-color:var(--verm);box-shadow:0 0 0 2px rgba(192,57,43,.15)}
-.match-card.matched{border-color:var(--green);opacity:.6;cursor:default}
-.match-card.wrong{border-color:var(--verm);background:var(--red-bg);animation:shake .3s ease}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  .score-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 18px
+  }
 
-/* blank */
-.blank-card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px}
-.blank-img{width:100%;height:130px;object-fit:cover;background:#e8e0d5;display:block}
-.blank-img-ph{width:100%;height:130px;background:#e8e0d5;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:2.5rem;color:rgba(26,16,8,.15)}
-.blank-body{padding:18px}
-.prompt-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.15em;margin-bottom:12px}
-.blank-sent{font-family:'Noto Serif JP',serif;font-size:1.05rem;line-height:2;margin-bottom:4px}
-.blank-en{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);font-style:italic;margin-bottom:16px}
-.choices{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-.choice-btn{padding:9px 16px;border:1.5px solid var(--border);background:var(--card);border-radius:3px;font-family:'Noto Serif JP',serif;font-size:1rem;cursor:pointer;color:var(--ink);transition:all .18s}
-.choice-btn:hover:not(:disabled){border-color:var(--verm);background:var(--verm-light)}
-.choice-btn.correct{border-color:var(--green);background:var(--green-bg);color:var(--green)}
-.choice-btn.incorrect{border-color:var(--verm);background:var(--red-bg);color:var(--verm)}
-.choice-btn:disabled{cursor:default}
-.feedback{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.07em;margin-top:12px;min-height:18px;text-align:center}
-.fb-ok{color:var(--green)}.fb-no{color:var(--verm)}
-.next-btn{padding:10px 24px;background:var(--ink);color:var(--rice);border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;cursor:pointer;margin-top:12px;display:none}
-.next-btn.show{display:inline-block}
+  .score-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--ink)
+  }
 
-/* recall */
-.recall-card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px}
-.recall-img{width:100%;height:150px;object-fit:cover;background:#e8e0d5;display:block}
-.recall-img-ph{width:100%;height:150px;background:#e8e0d5;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:3rem;color:rgba(26,16,8,.15)}
-.recall-body{padding:20px;text-align:center}
-.recall-meaning{font-size:1.7rem;font-style:italic;margin-bottom:4px}
-.recall-hint{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:16px}
-.recall-input{padding:11px 14px;font-family:'Noto Serif JP',serif;font-size:1.1rem;border:1.5px solid var(--border);border-radius:3px;background:var(--rice);color:var(--ink);outline:none;text-align:center;width:100%;max-width:240px;transition:border-color .2s}
-.recall-input:focus{border-color:var(--verm)}
-.recall-input.ok{border-color:var(--green);background:var(--green-bg)}
-.recall-input.no{border-color:var(--verm);background:var(--red-bg)}
-.recall-submit{padding:10px 20px;background:var(--verm);color:#fff;border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;margin-top:10px}
-.recall-submit:hover{background:#a93226}
-.recall-answer{font-family:'Noto Serif JP',serif;font-size:.95rem;color:var(--verm);margin-top:6px;display:none}
+  /* match */
+  .match-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px
+  }
 
-/* completion */
-.completion{text-align:center;padding:40px 20px}
-.comp-kanji{font-family:'Noto Serif JP',serif;font-size:52px;color:var(--gold);margin-bottom:8px}
-.comp-title{font-size:1.7rem;font-style:italic;margin-bottom:6px}
-.comp-score{font-size:2.2rem;font-style:italic;color:var(--verm);margin-bottom:6px}
-.comp-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em;margin-bottom:22px}
-.try-btn{padding:11px 28px;background:var(--ink);color:var(--rice);border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;cursor:pointer}
-.try-btn:hover{background:#2d1e0f}
-/* ── PDF PREVIEW CARDS ── */
-.pdf-preview-card{display:flex;align-items:center;gap:10px;background:var(--rice);border:1px solid var(--border);border-radius:4px;padding:8px 12px;cursor:pointer;transition:border-color .15s}
-.pdf-preview-card.selected{border-color:var(--verm);background:var(--verm-light)}
-.pdf-preview-card.selected .ppc-check{background:var(--verm);border-color:var(--verm);color:#fff}
-.ppc-check{width:16px;height:16px;border:1.5px solid var(--border);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s}
-.ppc-lesson{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.06em;flex-shrink:0;min-width:36px}
-.ppc-word{font-family:'Noto Serif JP',serif;font-size:1rem;flex-shrink:0;min-width:80px}
-.ppc-reading{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);flex-shrink:0;min-width:80px}
-.ppc-meaning{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink);flex:1}
-.lesson-btn{padding:4px 10px;border:1px solid var(--border);border-radius:20px;background:var(--card);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all .15s;color:var(--muted)}
-.lesson-btn.active{background:var(--verm);border-color:var(--verm);color:#fff}
+  .match-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px
+  }
 
-/* ── CUSTOM DECK BUILDER ── */
-.cdb-overlay{display:none;position:fixed;inset:0;background:rgba(26,16,8,.45);z-index:200;overflow-y:auto}
-.cdb-overlay.show{display:block}
-.cdb-panel{background:var(--card);min-height:100vh;max-width:600px;margin:0 auto;display:flex;flex-direction:column}
-.cdb-topbar{display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
-.cdb-title{font-family:'DM Serif Display',serif;font-size:1.1rem;font-style:italic;flex:1}
-.cdb-save{padding:8px 18px;background:var(--verm);color:#fff;border:none;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer}
-.cdb-save:hover{background:#a93226}
-.cdb-search{padding:14px 20px;border-bottom:1px solid var(--border)}
-.cdb-search-inp{width:100%;padding:10px 14px;font-family:'Noto Serif JP',serif;font-size:14px;border:1.5px solid var(--border);border-radius:3px;background:var(--rice);color:var(--ink);outline:none;transition:border-color .2s}
-.cdb-search-inp:focus{border-color:var(--verm)}
-.cdb-filters{padding:10px 20px;display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--border)}
-.cdb-body{padding:16px 20px;flex:1}
-.cdb-deck-group{margin-bottom:20px}
-.cdb-deck-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
-.cdb-select-all{background:none;border:1px solid var(--border);border-radius:20px;padding:2px 8px;font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;color:var(--muted);transition:all .15s}
-.cdb-select-all:hover{border-color:var(--verm);color:var(--verm)}
-.cdb-card-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:4px;cursor:pointer;transition:background .12s;margin-bottom:4px}
-.cdb-card-row:hover{background:rgba(26,16,8,.04)}
-.cdb-card-row.selected{background:var(--verm-light)}
-.cdb-checkbox{width:16px;height:16px;border:1.5px solid var(--border);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s;background:var(--card)}
-.cdb-card-row.selected .cdb-checkbox{background:var(--verm);border-color:var(--verm);color:#fff}
-.cdb-card-thumb{width:32px;height:32px;border-radius:3px;object-fit:cover;background:#e8e0d5;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:.85rem;color:rgba(26,16,8,.25);overflow:hidden}
-.cdb-card-thumb img{width:100%;height:100%;object-fit:cover}
-.cdb-card-info{flex:1;min-width:0}
-.cdb-card-word{font-family:'Noto Serif JP',serif;font-size:1rem}
-.cdb-card-meaning{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cdb-footer{padding:14px 20px;background:var(--card);border-top:1px solid var(--border);position:sticky;bottom:0;display:flex;align-items:center;justify-content:space-between}
-.cdb-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
+  .match-card {
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all .18s;
+    overflow: hidden;
+    background: var(--card)
+  }
 
-/* ── PROGRESS / STREAK ── */
-.streak-bar{display:flex;align-items:center;gap:8px;padding:10px 20px 0;flex-wrap:wrap}
-.streak-badge{display:inline-flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)}
-.streak-badge.hot{border-color:var(--gold);color:var(--gold);background:#fffbf0}
-.streak-num{font-family:'DM Serif Display',serif;font-size:1rem;font-style:italic;color:var(--ink)}
-.streak-badge.hot .streak-num{color:var(--gold)}
-.progress-ring-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
-.progress-mini{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.08em}
+  .match-jp {
+    display: flex;
+    flex-direction: column;
+    align-items: center
+  }
 
-/* ── DECK STATS PANEL ── */
-.stats-overlay{display:none;position:fixed;inset:0;background:rgba(26,16,8,.45);z-index:200;align-items:flex-end;justify-content:center}
-.stats-overlay.show{display:flex}
-.stats-sheet{background:var(--card);border-radius:12px 12px 0 0;padding:24px 20px 32px;width:100%;max-width:540px;animation:slideUp .3s ease}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.stats-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px}
-.stats-title{font-size:1.3rem;font-style:italic;margin-bottom:18px}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
-.stat-box{background:var(--rice);border-radius:6px;padding:14px;text-align:center}
-.stat-num{font-size:1.8rem;font-style:italic;color:var(--verm)}
-.stat-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--muted);margin-top:2px}
-.heatmap-row{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px}
-.heatmap-cell{width:12px;height:12px;border-radius:2px;background:var(--border)}
-.heatmap-cell.d1{background:#f5c0bb}.heatmap-cell.d2{background:#e07070}.heatmap-cell.d3{background:var(--verm)}
-.heatmap-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.08em}
+  .match-thumb {
+    width: 100%;
+    height: 64px;
+    object-fit: cover;
+    background: #e8e0d5;
+    display: block
+  }
 
-/* ── SEARCH ON HOME ── */
-.home-search-wrap{padding:12px 20px;border-bottom:1px solid var(--border)}
-.home-search{width:100%;padding:9px 14px;font-family:'DM Mono',monospace;font-size:12px;border:1.5px solid var(--border);border-radius:3px;background:var(--card);color:var(--ink);outline:none;transition:border-color .2s;letter-spacing:.04em}
-.home-search:focus{border-color:var(--verm)}
+  .match-thumb-ph {
+    width: 100%;
+    height: 64px;
+    background: #e8e0d5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.5rem;
+    color: rgba(26, 16, 8, .2)
+  }
 
-/* ── DECK ACTIONS ROW ── */
-.deck-actions{display:flex;gap:8px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--card);flex-wrap:wrap}
-.deck-action-btn{flex:1;min-width:100px;padding:9px 12px;background:none;border:1px solid var(--border);border-radius:3px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.06em;cursor:pointer;color:var(--ink);transition:all .15s;white-space:nowrap;text-align:center}
-.deck-action-btn:hover{background:rgba(26,16,8,.05)}
-.deck-action-btn.danger{color:var(--verm)}
-.deck-action-btn.danger:hover{background:var(--verm-light);border-color:var(--verm)}
+  .match-jp-word {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.2rem;
+    padding: 9px 8px;
+    text-align: center;
+    color: var(--ink)
+  }
 
-/* ── RENAME DECK MODAL ── */
-#renameDeckOverlay .modal-title{font-style:italic}
+  .match-en {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 10px;
+    min-height: 58px;
+    font-family: 'DM Serif Display', serif;
+    font-size: .95rem;
+    font-style: italic;
+    color: var(--ink);
+    text-align: center
+  }
 
-/* ── TOAST ── */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--rice);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;padding:10px 20px;border-radius:20px;z-index:9999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .match-card:hover:not(.matched):not(.wrong) {
+    border-color: var(--verm);
+    background: var(--verm-light)
+  }
 
-/* ── CARD SORT / FILTER ── */
-.card-list-controls{display:flex;align-items:center;gap:8px;padding:0 0 10px;flex-wrap:wrap}
-.card-sort-btn{padding:4px 10px;border:1px solid var(--border);border-radius:20px;background:var(--card);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;transition:all .15s;color:var(--muted)}
-.card-sort-btn.active{background:var(--ink);border-color:var(--ink);color:var(--rice)}
-.card-list-search{flex:1;min-width:120px;padding:5px 10px;font-family:'DM Mono',monospace;font-size:11px;border:1px solid var(--border);border-radius:3px;background:var(--rice);color:var(--ink);outline:none}
-.card-list-search:focus{border-color:var(--verm)}
+  .match-card.selected {
+    border-color: var(--verm);
+    box-shadow: 0 0 0 2px rgba(192, 57, 43, .15)
+  }
 
-/* ── MOBILE & TABLET FIRST ── */
+  .match-card.matched {
+    border-color: var(--green);
+    opacity: .6;
+    cursor: default
+  }
 
-/* Larger tap targets globally on touch devices */
-@media(hover:none){
-  .topbar-back{padding:10px 12px 10px 0;font-size:20px}
-  .topbar-action{padding:10px 16px;font-size:11px}
-  .deck-action-btn{padding:12px 14px}
-  .choice-btn{padding:13px 20px}
-  .nav-btn{padding:15px}
-  .gen-btn{padding:16px}
-  .modal-cancel,.modal-save{padding:13px 22px;font-size:12px}
-  .add-btn{padding:13px 18px}
-  .word-input{padding:13px 14px;font-size:16px} /* prevent zoom on iOS */
-  .modal-input{font-size:16px} /* prevent zoom on iOS */
-  .recall-input{font-size:16px}
-  .home-search{font-size:16px}
-  .cdb-search-inp{font-size:16px}
-}
+  .match-card.wrong {
+    border-color: var(--verm);
+    background: var(--red-bg);
+    animation: shake .3s ease
+  }
 
-@media(max-width:600px){
-  /* Hero */
-  .home-hero{padding:20px 16px 16px}
-  .home-title{font-size:1.7rem}
-  .home-jp{font-size:10px}
+  @keyframes shake {
 
-  /* Deck grid — 2 columns always on mobile */
-  .decks-grid{grid-template-columns:1fr 1fr;gap:10px}
-  .deck-card-img{height:70px}
-  .deck-card-body{padding:10px 12px}
-  .deck-card-name{font-size:.9rem}
+    0%,
+    100% {
+      transform: translateX(0)
+    }
 
-  /* Home body padding */
-  .home-body{padding:16px}
+    25% {
+      transform: translateX(-5px)
+    }
 
-  /* Streak bar wraps nicely */
-  .streak-bar{padding:10px 16px 0;gap:6px}
+    75% {
+      transform: translateX(5px)
+    }
+  }
 
-  /* Deck hub mode grid */
-  .mode-grid{grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px}
-  .mode-tile{padding:16px 12px}
-  .mode-icon{font-size:1.6rem;margin-bottom:7px}
-  .mode-name{font-size:.9rem}
-  .mode-desc{font-size:9px}
+  /* blank */
+  .blank-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 16px
+  }
 
-  /* Deck actions — stacked nicely */
-  .deck-actions{gap:6px;padding:10px 16px;flex-wrap:wrap}
-  .deck-action-btn{font-size:10px;padding:10px 10px;flex:1 1 calc(33% - 6px);min-width:80px}
+  .blank-img {
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    background: #e8e0d5;
+    display: block
+  }
 
-  /* Deck hero */
-  .deck-hero{padding:16px}
-  .deck-hero-name{font-size:1.4rem}
+  .blank-img-ph {
+    width: 100%;
+    height: 130px;
+    background: #e8e0d5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 2.5rem;
+    color: rgba(26, 16, 8, .15)
+  }
 
-  /* Topbar — prevent overflow */
-  .topbar{padding:12px 14px;gap:8px}
-  .topbar-title{font-size:1rem}
-  .topbar-action{padding:8px 12px;font-size:10px}
+  .blank-body {
+    padding: 18px
+  }
 
-  /* Study card */
-  .stage{max-width:100%}
-  .card-inner{min-height:300px}
-  .face{min-height:300px}
-  .card-img-wrap{height:180px}
-  .overlay-word{font-size:1.8rem}
-  .back-meaning{font-size:1.4rem}
-  .nav-row{gap:8px}
-  .nav-btn{padding:14px;font-size:11px;max-width:none}
+  .prompt-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .15em;
+    margin-bottom: 12px
+  }
 
-  /* Add words box */
-  .add-words-box{padding:14px}
-  .word-row{flex-direction:column;gap:8px}
-  .add-btn{width:100%;text-align:center}
+  .blank-sent {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.05rem;
+    line-height: 2;
+    margin-bottom: 4px
+  }
 
-  /* Existing cards section */
-  .existing-cards{padding:0 16px 20px}
+  .blank-en {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 16px
+  }
 
-  /* Modals — full width friendly */
-  .modal{padding:20px;border-radius:8px}
-  .modal-overlay{padding:16px;align-items:flex-end;padding-bottom:env(safe-area-inset-bottom, 16px)}
-  .modal-row{flex-direction:row;gap:8px}
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center
+  }
 
-  /* Stats grid */
-  .stats-grid{grid-template-columns:1fr 1fr}
-  .stats-sheet{padding:20px 16px 28px}
-  .stats-title{font-size:1.1rem}
+  .choice-btn {
+    padding: 9px 16px;
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    border-radius: 3px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--ink);
+    transition: all .18s
+  }
 
-  /* CDB */
-  .cdb-panel{max-width:100%}
-  .cdb-topbar{padding:12px 14px}
-  .cdb-body{padding:12px 16px}
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--verm);
+    background: var(--verm-light)
+  }
 
-  /* Blank/Recall practice */
-  .blank-body{padding:14px}
-  .recall-body{padding:16px}
-  .blank-img{height:110px}
-  .recall-img{height:120px}
+  .choice-btn.correct {
+    border-color: var(--green);
+    background: var(--green-bg);
+    color: var(--green)
+  }
 
-  /* Match grid */
-  .match-grid{gap:8px}
-  .match-jp-word{font-size:1.1rem;padding:7px 6px}
-  .match-thumb{height:54px}
-  .match-thumb-ph{height:54px;font-size:1.2rem}
-  .match-en{padding:10px 8px;min-height:50px;font-size:.85rem}
+  .choice-btn.incorrect {
+    border-color: var(--verm);
+    background: var(--red-bg);
+    color: var(--verm)
+  }
 
-  /* Section labels */
-  .section-label{font-size:9.5px}
+  .choice-btn:disabled {
+    cursor: default
+  }
 
-  /* Completion screen */
-  .completion{padding:28px 16px}
-  .comp-kanji{font-size:42px}
-  .comp-title{font-size:1.4rem}
-  .comp-score{font-size:1.8rem}
+  .feedback {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .07em;
+    margin-top: 12px;
+    min-height: 18px;
+    text-align: center
+  }
 
-  /* Toast — above mobile browser chrome */
-  .toast{bottom:max(20px, env(safe-area-inset-bottom, 20px));font-size:11px;max-width:calc(100% - 32px);text-align:center;white-space:normal}
+  .fb-ok {
+    color: var(--green)
+  }
 
-  /* Card list item - slightly larger for touch */
-  .card-list-item{padding:2px 0}
-  .cli-img{width:48px;height:48px}
-  .cli-body{padding:12px 4px}
-  .cli-del{padding:12px 14px}
+  .fb-no {
+    color: var(--verm)
+  }
 
-  /* PDF preview row - allow wrapping on tiny screens */
-  .ppc-reading{display:none}
-  .ppc-lesson{min-width:28px}
+  .next-btn {
+    padding: 10px 24px;
+    background: var(--ink);
+    color: var(--rice);
+    border: none;
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    cursor: pointer;
+    margin-top: 12px;
+    display: none
+  }
 
-  /* Home search */
-  .home-search-wrap{padding:10px 16px}
-}
+  .next-btn.show {
+    display: inline-block
+  }
 
-/* Very small phones */
-@media(max-width:360px){
-  .mode-tile{padding:12px 8px}
-  .mode-icon{font-size:1.4rem}
-  .mode-name{font-size:.85rem}
-  .decks-grid{grid-template-columns:1fr 1fr;gap:8px}
-  .deck-actions{flex-direction:column}
-  .deck-action-btn{flex:none;width:100%}
-}
+  /* recall */
+  .recall-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 16px
+  }
 
-/* Safe area for notched phones (bottom) */
-@supports(padding-bottom: env(safe-area-inset-bottom)){
-  .screen{padding-bottom:env(safe-area-inset-bottom)}
-  .cdb-footer,.stats-sheet{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
-}
+  .recall-img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    background: #e8e0d5;
+    display: block
+  }
 
-/* ── CONFETTI ── */
-.confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;pointer-events:none;z-index:9999;animation:confettiFall linear forwards}
-@keyframes confettiFall{0%{opacity:1;transform:translateY(0) rotate(0deg)}100%{opacity:0;transform:translateY(100vh) rotate(720deg)}}
+  .recall-img-ph {
+    width: 100%;
+    height: 150px;
+    background: #e8e0d5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 3rem;
+    color: rgba(26, 16, 8, .15)
+  }
+
+  .recall-body {
+    padding: 20px;
+    text-align: center
+  }
+
+  .recall-meaning {
+    font-size: 1.7rem;
+    font-style: italic;
+    margin-bottom: 4px
+  }
+
+  .recall-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 16px
+  }
+
+  .recall-input {
+    padding: 11px 14px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    background: var(--rice);
+    color: var(--ink);
+    outline: none;
+    text-align: center;
+    width: 100%;
+    max-width: 240px;
+    transition: border-color .2s
+  }
+
+  .recall-input:focus {
+    border-color: var(--verm)
+  }
+
+  .recall-input.ok {
+    border-color: var(--green);
+    background: var(--green-bg)
+  }
+
+  .recall-input.no {
+    border-color: var(--verm);
+    background: var(--red-bg)
+  }
+
+  .recall-submit {
+    padding: 10px 20px;
+    background: var(--verm);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    margin-top: 10px
+  }
+
+  .recall-submit:hover {
+    background: #a93226
+  }
+
+  .recall-answer {
+    font-family: 'Noto Serif JP', serif;
+    font-size: .95rem;
+    color: var(--verm);
+    margin-top: 6px;
+    display: none
+  }
+
+  /* completion */
+  .completion {
+    text-align: center;
+    padding: 40px 20px
+  }
+
+  .comp-kanji {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 52px;
+    color: var(--gold);
+    margin-bottom: 8px
+  }
+
+  .comp-title {
+    font-size: 1.7rem;
+    font-style: italic;
+    margin-bottom: 6px
+  }
+
+  .comp-score {
+    font-size: 2.2rem;
+    font-style: italic;
+    color: var(--verm);
+    margin-bottom: 6px
+  }
+
+  .comp-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .1em;
+    margin-bottom: 22px
+  }
+
+  .try-btn {
+    padding: 11px 28px;
+    background: var(--ink);
+    color: var(--rice);
+    border: none;
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    cursor: pointer
+  }
+
+  .try-btn:hover {
+    background: #2d1e0f
+  }
+
+  /* ── PDF PREVIEW CARDS ── */
+  .pdf-preview-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--rice);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: border-color .15s
+  }
+
+  .pdf-preview-card.selected {
+    border-color: var(--verm);
+    background: var(--verm-light)
+  }
+
+  .pdf-preview-card.selected .ppc-check {
+    background: var(--verm);
+    border-color: var(--verm);
+    color: #fff
+  }
+
+  .ppc-check {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    transition: all .15s
+  }
+
+  .ppc-lesson {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: .06em;
+    flex-shrink: 0;
+    min-width: 36px
+  }
+
+  .ppc-word {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    flex-shrink: 0;
+    min-width: 80px
+  }
+
+  .ppc-reading {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    flex-shrink: 0;
+    min-width: 80px
+  }
+
+  .ppc-meaning {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink);
+    flex: 1
+  }
+
+  .lesson-btn {
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--card);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all .15s;
+    color: var(--muted)
+  }
+
+  .lesson-btn.active {
+    background: var(--verm);
+    border-color: var(--verm);
+    color: #fff
+  }
+
+  /* ── CUSTOM DECK BUILDER ── */
+  .cdb-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 16, 8, .45);
+    z-index: 200;
+    overflow-y: auto
+  }
+
+  .cdb-overlay.show {
+    display: block
+  }
+
+  .cdb-panel {
+    background: var(--card);
+    min-height: 100vh;
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column
+  }
+
+  .cdb-topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10
+  }
+
+  .cdb-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    flex: 1
+  }
+
+  .cdb-save {
+    padding: 8px 18px;
+    background: var(--verm);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer
+  }
+
+  .cdb-save:hover {
+    background: #a93226
+  }
+
+  .cdb-search {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border)
+  }
+
+  .cdb-search-inp {
+    width: 100%;
+    padding: 10px 14px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    background: var(--rice);
+    color: var(--ink);
+    outline: none;
+    transition: border-color .2s
+  }
+
+  .cdb-search-inp:focus {
+    border-color: var(--verm)
+  }
+
+  .cdb-filters {
+    padding: 10px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    border-bottom: 1px solid var(--border)
+  }
+
+  .cdb-body {
+    padding: 16px 20px;
+    flex: 1
+  }
+
+  .cdb-deck-group {
+    margin-bottom: 20px
+  }
+
+  .cdb-deck-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px
+  }
+
+  .cdb-select-all {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all .15s
+  }
+
+  .cdb-select-all:hover {
+    border-color: var(--verm);
+    color: var(--verm)
+  }
+
+  .cdb-card-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background .12s;
+    margin-bottom: 4px
+  }
+
+  .cdb-card-row:hover {
+    background: rgba(26, 16, 8, .04)
+  }
+
+  .cdb-card-row.selected {
+    background: var(--verm-light)
+  }
+
+  .cdb-checkbox {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    transition: all .15s;
+    background: var(--card)
+  }
+
+  .cdb-card-row.selected .cdb-checkbox {
+    background: var(--verm);
+    border-color: var(--verm);
+    color: #fff
+  }
+
+  .cdb-card-thumb {
+    width: 32px;
+    height: 32px;
+    border-radius: 3px;
+    object-fit: cover;
+    background: #e8e0d5;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Serif JP', serif;
+    font-size: .85rem;
+    color: rgba(26, 16, 8, .25);
+    overflow: hidden
+  }
+
+  .cdb-card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover
+  }
+
+  .cdb-card-info {
+    flex: 1;
+    min-width: 0
+  }
+
+  .cdb-card-word {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem
+  }
+
+  .cdb-card-meaning {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+  }
+
+  .cdb-footer {
+    padding: 14px 20px;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between
+  }
+
+  .cdb-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted)
+  }
+
+  /* ── PROGRESS / STREAK ── */
+  .streak-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px 0;
+    flex-wrap: wrap
+  }
+
+  .streak-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted)
+  }
+
+  .streak-badge.hot {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: #fffbf0
+  }
+
+  .streak-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--ink)
+  }
+
+  .streak-badge.hot .streak-num {
+    color: var(--gold)
+  }
+
+  .progress-ring-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer
+  }
+
+  .progress-mini {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: .08em
+  }
+
+  /* ── DECK STATS PANEL ── */
+  .stats-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 16, 8, .45);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center
+  }
+
+  .stats-overlay.show {
+    display: flex
+  }
+
+  .stats-sheet {
+    background: var(--card);
+    border-radius: 12px 12px 0 0;
+    padding: 24px 20px 32px;
+    width: 100%;
+    max-width: 540px;
+    animation: slideUp .3s ease
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%)
+    }
+
+    to {
+      transform: translateY(0)
+    }
+  }
+
+  .stats-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 20px
+  }
+
+  .stats-title {
+    font-size: 1.3rem;
+    font-style: italic;
+    margin-bottom: 18px
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 18px
+  }
+
+  .stat-box {
+    background: var(--rice);
+    border-radius: 6px;
+    padding: 14px;
+    text-align: center
+  }
+
+  .stat-num {
+    font-size: 1.8rem;
+    font-style: italic;
+    color: var(--verm)
+  }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .12em;
+    color: var(--muted);
+    margin-top: 2px
+  }
+
+  .heatmap-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-bottom: 6px
+  }
+
+  .heatmap-cell {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    background: var(--border)
+  }
+
+  .heatmap-cell.d1 {
+    background: #f5c0bb
+  }
+
+  .heatmap-cell.d2 {
+    background: #e07070
+  }
+
+  .heatmap-cell.d3 {
+    background: var(--verm)
+  }
+
+  .heatmap-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: .08em
+  }
+
+  /* ── SEARCH ON HOME ── */
+  .home-search-wrap {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border)
+  }
+
+  .home-search {
+    width: 100%;
+    padding: 9px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    background: var(--card);
+    color: var(--ink);
+    outline: none;
+    transition: border-color .2s;
+    letter-spacing: .04em
+  }
+
+  .home-search:focus {
+    border-color: var(--verm)
+  }
+
+  /* ── DECK ACTIONS ROW ── */
+  .deck-actions {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    flex-wrap: wrap
+  }
+
+  .deck-action-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 9px 12px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .06em;
+    cursor: pointer;
+    color: var(--ink);
+    transition: all .15s;
+    white-space: nowrap;
+    text-align: center
+  }
+
+  .deck-action-btn:hover {
+    background: rgba(26, 16, 8, .05)
+  }
+
+  .deck-action-btn.danger {
+    color: var(--verm)
+  }
+
+  .deck-action-btn.danger:hover {
+    background: var(--verm-light);
+    border-color: var(--verm)
+  }
+
+  /* ── RENAME DECK MODAL ── */
+  #renameDeckOverlay .modal-title {
+    font-style: italic
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--rice);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    padding: 10px 20px;
+    border-radius: 20px;
+    z-index: 9999;
+    opacity: 0;
+    transition: all .3s;
+    pointer-events: none;
+    white-space: nowrap
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0)
+  }
+
+  /* ── CARD SORT / FILTER ── */
+  .card-list-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 0 10px;
+    flex-wrap: wrap
+  }
+
+  .card-sort-btn {
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--card);
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    cursor: pointer;
+    transition: all .15s;
+    color: var(--muted)
+  }
+
+  .card-sort-btn.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--rice)
+  }
+
+  .card-list-search {
+    flex: 1;
+    min-width: 120px;
+    padding: 5px 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--rice);
+    color: var(--ink);
+    outline: none
+  }
+
+  .card-list-search:focus {
+    border-color: var(--verm)
+  }
+
+  /* ── MOBILE & TABLET FIRST ── */
+
+  /* Larger tap targets globally on touch devices */
+  @media(hover:none) {
+    .topbar-back {
+      padding: 10px 12px 10px 0;
+      font-size: 20px
+    }
+
+    .topbar-action {
+      padding: 10px 16px;
+      font-size: 11px
+    }
+
+    .deck-action-btn {
+      padding: 12px 14px
+    }
+
+    .choice-btn {
+      padding: 13px 20px
+    }
+
+    .nav-btn {
+      padding: 15px
+    }
+
+    .gen-btn {
+      padding: 16px
+    }
+
+    .modal-cancel,
+    .modal-save {
+      padding: 13px 22px;
+      font-size: 12px
+    }
+
+    .add-btn {
+      padding: 13px 18px
+    }
+
+    .word-input {
+      padding: 13px 14px;
+      font-size: 16px
+    }
+
+    /* prevent zoom on iOS */
+    .modal-input {
+      font-size: 16px
+    }
+
+    /* prevent zoom on iOS */
+    .recall-input {
+      font-size: 16px
+    }
+
+    .home-search {
+      font-size: 16px
+    }
+
+    .cdb-search-inp {
+      font-size: 16px
+    }
+  }
+
+  @media(max-width:600px) {
+
+    /* Hero */
+    .home-hero {
+      padding: 20px 16px 16px
+    }
+
+    .home-title {
+      font-size: 1.7rem
+    }
+
+    .home-jp {
+      font-size: 10px
+    }
+
+    /* Deck grid — 2 columns always on mobile */
+    .decks-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 10px
+    }
+
+    .deck-card-img {
+      height: 70px
+    }
+
+    .deck-card-body {
+      padding: 10px 12px
+    }
+
+    .deck-card-name {
+      font-size: .9rem
+    }
+
+    /* Home body padding */
+    .home-body {
+      padding: 16px
+    }
+
+    /* Streak bar wraps nicely */
+    .streak-bar {
+      padding: 10px 16px 0;
+      gap: 6px
+    }
+
+    /* Deck hub mode grid */
+    .mode-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 14px 16px
+    }
+
+    .mode-tile {
+      padding: 16px 12px
+    }
+
+    .mode-icon {
+      font-size: 1.6rem;
+      margin-bottom: 7px
+    }
+
+    .mode-name {
+      font-size: .9rem
+    }
+
+    .mode-desc {
+      font-size: 9px
+    }
+
+    /* Deck actions — stacked nicely */
+    .deck-actions {
+      gap: 6px;
+      padding: 10px 16px;
+      flex-wrap: wrap
+    }
+
+    .deck-action-btn {
+      font-size: 10px;
+      padding: 10px 10px;
+      flex: 1 1 calc(33% - 6px);
+      min-width: 80px
+    }
+
+    /* Deck hero */
+    .deck-hero {
+      padding: 16px
+    }
+
+    .deck-hero-name {
+      font-size: 1.4rem
+    }
+
+    /* Topbar — prevent overflow */
+    .topbar {
+      padding: 12px 14px;
+      gap: 8px
+    }
+
+    .topbar-title {
+      font-size: 1rem
+    }
+
+    .topbar-action {
+      padding: 8px 12px;
+      font-size: 10px
+    }
+
+    /* Study card */
+    .stage {
+      max-width: 100%
+    }
+
+    .card-inner {
+      min-height: 300px
+    }
+
+    .face {
+      min-height: 300px
+    }
+
+    .card-img-wrap {
+      height: 180px
+    }
+
+    .overlay-word {
+      font-size: 1.8rem
+    }
+
+    .back-meaning {
+      font-size: 1.4rem
+    }
+
+    .nav-row {
+      gap: 8px
+    }
+
+    .nav-btn {
+      padding: 14px;
+      font-size: 11px;
+      max-width: none
+    }
+
+    /* Add words box */
+    .add-words-box {
+      padding: 14px
+    }
+
+    .word-row {
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .add-btn {
+      width: 100%;
+      text-align: center
+    }
+
+    /* Existing cards section */
+    .existing-cards {
+      padding: 0 16px 20px
+    }
+
+    /* Modals — full width friendly */
+    .modal {
+      padding: 20px;
+      border-radius: 8px
+    }
+
+    .modal-overlay {
+      padding: 16px;
+      align-items: flex-end;
+      padding-bottom: env(safe-area-inset-bottom, 16px)
+    }
+
+    .modal-row {
+      flex-direction: row;
+      gap: 8px
+    }
+
+    /* Stats grid */
+    .stats-grid {
+      grid-template-columns: 1fr 1fr
+    }
+
+    .stats-sheet {
+      padding: 20px 16px 28px
+    }
+
+    .stats-title {
+      font-size: 1.1rem
+    }
+
+    /* CDB */
+    .cdb-panel {
+      max-width: 100%
+    }
+
+    .cdb-topbar {
+      padding: 12px 14px
+    }
+
+    .cdb-body {
+      padding: 12px 16px
+    }
+
+    /* Blank/Recall practice */
+    .blank-body {
+      padding: 14px
+    }
+
+    .recall-body {
+      padding: 16px
+    }
+
+    .blank-img {
+      height: 110px
+    }
+
+    .recall-img {
+      height: 120px
+    }
+
+    /* Match grid */
+    .match-grid {
+      gap: 8px
+    }
+
+    .match-jp-word {
+      font-size: 1.1rem;
+      padding: 7px 6px
+    }
+
+    .match-thumb {
+      height: 54px
+    }
+
+    .match-thumb-ph {
+      height: 54px;
+      font-size: 1.2rem
+    }
+
+    .match-en {
+      padding: 10px 8px;
+      min-height: 50px;
+      font-size: .85rem
+    }
+
+    /* Section labels */
+    .section-label {
+      font-size: 9.5px
+    }
+
+    /* Completion screen */
+    .completion {
+      padding: 28px 16px
+    }
+
+    .comp-kanji {
+      font-size: 42px
+    }
+
+    .comp-title {
+      font-size: 1.4rem
+    }
+
+    .comp-score {
+      font-size: 1.8rem
+    }
+
+    /* Toast — above mobile browser chrome */
+    .toast {
+      bottom: max(20px, env(safe-area-inset-bottom, 20px));
+      font-size: 11px;
+      max-width: calc(100% - 32px);
+      text-align: center;
+      white-space: normal
+    }
+
+    /* Card list item - slightly larger for touch */
+    .card-list-item {
+      padding: 2px 0
+    }
+
+    .cli-img {
+      width: 48px;
+      height: 48px
+    }
+
+    .cli-body {
+      padding: 12px 4px
+    }
+
+    .cli-del {
+      padding: 12px 14px
+    }
+
+    /* PDF preview row - allow wrapping on tiny screens */
+    .ppc-reading {
+      display: none
+    }
+
+    .ppc-lesson {
+      min-width: 28px
+    }
+
+    /* Home search */
+    .home-search-wrap {
+      padding: 10px 16px
+    }
+  }
+
+  /* Very small phones */
+  @media(max-width:360px) {
+    .mode-tile {
+      padding: 12px 8px
+    }
+
+    .mode-icon {
+      font-size: 1.4rem
+    }
+
+    .mode-name {
+      font-size: .85rem
+    }
+
+    .decks-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 8px
+    }
+
+    .deck-actions {
+      flex-direction: column
+    }
+
+    .deck-action-btn {
+      flex: none;
+      width: 100%
+    }
+  }
+
+  /* Safe area for notched phones (bottom) */
+  @supports(padding-bottom: env(safe-area-inset-bottom)) {
+    .screen {
+      padding-bottom: env(safe-area-inset-bottom)
+    }
+
+    .cdb-footer,
+    .stats-sheet {
+      padding-bottom: calc(14px + env(safe-area-inset-bottom))
+    }
+  }
+
+  /* ── CONFETTI ── */
+  .confetti-piece {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 9999;
+    animation: confettiFall linear forwards
+  }
+
+  @keyframes confettiFall {
+    0% {
+      opacity: 1;
+      transform: translateY(0) rotate(0deg)
+    }
+
+    100% {
+      opacity: 0;
+      transform: translateY(100vh) rotate(720deg)
+    }
+  }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
 
@@ -485,7 +2465,9 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
   <div class="home-body">
     <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <span>My decks</span>
-      <button onclick="openCustomDeckBuilder()" style="background:none;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;cursor:pointer;color:var(--muted)">✦ Custom Deck</button>
+      <button onclick="openCustomDeckBuilder()"
+        style="background:none;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;cursor:pointer;color:var(--muted)">✦
+        Custom Deck</button>
     </div>
     <div class="decks-grid" id="decksGrid">
       <div class="empty-state" id="emptyState" style="grid-column:1/-1">
@@ -493,7 +2475,8 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
         <div class="empty-text">No decks yet — create your first one!</div>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
           <button class="empty-btn" onclick="showNewDeckModal()">+ New Deck</button>
-          <button class="empty-btn" style="background:var(--ink)" onclick="triggerHomePdfUpload()">📄 Import PDF</button>
+          <button class="empty-btn" style="background:var(--ink)" onclick="triggerHomePdfUpload()">📄 Import
+            PDF</button>
         </div>
       </div>
     </div>
@@ -531,10 +2514,12 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
       </div>
       <div class="modal-field">
         <label class="modal-label">Description (optional)</label>
-        <input class="modal-input mono" id="homePdfDeckDesc" placeholder="e.g. Chapter 1 vocab" style="font-size:12px" />
+        <input class="modal-input mono" id="homePdfDeckDesc" placeholder="e.g. Chapter 1 vocab"
+          style="font-size:12px" />
       </div>
       <div class="modal-row">
-        <button class="modal-cancel" onclick="document.getElementById('homePdfNameOverlay').classList.remove('show')">Cancel</button>
+        <button class="modal-cancel"
+          onclick="document.getElementById('homePdfNameOverlay').classList.remove('show')">Cancel</button>
         <button class="modal-save" onclick="confirmHomePdfDeck()">Continue →</button>
       </div>
     </div>
@@ -555,7 +2540,7 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
     <div class="deck-hero-name" id="deckHubName2"></div>
     <div class="deck-hero-meta mono" id="deckHubMeta"></div>
   </div>
-    <div class="deck-actions">
+  <div class="deck-actions">
     <button class="deck-action-btn" onclick="openRenameDeck()">✎ Rename</button>
     <button class="deck-action-btn" onclick="openCustomDeckBuilder()">✦ Build from All Cards</button>
     <button class="deck-action-btn danger" onclick="confirmDeleteCurrentDeck()">🗑 Delete Deck</button>
@@ -593,7 +2578,8 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
   <div class="existing-cards" id="existingCardsSection" style="margin-top:16px">
     <div class="section-label" style="padding:0 0 0 0">Cards in this deck</div>
     <div class="card-list-controls" id="cardListControls">
-      <input class="card-list-search" id="cardListSearch" placeholder="Search cards…" oninput="filterCardList(this.value)" />
+      <input class="card-list-search" id="cardListSearch" placeholder="Search cards…"
+        oninput="filterCardList(this.value)" />
       <button class="card-sort-btn active" id="sortAZ" onclick="sortCardList('alpha')">A–Z</button>
       <button class="card-sort-btn" id="sortNew" onclick="sortCardList('newest')">Newest</button>
     </div>
@@ -644,7 +2630,8 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
         <input class="modal-input mono" id="renameDeckDesc" style="font-size:12px" />
       </div>
       <div class="modal-row">
-        <button class="modal-cancel" onclick="document.getElementById('renameDeckOverlay').classList.remove('show')">Cancel</button>
+        <button class="modal-cancel"
+          onclick="document.getElementById('renameDeckOverlay').classList.remove('show')">Cancel</button>
         <button class="modal-save" onclick="saveRenameDeck()">Save</button>
       </div>
     </div>
@@ -654,14 +2641,18 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
   <div class="modal-overlay" id="pdfPreviewOverlay" style="overflow-y:auto;align-items:flex-start;padding:20px">
     <div class="modal" style="max-width:520px;width:100%;margin:auto">
       <div class="modal-title">Cards from PDF</div>
-      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.08em;margin-bottom:14px" id="pdfPreviewMeta"></div>
+      <div
+        style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.08em;margin-bottom:14px"
+        id="pdfPreviewMeta"></div>
       <!-- filter by lesson -->
       <div id="pdfLessonFilter" style="margin-bottom:14px;display:none">
         <div class="modal-label">Filter by lesson</div>
         <div id="pdfLessonButtons" style="display:flex;flex-wrap:wrap;gap:6px"></div>
       </div>
       <!-- card preview list -->
-      <div id="pdfCardPreviewList" style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:14px;padding-right:4px"></div>
+      <div id="pdfCardPreviewList"
+        style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:14px;padding-right:4px">
+      </div>
       <div class="error-msg" id="pdfError"></div>
       <div class="modal-row">
         <button class="modal-cancel" onclick="closePdfPreview()">Cancel</button>
@@ -689,7 +2680,8 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
       <div class="error-msg" id="errorMsg2"></div>
       <div class="modal-row">
         <button class="modal-cancel" onclick="hideAddWords()">Cancel</button>
-        <button class="modal-save" id="genBtn" onclick="generateCards()" style="opacity:.5;cursor:not-allowed" disabled>✦ Generate</button>
+        <button class="modal-save" id="genBtn" onclick="generateCards()" style="opacity:.5;cursor:not-allowed"
+          disabled>✦ Generate</button>
       </div>
     </div>
   </div>
@@ -716,7 +2708,8 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
     </div>
   </div>
   <!-- overview grid (hidden by default) -->
-  <div style="display:none;padding:16px;gap:12px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))" id="studyGridView">
+  <div style="display:none;padding:16px;gap:12px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))"
+    id="studyGridView">
   </div>
 </div>
 
@@ -729,7 +2722,10 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
   </div>
   <div class="practice-body">
     <div class="score-pill"><span class="mono">Matched</span><span class="score-num" id="matchScore">0 / 0</span></div>
-    <div class="match-grid"><div class="match-col" id="matchJp"></div><div class="match-col" id="matchEn"></div></div>
+    <div class="match-grid">
+      <div class="match-col" id="matchJp"></div>
+      <div class="match-col" id="matchEn"></div>
+    </div>
     <div class="completion" id="matchComp" style="display:none">
       <div class="comp-kanji">合</div>
       <div class="comp-title">All matched!</div>
@@ -756,7 +2752,8 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
       </div>
     </div>
     <div class="completion" id="blankComp" style="display:none">
-      <div class="comp-kanji">正</div><div class="comp-title">Round complete!</div>
+      <div class="comp-kanji">正</div>
+      <div class="comp-title">Round complete!</div>
       <div class="comp-score" id="blankFinal"></div>
       <div class="comp-sub mono">Keep practicing!</div>
       <button class="try-btn" onclick="initBlank()">Try Again ↺</button>
@@ -782,7 +2779,8 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
       </div>
     </div>
     <div class="completion" id="recallComp" style="display:none">
-      <div class="comp-kanji">完</div><div class="comp-title">Round complete!</div>
+      <div class="comp-kanji">完</div>
+      <div class="comp-title">Round complete!</div>
       <div class="comp-score" id="recallFinal"></div>
       <div class="comp-sub mono">Typing builds real memory!</div>
       <button class="try-btn" onclick="initRecall()">Try Again ↺</button>
@@ -809,7 +2807,9 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
     <div class="cdb-body" id="cdbBody"></div>
     <div class="cdb-footer">
       <span class="cdb-count" id="cdbCount">0 selected</span>
-      <button onclick="cdbSelectAll()" style="background:none;border:1px solid var(--border);border-radius:3px;padding:6px 14px;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;color:var(--muted)">Select All</button>
+      <button onclick="cdbSelectAll()"
+        style="background:none;border:1px solid var(--border);border-radius:3px;padding:6px 14px;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;color:var(--muted)">Select
+        All</button>
     </div>
   </div>
 </div>
@@ -831,197 +2831,197 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const UNSPLASH_KEY='pebCbGHApxWqoFDGGaJa3sJMsC03eMHhNE4nYFjwYic';
+  const UNSPLASH_KEY = 'pebCbGHApxWqoFDGGaJa3sJMsC03eMHhNE4nYFjwYic';
 
-// ── SUPABASE CONFIG ──
-const SUPABASE_URL = 'https://lnbxmmazadaqwcmwjeiu.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_02MpdyIT8nTbwZXtg8QDPw_Jvm3_QgF';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // ── SUPABASE CONFIG ──
+  const SUPABASE_URL = 'https://lnbxmmazadaqwcmwjeiu.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_02MpdyIT8nTbwZXtg8QDPw_Jvm3_QgF';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ── STATE ──
-// decks is now a local cache hydrated from Supabase on load / after mutations
-let decks=[];
-let currentDeckId=null;
-let pendingWords=[];
-let studyCards=[], studyIdx=0, studyFlipped=false, studyViewMode='flash';
-let matchSel=null, matchCorrect=0;
-let blankQ=[], blankIdx=0, blankCorrect=0, blankAnswered=false;
-let recallQ=[], recallIdx=0, recallCorrect=0, recallAnswered=false;
+  // ── STATE ──
+  // decks is now a local cache hydrated from Supabase on load / after mutations
+  let decks = [];
+  let currentDeckId = null;
+  let pendingWords = [];
+  let studyCards = [], studyIdx = 0, studyFlipped = false, studyViewMode = 'flash';
+  let matchSel = null, matchCorrect = 0;
+  let blankQ = [], blankIdx = 0, blankCorrect = 0, blankAnswered = false;
+  let recallQ = [], recallIdx = 0, recallCorrect = 0, recallAnswered = false;
 
-// ── CONFIG CHECK ──
-function isConfigured(){
-  return SUPABASE_URL!=='YOUR_SUPABASE_URL'&&SUPABASE_ANON_KEY!=='YOUR_SUPABASE_ANON_KEY';
-}
+  // ── CONFIG CHECK ──
+  function isConfigured() {
+    return SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY';
+  }
 
-// ── DB HELPERS ──
-async function loadDecks(){
-  if(!isConfigured()){showConfigBanner();return}
-  const{data:deckRows,error:de}=await sb.from('decks').select('*').order('created_at',{ascending:true});
-  if(de){console.error('Error loading decks',de);return}
-  const{data:cardRows,error:ce}=await sb.from('cards').select('*').order('created_at',{ascending:true});
-  if(ce){console.error('Error loading cards',ce);return}
-  // stitch cards into decks, mapping DB snake_case → app camelCase
-  decks=deckRows.map(d=>({
-    id:d.id,
-    name:d.name,
-    description:d.description||'',
-    createdAt:d.created_at,
-    cards:(cardRows||[]).filter(c=>c.deck_id===d.id).map(dbCardToApp)
-  }));
-}
+  // ── DB HELPERS ──
+  async function loadDecks() {
+    if (!isConfigured()) { showConfigBanner(); return }
+    const { data: deckRows, error: de } = await sb.from('decks').select('*').order('created_at', { ascending: true });
+    if (de) { console.error('Error loading decks', de); return }
+    const { data: cardRows, error: ce } = await sb.from('cards').select('*').order('created_at', { ascending: true });
+    if (ce) { console.error('Error loading cards', ce); return }
+    // stitch cards into decks, mapping DB snake_case → app camelCase
+    decks = deckRows.map(d => ({
+      id: d.id,
+      name: d.name,
+      description: d.description || '',
+      createdAt: d.created_at,
+      cards: (cardRows || []).filter(c => c.deck_id === d.id).map(dbCardToApp)
+    }));
+  }
 
-function dbCardToApp(c){
-  return{
-    word:c.word,
-    reading:c.reading||'',
-    meaning:c.meaning||'',
-    imageUrl:c.image_url||'',
-    imageCredit:c.image_credit||'',
-    example_jp:c.example_jp||'',
-    example_en:c.example_en||'',
-    _id:c.id,
-    _deck_id:c.deck_id
-  };
-}
+  function dbCardToApp(c) {
+    return {
+      word: c.word,
+      reading: c.reading || '',
+      meaning: c.meaning || '',
+      imageUrl: c.image_url || '',
+      imageCredit: c.image_credit || '',
+      example_jp: c.example_jp || '',
+      example_en: c.example_en || '',
+      _id: c.id,
+      _deck_id: c.deck_id
+    };
+  }
 
-async function dbCreateDeck(name,description){
-  const{data,error}=await sb.from('decks').insert({name,description}).select().single();
-  if(error)throw error;
-  return data;
-}
+  async function dbCreateDeck(name, description) {
+    const { data, error } = await sb.from('decks').insert({ name, description }).select().single();
+    if (error) throw error;
+    return data;
+  }
 
-async function dbDeleteDeck(id){
-  const{error}=await sb.from('decks').delete().eq('id',id);
-  if(error)throw error;
-}
+  async function dbDeleteDeck(id) {
+    const { error } = await sb.from('decks').delete().eq('id', id);
+    if (error) throw error;
+  }
 
-async function dbInsertCards(deckId, newCards){
-  const rows=newCards.map(c=>({
-    deck_id:deckId,
-    word:c.word,
-    reading:c.reading||'',
-    meaning:c.meaning||'',
-    image_url:c.imageUrl||'',
-    image_credit:c.imageCredit||'',
-    example_jp:c.example_jp||'',
-    example_en:c.example_en||''
-  }));
-  const{error}=await sb.from('cards').insert(rows);
-  if(error)throw error;
-}
+  async function dbInsertCards(deckId, newCards) {
+    const rows = newCards.map(c => ({
+      deck_id: deckId,
+      word: c.word,
+      reading: c.reading || '',
+      meaning: c.meaning || '',
+      image_url: c.imageUrl || '',
+      image_credit: c.imageCredit || '',
+      example_jp: c.example_jp || '',
+      example_en: c.example_en || ''
+    }));
+    const { error } = await sb.from('cards').insert(rows);
+    if (error) throw error;
+  }
 
-async function dbDeleteCard(cardId){
-  const{error}=await sb.from('cards').delete().eq('id',cardId);
-  if(error)throw error;
-}
+  async function dbDeleteCard(cardId) {
+    const { error } = await sb.from('cards').delete().eq('id', cardId);
+    if (error) throw error;
+  }
 
-function getDeck(){return decks.find(d=>d.id===currentDeckId)}
+  function getDeck() { return decks.find(d => d.id === currentDeckId) }
 
-// ── CONFIG BANNER ──
-function showConfigBanner(){
-  const b=document.createElement('div');
-  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:#c0392b;color:#fff;font-family:DM Mono,monospace;font-size:11px;letter-spacing:.08em;padding:12px 20px;text-align:center;line-height:1.7';
-  b.innerHTML='⚠ Open the HTML file and replace <strong>YOUR_SUPABASE_URL</strong> and <strong>YOUR_SUPABASE_ANON_KEY</strong> with your project credentials from <a href="https://supabase.com/dashboard" target="_blank" style="color:#ffd;text-underline-offset:2px">Supabase Dashboard → Project Settings → API</a>';
-  document.body.prepend(b);
-}
+  // ── CONFIG BANNER ──
+  function showConfigBanner() {
+    const b = document.createElement('div');
+    b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#c0392b;color:#fff;font-family:DM Mono,monospace;font-size:11px;letter-spacing:.08em;padding:12px 20px;text-align:center;line-height:1.7';
+    b.innerHTML = '⚠ Open the HTML file and replace <strong>YOUR_SUPABASE_URL</strong> and <strong>YOUR_SUPABASE_ANON_KEY</strong> with your project credentials from <a href="https://supabase.com/dashboard" target="_blank" style="color:#ffd;text-underline-offset:2px">Supabase Dashboard → Project Settings → API</a>';
+    document.body.prepend(b);
+  }
 
-// ── LOADING OVERLAY ──
-function showLoading(msg='LOADING...'){
-  let el=document.getElementById('globalLoading');
-  if(!el){
-    el=document.createElement('div');
-    el.id='globalLoading';
-    el.style.cssText='position:fixed;inset:0;background:var(--rice);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px';
-    el.innerHTML=`<div style="font-family:\'Noto Serif JP\',serif;font-size:48px;color:var(--verm);animation:float 1.4s ease-in-out infinite">学</div><div id="globalLoadingTxt" style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);letter-spacing:.12em">${msg}</div>`;
-    document.body.appendChild(el);
-  }else{document.getElementById('globalLoadingTxt').textContent=msg}
-  el.style.display='flex';
-}
-function hideLoading(){const el=document.getElementById('globalLoading');if(el)el.style.display='none'}
-function shuffle(a){return[...a].sort(()=>Math.random()-.5)}
+  // ── LOADING OVERLAY ──
+  function showLoading(msg = 'LOADING...') {
+    let el = document.getElementById('globalLoading');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'globalLoading';
+      el.style.cssText = 'position:fixed;inset:0;background:var(--rice);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px';
+      el.innerHTML = `<div style="font-family:\'Noto Serif JP\',serif;font-size:48px;color:var(--verm);animation:float 1.4s ease-in-out infinite">学</div><div id="globalLoadingTxt" style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);letter-spacing:.12em">${msg}</div>`;
+      document.body.appendChild(el);
+    } else { document.getElementById('globalLoadingTxt').textContent = msg }
+    el.style.display = 'flex';
+  }
+  function hideLoading() { const el = document.getElementById('globalLoading'); if (el) el.style.display = 'none' }
+  function shuffle(a) { return [...a].sort(() => Math.random() - .5) }
 
-// ── SCREENS ──
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-'+id).classList.add('active');
-}
+  // ── SCREENS ──
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + id).classList.add('active');
+  }
 
-// ── HOME ──
-function renderHome(){
-  const grid=document.getElementById('decksGrid');
-  const empty=document.getElementById('emptyState');
-  if(!decks.length){empty.style.display='block';grid.innerHTML='';grid.appendChild(empty);return}
-  empty.style.display='none';
-  const newBtn=`<div class="new-deck-card" onclick="showNewDeckModal()"><div class="new-deck-icon">+</div><div class="new-deck-label mono">New Deck</div></div>`;
-  grid.innerHTML=decks.map(d=>{
-    const firstImg=d.cards&&d.cards[0]&&d.cards[0].imageUrl?`<img src="${d.cards[0].imageUrl}" alt="">`:`<div class="deck-card-placeholder">${d.cards&&d.cards[0]?d.cards[0].word:'学'}</div>`;
-    return`<div class="deck-card" onclick="openDeck('${d.id}')">
+  // ── HOME ──
+  function renderHome() {
+    const grid = document.getElementById('decksGrid');
+    const empty = document.getElementById('emptyState');
+    if (!decks.length) { empty.style.display = 'block'; grid.innerHTML = ''; grid.appendChild(empty); return }
+    empty.style.display = 'none';
+    const newBtn = `<div class="new-deck-card" onclick="showNewDeckModal()"><div class="new-deck-icon">+</div><div class="new-deck-label mono">New Deck</div></div>`;
+    grid.innerHTML = decks.map(d => {
+      const firstImg = d.cards && d.cards[0] && d.cards[0].imageUrl ? `<img src="${d.cards[0].imageUrl}" alt="">` : `<div class="deck-card-placeholder">${d.cards && d.cards[0] ? d.cards[0].word : '学'}</div>`;
+      return `<div class="deck-card" onclick="openDeck('${d.id}')">
       <div class="deck-card-img">${firstImg}</div>
       <div class="deck-card-body">
         <div class="deck-card-name serif">${d.name}</div>
-        <div class="deck-card-meta mono">${(d.cards||[]).length} card${(d.cards||[]).length!==1?'s':''}</div>
+        <div class="deck-card-meta mono">${(d.cards || []).length} card${(d.cards || []).length !== 1 ? 's' : ''}</div>
       </div>
       <button class="deck-card-del" onclick="event.stopPropagation();deleteDeck('${d.id}')">×</button>
     </div>`;
-  }).join('')+newBtn;
-}
+    }).join('') + newBtn;
+  }
 
-async function goHome(){
-  showLoading('LOADING DECKS...');
-  await loadDecks();
-  hideLoading();
-  showScreen('home');
-  renderHome();
-}
-function showNewDeckModal(){document.getElementById('newDeckOverlay').classList.add('show');document.getElementById('newDeckName').focus()}
-function hideNewDeckModal(){document.getElementById('newDeckOverlay').classList.remove('show');document.getElementById('newDeckName').value='';document.getElementById('newDeckDesc').value=''}
-async function createDeck(){
-  const name=document.getElementById('newDeckName').value.trim();
-  if(!name)return;
-  const desc=document.getElementById('newDeckDesc').value.trim();
-  hideNewDeckModal();
-  showLoading('CREATING DECK...');
-  try{
-    const row=await dbCreateDeck(name,desc);
-    const deck={id:row.id,name:row.name,description:row.description||'',createdAt:row.created_at,cards:[]};
-    decks.push(deck);
+  async function goHome() {
+    showLoading('LOADING DECKS...');
+    await loadDecks();
     hideLoading();
-    openDeck(deck.id);
-  }catch(e){hideLoading();alert('Error creating deck: '+e.message)}
-}
-async function deleteDeck(id){
-  if(!confirm('Delete this deck and all its cards?'))return;
-  showLoading('DELETING...');
-  try{
-    await dbDeleteDeck(id);
-    decks=decks.filter(d=>d.id!==id);
-    hideLoading();
+    showScreen('home');
     renderHome();
-  }catch(e){hideLoading();alert('Error deleting deck: '+e.message)}
-}
+  }
+  function showNewDeckModal() { document.getElementById('newDeckOverlay').classList.add('show'); document.getElementById('newDeckName').focus() }
+  function hideNewDeckModal() { document.getElementById('newDeckOverlay').classList.remove('show'); document.getElementById('newDeckName').value = ''; document.getElementById('newDeckDesc').value = '' }
+  async function createDeck() {
+    const name = document.getElementById('newDeckName').value.trim();
+    if (!name) return;
+    const desc = document.getElementById('newDeckDesc').value.trim();
+    hideNewDeckModal();
+    showLoading('CREATING DECK...');
+    try {
+      const row = await dbCreateDeck(name, desc);
+      const deck = { id: row.id, name: row.name, description: row.description || '', createdAt: row.created_at, cards: [] };
+      decks.push(deck);
+      hideLoading();
+      openDeck(deck.id);
+    } catch (e) { hideLoading(); alert('Error creating deck: ' + e.message) }
+  }
+  async function deleteDeck(id) {
+    if (!confirm('Delete this deck and all its cards?')) return;
+    showLoading('DELETING...');
+    try {
+      await dbDeleteDeck(id);
+      decks = decks.filter(d => d.id !== id);
+      hideLoading();
+      renderHome();
+    } catch (e) { hideLoading(); alert('Error deleting deck: ' + e.message) }
+  }
 
-// ── DECK HUB ──
-function openDeck(id){
-  currentDeckId=id;pendingWords=[];
-  const deck=getDeck();
-  document.getElementById('deckHubName').textContent=deck.name;
-  document.getElementById('deckHubName2').textContent=deck.name;
-  document.getElementById('deckHubMeta').textContent=`${(deck.cards||[]).length} cards${deck.description?' · '+deck.description:''}`;
-  renderCardList();
-  showScreen('deck');
-}
-function goDeck(){
-  pendingWords=[];
-  document.getElementById('addWordsOverlay').classList.remove('show');
-  openDeck(currentDeckId);
-}
-function renderCardList(){
-  const deck=getDeck();
-  const list=document.getElementById('cardList');
-  if(!deck.cards||!deck.cards.length){list.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding:12px 0;letter-spacing:.08em">No cards yet — add some words above!</div>`;return}
-  list.innerHTML=deck.cards.map((c)=>`
+  // ── DECK HUB ──
+  function openDeck(id) {
+    currentDeckId = id; pendingWords = [];
+    const deck = getDeck();
+    document.getElementById('deckHubName').textContent = deck.name;
+    document.getElementById('deckHubName2').textContent = deck.name;
+    document.getElementById('deckHubMeta').textContent = `${(deck.cards || []).length} cards${deck.description ? ' · ' + deck.description : ''}`;
+    renderCardList();
+    showScreen('deck');
+  }
+  function goDeck() {
+    pendingWords = [];
+    document.getElementById('addWordsOverlay').classList.remove('show');
+    openDeck(currentDeckId);
+  }
+  function renderCardList() {
+    const deck = getDeck();
+    const list = document.getElementById('cardList');
+    if (!deck.cards || !deck.cards.length) { list.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding:12px 0;letter-spacing:.08em">No cards yet — add some words above!</div>`; return }
+    list.innerHTML = deck.cards.map((c) => `
     <div class="card-list-item">
-      <div class="cli-img">${c.imageUrl?`<img src="${c.imageUrl}" alt="">`:`${c.word}`}</div>
+      <div class="cli-img">${c.imageUrl ? `<img src="${c.imageUrl}" alt="">` : `${c.word}`}</div>
       <div class="cli-body">
         <div class="cli-word noto">${c.word}</div>
         <div class="cli-meaning mono">${c.meaning}</div>
@@ -1029,702 +3029,700 @@ function renderCardList(){
       <button class="cli-del" style="color:var(--muted);font-size:12px;padding:8px 8px" onclick="openEditCard('${c._id}')">✎</button>
       <button class="cli-del" onclick="deleteCard('${c._id}')">×</button>
     </div>`).join('');
-  document.getElementById('deckHubMeta').textContent=`${deck.cards.length} cards${deck.description?' · '+deck.description:''}`;
-}
-async function deleteCard(cardId){
-  const deck=getDeck();
-  showLoading('REMOVING...');
-  try{
-    await dbDeleteCard(cardId);
-    deck.cards=deck.cards.filter(c=>c._id!==cardId);
-    hideLoading();
-    renderCardList();
-  }catch(e){hideLoading();alert('Error deleting card: '+e.message)}
-}
-
-// add words modal
-function showNewDeckModal2(){
-  pendingWords=[];renderTags2();
-  document.getElementById('addWordsOverlay').classList.add('show');
-  document.getElementById('wordInput2').value='';
-  document.getElementById('errorMsg2').classList.remove('show');
-  setTimeout(()=>document.getElementById('wordInput2').focus(),100);
-}
-function hideAddWords(){document.getElementById('addWordsOverlay').classList.remove('show');pendingWords=[];renderTags2()}
-document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('wordInput2').addEventListener('keydown',e=>{if(e.key==='Enter')addWord()});
-});
-function addWord(){
-  const v=document.getElementById('wordInput2').value.trim();
-  if(!v||pendingWords.includes(v)){document.getElementById('wordInput2').value='';return}
-  pendingWords.push(v);document.getElementById('wordInput2').value='';renderTags2();
-  const btn=document.getElementById('genBtn');btn.disabled=false;btn.style.opacity='1';btn.style.cursor='pointer';
-}
-function removeWord(w){pendingWords=pendingWords.filter(x=>x!==w);renderTags2();const btn=document.getElementById('genBtn');btn.disabled=!pendingWords.length;btn.style.opacity=pendingWords.length?'1':'.5';btn.style.cursor=pendingWords.length?'pointer':'not-allowed'}
-function renderTags2(){
-  document.getElementById('wordTags2').innerHTML=pendingWords.map(w=>`<div class="word-tag"><span class="noto">${w}</span><button onclick="removeWord('${w.replace(/'/g,"\\'")}')">×</button></div>`).join('');
-}
-
-async function generateCards(){
-  if(!pendingWords.length)return;
-  const lb=document.getElementById('loadingBar');
-  const em=document.getElementById('errorMsg2');
-  em.classList.remove('show');lb.classList.add('show');
-  document.getElementById('loadingTxt').textContent='GENERATING CARDS...';
-  document.getElementById('genBtn').disabled=true;
-
-  try{
-    const res=await fetch('/api/generate',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,
-        messages:[{role:'user',content:`You are a Japanese language teacher. For each word, return ONLY a JSON array, no markdown.
-Each object: "word","reading"(hiragana/katakana, empty if already kana),"meaning"(English 1-5 words),"image_query"(vivid 2-4 word English phrase for photo search),"example_jp","example_en".
-Words: ${pendingWords.join(', ')}`}]})
-    });
-    const data = await res.json();
-    const raw = data.candidates[0].content.parts[0].text;
-    const newCards = JSON.parse(raw);
-
-    document.getElementById('loadingTxt').textContent='FETCHING IMAGES...';
-    await Promise.all(newCards.map(async c=>{
-      try{
-        const r=await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(c.image_query||c.meaning)}&per_page=1&orientation=landscape&client_id=${UNSPLASH_KEY}`);
-        const d=await r.json();
-        if(d.results&&d.results[0]){c.imageUrl=d.results[0].urls.small;c.imageCredit=d.results[0].user.name}
-      }catch(e){}
-    }));
-
-    document.getElementById('loadingTxt').textContent='SAVING TO DATABASE...';
-    await dbInsertCards(currentDeckId, newCards);
-
-    // reload cards from DB so we get the real UUIDs back
-    const{data:freshCards,error:ce}=await sb.from('cards').select('*').eq('deck_id',currentDeckId).order('created_at',{ascending:true});
-    if(ce)throw ce;
-    const deck=getDeck();
-    deck.cards=(freshCards||[]).map(dbCardToApp);
-
-    lb.classList.remove('show');hideAddWords();renderCardList();
-  }catch(e){
-    lb.classList.remove('show');document.getElementById('genBtn').disabled=false;
-    em.textContent='Something went wrong: '+(e.message||e);em.classList.add('show');
+    document.getElementById('deckHubMeta').textContent = `${deck.cards.length} cards${deck.description ? ' · ' + deck.description : ''}`;
   }
-}
+  async function deleteCard(cardId) {
+    const deck = getDeck();
+    showLoading('REMOVING...');
+    try {
+      await dbDeleteCard(cardId);
+      deck.cards = deck.cards.filter(c => c._id !== cardId);
+      hideLoading();
+      renderCardList();
+    } catch (e) { hideLoading(); alert('Error deleting card: ' + e.message) }
+  }
 
-// ── STUDY ──
-function goStudy(){
-  const deck=getDeck();
-  if(!deck.cards||!deck.cards.length){alert('Add some words to this deck first!');return}
-  studyCards=deck.cards;studyIdx=0;studyFlipped=false;studyViewMode='flash';
-  document.getElementById('studyViewBtn').textContent='Overview';
-  document.getElementById('studyFlashView').style.display='flex';
-  document.getElementById('studyGridView').style.display='none';
-  renderStudyCard();showScreen('study');
-}
-function renderStudyCard(){
-  const c=studyCards[studyIdx];
-  document.getElementById('cardInner').classList.remove('flipped');studyFlipped=false;
-  document.getElementById('cardFront').innerHTML=`
+  // add words modal
+  function showNewDeckModal2() {
+    pendingWords = []; renderTags2();
+    document.getElementById('addWordsOverlay').classList.add('show');
+    document.getElementById('wordInput2').value = '';
+    document.getElementById('errorMsg2').classList.remove('show');
+    setTimeout(() => document.getElementById('wordInput2').focus(), 100);
+  }
+  function hideAddWords() { document.getElementById('addWordsOverlay').classList.remove('show'); pendingWords = []; renderTags2() }
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('wordInput2').addEventListener('keydown', e => { if (e.key === 'Enter') addWord() });
+  });
+  function addWord() {
+    const v = document.getElementById('wordInput2').value.trim();
+    if (!v || pendingWords.includes(v)) { document.getElementById('wordInput2').value = ''; return }
+    pendingWords.push(v); document.getElementById('wordInput2').value = ''; renderTags2();
+    const btn = document.getElementById('genBtn'); btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+  }
+  function removeWord(w) { pendingWords = pendingWords.filter(x => x !== w); renderTags2(); const btn = document.getElementById('genBtn'); btn.disabled = !pendingWords.length; btn.style.opacity = pendingWords.length ? '1' : '.5'; btn.style.cursor = pendingWords.length ? 'pointer' : 'not-allowed' }
+  function renderTags2() {
+    document.getElementById('wordTags2').innerHTML = pendingWords.map(w => `<div class="word-tag"><span class="noto">${w}</span><button onclick="removeWord('${w.replace(/'/g, "\\'")}')">×</button></div>`).join('');
+  }
+
+  async function generateCards() {
+    if (!pendingWords.length) return;
+    const lb = document.getElementById('loadingBar');
+    const em = document.getElementById('errorMsg2');
+    em.classList.remove('show'); lb.classList.add('show');
+    document.getElementById('loadingTxt').textContent = 'GENERATING CARDS...';
+    document.getElementById('genBtn').disabled = true;
+
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pendingWords })
+      });
+      const data = await res.json();
+      const raw = data.candidates[0].content.parts[0].text;
+      const newCards = JSON.parse(raw);
+
+      document.getElementById('loadingTxt').textContent = 'FETCHING IMAGES...';
+      await Promise.all(newCards.map(async c => {
+        try {
+          const r = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(c.image_query || c.meaning)}&per_page=1&orientation=landscape&client_id=${UNSPLASH_KEY}`);
+          const d = await r.json();
+          if (d.results && d.results[0]) { c.imageUrl = d.results[0].urls.small; c.imageCredit = d.results[0].user.name }
+        } catch (e) { }
+      }));
+
+      document.getElementById('loadingTxt').textContent = 'SAVING TO DATABASE...';
+      await dbInsertCards(currentDeckId, newCards);
+
+      // reload cards from DB so we get the real UUIDs back
+      const { data: freshCards, error: ce } = await sb.from('cards').select('*').eq('deck_id', currentDeckId).order('created_at', { ascending: true });
+      if (ce) throw ce;
+      const deck = getDeck();
+      deck.cards = (freshCards || []).map(dbCardToApp);
+
+      lb.classList.remove('show'); hideAddWords(); renderCardList();
+    } catch (e) {
+      lb.classList.remove('show'); document.getElementById('genBtn').disabled = false;
+      em.textContent = 'Something went wrong: ' + (e.message || e); em.classList.add('show');
+    }
+  }
+
+  // ── STUDY ──
+  function goStudy() {
+    const deck = getDeck();
+    if (!deck.cards || !deck.cards.length) { alert('Add some words to this deck first!'); return }
+    studyCards = deck.cards; studyIdx = 0; studyFlipped = false; studyViewMode = 'flash';
+    document.getElementById('studyViewBtn').textContent = 'Overview';
+    document.getElementById('studyFlashView').style.display = 'flex';
+    document.getElementById('studyGridView').style.display = 'none';
+    renderStudyCard(); showScreen('study');
+  }
+  function renderStudyCard() {
+    const c = studyCards[studyIdx];
+    document.getElementById('cardInner').classList.remove('flipped'); studyFlipped = false;
+    document.getElementById('cardFront').innerHTML = `
     <div class="card-img-wrap">
-      ${c.imageUrl?`<img src="${c.imageUrl}" alt="${c.meaning}" style="opacity:0" onload="this.style.opacity=1">`:''}
+      ${c.imageUrl ? `<img src="${c.imageUrl}" alt="${c.meaning}" style="opacity:0" onload="this.style.opacity=1">` : ''}
       <div class="card-overlay">
         <div class="overlay-word">${c.word}</div>
-        ${c.reading?`<div class="overlay-reading">${c.reading}</div>`:''}
+        ${c.reading ? `<div class="overlay-reading">${c.reading}</div>` : ''}
       </div>
     </div>
     <div class="card-front-foot">tap to reveal meaning</div>`;
-  document.getElementById('cardBack').innerHTML=`
-    ${c.imageUrl?`<div class="card-back-thumb"><img src="${c.imageUrl}" alt="" style="width:100%;height:100%;object-fit:cover;filter:brightness(.8)"></div>`:''}
+    document.getElementById('cardBack').innerHTML = `
+    ${c.imageUrl ? `<div class="card-back-thumb"><img src="${c.imageUrl}" alt="" style="width:100%;height:100%;object-fit:cover;filter:brightness(.8)"></div>` : ''}
     <div class="card-back-body">
-      ${c.reading?`<div class="back-reading">${c.reading}</div>`:''}
+      ${c.reading ? `<div class="back-reading">${c.reading}</div>` : ''}
       <div class="back-meaning">${c.meaning}</div>
       <div class="back-example noto">${c.example_jp}<div class="back-ex-en">${c.example_en}</div></div>
-      ${c.imageCredit?`<div class="back-credit mono">Photo: ${c.imageCredit} / Unsplash</div>`:''}
+      ${c.imageCredit ? `<div class="back-credit mono">Photo: ${c.imageCredit} / Unsplash</div>` : ''}
     </div>`;
-  document.getElementById('studyProg').textContent=`${studyIdx+1} of ${studyCards.length}`;
-  document.getElementById('prevBtn').disabled=studyIdx===0;
-  document.getElementById('nextBtn').disabled=studyIdx===studyCards.length-1;
-}
-function flipCard(){studyFlipped=!studyFlipped;document.getElementById('cardInner').classList.toggle('flipped',studyFlipped)}
-function navigate(d){studyIdx=Math.max(0,Math.min(studyCards.length-1,studyIdx+d));renderStudyCard()}
-function toggleStudyView(){
-  studyViewMode=studyViewMode==='flash'?'grid':'flash';
-  const fv=document.getElementById('studyFlashView');
-  const gv=document.getElementById('studyGridView');
-  document.getElementById('studyViewBtn').textContent=studyViewMode==='flash'?'Overview':'Flashcards';
-  fv.style.display=studyViewMode==='flash'?'flex':'none';
-  if(studyViewMode==='grid'){
-    gv.style.display='grid';
-    gv.innerHTML=studyCards.map((c,i)=>`
+    document.getElementById('studyProg').textContent = `${studyIdx + 1} of ${studyCards.length}`;
+    document.getElementById('prevBtn').disabled = studyIdx === 0;
+    document.getElementById('nextBtn').disabled = studyIdx === studyCards.length - 1;
+  }
+  function flipCard() { studyFlipped = !studyFlipped; document.getElementById('cardInner').classList.toggle('flipped', studyFlipped) }
+  function navigate(d) { studyIdx = Math.max(0, Math.min(studyCards.length - 1, studyIdx + d)); renderStudyCard() }
+  function toggleStudyView() {
+    studyViewMode = studyViewMode === 'flash' ? 'grid' : 'flash';
+    const fv = document.getElementById('studyFlashView');
+    const gv = document.getElementById('studyGridView');
+    document.getElementById('studyViewBtn').textContent = studyViewMode === 'flash' ? 'Overview' : 'Flashcards';
+    fv.style.display = studyViewMode === 'flash' ? 'flex' : 'none';
+    if (studyViewMode === 'grid') {
+      gv.style.display = 'grid';
+      gv.innerHTML = studyCards.map((c, i) => `
       <div onclick="studyIdx=${i};studyViewMode='flash';document.getElementById('studyFlashView').style.display='flex';document.getElementById('studyGridView').style.display='none';document.getElementById('studyViewBtn').textContent='Overview';renderStudyCard()"
         style="background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-        ${c.imageUrl?`<img src="${c.imageUrl}" alt="" style="width:100%;height:80px;object-fit:cover">`:`<div style="height:80px;background:#e8e0d5;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:1.8rem;color:rgba(26,16,8,.2)">${c.word}</div>`}
+        ${c.imageUrl ? `<img src="${c.imageUrl}" alt="" style="width:100%;height:80px;object-fit:cover">` : `<div style="height:80px;background:#e8e0d5;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:1.8rem;color:rgba(26,16,8,.2)">${c.word}</div>`}
         <div style="padding:10px 10px">
           <div class="noto" style="font-size:1.2rem">${c.word}</div>
           <div class="mono" style="font-size:10px;color:var(--muted)">${c.meaning}</div>
         </div>
       </div>`).join('');
-  }else{gv.style.display='none'}
-}
+    } else { gv.style.display = 'none' }
+  }
 
-// ── PRACTICE ROUTER ──
-function goPractice(mode){
-  const deck=getDeck();
-  if(!deck.cards||deck.cards.length<2){alert('Add at least 2 cards to practice!');return}
-  if(mode==='match')initMatch();
-  if(mode==='blank')initBlank();
-  if(mode==='recall')initRecall();
-  showScreen(mode);
-}
+  // ── PRACTICE ROUTER ──
+  function goPractice(mode) {
+    const deck = getDeck();
+    if (!deck.cards || deck.cards.length < 2) { alert('Add at least 2 cards to practice!'); return }
+    if (mode === 'match') initMatch();
+    if (mode === 'blank') initBlank();
+    if (mode === 'recall') initRecall();
+    showScreen(mode);
+  }
 
-// ── MATCH ──
-function initMatch(){
-  const cards=getDeck().cards;
-  matchSel=null;matchCorrect=0;
-  document.getElementById('matchComp').style.display='none';
-  document.getElementById('matchScore').textContent=`0 / ${cards.length}`;
-  const jpS=shuffle(cards),enS=shuffle(cards);
-  document.getElementById('matchJp').innerHTML=jpS.map(c=>`
+  // ── MATCH ──
+  function initMatch() {
+    const cards = getDeck().cards;
+    matchSel = null; matchCorrect = 0;
+    document.getElementById('matchComp').style.display = 'none';
+    document.getElementById('matchScore').textContent = `0 / ${cards.length}`;
+    const jpS = shuffle(cards), enS = shuffle(cards);
+    document.getElementById('matchJp').innerHTML = jpS.map(c => `
     <div class="match-card match-jp" data-word="${c.word}" onclick="selectMatch(this,'jp')">
-      ${c.imageUrl?`<img class="match-thumb" src="${c.imageUrl}" alt="">`:`<div class="match-thumb-ph">${c.word}</div>`}
+      ${c.imageUrl ? `<img class="match-thumb" src="${c.imageUrl}" alt="">` : `<div class="match-thumb-ph">${c.word}</div>`}
       <div class="match-jp-word">${c.word}</div>
     </div>`).join('');
-  document.getElementById('matchEn').innerHTML=enS.map(c=>`
+    document.getElementById('matchEn').innerHTML = enS.map(c => `
     <div class="match-card match-en" data-word="${c.word}" onclick="selectMatch(this,'en')">${c.meaning}</div>`).join('');
-}
-function selectMatch(el,side){
-  if(el.classList.contains('matched')||el.classList.contains('wrong'))return;
-  if(!matchSel){el.classList.add('selected');matchSel={el,side};return}
-  if(matchSel.side===side){matchSel.el.classList.remove('selected');matchSel={el,side};el.classList.add('selected');return}
-  const a=matchSel.el,b=el;a.classList.remove('selected');
-  const cards=getDeck().cards;
-  if(a.dataset.word===b.dataset.word){
-    a.classList.add('matched');b.classList.add('matched');matchCorrect++;
-    document.getElementById('matchScore').textContent=`${matchCorrect} / ${cards.length}`;
-    matchSel=null;
-    if(matchCorrect===cards.length)setTimeout(()=>{document.getElementById('matchComp').style.display='block';document.getElementById('matchCompSub').textContent=`All ${cards.length} pairs matched!`},400);
-  }else{
-    a.classList.add('wrong');b.classList.add('wrong');
-    setTimeout(()=>{a.classList.remove('wrong');b.classList.remove('wrong')},700);matchSel=null;
   }
-}
+  function selectMatch(el, side) {
+    if (el.classList.contains('matched') || el.classList.contains('wrong')) return;
+    if (!matchSel) { el.classList.add('selected'); matchSel = { el, side }; return }
+    if (matchSel.side === side) { matchSel.el.classList.remove('selected'); matchSel = { el, side }; el.classList.add('selected'); return }
+    const a = matchSel.el, b = el; a.classList.remove('selected');
+    const cards = getDeck().cards;
+    if (a.dataset.word === b.dataset.word) {
+      a.classList.add('matched'); b.classList.add('matched'); matchCorrect++;
+      document.getElementById('matchScore').textContent = `${matchCorrect} / ${cards.length}`;
+      matchSel = null;
+      if (matchCorrect === cards.length) setTimeout(() => { document.getElementById('matchComp').style.display = 'block'; document.getElementById('matchCompSub').textContent = `All ${cards.length} pairs matched!` }, 400);
+    } else {
+      a.classList.add('wrong'); b.classList.add('wrong');
+      setTimeout(() => { a.classList.remove('wrong'); b.classList.remove('wrong') }, 700); matchSel = null;
+    }
+  }
 
-// ── BLANK ──
-function initBlank(){
-  blankQ=shuffle(getDeck().cards);blankIdx=0;blankCorrect=0;blankAnswered=false;
-  document.getElementById('blankComp').style.display='none';
-  document.getElementById('blankGame').style.display='block';
-  updateBlankScore();renderBlank();
-}
-function updateBlankScore(){document.getElementById('blankScore').textContent=`${blankCorrect} / ${blankQ.length}`}
-function renderBlank(){
-  if(blankIdx>=blankQ.length){document.getElementById('blankGame').style.display='none';document.getElementById('blankComp').style.display='block';document.getElementById('blankFinal').textContent=`${blankCorrect} / ${blankQ.length}`;return}
-  const c=blankQ[blankIdx];blankAnswered=false;
-  document.getElementById('blankFb').textContent='';document.getElementById('blankNext').classList.remove('show');
-  const allCards=getDeck().cards;
-  const wrong=shuffle(allCards.filter(x=>x.word!==c.word)).slice(0,3);
-  const choices=shuffle([c,...wrong]);
-  const blanked=c.example_jp.replace(c.word,'＿＿＿');
-  document.getElementById('blankCardWrap').innerHTML=`
+  // ── BLANK ──
+  function initBlank() {
+    blankQ = shuffle(getDeck().cards); blankIdx = 0; blankCorrect = 0; blankAnswered = false;
+    document.getElementById('blankComp').style.display = 'none';
+    document.getElementById('blankGame').style.display = 'block';
+    updateBlankScore(); renderBlank();
+  }
+  function updateBlankScore() { document.getElementById('blankScore').textContent = `${blankCorrect} / ${blankQ.length}` }
+  function renderBlank() {
+    if (blankIdx >= blankQ.length) { document.getElementById('blankGame').style.display = 'none'; document.getElementById('blankComp').style.display = 'block'; document.getElementById('blankFinal').textContent = `${blankCorrect} / ${blankQ.length}`; return }
+    const c = blankQ[blankIdx]; blankAnswered = false;
+    document.getElementById('blankFb').textContent = ''; document.getElementById('blankNext').classList.remove('show');
+    const allCards = getDeck().cards;
+    const wrong = shuffle(allCards.filter(x => x.word !== c.word)).slice(0, 3);
+    const choices = shuffle([c, ...wrong]);
+    const blanked = c.example_jp.replace(c.word, '＿＿＿');
+    document.getElementById('blankCardWrap').innerHTML = `
     <div class="blank-card">
-      ${c.imageUrl?`<img class="blank-img" src="${c.imageUrl}" alt="">`:`<div class="blank-img-ph">${c.word}</div>`}
+      ${c.imageUrl ? `<img class="blank-img" src="${c.imageUrl}" alt="">` : `<div class="blank-img-ph">${c.word}</div>`}
       <div class="blank-body">
         <div class="prompt-label mono">Fill in the blank</div>
         <div class="blank-sent noto">${blanked}</div>
         <div class="blank-en mono">${c.example_en}</div>
-        <div class="choices">${choices.map(ch=>`<button class="choice-btn noto" onclick="checkBlank(this,'${ch.word.replace(/'/g,"\\'")}','${c.word.replace(/'/g,"\\'")}')">${ch.word}</button>`).join('')}</div>
+        <div class="choices">${choices.map(ch => `<button class="choice-btn noto" onclick="checkBlank(this,'${ch.word.replace(/'/g, "\\'")}','${c.word.replace(/'/g, "\\'")}')">${ch.word}</button>`).join('')}</div>
       </div>
     </div>`;
-}
-function checkBlank(el,chosen,correct){
-  if(blankAnswered)return;blankAnswered=true;
-  document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=true);
-  if(chosen===correct){el.classList.add('correct');document.getElementById('blankFb').innerHTML=`<span class="fb-ok">✓ Correct!</span>`;blankCorrect++;updateBlankScore()}
-  else{el.classList.add('incorrect');document.querySelectorAll('.choice-btn').forEach(b=>{if(b.textContent===correct)b.classList.add('correct')});document.getElementById('blankFb').innerHTML=`<span class="fb-no">✗ Answer: ${correct}</span>`}
-  document.getElementById('blankNext').classList.add('show');
-}
-function nextBlank(){blankIdx++;renderBlank()}
+  }
+  function checkBlank(el, chosen, correct) {
+    if (blankAnswered) return; blankAnswered = true;
+    document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+    if (chosen === correct) { el.classList.add('correct'); document.getElementById('blankFb').innerHTML = `<span class="fb-ok">✓ Correct!</span>`; blankCorrect++; updateBlankScore() }
+    else { el.classList.add('incorrect'); document.querySelectorAll('.choice-btn').forEach(b => { if (b.textContent === correct) b.classList.add('correct') }); document.getElementById('blankFb').innerHTML = `<span class="fb-no">✗ Answer: ${correct}</span>` }
+    document.getElementById('blankNext').classList.add('show');
+  }
+  function nextBlank() { blankIdx++; renderBlank() }
 
-// ── RECALL ──
-function initRecall(){
-  recallQ=shuffle(getDeck().cards);recallIdx=0;recallCorrect=0;recallAnswered=false;
-  document.getElementById('recallComp').style.display='none';
-  document.getElementById('recallGame').style.display='block';
-  updateRecallScore();renderRecall();
-}
-function updateRecallScore(){document.getElementById('recallScore').textContent=`${recallCorrect} / ${recallQ.length}`}
-function renderRecall(){
-  if(recallIdx>=recallQ.length){document.getElementById('recallGame').style.display='none';document.getElementById('recallComp').style.display='block';document.getElementById('recallFinal').textContent=`${recallCorrect} / ${recallQ.length}`;return}
-  const c=recallQ[recallIdx];recallAnswered=false;
-  document.getElementById('recallFb').textContent='';document.getElementById('recallAnswer').style.display='none';document.getElementById('recallNext').classList.remove('show');
-  document.getElementById('recallCardWrap').innerHTML=`
+  // ── RECALL ──
+  function initRecall() {
+    recallQ = shuffle(getDeck().cards); recallIdx = 0; recallCorrect = 0; recallAnswered = false;
+    document.getElementById('recallComp').style.display = 'none';
+    document.getElementById('recallGame').style.display = 'block';
+    updateRecallScore(); renderRecall();
+  }
+  function updateRecallScore() { document.getElementById('recallScore').textContent = `${recallCorrect} / ${recallQ.length}` }
+  function renderRecall() {
+    if (recallIdx >= recallQ.length) { document.getElementById('recallGame').style.display = 'none'; document.getElementById('recallComp').style.display = 'block'; document.getElementById('recallFinal').textContent = `${recallCorrect} / ${recallQ.length}`; return }
+    const c = recallQ[recallIdx]; recallAnswered = false;
+    document.getElementById('recallFb').textContent = ''; document.getElementById('recallAnswer').style.display = 'none'; document.getElementById('recallNext').classList.remove('show');
+    document.getElementById('recallCardWrap').innerHTML = `
     <div class="recall-card">
-      ${c.imageUrl?`<img class="recall-img" src="${c.imageUrl}" alt="">`:`<div class="recall-img-ph">${c.word}</div>`}
+      ${c.imageUrl ? `<img class="recall-img" src="${c.imageUrl}" alt="">` : `<div class="recall-img-ph">${c.word}</div>`}
       <div class="recall-body">
         <div class="prompt-label mono">Type the Japanese word</div>
         <div class="recall-meaning">${c.meaning}</div>
-        ${c.reading?`<div class="recall-hint mono">Hint: ${c.reading}</div>`:'<div style="height:18px"></div>'}
+        ${c.reading ? `<div class="recall-hint mono">Hint: ${c.reading}</div>` : '<div style="height:18px"></div>'}
         <input class="recall-input noto" id="recallInp" placeholder="Type here..." autocomplete="off" autocorrect="off" spellcheck="false">
-        <br><button class="recall-submit" onclick="checkRecall('${c.word.replace(/'/g,"\\'")}')">Check ✓</button>
+        <br><button class="recall-submit" onclick="checkRecall('${c.word.replace(/'/g, "\\'")}')">Check ✓</button>
       </div>
     </div>`;
-  const inp=document.getElementById('recallInp');
-  inp.addEventListener('keydown',e=>{if(e.key==='Enter')checkRecall(c.word)});
-  setTimeout(()=>inp.focus(),60);
-}
-function checkRecall(correct){
-  if(recallAnswered)return;recallAnswered=true;
-  const inp=document.getElementById('recallInp');
-  const ok=inp.value.trim()===correct;
-  inp.disabled=true;inp.classList.add(ok?'ok':'no');
-  document.querySelector('.recall-submit').disabled=true;
-  if(ok){document.getElementById('recallFb').innerHTML=`<span class="fb-ok">✓ Perfect!</span>`;recallCorrect++}
-  else{document.getElementById('recallFb').innerHTML=`<span class="fb-no">✗ Not quite</span>`;const a=document.getElementById('recallAnswer');a.textContent=`Answer: ${correct}`;a.style.display='block'}
-  updateRecallScore();document.getElementById('recallNext').classList.add('show');
-}
-function nextRecall(){recallIdx++;renderRecall()}
+    const inp = document.getElementById('recallInp');
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') checkRecall(c.word) });
+    setTimeout(() => inp.focus(), 60);
+  }
+  function checkRecall(correct) {
+    if (recallAnswered) return; recallAnswered = true;
+    const inp = document.getElementById('recallInp');
+    const ok = inp.value.trim() === correct;
+    inp.disabled = true; inp.classList.add(ok ? 'ok' : 'no');
+    document.querySelector('.recall-submit').disabled = true;
+    if (ok) { document.getElementById('recallFb').innerHTML = `<span class="fb-ok">✓ Perfect!</span>`; recallCorrect++ }
+    else { document.getElementById('recallFb').innerHTML = `<span class="fb-no">✗ Not quite</span>`; const a = document.getElementById('recallAnswer'); a.textContent = `Answer: ${correct}`; a.style.display = 'block' }
+    updateRecallScore(); document.getElementById('recallNext').classList.add('show');
+  }
+  function nextRecall() { recallIdx++; renderRecall() }
 
-// ── HOME SCREEN PDF UPLOAD ──
-let homePdfFile = null;
+  // ── HOME SCREEN PDF UPLOAD ──
+  let homePdfFile = null;
 
-function triggerHomePdfUpload(){
-  document.getElementById('homePdfFileInput').value = '';
-  document.getElementById('homePdfFileInput').click();
-}
-
-function handleHomePdfUpload(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  homePdfFile = file;
-  // Ask for a deck name first
-  const suggested = file.name.replace(/\.pdf$/i,'').replace(/[_-]/g,' ');
-  document.getElementById('homePdfDeckName').value = suggested;
-  document.getElementById('homePdfDeckDesc').value = '';
-  document.getElementById('homePdfNameOverlay').classList.add('show');
-  setTimeout(()=>document.getElementById('homePdfDeckName').focus(), 100);
-}
-
-async function confirmHomePdfDeck(){
-  const name = document.getElementById('homePdfDeckName').value.trim();
-  if(!name) return;
-  const desc = document.getElementById('homePdfDeckDesc').value.trim();
-  document.getElementById('homePdfNameOverlay').classList.remove('show');
-
-  // Create the deck first
-  showLoading('CREATING DECK...');
-  try {
-    const row = await dbCreateDeck(name, desc);
-    const deck = {id:row.id, name:row.name, description:row.description||'', createdAt:row.created_at, cards:[]};
-    decks.push(deck);
-    currentDeckId = deck.id;
-  } catch(e) {
-    hideLoading();
-    alert('Error creating deck: ' + e.message);
-    return;
+  function triggerHomePdfUpload() {
+    document.getElementById('homePdfFileInput').value = '';
+    document.getElementById('homePdfFileInput').click();
   }
 
-  // Now parse the PDF
-  showLoading('READING PDF...');
-  try {
-    const text = await extractPdfText(homePdfFile);
-    pdfParsedCards = parseVocabPdf(text);
-    hideLoading();
-    if(!pdfParsedCards.length){
-      alert('No vocabulary cards could be found in this PDF.');
-      return;
-    }
-    // Go to deck screen first, then show preview
-    const deck = getDeck();
-    document.getElementById('deckHubName').textContent = deck.name;
-    document.getElementById('deckHubName2').textContent = deck.name;
-    document.getElementById('deckHubMeta').textContent = `0 cards${deck.description?' · '+deck.description:''}`;
-    renderCardList();
-    showScreen('deck');
-    showPdfPreview();
-  } catch(err) {
-    hideLoading();
-    alert('Could not read PDF: ' + err.message);
+  function handleHomePdfUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    homePdfFile = file;
+    // Ask for a deck name first
+    const suggested = file.name.replace(/\.pdf$/i, '').replace(/[_-]/g, ' ');
+    document.getElementById('homePdfDeckName').value = suggested;
+    document.getElementById('homePdfDeckDesc').value = '';
+    document.getElementById('homePdfNameOverlay').classList.add('show');
+    setTimeout(() => document.getElementById('homePdfDeckName').focus(), 100);
   }
-}
 
-// ── PDF IMPORT ──
-let pdfParsedCards = [];    // all cards parsed from PDF
-let pdfSelectedIds = new Set(); // indices of selected cards
-let pdfActiveLessons = new Set(); // lesson filters
+  async function confirmHomePdfDeck() {
+    const name = document.getElementById('homePdfDeckName').value.trim();
+    if (!name) return;
+    const desc = document.getElementById('homePdfDeckDesc').value.trim();
+    document.getElementById('homePdfNameOverlay').classList.remove('show');
 
-function triggerPdfUpload(){
-  document.getElementById('pdfFileInput').value='';
-  document.getElementById('pdfFileInput').click();
-}
-
-async function handlePdfUpload(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  showLoading('READING PDF...');
-
-  try {
-    const text = await extractPdfText(file);
-    pdfParsedCards = parseVocabPdf(text);
-
-    if(!pdfParsedCards.length){
+    // Create the deck first
+    showLoading('CREATING DECK...');
+    try {
+      const row = await dbCreateDeck(name, desc);
+      const deck = { id: row.id, name: row.name, description: row.description || '', createdAt: row.created_at, cards: [] };
+      decks.push(deck);
+      currentDeckId = deck.id;
+    } catch (e) {
       hideLoading();
-      alert('No vocabulary cards could be found in this PDF. Make sure it matches the Adventures in Japanese format.');
+      alert('Error creating deck: ' + e.message);
       return;
     }
 
-    hideLoading();
-    showPdfPreview();
-  } catch(err) {
-    hideLoading();
-    console.error(err);
-    alert('Could not read PDF: ' + err.message);
-  }
-}
-
-async function extractPdfText(file){
-  const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
-
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
-
-  const allItems = [];
-  for(let p = 1; p <= pdf.numPages; p++){
-    const page = await pdf.getPage(p);
-    const content = await page.getTextContent();
-    const viewport = page.getViewport({scale:1});
-    for(const item of content.items){
-      if(!item.str.trim()) continue;
-      allItems.push({
-        str: item.str,
-        x: item.transform[4],
-        y: Math.round(viewport.height - item.transform[5]),
-        page: p
-      });
-    }
-  }
-  return allItems;
-}
-
-function parseVocabPdf(items){
-  const isJapanese = s => /[\u3040-\u30FF\u4E00-\u9FFF]/.test(s);
-
-  // ── Step 1: Group items into rows ──
-  const rowMap = new Map();
-  for(const item of items){
-    const key = `${item.page}-${Math.round(item.y / 6) * 6}`;
-    if(!rowMap.has(key)) rowMap.set(key, {y: item.y, page: item.page, items: []});
-    rowMap.get(key).items.push(item);
-  }
-  const rows = [...rowMap.values()]
-    .sort((a,b) => a.page !== b.page ? a.page - b.page : a.y - b.y);
-  rows.forEach(r => r.items.sort((a,b) => a.x - b.x));
-
-  // ── Step 2: Auto-detect column boundaries ──
-  // Find rows that have BOTH Japanese text AND English text (vocab rows).
-  // On those rows, find where the Japanese cluster ends and the English cluster begins.
-  // The gap between them contains the romaji we want to skip.
-  const jpEnds = [];   // rightmost x of Japanese items on mixed rows
-  const enStarts = []; // leftmost x of English items on mixed rows
-
-  for(const row of rows){
-    const hasJp = row.items.some(i => isJapanese(i.str));
-    const hasEn = row.items.some(i => /[a-zA-Z]/.test(i.str) && !isJapanese(i.str));
-    if(!hasJp || !hasEn) continue;
-
-    const jpXs = row.items.filter(i => isJapanese(i.str)).map(i => i.x + (i.width||20));
-    const enXs = row.items.filter(i => /[a-zA-Z]/.test(i.str) && !isJapanese(i.str)).map(i => i.x);
-
-    // Only count rows where there's a clear gap (not just continuation)
-    const maxJpX = Math.max(...jpXs);
-    const minEnX = Math.min(...enXs);
-    if(minEnX - maxJpX > 30){
-      jpEnds.push(maxJpX);
-      enStarts.push(minEnX);
+    // Now parse the PDF
+    showLoading('READING PDF...');
+    try {
+      const text = await extractPdfText(homePdfFile);
+      pdfParsedCards = parseVocabPdf(text);
+      hideLoading();
+      if (!pdfParsedCards.length) {
+        alert('No vocabulary cards could be found in this PDF.');
+        return;
+      }
+      // Go to deck screen first, then show preview
+      const deck = getDeck();
+      document.getElementById('deckHubName').textContent = deck.name;
+      document.getElementById('deckHubName2').textContent = deck.name;
+      document.getElementById('deckHubMeta').textContent = `0 cards${deck.description ? ' · ' + deck.description : ''}`;
+      renderCardList();
+      showScreen('deck');
+      showPdfPreview();
+    } catch (err) {
+      hideLoading();
+      alert('Could not read PDF: ' + err.message);
     }
   }
 
-  // Use median values for robustness
-  const median = arr => { const s = [...arr].sort((a,b)=>a-b); return s[Math.floor(s.length/2)] || 0; };
-  const medJpEnd  = median(jpEnds);
-  const medEnStart = median(enStarts);
+  // ── PDF IMPORT ──
+  let pdfParsedCards = [];    // all cards parsed from PDF
+  let pdfSelectedIds = new Set(); // indices of selected cards
+  let pdfActiveLessons = new Set(); // lesson filters
 
-  // Add padding: Japanese col ends at medJpEnd+10, English col starts at medEnStart-10
-  // Anything in between is romaji — ignored
-  const JP_MAX_X = medJpEnd  > 0 ? medJpEnd  + 10 : 200;
-  const EN_MIN_X = medEnStart > 0 ? medEnStart - 10 : 250;
+  function triggerPdfUpload() {
+    document.getElementById('pdfFileInput').value = '';
+    document.getElementById('pdfFileInput').click();
+  }
 
-  console.log('[PDF Parser] JP_MAX_X:', JP_MAX_X, 'EN_MIN_X:', EN_MIN_X);
+  async function handlePdfUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    showLoading('READING PDF...');
 
-  // ── Step 3: Parse rows into cards ──
-  const lessonRe = /^\d+か\d+$/;
-  const skipPatterns = [
-    /©/, /Adventures in Japanese/, /Vocabulary Lists/, /Reproducible/,
-    /^\d+\s*$/, /^Adventures$/, /^Vocabulary$/, /^Lists$/
-  ];
+    try {
+      const text = await extractPdfText(file);
+      pdfParsedCards = parseVocabPdf(text);
 
-  let currentLesson = '';
-  const cards = [];
-  let pendingCard = null;
+      if (!pdfParsedCards.length) {
+        hideLoading();
+        alert('No vocabulary cards could be found in this PDF. Make sure it matches the Adventures in Japanese format.');
+        return;
+      }
 
-  for(const row of rows){
-    const fullText = row.items.map(i => i.str).join(' ').trim();
-    if(!fullText) continue;
-    if(skipPatterns.some(p => p.test(fullText))) continue;
-
-    // Detect lesson heading like "1か1"
-    if(lessonRe.test(fullText.trim())){
-      currentLesson = fullText.trim();
-      if(pendingCard){ cards.push(pendingCard); pendingCard = null; }
-      continue;
+      hideLoading();
+      showPdfPreview();
+    } catch (err) {
+      hideLoading();
+      console.error(err);
+      alert('Could not read PDF: ' + err.message);
     }
+  }
 
-    // Skip section title rows (e.g. "Self Introduction") — English only, no Japanese
-    if(!isJapanese(fullText) && /^[A-Z][a-zA-Z\s]+$/.test(fullText.trim())){
-      continue;
-    }
+  async function extractPdfText(file) {
+    const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
 
-    // Split row into JP and EN columns, ignoring romaji middle
-    const jpItems = row.items.filter(i => i.x < JP_MAX_X);
-    const enItems = row.items.filter(i => i.x > EN_MIN_X);
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-    const jpText = jpItems.map(i => i.str).join('').trim()
-      .replace(/^\d+\.\s*/, '').trim(); // strip "1." list numbers
-    const enText = enItems.map(i => i.str).join(' ').trim()
-      .replace(/\*+/g, '').trim();
-
-    if(isJapanese(jpText)){
-      // Push previous card
-      if(pendingCard) cards.push(pendingCard);
-      let meaning = enText;
-      if(meaning.length > 110) meaning = meaning.substring(0, meaning.lastIndexOf(' ', 110)) + '…';
-      pendingCard = {
-        word: jpText,
-        reading: '',
-        meaning,
-        lesson: currentLesson,
-        example_jp: '', example_en: '',
-        imageUrl: '', imageCredit: ''
-      };
-    } else if(pendingCard && enText){
-      // Continuation — append to previous card's meaning
-      if(pendingCard.meaning.length < 110){
-        pendingCard.meaning = (pendingCard.meaning + ' ' + enText).trim();
-        if(pendingCard.meaning.length > 110)
-          pendingCard.meaning = pendingCard.meaning.substring(0, pendingCard.meaning.lastIndexOf(' ', 110)) + '…';
+    const allItems = [];
+    for (let p = 1; p <= pdf.numPages; p++) {
+      const page = await pdf.getPage(p);
+      const content = await page.getTextContent();
+      const viewport = page.getViewport({ scale: 1 });
+      for (const item of content.items) {
+        if (!item.str.trim()) continue;
+        allItems.push({
+          str: item.str,
+          x: item.transform[4],
+          y: Math.round(viewport.height - item.transform[5]),
+          page: p
+        });
       }
     }
-  }
-  if(pendingCard) cards.push(pendingCard);
-
-  // Deduplicate by word
-  const seen = new Set();
-  return cards.filter(c => {
-    if(lessonRe.test(c.word) || !c.meaning || !c.word) return false;
-    if(seen.has(c.word)) return false;
-    seen.add(c.word);
-    return true;
-  });
-}
-
-function showPdfPreview(){
-  pdfSelectedIds = new Set(pdfParsedCards.map((_,i) => i)); // select all by default
-  pdfActiveLessons = new Set();
-
-  // Build lesson list
-  const lessons = [...new Set(pdfParsedCards.map(c => c.lesson).filter(Boolean))];
-  const filterDiv = document.getElementById('pdfLessonFilter');
-  const btnDiv = document.getElementById('pdfLessonButtons');
-
-  if(lessons.length > 1){
-    filterDiv.style.display = 'block';
-    btnDiv.innerHTML = `<button class="lesson-btn active" onclick="filterPdfLesson('all', this)">All</button>` +
-      lessons.map(l => `<button class="lesson-btn" onclick="filterPdfLesson('${l}', this)">${l}</button>`).join('');
-  } else {
-    filterDiv.style.display = 'none';
+    return allItems;
   }
 
-  renderPdfCardList();
-  updatePdfCount();
-  document.getElementById('pdfPreviewOverlay').classList.add('show');
-}
+  function parseVocabPdf(items) {
+    const isJapanese = s => /[\u3040-\u30FF\u4E00-\u9FFF]/.test(s);
 
-function filterPdfLesson(lesson, btn){
-  document.querySelectorAll('.lesson-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+    // ── Step 1: Group items into rows ──
+    const rowMap = new Map();
+    for (const item of items) {
+      const key = `${item.page}-${Math.round(item.y / 6) * 6}`;
+      if (!rowMap.has(key)) rowMap.set(key, { y: item.y, page: item.page, items: [] });
+      rowMap.get(key).items.push(item);
+    }
+    const rows = [...rowMap.values()]
+      .sort((a, b) => a.page !== b.page ? a.page - b.page : a.y - b.y);
+    rows.forEach(r => r.items.sort((a, b) => a.x - b.x));
 
-  if(lesson === 'all'){
+    // ── Step 2: Auto-detect column boundaries ──
+    // Find rows that have BOTH Japanese text AND English text (vocab rows).
+    // On those rows, find where the Japanese cluster ends and the English cluster begins.
+    // The gap between them contains the romaji we want to skip.
+    const jpEnds = [];   // rightmost x of Japanese items on mixed rows
+    const enStarts = []; // leftmost x of English items on mixed rows
+
+    for (const row of rows) {
+      const hasJp = row.items.some(i => isJapanese(i.str));
+      const hasEn = row.items.some(i => /[a-zA-Z]/.test(i.str) && !isJapanese(i.str));
+      if (!hasJp || !hasEn) continue;
+
+      const jpXs = row.items.filter(i => isJapanese(i.str)).map(i => i.x + (i.width || 20));
+      const enXs = row.items.filter(i => /[a-zA-Z]/.test(i.str) && !isJapanese(i.str)).map(i => i.x);
+
+      // Only count rows where there's a clear gap (not just continuation)
+      const maxJpX = Math.max(...jpXs);
+      const minEnX = Math.min(...enXs);
+      if (minEnX - maxJpX > 30) {
+        jpEnds.push(maxJpX);
+        enStarts.push(minEnX);
+      }
+    }
+
+    // Use median values for robustness
+    const median = arr => { const s = [...arr].sort((a, b) => a - b); return s[Math.floor(s.length / 2)] || 0; };
+    const medJpEnd = median(jpEnds);
+    const medEnStart = median(enStarts);
+
+    // Add padding: Japanese col ends at medJpEnd+10, English col starts at medEnStart-10
+    // Anything in between is romaji — ignored
+    const JP_MAX_X = medJpEnd > 0 ? medJpEnd + 10 : 200;
+    const EN_MIN_X = medEnStart > 0 ? medEnStart - 10 : 250;
+
+    console.log('[PDF Parser] JP_MAX_X:', JP_MAX_X, 'EN_MIN_X:', EN_MIN_X);
+
+    // ── Step 3: Parse rows into cards ──
+    const lessonRe = /^\d+か\d+$/;
+    const skipPatterns = [
+      /©/, /Adventures in Japanese/, /Vocabulary Lists/, /Reproducible/,
+      /^\d+\s*$/, /^Adventures$/, /^Vocabulary$/, /^Lists$/
+    ];
+
+    let currentLesson = '';
+    const cards = [];
+    let pendingCard = null;
+
+    for (const row of rows) {
+      const fullText = row.items.map(i => i.str).join(' ').trim();
+      if (!fullText) continue;
+      if (skipPatterns.some(p => p.test(fullText))) continue;
+
+      // Detect lesson heading like "1か1"
+      if (lessonRe.test(fullText.trim())) {
+        currentLesson = fullText.trim();
+        if (pendingCard) { cards.push(pendingCard); pendingCard = null; }
+        continue;
+      }
+
+      // Skip section title rows (e.g. "Self Introduction") — English only, no Japanese
+      if (!isJapanese(fullText) && /^[A-Z][a-zA-Z\s]+$/.test(fullText.trim())) {
+        continue;
+      }
+
+      // Split row into JP and EN columns, ignoring romaji middle
+      const jpItems = row.items.filter(i => i.x < JP_MAX_X);
+      const enItems = row.items.filter(i => i.x > EN_MIN_X);
+
+      const jpText = jpItems.map(i => i.str).join('').trim()
+        .replace(/^\d+\.\s*/, '').trim(); // strip "1." list numbers
+      const enText = enItems.map(i => i.str).join(' ').trim()
+        .replace(/\*+/g, '').trim();
+
+      if (isJapanese(jpText)) {
+        // Push previous card
+        if (pendingCard) cards.push(pendingCard);
+        let meaning = enText;
+        if (meaning.length > 110) meaning = meaning.substring(0, meaning.lastIndexOf(' ', 110)) + '…';
+        pendingCard = {
+          word: jpText,
+          reading: '',
+          meaning,
+          lesson: currentLesson,
+          example_jp: '', example_en: '',
+          imageUrl: '', imageCredit: ''
+        };
+      } else if (pendingCard && enText) {
+        // Continuation — append to previous card's meaning
+        if (pendingCard.meaning.length < 110) {
+          pendingCard.meaning = (pendingCard.meaning + ' ' + enText).trim();
+          if (pendingCard.meaning.length > 110)
+            pendingCard.meaning = pendingCard.meaning.substring(0, pendingCard.meaning.lastIndexOf(' ', 110)) + '…';
+        }
+      }
+    }
+    if (pendingCard) cards.push(pendingCard);
+
+    // Deduplicate by word
+    const seen = new Set();
+    return cards.filter(c => {
+      if (lessonRe.test(c.word) || !c.meaning || !c.word) return false;
+      if (seen.has(c.word)) return false;
+      seen.add(c.word);
+      return true;
+    });
+  }
+
+  function showPdfPreview() {
+    pdfSelectedIds = new Set(pdfParsedCards.map((_, i) => i)); // select all by default
     pdfActiveLessons = new Set();
-    pdfSelectedIds = new Set(pdfParsedCards.map((_,i) => i));
-  } else {
-    pdfActiveLessons = new Set([lesson]);
-    pdfSelectedIds = new Set(
-      pdfParsedCards.map((_,i) => i).filter(i => pdfParsedCards[i].lesson === lesson)
-    );
+
+    // Build lesson list
+    const lessons = [...new Set(pdfParsedCards.map(c => c.lesson).filter(Boolean))];
+    const filterDiv = document.getElementById('pdfLessonFilter');
+    const btnDiv = document.getElementById('pdfLessonButtons');
+
+    if (lessons.length > 1) {
+      filterDiv.style.display = 'block';
+      btnDiv.innerHTML = `<button class="lesson-btn active" onclick="filterPdfLesson('all', this)">All</button>` +
+        lessons.map(l => `<button class="lesson-btn" onclick="filterPdfLesson('${l}', this)">${l}</button>`).join('');
+    } else {
+      filterDiv.style.display = 'none';
+    }
+
+    renderPdfCardList();
+    updatePdfCount();
+    document.getElementById('pdfPreviewOverlay').classList.add('show');
   }
-  renderPdfCardList();
-  updatePdfCount();
-}
 
-function renderPdfCardList(){
-  const list = document.getElementById('pdfCardPreviewList');
-  const visibleCards = pdfActiveLessons.size === 0
-    ? pdfParsedCards.map((_,i) => i)
-    : pdfParsedCards.map((_,i) => i).filter(i => pdfActiveLessons.has(pdfParsedCards[i].lesson));
+  function filterPdfLesson(lesson, btn) {
+    document.querySelectorAll('.lesson-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
 
-  list.innerHTML = visibleCards.map(i => {
-    const c = pdfParsedCards[i];
-    const sel = pdfSelectedIds.has(i);
-    return `<div class="pdf-preview-card ${sel?'selected':''}" onclick="togglePdfCard(${i})">
-      <div class="ppc-check">${sel?'✓':''}</div>
-      <div class="ppc-lesson">${c.lesson||''}</div>
+    if (lesson === 'all') {
+      pdfActiveLessons = new Set();
+      pdfSelectedIds = new Set(pdfParsedCards.map((_, i) => i));
+    } else {
+      pdfActiveLessons = new Set([lesson]);
+      pdfSelectedIds = new Set(
+        pdfParsedCards.map((_, i) => i).filter(i => pdfParsedCards[i].lesson === lesson)
+      );
+    }
+    renderPdfCardList();
+    updatePdfCount();
+  }
+
+  function renderPdfCardList() {
+    const list = document.getElementById('pdfCardPreviewList');
+    const visibleCards = pdfActiveLessons.size === 0
+      ? pdfParsedCards.map((_, i) => i)
+      : pdfParsedCards.map((_, i) => i).filter(i => pdfActiveLessons.has(pdfParsedCards[i].lesson));
+
+    list.innerHTML = visibleCards.map(i => {
+      const c = pdfParsedCards[i];
+      const sel = pdfSelectedIds.has(i);
+      return `<div class="pdf-preview-card ${sel ? 'selected' : ''}" onclick="togglePdfCard(${i})">
+      <div class="ppc-check">${sel ? '✓' : ''}</div>
+      <div class="ppc-lesson">${c.lesson || ''}</div>
       <div class="ppc-word">${c.word}</div>
       <div class="ppc-meaning">${c.meaning}</div>
     </div>`;
-  }).join('');
+    }).join('');
 
-  document.getElementById('pdfPreviewMeta').textContent =
-    `${pdfParsedCards.length} cards found · click to deselect any you don't want`;
-}
-
-function togglePdfCard(i){
-  if(pdfSelectedIds.has(i)) pdfSelectedIds.delete(i);
-  else pdfSelectedIds.add(i);
-  renderPdfCardList();
-  updatePdfCount();
-}
-
-function updatePdfCount(){
-  document.getElementById('pdfSelectedCount').textContent = `${pdfSelectedIds.size} selected`;
-  document.getElementById('pdfImportBtn').disabled = pdfSelectedIds.size === 0;
-}
-
-function closePdfPreview(){
-  document.getElementById('pdfPreviewOverlay').classList.remove('show');
-  pdfParsedCards = [];
-  pdfSelectedIds = new Set();
-}
-
-async function importPdfCards(){
-  if(!pdfSelectedIds.size) return;
-  const toImport = [...pdfSelectedIds].sort((a,b) => a-b).map(i => pdfParsedCards[i]);
-
-  closePdfPreview();
-  showLoading('SAVING TO DATABASE...');
-
-  try {
-    await dbInsertCards(currentDeckId, toImport);
-
-    // Reload cards from DB to get real UUIDs
-    const {data: freshCards, error} = await sb.from('cards').select('*').eq('deck_id', currentDeckId).order('created_at', {ascending: true});
-    if(error) throw error;
-    getDeck().cards = (freshCards || []).map(dbCardToApp);
-
-    hideLoading();
-    renderCardList();
-  } catch(err) {
-    hideLoading();
-    alert('Error saving cards: ' + err.message);
+    document.getElementById('pdfPreviewMeta').textContent =
+      `${pdfParsedCards.length} cards found · click to deselect any you don't want`;
   }
-}
 
-// ── EDIT CARD ──
-let editingCardId = null;
-
-function openEditCard(cardId){
-  const deck = getDeck();
-  const card = deck.cards.find(c => c._id === cardId);
-  if(!card) return;
-  editingCardId = cardId;
-  document.getElementById('editWord').value = card.word;
-  document.getElementById('editReading').value = card.reading || '';
-  document.getElementById('editMeaning').value = card.meaning || '';
-  document.getElementById('editExampleJp').value = card.example_jp || '';
-  document.getElementById('editExampleEn').value = card.example_en || '';
-  document.getElementById('editCardOverlay').classList.add('show');
-  setTimeout(() => document.getElementById('editWord').focus(), 100);
-}
-
-function closeEditCard(){
-  document.getElementById('editCardOverlay').classList.remove('show');
-}
-
-async function saveEditCard(){
-  if(!editingCardId) return;
-  const id = editingCardId;
-  const updates = {
-    word:       document.getElementById('editWord').value.trim(),
-    reading:    document.getElementById('editReading').value.trim(),
-    meaning:    document.getElementById('editMeaning').value.trim(),
-    example_jp: document.getElementById('editExampleJp').value.trim(),
-    example_en: document.getElementById('editExampleEn').value.trim(),
-  };
-  if(!updates.word || !updates.meaning){ alert('Word and meaning are required.'); return; }
-  closeEditCard();
-  editingCardId = null;
-  showLoading('SAVING...');
-  try {
-    const { error } = await sb.from('cards').update(updates).eq('id', id);
-    if(error) throw error;
-    // Update local cache
-    const card = getDeck().cards.find(c => c._id === id);
-    if(card) Object.assign(card, { word: updates.word, reading: updates.reading, meaning: updates.meaning, example_jp: updates.example_jp, example_en: updates.example_en });
-    hideLoading();
-    renderCardList();
-  } catch(e) {
-    hideLoading();
-    alert('Error saving: ' + e.message);
+  function togglePdfCard(i) {
+    if (pdfSelectedIds.has(i)) pdfSelectedIds.delete(i);
+    else pdfSelectedIds.add(i);
+    renderPdfCardList();
+    updatePdfCount();
   }
-}
 
-// ── TOAST ──
-function showToast(msg, dur=2200){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(t._timer);
-  t._timer=setTimeout(()=>t.classList.remove('show'),dur);
-}
-
-// ── CONFETTI ──
-function popConfetti(){
-  const colors=['#c0392b','#c8962a','#2e7d52','#4a90d9','#9b59b6'];
-  for(let i=0;i<30;i++){
-    const el=document.createElement('div');
-    el.className='confetti-piece';
-    el.style.cssText=`left:${Math.random()*100}vw;top:-10px;background:${colors[i%colors.length]};animation-duration:${1+Math.random()*2}s;animation-delay:${Math.random()*.5}s;width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;border-radius:${Math.random()>0.5?'50%':'2px'}`;
-    document.body.appendChild(el);
-    setTimeout(()=>el.remove(),(3000));
+  function updatePdfCount() {
+    document.getElementById('pdfSelectedCount').textContent = `${pdfSelectedIds.size} selected`;
+    document.getElementById('pdfImportBtn').disabled = pdfSelectedIds.size === 0;
   }
-}
 
-// ── ACTIVITY / STREAK TRACKING ──
-function getActivity(){
-  try{return JSON.parse(localStorage.getItem('jp_activity')||'{}')}catch{return{}}
-}
-function recordActivity(){
-  const a=getActivity();
-  const today=new Date().toISOString().slice(0,10);
-  a[today]=(a[today]||0)+1;
-  localStorage.setItem('jp_activity',JSON.stringify(a));
-}
-function getStreak(){
-  const a=getActivity();
-  const today=new Date();
-  let streak=0;
-  for(let i=0;i<365;i++){
-    const d=new Date(today);d.setDate(d.getDate()-i);
-    const k=d.toISOString().slice(0,10);
-    if(a[k])streak++;
-    else if(i>0)break;
+  function closePdfPreview() {
+    document.getElementById('pdfPreviewOverlay').classList.remove('show');
+    pdfParsedCards = [];
+    pdfSelectedIds = new Set();
   }
-  return streak;
-}
-function renderStreakBar(){
-  const streak=getStreak();
-  const totalSessions=Object.values(getActivity()).reduce((a,b)=>a+b,0);
-  const bar=document.getElementById('streakBar');
-  bar.innerHTML=`
-    <div class="streak-badge ${streak>=2?'hot':''}">
-      <span>${streak>=2?'🔥':'📅'}</span>
+
+  async function importPdfCards() {
+    if (!pdfSelectedIds.size) return;
+    const toImport = [...pdfSelectedIds].sort((a, b) => a - b).map(i => pdfParsedCards[i]);
+
+    closePdfPreview();
+    showLoading('SAVING TO DATABASE...');
+
+    try {
+      await dbInsertCards(currentDeckId, toImport);
+
+      // Reload cards from DB to get real UUIDs
+      const { data: freshCards, error } = await sb.from('cards').select('*').eq('deck_id', currentDeckId).order('created_at', { ascending: true });
+      if (error) throw error;
+      getDeck().cards = (freshCards || []).map(dbCardToApp);
+
+      hideLoading();
+      renderCardList();
+    } catch (err) {
+      hideLoading();
+      alert('Error saving cards: ' + err.message);
+    }
+  }
+
+  // ── EDIT CARD ──
+  let editingCardId = null;
+
+  function openEditCard(cardId) {
+    const deck = getDeck();
+    const card = deck.cards.find(c => c._id === cardId);
+    if (!card) return;
+    editingCardId = cardId;
+    document.getElementById('editWord').value = card.word;
+    document.getElementById('editReading').value = card.reading || '';
+    document.getElementById('editMeaning').value = card.meaning || '';
+    document.getElementById('editExampleJp').value = card.example_jp || '';
+    document.getElementById('editExampleEn').value = card.example_en || '';
+    document.getElementById('editCardOverlay').classList.add('show');
+    setTimeout(() => document.getElementById('editWord').focus(), 100);
+  }
+
+  function closeEditCard() {
+    document.getElementById('editCardOverlay').classList.remove('show');
+  }
+
+  async function saveEditCard() {
+    if (!editingCardId) return;
+    const id = editingCardId;
+    const updates = {
+      word: document.getElementById('editWord').value.trim(),
+      reading: document.getElementById('editReading').value.trim(),
+      meaning: document.getElementById('editMeaning').value.trim(),
+      example_jp: document.getElementById('editExampleJp').value.trim(),
+      example_en: document.getElementById('editExampleEn').value.trim(),
+    };
+    if (!updates.word || !updates.meaning) { alert('Word and meaning are required.'); return; }
+    closeEditCard();
+    editingCardId = null;
+    showLoading('SAVING...');
+    try {
+      const { error } = await sb.from('cards').update(updates).eq('id', id);
+      if (error) throw error;
+      // Update local cache
+      const card = getDeck().cards.find(c => c._id === id);
+      if (card) Object.assign(card, { word: updates.word, reading: updates.reading, meaning: updates.meaning, example_jp: updates.example_jp, example_en: updates.example_en });
+      hideLoading();
+      renderCardList();
+    } catch (e) {
+      hideLoading();
+      alert('Error saving: ' + e.message);
+    }
+  }
+
+  // ── TOAST ──
+  function showToast(msg, dur = 2200) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), dur);
+  }
+
+  // ── CONFETTI ──
+  function popConfetti() {
+    const colors = ['#c0392b', '#c8962a', '#2e7d52', '#4a90d9', '#9b59b6'];
+    for (let i = 0; i < 30; i++) {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `left:${Math.random() * 100}vw;top:-10px;background:${colors[i % colors.length]};animation-duration:${1 + Math.random() * 2}s;animation-delay:${Math.random() * .5}s;width:${6 + Math.random() * 8}px;height:${6 + Math.random() * 8}px;border-radius:${Math.random() > 0.5 ? '50%' : '2px'}`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), (3000));
+    }
+  }
+
+  // ── ACTIVITY / STREAK TRACKING ──
+  function getActivity() {
+    try { return JSON.parse(localStorage.getItem('jp_activity') || '{}') } catch { return {} }
+  }
+  function recordActivity() {
+    const a = getActivity();
+    const today = new Date().toISOString().slice(0, 10);
+    a[today] = (a[today] || 0) + 1;
+    localStorage.setItem('jp_activity', JSON.stringify(a));
+  }
+  function getStreak() {
+    const a = getActivity();
+    const today = new Date();
+    let streak = 0;
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(today); d.setDate(d.getDate() - i);
+      const k = d.toISOString().slice(0, 10);
+      if (a[k]) streak++;
+      else if (i > 0) break;
+    }
+    return streak;
+  }
+  function renderStreakBar() {
+    const streak = getStreak();
+    const totalSessions = Object.values(getActivity()).reduce((a, b) => a + b, 0);
+    const bar = document.getElementById('streakBar');
+    bar.innerHTML = `
+    <div class="streak-badge ${streak >= 2 ? 'hot' : ''}">
+      <span>${streak >= 2 ? '🔥' : '📅'}</span>
       <span class="streak-num">${streak}</span>
       <span>day streak</span>
     </div>
@@ -1736,266 +3734,266 @@ function renderStreakBar(){
     <div class="streak-badge">
       <span>📚</span>
       <span class="streak-num">${decks.length}</span>
-      <span>deck${decks.length!==1?'s':''}</span>
+      <span>deck${decks.length !== 1 ? 's' : ''}</span>
     </div>`;
-}
-
-// ── HOME DECK SEARCH ──
-function filterDecks(q){
-  const grid=document.getElementById('decksGrid');
-  const cards=grid.querySelectorAll('.deck-card');
-  cards.forEach(c=>{
-    const name=c.querySelector('.deck-card-name')?.textContent?.toLowerCase()||'';
-    c.style.display=name.includes(q.toLowerCase())||!q?'':'none';
-  });
-}
-
-// ── CARD LIST SORT & SEARCH ──
-let cardSortMode='alpha';
-function sortCardList(mode){
-  cardSortMode=mode;
-  document.querySelectorAll('.card-sort-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById(mode==='alpha'?'sortAZ':'sortNew').classList.add('active');
-  renderCardList();
-}
-function filterCardList(q){renderCardList(q)}
-
-// Override renderCardList to support sort + search
-const _origRenderCardList = renderCardList;
-renderCardList = function(searchQ){
-  const deck=getDeck();
-  const list=document.getElementById('cardList');
-  if(!deck||!deck.cards||!deck.cards.length){
-    list.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding:12px 0;letter-spacing:.08em">No cards yet — add some words above!</div>`;
-    return;
   }
-  const q=(searchQ!==undefined?searchQ:(document.getElementById('cardListSearch')||{}).value||'').toLowerCase();
-  let cards=[...deck.cards];
-  if(cardSortMode==='alpha') cards.sort((a,b)=>a.word.localeCompare(b.word,'ja'));
-  // newest: default order (as-is)
-  if(q) cards=cards.filter(c=>c.word.includes(q)||c.meaning.toLowerCase().includes(q)||(c.reading&&c.reading.includes(q)));
-  if(!cards.length){
-    list.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding:12px 0">No cards match your search.</div>`;
-    return;
+
+  // ── HOME DECK SEARCH ──
+  function filterDecks(q) {
+    const grid = document.getElementById('decksGrid');
+    const cards = grid.querySelectorAll('.deck-card');
+    cards.forEach(c => {
+      const name = c.querySelector('.deck-card-name')?.textContent?.toLowerCase() || '';
+      c.style.display = name.includes(q.toLowerCase()) || !q ? '' : 'none';
+    });
   }
-  list.innerHTML=cards.map((c)=>`
+
+  // ── CARD LIST SORT & SEARCH ──
+  let cardSortMode = 'alpha';
+  function sortCardList(mode) {
+    cardSortMode = mode;
+    document.querySelectorAll('.card-sort-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(mode === 'alpha' ? 'sortAZ' : 'sortNew').classList.add('active');
+    renderCardList();
+  }
+  function filterCardList(q) { renderCardList(q) }
+
+  // Override renderCardList to support sort + search
+  const _origRenderCardList = renderCardList;
+  renderCardList = function (searchQ) {
+    const deck = getDeck();
+    const list = document.getElementById('cardList');
+    if (!deck || !deck.cards || !deck.cards.length) {
+      list.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding:12px 0;letter-spacing:.08em">No cards yet — add some words above!</div>`;
+      return;
+    }
+    const q = (searchQ !== undefined ? searchQ : (document.getElementById('cardListSearch') || {}).value || '').toLowerCase();
+    let cards = [...deck.cards];
+    if (cardSortMode === 'alpha') cards.sort((a, b) => a.word.localeCompare(b.word, 'ja'));
+    // newest: default order (as-is)
+    if (q) cards = cards.filter(c => c.word.includes(q) || c.meaning.toLowerCase().includes(q) || (c.reading && c.reading.includes(q)));
+    if (!cards.length) {
+      list.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding:12px 0">No cards match your search.</div>`;
+      return;
+    }
+    list.innerHTML = cards.map((c) => `
     <div class="card-list-item">
-      <div class="cli-img">${c.imageUrl?`<img src="${c.imageUrl}" alt="">`:`${c.word}`}</div>
+      <div class="cli-img">${c.imageUrl ? `<img src="${c.imageUrl}" alt="">` : `${c.word}`}</div>
       <div class="cli-body">
-        <div class="cli-word noto">${c.word}${c.reading?`<span style="font-size:.75rem;color:var(--muted);margin-left:6px">${c.reading}</span>`:''}</div>
+        <div class="cli-word noto">${c.word}${c.reading ? `<span style="font-size:.75rem;color:var(--muted);margin-left:6px">${c.reading}</span>` : ''}</div>
         <div class="cli-meaning mono">${c.meaning}</div>
       </div>
       <button class="cli-del" style="color:var(--muted);font-size:12px;padding:8px 8px" onclick="openEditCard('${c._id}')">✎</button>
       <button class="cli-del" onclick="deleteCard('${c._id}')">×</button>
     </div>`).join('');
-  document.getElementById('deckHubMeta').textContent=`${deck.cards.length} card${deck.cards.length!==1?'s':''}${deck.description?' · '+deck.description:''}`;
-};
+    document.getElementById('deckHubMeta').textContent = `${deck.cards.length} card${deck.cards.length !== 1 ? 's' : ''}${deck.description ? ' · ' + deck.description : ''}`;
+  };
 
-// ── RENAME DECK ──
-function openRenameDeck(){
-  const d=getDeck();
-  document.getElementById('renameDeckInput').value=d.name;
-  document.getElementById('renameDeckDesc').value=d.description||'';
-  document.getElementById('renameDeckOverlay').classList.add('show');
-  setTimeout(()=>document.getElementById('renameDeckInput').focus(),100);
-}
-async function saveRenameDeck(){
-  const name=document.getElementById('renameDeckInput').value.trim();
-  if(!name){showToast('Name cannot be empty');return}
-  const desc=document.getElementById('renameDeckDesc').value.trim();
-  document.getElementById('renameDeckOverlay').classList.remove('show');
-  showLoading('SAVING...');
-  try{
-    const{error}=await sb.from('decks').update({name,description:desc}).eq('id',currentDeckId);
-    if(error)throw error;
-    const d=getDeck();d.name=name;d.description=desc;
-    document.getElementById('deckHubName').textContent=name;
-    document.getElementById('deckHubName2').textContent=name;
-    hideLoading();
-    renderCardList();
-    showToast('Deck renamed ✓');
-  }catch(e){hideLoading();alert('Error: '+e.message)}
-}
+  // ── RENAME DECK ──
+  function openRenameDeck() {
+    const d = getDeck();
+    document.getElementById('renameDeckInput').value = d.name;
+    document.getElementById('renameDeckDesc').value = d.description || '';
+    document.getElementById('renameDeckOverlay').classList.add('show');
+    setTimeout(() => document.getElementById('renameDeckInput').focus(), 100);
+  }
+  async function saveRenameDeck() {
+    const name = document.getElementById('renameDeckInput').value.trim();
+    if (!name) { showToast('Name cannot be empty'); return }
+    const desc = document.getElementById('renameDeckDesc').value.trim();
+    document.getElementById('renameDeckOverlay').classList.remove('show');
+    showLoading('SAVING...');
+    try {
+      const { error } = await sb.from('decks').update({ name, description: desc }).eq('id', currentDeckId);
+      if (error) throw error;
+      const d = getDeck(); d.name = name; d.description = desc;
+      document.getElementById('deckHubName').textContent = name;
+      document.getElementById('deckHubName2').textContent = name;
+      hideLoading();
+      renderCardList();
+      showToast('Deck renamed ✓');
+    } catch (e) { hideLoading(); alert('Error: ' + e.message) }
+  }
 
-// ── DELETE CURRENT DECK (from deck screen) ──
-async function confirmDeleteCurrentDeck(){
-  const d=getDeck();
-  if(!confirm(`Delete "${d.name}" and all its cards? This cannot be undone.`))return;
-  showLoading('DELETING...');
-  try{
-    await dbDeleteDeck(currentDeckId);
-    decks=decks.filter(x=>x.id!==currentDeckId);
-    currentDeckId=null;
-    hideLoading();
-    showToast('Deck deleted');
-    await goHome();
-  }catch(e){hideLoading();alert('Error: '+e.message)}
-}
+  // ── DELETE CURRENT DECK (from deck screen) ──
+  async function confirmDeleteCurrentDeck() {
+    const d = getDeck();
+    if (!confirm(`Delete "${d.name}" and all its cards? This cannot be undone.`)) return;
+    showLoading('DELETING...');
+    try {
+      await dbDeleteDeck(currentDeckId);
+      decks = decks.filter(x => x.id !== currentDeckId);
+      currentDeckId = null;
+      hideLoading();
+      showToast('Deck deleted');
+      await goHome();
+    } catch (e) { hideLoading(); alert('Error: ' + e.message) }
+  }
 
-// ── STATS SHEET ──
-function openStatsSheet(){
-  const deck=getDeck();
-  if(!deck)return;
-  document.getElementById('statsTitle').textContent=deck.name+' — Stats';
-  const totalCards=deck.cards.length;
-  const withImg=deck.cards.filter(c=>c.imageUrl).length;
-  const withEx=deck.cards.filter(c=>c.example_jp).length;
-  const a=getActivity();
-  const today=new Date().toISOString().slice(0,10);
-  const todaySessions=a[today]||0;
-  document.getElementById('statsGrid').innerHTML=`
+  // ── STATS SHEET ──
+  function openStatsSheet() {
+    const deck = getDeck();
+    if (!deck) return;
+    document.getElementById('statsTitle').textContent = deck.name + ' — Stats';
+    const totalCards = deck.cards.length;
+    const withImg = deck.cards.filter(c => c.imageUrl).length;
+    const withEx = deck.cards.filter(c => c.example_jp).length;
+    const a = getActivity();
+    const today = new Date().toISOString().slice(0, 10);
+    const todaySessions = a[today] || 0;
+    document.getElementById('statsGrid').innerHTML = `
     <div class="stat-box"><div class="stat-num">${totalCards}</div><div class="stat-label">TOTAL CARDS</div></div>
     <div class="stat-box"><div class="stat-num">${withImg}</div><div class="stat-label">WITH IMAGES</div></div>
     <div class="stat-box"><div class="stat-num">${withEx}</div><div class="stat-label">WITH EXAMPLES</div></div>
     <div class="stat-box"><div class="stat-num">${todaySessions}</div><div class="stat-label">TODAY'S SESSIONS</div></div>`;
-  // Heatmap: last 28 days
-  const max=Math.max(1,...Object.values(a));
-  const cells=[];
-  const labels=[];
-  for(let i=27;i>=0;i--){
-    const d=new Date();d.setDate(d.getDate()-i);
-    const k=d.toISOString().slice(0,10);
-    const count=a[k]||0;
-    const level=count===0?0:count<max*.33?1:count<max*.66?2:3;
-    cells.push(`<div class="heatmap-cell d${level}" title="${k}: ${count} session${count!==1?'s':''}" style="flex-shrink:0"></div>`);
-    if(i===27||i===13||i===0)labels.push(d.toLocaleDateString('en',{month:'short',day:'numeric'}));
+    // Heatmap: last 28 days
+    const max = Math.max(1, ...Object.values(a));
+    const cells = [];
+    const labels = [];
+    for (let i = 27; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const k = d.toISOString().slice(0, 10);
+      const count = a[k] || 0;
+      const level = count === 0 ? 0 : count < max * .33 ? 1 : count < max * .66 ? 2 : 3;
+      cells.push(`<div class="heatmap-cell d${level}" title="${k}: ${count} session${count !== 1 ? 's' : ''}" style="flex-shrink:0"></div>`);
+      if (i === 27 || i === 13 || i === 0) labels.push(d.toLocaleDateString('en', { month: 'short', day: 'numeric' }));
+    }
+    document.getElementById('statsHeatmap').innerHTML = cells.join('');
+    document.getElementById('statsHeatLabel').textContent = `${labels[0]} → ${labels[2]}`;
+    document.getElementById('statsOverlay').classList.add('show');
   }
-  document.getElementById('statsHeatmap').innerHTML=cells.join('');
-  document.getElementById('statsHeatLabel').textContent=`${labels[0]} → ${labels[2]}`;
-  document.getElementById('statsOverlay').classList.add('show');
-}
 
-// ── CUSTOM DECK BUILDER ──
-let cdbSelected=new Set();
-let cdbDeckFilter='all';
+  // ── CUSTOM DECK BUILDER ──
+  let cdbSelected = new Set();
+  let cdbDeckFilter = 'all';
 
-function openCustomDeckBuilder(){
-  cdbSelected=new Set();
-  cdbDeckFilter='all';
-  document.getElementById('cdbSearch').value='';
-  document.getElementById('cdbDeckName').value='';
-  renderCDBFilters();
-  renderCDB();
-  document.getElementById('cdbOverlay').classList.add('show');
-  setTimeout(()=>document.getElementById('cdbDeckName').focus(),200);
-}
-function closeCDB(){
-  document.getElementById('cdbOverlay').classList.remove('show');
-}
-function renderCDBFilters(){
-  const filtersEl=document.getElementById('cdbFilters');
-  const allDecks=decks.filter(d=>d.cards&&d.cards.length);
-  if(allDecks.length<=1){filtersEl.innerHTML='';return}
-  filtersEl.innerHTML=`<button class="lesson-btn ${cdbDeckFilter==='all'?'active':''}" onclick="cdbSetFilter('all',this)">All Decks</button>`+
-    allDecks.map(d=>`<button class="lesson-btn ${cdbDeckFilter===d.id?'active':''}" onclick="cdbSetFilter('${d.id}',this)">${d.name}</button>`).join('');
-}
-function cdbSetFilter(id, btn){
-  cdbDeckFilter=id;
-  document.querySelectorAll('#cdbFilters .lesson-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderCDB();
-}
-function renderCDB(){
-  const q=document.getElementById('cdbSearch').value.toLowerCase();
-  const body=document.getElementById('cdbBody');
-  const filteredDecks=decks.filter(d=>{
-    if(!d.cards||!d.cards.length)return false;
-    if(cdbDeckFilter!=='all'&&d.id!==cdbDeckFilter)return false;
-    return true;
-  });
-  if(!filteredDecks.length){body.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-align:center;padding:32px">No cards yet — create some decks first!</div>`;return}
-  body.innerHTML=filteredDecks.map(d=>{
-    const cards=d.cards.filter(c=>
-      !q||(c.word.toLowerCase().includes(q)||c.meaning.toLowerCase().includes(q)||(c.reading&&c.reading.toLowerCase().includes(q)))
-    );
-    if(!cards.length)return'';
-    const allSelected=cards.every(c=>cdbSelected.has(c._id));
-    return`<div class="cdb-deck-group">
+  function openCustomDeckBuilder() {
+    cdbSelected = new Set();
+    cdbDeckFilter = 'all';
+    document.getElementById('cdbSearch').value = '';
+    document.getElementById('cdbDeckName').value = '';
+    renderCDBFilters();
+    renderCDB();
+    document.getElementById('cdbOverlay').classList.add('show');
+    setTimeout(() => document.getElementById('cdbDeckName').focus(), 200);
+  }
+  function closeCDB() {
+    document.getElementById('cdbOverlay').classList.remove('show');
+  }
+  function renderCDBFilters() {
+    const filtersEl = document.getElementById('cdbFilters');
+    const allDecks = decks.filter(d => d.cards && d.cards.length);
+    if (allDecks.length <= 1) { filtersEl.innerHTML = ''; return }
+    filtersEl.innerHTML = `<button class="lesson-btn ${cdbDeckFilter === 'all' ? 'active' : ''}" onclick="cdbSetFilter('all',this)">All Decks</button>` +
+      allDecks.map(d => `<button class="lesson-btn ${cdbDeckFilter === d.id ? 'active' : ''}" onclick="cdbSetFilter('${d.id}',this)">${d.name}</button>`).join('');
+  }
+  function cdbSetFilter(id, btn) {
+    cdbDeckFilter = id;
+    document.querySelectorAll('#cdbFilters .lesson-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderCDB();
+  }
+  function renderCDB() {
+    const q = document.getElementById('cdbSearch').value.toLowerCase();
+    const body = document.getElementById('cdbBody');
+    const filteredDecks = decks.filter(d => {
+      if (!d.cards || !d.cards.length) return false;
+      if (cdbDeckFilter !== 'all' && d.id !== cdbDeckFilter) return false;
+      return true;
+    });
+    if (!filteredDecks.length) { body.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-align:center;padding:32px">No cards yet — create some decks first!</div>`; return }
+    body.innerHTML = filteredDecks.map(d => {
+      const cards = d.cards.filter(c =>
+        !q || (c.word.toLowerCase().includes(q) || c.meaning.toLowerCase().includes(q) || (c.reading && c.reading.toLowerCase().includes(q)))
+      );
+      if (!cards.length) return '';
+      const allSelected = cards.every(c => cdbSelected.has(c._id));
+      return `<div class="cdb-deck-group">
       <div class="cdb-deck-label">
         ${d.name}
-        <button class="cdb-select-all" onclick="cdbToggleDeck('${d.id}',${!allSelected})">${allSelected?'Deselect all':'Select all'}</button>
+        <button class="cdb-select-all" onclick="cdbToggleDeck('${d.id}',${!allSelected})">${allSelected ? 'Deselect all' : 'Select all'}</button>
       </div>
-      ${cards.map(c=>`
-        <div class="cdb-card-row ${cdbSelected.has(c._id)?'selected':''}" onclick="cdbToggleCard('${c._id}')">
-          <div class="cdb-checkbox">${cdbSelected.has(c._id)?'✓':''}</div>
-          <div class="cdb-card-thumb">${c.imageUrl?`<img src="${c.imageUrl}" alt="">`:`${c.word.slice(0,2)}`}</div>
+      ${cards.map(c => `
+        <div class="cdb-card-row ${cdbSelected.has(c._id) ? 'selected' : ''}" onclick="cdbToggleCard('${c._id}')">
+          <div class="cdb-checkbox">${cdbSelected.has(c._id) ? '✓' : ''}</div>
+          <div class="cdb-card-thumb">${c.imageUrl ? `<img src="${c.imageUrl}" alt="">` : `${c.word.slice(0, 2)}`}</div>
           <div class="cdb-card-info">
-            <div class="cdb-card-word">${c.word}${c.reading?` <span style="font-size:.8rem;color:var(--muted)">${c.reading}</span>`:''}</div>
+            <div class="cdb-card-word">${c.word}${c.reading ? ` <span style="font-size:.8rem;color:var(--muted)">${c.reading}</span>` : ''}</div>
             <div class="cdb-card-meaning">${c.meaning}</div>
           </div>
         </div>`).join('')}
     </div>`;
-  }).join('');
-  updateCDBCount();
-}
-function cdbToggleCard(id){
-  if(cdbSelected.has(id))cdbSelected.delete(id);
-  else cdbSelected.add(id);
-  renderCDB();
-}
-function cdbToggleDeck(deckId, select){
-  const d=decks.find(x=>x.id===deckId);
-  if(!d)return;
-  d.cards.forEach(c=>select?cdbSelected.add(c._id):cdbSelected.delete(c._id));
-  renderCDB();
-}
-function cdbSelectAll(){
-  decks.forEach(d=>(d.cards||[]).forEach(c=>cdbSelected.add(c._id)));
-  renderCDB();
-}
-function updateCDBCount(){
-  document.getElementById('cdbCount').textContent=`${cdbSelected.size} card${cdbSelected.size!==1?'s':''} selected`;
-}
-async function saveCDB(){
-  const name=document.getElementById('cdbDeckName').value.trim();
-  if(!name){showToast('Please give your deck a name');document.getElementById('cdbDeckName').focus();return}
-  if(!cdbSelected.size){showToast('Select at least one card');return}
-  // Gather cards
-  const allCards=decks.flatMap(d=>d.cards||[]);
-  const toAdd=allCards.filter(c=>cdbSelected.has(c._id));
-  closeCDB();
-  showLoading('CREATING CUSTOM DECK...');
-  try{
-    const row=await dbCreateDeck(name,'Custom deck');
-    const deck={id:row.id,name:row.name,description:'Custom deck',createdAt:row.created_at,cards:[]};
-    decks.push(deck);
-    currentDeckId=deck.id;
-    await dbInsertCards(deck.id,toAdd);
-    const{data:freshCards,error}=await sb.from('cards').select('*').eq('deck_id',deck.id).order('created_at',{ascending:true});
-    if(error)throw error;
-    deck.cards=(freshCards||[]).map(dbCardToApp);
+    }).join('');
+    updateCDBCount();
+  }
+  function cdbToggleCard(id) {
+    if (cdbSelected.has(id)) cdbSelected.delete(id);
+    else cdbSelected.add(id);
+    renderCDB();
+  }
+  function cdbToggleDeck(deckId, select) {
+    const d = decks.find(x => x.id === deckId);
+    if (!d) return;
+    d.cards.forEach(c => select ? cdbSelected.add(c._id) : cdbSelected.delete(c._id));
+    renderCDB();
+  }
+  function cdbSelectAll() {
+    decks.forEach(d => (d.cards || []).forEach(c => cdbSelected.add(c._id)));
+    renderCDB();
+  }
+  function updateCDBCount() {
+    document.getElementById('cdbCount').textContent = `${cdbSelected.size} card${cdbSelected.size !== 1 ? 's' : ''} selected`;
+  }
+  async function saveCDB() {
+    const name = document.getElementById('cdbDeckName').value.trim();
+    if (!name) { showToast('Please give your deck a name'); document.getElementById('cdbDeckName').focus(); return }
+    if (!cdbSelected.size) { showToast('Select at least one card'); return }
+    // Gather cards
+    const allCards = decks.flatMap(d => d.cards || []);
+    const toAdd = allCards.filter(c => cdbSelected.has(c._id));
+    closeCDB();
+    showLoading('CREATING CUSTOM DECK...');
+    try {
+      const row = await dbCreateDeck(name, 'Custom deck');
+      const deck = { id: row.id, name: row.name, description: 'Custom deck', createdAt: row.created_at, cards: [] };
+      decks.push(deck);
+      currentDeckId = deck.id;
+      await dbInsertCards(deck.id, toAdd);
+      const { data: freshCards, error } = await sb.from('cards').select('*').eq('deck_id', deck.id).order('created_at', { ascending: true });
+      if (error) throw error;
+      deck.cards = (freshCards || []).map(dbCardToApp);
+      hideLoading();
+      popConfetti();
+      openDeck(deck.id);
+      showToast(`"${name}" created with ${toAdd.length} cards! ✦`);
+    } catch (e) { hideLoading(); alert('Error: ' + e.message) }
+  }
+
+  // ── RECORD ACTIVITY WHEN STUDYING ──
+  const _origGoStudy = goStudy;
+  goStudy = function () {
+    recordActivity();
+    _origGoStudy();
+  };
+  const _origGoPractice = goPractice;
+  goPractice = function (mode) {
+    recordActivity();
+    _origGoPractice(mode);
+  };
+
+  // ── RENDER STREAK ON HOME ──
+  const _origRenderHome = renderHome;
+  renderHome = function () {
+    _origRenderHome();
+    renderStreakBar();
+  };
+
+  (async () => {
+    showLoading('LOADING...');
+    await loadDecks();
     hideLoading();
-    popConfetti();
-    openDeck(deck.id);
-    showToast(`"${name}" created with ${toAdd.length} cards! ✦`);
-  }catch(e){hideLoading();alert('Error: '+e.message)}
-}
-
-// ── RECORD ACTIVITY WHEN STUDYING ──
-const _origGoStudy=goStudy;
-goStudy=function(){
-  recordActivity();
-  _origGoStudy();
-};
-const _origGoPractice=goPractice;
-goPractice=function(mode){
-  recordActivity();
-  _origGoPractice(mode);
-};
-
-// ── RENDER STREAK ON HOME ──
-const _origRenderHome=renderHome;
-renderHome=function(){
-  _origRenderHome();
-  renderStreakBar();
-};
-
-(async()=>{
-  showLoading('LOADING...');
-  await loadDecks();
-  hideLoading();
-  showScreen('home');
-  renderHome();
-})();
+    showScreen('home');
+    renderHome();
+  })();
 
 </script>
