@@ -247,10 +247,16 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
       <div class="empty-state" id="emptyState" style="grid-column:1/-1">
         <div class="empty-jp">学</div>
         <div class="empty-text">No decks yet — create your first one!</div>
-        <button class="empty-btn" onclick="showNewDeckModal()">+ New Deck</button>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <button class="empty-btn" onclick="showNewDeckModal()">+ New Deck</button>
+          <button class="empty-btn" style="background:var(--ink)" onclick="triggerHomePdfUpload()">📄 Import PDF</button>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- hidden file input for home screen PDF upload -->
+  <input type="file" id="homePdfFileInput" accept=".pdf" style="display:none" onchange="handleHomePdfUpload(event)">
 
   <!-- modal -->
   <div class="modal-overlay" id="newDeckOverlay">
@@ -270,6 +276,25 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
       </div>
     </div>
   </div>
+
+  <!-- PDF name modal — asks for deck name before importing from home screen -->
+  <div class="modal-overlay" id="homePdfNameOverlay">
+    <div class="modal">
+      <div class="modal-title">Name this deck</div>
+      <div class="modal-field">
+        <label class="modal-label">Deck name</label>
+        <input class="modal-input noto" id="homePdfDeckName" placeholder="e.g. Adventures in Japanese 1" />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Description (optional)</label>
+        <input class="modal-input mono" id="homePdfDeckDesc" placeholder="e.g. Chapter 1 vocab" style="font-size:12px" />
+      </div>
+      <div class="modal-row">
+        <button class="modal-cancel" onclick="document.getElementById('homePdfNameOverlay').classList.remove('show')">Cancel</button>
+        <button class="modal-save" onclick="confirmHomePdfDeck()">Continue →</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ DECK HUB ═══ -->
@@ -277,8 +302,8 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
   <div class="topbar">
     <button class="topbar-back" onclick="goHome()">← Decks</button>
     <div class="topbar-title" id="deckHubName"></div>
-    <button class="topbar-action" onclick="triggerPdfUpload()" style="margin-left:auto">📄 PDF</button>
-    <button class="topbar-action primary" onclick="showNewDeckModal2()" id="addMoreBtn">+ Add Words</button>
+    <button class="topbar-action" onclick="triggerPdfUpload()">📄 PDF</button>
+    <button class="topbar-action primary" onclick="showNewDeckModal2()" id="addMoreBtn">+ Words</button>
   </div>
   <!-- hidden file input -->
   <input type="file" id="pdfFileInput" accept=".pdf" style="display:none" onchange="handlePdfUpload(event)">
@@ -308,6 +333,11 @@ body{background:var(--rice);color:var(--ink);font-family:'DM Serif Display',seri
         <span class="mode-icon">書</span>
         <div class="mode-name">Recall</div>
         <div class="mode-desc mono">See the meaning · type the Japanese word</div>
+      </div>
+      <div class="mode-tile" style="border-top:3px solid var(--muted);grid-column:1/-1" onclick="triggerPdfUpload()">
+        <span class="mode-icon">📄</span>
+        <div class="mode-name">Import from PDF</div>
+        <div class="mode-desc mono">Upload a vocabulary PDF and generate cards automatically — no AI needed</div>
       </div>
     </div>
   </div>
@@ -910,6 +940,69 @@ function checkRecall(correct){
   updateRecallScore();document.getElementById('recallNext').classList.add('show');
 }
 function nextRecall(){recallIdx++;renderRecall()}
+
+// ── HOME SCREEN PDF UPLOAD ──
+let homePdfFile = null;
+
+function triggerHomePdfUpload(){
+  document.getElementById('homePdfFileInput').value = '';
+  document.getElementById('homePdfFileInput').click();
+}
+
+function handleHomePdfUpload(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  homePdfFile = file;
+  // Ask for a deck name first
+  const suggested = file.name.replace(/\.pdf$/i,'').replace(/[_-]/g,' ');
+  document.getElementById('homePdfDeckName').value = suggested;
+  document.getElementById('homePdfDeckDesc').value = '';
+  document.getElementById('homePdfNameOverlay').classList.add('show');
+  setTimeout(()=>document.getElementById('homePdfDeckName').focus(), 100);
+}
+
+async function confirmHomePdfDeck(){
+  const name = document.getElementById('homePdfDeckName').value.trim();
+  if(!name) return;
+  const desc = document.getElementById('homePdfDeckDesc').value.trim();
+  document.getElementById('homePdfNameOverlay').classList.remove('show');
+
+  // Create the deck first
+  showLoading('CREATING DECK...');
+  try {
+    const row = await dbCreateDeck(name, desc);
+    const deck = {id:row.id, name:row.name, description:row.description||'', createdAt:row.created_at, cards:[]};
+    decks.push(deck);
+    currentDeckId = deck.id;
+  } catch(e) {
+    hideLoading();
+    alert('Error creating deck: ' + e.message);
+    return;
+  }
+
+  // Now parse the PDF
+  showLoading('READING PDF...');
+  try {
+    const text = await extractPdfText(homePdfFile);
+    pdfParsedCards = parseVocabPdf(text);
+    hideLoading();
+    if(!pdfParsedCards.length){
+      alert('No vocabulary cards could be found in this PDF.');
+      return;
+    }
+    // Go to deck screen first, then show preview
+    const deck = getDeck();
+    document.getElementById('deckHubName').textContent = deck.name;
+    document.getElementById('deckHubName2').textContent = deck.name;
+    document.getElementById('deckHubMeta').textContent = `0 cards${deck.description?' · '+deck.description:''}`;
+    renderCardList();
+    showScreen('deck');
+    showPdfPreview();
+  } catch(err) {
+    hideLoading();
+    alert('Could not read PDF: ' + err.message);
+  }
+}
 
 // ── PDF IMPORT ──
 let pdfParsedCards = [];    // all cards parsed from PDF
