@@ -6,8 +6,10 @@ export default async function handler(req, res) {
   const { pendingWords } = req.body;
 
   try {
+    // 1. MUST use v1beta for JSON Schema features
+    // 2. We use gemini-1.5-flash-latest to ensure the model is found
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -20,19 +22,19 @@ export default async function handler(req, res) {
             }],
           }],
           generationConfig: {
-            maxOutputTokens: 2000,
-            responseMimeType: "application/json", 
-            responseSchema: {
-              type: "ARRAY",
+            // REST API expects snake_case for these specific fields in v1beta
+            response_mime_type: "application/json", 
+            response_schema: {
+              type: "array", // Note: some versions prefer lowercase "array"
               items: {
-                type: "OBJECT",
+                type: "object",
                 properties: {
-                  word: { type: "STRING" },
-                  reading: { type: "STRING" },
-                  meaning: { type: "STRING" },
-                  image_query: { type: "STRING" },
-                  example_jp: { type: "STRING" },
-                  example_en: { type: "STRING" }
+                  word: { type: "string" },
+                  reading: { type: "string" },
+                  meaning: { type: "string" },
+                  image_query: { type: "string" },
+                  example_jp: { type: "string" },
+                  example_en: { type: "string" }
                 },
                 required: ["word", "reading", "meaning", "image_query", "example_jp", "example_en"]
               }
@@ -45,15 +47,13 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Gemini Error Detail:", data);
+      console.error("Gemini Error:", JSON.stringify(data, null, 2));
       return res.status(response.status).json(data);
     }
 
-    // Success! Return the full data to your frontend
     return res.status(200).json(data);
 
   } catch (err) {
-    console.error("Handler error:", err);
     return res.status(500).json({ error: err.message });
   }
 }
