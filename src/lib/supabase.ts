@@ -231,3 +231,58 @@ export async function dbUpdateCard(
 
   return dbCardToApp(data);
 }
+
+// ─── ADD THESE TWO FUNCTIONS TO THE BOTTOM OF /lib/supabase.ts ───────────────
+
+/**
+ * Load every card across all decks (used by the "add existing cards" picker).
+ */
+export async function loadAllCards(): Promise<Flashcard[]> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    return [];
+  }
+
+  const { data, error } = await sb
+    .from('cards')
+    .select('*')
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error loading all cards', error);
+    return [];
+  }
+
+  return (data ?? []).map(dbCardToApp);
+}
+
+/**
+ * Duplicate the given cards into a different deck.
+ * The originals are untouched; new rows are inserted with targetDeckId.
+ */
+export async function dbCopyCardsIntoDeck(
+  targetDeckId: string,
+  cards: Flashcard[],
+): Promise<Flashcard[]> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    return [];
+  }
+
+  if (cards.length === 0) return [];
+
+  const rows = cards.map((card) => ({
+    deck_id: targetDeckId,
+    word: card.word,
+    reading: card.reading || '',
+    meaning: card.meaning || '',
+    image_url: card.imageUrl || '',
+    example_jp: card.example_jp || '',
+    example_en: card.example_en || '',
+  }));
+
+  const { data, error } = await sb.from('cards').insert(rows).select('*');
+
+  if (error) throw error;
+  return (data ?? []).map(dbCardToApp);
+}

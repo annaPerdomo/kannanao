@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState, ReactNode } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -30,7 +30,7 @@ export function CreateDeckDialog({
     setName("");
     setDescription("");
     onClose();
-    router.push(`/?deck=${deck.id}`); // or however you navigate into a deck
+    router.push(`/?deck=${deck.id}`); // FIXME: Make the decks based on url query params instead of global state so this can be more intuitive and less buggy
   };
 
   return (

@@ -2,6 +2,7 @@
 import { useState, useCallback, useEffect } from "react";
 import type { Flashcard } from "@/types/flashcard";
 import {
+  dbCopyCardsIntoDeck,
   dbDeleteCard,
   dbInsertCards,
   dbUpdateCard,
@@ -102,5 +103,23 @@ export function useCards(
     [],
   );
 
-  return { cards, addCard, addCards, deleteCard, updateCard, loading };
+    const copyExistingCards = useCallback(
+    async (sourcecards: Flashcard[]): Promise<void> => {
+      if (!isConfigured()) {
+        showConfigBanner();
+        return;
+      }
+ 
+      const saved = await dbCopyCardsIntoDeck(deckId, sourcecards);
+      setCards((prev) => {
+        const next = [...prev, ...saved];
+        onCountChange?.(next.length);
+        return next;
+      });
+    },
+    [deckId, onCountChange],
+  );
+ 
+
+  return { cards, copyExistingCards, addCard, addCards, deleteCard, updateCard, loading };
 }

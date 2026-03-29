@@ -1,5 +1,5 @@
 'use client';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import {
   Box,
   Typography,
@@ -14,9 +14,11 @@ import StyleIcon from '@mui/icons-material/Style';
 import LayersIcon from '@mui/icons-material/Layers';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
+import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import { GenerateForm } from '@/components/GenerateForm';
 import { ImageCard } from '@/components/ImageCard';
 import { Loading } from '@/components/Loading';
+import { AddExistingCardsDialog } from '@/components/AddExistingCardsDialog';
 import { useDecks } from '@/hooks/useDecks';
 import { useCards } from '@/hooks/useCards';
 import { useGenerateFlashcards } from '@/hooks/useGenerateFlashcards';
@@ -72,12 +74,14 @@ export function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
   const { decks, loading: decksLoading, updateDeckCount } = useDecks();
   const deck = decks.find((d) => d.id === deckId);
 
+  const [pickerOpen, setPickerOpen] = useState(false);
+
   const handleCountChange = useCallback(
     (count: number) => updateDeckCount(deckId, count),
     [deckId, updateDeckCount],
   );
 
-  const { cards, addCards, deleteCard, loading: cardsLoading, updateCard, } = useCards(deckId, handleCountChange);
+  const { cards, addCards, deleteCard, loading: cardsLoading, updateCard, copyExistingCards } = useCards(deckId, handleCountChange);
   const { generating, error, generate } = useGenerateFlashcards();
 
   const handleGenerate = async (words: string[]) => {
@@ -131,7 +135,7 @@ export function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
           alignItems: 'center',
           gap: 2,
           px: { xs: 2.5, sm: 3 },
-          pl: { xs: 3.5, sm: 4 }, // clear the accent strip
+          pl: { xs: 3.5, sm: 4 },
           py: { xs: 2, sm: 2.5 },
         }}>
           <IconButton
@@ -261,6 +265,26 @@ export function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
           <SidePanel>
             <Label>Add Cards</Label>
             <GenerateForm onGenerate={handleGenerate} generating={generating} error={error} />
+            <Divider sx={{ my: 1.5, borderColor: 'rgba(249,168,212,0.3)' }} />
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<LibraryAddIcon sx={{ fontSize: 15 }} />}
+              onClick={() => setPickerOpen(true)}
+              size="small"
+              sx={{
+                borderRadius: '9px',
+                justifyContent: 'flex-start',
+                px: 2,
+                py: '6px',
+                fontSize: '0.76rem',
+                letterSpacing: '0.01em',
+                textTransform: 'none',
+                fontWeight: 700,
+              }}
+            >
+              Add Existing Cards
+            </Button>
           </SidePanel>
         </Box>
 
@@ -297,6 +321,14 @@ export function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
           )}
         </Box>
       </Box>
+
+      {/* ── Add Existing Cards dialog ── */}
+      <AddExistingCardsDialog
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        targetDeckId={deckId}
+        onConfirm={copyExistingCards}
+      />
     </Box>
   );
 }
