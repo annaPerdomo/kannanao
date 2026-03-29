@@ -1,3 +1,4 @@
+import { access } from 'fs';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
@@ -18,13 +19,21 @@ export async function GET(req: NextRequest) {
     });
 
     if (!res.ok) {
-      return NextResponse.json({ error: 'Unsplash error' }, { status: 502 });
+      const errorText = await res.text();
+      return NextResponse.json(
+        {
+          error: 'Unsplash error',
+          status: res.status,
+          statusText: res.statusText,
+          detail: errorText,
+        },
+        { status: 502 },
+      );
     }
 
     const data = await res.json();
     return NextResponse.json(data, { status: 200 });
   } catch (err) {
-    console.error('[/api/images]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

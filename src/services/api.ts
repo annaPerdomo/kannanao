@@ -16,10 +16,10 @@ export async function fetchImage(query: string): Promise<string | null> {
   const res = await fetch(`${BASE}/images?query=${encodeURIComponent(query)}`);
   if (!res.ok) return null;
   const data = await res.json();
-  // Unsplash returns array; grab first result URL
-  if (Array.isArray(data) && data.length > 0) {
-    return data[0]?.urls?.regular ?? data[0]?.url ?? null;
+  // Unsplash search API returns an object with a results array.
+  const results = Array.isArray(data) ? data : data?.results;
+  if (Array.isArray(results) && results.length > 0) {
+    return results[0]?.urls?.regular ?? results[0]?.url ?? null;
   }
-  if (data?.urls?.regular) return data.urls.regular;
   return null;
 }
