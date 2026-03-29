@@ -3088,11 +3088,11 @@
             ? JSON.parse(data.candidates[0].content.parts[0].text)
             : []);
       if (!newCards.length) throw new Error('No cards returned from API');
-      console.log({data, newCards});
+
       document.getElementById('loadingTxt').textContent = 'FETCHING IMAGES...';
       await Promise.all(newCards.map(async c => {
         try {
-          const r = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(c.image_query || c.meaning)}&per_page=1&orientation=landscape&client_id=${UNSPLASH_KEY}`);
+          const r = await fetch(`/api/image?query=${encodeURIComponent(c.image_query || c.meaning)}`);
           const d = await r.json();
           if (d.results && d.results[0]) { c.imageUrl = d.results[0].urls.small; c.imageCredit = d.results[0].user.name }
         } catch (e) { }
