@@ -286,3 +286,28 @@ export async function dbCopyCardsIntoDeck(
   if (error) throw error;
   return (data ?? []).map(dbCardToApp);
 }
+
+export async function dbRenameDeck(
+  id: string,
+  name: string,
+  description?: string,
+): Promise<Deck> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    throw new Error('Supabase is not configured');
+  }
+
+  const { data, error } = await sb
+    .from('decks')
+    .update({ name, description: description ?? null })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error || !data) {
+    throw error ?? new Error('Unable to rename deck');
+  }
+
+  // Preserve card count — caller passes it in via the hook
+  return dbDeckToApp(data, 0);
+}

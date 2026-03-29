@@ -31,7 +31,7 @@ const STACK_COLORS = [
 
 export function DeckCard({ deck, onOpen, onDelete }: DeckCardProps) {
   const icon = pickIcon(deck.id);
-  const shouldShowDescription = Boolean(deck.description && deck.description !== deck.name);
+  const shouldShowDescription = Boolean(deck.description);
   return (
     <Box
       sx={{

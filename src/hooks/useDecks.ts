@@ -1,13 +1,14 @@
-'use client';
-import { useState, useCallback, useEffect } from 'react';
-import type { Deck } from '@/types/deck';
+"use client";
+import { useState, useCallback, useEffect } from "react";
+import type { Deck } from "@/types/deck";
 import {
   dbCreateDeck,
   dbDeleteDeck,
+  dbRenameDeck,
   isConfigured,
   loadDecks,
   showConfigBanner,
-} from '@/lib/supabase';
+} from "@/lib/supabase";
 
 export function useDecks() {
   const [decks, setDecks] = useState<Deck[]>([]);
@@ -27,7 +28,7 @@ export function useDecks() {
     async (name: string, description?: string): Promise<Deck> => {
       if (!isConfigured()) {
         showConfigBanner();
-        throw new Error('Supabase is not configured');
+        throw new Error("Supabase is not configured");
       }
 
       const deck = await dbCreateDeck(name, description);
@@ -40,7 +41,7 @@ export function useDecks() {
   const deleteDeck = useCallback(async (id: string): Promise<void> => {
     if (!isConfigured()) {
       showConfigBanner();
-      throw new Error('Supabase is not configured');
+      throw new Error("Supabase is not configured");
     }
 
     await dbDeleteDeck(id);
@@ -48,8 +49,37 @@ export function useDecks() {
   }, []);
 
   const updateDeckCount = useCallback((deckId: string, count: number): void => {
-    setDecks((prev) => prev.map((d) => (d.id === deckId ? { ...d, cardCount: count } : d)));
+    setDecks((prev) =>
+      prev.map((d) => (d.id === deckId ? { ...d, cardCount: count } : d)),
+    );
   }, []);
 
-  return { decks, loading, createDeck, deleteDeck, updateDeckCount };
+  const renameDeck = useCallback(
+    async (id: string, name: string, description?: string): Promise<void> => {
+      if (!isConfigured()) {
+        showConfigBanner();
+        throw new Error("Supabase is not configured");
+      }
+
+      await dbRenameDeck(id, name, description);
+
+      setDecks((prev) =>
+        prev.map((d) =>
+          d.id === id
+            ? { ...d, name, description: description ?? d.description }
+            : d,
+        ),
+      );
+    },
+    [],
+  );
+
+  return {
+    decks,
+    loading,
+    createDeck,
+    deleteDeck,
+    renameDeck,
+    updateDeckCount,
+  };
 }

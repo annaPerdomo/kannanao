@@ -12,7 +12,6 @@ import {
   InputAdornment,
   Checkbox,
   Box,
-  Chip,
   CircularProgress,
   Divider,
 } from "@mui/material";
@@ -31,6 +30,42 @@ interface Props {
   onConfirm: (cards: Flashcard[]) => Promise<void>;
 }
 
+function CardThumbnail({ card }: { card: Flashcard }) {
+  return card.imageUrl ? (
+    <Box
+      component="img"
+      src={card.imageUrl}
+      alt={card.word}
+      sx={{
+        width: 44,
+        height: 44,
+        borderRadius: '8px',
+        objectFit: 'cover',
+        flexShrink: 0,
+        border: '1px solid rgba(249,168,212,0.3)',
+        bgcolor: '#FFF0F8',
+      }}
+    />
+  ) : (
+    <Box
+      sx={{
+        width: 44,
+        height: 44,
+        borderRadius: '8px',
+        flexShrink: 0,
+        background: 'linear-gradient(135deg, #FFF0F8 0%, #FAF5FF 100%)',
+        border: '1px solid rgba(249,168,212,0.3)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '1.1rem',
+      }}
+    >
+      🌸
+    </Box>
+  );
+}
+
 export function AddExistingCardsDialog({
   open,
   onClose,
@@ -44,7 +79,6 @@ export function AddExistingCardsDialog({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Load all cards + deck names when dialog opens
   useEffect(() => {
     if (!open) return;
     setLoading(true);
@@ -52,7 +86,6 @@ export function AddExistingCardsDialog({
     setSearch("");
 
     Promise.all([loadAllCards(), loadDecks()]).then(([cards, decks]) => {
-      // Only show cards that belong to OTHER decks
       const foreign = cards.filter((c) => c.deckId !== targetDeckId);
       setAllCards(foreign);
 
@@ -215,14 +248,12 @@ export function AddExistingCardsDialog({
               flexDirection: "column",
               gap: 0.5,
               overflowY: "auto",
-              // Remaining height after search + header
               maxHeight: "calc(80vh - 220px)",
               pr: 0.5,
             }}
           >
             {filtered.map((card) => {
               const isChecked = selected.has(card.id);
-              const deckName = deckMap[card.deckId] ?? "Unknown deck";
               return (
                 <Box
                   key={card.id}
@@ -230,9 +261,9 @@ export function AddExistingCardsDialog({
                   sx={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 1,
-                    px: 1.5,
-                    py: 1,
+                    gap: 1.25,
+                    px: 1.25,
+                    py: 0.875,
                     borderRadius: 2,
                     cursor: "pointer",
                     border: "1px solid",
@@ -262,7 +293,10 @@ export function AddExistingCardsDialog({
                     }}
                   />
 
-                  {/* Word + reading */}
+                  {/* Thumbnail */}
+                  <CardThumbnail card={card} />
+
+                  {/* Word + reading + meaning */}
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Box
                       sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}
@@ -301,20 +335,6 @@ export function AddExistingCardsDialog({
                       </Typography>
                     )}
                   </Box>
-
-                  {/* Source deck chip */}
-                  <Chip
-                    label={deckName}
-                    size="small"
-                    sx={{
-                      height: 20,
-                      fontSize: "0.65rem",
-                      bgcolor: "rgba(249,168,212,0.2)",
-                      color: "#9D174D",
-                      border: "1px solid rgba(249,168,212,0.4)",
-                      "& .MuiChip-label": { px: 0.75 },
-                    }}
-                  />
                 </Box>
               );
             })}
