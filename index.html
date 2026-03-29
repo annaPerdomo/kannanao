@@ -3082,9 +3082,13 @@
       });
 
       const data = await res.json();
-      const rawText = data.candidates[0].content.parts[0].text;
-      const newCards = JSON.parse(rawText);
-      console.log({data, rawText, newCards});
+      const newCards = Array.isArray(data)
+        ? data
+        : (data?.candidates?.[0]?.content?.parts?.[0]?.text
+            ? JSON.parse(data.candidates[0].content.parts[0].text)
+            : []);
+      if (!newCards.length) throw new Error('No cards returned from API');
+      console.log({data, newCards});
       document.getElementById('loadingTxt').textContent = 'FETCHING IMAGES...';
       await Promise.all(newCards.map(async c => {
         try {
