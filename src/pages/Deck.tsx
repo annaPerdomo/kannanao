@@ -77,7 +77,7 @@ export function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
     [deckId, updateDeckCount],
   );
 
-  const { cards, addCards, deleteCard, loading: cardsLoading } = useCards(deckId, handleCountChange);
+  const { cards, addCards, deleteCard, loading: cardsLoading, updateCard, } = useCards(deckId, handleCountChange);
   const { generating, error, generate } = useGenerateFlashcards();
 
   const handleGenerate = async (words: string[]) => {
@@ -291,7 +291,7 @@ export function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
               gap: 1.75,
             }}>
               {cards.map((card) => (
-                <ImageCard key={card.id} card={card} onDelete={deleteCard} />
+                <ImageCard key={card.id} card={card} onDelete={deleteCard} onUpdate={updateCard}/>
               ))}
             </Box>
           )}
