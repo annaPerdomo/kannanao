@@ -11,11 +11,13 @@ import {
 
 export function useDecks() {
   const [decks, setDecks] = useState<Deck[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDecks = async () => {
       const loaded = await loadDecks();
       setDecks(loaded);
+      setLoading(false);
     };
 
     void fetchDecks();
@@ -49,5 +51,5 @@ export function useDecks() {
     setDecks((prev) => prev.map((d) => (d.id === deckId ? { ...d, cardCount: count } : d)));
   }, []);
 
-  return { decks, createDeck, deleteDeck, updateDeckCount };
+  return { decks, loading, createDeck, deleteDeck, updateDeckCount };
 }

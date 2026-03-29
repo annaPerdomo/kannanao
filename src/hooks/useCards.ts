@@ -1,6 +1,6 @@
-'use client';
-import { useState, useCallback, useEffect } from 'react';
-import type { Flashcard } from '@/types/flashcard';
+"use client";
+import { useState, useCallback, useEffect } from "react";
+import type { Flashcard } from "@/types/flashcard";
 import {
   dbDeleteCard,
   dbInsertCards,
@@ -8,23 +8,28 @@ import {
   isConfigured,
   loadCards,
   showConfigBanner,
-} from '@/lib/supabase';
+} from "@/lib/supabase";
 
-export function useCards(deckId: string, onCountChange?: (count: number) => void) {
+export function useCards(
+  deckId: string,
+  onCountChange?: (count: number) => void,
+) {
   const [cards, setCards] = useState<Flashcard[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCards = async () => {
       const loaded = await loadCards(deckId);
       setCards(loaded);
       onCountChange?.(loaded.length);
+      setLoading(false);
     };
 
     void fetchCards();
   }, [deckId, onCountChange]);
 
   const addCard = useCallback(
-    async (card: Omit<Flashcard, 'id'>): Promise<Flashcard | undefined> => {
+    async (card: Omit<Flashcard, "id">): Promise<Flashcard | undefined> => {
       if (!isConfigured()) {
         showConfigBanner();
         return undefined;
@@ -45,7 +50,7 @@ export function useCards(deckId: string, onCountChange?: (count: number) => void
   );
 
   const addCards = useCallback(
-    async (incoming: Omit<Flashcard, 'id'>[]): Promise<void> => {
+    async (incoming: Omit<Flashcard, "id">[]): Promise<void> => {
       if (!isConfigured()) {
         showConfigBanner();
         return;
@@ -79,7 +84,10 @@ export function useCards(deckId: string, onCountChange?: (count: number) => void
   );
 
   const updateCard = useCallback(
-    async (id: string, patch: Partial<Flashcard>): Promise<Flashcard | null> => {
+    async (
+      id: string,
+      patch: Partial<Flashcard>,
+    ): Promise<Flashcard | null> => {
       if (!isConfigured()) {
         showConfigBanner();
         return null;
@@ -94,5 +102,5 @@ export function useCards(deckId: string, onCountChange?: (count: number) => void
     [],
   );
 
-  return { cards, addCard, addCards, deleteCard, updateCard };
+  return { cards, addCard, addCards, deleteCard, updateCard, loading };
 }

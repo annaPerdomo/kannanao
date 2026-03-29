@@ -15,6 +15,7 @@ import StyleIcon from '@mui/icons-material/Style';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import { GenerateForm } from '@/components/GenerateForm';
 import { ImageCard } from '@/components/ImageCard';
+import { Loading } from '@/components/Loading';
 import { useDecks } from '@/hooks/useDecks';
 import { useCards } from '@/hooks/useCards';
 import { useGenerateFlashcards } from '@/hooks/useGenerateFlashcards';
@@ -28,7 +29,7 @@ interface DeckProps {
 }
 
 export function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
-  const { decks, updateDeckCount } = useDecks();
+  const { decks, loading: decksLoading, updateDeckCount } = useDecks();
   const deck = decks.find((d) => d.id === deckId);
 
   const handleCountChange = useCallback(
@@ -36,13 +37,22 @@ export function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
     [deckId, updateDeckCount],
   );
 
-  const { cards, addCards, deleteCard } = useCards(deckId, handleCountChange);
+  const { cards, addCards, deleteCard, loading: cardsLoading } = useCards(deckId, handleCountChange);
   const { generating, error, generate } = useGenerateFlashcards();
 
   const handleGenerate = async (words: string[]) => {
     const generated = await generate(words, deckId);
     addCards(generated.map((card) => ({ ...card, deckId })));
   };
+
+  if (decksLoading || cardsLoading) {
+    return (
+      <Box sx={{ maxWidth: 1100, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
+        <Loading message="Loading cards…" />
+      </Box>
+    );
+  }
+
 
   if (!deck) {
     return (

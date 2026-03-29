@@ -1,21 +1,12 @@
 'use client';
-import { useState } from 'react';
 import {
   Box,
   Typography,
-  Button,
   Grid,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Divider,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 
 import { DeckCard } from '@/components/DeckCard';
-import { useDeckDialog } from '@/contexts/DeckDialogContext';
+import { Loading } from '@/components/Loading';
 import { useDecks } from '@/hooks/useDecks';
 
 interface HomeProps {
@@ -23,8 +14,15 @@ interface HomeProps {
 }
 
 export function Home({ onOpenDeck }: HomeProps) {
-  const { decks, deleteDeck } = useDecks();
-   const { openNewDeckDialog } = useDeckDialog();  
+  const { decks, deleteDeck, loading } = useDecks();
+
+    if (loading) {
+    return (
+      <Box sx={{ maxWidth: 1100, mx: 'auto', px: { xs: 2, sm: 4 }, py: 6 }}>
+        <Loading message="Loading your decks…" />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ maxWidth: 1100, mx: 'auto', px: { xs: 2, sm: 4 }, py: 6 }}>
