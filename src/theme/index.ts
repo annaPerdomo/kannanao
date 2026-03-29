@@ -4,9 +4,9 @@ export const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#F9A8D4',
+      main: '#F472B6',
       light: '#FDE8F3',
-      dark: '#D946EF',
+      dark: '#BE185D',
     },
     secondary: {
       main: '#C4B5FD',
@@ -15,13 +15,13 @@ export const theme = createTheme({
     },
     background: {
       default: '#FFF5FB',
-      paper: '#FFF2F8',
+      paper: '#FFFFFF',
     },
     text: {
       primary: '#5E2F6C',
       secondary: '#A86C99',
     },
-    divider: '#F7D2E5',
+    divider: 'rgba(249,168,212,0.35)',
     error: { main: '#FB7185' },
     success: { main: '#34D399' },
     info: { main: '#60C8F5' },
@@ -29,10 +29,10 @@ export const theme = createTheme({
   },
   typography: {
     fontFamily: '"Nunito", "Noto Sans JP", sans-serif',
-    h1: { fontFamily: '"Nunito", sans-serif', fontWeight: 800, letterSpacing: '-0.01em' },
-    h2: { fontFamily: '"Nunito", sans-serif', fontWeight: 800 },
+    h1: { fontFamily: '"Nunito", sans-serif', fontWeight: 800, letterSpacing: '-0.02em' },
+    h2: { fontFamily: '"Nunito", sans-serif', fontWeight: 800, letterSpacing: '-0.015em' },
     h3: { fontFamily: '"Nunito", sans-serif', fontWeight: 700 },
-    h4: { fontFamily: '"Nunito", sans-serif', fontWeight: 700 },
+    h4: { fontFamily: '"Nunito", sans-serif', fontWeight: 800, letterSpacing: '-0.02em' },
     h5: { fontFamily: '"Nunito", sans-serif', fontWeight: 700 },
     h6: { fontFamily: '"Nunito", sans-serif', fontWeight: 600 },
     body1: { fontFamily: '"Nunito", sans-serif', fontSize: '0.95rem', fontWeight: 500 },
@@ -40,60 +40,66 @@ export const theme = createTheme({
     button: {
       fontFamily: '"Nunito", sans-serif',
       fontWeight: 700,
-      letterSpacing: '0.04em',
+      letterSpacing: '0.02em',
       textTransform: 'none',
-      fontSize: '0.9rem',
+      fontSize: '0.875rem',
     },
-    caption: { fontFamily: '"Nunito", sans-serif', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.03em' },
+    caption: { fontFamily: '"Nunito", sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em' },
   },
-  shape: { borderRadius: 24 },
+  // Keep shape borderRadius low — components override individually as needed
+  shape: { borderRadius: 12 },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 999,
-          padding: '10px 26px',
-          boxShadow: '0 6px 18px rgba(249, 168, 212, 0.26)',
-          transition: 'all 0.2s ease',
+          // Base: tasteful pill for most buttons, overridden per-context with sx
+          borderRadius: 10,
+          padding: '8px 20px',
+          boxShadow: 'none',
+          transition: 'all 0.18s ease',
           '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 10px 26px rgba(249, 168, 212, 0.35)',
+            transform: 'translateY(-1px)',
+            boxShadow: '0 6px 16px rgba(249,168,212,0.28)',
           },
-          '&:active': { transform: 'translateY(0)' },
+          '&:active': { transform: 'translateY(0)', boxShadow: 'none' },
+          '&.Mui-disabled': { opacity: 0.45, transform: 'none', boxShadow: 'none' },
         },
         contained: {
-          background: 'linear-gradient(135deg, #FEE2F1, #F472B6)',
+          background: 'linear-gradient(135deg, #FBCFE8 0%, #F472B6 100%)',
           color: '#fff',
+          boxShadow: '0 2px 8px rgba(244,114,182,0.3)',
           '&:hover': {
-            background: 'linear-gradient(135deg, #FBCFE8, #F472B6)',
+            background: 'linear-gradient(135deg, #F9A8D4 0%, #EC4899 100%)',
+            boxShadow: '0 6px 18px rgba(244,114,182,0.38)',
           },
         },
         outlined: {
-          borderColor: '#F9A8D4',
+          borderColor: 'rgba(249,168,212,0.7)',
+          borderWidth: '1.5px',
           color: '#BE185D',
-          borderWidth: 2,
           '&:hover': {
-            borderColor: '#EC4899',
-            backgroundColor: 'rgba(249, 168, 212, 0.14)',
+            borderColor: '#F472B6',
+            borderWidth: '1.5px',
+            backgroundColor: 'rgba(249,168,212,0.08)',
           },
         },
         text: {
-          color: '#D946EF',
-          '&:hover': { backgroundColor: 'rgba(249, 168, 212, 0.12)' },
+          color: '#BE185D',
+          '&:hover': { backgroundColor: 'rgba(249,168,212,0.1)' },
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          backgroundColor: '#FFF2F8',
-          border: '2px solid #FBCFE8',
-          borderRadius: 28,
-          boxShadow: '0 12px 28px rgba(249, 168, 212, 0.14)',
-          backgroundImage: 'linear-gradient(180deg, rgba(255, 242, 248, 0.95), rgba(255, 229, 241, 0.95))',
-          transition: 'box-shadow 0.25s ease, transform 0.25s ease',
+          backgroundColor: '#FFFFFF',
+          border: '1.5px solid rgba(249,168,212,0.3)',
+          borderRadius: 14,
+          boxShadow: '0 2px 10px rgba(249,168,212,0.12)',
+          backgroundImage: 'none',
+          transition: 'box-shadow 0.2s ease, transform 0.2s ease',
           '&:hover': {
-            boxShadow: '0 16px 40px rgba(249, 168, 212, 0.24)',
+            boxShadow: '0 8px 24px rgba(249,168,212,0.22)',
             transform: 'translateY(-2px)',
           },
         },
@@ -105,12 +111,12 @@ export const theme = createTheme({
           '& .MuiOutlinedInput-root': {
             fontFamily: '"Nunito", sans-serif',
             fontWeight: 600,
-            fontSize: '0.95rem',
-            borderRadius: 18,
-            backgroundColor: '#FFF1F8',
-            '& fieldset': { borderColor: '#FBCFE8', borderWidth: 2 },
-            '&:hover fieldset': { borderColor: '#F9A8D4', borderWidth: 2 },
-            '&.Mui-focused fieldset': { borderColor: '#EF4444', borderWidth: 2 },
+            fontSize: '0.9rem',
+            borderRadius: 10,
+            backgroundColor: '#FFF8FC',
+            '& fieldset': { borderColor: 'rgba(249,168,212,0.5)', borderWidth: '1.5px' },
+            '&:hover fieldset': { borderColor: '#F9A8D4', borderWidth: '1.5px' },
+            '&.Mui-focused fieldset': { borderColor: '#F472B6', borderWidth: '1.5px' },
           },
           '& .MuiInputLabel-root': {
             fontFamily: '"Nunito", sans-serif',
@@ -127,33 +133,35 @@ export const theme = createTheme({
         root: {
           fontFamily: '"Nunito", sans-serif',
           fontWeight: 700,
-          fontSize: '0.8rem',
-          borderRadius: 999,
+          fontSize: '0.75rem',
+          borderRadius: 8,
           backgroundColor: '#FCE7F3',
-          border: '1px solid #F9A8D4',
+          border: '1px solid rgba(249,168,212,0.6)',
           color: '#BE185D',
+          height: 24,
           '&:hover': { backgroundColor: '#FBCFE8' },
         },
         deleteIcon: {
           color: '#EC4899',
-          '&:hover': { color: '#D946EF' },
+          fontSize: '14px !important',
+          '&:hover': { color: '#BE185D' },
         },
       },
     },
     MuiDivider: {
       styleOverrides: {
-        root: { borderColor: '#F7D2E5', borderWidth: 1.5 },
+        root: { borderColor: 'rgba(249,168,212,0.3)', borderWidth: 1 },
       },
     },
     MuiIconButton: {
       styleOverrides: {
         root: {
-          color: '#D946EF',
-          transition: 'all 0.2s ease',
+          color: '#EC4899',
+          borderRadius: 8,
+          transition: 'all 0.18s ease',
           '&:hover': {
             color: '#BE185D',
-            backgroundColor: 'rgba(249,168,212,0.18)',
-            transform: 'scale(1.05)',
+            backgroundColor: 'rgba(249,168,212,0.14)',
           },
         },
       },
@@ -161,12 +169,12 @@ export const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 28,
+          borderRadius: 14,
           backgroundImage: 'none',
         },
-        elevation1: { boxShadow: '0 4px 16px rgba(249,168,212,0.12)' },
-        elevation2: { boxShadow: '0 8px 26px rgba(249,168,212,0.16)' },
-        elevation3: { boxShadow: '0 12px 40px rgba(249,168,212,0.2)' },
+        elevation1: { boxShadow: '0 2px 10px rgba(249,168,212,0.1)' },
+        elevation2: { boxShadow: '0 4px 16px rgba(249,168,212,0.14)' },
+        elevation3: { boxShadow: '0 8px 28px rgba(249,168,212,0.18)' },
       },
     },
     MuiTooltip: {
@@ -174,16 +182,16 @@ export const theme = createTheme({
         tooltip: {
           fontFamily: '"Nunito", sans-serif',
           fontWeight: 600,
-          fontSize: '0.8rem',
+          fontSize: '0.78rem',
           backgroundColor: '#BE185D',
-          borderRadius: 14,
+          borderRadius: 8,
         },
       },
     },
     MuiLinearProgress: {
       styleOverrides: {
-        root: { borderRadius: 50, backgroundColor: '#FAD2E6', height: 12 },
-        bar: { background: 'linear-gradient(90deg, #F9A8D4, #F472B6, #C4B5FD)', borderRadius: 50 },
+        root: { borderRadius: 6, backgroundColor: '#FAD2E6', height: 8 },
+        bar: { background: 'linear-gradient(90deg, #F9A8D4, #F472B6)', borderRadius: 6 },
       },
     },
     MuiAlert: {
@@ -191,9 +199,9 @@ export const theme = createTheme({
         root: {
           fontFamily: '"Nunito", sans-serif',
           fontWeight: 600,
-          borderRadius: 18,
-          border: '2px solid #FBCFE8',
-          backgroundColor: '#FFF0F6',
+          borderRadius: 10,
+          border: '1.5px solid rgba(249,168,212,0.4)',
+          backgroundColor: '#FFF5FB',
         },
       },
     },
