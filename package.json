@@ -1,6 +1,6 @@
 {
   "name": "kannanao",
-  "version": "1.0.0",
+  "description": "An ai-powered flashcard app for learning Japanese",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -29,5 +29,6 @@
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.2.0",
     "typescript": "^5.7.2"
-  }
+  },
+  "version": "1.0.0"
 }
