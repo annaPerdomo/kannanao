@@ -28,6 +28,7 @@ export function useGenerateFlashcards(): UseGenerateResult {
               ...card,
               imageUrl: imageUrl ?? undefined,
               deckId,
+              mainViewMode: 'hiragana' as const,
             };
           }),
         );
