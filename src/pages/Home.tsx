@@ -4,19 +4,17 @@ import {
   Typography,
   Grid,
 } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 import { DeckCard } from '@/components/DeckCard';
 import { Loading } from '@/components/Loading';
 import { useDecks } from '@/hooks/useDecks';
 
-interface HomeProps {
-  onOpenDeck: (id: string) => void;
-}
-
-export function Home({ onOpenDeck }: HomeProps) {
+export function Home() {
   const { decks, deleteDeck, loading } = useDecks();
+  const router = useRouter();
 
-    if (loading) {
+  if (loading) {
     return (
       <Box sx={{ maxWidth: 1100, mx: 'auto', px: { xs: 2, sm: 4 }, py: 6 }}>
         <Loading message="Loading your decks…" />
@@ -62,7 +60,7 @@ export function Home({ onOpenDeck }: HomeProps) {
         <Grid container spacing={2}>
           {decks.map((deck) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={deck.id}>
-              <DeckCard deck={deck} onOpen={onOpenDeck} onDelete={deleteDeck} />
+              <DeckCard deck={deck} onOpen={(id) => router.push(`/deck/${id}`)} onDelete={deleteDeck} />
             </Grid>
           ))}
         </Grid>
