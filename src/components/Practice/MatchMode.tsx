@@ -1,11 +1,13 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Box, Typography, Button, Grid, Chip, LinearProgress } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import type { Flashcard } from '@/types/flashcard';
+import { useProgress } from '@/hooks/useProgess';
 
 interface MatchModeProps {
   cards: Flashcard[];
+  deckId: string;
   onExit: () => void;
 }
 
@@ -22,7 +24,7 @@ function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
-export function MatchMode({ cards, onExit }: MatchModeProps) {
+export function MatchMode({ cards, deckId, onExit }: MatchModeProps) {
   const pool = useMemo(() => cards.slice(0, 8), [cards]);
 
   const tiles = useMemo<Tile[]>(() => {
@@ -38,23 +40,71 @@ export function MatchMode({ cards, onExit }: MatchModeProps) {
   const [wrong, setWrong] = useState<string | null>(null);
   const [score, setScore] = useState(0);
 
-  const handleSelect = (tile: Tile) => {
+  const { startSession, recordAnswer, endSession } = useProgress();
+  const sessionIdRef = useRef<string>('');
+  const startTimeRef = useRef<number>(Date.now());
+  const correctCountRef = useRef(0);
+  // Track which cardIds have already been recorded to avoid double-counting
+  const recordedRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    startSession(deckId).then((id) => {
+      sessionIdRef.current = id;
+      startTimeRef.current = Date.now();
+    });
+  }, [deckId, startSession]);
+
+  const done = matched.size === pool.length;
+
+  // End the session once all pairs are matched
+  useEffect(() => {
+    if (done && sessionIdRef.current) {
+      endSession(sessionIdRef.current, {
+        cardsStudied: pool.length,
+        cardsCorrect: correctCountRef.current,
+        durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done]);
+
+  const handleSelect = async (tile: Tile) => {
     if (matched.has(tile.cardId)) return;
     if (tile.id === selected?.id) { setSelected(null); return; }
 
     if (!selected) { setSelected(tile); return; }
 
     if (selected.cardId === tile.cardId && selected.side !== tile.side) {
+      // Correct match
       setMatched((prev) => new Set([...prev, tile.cardId]));
       setScore((s) => s + 1);
+      correctCountRef.current += 1;
       setSelected(null);
+
+      if (sessionIdRef.current && !recordedRef.current.has(tile.cardId)) {
+        recordedRef.current.add(tile.cardId);
+        await recordAnswer(sessionIdRef.current, true);
+      }
     } else {
+      // Wrong match — record once per pair attempt
       setWrong(tile.id);
+      if (sessionIdRef.current && selected) {
+        await recordAnswer(sessionIdRef.current, false);
+      }
       setTimeout(() => { setWrong(null); setSelected(null); }, 600);
     }
   };
 
-  const done = matched.size === pool.length;
+  const handleExit = async () => {
+    if (sessionIdRef.current) {
+      await endSession(sessionIdRef.current, {
+        cardsStudied: matched.size,
+        cardsCorrect: correctCountRef.current,
+        durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+      });
+    }
+    onExit();
+  };
 
   return (
     <Box>
@@ -76,58 +126,66 @@ export function MatchMode({ cards, onExit }: MatchModeProps) {
           <Button variant="outlined" onClick={onExit}>Back to Deck</Button>
         </Box>
       ) : (
-        <Grid container spacing={1.5}>
-          {tiles.map((tile) => {
-            const isMatched = matched.has(tile.cardId);
-            const isSelected = selected?.id === tile.id;
-            const isWrong = wrong === tile.id || (wrong && selected?.id === tile.id);
-            return (
-              <Grid size={{ xs: 6, sm: 4, md: 3 }} key={tile.id}>
-                <Box
-                  onClick={() => !isMatched && handleSelect(tile)}
-                  sx={{
-                    p: 2,
-                    border: '1px solid',
-                    borderRadius: 3,
-                    textAlign: 'center',
-                    cursor: isMatched ? 'default' : 'pointer',
-                    minHeight: 72,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.15s',
-                    borderColor: isMatched
-                      ? 'success.main'
-                      : isWrong
-                        ? 'error.main'
-                        : isSelected
-                          ? 'primary.main'
-                          : '#F7D2E5',
-                    bgcolor: isMatched
-                      ? 'rgba(126,184,154,0.12)'
-                      : isWrong
-                        ? 'rgba(255,209,220,0.18)'
-                        : isSelected
-                          ? 'rgba(249,168,212,0.16)'
-                          : '#FFF4FB',
-                    opacity: isMatched ? 0.75 : 1,
-                    '&:hover': !isMatched ? { borderColor: '#EC4899', bgcolor: 'rgba(249,168,212,0.2)' } : {},
-                  }}
-                >
-                  <Typography
+        <>
+          <Grid container spacing={1.5}>
+            {tiles.map((tile) => {
+              const isMatched = matched.has(tile.cardId);
+              const isSelected = selected?.id === tile.id;
+              const isWrong = wrong === tile.id || (wrong && selected?.id === tile.id);
+              return (
+                <Grid size={{ xs: 6, sm: 4, md: 3 }} key={tile.id}>
+                  <Box
+                    onClick={() => !isMatched && handleSelect(tile)}
                     sx={{
-                      fontFamily: tile.side === 'jp' ? '"Noto Serif JP", serif' : '"DM Mono", monospace',
-                      fontSize: tile.side === 'jp' ? '1.1rem' : '0.8rem',
-                      color: 'text.primary',
+                      p: 2,
+                      border: '1px solid',
+                      borderRadius: 3,
+                      textAlign: 'center',
+                      cursor: isMatched ? 'default' : 'pointer',
+                      minHeight: 72,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.15s',
+                      borderColor: isMatched
+                        ? 'success.main'
+                        : isWrong
+                          ? 'error.main'
+                          : isSelected
+                            ? 'primary.main'
+                            : '#F7D2E5',
+                      bgcolor: isMatched
+                        ? 'rgba(126,184,154,0.12)'
+                        : isWrong
+                          ? 'rgba(255,209,220,0.18)'
+                          : isSelected
+                            ? 'rgba(249,168,212,0.16)'
+                            : '#FFF4FB',
+                      opacity: isMatched ? 0.75 : 1,
+                      '&:hover': !isMatched ? { borderColor: '#EC4899', bgcolor: 'rgba(249,168,212,0.2)' } : {},
                     }}
                   >
-                    {tile.label}
-                  </Typography>
-                </Box>
-              </Grid>
-            );
-          })}
-        </Grid>
+                    <Typography
+                      sx={{
+                        fontFamily: tile.side === 'jp' ? '"Noto Serif JP", serif' : '"DM Mono", monospace',
+                        fontSize: tile.side === 'jp' ? '1.1rem' : '0.8rem',
+                        color: 'text.primary',
+                      }}
+                    >
+                      {tile.label}
+                    </Typography>
+                  </Box>
+                </Grid>
+              );
+            })}
+          </Grid>
+
+          <Box sx={{ mt: 3, textAlign: 'right' }}>
+            <Button size="small" color="inherit" onClick={handleExit} sx={{ opacity: 0.5 }}>
+              Quit &amp; Save Progress
+            </Button>
+          </Box>
+        </>
       )}
     </Box>
   );

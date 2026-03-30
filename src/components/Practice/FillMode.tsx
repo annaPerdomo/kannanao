@@ -1,5 +1,5 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -12,9 +12,11 @@ import {
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import type { Flashcard } from '@/types/flashcard';
+import { useProgress } from '@/hooks/useProgess';
 
 interface FillModeProps {
   cards: Flashcard[];
+  deckId: string;
   onExit: () => void;
 }
 
@@ -22,20 +24,39 @@ function maskWord(sentence: string, word: string): string {
   return sentence.replace(word, '＿'.repeat(word.length));
 }
 
-export function FillMode({ cards, onExit }: FillModeProps) {
+export function FillMode({ cards, deckId, onExit }: FillModeProps) {
   const pool = useMemo(() => [...cards].sort(() => Math.random() - 0.5), [cards]);
   const [index, setIndex] = useState(0);
   const [input, setInput] = useState('');
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
   const [score, setScore] = useState(0);
 
+  const { startSession, recordAnswer, endSession } = useProgress();
+  const sessionIdRef = useRef<string>('');
+  const startTimeRef = useRef<number>(Date.now());
+  const correctCountRef = useRef(0);
+
+  // Start a session when the component mounts
+  useEffect(() => {
+    startSession(deckId).then((id) => {
+      sessionIdRef.current = id;
+      startTimeRef.current = Date.now();
+    });
+  }, [deckId, startSession]);
+
   const card = pool[index];
   const done = index >= pool.length;
 
-  const check = () => {
+  const check = async () => {
     const correct = input.trim() === card.word || input.trim() === card.reading;
     setResult(correct ? 'correct' : 'wrong');
-    if (correct) setScore((s) => s + 1);
+    if (correct) {
+      setScore((s) => s + 1);
+      correctCountRef.current += 1;
+    }
+    if (sessionIdRef.current) {
+      await recordAnswer(sessionIdRef.current, correct);
+    }
   };
 
   const next = () => {
@@ -43,6 +64,29 @@ export function FillMode({ cards, onExit }: FillModeProps) {
     setInput('');
     setResult(null);
   };
+
+  const handleExit = async () => {
+    if (sessionIdRef.current) {
+      await endSession(sessionIdRef.current, {
+        cardsStudied: index,
+        cardsCorrect: correctCountRef.current,
+        durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+      });
+    }
+    onExit();
+  };
+
+  // End session when all cards are done
+  useEffect(() => {
+    if (done && sessionIdRef.current) {
+      endSession(sessionIdRef.current, {
+        cardsStudied: pool.length,
+        cardsCorrect: correctCountRef.current,
+        durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done]);
 
   if (done) {
     return (
@@ -163,6 +207,12 @@ export function FillMode({ cards, onExit }: FillModeProps) {
           </Button>
         )}
       </Stack>
+
+      <Box sx={{ mt: 3, textAlign: 'right' }}>
+        <Button size="small" color="inherit" onClick={handleExit} sx={{ opacity: 0.5 }}>
+          Quit &amp; Save Progress
+        </Button>
+      </Box>
     </Box>
   );
 }

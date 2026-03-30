@@ -41,9 +41,9 @@ export function Practice({ deckId, mode, onBack }: PracticeProps) {
         </Box>
       ) : (
         <>
-          {mode === 'match' && <MatchMode cards={cards} onExit={onBack} />}
-          {mode === 'fill' && <FillMode cards={cards} onExit={onBack} />}
-          {mode === 'recall' && <RecallMode cards={cards} onExit={onBack} />}
+          {mode === 'match' && <MatchMode cards={cards} deckId={deckId} onExit={onBack} />}
+          {mode === 'fill' && <FillMode deckId={deckId} cards={cards} onExit={onBack} />}
+          {mode === 'recall' && <RecallMode cards={cards} deckId={deckId} onExit={onBack} />}
         </>
       )}
     </Box>

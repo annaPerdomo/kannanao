@@ -1,5 +1,5 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -12,13 +12,15 @@ import {
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import type { Flashcard } from '@/types/flashcard';
+import { useProgress } from '@/hooks/useProgess';
 
 interface RecallModeProps {
   cards: Flashcard[];
+  deckId: string;
   onExit: () => void;
 }
 
-export function RecallMode({ cards, onExit }: RecallModeProps) {
+export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
   const pool = useMemo(() => [...cards].sort(() => Math.random() - 0.5), [cards]);
   const [index, setIndex] = useState(0);
   const [input, setInput] = useState('');
@@ -26,17 +28,35 @@ export function RecallMode({ cards, onExit }: RecallModeProps) {
   const [score, setScore] = useState(0);
   const [showHint, setShowHint] = useState(false);
 
+  const { startSession, recordAnswer, endSession } = useProgress();
+  const sessionIdRef = useRef<string>('');
+  const startTimeRef = useRef<number>(Date.now());
+  const correctCountRef = useRef(0);
+
+  useEffect(() => {
+    startSession(deckId).then((id) => {
+      sessionIdRef.current = id;
+      startTimeRef.current = Date.now();
+    });
+  }, [deckId, startSession]);
+
   const card = pool[index];
   const done = index >= pool.length;
 
-  const check = () => {
+  const check = async () => {
     const answer = input.trim().toLowerCase();
     const correct =
       answer === card.word ||
       answer === card.reading ||
       answer === card.meaning.toLowerCase();
     setResult(correct ? 'correct' : 'wrong');
-    if (correct) setScore((s) => s + 1);
+    if (correct) {
+      setScore((s) => s + 1);
+      correctCountRef.current += 1;
+    }
+    if (sessionIdRef.current) {
+      await recordAnswer(sessionIdRef.current, correct);
+    }
   };
 
   const next = () => {
@@ -45,6 +65,29 @@ export function RecallMode({ cards, onExit }: RecallModeProps) {
     setResult(null);
     setShowHint(false);
   };
+
+  const handleExit = async () => {
+    if (sessionIdRef.current) {
+      await endSession(sessionIdRef.current, {
+        cardsStudied: index,
+        cardsCorrect: correctCountRef.current,
+        durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+      });
+    }
+    onExit();
+  };
+
+  // End session when all cards are done
+  useEffect(() => {
+    if (done && sessionIdRef.current) {
+      endSession(sessionIdRef.current, {
+        cardsStudied: pool.length,
+        cardsCorrect: correctCountRef.current,
+        durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done]);
 
   if (done) {
     return (
@@ -212,6 +255,12 @@ export function RecallMode({ cards, onExit }: RecallModeProps) {
           </Button>
         )}
       </Stack>
+
+      <Box sx={{ mt: 3, textAlign: 'right' }}>
+        <Button size="small" color="inherit" onClick={handleExit} sx={{ opacity: 0.5 }}>
+          Quit &amp; Save Progress
+        </Button>
+      </Box>
     </Box>
   );
 }
