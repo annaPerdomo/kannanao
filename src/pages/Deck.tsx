@@ -4,6 +4,7 @@ import { useCallback, useState, useRef } from "react";
 import {
   Box,
   Typography,
+  Grid,
   Button,
   Stack,
   Divider,
@@ -13,6 +14,7 @@ import {
   CircularProgress,
   Tooltip,
 } from "@mui/material";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import StyleIcon from "@mui/icons-material/Style";
 import LayersIcon from "@mui/icons-material/Layers";
@@ -25,6 +27,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { GenerateForm } from "@/components/GenerateForm";
 import { ImageCard } from "@/components/ImageCard";
 import { Loading } from "@/components/Loading";
+import { PdfImportModal } from "@/components/PdfImportModal";
 import { AddExistingCardsDialog } from "@/components/AddExistingCardsDialog";
 import { useDecks } from "@/hooks/useDecks";
 import { useCards } from "@/hooks/useCards";
@@ -103,6 +106,20 @@ export function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
     renameDeck,
   } = useDecks();
   const deck = decks.find((d) => d.id === deckId);
+
+  const [pdfImportOpen, setPdfImportOpen] = useState(false);
+
+  const handlePdfCards = () => {
+    console.log("thingy");
+    // Map to your card format and add to deck
+    // const newCards = cards.map((c) => ({
+    //   id: crypto.randomUUID(),
+    //   front: c.word,
+    //   back: `${c.reading ? c.reading + "\n" : ""}${c.definition}`,
+    //   // add any other fields your card schema needs
+    // }));
+    // setDeckCards((prev) => [...prev, ...newCards]);
+  };
 
   // ── Rename state ──────────────────────────────────────────────────────────
   const [editing, setEditing] = useState(false);
@@ -349,7 +366,7 @@ export function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
                   disabled={renaming}
                   placeholder="Description (optional)"
                   sx={{
-                    pr: '76px',
+                    pr: "76px",
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "9px",
                       fontSize: "0.82rem",
@@ -522,25 +539,53 @@ export function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
               error={error}
             />
             <Divider sx={{ my: 1.5, borderColor: "rgba(249,168,212,0.3)" }} />
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<LibraryAddIcon sx={{ fontSize: 15 }} />}
-              onClick={() => setPickerOpen(true)}
-              size="small"
-              sx={{
-                borderRadius: "9px",
-                justifyContent: "flex-start",
-                px: 2,
-                py: "6px",
-                fontSize: "0.76rem",
-                letterSpacing: "0.01em",
-                textTransform: "none",
-                fontWeight: 700,
-              }}
-            >
-              Add Existing Cards
-            </Button>
+            <Box sx={{ display: "grid", gap: 1.25 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<LibraryAddIcon sx={{ fontSize: 15 }} />}
+                onClick={() => setPickerOpen(true)}
+                size="small"
+                sx={{
+                  borderRadius: "9px",
+                  justifyContent: "flex-start",
+                  px: 2,
+                  py: "6px",
+                  fontSize: "0.76rem",
+                  letterSpacing: "0.01em",
+                  textTransform: "none",
+                  fontWeight: 700,
+                }}
+              >
+                Add Existing Cards
+              </Button>
+
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<PictureAsPdfIcon sx={{ fontSize: 15 }} />}
+                onClick={() => setPdfImportOpen(true)}
+                size="small"
+                sx={{
+                  borderRadius: "9px",
+                  justifyContent: "flex-start",
+                  px: 2,
+                  py: "6px",
+                  fontSize: "0.76rem",
+                  letterSpacing: "0.01em",
+                  textTransform: "none",
+                  fontWeight: 700,
+                }}
+              >
+                Import from PDF
+              </Button>
+            </Box>
+
+            <PdfImportModal
+              open={pdfImportOpen}
+              onClose={() => setPdfImportOpen(false)}
+              onAddCards={handlePdfCards}
+            />
           </SidePanel>
         </Box>
 
