@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Chip, Typography, IconButton, Tooltip } from "@mui/material";
+import { Box, Typography, IconButton, Tooltip } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/Edit";
 import type { Flashcard } from "@/types/flashcard";
@@ -28,28 +28,29 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
     onUpdate?.(updated.id, updated);
   };
 
+  const isKanji = localCard.mainViewMode === "kanji";
+
   return (
     <>
       <Box
         sx={{
           position: "relative",
-          borderRadius: "14px",
+          borderRadius: "18px",
           overflow: "hidden",
-          border: "1.5px solid rgba(249,168,212,0.32)",
+          border: "1.5px solid rgba(249,168,212,0.35)",
           bgcolor: "#FFFFFF",
-          boxShadow: "0 2px 10px rgba(249,168,212,0.1)",
+          boxShadow: "0 2px 12px rgba(249,168,212,0.13)",
           display: "flex",
           flexDirection: "column",
           transition: "box-shadow 0.2s ease, transform 0.2s ease",
           "&:hover": {
-            boxShadow: "0 6px 20px rgba(249,168,212,0.22)",
-            transform: "translateY(-2px)",
-            // Reveal action buttons on hover
+            boxShadow: "0 8px 28px rgba(249,168,212,0.28)",
+            transform: "translateY(-3px)",
             "& .card-actions": { opacity: 1 },
           },
         }}
       >
-        {/* Image */}
+        {/* ── Image ── */}
         {localCard.imageUrl ? (
           <Box
             component="img"
@@ -57,7 +58,7 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
             alt={localCard.word}
             sx={{
               width: "100%",
-              height: 120,
+              height: 160,
               objectFit: "cover",
               display: "block",
               bgcolor: "#FFF0F8",
@@ -67,25 +68,60 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
           <Box
             sx={{
               width: "100%",
-              height: 120,
-              bgcolor: "linear-gradient(135deg, #FFF0F8 0%, #FAF5FF 100%)",
+              height: 160,
               background: "linear-gradient(135deg, #FFF0F8 0%, #FAF5FF 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <Typography sx={{ fontSize: "2rem" }}>🌸</Typography>
+            <Typography sx={{ fontSize: "2.5rem" }}>🌸</Typography>
           </Box>
         )}
 
-        {/* Action buttons — fade in on hover */}
+        {/* ── Mode badge (top-left, over image) ── */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: 10,
+            left: 10,
+            px: 1.1,
+            py: "3px",
+            borderRadius: "20px",
+            backdropFilter: "blur(6px)",
+            background: isKanji
+              ? "rgba(237,233,254,0.92)"
+              : "rgba(252,231,243,0.92)",
+            border: "1.5px solid",
+            borderColor: isKanji
+              ? "rgba(196,181,253,0.7)"
+              : "rgba(249,168,212,0.7)",
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: "0.68rem",
+              fontWeight: 800,
+              letterSpacing: "0.03em",
+              color: isKanji ? "#6D28D9" : "#BE185D",
+              fontFamily: '"Nunito", sans-serif',
+              lineHeight: 1,
+            }}
+          >
+            {isKanji ? "漢字" : "ひらがな"}
+          </Typography>
+        </Box>
+
+        {/* ── Action buttons (top-right, over image) ── */}
         <Box
           className="card-actions"
           sx={{
             position: "absolute",
-            top: 6,
-            right: 6,
+            top: 10,
+            right: 10,
             display: "flex",
             gap: 0.5,
             opacity: 0,
@@ -97,16 +133,16 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
               size="small"
               onClick={() => setEditOpen(true)}
               sx={{
-                width: 26,
-                height: 26,
+                width: 28,
+                height: 28,
                 bgcolor: "rgba(255,255,255,0.92)",
-                backdropFilter: "blur(4px)",
+                backdropFilter: "blur(6px)",
                 border: "1px solid rgba(249,168,212,0.5)",
                 color: "#BE185D",
                 "&:hover": { bgcolor: "#FFF0F8" },
               }}
             >
-              <EditIcon sx={{ fontSize: 13 }} />
+              <EditIcon sx={{ fontSize: 14 }} />
             </IconButton>
           </Tooltip>
 
@@ -115,27 +151,27 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
               size="small"
               onClick={() => onDelete(localCard.id)}
               sx={{
-                width: 26,
-                height: 26,
+                width: 28,
+                height: 28,
                 bgcolor: "rgba(255,255,255,0.92)",
-                backdropFilter: "blur(4px)",
+                backdropFilter: "blur(6px)",
                 border: "1px solid rgba(249,168,212,0.5)",
                 color: "#BE185D",
                 "&:hover": { bgcolor: "#FFF0F8", color: "#DC2626" },
               }}
             >
-              <DeleteOutlineIcon sx={{ fontSize: 13 }} />
+              <DeleteOutlineIcon sx={{ fontSize: 14 }} />
             </IconButton>
           </Tooltip>
         </Box>
 
-        {/* Card body */}
-        <Box sx={{ p: "10px 12px 12px" }}>
+        {/* ── Card body ── */}
+        <Box sx={{ p: "14px 14px 16px", display: "flex", flexDirection: "column", gap: 1 }}>
           {/* Word + reading */}
-          <Box sx={{ mb: 0.75 }}>
+          <Box>
             <Typography
               sx={{
-                fontSize: "1.1rem",
+                fontSize: "1.35rem",
                 fontWeight: 800,
                 color: "#9D174D",
                 lineHeight: 1.2,
@@ -147,10 +183,10 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
             {subtitleText && (
               <Typography
                 sx={{
-                  fontSize: "0.72rem",
+                  fontSize: "0.75rem",
                   color: "#C2709A",
                   fontFamily: '"Nunito", sans-serif',
-                  mt: 0.1,
+                  mt: 0.2,
                 }}
               >
                 {subtitleText}
@@ -161,45 +197,65 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
           {/* Meaning */}
           <Typography
             sx={{
-              fontSize: "0.8rem",
+              fontSize: "0.88rem",
               fontWeight: 700,
               color: "#1F2937",
               fontFamily: '"Nunito", sans-serif',
-              mb: localCard.example_jp ? 0.75 : 0,
             }}
           >
             {localCard.meaning}
           </Typography>
 
-          {/* Example sentences */}
+          {/* Example sentence block */}
           {localCard.example_jp && (
             <Box
               sx={{
                 bgcolor: "#FFF0F8",
-                borderRadius: "8px",
-                px: 1.25,
-                py: "6px",
-                borderLeft: "3px solid rgba(244,114,182,0.5)",
+                borderRadius: "10px",
+                px: 1.4,
+                pt: "7px",
+                pb: "9px",
+                borderLeft: "3px solid rgba(244,114,182,0.6)",
               }}
             >
+              {/* Label */}
               <Typography
                 sx={{
-                  fontSize: "0.7rem",
+                  fontSize: "0.6rem",
+                  fontWeight: 800,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "#F472B6",
+                  fontFamily: '"Nunito", sans-serif',
+                  mb: 0.4,
+                }}
+              >
+                例文 · Example
+              </Typography>
+
+              {/* Japanese sentence */}
+              <Typography
+                sx={{
+                  fontSize: "0.78rem",
                   color: "#6B21A8",
                   fontFamily: '"Nunito", sans-serif',
-                  lineHeight: 1.5,
+                  lineHeight: 1.55,
+                  fontWeight: 600,
                 }}
               >
                 {localCard.example_jp}
               </Typography>
+
+              {/* English translation */}
               {localCard.example_en && (
                 <Typography
                   sx={{
-                    fontSize: "0.66rem",
-                    color: "#9CA3AF",
+                    fontSize: "0.72rem",
+                    color: "#6B21A8",
                     fontFamily: '"Nunito", sans-serif',
-                    lineHeight: 1.4,
-                    mt: 0.25,
+                    lineHeight: 1.45,
+                    mt: 0.35,
+                    fontStyle: "italic",
                   }}
                 >
                   {localCard.example_en}
@@ -208,24 +264,6 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
             </Box>
           )}
         </Box>
-        <Chip
-          label={card.mainViewMode === "kanji" ? "漢字" : "ひ"}
-          size="small"
-          sx={{
-            fontSize: "0.72rem",
-            fontWeight: 700,
-            background:
-              card.mainViewMode === "kanji"
-                ? "linear-gradient(90deg, #ede9fe, #ddd6fe)"
-                : "linear-gradient(90deg, #fce7f3, #fce7f3)",
-            color: card.mainViewMode === "kanji" ? "#7c3aed" : "#be185d",
-            border: "1.5px solid",
-            borderColor:
-              card.mainViewMode === "kanji"
-                ? "rgba(196,181,253,0.6)"
-                : "rgba(249,168,212,0.5)",
-          }}
-        />
       </Box>
 
       <EditCardDialog

@@ -272,7 +272,7 @@ export function EditCardDialog({
       </DialogTitle>
 
       <DialogContent
-        sx={{ p: "20px", display: "flex", flexDirection: "column", gap: 2 }}
+        sx={{ pt: "16px !important", px: "20px", pb: "20px", display: "flex", flexDirection: "column", gap: 2 }}
       >
         {/* ── Test Mode Toggle ── */}
         <Box
@@ -355,12 +355,12 @@ export function EditCardDialog({
             }}
           >
             {/* Show the actual hiragana/kanji for this card so it's meaningful */}
-            <Tooltip title="Test with hiragana reading" placement="top">
+            <Tooltip title="Display hiragana as the primary text" placement="top">
               <ToggleButton value="hiragana">
                 {fields.reading || "ひ"}
               </ToggleButton>
             </Tooltip>
-            <Tooltip title="Test with kanji" placement="top">
+            <Tooltip title="Display kanji as the primary text" placement="top">
               <ToggleButton value="kanji">{fields.word || "漢"}</ToggleButton>
             </Tooltip>
           </ToggleButtonGroup>
