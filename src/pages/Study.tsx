@@ -1,5 +1,5 @@
-'use client';
-import { useState } from 'react';
+"use client";
+import { useState } from "react";
 import {
   Box,
   Typography,
@@ -7,12 +7,14 @@ import {
   Button,
   LinearProgress,
   Chip,
-} from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import { Flashcard } from '@/components/Flashcard';
-import { useCards } from '@/hooks/useCards';
+} from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+
+import { Flashcard } from "@/components/Flashcard";
+import { Loading } from "@/components/Loading";
+import { useCards } from "@/hooks/useCards";
 
 interface StudyProps {
   deckId: string;
@@ -20,15 +22,27 @@ interface StudyProps {
 }
 
 export function Study({ deckId, onBack }: StudyProps) {
-  const { cards } = useCards(deckId);
+  const { cards, loading } = useCards(deckId);
   const [index, setIndex] = useState(0);
   const card = cards[index];
 
+  if (loading) {
+    return (
+      <Box sx={{ maxWidth: 1100, mx: "auto", px: { xs: 2, sm: 4 }, py: 6 }}>
+        <Loading message="Loading your decks…" />
+      </Box>
+    );
+  }
+
   if (cards.length === 0) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={onBack}>Back to Deck</Button>
-        <Typography color="text.secondary" sx={{ mt: 3 }}>No cards in this deck yet.</Typography>
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
+          Back to Deck
+        </Button>
+        <Typography color="text.secondary" sx={{ mt: 3 }}>
+          No cards in this deck yet.
+        </Typography>
       </Box>
     );
   }
@@ -36,30 +50,30 @@ export function Study({ deckId, onBack }: StudyProps) {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
         px: 2,
         py: 6,
-        bgcolor: '#FFF5FB',
+        bgcolor: "#FFF5FB",
       }}
     >
       {/* Header */}
       <Box
         sx={{
-          position: 'fixed',
+          position: "fixed",
           top: 0,
           left: 0,
           right: 0,
-          display: 'flex',
-          alignItems: 'center',
+          display: "flex",
+          alignItems: "center",
           px: 3,
           py: 1.5,
-          backdropFilter: 'blur(12px)',
-          bgcolor: 'rgba(255, 241, 250, 0.95)',
-          borderBottom: '1px solid rgba(249,168,212,0.35)',
+          backdropFilter: "blur(12px)",
+          bgcolor: "rgba(255, 241, 250, 0.95)",
+          borderBottom: "1px solid rgba(249,168,212,0.35)",
           zIndex: 10,
         }}
       >
@@ -73,8 +87,8 @@ export function Study({ deckId, onBack }: StudyProps) {
             sx={{
               height: 2,
               borderRadius: 1,
-              bgcolor: 'rgba(200,169,126,0.1)',
-              '& .MuiLinearProgress-bar': { bgcolor: 'primary.main' },
+              bgcolor: "rgba(200,169,126,0.1)",
+              "& .MuiLinearProgress-bar": { bgcolor: "primary.main" },
             }}
           />
         </Box>
@@ -89,8 +103,8 @@ export function Study({ deckId, onBack }: StudyProps) {
       {/* Navigation */}
       <Box
         sx={{
-          display: 'flex',
-          alignItems: 'center',
+          display: "flex",
+          alignItems: "center",
           gap: 4,
           mt: 4,
         }}
@@ -99,15 +113,19 @@ export function Study({ deckId, onBack }: StudyProps) {
           onClick={() => setIndex((i) => Math.max(0, i - 1))}
           disabled={index === 0}
           sx={{
-            border: '1px solid rgba(249,168,212,0.45)',
-            bgcolor: '#FFF3F9',
-            '&:not(:disabled):hover': { borderColor: '#EC4899' },
+            border: "1px solid rgba(249,168,212,0.45)",
+            bgcolor: "#FFF3F9",
+            "&:not(:disabled):hover": { borderColor: "#EC4899" },
           }}
         >
           <ArrowBackIcon />
         </IconButton>
 
-        <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: '0.08em' }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ letterSpacing: "0.08em" }}
+        >
           TAP CARD TO FLIP
         </Typography>
 
@@ -115,9 +133,9 @@ export function Study({ deckId, onBack }: StudyProps) {
           onClick={() => setIndex((i) => Math.min(cards.length - 1, i + 1))}
           disabled={index === cards.length - 1}
           sx={{
-            border: '1px solid rgba(249,168,212,0.45)',
-            bgcolor: '#FFF3F9',
-            '&:not(:disabled):hover': { borderColor: '#EC4899' },
+            border: "1px solid rgba(249,168,212,0.45)",
+            bgcolor: "#FFF3F9",
+            "&:not(:disabled):hover": { borderColor: "#EC4899" },
           }}
         >
           <ArrowForwardIcon />

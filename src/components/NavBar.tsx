@@ -120,16 +120,6 @@ export function NavBar() {
               </Box>
             )}
 
-            {/* Home — only shown away from home */}
-            {!isHome && (
-              <Button onClick={() => router.push('/')} size="small" sx={navBtn}>
-                🏠{' '}
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, ml: 0.5 }}>
-                  Home
-                </Box>
-              </Button>
-            )}
-
             {/* Stats */}
             {!isStats && (
               <Button

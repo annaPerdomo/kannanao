@@ -1,10 +1,12 @@
 'use client';
 import { Box, Typography, IconButton, Chip } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+
 import { MatchMode } from '@/components/Practice/MatchMode';
 import { FillMode } from '@/components/Practice/FillMode';
 import { RecallMode } from '@/components/Practice/RecallMode';
 import { useCards } from '@/hooks/useCards';
+import { Loading } from '@/components/Loading';
 import type { PracticeMode } from '@/types/app';
 
 interface PracticeProps {
@@ -20,7 +22,15 @@ const LABELS: Record<PracticeMode, string> = {
 };
 
 export function Practice({ deckId, mode, onBack }: PracticeProps) {
-  const { cards } = useCards(deckId);
+  const { cards, loading } = useCards(deckId);
+
+  if (loading) {
+    return (
+      <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
+        <Loading message="Loading your practice session…" />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
