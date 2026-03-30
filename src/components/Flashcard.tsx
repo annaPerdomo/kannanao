@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Box, Typography, Skeleton } from '@mui/material';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
+import { getFlashcardDisplayText } from "@/lib/flashcardUtils";
 
 interface FlashcardProps {
   card: FlashcardType;
@@ -15,6 +16,7 @@ export function Flashcard({ card, width = 320, height = 220 }: FlashcardProps) {
   const [flipped, setFlipped] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
 
+  const { titleText, subtitleText } = getFlashcardDisplayText(card);
   return (
     <Box
       onClick={() => setFlipped((f) => !f)}
@@ -93,19 +95,22 @@ export function Flashcard({ card, width = 320, height = 220 }: FlashcardProps) {
                 textShadow: '0 2px 10px rgba(255,255,255,0.35)',
               }}
             >
-              {card.word}
+              {titleText}
             </Typography>
-            <Typography
-              sx={{
-                fontFamily: '"DM Mono", monospace',
-                fontSize: '0.8rem',
-                color: 'rgba(200,169,126,0.85)',
-                mt: 0.5,
-                letterSpacing: '0.05em',
-              }}
-            >
-              {card.reading}
-            </Typography>
+
+            {subtitleText && (
+              <Typography
+                sx={{
+                  fontFamily: '"DM Mono", monospace',
+                  fontSize: '0.8rem',
+                  color: 'rgba(200,169,126,0.85)',
+                  mt: 0.5,
+                  letterSpacing: '0.05em',
+                }}
+              >
+                {subtitleText}
+              </Typography>
+            )}
             <Typography
               variant="caption"
               sx={{ color: '#A86C99', display: 'block', mt: 1.5, letterSpacing: '0.08em' }}
@@ -134,6 +139,19 @@ export function Flashcard({ card, width = 320, height = 220 }: FlashcardProps) {
             gap: 1.5,
           }}
         >
+           {card.mainViewMode === "hiragana" && (
+            <Box>
+              <Typography
+                variant="caption"
+                sx={{ color: 'primary.main', letterSpacing: '0.12em', display: 'block', mb: 0.5 }}
+              >
+                KANJI
+            </Typography>
+            <Typography variant="h5" sx={{ color: '#5E2F6C' }}>
+              {card.word}
+            </Typography>
+          </Box>
+)}
           <Box>
             <Typography
               variant="caption"

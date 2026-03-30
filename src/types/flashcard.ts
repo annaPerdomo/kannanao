@@ -8,6 +8,7 @@ export interface Flashcard {
   example_en: string;
   imageUrl?: string;
   deckId: string;
+  mainViewMode: 'hiragana' | 'kanji'; 
 }
 
 export interface GeneratePayload {

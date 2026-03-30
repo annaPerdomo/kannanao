@@ -14,13 +14,14 @@ import {
   CircularProgress,
   Divider,
   Tooltip,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import SaveIcon from "@mui/icons-material/Save";
 import ImageSearchIcon from "@mui/icons-material/ImageSearch";
 import type { Flashcard } from "@/types/flashcard";
-import { dbUpdateCard } from "@/lib/supabase";
 import { fetchImage } from "@/services/api";
 
 interface EditCardDialogProps {
@@ -47,7 +48,7 @@ const fieldConfig: {
     key: "word",
     label: "日本語 (Japanese Word)",
     placeholder: "e.g. 猫",
-    helperText: "The Japanese word or phrase",
+    helperText: "The Japanese word or phrase (kanji)",
   },
   {
     key: "reading",
@@ -93,6 +94,9 @@ export function EditCardDialog({
     example_en: "",
     imageUrl: undefined,
   });
+  const [mainViewMode, setMainViewMode] = useState<"hiragana" | "kanji">(
+    "hiragana",
+  );
   const [imageQuery, setImageQuery] = useState("");
   const [savingImage, setSavingImage] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -110,6 +114,7 @@ export function EditCardDialog({
         example_en: card.example_en,
         imageUrl: card.imageUrl,
       });
+      setMainViewMode(card.mainViewMode ?? "hiragana");
       setImageQuery(card.image_query || card.word || "");
       setPreviewUrl(card.imageUrl);
       setImageError("");
@@ -155,6 +160,7 @@ export function EditCardDialog({
         example_jp: fields.example_jp,
         example_en: fields.example_en,
         imageUrl: fields.imageUrl,
+        mainViewMode,
       };
       onSave({ ...card, ...patch });
       onClose();
@@ -188,19 +194,28 @@ export function EditCardDialog({
     },
   };
 
+  // Which field is the "primary" answer for this mode
+  const modeField = mainViewMode === "hiragana" ? fields.reading : fields.word;
+  const modeHint =
+    mainViewMode === "hiragana"
+      ? "The hiragana reading will be the card title"
+      : "The kanji reading will be the card title";
+
   return (
     <Dialog
       open={open}
       onClose={onClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: "18px",
-          border: "1.5px solid rgba(249,168,212,0.35)",
-          boxShadow: "0 8px 40px rgba(249,168,212,0.2)",
-          bgcolor: "#FFFBFE",
-          overflow: "hidden",
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: "18px",
+            border: "1.5px solid rgba(249,168,212,0.35)",
+            boxShadow: "0 8px 40px rgba(249,168,212,0.2)",
+            bgcolor: "#FFFBFE",
+            overflow: "hidden",
+          },
         },
       }}
     >
@@ -259,6 +274,98 @@ export function EditCardDialog({
       <DialogContent
         sx={{ p: "20px", display: "flex", flexDirection: "column", gap: 2 }}
       >
+        {/* ── Test Mode Toggle ── */}
+        <Box
+          sx={{
+            borderRadius: "12px",
+            border: "1.5px solid rgba(249,168,212,0.35)",
+            background: "linear-gradient(135deg, #FFF5FB 0%, #FAF5FF 100%)",
+            p: "12px 14px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+          }}
+        >
+          <Box>
+            <Typography
+              sx={{
+                fontSize: "0.72rem",
+                fontWeight: 800,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "#EC4899",
+                fontFamily: '"Nunito", sans-serif',
+                lineHeight: 1,
+                mb: 0.4,
+              }}
+            >
+              Main View Mode
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: "0.68rem",
+                color: "#C2709A",
+                fontFamily: '"Nunito", sans-serif',
+                // Animate the hint text change so it feels responsive
+                transition: "opacity 0.15s ease",
+              }}
+            >
+              {modeHint}
+              {modeField ? (
+                <Box
+                  component="span"
+                  sx={{ ml: 0.5, fontWeight: 700, color: "#BE185D" }}
+                >
+                  · {modeField}
+                </Box>
+              ) : null}
+            </Typography>
+          </Box>
+
+          <ToggleButtonGroup
+            value={mainViewMode}
+            exclusive
+            onChange={(_, v) => {
+              if (v) setMainViewMode(v);
+            }}
+            size="small"
+            sx={{
+              flexShrink: 0,
+              "& .MuiToggleButton-root": {
+                px: 1.75,
+                py: 0.6,
+                fontWeight: 800,
+                fontSize: "0.9rem",
+                fontFamily: '"Nunito", sans-serif',
+                lineHeight: 1,
+                border: "1.5px solid rgba(249,168,212,0.45)",
+                color: "#C2709A",
+                transition: "all 0.18s ease",
+                "&.Mui-selected": {
+                  background: "linear-gradient(90deg, #fce7f3, #ede9fe)",
+                  color: "#BE185D",
+                  borderColor: "rgba(249,168,212,0.7)",
+                  boxShadow: "0 2px 8px rgba(249,168,212,0.25)",
+                },
+                "&:hover:not(.Mui-selected)": {
+                  bgcolor: "rgba(249,168,212,0.08)",
+                },
+              },
+            }}
+          >
+            {/* Show the actual hiragana/kanji for this card so it's meaningful */}
+            <Tooltip title="Test with hiragana reading" placement="top">
+              <ToggleButton value="hiragana">
+                {fields.reading || "ひ"}
+              </ToggleButton>
+            </Tooltip>
+            <Tooltip title="Test with kanji" placement="top">
+              <ToggleButton value="kanji">{fields.word || "漢"}</ToggleButton>
+            </Tooltip>
+          </ToggleButtonGroup>
+        </Box>
+
         {/* Text fields */}
         {fieldConfig.map(
           ({ key, label, placeholder, multiline, rows, helperText }) => (
@@ -273,7 +380,19 @@ export function EditCardDialog({
               helperText={helperText}
               fullWidth
               size="small"
-              sx={sharedTextFieldSx}
+              sx={{
+                ...sharedTextFieldSx,
+                // Subtly highlight the field that matches the active test mode
+                ...((key === "reading" && mainViewMode === "hiragana") ||
+                (key === "word" && mainViewMode === "kanji")
+                  ? {
+                      "& .MuiOutlinedInput-root fieldset": {
+                        borderColor: "rgba(236,72,153,0.5)",
+                        borderWidth: "1.5px",
+                      },
+                    }
+                  : {}),
+              }}
             />
           ),
         )}
@@ -296,7 +415,6 @@ export function EditCardDialog({
             Card Image
           </Typography>
 
-          {/* Image preview */}
           {previewUrl && (
             <Box
               sx={{
@@ -323,7 +441,6 @@ export function EditCardDialog({
             </Box>
           )}
 
-          {/* Query input + button */}
           <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
             <TextField
               label="Image Search Query"
@@ -392,14 +509,7 @@ export function EditCardDialog({
         </Box>
       </DialogContent>
 
-      <DialogActions
-        sx={{
-          px: "20px",
-          pb: "16px",
-          pt: 0,
-          gap: 1,
-        }}
-      >
+      <DialogActions sx={{ px: "20px", pb: "16px", pt: 0, gap: 1 }}>
         <Button
           onClick={onClose}
           disabled={saving}

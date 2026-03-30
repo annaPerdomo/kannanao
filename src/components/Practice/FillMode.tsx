@@ -20,8 +20,17 @@ interface FillModeProps {
   onExit: () => void;
 }
 
-function maskWord(sentence: string, word: string): string {
-  return sentence.replace(word, '＿'.repeat(word.length));
+function maskWord(sentence: string, word: string, reading?: string): string {
+  if (sentence.includes(word)) {
+    return sentence.replace(word, '＿'.repeat(word.length));
+  }
+
+  const target = reading || word;
+  if (target && sentence.includes(target)) {
+    return sentence.replace(target, '＿'.repeat(target.length));
+  }
+
+  return sentence;
 }
 
 export function FillMode({ cards, deckId, onExit }: FillModeProps) {
@@ -137,7 +146,7 @@ export function FillMode({ cards, deckId, onExit }: FillModeProps) {
             lineHeight: 1.8,
           }}
         >
-          {result ? card.example_jp : maskWord(card.example_jp, card.word)}
+          {result ? card.example_jp : maskWord(card.example_jp, card.word, card.reading)}
         </Typography>
 
         <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>

@@ -1,26 +1,30 @@
-'use client';
+"use client";
 
-import { createClient } from '@supabase/supabase-js';
-import type { Deck } from '@/types/deck';
-import type { Flashcard } from '@/types/flashcard';
+import { createClient } from "@supabase/supabase-js";
+import type { Deck } from "@/types/deck";
+import type { Flashcard } from "@/types/flashcard";
 
 const SUPABASE_URL =
-  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL';
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  process.env.SUPABASE_URL ||
+  "YOUR_SUPABASE_URL";
 const SUPABASE_ANON_KEY =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
+  "YOUR_SUPABASE_ANON_KEY";
 
 export function isConfigured(): boolean {
   return (
-    SUPABASE_URL !== 'YOUR_SUPABASE_URL' &&
-    SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY' &&
-    SUPABASE_URL !== '' &&
-    SUPABASE_ANON_KEY !== ''
+    SUPABASE_URL !== "YOUR_SUPABASE_URL" &&
+    SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY" &&
+    SUPABASE_URL !== "" &&
+    SUPABASE_ANON_KEY !== ""
   );
 }
 
 export function showConfigBanner(): void {
   console.warn(
-    'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY, or SUPABASE_URL and SUPABASE_ANON_KEY via next.config.ts.',
+    "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY, or SUPABASE_URL and SUPABASE_ANON_KEY via next.config.ts.",
   );
 }
 
@@ -42,6 +46,7 @@ interface SupabaseCardRow {
   image_url: string | null;
   example_jp: string | null;
   example_en: string | null;
+  main_view_mode: "hiragana" | "kanji";
 }
 
 function toNumber(value: string | null): number {
@@ -55,12 +60,13 @@ export function dbCardToApp(card: SupabaseCardRow): Flashcard {
     id: String(card.id),
     deckId: String(card.deck_id),
     word: card.word,
-    reading: card.reading ?? '',
-    meaning: card.meaning ?? '',
-    image_query: '',
-    example_jp: card.example_jp ?? '',
-    example_en: card.example_en ?? '',
+    reading: card.reading ?? "",
+    meaning: card.meaning ?? "",
+    image_query: "",
+    example_jp: card.example_jp ?? "",
+    example_en: card.example_en ?? "",
     imageUrl: card.image_url ?? undefined,
+    mainViewMode: card.main_view_mode ?? "hiragana",
   };
 }
 
@@ -68,7 +74,7 @@ export function dbDeckToApp(deck: SupabaseDeckRow, cardCount: number): Deck {
   return {
     id: deck.id,
     name: deck.name,
-    description: deck.description ?? '',
+    description: deck.description ?? "",
     createdAt: toNumber(deck.created_at),
     cardCount,
   };
@@ -81,20 +87,20 @@ export async function loadDecks(): Promise<Deck[]> {
   }
 
   const { data: deckRows, error: deckError } = await sb
-    .from('decks')
-    .select('*')
-    .order('created_at', { ascending: true });
+    .from("decks")
+    .select("*")
+    .order("created_at", { ascending: true });
   if (deckError) {
-    console.error('Error loading decks', deckError);
+    console.error("Error loading decks", deckError);
     return [];
   }
 
   const { data: cardRows, error: cardError } = await sb
-    .from('cards')
-    .select('*')
-    .order('created_at', { ascending: true });
+    .from("cards")
+    .select("*")
+    .order("created_at", { ascending: true });
   if (cardError) {
-    console.error('Error loading cards', cardError);
+    console.error("Error loading cards", cardError);
     return [];
   }
 
@@ -112,17 +118,17 @@ export async function dbCreateDeck(
 ): Promise<Deck> {
   if (!isConfigured()) {
     showConfigBanner();
-    throw new Error('Supabase is not configured');
+    throw new Error("Supabase is not configured");
   }
 
   const { data, error } = await sb
-    .from('decks')
+    .from("decks")
     .insert({ name, description: description ?? null })
     .select()
     .single();
 
   if (error || !data) {
-    throw error ?? new Error('Unable to create deck');
+    throw error ?? new Error("Unable to create deck");
   }
 
   return dbDeckToApp(data, 0);
@@ -131,10 +137,10 @@ export async function dbCreateDeck(
 export async function dbDeleteDeck(id: string): Promise<void> {
   if (!isConfigured()) {
     showConfigBanner();
-    throw new Error('Supabase is not configured');
+    throw new Error("Supabase is not configured");
   }
 
-  const { error } = await sb.from('decks').delete().eq('id', id);
+  const { error } = await sb.from("decks").delete().eq("id", id);
   if (error) throw error;
 }
 
@@ -145,13 +151,13 @@ export async function loadCards(deckId: string): Promise<Flashcard[]> {
   }
 
   const { data, error } = await sb
-    .from('cards')
-    .select('*')
-    .eq('deck_id', deckId)
-    .order('created_at', { ascending: true });
+    .from("cards")
+    .select("*")
+    .eq("deck_id", deckId)
+    .order("created_at", { ascending: true });
 
   if (error) {
-    console.error('Error loading cards', error);
+    console.error("Error loading cards", error);
     return [];
   }
 
@@ -160,7 +166,7 @@ export async function loadCards(deckId: string): Promise<Flashcard[]> {
 
 export async function dbInsertCards(
   deckId: string,
-  newCards: Array<Omit<Flashcard, 'id'>>,
+  newCards: Array<Omit<Flashcard, "id">>,
 ): Promise<Flashcard[]> {
   if (!isConfigured()) {
     showConfigBanner();
@@ -170,17 +176,15 @@ export async function dbInsertCards(
   const rows = newCards.map((card) => ({
     deck_id: deckId,
     word: card.word,
-    reading: card.reading || '',
-    meaning: card.meaning || '',
-    image_url: card.imageUrl || '',
-    example_jp: card.example_jp || '',
-    example_en: card.example_en || '',
+    reading: card.reading || "",
+    meaning: card.meaning || "",
+    image_url: card.imageUrl || "",
+    example_jp: card.example_jp || "",
+    example_en: card.example_en || "",
+    main_view_mode: card.mainViewMode || "hiragana",
   }));
 
-  const { data, error } = await sb
-    .from('cards')
-    .insert(rows)
-    .select('*');
+  const { data, error } = await sb.from("cards").insert(rows).select("*");
 
   if (error) throw error;
   return (data ?? []).map(dbCardToApp);
@@ -189,10 +193,10 @@ export async function dbInsertCards(
 export async function dbDeleteCard(cardId: string): Promise<void> {
   if (!isConfigured()) {
     showConfigBanner();
-    throw new Error('Supabase is not configured');
+    throw new Error("Supabase is not configured");
   }
 
-  const { error } = await sb.from('cards').delete().eq('id', cardId);
+  const { error } = await sb.from("cards").delete().eq("id", cardId);
   if (error) throw error;
 }
 
@@ -212,20 +216,22 @@ export async function dbUpdateCard(
   if (patch.imageUrl !== undefined) payload.image_url = patch.imageUrl;
   if (patch.example_jp !== undefined) payload.example_jp = patch.example_jp;
   if (patch.example_en !== undefined) payload.example_en = patch.example_en;
+  if (patch.mainViewMode !== undefined)
+    payload.main_view_mode = patch.mainViewMode;
 
   if (Object.keys(payload).length === 0) {
     return null;
   }
 
   const { data, error } = await sb
-    .from('cards')
+    .from("cards")
     .update(payload)
-    .eq('id', cardId)
+    .eq("id", cardId)
     .select()
     .single();
 
   if (error || !data) {
-    console.error('Error updating card', error);
+    console.error("Error updating card", error);
     return null;
   }
 
@@ -244,12 +250,12 @@ export async function loadAllCards(): Promise<Flashcard[]> {
   }
 
   const { data, error } = await sb
-    .from('cards')
-    .select('*')
-    .order('created_at', { ascending: true });
+    .from("cards")
+    .select("*")
+    .order("created_at", { ascending: true });
 
   if (error) {
-    console.error('Error loading all cards', error);
+    console.error("Error loading all cards", error);
     return [];
   }
 
@@ -274,14 +280,15 @@ export async function dbCopyCardsIntoDeck(
   const rows = cards.map((card) => ({
     deck_id: targetDeckId,
     word: card.word,
-    reading: card.reading || '',
-    meaning: card.meaning || '',
-    image_url: card.imageUrl || '',
-    example_jp: card.example_jp || '',
-    example_en: card.example_en || '',
+    reading: card.reading || "",
+    meaning: card.meaning || "",
+    image_url: card.imageUrl || "",
+    example_jp: card.example_jp || "",
+    example_en: card.example_en || "",
+    main_view_mode: card.mainViewMode ?? 'hiragana',
   }));
 
-  const { data, error } = await sb.from('cards').insert(rows).select('*');
+  const { data, error } = await sb.from("cards").insert(rows).select("*");
 
   if (error) throw error;
   return (data ?? []).map(dbCardToApp);
@@ -294,18 +301,18 @@ export async function dbRenameDeck(
 ): Promise<Deck> {
   if (!isConfigured()) {
     showConfigBanner();
-    throw new Error('Supabase is not configured');
+    throw new Error("Supabase is not configured");
   }
 
   const { data, error } = await sb
-    .from('decks')
+    .from("decks")
     .update({ name, description: description ?? null })
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
 
   if (error || !data) {
-    throw error ?? new Error('Unable to rename deck');
+    throw error ?? new Error("Unable to rename deck");
   }
 
   // Preserve card count — caller passes it in via the hook

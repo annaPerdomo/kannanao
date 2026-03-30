@@ -3,6 +3,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { Box, Typography, Button, Grid, Chip, LinearProgress } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import type { Flashcard } from '@/types/flashcard';
+import { getFlashcardDisplayText } from '@/lib/flashcardUtils';
 import { useProgress } from '@/hooks/useProgess';
 
 interface MatchModeProps {
@@ -28,10 +29,13 @@ export function MatchMode({ cards, deckId, onExit }: MatchModeProps) {
   const pool = useMemo(() => cards.slice(0, 8), [cards]);
 
   const tiles = useMemo<Tile[]>(() => {
-    const t: Tile[] = pool.flatMap((c) => [
-      { id: `jp-${c.id}`, cardId: c.id, side: 'jp', label: c.word },
-      { id: `en-${c.id}`, cardId: c.id, side: 'en', label: c.meaning },
-    ]);
+    const t: Tile[] = pool.flatMap((c) => {
+      const { titleText } = getFlashcardDisplayText(c);
+      return [
+        { id: `jp-${c.id}`, cardId: c.id, side: 'jp', label: titleText },
+        { id: `en-${c.id}`, cardId: c.id, side: 'en', label: c.meaning },
+      ];
+    });
     return shuffle(t);
   }, [pool]);
 
