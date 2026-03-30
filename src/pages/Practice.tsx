@@ -1,10 +1,10 @@
 'use client';
-import { Box, Typography, IconButton, Chip } from '@mui/material';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import { Box, Typography } from '@mui/material';
 
 import { MatchMode } from '@/components/Practice/MatchMode';
 import { FillMode } from '@/components/Practice/FillMode';
 import { RecallMode } from '@/components/Practice/RecallMode';
+import { SectionHeader } from '@/components/SectionHeader';
 import { useCards } from '@/hooks/useCards';
 import { Loading } from '@/components/Loading';
 import type { PracticeMode } from '@/types/app';
@@ -34,20 +34,17 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
 
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4, p: 3, borderRadius: 3, bgcolor: '#FFF2F8', border: '1px solid rgba(249,168,212,0.45)', boxShadow: '0 12px 28px rgba(249,168,212,0.12)' }}>
-        <IconButton onClick={onBack} size="small">
-          <ArrowBackIosNewIcon fontSize="small" />
-        </IconButton>
-        <Typography variant="h5" sx={{ flexGrow: 1, color: '#BE185D' }}>
-          {LABELS[mode]}
-        </Typography>
-        <Chip label={`${cards.length} cards`} size="small" />
-      </Box>
+      <SectionHeader
+        title={LABELS[mode]}
+        onBack={onBack}
+        badge={`${cards.length} cards`}
+      />
 
       {cards.length < 2 ? (
         <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Typography color="text.secondary">Not enough cards to practice. Add more cards to this deck.</Typography>
+          <Typography color="text.secondary">
+            Not enough cards to practice. Add more cards to this deck.
+          </Typography>
         </Box>
       ) : (
         <>

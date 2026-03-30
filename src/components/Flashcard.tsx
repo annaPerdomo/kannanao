@@ -1,8 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Skeleton } from '@mui/material';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
-import { getFlashcardDisplayText } from "@/lib/flashcardUtils";
+import { getFlashcardDisplayText } from '@/lib/flashcardUtils';
 
 interface FlashcardProps {
   card: FlashcardType;
@@ -10,13 +10,30 @@ interface FlashcardProps {
   height?: number | string;
 }
 
-const PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280"%3E%3Crect fill="%231A1916" width="400" height="280"/%3E%3C/svg%3E';
+const PLACEHOLDER =
+  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400"%3E%3Crect fill="%23FFF0F6" width="600" height="400"/%3E%3C/svg%3E';
 
-export function Flashcard({ card, width = 320, height = 220 }: FlashcardProps) {
+export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps) {
   const [flipped, setFlipped] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // Reset to front face whenever the card changes
+  useEffect(() => {
+    setFlipped(false);
+    setImgLoaded(false);
+  }, [card]);
+
+  // Cached images never fire onLoad — check .complete after the src settles
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      setImgLoaded(true);
+    }
+  }, [card]);
 
   const { titleText, subtitleText } = getFlashcardDisplayText(card);
+
   return (
     <Box
       onClick={() => setFlipped((f) => !f)}
@@ -24,7 +41,7 @@ export function Flashcard({ card, width = 320, height = 220 }: FlashcardProps) {
         width,
         height,
         cursor: 'pointer',
-        perspective: '1200px',
+        perspective: '1400px',
         userSelect: 'none',
         flexShrink: 0,
       }}
@@ -35,31 +52,40 @@ export function Flashcard({ card, width = 320, height = 220 }: FlashcardProps) {
           height: '100%',
           position: 'relative',
           transformStyle: 'preserve-3d',
-          transition: 'transform 0.55s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* Front */}
+        {/* ── FRONT ── */}
         <Box
           sx={{
             position: 'absolute',
             inset: 0,
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
-            borderRadius: 3,
+            borderRadius: 5,
             overflow: 'hidden',
-            border: '1px solid rgba(249,168,212,0.25)',
-            boxShadow: '0 16px 30px rgba(249,168,212,0.15)',
+            border: '1.5px solid rgba(249,168,212,0.35)',
+            boxShadow:
+              '0 4px 6px rgba(249,168,212,0.08), 0 20px 50px rgba(249,168,212,0.22), 0 0 0 1px rgba(255,255,255,0.6) inset',
           }}
         >
+          {/* Image */}
           {!imgLoaded && (
-            <Skeleton variant="rectangular" width="100%" height="100%" sx={{ bgcolor: 'rgba(200,169,126,0.06)' }} />
+            <Skeleton
+              variant="rectangular"
+              width="100%"
+              height="100%"
+              sx={{ bgcolor: 'rgba(249,168,212,0.1)', position: 'absolute', inset: 0 }}
+            />
           )}
           <Box
             component="img"
+            ref={imgRef}
             src={card.imageUrl ?? PLACEHOLDER}
             alt={card.word}
             onLoad={() => setImgLoaded(true)}
+            onError={() => setImgLoaded(true)}
             sx={{
               width: '100%',
               height: '100%',
@@ -67,14 +93,32 @@ export function Flashcard({ card, width = 320, height = 220 }: FlashcardProps) {
               display: imgLoaded ? 'block' : 'none',
             }}
           />
-          {/* Gradient overlay */}
+
+          {/* Gradient overlay — taller fade so text has breathing room */}
           <Box
             sx={{
               position: 'absolute',
               inset: 0,
-              background: 'linear-gradient(to top, rgba(255, 242, 248, 0.96) 24%, rgba(249, 168, 212, 0.18) 68%)',
+              background:
+                'linear-gradient(to top, rgba(255,236,246,0.98) 32%, rgba(255,220,240,0.55) 60%, transparent 100%)',
             }}
           />
+
+          {/* Decorative top-right sakura blur blob */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: -40,
+              right: -40,
+              width: 160,
+              height: 160,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(249,168,212,0.35) 0%, transparent 70%)',
+              filter: 'blur(24px)',
+              pointerEvents: 'none',
+            }}
+          />
+
           {/* Word + reading */}
           <Box
             sx={{
@@ -82,45 +126,68 @@ export function Flashcard({ card, width = 320, height = 220 }: FlashcardProps) {
               bottom: 0,
               left: 0,
               right: 0,
-              p: 2.5,
+              p: { xs: 3, sm: 4 },
             }}
           >
+            {/* Category / deck badge */}
+            {subtitleText && (
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  px: 1.5,
+                  py: 0.4,
+                  borderRadius: 99,
+                  bgcolor: 'rgba(249,168,212,0.22)',
+                  border: '1px solid rgba(249,168,212,0.4)',
+                  mb: 1.5,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontFamily: '"DM Mono", monospace',
+                    fontSize: '0.72rem',
+                    color: '#A04080',
+                    letterSpacing: '0.1em',
+                    fontWeight: 600,
+                  }}
+                >
+                  {subtitleText}
+                </Typography>
+              </Box>
+            )}
+
             <Typography
               sx={{
                 fontFamily: '"Noto Serif JP", serif',
-                fontSize: '2rem',
-                fontWeight: 600,
+                fontSize: { xs: '2.6rem', sm: '3.2rem' },
+                fontWeight: 700,
                 color: '#4A2068',
-                lineHeight: 1.1,
-                textShadow: '0 2px 10px rgba(255,255,255,0.35)',
+                lineHeight: 1.05,
+                letterSpacing: '-0.01em',
+                textShadow: '0 2px 16px rgba(255,255,255,0.5)',
               }}
             >
               {titleText}
             </Typography>
 
-            {subtitleText && (
-              <Typography
-                sx={{
-                  fontFamily: '"DM Mono", monospace',
-                  fontSize: '0.8rem',
-                  color: 'rgba(200,169,126,0.85)',
-                  mt: 0.5,
-                  letterSpacing: '0.05em',
-                }}
-              >
-                {subtitleText}
-              </Typography>
-            )}
             <Typography
               variant="caption"
-              sx={{ color: '#A86C99', display: 'block', mt: 1.5, letterSpacing: '0.08em' }}
+              sx={{
+                color: 'rgba(190,24,93,0.55)',
+                display: 'block',
+                mt: 2,
+                letterSpacing: '0.12em',
+                fontSize: '0.7rem',
+                textTransform: 'uppercase',
+              }}
             >
               tap to flip
             </Typography>
           </Box>
         </Box>
 
-        {/* Back */}
+        {/* ── BACK ── */}
         <Box
           sx={{
             position: 'absolute',
@@ -128,62 +195,132 @@ export function Flashcard({ card, width = 320, height = 220 }: FlashcardProps) {
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)',
-            borderRadius: 3,
+            borderRadius: 5,
             overflow: 'hidden',
-            border: '1px solid rgba(249,168,212,0.35)',
-            bgcolor: '#FFF1F8',
+            border: '1.5px solid rgba(249,168,212,0.35)',
+            boxShadow:
+              '0 4px 6px rgba(249,168,212,0.08), 0 20px 50px rgba(249,168,212,0.22), 0 0 0 1px rgba(255,255,255,0.6) inset',
+            bgcolor: '#FFF4FB',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            p: 2.5,
-            gap: 1.5,
+            p: { xs: 3, sm: 4.5 },
+            gap: 2.5,
           }}
         >
-           {card.mainViewMode === "hiragana" && (
-            <Box>
-              <Typography
-                variant="caption"
-                sx={{ color: 'primary.main', letterSpacing: '0.12em', display: 'block', mb: 0.5 }}
-              >
-                KANJI
-            </Typography>
-            <Typography variant="h5" sx={{ color: '#5E2F6C' }}>
-              {card.word}
-            </Typography>
-          </Box>
-)}
-          <Box>
-            <Typography
-              variant="caption"
-              sx={{ color: 'primary.main', letterSpacing: '0.12em', display: 'block', mb: 0.5 }}
-            >
-              MEANING
-            </Typography>
-            <Typography variant="h5" sx={{ color: '#5E2F6C', fontStyle: 'italic' }}>
-              {card.meaning}
-            </Typography>
-          </Box>
+          {/* Decorative blob */}
           <Box
             sx={{
-              borderTop: '1px solid',
-              borderColor: 'divider',
-              pt: 1.5,
+              position: 'absolute',
+              bottom: -60,
+              left: -60,
+              width: 220,
+              height: 220,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(249,168,212,0.2) 0%, transparent 70%)',
+              filter: 'blur(32px)',
+              pointerEvents: 'none',
             }}
-          >
-            <Typography variant="caption" sx={{ color: 'primary.main', letterSpacing: '0.12em', display: 'block', mb: 0.5 }}>
-              EXAMPLE
+          />
+
+          {/* Kanji (shown only when front was hiragana) */}
+          {card.mainViewMode === 'hiragana' && (
+            <Box>
+              <Typography
+                sx={{
+                  fontFamily: '"DM Mono", monospace',
+                  fontSize: '0.68rem',
+                  color: '#E879B0',
+                  letterSpacing: '0.14em',
+                  fontWeight: 700,
+                  mb: 0.75,
+                  textTransform: 'uppercase',
+                }}
+              >
+                Kanji
+              </Typography>
+              <Typography
+                sx={{
+                  fontFamily: '"Noto Serif JP", serif',
+                  fontSize: '2rem',
+                  fontWeight: 600,
+                  color: '#5E2F6C',
+                  lineHeight: 1.2,
+                }}
+              >
+                {card.word}
+              </Typography>
+            </Box>
+          )}
+
+          {/* Meaning */}
+          <Box>
+            <Typography
+              sx={{
+                fontFamily: '"DM Mono", monospace',
+                fontSize: '0.68rem',
+                color: '#E879B0',
+                letterSpacing: '0.14em',
+                fontWeight: 700,
+                mb: 0.75,
+                textTransform: 'uppercase',
+              }}
+            >
+              Meaning
             </Typography>
             <Typography
               sx={{
                 fontFamily: '"Noto Serif JP", serif',
-                fontSize: '0.95rem',
-                color: 'text.primary',
-                lineHeight: 1.7,
+                fontSize: { xs: '1.6rem', sm: '2rem' },
+                fontWeight: 600,
+                color: '#4A2068',
+                fontStyle: 'italic',
+                lineHeight: 1.25,
+              }}
+            >
+              {card.meaning}
+            </Typography>
+          </Box>
+
+          {/* Divider + Example */}
+          <Box
+            sx={{
+              borderTop: '1.5px solid rgba(249,168,212,0.3)',
+              pt: 2.5,
+            }}
+          >
+            <Typography
+              sx={{
+                fontFamily: '"DM Mono", monospace',
+                fontSize: '0.68rem',
+                color: '#E879B0',
+                letterSpacing: '0.14em',
+                fontWeight: 700,
+                mb: 1,
+                textTransform: 'uppercase',
+              }}
+            >
+              Example
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: '"Noto Serif JP", serif',
+                fontSize: '1.05rem',
+                color: '#5E2F6C',
+                lineHeight: 1.8,
               }}
             >
               {card.example_jp}
             </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5, fontStyle: 'italic' }}>
+            <Typography
+              sx={{
+                fontSize: '0.9rem',
+                color: 'rgba(94,47,108,0.6)',
+                mt: 0.75,
+                fontStyle: 'italic',
+                lineHeight: 1.6,
+              }}
+            >
               {card.example_en}
             </Typography>
           </Box>

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -10,25 +10,52 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 import { Flashcard } from "@/components/Flashcard";
 import { Loading } from "@/components/Loading";
+import { SectionHeader } from "@/components/SectionHeader";
 import { useCards } from "@/hooks/useCards";
+import { useDecks } from "@/hooks/useDecks";
 
 interface StudyProps {
   deckId: string;
   onBack: () => void;
 }
 
-export default function Study({ deckId, onBack }: StudyProps) {
-  const { cards, loading } = useCards(deckId);
-  const [index, setIndex] = useState(0);
-  const card = cards[index];
+// Must match the Flashcard flip transition duration (0.6s) — wait for it to
+// finish before swapping the card so the back face never flashes.
+const FLIP_DURATION_MS = 620;
 
-  if (loading) {
+export default function Study({ deckId, onBack }: StudyProps) {
+  const { cards, loading: cardsLoading } = useCards(deckId);
+  const { decks, loading: decksLoading } = useDecks();
+  const [index, setIndex] = useState(0);
+  const [navigating, setNavigating] = useState(false);
+
+  const card = cards[index];
+  const deck = decks.find((d) => d.id === deckId);
+  const deckName = deck ? deck.name : "Deck";
+
+  // Flip the card back to front, then after the animation completes, advance.
+  // `navigating` blocks further clicks mid-transition.
+  const navigate = useCallback(
+    (direction: 1 | -1) => {
+      if (navigating) return;
+      const nextIndex = index + direction;
+      if (nextIndex < 0 || nextIndex >= cards.length) return;
+
+      setNavigating(true);
+      setTimeout(() => {
+        setIndex(nextIndex);
+        setNavigating(false);
+      }, FLIP_DURATION_MS);
+    },
+    [navigating, index, cards.length]
+  );
+
+  if (cardsLoading || decksLoading) {
     return (
-      <Box sx={{ maxWidth: 1100, mx: "auto", px: { xs: 2, sm: 4 }, py: 6 }}>
+      <Box sx={{ maxWidth: 800, mx: "auto", px: { xs: 2, sm: 4 }, py: 6 }}>
         <Loading message="Loading your decks…" />
       </Box>
     );
@@ -36,7 +63,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
 
   if (cards.length === 0) {
     return (
-      <Box sx={{ p: 4, textAlign: "center" }}>
+      <Box sx={{ maxWidth: 800, mx: "auto", px: { xs: 2, sm: 4 }, py: 6, textAlign: "center" }}>
         <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
           Back to Deck
         </Button>
@@ -50,54 +77,52 @@ export default function Study({ deckId, onBack }: StudyProps) {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        maxWidth: 800,
+        mx: "auto",
+        px: { xs: 2, sm: 4 },
+        py: 4,
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        px: 2,
-        py: 6,
-        bgcolor: "#FFF5FB",
       }}
     >
-      {/* Header */}
-      <Box
-        sx={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          display: "flex",
-          alignItems: "center",
-          px: 3,
-          py: 1.5,
-          backdropFilter: "blur(12px)",
-          bgcolor: "rgba(255, 241, 250, 0.95)",
-          borderBottom: "1px solid rgba(249,168,212,0.35)",
-          zIndex: 10,
-        }}
-      >
-        <IconButton onClick={onBack} size="small">
-          <ArrowBackIosNewIcon fontSize="small" />
-        </IconButton>
-        <Box sx={{ flexGrow: 1, mx: 2 }}>
-          <LinearProgress
-            variant="determinate"
-            value={((index + 1) / cards.length) * 100}
-            sx={{
-              height: 2,
-              borderRadius: 1,
-              bgcolor: "rgba(200,169,126,0.1)",
-              "& .MuiLinearProgress-bar": { bgcolor: "primary.main" },
-            }}
-          />
-        </Box>
-        <Chip label={`${index + 1} / ${cards.length}`} size="small" />
+      {/* Header — same container as Practice page */}
+      <SectionHeader
+        title={deckName}
+        onBack={onBack}
+        badge={`${cards.length} cards`}
+      />
+
+      {/* Progress bar */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+        <LinearProgress
+          variant="determinate"
+          value={((index + 1) / cards.length) * 100}
+          sx={{
+            flexGrow: 1,
+            height: 6,
+            borderRadius: 99,
+            bgcolor: "rgba(249,168,212,0.18)",
+            "& .MuiLinearProgress-bar": {
+              borderRadius: 99,
+              background: "linear-gradient(90deg, #FBCFE8 0%, #F472B6 50%, #C4B5FD 100%)",
+            },
+          }}
+        />
+        <Chip
+          label={`${index + 1} / ${cards.length}`}
+          size="small"
+          sx={{
+            bgcolor: "rgba(249,168,212,0.18)",
+            color: "#BE185D",
+            fontWeight: 600,
+            border: "1px solid rgba(249,168,212,0.4)",
+          }}
+        />
       </Box>
 
-      {/* Card */}
-      <Box sx={{ mt: 4 }}>
-        {card && <Flashcard card={card} width={340} height={240} />}
+      {/* Card — fills the constrained column */}
+      <Box sx={{ width: "100%" }}>
+        {card && <Flashcard card={card} width="100%" height={420} />}
       </Box>
 
       {/* Navigation */}
@@ -105,13 +130,14 @@ export default function Study({ deckId, onBack }: StudyProps) {
         sx={{
           display: "flex",
           alignItems: "center",
+          justifyContent: "center",
           gap: 4,
-          mt: 4,
+          mt: 3,
         }}
       >
         <IconButton
-          onClick={() => setIndex((i) => Math.max(0, i - 1))}
-          disabled={index === 0}
+          onClick={() => navigate(-1)}
+          disabled={index === 0 || navigating}
           sx={{
             border: "1px solid rgba(249,168,212,0.45)",
             bgcolor: "#FFF3F9",
@@ -130,8 +156,8 @@ export default function Study({ deckId, onBack }: StudyProps) {
         </Typography>
 
         <IconButton
-          onClick={() => setIndex((i) => Math.min(cards.length - 1, i + 1))}
-          disabled={index === cards.length - 1}
+          onClick={() => navigate(1)}
+          disabled={index === cards.length - 1 || navigating}
           sx={{
             border: "1px solid rgba(249,168,212,0.45)",
             bgcolor: "#FFF3F9",
@@ -143,9 +169,11 @@ export default function Study({ deckId, onBack }: StudyProps) {
       </Box>
 
       {index === cards.length - 1 && (
-        <Button variant="outlined" onClick={onBack} sx={{ mt: 3 }}>
-          Finish Session
-        </Button>
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+          <Button variant="outlined" onClick={onBack}>
+            Finish Session
+          </Button>
+        </Box>
       )}
     </Box>
   );
