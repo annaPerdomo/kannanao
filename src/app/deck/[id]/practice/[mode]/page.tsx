@@ -1,7 +1,7 @@
 'use client';
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Practice } from '@/pages/Practice';
+import Practice from '@/pages/Practice';
 import type { PracticeMode } from '@/types/app';
 
 const VALID_MODES: PracticeMode[] = ['match', 'fill', 'recall'];

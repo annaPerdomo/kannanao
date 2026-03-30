@@ -1,7 +1,7 @@
 'use client';
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Study } from '@/pages/Study';
+import Study from '@/pages/Study';
 
 export default function StudyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

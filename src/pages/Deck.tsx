@@ -98,7 +98,7 @@ function Label({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
+export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
   const {
     decks,
     loading: decksLoading,

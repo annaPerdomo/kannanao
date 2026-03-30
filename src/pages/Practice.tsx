@@ -21,7 +21,7 @@ const LABELS: Record<PracticeMode, string> = {
   recall: 'Recall Typing',
 };
 
-export function Practice({ deckId, mode, onBack }: PracticeProps) {
+export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   const { cards, loading } = useCards(deckId);
 
   if (loading) {

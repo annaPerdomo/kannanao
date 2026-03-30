@@ -10,7 +10,7 @@ import { DeckCard } from '@/components/DeckCard';
 import { Loading } from '@/components/Loading';
 import { useDecks } from '@/hooks/useDecks';
 
-export function Home() {
+export default function Home() {
   const { decks, deleteDeck, loading } = useDecks();
   const router = useRouter();
 

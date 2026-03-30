@@ -1,7 +1,7 @@
 'use client';
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Deck } from '@/pages/Deck';
+import Deck from '@/pages/Deck';
 
 export default function DeckPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

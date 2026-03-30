@@ -21,7 +21,7 @@ interface StudyProps {
   onBack: () => void;
 }
 
-export function Study({ deckId, onBack }: StudyProps) {
+export default function Study({ deckId, onBack }: StudyProps) {
   const { cards, loading } = useCards(deckId);
   const [index, setIndex] = useState(0);
   const card = cards[index];
