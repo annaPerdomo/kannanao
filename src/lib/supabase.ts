@@ -96,6 +96,7 @@ export async function loadDecks(userId: string): Promise<Deck[]> {
   const { data: deckRows, error: deckError } = await sb
     .from("decks")
     .select("*")
+    .eq("user_id", userId)
     .order("created_at", { ascending: true });
   if (deckError) {
     console.error("Error loading decks", deckError);
