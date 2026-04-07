@@ -5,20 +5,18 @@ import {
   Box,
   Typography,
   Button,
-  Divider,
   Chip,
   IconButton,
   TextField,
   CircularProgress,
   Tooltip,
 } from "@mui/material";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
-import { GenerateForm } from "@/components/GenerateForm";
+import AddIcon from "@mui/icons-material/Add";
+import { AddCardsModal } from "@/components/AddCardsModal";
 import { ImageCard } from "@/components/ImageCard";
 import { Loading } from "@/components/Loading";
 import { PdfImportModal } from "@/components/PdfImportModal";
@@ -26,6 +24,7 @@ import { AddExistingCardsDialog } from "@/components/AddExistingCardsDialog";
 import { useDecks } from "@/hooks/useDecks";
 import { useCards } from "@/hooks/useCards";
 import { useGenerateFlashcards } from "@/hooks/useGenerateFlashcards";
+import { useAuth } from "@/contexts/AuthContext";
 import type { PracticeMode } from "@/types/app";
 
 interface DeckProps {
@@ -81,21 +80,6 @@ const practiceConfig: {
   },
 ];
 
-function SidePanel({ children }: { children: React.ReactNode }) {
-  return (
-    <Box
-      sx={{
-        border: "1.5px solid rgba(249,168,212,0.32)",
-        borderRadius: "14px",
-        p: "18px 20px",
-        bgcolor: "#FFFFFF",
-        boxShadow: "0 2px 10px rgba(249,168,212,0.1)",
-      }}
-    >
-      {children}
-    </Box>
-  );
-}
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
@@ -117,6 +101,7 @@ function Label({ children }: { children: React.ReactNode }) {
 }
 
 export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
+  const { user } = useAuth();
   const {
     decks,
     loading: decksLoading,
@@ -126,6 +111,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const deck = decks.find((d) => d.id === deckId);
 
   const [pdfImportOpen, setPdfImportOpen] = useState(false);
+  const [addCardsOpen, setAddCardsOpen] = useState(false);
 
   const handlePdfCards = () => {
     console.log("thingy");
@@ -667,131 +653,117 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         )}
       </Box>
 
-      {/* ── CARDS + ADD CARDS ── */}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          gap: 2.5,
-          alignItems: "flex-start",
-        }}
-      >
-        {/* Cards grid */}
-        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-          <Label>Cards in Deck</Label>
-          {cards.length === 0 ? (
-            <Box
-              sx={{
-                border: "1.5px dashed rgba(249,168,212,0.4)",
-                borderRadius: "14px",
-                p: 6,
-                textAlign: "center",
-                bgcolor: "rgba(255,255,255,0.6)",
-              }}
-            >
-              <Typography
-                sx={{ color: "text.secondary", fontSize: "0.875rem" }}
-              >
-                No cards yet — add some from the panel on the right.
-              </Typography>
-            </Box>
-          ) : (
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: {
-                  xs: "repeat(2, 1fr)",
-                  sm: "repeat(3, 1fr)",
-                  lg: "repeat(4, 1fr)",
-                },
-                gap: 1.75,
-              }}
-            >
-              {cards.map((card) => (
-                <ImageCard
-                  key={card.id}
-                  card={card}
-                  onDelete={deleteCard}
-                  onUpdate={updateCard}
-                  compact
-                />
-              ))}
-            </Box>
-          )}
-        </Box>
-
-        {/* Add Cards sidebar */}
+      {/* ── CARDS ── */}
+      <Box>
         <Box
           sx={{
-            width: { xs: "100%", md: 248 },
-            flexShrink: 0,
-            order: { xs: -1, md: 0 },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 1.5,
           }}
         >
-          <SidePanel>
-            <Label>Add Cards</Label>
-            <GenerateForm
-              onGenerate={handleGenerate}
-              generating={generating}
-              error={error}
-            />
-            <Divider sx={{ my: 1.5, borderColor: "rgba(249,168,212,0.3)" }} />
-            <Box sx={{ display: "grid", gap: 1.25 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<LibraryAddIcon sx={{ fontSize: 15 }} />}
-                onClick={() => setPickerOpen(true)}
-                size="small"
-                sx={{
-                  borderRadius: "9px",
-                  justifyContent: "flex-start",
-                  px: 2,
-                  py: "6px",
-                  fontSize: "0.76rem",
-                  letterSpacing: "0.01em",
-                  textTransform: "none",
-                  fontWeight: 700,
-                }}
-              >
-                Add Existing Cards
-              </Button>
-
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<PictureAsPdfIcon sx={{ fontSize: 15 }} />}
-                onClick={() => setPdfImportOpen(true)}
-                size="small"
-                sx={{
-                  borderRadius: "9px",
-                  justifyContent: "flex-start",
-                  px: 2,
-                  py: "6px",
-                  fontSize: "0.76rem",
-                  letterSpacing: "0.01em",
-                  textTransform: "none",
-                  fontWeight: 700,
-                }}
-              >
-                Import from PDF
-              </Button>
-            </Box>
-
-            <PdfImportModal
-              open={pdfImportOpen}
-              onClose={() => setPdfImportOpen(false)}
-              onAddCards={handlePdfCards}
-            />
-          </SidePanel>
+          <Label>Cards in Deck</Label>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AddIcon sx={{ fontSize: 15 }} />}
+            onClick={() => setAddCardsOpen(true)}
+            sx={{
+              borderRadius: "9px",
+              px: 2,
+              py: "5px",
+              fontSize: "0.76rem",
+              textTransform: "none",
+              fontWeight: 700,
+              mb: 1.5,
+            }}
+          >
+            Add Cards
+          </Button>
         </Box>
+
+        {cards.length === 0 ? (
+          <Box
+            sx={{
+              border: "1.5px dashed rgba(249,168,212,0.4)",
+              borderRadius: "14px",
+              p: 6,
+              textAlign: "center",
+              bgcolor: "rgba(255,255,255,0.6)",
+            }}
+          >
+            <Typography sx={{ color: "text.secondary", fontSize: "0.875rem" }}>
+              No cards yet —{" "}
+              <Box
+                component="span"
+                onClick={() => setAddCardsOpen(true)}
+                sx={{
+                  color: "#EC4899",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  textUnderlineOffset: 2,
+                }}
+              >
+                add some
+              </Box>{" "}
+              to get started.
+            </Typography>
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "repeat(2, 1fr)",
+                sm: "repeat(3, 1fr)",
+                lg: "repeat(4, 1fr)",
+              },
+              gap: 1.75,
+            }}
+          >
+            {cards.map((card) => (
+              <ImageCard
+                key={card.id}
+                card={card}
+                onDelete={deleteCard}
+                onUpdate={updateCard}
+                compact
+              />
+            ))}
+          </Box>
+        )}
       </Box>
+
+      <AddCardsModal
+        open={addCardsOpen}
+        onClose={() => setAddCardsOpen(false)}
+        onGenerate={handleGenerate}
+        generating={generating}
+        error={error}
+        onAddExisting={() => {
+          setAddCardsOpen(false);
+          setPickerOpen(true);
+        }}
+        onImportPdf={() => {
+          setAddCardsOpen(false);
+          setPdfImportOpen(true);
+        }}
+      />
 
       <AddExistingCardsDialog
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
         targetDeckId={deckId}
+        userId={user?.id ?? ""}
         onConfirm={copyExistingCards}
+      />
+
+      <PdfImportModal
+        open={pdfImportOpen}
+        onClose={() => setPdfImportOpen(false)}
+        onAddCards={handlePdfCards}
       />
     </Box>
   );

@@ -26,6 +26,7 @@ interface Props {
   onClose: () => void;
   /** The deck we are copying cards INTO — excluded from the source list */
   targetDeckId: string;
+  userId: string;
   /** Called with the cards the user confirmed — caller does the actual copy */
   onConfirm: (cards: Flashcard[]) => Promise<void>;
 }
@@ -70,6 +71,7 @@ export function AddExistingCardsDialog({
   open,
   onClose,
   targetDeckId,
+  userId,
   onConfirm,
 }: Props) {
   const [allCards, setAllCards] = useState<Flashcard[]>([]);
@@ -85,7 +87,7 @@ export function AddExistingCardsDialog({
     setSelected(new Set());
     setSearch("");
 
-    Promise.all([loadAllCards(), loadDecks()]).then(([cards, decks]) => {
+    Promise.all([loadAllCards(), loadDecks(userId)]).then(([cards, decks]) => {
       const foreign = cards.filter((c) => c.deckId !== targetDeckId);
       setAllCards(foreign);
 
@@ -96,7 +98,7 @@ export function AddExistingCardsDialog({
       setDeckMap(map);
       setLoading(false);
     });
-  }, [open, targetDeckId]);
+  }, [open, targetDeckId, userId]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
