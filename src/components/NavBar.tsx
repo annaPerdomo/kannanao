@@ -5,9 +5,11 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { usePathname, useRouter } from 'next/navigation';
 import { useDeckDialog } from '@/contexts/DeckDialogContext';
 import { useProgress } from '@/hooks/useProgess';
+import { useAuth } from '@/contexts/AuthContext';
 import { useEffect } from 'react';
 
 export function NavBar() {
@@ -17,6 +19,7 @@ export function NavBar() {
   const isStats = pathname === '/stats';
   const { openNewDeckDialog } = useDeckDialog();
   const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgress();
+  const { user, signOut } = useAuth();
 
   const trigger = useScrollTrigger({ threshold: 10 });
 
@@ -167,6 +170,37 @@ export function NavBar() {
                 New Deck
               </Box>
             </Button>
+
+            {/* Auth */}
+            {user ? (
+              <Button
+                onClick={signOut}
+                size="small"
+                startIcon={<AccountCircleIcon sx={{ fontSize: '1.1rem !important' }} />}
+                sx={{
+                  ...navBtn,
+                  '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
+                }}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Sign Out
+                </Box>
+              </Button>
+            ) : (
+              <Button
+                onClick={() => router.push('/login')}
+                size="small"
+                startIcon={<AccountCircleIcon sx={{ fontSize: '1.1rem !important' }} />}
+                sx={{
+                  ...navBtn,
+                  '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
+                }}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Sign In
+                </Box>
+              </Button>
+            )}
           </Toolbar>
         </AppBar>
       </Slide>
