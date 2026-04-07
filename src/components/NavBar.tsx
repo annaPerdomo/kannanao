@@ -94,7 +94,7 @@ export function NavBar() {
             </Box>
 
             {/* Streak pill — shown when streak > 0 */}
-            {progress && progress.streak_days > 0 && (
+            {user && progress && progress.streak_days > 0 && (
               <Box
                 sx={{
                   display: 'flex',
@@ -124,7 +124,7 @@ export function NavBar() {
             )}
 
             {/* Stats */}
-            {!isStats && (
+            {user && !isStats && (
               <Button
                 onClick={() => router.push('/stats')}
                 size="small"
@@ -142,7 +142,7 @@ export function NavBar() {
             )}
 
             {/* New Deck */}
-            <Button
+            {user && <Button
               variant="contained"
               size="small"
               startIcon={<AddIcon sx={{ fontSize: '1rem !important' }} />}
@@ -169,7 +169,7 @@ export function NavBar() {
               <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                 New Deck
               </Box>
-            </Button>
+            </Button>}
 
             {/* Auth */}
             {user ? (
