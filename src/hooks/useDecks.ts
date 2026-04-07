@@ -9,20 +9,28 @@ import {
   loadDecks,
   showConfigBanner,
 } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function useDecks() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
+    if (!user) {
+      setDecks([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     const fetchDecks = async () => {
-      const loaded = await loadDecks();
+      const loaded = await loadDecks(user.id);
       setDecks(loaded);
       setLoading(false);
     };
 
     void fetchDecks();
-  }, []);
+  }, [user?.id]);
 
   const createDeck = useCallback(
     async (name: string, description?: string): Promise<Deck> => {

@@ -35,6 +35,7 @@ interface SupabaseDeckRow {
   name: string;
   description: string | null;
   created_at: string | null;
+  user_id: string;
 }
 
 interface SupabaseCardRow {
@@ -70,17 +71,23 @@ export function dbCardToApp(card: SupabaseCardRow): Flashcard {
   };
 }
 
-export function dbDeckToApp(deck: SupabaseDeckRow, cardCount: number): Deck {
+export function dbDeckToApp(
+  deck: SupabaseDeckRow,
+  cardCount: number,
+  currentUserId: string,
+): Deck {
   return {
     id: deck.id,
     name: deck.name,
     description: deck.description ?? "",
     createdAt: toNumber(deck.created_at),
     cardCount,
+    ownerId: deck.user_id,
+    isShared: deck.user_id !== currentUserId,
   };
 }
 
-export async function loadDecks(): Promise<Deck[]> {
+export async function loadDecks(userId: string): Promise<Deck[]> {
   if (!isConfigured()) {
     showConfigBanner();
     return [];
@@ -108,7 +115,7 @@ export async function loadDecks(): Promise<Deck[]> {
 
   return (deckRows ?? []).map((deck) => {
     const deckCards = cards.filter((card) => String(card.deck_id) === deck.id);
-    return dbDeckToApp(deck, deckCards.length);
+    return dbDeckToApp(deck, deckCards.length, userId);
   });
 }
 
@@ -121,9 +128,12 @@ export async function dbCreateDeck(
     throw new Error("Supabase is not configured");
   }
 
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
   const { data, error } = await sb
     .from("decks")
-    .insert({ name, description: description ?? null })
+    .insert({ name, description: description ?? null, user_id: user.id })
     .select()
     .single();
 
@@ -131,7 +141,7 @@ export async function dbCreateDeck(
     throw error ?? new Error("Unable to create deck");
   }
 
-  return dbDeckToApp(data, 0);
+  return dbDeckToApp(data, 0, user.id);
 }
 
 export async function dbDeleteDeck(id: string): Promise<void> {
@@ -316,5 +326,82 @@ export async function dbRenameDeck(
   }
 
   // Preserve card count — caller passes it in via the hook
-  return dbDeckToApp(data, 0);
+  return dbDeckToApp(data, 0, data.user_id);
+}
+
+// ─── Auth / profiles ─────────────────────────────────────────────────────────
+
+export async function upsertProfile(
+  userId: string,
+  username: string,
+): Promise<void> {
+  const { error } = await sb
+    .from("profiles")
+    .upsert({ id: userId, username }, { onConflict: "id" });
+  if (error) console.error("upsertProfile error", error);
+}
+
+// ─── Deck sharing ─────────────────────────────────────────────────────────────
+
+export async function dbShareDeck(
+  deckId: string,
+  targetUsername: string,
+): Promise<{ error: string | null }> {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { data: profile, error: lookupError } = await sb
+    .from("profiles")
+    .select("id")
+    .eq("username", targetUsername.trim().toLowerCase())
+    .single();
+
+  if (lookupError || !profile) return { error: "User not found" };
+
+  const { error } = await sb
+    .from("deck_shares")
+    .insert({ deck_id: deckId, shared_with: profile.id, owner_id: user.id });
+
+  if (error) {
+    if (error.code === "23505") return { error: "Already shared with this user" };
+    return { error: error.message };
+  }
+  return { error: null };
+}
+
+export interface DeckShare {
+  id: string;
+  sharedWith: string;
+  username: string;
+}
+
+export async function dbGetDeckShares(deckId: string): Promise<DeckShare[]> {
+  const { data: shares, error } = await sb
+    .from("deck_shares")
+    .select("id, shared_with")
+    .eq("deck_id", deckId);
+
+  if (error || !shares || shares.length === 0) return [];
+
+  const userIds = shares.map((s: { shared_with: string }) => s.shared_with);
+  const { data: profiles } = await sb
+    .from("profiles")
+    .select("id, username")
+    .in("id", userIds);
+
+  const profileMap: Record<string, string> = {};
+  (profiles ?? []).forEach((p: { id: string; username: string }) => {
+    profileMap[p.id] = p.username;
+  });
+
+  return shares.map((s: { id: string; shared_with: string }) => ({
+    id: s.id,
+    sharedWith: s.shared_with,
+    username: profileMap[s.shared_with] ?? s.shared_with,
+  }));
+}
+
+export async function dbUnShareDeck(shareId: string): Promise<void> {
+  const { error } = await sb.from("deck_shares").delete().eq("id", shareId);
+  if (error) throw error;
 }

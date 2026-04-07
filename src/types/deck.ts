@@ -4,4 +4,6 @@ export interface Deck {
   description?: string;
   createdAt: number;
   cardCount: number;
+  ownerId: string;
+  isShared?: boolean;
 }

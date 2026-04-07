@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
-import { sb } from "@/lib/supabase";
+import { sb, upsertProfile } from "@/lib/supabase";
 
 const FAKE_DOMAIN = "kannanao.local";
 
@@ -42,8 +42,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = sb.auth.onAuthStateChange((event, session) => {
       setSession(session);
+      if (event === "SIGNED_IN" && session?.user) {
+        const username = session.user.email?.split("@")[0] ?? "";
+        void upsertProfile(session.user.id, username);
+      }
     });
 
     return () => subscription.unsubscribe();

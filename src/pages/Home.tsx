@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -7,12 +8,20 @@ import {
 import { useRouter } from 'next/navigation';
 
 import { DeckCard } from '@/components/DeckCard';
+import { ShareDeckDialog } from '@/components/ShareDeckDialog';
 import { Loading } from '@/components/Loading';
 import { useDecks } from '@/hooks/useDecks';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Home() {
   const { decks, deleteDeck, loading } = useDecks();
+  const { user } = useAuth();
   const router = useRouter();
+
+  const [shareDeckId, setShareDeckId] = useState<string | null>(null);
+  const [shareDeckName, setShareDeckName] = useState('');
+
+  const isOwner = (deck: { ownerId: string }) => deck.ownerId === user?.id;
 
   if (loading) {
     return (
@@ -58,13 +67,32 @@ export default function Home() {
         </Box>
       ) : (
         <Grid container spacing={2}>
-          {decks.map((deck) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={deck.id}>
-              <DeckCard deck={deck} onOpen={(id) => router.push(`/deck/${id}`)} onDelete={deleteDeck} />
-            </Grid>
-          ))}
+          {decks.map((deck) => {
+            const owned = isOwner(deck);
+            return (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={deck.id}>
+                <DeckCard
+                  deck={deck}
+                  onOpen={(id) => router.push(`/deck/${id}`)}
+                  onDelete={owned ? deleteDeck : () => {}}
+                  onShare={owned ? (id) => {
+                    setShareDeckId(id);
+                    setShareDeckName(deck.name);
+                  } : undefined}
+                  isOwner={owned}
+                />
+              </Grid>
+            );
+          })}
         </Grid>
       )}
+
+      <ShareDeckDialog
+        open={shareDeckId !== null}
+        onClose={() => setShareDeckId(null)}
+        deckId={shareDeckId ?? ''}
+        deckName={shareDeckName}
+      />
     </Box>
   );
 }
