@@ -16,9 +16,10 @@ interface ImageCardProps {
     id: string,
     patch: Partial<Flashcard>,
   ) => Promise<Flashcard | null>;
+  compact?: boolean;
 }
 
-export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
+export function ImageCard({ card, onDelete, onUpdate, compact = false }: ImageCardProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [localCard, setLocalCard] = useState<Flashcard>(card);
 
@@ -229,19 +230,21 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
           </Box>
 
           {/* Meaning */}
-          <Typography
-            sx={{
-              fontSize: "0.88rem",
-              fontWeight: 700,
-              color: "#1F2937",
-              fontFamily: '"Nunito", sans-serif',
-            }}
-          >
-            {localCard.meaning}
-          </Typography>
+          {!compact && (
+            <Typography
+              sx={{
+                fontSize: "0.88rem",
+                fontWeight: 700,
+                color: "#1F2937",
+                fontFamily: '"Nunito", sans-serif',
+              }}
+            >
+              {localCard.meaning}
+            </Typography>
+          )}
 
           {/* Example sentence block */}
-          {localCard.example_jp && (
+          {!compact && localCard.example_jp && (
             <Box
               sx={{
                 bgcolor: "#FFF0F8",
@@ -252,7 +255,6 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                 borderLeft: "3px solid rgba(244,114,182,0.6)",
               }}
             >
-              {/* Label */}
               <Typography
                 sx={{
                   fontSize: "0.6rem",
@@ -267,7 +269,6 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                 例文 · Example
               </Typography>
 
-              {/* Japanese sentence */}
               <Typography
                 component="div"
                 sx={{
@@ -284,7 +285,6 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                 />
               </Typography>
 
-              {/* English translation */}
               {localCard.example_en && (
                 <Typography
                   sx={{
@@ -300,6 +300,20 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                 </Typography>
               )}
             </Box>
+          )}
+
+          {/* Compact hint */}
+          {compact && (
+            <Typography
+              sx={{
+                fontSize: "0.68rem",
+                color: "rgba(190,24,93,0.45)",
+                fontFamily: '"Nunito", sans-serif',
+                fontStyle: "italic",
+              }}
+            >
+              Practice to reveal
+            </Typography>
           )}
         </Box>
       </Box>

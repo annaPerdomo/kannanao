@@ -4,9 +4,7 @@ import { useCallback, useState, useRef } from "react";
 import {
   Box,
   Typography,
-  Grid,
   Button,
-  Stack,
   Divider,
   Chip,
   IconButton,
@@ -16,10 +14,6 @@ import {
 } from "@mui/material";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import StyleIcon from "@mui/icons-material/Style";
-import LayersIcon from "@mui/icons-material/Layers";
-import EditNoteIcon from "@mui/icons-material/EditNote";
-import KeyboardIcon from "@mui/icons-material/Keyboard";
 import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
@@ -44,22 +38,46 @@ interface DeckProps {
 const practiceConfig: {
   mode: PracticeMode;
   label: string;
-  icon: React.ReactNode;
+  description: string;
+  emoji: string;
+  watermark: string;
+  color: string;
+  bg: string;
+  border: string;
+  shadowColor: string;
 }[] = [
   {
     mode: "match",
-    label: "Match JP ↔ EN",
-    icon: <LayersIcon sx={{ fontSize: 15 }} />,
+    label: "Match",
+    description: "Pair Japanese to English",
+    emoji: "🎯",
+    watermark: "合",
+    color: "#6D28D9",
+    bg: "linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%)",
+    border: "rgba(196,181,253,0.7)",
+    shadowColor: "rgba(109,40,217,0.22)",
   },
   {
     mode: "fill",
-    label: "Fill in the Blank",
-    icon: <EditNoteIcon sx={{ fontSize: 15 }} />,
+    label: "Fill in Blank",
+    description: "Complete the sentence",
+    emoji: "✏️",
+    watermark: "書",
+    color: "#0E7490",
+    bg: "linear-gradient(135deg, #ECFEFF 0%, #CFFAFE 100%)",
+    border: "rgba(34,211,238,0.6)",
+    shadowColor: "rgba(14,116,144,0.22)",
   },
   {
     mode: "recall",
     label: "Recall Typing",
-    icon: <KeyboardIcon sx={{ fontSize: 15 }} />,
+    description: "Type from memory",
+    emoji: "🌟",
+    watermark: "思",
+    color: "#B45309",
+    bg: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
+    border: "rgba(251,191,36,0.7)",
+    shadowColor: "rgba(180,83,9,0.22)",
   },
 ];
 
@@ -441,7 +459,215 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         </Box>
       </Box>
 
-      {/* ── MAIN LAYOUT ── (unchanged below) */}
+      {/* ── PRACTICE HERO ── */}
+      <Box
+        sx={{
+          background: "linear-gradient(135deg, #FFF0F8 0%, #F3E8FF 100%)",
+          borderRadius: "20px",
+          border: "1.5px solid rgba(249,168,212,0.35)",
+          p: { xs: 2.5, sm: 3.5 },
+          mb: 3,
+        }}
+      >
+        <Label>Let&apos;s practice!</Label>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(4, 1fr)" },
+            gap: { xs: 1.5, sm: 2 },
+          }}
+        >
+          {/* Flashcards – primary CTA */}
+          <Box
+            onClick={cards.length > 0 ? onStudy : undefined}
+            sx={{
+              cursor: cards.length > 0 ? "pointer" : "default",
+              position: "relative",
+              overflow: "hidden",
+              borderRadius: "18px",
+              p: { xs: "20px 18px", sm: "24px 22px" },
+              minHeight: 160,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              background: cards.length > 0
+                ? "linear-gradient(145deg, #F472B6 0%, #EC4899 40%, #A855F7 100%)"
+                : "rgba(200,200,200,0.3)",
+              border: "1.5px solid transparent",
+              opacity: cards.length > 0 ? 1 : 0.5,
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              boxShadow: cards.length > 0
+                ? "0 6px 24px rgba(236,72,153,0.35)"
+                : "none",
+              ...(cards.length > 0 && {
+                "&:hover": {
+                  transform: "translateY(-5px) scale(1.02)",
+                  boxShadow: "0 14px 36px rgba(236,72,153,0.45)",
+                },
+              }),
+            }}
+          >
+            {/* Watermark */}
+            <Typography
+              aria-hidden
+              sx={{
+                position: "absolute",
+                bottom: -12,
+                right: 4,
+                fontSize: "6rem",
+                lineHeight: 1,
+                opacity: 0.18,
+                userSelect: "none",
+                filter: "blur(1px)",
+              }}
+            >
+              🃏
+            </Typography>
+
+            <Box>
+              <Typography sx={{ fontSize: "2rem", lineHeight: 1, mb: 1 }}>✨</Typography>
+              <Typography
+                sx={{
+                  fontWeight: 900,
+                  fontSize: { xs: "1rem", sm: "1.05rem" },
+                  color: "#FFFFFF",
+                  fontFamily: '"Nunito", sans-serif',
+                  lineHeight: 1.2,
+                  textShadow: "0 1px 4px rgba(0,0,0,0.15)",
+                }}
+              >
+                Flashcards
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "0.72rem",
+                  color: "rgba(255,255,255,0.85)",
+                  fontFamily: '"Nunito", sans-serif',
+                  mt: 0.4,
+                }}
+              >
+                Flip & learn every card
+              </Typography>
+            </Box>
+
+            <Typography
+              sx={{
+                fontSize: "0.72rem",
+                fontWeight: 800,
+                color: "rgba(255,255,255,0.9)",
+                fontFamily: '"Nunito", sans-serif',
+                letterSpacing: "0.04em",
+                alignSelf: "flex-end",
+              }}
+            >
+              Let&apos;s go →
+            </Typography>
+          </Box>
+
+          {/* Practice mode tiles */}
+          {practiceConfig.map(({ mode, label, description, emoji, watermark, color, bg, border, shadowColor }) => (
+            <Box
+              key={mode}
+              onClick={!practiceDisabled ? () => onPractice(mode) : undefined}
+              sx={{
+                cursor: practiceDisabled ? "default" : "pointer",
+                position: "relative",
+                overflow: "hidden",
+                borderRadius: "18px",
+                p: { xs: "20px 18px", sm: "24px 22px" },
+                minHeight: 160,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                background: bg,
+                border: "1.5px solid",
+                borderColor: border,
+                opacity: practiceDisabled ? 0.45 : 1,
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                ...(!practiceDisabled && {
+                  "&:hover": {
+                    transform: "translateY(-5px) scale(1.02)",
+                    boxShadow: `0 12px 32px ${shadowColor}`,
+                  },
+                }),
+              }}
+            >
+              {/* Kanji watermark */}
+              <Typography
+                aria-hidden
+                sx={{
+                  position: "absolute",
+                  bottom: -16,
+                  right: 6,
+                  fontSize: "5.5rem",
+                  lineHeight: 1,
+                  color,
+                  opacity: 0.08,
+                  fontFamily: '"Noto Serif JP", serif',
+                  fontWeight: 900,
+                  userSelect: "none",
+                }}
+              >
+                {watermark}
+              </Typography>
+
+              <Box>
+                <Typography sx={{ fontSize: "1.85rem", lineHeight: 1, mb: 1 }}>{emoji}</Typography>
+                <Typography
+                  sx={{
+                    fontWeight: 900,
+                    fontSize: { xs: "0.92rem", sm: "0.98rem" },
+                    color,
+                    fontFamily: '"Nunito", sans-serif',
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {label}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: "0.7rem",
+                    color: `${color}BB`,
+                    fontFamily: '"Nunito", sans-serif',
+                    mt: 0.4,
+                  }}
+                >
+                  {description}
+                </Typography>
+              </Box>
+
+              <Typography
+                sx={{
+                  fontSize: "0.7rem",
+                  fontWeight: 800,
+                  color: practiceDisabled ? "text.disabled" : color,
+                  fontFamily: '"Nunito", sans-serif',
+                  letterSpacing: "0.04em",
+                  opacity: practiceDisabled ? 0.5 : 0.8,
+                  alignSelf: "flex-end",
+                }}
+              >
+                {practiceDisabled ? "Locked 🔒" : "Play →"}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+        {practiceDisabled && cards.length > 0 && (
+          <Typography
+            sx={{
+              fontSize: "0.7rem",
+              color: "text.secondary",
+              fontFamily: '"Nunito", sans-serif',
+              mt: 1.5,
+              textAlign: "center",
+            }}
+          >
+            Add at least 2 cards to unlock practice modes.
+          </Typography>
+        )}
+      </Box>
+
+      {/* ── CARDS + ADD CARDS ── */}
       <Box
         sx={{
           display: "flex",
@@ -450,87 +676,58 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           alignItems: "flex-start",
         }}
       >
-        {/* LEFT SIDEBAR */}
+        {/* Cards grid */}
+        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+          <Label>Cards in Deck</Label>
+          {cards.length === 0 ? (
+            <Box
+              sx={{
+                border: "1.5px dashed rgba(249,168,212,0.4)",
+                borderRadius: "14px",
+                p: 6,
+                textAlign: "center",
+                bgcolor: "rgba(255,255,255,0.6)",
+              }}
+            >
+              <Typography
+                sx={{ color: "text.secondary", fontSize: "0.875rem" }}
+              >
+                No cards yet — add some from the panel on the right.
+              </Typography>
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "repeat(2, 1fr)",
+                  sm: "repeat(3, 1fr)",
+                  lg: "repeat(4, 1fr)",
+                },
+                gap: 1.75,
+              }}
+            >
+              {cards.map((card) => (
+                <ImageCard
+                  key={card.id}
+                  card={card}
+                  onDelete={deleteCard}
+                  onUpdate={updateCard}
+                  compact
+                />
+              ))}
+            </Box>
+          )}
+        </Box>
+
+        {/* Add Cards sidebar */}
         <Box
           sx={{
             width: { xs: "100%", md: 248 },
             flexShrink: 0,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
+            order: { xs: -1, md: 0 },
           }}
         >
-          <SidePanel>
-            <Label>Study &amp; Practice</Label>
-            <Stack spacing={1}>
-              <Button
-                fullWidth
-                variant="contained"
-                startIcon={<StyleIcon sx={{ fontSize: 15 }} />}
-                onClick={onStudy}
-                disabled={cards.length === 0}
-                sx={{
-                  borderRadius: "9px",
-                  justifyContent: "flex-start",
-                  px: 2,
-                  py: "8px",
-                }}
-              >
-                Flashcards
-              </Button>
-              <Divider />
-              <Typography
-                sx={{
-                  fontSize: "0.6rem",
-                  fontWeight: 800,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  color: "text.secondary",
-                  fontFamily: '"Nunito", sans-serif',
-                  pt: 0.25,
-                }}
-              >
-                Practice Modes
-              </Typography>
-              {practiceConfig.map(({ mode, label, icon }) => (
-                <Button
-                  key={mode}
-                  fullWidth
-                  variant="outlined"
-                  startIcon={icon}
-                  onClick={() => onPractice(mode)}
-                  disabled={practiceDisabled}
-                  size="small"
-                  sx={{
-                    borderRadius: "9px",
-                    justifyContent: "flex-start",
-                    px: 2,
-                    py: "6px",
-                    fontSize: "0.76rem",
-                    letterSpacing: "0.01em",
-                    textTransform: "none",
-                    fontWeight: 700,
-                  }}
-                >
-                  {label}
-                </Button>
-              ))}
-              {practiceDisabled && (
-                <Typography
-                  sx={{
-                    fontSize: "0.68rem",
-                    color: "text.secondary",
-                    lineHeight: 1.5,
-                    fontFamily: '"Nunito", sans-serif',
-                    pt: 0.25,
-                  }}
-                >
-                  Add at least 2 cards to unlock practice modes.
-                </Typography>
-              )}
-            </Stack>
-          </SidePanel>
-
           <SidePanel>
             <Label>Add Cards</Label>
             <GenerateForm
@@ -587,48 +784,6 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
               onAddCards={handlePdfCards}
             />
           </SidePanel>
-        </Box>
-
-        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-          <Label>Cards in Deck</Label>
-          {cards.length === 0 ? (
-            <Box
-              sx={{
-                border: "1.5px dashed rgba(249,168,212,0.4)",
-                borderRadius: "14px",
-                p: 6,
-                textAlign: "center",
-                bgcolor: "rgba(255,255,255,0.6)",
-              }}
-            >
-              <Typography
-                sx={{ color: "text.secondary", fontSize: "0.875rem" }}
-              >
-                No cards yet — generate some from the panel on the left.
-              </Typography>
-            </Box>
-          ) : (
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: {
-                  xs: "repeat(2, 1fr)",
-                  sm: "repeat(3, 1fr)",
-                  lg: "repeat(4, 1fr)",
-                },
-                gap: 1.75,
-              }}
-            >
-              {cards.map((card) => (
-                <ImageCard
-                  key={card.id}
-                  card={card}
-                  onDelete={deleteCard}
-                  onUpdate={updateCard}
-                />
-              ))}
-            </Box>
-          )}
         </Box>
       </Box>
 
