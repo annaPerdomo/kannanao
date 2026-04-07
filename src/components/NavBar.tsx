@@ -1,6 +1,6 @@
 'use client';
 import {
-  AppBar, Toolbar, Box, Typography, Button, useScrollTrigger, Slide,
+  AppBar, Toolbar, Box, Typography, Button,
   Snackbar, Alert,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -20,8 +20,6 @@ export function NavBar() {
   const { openNewDeckDialog } = useDeckDialog();
   const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgress();
   const { user, signOut } = useAuth();
-
-  const trigger = useScrollTrigger({ threshold: 10 });
 
   // Auto-dismiss toast after 4 s
   useEffect(() => {
@@ -46,8 +44,7 @@ export function NavBar() {
 
   return (
     <>
-      <Slide appear={false} direction="down" in={!trigger}>
-        <AppBar
+      <AppBar
           position="sticky"
           elevation={0}
           sx={{
@@ -202,8 +199,7 @@ export function NavBar() {
               </Button>
             )}
           </Toolbar>
-        </AppBar>
-      </Slide>
+      </AppBar>
 
       {/* Achievement unlock toast */}
       {newlyUnlocked.map((ach, i) => (
