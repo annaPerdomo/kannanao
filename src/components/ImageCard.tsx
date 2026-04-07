@@ -7,6 +7,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import type { Flashcard } from "@/types/flashcard";
 import { EditCardDialog } from "@/components/EditCardDialog";
 import { getFlashcardDisplayText } from "@/lib/flashcardUtils";
+import FuriganaText from "@/components/FuriganaText";
 
 interface ImageCardProps {
   card: Flashcard;
@@ -268,6 +269,7 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
 
               {/* Japanese sentence */}
               <Typography
+                component="div"
                 sx={{
                   fontSize: "0.78rem",
                   color: "#6B21A8",
@@ -276,7 +278,10 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                   fontWeight: 600,
                 }}
               >
-                {localCard.example_jp}
+                <FuriganaText
+                  text={localCard.example_jp}
+                  showFurigana={localCard.mainViewMode === 'hiragana'}
+                />
               </Typography>
 
               {/* English translation */}

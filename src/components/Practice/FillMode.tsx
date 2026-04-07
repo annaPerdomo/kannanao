@@ -13,6 +13,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import type { Flashcard } from '@/types/flashcard';
 import { useProgress } from '@/hooks/useProgess';
+import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 
 interface FillModeProps {
   cards: Flashcard[];
@@ -138,6 +139,7 @@ export function FillMode({ cards, deckId, onExit }: FillModeProps) {
         </Typography>
 
         <Typography
+          component="div"
           sx={{
             fontFamily: '"Noto Serif JP", serif',
             fontSize: '1.3rem',
@@ -146,7 +148,10 @@ export function FillMode({ cards, deckId, onExit }: FillModeProps) {
             lineHeight: 1.8,
           }}
         >
-          {result ? card.example_jp : maskWord(card.example_jp, card.word, card.reading)}
+          {result
+            ? <FuriganaText text={card.example_jp} showFurigana={card.mainViewMode === 'hiragana'} />
+            : maskWord(stripFurigana(card.example_jp), card.word, card.reading)
+          }
         </Typography>
 
         <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
