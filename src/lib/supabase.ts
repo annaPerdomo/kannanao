@@ -48,6 +48,7 @@ interface SupabaseCardRow {
   example_jp: string | null;
   example_en: string | null;
   main_view_mode: "hiragana" | "kanji";
+  card_type: "word" | "phrase" | null;
 }
 
 function toNumber(value: string | null): number {
@@ -68,6 +69,7 @@ export function dbCardToApp(card: SupabaseCardRow): Flashcard {
     example_en: card.example_en ?? "",
     imageUrl: card.image_url ?? undefined,
     mainViewMode: card.main_view_mode ?? "hiragana",
+    cardType: card.card_type ?? "word",
   };
 }
 
@@ -193,6 +195,7 @@ export async function dbInsertCards(
     example_jp: card.example_jp || "",
     example_en: card.example_en || "",
     main_view_mode: card.mainViewMode || "hiragana",
+    card_type: card.cardType || "word",
   }));
 
   const { data, error } = await sb.from("cards").insert(rows).select("*");
@@ -229,6 +232,7 @@ export async function dbUpdateCard(
   if (patch.example_en !== undefined) payload.example_en = patch.example_en;
   if (patch.mainViewMode !== undefined)
     payload.main_view_mode = patch.mainViewMode;
+  if (patch.cardType !== undefined) payload.card_type = patch.cardType;
 
   if (Object.keys(payload).length === 0) {
     return null;
@@ -297,6 +301,7 @@ export async function dbCopyCardsIntoDeck(
     example_jp: card.example_jp || "",
     example_en: card.example_en || "",
     main_view_mode: card.mainViewMode ?? 'hiragana',
+    card_type: card.cardType ?? 'word',
   }));
 
   const { data, error } = await sb.from("cards").insert(rows).select("*");

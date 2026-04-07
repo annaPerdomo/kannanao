@@ -36,6 +36,8 @@ type EditableFields = Pick<
   "word" | "reading" | "meaning" | "example_jp" | "example_en" | "imageUrl"
 >;
 
+type CardType = 'word' | 'phrase';
+
 const fieldConfig: {
   key: keyof EditableFields;
   label: string;
@@ -97,6 +99,7 @@ export function EditCardDialog({
   const [mainViewMode, setMainViewMode] = useState<"hiragana" | "kanji">(
     "hiragana",
   );
+  const [cardType, setCardType] = useState<CardType>("word");
   const [imageQuery, setImageQuery] = useState("");
   const [savingImage, setSavingImage] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -115,6 +118,7 @@ export function EditCardDialog({
         imageUrl: card.imageUrl,
       });
       setMainViewMode(card.mainViewMode ?? "hiragana");
+      setCardType(card.cardType ?? "word");
       setImageQuery(card.image_query || card.word || "");
       setPreviewUrl(card.imageUrl);
       setImageError("");
@@ -161,6 +165,7 @@ export function EditCardDialog({
         example_en: fields.example_en,
         imageUrl: fields.imageUrl,
         mainViewMode,
+        cardType,
       };
       onSave({ ...card, ...patch });
       onClose();
@@ -363,6 +368,79 @@ export function EditCardDialog({
             <Tooltip title="Display kanji as the primary text" placement="top">
               <ToggleButton value="kanji">{fields.word || "漢"}</ToggleButton>
             </Tooltip>
+          </ToggleButtonGroup>
+        </Box>
+
+        {/* ── Card Type Toggle ── */}
+        <Box
+          sx={{
+            borderRadius: "12px",
+            border: "1.5px solid rgba(249,168,212,0.35)",
+            background: "linear-gradient(135deg, #FFF5FB 0%, #FAF5FF 100%)",
+            p: "12px 14px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+          }}
+        >
+          <Box>
+            <Typography
+              sx={{
+                fontSize: "0.72rem",
+                fontWeight: 800,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "#EC4899",
+                fontFamily: '"Nunito", sans-serif',
+                lineHeight: 1,
+                mb: 0.4,
+              }}
+            >
+              Card Type
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: "0.68rem",
+                color: "#C2709A",
+                fontFamily: '"Nunito", sans-serif',
+              }}
+            >
+              {cardType === "phrase" ? "Multi-word expression or sentence" : "Single vocabulary word"}
+            </Typography>
+          </Box>
+
+          <ToggleButtonGroup
+            value={cardType}
+            exclusive
+            onChange={(_, v) => { if (v) setCardType(v); }}
+            size="small"
+            sx={{
+              flexShrink: 0,
+              "& .MuiToggleButton-root": {
+                px: 1.75,
+                py: 0.6,
+                fontWeight: 800,
+                fontSize: "0.78rem",
+                fontFamily: '"Nunito", sans-serif',
+                lineHeight: 1,
+                border: "1.5px solid rgba(249,168,212,0.45)",
+                color: "#C2709A",
+                transition: "all 0.18s ease",
+                "&.Mui-selected": {
+                  background: "linear-gradient(90deg, #fce7f3, #ede9fe)",
+                  color: "#BE185D",
+                  borderColor: "rgba(249,168,212,0.7)",
+                  boxShadow: "0 2px 8px rgba(249,168,212,0.25)",
+                },
+                "&:hover:not(.Mui-selected)": {
+                  bgcolor: "rgba(249,168,212,0.08)",
+                },
+              },
+            }}
+          >
+            <ToggleButton value="word">単語</ToggleButton>
+            <ToggleButton value="phrase">フレーズ</ToggleButton>
           </ToggleButtonGroup>
         </Box>
 

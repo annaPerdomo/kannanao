@@ -81,7 +81,7 @@ export function GenerateForm({ onGenerate, generating, error }: GenerateFormProp
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={words.length === 0 ? 'Type a word…' : ''}
+          placeholder={words.length === 0 ? 'Type a word or phrase…' : ''}
           variant="standard"
           size="small"
           sx={{
@@ -128,7 +128,7 @@ export function GenerateForm({ onGenerate, generating, error }: GenerateFormProp
           fontSize: '0.67rem', color: 'text.secondary',
           fontFamily: '"Nunito", sans-serif',
         }}>
-          {words.length} word{words.length > 1 ? 's' : ''} queued
+          {words.length} item{words.length > 1 ? 's' : ''} queued
         </Typography>
       )}
     </Box>
