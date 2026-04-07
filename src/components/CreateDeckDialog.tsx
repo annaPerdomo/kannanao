@@ -30,7 +30,7 @@ export function CreateDeckDialog({
     setName("");
     setDescription("");
     onClose();
-    router.push(`/?deck=${deck.id}`); // FIXME: Make the decks based on url query params instead of global state so this can be more intuitive and less buggy
+    router.push(`/deck/${deck.id}`);
   };
 
   return (
