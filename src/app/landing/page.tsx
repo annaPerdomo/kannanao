@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -185,11 +186,6 @@ function FlashcardMockup() {
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-          {/* <Chip
-            label="N3 Vocabulary"
-            size="small"
-            sx={{ bgcolor: PINK_LIGHT, color: PINK, fontWeight: 600, fontSize: '0.65rem', border: `1px solid ${PINK_BORDER}` }}
-          /> */}
           <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>🌸 Example</Typography>
         </Box>
 
@@ -247,6 +243,8 @@ function FlashcardMockup() {
 
 export default function LandingPage() {
   const router = useRouter();
+  const { session } = useAuth();
+  const ctaTarget = session ? '/' : '/login';
 
   const features = [
     {
@@ -387,7 +385,7 @@ export default function LandingPage() {
             <Button
               variant="contained"
               size="large"
-              onClick={() => router.push('/login')}
+              onClick={() => router.push(ctaTarget)}
               sx={{
                 bgcolor: PINK,
                 color: '#fff',
@@ -406,7 +404,7 @@ export default function LandingPage() {
             <Button
               variant="outlined"
               size="large"
-              onClick={() => router.push('/login')}
+              onClick={() => router.push(ctaTarget)}
               sx={{
                 color: PINK,
                 borderColor: PINK_BORDER,
@@ -680,7 +678,7 @@ export default function LandingPage() {
           <Button
             variant="contained"
             size="large"
-            onClick={() => router.push('/login')}
+            onClick={() => router.push(ctaTarget)}
             sx={{
               bgcolor: PINK,
               color: '#fff',
@@ -699,7 +697,7 @@ export default function LandingPage() {
           <Button
             variant="outlined"
             size="large"
-            onClick={() => router.push('/login')}
+            onClick={() => router.push(ctaTarget)}
             sx={{
               color: PINK,
               borderColor: PINK_BORDER,

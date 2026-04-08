@@ -78,20 +78,6 @@ export default function LoginPage() {
             🌸 Kannanao
           </Typography>
 
-          <Typography
-            variant="body2"
-            sx={{ textAlign: 'center', color: 'text.secondary', fontSize: '0.8rem', mb: 1 }}
-          >
-            New here?{' '}
-            <Box
-              component="span"
-              onClick={() => router.push('/landing')}
-              sx={{ color: '#BE185D', cursor: 'pointer', textDecoration: 'underline' }}
-            >
-              See what Kannanao can do →
-            </Box>
-          </Typography>
-
           <Box
             component="form"
             onSubmit={handleSubmit}

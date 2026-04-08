@@ -20,6 +20,7 @@ export function NavBar() {
   const router = useRouter();
   const isHome = pathname === '/';
   const isStats = pathname === '/stats';
+  const isLanding = pathname === '/landing';
   const { openNewDeckDialog } = useDeckDialog();
   const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgress();
   const { user, displayName, signOut, updateDisplayName } = useAuth();
@@ -140,6 +141,22 @@ export function NavBar() {
                   {progress.streak_days}
                 </Typography>
               </Box>
+            )}
+
+            {/* About */}
+            {user && !isLanding && (
+              <Button
+                onClick={() => router.push('/landing')}
+                size="small"
+                sx={{ ...navBtn }}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  About
+                </Box>
+                <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+                  🌸
+                </Box>
+              </Button>
             )}
 
             {/* Stats */}

@@ -4,14 +4,17 @@ import { useRouter, usePathname } from "next/navigation";
 import { Box, CircularProgress } from "@mui/material";
 import { useAuth } from "@/contexts/AuthContext";
 
-const PUBLIC_PATHS = ["/login", "/landing"];
+const PUBLIC_PREFIXES = ["/login", "/landing"];
+const PUBLIC_EXACT = ["/"];
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
-  const isPublic = PUBLIC_PATHS.some((p) => pathname?.startsWith(p));
+  const isPublic =
+    PUBLIC_EXACT.includes(pathname ?? "") ||
+    PUBLIC_PREFIXES.some((p) => pathname?.startsWith(p));
 
   useEffect(() => {
     if (loading) return;
