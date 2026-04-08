@@ -113,16 +113,11 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const [pdfImportOpen, setPdfImportOpen] = useState(false);
   const [addCardsOpen, setAddCardsOpen] = useState(false);
 
-  const handlePdfCards = () => {
-    console.log("thingy");
-    // Map to your card format and add to deck
-    // const newCards = cards.map((c) => ({
-    //   id: crypto.randomUUID(),
-    //   front: c.word,
-    //   back: `${c.reading ? c.reading + "\n" : ""}${c.definition}`,
-    //   // add any other fields your card schema needs
-    // }));
-    // setDeckCards((prev) => [...prev, ...newCards]);
+  const handlePdfCards = async (extracted: { word: string }[]) => {
+    const words = extracted.map((c) => c.word);
+    const generated = await generate(words, deckId);
+    await addCards(generated.map((card) => ({ ...card, deckId })));
+    setPdfImportOpen(false);
   };
 
   // ── Rename state ──────────────────────────────────────────────────────────
@@ -498,16 +493,17 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
               aria-hidden
               sx={{
                 position: "absolute",
-                bottom: -12,
-                right: 4,
-                fontSize: "6rem",
+                bottom: -16,
+                right: 6,
+                fontSize: "5.5rem",
                 lineHeight: 1,
                 opacity: 0.18,
                 userSelect: "none",
-                filter: "blur(1px)",
+                fontFamily: '"Noto Serif JP", serif',
+                fontWeight: 900,
               }}
             >
-              🃏
+              学
             </Typography>
 
             <Box>
