@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Typography,
-  CircularProgress,
   Alert,
   IconButton,
 } from '@mui/material';
@@ -14,6 +13,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CloseIcon from '@mui/icons-material/Close';
 import { WordChipInput } from '@/components/WordChipInput';
 import { OrDivider, AddCardOptionButtons } from '@/components/AddCardOptionButtons';
+import { Loading } from '@/components/Loading';
 
 interface AddCardsModalProps {
   open: boolean;
@@ -124,7 +124,23 @@ export function AddCardsModal({
         </Typography>
       </Box>
 
-      <DialogContent sx={{ px: 2.5, pt: 2.5, pb: 2.5 }}>
+      <DialogContent sx={{ px: 2.5, pt: 2.5, pb: 2.5, position: 'relative' }}>
+        {generating && (
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 10,
+              bgcolor: 'rgba(255,251,254,0.92)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '0 0 20px 20px',
+            }}
+          >
+            <Loading message="Generating cards…" />
+          </Box>
+        )}
         {/* Generate section */}
         <Box
           sx={{
@@ -175,13 +191,7 @@ export function AddCardsModal({
             variant="contained"
             onClick={handleGenerate}
             disabled={generating || !canGenerate}
-            startIcon={
-              generating ? (
-                <CircularProgress size={13} color="inherit" />
-              ) : (
-                <AutoAwesomeIcon sx={{ fontSize: 14 }} />
-              )
-            }
+            startIcon={<AutoAwesomeIcon sx={{ fontSize: 14 }} />}
             sx={{
               borderRadius: '10px',
               py: '9px',
@@ -201,7 +211,7 @@ export function AddCardsModal({
               },
             }}
           >
-            {generating ? 'Generating your cards…' : 'Generate Cards'}
+            Generate Cards
           </Button>
 
           {words.length > 0 && !generating && (
