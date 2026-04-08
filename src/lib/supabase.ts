@@ -341,11 +341,24 @@ export async function dbRenameDeck(
 export async function upsertProfile(
   userId: string,
   username: string,
+  displayName?: string,
 ): Promise<void> {
+  const payload: { id: string; username: string; display_name?: string } = { id: userId, username };
+  if (displayName) payload.display_name = displayName;
   const { error } = await sb
     .from("profiles")
-    .upsert({ id: userId, username }, { onConflict: "id" });
+    .upsert(payload, { onConflict: "id" });
   if (error) console.error("upsertProfile error", error);
+}
+
+export async function loadProfile(userId: string): Promise<{ username: string; displayName: string | null } | null> {
+  const { data, error } = await sb
+    .from("profiles")
+    .select("username, display_name")
+    .eq("id", userId)
+    .single();
+  if (error || !data) return null;
+  return { username: data.username, displayName: data.display_name ?? null };
 }
 
 // ─── Deck sharing ─────────────────────────────────────────────────────────────

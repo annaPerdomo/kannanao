@@ -21,6 +21,7 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -29,11 +30,15 @@ export default function LoginPage() {
     if (!username || !password) return;
     setBusy(true);
     setError(null);
-    const fn = isSignUp ? signUpWithUsername : signInWithUsername;
-    const { error } = await fn(username, password);
+    let result: { error: string | null };
+    if (isSignUp) {
+      result = await signUpWithUsername(username, password, name);
+    } else {
+      result = await signInWithUsername(username, password);
+    }
     setBusy(false);
-    if (error) {
-      setError(error);
+    if (result.error) {
+      setError(result.error);
     } else {
       router.push("/");
     }
@@ -78,6 +83,17 @@ export default function LoginPage() {
             onSubmit={handleSubmit}
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
+            {isSignUp && (
+              <TextField
+                label="Your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoComplete="name"
+                size="small"
+                fullWidth
+                placeholder="How should we call you?"
+              />
+            )}
             <TextField
               label="Username"
               value={username}
@@ -130,6 +146,7 @@ export default function LoginPage() {
               onClick={() => {
                 setIsSignUp((s) => !s);
                 setError(null);
+                setName("");
               }}
             >
               {isSignUp

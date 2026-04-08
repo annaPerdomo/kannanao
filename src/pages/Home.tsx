@@ -112,14 +112,14 @@ function WelcomeBanner({ username, level, streak, totalXp }: {
 
 export default function Home() {
   const { decks, deleteDeck, loading } = useDecks();
-  const { user } = useAuth();
+  const { user, displayName } = useAuth();
   const { progress, addBonusXp } = useProgress();
   const router = useRouter();
 
   const [shareDeckId, setShareDeckId] = useState<string | null>(null);
   const [shareDeckName, setShareDeckName] = useState('');
 
-  const username = user?.email?.split('@')[0] ?? 'there';
+  const username = displayName ?? user?.email?.split('@')[0] ?? 'there';
   const isOwner = (deck: { ownerId: string }) => deck.ownerId === user?.id;
 
   if (loading) {

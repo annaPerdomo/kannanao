@@ -1,16 +1,19 @@
 'use client';
 import {
   AppBar, Toolbar, Box, Typography, Button,
-  Snackbar, Alert,
+  Snackbar, Alert, Menu, MenuItem, Dialog, DialogTitle,
+  DialogContent, DialogActions, TextField,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import EditIcon from '@mui/icons-material/Edit';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { usePathname, useRouter } from 'next/navigation';
 import { useDeckDialog } from '@/contexts/DeckDialogContext';
 import { useProgress } from '@/hooks/useProgess';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export function NavBar() {
   const pathname = usePathname();
@@ -19,7 +22,12 @@ export function NavBar() {
   const isStats = pathname === '/stats';
   const { openNewDeckDialog } = useDeckDialog();
   const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgress();
-  const { user, signOut } = useAuth();
+  const { user, displayName, signOut, updateDisplayName } = useAuth();
+
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [nameInput, setNameInput] = useState('');
+  const [saving, setSaving] = useState(false);
 
   // Auto-dismiss toast after 4 s
   useEffect(() => {
@@ -28,6 +36,20 @@ export function NavBar() {
       return () => clearTimeout(t);
     }
   }, [newlyUnlocked, clearNewlyUnlocked]);
+
+  const openEdit = () => {
+    setNameInput(displayName ?? '');
+    setMenuAnchor(null);
+    setEditOpen(true);
+  };
+
+  const handleSave = async () => {
+    if (!nameInput.trim()) return;
+    setSaving(true);
+    await updateDisplayName(nameInput);
+    setSaving(false);
+    setEditOpen(false);
+  };
 
   const navBtn = {
     color: '#BE185D',
@@ -170,19 +192,50 @@ export function NavBar() {
 
             {/* Auth */}
             {user ? (
-              <Button
-                onClick={signOut}
-                size="small"
-                startIcon={<AccountCircleIcon sx={{ fontSize: '1.1rem !important' }} />}
-                sx={{
-                  ...navBtn,
-                  '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
-                }}
-              >
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  Sign Out
-                </Box>
-              </Button>
+              <>
+                <Button
+                  onClick={(e) => setMenuAnchor(e.currentTarget)}
+                  size="small"
+                  startIcon={<AccountCircleIcon sx={{ fontSize: '1.1rem !important' }} />}
+                  sx={{
+                    ...navBtn,
+                    '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
+                  }}
+                >
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                    {displayName ?? user.email?.split('@')[0]}
+                  </Box>
+                </Button>
+                <Menu
+                  anchorEl={menuAnchor}
+                  open={Boolean(menuAnchor)}
+                  onClose={() => setMenuAnchor(null)}
+                  slotProps={{
+                    paper: {
+                      sx: {
+                        borderRadius: 3,
+                        border: '1px solid rgba(249,168,212,0.35)',
+                        boxShadow: '0 8px 32px rgba(190,24,93,0.12)',
+                        bgcolor: 'rgba(255,242,248,0.97)',
+                        minWidth: 160,
+                      },
+                    },
+                  }}
+                >
+                  <MenuItem
+                    onClick={openEdit}
+                    sx={{ gap: 1.5, color: '#BE185D', fontSize: '0.88rem', fontFamily: '"DM Serif Display", serif' }}
+                  >
+                    <EditIcon sx={{ fontSize: '1rem' }} /> Edit name
+                  </MenuItem>
+                  <MenuItem
+                    onClick={signOut}
+                    sx={{ gap: 1.5, color: '#BE185D', fontSize: '0.88rem', fontFamily: '"DM Serif Display", serif' }}
+                  >
+                    <LogoutIcon sx={{ fontSize: '1rem' }} /> Sign out
+                  </MenuItem>
+                </Menu>
+              </>
             ) : (
               <Button
                 onClick={() => router.push('/login')}
@@ -200,6 +253,64 @@ export function NavBar() {
             )}
           </Toolbar>
       </AppBar>
+
+      {/* Edit name dialog */}
+      <Dialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: 4,
+              border: '1px solid rgba(249,168,212,0.35)',
+              boxShadow: '0 8px 40px rgba(190,24,93,0.12)',
+              bgcolor: 'rgba(255,242,248,0.97)',
+              minWidth: 320,
+            },
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{ fontFamily: '"DM Serif Display", serif', color: '#BE185D', pb: 1 }}
+        >
+          Edit your name
+        </DialogTitle>
+        <DialogContent sx={{ pt: '8px !important' }}>
+          <TextField
+            autoFocus
+            fullWidth
+            size="small"
+            label="Display name"
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') void handleSave(); }}
+            sx={{ mt: 0.5 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button
+            onClick={() => setEditOpen(false)}
+            sx={{ color: 'text.secondary', textTransform: 'none', borderRadius: 6 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={saving || !nameInput.trim()}
+            variant="contained"
+            sx={{
+              bgcolor: '#BE185D',
+              color: '#fff',
+              textTransform: 'none',
+              borderRadius: 6,
+              fontFamily: '"DM Serif Display", serif',
+              '&:hover': { bgcolor: '#9D174D' },
+            }}
+          >
+            {saving ? 'Saving…' : 'Save'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Achievement unlock toast */}
       {newlyUnlocked.map((ach, i) => (

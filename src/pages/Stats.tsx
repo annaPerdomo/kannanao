@@ -618,41 +618,6 @@ export default function Stats() {
         ) : null}
       </Box>
 
-      {/* ── Activity calendar + period summaries ── */}
-      <Paper
-        elevation={0}
-        sx={{
-          background: BG,
-          border: `1px solid ${PINK_BORDER}`,
-          borderRadius: 4,
-          p: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2.5,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CalendarTodayIcon sx={{ color: PINK, fontSize: '1rem' }} />
-          <Typography
-            sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: PINK }}
-          >
-            Study Activity
-          </Typography>
-        </Box>
-
-        {loading ? (
-          <>
-            <Skeleton variant="rounded" height={100} sx={{ borderRadius: 2 }} />
-            <Skeleton variant="rounded" height={120} sx={{ borderRadius: 2 }} />
-          </>
-        ) : (
-          <>
-            <PeriodSummary sessions={recentSessions} />
-            <StudyCalendar sessions={recentSessions} />
-          </>
-        )}
-      </Paper>
-
       {/* ── Achievements ── */}
       <Paper
         elevation={0}
@@ -750,6 +715,41 @@ export default function Stats() {
                 secs={s.duration_secs}
               />
             ))
+        )}
+      </Paper>
+
+      {/* ── Activity calendar + period summaries ── */}
+      <Paper
+        elevation={0}
+        sx={{
+          background: BG,
+          border: `1px solid ${PINK_BORDER}`,
+          borderRadius: 4,
+          p: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2.5,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CalendarTodayIcon sx={{ color: PINK, fontSize: '1rem' }} />
+          <Typography
+            sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: PINK }}
+          >
+            Study Activity
+          </Typography>
+        </Box>
+
+        {loading ? (
+          <>
+            <Skeleton variant="rounded" height={100} sx={{ borderRadius: 2 }} />
+            <Skeleton variant="rounded" height={120} sx={{ borderRadius: 2 }} />
+          </>
+        ) : (
+          <>
+            <PeriodSummary sessions={recentSessions} />
+            <StudyCalendar sessions={recentSessions} />
+          </>
         )}
       </Paper>
     </Box>
