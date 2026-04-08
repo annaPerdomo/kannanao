@@ -24,6 +24,8 @@ import { AddExistingCardsDialog } from "@/components/AddExistingCardsDialog";
 import { useDecks } from "@/hooks/useDecks";
 import { useCards } from "@/hooks/useCards";
 import { useGenerateFlashcards } from "@/hooks/useGenerateFlashcards";
+import { fetchImage } from "@/services/api";
+import type { GeneratedCard } from "@/types/flashcard";
 import { useAuth } from "@/contexts/AuthContext";
 import type { PracticeMode } from "@/types/app";
 
@@ -113,10 +115,20 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const [pdfImportOpen, setPdfImportOpen] = useState(false);
   const [addCardsOpen, setAddCardsOpen] = useState(false);
 
-  const handlePdfCards = async (extracted: { word: string }[]) => {
-    const words = extracted.map((c) => c.word);
-    const generated = await generate(words, deckId);
-    await addCards(generated.map((card) => ({ ...card, deckId })));
+  const handlePdfCards = async (extracted: GeneratedCard[]) => {
+    const withImages = await Promise.all(
+      extracted.map(async (card) => {
+        const imageUrl = await fetchImage(card.image_query).catch(() => null);
+        return {
+          ...card,
+          imageUrl: imageUrl ?? undefined,
+          deckId,
+          mainViewMode: "hiragana" as const,
+          cardType: card.card_type,
+        };
+      }),
+    );
+    await addCards(withImages);
     setPdfImportOpen(false);
   };
 

@@ -8,7 +8,6 @@ import {
   Box,
   Typography,
   CircularProgress,
-  Chip,
   IconButton,
   Divider,
   Alert,
@@ -16,30 +15,21 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import type { GeneratedCard } from "@/types/flashcard";
 
 const FORMAT_PRESETS = [
   {
     id: "adventures-in-japanese-1",
     label: "Adventures in Japanese 1 Vocabulary List",
-    description: "Word · reading · meaning",
-    fields: ["word", "reading", "definition"],
-    prompt: `Extract all Japanese vocabulary entries from this PDF. 
-For each entry return JSON: { "word": "<Japanese>", "reading": "<furigana/romaji>", "definition": "<English meaning>" }.
-Return ONLY a JSON array, no markdown.`,
+    description: "Word · reading · meaning · examples",
+    fields: ["word", "reading", "meaning", "example_jp", "example_en"],
   },
 ];
-
-interface ExtractedCard {
-  word: string;
-  reading: string;
-  definition: string;
-  level?: string;
-}
 
 interface PdfImportModalProps {
   open: boolean;
   onClose: () => void;
-  onAddCards: (cards: ExtractedCard[]) => void | Promise<void>;
+  onAddCards: (cards: GeneratedCard[]) => void | Promise<void>;
 }
 
 export function PdfImportModal({
@@ -50,7 +40,7 @@ export function PdfImportModal({
   const [file, setFile] = useState<File | null>(null);
   const [selectedFormat, setSelectedFormat] = useState(FORMAT_PRESETS[0].id);
   const [extracting, setExtracting] = useState(false);
-  const [extracted, setExtracted] = useState<ExtractedCard[] | null>(null);
+  const [extracted, setExtracted] = useState<GeneratedCard[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -107,7 +97,7 @@ export function PdfImportModal({
         throw new Error(data.error ?? "Extraction failed");
       }
 
-      setExtracted(data as ExtractedCard[]);
+      setExtracted(data as GeneratedCard[]);
     } catch (err) {
       setError(
         err instanceof Error
@@ -356,15 +346,8 @@ export function PdfImportModal({
                     {card.reading}
                   </Typography>
                   <Typography fontSize="0.7rem" color="text.secondary" noWrap>
-                    {card.definition}
+                    {card.meaning}
                   </Typography>
-                  {card.level && (
-                    <Chip
-                      label={card.level}
-                      size="small"
-                      sx={{ fontSize: "0.6rem", height: 16, ml: "auto" }}
-                    />
-                  )}
                 </Box>
               ))}
               {extracted.length > 20 && (
