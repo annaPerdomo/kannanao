@@ -3,6 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Deck } from "@/types/deck";
 import type { Flashcard } from "@/types/flashcard";
+import type { Todo } from "@/types/todo";
 
 const SUPABASE_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -409,5 +410,75 @@ export async function dbGetDeckShares(deckId: string): Promise<DeckShare[]> {
 
 export async function dbUnShareDeck(shareId: string): Promise<void> {
   const { error } = await sb.from("deck_shares").delete().eq("id", shareId);
+  if (error) throw error;
+}
+
+// ─── Todos ────────────────────────────────────────────────────────────────────
+
+const TODO_EMOJIS = ['🌸', '⭐', '🦋', '🌈', '💕', '🌺', '🎀', '🍓', '🌙', '✨', '🐝', '🍀'];
+
+function randomTodoEmoji(): string {
+  return TODO_EMOJIS[Math.floor(Math.random() * TODO_EMOJIS.length)];
+}
+
+interface SupabaseTodoRow {
+  id: string;
+  user_id: string;
+  text: string;
+  completed: boolean;
+  emoji: string;
+  created_at: string | null;
+}
+
+function dbTodoToApp(row: SupabaseTodoRow): Todo {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    text: row.text,
+    completed: row.completed,
+    emoji: row.emoji,
+    createdAt: toNumber(row.created_at),
+  };
+}
+
+export async function loadTodos(userId: string): Promise<Todo[]> {
+  if (!isConfigured()) { showConfigBanner(); return []; }
+  const { data, error } = await sb
+    .from('todos')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true });
+  if (error) { console.error('Error loading todos', error); return []; }
+  return (data ?? []).map(dbTodoToApp);
+}
+
+export async function dbCreateTodo(text: string): Promise<Todo> {
+  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+  const { data, error } = await sb
+    .from('todos')
+    .insert({ text, user_id: user.id, completed: false, emoji: randomTodoEmoji() })
+    .select()
+    .single();
+  if (error || !data) throw error ?? new Error('Unable to create todo');
+  return dbTodoToApp(data);
+}
+
+export async function dbUpdateTodo(id: string, patch: Partial<Pick<Todo, 'text' | 'completed'>>): Promise<Todo> {
+  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  const { data, error } = await sb
+    .from('todos')
+    .update(patch)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error || !data) throw error ?? new Error('Unable to update todo');
+  return dbTodoToApp(data);
+}
+
+export async function dbDeleteTodo(id: string): Promise<void> {
+  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  const { error } = await sb.from('todos').delete().eq('id', id);
   if (error) throw error;
 }
