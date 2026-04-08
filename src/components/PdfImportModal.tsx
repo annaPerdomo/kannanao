@@ -39,7 +39,7 @@ interface ExtractedCard {
 interface PdfImportModalProps {
   open: boolean;
   onClose: () => void;
-  onAddCards: (cards: ExtractedCard[]) => void;
+  onAddCards: (cards: ExtractedCard[]) => void | Promise<void>;
 }
 
 export function PdfImportModal({
@@ -87,53 +87,36 @@ export function PdfImportModal({
     });
 
   const handleExtract = async () => {
-    console.log("WIP");
-    // if (!file) return;
-    // setExtracting(true);
-    // setError(null);
-    // setExtracted(null);
+    if (!file) return;
+    setExtracting(true);
+    setError(null);
+    setExtracted(null);
 
-    // try {
-    //   const base64Data = await toBase64(file);
+    try {
+      const pdfBase64 = await toBase64(file);
 
-    //   const response = await fetch("https://api.anthropic.com/v1/messages", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({
-    //       model: "claude-sonnet-4-20250514",
-    //       max_tokens: 4096,
-    //       messages: [
-    //         {
-    //           role: "user",
-    //           content: [
-    //             {
-    //               type: "document",
-    //               source: {
-    //                 type: "base64",
-    //                 media_type: "application/pdf",
-    //                 data: base64Data,
-    //               },
-    //             },
-    //             { type: "text", text: preset.prompt },
-    //           ],
-    //         },
-    //       ],
-    //     }),
-    //   });
+      const response = await fetch("/api/pdf-extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pdfBase64 }),
+      });
 
-    //   const data = await response.json();
-    //   const text = data.content
-    //     .map((b: { type: string; text?: string }) => (b.type === "text" ? b.text : ""))
-    //     .join("");
+      const data = await response.json();
 
-    //   const clean = text.replace(/```json|```/g, "").trim();
-    //   const cards: ExtractedCard[] = JSON.parse(clean);
-    //   setExtracted(cards);
-    // } catch (err) {
-    //   setError("Failed to extract cards. Please check the PDF and try again.");
-    // } finally {
-    //   setExtracting(false);
-    // }
+      if (!response.ok) {
+        throw new Error(data.error ?? "Extraction failed");
+      }
+
+      setExtracted(data as ExtractedCard[]);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to extract cards. Please check the PDF and try again.",
+      );
+    } finally {
+      setExtracting(false);
+    }
   };
 
   const handleAdd = () => {
