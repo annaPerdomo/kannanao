@@ -146,8 +146,8 @@ export function EditCardDialog({
           "No image found for that query. Try a different search term.",
         );
       }
-    } catch {
-      setImageError("Failed to fetch image. Please try again.");
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : "Failed to fetch image. Please try again.");
     } finally {
       setSavingImage(false);
     }
