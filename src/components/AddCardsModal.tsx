@@ -1,11 +1,9 @@
 'use client';
-import { useState, type KeyboardEvent } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   Box,
-  TextField,
-  Chip,
   Button,
   Typography,
   CircularProgress,
@@ -13,10 +11,9 @@ import {
   IconButton,
 } from '@mui/material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import CloseIcon from '@mui/icons-material/Close';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { WordChipInput } from '@/components/WordChipInput';
+import { OrDivider, AddCardOptionButtons } from '@/components/AddCardOptionButtons';
 
 interface AddCardsModalProps {
   open: boolean;
@@ -40,28 +37,9 @@ export function AddCardsModal({
   const [input, setInput] = useState('');
   const [words, setWords] = useState<string[]>([]);
 
-  const addWord = () => {
-    const trimmed = input.trim();
-    if (trimmed && !words.includes(trimmed)) {
-      setWords((prev) => [...prev, trimmed]);
-    }
-    setInput('');
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault();
-      addWord();
-    }
-    if (e.key === 'Backspace' && !input && words.length > 0) {
-      setWords((prev) => prev.slice(0, -1));
-    }
-  };
-
   const handleGenerate = async () => {
-    if (input.trim()) addWord();
-    if (words.length === 0 && !input.trim()) return;
     const finalWords = input.trim() ? [...words, input.trim()] : words;
+    if (finalWords.length === 0) return;
     await onGenerate(finalWords);
     setWords([]);
     setInput('');
@@ -174,71 +152,14 @@ export function AddCardsModal({
             Generate with AI
           </Typography>
 
-          {/* Word chip input */}
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 0.5,
-              p: '9px 11px',
-              border: '1.5px solid',
-              borderColor: generating ? 'rgba(249,168,212,0.3)' : 'rgba(249,168,212,0.5)',
-              borderRadius: '10px',
-              minHeight: 46,
-              cursor: generating ? 'default' : 'text',
-              mb: 1.25,
-              bgcolor: generating ? 'rgba(255,255,255,0.5)' : '#FFFFFF',
-              transition: 'border-color 0.18s, background-color 0.18s',
-              '&:focus-within': {
-                borderColor: generating ? 'rgba(249,168,212,0.3)' : '#F472B6',
-                boxShadow: generating ? 'none' : '0 0 0 3px rgba(244,114,182,0.1)',
-              },
-            }}
-            onClick={() => !generating && document.getElementById('modal-word-input')?.focus()}
-          >
-            {words.map((w) => (
-              <Chip
-                key={w}
-                label={w}
-                size="small"
-                onDelete={generating ? undefined : () => setWords((p) => p.filter((x) => x !== w))}
-                sx={{
-                  height: 22,
-                  fontSize: '0.72rem',
-                  fontFamily: '"Nunito", sans-serif',
-                  fontWeight: 700,
-                  bgcolor: '#FCE7F3',
-                  color: '#BE185D',
-                  border: '1px solid rgba(244,114,182,0.4)',
-                  '& .MuiChip-deleteIcon': { fontSize: 13, color: '#F472B6' },
-                }}
-              />
-            ))}
-            <TextField
-              id="modal-word-input"
-              value={input}
-              onChange={(e) => !generating && setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={words.length === 0 ? 'Type words or phrases, press Enter…' : ''}
-              variant="standard"
-              size="small"
-              disabled={generating}
-              sx={{
-                flexGrow: 1,
-                minWidth: 90,
-                '& .MuiInput-root': {
-                  fontFamily: '"Nunito", sans-serif',
-                  fontWeight: 600,
-                  fontSize: '0.82rem',
-                  color: '#5E2F6C',
-                  '&:before, &:after': { display: 'none' },
-                },
-                '& input': { p: 0.25 },
-                '& input::placeholder': { color: '#C2709A', opacity: 1, fontSize: '0.8rem' },
-              }}
-              slotProps={{ input: { disableUnderline: true } }}
-            />
-          </Box>
+          <WordChipInput
+            words={words}
+            onWordsChange={setWords}
+            input={input}
+            onInputChange={setInput}
+            disabled={generating}
+            inputId="modal-word-input"
+          />
 
           {error && (
             <Alert
@@ -299,158 +220,13 @@ export function AddCardsModal({
           )}
         </Box>
 
-        {/* "or" divider */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-          <Box sx={{ flexGrow: 1, height: '1px', bgcolor: 'rgba(249,168,212,0.3)' }} />
-          <Typography
-            sx={{
-              fontSize: '0.65rem',
-              fontWeight: 800,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: 'rgba(194,112,154,0.6)',
-              fontFamily: '"Nunito", sans-serif',
-            }}
-          >
-            or
-          </Typography>
-          <Box sx={{ flexGrow: 1, height: '1px', bgcolor: 'rgba(249,168,212,0.3)' }} />
-        </Box>
+        <OrDivider />
 
-        {/* Alternative options */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Box
-            component="button"
-            onClick={!generating ? onAddExisting : undefined}
-            disabled={generating}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              p: '12px 14px',
-              border: '1.5px solid rgba(249,168,212,0.35)',
-              borderRadius: '12px',
-              bgcolor: '#FFFFFF',
-              cursor: generating ? 'default' : 'pointer',
-              textAlign: 'left',
-              width: '100%',
-              transition: 'all 0.15s ease',
-              opacity: generating ? 0.45 : 1,
-              '&:hover:not(:disabled)': {
-                borderColor: '#F472B6',
-                bgcolor: '#FFF8FC',
-                boxShadow: '0 2px 10px rgba(249,168,212,0.2)',
-              },
-            }}
-          >
-            <Box
-              sx={{
-                width: 36,
-                height: 36,
-                borderRadius: '10px',
-                bgcolor: '#FCE7F3',
-                border: '1px solid rgba(244,114,182,0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              <LibraryAddIcon sx={{ fontSize: 17, color: '#EC4899' }} />
-            </Box>
-            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-              <Typography
-                sx={{
-                  fontSize: '0.8rem',
-                  fontWeight: 800,
-                  color: '#9D174D',
-                  fontFamily: '"Nunito", sans-serif',
-                  lineHeight: 1.2,
-                }}
-              >
-                Add Existing Cards
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: '0.68rem',
-                  color: '#C2709A',
-                  fontFamily: '"Nunito", sans-serif',
-                  fontWeight: 500,
-                  mt: 0.2,
-                }}
-              >
-                Copy from your other decks
-              </Typography>
-            </Box>
-            <ChevronRightIcon sx={{ fontSize: 16, color: 'rgba(194,112,154,0.5)', flexShrink: 0 }} />
-          </Box>
-
-          <Box
-            component="button"
-            onClick={!generating ? onImportPdf : undefined}
-            disabled={generating}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              p: '12px 14px',
-              border: '1.5px solid rgba(249,168,212,0.35)',
-              borderRadius: '12px',
-              bgcolor: '#FFFFFF',
-              cursor: generating ? 'default' : 'pointer',
-              textAlign: 'left',
-              width: '100%',
-              transition: 'all 0.15s ease',
-              opacity: generating ? 0.45 : 1,
-              '&:hover:not(:disabled)': {
-                borderColor: '#F472B6',
-                bgcolor: '#FFF8FC',
-                boxShadow: '0 2px 10px rgba(249,168,212,0.2)',
-              },
-            }}
-          >
-            <Box
-              sx={{
-                width: 36,
-                height: 36,
-                borderRadius: '10px',
-                bgcolor: '#F3E8FF',
-                border: '1px solid rgba(196,181,253,0.45)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              <PictureAsPdfIcon sx={{ fontSize: 17, color: '#9333EA' }} />
-            </Box>
-            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-              <Typography
-                sx={{
-                  fontSize: '0.8rem',
-                  fontWeight: 800,
-                  color: '#9D174D',
-                  fontFamily: '"Nunito", sans-serif',
-                  lineHeight: 1.2,
-                }}
-              >
-                Import from PDF
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: '0.68rem',
-                  color: '#C2709A',
-                  fontFamily: '"Nunito", sans-serif',
-                  fontWeight: 500,
-                  mt: 0.2,
-                }}
-              >
-                Extract vocabulary from a document
-              </Typography>
-            </Box>
-            <ChevronRightIcon sx={{ fontSize: 16, color: 'rgba(194,112,154,0.5)', flexShrink: 0 }} />
-          </Box>
-        </Box>
+        <AddCardOptionButtons
+          disabled={generating}
+          onAddExisting={onAddExisting}
+          onImportPdf={onImportPdf}
+        />
       </DialogContent>
     </Dialog>
   );
