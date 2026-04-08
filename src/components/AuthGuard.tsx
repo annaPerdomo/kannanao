@@ -4,7 +4,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { Box, CircularProgress } from "@mui/material";
 import { useAuth } from "@/contexts/AuthContext";
 
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PATHS = ["/login", "/landing"];
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
