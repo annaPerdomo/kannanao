@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -14,7 +15,10 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SchoolIcon from '@mui/icons-material/School';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import { useProgress, xpProgressInLevel, ACHIEVEMENTS } from '@/hooks/useProgess';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import IconButton from '@mui/material/IconButton';
+import { useProgress, xpProgressInLevel, ACHIEVEMENTS, StudySession } from '@/hooks/useProgess';
 
 // ─── Palette (matches existing NavBar palette) ────────────────────────────────
 const PINK = '#BE185D';
@@ -212,6 +216,249 @@ function AchievementBadge({
   );
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function toLocalDateStr(date: Date): string {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-');
+}
+
+function sessionLocalDate(started_at: string): string {
+  return toLocalDateStr(new Date(started_at));
+}
+
+// ─── Monthly calendar ─────────────────────────────────────────────────────────
+
+function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
+  const todayReal = new Date();
+  todayReal.setHours(0, 0, 0, 0);
+  const todayStr = toLocalDateStr(todayReal);
+
+  const [viewYear, setViewYear] = useState<number>(todayReal.getFullYear());
+  const [viewMonth, setViewMonth] = useState<number>(todayReal.getMonth()); // 0-indexed
+
+  // cards studied per local date
+  const activityMap = new Map<string, number>();
+  sessions.forEach((s) => {
+    if (!s.ended_at) return;
+    const key = sessionLocalDate(s.started_at);
+    activityMap.set(key, (activityMap.get(key) ?? 0) + s.cards_studied);
+  });
+
+  const goBack = () => {
+    if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); }
+    else setViewMonth((m) => m - 1);
+  };
+  const goForward = () => {
+    if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); }
+    else setViewMonth((m) => m + 1);
+  };
+
+  const isCurrentMonth = viewYear === todayReal.getFullYear() && viewMonth === todayReal.getMonth();
+
+  // First day of month and total days
+  const firstDay = new Date(viewYear, viewMonth, 1);
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  // Monday-based offset (0=Mon … 6=Sun)
+  const startOffset = (firstDay.getDay() + 6) % 7;
+
+  // Build flat cell array: nulls for padding + day numbers
+  const cells: (number | null)[] = [
+    ...Array.from({ length: startOffset }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
+  // Pad end to complete last row
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const weeks: (number | null)[][] = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+
+  const cellBg = (cards: number) => {
+    if (cards === 0) return undefined;
+    if (cards < 5)  return 'rgba(249,168,212,0.35)';
+    if (cards < 15) return 'rgba(249,168,212,0.65)';
+    if (cards < 30) return '#F9A8D4';
+    return PINK;
+  };
+
+  const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const monthLabel = firstDay.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+
+  return (
+    <Box>
+      {/* Month navigation */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+        <IconButton size="small" onClick={goBack} sx={{ color: PINK }}>
+          <ChevronLeftIcon fontSize="small" />
+        </IconButton>
+        <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '0.9rem', color: PINK }}>
+          {monthLabel}
+        </Typography>
+        <IconButton size="small" onClick={goForward} disabled={isCurrentMonth} sx={{ color: PINK }}>
+          <ChevronRightIcon fontSize="small" />
+        </IconButton>
+      </Box>
+
+      {/* Day-of-week headers */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5, mb: 0.5 }}>
+        {DAY_LABELS.map((d) => (
+          <Typography key={d} sx={{ fontSize: '0.62rem', color: 'text.secondary', textAlign: 'center', fontWeight: 600 }}>
+            {d}
+          </Typography>
+        ))}
+      </Box>
+
+      {/* Calendar grid */}
+      {weeks.map((week, wi) => (
+        <Box key={wi} sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5, mb: 0.5 }}>
+          {week.map((day, di) => {
+            if (day === null) return <Box key={di} />;
+
+            const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const isFuture = dateStr > todayStr;
+            const isToday = dateStr === todayStr;
+            const cards = activityMap.get(dateStr) ?? 0;
+            const bg = isFuture ? undefined : cellBg(cards);
+            const textColor = cards >= 30 ? '#fff' : isToday ? PINK : 'text.primary';
+
+            return (
+              <Tooltip
+                key={dateStr}
+                title={isFuture || cards === 0 ? '' : `${cards} cards studied`}
+                arrow
+              >
+                <Box
+                  sx={{
+                    position: 'relative',
+                    aspectRatio: '1',
+                    borderRadius: '8px',
+                    backgroundColor: bg,
+                    border: isToday ? `2px solid ${PINK}` : '2px solid transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: cards > 0 ? 'default' : 'default',
+                    opacity: isFuture ? 0.25 : 1,
+                    transition: 'opacity 0.15s',
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                      fontWeight: isToday ? 700 : 400,
+                      color: textColor,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {day}
+                  </Typography>
+                  {cards > 0 && !isFuture && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        bottom: '3px',
+                        width: 4,
+                        height: 4,
+                        borderRadius: '50%',
+                        backgroundColor: cards >= 30 ? 'rgba(255,255,255,0.8)' : PINK,
+                      }}
+                    />
+                  )}
+                </Box>
+              </Tooltip>
+            );
+          })}
+        </Box>
+      ))}
+    </Box>
+  );
+}
+
+// ─── Period summary (week / month) ───────────────────────────────────────────
+
+function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const dayOfWeek = today.getDay();
+  const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - daysToMonday);
+
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  const completed = sessions.filter((s) => s.ended_at);
+
+  const forPeriod = (start: Date) =>
+    completed.filter((s) => new Date(s.started_at) >= start);
+
+  const aggregate = (list: StudySession[]) => ({
+    sessions: list.length,
+    cards: list.reduce((n, s) => n + s.cards_studied, 0),
+    xp: list.reduce((n, s) => n + s.xp_earned, 0),
+    days: new Set(list.map((s) => sessionLocalDate(s.started_at))).size,
+  });
+
+  const week = aggregate(forPeriod(weekStart));
+  const month = aggregate(forPeriod(monthStart));
+
+  const monthName = today.toLocaleDateString(undefined, { month: 'long' });
+
+  const PeriodCard = ({
+    title,
+    data,
+  }: {
+    title: string;
+    data: { sessions: number; cards: number; xp: number; days: number };
+  }) => (
+    <Box
+      sx={{
+        flex: '1 1 0',
+        background: PINK_LIGHT,
+        border: `1px solid ${PINK_BORDER}`,
+        borderRadius: 3,
+        p: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+      }}
+    >
+      <Typography
+        sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '0.78rem', color: PINK }}
+      >
+        {title}
+      </Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        {[
+          { label: 'Days studied', value: data.days },
+          { label: 'Cards studied', value: data.cards.toLocaleString() },
+          { label: 'XP earned', value: `+${data.xp.toLocaleString()}` },
+          { label: 'Sessions', value: data.sessions },
+        ].map(({ label, value }) => (
+          <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>{label}</Typography>
+            <Typography
+              sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: PINK }}
+            >
+              {value}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+
+  return (
+    <Box sx={{ display: 'flex', gap: 1.5 }}>
+      <PeriodCard title="This Week" data={week} />
+      <PeriodCard title={monthName} data={month} />
+    </Box>
+  );
+}
+
 // ─── Recent sessions ──────────────────────────────────────────────────────────
 
 function SessionRow({
@@ -370,6 +617,41 @@ export default function Stats() {
           </>
         ) : null}
       </Box>
+
+      {/* ── Activity calendar + period summaries ── */}
+      <Paper
+        elevation={0}
+        sx={{
+          background: BG,
+          border: `1px solid ${PINK_BORDER}`,
+          borderRadius: 4,
+          p: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2.5,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CalendarTodayIcon sx={{ color: PINK, fontSize: '1rem' }} />
+          <Typography
+            sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: PINK }}
+          >
+            Study Activity
+          </Typography>
+        </Box>
+
+        {loading ? (
+          <>
+            <Skeleton variant="rounded" height={100} sx={{ borderRadius: 2 }} />
+            <Skeleton variant="rounded" height={120} sx={{ borderRadius: 2 }} />
+          </>
+        ) : (
+          <>
+            <PeriodSummary sessions={recentSessions} />
+            <StudyCalendar sessions={recentSessions} />
+          </>
+        )}
+      </Paper>
 
       {/* ── Achievements ── */}
       <Paper
