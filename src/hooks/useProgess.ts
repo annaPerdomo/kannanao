@@ -360,6 +360,18 @@ export function useProgress() {
 
   const clearNewlyUnlocked = useCallback(() => setNewlyUnlocked([]), []);
 
+  /** Award a flat XP bonus (e.g. for completing a to-do item). */
+  const addBonusXp = useCallback(async (amount: number) => {
+    if (!progress) return;
+    const newXp = progress.total_xp + amount;
+    const newLevel = levelFromXp(newXp);
+    await supabase
+      .from('user_progress')
+      .update({ total_xp: newXp, level: newLevel })
+      .eq('id', progress.id);
+    setProgress((p) => p ? { ...p, total_xp: newXp, level: newLevel } : p);
+  }, [progress, supabase]);
+
   return {
     progress,
     achievements,
@@ -370,6 +382,7 @@ export function useProgress() {
     recordAnswer,
     endSession,
     startSession,
+    addBonusXp,
     refetch: fetchAll,
   };
 }

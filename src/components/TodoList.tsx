@@ -18,9 +18,11 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { useTodos } from '@/hooks/useTodos';
 import type { Todo } from '@/types/todo';
 
+export const XP_PER_TODO = 5;
+
 const CELEBRATION_MESSAGES = [
   '🎉 Amazing work!',
-  '⭐ You\'re on fire!',
+  "⭐ You're on fire!",
   '🌸 So productive!',
   '✨ Keep it up!',
   '🦋 Unstoppable!',
@@ -33,55 +35,64 @@ function randomCelebration() {
   return CELEBRATION_MESSAGES[Math.floor(Math.random() * CELEBRATION_MESSAGES.length)];
 }
 
-// Sparkle burst shown briefly after completing a task
-function Sparkle({ show }: { show: boolean }) {
+/** Floating "+5 XP ✨" badge that flies upward then fades out */
+function XpPop({ show }: { show: boolean }) {
   if (!show) return null;
   return (
     <Box
       sx={{
         position: 'absolute',
-        inset: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        top: '-4px',
+        right: 8,
         pointerEvents: 'none',
-        fontSize: '1.4rem',
-        animation: 'sparkle-pop 0.6s ease forwards',
-        '@keyframes sparkle-pop': {
-          '0%': { opacity: 1, transform: 'scale(0.5)' },
-          '60%': { opacity: 1, transform: 'scale(1.4)' },
-          '100%': { opacity: 0, transform: 'scale(1.6)' },
+        zIndex: 10,
+        fontSize: '0.78rem',
+        fontWeight: 800,
+        color: 'secondary.dark',
+        background: 'linear-gradient(90deg, #FDE8F3, #EDE9FE)',
+        border: '1.5px solid rgba(196,181,253,0.5)',
+        borderRadius: 2,
+        px: 0.75,
+        py: 0.25,
+        whiteSpace: 'nowrap',
+        animation: 'xp-fly 0.9s ease forwards',
+        '@keyframes xp-fly': {
+          '0%':   { opacity: 1, transform: 'translateY(0) scale(1)' },
+          '60%':  { opacity: 1, transform: 'translateY(-20px) scale(1.1)' },
+          '100%': { opacity: 0, transform: 'translateY(-32px) scale(0.9)' },
         },
       }}
     >
-      ✨
+      +{XP_PER_TODO} XP ✨
     </Box>
   );
 }
 
 interface TodoItemProps {
   todo: Todo;
-  onToggle: (id: string) => void;
+  onToggle: (id: string) => Promise<boolean>;
   onEdit: (id: string, text: string) => void;
   onDelete: (id: string) => void;
+  onXpEarned?: (xp: number) => void;
 }
 
-function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemProps) {
+function TodoItem({ todo, onToggle, onEdit, onDelete, onXpEarned }: TodoItemProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(todo.text);
-  const [sparkle, setSparkle] = useState(false);
+  const [showXp, setShowXp] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (editing) inputRef.current?.focus();
   }, [editing]);
 
-  const handleToggle = () => {
-    if (!todo.completed) {
-      setSparkle(true);
-      setTimeout(() => setSparkle(false), 700);
+  const handleToggle = async () => {
+    const justCompleted = await onToggle(todo.id);
+    if (justCompleted) {
+      setShowXp(true);
+      onXpEarned?.(XP_PER_TODO);
+      setTimeout(() => setShowXp(false), 950);
     }
-    onToggle(todo.id);
   };
 
   const handleSave = () => {
@@ -95,11 +106,6 @@ function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemProps) {
     if (e.key === 'Escape') { setDraft(todo.text); setEditing(false); }
   };
 
-  // Cycle through gentle pastel gradients per item emoji
-  const itemBg = todo.completed
-    ? 'rgba(249,168,212,0.06)'
-    : 'linear-gradient(120deg, #FFF5FB 0%, #F3EFFE 100%)';
-
   return (
     <Box
       sx={{
@@ -110,30 +116,31 @@ function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemProps) {
         px: 1.5,
         py: 1,
         borderRadius: 3,
-        background: itemBg,
+        background: todo.completed
+          ? 'rgba(249,168,212,0.06)'
+          : 'linear-gradient(120deg, #FFF5FB 0%, #F3EFFE 100%)',
         border: '1.5px solid',
         borderColor: todo.completed ? 'rgba(196,181,253,0.3)' : 'rgba(244,114,182,0.25)',
         transition: 'all 0.25s ease',
-        opacity: todo.completed ? 0.65 : 1,
+        opacity: todo.completed ? 0.6 : 1,
         animation: 'slide-in 0.3s ease',
         '@keyframes slide-in': {
-          from: { opacity: 0, transform: 'translateY(-8px)' },
-          to: { opacity: 1, transform: 'translateY(0)' },
+          from: { opacity: 0, transform: 'translateY(-6px)' },
+          to:   { opacity: 1, transform: 'translateY(0)' },
         },
         '&:hover': {
           borderColor: todo.completed ? 'rgba(196,181,253,0.5)' : 'rgba(244,114,182,0.5)',
           boxShadow: '0 2px 12px rgba(244,114,182,0.12)',
+          '& .todo-actions': { opacity: 1 },
         },
       }}
     >
-      <Sparkle show={sparkle} />
+      <XpPop show={showXp} />
 
-      {/* Emoji badge */}
-      <Typography sx={{ fontSize: '1.1rem', lineHeight: 1, flexShrink: 0 }}>
+      <Typography sx={{ fontSize: '1.05rem', lineHeight: 1, flexShrink: 0 }}>
         {todo.emoji}
       </Typography>
 
-      {/* Checkbox */}
       <Checkbox
         checked={todo.completed}
         onChange={handleToggle}
@@ -142,11 +149,10 @@ function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemProps) {
           p: 0.5,
           color: 'primary.main',
           '&.Mui-checked': { color: 'secondary.dark' },
-          '& .MuiSvgIcon-root': { fontSize: '1.2rem' },
+          '& .MuiSvgIcon-root': { fontSize: '1.15rem' },
         }}
       />
 
-      {/* Text / edit field */}
       {editing ? (
         <TextField
           inputRef={inputRef}
@@ -158,7 +164,7 @@ function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemProps) {
           size="small"
           fullWidth
           sx={{
-            '& .MuiInput-root': { fontSize: '0.9rem', fontWeight: 600 },
+            '& .MuiInput-root': { fontSize: '0.875rem', fontWeight: 600 },
             '& .MuiInput-underline:before': { borderColor: 'primary.light' },
             '& .MuiInput-underline:after': { borderColor: 'primary.main' },
           }}
@@ -167,7 +173,7 @@ function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemProps) {
         <Typography
           sx={{
             flex: 1,
-            fontSize: '0.9rem',
+            fontSize: '0.875rem',
             fontWeight: 600,
             color: 'text.primary',
             textDecoration: todo.completed ? 'line-through' : 'none',
@@ -179,8 +185,7 @@ function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemProps) {
         </Typography>
       )}
 
-      {/* Action buttons */}
-      <Stack direction="row" spacing={0} sx={{ flexShrink: 0 }}>
+      <Stack className="todo-actions" direction="row" spacing={0} sx={{ flexShrink: 0, opacity: 0, transition: 'opacity 0.2s' }}>
         {editing ? (
           <>
             <Tooltip title="Save">
@@ -197,20 +202,12 @@ function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemProps) {
         ) : (
           <>
             <Tooltip title="Edit">
-              <IconButton
-                size="small"
-                onClick={() => setEditing(true)}
-                sx={{ color: 'secondary.dark', opacity: 0, '.MuiBox-root:hover &': { opacity: 1 }, transition: 'opacity 0.2s' }}
-              >
+              <IconButton size="small" onClick={() => setEditing(true)} sx={{ color: 'secondary.dark' }}>
                 <EditRoundedIcon sx={{ fontSize: '1rem' }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="Delete">
-              <IconButton
-                size="small"
-                onClick={() => onDelete(todo.id)}
-                sx={{ color: 'error.main', opacity: 0, '.MuiBox-root:hover &': { opacity: 1 }, transition: 'opacity 0.2s' }}
-              >
+              <IconButton size="small" onClick={() => onDelete(todo.id)} sx={{ color: 'error.main' }}>
                 <DeleteRoundedIcon sx={{ fontSize: '1rem' }} />
               </IconButton>
             </Tooltip>
@@ -221,7 +218,11 @@ function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemProps) {
   );
 }
 
-export function TodoList() {
+interface TodoListProps {
+  onXpEarned?: (xp: number) => void;
+}
+
+export function TodoList({ onXpEarned }: TodoListProps) {
   const { todos, loading, error, addTodo, toggleTodo, editTodo, deleteTodo, clearError } = useTodos();
   const [input, setInput] = useState('');
   const [celebration, setCelebration] = useState('');
@@ -231,11 +232,10 @@ export function TodoList() {
   const totalCount = todos.length;
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
-  // Show celebration message when all tasks are done
   useEffect(() => {
     if (totalCount > 0 && completedCount === totalCount && completedCount > prevCompleted.current) {
       setCelebration(randomCelebration());
-      const timer = setTimeout(() => setCelebration(''), 3000);
+      const timer = setTimeout(() => setCelebration(''), 3500);
       return () => clearTimeout(timer);
     }
     prevCompleted.current = completedCount;
@@ -254,9 +254,9 @@ export function TodoList() {
   return (
     <Box
       sx={{
-        background: 'linear-gradient(135deg, #FFF0FA 0%, #F0EBFF 100%)',
+        background: 'linear-gradient(160deg, #FFF0FA 0%, #F0EBFF 100%)',
         borderRadius: 4,
-        border: '2px solid rgba(244,114,182,0.25)',
+        border: '2px solid rgba(244,114,182,0.22)',
         boxShadow: '0 8px 32px rgba(196,181,253,0.18), 0 2px 8px rgba(244,114,182,0.1)',
         overflow: 'hidden',
       }}
@@ -264,16 +264,16 @@ export function TodoList() {
       {/* Header */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, rgba(244,114,182,0.15) 0%, rgba(196,181,253,0.2) 100%)',
+          background: 'linear-gradient(135deg, rgba(244,114,182,0.18) 0%, rgba(196,181,253,0.22) 100%)',
           px: 2.5,
           pt: 2.5,
           pb: 1.5,
-          borderBottom: '1.5px solid rgba(244,114,182,0.15)',
+          borderBottom: '1.5px solid rgba(244,114,182,0.12)',
         }}
       >
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={0.5}>
           <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography sx={{ fontSize: '1.4rem' }}>🌸</Typography>
+            <Typography sx={{ fontSize: '1.3rem' }}>🌸</Typography>
             <Typography
               variant="h6"
               sx={{
@@ -286,34 +286,38 @@ export function TodoList() {
             >
               My To-Do List
             </Typography>
-            <Typography sx={{ fontSize: '1.1rem' }}>✨</Typography>
+            <Typography sx={{ fontSize: '1rem' }}>✨</Typography>
           </Stack>
           {totalCount > 0 && (
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
+            <Typography variant="caption" sx={{ color: 'secondary.dark', fontWeight: 800 }}>
               {completedCount}/{totalCount} done
             </Typography>
           )}
         </Stack>
 
-        {/* Progress bar */}
         {totalCount > 0 && (
           <Box sx={{ mt: 1 }}>
             <LinearProgress
               variant="determinate"
               value={progress}
               sx={{
-                height: 6,
-                borderRadius: 3,
-                bgcolor: 'rgba(244,114,182,0.15)',
+                height: 7,
+                borderRadius: 4,
+                bgcolor: 'rgba(244,114,182,0.12)',
                 '& .MuiLinearProgress-bar': {
                   background: progress === 100
                     ? 'linear-gradient(90deg, #34D399, #60C8F5)'
                     : 'linear-gradient(90deg, #F472B6, #C4B5FD)',
-                  borderRadius: 3,
+                  borderRadius: 4,
                   transition: 'width 0.5s ease',
                 },
               }}
             />
+            {totalCount > 0 && (
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, mt: 0.5, display: 'block' }}>
+                {progress === 100 ? '🎊 All done!' : `Each task = +${XP_PER_TODO} XP ⭐`}
+              </Typography>
+            )}
           </Box>
         )}
       </Box>
@@ -327,7 +331,7 @@ export function TodoList() {
               textAlign: 'center',
               py: 1,
               mb: 1.5,
-              borderRadius: 2.5,
+              borderRadius: 3,
               background: 'linear-gradient(90deg, rgba(244,114,182,0.15), rgba(196,181,253,0.2), rgba(244,114,182,0.15))',
               animation: 'pulse-soft 1s ease infinite',
               '@keyframes pulse-soft': {
@@ -336,24 +340,19 @@ export function TodoList() {
               },
             }}
           >
-            <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: 'secondary.dark' }}>
+            <Typography sx={{ fontWeight: 800, fontSize: '0.95rem', color: 'secondary.dark' }}>
               {celebration} All done! 🎊
             </Typography>
           </Box>
         </Collapse>
 
-        {/* Error alert */}
         <Collapse in={!!error}>
-          <Alert
-            severity="error"
-            onClose={clearError}
-            sx={{ mb: 1.5, borderRadius: 2.5, fontSize: '0.82rem' }}
-          >
+          <Alert severity="error" onClose={clearError} sx={{ mb: 1.5, borderRadius: 2.5, fontSize: '0.82rem' }}>
             {error}
           </Alert>
         </Collapse>
 
-        {/* Add new todo input */}
+        {/* Add input */}
         <Stack direction="row" spacing={1} alignItems="center" mb={2}>
           <TextField
             value={input}
@@ -373,7 +372,7 @@ export function TodoList() {
               },
             }}
           />
-          <Tooltip title="Add">
+          <Tooltip title="Add (Enter)">
             <span>
               <IconButton
                 onClick={handleAdd}
@@ -396,7 +395,7 @@ export function TodoList() {
           </Tooltip>
         </Stack>
 
-        {/* Todo items */}
+        {/* List */}
         {loading ? (
           <Box sx={{ py: 2 }}>
             <LinearProgress sx={{ borderRadius: 2, bgcolor: 'rgba(244,114,182,0.1)', '& .MuiLinearProgress-bar': { background: 'linear-gradient(90deg, #F472B6, #C4B5FD)' } }} />
@@ -405,18 +404,17 @@ export function TodoList() {
             </Typography>
           </Box>
         ) : todos.length === 0 ? (
-          <Box sx={{ textAlign: 'center', py: 3 }}>
-            <Typography sx={{ fontSize: '2.5rem', mb: 1 }}>🌸</Typography>
+          <Box sx={{ textAlign: 'center', py: 2.5 }}>
+            <Typography sx={{ fontSize: '2.2rem', mb: 1 }}>🌸</Typography>
             <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', fontWeight: 600 }}>
-              No tasks yet — add something above!
+              No tasks yet — add one above!
             </Typography>
             <Typography sx={{ color: 'text.secondary', fontSize: '0.78rem', mt: 0.5, opacity: 0.7 }}>
-              Your to-do list is your superpower ✨
+              Complete tasks to earn XP ⭐
             </Typography>
           </Box>
         ) : (
           <Stack spacing={1}>
-            {/* Active todos first, then completed */}
             {[...todos.filter((t) => !t.completed), ...todos.filter((t) => t.completed)].map((todo) => (
               <TodoItem
                 key={todo.id}
@@ -424,6 +422,7 @@ export function TodoList() {
                 onToggle={toggleTodo}
                 onEdit={editTodo}
                 onDelete={deleteTodo}
+                onXpEarned={onXpEarned}
               />
             ))}
           </Stack>

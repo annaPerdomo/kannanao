@@ -31,17 +31,20 @@ export function useTodos() {
     }
   }, []);
 
-  const toggleTodo = useCallback(async (id: string) => {
+  // Returns true if the task was just marked as completed (for XP award)
+  const toggleTodo = useCallback(async (id: string): Promise<boolean> => {
     const todo = todos.find((t) => t.id === id);
-    if (!todo) return;
-    const updated = { ...todo, completed: !todo.completed };
+    if (!todo) return false;
+    const nowCompleted = !todo.completed;
+    const updated = { ...todo, completed: nowCompleted };
     setTodos((prev) => prev.map((t) => (t.id === id ? updated : t)));
     try {
-      await dbUpdateTodo(id, { completed: updated.completed });
+      await dbUpdateTodo(id, { completed: nowCompleted });
     } catch {
       setTodos((prev) => prev.map((t) => (t.id === id ? todo : t)));
       setError('Could not update item — please try again');
     }
+    return nowCompleted;
   }, [todos]);
 
   const editTodo = useCallback(async (id: string, text: string) => {
