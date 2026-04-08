@@ -3,6 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Deck } from "@/types/deck";
 import type { Flashcard } from "@/types/flashcard";
+import type { Todo } from "@/types/todo";
 
 const SUPABASE_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -35,6 +36,7 @@ interface SupabaseDeckRow {
   name: string;
   description: string | null;
   created_at: string | null;
+  user_id: string;
 }
 
 interface SupabaseCardRow {
@@ -47,6 +49,7 @@ interface SupabaseCardRow {
   example_jp: string | null;
   example_en: string | null;
   main_view_mode: "hiragana" | "kanji";
+  card_type: "word" | "phrase" | null;
 }
 
 function toNumber(value: string | null): number {
@@ -67,20 +70,27 @@ export function dbCardToApp(card: SupabaseCardRow): Flashcard {
     example_en: card.example_en ?? "",
     imageUrl: card.image_url ?? undefined,
     mainViewMode: card.main_view_mode ?? "hiragana",
+    cardType: card.card_type ?? "word",
   };
 }
 
-export function dbDeckToApp(deck: SupabaseDeckRow, cardCount: number): Deck {
+export function dbDeckToApp(
+  deck: SupabaseDeckRow,
+  cardCount: number,
+  currentUserId: string,
+): Deck {
   return {
     id: deck.id,
     name: deck.name,
     description: deck.description ?? "",
     createdAt: toNumber(deck.created_at),
     cardCount,
+    ownerId: deck.user_id,
+    isShared: deck.user_id !== currentUserId,
   };
 }
 
-export async function loadDecks(): Promise<Deck[]> {
+export async function loadDecks(userId: string): Promise<Deck[]> {
   if (!isConfigured()) {
     showConfigBanner();
     return [];
@@ -89,6 +99,7 @@ export async function loadDecks(): Promise<Deck[]> {
   const { data: deckRows, error: deckError } = await sb
     .from("decks")
     .select("*")
+    .eq("user_id", userId)
     .order("created_at", { ascending: true });
   if (deckError) {
     console.error("Error loading decks", deckError);
@@ -108,7 +119,7 @@ export async function loadDecks(): Promise<Deck[]> {
 
   return (deckRows ?? []).map((deck) => {
     const deckCards = cards.filter((card) => String(card.deck_id) === deck.id);
-    return dbDeckToApp(deck, deckCards.length);
+    return dbDeckToApp(deck, deckCards.length, userId);
   });
 }
 
@@ -121,9 +132,12 @@ export async function dbCreateDeck(
     throw new Error("Supabase is not configured");
   }
 
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
   const { data, error } = await sb
     .from("decks")
-    .insert({ name, description: description ?? null })
+    .insert({ name, description: description ?? null, user_id: user.id })
     .select()
     .single();
 
@@ -131,7 +145,7 @@ export async function dbCreateDeck(
     throw error ?? new Error("Unable to create deck");
   }
 
-  return dbDeckToApp(data, 0);
+  return dbDeckToApp(data, 0, user.id);
 }
 
 export async function dbDeleteDeck(id: string): Promise<void> {
@@ -182,6 +196,7 @@ export async function dbInsertCards(
     example_jp: card.example_jp || "",
     example_en: card.example_en || "",
     main_view_mode: card.mainViewMode || "hiragana",
+    card_type: card.cardType || "word",
   }));
 
   const { data, error } = await sb.from("cards").insert(rows).select("*");
@@ -218,6 +233,7 @@ export async function dbUpdateCard(
   if (patch.example_en !== undefined) payload.example_en = patch.example_en;
   if (patch.mainViewMode !== undefined)
     payload.main_view_mode = patch.mainViewMode;
+  if (patch.cardType !== undefined) payload.card_type = patch.cardType;
 
   if (Object.keys(payload).length === 0) {
     return null;
@@ -286,6 +302,7 @@ export async function dbCopyCardsIntoDeck(
     example_jp: card.example_jp || "",
     example_en: card.example_en || "",
     main_view_mode: card.mainViewMode ?? 'hiragana',
+    card_type: card.cardType ?? 'word',
   }));
 
   const { data, error } = await sb.from("cards").insert(rows).select("*");
@@ -316,5 +333,165 @@ export async function dbRenameDeck(
   }
 
   // Preserve card count — caller passes it in via the hook
-  return dbDeckToApp(data, 0);
+  return dbDeckToApp(data, 0, data.user_id);
+}
+
+// ─── Auth / profiles ─────────────────────────────────────────────────────────
+
+export async function upsertProfile(
+  userId: string,
+  username: string,
+  displayName?: string,
+): Promise<void> {
+  const payload: { id: string; username: string; display_name?: string } = { id: userId, username };
+  if (displayName) payload.display_name = displayName;
+  const { error } = await sb
+    .from("profiles")
+    .upsert(payload, { onConflict: "id" });
+  if (error) console.error("upsertProfile error", error);
+}
+
+export async function loadProfile(userId: string): Promise<{ username: string; displayName: string | null } | null> {
+  const { data, error } = await sb
+    .from("profiles")
+    .select("username, display_name")
+    .eq("id", userId)
+    .single();
+  if (error || !data) return null;
+  return { username: data.username, displayName: data.display_name ?? null };
+}
+
+// ─── Deck sharing ─────────────────────────────────────────────────────────────
+
+export async function dbShareDeck(
+  deckId: string,
+  targetUsername: string,
+): Promise<{ error: string | null }> {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { data: profile, error: lookupError } = await sb
+    .from("profiles")
+    .select("id")
+    .eq("username", targetUsername.trim().toLowerCase())
+    .single();
+
+  if (lookupError || !profile) return { error: "User not found" };
+
+  const { error } = await sb
+    .from("deck_shares")
+    .insert({ deck_id: deckId, shared_with: profile.id, owner_id: user.id });
+
+  if (error) {
+    if (error.code === "23505") return { error: "Already shared with this user" };
+    return { error: error.message };
+  }
+  return { error: null };
+}
+
+export interface DeckShare {
+  id: string;
+  sharedWith: string;
+  username: string;
+}
+
+export async function dbGetDeckShares(deckId: string): Promise<DeckShare[]> {
+  const { data: shares, error } = await sb
+    .from("deck_shares")
+    .select("id, shared_with")
+    .eq("deck_id", deckId);
+
+  if (error || !shares || shares.length === 0) return [];
+
+  const userIds = shares.map((s: { shared_with: string }) => s.shared_with);
+  const { data: profiles } = await sb
+    .from("profiles")
+    .select("id, username")
+    .in("id", userIds);
+
+  const profileMap: Record<string, string> = {};
+  (profiles ?? []).forEach((p: { id: string; username: string }) => {
+    profileMap[p.id] = p.username;
+  });
+
+  return shares.map((s: { id: string; shared_with: string }) => ({
+    id: s.id,
+    sharedWith: s.shared_with,
+    username: profileMap[s.shared_with] ?? s.shared_with,
+  }));
+}
+
+export async function dbUnShareDeck(shareId: string): Promise<void> {
+  const { error } = await sb.from("deck_shares").delete().eq("id", shareId);
+  if (error) throw error;
+}
+
+// ─── Todos ────────────────────────────────────────────────────────────────────
+
+const TODO_EMOJIS = ['🌸', '⭐', '🦋', '🌈', '💕', '🌺', '🎀', '🍓', '🌙', '✨', '🐝', '🍀'];
+
+function randomTodoEmoji(): string {
+  return TODO_EMOJIS[Math.floor(Math.random() * TODO_EMOJIS.length)];
+}
+
+interface SupabaseTodoRow {
+  id: string;
+  user_id: string;
+  text: string;
+  completed: boolean;
+  emoji: string;
+  created_at: string | null;
+}
+
+function dbTodoToApp(row: SupabaseTodoRow): Todo {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    text: row.text,
+    completed: row.completed,
+    emoji: row.emoji,
+    createdAt: toNumber(row.created_at),
+  };
+}
+
+export async function loadTodos(userId: string): Promise<Todo[]> {
+  if (!isConfigured()) { showConfigBanner(); return []; }
+  const { data, error } = await sb
+    .from('todos')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true });
+  if (error) { console.error('Error loading todos', error); return []; }
+  return (data ?? []).map(dbTodoToApp);
+}
+
+export async function dbCreateTodo(text: string): Promise<Todo> {
+  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+  const { data, error } = await sb
+    .from('todos')
+    .insert({ text, user_id: user.id, completed: false, emoji: randomTodoEmoji() })
+    .select()
+    .single();
+  if (error || !data) throw error ?? new Error('Unable to create todo');
+  return dbTodoToApp(data);
+}
+
+export async function dbUpdateTodo(id: string, patch: Partial<Pick<Todo, 'text' | 'completed'>>): Promise<Todo> {
+  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  const { data, error } = await sb
+    .from('todos')
+    .update(patch)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error || !data) throw error ?? new Error('Unable to update todo');
+  return dbTodoToApp(data);
+}
+
+export async function dbDeleteTodo(id: string): Promise<void> {
+  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  const { error } = await sb.from('todos').delete().eq('id', id);
+  if (error) throw error;
 }

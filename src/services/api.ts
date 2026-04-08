@@ -14,7 +14,11 @@ export async function generateFlashcards(payload: GeneratePayload): Promise<Gene
 
 export async function fetchImage(query: string): Promise<string | null> {
   const res = await fetch(`${BASE}/images?query=${encodeURIComponent(query)}`);
-  if (!res.ok) return null;
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const detail = body?.detail ?? body?.error ?? res.statusText;
+    throw new Error(detail);
+  }
   const data = await res.json();
   // Unsplash search API returns an object with a results array.
   const results = Array.isArray(data) ? data : data?.results;

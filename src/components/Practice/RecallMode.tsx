@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
+import LightbulbOutlinedIcon from "@mui/icons-material/LightbulbOutlined";
 import type { Flashcard } from "@/types/flashcard";
 import { getFlashcardDisplayText } from "@/lib/flashcardUtils";
 import { useProgress } from "@/hooks/useProgess";
@@ -30,7 +31,7 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
   const [input, setInput] = useState("");
   const [result, setResult] = useState<"correct" | "wrong" | null>(null);
   const [score, setScore] = useState(0);
-  const [showHint, setShowHint] = useState(false);
+  const [hintLevel, setHintLevel] = useState(0); // 0=none, 1=first char hint, 2=full meaning
 
   const { startSession, recordAnswer, endSession } = useProgress();
   const sessionIdRef = useRef<string>("");
@@ -47,6 +48,18 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
   const card = pool[index];
   const display = getFlashcardDisplayText(card);
   const done = index >= pool.length;
+
+  // Build progressive hint text
+  const hintText = useMemo(() => {
+    if (!card) return "";
+    if (hintLevel === 0) return "";
+    const target = card.reading || card.word;
+    if (hintLevel === 1) {
+      // Show first character + dashes for the rest
+      return target[0] + "_ ".repeat(target.length - 1).trim();
+    }
+    return card.meaning;
+  }, [card, hintLevel]);
 
   const check = async () => {
     const answer = input.trim().toLowerCase();
@@ -68,7 +81,7 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
     setIndex((i) => i + 1);
     setInput("");
     setResult(null);
-    setShowHint(false);
+    setHintLevel(0);
   };
 
   const handleExit = async () => {
@@ -137,15 +150,15 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
         }}
       />
 
-      {/* Image prompt */}
+      {/* Image prompt — shown clearly so user can recall the word */}
       <Box
         sx={{
           position: "relative",
           width: "100%",
-          height: 200,
+          height: 220,
           borderRadius: 3,
           overflow: "hidden",
-          mb: 3,
+          mb: 0,
           border: "1px solid rgba(249,168,212,0.45)",
           bgcolor: "#FFF2F8",
           boxShadow: "0 10px 26px rgba(249,168,212,0.12)",
@@ -156,52 +169,64 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
             <Box
               component="img"
               src={card.imageUrl}
-              alt="prompt"
+              alt="recall prompt"
               sx={{
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
-                filter: result ? "none" : "blur(8px) brightness(0.5)",
-                transition: "filter 0.4s",
+                transition: "opacity 0.3s",
               }}
             />
-            {!result && (
-              <Box
+            {/* Subtle bottom gradient label */}
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                px: 2,
+                py: 1,
+                background:
+                  "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography
+                variant="caption"
                 sx={{
-                  position: "absolute",
-                  inset: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 1,
+                  color: "rgba(255,255,255,0.75)",
+                  letterSpacing: "0.08em",
+                  fontSize: "0.65rem",
                 }}
               >
-                <Typography
-                  variant="caption"
+                WHAT IS THIS WORD?
+              </Typography>
+              {result && (
+                <Box
                   sx={{
-                    color: "rgba(240,237,230,0.6)",
-                    letterSpacing: "0.1em",
+                    px: 1,
+                    py: 0.25,
+                    borderRadius: 1,
+                    bgcolor:
+                      result === "correct"
+                        ? "rgba(126,184,154,0.85)"
+                        : "rgba(224,112,112,0.85)",
                   }}
                 >
-                  WHAT IS THIS WORD?
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: "primary.main",
-                    letterSpacing: "0.08em",
-                    cursor: "pointer",
-                    "&:hover": { textDecoration: "underline" },
-                  }}
-                  onClick={() => setShowHint(true)}
-                >
-                  {showHint ? card.meaning : "SHOW HINT"}
-                </Typography>
-              </Box>
-            )}
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "#fff", fontSize: "0.65rem" }}
+                  >
+                    {result === "correct" ? "Correct!" : "Incorrect"}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
           </>
         ) : (
+          /* No image: show example sentence as a visual cue */
           <Box
             sx={{
               width: "100%",
@@ -210,38 +235,90 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              bgcolor: "background.paper",
-              gap: 1,
+              px: 3,
+              gap: 1.5,
             }}
           >
             <Typography
               variant="caption"
-              sx={{ color: "text.secondary", letterSpacing: "0.1em" }}
+              sx={{
+                color: "text.disabled",
+                letterSpacing: "0.1em",
+                fontSize: "0.65rem",
+              }}
             >
               WHAT WORD MATCHES?
             </Typography>
-            {showHint && (
+            {card.example_jp && (
               <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ fontStyle: "italic" }}
+                sx={{
+                  fontFamily: '"Noto Serif JP", serif',
+                  fontSize: "1rem",
+                  color: "text.primary",
+                  textAlign: "center",
+                  lineHeight: 1.8,
+                }}
               >
-                {card.meaning}
+                {card.example_jp}
               </Typography>
             )}
-            {!showHint && (
-              <Button
-                size="small"
-                variant="text"
-                onClick={() => setShowHint(true)}
-                sx={{ fontSize: "0.7rem", color: "primary.main" }}
+            {card.example_en && (
+              <Typography
+                variant="caption"
+                sx={{ color: "text.secondary", textAlign: "center" }}
               >
-                Show Hint
-              </Button>
+                {card.example_en}
+              </Typography>
             )}
           </Box>
         )}
       </Box>
+
+      {/* Hint row — sits just below the image */}
+      {!result && (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: 1,
+            mt: 1,
+            mb: 2,
+            minHeight: 28,
+          }}
+        >
+          {hintLevel > 0 && (
+            <Typography
+              variant="caption"
+              sx={{
+                color: "text.secondary",
+                fontStyle: "italic",
+                mr: "auto",
+              }}
+            >
+              {hintText}
+            </Typography>
+          )}
+          {hintLevel < 2 && (
+            <Button
+              size="small"
+              variant="text"
+              startIcon={<LightbulbOutlinedIcon sx={{ fontSize: "0.9rem" }} />}
+              onClick={() => setHintLevel((l) => l + 1)}
+              sx={{
+                fontSize: "0.7rem",
+                color: "text.secondary",
+                py: 0,
+                minWidth: 0,
+                "&:hover": { color: "primary.main" },
+              }}
+            >
+              {hintLevel === 0 ? "Hint" : "More"}
+            </Button>
+          )}
+        </Box>
+      )}
+      {result && <Box sx={{ mb: 2 }} />}
 
       {result && (
         <Box

@@ -3,6 +3,7 @@ import { Box } from "@mui/material";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import Providers from "./providers";
 import { NavBar } from "@/components/NavBar";
+import { AuthGuard } from "@/components/AuthGuard";
 
 export const metadata: Metadata = {
   title: "語学 — Japanese Flashcards",
@@ -53,7 +54,7 @@ export default function RootLayout({
               }}
             >
               <NavBar />
-              {children}
+              <AuthGuard>{children}</AuthGuard>
             </Box>
           </Providers>
         </AppRouterCacheProvider>

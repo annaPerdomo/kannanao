@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Skeleton } from '@mui/material';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
 import { getFlashcardDisplayText } from '@/lib/flashcardUtils';
+import FuriganaText from '@/components/FuriganaText';
 
 interface FlashcardProps {
   card: FlashcardType;
@@ -303,6 +304,7 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
               Example
             </Typography>
             <Typography
+              component="div"
               sx={{
                 fontFamily: '"Noto Serif JP", serif',
                 fontSize: '1.05rem',
@@ -310,7 +312,10 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
                 lineHeight: 1.8,
               }}
             >
-              {card.example_jp}
+              <FuriganaText
+                text={card.example_jp}
+                showFurigana={card.mainViewMode === 'hiragana'}
+              />
             </Typography>
             <Typography
               sx={{

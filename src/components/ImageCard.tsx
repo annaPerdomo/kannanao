@@ -7,6 +7,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import type { Flashcard } from "@/types/flashcard";
 import { EditCardDialog } from "@/components/EditCardDialog";
 import { getFlashcardDisplayText } from "@/lib/flashcardUtils";
+import FuriganaText from "@/components/FuriganaText";
 
 interface ImageCardProps {
   card: Flashcard;
@@ -15,9 +16,10 @@ interface ImageCardProps {
     id: string,
     patch: Partial<Flashcard>,
   ) => Promise<Flashcard | null>;
+  compact?: boolean;
 }
 
-export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
+export function ImageCard({ card, onDelete, onUpdate, compact = false }: ImageCardProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [localCard, setLocalCard] = useState<Flashcard>(card);
 
@@ -85,34 +87,67 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
             position: "absolute",
             top: 10,
             left: 10,
-            px: 1.1,
-            py: "3px",
-            borderRadius: "20px",
-            backdropFilter: "blur(6px)",
-            background: isKanji
-              ? "rgba(237,233,254,0.92)"
-              : "rgba(252,231,243,0.92)",
-            border: "1.5px solid",
-            borderColor: isKanji
-              ? "rgba(196,181,253,0.7)"
-              : "rgba(249,168,212,0.7)",
             display: "flex",
-            alignItems: "center",
-            gap: 0.5,
+            gap: 0.6,
           }}
         >
-          <Typography
+          <Box
             sx={{
-              fontSize: "0.68rem",
-              fontWeight: 800,
-              letterSpacing: "0.03em",
-              color: isKanji ? "#6D28D9" : "#BE185D",
-              fontFamily: '"Nunito", sans-serif',
-              lineHeight: 1,
+              px: 1.1,
+              py: "3px",
+              borderRadius: "20px",
+              backdropFilter: "blur(6px)",
+              background: isKanji
+                ? "rgba(237,233,254,0.92)"
+                : "rgba(252,231,243,0.92)",
+              border: "1.5px solid",
+              borderColor: isKanji
+                ? "rgba(196,181,253,0.7)"
+                : "rgba(249,168,212,0.7)",
             }}
           >
-            {isKanji ? "漢字" : "ひらがな"}
-          </Typography>
+            <Typography
+              sx={{
+                fontSize: "0.68rem",
+                fontWeight: 800,
+                letterSpacing: "0.03em",
+                color: isKanji ? "#6D28D9" : "#BE185D",
+                fontFamily: '"Nunito", sans-serif',
+                lineHeight: 1,
+              }}
+            >
+              {isKanji ? "漢字" : "ひらがな"}
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              px: 1.1,
+              py: "3px",
+              borderRadius: "20px",
+              backdropFilter: "blur(6px)",
+              background: localCard.cardType === "phrase"
+                ? "rgba(209,250,229,0.92)"
+                : "rgba(254,243,199,0.92)",
+              border: "1.5px solid",
+              borderColor: localCard.cardType === "phrase"
+                ? "rgba(110,231,183,0.7)"
+                : "rgba(252,211,77,0.7)",
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: "0.68rem",
+                fontWeight: 800,
+                letterSpacing: "0.03em",
+                color: localCard.cardType === "phrase" ? "#065F46" : "#92400E",
+                fontFamily: '"Nunito", sans-serif',
+                lineHeight: 1,
+              }}
+            >
+              {localCard.cardType === "phrase" ? "フレーズ" : "単語"}
+            </Typography>
+          </Box>
         </Box>
 
         {/* ── Action buttons (top-right, over image) ── */}
@@ -195,19 +230,21 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
           </Box>
 
           {/* Meaning */}
-          <Typography
-            sx={{
-              fontSize: "0.88rem",
-              fontWeight: 700,
-              color: "#1F2937",
-              fontFamily: '"Nunito", sans-serif',
-            }}
-          >
-            {localCard.meaning}
-          </Typography>
+          {!compact && (
+            <Typography
+              sx={{
+                fontSize: "0.88rem",
+                fontWeight: 700,
+                color: "#1F2937",
+                fontFamily: '"Nunito", sans-serif',
+              }}
+            >
+              {localCard.meaning}
+            </Typography>
+          )}
 
           {/* Example sentence block */}
-          {localCard.example_jp && (
+          {!compact && localCard.example_jp && (
             <Box
               sx={{
                 bgcolor: "#FFF0F8",
@@ -218,7 +255,6 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                 borderLeft: "3px solid rgba(244,114,182,0.6)",
               }}
             >
-              {/* Label */}
               <Typography
                 sx={{
                   fontSize: "0.6rem",
@@ -233,8 +269,8 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                 例文 · Example
               </Typography>
 
-              {/* Japanese sentence */}
               <Typography
+                component="div"
                 sx={{
                   fontSize: "0.78rem",
                   color: "#6B21A8",
@@ -243,10 +279,12 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                   fontWeight: 600,
                 }}
               >
-                {localCard.example_jp}
+                <FuriganaText
+                  text={localCard.example_jp}
+                  showFurigana={localCard.mainViewMode === 'hiragana'}
+                />
               </Typography>
 
-              {/* English translation */}
               {localCard.example_en && (
                 <Typography
                   sx={{
@@ -262,6 +300,20 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                 </Typography>
               )}
             </Box>
+          )}
+
+          {/* Compact hint */}
+          {compact && (
+            <Typography
+              sx={{
+                fontSize: "0.68rem",
+                color: "rgba(190,24,93,0.45)",
+                fontFamily: '"Nunito", sans-serif',
+                fontStyle: "italic",
+              }}
+            >
+              Practice to reveal
+            </Typography>
           )}
         </Box>
       </Box>

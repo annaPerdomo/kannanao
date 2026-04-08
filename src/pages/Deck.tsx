@@ -4,27 +4,19 @@ import { useCallback, useState, useRef } from "react";
 import {
   Box,
   Typography,
-  Grid,
   Button,
-  Stack,
-  Divider,
   Chip,
   IconButton,
   TextField,
   CircularProgress,
   Tooltip,
 } from "@mui/material";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import StyleIcon from "@mui/icons-material/Style";
-import LayersIcon from "@mui/icons-material/Layers";
-import EditNoteIcon from "@mui/icons-material/EditNote";
-import KeyboardIcon from "@mui/icons-material/Keyboard";
-import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
-import { GenerateForm } from "@/components/GenerateForm";
+import AddIcon from "@mui/icons-material/Add";
+import { AddCardsModal } from "@/components/AddCardsModal";
 import { ImageCard } from "@/components/ImageCard";
 import { Loading } from "@/components/Loading";
 import { PdfImportModal } from "@/components/PdfImportModal";
@@ -32,6 +24,9 @@ import { AddExistingCardsDialog } from "@/components/AddExistingCardsDialog";
 import { useDecks } from "@/hooks/useDecks";
 import { useCards } from "@/hooks/useCards";
 import { useGenerateFlashcards } from "@/hooks/useGenerateFlashcards";
+import { fetchImage } from "@/services/api";
+import type { GeneratedCard } from "@/types/flashcard";
+import { useAuth } from "@/contexts/AuthContext";
 import type { PracticeMode } from "@/types/app";
 
 interface DeckProps {
@@ -44,40 +39,49 @@ interface DeckProps {
 const practiceConfig: {
   mode: PracticeMode;
   label: string;
-  icon: React.ReactNode;
+  description: string;
+  emoji: string;
+  watermark: string;
+  color: string;
+  bg: string;
+  border: string;
+  shadowColor: string;
 }[] = [
   {
     mode: "match",
-    label: "Match JP ↔ EN",
-    icon: <LayersIcon sx={{ fontSize: 15 }} />,
+    label: "Match",
+    description: "Pair Japanese to English",
+    emoji: "🎯",
+    watermark: "合",
+    color: "#6D28D9",
+    bg: "linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%)",
+    border: "rgba(196,181,253,0.7)",
+    shadowColor: "rgba(109,40,217,0.22)",
   },
   {
     mode: "fill",
-    label: "Fill in the Blank",
-    icon: <EditNoteIcon sx={{ fontSize: 15 }} />,
+    label: "Fill in Blank",
+    description: "Complete the sentence",
+    emoji: "✏️",
+    watermark: "書",
+    color: "#0E7490",
+    bg: "linear-gradient(135deg, #ECFEFF 0%, #CFFAFE 100%)",
+    border: "rgba(34,211,238,0.6)",
+    shadowColor: "rgba(14,116,144,0.22)",
   },
   {
     mode: "recall",
     label: "Recall Typing",
-    icon: <KeyboardIcon sx={{ fontSize: 15 }} />,
+    description: "Type from memory",
+    emoji: "🌟",
+    watermark: "思",
+    color: "#B45309",
+    bg: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
+    border: "rgba(251,191,36,0.7)",
+    shadowColor: "rgba(180,83,9,0.22)",
   },
 ];
 
-function SidePanel({ children }: { children: React.ReactNode }) {
-  return (
-    <Box
-      sx={{
-        border: "1.5px solid rgba(249,168,212,0.32)",
-        borderRadius: "14px",
-        p: "18px 20px",
-        bgcolor: "#FFFFFF",
-        boxShadow: "0 2px 10px rgba(249,168,212,0.1)",
-      }}
-    >
-      {children}
-    </Box>
-  );
-}
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
@@ -99,6 +103,7 @@ function Label({ children }: { children: React.ReactNode }) {
 }
 
 export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
+  const { user } = useAuth();
   const {
     decks,
     loading: decksLoading,
@@ -108,17 +113,23 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const deck = decks.find((d) => d.id === deckId);
 
   const [pdfImportOpen, setPdfImportOpen] = useState(false);
+  const [addCardsOpen, setAddCardsOpen] = useState(false);
 
-  const handlePdfCards = () => {
-    console.log("thingy");
-    // Map to your card format and add to deck
-    // const newCards = cards.map((c) => ({
-    //   id: crypto.randomUUID(),
-    //   front: c.word,
-    //   back: `${c.reading ? c.reading + "\n" : ""}${c.definition}`,
-    //   // add any other fields your card schema needs
-    // }));
-    // setDeckCards((prev) => [...prev, ...newCards]);
+  const handlePdfCards = async (extracted: GeneratedCard[]) => {
+    const withImages = await Promise.all(
+      extracted.map(async (card) => {
+        const imageUrl = await fetchImage(card.image_query).catch(() => null);
+        return {
+          ...card,
+          imageUrl: imageUrl ?? undefined,
+          deckId,
+          mainViewMode: "hiragana" as const,
+          cardType: card.card_type,
+        };
+      }),
+    );
+    await addCards(withImages);
+    setPdfImportOpen(false);
   };
 
   // ── Rename state ──────────────────────────────────────────────────────────
@@ -441,202 +452,326 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         </Box>
       </Box>
 
-      {/* ── MAIN LAYOUT ── (unchanged below) */}
+      {/* ── PRACTICE HERO ── */}
       <Box
         sx={{
-          display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          gap: 2.5,
-          alignItems: "flex-start",
+          background: "linear-gradient(135deg, #FFF0F8 0%, #F3E8FF 100%)",
+          borderRadius: "20px",
+          border: "1.5px solid rgba(249,168,212,0.35)",
+          p: { xs: 2.5, sm: 3.5 },
+          mb: 3,
         }}
       >
-        {/* LEFT SIDEBAR */}
+        <Label>Let&apos;s practice!</Label>
         <Box
           sx={{
-            width: { xs: "100%", md: 248 },
-            flexShrink: 0,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(4, 1fr)" },
+            gap: { xs: 1.5, sm: 2 },
           }}
         >
-          <SidePanel>
-            <Label>Study &amp; Practice</Label>
-            <Stack spacing={1}>
-              <Button
-                fullWidth
-                variant="contained"
-                startIcon={<StyleIcon sx={{ fontSize: 15 }} />}
-                onClick={onStudy}
-                disabled={cards.length === 0}
+          {/* Flashcards – primary CTA */}
+          <Box
+            onClick={cards.length > 0 ? onStudy : undefined}
+            sx={{
+              cursor: cards.length > 0 ? "pointer" : "default",
+              position: "relative",
+              overflow: "hidden",
+              borderRadius: "18px",
+              p: { xs: "20px 18px", sm: "24px 22px" },
+              minHeight: 160,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              background: cards.length > 0
+                ? "linear-gradient(145deg, #F472B6 0%, #EC4899 40%, #A855F7 100%)"
+                : "rgba(200,200,200,0.3)",
+              border: "1.5px solid transparent",
+              opacity: cards.length > 0 ? 1 : 0.5,
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              boxShadow: cards.length > 0
+                ? "0 6px 24px rgba(236,72,153,0.35)"
+                : "none",
+              ...(cards.length > 0 && {
+                "&:hover": {
+                  transform: "translateY(-5px) scale(1.02)",
+                  boxShadow: "0 14px 36px rgba(236,72,153,0.45)",
+                },
+              }),
+            }}
+          >
+            {/* Watermark */}
+            <Typography
+              aria-hidden
+              sx={{
+                position: "absolute",
+                bottom: -16,
+                right: 6,
+                fontSize: "5.5rem",
+                lineHeight: 1,
+                opacity: 0.18,
+                userSelect: "none",
+                fontFamily: '"Noto Serif JP", serif',
+                fontWeight: 900,
+              }}
+            >
+              学
+            </Typography>
+
+            <Box>
+              <Typography sx={{ fontSize: "2rem", lineHeight: 1, mb: 1 }}>✨</Typography>
+              <Typography
                 sx={{
-                  borderRadius: "9px",
-                  justifyContent: "flex-start",
-                  px: 2,
-                  py: "8px",
+                  fontWeight: 900,
+                  fontSize: { xs: "1rem", sm: "1.05rem" },
+                  color: "#FFFFFF",
+                  fontFamily: '"Nunito", sans-serif',
+                  lineHeight: 1.2,
+                  textShadow: "0 1px 4px rgba(0,0,0,0.15)",
                 }}
               >
                 Flashcards
-              </Button>
-              <Divider />
+              </Typography>
               <Typography
                 sx={{
-                  fontSize: "0.6rem",
-                  fontWeight: 800,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  color: "text.secondary",
+                  fontSize: "0.72rem",
+                  color: "rgba(255,255,255,0.85)",
                   fontFamily: '"Nunito", sans-serif',
-                  pt: 0.25,
+                  mt: 0.4,
                 }}
               >
-                Practice Modes
+                Flip & learn every card
               </Typography>
-              {practiceConfig.map(({ mode, label, icon }) => (
-                <Button
-                  key={mode}
-                  fullWidth
-                  variant="outlined"
-                  startIcon={icon}
-                  onClick={() => onPractice(mode)}
-                  disabled={practiceDisabled}
-                  size="small"
+            </Box>
+
+            <Typography
+              sx={{
+                fontSize: "0.72rem",
+                fontWeight: 800,
+                color: "rgba(255,255,255,0.9)",
+                fontFamily: '"Nunito", sans-serif',
+                letterSpacing: "0.04em",
+                alignSelf: "flex-end",
+              }}
+            >
+              Let&apos;s go →
+            </Typography>
+          </Box>
+
+          {/* Practice mode tiles */}
+          {practiceConfig.map(({ mode, label, description, emoji, watermark, color, bg, border, shadowColor }) => (
+            <Box
+              key={mode}
+              onClick={!practiceDisabled ? () => onPractice(mode) : undefined}
+              sx={{
+                cursor: practiceDisabled ? "default" : "pointer",
+                position: "relative",
+                overflow: "hidden",
+                borderRadius: "18px",
+                p: { xs: "20px 18px", sm: "24px 22px" },
+                minHeight: 160,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                background: bg,
+                border: "1.5px solid",
+                borderColor: border,
+                opacity: practiceDisabled ? 0.45 : 1,
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                ...(!practiceDisabled && {
+                  "&:hover": {
+                    transform: "translateY(-5px) scale(1.02)",
+                    boxShadow: `0 12px 32px ${shadowColor}`,
+                  },
+                }),
+              }}
+            >
+              {/* Kanji watermark */}
+              <Typography
+                aria-hidden
+                sx={{
+                  position: "absolute",
+                  bottom: -16,
+                  right: 6,
+                  fontSize: "5.5rem",
+                  lineHeight: 1,
+                  color,
+                  opacity: 0.08,
+                  fontFamily: '"Noto Serif JP", serif',
+                  fontWeight: 900,
+                  userSelect: "none",
+                }}
+              >
+                {watermark}
+              </Typography>
+
+              <Box>
+                <Typography sx={{ fontSize: "1.85rem", lineHeight: 1, mb: 1 }}>{emoji}</Typography>
+                <Typography
                   sx={{
-                    borderRadius: "9px",
-                    justifyContent: "flex-start",
-                    px: 2,
-                    py: "6px",
-                    fontSize: "0.76rem",
-                    letterSpacing: "0.01em",
-                    textTransform: "none",
-                    fontWeight: 700,
+                    fontWeight: 900,
+                    fontSize: { xs: "0.92rem", sm: "0.98rem" },
+                    color,
+                    fontFamily: '"Nunito", sans-serif',
+                    lineHeight: 1.2,
                   }}
                 >
                   {label}
-                </Button>
-              ))}
-              {practiceDisabled && (
+                </Typography>
                 <Typography
                   sx={{
-                    fontSize: "0.68rem",
-                    color: "text.secondary",
-                    lineHeight: 1.5,
+                    fontSize: "0.7rem",
+                    color: `${color}BB`,
                     fontFamily: '"Nunito", sans-serif',
-                    pt: 0.25,
+                    mt: 0.4,
                   }}
                 >
-                  Add at least 2 cards to unlock practice modes.
+                  {description}
                 </Typography>
-              )}
-            </Stack>
-          </SidePanel>
+              </Box>
 
-          <SidePanel>
-            <Label>Add Cards</Label>
-            <GenerateForm
-              onGenerate={handleGenerate}
-              generating={generating}
-              error={error}
-            />
-            <Divider sx={{ my: 1.5, borderColor: "rgba(249,168,212,0.3)" }} />
-            <Box sx={{ display: "grid", gap: 1.25 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<LibraryAddIcon sx={{ fontSize: 15 }} />}
-                onClick={() => setPickerOpen(true)}
-                size="small"
-                sx={{
-                  borderRadius: "9px",
-                  justifyContent: "flex-start",
-                  px: 2,
-                  py: "6px",
-                  fontSize: "0.76rem",
-                  letterSpacing: "0.01em",
-                  textTransform: "none",
-                  fontWeight: 700,
-                }}
-              >
-                Add Existing Cards
-              </Button>
-
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<PictureAsPdfIcon sx={{ fontSize: 15 }} />}
-                onClick={() => setPdfImportOpen(true)}
-                size="small"
-                sx={{
-                  borderRadius: "9px",
-                  justifyContent: "flex-start",
-                  px: 2,
-                  py: "6px",
-                  fontSize: "0.76rem",
-                  letterSpacing: "0.01em",
-                  textTransform: "none",
-                  fontWeight: 700,
-                }}
-              >
-                Import from PDF
-              </Button>
-            </Box>
-
-            <PdfImportModal
-              open={pdfImportOpen}
-              onClose={() => setPdfImportOpen(false)}
-              onAddCards={handlePdfCards}
-            />
-          </SidePanel>
-        </Box>
-
-        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-          <Label>Cards in Deck</Label>
-          {cards.length === 0 ? (
-            <Box
-              sx={{
-                border: "1.5px dashed rgba(249,168,212,0.4)",
-                borderRadius: "14px",
-                p: 6,
-                textAlign: "center",
-                bgcolor: "rgba(255,255,255,0.6)",
-              }}
-            >
               <Typography
-                sx={{ color: "text.secondary", fontSize: "0.875rem" }}
+                sx={{
+                  fontSize: "0.7rem",
+                  fontWeight: 800,
+                  color: practiceDisabled ? "text.disabled" : color,
+                  fontFamily: '"Nunito", sans-serif',
+                  letterSpacing: "0.04em",
+                  opacity: practiceDisabled ? 0.5 : 0.8,
+                  alignSelf: "flex-end",
+                }}
               >
-                No cards yet — generate some from the panel on the left.
+                {practiceDisabled ? "Locked 🔒" : "Play →"}
               </Typography>
             </Box>
-          ) : (
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: {
-                  xs: "repeat(2, 1fr)",
-                  sm: "repeat(3, 1fr)",
-                  lg: "repeat(4, 1fr)",
-                },
-                gap: 1.75,
-              }}
-            >
-              {cards.map((card) => (
-                <ImageCard
-                  key={card.id}
-                  card={card}
-                  onDelete={deleteCard}
-                  onUpdate={updateCard}
-                />
-              ))}
-            </Box>
-          )}
+          ))}
         </Box>
+        {practiceDisabled && cards.length > 0 && (
+          <Typography
+            sx={{
+              fontSize: "0.7rem",
+              color: "text.secondary",
+              fontFamily: '"Nunito", sans-serif',
+              mt: 1.5,
+              textAlign: "center",
+            }}
+          >
+            Add at least 2 cards to unlock practice modes.
+          </Typography>
+        )}
       </Box>
+
+      {/* ── CARDS ── */}
+      <Box>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 1.5,
+          }}
+        >
+          <Label>Cards in Deck</Label>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AddIcon sx={{ fontSize: 15 }} />}
+            onClick={() => setAddCardsOpen(true)}
+            sx={{
+              borderRadius: "9px",
+              px: 2,
+              py: "5px",
+              fontSize: "0.76rem",
+              textTransform: "none",
+              fontWeight: 700,
+              mb: 1.5,
+            }}
+          >
+            Add Cards
+          </Button>
+        </Box>
+
+        {cards.length === 0 ? (
+          <Box
+            sx={{
+              border: "1.5px dashed rgba(249,168,212,0.4)",
+              borderRadius: "14px",
+              p: 6,
+              textAlign: "center",
+              bgcolor: "rgba(255,255,255,0.6)",
+            }}
+          >
+            <Typography sx={{ color: "text.secondary", fontSize: "0.875rem" }}>
+              No cards yet —{" "}
+              <Box
+                component="span"
+                onClick={() => setAddCardsOpen(true)}
+                sx={{
+                  color: "#EC4899",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  textUnderlineOffset: 2,
+                }}
+              >
+                add some
+              </Box>{" "}
+              to get started.
+            </Typography>
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "repeat(2, 1fr)",
+                sm: "repeat(3, 1fr)",
+                lg: "repeat(4, 1fr)",
+              },
+              gap: 1.75,
+            }}
+          >
+            {cards.map((card) => (
+              <ImageCard
+                key={card.id}
+                card={card}
+                onDelete={deleteCard}
+                onUpdate={updateCard}
+                compact
+              />
+            ))}
+          </Box>
+        )}
+      </Box>
+
+      <AddCardsModal
+        open={addCardsOpen}
+        onClose={() => setAddCardsOpen(false)}
+        onGenerate={handleGenerate}
+        generating={generating}
+        error={error}
+        onAddExisting={() => {
+          setAddCardsOpen(false);
+          setPickerOpen(true);
+        }}
+        onImportPdf={() => {
+          setAddCardsOpen(false);
+          setPdfImportOpen(true);
+        }}
+      />
 
       <AddExistingCardsDialog
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
         targetDeckId={deckId}
+        userId={user?.id ?? ""}
         onConfirm={copyExistingCards}
+      />
+
+      <PdfImportModal
+        open={pdfImportOpen}
+        onClose={() => setPdfImportOpen(false)}
+        onAddCards={handlePdfCards}
       />
     </Box>
   );

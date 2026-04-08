@@ -8,7 +8,8 @@ export interface Flashcard {
   example_en: string;
   imageUrl?: string;
   deckId: string;
-  mainViewMode: 'hiragana' | 'kanji'; 
+  mainViewMode: 'hiragana' | 'kanji';
+  cardType: 'word' | 'phrase';
 }
 
 export interface GeneratePayload {
@@ -22,4 +23,5 @@ export interface GeneratedCard {
   image_query: string;
   example_jp: string;
   example_en: string;
+  card_type: 'word' | 'phrase';
 }

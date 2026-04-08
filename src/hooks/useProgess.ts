@@ -165,16 +165,33 @@ export function useProgress() {
   const [newlyUnlocked, setNewlyUnlocked] = useState<AchievementDef[]>([]);
 
   const fetchAll = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setLoading(false); return; }
+
     const [{ data: prog }, { data: ach }, { data: sess }] = await Promise.all([
-      supabase.from('user_progress').select('*').limit(1).single(),
-      supabase.from('user_achievements').select('*').order('unlocked_at', { ascending: false }),
+      supabase.from('user_progress').select('*').eq('user_id', user.id).maybeSingle(),
+      supabase.from('user_achievements').select('*').eq('user_id', user.id).order('unlocked_at', { ascending: false }),
       supabase
         .from('study_sessions')
         .select('*')
+        .eq('user_id', user.id)
+        .gte('started_at', new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString())
         .order('started_at', { ascending: false })
-        .limit(20),
+        .limit(200),
     ]);
-    if (prog) setProgress(prog);
+
+    // Create initial progress row for new users
+    if (!prog) {
+      const { data: newProg } = await supabase
+        .from('user_progress')
+        .insert({ user_id: user.id })
+        .select('*')
+        .single();
+      if (newProg) setProgress(newProg);
+    } else {
+      setProgress(prog);
+    }
+
     if (ach) setAchievements(ach);
     if (sess) setRecentSessions(sess);
     setLoading(false);
@@ -246,10 +263,11 @@ export function useProgress() {
       if (newLevel >= 10 && !unlocked.includes('level_10')) toUnlock.push('level_10');
 
       if (toUnlock.length > 0) {
+        const { data: { user } } = await supabase.auth.getUser();
         await supabase
           .from('user_achievements')
-          .upsert(toUnlock.map((key) => ({ achievement_key: key })), {
-            onConflict: 'achievement_key',
+          .upsert(toUnlock.map((key) => ({ user_id: user?.id, achievement_key: key })), {
+            onConflict: 'user_id,achievement_key',
           });
 
         const newDefs = ACHIEVEMENTS.filter((a) => toUnlock.includes(a.key));
@@ -296,9 +314,10 @@ export function useProgress() {
         cardsCorrect === cardsStudied &&
         !achievements.find((a) => a.achievement_key === 'perfect_session')
       ) {
+        const { data: { user } } = await supabase.auth.getUser();
         await supabase
           .from('user_achievements')
-          .upsert([{ achievement_key: 'perfect_session' }], { onConflict: 'achievement_key' });
+          .upsert([{ user_id: user?.id, achievement_key: 'perfect_session' }], { onConflict: 'user_id,achievement_key' });
 
         // XP bonus
         if (progress) {
@@ -322,9 +341,10 @@ export function useProgress() {
   /** Call at the beginning of a study session to create a session row */
   const startSession = useCallback(
     async (deckId: string): Promise<string> => {
+      const { data: { user } } = await supabase.auth.getUser();
       const { data } = await supabase
         .from('study_sessions')
-        .insert({ deck_id: deckId })
+        .insert({ deck_id: deckId, user_id: user?.id })
         .select('id')
         .single();
 
@@ -341,6 +361,18 @@ export function useProgress() {
 
   const clearNewlyUnlocked = useCallback(() => setNewlyUnlocked([]), []);
 
+  /** Award a flat XP bonus (e.g. for completing a to-do item). */
+  const addBonusXp = useCallback(async (amount: number) => {
+    if (!progress) return;
+    const newXp = progress.total_xp + amount;
+    const newLevel = levelFromXp(newXp);
+    await supabase
+      .from('user_progress')
+      .update({ total_xp: newXp, level: newLevel })
+      .eq('id', progress.id);
+    setProgress((p) => p ? { ...p, total_xp: newXp, level: newLevel } : p);
+  }, [progress, supabase]);
+
   return {
     progress,
     achievements,
@@ -351,6 +383,7 @@ export function useProgress() {
     recordAnswer,
     endSession,
     startSession,
+    addBonusXp,
     refetch: fetchAll,
   };
 }

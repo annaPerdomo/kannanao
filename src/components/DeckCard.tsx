@@ -7,12 +7,15 @@ import {
   Chip,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import IosShareIcon from '@mui/icons-material/IosShare';
 import type { Deck } from '@/types/deck';
 
 interface DeckCardProps {
   deck: Deck;
   onOpen: (id: string) => void;
   onDelete: (id: string) => void;
+  onShare?: (id: string) => void;
+  isOwner?: boolean;
 }
 
 // Randomly pick a cute emoji per deck (deterministic based on id)
@@ -29,7 +32,7 @@ const STACK_COLORS = [
   'linear-gradient(135deg, #f9c8e8, #f5a8dc)',
 ];
 
-export function DeckCard({ deck, onOpen, onDelete }: DeckCardProps) {
+export function DeckCard({ deck, onOpen, onDelete, onShare, isOwner = true }: DeckCardProps) {
   const icon = pickIcon(deck.id);
   const shouldShowDescription = Boolean(deck.description);
   return (
@@ -175,7 +178,7 @@ export function DeckCard({ deck, onOpen, onDelete }: DeckCardProps) {
             </Typography>
           )}
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, flexWrap: 'wrap' }}>
             <Chip
               label={`${deck.cardCount} card${deck.cardCount !== 1 ? 's' : ''} 🌟`}
               size="small"
@@ -187,38 +190,73 @@ export function DeckCard({ deck, onOpen, onDelete }: DeckCardProps) {
                 fontSize: '0.78rem',
               }}
             />
+            {deck.isShared && (
+              <Chip
+                label="Shared with you"
+                size="small"
+                sx={{
+                  background: 'linear-gradient(90deg, #ede9fe, #ddd6fe)',
+                  border: '1.5px solid rgba(167,139,250,0.5)',
+                  fontWeight: 600,
+                  color: '#6d28d9',
+                  fontSize: '0.72rem',
+                }}
+              />
+            )}
           </Box>
         </CardContent>
 
-        {/* Bottom bar with delete */}
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            px: 1.5,
-            pb: 1.5,
-          }}
-        >
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(deck.id);
-            }}
-            aria-label="Delete deck"
+        {/* Bottom bar with actions */}
+        {isOwner && (
+          <Box
             sx={{
-              color: 'rgba(249,168,212,0.7)',
-              '&:hover': {
-                color: '#ec4899',
-                backgroundColor: 'rgba(249,168,212,0.15)',
-                transform: 'scale(1.1)',
-              },
-              transition: 'all 0.2s ease',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              px: 1.5,
+              pb: 1.5,
+              gap: 0.5,
             }}
           >
-            <DeleteOutlineIcon fontSize="small" />
-          </IconButton>
-        </Box>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onShare?.(deck.id);
+              }}
+              aria-label="Share deck"
+              sx={{
+                color: 'rgba(167,139,250,0.7)',
+                '&:hover': {
+                  color: '#7c3aed',
+                  backgroundColor: 'rgba(167,139,250,0.15)',
+                  transform: 'scale(1.1)',
+                },
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <IosShareIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(deck.id);
+              }}
+              aria-label="Delete deck"
+              sx={{
+                color: 'rgba(249,168,212,0.7)',
+                '&:hover': {
+                  color: '#ec4899',
+                  backgroundColor: 'rgba(249,168,212,0.15)',
+                  transform: 'scale(1.1)',
+                },
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <DeleteOutlineIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
       </Box>
     </Box>
   );

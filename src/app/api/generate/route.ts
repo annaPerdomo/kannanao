@@ -11,6 +11,7 @@ interface GeneratedCard {
   image_query: string;
   example_jp: string;
   example_en: string;
+  card_type: 'word' | 'phrase';
 }
 
 export async function POST(req: NextRequest) {
@@ -33,10 +34,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const prompt = `Japanese language teacher. Create exactly one card per word for: ${pendingWords.join(", ")}.
+    const prompt = `Japanese language teacher. Create exactly one card per item for: ${pendingWords.join(", ")}.
+- card_type: "word" for single vocabulary words, "phrase" for multi-word expressions or full phrases.
 - reading: kana pronunciation (empty if already kana)
-- image_query: 2-4 word English noun phrase for Unsplash (concrete, photographic, child-friendly). Verbs→scene (食べる="child eating noodles"), abstracts→closest visual (楽しい="children laughing").
-- example_jp/example_en: simple sentence pair for a young learner.
+- image_query: 2-4 word English noun phrase for Unsplash (concrete, photographic, child-friendly). Verbs→scene (食べる="child eating noodles"), abstracts→closest visual (楽しい="children laughing"). For phrases, pick the most concrete noun in the phrase.
+- example_jp: simple sentence for a young learner using the word naturally. Wrap every kanji (or kanji compound) with its hiragana reading using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです。 Pure kana words need no wrapping.
+- example_en: English translation of the example sentence.
 If a word has multiple translations, use the most common/natural one.`;
 
     const response = await fetch(
@@ -63,6 +66,7 @@ If a word has multiple translations, use the most common/natural one.`;
                   image_query: { type: "string" },
                   example_jp: { type: "string" },
                   example_en: { type: "string" },
+                  card_type: { type: "string", enum: ["word", "phrase"] },
                 },
                 required: [
                   "word",
@@ -71,6 +75,7 @@ If a word has multiple translations, use the most common/natural one.`;
                   "image_query",
                   "example_jp",
                   "example_en",
+                  "card_type",
                 ],
               },
             },
