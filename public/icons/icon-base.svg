@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="#FDE8F3"/>
+
+  <!-- Subtle radial glow -->
+  <radialGradient id="glow" cx="50%" cy="45%" r="55%">
+    <stop offset="0%" stop-color="#FBCFE8" stop-opacity="0.8"/>
+    <stop offset="100%" stop-color="#FDE8F3" stop-opacity="0"/>
+  </radialGradient>
+  <rect width="512" height="512" rx="112" fill="url(#glow)"/>
+
+  <!-- Cherry blossom petals (decorative, behind character) -->
+  <g opacity="0.35" fill="#EC4899">
+    <!-- top-left petal cluster -->
+    <ellipse cx="110" cy="130" rx="28" ry="18" transform="rotate(-30 110 130)"/>
+    <ellipse cx="145" cy="105" rx="28" ry="18" transform="rotate(20 145 105)"/>
+    <!-- top-right petal cluster -->
+    <ellipse cx="380" cy="118" rx="28" ry="18" transform="rotate(40 380 118)"/>
+    <ellipse cx="408" cy="148" rx="28" ry="18" transform="rotate(-15 408 148)"/>
+    <!-- bottom-left -->
+    <ellipse cx="100" cy="390" rx="22" ry="14" transform="rotate(15 100 390)"/>
+    <!-- bottom-right -->
+    <ellipse cx="415" cy="385" rx="22" ry="14" transform="rotate(-20 415 385)"/>
+  </g>
+
+  <!-- Main kanji 語 (language/words) -->
+  <text
+    x="256"
+    y="330"
+    font-family="'Noto Serif JP', 'Hiragino Mincho ProN', serif"
+    font-size="260"
+    font-weight="400"
+    text-anchor="middle"
+    fill="#BE185D"
+  >語</text>
+
+  <!-- Small dot accent -->
+  <circle cx="256" cy="418" r="10" fill="#F472B6" opacity="0.7"/>
+</svg>

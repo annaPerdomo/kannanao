@@ -22,12 +22,14 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@ducanh2912/next-pwa": "^10.2.9",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/uuid": "^10.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.2.0",
+    "sharp": "^0.34.5",
     "typescript": "^5.7.2"
   },
   "version": "1.0.0"

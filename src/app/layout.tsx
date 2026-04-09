@@ -38,6 +38,16 @@ export default function RootLayout({
           rel="icon"
           href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>"
         />
+        {/* PWA manifest */}
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#EC4899" />
+        {/* iOS home screen */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="語学" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png" />
+        <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png" />
       </head>
       <body>
         <AppRouterCacheProvider>
