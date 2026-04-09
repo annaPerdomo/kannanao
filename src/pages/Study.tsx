@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   Box,
   Typography,
@@ -16,6 +16,7 @@ import { Loading } from "@/components/Loading";
 import { SectionHeader } from "@/components/SectionHeader";
 import { useCards } from "@/hooks/useCards";
 import { useDecks } from "@/hooks/useDecks";
+import { useProgress } from "@/hooks/useProgess";
 
 interface StudyProps {
   deckId: string;
@@ -31,6 +32,45 @@ export default function Study({ deckId, onBack }: StudyProps) {
   const { decks, loading: decksLoading } = useDecks();
   const [index, setIndex] = useState(0);
   const [navigating, setNavigating] = useState(false);
+
+  // ── Session tracking ──────────────────────────────────────────────────────
+  const { startSession, recordAnswer, endSession } = useProgress();
+  const sessionIdRef = useRef<string>('');
+  const startTimeRef = useRef<number>(Date.now());
+  const seenRef = useRef<Set<number>>(new Set());
+  const endedRef = useRef(false);
+
+  useEffect(() => {
+    startSession(deckId).then((id) => {
+      sessionIdRef.current = id;
+      startTimeRef.current = Date.now();
+    });
+  }, [deckId, startSession]);
+
+  // Mark the first card as seen on mount (once cards load)
+  useEffect(() => {
+    if (cards.length > 0 && sessionIdRef.current && !seenRef.current.has(0)) {
+      seenRef.current.add(0);
+      void recordAnswer(sessionIdRef.current, true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cards.length]);
+
+  const finishSession = useCallback(async () => {
+    if (endedRef.current || !sessionIdRef.current) return;
+    endedRef.current = true;
+    await endSession(sessionIdRef.current, {
+      cardsStudied: seenRef.current.size,
+      cardsCorrect: seenRef.current.size,
+      durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+    });
+  }, [endSession]);
+
+  const handleBack = useCallback(async () => {
+    await finishSession();
+    onBack();
+  }, [finishSession, onBack]);
+  // ─────────────────────────────────────────────────────────────────────────
 
   const card = cards[index];
   const deck = decks.find((d) => d.id === deckId);
@@ -48,9 +88,15 @@ export default function Study({ deckId, onBack }: StudyProps) {
       setTimeout(() => {
         setIndex(nextIndex);
         setNavigating(false);
+
+        // Record this card as studied (once per unique index)
+        if (sessionIdRef.current && !seenRef.current.has(nextIndex)) {
+          seenRef.current.add(nextIndex);
+          void recordAnswer(sessionIdRef.current, true);
+        }
       }, FLIP_DURATION_MS);
     },
-    [navigating, index, cards.length]
+    [navigating, index, cards.length, recordAnswer],
   );
 
   if (cardsLoading || decksLoading) {
@@ -64,7 +110,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
   if (cards.length === 0) {
     return (
       <Box sx={{ maxWidth: 800, mx: "auto", px: { xs: 2, sm: 4 }, py: 6, textAlign: "center" }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
+        <Button startIcon={<ArrowBackIcon />} onClick={handleBack}>
           Back to Deck
         </Button>
         <Typography color="text.secondary" sx={{ mt: 3 }}>
@@ -88,7 +134,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
       {/* Header — same container as Practice page */}
       <SectionHeader
         title={deckName}
-        onBack={onBack}
+        onBack={handleBack}
         badge={`${cards.length} cards`}
       />
 
@@ -170,8 +216,8 @@ export default function Study({ deckId, onBack }: StudyProps) {
 
       {index === cards.length - 1 && (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-          <Button variant="outlined" onClick={onBack}>
-            Finish Session
+          <Button variant="outlined" onClick={handleBack}>
+            Finish Session ✨
           </Button>
         </Box>
       )}

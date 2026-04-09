@@ -9,6 +9,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import EditIcon from '@mui/icons-material/Edit';
 import LogoutIcon from '@mui/icons-material/Logout';
+import MicIcon from '@mui/icons-material/Mic';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
@@ -27,6 +28,7 @@ export function NavBar() {
   const isHome    = pathname === '/';
   const isStats   = pathname === '/stats';
   const isLanding = pathname === '/landing';
+  const isOhanashikai = pathname?.startsWith('/ohanashikai') ?? false;
   const { openNewDeckDialog } = useDeckDialog();
   const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgress();
   const { user, displayName, signOut, updateDisplayName } = useAuth();
@@ -155,6 +157,21 @@ export function NavBar() {
             <Button onClick={() => router.push('/landing')} size="small" sx={navBtn}>
               <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>About</Box>
               <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>🌸</Box>
+            </Button>
+          )}
+
+          {/* Ohanashikai */}
+          {user && !isOhanashikai && (
+            <Button
+              onClick={() => router.push('/ohanashikai')}
+              size="small"
+              startIcon={<MicIcon sx={{ fontSize: '1rem !important' }} />}
+              sx={{
+                ...navBtn,
+                '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
+              }}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Speech</Box>
             </Button>
           )}
 

@@ -340,11 +340,11 @@ export function useProgress() {
 
   /** Call at the beginning of a study session to create a session row */
   const startSession = useCallback(
-    async (deckId: string): Promise<string> => {
+    async (deckId: string | null): Promise<string> => {
       const { data: { user } } = await supabase.auth.getUser();
       const { data } = await supabase
         .from('study_sessions')
-        .insert({ deck_id: deckId, user_id: user?.id })
+        .insert({ deck_id: deckId ?? null, user_id: user?.id })
         .select('id')
         .single();
 
