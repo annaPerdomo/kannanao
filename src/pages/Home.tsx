@@ -1,5 +1,7 @@
 'use client';
 import { useState } from 'react';
+import { useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -31,6 +33,8 @@ function WelcomeBanner({ username, level, streak, totalXp }: {
   const { text, emoji } = getGreeting(username);
   const { current, needed } = xpProgressInLevel(totalXp);
   const pct = Math.round((current / needed) * 100);
+  const theme = useTheme();
+  const { brand, accent } = theme.palette;
 
   return (
     <Box
@@ -40,14 +44,15 @@ function WelcomeBanner({ username, level, streak, totalXp }: {
         borderRadius: 4,
         mb: 4,
         p: { xs: 3, sm: 3.5 },
-        background: 'linear-gradient(135deg, #FFDDF4 0%, #EDE9FE 50%, #D1FAE5 100%)',
-        border: '2px solid rgba(244,114,182,0.2)',
-        boxShadow: '0 8px 40px rgba(196,181,253,0.22)',
+        background: `linear-gradient(135deg, ${brand[200]} 0%, ${accent[100]} 45%, ${brand[100]} 100%)`,
+        border: `2px solid ${alpha(brand[300], 0.35)}`,
+        boxShadow: `0 8px 40px ${alpha(brand[300], 0.28)}, 0 2px 12px ${alpha(accent[300], 0.18)}`,
       }}
     >
       {/* Decorative blobs */}
-      <Box sx={{ position: 'absolute', top: -30, right: -30, width: 130, height: 130, borderRadius: '50%', background: 'rgba(244,114,182,0.12)', pointerEvents: 'none' }} />
-      <Box sx={{ position: 'absolute', bottom: -20, left: '40%', width: 90, height: 90, borderRadius: '50%', background: 'rgba(196,181,253,0.15)', pointerEvents: 'none' }} />
+      <Box sx={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: `radial-gradient(circle, ${alpha(brand[300], 0.35)} 0%, transparent 70%)`, pointerEvents: 'none' }} />
+      <Box sx={{ position: 'absolute', bottom: -25, left: '35%', width: 110, height: 110, borderRadius: '50%', background: `radial-gradient(circle, ${alpha(accent[300], 0.3)} 0%, transparent 70%)`, pointerEvents: 'none' }} />
+      <Box sx={{ position: 'absolute', top: '10%', left: -20, width: 80, height: 80, borderRadius: '50%', background: `radial-gradient(circle, ${alpha(accent[200], 0.25)} 0%, transparent 70%)`, pointerEvents: 'none' }} />
 
       <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} justifyContent="space-between" spacing={2}>
         <Box>
@@ -58,7 +63,7 @@ function WelcomeBanner({ username, level, streak, totalXp }: {
               sx={{
                 fontWeight: 800,
                 fontSize: { xs: '1.4rem', sm: '1.7rem' },
-                background: 'linear-gradient(90deg, #BE185D 0%, #7C3AED 100%)',
+                background: `linear-gradient(90deg, ${brand[700]} 0%, ${accent[500]} 100%)`,
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -71,7 +76,12 @@ function WelcomeBanner({ username, level, streak, totalXp }: {
             <Chip
               label={`✨ Level ${level}`}
               size="small"
-              sx={{ fontWeight: 800, bgcolor: 'rgba(244,114,182,0.15)', color: 'primary.dark', border: '1.5px solid rgba(244,114,182,0.3)' }}
+              sx={{
+                fontWeight: 800,
+                bgcolor: alpha(brand[100], 0.9),
+                color: brand[700],
+                border: `1.5px solid ${alpha(brand[400], 0.4)}`,
+              }}
             />
             {streak > 0 && (
               <Chip
@@ -86,8 +96,8 @@ function WelcomeBanner({ username, level, streak, totalXp }: {
         {/* XP bar */}
         <Box sx={{ minWidth: { sm: 200 }, width: { xs: '100%', sm: 220 } }}>
           <Stack direction="row" justifyContent="space-between" mb={0.5}>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: 'secondary.dark' }}>XP Progress</Typography>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>{current} / {needed}</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: brand[700] }}>XP Progress</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: brand[600] }}>{current} / {needed}</Typography>
           </Stack>
           <LinearProgress
             variant="determinate"
@@ -95,15 +105,15 @@ function WelcomeBanner({ username, level, streak, totalXp }: {
             sx={{
               height: 10,
               borderRadius: 5,
-              bgcolor: 'rgba(196,181,253,0.25)',
+              bgcolor: alpha(brand[200], 0.5),
               '& .MuiLinearProgress-bar': {
-                background: 'linear-gradient(90deg, #F472B6, #8B5CF6)',
+                background: `linear-gradient(90deg, ${brand[400]}, ${accent[400]})`,
                 borderRadius: 5,
                 transition: 'width 0.6s ease',
               },
             }}
           />
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, mt: 0.5, display: 'block' }}>
+          <Typography variant="caption" sx={{ color: brand[600], fontWeight: 600, mt: 0.5, display: 'block' }}>
             {needed - current} XP to level {level + 1} 🚀
           </Typography>
         </Box>
