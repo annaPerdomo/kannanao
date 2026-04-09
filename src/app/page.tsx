@@ -11,7 +11,7 @@ export default function HomePage() {
   if (loading) {
     return (
       <Box sx={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <CircularProgress sx={{ color: '#BE185D' }} />
+        <CircularProgress sx={{ color: 'primary.dark' }} />
       </Box>
     );
   }

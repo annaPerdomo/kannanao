@@ -7,7 +7,8 @@ import {
   type ReactNode,
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
-import { sb, upsertProfile, loadProfile } from "@/lib/supabase";
+import { sb, upsertProfile, loadProfile, updateProfileColorScheme } from "@/lib/supabase";
+import type { ColorScheme } from "@/theme";
 
 const FAKE_DOMAIN = "kannanao.local";
 
@@ -15,11 +16,13 @@ interface AuthContextValue {
   session: Session | null;
   user: User | null;
   displayName: string | null;
+  colorScheme: ColorScheme | null;
   loading: boolean;
   signInWithUsername: (username: string, password: string) => Promise<{ error: string | null }>;
   signUpWithUsername: (username: string, password: string, name?: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   updateDisplayName: (name: string) => Promise<{ error: string | null }>;
+  updateColorScheme: (scheme: ColorScheme) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -34,21 +37,28 @@ function toEmail(username: string) {
   return `${username.trim().toLowerCase()}@${FAKE_DOMAIN}`;
 }
 
+const VALID_SCHEMES: ColorScheme[] = ["sakura", "murasaki", "yuki"];
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
+  const [colorScheme, setColorScheme] = useState<ColorScheme | null>(null);
   const [loading, setLoading] = useState(true);
 
-  async function fetchDisplayName(userId: string) {
+  async function fetchProfile(userId: string) {
     const profile = await loadProfile(userId);
     setDisplayName(profile?.displayName ?? null);
+    const saved = profile?.colorScheme;
+    if (saved && VALID_SCHEMES.includes(saved as ColorScheme)) {
+      setColorScheme(saved as ColorScheme);
+    }
   }
 
   useEffect(() => {
     sb.auth.getSession().then(({ data }) => {
       setSession(data.session);
       if (data.session?.user) {
-        void fetchDisplayName(data.session.user.id);
+        void fetchProfile(data.session.user.id);
       }
       setLoading(false);
     });
@@ -58,10 +68,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event === "SIGNED_IN" && session?.user) {
         const username = session.user.email?.split("@")[0] ?? "";
         void upsertProfile(session.user.id, username);
-        void fetchDisplayName(session.user.id);
+        void fetchProfile(session.user.id);
       }
       if (event === "SIGNED_OUT") {
         setDisplayName(null);
+        setColorScheme(null);
       }
     });
 
@@ -97,6 +108,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: null };
   };
 
+  const updateColorScheme = async (scheme: ColorScheme) => {
+    setColorScheme(scheme);
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+      await updateProfileColorScheme(user.id, scheme);
+    }
+  };
+
   const signOut = async () => {
     await sb.auth.signOut();
   };
@@ -107,11 +126,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         user: session?.user ?? null,
         displayName,
+        colorScheme,
         loading,
         signInWithUsername,
         signUpWithUsername,
         signOut,
         updateDisplayName,
+        updateColorScheme,
       }}
     >
       {children}

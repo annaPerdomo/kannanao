@@ -9,6 +9,8 @@ import {
   Chip,
   Stack,
 } from "@mui/material";
+import { useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import LightbulbOutlinedIcon from "@mui/icons-material/LightbulbOutlined";
@@ -23,6 +25,9 @@ interface RecallModeProps {
 }
 
 export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
+  const theme = useTheme();
+  const { brand, surfaces } = theme.palette;
+
   const pool = useMemo(
     () => [...cards].sort(() => Math.random() - 0.5),
     [cards],
@@ -145,7 +150,7 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
           mb: 4,
           height: 3,
           borderRadius: 1,
-          bgcolor: "rgba(200,169,126,0.1)",
+          bgcolor: alpha(brand[300], 0.12),
           "& .MuiLinearProgress-bar": { bgcolor: "primary.main" },
         }}
       />
@@ -159,9 +164,9 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
           borderRadius: 3,
           overflow: "hidden",
           mb: 0,
-          border: "1px solid rgba(249,168,212,0.45)",
-          bgcolor: "#FFF2F8",
-          boxShadow: "0 10px 26px rgba(249,168,212,0.12)",
+          border: `1px solid ${alpha(brand[300], 0.45)}`,
+          bgcolor: surfaces.input,
+          boxShadow: `0 10px 26px ${alpha(brand[300], 0.12)}`,
         }}
       >
         {card.imageUrl ? (
@@ -388,12 +393,7 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
             variant="contained"
             onClick={check}
             disabled={!input.trim()}
-            sx={{
-              bgcolor: "primary.main",
-              color: "#0F0E0C",
-              "&:hover": { bgcolor: "primary.light" },
-              flexShrink: 0,
-            }}
+            sx={{ flexShrink: 0 }}
           >
             Check
           </Button>

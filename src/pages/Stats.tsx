@@ -10,6 +10,8 @@ import {
   Skeleton,
   Paper,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -19,12 +21,6 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import IconButton from '@mui/material/IconButton';
 import { useProgress, xpProgressInLevel, ACHIEVEMENTS, StudySession } from '@/hooks/useProgess';
-
-// ─── Palette (matches existing NavBar palette) ────────────────────────────────
-const PINK = '#BE185D';
-const PINK_LIGHT = 'rgba(249,168,212,0.22)';
-const PINK_BORDER = 'rgba(249,168,212,0.40)';
-const BG = 'rgba(255,242,248,0.60)';
 
 // ─── Small stat card ─────────────────────────────────────────────────────────
 
@@ -41,24 +37,28 @@ function StatCard({
   sub?: string;
   accent?: string;
 }) {
+  const theme = useTheme();
+  const { brand } = theme.palette;
+  const color = accent ?? brand[700];
+
   return (
     <Paper
       elevation={0}
       sx={{
         flex: '1 1 160px',
         minWidth: 140,
-        background: BG,
-        border: `1px solid ${PINK_BORDER}`,
+        background: alpha(brand[50], 0.6),
+        border: `1px solid ${alpha(brand[300], 0.40)}`,
         borderRadius: 4,
         p: 2.5,
         display: 'flex',
         flexDirection: 'column',
         gap: 0.5,
         transition: 'box-shadow 0.2s',
-        '&:hover': { boxShadow: '0 4px 20px rgba(190,24,93,0.12)' },
+        '&:hover': { boxShadow: `0 4px 20px ${alpha(brand[700], 0.12)}` },
       }}
     >
-      <Box sx={{ color: accent ?? PINK, display: 'flex', alignItems: 'center', gap: 0.75 }}>
+      <Box sx={{ color, display: 'flex', alignItems: 'center', gap: 0.75 }}>
         {icon}
         <Typography
           sx={{
@@ -75,7 +75,7 @@ function StatCard({
         sx={{
           fontFamily: '"DM Serif Display", serif',
           fontSize: '2rem',
-          color: accent ?? PINK,
+          color,
           lineHeight: 1.1,
           fontWeight: 400,
         }}
@@ -92,6 +92,8 @@ function StatCard({
 // ─── XP level bar ────────────────────────────────────────────────────────────
 
 function LevelBar({ totalXp, level }: { totalXp: number; level: number }) {
+  const theme = useTheme();
+  const { brand } = theme.palette;
   const { current, needed } = xpProgressInLevel(totalXp);
   const pct = Math.round((current / needed) * 100);
 
@@ -99,8 +101,8 @@ function LevelBar({ totalXp, level }: { totalXp: number; level: number }) {
     <Paper
       elevation={0}
       sx={{
-        background: BG,
-        border: `1px solid ${PINK_BORDER}`,
+        background: alpha(brand[50], 0.6),
+        border: `1px solid ${alpha(brand[300], 0.40)}`,
         borderRadius: 4,
         p: 3,
         display: 'flex',
@@ -110,9 +112,9 @@ function LevelBar({ totalXp, level }: { totalXp: number; level: number }) {
     >
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <AutoAwesomeIcon sx={{ color: PINK, fontSize: '1.1rem' }} />
+          <AutoAwesomeIcon sx={{ color: brand[700], fontSize: '1.1rem' }} />
           <Typography
-            sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: PINK }}
+            sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: brand[700] }}
           >
             Level {level}
           </Typography>
@@ -128,10 +130,10 @@ function LevelBar({ totalXp, level }: { totalXp: number; level: number }) {
         sx={{
           height: 12,
           borderRadius: 6,
-          backgroundColor: PINK_LIGHT,
+          backgroundColor: alpha(brand[300], 0.22),
           '& .MuiLinearProgress-bar': {
             borderRadius: 6,
-            background: `linear-gradient(90deg, #F9A8D4 0%, ${PINK} 100%)`,
+            background: `linear-gradient(90deg, ${brand[300]} 0%, ${brand[700]} 100%)`,
           },
         }}
       />
@@ -233,6 +235,9 @@ function sessionLocalDate(started_at: string): string {
 // ─── Monthly calendar ─────────────────────────────────────────────────────────
 
 function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
+  const theme = useTheme();
+  const { brand } = theme.palette;
+
   const todayReal = new Date();
   todayReal.setHours(0, 0, 0, 0);
   const todayStr = toLocalDateStr(todayReal);
@@ -278,10 +283,10 @@ function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
 
   const cellBg = (cards: number) => {
     if (cards === 0) return undefined;
-    if (cards < 5)  return 'rgba(249,168,212,0.35)';
-    if (cards < 15) return 'rgba(249,168,212,0.65)';
-    if (cards < 30) return '#F9A8D4';
-    return PINK;
+    if (cards < 5)  return alpha(brand[300], 0.35);
+    if (cards < 15) return alpha(brand[300], 0.65);
+    if (cards < 30) return brand[300];
+    return brand[700];
   };
 
   const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -291,13 +296,13 @@ function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
     <Box>
       {/* Month navigation */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-        <IconButton size="small" onClick={goBack} sx={{ color: PINK }}>
+        <IconButton size="small" onClick={goBack} sx={{ color: brand[700] }}>
           <ChevronLeftIcon fontSize="small" />
         </IconButton>
-        <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '0.9rem', color: PINK }}>
+        <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '0.9rem', color: brand[700] }}>
           {monthLabel}
         </Typography>
-        <IconButton size="small" onClick={goForward} disabled={isCurrentMonth} sx={{ color: PINK }}>
+        <IconButton size="small" onClick={goForward} disabled={isCurrentMonth} sx={{ color: brand[700] }}>
           <ChevronRightIcon fontSize="small" />
         </IconButton>
       </Box>
@@ -322,7 +327,7 @@ function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
             const isToday = dateStr === todayStr;
             const cards = activityMap.get(dateStr) ?? 0;
             const bg = isFuture ? undefined : cellBg(cards);
-            const textColor = cards >= 30 ? '#fff' : isToday ? PINK : 'text.primary';
+            const textColor = cards >= 30 ? '#fff' : isToday ? brand[700] : 'text.primary';
 
             return (
               <Tooltip
@@ -336,7 +341,7 @@ function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
                     aspectRatio: '1',
                     borderRadius: '8px',
                     backgroundColor: bg,
-                    border: isToday ? `2px solid ${PINK}` : '2px solid transparent',
+                    border: isToday ? `2px solid ${brand[700]}` : '2px solid transparent',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -363,7 +368,7 @@ function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
                         width: 4,
                         height: 4,
                         borderRadius: '50%',
-                        backgroundColor: cards >= 30 ? 'rgba(255,255,255,0.8)' : PINK,
+                        backgroundColor: cards >= 30 ? 'rgba(255,255,255,0.8)' : brand[700],
                       }}
                     />
                   )}
@@ -380,6 +385,9 @@ function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
 // ─── Period summary (week / month) ───────────────────────────────────────────
 
 function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
+  const theme = useTheme();
+  const { brand } = theme.palette;
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -417,8 +425,8 @@ function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
     <Box
       sx={{
         flex: '1 1 0',
-        background: PINK_LIGHT,
-        border: `1px solid ${PINK_BORDER}`,
+        background: alpha(brand[300], 0.22),
+        border: `1px solid ${alpha(brand[300], 0.40)}`,
         borderRadius: 3,
         p: 2,
         display: 'flex',
@@ -427,7 +435,7 @@ function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
       }}
     >
       <Typography
-        sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '0.78rem', color: PINK }}
+        sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '0.78rem', color: brand[700] }}
       >
         {title}
       </Typography>
@@ -441,7 +449,7 @@ function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
           <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
             <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>{label}</Typography>
             <Typography
-              sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: PINK }}
+              sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: brand[700] }}
             >
               {value}
             </Typography>
@@ -474,6 +482,8 @@ function SessionRow({
   date: string;
   secs: number;
 }) {
+  const theme = useTheme();
+  const { brand } = theme.palette;
   const pct = studied > 0 ? Math.round((correct / studied) * 100) : 0;
   const mins = Math.round(secs / 60);
 
@@ -484,7 +494,7 @@ function SessionRow({
         alignItems: 'center',
         gap: 2,
         py: 1.25,
-        borderBottom: `1px solid ${PINK_BORDER}`,
+        borderBottom: `1px solid ${alpha(brand[300], 0.40)}`,
         '&:last-child': { borderBottom: 'none' },
       }}
     >
@@ -499,10 +509,10 @@ function SessionRow({
           sx={{
             height: 7,
             borderRadius: 4,
-            backgroundColor: PINK_LIGHT,
+            backgroundColor: alpha(brand[300], 0.22),
             '& .MuiLinearProgress-bar': {
               borderRadius: 4,
-              backgroundColor: pct === 100 ? '#10B981' : PINK,
+              backgroundColor: pct === 100 ? '#10B981' : brand[700],
             },
           }}
         />
@@ -516,12 +526,12 @@ function SessionRow({
         label={`+${xp} XP`}
         size="small"
         sx={{
-          bgcolor: PINK_LIGHT,
-          color: PINK,
+          bgcolor: alpha(brand[300], 0.22),
+          color: brand[700],
           fontWeight: 700,
           fontSize: '0.68rem',
           height: 22,
-          border: `1px solid ${PINK_BORDER}`,
+          border: `1px solid ${alpha(brand[300], 0.40)}`,
         }}
       />
 
@@ -535,6 +545,8 @@ function SessionRow({
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function Stats() {
+  const theme = useTheme();
+  const { brand } = theme.palette;
   const { progress, achievements, recentSessions, loading } = useProgress();
 
   const accuracy =
@@ -562,7 +574,7 @@ export default function Stats() {
           sx={{
             fontFamily: '"DM Serif Display", serif',
             fontSize: { xs: '1.6rem', sm: '2rem' },
-            color: PINK,
+            color: brand[700],
             lineHeight: 1.1,
           }}
         >
@@ -622,16 +634,16 @@ export default function Stats() {
       <Paper
         elevation={0}
         sx={{
-          background: BG,
-          border: `1px solid ${PINK_BORDER}`,
+          background: alpha(brand[50], 0.6),
+          border: `1px solid ${alpha(brand[300], 0.40)}`,
           borderRadius: 4,
           p: 3,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
-          <EmojiEventsIcon sx={{ color: PINK, fontSize: '1.1rem' }} />
+          <EmojiEventsIcon sx={{ color: brand[700], fontSize: '1.1rem' }} />
           <Typography
-            sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: PINK }}
+            sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: brand[700] }}
           >
             Achievements
           </Typography>
@@ -640,12 +652,12 @@ export default function Stats() {
             size="small"
             sx={{
               ml: 'auto',
-              bgcolor: PINK_LIGHT,
-              color: PINK,
+              bgcolor: alpha(brand[300], 0.22),
+              color: brand[700],
               fontWeight: 700,
               fontSize: '0.68rem',
               height: 22,
-              border: `1px solid ${PINK_BORDER}`,
+              border: `1px solid ${alpha(brand[300], 0.40)}`,
             }}
           />
         </Box>
@@ -679,16 +691,16 @@ export default function Stats() {
       <Paper
         elevation={0}
         sx={{
-          background: BG,
-          border: `1px solid ${PINK_BORDER}`,
+          background: alpha(brand[50], 0.6),
+          border: `1px solid ${alpha(brand[300], 0.40)}`,
           borderRadius: 4,
           p: 3,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <CalendarTodayIcon sx={{ color: PINK, fontSize: '1rem' }} />
+          <CalendarTodayIcon sx={{ color: brand[700], fontSize: '1rem' }} />
           <Typography
-            sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: PINK }}
+            sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: brand[700] }}
           >
             Recent Sessions
           </Typography>
@@ -722,8 +734,8 @@ export default function Stats() {
       <Paper
         elevation={0}
         sx={{
-          background: BG,
-          border: `1px solid ${PINK_BORDER}`,
+          background: alpha(brand[50], 0.6),
+          border: `1px solid ${alpha(brand[300], 0.40)}`,
           borderRadius: 4,
           p: 3,
           display: 'flex',
@@ -732,9 +744,9 @@ export default function Stats() {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CalendarTodayIcon sx={{ color: PINK, fontSize: '1rem' }} />
+          <CalendarTodayIcon sx={{ color: brand[700], fontSize: '1rem' }} />
           <Typography
-            sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: PINK }}
+            sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: brand[700] }}
           >
             Study Activity
           </Typography>

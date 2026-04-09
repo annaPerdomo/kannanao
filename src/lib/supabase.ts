@@ -351,14 +351,20 @@ export async function upsertProfile(
   if (error) console.error("upsertProfile error", error);
 }
 
-export async function loadProfile(userId: string): Promise<{ username: string; displayName: string | null } | null> {
+export async function loadProfile(userId: string): Promise<{ username: string; displayName: string | null; colorScheme: string | null } | null> {
   const { data, error } = await sb
     .from("profiles")
-    .select("username, display_name")
+    .select("username, display_name, color_scheme")
     .eq("id", userId)
     .single();
   if (error || !data) return null;
-  return { username: data.username, displayName: data.display_name ?? null };
+  return { username: data.username, displayName: data.display_name ?? null, colorScheme: data.color_scheme ?? null };
+}
+
+export async function updateProfileColorScheme(userId: string, colorScheme: string): Promise<void> {
+  if (!isConfigured()) { showConfigBanner(); return; }
+  const { error } = await sb.from("profiles").update({ color_scheme: colorScheme }).eq("id", userId);
+  if (error) console.error("updateProfileColorScheme error", error);
 }
 
 // ─── Deck sharing ─────────────────────────────────────────────────────────────

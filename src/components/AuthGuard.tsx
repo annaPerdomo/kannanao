@@ -25,22 +25,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <Box
-        sx={{
-          minHeight: "80vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <CircularProgress sx={{ color: "#BE185D" }} />
+      <Box sx={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <CircularProgress sx={{ color: "primary.dark" }} />
       </Box>
     );
   }
 
-  if (!session && !isPublic) {
-    return null;
-  }
+  if (!session && !isPublic) return null;
 
   return <>{children}</>;
 }

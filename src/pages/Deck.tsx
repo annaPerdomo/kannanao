@@ -11,6 +11,8 @@ import {
   CircularProgress,
   Tooltip,
 } from "@mui/material";
+import { useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
@@ -36,6 +38,7 @@ interface DeckProps {
   onPractice: (mode: PracticeMode) => void;
 }
 
+// Practice mode tiles use intentional semantic colors (purple, cyan, amber) for visual distinction
 const practiceConfig: {
   mode: PracticeMode;
   label: string;
@@ -82,7 +85,6 @@ const practiceConfig: {
   },
 ];
 
-
 function Label({ children }: { children: React.ReactNode }) {
   return (
     <Typography
@@ -93,7 +95,7 @@ function Label({ children }: { children: React.ReactNode }) {
         fontWeight: 800,
         letterSpacing: "0.16em",
         textTransform: "uppercase",
-        color: "#EC4899",
+        color: "primary.main",
         fontFamily: '"Nunito", sans-serif',
       }}
     >
@@ -103,6 +105,9 @@ function Label({ children }: { children: React.ReactNode }) {
 }
 
 export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
+  const theme = useTheme();
+  const { brand, accent } = theme.palette;
+
   const { user } = useAuth();
   const {
     decks,
@@ -144,7 +149,6 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     setNameVal(deck.name);
     setDescVal(deck.description ?? "");
     setEditing(true);
-    // Focus the input after render
     setTimeout(() => nameInputRef.current?.focus(), 0);
   }, [deck]);
 
@@ -160,7 +164,6 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
       return;
     }
 
-    // Only call the DB if something actually changed
     const nameChanged = trimmedName !== deck.name;
     const descChanged = trimmedDesc !== (deck.description ?? "");
     if (!nameChanged && !descChanged) {
@@ -248,8 +251,8 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           borderRadius: "16px",
           overflow: "hidden",
           bgcolor: "#FFFFFF",
-          border: "1.5px solid rgba(249,168,212,0.35)",
-          boxShadow: "0 2px 12px rgba(249,168,212,0.12)",
+          border: `1.5px solid ${alpha(brand[300], 0.35)}`,
+          boxShadow: `0 2px 12px ${alpha(brand[300], 0.12)}`,
         }}
       >
         <Box
@@ -259,8 +262,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
             top: 0,
             bottom: 0,
             width: 4,
-            background:
-              "linear-gradient(180deg, #FBCFE8 0%, #F472B6 50%, #C4B5FD 100%)",
+            background: `linear-gradient(180deg, ${brand[200]} 0%, ${brand[400]} 50%, ${accent[300]} 100%)`,
             borderRadius: "16px 0 0 16px",
           }}
         />
@@ -279,13 +281,13 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
             onClick={onBack}
             size="small"
             sx={{
-              border: "1.5px solid rgba(249,168,212,0.45)",
+              border: `1.5px solid ${alpha(brand[300], 0.45)}`,
               borderRadius: "9px",
               width: 32,
               height: 32,
               flexShrink: 0,
-              color: "#BE185D",
-              "&:hover": { bgcolor: "#FFF0F8", borderColor: "#F472B6" },
+              color: brand[700],
+              "&:hover": { bgcolor: brand[50], borderColor: brand[400] },
             }}
           >
             <ArrowBackIcon sx={{ fontSize: 15 }} />
@@ -312,18 +314,18 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
                         borderRadius: "9px",
                         fontSize: "1.25rem",
                         fontWeight: 700,
-                        color: "#9D174D",
+                        color: brand[800],
                         fontFamily: '"Nunito", sans-serif',
-                        "& fieldset": { borderColor: "rgba(244,114,182,0.5)" },
-                        "&:hover fieldset": { borderColor: "#F472B6" },
-                        "&.Mui-focused fieldset": { borderColor: "#EC4899" },
+                        "& fieldset": { borderColor: alpha(brand[400], 0.5) },
+                        "&:hover fieldset": { borderColor: brand[400] },
+                        "&.Mui-focused fieldset": { borderColor: brand[500] },
                       },
                     }}
                   />
                   {renaming ? (
                     <CircularProgress
                       size={18}
-                      sx={{ color: "#EC4899", flexShrink: 0 }}
+                      sx={{ color: "primary.main", flexShrink: 0 }}
                     />
                   ) : (
                     <>
@@ -335,12 +337,12 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
                             width: 30,
                             height: 30,
                             borderRadius: "8px",
-                            bgcolor: "#FFF0F8",
-                            border: "1.5px solid rgba(244,114,182,0.4)",
-                            color: "#BE185D",
+                            bgcolor: brand[50],
+                            border: `1.5px solid ${alpha(brand[400], 0.4)}`,
+                            color: brand[700],
                             "&:hover": {
-                              bgcolor: "#FCE7F3",
-                              borderColor: "#F472B6",
+                              bgcolor: brand[100],
+                              borderColor: brand[400],
                             },
                           }}
                         >
@@ -357,7 +359,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
                             borderRadius: "8px",
                             color: "text.secondary",
                             border: "1.5px solid rgba(0,0,0,0.1)",
-                            "&:hover": { bgcolor: "#F5F5F5" },
+                            "&:hover": { bgcolor: "rgba(0,0,0,0.04)" },
                           }}
                         >
                           <CloseIcon sx={{ fontSize: 15 }} />
@@ -381,11 +383,11 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "9px",
                       fontSize: "0.82rem",
-                      color: "#C2709A",
+                      color: brand[500],
                       fontFamily: '"Nunito", sans-serif',
-                      "& fieldset": { borderColor: "rgba(244,114,182,0.35)" },
-                      "&:hover fieldset": { borderColor: "#F472B6" },
-                      "&.Mui-focused fieldset": { borderColor: "#EC4899" },
+                      "& fieldset": { borderColor: alpha(brand[400], 0.35) },
+                      "&:hover fieldset": { borderColor: brand[400] },
+                      "&.Mui-focused fieldset": { borderColor: brand[500] },
                     },
                   }}
                 />
@@ -401,7 +403,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
               >
                 <Typography
                   variant="h4"
-                  sx={{ color: "#9D174D", lineHeight: 1.1, minWidth: 0 }}
+                  sx={{ color: brand[800], lineHeight: 1.1, minWidth: 0 }}
                 >
                   {deck.name}
                 </Typography>
@@ -414,10 +416,10 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
                       height: 26,
                       borderRadius: "7px",
                       flexShrink: 0,
-                      color: "rgba(190,24,93,0.45)",
+                      color: alpha(brand[700], 0.45),
                       "&:hover": {
-                        bgcolor: "#FFF0F8",
-                        color: "#BE185D",
+                        bgcolor: brand[50],
+                        color: brand[700],
                       },
                     }}
                   >
@@ -428,7 +430,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
             )}
 
             {!editing && deck.description && (
-              <Typography variant="body2" sx={{ color: "#C2709A", mt: 0.25 }}>
+              <Typography variant="body2" sx={{ color: brand[500], mt: 0.25 }}>
                 {deck.description}
               </Typography>
             )}
@@ -440,9 +442,9 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
               size="small"
               sx={{
                 borderRadius: "8px",
-                bgcolor: "#FFF0F8",
-                border: "1.5px solid rgba(244,114,182,0.4)",
-                color: "#BE185D",
+                bgcolor: brand[50],
+                border: `1.5px solid ${alpha(brand[400], 0.4)}`,
+                color: brand[700],
                 fontWeight: 800,
                 fontSize: "0.7rem",
                 flexShrink: 0,
@@ -455,9 +457,9 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
       {/* ── PRACTICE HERO ── */}
       <Box
         sx={{
-          background: "linear-gradient(135deg, #FFF0F8 0%, #F3E8FF 100%)",
+          background: `linear-gradient(135deg, ${brand[50]} 0%, ${accent[50]} 100%)`,
           borderRadius: "20px",
-          border: "1.5px solid rgba(249,168,212,0.35)",
+          border: `1.5px solid ${alpha(brand[300], 0.35)}`,
           p: { xs: 2.5, sm: 3.5 },
           mb: 3,
         }}
@@ -484,18 +486,18 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
               flexDirection: "column",
               justifyContent: "space-between",
               background: cards.length > 0
-                ? "linear-gradient(145deg, #F472B6 0%, #EC4899 40%, #A855F7 100%)"
+                ? `linear-gradient(145deg, ${brand[400]} 0%, ${brand[500]} 40%, ${accent[400]} 100%)`
                 : "rgba(200,200,200,0.3)",
               border: "1.5px solid transparent",
               opacity: cards.length > 0 ? 1 : 0.5,
               transition: "transform 0.2s ease, box-shadow 0.2s ease",
               boxShadow: cards.length > 0
-                ? "0 6px 24px rgba(236,72,153,0.35)"
+                ? `0 6px 24px ${alpha(brand[500], 0.35)}`
                 : "none",
               ...(cards.length > 0 && {
                 "&:hover": {
                   transform: "translateY(-5px) scale(1.02)",
-                  boxShadow: "0 14px 36px rgba(236,72,153,0.45)",
+                  boxShadow: `0 14px 36px ${alpha(brand[500], 0.45)}`,
                 },
               }),
             }}
@@ -694,7 +696,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         {cards.length === 0 ? (
           <Box
             sx={{
-              border: "1.5px dashed rgba(249,168,212,0.4)",
+              border: `1.5px dashed ${alpha(brand[300], 0.4)}`,
               borderRadius: "14px",
               p: 6,
               textAlign: "center",
@@ -707,7 +709,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
                 component="span"
                 onClick={() => setAddCardsOpen(true)}
                 sx={{
-                  color: "#EC4899",
+                  color: "primary.main",
                   fontWeight: 700,
                   cursor: "pointer",
                   textDecoration: "underline",

@@ -2,16 +2,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Box,
-  Card,
-  CardContent,
-  TextField,
-  Button,
-  Typography,
-  Alert,
-  Divider,
-  CircularProgress,
+  Box, Card, CardContent, TextField, Button,
+  Typography, Alert, Divider, CircularProgress,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
@@ -30,128 +24,67 @@ export default function LoginPage() {
     if (!username || !password) return;
     setBusy(true);
     setError(null);
-    let result: { error: string | null };
-    if (isSignUp) {
-      result = await signUpWithUsername(username, password, name);
-    } else {
-      result = await signInWithUsername(username, password);
-    }
+    const result = isSignUp
+      ? await signUpWithUsername(username, password, name)
+      : await signInWithUsername(username, password);
     setBusy(false);
-    if (result.error) {
-      setError(result.error);
-    } else {
-      router.push("/");
-    }
+    if (result.error) setError(result.error);
+    else router.push("/");
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "80vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        px: 2,
-      }}
-    >
+    <Box sx={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center", px: 2 }}>
       <Card
-        sx={{
-          maxWidth: 400,
-          width: "100%",
-          borderRadius: 4,
-          border: "1px solid rgba(249,168,212,0.35)",
-          boxShadow: "0 8px 40px rgba(190,24,93,0.10)",
-          bgcolor: "rgba(255,242,248,0.92)",
+        sx={(theme) => ({
+          maxWidth: 400, width: "100%", borderRadius: 4,
+          border: `1px solid ${alpha(theme.palette.brand[300], 0.35)}`,
+          boxShadow: `0 8px 40px ${alpha(theme.palette.brand[700], 0.10)}`,
+          bgcolor: theme.palette.surfaces.overlay,
           backdropFilter: "blur(14px)",
-        }}
+        })}
       >
         <CardContent sx={{ p: 4 }}>
           <Typography
             variant="h5"
-            sx={{
-              fontFamily: '"DM Serif Display", serif',
-              color: "#BE185D",
-              mb: 3,
-              textAlign: "center",
-            }}
+            sx={{ fontFamily: '"DM Serif Display", serif', color: "primary.dark", mb: 3, textAlign: "center" }}
           >
             🌸 Kannanao
           </Typography>
 
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-          >
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {isSignUp && (
               <TextField
-                label="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoComplete="name"
-                size="small"
-                fullWidth
-                placeholder="How should we call you?"
+                label="Your name" value={name} onChange={(e) => setName(e.target.value)}
+                autoComplete="name" size="small" fullWidth placeholder="How should we call you?"
               />
             )}
             <TextField
-              label="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              autoComplete="username"
-              size="small"
-              fullWidth
-              required
+              label="Username" value={username} onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username" size="small" fullWidth required
             />
             <TextField
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete={isSignUp ? "new-password" : "current-password"}
-              size="small"
-              fullWidth
-              required
+              label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+              autoComplete={isSignUp ? "new-password" : "current-password"} size="small" fullWidth required
             />
-            {error && (
-              <Alert severity="error" sx={{ borderRadius: 2 }}>
-                {error}
-              </Alert>
-            )}
+            {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
             <Button
-              type="submit"
-              variant="contained"
-              disabled={busy}
+              type="submit" variant="contained" disabled={busy}
               sx={{
-                bgcolor: "#BE185D",
-                color: "#fff",
+                bgcolor: "primary.dark", color: "#fff",
                 fontFamily: '"DM Serif Display", serif',
-                textTransform: "none",
-                borderRadius: 6,
-                "&:hover": { bgcolor: "#9D174D" },
+                textTransform: "none", borderRadius: 6,
+                "&:hover": { bgcolor: "primary.dark", filter: "brightness(0.9)" },
               }}
             >
-              {busy ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : isSignUp ? (
-                "Create Account"
-              ) : (
-                "Sign In"
-              )}
+              {busy ? <CircularProgress size={20} color="inherit" /> : isSignUp ? "Create Account" : "Sign In"}
             </Button>
             <Divider sx={{ my: 0.5 }} />
             <Typography
               variant="body2"
-              sx={{ textAlign: "center", color: "#BE185D", cursor: "pointer" }}
-              onClick={() => {
-                setIsSignUp((s) => !s);
-                setError(null);
-                setName("");
-              }}
+              sx={{ textAlign: "center", color: "primary.dark", cursor: "pointer" }}
+              onClick={() => { setIsSignUp((s) => !s); setError(null); setName(""); }}
             >
-              {isSignUp
-                ? "Already have an account? Sign in"
-                : "New here? Create account"}
+              {isSignUp ? "Already have an account? Sign in" : "New here? Create account"}
             </Typography>
           </Box>
         </CardContent>

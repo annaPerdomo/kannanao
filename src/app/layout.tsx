@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Box } from "@mui/material";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import Providers from "./providers";
 import { NavBar } from "@/components/NavBar";
 import { AuthGuard } from "@/components/AuthGuard";
+import { AppBackground } from "@/components/AppBackground";
 
 export const metadata: Metadata = {
   title: "語学 — Japanese Flashcards",
@@ -42,20 +42,10 @@ export default function RootLayout({
       <body>
         <AppRouterCacheProvider>
           <Providers>
-            <Box
-              sx={{
-                minHeight: "100vh",
-                bgcolor: "background.default",
-                backgroundImage: `
-              radial-gradient(circle at 20% 20%, rgba(249,168,212,0.18) 0%, transparent 28%),
-              radial-gradient(circle at 80% 15%, rgba(196,181,253,0.14) 0%, transparent 26%),
-              radial-gradient(circle at 50% 85%, rgba(255,219,235,0.7) 0%, transparent 32%)
-            `,
-              }}
-            >
+            <AppBackground>
               <NavBar />
               <AuthGuard>{children}</AuthGuard>
-            </Box>
+            </AppBackground>
           </Providers>
         </AppRouterCacheProvider>
       </body>

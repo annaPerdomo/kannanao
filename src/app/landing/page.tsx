@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -9,10 +11,6 @@ import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-
-const PINK = '#BE185D';
-const PINK_LIGHT = 'rgba(249,168,212,0.22)';
-const PINK_BORDER = 'rgba(249,168,212,0.40)';
 
 // ─── Feature card ─────────────────────────────────────────────────────────────
 
@@ -27,15 +25,18 @@ function FeatureCard({
   description: string;
   accent?: string;
 }) {
-  const color = accent ?? PINK;
+  const theme = useTheme();
+  const { brand } = theme.palette;
+  const color = accent ?? brand[700];
+
   return (
     <Paper
       elevation={0}
       sx={{
         p: 3,
         borderRadius: 4,
-        background: 'rgba(255,242,248,0.70)',
-        border: `1px solid ${PINK_BORDER}`,
+        background: alpha(brand[50], 0.7),
+        border: `1px solid ${alpha(brand[300], 0.40)}`,
         backdropFilter: 'blur(8px)',
         display: 'flex',
         flexDirection: 'column',
@@ -92,6 +93,9 @@ function Step({
   title: string;
   description: string;
 }) {
+  const theme = useTheme();
+  const { brand } = theme.palette;
+
   return (
     <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'flex-start' }}>
       <Box
@@ -100,11 +104,11 @@ function Step({
           width: 42,
           height: 42,
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, #F9A8D4 0%, #BE185D 100%)',
+          background: `linear-gradient(135deg, ${brand[300]} 0%, ${brand[700]} 100%)`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 4px 14px rgba(190,24,93,0.24)',
+          boxShadow: `0 4px 14px ${alpha(brand[700], 0.24)}`,
         }}
       >
         <Typography
@@ -123,7 +127,7 @@ function Step({
           sx={{
             fontFamily: '"DM Serif Display", serif',
             fontSize: '1rem',
-            color: PINK,
+            color: brand[700],
             mb: 0.4,
           }}
         >
@@ -140,6 +144,9 @@ function Step({
 // ─── Floating flashcard mockup ─────────────────────────────────────────────────
 
 function FlashcardMockup() {
+  const theme = useTheme();
+  const { brand } = theme.palette;
+
   return (
     <Box
       sx={{
@@ -161,8 +168,8 @@ function FlashcardMockup() {
           right: 0,
           borderRadius: 4,
           p: 3,
-          background: 'linear-gradient(135deg, #EDE9FE 0%, #FFDDF4 100%)',
-          border: '1.5px solid rgba(196,181,253,0.45)',
+          background: `linear-gradient(135deg, ${alpha(brand[100], 0.9)} 0%, ${alpha(brand[200], 0.7)} 100%)`,
+          border: `1.5px solid ${alpha(brand[300], 0.45)}`,
           height: 180,
           transform: 'rotate(-4deg)',
           opacity: 0.7,
@@ -178,9 +185,9 @@ function FlashcardMockup() {
           right: 20,
           borderRadius: 4,
           p: 3,
-          background: 'rgba(255,242,248,0.95)',
-          border: `1.5px solid ${PINK_BORDER}`,
-          boxShadow: '0 12px 40px rgba(190,24,93,0.14)',
+          background: alpha(brand[50], 0.95),
+          border: `1.5px solid ${alpha(brand[300], 0.40)}`,
+          boxShadow: `0 12px 40px ${alpha(brand[700], 0.14)}`,
           backdropFilter: 'blur(12px)',
           height: 180,
         }}
@@ -193,7 +200,7 @@ function FlashcardMockup() {
           sx={{
             fontFamily: '"Noto Serif JP", serif',
             fontSize: '2.6rem',
-            color: PINK,
+            color: brand[700],
             lineHeight: 1,
             mb: 0.5,
             textAlign: 'center',
@@ -223,15 +230,15 @@ function FlashcardMockup() {
           position: 'absolute',
           bottom: 8,
           right: 12,
-          bgcolor: 'rgba(255,242,248,0.95)',
-          border: `1px solid ${PINK_BORDER}`,
+          bgcolor: alpha(brand[50], 0.95),
+          border: `1px solid ${alpha(brand[300], 0.40)}`,
           borderRadius: 6,
           px: 1.5,
           py: 0.5,
-          boxShadow: '0 4px 12px rgba(190,24,93,0.14)',
+          boxShadow: `0 4px 12px ${alpha(brand[700], 0.14)}`,
         }}
       >
-        <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '0.78rem', color: PINK }}>
+        <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '0.78rem', color: brand[700] }}>
           +10 XP ✨
         </Typography>
       </Box>
@@ -244,6 +251,8 @@ function FlashcardMockup() {
 export default function LandingPage() {
   const router = useRouter();
   const { session } = useAuth();
+  const theme = useTheme();
+  const { brand, accent } = theme.palette;
   const ctaTarget = session ? '/' : '/login';
 
   const features = [
@@ -287,7 +296,7 @@ export default function LandingPage() {
       title: 'Share Decks',
       description:
         'Share your carefully crafted decks with friends or classmates with a single link. Study together.',
-      accent: PINK,
+      accent: brand[700],
     },
     {
       emoji: '📊',
@@ -301,7 +310,7 @@ export default function LandingPage() {
       title: 'Study To-Do List',
       description:
         'Jot down study goals right in the app. Complete tasks, earn bonus XP, and stay organised.',
-      accent: '#BE185D',
+      accent: brand[700],
     },
   ];
 
@@ -351,7 +360,7 @@ export default function LandingPage() {
               fontSize: { xs: '2.8rem', sm: '3.6rem', md: '4rem' },
               lineHeight: 1.05,
               mb: 1.5,
-              background: 'linear-gradient(135deg, #BE185D 0%, #7C3AED 60%, #0EA5E9 100%)',
+              background: `linear-gradient(135deg, ${brand[700]} 0%, #7C3AED 60%, #0EA5E9 100%)`,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -387,16 +396,12 @@ export default function LandingPage() {
               size="large"
               onClick={() => router.push(ctaTarget)}
               sx={{
-                bgcolor: PINK,
-                color: '#fff',
                 fontFamily: '"DM Serif Display", serif',
                 fontSize: '1rem',
                 textTransform: 'none',
                 borderRadius: 7,
                 px: 4,
                 py: 1.4,
-                boxShadow: '0 6px 24px rgba(190,24,93,0.30)',
-                '&:hover': { bgcolor: '#9D174D', boxShadow: '0 8px 28px rgba(190,24,93,0.40)' },
               }}
             >
               Get started free 🌸
@@ -406,15 +411,12 @@ export default function LandingPage() {
               size="large"
               onClick={() => router.push(ctaTarget)}
               sx={{
-                color: PINK,
-                borderColor: PINK_BORDER,
                 fontFamily: '"DM Serif Display", serif',
                 fontSize: '1rem',
                 textTransform: 'none',
                 borderRadius: 7,
                 px: 3.5,
                 py: 1.4,
-                '&:hover': { bgcolor: PINK_LIGHT, borderColor: `${PINK}60` },
               }}
             >
               Sign in
@@ -436,10 +438,10 @@ export default function LandingPage() {
                 label={tag}
                 size="small"
                 sx={{
-                  bgcolor: 'rgba(255,242,248,0.80)',
+                  bgcolor: alpha(brand[50], 0.80),
                   color: 'text.secondary',
                   fontSize: '0.72rem',
-                  border: `1px solid ${PINK_BORDER}`,
+                  border: `1px solid ${alpha(brand[300], 0.40)}`,
                   borderRadius: 4,
                 }}
               />
@@ -460,7 +462,7 @@ export default function LandingPage() {
             sx={{
               fontFamily: '"DM Serif Display", serif',
               fontSize: { xs: '1.8rem', sm: '2.2rem' },
-              color: PINK,
+              color: brand[700],
               mb: 1,
             }}
           >
@@ -500,7 +502,7 @@ export default function LandingPage() {
             sx={{
               fontFamily: '"DM Serif Display", serif',
               fontSize: { xs: '1.8rem', sm: '2.2rem' },
-              color: PINK,
+              color: brand[700],
               lineHeight: 1.15,
               mb: 1.5,
             }}
@@ -549,7 +551,7 @@ export default function LandingPage() {
             sx={{
               fontFamily: '"DM Serif Display", serif',
               fontSize: { xs: '1.8rem', sm: '2.2rem' },
-              color: PINK,
+              color: brand[700],
               mb: 1,
             }}
           >
@@ -588,9 +590,9 @@ export default function LandingPage() {
               emoji: '🧠',
               title: 'Recall',
               description: 'See the meaning, type the Japanese. The hardest mode — and the best for long-term retention.',
-              accent: PINK,
-              bg: 'rgba(255,228,241,0.50)',
-              border: PINK_BORDER,
+              accent: brand[700],
+              bg: alpha(brand[100], 0.5),
+              border: alpha(brand[300], 0.40),
             },
           ].map((m) => (
             <Paper
@@ -628,22 +630,22 @@ export default function LandingPage() {
           borderRadius: 6,
           p: { xs: 4, sm: 6 },
           textAlign: 'center',
-          background: 'linear-gradient(135deg, #FFDDF4 0%, #EDE9FE 50%, #D1FAE5 100%)',
-          border: '2px solid rgba(244,114,182,0.2)',
-          boxShadow: '0 12px 48px rgba(196,181,253,0.22)',
+          background: `linear-gradient(135deg, ${alpha(brand[100], 0.9)} 0%, ${alpha(accent[100], 0.9)} 50%, ${alpha(brand[50], 0.95)} 100%)`,
+          border: `2px solid ${alpha(brand[300], 0.2)}`,
+          boxShadow: `0 12px 48px ${alpha(accent[300], 0.22)}`,
           position: 'relative',
           overflow: 'hidden',
         }}
       >
         {/* Decorative blobs */}
-        <Box sx={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(244,114,182,0.12)', pointerEvents: 'none' }} />
-        <Box sx={{ position: 'absolute', bottom: -30, left: '30%', width: 110, height: 110, borderRadius: '50%', background: 'rgba(196,181,253,0.14)', pointerEvents: 'none' }} />
+        <Box sx={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: alpha(brand[300], 0.12), pointerEvents: 'none' }} />
+        <Box sx={{ position: 'absolute', bottom: -30, left: '30%', width: 110, height: 110, borderRadius: '50%', background: alpha(accent[300], 0.14), pointerEvents: 'none' }} />
 
         <Typography
           sx={{
             fontFamily: '"Noto Serif JP", serif',
             fontSize: { xs: '3.5rem', sm: '5rem' },
-            color: 'rgba(190,24,93,0.12)',
+            color: alpha(brand[700], 0.12),
             lineHeight: 1,
             mb: 1,
             userSelect: 'none',
@@ -658,7 +660,7 @@ export default function LandingPage() {
             fontSize: { xs: '2rem', sm: '2.6rem' },
             lineHeight: 1.1,
             mb: 1.5,
-            background: 'linear-gradient(90deg, #BE185D 0%, #7C3AED 100%)',
+            background: `linear-gradient(90deg, ${brand[700]} 0%, #7C3AED 100%)`,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -680,16 +682,12 @@ export default function LandingPage() {
             size="large"
             onClick={() => router.push(ctaTarget)}
             sx={{
-              bgcolor: PINK,
-              color: '#fff',
               fontFamily: '"DM Serif Display", serif',
               fontSize: '1rem',
               textTransform: 'none',
               borderRadius: 7,
               px: 5,
               py: 1.4,
-              boxShadow: '0 6px 24px rgba(190,24,93,0.30)',
-              '&:hover': { bgcolor: '#9D174D' },
             }}
           >
             Create free account 🌸
@@ -699,15 +697,12 @@ export default function LandingPage() {
             size="large"
             onClick={() => router.push(ctaTarget)}
             sx={{
-              color: PINK,
-              borderColor: PINK_BORDER,
               fontFamily: '"DM Serif Display", serif',
               fontSize: '1rem',
               textTransform: 'none',
               borderRadius: 7,
               px: 3.5,
               py: 1.4,
-              '&:hover': { bgcolor: PINK_LIGHT, borderColor: `${PINK}60` },
             }}
           >
             Sign in
@@ -721,7 +716,7 @@ export default function LandingPage() {
           sx={{
             fontFamily: '"DM Serif Display", serif',
             fontSize: '1.1rem',
-            color: PINK,
+            color: brand[700],
             mb: 0.5,
           }}
         >

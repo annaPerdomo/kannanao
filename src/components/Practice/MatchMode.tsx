@@ -1,6 +1,8 @@
 'use client';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Box, Typography, Button, Grid, Chip, LinearProgress } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import type { Flashcard } from '@/types/flashcard';
 import { getFlashcardDisplayText } from '@/lib/flashcardUtils';
@@ -26,6 +28,9 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function MatchMode({ cards, deckId, onExit }: MatchModeProps) {
+  const theme = useTheme();
+  const { brand, surfaces } = theme.palette;
+
   const pool = useMemo(() => cards.slice(0, 8), [cards]);
 
   const tiles = useMemo<Tile[]>(() => {
@@ -120,7 +125,7 @@ export function MatchMode({ cards, deckId, onExit }: MatchModeProps) {
       <LinearProgress
         variant="determinate"
         value={(matched.size / pool.length) * 100}
-        sx={{ mb: 3, height: 3, borderRadius: 1, bgcolor: 'rgba(200,169,126,0.1)', '& .MuiLinearProgress-bar': { bgcolor: 'primary.main' } }}
+        sx={{ mb: 3, height: 3, borderRadius: 1, bgcolor: alpha(brand[300], 0.12), '& .MuiLinearProgress-bar': { bgcolor: 'primary.main' } }}
       />
 
       {done ? (
@@ -157,16 +162,16 @@ export function MatchMode({ cards, deckId, onExit }: MatchModeProps) {
                           ? 'error.main'
                           : isSelected
                             ? 'primary.main'
-                            : '#F7D2E5',
+                            : alpha(brand[200], 0.7),
                       bgcolor: isMatched
                         ? 'rgba(126,184,154,0.12)'
                         : isWrong
                           ? 'rgba(255,209,220,0.18)'
                           : isSelected
-                            ? 'rgba(249,168,212,0.16)'
-                            : '#FFF4FB',
+                            ? alpha(brand[300], 0.16)
+                            : surfaces.input,
                       opacity: isMatched ? 0.75 : 1,
-                      '&:hover': !isMatched ? { borderColor: '#EC4899', bgcolor: 'rgba(249,168,212,0.2)' } : {},
+                      '&:hover': !isMatched ? { borderColor: brand[500], bgcolor: alpha(brand[300], 0.2) } : {},
                     }}
                   >
                     <Typography

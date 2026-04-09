@@ -1,14 +1,10 @@
 'use client';
 import { useState, type KeyboardEvent } from 'react';
 import {
-  Box,
-  TextField,
-  Chip,
-  Button,
-  Typography,
-  CircularProgress,
-  Alert,
+  Box, TextField, Chip, Button, Typography, CircularProgress, Alert,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 interface GenerateFormProps {
@@ -18,25 +14,21 @@ interface GenerateFormProps {
 }
 
 export function GenerateForm({ onGenerate, generating, error }: GenerateFormProps) {
+  const theme = useTheme();
+  const { brand } = theme.palette;
+
   const [input, setInput] = useState('');
   const [words, setWords] = useState<string[]>([]);
 
   const addWord = () => {
     const trimmed = input.trim();
-    if (trimmed && !words.includes(trimmed)) {
-      setWords((prev) => [...prev, trimmed]);
-    }
+    if (trimmed && !words.includes(trimmed)) setWords((prev) => [...prev, trimmed]);
     setInput('');
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault();
-      addWord();
-    }
-    if (e.key === 'Backspace' && !input && words.length > 0) {
-      setWords((prev) => prev.slice(0, -1));
-    }
+    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addWord(); }
+    if (e.key === 'Backspace' && !input && words.length > 0) setWords((prev) => prev.slice(0, -1));
   };
 
   const handleGenerate = async () => {
@@ -50,31 +42,20 @@ export function GenerateForm({ onGenerate, generating, error }: GenerateFormProp
 
   return (
     <Box>
-      {/* Word input */}
       <Box
         sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 0.5,
+          display: 'flex', flexWrap: 'wrap', gap: 0.5,
           p: '10px 12px',
-          border: '1.5px solid rgba(249,168,212,0.45)',
-          borderRadius: '10px',
-          minHeight: 48,
-          cursor: 'text',
-          mb: 1.5,
-          bgcolor: '#FFF8FC',
+          border: `1.5px solid ${alpha(brand[300], 0.45)}`,
+          borderRadius: '10px', minHeight: 48, cursor: 'text', mb: 1.5,
+          bgcolor: theme.palette.surfaces.input,
           transition: 'border-color 0.18s',
-          '&:focus-within': { borderColor: '#F472B6' },
+          '&:focus-within': { borderColor: brand[400] },
         }}
         onClick={() => document.getElementById('word-input')?.focus()}
       >
         {words.map((w) => (
-          <Chip
-            key={w}
-            label={w}
-            size="small"
-            onDelete={() => setWords((p) => p.filter((x) => x !== w))}
-          />
+          <Chip key={w} label={w} size="small" onDelete={() => setWords((p) => p.filter((x) => x !== w))} />
         ))}
         <TextField
           id="word-input"
@@ -85,17 +66,13 @@ export function GenerateForm({ onGenerate, generating, error }: GenerateFormProp
           variant="standard"
           size="small"
           sx={{
-            flexGrow: 1,
-            minWidth: 90,
+            flexGrow: 1, minWidth: 90,
             '& .MuiInput-root': {
-              fontFamily: '"Nunito", sans-serif',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              color: '#5E2F6C',
-              '&:before, &:after': { display: 'none' },
+              fontFamily: '"Nunito", sans-serif', fontWeight: 600, fontSize: '0.85rem',
+              color: 'text.primary', '&:before, &:after': { display: 'none' },
             },
             '& input': { p: 0.25 },
-            '& input::placeholder': { color: '#C2709A', opacity: 1 },
+            '& input::placeholder': { color: 'text.secondary', opacity: 1 },
           }}
           slotProps={{ input: { disableUnderline: true } }}
         />
@@ -108,26 +85,16 @@ export function GenerateForm({ onGenerate, generating, error }: GenerateFormProp
       )}
 
       <Button
-        fullWidth
-        variant="contained"
-        onClick={handleGenerate}
+        fullWidth variant="contained" onClick={handleGenerate}
         disabled={generating || (words.length === 0 && !input.trim())}
-        startIcon={
-          generating
-            ? <CircularProgress size={13} color="inherit" />
-            : <AutoAwesomeIcon sx={{ fontSize: 14 }} />
-        }
+        startIcon={generating ? <CircularProgress size={13} color="inherit" /> : <AutoAwesomeIcon sx={{ fontSize: 14 }} />}
         sx={{ borderRadius: '9px', py: '8px' }}
       >
         {generating ? 'Generating…' : 'Generate Cards'}
       </Button>
 
       {words.length > 0 && (
-        <Typography sx={{
-          mt: 1, textAlign: 'center',
-          fontSize: '0.67rem', color: 'text.secondary',
-          fontFamily: '"Nunito", sans-serif',
-        }}>
+        <Typography sx={{ mt: 1, textAlign: 'center', fontSize: '0.67rem', color: 'text.secondary', fontFamily: '"Nunito", sans-serif' }}>
           {words.length} item{words.length > 1 ? 's' : ''} queued
         </Typography>
       )}

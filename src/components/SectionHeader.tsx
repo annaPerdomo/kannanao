@@ -1,6 +1,7 @@
 'use client';
 import { Box, Typography, IconButton, Chip } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import { alpha } from '@mui/material/styles';
 
 interface SectionHeaderProps {
   title: string;
@@ -11,22 +12,22 @@ interface SectionHeaderProps {
 export function SectionHeader({ title, onBack, badge }: SectionHeaderProps) {
   return (
     <Box
-      sx={{
+      sx={(theme) => ({
         display: 'flex',
         alignItems: 'center',
         gap: 1.5,
         mb: 4,
         p: 3,
         borderRadius: 3,
-        bgcolor: '#FFF2F8',
-        border: '1px solid rgba(249,168,212,0.45)',
-        boxShadow: '0 12px 28px rgba(249,168,212,0.12)',
-      }}
+        bgcolor: theme.palette.surfaces.input,
+        border: `1px solid ${alpha(theme.palette.brand[300], 0.45)}`,
+        boxShadow: `0 12px 28px ${alpha(theme.palette.brand[300], 0.12)}`,
+      })}
     >
-      <IconButton onClick={onBack} size="small" sx={{ color: '#BE185D' }}>
+      <IconButton onClick={onBack} size="small" sx={{ color: 'primary.dark' }}>
         <ArrowBackIosNewIcon fontSize="small" />
       </IconButton>
-      <Typography variant="h5" sx={{ flexGrow: 1, fontWeight: 700, color: '#BE185D' }}>
+      <Typography variant="h5" sx={{ flexGrow: 1, fontWeight: 700, color: 'primary.dark' }}>
         {title}
       </Typography>
       {badge && <Chip label={badge} size="small" />}
