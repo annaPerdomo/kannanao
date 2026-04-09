@@ -1,3 +1,5 @@
+export type JlptLevel = 'N5' | 'N4' | 'N3' | 'N2' | 'N1';
+
 export interface Flashcard {
   id: string;
   word: string;
@@ -10,6 +12,7 @@ export interface Flashcard {
   deckId: string;
   mainViewMode: 'hiragana' | 'kanji';
   cardType: 'word' | 'phrase';
+  jlptLevel?: JlptLevel;
 }
 
 export interface GeneratePayload {
@@ -24,4 +27,5 @@ export interface GeneratedCard {
   example_jp: string;
   example_en: string;
   card_type: 'word' | 'phrase';
+  jlpt_level: JlptLevel | null;
 }

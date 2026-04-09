@@ -130,6 +130,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           deckId,
           mainViewMode: "hiragana" as const,
           cardType: card.card_type,
+          jlptLevel: card.jlpt_level ?? undefined,
         };
       }),
     );

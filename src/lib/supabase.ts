@@ -2,7 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import type { Deck } from "@/types/deck";
-import type { Flashcard } from "@/types/flashcard";
+import type { Flashcard, JlptLevel } from "@/types/flashcard";
 import type { Todo } from "@/types/todo";
 
 const SUPABASE_URL =
@@ -50,6 +50,7 @@ interface SupabaseCardRow {
   example_en: string | null;
   main_view_mode: "hiragana" | "kanji";
   card_type: "word" | "phrase" | null;
+  jlpt_level: JlptLevel | null;
 }
 
 function toNumber(value: string | null): number {
@@ -71,6 +72,7 @@ export function dbCardToApp(card: SupabaseCardRow): Flashcard {
     imageUrl: card.image_url ?? undefined,
     mainViewMode: card.main_view_mode ?? "hiragana",
     cardType: card.card_type ?? "word",
+    jlptLevel: card.jlpt_level ?? undefined,
   };
 }
 
@@ -197,6 +199,7 @@ export async function dbInsertCards(
     example_en: card.example_en || "",
     main_view_mode: card.mainViewMode || "hiragana",
     card_type: card.cardType || "word",
+    jlpt_level: card.jlptLevel ?? null,
   }));
 
   const { data, error } = await sb.from("cards").insert(rows).select("*");
@@ -234,6 +237,7 @@ export async function dbUpdateCard(
   if (patch.mainViewMode !== undefined)
     payload.main_view_mode = patch.mainViewMode;
   if (patch.cardType !== undefined) payload.card_type = patch.cardType;
+  if (patch.jlptLevel !== undefined) payload.jlpt_level = patch.jlptLevel ?? null;
 
   if (Object.keys(payload).length === 0) {
     return null;
@@ -303,6 +307,7 @@ export async function dbCopyCardsIntoDeck(
     example_en: card.example_en || "",
     main_view_mode: card.mainViewMode ?? 'hiragana',
     card_type: card.cardType ?? 'word',
+    jlpt_level: card.jlptLevel ?? null,
   }));
 
   const { data, error } = await sb.from("cards").insert(rows).select("*");

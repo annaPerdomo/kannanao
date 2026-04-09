@@ -16,28 +16,45 @@ interface FlashcardProps {
 const PLACEHOLDER =
   'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400"%3E%3Crect fill="%23FFF0F6" width="600" height="400"/%3E%3C/svg%3E';
 
+
+function cardHp(word: string | undefined) {
+  return Math.min(Math.max((word?.length ?? 3) * 15 + 40, 60), 200);
+}
+
 export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps) {
   const theme = useTheme();
-  const { brand } = theme.palette;
+  const { brand, accent } = theme.palette;
+  const CARD_FRAME = `linear-gradient(145deg, ${brand[100]} 0%, ${brand[300]} 25%, ${brand[50]} 50%, ${brand[400]} 75%, ${brand[100]} 100%)`;
 
   const [flipped, setFlipped] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => { setFlipped(false); setImgLoaded(false); }, [card]);
-
   useEffect(() => {
     const img = imgRef.current;
     if (img && img.complete && img.naturalWidth > 0) setImgLoaded(true);
   }, [card]);
 
   const { titleText, subtitleText } = getFlashcardDisplayText(card);
+  const isKanji = card.mainViewMode === 'kanji';
+  const typeGradient = isKanji
+    ? `linear-gradient(135deg, ${accent[400]} 0%, ${accent[600]} 100%)`
+    : `linear-gradient(135deg, ${brand[400]} 0%, ${brand[600]} 100%)`;
+  const typeAccent = isKanji ? accent[400] : brand[400];
 
-  const cardEdgeSx = {
+  const frameBox = {
     position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
-    borderRadius: 5, overflow: 'hidden',
-    border: `1.5px solid ${alpha(brand[300], 0.35)}`,
-    boxShadow: `0 4px 6px ${alpha(brand[300], 0.08)}, 0 20px 50px ${alpha(brand[300], 0.22)}, 0 0 0 1px rgba(255,255,255,0.6) inset`,
+    background: CARD_FRAME,
+    borderRadius: '20px', p: { xs: '5px', sm: '6px' },
+    boxShadow: `0 8px 40px rgba(0,0,0,0.18), 0 4px 12px ${alpha(brand[400], 0.28)}`,
+  } as const;
+
+  const innerCard = {
+    width: '100%', height: '100%',
+    bgcolor: brand[50], borderRadius: '15px', overflow: 'hidden',
+    border: '2.5px solid rgba(255,255,255,0.9)',
+    display: 'flex', flexDirection: 'column',
   } as const;
 
   return (
@@ -50,108 +67,139 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
       }}>
 
         {/* ── FRONT ── */}
-        <Box sx={cardEdgeSx}>
-          {!imgLoaded && (
-            <Skeleton variant="rectangular" width="100%" height="100%"
-              sx={{ bgcolor: alpha(brand[300], 0.1), position: 'absolute', inset: 0 }} />
-          )}
-          <Box component="img" ref={imgRef} src={card.imageUrl ?? PLACEHOLDER} alt={card.word}
-            onLoad={() => setImgLoaded(true)} onError={() => setImgLoaded(true)}
-            sx={{ width: '100%', height: '100%', objectFit: 'cover', display: imgLoaded ? 'block' : 'none' }}
-          />
-
-          {/* Gradient overlay */}
-          <Box sx={{
-            position: 'absolute', inset: 0,
-            background: `linear-gradient(to top, ${alpha(brand[50], 0.98)} 32%, ${alpha(brand[100], 0.55)} 60%, transparent 100%)`,
-          }} />
-
-          {/* Decorative blob */}
-          <Box sx={{
-            position: 'absolute', top: -40, right: -40, width: 160, height: 160,
-            borderRadius: '50%',
-            background: `radial-gradient(circle, ${alpha(brand[300], 0.35)} 0%, transparent 70%)`,
-            filter: 'blur(24px)', pointerEvents: 'none',
-          }} />
-
-          <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, p: { xs: 3, sm: 4 } }}>
-            {subtitleText && (
-              <Box sx={{
-                display: 'inline-flex', alignItems: 'center', px: 1.5, py: 0.4, borderRadius: 99, mb: 1.5,
-                bgcolor: alpha(brand[300], 0.22), border: `1px solid ${alpha(brand[300], 0.4)}`,
-              }}>
-                <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.72rem', color: brand[700], letterSpacing: '0.1em', fontWeight: 600 }}>
-                  {subtitleText}
+        <Box sx={frameBox}>
+          <Box sx={innerCard}>
+            {/* Top bar */}
+            <Box sx={{
+              px: { xs: 2, sm: 2.5 }, py: { xs: 0.9, sm: 1.1 },
+              background: typeGradient,
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              flexShrink: 0,
+            }}>
+              <Typography sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, fontWeight: 900, color: 'white', textTransform: 'uppercase', letterSpacing: '0.08em', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
+                {isKanji ? '漢字' : 'かな'}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                <Typography sx={{ fontSize: '0.55rem', fontWeight: 700, color: 'rgba(255,255,255,0.82)' }}>HP</Typography>
+                <Typography sx={{ fontSize: { xs: '0.78rem', sm: '0.88rem' }, fontWeight: 900, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
+                  {cardHp(card.word)}
                 </Typography>
               </Box>
-            )}
+            </Box>
 
-            <Typography sx={{
-              fontFamily: '"Noto Serif JP", serif', fontSize: { xs: '2.6rem', sm: '3.2rem' },
-              fontWeight: 700, color: 'text.primary', lineHeight: 1.05, letterSpacing: '-0.01em',
-              textShadow: '0 2px 16px rgba(255,255,255,0.5)',
+            {/* Art frame */}
+            <Box sx={{
+              mx: { xs: '8px', sm: '10px' }, mt: { xs: '6px', sm: '8px' },
+              borderRadius: '7px', overflow: 'hidden',
+              border: '2px solid rgba(0,0,0,0.18)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.12)',
+              flexShrink: 0, position: 'relative',
             }}>
-              {titleText}
-            </Typography>
+              {!imgLoaded && (
+                <Skeleton variant="rectangular" width="100%" height={200}
+                  sx={{ bgcolor: alpha(brand[300], 0.1), position: 'absolute', inset: 0 }} />
+              )}
+              <Box
+                component="img" ref={imgRef} src={card.imageUrl ?? PLACEHOLDER} alt={card.word}
+                onLoad={() => setImgLoaded(true)} onError={() => setImgLoaded(true)}
+                sx={{ width: '100%', height: { xs: 180, sm: 210 }, objectFit: 'cover', display: imgLoaded ? 'block' : 'none' }}
+              />
+            </Box>
 
-            <Typography variant="caption" sx={{
-              color: alpha(brand[700], 0.55), display: 'block', mt: 2,
-              letterSpacing: '0.12em', fontSize: '0.7rem', textTransform: 'uppercase',
-            }}>
-              tap to flip
-            </Typography>
+            {/* Card name */}
+            <Box sx={{ px: { xs: 2, sm: 2.5 }, pt: { xs: 1.25, sm: 1.5 }, pb: 1, borderBottom: `2.5px solid ${typeAccent}`, flexShrink: 0 }}>
+              {subtitleText && (
+                <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.65rem', color: '#888', letterSpacing: '0.08em', mb: 0.25, lineHeight: 1 }}>
+                  {subtitleText}
+                </Typography>
+              )}
+              <Typography sx={{
+                fontFamily: '"Noto Serif JP", serif',
+                fontSize: { xs: '2.2rem', sm: '2.8rem' },
+                fontWeight: 700, color: '#111', lineHeight: 1.05,
+              }}>
+                {titleText}
+              </Typography>
+            </Box>
+
+            {/* Tap hint */}
+            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', px: 2 }}>
+              <Typography sx={{ fontSize: '0.63rem', color: alpha(brand[500], 0.55), letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                ✦ tap to flip ✦
+              </Typography>
+            </Box>
+
+            {/* Footer */}
+            <Box sx={{ px: { xs: 2, sm: 2.5 }, pb: { xs: 1, sm: 1.25 }, display: 'flex', justifyContent: 'space-between', borderTop: `1px solid ${alpha(brand[300], 0.25)}`, pt: 0.75 }}>
+              {card.jlptLevel && (
+                <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[600], 0.7), fontFamily: '"DM Mono", monospace', letterSpacing: '0.06em' }}>
+                  JLPT {card.jlptLevel}
+                </Typography>
+              )}
+              <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[500], 0.5), fontFamily: '"DM Mono", monospace' }}>★</Typography>
+            </Box>
           </Box>
         </Box>
 
         {/* ── BACK ── */}
-        <Box sx={{
-          ...cardEdgeSx,
-          transform: 'rotateY(180deg)',
-          bgcolor: brand[50],
-          display: 'flex', flexDirection: 'column', justifyContent: 'center',
-          p: { xs: 3, sm: 4.5 }, gap: 2.5,
-        }}>
-          {/* Decorative blob */}
-          <Box sx={{
-            position: 'absolute', bottom: -60, left: -60, width: 220, height: 220,
-            borderRadius: '50%',
-            background: `radial-gradient(circle, ${alpha(brand[300], 0.2)} 0%, transparent 70%)`,
-            filter: 'blur(32px)', pointerEvents: 'none',
-          }} />
-
-          {/* Kanji section */}
-          {card.mainViewMode === 'hiragana' && (
-            <Box>
-              <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.68rem', color: brand[500], letterSpacing: '0.14em', fontWeight: 700, mb: 0.75, textTransform: 'uppercase' }}>
-                Kanji
-              </Typography>
-              <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '2rem', fontWeight: 600, color: 'text.primary', lineHeight: 1.2 }}>
-                {card.word}
+        <Box sx={{ ...frameBox, transform: 'rotateY(180deg)' }}>
+          <Box sx={innerCard}>
+            {/* Top bar */}
+            <Box sx={{
+              px: { xs: 2, sm: 2.5 }, py: { xs: 0.9, sm: 1.1 },
+              background: `linear-gradient(135deg, ${brand[400]} 0%, ${accent[400]} 100%)`,
+              flexShrink: 0,
+            }}>
+              <Typography sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, fontWeight: 900, color: 'white', textTransform: 'uppercase', letterSpacing: '0.08em', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
+                Answer
               </Typography>
             </Box>
-          )}
 
-          {/* Meaning */}
-          <Box>
-            <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.68rem', color: brand[500], letterSpacing: '0.14em', fontWeight: 700, mb: 0.75, textTransform: 'uppercase' }}>
-              Meaning
-            </Typography>
-            <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: { xs: '1.6rem', sm: '2rem' }, fontWeight: 600, color: 'text.primary', fontStyle: 'italic', lineHeight: 1.25 }}>
-              {card.meaning}
-            </Typography>
-          </Box>
+            {/* Content */}
+            <Box sx={{ flex: 1, px: { xs: 2, sm: 2.5 }, py: { xs: 1.5, sm: 2 }, display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 2 }, overflow: 'auto', position: 'relative' }}>
+              <Box sx={{ position: 'absolute', bottom: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: `radial-gradient(circle, ${alpha(brand[300], 0.14)} 0%, transparent 70%)`, filter: 'blur(24px)', pointerEvents: 'none' }} />
 
-          {/* Example */}
-          <Box sx={{ borderTop: `1.5px solid ${alpha(brand[300], 0.3)}`, pt: 2.5 }}>
-            <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.68rem', color: brand[500], letterSpacing: '0.14em', fontWeight: 700, mb: 1, textTransform: 'uppercase' }}>
-              Example
-            </Typography>
-            <Typography component="div" sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.05rem', color: 'text.primary', lineHeight: 1.8 }}>
-              <FuriganaText text={card.example_jp} showFurigana={card.mainViewMode === 'hiragana'} />
-            </Typography>
-            <Typography sx={{ fontSize: '0.9rem', color: alpha(theme.palette.text.primary, 0.6), mt: 0.75, fontStyle: 'italic', lineHeight: 1.6 }}>
-              {card.example_en}
-            </Typography>
+              {card.mainViewMode === 'hiragana' && (
+                <Box>
+                  <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.62rem', color: brand[500], letterSpacing: '0.14em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
+                    ★ Kanji
+                  </Typography>
+                  <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: { xs: '1.8rem', sm: '2.1rem' }, fontWeight: 700, color: '#111', lineHeight: 1.2 }}>
+                    {card.word}
+                  </Typography>
+                </Box>
+              )}
+
+              <Box>
+                <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.62rem', color: brand[500], letterSpacing: '0.14em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
+                  ★ Meaning
+                </Typography>
+                <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: { xs: '1.5rem', sm: '1.9rem' }, fontWeight: 700, color: '#111', fontStyle: 'italic', lineHeight: 1.25 }}>
+                  {card.meaning}
+                </Typography>
+              </Box>
+
+              <Box sx={{ borderTop: `2px solid ${alpha(brand[300], 0.22)}`, pt: { xs: 1.25, sm: 1.75 } }}>
+                <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.62rem', color: brand[500], letterSpacing: '0.14em', fontWeight: 700, mb: 0.75, textTransform: 'uppercase' }}>
+                  ★ Example
+                </Typography>
+                <Typography component="div" sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: { xs: '0.95rem', sm: '1.05rem' }, color: '#111', lineHeight: 1.8 }}>
+                  <FuriganaText text={card.example_jp} showFurigana={card.mainViewMode === 'hiragana'} />
+                </Typography>
+                <Typography sx={{ fontSize: { xs: '0.82rem', sm: '0.9rem' }, color: alpha('#000', 0.5), mt: 0.75, fontStyle: 'italic', lineHeight: 1.6 }}>
+                  {card.example_en}
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Footer */}
+            <Box sx={{ px: { xs: 2, sm: 2.5 }, pb: { xs: 1, sm: 1.25 }, borderTop: `1px solid ${alpha(brand[300], 0.25)}`, pt: 0.75, display: 'flex', justifyContent: 'space-between', flexShrink: 0 }}>
+              {card.jlptLevel && (
+                <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[600], 0.7), fontFamily: '"DM Mono", monospace', letterSpacing: '0.06em' }}>
+                  JLPT {card.jlptLevel}
+                </Typography>
+              )}
+              <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[500], 0.5), fontFamily: '"DM Mono", monospace' }}>tap to flip back</Typography>
+            </Box>
           </Box>
         </Box>
       </Box>

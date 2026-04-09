@@ -30,6 +30,7 @@ export function useGenerateFlashcards(): UseGenerateResult {
               deckId,
               mainViewMode: 'hiragana' as const,
               cardType: card.card_type,
+              jlptLevel: card.jlpt_level ?? undefined,
             };
           }),
         );
