@@ -188,7 +188,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
         px: { xs: 2.5, sm: 3 }, pt: 2.5, pb: 2,
         borderBottom: `1.5px solid ${alpha(brand[400], 0.12)}`,
       }}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} justifyContent="space-between" spacing={{ xs: 1.5, sm: 2 }}>
+        <Stack direction="column" spacing={1.5}>
           {/* Title + progress */}
           <Box sx={{ flexShrink: 0 }}>
             <Stack direction="row" alignItems="center" spacing={1} mb={totalCount > 0 ? 1 : 0}>
@@ -229,8 +229,8 @@ export function TodoList({ onXpEarned }: TodoListProps) {
             )}
           </Box>
 
-          {/* Add input — inline in header on desktop */}
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexGrow: 1, maxWidth: { sm: 420 } }}>
+          {/* Add input */}
+          <Stack direction="row" spacing={1} alignItems="center">
             <TextField
               value={input} onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
@@ -256,7 +256,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
       </Box>
 
       {/* Body */}
-      <Box sx={{ px: { xs: 2.5, sm: 3 }, py: 2 }}>
+      <Box sx={{ px: { xs: 2, sm: 2.5 }, py: 1.5 }}>
         <Collapse in={!!celebration}>
           <Box sx={{
             textAlign: 'center', py: 1, mb: 1.5, borderRadius: 3,
@@ -288,15 +288,11 @@ export function TodoList({ onXpEarned }: TodoListProps) {
             <Typography sx={{ color: 'text.secondary', fontSize: '0.78rem', mt: 0.5, opacity: 0.7 }}>Complete tasks to earn XP ⭐</Typography>
           </Box>
         ) : (
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
-            gap: 1,
-          }}>
+          <Stack spacing={1}>
             {[...todos.filter((t) => !t.completed), ...todos.filter((t) => t.completed)].map((todo) => (
               <TodoItem key={todo.id} todo={todo} onToggle={toggleTodo} onEdit={editTodo} onDelete={deleteTodo} onXpEarned={onXpEarned} />
             ))}
-          </Box>
+          </Stack>
         )}
       </Box>
     </Box>

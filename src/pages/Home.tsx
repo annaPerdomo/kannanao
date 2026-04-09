@@ -76,12 +76,7 @@ function WelcomeBanner({ username, level, streak, totalXp }: {
             <Chip
               label={`✨ Level ${level}`}
               size="small"
-              sx={{
-                fontWeight: 800,
-                bgcolor: alpha(brand[100], 0.9),
-                color: brand[700],
-                border: `1.5px solid ${alpha(brand[400], 0.4)}`,
-              }}
+              sx={{ fontWeight: 800, bgcolor: alpha(brand[100], 0.9), color: brand[700], border: `1.5px solid ${alpha(brand[400], 0.4)}` }}
             />
             {streak > 0 && (
               <Chip
@@ -145,7 +140,7 @@ export default function Home() {
 
   return (
     <Box sx={{ maxWidth: 1100, mx: 'auto', px: { xs: 2, sm: 4 }, py: { xs: 3, sm: 5 } }}>
-      {/* Welcome banner — shown once progress has loaded */}
+      {/* Welcome banner — full width */}
       {progress && (
         <WelcomeBanner
           username={username}
@@ -155,9 +150,42 @@ export default function Home() {
         />
       )}
 
-      {/* ── To-Do Section ── */}
-      <Box sx={{ mb: 5 }}>
-        <TodoList onXpEarned={addBonusXp} />
+      {/* To-Do Section — centered with side decorations */}
+      <Box sx={{ mb: 5, position: 'relative' }}>
+        {/* Left decorations */}
+        <Box sx={{
+          display: { xs: 'none', lg: 'block' },
+          position: 'absolute', left: 0, top: 0, bottom: 0,
+          width: 'calc((100% - 680px) / 2)',
+          pointerEvents: 'none',
+          '@keyframes float-a': { '0%,100%': { transform: 'translateY(0px) rotate(-8deg)' }, '50%': { transform: 'translateY(-10px) rotate(-4deg)' } },
+          '@keyframes float-b': { '0%,100%': { transform: 'translateY(0px) rotate(6deg)' }, '50%': { transform: 'translateY(-14px) rotate(10deg)' } },
+          '@keyframes float-c': { '0%,100%': { transform: 'translateY(0px) rotate(0deg)' }, '50%': { transform: 'translateY(-8px) rotate(-6deg)' } },
+        }}>
+          <Typography sx={{ position: 'absolute', top: '8%',  left: '55%', fontSize: '2rem',   animation: 'float-a 4.2s ease-in-out infinite' }}>🌸</Typography>
+          <Typography sx={{ position: 'absolute', top: '28%', left: '20%', fontSize: '1.4rem', animation: 'float-b 5.1s ease-in-out infinite' }}>✨</Typography>
+          <Typography sx={{ position: 'absolute', top: '50%', left: '65%', fontSize: '1.6rem', animation: 'float-c 3.8s ease-in-out infinite' }}>🌷</Typography>
+          <Typography sx={{ position: 'absolute', top: '70%', left: '30%', fontSize: '1.2rem', animation: 'float-a 4.8s ease-in-out infinite 0.5s' }}>💫</Typography>
+          <Typography sx={{ position: 'absolute', top: '88%', left: '60%', fontSize: '1.5rem', animation: 'float-b 5.5s ease-in-out infinite 1s' }}>🌺</Typography>
+        </Box>
+
+        {/* Right decorations */}
+        <Box sx={{
+          display: { xs: 'none', lg: 'block' },
+          position: 'absolute', right: 0, top: 0, bottom: 0,
+          width: 'calc((100% - 680px) / 2)',
+          pointerEvents: 'none',
+        }}>
+          <Typography sx={{ position: 'absolute', top: '5%',  right: '50%', fontSize: '1.5rem', animation: 'float-b 4.6s ease-in-out infinite 0.3s' }}>🦋</Typography>
+          <Typography sx={{ position: 'absolute', top: '25%', right: '20%', fontSize: '1.8rem', animation: 'float-c 5.0s ease-in-out infinite' }}>🌟</Typography>
+          <Typography sx={{ position: 'absolute', top: '48%', right: '55%', fontSize: '1.3rem', animation: 'float-a 3.9s ease-in-out infinite 0.7s' }}>💕</Typography>
+          <Typography sx={{ position: 'absolute', top: '68%', right: '25%', fontSize: '1.6rem', animation: 'float-b 4.3s ease-in-out infinite' }}>🌸</Typography>
+          <Typography sx={{ position: 'absolute', top: '85%', right: '50%', fontSize: '1.2rem', animation: 'float-c 5.2s ease-in-out infinite 1.2s' }}>✨</Typography>
+        </Box>
+
+        <Box sx={{ maxWidth: 680, mx: 'auto', width: '100%' }}>
+          <TodoList onXpEarned={addBonusXp} />
+        </Box>
       </Box>
 
       {/* ── Decks Section ── */}
