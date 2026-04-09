@@ -145,58 +145,54 @@ export default function Home() {
         />
       )}
 
-      <Grid container spacing={3} alignItems="flex-start">
-        {/* Decks — left, wider column */}
-        <Grid size={{ xs: 12, md: 7 }}>
-          <Typography variant="h5" sx={{ color: 'text.primary', mb: 2, fontWeight: 800 }}>
-            {decks.length > 0 ? '📚 Your Decks' : '📚 No decks yet'}
-          </Typography>
+      {/* ── To-Do Section ── */}
+      <Box sx={{ mb: 5 }}>
+        <TodoList onXpEarned={addBonusXp} />
+      </Box>
 
-          {decks.length === 0 ? (
-            <Box
-              sx={{
-                border: '1px dashed rgba(249,168,212,0.35)',
-                borderRadius: 3,
-                p: 8,
-                textAlign: 'center',
-                bgcolor: '#FFF3F9',
-                boxShadow: '0 12px 26px rgba(249,168,212,0.12)',
-              }}
-            >
-              <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '4rem', color: 'rgba(249,168,212,0.25)', mb: 2, lineHeight: 1 }}>
-                漢
-              </Typography>
-              <Typography color="text.secondary" sx={{ mb: 3 }}>
-                Create your first deck to start building flashcards
-              </Typography>
-            </Box>
-          ) : (
-            <Grid container spacing={2}>
-              {decks.map((deck) => {
-                const owned = isOwner(deck);
-                return (
-                  <Grid size={{ xs: 12, sm: 6 }} key={deck.id}>
-                    <DeckCard
-                      deck={deck}
-                      onOpen={(id) => router.push(`/deck/${id}`)}
-                      onDelete={owned ? deleteDeck : () => {}}
-                      onShare={owned ? (id) => { setShareDeckId(id); setShareDeckName(deck.name); } : undefined}
-                      isOwner={owned}
-                    />
-                  </Grid>
-                );
-              })}
-            </Grid>
-          )}
-        </Grid>
+      {/* ── Decks Section ── */}
+      <Box>
+        <Typography variant="h5" sx={{ color: 'text.primary', mb: 2, fontWeight: 800 }}>
+          {decks.length > 0 ? '📚 Your Decks' : '📚 No decks yet'}
+        </Typography>
 
-        {/* Todo list — right column, sticky */}
-        <Grid size={{ xs: 12, md: 5 }}>
-          <Box sx={{ position: { md: 'sticky' }, top: { md: 24 } }}>
-            <TodoList onXpEarned={addBonusXp} />
+        {decks.length === 0 ? (
+          <Box
+            sx={{
+              border: '1px dashed rgba(249,168,212,0.35)',
+              borderRadius: 3,
+              p: 8,
+              textAlign: 'center',
+              bgcolor: '#FFF3F9',
+              boxShadow: '0 12px 26px rgba(249,168,212,0.12)',
+            }}
+          >
+            <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '4rem', color: 'rgba(249,168,212,0.25)', mb: 2, lineHeight: 1 }}>
+              漢
+            </Typography>
+            <Typography color="text.secondary" sx={{ mb: 3 }}>
+              Create your first deck to start building flashcards
+            </Typography>
           </Box>
-        </Grid>
-      </Grid>
+        ) : (
+          <Grid container spacing={2}>
+            {decks.map((deck) => {
+              const owned = isOwner(deck);
+              return (
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={deck.id}>
+                  <DeckCard
+                    deck={deck}
+                    onOpen={(id) => router.push(`/deck/${id}`)}
+                    onDelete={owned ? deleteDeck : () => {}}
+                    onShare={owned ? (id) => { setShareDeckId(id); setShareDeckName(deck.name); } : undefined}
+                    isOwner={owned}
+                  />
+                </Grid>
+              );
+            })}
+          </Grid>
+        )}
+      </Box>
 
       {/* ── Ohanashikai prompt ── */}
       <Box sx={{ mt: 4 }}>

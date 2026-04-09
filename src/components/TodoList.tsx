@@ -185,52 +185,78 @@ export function TodoList({ onXpEarned }: TodoListProps) {
       {/* Header */}
       <Box sx={{
         background: `linear-gradient(135deg, ${alpha(brand[400], 0.18)} 0%, ${alpha(accent[300], 0.22)} 100%)`,
-        px: 2.5, pt: 2.5, pb: 1.5,
+        px: { xs: 2.5, sm: 3 }, pt: 2.5, pb: 2,
         borderBottom: `1.5px solid ${alpha(brand[400], 0.12)}`,
       }}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={0.5}>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography sx={{ fontSize: '1.3rem' }}>🌸</Typography>
-            <Typography variant="h6" sx={{
-              fontWeight: 800,
-              background: `linear-gradient(90deg, ${brand[700]} 0%, ${accent[500]} 100%)`,
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            }}>
-              My To-Do List
-            </Typography>
-            <Typography sx={{ fontSize: '1rem' }}>✨</Typography>
-          </Stack>
-          {totalCount > 0 && (
-            <Typography variant="caption" sx={{ color: 'secondary.dark', fontWeight: 800 }}>
-              {completedCount}/{totalCount} done
-            </Typography>
-          )}
-        </Stack>
-
-        {totalCount > 0 && (
-          <Box sx={{ mt: 1 }}>
-            <LinearProgress
-              variant="determinate" value={progress}
-              sx={{
-                height: 7, borderRadius: 4,
-                bgcolor: alpha(brand[400], 0.12),
-                '& .MuiLinearProgress-bar': {
-                  background: progress === 100
-                    ? 'linear-gradient(90deg, #34D399, #60C8F5)'
-                    : `linear-gradient(90deg, ${brand[400]}, ${accent[300]})`,
-                  borderRadius: 4, transition: 'width 0.5s ease',
-                },
-              }}
-            />
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, mt: 0.5, display: 'block' }}>
-              {progress === 100 ? '🎊 All done!' : `Each task = +${XP_PER_TODO} XP ⭐`}
-            </Typography>
+        <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} justifyContent="space-between" spacing={{ xs: 1.5, sm: 2 }}>
+          {/* Title + progress */}
+          <Box sx={{ flexShrink: 0 }}>
+            <Stack direction="row" alignItems="center" spacing={1} mb={totalCount > 0 ? 1 : 0}>
+              <Typography sx={{ fontSize: '1.3rem' }}>🌸</Typography>
+              <Typography variant="h6" sx={{
+                fontWeight: 800,
+                background: `linear-gradient(90deg, ${brand[700]} 0%, ${accent[500]} 100%)`,
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+              }}>
+                My To-Do List
+              </Typography>
+              <Typography sx={{ fontSize: '1rem' }}>✨</Typography>
+              {totalCount > 0 && (
+                <Typography variant="caption" sx={{ color: 'secondary.dark', fontWeight: 800, ml: 1 }}>
+                  {completedCount}/{totalCount} done
+                </Typography>
+              )}
+            </Stack>
+            {totalCount > 0 && (
+              <Box sx={{ minWidth: { sm: 220 } }}>
+                <LinearProgress
+                  variant="determinate" value={progress}
+                  sx={{
+                    height: 7, borderRadius: 4,
+                    bgcolor: alpha(brand[400], 0.12),
+                    '& .MuiLinearProgress-bar': {
+                      background: progress === 100
+                        ? 'linear-gradient(90deg, #34D399, #60C8F5)'
+                        : `linear-gradient(90deg, ${brand[400]}, ${accent[300]})`,
+                      borderRadius: 4, transition: 'width 0.5s ease',
+                    },
+                  }}
+                />
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, mt: 0.5, display: 'block' }}>
+                  {progress === 100 ? '🎊 All done!' : `Each task = +${XP_PER_TODO} XP ⭐`}
+                </Typography>
+              </Box>
+            )}
           </Box>
-        )}
+
+          {/* Add input — inline in header on desktop */}
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexGrow: 1, maxWidth: { sm: 420 } }}>
+            <TextField
+              value={input} onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
+              placeholder="Add something fun to do... 🌟" size="small" fullWidth disabled={loading}
+              inputProps={{ maxLength: 200 }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3, fontSize: '0.875rem', fontWeight: 600, bgcolor: 'white' } }}
+            />
+            <Tooltip title="Add (Enter)">
+              <span>
+                <IconButton onClick={handleAdd} disabled={!input.trim() || loading} sx={{
+                  background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
+                  color: 'white', borderRadius: 2.5, width: 38, height: 38, flexShrink: 0,
+                  '&:hover': { background: `linear-gradient(135deg, ${brand[700]}, ${accent[500]})`, transform: 'scale(1.08)' },
+                  '&:disabled': { background: 'rgba(0,0,0,0.1)', color: 'rgba(0,0,0,0.3)' },
+                  transition: 'all 0.2s ease',
+                }}>
+                  <AddRoundedIcon sx={{ fontSize: '1.2rem' }} />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Stack>
+        </Stack>
       </Box>
 
       {/* Body */}
-      <Box sx={{ px: 2.5, py: 2 }}>
+      <Box sx={{ px: { xs: 2.5, sm: 3 }, py: 2 }}>
         <Collapse in={!!celebration}>
           <Box sx={{
             textAlign: 'center', py: 1, mb: 1.5, borderRadius: 3,
@@ -248,29 +274,6 @@ export function TodoList({ onXpEarned }: TodoListProps) {
           <Alert severity="error" onClose={clearError} sx={{ mb: 1.5, borderRadius: 2.5, fontSize: '0.82rem' }}>{error}</Alert>
         </Collapse>
 
-        <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-          <TextField
-            value={input} onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
-            placeholder="Add something fun to do... 🌟" size="small" fullWidth disabled={loading}
-            inputProps={{ maxLength: 200 }}
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3, fontSize: '0.875rem', fontWeight: 600, bgcolor: 'white' } }}
-          />
-          <Tooltip title="Add (Enter)">
-            <span>
-              <IconButton onClick={handleAdd} disabled={!input.trim() || loading} sx={{
-                background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
-                color: 'white', borderRadius: 2.5, width: 38, height: 38, flexShrink: 0,
-                '&:hover': { background: `linear-gradient(135deg, ${brand[700]}, ${accent[500]})`, transform: 'scale(1.08)' },
-                '&:disabled': { background: 'rgba(0,0,0,0.1)', color: 'rgba(0,0,0,0.3)' },
-                transition: 'all 0.2s ease',
-              }}>
-                <AddRoundedIcon sx={{ fontSize: '1.2rem' }} />
-              </IconButton>
-            </span>
-          </Tooltip>
-        </Stack>
-
         {loading ? (
           <Box sx={{ py: 2 }}>
             <LinearProgress sx={{ borderRadius: 2, bgcolor: alpha(brand[400], 0.1), '& .MuiLinearProgress-bar': { background: `linear-gradient(90deg, ${brand[400]}, ${accent[300]})` } }} />
@@ -285,11 +288,15 @@ export function TodoList({ onXpEarned }: TodoListProps) {
             <Typography sx={{ color: 'text.secondary', fontSize: '0.78rem', mt: 0.5, opacity: 0.7 }}>Complete tasks to earn XP ⭐</Typography>
           </Box>
         ) : (
-          <Stack spacing={1}>
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+            gap: 1,
+          }}>
             {[...todos.filter((t) => !t.completed), ...todos.filter((t) => t.completed)].map((todo) => (
               <TodoItem key={todo.id} todo={todo} onToggle={toggleTodo} onEdit={editTodo} onDelete={deleteTodo} onXpEarned={onXpEarned} />
             ))}
-          </Stack>
+          </Box>
         )}
       </Box>
     </Box>
