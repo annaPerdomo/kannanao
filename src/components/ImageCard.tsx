@@ -7,7 +7,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/Edit";
 import type { Flashcard } from "@/types/flashcard";
 import { EditCardDialog } from "@/components/EditCardDialog";
-import { getFlashcardDisplayText } from "@/lib/flashcardUtils";
+import { getFlashcardDisplayText, cardXp } from "@/lib/flashcardUtils";
 import FuriganaText from "@/components/FuriganaText";
 
 interface ImageCardProps {
@@ -18,9 +18,6 @@ interface ImageCardProps {
 }
 
 
-function cardHp(word: string | undefined) {
-  return Math.min(Math.max((word?.length ?? 3) * 10 + 40, 50), 150);
-}
 
 export function ImageCard({ card, onDelete, onUpdate, compact = false }: ImageCardProps) {
   const theme = useTheme();
@@ -99,7 +96,7 @@ export function ImageCard({ card, onDelete, onUpdate, compact = false }: ImageCa
             <Box sx={{ display: "flex", alignItems: "baseline", gap: "2px" }}>
               <Typography sx={{ fontSize: "0.5rem", fontWeight: 700, color: "rgba(255,255,255,0.8)", lineHeight: 1 }}>HP</Typography>
               <Typography sx={{ fontSize: "0.68rem", fontWeight: 900, color: "white", textShadow: "0 1px 3px rgba(0,0,0,0.3)", lineHeight: 1 }}>
-                {cardHp(localCard.word)}
+                {cardXp(localCard.jlptLevel)}
               </Typography>
             </Box>
           </Box>

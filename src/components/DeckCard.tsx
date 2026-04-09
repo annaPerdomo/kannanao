@@ -94,12 +94,6 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, isOwner = true }: De
             <Typography sx={{ fontSize: '0.65rem', fontWeight: 900, color: 'white', textTransform: 'uppercase', letterSpacing: '0.08em', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
               Card Deck
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-              <Typography sx={{ fontSize: '0.5rem', fontWeight: 700, color: 'rgba(255,255,255,0.8)' }}>HP</Typography>
-              <Typography sx={{ fontSize: '0.72rem', fontWeight: 900, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
-                {Math.min(deck.cardCount * 10 + 30, 200)}
-              </Typography>
-            </Box>
           </Box>
 
           {/* Art frame */}

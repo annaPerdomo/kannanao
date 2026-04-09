@@ -51,7 +51,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
   useEffect(() => {
     if (cards.length > 0 && sessionIdRef.current && !seenRef.current.has(0)) {
       seenRef.current.add(0);
-      void recordAnswer(sessionIdRef.current, true);
+      void recordAnswer(sessionIdRef.current, true, cards[0].jlptLevel);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cards.length]);
@@ -92,7 +92,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
         // Record this card as studied (once per unique index)
         if (sessionIdRef.current && !seenRef.current.has(nextIndex)) {
           seenRef.current.add(nextIndex);
-          void recordAnswer(sessionIdRef.current, true);
+          void recordAnswer(sessionIdRef.current, true, cards[nextIndex].jlptLevel);
         }
       }, FLIP_DURATION_MS);
     },

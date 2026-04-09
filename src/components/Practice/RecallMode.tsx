@@ -78,7 +78,7 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
       correctCountRef.current += 1;
     }
     if (sessionIdRef.current) {
-      await recordAnswer(sessionIdRef.current, correct);
+      await recordAnswer(sessionIdRef.current, correct, card.jlptLevel);
     }
   };
 

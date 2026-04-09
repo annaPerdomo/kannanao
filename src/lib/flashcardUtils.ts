@@ -1,4 +1,16 @@
-import type { Flashcard } from "@/types/flashcard";
+import type { Flashcard, JlptLevel } from "@/types/flashcard";
+
+/** XP earned (and HP displayed) per card, scaled by JLPT difficulty. */
+export function cardXp(jlptLevel?: JlptLevel | null): number {
+  switch (jlptLevel) {
+    case 'N1': return 120;
+    case 'N2': return 100;
+    case 'N3': return 80;
+    case 'N4': return 60;
+    case 'N5': return 40;
+    default:   return 40;
+  }
+}
 
 export interface FlashcardDisplayText {
   titleText: string;

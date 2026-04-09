@@ -4,7 +4,7 @@ import { Box, Typography, Skeleton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
-import { getFlashcardDisplayText } from '@/lib/flashcardUtils';
+import { getFlashcardDisplayText, cardXp } from '@/lib/flashcardUtils';
 import FuriganaText from '@/components/FuriganaText';
 
 interface FlashcardProps {
@@ -17,9 +17,6 @@ const PLACEHOLDER =
   'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400"%3E%3Crect fill="%23FFF0F6" width="600" height="400"/%3E%3C/svg%3E';
 
 
-function cardHp(word: string | undefined) {
-  return Math.min(Math.max((word?.length ?? 3) * 15 + 40, 60), 200);
-}
 
 export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps) {
   const theme = useTheme();
@@ -82,7 +79,7 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
               <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
                 <Typography sx={{ fontSize: '0.55rem', fontWeight: 700, color: 'rgba(255,255,255,0.82)' }}>HP</Typography>
                 <Typography sx={{ fontSize: { xs: '0.78rem', sm: '0.88rem' }, fontWeight: 900, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
-                  {cardHp(card.word)}
+                  {cardXp(card.jlptLevel)}
                 </Typography>
               </Box>
             </Box>

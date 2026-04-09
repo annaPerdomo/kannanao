@@ -92,13 +92,15 @@ export function MatchMode({ cards, deckId, onExit }: MatchModeProps) {
 
       if (sessionIdRef.current && !recordedRef.current.has(tile.cardId)) {
         recordedRef.current.add(tile.cardId);
-        await recordAnswer(sessionIdRef.current, true);
+        const matchedCard = pool.find((c) => c.id === tile.cardId);
+        await recordAnswer(sessionIdRef.current, true, matchedCard?.jlptLevel);
       }
     } else {
       // Wrong match — record once per pair attempt
       setWrong(tile.id);
       if (sessionIdRef.current && selected) {
-        await recordAnswer(sessionIdRef.current, false);
+        const attemptedCard = pool.find((c) => c.id === tile.cardId);
+        await recordAnswer(sessionIdRef.current, false, attemptedCard?.jlptLevel);
       }
       setTimeout(() => { setWrong(null); setSelected(null); }, 600);
     }

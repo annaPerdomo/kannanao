@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { sb } from '@/lib/supabase'; // adjust to your Supabase client path
+import { cardXp } from '@/lib/flashcardUtils';
+import type { JlptLevel } from '@/types/flashcard';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -206,10 +208,10 @@ export function useProgress() {
    * Pass the active session ID (from startSession) and whether the answer was correct.
    */
   const recordAnswer = useCallback(
-    async (sessionId: string, correct: boolean) => {
+    async (sessionId: string, correct: boolean, jlptLevel?: JlptLevel) => {
       if (!progress) return;
 
-      const xpGain = correct ? XP_PER_CORRECT : XP_PER_WRONG;
+      const xpGain = correct ? cardXp(jlptLevel) : XP_PER_WRONG;
       const newXp = progress.total_xp + xpGain;
       const newLevel = levelFromXp(newXp);
       const newStudied = progress.total_cards_studied + 1;

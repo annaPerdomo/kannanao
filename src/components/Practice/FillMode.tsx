@@ -40,7 +40,7 @@ export function FillMode({ cards, deckId, onExit }: FillModeProps) {
     const correct = input.trim() === card.word || input.trim() === card.reading;
     setResult(correct ? 'correct' : 'wrong');
     if (correct) { setScore((s) => s + 1); correctCountRef.current += 1; }
-    if (sessionIdRef.current) await recordAnswer(sessionIdRef.current, correct);
+    if (sessionIdRef.current) await recordAnswer(sessionIdRef.current, correct, card.jlptLevel);
   };
 
   const next = () => { setIndex((i) => i + 1); setInput(''); setResult(null); };
