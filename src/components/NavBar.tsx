@@ -10,6 +10,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import EditIcon from '@mui/icons-material/Edit';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MicIcon from '@mui/icons-material/Mic';
+import StyleIcon from '@mui/icons-material/Style';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
@@ -150,6 +151,21 @@ export function NavBar() {
                 {progress.streak_days}
               </Typography>
             </Box>
+          )}
+
+          {/* Decks (home) */}
+          {user && !isHome && (
+            <Button
+              onClick={() => router.push('/')}
+              size="small"
+              startIcon={<StyleIcon sx={{ fontSize: '1rem !important' }} />}
+              sx={{
+                ...navBtn,
+                '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
+              }}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Home</Box>
+            </Button>
           )}
 
           {/* About */}

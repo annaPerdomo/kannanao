@@ -6,6 +6,7 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import LinearProgress from '@mui/material/LinearProgress';
 import Chip from '@mui/material/Chip';
+import Button from '@mui/material/Button';
 import { useRouter } from 'next/navigation';
 
 import { DeckCard } from '@/components/DeckCard';
@@ -15,6 +16,7 @@ import { TodoList } from '@/components/TodoList';
 import { useDecks } from '@/hooks/useDecks';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProgress, xpProgressInLevel } from '@/hooks/useProgess';
+import { useOhanashikais } from '@/hooks/useOhanashikais';
 
 function getGreeting(name: string): { text: string; emoji: string } {
   const h = new Date().getHours();
@@ -114,6 +116,7 @@ export default function Home() {
   const { decks, deleteDeck, loading } = useDecks();
   const { user, displayName } = useAuth();
   const { progress, addBonusXp } = useProgress();
+  const { ohanashikais } = useOhanashikais();
   const router = useRouter();
 
   const [shareDeckId, setShareDeckId] = useState<string | null>(null);
@@ -194,6 +197,101 @@ export default function Home() {
           </Box>
         </Grid>
       </Grid>
+
+      {/* ── Ohanashikai prompt ── */}
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h5" sx={{ color: 'text.primary', mb: 2, fontWeight: 800 }}>
+          ✨ Speech Practice
+        </Typography>
+
+        {ohanashikais.length === 0 ? (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2.5,
+              p: { xs: 2.5, sm: 3 },
+              borderRadius: 3,
+              border: '1.5px dashed rgba(249,168,212,0.4)',
+              bgcolor: 'rgba(255,243,249,0.7)',
+              cursor: 'pointer',
+              transition: 'all 0.18s ease',
+              '&:hover': { bgcolor: 'rgba(255,236,246,0.9)', borderColor: 'rgba(244,114,182,0.55)' },
+            }}
+            onClick={() => router.push('/ohanashikai')}
+          >
+            <Typography sx={{ fontSize: '2.2rem', flexShrink: 0 }}>🌸</Typography>
+            <Box>
+              <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                Practice your お話し会 speech!
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Add your lines and start memorizing — tap to get started ✨
+              </Typography>
+            </Box>
+          </Box>
+        ) : (
+          <Stack spacing={1.5}>
+            {ohanashikais.map((item, i) => {
+              const cardEmojis = ['🌸', '✨', '🌟', '💫', '🎀'];
+              const emoji = cardEmojis[i % cardEmojis.length];
+              return (
+                <Box
+                  key={item.id}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    p: { xs: 1.75, sm: 2 },
+                    borderRadius: 3,
+                    bgcolor: '#FFFFFF',
+                    border: '1.5px solid rgba(249,168,212,0.3)',
+                    boxShadow: '0 2px 10px rgba(249,168,212,0.1)',
+                    transition: 'all 0.18s ease',
+                    '&:hover': { boxShadow: '0 5px 20px rgba(249,168,212,0.2)', transform: 'translateY(-1px)' },
+                  }}
+                >
+                  <Typography sx={{ fontSize: '1.4rem', flexShrink: 0 }}>{emoji}</Typography>
+                  <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                    <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.2 }} noWrap>
+                      {item.title}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {item.lineCount} line{item.lineCount !== 1 ? 's' : ''}
+                    </Typography>
+                  </Box>
+                  <Stack direction="row" spacing={1} flexShrink={0}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => router.push(`/ohanashikai/${item.id}/practice/readthrough`)}
+                      sx={{ borderRadius: 2, px: 1.5, py: 0.5, fontSize: '0.72rem', fontWeight: 700, display: { xs: 'none', sm: 'inline-flex' } }}
+                    >
+                      📖 Read
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={() => router.push(`/ohanashikai/${item.id}/practice/linerecall`)}
+                      sx={{ borderRadius: 2, px: 1.5, py: 0.5, fontSize: '0.72rem', fontWeight: 700 }}
+                    >
+                      🎯 Recall
+                    </Button>
+                  </Stack>
+                </Box>
+              );
+            })}
+            <Button
+              size="small"
+              variant="text"
+              onClick={() => router.push('/ohanashikai')}
+              sx={{ alignSelf: 'flex-start', fontSize: '0.78rem', color: 'text.secondary', mt: 0.5 }}
+            >
+              Manage speeches →
+            </Button>
+          </Stack>
+        )}
+      </Box>
 
       <ShareDeckDialog
         open={shareDeckId !== null}

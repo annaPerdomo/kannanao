@@ -128,7 +128,7 @@ export default function OhanashikaiHome() {
             bgcolor: alpha(brand[50], 0.6),
           }}
         >
-          <Typography sx={{ fontSize: '3.5rem', mb: 2 }}>🎤</Typography>
+          <Typography sx={{ fontSize: '3.5rem', mb: 2 }}>📝</Typography>
           <Typography variant="h6" sx={{ color: brand[700], fontWeight: 700, mb: 1 }}>
             No speeches yet!
           </Typography>
@@ -246,7 +246,7 @@ export default function OhanashikaiHome() {
         }}
       >
         <DialogTitle sx={{ fontWeight: 800, color: brand[700], pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-          🎤 New Speech
+          New Speech
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important' }}>
           <Stack spacing={2}>

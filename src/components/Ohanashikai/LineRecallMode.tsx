@@ -152,7 +152,7 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 800, color: brand[700] }}>
-          🎤 Line Recall
+          🎯 Line Recall
         </Typography>
         <Chip
           label={`${score} ⭐ · ${index + 1}/${pool.length}`}

@@ -253,7 +253,6 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
               </Box>
             ) : (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                <Typography sx={{ fontSize: '1.2rem' }}>🎤</Typography>
                 <Typography variant="h5" sx={{ color: brand[800], lineHeight: 1.1, fontWeight: 800 }}>
                   {item?.title ?? 'Speech'}
                 </Typography>
