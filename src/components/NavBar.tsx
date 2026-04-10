@@ -4,17 +4,15 @@ import {
   Snackbar, Alert, Menu, MenuItem, Dialog, DialogTitle,
   DialogContent, DialogActions, TextField, Divider,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import EditIcon from '@mui/icons-material/Edit';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MicIcon from '@mui/icons-material/Mic';
-import StyleIcon from '@mui/icons-material/Style';
+import HomeIcon from '@mui/icons-material/Home';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import { useDeckDialog } from '@/contexts/DeckDialogContext';
 import { useProgress } from '@/hooks/useProgess';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme, schemeInfo, type ColorScheme } from '@/contexts/ThemeContext';
@@ -26,11 +24,11 @@ export function NavBar() {
 
   const pathname = usePathname();
   const router = useRouter();
-  const isHome    = pathname === '/';
-  const isStats   = pathname === '/stats';
-  const isLanding = pathname === '/landing';
+  const isHome        = pathname === '/';
+  const isStats       = pathname === '/stats';
   const isOhanashikai = pathname?.startsWith('/ohanashikai') ?? false;
-  const { openNewDeckDialog } = useDeckDialog();
+
+
   const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgress();
   const { user, displayName, signOut, updateDisplayName } = useAuth();
   const { scheme, setScheme } = useColorScheme();
@@ -39,6 +37,11 @@ export function NavBar() {
   const [editOpen, setEditOpen]     = useState(false);
   const [nameInput, setNameInput]   = useState('');
   const [saving, setSaving]         = useState(false);
+
+  // Reset menu when user changes (fixes dropdown appearing open after login)
+  useEffect(() => {
+    setMenuAnchor(null);
+  }, [user]);
 
   useEffect(() => {
     if (newlyUnlocked.length > 0) {
@@ -108,7 +111,7 @@ export function NavBar() {
           {/* Brand */}
           <Box
             onClick={() => router.push('/')}
-            sx={{ cursor: 'pointer', userSelect: 'none', mr: 'auto', display: 'flex', alignItems: 'baseline', gap: 0.75 }}
+            sx={{ cursor: 'pointer', userSelect: 'none', mr: 'auto' }}
           >
             <Typography
               sx={{
@@ -117,6 +120,7 @@ export function NavBar() {
                 color: brand[700],
                 lineHeight: 1,
                 letterSpacing: '-0.01em',
+                whiteSpace: 'nowrap',
               }}
             >
               🌸 Kannanao
@@ -153,26 +157,18 @@ export function NavBar() {
             </Box>
           )}
 
-          {/* Decks (home) */}
+          {/* Home — hide only on home page */}
           {user && !isHome && (
             <Button
               onClick={() => router.push('/')}
               size="small"
-              startIcon={<StyleIcon sx={{ fontSize: '1rem !important' }} />}
+              startIcon={<HomeIcon sx={{ fontSize: '1rem !important' }} />}
               sx={{
                 ...navBtn,
                 '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
               }}
             >
               <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Home</Box>
-            </Button>
-          )}
-
-          {/* About */}
-          {user && !isLanding && (
-            <Button onClick={() => router.push('/landing')} size="small" sx={navBtn}>
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>About</Box>
-              <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>🌸</Box>
             </Button>
           )}
 
@@ -199,41 +195,10 @@ export function NavBar() {
               startIcon={<BarChartIcon sx={{ fontSize: '1rem !important' }} />}
               sx={{
                 ...navBtn,
-                bgcolor: isStats ? alpha(brand[300], 0.18) : 'transparent',
                 '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
               }}
             >
               <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Stats</Box>
-            </Button>
-          )}
-
-          {/* New Deck */}
-          {user && (
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={<AddIcon sx={{ fontSize: '1rem !important' }} />}
-              onClick={openNewDeckDialog}
-              sx={{
-                bgcolor: brand[700],
-                color: '#fff',
-                fontFamily: '"DM Serif Display", serif',
-                fontWeight: 400,
-                fontSize: '0.85rem',
-                textTransform: 'none',
-                borderRadius: 6,
-                px: { xs: 1.25, sm: 2 },
-                py: 0.75,
-                boxShadow: `0 4px 14px ${alpha(brand[700], 0.22)}`,
-                whiteSpace: 'nowrap',
-                '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
-                '&:hover': {
-                  bgcolor: brand[800],
-                  boxShadow: `0 6px 18px ${alpha(brand[700], 0.32)}`,
-                },
-              }}
-            >
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>New Deck</Box>
             </Button>
           )}
 
