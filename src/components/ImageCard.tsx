@@ -14,12 +14,11 @@ interface ImageCardProps {
   card: Flashcard;
   onDelete: (id: string) => void;
   onUpdate?: (id: string, patch: Partial<Flashcard>) => Promise<Flashcard | null>;
-  compact?: boolean;
 }
 
 
 
-export function ImageCard({ card, onDelete, onUpdate, compact = false }: ImageCardProps) {
+export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const CARD_FRAME = `linear-gradient(145deg, ${brand[100]} 0%, ${brand[300]} 25%, ${brand[50]} 50%, ${brand[400]} 75%, ${brand[100]} 100%)`;
@@ -146,8 +145,26 @@ export function ImageCard({ card, onDelete, onUpdate, compact = false }: ImageCa
           </Box>
 
           {/* Meaning as "ability" */}
-          {!compact && (
-            <Box sx={{ px: 1.5, pt: "8px" }}>
+          <Box sx={{ px: 1.5, pt: "8px" }}>
+            <Box
+              sx={{
+                bgcolor: alpha(typeBg, 0.75),
+                borderRadius: "6px", px: 1.2, py: "7px",
+                border: `1px solid ${alpha(typeAccent, 0.22)}`,
+              }}
+            >
+              <Typography sx={{ fontSize: "0.54rem", fontWeight: 900, color: typeAccent, letterSpacing: "0.12em", textTransform: "uppercase", mb: "3px", fontFamily: '"DM Mono", monospace' }}>
+                ★ Meaning
+              </Typography>
+              <Typography sx={{ fontSize: "0.78rem", fontWeight: 700, color: "#1A1A1A", fontFamily: '"Nunito", sans-serif', lineHeight: 1.3 }}>
+                {localCard.meaning}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Example sentence as "attack" */}
+          {localCard.example_jp && (
+            <Box sx={{ px: 1.5, pt: "6px" }}>
               <Box
                 sx={{
                   bgcolor: alpha(typeBg, 0.75),
@@ -156,45 +173,17 @@ export function ImageCard({ card, onDelete, onUpdate, compact = false }: ImageCa
                 }}
               >
                 <Typography sx={{ fontSize: "0.54rem", fontWeight: 900, color: typeAccent, letterSpacing: "0.12em", textTransform: "uppercase", mb: "3px", fontFamily: '"DM Mono", monospace' }}>
-                  ★ Meaning
+                  * SAMPLE SENTENCE
                 </Typography>
-                <Typography sx={{ fontSize: "0.78rem", fontWeight: 700, color: "#1A1A1A", fontFamily: '"Nunito", sans-serif', lineHeight: 1.3 }}>
-                  {localCard.meaning}
-                </Typography>
-              </Box>
-            </Box>
-          )}
-
-          {/* Example sentence as "attack" */}
-          {!compact && localCard.example_jp && (
-            <Box sx={{ px: 1.5, pt: "6px" }}>
-              <Box
-                sx={{
-                  bgcolor: "rgba(0,0,0,0.025)",
-                  borderRadius: "6px", px: 1.2, py: "7px",
-                  border: "1px solid rgba(0,0,0,0.07)",
-                }}
-              >
-                <Typography sx={{ fontSize: "0.54rem", fontWeight: 900, color: "#999", letterSpacing: "0.12em", textTransform: "uppercase", mb: "3px", fontFamily: '"DM Mono", monospace' }}>
-                  例文
-                </Typography>
-                <Typography component="div" sx={{ fontSize: "0.7rem", color: accent[700], fontFamily: '"Nunito", sans-serif', lineHeight: 1.5, fontWeight: 600 }}>
+                <Typography component="div" sx={{ fontSize: "0.85rem", color: accent[700], fontFamily: '"Nunito", sans-serif', lineHeight: 1.6, fontWeight: 600 }}>
                   <FuriganaText text={localCard.example_jp} showFurigana={localCard.mainViewMode === "hiragana"} />
                 </Typography>
                 {localCard.example_en && (
-                  <Typography sx={{ fontSize: "0.63rem", color: "#666", mt: "3px", fontStyle: "italic", lineHeight: 1.4 }}>
+                  <Typography sx={{ fontSize: "0.78rem", color: "#555", mt: "4px", fontStyle: "italic", lineHeight: 1.5 }}>
                     {localCard.example_en}
                   </Typography>
                 )}
               </Box>
-            </Box>
-          )}
-
-          {compact && (
-            <Box sx={{ px: 1.5, pt: 1, pb: 0.5 }}>
-              <Typography sx={{ fontSize: "0.62rem", color: alpha(brand[700], 0.45), fontStyle: "italic" }}>
-                Practice to reveal ✨
-              </Typography>
             </Box>
           )}
 

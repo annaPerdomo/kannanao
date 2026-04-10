@@ -740,7 +740,6 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
                 card={card}
                 onDelete={deleteCard}
                 onUpdate={updateCard}
-                compact
               />
             ))}
           </Box>
