@@ -199,22 +199,47 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
               {onPin && (
                 <Tooltip title={deck.pinned ? 'Unpin from home' : 'Pin to home'}>
                   <IconButton size="small" onClick={(e) => { e.stopPropagation(); onPin(deck.id, !deck.pinned); }}
-                    sx={{ width: 26, height: 26, color: deck.pinned ? brand[500] : alpha(brand[300], 0.6), '&:hover': { color: brand[600], bgcolor: alpha(brand[100], 0.5) } }}>
-                    {deck.pinned ? <PushPinIcon sx={{ fontSize: 14 }} /> : <PushPinOutlinedIcon sx={{ fontSize: 14 }} />}
+                    sx={{
+                      width: 26, height: 26,
+                      color: deck.pinned ? brand[600] : brand[500],
+                      bgcolor: deck.pinned ? alpha(brand[200], 0.6) : 'transparent',
+                      border: `1px solid ${deck.pinned ? alpha(brand[400], 0.6) : alpha(brand[400], 0.35)}`,
+                      borderRadius: '6px',
+                      '&:hover': { color: brand[700], bgcolor: alpha(brand[200], 0.7), borderColor: alpha(brand[500], 0.6) },
+                    }}>
+                    {deck.pinned ? <PushPinIcon sx={{ fontSize: 13 }} /> : <PushPinOutlinedIcon sx={{ fontSize: 13 }} />}
                   </IconButton>
                 </Tooltip>
               )}
               {isOwner && onShare && (
-                <IconButton size="small" onClick={(e) => { e.stopPropagation(); onShare(deck.id); }}
-                  sx={{ width: 26, height: 26, color: alpha(accent[400], 0.7), '&:hover': { color: accent[600], bgcolor: alpha(accent[100], 0.5) } }}>
-                  <IosShareIcon sx={{ fontSize: 14 }} />
-                </IconButton>
+                <Tooltip title="Share deck">
+                  <IconButton size="small" onClick={(e) => { e.stopPropagation(); onShare(deck.id); }}
+                    sx={{
+                      width: 26, height: 26,
+                      color: accent[500],
+                      bgcolor: 'transparent',
+                      border: `1px solid ${alpha(accent[400], 0.35)}`,
+                      borderRadius: '6px',
+                      '&:hover': { color: accent[700], bgcolor: alpha(accent[100], 0.5), borderColor: alpha(accent[500], 0.6) },
+                    }}>
+                    <IosShareIcon sx={{ fontSize: 14 }} />
+                  </IconButton>
+                </Tooltip>
               )}
               {isOwner && (
-                <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDelete(deck.id); }}
-                  sx={{ width: 26, height: 26, color: alpha(brand[300], 0.7), '&:hover': { color: brand[500], bgcolor: alpha(brand[100], 0.5) } }}>
-                  <DeleteOutlineIcon sx={{ fontSize: 14 }} />
-                </IconButton>
+                <Tooltip title="Delete deck">
+                  <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDelete(deck.id); }}
+                    sx={{
+                      width: 26, height: 26,
+                      color: brand[500],
+                      bgcolor: 'transparent',
+                      border: `1px solid ${alpha(brand[400], 0.35)}`,
+                      borderRadius: '6px',
+                      '&:hover': { color: brand[700], bgcolor: alpha(brand[100], 0.5), borderColor: alpha(brand[500], 0.6) },
+                    }}>
+                    <DeleteOutlineIcon sx={{ fontSize: 14 }} />
+                  </IconButton>
+                </Tooltip>
               )}
             </Box>
           </Box>

@@ -10,7 +10,7 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
   return (
     <Deck
       deckId={id}
-      onBack={() => router.push('/')}
+      onBack={() => router.push('/decks')}
       onStudy={() => router.push(`/deck/${id}/study`)}
       onPractice={(mode) => router.push(`/deck/${id}/practice/${mode}`)}
     />

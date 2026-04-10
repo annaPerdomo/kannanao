@@ -18,6 +18,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
+import PushPinIcon from "@mui/icons-material/PushPin";
+import PushPinOutlinedIcon from "@mui/icons-material/PushPinOutlined";
 import { AddCardsModal } from "@/components/AddCardsModal";
 import { ImageCard } from "@/components/ImageCard";
 import { Loading } from "@/components/Loading";
@@ -114,6 +116,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     loading: decksLoading,
     updateDeckCount,
     renameDeck,
+    pinDeck,
   } = useDecks();
   const deck = decks.find((d) => d.id === deckId);
 
@@ -438,19 +441,44 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           </Box>
 
           {!editing && (
-            <Chip
-              label={`${cards.length} card${cards.length !== 1 ? "s" : ""}`}
-              size="small"
-              sx={{
-                borderRadius: "8px",
-                bgcolor: brand[50],
-                border: `1.5px solid ${alpha(brand[400], 0.4)}`,
-                color: brand[700],
-                fontWeight: 800,
-                fontSize: "0.7rem",
-                flexShrink: 0,
-              }}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}>
+              <Tooltip title={deck.pinned ? "Unpin from home" : "Pin to home"}>
+                <IconButton
+                  size="small"
+                  onClick={() => pinDeck(deck.id, !deck.pinned)}
+                  sx={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: "8px",
+                    border: `1.5px solid ${deck.pinned ? alpha(brand[500], 0.6) : alpha(brand[300], 0.45)}`,
+                    bgcolor: deck.pinned ? alpha(brand[100], 0.8) : "transparent",
+                    color: deck.pinned ? brand[600] : alpha(brand[500], 0.55),
+                    "&:hover": {
+                      bgcolor: alpha(brand[100], 0.8),
+                      color: brand[600],
+                      borderColor: alpha(brand[500], 0.6),
+                    },
+                  }}
+                >
+                  {deck.pinned
+                    ? <PushPinIcon sx={{ fontSize: 14 }} />
+                    : <PushPinOutlinedIcon sx={{ fontSize: 14 }} />
+                  }
+                </IconButton>
+              </Tooltip>
+              <Chip
+                label={`${cards.length} card${cards.length !== 1 ? "s" : ""}`}
+                size="small"
+                sx={{
+                  borderRadius: "8px",
+                  bgcolor: brand[50],
+                  border: `1.5px solid ${alpha(brand[400], 0.4)}`,
+                  color: brand[700],
+                  fontWeight: 800,
+                  fontSize: "0.7rem",
+                }}
+              />
+            </Box>
           )}
         </Box>
       </Box>

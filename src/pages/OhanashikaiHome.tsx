@@ -22,6 +22,7 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { Loading } from '@/components/Loading';
+import { PageHeroHeader } from '@/components/PageHeroHeader';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
 
 export default function OhanashikaiHome() {
@@ -62,47 +63,18 @@ export default function OhanashikaiHome() {
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', px: { xs: 2, sm: 4 }, py: { xs: 3, sm: 5 } }}>
 
-      {/* ── Hero Header ── */}
-      <Box
-        sx={{
-          position: 'relative',
-          overflow: 'hidden',
-          borderRadius: 4,
-          mb: 4,
-          p: { xs: 3, sm: 4 },
-          background: `linear-gradient(135deg, ${alpha(brand[100], 0.9)} 0%, ${alpha(accent[100], 0.8)} 100%)`,
-          border: `2px solid ${alpha(brand[300], 0.3)}`,
-          boxShadow: `0 8px 40px ${alpha(brand[300], 0.2)}`,
-        }}
-      >
-        {/* Decorative blobs */}
-        <Box sx={{ position: 'absolute', top: -30, right: -30, width: 150, height: 150, borderRadius: '50%', background: alpha(accent[200], 0.2), pointerEvents: 'none' }} />
-        <Box sx={{ position: 'absolute', bottom: -20, left: '30%', width: 100, height: 100, borderRadius: '50%', background: alpha(brand[200], 0.2), pointerEvents: 'none' }} />
-
-        <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} justifyContent="space-between" spacing={2}>
-          <Box>
-            <Stack direction="row" alignItems="center" spacing={1.5} mb={0.75}>
-              <Typography sx={{ fontSize: { xs: '2rem', sm: '2.5rem' } }}>🎤</Typography>
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 800, color: brand[800], lineHeight: 1.1 }}>
-                  お話し会
-                </Typography>
-                <Typography variant="body2" sx={{ color: brand[600], mt: 0.25 }}>
-                  Speech Practice
-                </Typography>
-              </Box>
-            </Stack>
-            <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 380 }}>
-              Add your speeches, then practice until you know every line by heart! ✨
-            </Typography>
-          </Box>
-
+      <PageHeroHeader
+        emoji="🎤"
+        title="お話し会"
+        subtitle="Speech Practice"
+        description="Add your speeches, then practice until you know every line by heart! ✨"
+        onBack={() => router.push('/')}
+        action={
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setCreateOpen(true)}
             sx={{
-              flexShrink: 0,
               borderRadius: 3,
               px: 2.5,
               py: 1,
@@ -116,8 +88,8 @@ export default function OhanashikaiHome() {
           >
             New Speech
           </Button>
-        </Stack>
-      </Box>
+        }
+      />
 
       {/* ── Speech List ── */}
       {ohanashikais.length === 0 ? (
@@ -153,6 +125,7 @@ export default function OhanashikaiHome() {
             return (
               <Box
                 key={item.id}
+                onClick={() => router.push(`/ohanashikai/${item.id}`)}
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
@@ -162,6 +135,7 @@ export default function OhanashikaiHome() {
                   bgcolor: '#FFFFFF',
                   border: `1.5px solid ${alpha(brand[300], 0.3)}`,
                   boxShadow: `0 2px 12px ${alpha(brand[300], 0.1)}`,
+                  cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   '&:hover': {
                     boxShadow: `0 6px 24px ${alpha(brand[300], 0.22)}`,
@@ -205,7 +179,7 @@ export default function OhanashikaiHome() {
                 </Box>
 
                 {/* Actions */}
-                <Stack direction="row" spacing={0.5} flexShrink={0}>
+                <Stack direction="row" spacing={0.5} flexShrink={0} onClick={(e) => e.stopPropagation()}>
                   <Tooltip title={item.pinned ? 'Unpin from home' : 'Pin to home'}>
                     <IconButton
                       size="small"
@@ -224,15 +198,6 @@ export default function OhanashikaiHome() {
                       <DeleteIcon sx={{ fontSize: '1rem' }} />
                     </IconButton>
                   </Tooltip>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    endIcon={<ArrowForwardIcon sx={{ fontSize: '0.9rem !important' }} />}
-                    onClick={() => router.push(`/ohanashikai/${item.id}`)}
-                    sx={{ borderRadius: 2.5, px: 2, fontSize: '0.78rem', fontWeight: 800 }}
-                  >
-                    Open
-                  </Button>
                 </Stack>
               </Box>
             );

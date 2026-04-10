@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import Box from "@mui/material/Box";
 import Providers from "./providers";
 import { NavBar } from "@/components/NavBar";
 import { Footer } from "@/components/Footer";
@@ -55,7 +56,9 @@ export default function RootLayout({
           <Providers>
             <AppBackground>
               <NavBar />
-              <AuthGuard>{children}</AuthGuard>
+              <Box sx={{ flex: 1 }}>
+                <AuthGuard>{children}</AuthGuard>
+              </Box>
               <Footer />
             </AppBackground>
           </Providers>

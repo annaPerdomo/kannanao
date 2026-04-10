@@ -12,6 +12,8 @@ export function AppBackground({ children }: { children: ReactNode }) {
     <Box
       sx={(theme) => ({
         minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
         bgcolor: 'background.default',
         backgroundImage: `
           radial-gradient(circle at 20% 20%, ${alpha(theme.palette.brand[300], 0.18)} 0%, transparent 28%),
