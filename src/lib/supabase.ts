@@ -489,7 +489,7 @@ export async function dbCreateTodo(text: string): Promise<Todo> {
   return dbTodoToApp(data);
 }
 
-export async function dbUpdateTodo(id: string, patch: Partial<Pick<Todo, 'text' | 'completed'>>): Promise<Todo> {
+export async function dbUpdateTodo(id: string, patch: Partial<Pick<Todo, 'text' | 'completed' | 'emoji'>>): Promise<Todo> {
   if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
   const { data, error } = await sb
     .from('todos')

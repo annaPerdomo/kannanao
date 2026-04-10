@@ -61,6 +61,18 @@ export function useTodos() {
     }
   }, [todos]);
 
+  const editEmoji = useCallback(async (id: string, emoji: string) => {
+    const prev_todo = todos.find((t) => t.id === id);
+    if (!prev_todo) return;
+    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, emoji } : t)));
+    try {
+      await dbUpdateTodo(id, { emoji });
+    } catch {
+      setTodos((prev) => prev.map((t) => (t.id === id ? prev_todo : t)));
+      setError('Could not save emoji — please try again');
+    }
+  }, [todos]);
+
   const deleteTodo = useCallback(async (id: string) => {
     const snapshot = todos;
     setTodos((prev) => prev.filter((t) => t.id !== id));
@@ -74,5 +86,5 @@ export function useTodos() {
 
   const clearError = useCallback(() => setError(null), []);
 
-  return { todos, loading, error, addTodo, toggleTodo, editTodo, deleteTodo, clearError };
+  return { todos, loading, error, addTodo, toggleTodo, editTodo, editEmoji, deleteTodo, clearError };
 }

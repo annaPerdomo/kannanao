@@ -10,6 +10,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Collapse from '@mui/material/Collapse';
 import Alert from '@mui/material/Alert';
 import Tooltip from '@mui/material/Tooltip';
+import Popover from '@mui/material/Popover';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
@@ -17,6 +18,7 @@ import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
 import { useTodos } from '@/hooks/useTodos';
 import type { Todo } from '@/types/todo';
 
@@ -57,17 +59,19 @@ interface TodoItemProps {
   todo: Todo;
   onToggle: (id: string) => Promise<boolean>;
   onEdit: (id: string, text: string) => void;
+  onEditEmoji: (id: string, emoji: string) => void;
   onDelete: (id: string) => void;
   onXpEarned?: (xp: number) => void;
 }
 
-function TodoItem({ todo, onToggle, onEdit, onDelete, onXpEarned }: TodoItemProps) {
+function TodoItem({ todo, onToggle, onEdit, onEditEmoji, onDelete, onXpEarned }: TodoItemProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(todo.text);
   const [showXp, setShowXp] = useState(false);
+  const [emojiAnchor, setEmojiAnchor] = useState<HTMLElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
@@ -106,7 +110,36 @@ function TodoItem({ todo, onToggle, onEdit, onDelete, onXpEarned }: TodoItemProp
       },
     }}>
       <XpPop show={showXp} />
-      <Typography sx={{ fontSize: '1.05rem', lineHeight: 1, flexShrink: 0 }}>{todo.emoji}</Typography>
+      <Tooltip title="Change emoji">
+        <Box
+          component="button"
+          onClick={(e) => setEmojiAnchor(e.currentTarget)}
+          sx={{
+            fontSize: '1.05rem', lineHeight: 1, flexShrink: 0,
+            background: 'none', border: 'none', cursor: 'pointer', p: 0.25,
+            borderRadius: 1, transition: 'transform 0.15s',
+            '&:hover': { transform: 'scale(1.3)' },
+          }}
+        >
+          {todo.emoji}
+        </Box>
+      </Tooltip>
+      <Popover
+        open={Boolean(emojiAnchor)}
+        anchorEl={emojiAnchor}
+        onClose={() => setEmojiAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      >
+        <EmojiPicker
+          theme={Theme.AUTO}
+          onEmojiClick={(data: EmojiClickData) => {
+            onEditEmoji(todo.id, data.emoji);
+            setEmojiAnchor(null);
+          }}
+          lazyLoadEmojis
+        />
+      </Popover>
       <Checkbox checked={todo.completed} onChange={handleToggle} size="small" sx={{
         p: 0.5, color: 'primary.main',
         '&.Mui-checked': { color: 'secondary.dark' },
@@ -151,7 +184,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
-  const { todos, loading, error, addTodo, toggleTodo, editTodo, deleteTodo, clearError } = useTodos();
+  const { todos, loading, error, addTodo, toggleTodo, editTodo, editEmoji, deleteTodo, clearError } = useTodos();
   const [input, setInput] = useState('');
   const [celebration, setCelebration] = useState('');
   const prevCompleted = useRef(0);
@@ -290,7 +323,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
         ) : (
           <Stack spacing={1}>
             {[...todos.filter((t) => !t.completed), ...todos.filter((t) => t.completed)].map((todo) => (
-              <TodoItem key={todo.id} todo={todo} onToggle={toggleTodo} onEdit={editTodo} onDelete={deleteTodo} onXpEarned={onXpEarned} />
+              <TodoItem key={todo.id} todo={todo} onToggle={toggleTodo} onEdit={editTodo} onEditEmoji={editEmoji} onDelete={deleteTodo} onXpEarned={onXpEarned} />
             ))}
           </Stack>
         )}
