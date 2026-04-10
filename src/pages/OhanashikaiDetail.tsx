@@ -497,7 +497,7 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
             inputRef={inputRef}
             value={newLineText}
             onChange={(e) => setNewLineText(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) void handleAddLine(); }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) void handleAddLine(); }}
             placeholder="Type a new line and press Enter…"
             size="small"
             fullWidth

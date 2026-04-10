@@ -3,9 +3,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box, Card, CardContent, TextField, Button,
-  Typography, Alert, Divider, CircularProgress,
+  Typography, Alert, Divider, CircularProgress, IconButton, InputAdornment,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
@@ -18,6 +20,7 @@ export default function LoginPage() {
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,8 +66,19 @@ export default function LoginPage() {
               autoComplete="username" size="small" fullWidth required
             />
             <TextField
-              label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+              label="Password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
               autoComplete={isSignUp ? "new-password" : "current-password"} size="small" fullWidth required
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => setShowPassword((s) => !s)} edge="end">
+                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
             />
             {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
             <Button
