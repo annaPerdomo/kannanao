@@ -16,6 +16,8 @@ import Tooltip from '@mui/material/Tooltip';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import PushPinIcon from '@mui/icons-material/PushPin';
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
@@ -27,7 +29,7 @@ export default function OhanashikaiHome() {
   const { brand, accent, surfaces } = theme.palette;
   const router = useRouter();
 
-  const { ohanashikais, loading, createOhanashikai, deleteOhanashikai } = useOhanashikais();
+  const { ohanashikais, loading, createOhanashikai, deleteOhanashikai, pinOhanashikai } = useOhanashikais();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [titleVal, setTitleVal] = useState('');
@@ -204,6 +206,15 @@ export default function OhanashikaiHome() {
 
                 {/* Actions */}
                 <Stack direction="row" spacing={0.5} flexShrink={0}>
+                  <Tooltip title={item.pinned ? 'Unpin from home' : 'Pin to home'}>
+                    <IconButton
+                      size="small"
+                      onClick={() => pinOhanashikai(item.id, !item.pinned)}
+                      sx={{ color: item.pinned ? brand[500] : alpha(brand[300], 0.6), '&:hover': { color: brand[600], bgcolor: alpha(brand[100], 0.5) } }}
+                    >
+                      {item.pinned ? <PushPinIcon sx={{ fontSize: '1rem' }} /> : <PushPinOutlinedIcon sx={{ fontSize: '1rem' }} />}
+                    </IconButton>
+                  </Tooltip>
                   <Tooltip title="Delete">
                     <IconButton
                       size="small"

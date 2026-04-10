@@ -6,6 +6,7 @@ import {
   dbDeleteDeck,
   dbRenameDeck,
   dbUpdateDeckEmoji,
+  dbPinDeck,
   isConfigured,
   loadDecks,
   showConfigBanner,
@@ -94,6 +95,15 @@ export function useDecks() {
     }
   }, [decks]);
 
+  const pinDeck = useCallback(async (id: string, pinned: boolean): Promise<void> => {
+    setDecks((ds) => ds.map((d) => (d.id === id ? { ...d, pinned } : d)));
+    try {
+      await dbPinDeck(id, pinned);
+    } catch {
+      setDecks((ds) => ds.map((d) => (d.id === id ? { ...d, pinned: !pinned } : d)));
+    }
+  }, []);
+
   return {
     decks,
     loading,
@@ -102,5 +112,6 @@ export function useDecks() {
     renameDeck,
     updateDeckCount,
     updateDeckEmoji,
+    pinDeck,
   };
 }

@@ -4,12 +4,15 @@ import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 export function Footer() {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
   const router = useRouter();
+  const pathname = usePathname();
+
+  if (pathname === '/login') return null;
 
   return (
     <Box

@@ -5,6 +5,8 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import IosShareIcon from '@mui/icons-material/IosShare';
+import PushPinIcon from '@mui/icons-material/PushPin';
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
 import type { Deck } from '@/types/deck';
 
@@ -14,10 +16,11 @@ interface DeckCardProps {
   onDelete: (id: string) => void;
   onShare?: (id: string) => void;
   onEditEmoji?: (id: string, emoji: string) => void;
+  onPin?: (id: string, pinned: boolean) => void;
   isOwner?: boolean;
 }
 
-export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, isOwner = true }: DeckCardProps) {
+export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, isOwner = true }: DeckCardProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const [emojiAnchor, setEmojiAnchor] = useState<HTMLElement | null>(null);
@@ -192,18 +195,28 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, isOwner
             <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[500], 0.6), fontFamily: '"DM Mono", monospace', letterSpacing: '0.06em' }}>
               CARD DECK
             </Typography>
-            {isOwner && (
-              <Box sx={{ display: 'flex', gap: 0.25 }} onClick={(e) => e.stopPropagation()}>
-                <IconButton size="small" onClick={(e) => { e.stopPropagation(); onShare?.(deck.id); }}
+            <Box sx={{ display: 'flex', gap: 0.25 }} onClick={(e) => e.stopPropagation()}>
+              {onPin && (
+                <Tooltip title={deck.pinned ? 'Unpin from home' : 'Pin to home'}>
+                  <IconButton size="small" onClick={(e) => { e.stopPropagation(); onPin(deck.id, !deck.pinned); }}
+                    sx={{ width: 26, height: 26, color: deck.pinned ? brand[500] : alpha(brand[300], 0.6), '&:hover': { color: brand[600], bgcolor: alpha(brand[100], 0.5) } }}>
+                    {deck.pinned ? <PushPinIcon sx={{ fontSize: 14 }} /> : <PushPinOutlinedIcon sx={{ fontSize: 14 }} />}
+                  </IconButton>
+                </Tooltip>
+              )}
+              {isOwner && onShare && (
+                <IconButton size="small" onClick={(e) => { e.stopPropagation(); onShare(deck.id); }}
                   sx={{ width: 26, height: 26, color: alpha(accent[400], 0.7), '&:hover': { color: accent[600], bgcolor: alpha(accent[100], 0.5) } }}>
                   <IosShareIcon sx={{ fontSize: 14 }} />
                 </IconButton>
+              )}
+              {isOwner && (
                 <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDelete(deck.id); }}
                   sx={{ width: 26, height: 26, color: alpha(brand[300], 0.7), '&:hover': { color: brand[500], bgcolor: alpha(brand[100], 0.5) } }}>
                   <DeleteOutlineIcon sx={{ fontSize: 14 }} />
                 </IconButton>
-              </Box>
-            )}
+              )}
+            </Box>
           </Box>
         </Box>
       </Box>

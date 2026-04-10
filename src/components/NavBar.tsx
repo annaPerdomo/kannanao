@@ -10,6 +10,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MicIcon from '@mui/icons-material/Mic';
 import HomeIcon from '@mui/icons-material/Home';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
@@ -27,6 +28,7 @@ export function NavBar() {
   const isHome        = pathname === '/';
   const isStats       = pathname === '/stats';
   const isOhanashikai = pathname?.startsWith('/ohanashikai') ?? false;
+  const isDecks       = pathname?.startsWith('/decks') ?? false;
 
 
   const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgress();
@@ -169,6 +171,21 @@ export function NavBar() {
               }}
             >
               <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Home</Box>
+            </Button>
+          )}
+
+          {/* Decks */}
+          {user && !isDecks && (
+            <Button
+              onClick={() => router.push('/decks')}
+              size="small"
+              startIcon={<LibraryBooksIcon sx={{ fontSize: '1rem !important' }} />}
+              sx={{
+                ...navBtn,
+                '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
+              }}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Decks</Box>
             </Button>
           )}
 

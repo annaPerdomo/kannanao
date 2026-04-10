@@ -118,7 +118,7 @@ function WelcomeBanner({ username, level, streak, totalXp }: {
 }
 
 export default function Home() {
-  const { decks, deleteDeck, updateDeckEmoji, loading } = useDecks();
+  const { decks, deleteDeck, updateDeckEmoji, pinDeck, loading } = useDecks();
   const { user, displayName } = useAuth();
   const { progress, addBonusXp } = useProgress();
   const { ohanashikais } = useOhanashikais();
@@ -129,6 +129,9 @@ export default function Home() {
 
   const username = displayName ?? user?.email?.split('@')[0] ?? 'there';
   const isOwner = (deck: { ownerId: string }) => deck.ownerId === user?.id;
+
+  const pinnedDecks = decks.filter((d) => d.pinned);
+  const pinnedSpeeches = ohanashikais.filter((o) => o.pinned);
 
   if (loading) {
     return (
@@ -188,33 +191,53 @@ export default function Home() {
         </Box>
       </Box>
 
-      {/* ── Decks Section ── */}
-      <Box>
-        <Typography variant="h5" sx={{ color: 'text.primary', mb: 2, fontWeight: 800 }}>
-          {decks.length > 0 ? '📚 Your Decks' : '📚 No decks yet'}
-        </Typography>
+      {/* ── Pinned Decks Section ── */}
+      <Box sx={{ mb: 5 }}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
+          <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 800 }}>
+            📚 Decks
+          </Typography>
+          <Button
+            size="small"
+            variant="text"
+            onClick={() => router.push('/decks')}
+            sx={{ fontSize: '0.78rem', color: 'text.secondary' }}
+          >
+            Manage all decks →
+          </Button>
+        </Stack>
 
-        {decks.length === 0 ? (
+        {pinnedDecks.length === 0 ? (
           <Box
+            onClick={() => router.push('/decks')}
             sx={{
-              border: '1px dashed rgba(249,168,212,0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2.5,
+              p: { xs: 2.5, sm: 3 },
               borderRadius: 3,
-              p: 8,
-              textAlign: 'center',
-              bgcolor: '#FFF3F9',
-              boxShadow: '0 12px 26px rgba(249,168,212,0.12)',
+              border: '1.5px dashed rgba(249,168,212,0.4)',
+              bgcolor: 'rgba(255,243,249,0.7)',
+              cursor: 'pointer',
+              transition: 'all 0.18s ease',
+              '&:hover': { bgcolor: 'rgba(255,236,246,0.9)', borderColor: 'rgba(244,114,182,0.55)' },
             }}
           >
-            <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '4rem', color: 'rgba(249,168,212,0.25)', mb: 2, lineHeight: 1 }}>
-              漢
-            </Typography>
-            <Typography color="text.secondary" sx={{ mb: 3 }}>
-              Create your first deck to start building flashcards
-            </Typography>
+            <Typography sx={{ fontSize: '2.2rem', flexShrink: 0 }}>📌</Typography>
+            <Box>
+              <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                {decks.length === 0 ? 'Create your first deck!' : 'Pin a deck to see it here'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {decks.length === 0
+                  ? 'Head to Decks to start building flashcards ✨'
+                  : 'Open Decks and tap the pin icon on any deck ✨'}
+              </Typography>
+            </Box>
           </Box>
         ) : (
           <Grid container spacing={2}>
-            {decks.map((deck) => {
+            {pinnedDecks.map((deck) => {
               const owned = isOwner(deck);
               return (
                 <Grid size={{ xs: 12, sm: 6, md: 4 }} key={deck.id}>
@@ -224,6 +247,7 @@ export default function Home() {
                     onDelete={owned ? deleteDeck : () => {}}
                     onShare={owned ? (id) => { setShareDeckId(id); setShareDeckName(deck.name); } : undefined}
                     onEditEmoji={owned ? updateDeckEmoji : undefined}
+                    onPin={pinDeck}
                     isOwner={owned}
                   />
                 </Grid>
@@ -233,13 +257,23 @@ export default function Home() {
         )}
       </Box>
 
-      {/* ── Ohanashikai prompt ── */}
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h5" sx={{ color: 'text.primary', mb: 2, fontWeight: 800 }}>
-          ✨ Speech Practice
-        </Typography>
+      {/* ── Pinned Speeches Section ── */}
+      <Box>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
+          <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 800 }}>
+            ✨ Speech Practice
+          </Typography>
+          <Button
+            size="small"
+            variant="text"
+            onClick={() => router.push('/ohanashikai')}
+            sx={{ fontSize: '0.78rem', color: 'text.secondary' }}
+          >
+            Manage speeches →
+          </Button>
+        </Stack>
 
-        {ohanashikais.length === 0 ? (
+        {pinnedSpeeches.length === 0 ? (
           <Box
             sx={{
               display: 'flex',
@@ -258,16 +292,18 @@ export default function Home() {
             <Typography sx={{ fontSize: '2.2rem', flexShrink: 0 }}>🌸</Typography>
             <Box>
               <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                Practice your お話し会 speech!
+                {ohanashikais.length === 0 ? 'Practice your お話し会 speech!' : 'Pin a speech to see it here'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Add your lines and start memorizing — tap to get started ✨
+                {ohanashikais.length === 0
+                  ? 'Add your lines and start memorizing — tap to get started ✨'
+                  : 'Open Speeches and tap the pin icon on any speech ✨'}
               </Typography>
             </Box>
           </Box>
         ) : (
           <Stack spacing={1.5}>
-            {ohanashikais.map((item, i) => {
+            {pinnedSpeeches.map((item, i) => {
               const cardEmojis = ['🌸', '✨', '🌟', '💫', '🎀'];
               const emoji = cardEmojis[i % cardEmojis.length];
               return (
@@ -300,14 +336,6 @@ export default function Home() {
                 </Box>
               );
             })}
-            <Button
-              size="small"
-              variant="text"
-              onClick={() => router.push('/ohanashikai')}
-              sx={{ alignSelf: 'flex-start', fontSize: '0.78rem', color: 'text.secondary', mt: 0.5 }}
-            >
-              Manage speeches →
-            </Button>
           </Stack>
         )}
       </Box>

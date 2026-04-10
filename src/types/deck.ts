@@ -7,4 +7,5 @@ export interface Deck {
   ownerId: string;
   isShared?: boolean;
   emoji: string;
+  pinned?: boolean;
 }

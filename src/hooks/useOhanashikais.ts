@@ -8,6 +8,7 @@ import {
   dbCreateOhanashikai,
   dbDeleteOhanashikai,
   dbUpdateOhanashikaiTitle,
+  dbPinOhanashikai,
   loadOhanashikaiLines,
   dbCreateOhanashikaiLine,
   dbUpdateOhanashikaiLine,
@@ -53,7 +54,16 @@ export function useOhanashikais() {
     [],
   );
 
-  return { ohanashikais, loading, createOhanashikai, deleteOhanashikai, renameOhanashikai, refetch: fetchAll };
+  const pinOhanashikai = useCallback(async (id: string, pinned: boolean) => {
+    setOhanashikais((prev) => prev.map((o) => (o.id === id ? { ...o, pinned } : o)));
+    try {
+      await dbPinOhanashikai(id, pinned);
+    } catch {
+      setOhanashikais((prev) => prev.map((o) => (o.id === id ? { ...o, pinned: !pinned } : o)));
+    }
+  }, []);
+
+  return { ohanashikais, loading, createOhanashikai, deleteOhanashikai, renameOhanashikai, pinOhanashikai, refetch: fetchAll };
 }
 
 // ─── useOhanashikaiLines ──────────────────────────────────────────────────────

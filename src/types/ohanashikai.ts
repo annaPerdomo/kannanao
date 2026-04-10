@@ -5,6 +5,7 @@ export interface Ohanashikai {
   description?: string;
   lineCount: number;
   createdAt: number;
+  pinned?: boolean;
 }
 
 export interface OhanashikaiLine {

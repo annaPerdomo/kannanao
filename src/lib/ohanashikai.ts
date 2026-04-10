@@ -11,6 +11,7 @@ interface OhanashikaiRow {
   title: string;
   description: string | null;
   created_at: string | null;
+  pinned: boolean | null;
 }
 
 interface OhanashikaiLineRow {
@@ -35,6 +36,7 @@ function rowToOhanashikai(row: OhanashikaiRow, lineCount: number): Ohanashikai {
     description: row.description ?? undefined,
     lineCount,
     createdAt: toMs(row.created_at),
+    pinned: row.pinned ?? false,
   };
 }
 
@@ -102,6 +104,12 @@ export async function dbDeleteOhanashikai(id: string): Promise<void> {
   if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
   const { error } = await sb.from('ohanashikais').delete().eq('id', id);
   if (error) throw error;
+}
+
+export async function dbPinOhanashikai(id: string, pinned: boolean): Promise<void> {
+  if (!isConfigured()) { showConfigBanner(); return; }
+  const { error } = await sb.from('ohanashikais').update({ pinned }).eq('id', id);
+  if (error) console.error('Error pinning ohanashikai', error);
 }
 
 export async function dbUpdateOhanashikaiTitle(
