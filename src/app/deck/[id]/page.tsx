@@ -7,7 +7,7 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
   const { id } = use(params);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const backPath = searchParams.get('from') === 'home' ? '/' : '/decks';
+  const backPath = searchParams?.get('from') === 'home' ? '/' : '/decks';
 
   return (
     <Deck

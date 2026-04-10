@@ -9,7 +9,7 @@ export default function OhanashikaiDetailPage({ params }: { params: Promise<{ id
   const { id } = use(params);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const backPath = searchParams.get('from') === 'home' ? '/' : '/ohanashikai';
+  const backPath = searchParams?.get('from') === 'home' ? '/' : '/ohanashikai';
 
   return (
     <OhanashikaiDetail

@@ -85,13 +85,21 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
         >
           {/* Top bar */}
           <Box sx={{
-            px: 2, py: 1,
+            px: 1.5, py: 0.75,
             background: `linear-gradient(135deg, ${brand[400]} 0%, ${accent[400]} 100%)`,
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
-            <Typography sx={{ fontSize: '0.65rem', fontWeight: 900, color: 'white', textTransform: 'uppercase', letterSpacing: '0.08em', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
-              Card Deck
-            </Typography>
+            <Box sx={{ display: 'flex', gap: 0.7, alignItems: 'center' }}>
+              <Typography sx={{ fontSize: '0.6rem', fontWeight: 900, color: 'white', textTransform: 'uppercase', letterSpacing: '0.07em', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
+                Card Deck
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+              <Typography sx={{ fontSize: '0.5rem', fontWeight: 700, color: 'rgba(255,255,255,0.8)', lineHeight: 1 }}>HP</Typography>
+              <Typography sx={{ fontSize: '0.68rem', fontWeight: 900, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: 1 }}>
+                {deck.cardCount * 10}
+              </Typography>
+            </Box>
           </Box>
 
           {/* Art frame */}
@@ -99,7 +107,7 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
             mx: '8px', mt: '6px', borderRadius: '6px', overflow: 'hidden',
             border: '2px solid rgba(0,0,0,0.14)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.1)',
             background: `linear-gradient(135deg, ${brand[100]} 0%, ${accent[100]} 50%, ${brand[100]} 100%)`,
-            height: 165, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            height: 185, display: 'flex', alignItems: 'center', justifyContent: 'center',
             position: 'relative',
           }}>
             <Box sx={{ position: 'absolute', top: 8, right: 12, fontSize: '0.65rem', color: alpha(brand[300], 0.6), pointerEvents: 'none' }}>✦</Box>
@@ -153,17 +161,19 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
           </Box>
 
           {/* Name */}
-          <Box sx={{ px: 2, pt: 1.5, pb: 0.75, borderBottom: `2.5px solid ${brand[400]}`, minHeight: 64 }}>
-            <Typography sx={{ fontWeight: 900, color: '#111', lineHeight: 1.15, fontSize: '1.1rem', letterSpacing: '-0.01em', fontFamily: '"Nunito", sans-serif' }}>
+          <Box sx={{ px: 1.5, pt: '9px', pb: '7px', borderBottom: `2px solid ${brand[400]}` }}>
+            <Typography sx={{ fontWeight: 900, color: '#111', lineHeight: 1.15, fontSize: '1.05rem', letterSpacing: '-0.01em', fontFamily: '"Nunito", sans-serif' }}>
               {deck.name}
             </Typography>
-            <Typography sx={{ color: '#777', lineHeight: 1.4, fontSize: '0.7rem', fontStyle: 'italic', mt: '2px', visibility: deck.description ? 'visible' : 'hidden' }}>
-              {deck.description || '\u00A0'}
-            </Typography>
+            {deck.description && (
+              <Typography sx={{ color: '#777', lineHeight: 1.3, fontSize: '0.65rem', fontStyle: 'italic', mt: '2px', fontFamily: '"Nunito", sans-serif' }}>
+                {deck.description}
+              </Typography>
+            )}
           </Box>
 
           {/* Stats */}
-          <Box sx={{ px: 2, py: 1.25, display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+          <Box sx={{ px: 1.5, pt: '8px', pb: '6px', display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
             <Chip
               label={`${deck.cardCount} cards ★`}
               size="small"
@@ -188,9 +198,9 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
 
           {/* Footer */}
           <Box sx={{
-            px: 2, py: '8px',
+            mt: 'auto', px: 1.5, py: '8px',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            borderTop: '1px solid rgba(0,0,0,0.07)',
+            borderTop: `1px solid ${alpha(brand[300], 0.25)}`,
           }}>
             <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[500], 0.6), fontFamily: '"DM Mono", monospace', letterSpacing: '0.06em' }}>
               CARD DECK
