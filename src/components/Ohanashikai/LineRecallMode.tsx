@@ -15,6 +15,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import type { OhanashikaiLine } from '@/types/ohanashikai';
 import { useProgress } from '@/hooks/useProgess';
+import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 
 interface LineRecallModeProps {
   lines: OhanashikaiLine[];
@@ -67,7 +68,7 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
   const done = index >= pool.length;
 
   const check = async () => {
-    const correct = normalize(input) === normalize(current.text);
+    const correct = normalize(input) === normalize(stripFurigana(current.text));
     setResult(correct ? 'correct' : 'wrong');
     if (correct) {
       setScore((s) => s + 1);
@@ -145,7 +146,7 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
     );
   }
 
-  const hint = getHint(current.text);
+  const hint = getHint(stripFurigana(current.text));
 
   return (
     <Box>
@@ -237,16 +238,16 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
             <Typography variant="caption" sx={{ color: accent[600], display: 'block', mb: 0.5, fontWeight: 800 }}>
               The answer:
             </Typography>
-            <Typography
+            <FuriganaText
+              text={current.text}
+              showFurigana
               sx={{
                 fontFamily: '"Noto Serif JP", serif',
                 fontSize: '1.1rem',
-                lineHeight: 1.8,
+                lineHeight: 2.4,
                 color: 'text.primary',
               }}
-            >
-              {current.text}
-            </Typography>
+            />
           </Box>
         )}
 

@@ -13,6 +13,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import type { OhanashikaiLine } from '@/types/ohanashikai';
 import { useProgress } from '@/hooks/useProgess';
+import FuriganaText from '@/components/FuriganaText';
 
 interface ReadThroughModeProps {
   lines: OhanashikaiLine[];
@@ -172,19 +173,19 @@ export function ReadThroughMode({ lines, ohanashikaiId, onExit }: ReadThroughMod
         </Stack>
 
         {/* The actual sentence */}
-        <Typography
+        <FuriganaText
+          text={currentLine?.text ?? ''}
+          showFurigana
           sx={{
             fontFamily: '"Noto Serif JP", "Noto Sans JP", serif',
             fontSize: { xs: '1.3rem', sm: '1.6rem' },
-            lineHeight: 1.9,
+            lineHeight: 2.8,
             color: 'text.primary',
             fontWeight: 500,
             flexGrow: 1,
             my: 'auto',
           }}
-        >
-          {currentLine?.text}
-        </Typography>
+        />
 
         {/* Hint */}
         <Typography

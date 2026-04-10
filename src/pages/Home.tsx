@@ -273,6 +273,7 @@ export default function Home() {
               return (
                 <Box
                   key={item.id}
+                  onClick={() => router.push(`/ohanashikai/${item.id}`)}
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
@@ -283,6 +284,7 @@ export default function Home() {
                     border: '1.5px solid rgba(249,168,212,0.3)',
                     boxShadow: '0 2px 10px rgba(249,168,212,0.1)',
                     transition: 'all 0.18s ease',
+                    cursor: 'pointer',
                     '&:hover': { boxShadow: '0 5px 20px rgba(249,168,212,0.2)', transform: 'translateY(-1px)' },
                   }}
                 >
@@ -295,24 +297,6 @@ export default function Home() {
                       {item.lineCount} line{item.lineCount !== 1 ? 's' : ''}
                     </Typography>
                   </Box>
-                  <Stack direction="row" spacing={1} flexShrink={0}>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={() => router.push(`/ohanashikai/${item.id}/practice/readthrough`)}
-                      sx={{ borderRadius: 2, px: 1.5, py: 0.5, fontSize: '0.72rem', fontWeight: 700, display: { xs: 'none', sm: 'inline-flex' } }}
-                    >
-                      📖 Read
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      onClick={() => router.push(`/ohanashikai/${item.id}/practice/linerecall`)}
-                      sx={{ borderRadius: 2, px: 1.5, py: 0.5, fontSize: '0.72rem', fontWeight: 700 }}
-                    >
-                      🎯 Recall
-                    </Button>
-                  </Stack>
                 </Box>
               );
             })}
