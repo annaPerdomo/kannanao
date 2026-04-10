@@ -439,10 +439,44 @@ export async function dbUnShareDeck(shareId: string): Promise<void> {
 
 // ─── Todos ────────────────────────────────────────────────────────────────────
 
-const TODO_EMOJIS = ['🌸', '⭐', '🦋', '🌈', '💕', '🌺', '🎀', '🍓', '🌙', '✨', '🐝', '🍀'];
+const EMOJI_KEYWORDS: Array<[string[], string]> = [
+  [['study', 'learn', 'read', 'book', 'homework', 'school', 'class', 'review', 'memorize'], '📚'],
+  [['japanese', 'kanji', 'hiragana', 'katakana', 'vocab', 'flashcard', 'anki', 'nihongo'], '🗾'],
+  [['eat', 'food', 'lunch', 'dinner', 'breakfast', 'cook', 'meal', 'snack', 'recipe', 'bake'], '🍱'],
+  [['exercise', 'workout', 'run', 'gym', 'walk', 'swim', 'sport', 'yoga', 'dance', 'stretch'], '🏃'],
+  [['sleep', 'rest', 'nap', 'bed'], '😴'],
+  [['clean', 'wash', 'laundry', 'dishes', 'tidy', 'organize', 'vacuum', 'sweep', 'mop'], '🧹'],
+  [['shop', 'buy', 'grocery', 'store', 'market', 'purchase', 'order'], '🛒'],
+  [['work', 'meeting', 'office', 'email', 'job', 'project', 'deadline', 'report', 'presentation'], '💼'],
+  [['friend', 'family', 'mom', 'dad', 'sister', 'brother', 'visit', 'hang out'], '💕'],
+  [['music', 'sing', 'guitar', 'piano', 'listen', 'song', 'playlist', 'practice instrument'], '🎵'],
+  [['draw', 'paint', 'art', 'craft', 'design', 'sketch', 'color'], '🎨'],
+  [['write', 'journal', 'diary', 'essay', 'poem', 'story', 'blog', 'notes'], '✏️'],
+  [['code', 'program', 'debug', 'build', 'develop', 'app', 'website', 'github'], '💻'],
+  [['water', 'hydrate', 'drink water'], '💧'],
+  [['coffee', 'tea', 'drink'], '☕'],
+  [['birthday', 'party', 'celebrate', 'gift', 'present', 'event'], '🎉'],
+  [['movie', 'watch', 'show', 'film', 'anime', 'video', 'tv', 'netflix', 'episode'], '🎬'],
+  [['game', 'gaming', 'mario', 'pokemon', 'play game'], '🎮'],
+  [['call', 'phone', 'text', 'message', 'facetime', 'zoom'], '📱'],
+  [['doctor', 'medicine', 'health', 'appointment', 'dentist', 'hospital', 'checkup'], '🏥'],
+  [['travel', 'trip', 'vacation', 'flight', 'pack', 'hotel', 'tour'], '✈️'],
+  [['garden', 'plant', 'flower', 'water plant', 'outdoor', 'hike', 'nature'], '🌸'],
+  [['pet', 'cat', 'dog', 'feed pet', 'walk dog', 'animal'], '🐾'],
+  [['money', 'pay', 'bill', 'bank', 'budget', 'save', 'rent', 'finance', 'invoice'], '💰'],
+  [['meditation', 'mindful', 'breathe', 'calm', 'relax'], '🧘'],
+  [['photo', 'camera', 'picture', 'selfie', 'instagram'], '📷'],
+  [['birthday', 'anniversary', 'wedding', 'graduation'], '🎊'],
+];
 
-function randomTodoEmoji(): string {
-  return TODO_EMOJIS[Math.floor(Math.random() * TODO_EMOJIS.length)];
+const FALLBACK_EMOJIS = ['🌸', '⭐', '🦋', '🌈', '💕', '🌺', '🎀', '🍓', '🌙', '✨', '🐝', '🍀'];
+
+function pickEmojiForText(text: string): string {
+  const lower = text.toLowerCase();
+  for (const [keywords, emoji] of EMOJI_KEYWORDS) {
+    if (keywords.some((kw) => lower.includes(kw))) return emoji;
+  }
+  return FALLBACK_EMOJIS[Math.floor(Math.random() * FALLBACK_EMOJIS.length)];
 }
 
 interface SupabaseTodoRow {
@@ -482,7 +516,7 @@ export async function dbCreateTodo(text: string): Promise<Todo> {
   if (!user) throw new Error('Not authenticated');
   const { data, error } = await sb
     .from('todos')
-    .insert({ text, user_id: user.id, completed: false, emoji: randomTodoEmoji() })
+    .insert({ text, user_id: user.id, completed: false, emoji: pickEmojiForText(text) })
     .select()
     .single();
   if (error || !data) throw error ?? new Error('Unable to create todo');

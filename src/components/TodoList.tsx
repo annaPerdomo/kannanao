@@ -131,14 +131,29 @@ function TodoItem({ todo, onToggle, onEdit, onEditEmoji, onDelete, onXpEarned }:
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
-        <EmojiPicker
-          theme={Theme.AUTO}
-          onEmojiClick={(data: EmojiClickData) => {
-            onEditEmoji(todo.id, data.emoji);
-            setEmojiAnchor(null);
-          }}
-          lazyLoadEmojis
-        />
+        <Box sx={{
+          '--epr-bg-color': brand[50],
+          '--epr-category-label-bg-color': brand[100],
+          '--epr-hover-bg-color': alpha(brand[300], 0.25),
+          '--epr-focus-bg-color': alpha(brand[300], 0.35),
+          '--epr-highlight-color': brand[400],
+          '--epr-search-border-color': alpha(brand[400], 0.4),
+          '--epr-header-overlay-color': brand[50],
+          '--epr-text-color': 'text.primary',
+          '--epr-category-icon-active-color': accent[500],
+          '--epr-search-input-bg-color': '#fff',
+          '--epr-emoji-size': '24px',
+          borderRadius: 3, overflow: 'hidden',
+        }}>
+          <EmojiPicker
+            theme={Theme.LIGHT}
+            onEmojiClick={(data: EmojiClickData) => {
+              onEditEmoji(todo.id, data.emoji);
+              setEmojiAnchor(null);
+            }}
+            lazyLoadEmojis
+          />
+        </Box>
       </Popover>
       <Checkbox checked={todo.completed} onChange={handleToggle} size="small" sx={{
         p: 0.5, color: 'primary.main',
