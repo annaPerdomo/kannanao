@@ -243,7 +243,7 @@ export default function Home() {
                 <Grid size={{ xs: 12, sm: 6, md: 4 }} key={deck.id}>
                   <DeckCard
                     deck={deck}
-                    onOpen={(id) => router.push(`/deck/${id}`)}
+                    onOpen={(id) => router.push(`/deck/${id}?from=home`)}
                     onDelete={owned ? deleteDeck : () => {}}
                     onShare={owned ? (id) => { setShareDeckId(id); setShareDeckName(deck.name); } : undefined}
                     onEditEmoji={owned ? updateDeckEmoji : undefined}
@@ -309,7 +309,7 @@ export default function Home() {
               return (
                 <Box
                   key={item.id}
-                  onClick={() => router.push(`/ohanashikai/${item.id}`)}
+                  onClick={() => router.push(`/ohanashikai/${item.id}?from=home`)}
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
