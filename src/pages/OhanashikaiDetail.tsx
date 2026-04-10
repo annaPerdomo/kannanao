@@ -9,11 +9,8 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -23,7 +20,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
+import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { Loading } from '@/components/Loading';
+import FuriganaText from '@/components/FuriganaText';
+import { formatFurigana } from '@/services/api';
 import { useOhanashikais, useOhanashikaiLines } from '@/hooks/useOhanashikais';
 import type { OhanashikaiPracticeMode } from '@/types/ohanashikai';
 
@@ -129,10 +130,45 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
     setEditingId(null);
   }, [editingId, editVal, updateLine]);
 
-  // ── Paste import dialog ──
-  const [pasteOpen, setPasteOpen] = useState(false);
+  // ── Bulk import ──
+  const [bulkMode, setBulkMode] = useState(false);
   const [pasteText, setPasteText] = useState('');
   const [importing, setImporting] = useState(false);
+  const [addingFurigana, setAddingFurigana] = useState(false);
+  const [furiganaError, setFuriganaError] = useState<string | null>(null);
+
+  const handleAddFurigana = useCallback(async () => {
+    const rawLines = pasteText.split('\n').map((t) => t.trim()).filter(Boolean);
+    if (rawLines.length === 0) return;
+    setAddingFurigana(true);
+    setFuriganaError(null);
+    try {
+      const formatted = await formatFurigana(rawLines);
+      setPasteText(formatted.join('\n'));
+    } catch (err) {
+      setFuriganaError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setAddingFurigana(false);
+    }
+  }, [pasteText]);
+
+  // ── Auto-format all saved lines ──
+  const [autoFormattingAll, setAutoFormattingAll] = useState(false);
+  const [autoFormatAllError, setAutoFormatAllError] = useState<string | null>(null);
+
+  const handleAutoFormatAll = useCallback(async () => {
+    if (lines.length === 0) return;
+    setAutoFormattingAll(true);
+    setAutoFormatAllError(null);
+    try {
+      const formatted = await formatFurigana(lines.map((l) => l.text));
+      await Promise.all(lines.map((line, i) => updateLine(line.id, formatted[i])));
+    } catch (err) {
+      setAutoFormatAllError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setAutoFormattingAll(false);
+    }
+  }, [lines, updateLine]);
 
   const handleImport = useCallback(async () => {
     const texts = pasteText.split('\n').map((t) => t.trim()).filter(Boolean);
@@ -141,7 +177,7 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
     try {
       await importLines(texts);
       setPasteText('');
-      setPasteOpen(false);
+      setBulkMode(false);
     } finally {
       setImporting(false);
     }
@@ -368,20 +404,53 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
       <Box>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
           <Label>Speech Lines</Label>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<ContentPasteIcon sx={{ fontSize: 14 }} />}
-            onClick={() => setPasteOpen(true)}
-            sx={{ borderRadius: '9px', px: 1.5, py: '4px', fontSize: '0.72rem', fontWeight: 700, mb: 1.5 }}
-          >
-            Paste All
-          </Button>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+            {lines.length > 0 && !bulkMode && (
+              <Tooltip title="Auto-add kanji + furigana to all saved lines">
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={autoFormattingAll ? <CircularProgress size={12} /> : <AutoFixHighIcon sx={{ fontSize: 14 }} />}
+                  onClick={handleAutoFormatAll}
+                  disabled={autoFormattingAll}
+                  sx={{ borderRadius: '9px', px: 1.5, py: '4px', fontSize: '0.72rem', fontWeight: 700 }}
+                >
+                  {autoFormattingAll ? 'Formatting…' : 'Auto Furigana All'}
+                </Button>
+              </Tooltip>
+            )}
+            <Button
+              variant={bulkMode ? 'contained' : 'outlined'}
+              size="small"
+              startIcon={bulkMode ? <ViewHeadlineIcon sx={{ fontSize: 14 }} /> : <ContentPasteIcon sx={{ fontSize: 14 }} />}
+              onClick={() => { setBulkMode((v) => !v); setPasteText(''); }}
+              sx={{ borderRadius: '9px', px: 1.5, py: '4px', fontSize: '0.72rem', fontWeight: 700 }}
+            >
+              {bulkMode ? 'Line by Line' : 'Import Lines'}
+            </Button>
+          </Stack>
         </Box>
+
+        {/* Auto-format-all error */}
+        {autoFormatAllError && (
+          <Alert severity="error" onClose={() => setAutoFormatAllError(null)} sx={{ mb: 1.5, borderRadius: 2, fontSize: '0.75rem' }}>
+            Auto Furigana failed: {autoFormatAllError}
+          </Alert>
+        )}
 
         {/* Existing lines */}
         {lines.length > 0 && (
-          <Stack spacing={1} mb={2}>
+          <Box sx={{ position: 'relative', mb: 2 }}>
+            {autoFormattingAll && (
+              <Box sx={{
+                position: 'absolute', inset: 0, zIndex: 10, borderRadius: 2.5,
+                bgcolor: alpha('#FFFFFF', 0.75), backdropFilter: 'blur(2px)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Loading message="Adding furigana to all lines…" />
+              </Box>
+            )}
+          <Stack spacing={1}>
             {lines.map((line, i) => (
               <Box
                 key={line.id}
@@ -433,17 +502,17 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
                       sx={{ '& .MuiOutlinedInput-root': { fontFamily: '"Noto Serif JP", serif', fontSize: '0.95rem' } }}
                     />
                   ) : (
-                    <Typography
+                    <FuriganaText
+                      text={line.text}
+                      showFurigana
                       sx={{
                         fontFamily: '"Noto Serif JP", "Noto Sans JP", serif',
-                        fontSize: { xs: '0.9rem', sm: '1rem' },
-                        lineHeight: 1.7,
+                        fontSize: { xs: '1.1rem', sm: '1.25rem' },
+                        lineHeight: 2.8,
                         color: 'text.primary',
                         wordBreak: 'break-all',
                       }}
-                    >
-                      {line.text}
-                    </Typography>
+                    />
                   )}
                 </Box>
 
@@ -480,91 +549,156 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
               </Box>
             ))}
           </Stack>
+          </Box>
         )}
 
-        {/* Add new line */}
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 1.5,
-            p: 2,
-            borderRadius: 2.5,
-            border: `1.5px dashed ${alpha(brand[300], 0.45)}`,
-            bgcolor: alpha(brand[50], 0.5),
-          }}
-        >
-          <TextField
-            inputRef={inputRef}
-            value={newLineText}
-            onChange={(e) => setNewLineText(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) void handleAddLine(); }}
-            placeholder="Type a new line and press Enter…"
-            size="small"
-            fullWidth
-            multiline
-            minRows={1}
-            disabled={adding}
-            sx={{ '& .MuiOutlinedInput-root': { fontFamily: '"Noto Serif JP", serif', fontSize: '0.95rem' } }}
-          />
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={adding ? <CircularProgress size={12} sx={{ color: '#fff' }} /> : <AddIcon sx={{ fontSize: 14 }} />}
-            onClick={handleAddLine}
-            disabled={adding || !newLineText.trim()}
-            sx={{ flexShrink: 0, borderRadius: '10px', px: 2 }}
+        {/* Add area — toggles between line-by-line and bulk import */}
+        {bulkMode ? (
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 2.5,
+              border: `1.5px dashed ${alpha(brand[300], 0.45)}`,
+              bgcolor: alpha(brand[50], 0.5),
+            }}
           >
-            Add
-          </Button>
-        </Box>
-      </Box>
+            {/* Instructions */}
+            <Box
+              sx={{
+                mb: 1.5,
+                p: 1.5,
+                borderRadius: 2,
+                bgcolor: alpha(brand[100], 0.5),
+                border: `1px solid ${alpha(brand[300], 0.3)}`,
+              }}
+            >
+              <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: brand[700], mb: 0.5 }}>
+                How to add furigana
+              </Typography>
+              <Typography sx={{ fontSize: '0.7rem', color: brand[600], lineHeight: 1.6 }}>
+                <strong>Option 1 — Auto:</strong> Paste plain Japanese, then hit <em>Auto Furigana</em> ✨ and it'll add kanji + readings for you.
+              </Typography>
+              <Typography sx={{ fontSize: '0.7rem', color: brand[600], lineHeight: 1.6, mt: 0.25 }}>
+                <strong>Option 2 — Manual:</strong> Use <code style={{ background: alpha(brand[200], 0.5), padding: '0 3px', borderRadius: 3 }}>{'{kanji|reading}'}</code> format, e.g. <code style={{ background: alpha(brand[200], 0.5), padding: '0 3px', borderRadius: 3 }}>{'{私|わたし}'}</code>. Plain hiragana lines work too!
+              </Typography>
+            </Box>
 
-      {/* ── Paste import dialog ── */}
-      <Dialog
-        open={pasteOpen}
-        onClose={() => setPasteOpen(false)}
-        slotProps={{
-          paper: {
-            sx: {
-              borderRadius: 4,
-              border: `1.5px solid ${alpha(brand[300], 0.35)}`,
-              minWidth: { xs: 320, sm: 480 },
-            },
-          },
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 800, color: brand[700], display: 'flex', alignItems: 'center', gap: 1 }}>
-          <ContentPasteIcon sx={{ fontSize: '1.2rem' }} /> Paste All Lines
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Paste your entire speech below — each line on its own line. They&apos;ll be added in order.
-          </Typography>
-          <TextField
-            value={pasteText}
-            onChange={(e) => setPasteText(e.target.value)}
-            placeholder={'Line 1 of your speech\nLine 2 of your speech\nLine 3 of your speech\n…'}
-            fullWidth
-            multiline
-            minRows={6}
-            maxRows={16}
-            autoFocus
-          />
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-            {pasteText.split('\n').filter((l) => l.trim()).length} lines detected
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
-          <Button onClick={() => setPasteOpen(false)} sx={{ color: 'text.secondary' }}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={handleImport}
-            disabled={importing || !pasteText.trim()}
+            {/* Textarea + transparent loading overlay */}
+            <Box sx={{ position: 'relative' }}>
+              {addingFurigana && (
+                <Box sx={{
+                  position: 'absolute', inset: 0, zIndex: 10, borderRadius: 2,
+                  bgcolor: alpha('#FFFFFF', 0.75), backdropFilter: 'blur(2px)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Loading message="Adding furigana…" />
+                </Box>
+              )}
+              <TextField
+                value={pasteText}
+                onChange={(e) => { setPasteText(e.target.value); setFuriganaError(null); }}
+                placeholder={'Line 1 of your speech\nLine 2 of your speech\n…'}
+                fullWidth
+                multiline
+                minRows={6}
+                maxRows={16}
+                autoFocus
+                sx={{ mb: 1, '& .MuiOutlinedInput-root': { fontFamily: '"Noto Serif JP", serif', fontSize: '0.95rem' } }}
+              />
+            </Box>
+
+            {/* Error */}
+            {furiganaError && (
+              <Alert severity="error" onClose={() => setFuriganaError(null)} sx={{ mb: 1, borderRadius: 2, fontSize: '0.75rem' }}>
+                Auto Furigana failed: {furiganaError}
+              </Alert>
+            )}
+
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+              <Typography variant="caption" color="text.secondary">
+                {pasteText.split('\n').filter((l) => l.trim()).length} lines detected
+              </Typography>
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={addingFurigana ? <CircularProgress size={12} /> : <AutoFixHighIcon sx={{ fontSize: 14 }} />}
+                  onClick={handleAddFurigana}
+                  disabled={addingFurigana || importing || !pasteText.trim()}
+                  sx={{ borderRadius: '10px', px: 2, fontSize: '0.72rem', fontWeight: 700 }}
+                >
+                  {addingFurigana ? 'Adding furigana…' : 'Auto Furigana'}
+                </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={importing ? <CircularProgress size={12} sx={{ color: '#fff' }} /> : <AddIcon sx={{ fontSize: 14 }} />}
+                  onClick={handleImport}
+                  disabled={importing || addingFurigana || !pasteText.trim()}
+                  sx={{ borderRadius: '10px', px: 2 }}
+                >
+                  {importing ? 'Importing…' : 'Add Lines'}
+                </Button>
+              </Stack>
+            </Box>
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 2.5,
+              border: `1.5px dashed ${alpha(brand[300], 0.45)}`,
+              bgcolor: alpha(brand[50], 0.5),
+            }}
           >
-            {importing ? 'Importing…' : 'Add Lines ✨'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+            {/* Instructions */}
+            <Box
+              sx={{
+                mb: 1.5,
+                p: 1.5,
+                borderRadius: 2,
+                bgcolor: alpha(brand[100], 0.5),
+                border: `1px solid ${alpha(brand[300], 0.3)}`,
+              }}
+            >
+              <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: brand[700], mb: 0.5 }}>
+                How to add furigana
+              </Typography>
+              <Typography sx={{ fontSize: '0.7rem', color: brand[600], lineHeight: 1.6 }}>
+                <strong>Auto:</strong> Type plain Japanese, add the line, then use <em>Auto Furigana All</em> ✨ above to format everything at once.
+              </Typography>
+              <Typography sx={{ fontSize: '0.7rem', color: brand[600], lineHeight: 1.6, mt: 0.25 }}>
+                <strong>Manual:</strong> Use <code style={{ background: alpha(brand[200], 0.5), padding: '0 3px', borderRadius: 3 }}>{'{kanji|reading}'}</code> format, e.g. <code style={{ background: alpha(brand[200], 0.5), padding: '0 3px', borderRadius: 3 }}>{'{私|わたし}'}</code>. Plain hiragana works too!
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1.5 }}>
+              <TextField
+                inputRef={inputRef}
+                value={newLineText}
+                onChange={(e) => setNewLineText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) void handleAddLine(); }}
+                placeholder="Type a new line and press Enter…"
+                size="small"
+                fullWidth
+                multiline
+                minRows={1}
+                disabled={adding}
+                sx={{ '& .MuiOutlinedInput-root': { fontFamily: '"Noto Serif JP", serif', fontSize: '0.95rem' } }}
+              />
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={adding ? <CircularProgress size={12} sx={{ color: '#fff' }} /> : <AddIcon sx={{ fontSize: 14 }} />}
+                onClick={handleAddLine}
+                disabled={adding || !newLineText.trim()}
+                sx={{ flexShrink: 0, borderRadius: '10px', px: 2 }}
+              >
+                Add
+              </Button>
+            </Box>
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 }

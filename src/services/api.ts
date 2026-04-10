@@ -12,6 +12,17 @@ export async function generateFlashcards(payload: GeneratePayload): Promise<Gene
   return res.json();
 }
 
+export async function formatFurigana(lines: string[]): Promise<string[]> {
+  const res = await fetch(`${BASE}/furigana`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ lines }),
+  });
+  if (!res.ok) throw new Error(`Furigana formatting failed: ${res.statusText}`);
+  const data = await res.json();
+  return data.lines as string[];
+}
+
 export async function fetchImage(query: string): Promise<string | null> {
   const res = await fetch(`${BASE}/images?query=${encodeURIComponent(query)}`);
   if (!res.ok) {

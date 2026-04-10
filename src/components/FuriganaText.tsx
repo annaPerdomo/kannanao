@@ -35,7 +35,7 @@ export default function FuriganaText({ text, showFurigana, sx }: FuriganaTextPro
       component="span"
       sx={{
         '& ruby': { rubyAlign: 'center' },
-        '& rt': { fontSize: '0.55em', lineHeight: 1 },
+        '& rt': { fontSize: '0.75em', lineHeight: 1.2, fontWeight: 600 },
         ...sx,
       }}
     >
