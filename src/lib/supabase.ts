@@ -37,6 +37,7 @@ interface SupabaseDeckRow {
   description: string | null;
   created_at: string | null;
   user_id: string;
+  emoji: string | null;
 }
 
 interface SupabaseCardRow {
@@ -76,6 +77,13 @@ export function dbCardToApp(card: SupabaseCardRow): Flashcard {
   };
 }
 
+const DECK_FALLBACK_EMOJIS = ['🌸', '🐱', '✨', '🌷', '🍡', '🎀', '🐰', '🌙', '🍓', '🦋'];
+function deckFallbackEmoji(id: string): string {
+  let n = 0;
+  for (let i = 0; i < id.length; i++) n += id.charCodeAt(i);
+  return DECK_FALLBACK_EMOJIS[n % DECK_FALLBACK_EMOJIS.length];
+}
+
 export function dbDeckToApp(
   deck: SupabaseDeckRow,
   cardCount: number,
@@ -89,6 +97,7 @@ export function dbDeckToApp(
     cardCount,
     ownerId: deck.user_id,
     isShared: deck.user_id !== currentUserId,
+    emoji: deck.emoji ?? deckFallbackEmoji(deck.id),
   };
 }
 
@@ -157,6 +166,12 @@ export async function dbDeleteDeck(id: string): Promise<void> {
   }
 
   const { error } = await sb.from("decks").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function dbUpdateDeckEmoji(id: string, emoji: string): Promise<void> {
+  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  const { error } = await sb.from('decks').update({ emoji }).eq('id', id);
   if (error) throw error;
 }
 

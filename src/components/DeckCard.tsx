@@ -1,9 +1,11 @@
 'use client';
-import { CardContent, Typography, IconButton, Box, Chip } from '@mui/material';
+import { useState } from 'react';
+import { Typography, IconButton, Box, Chip, Popover, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import IosShareIcon from '@mui/icons-material/IosShare';
+import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
 import type { Deck } from '@/types/deck';
 
 interface DeckCardProps {
@@ -11,21 +13,14 @@ interface DeckCardProps {
   onOpen: (id: string) => void;
   onDelete: (id: string) => void;
   onShare?: (id: string) => void;
+  onEditEmoji?: (id: string, emoji: string) => void;
   isOwner?: boolean;
 }
 
-const KAWAII_ICONS = ['🌸', '🐱', '✨', '🌷', '🍡', '🎀', '🐰', '🌙', '🍓', '🦋'];
-function pickIcon(id: string) {
-  let n = 0;
-  for (let i = 0; i < id.length; i++) n += id.charCodeAt(i);
-  return KAWAII_ICONS[n % KAWAII_ICONS.length];
-}
-
-
-export function DeckCard({ deck, onOpen, onDelete, onShare, isOwner = true }: DeckCardProps) {
+export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, isOwner = true }: DeckCardProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
-  const icon = pickIcon(deck.id);
+  const [emojiAnchor, setEmojiAnchor] = useState<HTMLElement | null>(null);
   const CARD_FRAME = `linear-gradient(145deg, ${brand[100]} 0%, ${brand[300]} 25%, ${brand[50]} 50%, ${brand[400]} 75%, ${brand[100]} 100%)`;
 
   return (
@@ -106,9 +101,52 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, isOwner = true }: De
           }}>
             <Box sx={{ position: 'absolute', top: 8, right: 12, fontSize: '0.65rem', color: alpha(brand[300], 0.6), pointerEvents: 'none' }}>✦</Box>
             <Box sx={{ position: 'absolute', bottom: 8, left: 12, fontSize: '0.5rem', color: alpha(accent[300], 0.7), pointerEvents: 'none' }}>✦</Box>
-            <Typography className="emoji-art" sx={{ fontSize: '3.6rem', transition: 'transform 0.35s cubic-bezier(.34,1.56,.64,1)', display: 'block', lineHeight: 1 }}>
-              {icon}
-            </Typography>
+            <Tooltip title={isOwner ? 'Change emoji' : ''} disableHoverListener={!isOwner}>
+              <Box
+                component={isOwner ? 'button' : 'span'}
+                className="emoji-art"
+                onClick={isOwner ? (e: React.MouseEvent<HTMLElement>) => { e.stopPropagation(); setEmojiAnchor(e.currentTarget); } : undefined}
+                sx={{
+                  fontSize: '3.6rem', lineHeight: 1, display: 'block',
+                  background: 'none', border: 'none', p: 0,
+                  cursor: isOwner ? 'pointer' : 'default',
+                  transition: 'transform 0.35s cubic-bezier(.34,1.56,.64,1)',
+                }}
+              >
+                {deck.emoji}
+              </Box>
+            </Tooltip>
+            <Popover
+              open={Boolean(emojiAnchor)}
+              anchorEl={emojiAnchor}
+              onClose={() => setEmojiAnchor(null)}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Box sx={{
+                '--epr-bg-color': brand[50],
+                '--epr-category-label-bg-color': brand[100],
+                '--epr-hover-bg-color': alpha(brand[300], 0.25),
+                '--epr-focus-bg-color': alpha(brand[300], 0.35),
+                '--epr-highlight-color': brand[400],
+                '--epr-search-border-color': alpha(brand[400], 0.4),
+                '--epr-header-overlay-color': brand[50],
+                '--epr-category-icon-active-color': accent[500],
+                '--epr-search-input-bg-color': '#fff',
+                '--epr-emoji-size': '24px',
+                borderRadius: 3, overflow: 'hidden',
+              }}>
+                <EmojiPicker
+                  theme={Theme.LIGHT}
+                  onEmojiClick={(data: EmojiClickData) => {
+                    onEditEmoji?.(deck.id, data.emoji);
+                    setEmojiAnchor(null);
+                  }}
+                  lazyLoadEmojis
+                />
+              </Box>
+            </Popover>
           </Box>
 
           {/* Name */}

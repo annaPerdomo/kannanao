@@ -118,7 +118,7 @@ function WelcomeBanner({ username, level, streak, totalXp }: {
 }
 
 export default function Home() {
-  const { decks, deleteDeck, loading } = useDecks();
+  const { decks, deleteDeck, updateDeckEmoji, loading } = useDecks();
   const { user, displayName } = useAuth();
   const { progress, addBonusXp } = useProgress();
   const { ohanashikais } = useOhanashikais();
@@ -223,6 +223,7 @@ export default function Home() {
                     onOpen={(id) => router.push(`/deck/${id}`)}
                     onDelete={owned ? deleteDeck : () => {}}
                     onShare={owned ? (id) => { setShareDeckId(id); setShareDeckName(deck.name); } : undefined}
+                    onEditEmoji={owned ? updateDeckEmoji : undefined}
                     isOwner={owned}
                   />
                 </Grid>

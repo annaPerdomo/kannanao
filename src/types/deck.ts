@@ -6,4 +6,5 @@ export interface Deck {
   cardCount: number;
   ownerId: string;
   isShared?: boolean;
+  emoji: string;
 }
