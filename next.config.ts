@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "frame-ancestors 'self'",
+              "http://localhost:*",
+              "https://localhost:*",
               "https://*.instructure.com",
               "https://*.canvas.net",
               "https://*.canvaslms.com",

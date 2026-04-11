@@ -7,7 +7,8 @@ import LinearProgress from "@mui/material/LinearProgress";
 import Chip from "@mui/material/Chip";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { Flashcard } from "@/components/Flashcard";
+import { EmbedFlashcard } from "@/components/EmbedFlashcard";
+import { IndexCard } from "@/components/IndexCard";
 import { Loading } from "@/components/Loading";
 import { dbCardToApp } from "@/lib/supabase";
 import type { Flashcard as FlashcardType } from "@/types/flashcard";
@@ -16,9 +17,11 @@ interface EmbedStudyProps {
   deckId: string;
 }
 
+type CardStyle = "pokemon" | "index";
+
 const SLIDE_DURATION_MS = 260;
-const CARD_W = 320;
-const CARD_H = 452;
+const CARD_W = 480;
+const CARD_H = 300;
 
 const CONFETTI_COLORS = [
   "#F472B6", "#C4B5FD", "#FCD34D", "#67E8F9",
@@ -88,7 +91,6 @@ function CelebrationOverlay({ cardCount, onReset }: { cardCount: number; onReset
           to: { transform: "scale(1) translateY(0)", opacity: 1 },
         },
       }}>
-        <Box sx={{ fontSize: "4rem", lineHeight: 1 }}>🌸</Box>
         <Typography sx={{ mt: 1.5, fontSize: "1.7rem", fontWeight: 900, color: "#fff", fontFamily: '"Nunito",sans-serif' }}>
           すごい！
         </Typography>
@@ -113,6 +115,7 @@ export default function EmbedStudy({ deckId }: EmbedStudyProps) {
   const [navigating, setNavigating] = useState(false);
   const [navDir, setNavDir] = useState<1 | -1>(1);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [cardStyle, setCardStyle] = useState<CardStyle>("pokemon");
 
   useEffect(() => {
     fetch(`/api/public/deck/${deckId}`)
@@ -169,29 +172,73 @@ export default function EmbedStudy({ deckId }: EmbedStudyProps) {
 
   const card = cards[index];
 
+  // Toggle button style helpers
+  const toggleBtn = (active: boolean) => ({
+    px: 1.25, py: 0.4,
+    borderRadius: "6px",
+    border: active ? "1.5px solid #EC4899" : "1.5px solid rgba(249,168,212,0.4)",
+    bgcolor: active ? "rgba(249,168,212,0.18)" : "transparent",
+    color: active ? "#BE185D" : "#aaa",
+    cursor: "pointer",
+    fontSize: "0.68rem",
+    fontFamily: '"DM Mono", monospace',
+    letterSpacing: "0.05em",
+    fontWeight: active ? 700 : 400,
+    transition: "all 0.18s ease",
+    userSelect: "none" as const,
+    display: "flex", alignItems: "center", gap: "4px",
+  });
+
   return (
     <Box sx={{
-      display: "flex", flexDirection: "column", alignItems: "center",
-      px: 2, py: 3, minHeight: "100dvh",
+      display: "flex", flexDirection: "column",
+      height: "100dvh", overflow: "hidden",
+      px: 2, pt: 2, pb: 1.5,
     }}>
-      {/* Deck title */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2, alignSelf: "flex-start", pl: 1 }}>
-        <Typography sx={{ fontSize: "1.1rem" }}>{deckEmoji}</Typography>
-        <Typography sx={{
-          fontFamily: '"Nunito",sans-serif', fontWeight: 800, fontSize: "1rem",
-          color: "text.primary", lineHeight: 1,
-        }}>
-          {deckName}
-        </Typography>
+      {/* Header: deck title + JLPT + style toggle */}
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.25, flexShrink: 0 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Typography sx={{ fontSize: "1rem" }}>{deckEmoji}</Typography>
+          <Typography sx={{
+            fontFamily: '"Nunito",sans-serif', fontWeight: 800, fontSize: "0.95rem",
+            color: "text.primary", lineHeight: 1,
+          }}>
+            {deckName}
+          </Typography>
+          {card.jlptLevel && (
+            <Chip
+              label={`JLPT ${card.jlptLevel}`}
+              size="small"
+              sx={{
+                height: 20, fontSize: "0.62rem",
+                bgcolor: "rgba(249,168,212,0.15)",
+                color: "#BE185D",
+                border: "1px solid rgba(249,168,212,0.35)",
+                fontFamily: '"DM Mono", monospace',
+                letterSpacing: "0.05em",
+              }}
+            />
+          )}
+        </Box>
+
+        {/* Card style toggle */}
+        <Box sx={{ display: "flex", gap: 0.5 }}>
+          <Box component="span" sx={toggleBtn(cardStyle === "pokemon")} onClick={() => setCardStyle("pokemon")}>
+            ✦ Card
+          </Box>
+          <Box component="span" sx={toggleBtn(cardStyle === "index")} onClick={() => setCardStyle("index")}>
+            ≡ Index
+          </Box>
+        </Box>
       </Box>
 
       {/* Progress bar */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3, width: "100%", maxWidth: CARD_W }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1.5, flexShrink: 0 }}>
         <LinearProgress
           variant="determinate"
           value={((index + 1) / cards.length) * 100}
           sx={{
-            flexGrow: 1, height: 6, borderRadius: 99,
+            flexGrow: 1, height: 5, borderRadius: 99,
             bgcolor: "rgba(249,168,212,0.18)",
             "& .MuiLinearProgress-bar": {
               borderRadius: 99,
@@ -205,34 +252,36 @@ export default function EmbedStudy({ deckId }: EmbedStudyProps) {
           sx={{
             bgcolor: "rgba(249,168,212,0.18)", color: "#BE185D",
             fontWeight: 600, border: "1px solid rgba(249,168,212,0.4)",
+            height: 22, fontSize: "0.72rem",
           }}
         />
       </Box>
 
       {/* Card */}
-      <Box sx={{ display: "flex", justifyContent: "center", perspective: "1000px", position: "relative" }}>
+      <Box sx={{ flex: 1, minHeight: 0, display: "flex", justifyContent: "center", alignItems: "center", perspective: "1000px" }}>
         <Box
           key={index}
           sx={{
             width: CARD_W, height: CARD_H, flexShrink: 0,
             position: "relative", transformOrigin: "top center",
+            maxWidth: "100%",
             "@keyframes dealIn": {
-              "0%": { transform: "translateY(-90px) rotateX(-42deg) rotateZ(4deg) scale(0.82)", opacity: 0 },
+              "0%": { transform: "translateY(-70px) rotateX(-38deg) rotateZ(3deg) scale(0.85)", opacity: 0 },
               "55%": { opacity: 1 },
               "100%": { transform: "translateY(0) rotateX(0deg) rotateZ(0deg) scale(1)", opacity: 1 },
             },
             "@keyframes dealInBack": {
-              "0%": { transform: "translateY(-90px) rotateX(-42deg) rotateZ(-4deg) scale(0.82)", opacity: 0 },
+              "0%": { transform: "translateY(-70px) rotateX(-38deg) rotateZ(-3deg) scale(0.85)", opacity: 0 },
               "55%": { opacity: 1 },
               "100%": { transform: "translateY(0) rotateX(0deg) rotateZ(0deg) scale(1)", opacity: 1 },
             },
             "@keyframes sparkleUp": {
               from: { transform: "translateY(0) scale(1)", opacity: 0.9 },
-              to: { transform: "translateY(-64px) scale(0)", opacity: 0 },
+              to: { transform: "translateY(-56px) scale(0)", opacity: 0 },
             },
             ...(navigating
               ? {
-                  transform: "translateY(28px) rotateX(12deg) scale(0.91)",
+                  transform: "translateY(24px) rotateX(10deg) scale(0.92)",
                   opacity: 0,
                   transition: `transform ${SLIDE_DURATION_MS}ms ease-in, opacity ${SLIDE_DURATION_MS}ms ease-in`,
                   pointerEvents: "none",
@@ -242,11 +291,17 @@ export default function EmbedStudy({ deckId }: EmbedStudyProps) {
                 }),
           }}
         >
-          {card && <Flashcard card={card} width={CARD_W} height={CARD_H} />}
-          {!navigating && SPARKLE_ITEMS.map((s, i) => (
+          {card && cardStyle === "pokemon" && (
+            <EmbedFlashcard card={card} width={CARD_W} height={CARD_H} />
+          )}
+          {card && cardStyle === "index" && (
+            <IndexCard card={card} width={CARD_W} height={CARD_H} />
+          )}
+          {/* Sparkles: only for pokemon style */}
+          {cardStyle === "pokemon" && !navigating && SPARKLE_ITEMS.map((s, i) => (
             <Box key={i} sx={{
-              position: "absolute", bottom: 16, left: `${s.left}%`,
-              fontSize: "1rem", pointerEvents: "none",
+              position: "absolute", bottom: 12, left: `${s.left}%`,
+              fontSize: "0.85rem", pointerEvents: "none",
               animation: `sparkleUp 0.72s ${s.delay}s ease-out both`,
             }}>
               {s.emoji}
@@ -256,50 +311,57 @@ export default function EmbedStudy({ deckId }: EmbedStudyProps) {
       </Box>
 
       {/* Navigation */}
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, mt: 3 }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, mt: 1.5, flexShrink: 0 }}>
         <IconButton
           onClick={() => navigate(-1)}
           disabled={index === 0 || navigating}
+          size="small"
           sx={{
             border: "1px solid rgba(249,168,212,0.45)", bgcolor: "#FFF3F9",
             "&:not(:disabled):hover": { borderColor: "#EC4899" },
           }}
         >
-          <ArrowBackIcon />
+          <ArrowBackIcon fontSize="small" />
         </IconButton>
         <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: "0.08em" }}>
-          TAP CARD TO FLIP
+          {cardStyle === "pokemon" ? "TAP CARD TO FLIP" : "CLICK CARD TO FLIP"}
         </Typography>
         <IconButton
           onClick={() => index === cards.length - 1 ? setShowCelebration(true) : navigate(1)}
           disabled={navigating}
+          size="small"
           sx={{
             border: "1px solid rgba(249,168,212,0.45)", bgcolor: "#FFF3F9",
             "&:not(:disabled):hover": { borderColor: "#EC4899" },
           }}
         >
-          <ArrowForwardIcon />
+          <ArrowForwardIcon fontSize="small" />
         </IconButton>
       </Box>
 
       {/* Branding */}
-      <Box sx={{ mt: "auto", pt: 3, pb: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
-        <Typography sx={{ fontSize: "0.65rem", color: "text.disabled", fontFamily: '"DM Mono",monospace', letterSpacing: "0.06em" }}>
-          Powered by
+      <Box sx={{ mt: 1, pb: 0.25, display: "flex", flexDirection: "column", alignItems: "center", gap: 0.25, flexShrink: 0 }}>
+        <Typography sx={{ fontSize: "0.62rem", color: "text.disabled", fontFamily: '"DM Mono",monospace', letterSpacing: "0.06em" }}>
+          Made by Variations on a String
         </Typography>
-        <Typography
-          component="a"
-          href="/"
-          target="_blank"
-          rel="noopener noreferrer"
-          sx={{
-            fontSize: "0.65rem", color: "primary.main", fontFamily: '"DM Mono",monospace',
-            letterSpacing: "0.06em", textDecoration: "none", fontWeight: 700,
-            "&:hover": { textDecoration: "underline" },
-          }}
-        >
-          Kannanao 🌸
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <Typography sx={{ fontSize: "0.6rem", color: "text.disabled", fontFamily: '"DM Mono",monospace', letterSpacing: "0.06em" }}>
+            Powered by
+          </Typography>
+          <Typography
+            component="a"
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              fontSize: "0.6rem", color: "primary.main", fontFamily: '"DM Mono",monospace',
+              letterSpacing: "0.06em", textDecoration: "none", fontWeight: 700,
+              "&:hover": { textDecoration: "underline" },
+            }}
+          >
+            Kannanao
+          </Typography>
+        </Box>
       </Box>
 
       {showCelebration && (
