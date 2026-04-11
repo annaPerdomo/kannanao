@@ -1,12 +1,13 @@
 'use client';
 import { useState } from 'react';
-import { Typography, IconButton, Box, Chip, Popover, Tooltip } from '@mui/material';
+import { Typography, IconButton, Box, Popover, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
+import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined';
 import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
 import type { Deck } from '@/types/deck';
 
@@ -36,6 +37,7 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
         '&:hover .deck-stack-1': { transform: 'rotate(6deg) translateY(12px)' },
         '&:hover .holo-sheen': { opacity: 1 },
         '&:hover .emoji-art': { transform: 'rotate(-10deg) scale(1.18)' },
+        '&:hover .card-actions': { opacity: 1 },
       }}
     >
       {/* Card back: bottom layer */}
@@ -46,7 +48,6 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
       }}>
         <Box sx={{
           width: '100%', height: '100%', borderRadius: '10px',
-          background: `radial-gradient(circle at 50% 50%, ${brand[600]} 0%, ${brand[900]} 100%)`,
           backgroundImage: `radial-gradient(circle at 50% 50%, ${brand[600]} 0%, ${brand[900]} 100%), radial-gradient(circle, ${alpha('#fff', 0.08)} 1.5px, transparent 1.5px)`,
           backgroundSize: 'auto, 16px 16px',
         }} />
@@ -65,7 +66,12 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
       </Box>
 
       {/* Front card */}
-      <Box sx={{ position: 'relative', zIndex: 3, background: CARD_FRAME, borderRadius: '14px', p: '5px', boxShadow: `0 8px 28px rgba(0,0,0,0.18), 0 2px 8px ${alpha(brand[400], 0.32)}` }}>
+      <Box sx={{
+        position: 'relative', zIndex: 3, background: CARD_FRAME, borderRadius: '14px', p: '5px',
+        boxShadow: `0 6px 24px rgba(0,0,0,0.16), 0 2px 8px ${alpha(brand[400], 0.28)}`,
+        transition: 'box-shadow 0.25s ease',
+        '&:hover': { boxShadow: `0 16px 40px rgba(0,0,0,0.24), 0 4px 12px ${alpha(brand[400], 0.38)}` },
+      }}>
         {/* Holographic sheen */}
         <Box className="holo-sheen" sx={{
           position: 'absolute', inset: 0, borderRadius: '14px',
@@ -79,7 +85,7 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
           onClick={() => onOpen(deck.id)}
           sx={{
             bgcolor: brand[50], borderRadius: '10px', overflow: 'hidden',
-            border: '2px solid rgba(255,255,255,0.9)',
+            border: '2px solid rgba(255,255,255,0.88)',
             display: 'flex', flexDirection: 'column',
           }}
         >
@@ -107,57 +113,21 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
             mx: '8px', mt: '6px', borderRadius: '6px', overflow: 'hidden',
             border: '2px solid rgba(0,0,0,0.14)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.1)',
             background: `linear-gradient(135deg, ${brand[100]} 0%, ${accent[100]} 50%, ${brand[100]} 100%)`,
-            height: 185, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center',
             position: 'relative',
           }}>
             <Box sx={{ position: 'absolute', top: 8, right: 12, fontSize: '0.65rem', color: alpha(brand[300], 0.6), pointerEvents: 'none' }}>✦</Box>
             <Box sx={{ position: 'absolute', bottom: 8, left: 12, fontSize: '0.5rem', color: alpha(accent[300], 0.7), pointerEvents: 'none' }}>✦</Box>
-            <Tooltip title={isOwner ? 'Change emoji' : ''} disableHoverListener={!isOwner}>
-              <Box
-                component={isOwner ? 'button' : 'span'}
-                className="emoji-art"
-                onClick={isOwner ? (e: React.MouseEvent<HTMLElement>) => { e.stopPropagation(); setEmojiAnchor(e.currentTarget); } : undefined}
-                sx={{
-                  fontSize: '3.6rem', lineHeight: 1, display: 'block',
-                  background: 'none', border: 'none', p: 0,
-                  cursor: isOwner ? 'pointer' : 'default',
-                  transition: 'transform 0.35s cubic-bezier(.34,1.56,.64,1)',
-                }}
-              >
-                {deck.emoji}
-              </Box>
-            </Tooltip>
-            <Popover
-              open={Boolean(emojiAnchor)}
-              anchorEl={emojiAnchor}
-              onClose={() => setEmojiAnchor(null)}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-              transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-              onClick={(e) => e.stopPropagation()}
+            <Box
+              className="emoji-art"
+              sx={{
+                fontSize: '3.6rem', lineHeight: 1, display: 'block',
+                transition: 'transform 0.35s cubic-bezier(.34,1.56,.64,1)',
+                userSelect: 'none',
+              }}
             >
-              <Box sx={{
-                '--epr-bg-color': brand[50],
-                '--epr-category-label-bg-color': brand[100],
-                '--epr-hover-bg-color': alpha(brand[300], 0.25),
-                '--epr-focus-bg-color': alpha(brand[300], 0.35),
-                '--epr-highlight-color': brand[400],
-                '--epr-search-border-color': alpha(brand[400], 0.4),
-                '--epr-header-overlay-color': brand[50],
-                '--epr-category-icon-active-color': accent[500],
-                '--epr-search-input-bg-color': '#fff',
-                '--epr-emoji-size': '24px',
-                borderRadius: 3, overflow: 'hidden',
-              }}>
-                <EmojiPicker
-                  theme={Theme.LIGHT}
-                  onEmojiClick={(data: EmojiClickData) => {
-                    onEditEmoji?.(deck.id, data.emoji);
-                    setEmojiAnchor(null);
-                  }}
-                  lazyLoadEmojis
-                />
-              </Box>
-            </Popover>
+              {deck.emoji}
+            </Box>
           </Box>
 
           {/* Name */}
@@ -172,28 +142,27 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
             )}
           </Box>
 
-          {/* Stats */}
-          <Box sx={{ px: 1.5, pt: '8px', pb: '6px', display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
-            <Chip
-              label={`${deck.cardCount} cards ★`}
-              size="small"
-              sx={{
-                background: `linear-gradient(90deg, ${brand[100]}, ${accent[100]})`,
-                border: `1.5px solid ${alpha(brand[300], 0.55)}`,
-                fontWeight: 800, color: brand[700], fontSize: '0.72rem',
-              }}
-            />
-            {deck.isShared && (
-              <Chip
-                label="✨ Shared"
-                size="small"
-                sx={{
-                  background: `linear-gradient(90deg, ${accent[100]}, ${accent[200]})`,
-                  border: `1.5px solid ${alpha(accent[400], 0.5)}`,
-                  fontWeight: 700, color: accent[700], fontSize: '0.72rem',
-                }}
-              />
-            )}
+          {/* Stats — ability box style matching ImageCard */}
+          <Box sx={{ px: 1.5, pt: '8px', pb: '10px' }}>
+            <Box sx={{
+              bgcolor: alpha(brand[50], 0.75),
+              borderRadius: '6px', px: 1.2, py: '7px',
+              border: `1px solid ${alpha(brand[400], 0.22)}`,
+            }}>
+              <Typography sx={{ fontSize: '0.54rem', fontWeight: 900, color: brand[500], letterSpacing: '0.12em', textTransform: 'uppercase', mb: '3px', fontFamily: '"DM Mono", monospace' }}>
+                ★ Cards
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#1A1A1A', fontFamily: '"Nunito", sans-serif', lineHeight: 1.3 }}>
+                  {deck.cardCount} cards in this deck
+                </Typography>
+                {deck.isShared && (
+                  <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: accent[600], fontFamily: '"Nunito", sans-serif' }}>
+                    · ✨ Shared
+                  </Typography>
+                )}
+              </Box>
+            </Box>
           </Box>
 
           {/* Footer */}
@@ -206,6 +175,53 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
               CARD DECK
             </Typography>
             <Box sx={{ display: 'flex', gap: 0.25 }} onClick={(e) => e.stopPropagation()}>
+              {isOwner && onEditEmoji && (
+                <>
+                  <Tooltip title="Change emoji">
+                    <IconButton size="small" onClick={(e) => { e.stopPropagation(); setEmojiAnchor(e.currentTarget); }}
+                      sx={{
+                        width: 26, height: 26,
+                        color: accent[500], bgcolor: 'transparent',
+                        border: `1px solid ${alpha(accent[400], 0.35)}`,
+                        borderRadius: '6px',
+                        '&:hover': { color: accent[700], bgcolor: alpha(accent[100], 0.5), borderColor: alpha(accent[500], 0.6) },
+                      }}>
+                      <EmojiEmotionsOutlinedIcon sx={{ fontSize: 14 }} />
+                    </IconButton>
+                  </Tooltip>
+                  <Popover
+                    open={Boolean(emojiAnchor)}
+                    anchorEl={emojiAnchor}
+                    onClose={() => setEmojiAnchor(null)}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                    transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Box sx={{
+                      '--epr-bg-color': brand[50],
+                      '--epr-category-label-bg-color': brand[100],
+                      '--epr-hover-bg-color': alpha(brand[300], 0.25),
+                      '--epr-focus-bg-color': alpha(brand[300], 0.35),
+                      '--epr-highlight-color': brand[400],
+                      '--epr-search-border-color': alpha(brand[400], 0.4),
+                      '--epr-header-overlay-color': brand[50],
+                      '--epr-category-icon-active-color': accent[500],
+                      '--epr-search-input-bg-color': '#fff',
+                      '--epr-emoji-size': '24px',
+                      borderRadius: 3, overflow: 'hidden',
+                    }}>
+                      <EmojiPicker
+                        theme={Theme.LIGHT}
+                        onEmojiClick={(data: EmojiClickData) => {
+                          onEditEmoji(deck.id, data.emoji);
+                          setEmojiAnchor(null);
+                        }}
+                        lazyLoadEmojis
+                      />
+                    </Box>
+                  </Popover>
+                </>
+              )}
               {onPin && (
                 <Tooltip title={deck.pinned ? 'Unpin from home' : 'Pin to home'}>
                   <IconButton size="small" onClick={(e) => { e.stopPropagation(); onPin(deck.id, !deck.pinned); }}
@@ -226,11 +242,10 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
                   <IconButton size="small" onClick={(e) => { e.stopPropagation(); onShare(deck.id); }}
                     sx={{
                       width: 26, height: 26,
-                      color: accent[500],
-                      bgcolor: 'transparent',
-                      border: `1px solid ${alpha(accent[400], 0.35)}`,
+                      color: brand[500], bgcolor: 'transparent',
+                      border: `1px solid ${alpha(brand[400], 0.35)}`,
                       borderRadius: '6px',
-                      '&:hover': { color: accent[700], bgcolor: alpha(accent[100], 0.5), borderColor: alpha(accent[500], 0.6) },
+                      '&:hover': { color: brand[700], bgcolor: alpha(brand[100], 0.5), borderColor: alpha(brand[500], 0.6) },
                     }}>
                     <IosShareIcon sx={{ fontSize: 14 }} />
                   </IconButton>
@@ -241,8 +256,7 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
                   <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDelete(deck.id); }}
                     sx={{
                       width: 26, height: 26,
-                      color: brand[500],
-                      bgcolor: 'transparent',
+                      color: brand[500], bgcolor: 'transparent',
                       border: `1px solid ${alpha(brand[400], 0.35)}`,
                       borderRadius: '6px',
                       '&:hover': { color: brand[700], bgcolor: alpha(brand[100], 0.5), borderColor: alpha(brand[500], 0.6) },
