@@ -224,10 +224,10 @@ export default function EmbedStudy({ deckId }: EmbedStudyProps) {
         {/* Card style toggle */}
         <Box sx={{ display: "flex", gap: 0.5 }}>
           <Box component="span" sx={toggleBtn(cardStyle === "pokemon")} onClick={() => setCardStyle("pokemon")}>
-            ✦ Card
+            ✦ Color
           </Box>
           <Box component="span" sx={toggleBtn(cardStyle === "index")} onClick={() => setCardStyle("index")}>
-            ≡ Index
+            ◻ Plain
           </Box>
         </Box>
       </Box>
@@ -341,7 +341,17 @@ export default function EmbedStudy({ deckId }: EmbedStudyProps) {
 
       {/* Branding */}
       <Box sx={{ mt: 1, pb: 0.25, display: "flex", flexDirection: "column", alignItems: "center", gap: 0.25, flexShrink: 0 }}>
-        <Typography sx={{ fontSize: "0.62rem", color: "text.disabled", fontFamily: '"DM Mono",monospace', letterSpacing: "0.06em" }}>
+        <Typography
+          component="a"
+          href="https://www.variationsonastring.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{
+            fontSize: "0.62rem", color: "text.disabled", fontFamily: '"DM Mono",monospace',
+            letterSpacing: "0.06em", textDecoration: "none",
+            "&:hover": { color: "text.secondary", textDecoration: "underline" },
+          }}
+        >
           Made by Variations on a String
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>

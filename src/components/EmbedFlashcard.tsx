@@ -157,35 +157,35 @@ export function EmbedFlashcard({ card, width = '100%', height = 300 }: EmbedFlas
               {/* Left: Reading (kanji mode) or Kanji (hiragana mode) + Meaning */}
               <Box sx={{
                 flex: '0 0 44%',
-                px: 2, py: 1.5,
-                display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.25,
+                px: 2.5, py: 2,
+                display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 2.5,
                 borderRight: `1.5px solid ${alpha(brand[300], 0.25)}`,
               }}>
                 {isKanji && card.reading && (
                   <Box>
-                    <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.25, textTransform: 'uppercase' }}>
+                    <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
                       ★ Reading
                     </Typography>
-                    <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.5rem', fontWeight: 700, color: '#111', lineHeight: 1.2 }}>
+                    <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.6rem', fontWeight: 700, color: '#111', lineHeight: 1.2 }}>
                       {card.reading}
                     </Typography>
                   </Box>
                 )}
                 {card.mainViewMode === 'hiragana' && (
                   <Box>
-                    <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.25, textTransform: 'uppercase' }}>
+                    <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
                       ★ Kanji
                     </Typography>
-                    <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.5rem', fontWeight: 700, color: '#111', lineHeight: 1.2 }}>
+                    <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.6rem', fontWeight: 700, color: '#111', lineHeight: 1.2 }}>
                       {card.word}
                     </Typography>
                   </Box>
                 )}
                 <Box>
-                  <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.25, textTransform: 'uppercase' }}>
+                  <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
                     ★ Meaning
                   </Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.2rem', fontWeight: 700, color: '#111', fontStyle: 'italic', lineHeight: 1.25 }}>
+                  <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.3rem', fontWeight: 700, color: '#111', fontStyle: 'italic', lineHeight: 1.3 }}>
                     {card.meaning}
                   </Typography>
                 </Box>
