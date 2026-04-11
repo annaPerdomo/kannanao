@@ -7,7 +7,6 @@ import {
   Button,
   Box,
   Typography,
-  CircularProgress,
   IconButton,
   Divider,
   Alert,
@@ -16,6 +15,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import type { GeneratedCard } from "@/types/flashcard";
+import { Loading } from "@/components/Loading";
 
 const FORMAT_PRESETS = [
   {
@@ -150,217 +150,234 @@ export function PdfImportModal({
       </DialogTitle>
 
       <DialogContent sx={{ pt: 1 }}>
-        {/* Drop zone */}
-        <Box
-          onClick={() => inputRef.current?.click()}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={handleDrop}
-          sx={{
-            border: dragging ? "1.5px dashed #f9a8d4" : "1.5px dashed",
-            borderColor: dragging ? "#f9a8d4" : "divider",
-            borderRadius: "10px",
-            p: 2.5,
-            textAlign: "center",
-            cursor: "pointer",
-            mb: 2,
-            bgcolor: file
-              ? "rgba(249,168,212,0.06)"
-              : dragging
-                ? "rgba(249,168,212,0.08)"
-                : "background.default",
-            transition: "all 0.15s",
-          }}
-        >
-          <input
-            ref={inputRef}
-            type="file"
-            accept="application/pdf"
-            style={{ display: "none" }}
-            onChange={(e) => {
-              if (e.target.files?.[0]) handleFile(e.target.files[0]);
-            }}
-          />
-          {file ? (
-            <>
-              <CheckCircleOutlineIcon
-                sx={{ color: "#ec4899", fontSize: 22, mb: 0.5 }}
-              />
-              <Typography fontSize="0.78rem" fontWeight={700}>
-                {file.name}
-              </Typography>
-              <Typography fontSize="0.71rem" color="text.secondary">
-                {(file.size / 1024).toFixed(0)} KB · Click to replace
-              </Typography>
-            </>
-          ) : (
-            <>
-              <UploadFileIcon
-                sx={{ color: "text.secondary", fontSize: 22, mb: 0.5 }}
-              />
-              <Typography fontSize="0.78rem" fontWeight={700}>
-                Drop a PDF here
-              </Typography>
-              <Typography fontSize="0.71rem" color="text.secondary">
-                or click to browse · PDF only · max 20 MB
-              </Typography>
-            </>
-          )}
-        </Box>
-
-        {/* Format presets */}
-        <Typography
-          fontSize="0.7rem"
-          fontWeight={700}
-          color="text.secondary"
-          sx={{ textTransform: "uppercase", letterSpacing: "0.05em", mb: 1 }}
-        >
-          Format preset
-        </Typography>
-
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 0.75,
-            mb: 1.5,
-          }}
-        >
-          {FORMAT_PRESETS.map((p) => (
+        {extracting ? (
+          <Loading message="Extracting cards…" />
+        ) : (
+          <>
+            {/* Drop zone */}
             <Box
-              key={p.id}
-              onClick={() => setSelectedFormat(p.id)}
+              onClick={() => inputRef.current?.click()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={handleDrop}
               sx={{
-                border:
-                  selectedFormat === p.id ? "2px solid #f9a8d4" : "0.5px solid",
-                borderColor: selectedFormat === p.id ? "#f9a8d4" : "divider",
-                borderRadius: "9px",
-                p: "8px 10px",
+                border: dragging ? "1.5px dashed #f9a8d4" : "1.5px dashed",
+                borderColor: dragging ? "#f9a8d4" : "divider",
+                borderRadius: "10px",
+                p: 2.5,
+                textAlign: "center",
                 cursor: "pointer",
-                bgcolor:
-                  selectedFormat === p.id
+                mb: 2,
+                bgcolor: file
+                  ? "rgba(249,168,212,0.06)"
+                  : dragging
                     ? "rgba(249,168,212,0.08)"
-                    : "transparent",
-                gridColumn: p.id === "auto" ? "span 2" : "span 1",
-                transition: "all 0.12s",
+                    : "background.default",
+                transition: "all 0.15s",
               }}
             >
-              <Typography
-                fontSize="0.72rem"
-                fontWeight={700}
-                color={selectedFormat === p.id ? "#9d174d" : "text.primary"}
-              >
-                {p.label}
-              </Typography>
-              <Typography
-                fontSize="0.68rem"
-                color={selectedFormat === p.id ? "#be185d" : "text.secondary"}
-              >
-                {p.description}
-              </Typography>
+              <input
+                ref={inputRef}
+                type="file"
+                accept="application/pdf"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  if (e.target.files?.[0]) handleFile(e.target.files[0]);
+                }}
+              />
+              {file ? (
+                <>
+                  <CheckCircleOutlineIcon
+                    sx={{ color: "#ec4899", fontSize: 22, mb: 0.5 }}
+                  />
+                  <Typography fontSize="0.78rem" fontWeight={700}>
+                    {file.name}
+                  </Typography>
+                  <Typography fontSize="0.71rem" color="text.secondary">
+                    {(file.size / 1024).toFixed(0)} KB · Click to replace
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <UploadFileIcon
+                    sx={{ color: "text.secondary", fontSize: 22, mb: 0.5 }}
+                  />
+                  <Typography fontSize="0.78rem" fontWeight={700}>
+                    Drop a PDF here
+                  </Typography>
+                  <Typography fontSize="0.71rem" color="text.secondary">
+                    or click to browse · PDF only · max 20 MB
+                  </Typography>
+                </>
+              )}
             </Box>
-          ))}
-        </Box>
 
-        {/* Extracting fields preview */}
-        <Box
-          sx={{
-            bgcolor: "rgba(249,168,212,0.08)",
-            borderRadius: "9px",
-            p: "8px 10px",
-            mb: 1.5,
-            border: "0.5px solid rgba(249,168,212,0.3)",
-          }}
-        >
-          <Typography fontSize="0.69rem" color="#9d174d">
-            Extracting:{" "}
-            {preset.fields.map((f, i) => (
-              <span key={f}>
-                <strong>{f}</strong>
-                {i < preset.fields.length - 1 ? " · " : ""}
-              </span>
-            ))}
-          </Typography>
-        </Box>
-
-        {error && (
-          <Alert severity="error" sx={{ fontSize: "0.74rem", mb: 1.5 }}>
-            {error}
-          </Alert>
-        )}
-
-        {/* Preview extracted cards */}
-        {extracted && (
-          <Box>
-            <Divider sx={{ mb: 1.5 }} />
+            {/* Format presets */}
             <Typography
               fontSize="0.7rem"
               fontWeight={700}
               color="text.secondary"
-              sx={{
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                mb: 1,
-              }}
+              sx={{ textTransform: "uppercase", letterSpacing: "0.05em", mb: 1 }}
             >
-              {extracted.length} cards extracted
+              Format preset
             </Typography>
+
             <Box
               sx={{
-                maxHeight: 180,
-                overflowY: "auto",
-                display: "flex",
-                flexDirection: "column",
-                gap: 0.5,
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 0.75,
+                mb: 1.5,
               }}
             >
-              {extracted.slice(0, 20).map((card, i) => (
+              {FORMAT_PRESETS.map((p) => (
                 <Box
-                  key={i}
+                  key={p.id}
+                  onClick={() => setSelectedFormat(p.id)}
                   sx={{
-                    display: "flex",
-                    alignItems: "baseline",
-                    gap: 1,
-                    p: "5px 8px",
-                    bgcolor: "background.default",
-                    borderRadius: "7px",
-                    border: "0.5px solid",
-                    borderColor: "divider",
+                    border:
+                      selectedFormat === p.id
+                        ? "2px solid #f9a8d4"
+                        : "0.5px solid",
+                    borderColor:
+                      selectedFormat === p.id ? "#f9a8d4" : "divider",
+                    borderRadius: "9px",
+                    p: "8px 10px",
+                    cursor: "pointer",
+                    bgcolor:
+                      selectedFormat === p.id
+                        ? "rgba(249,168,212,0.08)"
+                        : "transparent",
+                    gridColumn: p.id === "auto" ? "span 2" : "span 1",
+                    transition: "all 0.12s",
                   }}
                 >
                   <Typography
-                    fontSize="0.78rem"
+                    fontSize="0.72rem"
                     fontWeight={700}
-                    sx={{ minWidth: 60 }}
+                    color={
+                      selectedFormat === p.id ? "#9d174d" : "text.primary"
+                    }
                   >
-                    {card.word}
+                    {p.label}
                   </Typography>
                   <Typography
-                    fontSize="0.7rem"
-                    color="text.secondary"
-                    sx={{ minWidth: 60 }}
+                    fontSize="0.68rem"
+                    color={
+                      selectedFormat === p.id ? "#be185d" : "text.secondary"
+                    }
                   >
-                    {card.reading}
-                  </Typography>
-                  <Typography fontSize="0.7rem" color="text.secondary" noWrap>
-                    {card.meaning}
+                    {p.description}
                   </Typography>
                 </Box>
               ))}
-              {extracted.length > 20 && (
+            </Box>
+
+            {/* Extracting fields preview */}
+            <Box
+              sx={{
+                bgcolor: "rgba(249,168,212,0.08)",
+                borderRadius: "9px",
+                p: "8px 10px",
+                mb: 1.5,
+                border: "0.5px solid rgba(249,168,212,0.3)",
+              }}
+            >
+              <Typography fontSize="0.69rem" color="#9d174d">
+                Extracting:{" "}
+                {preset.fields.map((f, i) => (
+                  <span key={f}>
+                    <strong>{f}</strong>
+                    {i < preset.fields.length - 1 ? " · " : ""}
+                  </span>
+                ))}
+              </Typography>
+            </Box>
+
+            {error && (
+              <Alert severity="error" sx={{ fontSize: "0.74rem", mb: 1.5 }}>
+                {error}
+              </Alert>
+            )}
+
+            {/* Preview extracted cards */}
+            {extracted && (
+              <Box>
+                <Divider sx={{ mb: 1.5 }} />
                 <Typography
                   fontSize="0.7rem"
+                  fontWeight={700}
                   color="text.secondary"
-                  textAlign="center"
+                  sx={{
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    mb: 1,
+                  }}
                 >
-                  +{extracted.length - 20} more cards
+                  {extracted.length} cards extracted
                 </Typography>
-              )}
-            </Box>
-          </Box>
+                <Box
+                  sx={{
+                    maxHeight: 180,
+                    overflowY: "auto",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 0.5,
+                  }}
+                >
+                  {extracted.slice(0, 20).map((card, i) => (
+                    <Box
+                      key={i}
+                      sx={{
+                        display: "flex",
+                        alignItems: "baseline",
+                        gap: 1,
+                        p: "5px 8px",
+                        bgcolor: "background.default",
+                        borderRadius: "7px",
+                        border: "0.5px solid",
+                        borderColor: "divider",
+                      }}
+                    >
+                      <Typography
+                        fontSize="0.78rem"
+                        fontWeight={700}
+                        sx={{ minWidth: 60 }}
+                      >
+                        {card.word}
+                      </Typography>
+                      <Typography
+                        fontSize="0.7rem"
+                        color="text.secondary"
+                        sx={{ minWidth: 60 }}
+                      >
+                        {card.reading}
+                      </Typography>
+                      <Typography
+                        fontSize="0.7rem"
+                        color="text.secondary"
+                        noWrap
+                      >
+                        {card.meaning}
+                      </Typography>
+                    </Box>
+                  ))}
+                  {extracted.length > 20 && (
+                    <Typography
+                      fontSize="0.7rem"
+                      color="text.secondary"
+                      textAlign="center"
+                    >
+                      +{extracted.length - 20} more cards
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            )}
+          </>
         )}
       </DialogContent>
 
@@ -380,14 +397,7 @@ export function PdfImportModal({
               "&:hover": { bgcolor: "#db2777" },
             }}
           >
-            {extracting ? (
-              <>
-                <CircularProgress size={12} sx={{ mr: 1, color: "white" }} />{" "}
-                Extracting…
-              </>
-            ) : (
-              "Extract cards"
-            )}
+            Extract cards
           </Button>
         ) : (
           <>

@@ -21,8 +21,10 @@ import CloseIcon from "@mui/icons-material/Close";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import SaveIcon from "@mui/icons-material/Save";
 import ImageSearchIcon from "@mui/icons-material/ImageSearch";
-import type { Flashcard } from "@/types/flashcard";
+import type { Flashcard, JlptLevel } from "@/types/flashcard";
 import { fetchImage } from "@/services/api";
+
+const JLPT_LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
 interface EditCardDialogProps {
   card: Flashcard | null;
@@ -100,6 +102,7 @@ export function EditCardDialog({
     "hiragana",
   );
   const [cardType, setCardType] = useState<CardType>("word");
+  const [jlptLevel, setJlptLevel] = useState<JlptLevel | undefined>(undefined);
   const [imageQuery, setImageQuery] = useState("");
   const [savingImage, setSavingImage] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -119,6 +122,7 @@ export function EditCardDialog({
       });
       setMainViewMode(card.mainViewMode ?? "hiragana");
       setCardType(card.cardType ?? "word");
+      setJlptLevel(card.jlptLevel);
       setImageQuery(card.image_query || card.word || "");
       setPreviewUrl(card.imageUrl);
       setImageError("");
@@ -166,6 +170,7 @@ export function EditCardDialog({
         imageUrl: fields.imageUrl,
         mainViewMode,
         cardType,
+        jlptLevel,
       };
       onSave({ ...card, ...patch });
       onClose();
@@ -441,6 +446,80 @@ export function EditCardDialog({
           >
             <ToggleButton value="word">単語</ToggleButton>
             <ToggleButton value="phrase">フレーズ</ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+
+        {/* ── JLPT Level ── */}
+        <Box
+          sx={{
+            borderRadius: "12px",
+            border: "1.5px solid rgba(249,168,212,0.35)",
+            background: "linear-gradient(135deg, #FFF5FB 0%, #FAF5FF 100%)",
+            p: "12px 14px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+          }}
+        >
+          <Box>
+            <Typography
+              sx={{
+                fontSize: "0.72rem",
+                fontWeight: 800,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "#EC4899",
+                fontFamily: '"Nunito", sans-serif',
+                lineHeight: 1,
+                mb: 0.4,
+              }}
+            >
+              JLPT Level
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: "0.68rem",
+                color: "#C2709A",
+                fontFamily: '"Nunito", sans-serif',
+              }}
+            >
+              {jlptLevel ? `Tagged as ${jlptLevel}` : "No level assigned"}
+            </Typography>
+          </Box>
+
+          <ToggleButtonGroup
+            value={jlptLevel ?? null}
+            exclusive
+            onChange={(_, v) => setJlptLevel(v ?? undefined)}
+            size="small"
+            sx={{
+              flexShrink: 0,
+              "& .MuiToggleButton-root": {
+                px: 1.25,
+                py: 0.6,
+                fontWeight: 800,
+                fontSize: "0.72rem",
+                fontFamily: '"Nunito", sans-serif',
+                lineHeight: 1,
+                border: "1.5px solid rgba(249,168,212,0.45)",
+                color: "#C2709A",
+                transition: "all 0.18s ease",
+                "&.Mui-selected": {
+                  background: "linear-gradient(90deg, #fce7f3, #ede9fe)",
+                  color: "#BE185D",
+                  borderColor: "rgba(249,168,212,0.7)",
+                  boxShadow: "0 2px 8px rgba(249,168,212,0.25)",
+                },
+                "&:hover:not(.Mui-selected)": {
+                  bgcolor: "rgba(249,168,212,0.08)",
+                },
+              },
+            }}
+          >
+            {JLPT_LEVELS.map((level) => (
+              <ToggleButton key={level} value={level}>{level}</ToggleButton>
+            ))}
           </ToggleButtonGroup>
         </Box>
 

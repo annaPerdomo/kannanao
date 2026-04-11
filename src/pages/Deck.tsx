@@ -126,6 +126,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const [addCardsOpen, setAddCardsOpen] = useState(false);
   const [embedOpen, setEmbedOpen] = useState(false);
   const [deckIsPublic, setDeckIsPublic] = useState(deck?.isPublic ?? false);
+  const [pendingMainViewMode, setPendingMainViewMode] = useState<'hiragana' | 'kanji'>('hiragana');
 
   const handlePdfCards = async (extracted: GeneratedCard[]) => {
     const withImages = await Promise.all(
@@ -135,7 +136,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           ...card,
           imageUrl: imageUrl ?? undefined,
           deckId,
-          mainViewMode: "hiragana" as const,
+          mainViewMode: pendingMainViewMode,
           cardType: card.card_type,
           jlptLevel: card.jlpt_level ?? undefined,
         };
@@ -805,11 +806,13 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         onGenerate={handleGenerate}
         generating={generating}
         error={error}
-        onAddExisting={() => {
+        onAddExisting={(mainViewMode) => {
+          setPendingMainViewMode(mainViewMode);
           setAddCardsOpen(false);
           setPickerOpen(true);
         }}
-        onImportPdf={() => {
+        onImportPdf={(mainViewMode) => {
+          setPendingMainViewMode(mainViewMode);
           setAddCardsOpen(false);
           setPdfImportOpen(true);
         }}
@@ -820,7 +823,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         onClose={() => setPickerOpen(false)}
         targetDeckId={deckId}
         userId={user?.id ?? ""}
-        onConfirm={copyExistingCards}
+        onConfirm={(cards) => copyExistingCards(cards.map((c) => ({ ...c, mainViewMode: pendingMainViewMode })))}
       />
 
       <PdfImportModal

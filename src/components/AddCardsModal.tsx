@@ -23,8 +23,8 @@ interface AddCardsModalProps {
   onGenerate: (words: string[], mainViewMode: 'hiragana' | 'kanji') => Promise<void>;
   generating: boolean;
   error: string | null;
-  onAddExisting: () => void;
-  onImportPdf: () => void;
+  onAddExisting: (mainViewMode: 'hiragana' | 'kanji') => void;
+  onImportPdf: (mainViewMode: 'hiragana' | 'kanji') => void;
 }
 
 export function AddCardsModal({
@@ -144,6 +144,44 @@ export function AddCardsModal({
             <Loading message="Generating cards…" />
           </Box>
         )}
+        {/* Main view mode — applies to all add methods */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, color: '#C2709A', fontFamily: '"Nunito", sans-serif', flexShrink: 0 }}>
+            Main display mode:
+          </Typography>
+          <ToggleButtonGroup
+            value={mainViewMode}
+            exclusive
+            size="small"
+            onChange={(_, v) => { if (v) setMainViewMode(v); }}
+            disabled={generating}
+            sx={{ ml: 'auto' }}
+          >
+            <ToggleButton
+              value="hiragana"
+              sx={{
+                px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700,
+                fontFamily: '"Nunito", sans-serif', textTransform: 'none',
+                borderColor: 'rgba(249,168,212,0.5)',
+                '&.Mui-selected': { bgcolor: 'rgba(249,168,212,0.25)', color: '#BE185D', borderColor: 'rgba(236,72,153,0.5)' },
+              }}
+            >
+              ひ Hiragana
+            </ToggleButton>
+            <ToggleButton
+              value="kanji"
+              sx={{
+                px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700,
+                fontFamily: '"Nunito", sans-serif', textTransform: 'none',
+                borderColor: 'rgba(249,168,212,0.5)',
+                '&.Mui-selected': { bgcolor: 'rgba(249,168,212,0.25)', color: '#BE185D', borderColor: 'rgba(236,72,153,0.5)' },
+              }}
+            >
+              漢 Kanji
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+
         {/* Generate section */}
         <Box
           sx={{
@@ -179,43 +217,6 @@ export function AddCardsModal({
             disabled={generating}
             inputId="modal-word-input"
           />
-
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5, mb: 1 }}>
-            <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, color: '#C2709A', fontFamily: '"Nunito", sans-serif', flexShrink: 0 }}>
-              Main display mode:
-            </Typography>
-            <ToggleButtonGroup
-              value={mainViewMode}
-              exclusive
-              size="small"
-              onChange={(_, v) => { if (v) setMainViewMode(v); }}
-              disabled={generating}
-              sx={{ ml: 'auto' }}
-            >
-              <ToggleButton
-                value="hiragana"
-                sx={{
-                  px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700,
-                  fontFamily: '"Nunito", sans-serif', textTransform: 'none',
-                  borderColor: 'rgba(249,168,212,0.5)',
-                  '&.Mui-selected': { bgcolor: 'rgba(249,168,212,0.25)', color: '#BE185D', borderColor: 'rgba(236,72,153,0.5)' },
-                }}
-              >
-                ひ Hiragana
-              </ToggleButton>
-              <ToggleButton
-                value="kanji"
-                sx={{
-                  px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700,
-                  fontFamily: '"Nunito", sans-serif', textTransform: 'none',
-                  borderColor: 'rgba(249,168,212,0.5)',
-                  '&.Mui-selected': { bgcolor: 'rgba(249,168,212,0.25)', color: '#BE185D', borderColor: 'rgba(236,72,153,0.5)' },
-                }}
-              >
-                漢 Kanji
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Box>
 
           {error && (
             <Alert
@@ -274,8 +275,8 @@ export function AddCardsModal({
 
         <AddCardOptionButtons
           disabled={generating}
-          onAddExisting={onAddExisting}
-          onImportPdf={onImportPdf}
+          onAddExisting={() => onAddExisting(mainViewMode)}
+          onImportPdf={() => onImportPdf(mainViewMode)}
         />
       </DialogContent>
     </Dialog>
