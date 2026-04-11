@@ -205,20 +205,6 @@ export default function EmbedStudy({ deckId }: EmbedStudyProps) {
           }}>
             {deckName}
           </Typography>
-          {card.jlptLevel && (
-            <Chip
-              label={`JLPT ${card.jlptLevel}`}
-              size="small"
-              sx={{
-                height: 20, fontSize: "0.62rem",
-                bgcolor: "rgba(249,168,212,0.15)",
-                color: "#BE185D",
-                border: "1px solid rgba(249,168,212,0.35)",
-                fontFamily: '"DM Mono", monospace',
-                letterSpacing: "0.05em",
-              }}
-            />
-          )}
         </Box>
 
         {/* Card style toggle */}

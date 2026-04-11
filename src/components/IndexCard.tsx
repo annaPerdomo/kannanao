@@ -54,9 +54,6 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
             borderBottom: '1.5px solid #f0f0f5',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
-            <Typography sx={{ fontSize: '0.65rem', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: '"DM Mono", monospace' }}>
-              {isKanji ? 'Kanji' : 'Hiragana'}
-            </Typography>
             {card.jlptLevel && (
               <Box sx={{ px: 1, py: 0.3, borderRadius: '5px', bgcolor: '#f4f4f8', border: '1px solid #e0e0ea' }}>
                 <Typography sx={{ fontSize: '0.62rem', color: '#777', letterSpacing: '0.08em', fontFamily: '"DM Mono", monospace' }}>
@@ -107,7 +104,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
                   <Typography sx={{ fontSize: '0.58rem', color: '#bbb', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', mb: 0.5 }}>
                     Reading
                   </Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.6rem', fontWeight: 600, color: '#333' }}>
+                  <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.1rem', fontWeight: 600, color: '#333', whiteSpace: 'nowrap' }}>
                     {card.reading}
                   </Typography>
                 </Box>
@@ -117,7 +114,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
                   <Typography sx={{ fontSize: '0.58rem', color: '#bbb', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', mb: 0.5 }}>
                     Kanji
                   </Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.6rem', fontWeight: 600, color: '#333' }}>
+                  <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.1rem', fontWeight: 600, color: '#333', whiteSpace: 'nowrap' }}>
                     {card.word}
                   </Typography>
                 </Box>
@@ -126,7 +123,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
                 <Typography sx={{ fontSize: '0.58rem', color: '#bbb', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', mb: 0.5 }}>
                   Meaning
                 </Typography>
-                <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.35rem', fontWeight: 700, color: '#222', fontStyle: 'italic', lineHeight: 1.3 }}>
+                <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.1rem', fontWeight: 700, color: '#222', fontStyle: 'italic', lineHeight: 1.3, whiteSpace: 'nowrap' }}>
                   {card.meaning}
                 </Typography>
               </Box>
@@ -137,10 +134,10 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
               <Typography sx={{ fontSize: '0.58rem', color: '#bbb', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', mb: 0.5 }}>
                 Example
               </Typography>
-              <Typography component="div" sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '0.9rem', color: '#222', lineHeight: 2.2 }}>
+              <Typography component="div" sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '0.95rem', color: '#222', lineHeight: 2.2 }}>
                 <FuriganaText text={card.example_jp} showFurigana={true} />
               </Typography>
-              <Typography sx={{ fontSize: '0.8rem', color: alpha('#000', 0.4), fontStyle: 'italic', lineHeight: 1.5 }}>
+              <Typography sx={{ fontSize: '0.9rem', color: alpha('#000', 0.4), fontStyle: 'italic', lineHeight: 1.5 }}>
                 {card.example_en}
               </Typography>
             </Box>

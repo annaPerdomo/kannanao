@@ -97,16 +97,13 @@ export function EmbedFlashcard({ card, width = '100%', height = 300 }: EmbedFlas
         {/* ── FRONT ── */}
         <Box sx={frameStyle}>
           <Box sx={innerStyle}>
-            {/* Top bar: type label + JLPT */}
+            {/* Top bar: JLPT only */}
             <Box sx={{
               px: 2, py: 1,
               background: typeGradient,
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              display: 'flex', justifyContent: 'flex-end', alignItems: 'center',
               flexShrink: 0,
             }}>
-              <Typography sx={{ fontSize: '0.7rem', fontWeight: 900, color: 'white', textTransform: 'uppercase', letterSpacing: '0.08em', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
-                {isKanji ? '漢字' : 'かな'}
-              </Typography>
               {card.jlptLevel && (
                 <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.92)', letterSpacing: '0.06em', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
                   JLPT {card.jlptLevel}
@@ -166,7 +163,7 @@ export function EmbedFlashcard({ card, width = '100%', height = 300 }: EmbedFlas
                     <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
                       ★ Reading
                     </Typography>
-                    <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.6rem', fontWeight: 700, color: '#111', lineHeight: 1.2 }}>
+                    <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.1rem', fontWeight: 700, color: '#111', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
                       {card.reading}
                     </Typography>
                   </Box>
@@ -176,7 +173,7 @@ export function EmbedFlashcard({ card, width = '100%', height = 300 }: EmbedFlas
                     <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
                       ★ Kanji
                     </Typography>
-                    <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.6rem', fontWeight: 700, color: '#111', lineHeight: 1.2 }}>
+                    <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.1rem', fontWeight: 700, color: '#111', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
                       {card.word}
                     </Typography>
                   </Box>
@@ -185,7 +182,7 @@ export function EmbedFlashcard({ card, width = '100%', height = 300 }: EmbedFlas
                   <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
                     ★ Meaning
                   </Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.3rem', fontWeight: 700, color: '#111', fontStyle: 'italic', lineHeight: 1.3 }}>
+                  <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.1rem', fontWeight: 700, color: '#111', fontStyle: 'italic', lineHeight: 1.3, whiteSpace: 'nowrap' }}>
                     {card.meaning}
                   </Typography>
                 </Box>
@@ -196,10 +193,10 @@ export function EmbedFlashcard({ card, width = '100%', height = 300 }: EmbedFlas
                 <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
                   ★ Example
                 </Typography>
-                <Typography component="div" sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '0.88rem', color: '#111', lineHeight: 2.2 }}>
+                <Typography component="div" sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '0.95rem', color: '#111', lineHeight: 2.2 }}>
                   <FuriganaText text={card.example_jp} showFurigana={true} />
                 </Typography>
-                <Typography sx={{ fontSize: '0.78rem', color: alpha('#000', 0.5), fontStyle: 'italic', lineHeight: 1.5 }}>
+                <Typography sx={{ fontSize: '0.9rem', color: alpha('#000', 0.5), fontStyle: 'italic', lineHeight: 1.5 }}>
                   {card.example_en}
                 </Typography>
               </Box>
