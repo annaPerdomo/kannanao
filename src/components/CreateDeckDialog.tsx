@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, Typography, Box, CircularProgress, Alert,
-  FormControlLabel, Switch,
+  FormControlLabel, Switch, ToggleButtonGroup, ToggleButton,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { alpha } from "@mui/material/styles";
@@ -36,6 +36,7 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
   const [input, setInput] = useState("");
   const [words, setWords] = useState<string[]>([]);
   const [pinToHome, setPinToHome] = useState(false);
+  const [mainViewMode, setMainViewMode] = useState<'hiragana' | 'kanji'>('hiragana');
   const [creating, setCreating] = useState(false);
   const [createdDeckId, setCreatedDeckId] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -45,7 +46,7 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
 
   const reset = () => {
     setName(""); setDescription(""); setInput(""); setWords([]);
-    setPinToHome(false); setCreating(false); setCreatedDeckId(null);
+    setPinToHome(false); setMainViewMode('hiragana'); setCreating(false); setCreatedDeckId(null);
   };
 
   const handleCreate = async () => {
@@ -56,7 +57,7 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
       if (pinToHome) await pinDeck(deck.id, true);
       const finalWords = input.trim() ? [...words, input.trim()] : words;
       if (finalWords.length > 0) {
-        const generated = await generate(finalWords, deck.id);
+        const generated = await generate(finalWords, deck.id, mainViewMode);
         await dbInsertCards(deck.id, generated.map((card) => ({ ...card, deckId: deck.id })));
       }
       reset(); onClose(); router.push(`/deck/${deck.id}`);
@@ -184,6 +185,28 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
                 Generate with AI
               </Typography>
               <WordChipInput words={words} onWordsChange={setWords} input={input} onInputChange={setInput} disabled={busy} inputId="create-deck-word-input" />
+
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1.5, mb: 1 }}>
+                <Typography sx={{ fontSize: "0.65rem", fontWeight: 700, color: "text.secondary", fontFamily: '"Nunito", sans-serif', flexShrink: 0 }}>
+                  Main display mode:
+                </Typography>
+                <ToggleButtonGroup
+                  value={mainViewMode}
+                  exclusive
+                  size="small"
+                  onChange={(_, v) => { if (v) setMainViewMode(v); }}
+                  disabled={busy}
+                  sx={{ ml: "auto" }}
+                >
+                  <ToggleButton value="hiragana" sx={{ px: 1.5, py: 0.4, fontSize: "0.72rem", fontWeight: 700, fontFamily: '"Nunito", sans-serif', textTransform: "none", borderColor: alpha(brand[300], 0.5), "&.Mui-selected": { bgcolor: alpha(brand[100], 0.6), color: brand[700], borderColor: alpha(brand[400], 0.6) } }}>
+                    ひ Hiragana
+                  </ToggleButton>
+                  <ToggleButton value="kanji" sx={{ px: 1.5, py: 0.4, fontSize: "0.72rem", fontWeight: 700, fontFamily: '"Nunito", sans-serif', textTransform: "none", borderColor: alpha(brand[300], 0.5), "&.Mui-selected": { bgcolor: alpha(brand[100], 0.6), color: brand[700], borderColor: alpha(brand[400], 0.6) } }}>
+                    漢 Kanji
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+
               {error && <Alert severity="error" sx={{ mb: 1.25, fontSize: "0.73rem", py: 0.4, borderRadius: "9px" }}>{error}</Alert>}
               {words.length > 0 && !busy && (
                 <Typography sx={{ textAlign: "center", fontSize: "0.67rem", color: "text.secondary", fontFamily: '"Nunito", sans-serif', fontWeight: 600 }}>

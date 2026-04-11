@@ -210,8 +210,8 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   } = useCards(deckId, handleCountChange);
   const { generating, error, generate } = useGenerateFlashcards();
 
-  const handleGenerate = async (words: string[]) => {
-    const generated = await generate(words, deckId);
+  const handleGenerate = async (words: string[], mainViewMode: 'hiragana' | 'kanji') => {
+    const generated = await generate(words, deckId, mainViewMode);
     addCards(generated.map((card) => ({ ...card, deckId })));
   };
 

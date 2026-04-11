@@ -8,6 +8,8 @@ import {
   Typography,
   Alert,
   IconButton,
+  ToggleButtonGroup,
+  ToggleButton,
 } from '@mui/material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CloseIcon from '@mui/icons-material/Close';
@@ -18,7 +20,7 @@ import { Loading } from '@/components/Loading';
 interface AddCardsModalProps {
   open: boolean;
   onClose: () => void;
-  onGenerate: (words: string[]) => Promise<void>;
+  onGenerate: (words: string[], mainViewMode: 'hiragana' | 'kanji') => Promise<void>;
   generating: boolean;
   error: string | null;
   onAddExisting: () => void;
@@ -36,11 +38,12 @@ export function AddCardsModal({
 }: AddCardsModalProps) {
   const [input, setInput] = useState('');
   const [words, setWords] = useState<string[]>([]);
+  const [mainViewMode, setMainViewMode] = useState<'hiragana' | 'kanji'>('hiragana');
 
   const handleGenerate = async () => {
     const finalWords = input.trim() ? [...words, input.trim()] : words;
     if (finalWords.length === 0) return;
-    await onGenerate(finalWords);
+    await onGenerate(finalWords, mainViewMode);
     setWords([]);
     setInput('');
   };
@@ -176,6 +179,43 @@ export function AddCardsModal({
             disabled={generating}
             inputId="modal-word-input"
           />
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5, mb: 1 }}>
+            <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, color: '#C2709A', fontFamily: '"Nunito", sans-serif', flexShrink: 0 }}>
+              Main display mode:
+            </Typography>
+            <ToggleButtonGroup
+              value={mainViewMode}
+              exclusive
+              size="small"
+              onChange={(_, v) => { if (v) setMainViewMode(v); }}
+              disabled={generating}
+              sx={{ ml: 'auto' }}
+            >
+              <ToggleButton
+                value="hiragana"
+                sx={{
+                  px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700,
+                  fontFamily: '"Nunito", sans-serif', textTransform: 'none',
+                  borderColor: 'rgba(249,168,212,0.5)',
+                  '&.Mui-selected': { bgcolor: 'rgba(249,168,212,0.25)', color: '#BE185D', borderColor: 'rgba(236,72,153,0.5)' },
+                }}
+              >
+                ひ Hiragana
+              </ToggleButton>
+              <ToggleButton
+                value="kanji"
+                sx={{
+                  px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700,
+                  fontFamily: '"Nunito", sans-serif', textTransform: 'none',
+                  borderColor: 'rgba(249,168,212,0.5)',
+                  '&.Mui-selected': { bgcolor: 'rgba(249,168,212,0.25)', color: '#BE185D', borderColor: 'rgba(236,72,153,0.5)' },
+                }}
+              >
+                漢 Kanji
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
 
           {error && (
             <Alert
