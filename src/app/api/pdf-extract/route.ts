@@ -15,6 +15,7 @@ For each vocabulary word or phrase found, return a JSON object with:
 - "example_jp": simple sentence for a young learner using the word naturally. Wrap every kanji (or kanji compound) with its hiragana reading using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです。 Pure kana words need no wrapping.
 - "example_en": English translation of the example sentence, no trailing period.
 - "card_type": "word" for single vocabulary words, "phrase" for multi-word expressions or full phrases.
+- "jlpt_level": JLPT level this word/phrase belongs to ("N5", "N4", "N3", "N2", "N1"), or null if not in any JLPT list.
 
 Skip section headers and meta-content. Focus only on actual vocabulary words and phrases a student would need to memorize. Do not include periods in any field.`;
 
@@ -73,8 +74,9 @@ export async function POST(req: NextRequest) {
                   example_jp: { type: "string" },
                   example_en: { type: "string" },
                   card_type: { type: "string", enum: ["word", "phrase"] },
+                  jlpt_level: { type: "string", enum: ["N5", "N4", "N3", "N2", "N1"], nullable: true },
                 },
-                required: ["word", "reading", "meaning", "image_query", "example_jp", "example_en", "card_type"],
+                required: ["word", "reading", "meaning", "image_query", "example_jp", "example_en", "card_type", "jlpt_level"],
               },
             },
           },
