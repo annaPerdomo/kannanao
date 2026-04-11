@@ -2,6 +2,25 @@ import type { NextConfig } from 'next';
 import withPWA from '@ducanh2912/next-pwa';
 
 const nextConfig: NextConfig = {
+  async headers() {
+    return [
+      {
+        // Allow /embed/* routes to be framed inside Canvas and other LMS platforms
+        source: "/embed/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "frame-ancestors 'self'",
+              "https://*.instructure.com",
+              "https://*.canvas.net",
+              "https://*.canvaslms.com",
+            ].join(" "),
+          },
+        ],
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

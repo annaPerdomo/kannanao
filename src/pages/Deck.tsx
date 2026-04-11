@@ -20,7 +20,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import PushPinIcon from "@mui/icons-material/PushPin";
 import PushPinOutlinedIcon from "@mui/icons-material/PushPinOutlined";
+import CodeIcon from "@mui/icons-material/Code";
 import { AddCardsModal } from "@/components/AddCardsModal";
+import { EmbedDeckDialog } from "@/components/EmbedDeckDialog";
 import { ImageCard } from "@/components/ImageCard";
 import { Loading } from "@/components/Loading";
 import { PdfImportModal } from "@/components/PdfImportModal";
@@ -122,6 +124,8 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
 
   const [pdfImportOpen, setPdfImportOpen] = useState(false);
   const [addCardsOpen, setAddCardsOpen] = useState(false);
+  const [embedOpen, setEmbedOpen] = useState(false);
+  const [deckIsPublic, setDeckIsPublic] = useState(deck?.isPublic ?? false);
 
   const handlePdfCards = async (extracted: GeneratedCard[]) => {
     const withImages = await Promise.all(
@@ -442,6 +446,27 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
 
           {!editing && (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}>
+              <Tooltip title={deckIsPublic ? "Embed (public)" : "Embed deck"}>
+                <IconButton
+                  size="small"
+                  onClick={() => setEmbedOpen(true)}
+                  sx={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: "8px",
+                    border: `1.5px solid ${deckIsPublic ? alpha(accent[500], 0.6) : alpha(brand[300], 0.45)}`,
+                    bgcolor: deckIsPublic ? alpha(accent[100], 0.8) : "transparent",
+                    color: deckIsPublic ? accent[600] : alpha(brand[500], 0.55),
+                    "&:hover": {
+                      bgcolor: alpha(accent[100], 0.8),
+                      color: accent[600],
+                      borderColor: alpha(accent[500], 0.6),
+                    },
+                  }}
+                >
+                  <CodeIcon sx={{ fontSize: 14 }} />
+                </IconButton>
+              </Tooltip>
               <Tooltip title={deck.pinned ? "Unpin from home" : "Pin to home"}>
                 <IconButton
                   size="small"
@@ -802,6 +827,15 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         open={pdfImportOpen}
         onClose={() => setPdfImportOpen(false)}
         onAddCards={handlePdfCards}
+      />
+
+      <EmbedDeckDialog
+        open={embedOpen}
+        onClose={() => setEmbedOpen(false)}
+        deckId={deckId}
+        deckName={deck.name}
+        isPublic={deckIsPublic}
+        onPublicChange={setDeckIsPublic}
       />
     </Box>
   );

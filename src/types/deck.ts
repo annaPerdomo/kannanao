@@ -8,4 +8,5 @@ export interface Deck {
   isShared?: boolean;
   emoji: string;
   pinned?: boolean;
+  isPublic?: boolean;
 }

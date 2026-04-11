@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
-import Box from "@mui/material/Box";
 import Providers from "./providers";
-import { NavBar } from "@/components/NavBar";
-import { Footer } from "@/components/Footer";
-import { AuthGuard } from "@/components/AuthGuard";
+import { ConditionalShell } from "@/components/ConditionalShell";
 import { AppBackground } from "@/components/AppBackground";
 
 export const metadata: Metadata = {
@@ -55,11 +52,7 @@ export default function RootLayout({
         <AppRouterCacheProvider>
           <Providers>
             <AppBackground>
-              <NavBar />
-              <Box sx={{ flex: 1 }}>
-                <AuthGuard>{children}</AuthGuard>
-              </Box>
-              <Footer />
+              <ConditionalShell>{children}</ConditionalShell>
             </AppBackground>
           </Providers>
         </AppRouterCacheProvider>

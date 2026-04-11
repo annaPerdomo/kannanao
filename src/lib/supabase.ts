@@ -39,6 +39,7 @@ interface SupabaseDeckRow {
   user_id: string;
   emoji: string | null;
   pinned: boolean | null;
+  is_public: boolean | null;
 }
 
 interface SupabaseCardRow {
@@ -100,6 +101,7 @@ export function dbDeckToApp(
     isShared: deck.user_id !== currentUserId,
     emoji: deck.emoji ?? deckFallbackEmoji(deck.id),
     pinned: deck.pinned ?? false,
+    isPublic: deck.is_public ?? false,
   };
 }
 
@@ -180,6 +182,12 @@ export async function dbUpdateDeckEmoji(id: string, emoji: string): Promise<void
 export async function dbPinDeck(id: string, pinned: boolean): Promise<void> {
   if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
   const { error } = await sb.from('decks').update({ pinned }).eq('id', id);
+  if (error) throw error;
+}
+
+export async function dbSetDeckPublic(id: string, isPublic: boolean): Promise<void> {
+  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  const { error } = await sb.from('decks').update({ is_public: isPublic }).eq('id', id);
   if (error) throw error;
 }
 
