@@ -4,17 +4,12 @@ import {
   Dialog,
   DialogContent,
   Box,
-  Button,
   Typography,
   Alert,
   IconButton,
-  ToggleButtonGroup,
-  ToggleButton,
 } from '@mui/material';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CloseIcon from '@mui/icons-material/Close';
-import { WordChipInput } from '@/components/WordChipInput';
-import { OrDivider, AddCardOptionButtons } from '@/components/AddCardOptionButtons';
+import { AddCardsSection } from '@/components/AddCardsSection';
 import { Loading } from '@/components/Loading';
 
 interface AddCardsModalProps {
@@ -40,20 +35,10 @@ export function AddCardsModal({
   const [words, setWords] = useState<string[]>([]);
   const [mainViewMode, setMainViewMode] = useState<'hiragana' | 'kanji'>('hiragana');
 
-  const handleGenerate = async () => {
-    const finalWords = input.trim() ? [...words, input.trim()] : words;
-    if (finalWords.length === 0) return;
-    await onGenerate(finalWords, mainViewMode);
-    setWords([]);
-    setInput('');
-  };
-
   const handleClose = () => {
     if (generating) return;
     onClose();
   };
-
-  const canGenerate = words.length > 0 || input.trim().length > 0;
 
   return (
     <Dialog
@@ -144,139 +129,26 @@ export function AddCardsModal({
             <Loading message="Generating cards…" />
           </Box>
         )}
-        {/* Main view mode — applies to all add methods */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, color: '#C2709A', fontFamily: '"Nunito", sans-serif', flexShrink: 0 }}>
-            Main display mode:
-          </Typography>
-          <ToggleButtonGroup
-            value={mainViewMode}
-            exclusive
-            size="small"
-            onChange={(_, v) => { if (v) setMainViewMode(v); }}
-            disabled={generating}
-            sx={{ ml: 'auto' }}
-          >
-            <ToggleButton
-              value="hiragana"
-              sx={{
-                px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700,
-                fontFamily: '"Nunito", sans-serif', textTransform: 'none',
-                borderColor: 'rgba(249,168,212,0.5)',
-                '&.Mui-selected': { bgcolor: 'rgba(249,168,212,0.25)', color: '#BE185D', borderColor: 'rgba(236,72,153,0.5)' },
-              }}
-            >
-              ひ Hiragana
-            </ToggleButton>
-            <ToggleButton
-              value="kanji"
-              sx={{
-                px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700,
-                fontFamily: '"Nunito", sans-serif', textTransform: 'none',
-                borderColor: 'rgba(249,168,212,0.5)',
-                '&.Mui-selected': { bgcolor: 'rgba(249,168,212,0.25)', color: '#BE185D', borderColor: 'rgba(236,72,153,0.5)' },
-              }}
-            >
-              漢 Kanji
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
-
-        {/* Generate section */}
-        <Box
-          sx={{
+        <AddCardsSection
+          words={words}
+          onWordsChange={setWords}
+          input={input}
+          onInputChange={setInput}
+          disabled={generating}
+          error={error}
+          mainViewMode={mainViewMode}
+          onMainViewModeChange={setMainViewMode}
+          onGenerate={async (finalWords, mode) => await onGenerate(finalWords, mode)}
+          onAddExisting={() => onAddExisting(mainViewMode)}
+          onImportPdf={() => onImportPdf(mainViewMode)}
+          containerSx={{
             bgcolor: '#FFF8FC',
             border: '1.5px solid rgba(249,168,212,0.35)',
             borderRadius: '14px',
             p: 2,
             mb: 2,
           }}
-        >
-          <Typography
-            sx={{
-              fontSize: '0.6rem',
-              fontWeight: 800,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: '#EC4899',
-              fontFamily: '"Nunito", sans-serif',
-              mb: 1.25,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-            }}
-          >
-            Generate with AI
-          </Typography>
-
-          <WordChipInput
-            words={words}
-            onWordsChange={setWords}
-            input={input}
-            onInputChange={setInput}
-            disabled={generating}
-            inputId="modal-word-input"
-          />
-
-          {error && (
-            <Alert
-              severity="error"
-              sx={{ mb: 1.25, fontSize: '0.73rem', py: 0.4, borderRadius: '9px' }}
-            >
-              {error}
-            </Alert>
-          )}
-
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={handleGenerate}
-            disabled={generating || !canGenerate}
-            startIcon={<AutoAwesomeIcon sx={{ fontSize: 14 }} />}
-            sx={{
-              borderRadius: '10px',
-              py: '9px',
-              fontFamily: '"Nunito", sans-serif',
-              fontWeight: 800,
-              fontSize: '0.82rem',
-              letterSpacing: '0.02em',
-              textTransform: 'none',
-              background: canGenerate && !generating
-                ? 'linear-gradient(135deg, #F472B6 0%, #EC4899 50%, #A855F7 100%)'
-                : undefined,
-              boxShadow: canGenerate && !generating
-                ? '0 4px 14px rgba(236,72,153,0.35)'
-                : undefined,
-              '&:hover': {
-                boxShadow: '0 6px 20px rgba(236,72,153,0.45)',
-              },
-            }}
-          >
-            Generate Cards
-          </Button>
-
-          {words.length > 0 && !generating && (
-            <Typography
-              sx={{
-                mt: 1,
-                textAlign: 'center',
-                fontSize: '0.67rem',
-                color: '#C2709A',
-                fontFamily: '"Nunito", sans-serif',
-                fontWeight: 600,
-              }}
-            >
-              {words.length} word{words.length > 1 ? 's' : ''} queued
-            </Typography>
-          )}
-        </Box>
-
-        <OrDivider />
-
-        <AddCardOptionButtons
-          disabled={generating}
-          onAddExisting={() => onAddExisting(mainViewMode)}
-          onImportPdf={() => onImportPdf(mainViewMode)}
+          titleColor="#EC4899"
         />
       </DialogContent>
     </Dialog>

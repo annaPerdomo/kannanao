@@ -16,11 +16,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { dbInsertCards, dbCopyCardsIntoDeck } from "@/lib/supabase";
 import { AddExistingCardsDialog } from "@/components/AddExistingCardsDialog";
 import { PdfImportModal } from "@/components/PdfImportModal";
-import { WordChipInput } from "@/components/WordChipInput";
-import { OrDivider, AddCardOptionButtons } from "@/components/AddCardOptionButtons";
+import { AddCardsSection } from "@/components/AddCardsSection";
 import { Loading } from "@/components/Loading";
 import { useRouter } from "next/navigation";
-import type { Flashcard } from "@/types/flashcard";
+import type { Flashcard, GeneratedCard } from '@/types/flashcard';
 
 export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const theme = useTheme();
@@ -86,6 +85,24 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
       setCreatedDeckId(deck.id);
       setPdfOpen(true);
     } finally { setCreating(false); }
+  };
+
+  const handlePdfImportAddCards = async (cards: GeneratedCard[]) => {
+    if (!createdDeckId) return;
+    await dbInsertCards(createdDeckId, cards.map((card) => ({
+      deckId: createdDeckId,
+      word: card.word,
+      reading: card.reading,
+      meaning: card.meaning,
+      image_query: card.image_query,
+      example_jp: card.example_jp,
+      example_en: card.example_en,
+      mainViewMode,
+      cardType: card.card_type,
+      jlptLevel: card.jlpt_level ?? undefined,
+    })));
+    setPdfOpen(false);
+    navigateToDeck(createdDeckId);
   };
 
   const handlePickerConfirm = async (cards: Flashcard[]) => {
@@ -180,43 +197,26 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
               <Box sx={{ flexGrow: 1, height: "1px", bgcolor: alpha(brand[300], 0.3) }} />
             </Box>
 
-            <Box sx={{ bgcolor: surfaces.input, border: `1.5px solid ${alpha(brand[300], 0.35)}`, borderRadius: "14px", p: 2, mb: 2 }}>
-              <Typography sx={{ fontSize: "0.6rem", fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: brand[500], fontFamily: '"Nunito", sans-serif', mb: 1.25 }}>
-                Generate with AI
-              </Typography>
-              <WordChipInput words={words} onWordsChange={setWords} input={input} onInputChange={setInput} disabled={busy} inputId="create-deck-word-input" />
-
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1.5, mb: 1 }}>
-                <Typography sx={{ fontSize: "0.65rem", fontWeight: 700, color: "text.secondary", fontFamily: '"Nunito", sans-serif', flexShrink: 0 }}>
-                  Main display mode:
-                </Typography>
-                <ToggleButtonGroup
-                  value={mainViewMode}
-                  exclusive
-                  size="small"
-                  onChange={(_, v) => { if (v) setMainViewMode(v); }}
-                  disabled={busy}
-                  sx={{ ml: "auto" }}
-                >
-                  <ToggleButton value="hiragana" sx={{ px: 1.5, py: 0.4, fontSize: "0.72rem", fontWeight: 700, fontFamily: '"Nunito", sans-serif', textTransform: "none", borderColor: alpha(brand[300], 0.5), "&.Mui-selected": { bgcolor: alpha(brand[100], 0.6), color: brand[700], borderColor: alpha(brand[400], 0.6) } }}>
-                    ひ Hiragana
-                  </ToggleButton>
-                  <ToggleButton value="kanji" sx={{ px: 1.5, py: 0.4, fontSize: "0.72rem", fontWeight: 700, fontFamily: '"Nunito", sans-serif', textTransform: "none", borderColor: alpha(brand[300], 0.5), "&.Mui-selected": { bgcolor: alpha(brand[100], 0.6), color: brand[700], borderColor: alpha(brand[400], 0.6) } }}>
-                    漢 Kanji
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </Box>
-
-              {error && <Alert severity="error" sx={{ mb: 1.25, fontSize: "0.73rem", py: 0.4, borderRadius: "9px" }}>{error}</Alert>}
-              {words.length > 0 && !busy && (
-                <Typography sx={{ textAlign: "center", fontSize: "0.67rem", color: "text.secondary", fontFamily: '"Nunito", sans-serif', fontWeight: 600 }}>
-                  {words.length} word{words.length > 1 ? "s" : ""} queued
-                </Typography>
-              )}
-            </Box>
-
-            <OrDivider />
-            <AddCardOptionButtons disabled={busy || !name.trim()} onAddExisting={handleAddExisting} onImportPdf={handleImportPdf} />
+            <AddCardsSection
+              words={words}
+              onWordsChange={setWords}
+              input={input}
+              onInputChange={setInput}
+              disabled={busy}
+              error={error}
+              mainViewMode={mainViewMode}
+              onMainViewModeChange={setMainViewMode}
+              onAddExisting={handleAddExisting}
+              onImportPdf={handleImportPdf}
+              containerSx={{
+                bgcolor: surfaces.input,
+                border: `1.5px solid ${alpha(brand[300], 0.35)}`,
+                borderRadius: '14px',
+                p: 2,
+                mb: 2,
+              }}
+              titleColor={brand[500]}
+            />
           </DialogContent>
         )}
 
@@ -238,7 +238,11 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
 
       <AddExistingCardsDialog open={pickerOpen} onClose={() => { setPickerOpen(false); if (createdDeckId) navigateToDeck(createdDeckId); }}
         targetDeckId={createdDeckId ?? ""} userId={user?.id ?? ""} onConfirm={handlePickerConfirm} />
-      <PdfImportModal open={pdfOpen} onClose={() => { setPdfOpen(false); if (createdDeckId) navigateToDeck(createdDeckId); }} onAddCards={() => { setPdfOpen(false); if (createdDeckId) navigateToDeck(createdDeckId); }} />
+      <PdfImportModal
+        open={pdfOpen}
+        onClose={() => { setPdfOpen(false); if (createdDeckId) navigateToDeck(createdDeckId); }}
+        onAddCards={handlePdfImportAddCards}
+      />
     </>
   );
 }
