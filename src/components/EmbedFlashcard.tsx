@@ -21,24 +21,20 @@ export function EmbedFlashcard({ card, width = '100%', height = 300 }: EmbedFlas
   useEffect(() => { setFlipped(false); }, [card]);
 
   const isKanji = card.mainViewMode === 'kanji';
-  const typeGradient = isKanji
-    ? `linear-gradient(135deg, ${accent[400]} 0%, ${accent[600]} 100%)`
-    : `linear-gradient(135deg, ${brand[400]} 0%, ${brand[600]} 100%)`;
+  // Top bar uses brand gradient so each theme has a distinct color (purple for murasaki, sky for yuki, pink for sakura).
+  // The kanji/hiragana mode distinction is preserved via the bottom border color (typeAccent).
+  const topBarGradient = `linear-gradient(135deg, ${brand[400]} 0%, ${brand[600]} 100%)`;
   const typeAccent = isKanji ? accent[400] : brand[400];
 
   // Kanji front: show kanji without reading hint; hiragana front: show the reading
   const frontMainText = isKanji ? card.word : (card.reading || card.word);
 
   const CARD_FRAME = `linear-gradient(145deg,
-    ${brand[300]}  0%,
-    #ffd700        10%,
-    ${accent[300]} 22%,
-    #7dd3fc        35%,
-    #6ee7b7        48%,
-    ${brand[400]}  60%,
-    #ffd700        72%,
-    ${accent[400]} 84%,
-    ${brand[300]}  100%
+    ${brand[200]}   0%,
+    ${accent[100]}  35%,
+    ${brand[300]}   55%,
+    ${accent[100]}  80%,
+    ${brand[200]}   100%
   )`;
 
   const frameStyle = {
@@ -47,17 +43,17 @@ export function EmbedFlashcard({ card, width = '100%', height = 300 }: EmbedFlas
     backfaceVisibility: 'hidden' as const,
     WebkitBackfaceVisibility: 'hidden' as const,
     background: CARD_FRAME,
-    backgroundSize: '350% 350%',
-    animation: 'holoFrame 7s ease infinite',
+    backgroundSize: '240% 240%',
+    animation: 'holoFrame 10s ease infinite',
     borderRadius: '20px',
     p: '5px',
-    boxShadow: `0 8px 40px rgba(0,0,0,0.18), 0 4px 12px ${alpha(brand[400], 0.28)}`,
+    boxShadow: `0 6px 28px rgba(0,0,0,0.12), 0 2px 8px ${alpha(brand[400], 0.2)}`,
   };
 
   const innerStyle = {
     width: '100%',
     height: '100%',
-    bgcolor: brand[50],
+    bgcolor: 'common.white',
     borderRadius: '15px',
     overflow: 'hidden',
     border: '2.5px solid rgba(255,255,255,0.92)',
@@ -100,7 +96,7 @@ export function EmbedFlashcard({ card, width = '100%', height = 300 }: EmbedFlas
             {/* Top bar: JLPT only */}
             <Box sx={{
               px: 2, py: 1,
-              background: typeGradient,
+              background: topBarGradient,
               display: 'flex', justifyContent: 'flex-end', alignItems: 'center',
               flexShrink: 0,
             }}>

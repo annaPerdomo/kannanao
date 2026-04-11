@@ -97,11 +97,11 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
     bgDefault: '#F5F3FF', bgPaper: '#FFFFFF',
     textPrimary: '#2E1065', textSecondary: '#7C3AED',
   },
-  /** ❄️ Yuki — frosty sky blue & pink */
+  /** ❄️ Yuki — frosty sky blue & violet */
   yuki: {
-    brand: sky, accent: pink,
+    brand: sky, accent: purple,
     primaryMain: sky[400], primaryLight: sky[100], primaryDark: sky[700],
-    secondaryMain: pink[300], secondaryLight: pink[100], secondaryDark: pink[700],
+    secondaryMain: purple[300], secondaryLight: purple[100], secondaryDark: purple[700],
     bgDefault: '#F0F9FF', bgPaper: '#FFFFFF',
     textPrimary: '#0C4A6E', textSecondary: '#0284C7',
   },
