@@ -109,3 +109,52 @@ export function formatWeekRange(weekDates: Date[]): string {
   }
   return `${MONTH_NAMES[mon.getMonth()]} ${mon.getDate()} – ${MONTH_NAMES[sun.getMonth()]} ${sun.getDate()}`;
 }
+
+/**
+ * Calculate how many consecutive days (going backward from today)
+ * had ALL scheduled todos completed. Days with zero scheduled tasks are skipped.
+ */
+export function calculateStreak(todos: Todo[]): number {
+  if (todos.length === 0) return 0;
+  let streak = 0;
+  const today = new Date();
+  // Go back up to a year
+  for (let i = 0; i <= 365; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dateISO = toISODate(d);
+    const scheduled = todos.filter((t) => isScheduledForDate(t, d));
+    if (scheduled.length === 0) continue; // skip days with no tasks
+    const completed = scheduled.filter((t) => isCompletedOnDate(t, dateISO));
+    if (completed.length === scheduled.length) {
+      streak++;
+    } else {
+      // If it's today and not all done yet, don't break streak — just don't count today
+      if (i === 0) continue;
+      break;
+    }
+  }
+  return streak;
+}
+
+/**
+ * Get weekly stats for the given week dates.
+ */
+export function getWeekStats(todos: Todo[], weekDates: Date[]) {
+  let totalScheduled = 0;
+  let totalCompleted = 0;
+  let perfectDays = 0;
+
+  for (const date of weekDates) {
+    const dateISO = toISODate(date);
+    const scheduled = todos.filter((t) => isScheduledForDate(t, date));
+    const completed = scheduled.filter((t) => isCompletedOnDate(t, dateISO));
+    totalScheduled += scheduled.length;
+    totalCompleted += completed.length;
+    if (scheduled.length > 0 && completed.length === scheduled.length) {
+      perfectDays++;
+    }
+  }
+
+  return { totalScheduled, totalCompleted, perfectDays };
+}

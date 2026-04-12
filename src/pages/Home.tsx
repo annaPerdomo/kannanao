@@ -159,7 +159,7 @@ export default function Home() {
         <Box sx={{
           display: { xs: 'none', lg: 'block' },
           position: 'absolute', left: 0, top: 0, bottom: 0,
-          width: 'calc((100% - 680px) / 2)',
+          width: 'calc((100% - 720px) / 2)',
           pointerEvents: 'none',
           '@keyframes float-a': { '0%,100%': { transform: 'translateY(0px) rotate(-8deg)' }, '50%': { transform: 'translateY(-10px) rotate(-4deg)' } },
           '@keyframes float-b': { '0%,100%': { transform: 'translateY(0px) rotate(6deg)' }, '50%': { transform: 'translateY(-14px) rotate(10deg)' } },
@@ -176,7 +176,7 @@ export default function Home() {
         <Box sx={{
           display: { xs: 'none', lg: 'block' },
           position: 'absolute', right: 0, top: 0, bottom: 0,
-          width: 'calc((100% - 680px) / 2)',
+          width: 'calc((100% - 720px) / 2)',
           pointerEvents: 'none',
         }}>
           <Typography sx={{ position: 'absolute', top: '5%',  right: '50%', fontSize: '1.5rem', animation: 'float-b 4.6s ease-in-out infinite 0.3s' }}>🦋</Typography>
@@ -186,7 +186,7 @@ export default function Home() {
           <Typography sx={{ position: 'absolute', top: '85%', right: '50%', fontSize: '1.2rem', animation: 'float-c 5.2s ease-in-out infinite 1.2s' }}>✨</Typography>
         </Box>
 
-        <Box sx={{ maxWidth: 680, mx: 'auto', width: '100%' }}>
+        <Box sx={{ maxWidth: 720, mx: 'auto', width: '100%' }}>
           <TodoList onXpEarned={addBonusXp} />
         </Box>
       </Box>
