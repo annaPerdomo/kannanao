@@ -517,6 +517,8 @@ interface SupabaseTodoRow {
   completed: boolean;
   emoji: string;
   created_at: string | null;
+  frequency_days: number[] | null;
+  completed_dates: string[] | null;
 }
 
 function dbTodoToApp(row: SupabaseTodoRow): Todo {
@@ -527,6 +529,8 @@ function dbTodoToApp(row: SupabaseTodoRow): Todo {
     completed: row.completed,
     emoji: row.emoji,
     createdAt: toNumber(row.created_at),
+    frequencyDays: row.frequency_days ?? [],
+    completedDates: row.completed_dates ?? [],
   };
 }
 
@@ -541,24 +545,33 @@ export async function loadTodos(userId: string): Promise<Todo[]> {
   return (data ?? []).map(dbTodoToApp);
 }
 
-export async function dbCreateTodo(text: string): Promise<Todo> {
+export async function dbCreateTodo(text: string, frequencyDays: number[] = []): Promise<Todo> {
   if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
   const { data: { user } } = await sb.auth.getUser();
   if (!user) throw new Error('Not authenticated');
   const { data, error } = await sb
     .from('todos')
-    .insert({ text, user_id: user.id, completed: false, emoji: pickEmojiForText(text) })
+    .insert({ text, user_id: user.id, completed: false, emoji: pickEmojiForText(text), frequency_days: frequencyDays, completed_dates: [] })
     .select()
     .single();
   if (error || !data) throw error ?? new Error('Unable to create todo');
   return dbTodoToApp(data);
 }
 
-export async function dbUpdateTodo(id: string, patch: Partial<Pick<Todo, 'text' | 'completed' | 'emoji'>>): Promise<Todo> {
+export async function dbUpdateTodo(
+  id: string,
+  patch: Partial<Pick<Todo, 'text' | 'completed' | 'emoji' | 'completedDates' | 'frequencyDays'>>,
+): Promise<Todo> {
   if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  const dbPatch: Record<string, unknown> = {};
+  if (patch.text !== undefined) dbPatch.text = patch.text;
+  if (patch.completed !== undefined) dbPatch.completed = patch.completed;
+  if (patch.emoji !== undefined) dbPatch.emoji = patch.emoji;
+  if (patch.completedDates !== undefined) dbPatch.completed_dates = patch.completedDates;
+  if (patch.frequencyDays !== undefined) dbPatch.frequency_days = patch.frequencyDays;
   const { data, error } = await sb
     .from('todos')
-    .update(patch)
+    .update(dbPatch)
     .eq('id', id)
     .select()
     .single();

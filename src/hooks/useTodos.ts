@@ -19,12 +19,12 @@ export function useTodos() {
       .finally(() => setLoading(false));
   }, [user]);
 
-  const addTodo = useCallback(async (text: string) => {
+  const addTodo = useCallback(async (text: string, frequencyDays: number[] = []) => {
     const trimmed = text.trim();
     if (!trimmed) return;
     setError(null);
     try {
-      const todo = await dbCreateTodo(trimmed);
+      const todo = await dbCreateTodo(trimmed, frequencyDays);
       setTodos((prev) => [...prev, todo]);
     } catch {
       setError('Could not add item — please try again');
@@ -32,19 +32,24 @@ export function useTodos() {
   }, []);
 
   // Returns true if the task was just marked as completed (for XP award)
-  const toggleTodo = useCallback(async (id: string): Promise<boolean> => {
+  const toggleTodo = useCallback(async (id: string, date: string): Promise<boolean> => {
     const todo = todos.find((t) => t.id === id);
     if (!todo) return false;
-    const nowCompleted = !todo.completed;
-    const updated = { ...todo, completed: nowCompleted };
+    const wasCompleted = todo.completedDates.includes(date);
+    const newCompletedDates = wasCompleted
+      ? todo.completedDates.filter((d) => d !== date)
+      : [...todo.completedDates, date];
+    const today = new Date().toISOString().split('T')[0];
+    const nowCompleted = newCompletedDates.includes(today);
+    const updated = { ...todo, completedDates: newCompletedDates, completed: nowCompleted };
     setTodos((prev) => prev.map((t) => (t.id === id ? updated : t)));
     try {
-      await dbUpdateTodo(id, { completed: nowCompleted });
+      await dbUpdateTodo(id, { completedDates: newCompletedDates, completed: nowCompleted });
     } catch {
       setTodos((prev) => prev.map((t) => (t.id === id ? todo : t)));
       setError('Could not update item — please try again');
     }
-    return nowCompleted;
+    return !wasCompleted;
   }, [todos]);
 
   const editTodo = useCallback(async (id: string, text: string) => {
