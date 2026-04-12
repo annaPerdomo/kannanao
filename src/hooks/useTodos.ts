@@ -78,6 +78,36 @@ export function useTodos() {
     }
   }, [todos]);
 
+  const editTodoAdvanced = useCallback(async (
+    id: string,
+    text: string,
+    frequencyDays: number[],
+    assignedDateISO: string | null
+  ) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const prev_todo = todos.find((t) => t.id === id);
+    if (!prev_todo) return;
+    // Calculate new createdAt if assignedDateISO is different and it's a single-day task
+    let newCreatedAt = prev_todo.createdAt;
+    if (frequencyDays.length === 0 && assignedDateISO) {
+      newCreatedAt = new Date(`${assignedDateISO}T12:00:00.000Z`).getTime();
+    }
+    const updated = { ...prev_todo, text: trimmed, frequencyDays, createdAt: newCreatedAt };
+    setTodos((prev) => prev.map((t) => (t.id === id ? updated : t)));
+    try {
+      const dbPatch: Parameters<typeof dbUpdateTodo>[1] = { text: trimmed, frequencyDays };
+      // Only update createdAt in DB if it changed
+      if (newCreatedAt !== prev_todo.createdAt) {
+        dbPatch.createdAt = newCreatedAt;
+      }
+      await dbUpdateTodo(id, dbPatch);
+    } catch {
+      setTodos((prev) => prev.map((t) => (t.id === id ? prev_todo : t)));
+      setError('Could not save changes — please try again');
+    }
+  }, [todos]);
+
   const deleteTodo = useCallback(async (id: string) => {
     const snapshot = todos;
     setTodos((prev) => prev.filter((t) => t.id !== id));
@@ -91,5 +121,5 @@ export function useTodos() {
 
   const clearError = useCallback(() => setError(null), []);
 
-  return { todos, loading, error, addTodo, toggleTodo, editTodo, editEmoji, deleteTodo, clearError };
+  return { todos, loading, error, addTodo, toggleTodo, editTodo, editEmoji, editTodoAdvanced, deleteTodo, clearError };
 }

@@ -13,6 +13,7 @@ import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
 import type { Todo } from '@/types/todo';
 import { isCompletedOnDate, todayISO, XP_PER_TODO } from './helpers';
@@ -25,10 +26,11 @@ interface TodoItemProps {
   onEdit: (id: string, text: string) => void;
   onEditEmoji: (id: string, emoji: string) => void;
   onDelete: (id: string) => void;
+  onAdvancedEdit: (todo: Todo) => void;
   onXpEarned?: (xp: number) => void;
 }
 
-export function TodoItem({ todo, viewDateISO, onToggle, onEdit, onEditEmoji, onDelete, onXpEarned }: TodoItemProps) {
+export function TodoItem({ todo, viewDateISO, onToggle, onEdit, onEditEmoji, onDelete, onAdvancedEdit, onXpEarned }: TodoItemProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
@@ -179,6 +181,7 @@ export function TodoItem({ todo, viewDateISO, onToggle, onEdit, onEditEmoji, onD
         ) : (
           <>
             <Tooltip title="Edit"><IconButton size="small" onClick={() => setEditing(true)} sx={{ color: brand[500] }}><EditRoundedIcon sx={{ fontSize: '0.95rem' }} /></IconButton></Tooltip>
+            <Tooltip title="Advanced Edit"><IconButton size="small" onClick={() => onAdvancedEdit(todo)} sx={{ color: accent[500] }}><MoreVertRoundedIcon sx={{ fontSize: '0.95rem' }} /></IconButton></Tooltip>
             <Tooltip title="Delete"><IconButton size="small" onClick={() => onDelete(todo.id)} sx={{ color: 'error.main' }}><DeleteRoundedIcon sx={{ fontSize: '0.95rem' }} /></IconButton></Tooltip>
           </>
         )}

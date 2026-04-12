@@ -616,7 +616,7 @@ export async function dbCreateTodo(text: string, frequencyDays: number[] = [], a
 
 export async function dbUpdateTodo(
   id: string,
-  patch: Partial<Pick<Todo, 'text' | 'completed' | 'emoji' | 'completedDates' | 'frequencyDays'>>,
+  patch: Partial<Pick<Todo, 'text' | 'completed' | 'emoji' | 'completedDates' | 'frequencyDays' | 'createdAt'>>,
 ): Promise<Todo> {
   if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
   const dbPatch: Record<string, unknown> = {};
@@ -625,6 +625,7 @@ export async function dbUpdateTodo(
   if (patch.emoji !== undefined) dbPatch.emoji = patch.emoji;
   if (patch.completedDates !== undefined) dbPatch.completed_dates = patch.completedDates;
   if (patch.frequencyDays !== undefined) dbPatch.frequency_days = patch.frequencyDays;
+  if (patch.createdAt !== undefined) dbPatch.created_at = new Date(patch.createdAt).toISOString();
   const { data, error } = await sb
     .from('todos')
     .update(dbPatch)

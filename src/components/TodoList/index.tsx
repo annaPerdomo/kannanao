@@ -23,6 +23,8 @@ import { CalendarEntrySection } from './CalendarEntrySection';
 import { AddTodoInput } from './AddTodoInput';
 import { TodoItem } from './TodoItem';
 import { MonthCalendar } from './MonthCalendar';
+import { EditTodoDialog } from './EditTodoDialog';
+import type { Todo } from '@/types/todo';
 
 export { XP_PER_TODO };
 
@@ -32,7 +34,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
-  const { todos, loading, error, addTodo, toggleTodo, editTodo, editEmoji, deleteTodo, clearError } = useTodos();
+  const { todos, loading, error, addTodo, toggleTodo, editTodo, editEmoji, editTodoAdvanced, deleteTodo, clearError } = useTodos();
 
   // View state
   const [view, setView] = useState<'week' | 'month'>('week');
@@ -43,6 +45,9 @@ export function TodoList({ onXpEarned }: TodoListProps) {
   // Add form
   const [input, setInput] = useState('');
   const [frequencyDays, setFrequencyDays] = useState<number[]>([]);
+
+  // Advanced edit dialog
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
 
   // Calendar entries
   const [entries, setEntries] = useState<CalendarEntry[]>([]);
@@ -98,6 +103,23 @@ export function TodoList({ onXpEarned }: TodoListProps) {
     void deleteEntryType(typeId);
     setEntries((prev) => prev.filter((e) => e.typeId !== typeId));
   }, [deleteEntryType]);
+
+  const handleAdvancedEdit = useCallback((todo: Todo) => {
+    setEditingTodo(todo);
+  }, []);
+
+  const handleSaveAdvancedEdit = useCallback(async (
+    id: string,
+    text: string,
+    frequencyDays: number[],
+    assignedDate: string | null
+  ) => {
+    await editTodoAdvanced(id, text, frequencyDays, assignedDate);
+    setEditingTodo(null);
+  }, [editTodoAdvanced]);
+
+  // Determine if selected date is in the past
+  const isPastDate = new Date(selectedDateISO) < new Date(todayStr);
 
   return (
     <Box sx={{
@@ -241,10 +263,10 @@ export function TodoList({ onXpEarned }: TodoListProps) {
               <Box sx={{ textAlign: 'center', py: 3 }}>
                 <Typography sx={{ fontSize: '2rem', mb: 0.5 }}>🌷</Typography>
                 <Typography sx={{ color: 'text.secondary', fontSize: '0.82rem', fontWeight: 700 }}>
-                  Nothing here yet!
+                  {isPastDate ? 'Nothing scheduled for this day' : 'Nothing here yet!'}
                 </Typography>
                 <Typography sx={{ color: 'text.disabled', fontSize: '0.72rem', mt: 0.25 }}>
-                  Add a task above ⭐
+                  {isPastDate ? '' : 'Add a task above ⭐'}
                 </Typography>
               </Box>
             ) : (
@@ -261,6 +283,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
                     onEdit={editTodo}
                     onEditEmoji={editEmoji}
                     onDelete={deleteTodo}
+                    onAdvancedEdit={handleAdvancedEdit}
                     onXpEarned={onXpEarned}
                   />
                 ))}
@@ -269,6 +292,14 @@ export function TodoList({ onXpEarned }: TodoListProps) {
           </Stack>
         )}
       </Box>
+
+      {/* Advanced Edit Dialog */}
+      <EditTodoDialog
+        open={!!editingTodo}
+        onClose={() => setEditingTodo(null)}
+        todo={editingTodo}
+        onSave={handleSaveAdvancedEdit}
+      />
     </Box>
   );
 }
