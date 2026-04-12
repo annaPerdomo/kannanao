@@ -30,21 +30,29 @@ export function WeekStrip({
   weekOffset, onWeekChange, todos, entries,
 }: WeekStripProps) {
   const theme = useTheme();
-  const { brand, accent } = theme.palette;
+  const { brand, accent, rainbow } = theme.palette;
   const todayStr = todayISO();
+
+  const TAB_COLORS = [
+    rainbow[50],
+    rainbow[100],
+    rainbow[200],
+    rainbow[300],
+    rainbow[400],
+    rainbow[500],
+    rainbow[600],
+  ];
 
   return (
     <Box>
-      {/* Day pills — compact row */}
+      {/* Horizontal Day Tabs */}
       <Box sx={{
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
-        gap: 0.5,
+        gap: 0.75,
         mb: 1,
-        p: 0.5,
-        borderRadius: 3.5,
-        background: alpha(brand[100], 0.4),
-        border: `1.5px solid ${alpha(brand[200], 0.3)}`,
+        position: 'relative',
+        height: 80, // Provide space for tabs to "stick out"
       }}>
         {weekDates.map((date, i) => {
           const dateISO = toISODate(date);
@@ -54,6 +62,7 @@ export function WeekStrip({
           const dayCompleted = dayTodos.filter((t) => isCompletedOnDate(t, dateISO)).length;
           const dayEntries = entries.filter((entry) => isEntryOnDate(entry, date));
           const allDone = dayTodos.length > 0 && dayCompleted === dayTodos.length;
+          const tabColor = TAB_COLORS[i % TAB_COLORS.length];
 
           return (
             <Box
@@ -61,57 +70,62 @@ export function WeekStrip({
               component="button"
               onClick={() => onSelectDay(i)}
               sx={{
-                minHeight: 64,
-                px: 0.25,
-                py: 0.5,
+                position: 'relative',
+                height: isSelected ? 76 : 64,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 0.1,
-                borderRadius: 2.5,
-                border: '2px solid',
-                borderColor: isSelected ? brand[400] : 'transparent',
-                background: isSelected
-                  ? `linear-gradient(145deg, ${brand[400]}, ${accent[300]})`
-                  : isToday
-                    ? alpha(brand[100], 0.8)
-                    : alpha('#fff', 0.7),
+                gap: 0.5,
+                border: 'none',
+                borderTopLeftRadius: 16,
+                borderTopRightRadius: 16,
+                background: isSelected ? tabColor : alpha(tabColor, 0.45),
+                color: isSelected ? 'white' : 'text.primary',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: isSelected
+                  ? `0 -5px 15px ${alpha(tabColor, 0.45)}`
+                  : `0 -2px 5px ${alpha(tabColor, 0.2)}`,
+                transform: isSelected ? 'translateY(0px)' : 'translateY(12px)',
+                zIndex: isSelected ? 10 : 1,
                 '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: `0 3px 10px ${alpha(brand[300], 0.25)}`,
+                  transform: 'translateY(4px)',
+                  height: 70,
+                  zIndex: 11,
+                  background: isSelected ? tabColor : alpha(tabColor, 0.6),
                 },
               }}
             >
-              {/* Cute mascot */}
-              <Typography sx={{ fontSize: '0.95rem', lineHeight: 1.1 }}>
-                {allDone ? '⭐' : DAY_MASCOTS[i]}
+              <Typography sx={{
+                fontSize: '1.1rem',
+                lineHeight: 1,
+                filter: isSelected ? 'saturate(1.2)' : 'saturate(0.8) opacity(0.7)',
+                transition: 'filter 0.3s',
+              }}>
+                {allDone ? '💖' : DAY_MASCOTS[i]}
               </Typography>
               <Typography sx={{
-                fontSize: '0.58rem', fontWeight: 800, letterSpacing: '0.03em',
-                color: isSelected ? 'rgba(255,255,255,0.85)' : isToday ? brand[600] : 'text.disabled',
+                fontSize: '0.6rem', fontWeight: 800,
+                color: isSelected ? 'rgba(255,255,255,0.9)' : 'text.disabled',
                 lineHeight: 1,
               }}>
                 {DAY_LABELS[i]}
               </Typography>
               <Typography sx={{
-                fontSize: '0.88rem', fontWeight: 900,
-                color: isSelected ? 'white' : isToday ? brand[700] : 'text.primary',
-                lineHeight: 1.1,
+                fontSize: '0.9rem', fontWeight: 900,
+                color: isSelected ? 'white' : isToday ? brand[700] : brand[500],
+                lineHeight: 1.2,
               }}>
                 {date.getDate()}
               </Typography>
-              {/* Tiny status dot */}
-              {!allDone && dayTodos.length > 0 ? (
-                <Box sx={{
-                  width: 5, height: 5, borderRadius: '50%',
-                  bgcolor: isSelected ? 'rgba(255,255,255,0.7)' : brand[300],
-                }}/>
-              ) : !allDone && dayEntries.length > 0 ? (
-                <Typography sx={{ fontSize: '0.52rem', lineHeight: 1 }}>{dayEntries[0].emoji}</Typography>
-              ) : null}
+              
+              {/* Status indicator */}
+              <Box sx={{ position: 'absolute', bottom: 8, display: 'flex', alignItems: 'center' }}>
+                {!allDone && dayEntries.length > 0 ? (
+                  <Typography sx={{ fontSize: '0.65rem', lineHeight: 1 }}>{dayEntries[0].emoji}</Typography>
+                ) : null}
+              </Box>
             </Box>
           );
         })}

@@ -1,6 +1,6 @@
 import { createTheme, alpha, Theme } from '@mui/material/styles';
 
-export type ColorScheme = 'sakura' | 'murasaki' | 'yuki';
+export type ColorScheme = 'sakura' | 'ohanashikai' | 'murasaki' | 'yuki';
 
 type ColorScale = {
   50: string; 100: string; 200: string; 300: string; 400: string;
@@ -13,6 +13,8 @@ declare module '@mui/material/styles' {
     brand: ColorScale;
     /** Secondary accent color scale (50–900) — changes per scheme */
     accent: ColorScale;
+    /** Rainbow color scale for diverse UI elements */
+    rainbow: ColorScale;
     /** Pre-computed surface tokens derived from the current scheme */
     surfaces: {
       glass:   string; // AppBar / sticky UI glass background
@@ -24,6 +26,7 @@ declare module '@mui/material/styles' {
   interface PaletteOptions {
     brand?:    Partial<ColorScale>;
     accent?:   Partial<ColorScale>;
+    rainbow?:  Partial<ColorScale>;
     surfaces?: Partial<{ glass: string; overlay: string; input: string; chip: string }>;
   }
 }
@@ -41,6 +44,19 @@ const pink: ColorScale = {
   700: '#BE185D',
   800: '#9D174D',
   900: '#831843',
+};
+
+const orange: ColorScale = {
+  50: '#FFF7ED',
+  100: '#FFEDD5',
+  200: '#FED7AA',
+  300: '#FDBA74',
+  400: '#FB923C',
+  500: '#F97316',
+  600: '#EA580C',
+  700: '#C2410C',
+  800: '#9A3412',
+  900: '#7C2D12',
 };
 
 const purple: ColorScale = {
@@ -69,11 +85,69 @@ const sky: ColorScale = {
   900: '#0C4A6E',
 };
 
+// Theme-specific rainbow week tab colors (Mon–Sun)
+// 🌸 Sakura rainbow — warm pastel rainbow with pink harmony
+const rainbowSakura: ColorScale = {
+  50:  '#FF4D8D', // vivid rose
+  100: '#FF7733', // bright tangerine
+  200: '#FFCC00', // golden yellow
+  300: '#22CC77', // emerald green
+  400: '#1DA1F2', // twitter blue
+  500: '#9B59B6', // amethyst purple
+  600: '#FF69B4', // hot pink
+  700: '#FF6348', // coral red
+  800: '#7C4DFF', // deep violet
+  900: '#00BCD4', // teal
+};
+
+// 🍊 Ohanashikai rainbow — warm fiesta rainbow
+const rainbowOhanashikai: ColorScale = {
+  50:  '#FF3D00', // vivid red-orange
+  100: '#FF9100', // amber
+  200: '#FFD600', // bright yellow
+  300: '#00C853', // vivid green
+  400: '#2962FF', // strong blue
+  500: '#AA00FF', // electric violet
+  600: '#FF1744', // neon red
+  700: '#FF6D00', // deep orange
+  800: '#D500F9', // bright magenta
+  900: '#00BFA5', // teal
+};
+
+// 💜 Murasaki rainbow — jewel-toned mystical rainbow
+const rainbowMurasaki: ColorScale = {
+  50:  '#FF1493', // deep pink
+  100: '#FF6600', // vivid orange
+  200: '#FFD700', // gold
+  300: '#00E676', // neon green
+  400: '#00B0FF', // vivid sky blue
+  500: '#D500F9', // electric magenta
+  600: '#651FFF', // deep indigo
+  700: '#FF4081', // pink accent
+  800: '#1DE9B6', // turquoise
+  900: '#FFAB00', // vivid amber
+};
+
+// ❄️ Yuki rainbow — icy crystalline rainbow
+const rainbowYuki: ColorScale = {
+  50:  '#00E5FF', // bright cyan
+  100: '#2979FF', // strong blue
+  200: '#76FF03', // electric lime
+  300: '#FF9100', // vivid amber
+  400: '#E040FB', // bright magenta
+  500: '#00BCD4', // dark cyan
+  600: '#FF5252', // coral red
+  700: '#18FFFF', // aqua
+  800: '#7C4DFF', // vibrant purple
+  900: '#64FFDA', // turquoise
+};
+
 // ─── Scheme configurations ────────────────────────────────────────────────────
 
 type SchemeConfig = {
   brand: ColorScale;
   accent: ColorScale;
+  rainbow: ColorScale;
   primaryMain: string; primaryLight: string; primaryDark: string;
   secondaryMain: string; secondaryLight: string; secondaryDark: string;
   bgDefault: string; bgPaper: string;
@@ -83,15 +157,23 @@ type SchemeConfig = {
 const schemes: Record<ColorScheme, SchemeConfig> = {
   /** 🌸 Sakura — classic kawaii pink & lavender */
   sakura: {
-    brand: pink, accent: purple,
+    brand: pink, accent: purple, rainbow: rainbowSakura,
     primaryMain: pink[400], primaryLight: pink[100], primaryDark: pink[700],
     secondaryMain: purple[300], secondaryLight: purple[100], secondaryDark: purple[500],
     bgDefault: '#FFF5FB', bgPaper: '#FFFFFF',
     textPrimary: '#5E2F6C', textSecondary: '#A86C99',
   },
+  /** 🍊 Ohanashikai — cheerful orange & deep purple */
+  ohanashikai: {
+    brand: orange, accent: purple, rainbow: rainbowOhanashikai,
+    primaryMain: orange[500], primaryLight: orange[100], primaryDark: orange[700],
+    secondaryMain: purple[300], secondaryLight: purple[100], secondaryDark: purple[500],
+    bgDefault: '#FFF7ED', bgPaper: '#FFFFFF',
+    textPrimary: '#7C2D12', textSecondary: '#C2410C',
+  },
   /** 💜 Murasaki — dreamy violet & pink */
   murasaki: {
-    brand: purple, accent: pink,
+    brand: purple, accent: pink, rainbow: rainbowMurasaki,
     primaryMain: purple[400], primaryLight: purple[100], primaryDark: purple[700],
     secondaryMain: pink[300], secondaryLight: pink[100], secondaryDark: pink[700],
     bgDefault: '#F5F3FF', bgPaper: '#FFFFFF',
@@ -99,7 +181,7 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
   },
   /** ❄️ Yuki — frosty sky blue & violet */
   yuki: {
-    brand: sky, accent: purple,
+    brand: sky, accent: purple, rainbow: rainbowYuki,
     primaryMain: sky[400], primaryLight: sky[100], primaryDark: sky[700],
     secondaryMain: purple[300], secondaryLight: purple[100], secondaryDark: purple[700],
     bgDefault: '#F0F9FF', bgPaper: '#FFFFFF',
@@ -111,7 +193,7 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
 
 export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
   const s = schemes[scheme];
-  const { brand, accent } = s;
+  const { brand, accent, rainbow } = s;
 
   const surfaces = {
     glass:   alpha(brand[50], 0.82),
@@ -134,6 +216,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
       warning:    { main: '#FBBF24' },
       brand,
       accent,
+      rainbow,
       surfaces,
     },
 
