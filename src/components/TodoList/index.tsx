@@ -32,7 +32,6 @@ import {
   isEntryOnDate,
   parseJson,
   calculateStreak,
-  getWeekStats,
 } from "./helpers";
 import { WeekStrip } from "./WeekStrip";
 import { DayProgress } from "./DayProgress";
@@ -130,12 +129,6 @@ export function TodoList({ onXpEarned }: TodoListProps) {
 
   // Streak
   const streak = useMemo(() => calculateStreak(todos), [todos]);
-
-  // Week stats
-  const weekStats = useMemo(
-    () => getWeekStats(todos, weekDates),
-    [todos, weekDates],
-  );
 
   useEffect(() => {
     if (
@@ -563,94 +556,6 @@ export function TodoList({ onXpEarned }: TodoListProps) {
           ) : (
             <Stack spacing={1.25}>
               {dayDetailPanel}
-
-              {/* Week summary */}
-              {weekStats.totalScheduled > 0 && (
-                <Box
-                  sx={{
-                    mt: 0.5,
-                    p: 1.25,
-                    borderRadius: 3,
-                    background: alpha(brand[50], 0.6),
-                    border: `1.5px solid ${alpha(brand[200], 0.25)}`,
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontSize: "0.72rem",
-                      fontWeight: 800,
-                      color: brand[600],
-                      mb: 0.5,
-                    }}
-                  >
-                    📊 This Week
-                  </Typography>
-                  <Stack direction="row" spacing={2}>
-                    <Box sx={{ textAlign: "center" }}>
-                      <Typography
-                        sx={{
-                          fontSize: "1.1rem",
-                          fontWeight: 900,
-                          color: brand[700],
-                        }}
-                      >
-                        {weekStats.totalCompleted}
-                      </Typography>
-                      <Typography
-                        sx={{
-                          fontSize: "0.62rem",
-                          color: "text.disabled",
-                          fontWeight: 700,
-                        }}
-                      >
-                        completed
-                      </Typography>
-                    </Box>
-                    <Box sx={{ textAlign: "center" }}>
-                      <Typography
-                        sx={{
-                          fontSize: "1.1rem",
-                          fontWeight: 900,
-                          color: accent[500],
-                        }}
-                      >
-                        {weekStats.totalScheduled - weekStats.totalCompleted}
-                      </Typography>
-                      <Typography
-                        sx={{
-                          fontSize: "0.62rem",
-                          color: "text.disabled",
-                          fontWeight: 700,
-                        }}
-                      >
-                        remaining
-                      </Typography>
-                    </Box>
-                    <Box sx={{ textAlign: "center" }}>
-                      <Typography
-                        sx={{
-                          fontSize: "1.1rem",
-                          fontWeight: 900,
-                          color: brand[700],
-                        }}
-                      >
-                        {weekStats.perfectDays > 0
-                          ? "⭐".repeat(Math.min(weekStats.perfectDays, 7))
-                          : "—"}
-                      </Typography>
-                      <Typography
-                        sx={{
-                          fontSize: "0.62rem",
-                          color: "text.disabled",
-                          fontWeight: 700,
-                        }}
-                      >
-                        perfect days
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Box>
-              )}
             </Stack>
           )}
         </Box>
