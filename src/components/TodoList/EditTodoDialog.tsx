@@ -9,6 +9,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
+import Alert from '@mui/material/Alert';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { useTheme, alpha } from '@mui/material/styles';
 import type { Todo } from '@/types/todo';
@@ -30,11 +31,13 @@ export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogPr
   const [frequencyDays, setFrequencyDays] = useState<number[]>([]);
   const [assignedDate, setAssignedDate] = useState('');
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (todo) {
       setText(todo.text);
       setFrequencyDays(todo.frequencyDays);
+      setError(null);
       // If it's a single-day task, show the created date
       if (todo.frequencyDays.length === 0) {
         setAssignedDate(toISODate(new Date(todo.createdAt)));
@@ -52,8 +55,9 @@ export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogPr
       const finalAssignedDate = frequencyDays.length === 0 ? assignedDate : null;
       await onSave(todo.id, text.trim(), frequencyDays, finalAssignedDate);
       onClose();
-    } catch (error) {
-      console.error('Failed to save todo:', error);
+    } catch (err) {
+      console.error('Failed to save todo:', err);
+      setError('Failed to save. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -95,6 +99,11 @@ export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogPr
 
       <DialogContent sx={{ pt: 2 }}>
         <Stack spacing={2.5}>
+          {error && (
+            <Alert severity="error" onClose={() => setError(null)} sx={{ borderRadius: 2, fontSize: '0.78rem' }}>
+              {error}
+            </Alert>
+          )}
           {/* Task text */}
           <TextField
             label="Task"

@@ -1,9 +1,8 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
@@ -11,9 +10,6 @@ import Popover from '@mui/material/Popover';
 import { useTheme, alpha } from '@mui/material/styles';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
 import type { Todo } from '@/types/todo';
 import { isCompletedOnDate, todayISO, XP_PER_TODO } from './helpers';
@@ -23,24 +19,18 @@ interface TodoItemProps {
   todo: Todo;
   viewDateISO: string;
   onToggle: (id: string, date: string) => Promise<boolean>;
-  onEdit: (id: string, text: string) => void;
   onEditEmoji: (id: string, emoji: string) => void;
   onDelete: (id: string) => void;
   onAdvancedEdit: (todo: Todo) => void;
   onXpEarned?: (xp: number) => void;
 }
 
-export function TodoItem({ todo, viewDateISO, onToggle, onEdit, onEditEmoji, onDelete, onAdvancedEdit, onXpEarned }: TodoItemProps) {
+export function TodoItem({ todo, viewDateISO, onToggle, onEditEmoji, onDelete, onAdvancedEdit, onXpEarned }: TodoItemProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(todo.text);
   const [showXp, setShowXp] = useState(false);
   const [emojiAnchor, setEmojiAnchor] = useState<HTMLElement | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
 
   const completed = isCompletedOnDate(todo, viewDateISO);
 
@@ -51,16 +41,6 @@ export function TodoItem({ todo, viewDateISO, onToggle, onEdit, onEditEmoji, onD
       onXpEarned?.(XP_PER_TODO);
       setTimeout(() => setShowXp(false), 950);
     }
-  };
-
-  const handleSave = () => {
-    if (draft.trim()) onEdit(todo.id, draft); else setDraft(todo.text);
-    setEditing(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleSave();
-    if (e.key === 'Escape') { setDraft(todo.text); setEditing(false); }
   };
 
   return (
@@ -148,43 +128,20 @@ export function TodoItem({ todo, viewDateISO, onToggle, onEdit, onEditEmoji, onD
         }}
       />
 
-      {/* Text / editor */}
-      {editing ? (
-        <TextField
-          inputRef={inputRef} value={draft} onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={handleKeyDown} onBlur={handleSave}
-          variant="standard" size="small" fullWidth
-          sx={{
-            '& .MuiInput-root': { fontSize: '0.85rem', fontWeight: 600 },
-            '& .MuiInput-underline:before': { borderColor: brand[200] },
-            '& .MuiInput-underline:after': { borderColor: brand[400] },
-          }}
-        />
-      ) : (
-        <Typography sx={{
-          flex: 1, fontSize: '0.85rem', fontWeight: 600,
-          color: completed ? 'text.disabled' : 'text.primary',
-          textDecoration: completed ? 'line-through' : 'none',
-          wordBreak: 'break-word',
-        }}>
-          {todo.text}
-        </Typography>
-      )}
+      {/* Text */}
+      <Typography sx={{
+        flex: 1, fontSize: '0.85rem', fontWeight: 600,
+        color: completed ? 'text.disabled' : 'text.primary',
+        textDecoration: completed ? 'line-through' : 'none',
+        wordBreak: 'break-word',
+      }}>
+        {todo.text}
+      </Typography>
 
       {/* Action buttons */}
       <Stack className="todo-actions" direction="row" spacing={0} sx={{ flexShrink: 0, opacity: 0, transition: 'opacity 0.2s' }}>
-        {editing ? (
-          <>
-            <Tooltip title="Save"><IconButton size="small" onClick={handleSave} sx={{ color: 'success.main' }}><CheckRoundedIcon sx={{ fontSize: '0.95rem' }} /></IconButton></Tooltip>
-            <Tooltip title="Cancel"><IconButton size="small" onClick={() => { setDraft(todo.text); setEditing(false); }} sx={{ color: 'text.secondary' }}><CloseRoundedIcon sx={{ fontSize: '0.95rem' }} /></IconButton></Tooltip>
-          </>
-        ) : (
-          <>
-            <Tooltip title="Edit"><IconButton size="small" onClick={() => setEditing(true)} sx={{ color: brand[500] }}><EditRoundedIcon sx={{ fontSize: '0.95rem' }} /></IconButton></Tooltip>
-            <Tooltip title="Advanced Edit"><IconButton size="small" onClick={() => onAdvancedEdit(todo)} sx={{ color: accent[500] }}><MoreVertRoundedIcon sx={{ fontSize: '0.95rem' }} /></IconButton></Tooltip>
-            <Tooltip title="Delete"><IconButton size="small" onClick={() => onDelete(todo.id)} sx={{ color: 'error.main' }}><DeleteRoundedIcon sx={{ fontSize: '0.95rem' }} /></IconButton></Tooltip>
-          </>
-        )}
+        <Tooltip title="Edit"><IconButton size="small" onClick={() => onAdvancedEdit(todo)} sx={{ color: brand[500] }}><EditRoundedIcon sx={{ fontSize: '0.95rem' }} /></IconButton></Tooltip>
+        <Tooltip title="Delete"><IconButton size="small" onClick={() => onDelete(todo.id)} sx={{ color: 'error.main' }}><DeleteRoundedIcon sx={{ fontSize: '0.95rem' }} /></IconButton></Tooltip>
       </Stack>
     </Box>
   );

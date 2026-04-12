@@ -12,6 +12,8 @@ import { useTheme, alpha } from '@mui/material/styles';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import ViewWeekRoundedIcon from '@mui/icons-material/ViewWeekRounded';
 import LocalFireDepartmentRoundedIcon from '@mui/icons-material/LocalFireDepartmentRounded';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useTodos } from '@/hooks/useTodos';
 import { useEventTypes } from '@/hooks/useEventTypes';
 import type { CalendarEntry, EntryType } from '@/types/todo';
@@ -38,7 +40,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
-  const { todos, loading, error, addTodo, toggleTodo, editTodo, editEmoji, editTodoAdvanced, deleteTodo, clearError } = useTodos();
+  const { todos, loading, error, addTodo, toggleTodo, editEmoji, editTodoAdvanced, deleteTodo, clearError } = useTodos();
 
   // View state
   const [view, setView] = useState<'week' | 'month'>('week');
@@ -115,6 +117,14 @@ export function TodoList({ onXpEarned }: TodoListProps) {
     setEntries((prev) => [...prev, entry]);
   }, []);
 
+  const handleEditEntry = useCallback((updated: CalendarEntry) => {
+    setEntries((prev) => prev.map((e) => e.id === updated.id ? updated : e));
+  }, []);
+
+  const handleDeleteEntry = useCallback((id: string) => {
+    setEntries((prev) => prev.filter((e) => e.id !== id));
+  }, []);
+
   const handleAddEntryType = useCallback(async (name: string, emoji: string, color: string) => {
     return addEntryType(name, emoji, color);
   }, [addEntryType]);
@@ -151,13 +161,11 @@ export function TodoList({ onXpEarned }: TodoListProps) {
 
   // Shared day detail panel — used by both week & month views
   const dayDetailPanel = (
-    <Stack spacing={1.25}>
+    <Stack spacing={1.5}>
       {/* Day label (shown in month view to indicate which day is selected) */}
       {view === 'month' && (
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography sx={{
-            fontWeight: 800, fontSize: '0.85rem', color: brand[700],
-          }}>
+          <Typography sx={{ fontWeight: 800, fontSize: '0.85rem', color: brand[700] }}>
             📅 {activeDateLabel}
           </Typography>
           {totalCount > 0 && (
@@ -171,91 +179,100 @@ export function TodoList({ onXpEarned }: TodoListProps) {
       {/* Progress */}
       <DayProgress completedCount={completedCount} totalCount={totalCount} />
 
-      {/* Calendar entries for day */}
+      {/* Calendar entries section */}
       <CalendarEntrySection
         entries={entries}
         onAddEntry={handleAddEntry}
+        onEditEntry={handleEditEntry}
+        onDeleteEntry={handleDeleteEntry}
         allEntryTypes={allEntryTypes}
         onAddEntryType={handleAddEntryType}
         onDeleteEntryType={handleDeleteEntryType}
         selectedDate={activeDate}
       />
 
-      {/* Add todo input */}
-      <AddTodoInput
-        value={input}
-        onChange={setInput}
-        onAdd={handleAdd}
-        disabled={loading}
-        frequencyDays={frequencyDays}
-        onFrequencyChange={setFrequencyDays}
-      />
+      <Divider sx={{ borderColor: alpha(brand[200], 0.3) }} />
 
-      {/* Celebration */}
-      <Collapse in={!!celebration}>
-        <Box sx={{
-          textAlign: 'center', py: 0.75, borderRadius: 3,
-          background: `linear-gradient(90deg, ${alpha(brand[300], 0.15)}, ${alpha(accent[200], 0.2)}, ${alpha(brand[300], 0.15)})`,
-          animation: 'pulse-soft 1s ease infinite',
-          '@keyframes pulse-soft': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.75 } },
-        }}>
-          <Typography sx={{ fontWeight: 800, fontSize: '0.88rem', color: brand[700] }}>
-            {celebration} All done! 🎊
-          </Typography>
-        </Box>
-      </Collapse>
+      {/* Tasks section */}
+      <Stack spacing={1}>
+        {/* Add todo input */}
+        <AddTodoInput
+          value={input}
+          onChange={setInput}
+          onAdd={handleAdd}
+          disabled={loading}
+          frequencyDays={frequencyDays}
+          onFrequencyChange={setFrequencyDays}
+        />
 
-      {/* Error */}
-      <Collapse in={!!error}>
-        <Alert severity="error" onClose={clearError} sx={{ borderRadius: 2.5, fontSize: '0.78rem' }}>{error}</Alert>
-      </Collapse>
+        {/* Celebration */}
+        <Collapse in={!!celebration}>
+          <Box sx={{
+            textAlign: 'center', py: 0.75, borderRadius: 3,
+            background: `linear-gradient(90deg, ${alpha(brand[300], 0.15)}, ${alpha(accent[200], 0.2)}, ${alpha(brand[300], 0.15)})`,
+            animation: 'pulse-soft 1s ease infinite',
+            '@keyframes pulse-soft': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.75 } },
+          }}>
+            <Typography sx={{ fontWeight: 800, fontSize: '0.88rem', color: brand[700] }}>
+              {celebration} All done! 🎊
+            </Typography>
+          </Box>
+        </Collapse>
 
-      {/* Todo list */}
-      {loading ? (
-        <Box sx={{ py: 2 }}>
-          <LinearProgress sx={{
-            borderRadius: 2,
-            bgcolor: alpha(brand[200], 0.15),
-            '& .MuiLinearProgress-bar': { background: `linear-gradient(90deg, ${brand[400]}, ${accent[300]})` },
-          }} />
-          <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 1, color: 'text.disabled' }}>
-            Loading your list... 🌸
-          </Typography>
-        </Box>
-      ) : todosForDay.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 3 }}>
-          <Typography sx={{ fontSize: '2rem', mb: 0.5 }}>🌷</Typography>
-          <Typography sx={{ color: 'text.secondary', fontSize: '0.82rem', fontWeight: 700 }}>
-            {isPastDate ? 'Nothing scheduled for this day' : 'Nothing here yet!'}
-          </Typography>
-          <Typography sx={{ color: 'text.disabled', fontSize: '0.72rem', mt: 0.25 }}>
-            {isPastDate ? '' : 'Add a task above ⭐'}
-          </Typography>
-        </Box>
-      ) : (
-        <Stack spacing={0.75}>
-          {[
-            ...todosForDay.filter((t) => !isCompletedOnDate(t, activeDateISO)),
-            ...todosForDay.filter((t) => isCompletedOnDate(t, activeDateISO)),
-          ].map((todo) => (
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              viewDateISO={activeDateISO}
-              onToggle={toggleTodo}
-              onEdit={editTodo}
-              onEditEmoji={editEmoji}
-              onDelete={deleteTodo}
-              onAdvancedEdit={handleAdvancedEdit}
-              onXpEarned={onXpEarned}
-            />
-          ))}
-        </Stack>
-      )}
+        {/* Error */}
+        <Collapse in={!!error}>
+          <Alert severity="error" onClose={clearError} sx={{ borderRadius: 2.5, fontSize: '0.78rem' }}>{error}</Alert>
+        </Collapse>
+
+        {/* Todo list */}
+        {loading ? (
+          <Box sx={{ py: 2 }}>
+            <LinearProgress sx={{
+              borderRadius: 2,
+              bgcolor: alpha(brand[200], 0.15),
+              '& .MuiLinearProgress-bar': { background: `linear-gradient(90deg, ${brand[400]}, ${accent[300]})` },
+            }} />
+            <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 1, color: 'text.disabled' }}>
+              Loading your list... 🌸
+            </Typography>
+          </Box>
+        ) : todosForDay.length === 0 ? (
+          <Box sx={{ textAlign: 'center', py: 2.5 }}>
+            <Typography sx={{ fontSize: '1.75rem', mb: 0.5 }}>🌷</Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: '0.82rem', fontWeight: 700 }}>
+              {isPastDate ? 'Nothing scheduled for this day' : 'Nothing here yet!'}
+            </Typography>
+            {!isPastDate && (
+              <Typography sx={{ color: 'text.disabled', fontSize: '0.72rem', mt: 0.25 }}>
+                Type a task above and press Enter ⭐
+              </Typography>
+            )}
+          </Box>
+        ) : (
+          <Stack spacing={0.75}>
+            {[
+              ...todosForDay.filter((t) => !isCompletedOnDate(t, activeDateISO)),
+              ...todosForDay.filter((t) => isCompletedOnDate(t, activeDateISO)),
+            ].map((todo) => (
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                viewDateISO={activeDateISO}
+                onToggle={toggleTodo}
+                onEditEmoji={editEmoji}
+                onDelete={deleteTodo}
+                onAdvancedEdit={handleAdvancedEdit}
+                onXpEarned={onXpEarned}
+              />
+            ))}
+          </Stack>
+        )}
+      </Stack>
     </Stack>
   );
 
   return (
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
     <Box sx={{
       width: '100%',
       maxWidth: '100%',
@@ -416,5 +433,6 @@ export function TodoList({ onXpEarned }: TodoListProps) {
         onSave={handleSaveAdvancedEdit}
       />
     </Box>
+    </LocalizationProvider>
   );
 }

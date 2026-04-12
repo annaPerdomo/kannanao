@@ -17,7 +17,6 @@ export const CELEBRATION_MESSAGES = [
 ];
 
 export const DEFAULT_ENTRY_TYPES: EntryType[] = [
-  { id: 'todo', name: 'To-Do', emoji: '📝', color: '#F97316' },
   { id: 'event', name: 'Event', emoji: '📌', color: '#3B82F6' },
   { id: 'birthday', name: 'Birthday', emoji: '🎂', color: '#F59E0B' },
   { id: 'holiday', name: 'Holiday', emoji: '🎉', color: '#8B5CF6' },

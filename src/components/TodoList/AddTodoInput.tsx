@@ -23,13 +23,23 @@ export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, 
   const { brand, accent } = theme.palette;
 
   return (
-    <Stack spacing={0.75}>
+    <Box sx={{
+      p: 1.25, borderRadius: 3,
+      background: `linear-gradient(135deg, ${alpha(brand[50], 0.8)}, ${alpha(accent[50], 0.6)})`,
+      border: `1.5px solid ${alpha(brand[300], 0.2)}`,
+    }}>
+      <Typography sx={{
+        fontSize: '0.72rem', fontWeight: 800, color: brand[600],
+        textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.85,
+      }}>
+        ✅ Tasks
+      </Typography>
       <Stack direction="row" spacing={0.75} alignItems="center">
         <TextField
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') onAdd(); }}
-          placeholder="What will you do today? 🌸"
+          placeholder="Add a task… 🌸"
           size="small"
           fullWidth
           disabled={disabled}
@@ -37,13 +47,15 @@ export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, 
           sx={{
             '& .MuiOutlinedInput-root': {
               borderRadius: 3,
-              fontSize: '0.85rem',
+              fontSize: '0.88rem',
               fontWeight: 600,
-              bgcolor: alpha('#fff', 0.85),
-              '& fieldset': { borderColor: alpha(brand[300], 0.35), borderWidth: 2 },
-              '&:hover fieldset': { borderColor: brand[400] },
-              '&.Mui-focused fieldset': { borderColor: brand[400] },
+              bgcolor: alpha('#fff', 0.9),
+              '& fieldset': { borderColor: alpha(brand[400], 0.4), borderWidth: 1.5 },
+              '&:hover fieldset': { borderColor: brand[500] },
+              '&.Mui-focused fieldset': { borderColor: brand[500], borderWidth: 2 },
+              '&.Mui-disabled': { bgcolor: alpha('#fff', 0.5) },
             },
+            '& .MuiInputBase-input::placeholder': { color: brand[400], opacity: 1 },
           }}
         />
         <Tooltip title="Add (Enter)">
@@ -53,18 +65,25 @@ export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, 
               disabled={!value.trim() || disabled}
               sx={{
                 background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
-                color: 'white', borderRadius: 2.5, width: 36, height: 36, flexShrink: 0,
-                '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})`, transform: 'scale(1.08)' },
-                '&:disabled': { background: alpha(brand[200], 0.3), color: alpha(brand[400], 0.3) },
+                color: 'white', borderRadius: 2.5, width: 38, height: 38, flexShrink: 0,
+                boxShadow: `0 4px 12px ${alpha(brand[400], 0.3)}`,
+                '&:hover': {
+                  background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})`,
+                  transform: 'scale(1.1)',
+                  boxShadow: `0 6px 16px ${alpha(brand[400], 0.4)}`,
+                },
+                '&:disabled': { background: alpha(brand[200], 0.35), color: alpha(brand[400], 0.3), boxShadow: 'none' },
                 transition: 'all 0.2s ease',
               }}
             >
-              <AddRoundedIcon sx={{ fontSize: '1.15rem' }} />
+              <AddRoundedIcon sx={{ fontSize: '1.2rem' }} />
             </IconButton>
           </span>
         </Tooltip>
       </Stack>
-      <FrequencyPicker value={frequencyDays} onChange={onFrequencyChange} />
-    </Stack>
+      <Box mt={0.85}>
+        <FrequencyPicker value={frequencyDays} onChange={onFrequencyChange} />
+      </Box>
+    </Box>
   );
 }
