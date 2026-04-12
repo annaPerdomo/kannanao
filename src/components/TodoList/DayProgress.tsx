@@ -19,31 +19,29 @@ export function DayProgress({ completedCount, totalCount }: DayProgressProps) {
   if (totalCount === 0) return null;
 
   return (
-    <Box mb={0.5}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={0.75}>
-        <Typography sx={{ color: brand[700], fontWeight: 800, fontSize: '0.78rem' }}>
-          {progress === 100 ? '🎊' : '🌟'} {completedCount}/{totalCount} done
-        </Typography>
+    <Box>
+      <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1} mb={0.75}>
         <Typography sx={{ color: 'text.disabled', fontWeight: 700, fontSize: '0.68rem' }}>
-          {progress === 100 ? 'All done! ⭐' : `+${XP_PER_TODO} XP each ✨`}
+          {progress === 100 ? 'All done! ⭐' : `+${XP_PER_TODO} XP each`}
+        </Typography>
+        <Typography sx={{ color: brand[700], fontWeight: 800, fontSize: '0.72rem' }}>
+          {progress === 100 ? '🎊' : '🌟'} {completedCount}/{totalCount} done
         </Typography>
       </Stack>
       <LinearProgress
-        variant="determinate"
-        value={progress}
-        sx={{
-          height: 10,
+      variant="determinate"
+      value={progress}
+      sx={{
+        height: 10,
+        borderRadius: 5,
+        bgcolor: alpha(brand[200], 0.25),
+        '& .MuiLinearProgress-bar': {
+          background: `linear-gradient(90deg, ${brand[400]} 0%, ${brand[500]} 40%, ${accent[400]} 100%)`,
           borderRadius: 5,
-          bgcolor: alpha(brand[200], 0.25),
-          '& .MuiLinearProgress-bar': {
-            background: progress === 100
-              ? `linear-gradient(90deg, ${brand[400]} 0%, ${brand[500]} 40%, ${accent[400]} 100%)`
-              : `linear-gradient(90deg, ${brand[400]} 0%, ${brand[500]} 40%, ${accent[400]} 100%)`,
-            borderRadius: 5,
-            transition: 'width 0.6s ease',
-          },
-        }}
-      />
+          transition: 'width 0.6s ease',
+        },
+      }}
+    />
     </Box>
   );
 }

@@ -1,6 +1,5 @@
 'use client';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
@@ -23,17 +22,7 @@ export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, 
   const { brand, accent } = theme.palette;
 
   return (
-    <Box sx={{
-      p: 1.25, pt: 1.75, borderRadius: 3,
-      background: `linear-gradient(135deg, ${alpha(brand[50], 0.8)}, ${alpha(accent[50], 0.6)})`,
-      border: `1.5px solid ${alpha(brand[300], 0.2)}`,
-    }}>
-      <Typography sx={{
-        fontSize: '0.72rem', fontWeight: 800, color: brand[600],
-        textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.85,
-      }}>
-        ✅ To-Dos
-      </Typography>
+    <Box>
       <Stack direction="row" spacing={0.75} alignItems="center">
         <TextField
           value={value}
