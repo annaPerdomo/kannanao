@@ -61,7 +61,7 @@ export function CalendarEntrySection({
               : <ExpandLessRoundedIcon sx={{ fontSize: '0.95rem' }} />}
           </IconButton>
           <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: brand[600], textTransform: 'uppercase', letterSpacing: 0.5 }}>
-            📅 Events
+            📌 Events
           </Typography>
         </Stack>
         <Button

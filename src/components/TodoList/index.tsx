@@ -234,17 +234,6 @@ export function TodoList({ onXpEarned }: TodoListProps) {
           >
             📅 {activeDateLabel}
           </Typography>
-          {totalCount > 0 && (
-            <Typography
-              sx={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                color: "text.disabled",
-              }}
-            >
-              {completedCount}/{totalCount} done
-            </Typography>
-          )}
         </Stack>
       )}
 
@@ -540,19 +529,23 @@ export function TodoList({ onXpEarned }: TodoListProps) {
         {/* ── Body ── */}
         <Box sx={{ px: { xs: 1.25, sm: 2 }, py: 1.5 }}>
           {view === "month" ? (
-            <Stack spacing={1.5}>
-              <MonthCalendar
-                todos={todos}
-                entries={entries}
-                entryTypes={allEntryTypes}
-                monthOffset={monthOffset}
-                onMonthChange={setMonthOffset}
-                selectedDateISO={monthSelectedDateISO}
-                onSelectDate={setMonthSelectedDateISO}
-              />
-              <Divider sx={{ borderColor: alpha(brand[200], 0.35) }} />
-              {dayDetailPanel}
-            </Stack>
+            <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+              <Box sx={{ flex: "0 0 52%", minWidth: 0 }}>
+                <MonthCalendar
+                  todos={todos}
+                  entries={entries}
+                  entryTypes={allEntryTypes}
+                  monthOffset={monthOffset}
+                  onMonthChange={setMonthOffset}
+                  selectedDateISO={monthSelectedDateISO}
+                  onSelectDate={setMonthSelectedDateISO}
+                />
+              </Box>
+              <Divider orientation="vertical" flexItem sx={{ borderColor: alpha(brand[200], 0.35) }} />
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                {dayDetailPanel}
+              </Box>
+            </Box>
           ) : (
             <Stack spacing={1.25}>
               {dayDetailPanel}
