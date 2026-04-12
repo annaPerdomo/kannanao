@@ -17,14 +17,7 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import type { GeneratedCard } from "@/types/flashcard";
 import { Loading } from "@/components/Loading";
 
-const FORMAT_PRESETS = [
-  {
-    id: "adventures-in-japanese-1",
-    label: "Adventures in Japanese 1 Vocabulary List",
-    description: "Word · reading · meaning · examples",
-    fields: ["word", "reading", "meaning", "example_jp", "example_en"],
-  },
-];
+const EXTRACTED_FIELDS = ["word", "reading", "meaning", "example sentence in Japanese", "example sentence in English", "JLPT level"];
 
 interface PdfImportModalProps {
   open: boolean;
@@ -38,14 +31,11 @@ export function PdfImportModal({
   onAddCards,
 }: PdfImportModalProps) {
   const [file, setFile] = useState<File | null>(null);
-  const [selectedFormat, setSelectedFormat] = useState(FORMAT_PRESETS[0].id);
   const [extracting, setExtracting] = useState(false);
   const [extracted, setExtracted] = useState<GeneratedCard[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const preset = FORMAT_PRESETS.find((p) => p.id === selectedFormat)!;
 
   const handleFile = (f: File) => {
     if (f.type !== "application/pdf") {
@@ -149,7 +139,7 @@ export function PdfImportModal({
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ pt: 1 }}>
+      <DialogContent sx={{ pb: 0, pt: 1,}}>
         {extracting ? (
           <Loading message="Extracting cards…" />
         ) : (
@@ -203,7 +193,7 @@ export function PdfImportModal({
               ) : (
                 <>
                   <UploadFileIcon
-                    sx={{ color: "text.secondary", fontSize: 22, mb: 0.5 }}
+                    sx={{ color: "rgba(236,72,153,0.5)", fontSize: 28, mb: 0.75 }}
                   />
                   <Typography fontSize="0.78rem" fontWeight={700}>
                     Drop a PDF here
@@ -215,86 +205,34 @@ export function PdfImportModal({
               )}
             </Box>
 
-            {/* Format presets */}
-            <Typography
-              fontSize="0.7rem"
-              fontWeight={700}
-              color="text.secondary"
-              sx={{ textTransform: "uppercase", letterSpacing: "0.05em", mb: 1 }}
-            >
-              Format preset
-            </Typography>
-
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 0.75,
-                mb: 1.5,
-              }}
-            >
-              {FORMAT_PRESETS.map((p) => (
-                <Box
-                  key={p.id}
-                  onClick={() => setSelectedFormat(p.id)}
-                  sx={{
-                    border:
-                      selectedFormat === p.id
-                        ? "2px solid #f9a8d4"
-                        : "0.5px solid",
-                    borderColor:
-                      selectedFormat === p.id ? "#f9a8d4" : "divider",
-                    borderRadius: "9px",
-                    p: "8px 10px",
-                    cursor: "pointer",
-                    bgcolor:
-                      selectedFormat === p.id
-                        ? "rgba(249,168,212,0.08)"
-                        : "transparent",
-                    gridColumn: p.id === "auto" ? "span 2" : "span 1",
-                    transition: "all 0.12s",
-                  }}
-                >
-                  <Typography
-                    fontSize="0.72rem"
-                    fontWeight={700}
-                    color={
-                      selectedFormat === p.id ? "#9d174d" : "text.primary"
-                    }
-                  >
-                    {p.label}
-                  </Typography>
-                  <Typography
-                    fontSize="0.68rem"
-                    color={
-                      selectedFormat === p.id ? "#be185d" : "text.secondary"
-                    }
-                  >
-                    {p.description}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-
             {/* Extracting fields preview */}
-            <Box
-              sx={{
-                bgcolor: "rgba(249,168,212,0.08)",
-                borderRadius: "9px",
-                p: "8px 10px",
-                mb: 1.5,
-                border: "0.5px solid rgba(249,168,212,0.3)",
-              }}
-            >
-              <Typography fontSize="0.69rem" color="#9d174d">
-                Extracting:{" "}
-                {preset.fields.map((f, i) => (
-                  <span key={f}>
-                    <strong>{f}</strong>
-                    {i < preset.fields.length - 1 ? " · " : ""}
-                  </span>
-                ))}
+            <Box sx={{ mb: 1.5 }}>
+              <Typography
+                fontSize="0.68rem"
+                color="text.disabled"
+                sx={{ mb: 0.75 }}
+              >
+                Fields extracted
               </Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                {EXTRACTED_FIELDS.map((f) => (
+                  <Box
+                    key={f}
+                    sx={{
+                      px: 1,
+                      py: 0.25,
+                      borderRadius: "20px",
+                      border: "1px solid",
+                      borderColor: "rgba(236,72,153,0.25)",
+                      bgcolor: "rgba(236,72,153,0.05)",
+                    }}
+                  >
+                    <Typography fontSize="0.68rem" color="text.secondary">
+                      {f}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
             </Box>
 
             {error && (
