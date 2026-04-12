@@ -258,7 +258,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
   return (
     <Box sx={{
       width: '100%',
-      maxWidth: { xs: '100%', sm: 560, md: 640 },
+      maxWidth: '100%',
       mx: 'auto',
       background: `linear-gradient(160deg, ${alpha(brand[50], 0.85)} 0%, ${alpha(accent[50], 0.7)} 100%)`,
       borderRadius: { xs: 0, sm: 4 },

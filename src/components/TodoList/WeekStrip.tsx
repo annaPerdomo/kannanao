@@ -22,6 +22,9 @@ interface WeekStripProps {
   entries: CalendarEntry[];
 }
 
+// Cute mascot emoji per weekday (Mon→Sun)
+const DAY_MASCOTS = ['🐱', '🐰', '🌸', '🧸', '⭐', '🦋', '☀️'];
+
 export function WeekStrip({
   weekDates, selectedDayIndex, onSelectDay,
   weekOffset, onWeekChange, todos, entries,
@@ -58,14 +61,14 @@ export function WeekStrip({
               component="button"
               onClick={() => onSelectDay(i)}
               sx={{
-                minHeight: 52,
+                minHeight: 64,
                 px: 0.25,
                 py: 0.5,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 0.15,
+                gap: 0.1,
                 borderRadius: 2.5,
                 border: '2px solid',
                 borderColor: isSelected ? brand[400] : 'transparent',
@@ -82,30 +85,32 @@ export function WeekStrip({
                 },
               }}
             >
+              {/* Cute mascot */}
+              <Typography sx={{ fontSize: '0.95rem', lineHeight: 1.1 }}>
+                {allDone ? '⭐' : DAY_MASCOTS[i]}
+              </Typography>
               <Typography sx={{
-                fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.03em',
+                fontSize: '0.58rem', fontWeight: 800, letterSpacing: '0.03em',
                 color: isSelected ? 'rgba(255,255,255,0.85)' : isToday ? brand[600] : 'text.disabled',
                 lineHeight: 1,
               }}>
                 {DAY_LABELS[i]}
               </Typography>
               <Typography sx={{
-                fontSize: '0.92rem', fontWeight: 900,
+                fontSize: '0.88rem', fontWeight: 900,
                 color: isSelected ? 'white' : isToday ? brand[700] : 'text.primary',
                 lineHeight: 1.1,
               }}>
                 {date.getDate()}
               </Typography>
-              {/* Tiny status indicator */}
-              {allDone ? (
-                <Typography sx={{ fontSize: '0.55rem', lineHeight: 1 }}>⭐</Typography>
-              ) : dayTodos.length > 0 ? (
+              {/* Tiny status dot */}
+              {!allDone && dayTodos.length > 0 ? (
                 <Box sx={{
                   width: 5, height: 5, borderRadius: '50%',
                   bgcolor: isSelected ? 'rgba(255,255,255,0.7)' : brand[300],
                 }}/>
-              ) : dayEntries.length > 0 ? (
-                <Typography sx={{ fontSize: '0.55rem', lineHeight: 1 }}>{dayEntries[0].emoji}</Typography>
+              ) : !allDone && dayEntries.length > 0 ? (
+                <Typography sx={{ fontSize: '0.52rem', lineHeight: 1 }}>{dayEntries[0].emoji}</Typography>
               ) : null}
             </Box>
           );

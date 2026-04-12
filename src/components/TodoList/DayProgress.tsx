@@ -19,8 +19,8 @@ export function DayProgress({ completedCount, totalCount }: DayProgressProps) {
   if (totalCount === 0) return null;
 
   return (
-    <Box mb={1.5}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={0.5}>
+    <Box mb={0.5}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={0.75}>
         <Typography sx={{ color: brand[700], fontWeight: 800, fontSize: '0.78rem' }}>
           {progress === 100 ? '🎊' : '🌟'} {completedCount}/{totalCount} done
         </Typography>
@@ -32,14 +32,15 @@ export function DayProgress({ completedCount, totalCount }: DayProgressProps) {
         variant="determinate"
         value={progress}
         sx={{
-          height: 8, borderRadius: 4,
+          height: 10,
+          borderRadius: 5,
           bgcolor: alpha(brand[200], 0.25),
           '& .MuiLinearProgress-bar': {
             background: progress === 100
-              ? `linear-gradient(90deg, ${brand[300]}, ${accent[300]}, ${brand[400]})`
-              : `linear-gradient(90deg, ${brand[400]}, ${accent[300]})`,
-            borderRadius: 4,
-            transition: 'width 0.5s ease',
+              ? `linear-gradient(90deg, ${brand[400]} 0%, ${brand[500]} 40%, ${accent[400]} 100%)`
+              : `linear-gradient(90deg, ${brand[400]} 0%, ${brand[500]} 40%, ${accent[400]} 100%)`,
+            borderRadius: 5,
+            transition: 'width 0.6s ease',
           },
         }}
       />

@@ -22,10 +22,18 @@ export function FrequencyPicker({ value, onChange }: FrequencyPickerProps) {
   }
 
   return (
-    <Stack direction="row" spacing={0.5} alignItems="center">
-      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, mr: 0.5, fontSize: '0.7rem' }}>
-        {value.length > 0 ? '🔁' : '1️⃣ once'}
-      </Typography>
+    <Stack spacing={0.5}>
+      <Stack direction="row" alignItems="center" spacing={0.75}>
+        <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: value.length > 0 ? brand[600] : 'text.disabled' }}>
+          {value.length > 0 ? '🔁 Repeats on:' : '📅 One-time task'}
+        </Typography>
+        {value.length === 0 && (
+          <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled', fontStyle: 'italic' }}>
+            tap a day to repeat
+          </Typography>
+        )}
+      </Stack>
+      <Stack direction="row" spacing={0.5} alignItems="center">
       {DAY_LABELS_SHORT.map((label, i) => {
         const jsDay = DAY_INDEX_TO_JS[i];
         const active = value.includes(jsDay);
@@ -55,6 +63,7 @@ export function FrequencyPicker({ value, onChange }: FrequencyPickerProps) {
           </Box>
         );
       })}
+      </Stack>
     </Stack>
   );
 }
