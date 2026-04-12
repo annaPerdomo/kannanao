@@ -50,6 +50,9 @@ Next.js 15 app with React 19, MUI 7, Supabase, TypeScript.
 **API routes** (`src/app/api/`):
 - `/api/generate` — calls Google Gemini API to generate flashcard fields (POST)
 - `/api/images` — fetches images from Unsplash by query (GET)
+- `/api/furigana` — calls Google Gemini API to add furigana readings to Japanese text using `{kanji|reading}` format (POST)
+- `/api/pdf-extract` — calls Google Gemini API to extract vocabulary from a PDF and generate full flashcard data (POST)
+- `/api/public/deck/[id]` — public read-only endpoint to fetch a deck and its cards by ID without auth (GET)
 
 **API client** (`src/services/api.ts`):
 - `generateFlashcards()` — calls `/api/generate`

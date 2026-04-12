@@ -90,13 +90,30 @@ export function AddEntryDialog({
   }, [title, typeId, startDate, endDate, frequencyDays, allEntryTypes, selectedDate, onAddEntry, onClose]);
 
   const datePickerSx = {
-    '& .MuiOutlinedInput-root': {
-      borderRadius: 2.5,
-      background: alpha('#fff', 0.7),
+    // MUI X v9: date text is rendered by PickersSectionList, not a standard <input>
+    '& .MuiPickersSectionList-root': {
+      fontFamily: '"Nunito", sans-serif',
+      fontWeight: 700,
       fontSize: '0.85rem',
-      '& fieldset': { borderColor: alpha(brand[300], 0.4) },
-      '&:hover fieldset': { borderColor: brand[400] },
-      '&.Mui-focused fieldset': { borderColor: brand[500] },
+    },
+  };
+
+  const daySlotSx = {
+    fontFamily: '"Nunito", sans-serif',
+    fontWeight: 700,
+    color: brand[700],
+    '&:hover:not(.Mui-selected)': { background: alpha(brand[200], 0.5), color: brand[700] },
+    '&.Mui-selected': {
+      background: `linear-gradient(135deg, ${brand[200]}, ${alpha(accent[200], 0.9)})`,
+      color: brand[800],
+      fontWeight: 800,
+      boxShadow: `0 2px 8px ${alpha(brand[300], 0.35)}`,
+      '&:hover': { background: `linear-gradient(135deg, ${brand[300]}, ${alpha(accent[300], 0.85)})`, color: brand[800] },
+      '&:focus-visible': { background: `linear-gradient(135deg, ${brand[200]}, ${alpha(accent[200], 0.9)})`, color: brand[800] },
+    },
+    '&.MuiPickersDay-today:not(.Mui-selected)': {
+      border: `2px solid ${brand[400]}`,
+      color: brand[600],
     },
   };
 
@@ -110,30 +127,14 @@ export function AddEntryDialog({
     '& .MuiPickersCalendarHeader-switchViewButton': { color: brand[500] },
     '& .MuiPickersArrowSwitcher-button': { color: brand[500], '&:hover': { color: brand[700], background: alpha(brand[100], 0.5) } },
     '& .MuiDayCalendar-weekDayLabel': { color: brand[400], fontWeight: 700, fontFamily: '"Nunito", sans-serif' },
-    '& .MuiPickersDay-root': {
-      fontFamily: '"Nunito", sans-serif',
-      fontWeight: 700,
-      color: brand[700],
-      '&:hover': { background: alpha(brand[200], 0.5), color: brand[700] },
-      '&.Mui-selected': {
-        background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
-        color: 'white',
-        boxShadow: `0 2px 8px ${alpha(brand[400], 0.4)}`,
-        '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
-        '&:focus': { background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})` },
-      },
-      '&.MuiPickersDay-today:not(.Mui-selected)': {
-        border: `2px solid ${brand[400]}`,
-        color: brand[600],
-      },
-    },
     '& .MuiPickersYear-yearButton': {
       fontFamily: '"Nunito", sans-serif',
       fontWeight: 700,
       color: brand[700],
       '&.Mui-selected': {
-        background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
-        color: 'white',
+        background: `linear-gradient(135deg, ${brand[200]}, ${alpha(accent[200], 0.9)})`,
+        color: brand[800],
+        fontWeight: 800,
       },
     },
   };
@@ -264,6 +265,7 @@ export function AddEntryDialog({
               textField: { size: 'small', fullWidth: true, sx: datePickerSx },
               openPickerButton: { sx: { color: brand[500] } },
               desktopPaper: { sx: calendarPopperSx },
+              day: { sx: daySlotSx },
             }}
           />
 
@@ -293,6 +295,7 @@ export function AddEntryDialog({
                     textField: { size: 'small', fullWidth: true, sx: datePickerSx },
                     openPickerButton: { sx: { color: brand[500] } },
                     desktopPaper: { sx: calendarPopperSx },
+                    day: { sx: daySlotSx },
                   }}
                 />
                 <FrequencyPicker value={frequencyDays} onChange={setFrequencyDays} />
