@@ -62,8 +62,18 @@ Next.js 15 app with React 19, MUI 7, Supabase, TypeScript.
 
 Hooks in `src/hooks/` follow this pattern:
 - Load data on mount, expose async action functions with optimistic updates
-- Always return `{ data, loading, ...actions }`
+- Always return `{ data, loading, error, ...actions }`
 - Use `useCallback` for all action functions
+- All CRUD actions must handle loading, error, and success states; use try/catch and set error state on failure
+- Optimistic updates should be rolled back on error
+
+## State Handling in Components
+
+Every component that fetches or mutates data must:
+- Show a loading state using `<Loading />` (`@/components/Loading`) while `loading` is true
+- Show an error state (e.g. `<Alert severity="error">`) when `error` is set
+- Confirm success visually (e.g. `<Alert severity="success">` or snackbar) after mutations
+- Disable action buttons while a mutation is in-flight
 
 ## Code Style
 
