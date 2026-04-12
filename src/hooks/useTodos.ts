@@ -19,12 +19,12 @@ export function useTodos() {
       .finally(() => setLoading(false));
   }, [user]);
 
-  const addTodo = useCallback(async (text: string, frequencyDays: number[] = []) => {
+  const addTodo = useCallback(async (text: string, frequencyDays: number[] = [], assignedDateISO?: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
     setError(null);
     try {
-      const todo = await dbCreateTodo(trimmed, frequencyDays);
+      const todo = await dbCreateTodo(trimmed, frequencyDays, assignedDateISO);
       setTodos((prev) => [...prev, todo]);
     } catch {
       setError('Could not add item — please try again');

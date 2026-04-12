@@ -3,7 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Deck } from "@/types/deck";
 import type { Flashcard, JlptLevel } from "@/types/flashcard";
-import type { Todo } from "@/types/todo";
+import type { EntryType, Todo } from '@/types/todo';
 
 const SUPABASE_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -521,6 +521,23 @@ interface SupabaseTodoRow {
   completed_dates: string[] | null;
 }
 
+interface SupabaseEventTypeRow {
+  id: string;
+  user_id: string;
+  name: string;
+  emoji: string;
+  color: string;
+}
+
+function dbEventTypeToApp(row: SupabaseEventTypeRow): EntryType {
+  return {
+    id: row.id,
+    name: row.name,
+    emoji: row.emoji,
+    color: row.color,
+  };
+}
+
 function dbTodoToApp(row: SupabaseTodoRow): Todo {
   return {
     id: row.id,
@@ -534,6 +551,34 @@ function dbTodoToApp(row: SupabaseTodoRow): Todo {
   };
 }
 
+export async function loadEventTypes(userId: string): Promise<EntryType[]> {
+  if (!isConfigured()) { showConfigBanner(); return []; }
+  const { data, error } = await sb
+    .from('event_types')
+    .select('*')
+    .eq('user_id', userId)
+    .order('name', { ascending: true });
+  if (error) { console.error('Error loading event types', error); return []; }
+  return (data ?? []).map(dbEventTypeToApp);
+}
+
+export async function dbCreateEventType(userId: string, name: string, emoji: string, color: string): Promise<EntryType> {
+  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  const { data, error } = await sb
+    .from('event_types')
+    .insert({ user_id: userId, name, emoji, color })
+    .select()
+    .single();
+  if (error || !data) throw error ?? new Error('Unable to create event type');
+  return dbEventTypeToApp(data);
+}
+
+export async function dbDeleteEventType(id: string): Promise<void> {
+  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  const { error } = await sb.from('event_types').delete().eq('id', id);
+  if (error) throw error;
+}
+
 export async function loadTodos(userId: string): Promise<Todo[]> {
   if (!isConfigured()) { showConfigBanner(); return []; }
   const { data, error } = await sb
@@ -545,13 +590,24 @@ export async function loadTodos(userId: string): Promise<Todo[]> {
   return (data ?? []).map(dbTodoToApp);
 }
 
-export async function dbCreateTodo(text: string, frequencyDays: number[] = []): Promise<Todo> {
+export async function dbCreateTodo(text: string, frequencyDays: number[] = [], assignedDateISO?: string): Promise<Todo> {
   if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
   const { data: { user } } = await sb.auth.getUser();
   if (!user) throw new Error('Not authenticated');
+  const insertPayload: Record<string, unknown> = {
+    text,
+    user_id: user.id,
+    completed: false,
+    emoji: pickEmojiForText(text),
+    frequency_days: frequencyDays,
+    completed_dates: [],
+  };
+  if (assignedDateISO) {
+    insertPayload.created_at = `${assignedDateISO}T12:00:00.000Z`;
+  }
   const { data, error } = await sb
     .from('todos')
-    .insert({ text, user_id: user.id, completed: false, emoji: pickEmojiForText(text), frequency_days: frequencyDays, completed_dates: [] })
+    .insert(insertPayload)
     .select()
     .single();
   if (error || !data) throw error ?? new Error('Unable to create todo');
