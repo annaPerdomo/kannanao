@@ -1,6 +1,6 @@
 import { createTheme, alpha, Theme } from '@mui/material/styles';
 
-export type ColorScheme = 'sakura' | 'ohanashikai' | 'murasaki' | 'yuki';
+export type ColorScheme = 'sakura' | 'murasaki' | 'yuki';
 
 type ColorScale = {
   50: string; 100: string; 200: string; 300: string; 400: string;
@@ -46,19 +46,6 @@ const pink: ColorScale = {
   900: '#831843',
 };
 
-const orange: ColorScale = {
-  50: '#FFF7ED',
-  100: '#FFEDD5',
-  200: '#FED7AA',
-  300: '#FDBA74',
-  400: '#FB923C',
-  500: '#F97316',
-  600: '#EA580C',
-  700: '#C2410C',
-  800: '#9A3412',
-  900: '#7C2D12',
-};
-
 const purple: ColorScale = {
   50:  '#F5F3FF',
   100: '#EDE9FE',
@@ -98,20 +85,6 @@ const rainbowSakura: ColorScale = {
   700: '#FF6348', // coral red
   800: '#7C4DFF', // deep violet
   900: '#00BCD4', // teal
-};
-
-// 🍊 Ohanashikai rainbow — warm fiesta rainbow
-const rainbowOhanashikai: ColorScale = {
-  50:  '#FF3D00', // vivid red-orange
-  100: '#FF9100', // amber
-  200: '#FFD600', // bright yellow
-  300: '#00C853', // vivid green
-  400: '#2962FF', // strong blue
-  500: '#AA00FF', // electric violet
-  600: '#FF1744', // neon red
-  700: '#FF6D00', // deep orange
-  800: '#D500F9', // bright magenta
-  900: '#00BFA5', // teal
 };
 
 // 💜 Murasaki rainbow — jewel-toned mystical rainbow
@@ -162,14 +135,6 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
     secondaryMain: purple[300], secondaryLight: purple[100], secondaryDark: purple[500],
     bgDefault: '#FFF5FB', bgPaper: '#FFFFFF',
     textPrimary: '#5E2F6C', textSecondary: '#A86C99',
-  },
-  /** 🍊 Ohanashikai — cheerful orange & deep purple */
-  ohanashikai: {
-    brand: orange, accent: purple, rainbow: rainbowOhanashikai,
-    primaryMain: orange[500], primaryLight: orange[100], primaryDark: orange[700],
-    secondaryMain: purple[300], secondaryLight: purple[100], secondaryDark: purple[500],
-    bgDefault: '#FFF7ED', bgPaper: '#FFFFFF',
-    textPrimary: '#7C2D12', textSecondary: '#C2410C',
   },
   /** 💜 Murasaki — dreamy violet & pink */
   murasaki: {

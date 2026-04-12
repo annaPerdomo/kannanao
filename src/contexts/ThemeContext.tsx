@@ -16,7 +16,7 @@ const VALID_SCHEMES: ColorScheme[] = ['sakura', 'murasaki', 'yuki'];
 export const schemeInfo: Record<ColorScheme, { label: string; emoji: string; preview: string }> = {
   sakura:   { label: 'Sakura',   emoji: '🌸', preview: '#F472B6' },
   murasaki: { label: 'Murasaki', emoji: '💜', preview: '#A78BFA' },
-  yuki:     { label: 'Yuki',     emoji: '❄️', preview: '#38BDF8' },
+  yuki:        { label: 'Yuki',        emoji: '❄️', preview: '#38BDF8' },
 };
 
 interface ThemeContextValue {
