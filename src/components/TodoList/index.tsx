@@ -58,7 +58,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
 
   // Calendar entries
   const [entries, setEntries] = useState<CalendarEntry[]>([]);
-  const { entryTypes: persistedEntryTypes, addEntryType, deleteEntryType } = useEventTypes();
+  const { entryTypes: persistedEntryTypes, addEntryType, updateEntryType, deleteEntryType } = useEventTypes();
   const allEntryTypes: EntryType[] = [...DEFAULT_ENTRY_TYPES, ...persistedEntryTypes];
 
   // Celebration
@@ -129,8 +129,12 @@ export function TodoList({ onXpEarned }: TodoListProps) {
     return addEntryType(name, emoji, color);
   }, [addEntryType]);
 
-  const handleDeleteEntryType = useCallback((typeId: string) => {
-    void deleteEntryType(typeId);
+  const handleUpdateEntryType = useCallback(async (id: string, name: string, emoji: string) => {
+    return updateEntryType(id, name, emoji);
+  }, [updateEntryType]);
+
+  const handleDeleteEntryType = useCallback(async (typeId: string) => {
+    await deleteEntryType(typeId);
     setEntries((prev) => prev.filter((e) => e.typeId !== typeId));
   }, [deleteEntryType]);
 
@@ -187,6 +191,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
         onDeleteEntry={handleDeleteEntry}
         allEntryTypes={allEntryTypes}
         onAddEntryType={handleAddEntryType}
+        onUpdateEntryType={handleUpdateEntryType}
         onDeleteEntryType={handleDeleteEntryType}
         selectedDate={activeDate}
       />

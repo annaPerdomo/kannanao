@@ -1,18 +1,19 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import Collapse from '@mui/material/Collapse';
 import { useTheme, alpha } from '@mui/material/styles';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
+import ExpandLessRoundedIcon from '@mui/icons-material/ExpandLessRounded';
 import type { CalendarEntry, EntryType } from '@/types/todo';
 import { getEntryType, isEntryOnDate, DAY_LABELS_SHORT, DAY_INDEX_TO_JS } from './helpers';
-import { ManageEntryTypesDialog } from './ManageEntryTypesDialog';
 import { AddEntryDialog } from './AddEntryDialog';
 import { EditEntryDialog } from './EditEntryDialog';
 
@@ -23,66 +24,72 @@ interface CalendarEntrySectionProps {
   onDeleteEntry: (id: string) => void;
   allEntryTypes: EntryType[];
   onAddEntryType: (name: string, emoji: string, color: string) => Promise<EntryType>;
-  onDeleteEntryType: (typeId: string) => void;
+  onUpdateEntryType: (id: string, name: string, emoji: string) => Promise<EntryType>;
+  onDeleteEntryType: (typeId: string) => Promise<void>;
   selectedDate: Date;
 }
 
 export function CalendarEntrySection({
   entries, onAddEntry, onEditEntry, onDeleteEntry, allEntryTypes,
-  onAddEntryType, onDeleteEntryType, selectedDate,
+  onAddEntryType, onUpdateEntryType, onDeleteEntryType, selectedDate,
 }: CalendarEntrySectionProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
+  const entriesForDay = entries.filter((e) => isEntryOnDate(e, selectedDate));
+
   const [addOpen, setAddOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<CalendarEntry | null>(null);
-  const [manageTypesOpen, setManageTypesOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(entriesForDay.length === 0);
 
-  const entriesForDay = entries.filter((e) => isEntryOnDate(e, selectedDate));
+  useEffect(() => {
+    setCollapsed(entriesForDay.length === 0);
+  }, [selectedDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Box>
       {/* Section header */}
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={0.75}>
-        <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: brand[600], textTransform: 'uppercase', letterSpacing: 0.5 }}>
-          📅 Events
-        </Typography>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={collapsed ? 0 : 0.75}>
         <Stack direction="row" alignItems="center" spacing={0.25}>
-          <Tooltip title="Manage event types">
-            <IconButton
-              size="small"
-              onClick={() => setManageTypesOpen(true)}
-              sx={{ color: brand[400], '&:hover': { color: brand[600], background: alpha(brand[100], 0.5) } }}
-            >
-              <TuneRoundedIcon sx={{ fontSize: '0.95rem' }} />
-            </IconButton>
-          </Tooltip>
-          <Button
+          <IconButton
             size="small"
-            startIcon={<AddRoundedIcon sx={{ fontSize: '0.9rem !important' }} />}
-            onClick={() => setAddOpen(true)}
-            sx={{
-              borderRadius: 2.5, py: 0.35, px: 1.25,
-              fontSize: '0.72rem', fontWeight: 800,
-              background: `linear-gradient(135deg, ${alpha(brand[400], 0.12)}, ${alpha(accent[300], 0.12)})`,
-              color: brand[600],
-              border: `1.5px solid ${alpha(brand[300], 0.35)}`,
-              textTransform: 'none',
-              '&:hover': {
-                background: `linear-gradient(135deg, ${alpha(brand[400], 0.2)}, ${alpha(accent[300], 0.2)})`,
-                borderColor: brand[400],
-                transform: 'translateY(-1px)',
-              },
-              transition: 'all 0.18s ease',
-            }}
+            onClick={() => setCollapsed((c) => !c)}
+            sx={{ color: brand[400], '&:hover': { color: brand[600], background: alpha(brand[100], 0.5) } }}
           >
-            Add event
-          </Button>
+            {collapsed
+              ? <ExpandMoreRoundedIcon sx={{ fontSize: '0.95rem' }} />
+              : <ExpandLessRoundedIcon sx={{ fontSize: '0.95rem' }} />}
+          </IconButton>
+          <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: brand[600], textTransform: 'uppercase', letterSpacing: 0.5 }}>
+            📅 Events
+          </Typography>
         </Stack>
+        <Button
+          size="small"
+          startIcon={<AddRoundedIcon sx={{ fontSize: '0.9rem !important' }} />}
+          onClick={() => setAddOpen(true)}
+          sx={{
+            borderRadius: 2.5, py: 0.35, px: 1.25,
+            fontSize: '0.72rem', fontWeight: 800,
+            background: `linear-gradient(135deg, ${alpha(brand[400], 0.12)}, ${alpha(accent[300], 0.12)})`,
+            color: brand[600],
+            border: `1.5px solid ${alpha(brand[300], 0.35)}`,
+            textTransform: 'none',
+            '&:hover': {
+              background: `linear-gradient(135deg, ${alpha(brand[400], 0.2)}, ${alpha(accent[300], 0.2)})`,
+              borderColor: brand[400],
+              transform: 'translateY(-1px)',
+            },
+            transition: 'all 0.18s ease',
+          }}
+        >
+          Add event
+        </Button>
       </Stack>
 
-      {/* Event cards */}
-      {entriesForDay.length === 0 ? (
+      <Collapse in={!collapsed}>
+        {/* Event cards */}
+        {entriesForDay.length === 0 ? (
         <Box
           component="button"
           onClick={() => setAddOpen(true)}
@@ -163,6 +170,7 @@ export function CalendarEntrySection({
           </Button>
         </Stack>
       )}
+      </Collapse>
 
       <AddEntryDialog
         open={addOpen}
@@ -170,6 +178,9 @@ export function CalendarEntrySection({
         selectedDate={selectedDate}
         allEntryTypes={allEntryTypes}
         onAddEntry={onAddEntry}
+        onAddEntryType={onAddEntryType}
+        onUpdateEntryType={onUpdateEntryType}
+        onDeleteEntryType={onDeleteEntryType}
       />
       <EditEntryDialog
         open={!!editingEntry}
@@ -178,13 +189,6 @@ export function CalendarEntrySection({
         allEntryTypes={allEntryTypes}
         onSave={onEditEntry}
         onDelete={onDeleteEntry}
-      />
-      <ManageEntryTypesDialog
-        open={manageTypesOpen}
-        onClose={() => setManageTypesOpen(false)}
-        allEntryTypes={allEntryTypes}
-        onAddEntryType={onAddEntryType}
-        onDeleteEntryType={onDeleteEntryType}
       />
     </Box>
   );

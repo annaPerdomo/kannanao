@@ -11,16 +11,19 @@ import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import Collapse from '@mui/material/Collapse';
 import Alert from '@mui/material/Alert';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import ExpandLessRoundedIcon from '@mui/icons-material/ExpandLessRounded';
+import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
 import { useTheme, alpha } from '@mui/material/styles';
 import type { CalendarEntry, EntryType } from '@/types/todo';
 import { DEFAULT_ENTRY_TYPES, getEntryType, toISODate } from './helpers';
 import { FrequencyPicker } from './FrequencyPicker';
+import { ManageEntryTypesDialog } from './ManageEntryTypesDialog';
 
 interface AddEntryDialogProps {
   open: boolean;
@@ -28,10 +31,14 @@ interface AddEntryDialogProps {
   selectedDate: Date;
   allEntryTypes: EntryType[];
   onAddEntry: (entry: CalendarEntry) => void;
+  onAddEntryType: (name: string, emoji: string, color: string) => Promise<EntryType>;
+  onUpdateEntryType: (id: string, name: string, emoji: string) => Promise<EntryType>;
+  onDeleteEntryType: (typeId: string) => Promise<void>;
 }
 
 export function AddEntryDialog({
   open, onClose, selectedDate, allEntryTypes, onAddEntry,
+  onAddEntryType, onUpdateEntryType, onDeleteEntryType,
 }: AddEntryDialogProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
@@ -43,6 +50,7 @@ export function AddEntryDialog({
   const [frequencyDays, setFrequencyDays] = useState<number[]>([]);
   const [showMore, setShowMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [manageTypesOpen, setManageTypesOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -92,21 +100,60 @@ export function AddEntryDialog({
     },
   };
 
+  const calendarPopperSx = {
+    borderRadius: 3,
+    border: `1.5px solid ${alpha(brand[300], 0.3)}`,
+    boxShadow: `0 8px 32px ${alpha(brand[400], 0.2)}, 0 2px 8px ${alpha(accent[200], 0.1)}`,
+    background: `linear-gradient(160deg, ${alpha(brand[50], 0.98)} 0%, ${alpha(accent[50], 0.92)} 100%)`,
+    overflow: 'hidden',
+    '& .MuiPickersCalendarHeader-label': { fontWeight: 800, color: brand[700], fontFamily: '"Nunito", sans-serif' },
+    '& .MuiPickersCalendarHeader-switchViewButton': { color: brand[500] },
+    '& .MuiPickersArrowSwitcher-button': { color: brand[500], '&:hover': { color: brand[700], background: alpha(brand[100], 0.5) } },
+    '& .MuiDayCalendar-weekDayLabel': { color: brand[400], fontWeight: 700, fontFamily: '"Nunito", sans-serif' },
+    '& .MuiPickersDay-root': {
+      fontFamily: '"Nunito", sans-serif',
+      fontWeight: 700,
+      color: brand[700],
+      '&:hover': { background: alpha(brand[200], 0.5), color: brand[700] },
+      '&.Mui-selected': {
+        background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
+        color: 'white',
+        boxShadow: `0 2px 8px ${alpha(brand[400], 0.4)}`,
+        '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
+        '&:focus': { background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})` },
+      },
+      '&.MuiPickersDay-today:not(.Mui-selected)': {
+        border: `2px solid ${brand[400]}`,
+        color: brand[600],
+      },
+    },
+    '& .MuiPickersYear-yearButton': {
+      fontFamily: '"Nunito", sans-serif',
+      fontWeight: 700,
+      color: brand[700],
+      '&.Mui-selected': {
+        background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
+        color: 'white',
+      },
+    },
+  };
+
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="xs"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 4,
-          background: `linear-gradient(160deg, ${alpha(brand[50], 0.98)} 0%, ${alpha(accent[50], 0.92)} 100%)`,
-          border: `2px solid ${alpha(brand[300], 0.2)}`,
-          boxShadow: `0 12px 40px ${alpha(brand[400], 0.18)}, 0 4px 12px ${alpha(accent[200], 0.12)}`,
-        },
-      }}
-    >
+    <>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            background: `linear-gradient(160deg, ${alpha(brand[50], 0.98)} 0%, ${alpha(accent[50], 0.92)} 100%)`,
+            border: `2px solid ${alpha(brand[300], 0.2)}`,
+            boxShadow: `0 12px 40px ${alpha(brand[400], 0.18)}, 0 4px 12px ${alpha(accent[200], 0.12)}`,
+          },
+        }}
+      >
       <DialogTitle sx={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         pb: 0.5, pt: 2.5, px: 3,
@@ -155,9 +202,20 @@ export function AddEntryDialog({
 
           {/* Type chips */}
           <Box>
-            <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, color: 'text.secondary', mb: 0.75, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-              Type
-            </Typography>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" mb={0.75}>
+              <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                Type
+              </Typography>
+              <Tooltip title="Manage event types">
+                <IconButton
+                  size="small"
+                  onClick={() => setManageTypesOpen(true)}
+                  sx={{ color: brand[400], p: 0.4, '&:hover': { color: brand[600], background: alpha(brand[100], 0.5) } }}
+                >
+                  <TuneRoundedIcon sx={{ fontSize: '0.95rem' }} />
+                </IconButton>
+              </Tooltip>
+            </Stack>
             <Stack direction="row" flexWrap="wrap" gap={0.6}>
               {allEntryTypes.map((type) => {
                 const selected = typeId === type.id;
@@ -205,6 +263,7 @@ export function AddEntryDialog({
             slotProps={{
               textField: { size: 'small', fullWidth: true, sx: datePickerSx },
               openPickerButton: { sx: { color: brand[500] } },
+              desktopPaper: { sx: calendarPopperSx },
             }}
           />
 
@@ -233,6 +292,7 @@ export function AddEntryDialog({
                   slotProps={{
                     textField: { size: 'small', fullWidth: true, sx: datePickerSx },
                     openPickerButton: { sx: { color: brand[500] } },
+                    desktopPaper: { sx: calendarPopperSx },
                   }}
                 />
                 <FrequencyPicker value={frequencyDays} onChange={setFrequencyDays} />
@@ -271,5 +331,14 @@ export function AddEntryDialog({
         </Button>
       </DialogActions>
     </Dialog>
+    <ManageEntryTypesDialog
+      open={manageTypesOpen}
+      onClose={() => setManageTypesOpen(false)}
+      allEntryTypes={allEntryTypes}
+      onAddEntryType={onAddEntryType}
+      onUpdateEntryType={onUpdateEntryType}
+      onDeleteEntryType={onDeleteEntryType}
+    />
+  </>
   );
 }

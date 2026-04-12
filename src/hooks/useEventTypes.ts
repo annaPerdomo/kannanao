@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { loadEventTypes, dbCreateEventType, dbDeleteEventType } from '@/lib/supabase';
+import { loadEventTypes, dbCreateEventType, dbUpdateEventType, dbDeleteEventType } from '@/lib/supabase';
 import type { EntryType } from '@/types/todo';
 
 export function useEventTypes() {
@@ -31,6 +31,13 @@ export function useEventTypes() {
     return type;
   }, [user]);
 
+  const updateEntryType = useCallback(async (id: string, name: string, emoji: string) => {
+    setError(null);
+    const updated = await dbUpdateEventType(id, name, emoji);
+    setEntryTypes((prev) => prev.map((t) => (t.id === id ? updated : t)));
+    return updated;
+  }, []);
+
   const deleteEntryType = useCallback(async (id: string) => {
     setError(null);
     try {
@@ -48,6 +55,7 @@ export function useEventTypes() {
     loading,
     error,
     addEntryType,
+    updateEntryType,
     deleteEntryType,
     clearError,
   };

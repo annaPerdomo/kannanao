@@ -20,8 +20,7 @@ export const DEFAULT_ENTRY_TYPES: EntryType[] = [
   { id: 'event', name: 'Event', emoji: '📌', color: '#3B82F6' },
   { id: 'birthday', name: 'Birthday', emoji: '🎂', color: '#F59E0B' },
   { id: 'holiday', name: 'Holiday', emoji: '🎉', color: '#8B5CF6' },
-  { id: 'meeting', name: 'Meeting', emoji: '📅', color: '#10B981' },
-  { id: 'reminder', name: 'Reminder', emoji: '⏰', color: '#8B5CF6' },
+  { id: 'reminder', name: 'Reminder', emoji: '⏰', color: '#EC4899' },
 ];
 
 export const CALENDAR_ENTRIES_KEY = 'kannanao-calendar-entries';

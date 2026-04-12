@@ -102,6 +102,44 @@ export function EditEntryDialog({
     },
   };
 
+  const calendarPopperSx = {
+    borderRadius: 3,
+    border: `1.5px solid ${alpha(brand[300], 0.3)}`,
+    boxShadow: `0 8px 32px ${alpha(brand[400], 0.2)}, 0 2px 8px ${alpha(accent[200], 0.1)}`,
+    background: `linear-gradient(160deg, ${alpha(brand[50], 0.98)} 0%, ${alpha(accent[50], 0.92)} 100%)`,
+    overflow: 'hidden',
+    '& .MuiPickersCalendarHeader-label': { fontWeight: 800, color: brand[700], fontFamily: '"Nunito", sans-serif' },
+    '& .MuiPickersCalendarHeader-switchViewButton': { color: brand[500] },
+    '& .MuiPickersArrowSwitcher-button': { color: brand[500], '&:hover': { color: brand[700], background: alpha(brand[100], 0.5) } },
+    '& .MuiDayCalendar-weekDayLabel': { color: brand[400], fontWeight: 700, fontFamily: '"Nunito", sans-serif' },
+    '& .MuiPickersDay-root': {
+      fontFamily: '"Nunito", sans-serif',
+      fontWeight: 700,
+      color: brand[700],
+      '&:hover': { background: alpha(brand[200], 0.5), color: brand[700] },
+      '&.Mui-selected': {
+        background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
+        color: 'white',
+        boxShadow: `0 2px 8px ${alpha(brand[400], 0.4)}`,
+        '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
+        '&:focus': { background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})` },
+      },
+      '&.MuiPickersDay-today:not(.Mui-selected)': {
+        border: `2px solid ${brand[400]}`,
+        color: brand[600],
+      },
+    },
+    '& .MuiPickersYear-yearButton': {
+      fontFamily: '"Nunito", sans-serif',
+      fontWeight: 700,
+      color: brand[700],
+      '&.Mui-selected': {
+        background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
+        color: 'white',
+      },
+    },
+  };
+
   return (
     <Dialog
       open={open}
@@ -199,6 +237,7 @@ export function EditEntryDialog({
             slotProps={{
               textField: { size: 'small', fullWidth: true, sx: datePickerSx },
               openPickerButton: { sx: { color: brand[500] } },
+              desktopPaper: { sx: calendarPopperSx },
             }}
           />
 
@@ -227,6 +266,7 @@ export function EditEntryDialog({
                   slotProps={{
                     textField: { size: 'small', fullWidth: true, sx: datePickerSx },
                     openPickerButton: { sx: { color: brand[500] } },
+                    desktopPaper: { sx: calendarPopperSx },
                   }}
                 />
                 <FrequencyPicker value={frequencyDays} onChange={setFrequencyDays} />

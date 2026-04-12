@@ -573,6 +573,18 @@ export async function dbCreateEventType(userId: string, name: string, emoji: str
   return dbEventTypeToApp(data);
 }
 
+export async function dbUpdateEventType(id: string, name: string, emoji: string): Promise<EntryType> {
+  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  const { data, error } = await sb
+    .from('event_types')
+    .update({ name, emoji })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error || !data) throw error ?? new Error('Unable to update event type');
+  return dbEventTypeToApp(data);
+}
+
 export async function dbDeleteEventType(id: string): Promise<void> {
   if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
   const { error } = await sb.from('event_types').delete().eq('id', id);
