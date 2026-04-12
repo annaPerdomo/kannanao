@@ -24,14 +24,9 @@ export function FrequencyPicker({ value, onChange }: FrequencyPickerProps) {
   return (
     <Stack spacing={0.5}>
       <Stack direction="row" alignItems="center" spacing={0.75}>
-        <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: value.length > 0 ? brand[600] : 'text.disabled' }}>
-          {value.length > 0 ? '🔁 Repeats on:' : '📅 One-time task'}
+        <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: brand[600] }}>
+          {value.length > 0 ? 'Repeats on:' : 'Tap a day to repeat:'}
         </Typography>
-        {value.length === 0 && (
-          <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled', fontStyle: 'italic' }}>
-            tap a day to repeat
-          </Typography>
-        )}
       </Stack>
       <Stack direction="row" spacing={0.5} alignItems="center">
       {DAY_LABELS_SHORT.map((label, i) => {
@@ -45,11 +40,11 @@ export function FrequencyPicker({ value, onChange }: FrequencyPickerProps) {
             sx={{
               width: 28, height: 28, borderRadius: '50%',
               border: '2px solid',
-              borderColor: active ? brand[400] : alpha(brand[200], 0.5),
+              borderColor: active ? brand[400] : alpha(brand[300], 0.7),
               background: active
                 ? `linear-gradient(135deg, ${brand[300]}, ${accent[200]})`
-                : alpha(brand[50], 0.7),
-              color: active ? brand[800] : alpha(brand[400], 0.5),
+                : alpha(brand[50], 0.9),
+              color: active ? brand[800] : brand[400],
               fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer',
               transition: 'all 0.2s ease',
               '&:hover': {

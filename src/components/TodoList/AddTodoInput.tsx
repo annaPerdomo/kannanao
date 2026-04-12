@@ -24,7 +24,7 @@ export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, 
 
   return (
     <Box sx={{
-      p: 1.25, borderRadius: 3,
+      p: 1.25, pt: 1.75, borderRadius: 3,
       background: `linear-gradient(135deg, ${alpha(brand[50], 0.8)}, ${alpha(accent[50], 0.6)})`,
       border: `1.5px solid ${alpha(brand[300], 0.2)}`,
     }}>
@@ -32,14 +32,14 @@ export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, 
         fontSize: '0.72rem', fontWeight: 800, color: brand[600],
         textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.85,
       }}>
-        ✅ Tasks
+        ✅ To-Dos
       </Typography>
       <Stack direction="row" spacing={0.75} alignItems="center">
         <TextField
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') onAdd(); }}
-          placeholder="Add a task… 🌸"
+          placeholder="Add a to-do…"
           size="small"
           fullWidth
           disabled={disabled}
