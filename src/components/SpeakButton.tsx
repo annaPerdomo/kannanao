@@ -6,17 +6,16 @@ import { useSpeech } from '@/hooks/useSpeech';
 
 interface SpeakButtonProps {
   text: string;
-  lang?: string;
   iconSize?: string;
   sx?: SxProps<Theme>;
 }
 
-export function SpeakButton({ text, lang = 'ja-JP', iconSize = '1rem', sx }: SpeakButtonProps) {
+export function SpeakButton({ text, iconSize = '1rem', sx }: SpeakButtonProps) {
   const { speak, speaking } = useSpeech();
   return (
     <IconButton
       size="small"
-      onClick={(e) => { e.stopPropagation(); speak(text, lang); }}
+      onClick={(e) => { e.stopPropagation(); speak(text); }}
       disabled={speaking}
       sx={{ p: 0.5, color: '#aaa', '&:hover': { color: '#555' }, flexShrink: 0, ...sx }}
     >
