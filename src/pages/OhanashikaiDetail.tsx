@@ -22,10 +22,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import StopIcon from '@mui/icons-material/Stop';
 import { Loading } from '@/components/Loading';
-import FuriganaText from '@/components/FuriganaText';
+import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import { SpeakButton } from '@/components/SpeakButton';
 import { formatFurigana } from '@/services/api';
 import { useOhanashikais, useOhanashikaiLines } from '@/hooks/useOhanashikais';
+import { useSpeech } from '@/hooks/useSpeech';
 import type { OhanashikaiPracticeMode } from '@/types/ohanashikai';
 
 interface OhanashikaiDetailProps {
@@ -94,6 +98,7 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
 
   const { ohanashikais, renameOhanashikai } = useOhanashikais();
   const { lines, loading, addLine, updateLine, deleteLine, importLines } = useOhanashikaiLines(ohanashikaiId);
+  const { speakAll, stop, speaking } = useSpeech();
 
   const item = ohanashikais.find((o) => o.id === ohanashikaiId);
 
@@ -406,18 +411,31 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
           <Label>Speech Lines</Label>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
             {lines.length > 0 && !bulkMode && (
-              <Tooltip title="Auto-add kanji + furigana to all saved lines">
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={autoFormattingAll ? <CircularProgress size={12} /> : <AutoFixHighIcon sx={{ fontSize: 14 }} />}
-                  onClick={handleAutoFormatAll}
-                  disabled={autoFormattingAll}
-                  sx={{ borderRadius: '9px', px: 1.5, py: '4px', fontSize: '0.72rem', fontWeight: 700 }}
-                >
-                  {autoFormattingAll ? 'Formatting…' : 'Auto Furigana All'}
-                </Button>
-              </Tooltip>
+              <>
+                <Tooltip title={speaking ? 'Stop' : 'Listen to full speech'}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={speaking ? <StopIcon sx={{ fontSize: 14 }} /> : <VolumeUpIcon sx={{ fontSize: 14 }} />}
+                    onClick={speaking ? stop : () => speakAll(lines.map((l) => stripFurigana(l.text)))}
+                    sx={{ borderRadius: '9px', px: 1.5, py: '4px', fontSize: '0.72rem', fontWeight: 700 }}
+                  >
+                    {speaking ? 'Stop' : 'Listen'}
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Auto-add kanji + furigana to all saved lines">
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={autoFormattingAll ? <CircularProgress size={12} /> : <AutoFixHighIcon sx={{ fontSize: 14 }} />}
+                    onClick={handleAutoFormatAll}
+                    disabled={autoFormattingAll}
+                    sx={{ borderRadius: '9px', px: 1.5, py: '4px', fontSize: '0.72rem', fontWeight: 700 }}
+                  >
+                    {autoFormattingAll ? 'Formatting…' : 'Auto Furigana All'}
+                  </Button>
+                </Tooltip>
+              </>
             )}
             <Button
               variant={bulkMode ? 'contained' : 'outlined'}
@@ -533,6 +551,11 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
                     </>
                   ) : (
                     <>
+                      <Tooltip title="Listen">
+                        <span>
+                          <SpeakButton text={stripFurigana(line.text)} iconSize="13px" sx={{ width: 26, height: 26, borderRadius: '8px' }} />
+                        </span>
+                      </Tooltip>
                       <Tooltip title="Edit line">
                         <IconButton size="small" onClick={() => startEdit(line.id, line.text)} sx={{ width: 26, height: 26, borderRadius: '8px', color: alpha(brand[600], 0.5), '&:hover': { bgcolor: brand[50], color: brand[600] } }}>
                           <EditIcon sx={{ fontSize: 13 }} />

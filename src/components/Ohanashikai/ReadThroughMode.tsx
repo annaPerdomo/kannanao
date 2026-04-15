@@ -13,7 +13,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import type { OhanashikaiLine } from '@/types/ohanashikai';
 import { useProgress } from '@/hooks/useProgess';
-import FuriganaText from '@/components/FuriganaText';
+import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import { SpeakButton } from '@/components/SpeakButton';
 
 interface ReadThroughModeProps {
   lines: OhanashikaiLine[];
@@ -170,6 +171,8 @@ export function ReadThroughMode({ lines, ohanashikaiId, onExit }: ReadThroughMod
             LINE {index + 1}
           </Typography>
           <Typography sx={{ fontSize: '0.9rem' }}>{decoEmoji}</Typography>
+          <Box sx={{ flexGrow: 1 }} />
+          <SpeakButton text={stripFurigana(currentLine?.text ?? '')} iconSize="1.1rem" sx={{ color: brand[400], '&:hover': { color: brand[600] } }} />
         </Stack>
 
         {/* The actual sentence */}

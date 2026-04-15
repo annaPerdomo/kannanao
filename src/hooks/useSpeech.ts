@@ -77,5 +77,35 @@ export function useSpeech() {
     waitForVoices().then(trySpeak);
   }, []);
 
-  return { speak, stop, speaking };
+  // Speak multiple texts in sequence. The Web Speech API queues utterances
+  // naturally — we queue them all at once and only clear speaking when the
+  // last one finishes (or on error).
+  const speakAll = useCallback((texts: string[]) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    const filtered = texts.filter(Boolean);
+    if (!filtered.length) return;
+    window.speechSynthesis.cancel();
+    setSpeaking(false);
+
+    const trySpeak = () => {
+      const voice = getBestJapaneseVoice();
+      filtered.forEach((text, i) => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ja-JP';
+        utterance.rate = 0.9;
+        if (voice) utterance.voice = voice;
+        if (i === 0) utterance.onstart = () => setSpeaking(true);
+        if (i === filtered.length - 1) {
+          utterance.onend = () => setSpeaking(false);
+          utterance.onerror = () => setSpeaking(false);
+        }
+        utteranceRef.current = utterance;
+        window.speechSynthesis.speak(utterance);
+      });
+    };
+
+    waitForVoices().then(trySpeak);
+  }, []);
+
+  return { speak, speakAll, stop, speaking };
 }

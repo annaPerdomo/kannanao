@@ -16,6 +16,7 @@ import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import type { OhanashikaiLine } from '@/types/ohanashikai';
 import { useProgress } from '@/hooks/useProgess';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import { SpeakButton } from '@/components/SpeakButton';
 
 interface LineRecallModeProps {
   lines: OhanashikaiLine[];
@@ -235,9 +236,12 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
               border: `1px dashed ${alpha(accent[300], 0.6)}`,
             }}
           >
-            <Typography variant="caption" sx={{ color: accent[600], display: 'block', mb: 0.5, fontWeight: 800 }}>
-              The answer:
-            </Typography>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" mb={0.5}>
+              <Typography variant="caption" sx={{ color: accent[600], fontWeight: 800 }}>
+                The answer:
+              </Typography>
+              <SpeakButton text={stripFurigana(current.text)} iconSize="1rem" sx={{ color: accent[400], '&:hover': { color: accent[700] } }} />
+            </Stack>
             <FuriganaText
               text={current.text}
               showFurigana
