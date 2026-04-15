@@ -7,6 +7,7 @@ import {
 import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import EditIcon from '@mui/icons-material/Edit';
+import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MicIcon from '@mui/icons-material/Mic';
 import HomeIcon from '@mui/icons-material/Home';
@@ -250,10 +251,10 @@ export function NavBar() {
                 )}
 
                 <MenuItem
-                  onClick={openEdit}
+                  onClick={() => { setMenuAnchor(null); router.push('/settings'); }}
                   sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontFamily: '"DM Serif Display", serif' }}
                 >
-                  <EditIcon sx={{ fontSize: '1rem' }} /> Edit name
+                  <SettingsIcon sx={{ fontSize: '1rem' }} /> Account
                 </MenuItem>
 
                 <MenuItem

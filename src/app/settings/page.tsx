@@ -1,0 +1,349 @@
+'use client';
+
+import { useState } from 'react';
+import {
+  Box, Container, Typography, Paper, Stack, TextField,
+  Button, Alert, Snackbar, Divider,
+} from '@mui/material';
+import BadgeIcon from '@mui/icons-material/Badge';
+import EditIcon from '@mui/icons-material/Edit';
+import KeyIcon from '@mui/icons-material/Key';
+import { useTheme, alpha } from '@mui/material/styles';
+import { useAuth } from '@/contexts/AuthContext';
+import { Loading } from '@/components/Loading';
+import { useRouter } from 'next/navigation';
+
+interface SectionProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}
+
+function Section({ icon, title, description, children }: SectionProps) {
+  const theme = useTheme();
+  const { brand, surfaces } = theme.palette;
+  return (
+    <Paper
+      sx={{
+        p: 3,
+        borderRadius: 4,
+        border: `1px solid ${alpha(brand[200], 0.4)}`,
+        bgcolor: surfaces.glass,
+      }}
+    >
+      <Stack direction="row" alignItems="center" gap={1.5} sx={{ mb: 0.5 }}>
+        <Box sx={{ color: brand[500], display: 'flex' }}>{icon}</Box>
+        <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1.05rem', color: brand[700] }}>
+          {title}
+        </Typography>
+      </Stack>
+      <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary', mb: 2 }}>
+        {description}
+      </Typography>
+      {children}
+    </Paper>
+  );
+}
+
+export default function SettingsPage() {
+  const theme = useTheme();
+  const { brand } = theme.palette;
+  const { user, loading, displayName, updateDisplayName, session, signOut } = useAuth();
+  const router = useRouter();
+
+  const currentUsername = user?.email?.split('@')[0] ?? '';
+
+  // Display name
+  const [newDisplayName, setNewDisplayName] = useState('');
+  const [displayNameOpen, setDisplayNameOpen] = useState(false);
+  const [displayNameSaving, setDisplayNameSaving] = useState(false);
+
+  // Username
+  const [newUsername, setNewUsername] = useState('');
+  const [usernameOpen, setUsernameOpen] = useState(false);
+  const [usernameSaving, setUsernameSaving] = useState(false);
+
+  // Password
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+
+  const [snack, setSnack] = useState<{ msg: string; severity: 'success' | 'error' } | null>(null);
+
+  const saveBtnSx = {
+    bgcolor: brand[700],
+    color: '#fff',
+    textTransform: 'none' as const,
+    borderRadius: 6,
+    fontFamily: '"DM Serif Display", serif',
+    '&:hover': { bgcolor: brand[800] },
+    '&.Mui-disabled': { opacity: 0.5 },
+  };
+
+  const cancelBtnSx = {
+    color: 'text.secondary',
+    textTransform: 'none' as const,
+    borderRadius: 6,
+  };
+
+  async function patchProfile(body: object) {
+    const res = await fetch('/api/profile', {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${session?.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    return res.json() as Promise<{ message?: string; error?: string }>;
+  }
+
+  const handleSaveDisplayName = async () => {
+    setDisplayNameSaving(true);
+    try {
+      const json = await patchProfile({ action: 'changeDisplayName', displayName: newDisplayName });
+      if (json.error) {
+        setSnack({ msg: json.error, severity: 'error' });
+      } else {
+        await updateDisplayName(newDisplayName);
+        setSnack({ msg: 'Display name updated!', severity: 'success' });
+        setDisplayNameOpen(false);
+        setNewDisplayName('');
+      }
+    } catch {
+      setSnack({ msg: 'Network error.', severity: 'error' });
+    } finally {
+      setDisplayNameSaving(false);
+    }
+  };
+
+  const handleSaveUsername = async () => {
+    setUsernameSaving(true);
+    try {
+      const json = await patchProfile({ action: 'changeUsername', username: newUsername });
+      if (json.error) {
+        setSnack({ msg: json.error, severity: 'error' });
+        setUsernameSaving(false);
+      } else {
+        setSnack({ msg: 'Username updated! Signing you out…', severity: 'success' });
+        setTimeout(async () => {
+          await signOut();
+          router.push('/login');
+        }, 1500);
+      }
+    } catch {
+      setSnack({ msg: 'Network error.', severity: 'error' });
+      setUsernameSaving(false);
+    }
+  };
+
+  const handleSavePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      setSnack({ msg: 'Passwords do not match.', severity: 'error' });
+      return;
+    }
+    setPasswordSaving(true);
+    try {
+      const json = await patchProfile({ action: 'changePassword', password: newPassword });
+      if (json.error) {
+        setSnack({ msg: json.error, severity: 'error' });
+      } else {
+        setSnack({ msg: 'Password updated!', severity: 'success' });
+        setPasswordOpen(false);
+        setNewPassword('');
+        setConfirmPassword('');
+      }
+    } catch {
+      setSnack({ msg: 'Network error.', severity: 'error' });
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
+  if (loading) return <Loading />;
+  if (!user) {
+    router.replace('/login');
+    return null;
+  }
+
+  const fieldSx = { mt: 0.5 };
+
+  return (
+    <Container maxWidth="sm" sx={{ py: 4 }}>
+      <Typography
+        sx={{
+          fontFamily: '"DM Serif Display", serif',
+          fontSize: { xs: '1.6rem', sm: '2rem' },
+          color: brand[700],
+          mb: 3,
+        }}
+      >
+        Account Settings
+      </Typography>
+
+      <Stack gap={2.5}>
+        {/* Display Name */}
+        <Section
+          icon={<BadgeIcon />}
+          title="Display Name"
+          description="The name shown throughout the app. Leave blank to use your username."
+        >
+          <Typography sx={{ fontSize: '0.85rem', color: 'text.primary', mb: 1.5 }}>
+            Current: <strong>{displayName ?? <em>none</em>}</strong>
+          </Typography>
+          {!displayNameOpen ? (
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => { setNewDisplayName(displayName ?? ''); setDisplayNameOpen(true); }}
+              sx={{ borderRadius: 6, textTransform: 'none', borderColor: alpha(brand[400], 0.5), color: brand[700] }}
+            >
+              Change display name
+            </Button>
+          ) : (
+            <Stack gap={1.5}>
+              <TextField
+                autoFocus
+                fullWidth
+                size="small"
+                label="New display name"
+                value={newDisplayName}
+                onChange={(e) => setNewDisplayName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') void handleSaveDisplayName(); }}
+                helperText="The name shown in the app (max 100 characters)"
+                sx={fieldSx}
+              />
+              <Stack direction="row" gap={1}>
+                <Button onClick={() => setDisplayNameOpen(false)} sx={cancelBtnSx}>Cancel</Button>
+                <Button
+                  onClick={handleSaveDisplayName}
+                  disabled={displayNameSaving}
+                  variant="contained"
+                  sx={saveBtnSx}
+                >
+                  {displayNameSaving ? 'Saving…' : 'Save'}
+                </Button>
+              </Stack>
+            </Stack>
+          )}
+        </Section>
+
+        <Divider />
+
+        {/* Username */}
+        <Section
+          icon={<EditIcon />}
+          title="Username"
+          description="Your login username. Changing it will sign you out."
+        >
+          <Typography sx={{ fontSize: '0.85rem', color: 'text.primary', mb: 1.5 }}>
+            Current: <strong>@{currentUsername}</strong>
+          </Typography>
+          {!usernameOpen ? (
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => { setNewUsername(''); setUsernameOpen(true); }}
+              sx={{ borderRadius: 6, textTransform: 'none', borderColor: alpha(brand[400], 0.5), color: brand[700] }}
+            >
+              Change username
+            </Button>
+          ) : (
+            <Stack gap={1.5}>
+              <TextField
+                autoFocus
+                fullWidth
+                size="small"
+                label="New username"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') void handleSaveUsername(); }}
+                helperText="Letters, numbers, _ or - (2–30 chars). You will be signed out after saving."
+                sx={fieldSx}
+              />
+              <Stack direction="row" gap={1}>
+                <Button onClick={() => setUsernameOpen(false)} sx={cancelBtnSx}>Cancel</Button>
+                <Button
+                  onClick={handleSaveUsername}
+                  disabled={usernameSaving || !newUsername.trim()}
+                  variant="contained"
+                  sx={saveBtnSx}
+                >
+                  {usernameSaving ? 'Saving…' : 'Save'}
+                </Button>
+              </Stack>
+            </Stack>
+          )}
+        </Section>
+
+        <Divider />
+
+        {/* Password */}
+        <Section
+          icon={<KeyIcon />}
+          title="Password"
+          description="Update your login password. Minimum 6 characters."
+        >
+          {!passwordOpen ? (
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => { setNewPassword(''); setConfirmPassword(''); setPasswordOpen(true); }}
+              sx={{ borderRadius: 6, textTransform: 'none', borderColor: alpha(brand[400], 0.5), color: brand[700] }}
+            >
+              Change password
+            </Button>
+          ) : (
+            <Stack gap={1.5}>
+              <TextField
+                autoFocus
+                fullWidth
+                size="small"
+                type="password"
+                label="New password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                helperText="Minimum 6 characters"
+                sx={fieldSx}
+              />
+              <TextField
+                fullWidth
+                size="small"
+                type="password"
+                label="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') void handleSavePassword(); }}
+                sx={fieldSx}
+              />
+              <Stack direction="row" gap={1}>
+                <Button onClick={() => setPasswordOpen(false)} sx={cancelBtnSx}>Cancel</Button>
+                <Button
+                  onClick={handleSavePassword}
+                  disabled={passwordSaving || !newPassword || !confirmPassword}
+                  variant="contained"
+                  sx={saveBtnSx}
+                >
+                  {passwordSaving ? 'Saving…' : 'Save'}
+                </Button>
+              </Stack>
+            </Stack>
+          )}
+        </Section>
+      </Stack>
+
+      <Snackbar
+        open={Boolean(snack)}
+        autoHideDuration={4000}
+        onClose={() => setSnack(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={snack?.severity ?? 'success'} onClose={() => setSnack(null)} sx={{ width: '100%' }}>
+          {snack?.msg}
+        </Alert>
+      </Snackbar>
+    </Container>
+  );
+}
