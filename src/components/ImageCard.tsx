@@ -8,7 +8,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import type { Flashcard } from "@/types/flashcard";
 import { EditCardDialog } from "@/components/EditCardDialog";
 import { getFlashcardDisplayText, cardXp } from "@/lib/flashcardUtils";
-import FuriganaText from "@/components/FuriganaText";
+import FuriganaText, { stripFurigana } from "@/components/FuriganaText";
+import { SpeakButton } from "@/components/SpeakButton";
 
 interface ImageCardProps {
   card: Flashcard;
@@ -129,14 +130,17 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
 
           {/* Card name */}
           <Box sx={{ px: 1.5, pt: "9px", pb: "7px", borderBottom: `2px solid ${typeAccent}` }}>
-            <Typography
-              sx={{
-                fontSize: "1.05rem", fontWeight: 900, color: "#111",
-                lineHeight: 1.15, fontFamily: '"Nunito", sans-serif', letterSpacing: "-0.01em",
-              }}
-            >
-              {titleText}
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <Typography
+                sx={{
+                  fontSize: "1.05rem", fontWeight: 900, color: "#111",
+                  lineHeight: 1.15, fontFamily: '"Nunito", sans-serif', letterSpacing: "-0.01em",
+                }}
+              >
+                {titleText}
+              </Typography>
+              <SpeakButton text={titleText} iconSize="0.85rem" />
+            </Box>
             {subtitleText && (
               <Typography sx={{ fontSize: "0.65rem", color: "#777", fontFamily: '"Nunito", sans-serif', fontStyle: "italic", lineHeight: 1.3, mt: "2px" }}>
                 {subtitleText}
@@ -172,9 +176,12 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                   border: `1px solid ${alpha(typeAccent, 0.22)}`,
                 }}
               >
-                <Typography sx={{ fontSize: "0.54rem", fontWeight: 900, color: typeAccent, letterSpacing: "0.12em", textTransform: "uppercase", mb: "3px", fontFamily: '"DM Mono", monospace' }}>
-                  * SAMPLE SENTENCE
-                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: "3px" }}>
+                  <Typography sx={{ fontSize: "0.54rem", fontWeight: 900, color: typeAccent, letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: '"DM Mono", monospace' }}>
+                    * SAMPLE SENTENCE
+                  </Typography>
+                  <SpeakButton text={stripFurigana(localCard.example_jp)} iconSize="0.75rem" />
+                </Box>
                 <Typography component="div" sx={{ fontSize: "0.85rem", color: accent[700], fontFamily: '"Nunito", sans-serif', lineHeight: 1.6, fontWeight: 600 }}>
                   <FuriganaText text={localCard.example_jp} showFurigana={localCard.mainViewMode === "hiragana"} />
                 </Typography>

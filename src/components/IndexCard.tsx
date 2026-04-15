@@ -4,7 +4,8 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
-import FuriganaText from '@/components/FuriganaText';
+import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import { SpeakButton } from '@/components/SpeakButton';
 
 interface IndexCardProps {
   card: FlashcardType;
@@ -54,13 +55,14 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
             borderBottom: '1.5px solid #f0f0f5',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
-            {card.jlptLevel && (
+            {card.jlptLevel ? (
               <Box sx={{ px: 1, py: 0.3, borderRadius: '5px', bgcolor: '#f4f4f8', border: '1px solid #e0e0ea' }}>
                 <Typography sx={{ fontSize: '0.62rem', color: '#777', letterSpacing: '0.08em', fontFamily: '"DM Mono", monospace' }}>
                   JLPT {card.jlptLevel}
                 </Typography>
               </Box>
-            )}
+            ) : <Box />}
+            <SpeakButton text={frontMainText} />
           </Box>
 
           {/* Word — large, centered */}
@@ -131,9 +133,12 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
 
             {/* Right: Example with furigana always shown */}
             <Box sx={{ flex: 1, px: 2.5, py: 2, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 0.75 }}>
-              <Typography sx={{ fontSize: '0.58rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', mb: 0.5 }}>
-                Example
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                <Typography sx={{ fontSize: '0.58rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace' }}>
+                  Example
+                </Typography>
+                <SpeakButton text={stripFurigana(card.example_jp)} />
+              </Box>
               <Typography component="div" sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '0.95rem', color: '#222', lineHeight: 2.2 }}>
                 <FuriganaText text={card.example_jp} showFurigana={true} />
               </Typography>

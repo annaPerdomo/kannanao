@@ -5,7 +5,8 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
 import { getFlashcardDisplayText, cardXp } from '@/lib/flashcardUtils';
-import FuriganaText from '@/components/FuriganaText';
+import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import { SpeakButton } from '@/components/SpeakButton';
 
 interface FlashcardProps {
   card: FlashcardType;
@@ -187,13 +188,16 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
                     {subtitleText}
                   </Typography>
                 )}
-                <Typography sx={{
-                  fontFamily: '"Noto Serif JP", serif',
-                  fontSize: '2.2rem',
-                  fontWeight: 700, color: '#111', lineHeight: 1.05,
-                }}>
-                  {titleText}
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Typography sx={{
+                    fontFamily: '"Noto Serif JP", serif',
+                    fontSize: '2.2rem',
+                    fontWeight: 700, color: '#111', lineHeight: 1.05,
+                  }}>
+                    {titleText}
+                  </Typography>
+                  <SpeakButton text={titleText} sx={{ alignSelf: 'flex-end', mb: 0.5 }} />
+                </Box>
               </Box>
 
               {/* Tap hint */}
@@ -255,9 +259,12 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
                 </Box>
 
                 <Box sx={{ borderTop: `2px solid ${alpha(brand[300], 0.22)}`, pt: { xs: 1.25, sm: 1.75 } }}>
-                  <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.62rem', color: brand[500], letterSpacing: '0.14em', fontWeight: 700, mb: 0.75, textTransform: 'uppercase' }}>
-                    ★ Example
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.75 }}>
+                    <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.62rem', color: brand[500], letterSpacing: '0.14em', fontWeight: 700, textTransform: 'uppercase' }}>
+                      ★ Example
+                    </Typography>
+                    <SpeakButton text={stripFurigana(card.example_jp)} iconSize="0.85rem" />
+                  </Box>
                   <Typography component="div" sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: { xs: '0.95rem', sm: '1.05rem' }, color: '#111', lineHeight: 1.8 }}>
                     <FuriganaText text={card.example_jp} showFurigana={card.mainViewMode === 'hiragana'} />
                   </Typography>
