@@ -4,13 +4,17 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   Box, Container, Typography, Paper, Alert,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Chip, Stack, Divider,
+  Chip, Stack, Divider, IconButton, Dialog, DialogTitle,
+  DialogContent, DialogActions, TextField, Button, Snackbar,
 } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import StyleIcon from '@mui/icons-material/Style';
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import EditIcon from '@mui/icons-material/Edit';
+import KeyIcon from '@mui/icons-material/Key';
+import BadgeIcon from '@mui/icons-material/Badge';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loading } from '@/components/Loading';
@@ -89,6 +93,59 @@ export default function AdminPage() {
   const [data, setData] = useState<AdminData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Edit dialogs
+  const [editUser, setEditUser] = useState<UserStat | null>(null);
+  const [editType, setEditType] = useState<'username' | 'password' | 'displayName' | null>(null);
+  const [inputValue, setInputValue] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [snack, setSnack] = useState<{ msg: string; severity: 'success' | 'error' } | null>(null);
+
+  const openEdit = (user: UserStat, type: 'username' | 'password' | 'displayName') => {
+    setEditUser(user);
+    setEditType(type);
+    setInputValue(type === 'username' ? user.username : type === 'displayName' ? (user.displayName ?? '') : '');
+  };
+
+  const closeEdit = () => {
+    setEditUser(null);
+    setEditType(null);
+    setInputValue('');
+    setSaving(false);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editUser || !editType || !session?.access_token) return;
+    setSaving(true);
+    try {
+      const body = editType === 'password'
+        ? { userId: editUser.id, action: 'changePassword', password: inputValue }
+        : editType === 'displayName'
+          ? { userId: editUser.id, action: 'changeDisplayName', displayName: inputValue }
+          : { userId: editUser.id, action: 'changeUsername', username: inputValue };
+
+      const res = await fetch('/api/admin', {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setSnack({ msg: json.error ?? 'Failed to update.', severity: 'error' });
+      } else {
+        setSnack({ msg: json.message ?? 'Updated!', severity: 'success' });
+        if (editType === 'username') void fetchData(); // refresh table
+        if (editType === 'displayName') void fetchData();
+      }
+      closeEdit();
+    } catch {
+      setSnack({ msg: 'Network error.', severity: 'error' });
+      setSaving(false);
+    }
+  };
 
   const fetchData = useCallback(async () => {
     if (!session?.access_token) return;
@@ -188,6 +245,7 @@ export default function AdminPage() {
               <TableCell sx={headerCellSx} align="center">Completions</TableCell>
               <TableCell sx={headerCellSx} align="center">Theme</TableCell>
               <TableCell sx={headerCellSx}>Joined</TableCell>
+              <TableCell sx={headerCellSx} align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -225,6 +283,17 @@ export default function AdminPage() {
                   ) : '—'}
                 </TableCell>
                 <TableCell sx={bodyCellSx}>{formatDate(u.createdAt)}</TableCell>
+                <TableCell sx={bodyCellSx} align="center">
+                  <IconButton size="small" title="Change display name" onClick={() => openEdit(u, 'displayName')} sx={{ color: brand[500] }}>
+                    <BadgeIcon sx={{ fontSize: '1rem' }} />
+                  </IconButton>
+                  <IconButton size="small" title="Change username" onClick={() => openEdit(u, 'username')} sx={{ color: brand[500] }}>
+                    <EditIcon sx={{ fontSize: '1rem' }} />
+                  </IconButton>
+                  <IconButton size="small" title="Change password" onClick={() => openEdit(u, 'password')} sx={{ color: brand[500] }}>
+                    <KeyIcon sx={{ fontSize: '1rem' }} />
+                  </IconButton>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -277,6 +346,88 @@ export default function AdminPage() {
           </Table>
         </TableContainer>
       )}
+
+      {/* Edit User Dialog */}
+      <Dialog
+        open={Boolean(editUser && editType)}
+        onClose={closeEdit}
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: 4,
+              border: `1px solid ${alpha(brand[300], 0.35)}`,
+              boxShadow: `0 8px 40px ${alpha(brand[700], 0.12)}`,
+              bgcolor: surfaces.overlay,
+              minWidth: 340,
+            },
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontFamily: '"DM Serif Display", serif', color: brand[700], pb: 1 }}>
+          {editType === 'password' ? 'Change Password' : editType === 'displayName' ? 'Change Display Name' : 'Change Username'}
+          {editUser && (
+            <Typography variant="body2" sx={{ color: 'text.secondary', fontFamily: 'inherit', mt: 0.25 }}>
+              {editUser.displayName ?? editUser.username}
+              {editUser.displayName && ` (@${editUser.username})`}
+            </Typography>
+          )}
+        </DialogTitle>
+        <DialogContent sx={{ pt: '8px !important' }}>
+          <TextField
+            autoFocus
+            fullWidth
+            size="small"
+            type={editType === 'password' ? 'password' : 'text'}
+            label={editType === 'password' ? 'New password' : editType === 'displayName' ? 'New display name' : 'New username'}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') void handleSaveEdit(); }}
+            helperText={
+              editType === 'password'
+                ? 'Minimum 6 characters'
+                : editType === 'displayName'
+                  ? 'The name shown in the app'
+                  : 'Letters, numbers, _ or - (2–30 chars)'
+            }
+            sx={{ mt: 0.5 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button
+            onClick={closeEdit}
+            sx={{ color: 'text.secondary', textTransform: 'none', borderRadius: 6 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSaveEdit}
+            disabled={saving || !inputValue.trim()}
+            variant="contained"
+            sx={{
+              bgcolor: brand[700],
+              color: '#fff',
+              textTransform: 'none',
+              borderRadius: 6,
+              fontFamily: '"DM Serif Display", serif',
+              '&:hover': { bgcolor: brand[800] },
+            }}
+          >
+            {saving ? 'Saving…' : 'Save'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={Boolean(snack)}
+        autoHideDuration={4000}
+        onClose={() => setSnack(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={snack?.severity ?? 'success'} onClose={() => setSnack(null)} sx={{ width: '100%' }}>
+          {snack?.msg}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }
