@@ -87,16 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message ?? null };
   };
 
-  const signUpWithUsername = async (username: string, password: string, name?: string) => {
-    const { data, error } = await sb.auth.signUp({
-      email: toEmail(username),
-      password,
-    });
-    if (!error && data.user && name?.trim()) {
-      await upsertProfile(data.user.id, username, name.trim());
-      setDisplayName(name.trim());
-    }
-    return { error: error?.message ?? null };
+  const signUpWithUsername = async (_username: string, _password: string, _name?: string) => {
+    return { error: "Sign-ups are currently closed. Join the waitlist at the landing page." };
   };
 
   const updateDisplayName = async (name: string) => {

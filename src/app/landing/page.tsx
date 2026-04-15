@@ -11,6 +11,7 @@ import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import WaitlistForm from '@/components/WaitlistForm';
 
 // ─── Feature card ─────────────────────────────────────────────────────────────
 
@@ -253,7 +254,6 @@ export default function LandingPage() {
   const { session } = useAuth();
   const theme = useTheme();
   const { brand, accent } = theme.palette;
-  const ctaTarget = session ? '/' : '/login';
 
   const features = [
     {
@@ -339,16 +339,16 @@ export default function LandingPage() {
         <Box sx={{ flex: 1, textAlign: { xs: 'center', md: 'left' } }}>
           {/* Badge */}
           <Chip
-            icon={<AutoAwesomeIcon sx={{ fontSize: '0.85rem !important', color: '#7C3AED !important' }} />}
-            label="AI-powered · Free to use"
+            icon={<AutoAwesomeIcon sx={{ fontSize: '0.85rem !important', color: '#B45309 !important' }} />}
+            label="Beta · Sign-ups opening soon"
             size="small"
             sx={{
               mb: 2.5,
-              bgcolor: 'rgba(196,181,253,0.18)',
-              color: '#7C3AED',
+              bgcolor: 'rgba(251,191,36,0.12)',
+              color: '#B45309',
               fontWeight: 700,
               fontSize: '0.72rem',
-              border: '1px solid rgba(196,181,253,0.45)',
+              border: '1px solid rgba(251,191,36,0.35)',
               borderRadius: 6,
             }}
           />
@@ -391,36 +391,59 @@ export default function LandingPage() {
             spacing={1.5}
             justifyContent={{ xs: 'center', md: 'flex-start' }}
           >
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => router.push(ctaTarget)}
-              sx={{
-                fontFamily: '"DM Serif Display", serif',
-                fontSize: '1rem',
-                textTransform: 'none',
-                borderRadius: 7,
-                px: 4,
-                py: 1.4,
-              }}
-            >
-              Get started free 🌸
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={() => router.push(ctaTarget)}
-              sx={{
-                fontFamily: '"DM Serif Display", serif',
-                fontSize: '1rem',
-                textTransform: 'none',
-                borderRadius: 7,
-                px: 3.5,
-                py: 1.4,
-              }}
-            >
-              Sign in
-            </Button>
+            {session ? (
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => router.push('/')}
+                sx={{
+                  fontFamily: '"DM Serif Display", serif',
+                  fontSize: '1rem',
+                  textTransform: 'none',
+                  borderRadius: 7,
+                  px: 4,
+                  py: 1.4,
+                }}
+              >
+                Go to dashboard 🌸
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => {
+                    const el = document.getElementById('waitlist');
+                    el?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  sx={{
+                    fontFamily: '"DM Serif Display", serif',
+                    fontSize: '1rem',
+                    textTransform: 'none',
+                    borderRadius: 7,
+                    px: 4,
+                    py: 1.4,
+                  }}
+                >
+                  Join the waitlist 🌸
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={() => router.push('/login')}
+                  sx={{
+                    fontFamily: '"DM Serif Display", serif',
+                    fontSize: '1rem',
+                    textTransform: 'none',
+                    borderRadius: 7,
+                    px: 3.5,
+                    py: 1.4,
+                  }}
+                >
+                  Sign in
+                </Button>
+              </>
+            )}
           </Stack>
 
           {/* Social proof mini-chips */}
@@ -624,8 +647,9 @@ export default function LandingPage() {
         </Box>
       </Box>
 
-      {/* ── CTA ── */}
+      {/* ── CTA / Waitlist ── */}
       <Box
+        id="waitlist"
         sx={{
           borderRadius: 6,
           p: { xs: 4, sm: 6 },
@@ -666,21 +690,21 @@ export default function LandingPage() {
             backgroundClip: 'text',
           }}
         >
-          Ready to start your streak?
+          We&apos;re in beta — spots opening soon
         </Typography>
 
         <Typography
-          sx={{ fontSize: '0.95rem', color: 'text.secondary', mb: 4, maxWidth: 420, mx: 'auto' }}
+          sx={{ fontSize: '0.95rem', color: 'text.secondary', mb: 4, maxWidth: 480, mx: 'auto' }}
         >
-          Join Kannanao and build a vocabulary you'll actually remember. Free,
-          beautiful, and powered by AI.
+          Kannanao is currently in closed beta. Drop your email below and
+          we&apos;ll let you know as soon as new sign-ups open.
         </Typography>
 
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center">
+        {session ? (
           <Button
             variant="contained"
             size="large"
-            onClick={() => router.push(ctaTarget)}
+            onClick={() => router.push('/')}
             sx={{
               fontFamily: '"DM Serif Display", serif',
               fontSize: '1rem',
@@ -690,24 +714,11 @@ export default function LandingPage() {
               py: 1.4,
             }}
           >
-            Create free account 🌸
+            Go to dashboard 🌸
           </Button>
-          <Button
-            variant="outlined"
-            size="large"
-            onClick={() => router.push(ctaTarget)}
-            sx={{
-              fontFamily: '"DM Serif Display", serif',
-              fontSize: '1rem',
-              textTransform: 'none',
-              borderRadius: 7,
-              px: 3.5,
-              py: 1.4,
-            }}
-          >
-            Sign in
-          </Button>
-        </Stack>
+        ) : (
+          <WaitlistForm />
+        )}
       </Box>
 
       {/* ── Footer ── */}
