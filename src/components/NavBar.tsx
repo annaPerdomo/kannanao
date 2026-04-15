@@ -11,6 +11,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import MicIcon from '@mui/icons-material/Mic';
 import HomeIcon from '@mui/icons-material/Home';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
@@ -239,6 +240,15 @@ export function NavBar() {
                 onClose={() => setMenuAnchor(null)}
                 slotProps={{ paper: { sx: menuPaperSx } }}
               >
+                {user.email?.split('@')[0] === (process.env.NEXT_PUBLIC_ADMIN_USERNAME ?? 'test') && (
+                  <MenuItem
+                    onClick={() => { setMenuAnchor(null); router.push('/admin'); }}
+                    sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontFamily: '"DM Serif Display", serif' }}
+                  >
+                    <AdminPanelSettingsIcon sx={{ fontSize: '1rem' }} /> Admin
+                  </MenuItem>
+                )}
+
                 <MenuItem
                   onClick={openEdit}
                   sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontFamily: '"DM Serif Display", serif' }}
