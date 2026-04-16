@@ -1,20 +1,12 @@
-'use client';
-
-import Home from '@/pages/Home';
 import LandingPage from '@/app/landing/page';
-import { useAuth } from '@/contexts/AuthContext';
-import { Box, CircularProgress } from '@mui/material';
+import HomeWrapper from './_components/HomeWrapper';
 
-export default function HomePage() {
-  const { session, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <Box sx={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <CircularProgress sx={{ color: 'primary.dark' }} />
-      </Box>
-    );
-  }
-
-  return session ? <Home /> : <LandingPage />;
+// Server Component — always renders LandingPage HTML for crawlers.
+// HomeWrapper (client) swaps in the dashboard once auth resolves on the client.
+export default function Page() {
+  return (
+    <HomeWrapper>
+      <LandingPage />
+    </HomeWrapper>
+  );
 }
