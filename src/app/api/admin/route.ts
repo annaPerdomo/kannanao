@@ -44,6 +44,7 @@ export async function GET(req: Request) {
     todosRes,
     waitlistRes,
     eventTypesRes,
+    embedEventsRes,
   ] = await Promise.all([
     client.from("profiles").select("id, username, display_name, color_scheme, created_at"),
     client.from("decks").select("id, user_id, name, created_at, emoji, pinned, is_public"),
@@ -51,6 +52,7 @@ export async function GET(req: Request) {
     client.from("todos").select("id, user_id, text, emoji, completed, frequency_days, completed_dates, created_at"),
     client.from("waitlist").select("id, email, name, message, created_at").order("created_at", { ascending: false }),
     client.from("event_types").select("id, user_id, name, emoji, color"),
+    client.from("embed_events").select("deck_id, session_id, event_type, card_index, duration_seconds, created_at"),
   ]);
 
   const profiles = profilesRes.data ?? [];
@@ -59,6 +61,66 @@ export async function GET(req: Request) {
   const todos = todosRes.data ?? [];
   const waitlist = waitlistRes.data ?? [];
   const eventTypes = eventTypesRes.data ?? [];
+  const embedEvents = embedEventsRes.data ?? [];
+
+  // Build embed analytics per public deck
+  const publicDecksById = Object.fromEntries(
+    decks.filter((d) => d.is_public).map((d) => [d.id, d]),
+  );
+
+  const embedDeckMap: Record<string, {
+    deckId: string; deckName: string; deckEmoji: string;
+    totalViews: number; uniqueSessions: Set<string>;
+    completions: number; durations: number[]; lastViewedAt: string | null;
+  }> = {};
+
+  for (const ev of embedEvents) {
+    if (!embedDeckMap[ev.deck_id]) {
+      const deck = publicDecksById[ev.deck_id];
+      embedDeckMap[ev.deck_id] = {
+        deckId: ev.deck_id,
+        deckName: deck?.name ?? "Unknown deck",
+        deckEmoji: deck?.emoji ?? "📘",
+        totalViews: 0,
+        uniqueSessions: new Set(),
+        completions: 0,
+        durations: [],
+        lastViewedAt: null,
+      };
+    }
+    const stat = embedDeckMap[ev.deck_id];
+    stat.uniqueSessions.add(ev.session_id);
+    if (ev.event_type === "view") stat.totalViews++;
+    if (ev.event_type === "deck_complete") stat.completions++;
+    if (ev.event_type === "session_end" && ev.duration_seconds != null) {
+      stat.durations.push(ev.duration_seconds);
+    }
+    if (ev.created_at && (!stat.lastViewedAt || ev.created_at > stat.lastViewedAt)) {
+      stat.lastViewedAt = ev.created_at;
+    }
+  }
+
+  const embedAnalytics = {
+    overview: {
+      totalViews: embedEvents.filter((e) => e.event_type === "view").length,
+      totalSessions: new Set(embedEvents.map((e) => e.session_id)).size,
+      totalCompletions: embedEvents.filter((e) => e.event_type === "deck_complete").length,
+    },
+    decks: Object.values(embedDeckMap)
+      .map((s) => ({
+        deckId: s.deckId,
+        deckName: s.deckName,
+        deckEmoji: s.deckEmoji,
+        totalViews: s.totalViews,
+        uniqueSessions: s.uniqueSessions.size,
+        completions: s.completions,
+        avgDurationSeconds: s.durations.length
+          ? Math.round(s.durations.reduce((a, b) => a + b, 0) / s.durations.length)
+          : null,
+        lastViewedAt: s.lastViewedAt,
+      }))
+      .sort((a, b) => b.totalViews - a.totalViews),
+  };
 
   // Build per-user stats
   const userStats = profiles.map((p) => {
@@ -97,7 +159,7 @@ export async function GET(req: Request) {
     totalEventTypes: eventTypes.length,
   };
 
-  return NextResponse.json({ overview, users: userStats, waitlist });
+  return NextResponse.json({ overview, users: userStats, waitlist, embedAnalytics });
 }
 
 export async function PATCH(req: Request) {

@@ -15,6 +15,10 @@ import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import EditIcon from '@mui/icons-material/Edit';
 import KeyIcon from '@mui/icons-material/Key';
 import BadgeIcon from '@mui/icons-material/Badge';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import GroupIcon from '@mui/icons-material/Group';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loading } from '@/components/Loading';
@@ -31,6 +35,17 @@ interface UserStat {
   todoCompletions: number;
   eventTypeCount: number;
   publicDecks: number;
+}
+
+interface EmbedDeckStat {
+  deckId: string;
+  deckName: string;
+  deckEmoji: string;
+  totalViews: number;
+  uniqueSessions: number;
+  completions: number;
+  avgDurationSeconds: number | null;
+  lastViewedAt: string | null;
 }
 
 interface WaitlistEntry {
@@ -52,6 +67,14 @@ interface AdminData {
   };
   users: UserStat[];
   waitlist: WaitlistEntry[];
+  embedAnalytics: {
+    overview: {
+      totalViews: number;
+      totalSessions: number;
+      totalCompletions: number;
+    };
+    decks: EmbedDeckStat[];
+  };
 }
 
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
@@ -340,6 +363,81 @@ export default function AdminPage() {
                     {w.message ?? '—'}
                   </TableCell>
                   <TableCell sx={bodyCellSx}>{formatDate(w.created_at)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      <Divider sx={{ mb: 4, mt: 4 }} />
+
+      {/* Embed Analytics */}
+      <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 2 }}>
+        <BarChartIcon sx={{ color: brand[500] }} />
+        <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1.2rem', color: brand[700] }}>
+          Embed Analytics
+        </Typography>
+      </Stack>
+
+      <Stack direction="row" flexWrap="wrap" gap={2} sx={{ mb: 3 }}>
+        <StatCard icon={<VisibilityIcon />} label="Total Views" value={data.embedAnalytics.overview.totalViews} />
+        <StatCard icon={<GroupIcon />} label="Unique Sessions" value={data.embedAnalytics.overview.totalSessions} />
+        <StatCard icon={<EmojiEventsIcon />} label="Completions" value={data.embedAnalytics.overview.totalCompletions} />
+      </Stack>
+
+      {data.embedAnalytics.decks.length === 0 ? (
+        <Paper sx={{ ...tablePaperSx, p: 3, textAlign: 'center', mb: 4 }}>
+          <Typography sx={{ color: 'text.secondary', fontSize: '0.88rem' }}>
+            No embed views yet. Share a public deck's embed link to start collecting data.
+          </Typography>
+        </Paper>
+      ) : (
+        <TableContainer component={Paper} sx={{ ...tablePaperSx, mb: 4 }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={headerCellSx}>Deck</TableCell>
+                <TableCell sx={headerCellSx} align="center">Views</TableCell>
+                <TableCell sx={headerCellSx} align="center">Sessions</TableCell>
+                <TableCell sx={headerCellSx} align="center">Completions</TableCell>
+                <TableCell sx={headerCellSx} align="center">Avg Duration</TableCell>
+                <TableCell sx={headerCellSx}>Last Viewed</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data.embedAnalytics.decks.map((d) => (
+                <TableRow key={d.deckId} hover>
+                  <TableCell sx={bodyCellSx}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography sx={{ fontSize: '1rem' }}>{d.deckEmoji}</Typography>
+                      <Box>
+                        <Typography sx={{ fontWeight: 600, fontSize: '0.82rem' }}>{d.deckName}</Typography>
+                        <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', fontFamily: '"DM Mono", monospace' }}>
+                          {d.deckId.slice(0, 8)}…
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={bodyCellSx} align="center">{d.totalViews}</TableCell>
+                  <TableCell sx={bodyCellSx} align="center">{d.uniqueSessions}</TableCell>
+                  <TableCell sx={bodyCellSx} align="center">
+                    {d.completions > 0 ? (
+                      <Chip
+                        label={d.completions}
+                        size="small"
+                        sx={{ fontSize: '0.7rem', height: 22, bgcolor: alpha(brand[100], 0.5), color: brand[700] }}
+                      />
+                    ) : '—'}
+                  </TableCell>
+                  <TableCell sx={bodyCellSx} align="center">
+                    {d.avgDurationSeconds != null
+                      ? d.avgDurationSeconds >= 60
+                        ? `${Math.floor(d.avgDurationSeconds / 60)}m ${d.avgDurationSeconds % 60}s`
+                        : `${d.avgDurationSeconds}s`
+                      : '—'}
+                  </TableCell>
+                  <TableCell sx={bodyCellSx}>{formatDate(d.lastViewedAt)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

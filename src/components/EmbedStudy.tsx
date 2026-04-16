@@ -148,6 +148,38 @@ export default function EmbedStudy({ deckId }: EmbedStudyProps) {
   const [navDir, setNavDir] = useState<1 | -1>(1);
   const [showCelebration, setShowCelebration] = useState(false);
 
+  // Analytics — one stable session ID per mount, never null
+  const sessionIdRef = useRef<string>(
+    typeof crypto !== "undefined" ? crypto.randomUUID() : Math.random().toString(36).slice(2),
+  );
+  const sessionStartRef = useRef<number>(Date.now());
+  const viewFiredRef = useRef(false);
+
+  const trackEvent = useCallback((
+    eventType: "view" | "card_flip" | "deck_complete" | "session_end",
+    extra?: { cardIndex?: number; durationSeconds?: number },
+  ) => {
+    const payload = JSON.stringify({
+      deckId,
+      sessionId: sessionIdRef.current,
+      eventType,
+      referrer: typeof document !== "undefined" ? document.referrer.substring(0, 500) : undefined,
+      ...extra,
+    });
+
+    // sendBeacon survives page unload; use it for session_end
+    if (eventType === "session_end" && typeof navigator !== "undefined" && navigator.sendBeacon) {
+      navigator.sendBeacon("/api/analytics/embed", new Blob([payload], { type: "application/json" }));
+    } else {
+      fetch("/api/analytics/embed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+        keepalive: true,
+      }).catch(() => { /* never break the embed */ });
+    }
+  }, [deckId]);
+
   const [cardTheme, setCardTheme] = useState<CardTheme>(() => {
     if (typeof window === "undefined") return DEFAULT_THEME;
     const saved = localStorage.getItem(THEME_STORAGE_KEY) as CardTheme | null;
@@ -194,6 +226,26 @@ export default function EmbedStudy({ deckId }: EmbedStudyProps) {
       .finally(() => setLoading(false));
   }, [deckId]);
 
+  // Fire "view" once when the deck finishes loading successfully
+  useEffect(() => {
+    if (!loading && cards.length > 0 && !viewFiredRef.current) {
+      viewFiredRef.current = true;
+      sessionStartRef.current = Date.now();
+      trackEvent("view");
+    }
+  }, [loading, cards.length, trackEvent]);
+
+  // Fire "session_end" with elapsed duration when the embed unmounts
+  useEffect(() => {
+    return () => {
+      if (viewFiredRef.current) {
+        const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
+        trackEvent("session_end", { durationSeconds });
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const navigate = useCallback(
     (direction: 1 | -1) => {
       if (navigating) return;
@@ -201,20 +253,26 @@ export default function EmbedStudy({ deckId }: EmbedStudyProps) {
       if (nextIndex < 0 || nextIndex >= cards.length) return;
       setNavDir(direction);
       setNavigating(true);
+      trackEvent("card_flip", { cardIndex: nextIndex });
       setTimeout(() => {
         setIndex(nextIndex);
         setNavigating(false);
       }, SLIDE_DURATION_MS);
     },
-    [navigating, index, cards.length],
+    [navigating, index, cards.length, trackEvent],
   );
+
+  const triggerCelebration = useCallback(() => {
+    trackEvent("deck_complete");
+    setShowCelebration(true);
+  }, [trackEvent]);
 
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") {
         if (index === cards.length - 1) {
-          setShowCelebration(true);
+          triggerCelebration();
         } else {
           navigate(1);
         }
@@ -224,7 +282,7 @@ export default function EmbedStudy({ deckId }: EmbedStudyProps) {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [navigate, index, cards.length]);
+  }, [navigate, triggerCelebration, index, cards.length]);
 
   const handleReset = useCallback(() => {
     setShowCelebration(false);
@@ -426,7 +484,7 @@ export default function EmbedStudy({ deckId }: EmbedStudyProps) {
               {cardTheme !== "plain" ? "TAP CARD TO FLIP" : "CLICK CARD TO FLIP"}
             </Typography>
             <IconButton
-              onClick={() => index === cards.length - 1 ? setShowCelebration(true) : navigate(1)}
+              onClick={() => index === cards.length - 1 ? triggerCelebration() : navigate(1)}
               disabled={navigating}
               size="small"
               sx={(t) => ({
