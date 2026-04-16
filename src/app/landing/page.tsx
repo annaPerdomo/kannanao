@@ -11,10 +11,15 @@ import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Link from '@mui/material/Link';
-import CircularProgress from '@mui/material/CircularProgress';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
 import { Flashcard } from '@/components/Flashcard';
 import { EmbedFlashcard } from '@/components/EmbedFlashcard';
+import { ImageCard } from '@/components/ImageCard';
+import { Loading } from '@/components/Loading';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
 import { createAppTheme, pink, purple, sky, emerald, amber, macChrome, darkPurple } from '@/theme';
 import WaitlistForm from '@/components/WaitlistForm';
@@ -423,387 +428,424 @@ function FeaturesSection() {
 
 // ─── Section 3: AI card generation demo ──────────────────────────────────────
 
-const DEMO_CHIP_WORDS = ['食べる', '楽しい', '夢', '桜', '集中する', '先生', '勉強'];
+// Five words — mix of English, Japanese, and French to show multi-language input
+const DEMO_WORDS = ['cherry blossom', '夢', 'beautiful', '月', 'voyage'];
 
-const DEMO_GENERATED_CARDS = [
-  { word: '食べる', reading: 'たべる', meaning: 'to eat' },
-  { word: '楽しい', reading: 'たのしい', meaning: 'fun' },
-  { word: '夢', reading: 'ゆめ', meaning: 'dream' },
-  { word: '桜', reading: 'さくら', meaning: 'cherry blossom' },
-  { word: '集中する', reading: 'しゅうちゅう', meaning: 'to concentrate' },
+const DEMO_REVIEW_CARDS = [
+  { word: '桜',    reading: 'さくら',     meaning: 'cherry blossom', jlpt: 'N5' },
+  { word: '夢',    reading: 'ゆめ',       meaning: 'dream',          jlpt: 'N4' },
+  { word: '美しい', reading: 'うつくしい', meaning: 'beautiful',      jlpt: 'N3' },
+  { word: '月',    reading: 'つき',       meaning: 'moon',           jlpt: 'N5' },
+  { word: '旅',    reading: 'たび',       meaning: 'journey',        jlpt: 'N4' },
 ];
 
-const PDF_EXTRACTED_CARDS = [
-  { word: '経験', reading: 'けいけん', meaning: 'experience' },
-  { word: '届ける', reading: 'とどける', meaning: 'to deliver' },
-  { word: '正直', reading: 'しょうじき', meaning: 'honest' },
-  { word: '増える', reading: 'ふえる', meaning: 'to increase' },
+const DEMO_IMAGE_CARDS: FlashcardType[] = [
+  {
+    id: 'img-1', word: '桜', reading: 'さくら', meaning: 'cherry blossom',
+    image_query: 'cherry blossom',
+    imageUrl: 'https://images.unsplash.com/photo-1522383225653-ed111181a951?auto=format&fit=crop&w=400&q=80',
+    example_jp: '{桜|さくら}が{美|うつく}しく{咲|さ}いています。',
+    example_en: 'The cherry blossoms are blooming beautifully.',
+    deckId: 'demo', mainViewMode: 'kanji', cardType: 'word', jlptLevel: 'N5',
+  },
+  {
+    id: 'img-2', word: '夢', reading: 'ゆめ', meaning: 'dream',
+    image_query: 'dream stars galaxy',
+    // Milky Way / galaxy — unmistakably "dream"
+    imageUrl: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=400&q=80',
+    example_jp: '{素晴|すば}らしい{夢|ゆめ}を{見|み}た。',
+    example_en: 'I had a wonderful dream.',
+    deckId: 'demo', mainViewMode: 'kanji', cardType: 'word', jlptLevel: 'N4',
+  },
+  {
+    id: 'img-3', word: '美しい', reading: 'うつくしい', meaning: 'beautiful',
+    image_query: 'beautiful japan landscape',
+    imageUrl: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=400&q=80',
+    example_jp: '{景色|けしき}が{本当|ほんとう}に{美|うつく}しい。',
+    example_en: 'The scenery is truly beautiful.',
+    deckId: 'demo', mainViewMode: 'kanji', cardType: 'word', jlptLevel: 'N3',
+  },
+  {
+    id: 'img-4', word: '月', reading: 'つき', meaning: 'moon',
+    image_query: 'full moon night',
+    imageUrl: 'https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=400&q=80',
+    example_jp: '今夜の{月|つき}は{丸|まる}くて{明|あか}るい。',
+    example_en: "Tonight's moon is round and bright.",
+    deckId: 'demo', mainViewMode: 'kanji', cardType: 'word', jlptLevel: 'N5',
+  },
+  {
+    id: 'img-5', word: '旅', reading: 'たび', meaning: 'journey',
+    image_query: 'travel japan journey',
+    imageUrl: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=400&q=80',
+    example_jp: '{長|なが}い{旅|たび}が{始|はじ}まります。',
+    example_en: 'A long journey begins.',
+    deckId: 'demo', mainViewMode: 'kanji', cardType: 'word', jlptLevel: 'N4',
+  },
 ];
 
-type DemoPhase = 'idle' | 'generating' | 'done';
-
-function MiniCardRow({ word, reading, meaning, delay }: { word: string; reading: string; meaning: string; delay: number }) {
-  return (
-    <Box sx={{
-      display: 'flex', alignItems: 'center', gap: 1.5,
-      px: 1.5, py: 0.8,
-      bgcolor: alpha(emerald[50], 0.8),
-      border: `1px solid ${alpha(emerald[300], 0.3)}`,
-      borderRadius: 1.5,
-      opacity: 0,
-      animation: `chipPopIn 0.4s ease ${delay}s forwards`,
-    }}>
-      <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '0.95rem', color: 'text.primary' }}>
-        {word}
-      </Typography>
-      <Typography sx={{ fontSize: '0.75rem', color: alpha(purple[600], 0.6), fontFamily: '"Noto Serif JP", serif' }}>
-        {reading}
-      </Typography>
-      <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 'auto', fontStyle: 'italic' }}>
-        {meaning}
-      </Typography>
-    </Box>
-  );
-}
+type DemoPhase = 'input' | 'generating' | 'reviewing' | 'cards';
 
 function AiDemoSection() {
-  const { ref, inView } = useInView(0.12);
+  const { ref, inView } = useInView(0.06);
   const [chipsShown, setChipsShown] = useState(0);
-  const [wordsPhase, setWordsPhase] = useState<DemoPhase>('idle');
-  const [pdfPhase, setPdfPhase] = useState<DemoPhase>('idle');
+  const [wordsState, setWordsState] = useState<'idle' | 'generating' | 'done'>('idle');
+  const [reviewFilled, setReviewFilled] = useState(0); // how many review rows are shown
+  const [cardsVisible, setCardsVisible] = useState(0);
+  const [phase, setPhase] = useState<DemoPhase>('input');
 
   useEffect(() => {
     if (!inView) return;
     let cancelled = false;
-    const timers: ReturnType<typeof setTimeout>[] = [];
+    const T: ReturnType<typeof setTimeout>[] = [];
 
-    setChipsShown(0);
-    setWordsPhase('idle');
-    setPdfPhase('idle');
+    // Reset all state
+    setChipsShown(0); setWordsState('idle');
+    setReviewFilled(0); setCardsVisible(0); setPhase('input');
 
-    // Words flow: chips appear one by one → generating → done
-    let chipCount = 0;
-    const chipInterval = setInterval(() => {
-      if (cancelled) { clearInterval(chipInterval); return; }
-      chipCount++;
-      setChipsShown(chipCount);
-      if (chipCount >= DEMO_CHIP_WORDS.length) {
-        clearInterval(chipInterval);
-        timers.push(setTimeout(() => {
-          if (cancelled) return;
-          setWordsPhase('generating');
-          timers.push(setTimeout(() => {
-            if (cancelled) return;
-            setWordsPhase('done');
-          }, 2200));
-        }, 800));
+    // Chips: one per 600ms (5 words = 3s total)
+    let count = 0;
+    const chipTimer = setInterval(() => {
+      if (cancelled) { clearInterval(chipTimer); return; }
+      count++;
+      setChipsShown(count);
+      if (count >= DEMO_WORDS.length) clearInterval(chipTimer);
+    }, 600);
+
+    // Words: generating starts at 3.8s (after all chips in), loading for ~3s
+    T.push(setTimeout(() => { if (!cancelled) setWordsState('generating'); }, 3800));
+    T.push(setTimeout(() => {
+      if (!cancelled) {
+        setWordsState('done');
+        setPhase('reviewing');
+        // Fill review cards one by one
+        DEMO_REVIEW_CARDS.forEach((_, i) => {
+          T.push(setTimeout(() => { if (!cancelled) setReviewFilled(i + 1); }, i * 280));
+        });
       }
-    }, 420);
+    }, 7000));
 
-    // PDF flow: delayed start → generating → done
-    timers.push(setTimeout(() => {
+    // Cards phase: after review is fully filled
+    T.push(setTimeout(() => {
       if (cancelled) return;
-      setPdfPhase('generating');
-      timers.push(setTimeout(() => {
-        if (cancelled) return;
-        setPdfPhase('done');
-      }, 3500));
-    }, 2000));
+      setPhase('cards');
+      DEMO_IMAGE_CARDS.forEach((_, i) => {
+        T.push(setTimeout(() => { if (!cancelled) setCardsVisible(i + 1); }, i * 350));
+      });
+    }, 10500));
 
-    return () => {
-      cancelled = true;
-      clearInterval(chipInterval);
-      timers.forEach(clearTimeout);
-    };
+    return () => { cancelled = true; clearInterval(chipTimer); T.forEach(clearTimeout); };
   }, [inView]);
 
-  const allChipsIn = chipsShown >= DEMO_CHIP_WORDS.length;
+  const allChipsIn = chipsShown >= DEMO_WORDS.length;
+  const showReview = phase === 'reviewing' || phase === 'cards';
 
   return (
     <Box ref={ref} sx={{
-      minHeight: '100vh',
       position: 'relative', overflow: 'hidden',
       background: `linear-gradient(148deg, ${pink[50]} 0%, ${pink[100]} 30%, ${alpha(pink[50], 0.6)} 60%, ${pink[50]} 100%)`,
-      display: 'flex', alignItems: 'center',
-      py: { xs: 10, md: 8 },
+      py: { xs: 10, md: 10 },
       px: { xs: 2, sm: 4, md: 6, lg: 8 },
     }}>
       <Blob color={purple[300]} size={500} top="-100px" right="-80px" opacity={0.2} blur={90} />
       <Blob color={pink[300]} size={360} bottom="-60px" left="-70px" opacity={0.22} blur={80} pulse />
       <Blob color={sky[300]} size={260} top="40%" left="42%" opacity={0.14} blur={60} />
+      <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: `radial-gradient(circle, ${alpha(pink[400], 0.08)} 1px, transparent 1px)`, backgroundSize: '48px 48px' }} />
 
-      <Box sx={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
-        backgroundImage: `radial-gradient(circle, ${alpha(pink[400], 0.08)} 1px, transparent 1px)`,
-        backgroundSize: '48px 48px',
-      }} />
+      <Box sx={{ maxWidth: 1280, mx: 'auto', width: '100%', position: 'relative', zIndex: 1 }}>
 
-      <Box sx={{ maxWidth: 1220, mx: 'auto', width: '100%', position: 'relative', zIndex: 1 }}>
-        {/* Heading */}
-        <Box sx={{
-          textAlign: 'center', mb: { xs: 6, md: 8 },
-          opacity: inView ? 1 : 0, transform: inView ? 'translateY(0)' : 'translateY(32px)',
-          transition: 'opacity 0.8s ease, transform 0.8s ease',
-        }}>
-          <Typography sx={{
-            fontFamily: '"DM Serif Display", serif',
-            fontSize: { xs: '2.2rem', sm: '3rem', md: '3.8rem' },
-            color: pink[700], mb: 1.5, lineHeight: 1.05,
-          }}>
+        {/* ── Heading ── */}
+        <Box sx={{ textAlign: 'center', mb: { xs: 6, md: 7 }, opacity: inView ? 1 : 0, transform: inView ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.8s ease, transform 0.8s ease' }}>
+          <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: { xs: '2.2rem', sm: '3rem', md: '3.8rem' }, color: pink[700], mb: 1.5, lineHeight: 1.05 }}>
             Generate a full deck<br />in minutes
           </Typography>
           <Typography sx={{ fontSize: '1rem', color: alpha(pink[700], 0.62), maxWidth: 560, mx: 'auto', lineHeight: 1.7 }}>
-            Type a list of words or upload a PDF — Gemini AI generates readings,
-            meanings, and bilingual example sentences for 50+ cards at once.
+            Type a few words or drop any PDF — Gemini AI generates readings, meanings,
+            and bilingual example sentences for every card instantly.
           </Typography>
         </Box>
 
-        {/* Two panels */}
+        {/* ── Step labels row ── */}
         <Box sx={{
           display: 'flex', flexDirection: { xs: 'column', lg: 'row' },
-          gap: { xs: 4, lg: 5 }, alignItems: 'stretch',
-          opacity: inView ? 1 : 0, transform: inView ? 'translateY(0)' : 'translateY(32px)',
+          gap: { xs: 2, lg: 4 }, mb: 1.5,
+          opacity: inView ? 1 : 0, transform: inView ? 'translateY(0)' : 'translateY(28px)',
+          transition: 'opacity 0.8s ease 0.15s, transform 0.8s ease 0.15s',
+        }}>
+          {[
+            { n: 1, label: 'Generate cards', flex: '0 0 auto', width: { xs: '100%', lg: '46%' } },
+            { n: 2, label: 'Review & edit', flex: 1, width: undefined },
+          ].map(({ n, label, flex, width }) => (
+            <Box key={n} sx={{ flex, width, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{
+                width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                background: `linear-gradient(135deg, ${pink[400]} 0%, ${purple[500]} 100%)`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: `0 2px 8px ${alpha(pink[500], 0.38)}`,
+              }}>
+                <Typography sx={{ color: '#fff', fontSize: '0.65rem', fontWeight: 900, fontFamily: '"Nunito", sans-serif', lineHeight: 1 }}>{n}</Typography>
+              </Box>
+              <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: pink[600], fontFamily: '"Nunito", sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                {label}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+
+        {/* ── ROW 1: Generate (left) + Review (right) ── */}
+        <Box sx={{
+          display: 'flex', flexDirection: { xs: 'column', lg: 'row' },
+          gap: { xs: 3, lg: 4 }, alignItems: 'stretch', mb: { xs: 4, md: 5 },
+          opacity: inView ? 1 : 0, transform: inView ? 'translateY(0)' : 'translateY(28px)',
           transition: 'opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s',
         }}>
-          {/* Panel 1: Generate with AI */}
-          <Box sx={{ flex: 1 }}>
-            <Paper elevation={0} sx={{
-              borderRadius: 4, overflow: 'hidden', height: '100%',
-              boxShadow: `0 24px 80px ${alpha(pink[300], 0.22)}, 0 4px 16px ${alpha(purple[300], 0.12)}`,
-              border: `1px solid ${alpha(pink[200], 0.7)}`,
-              background: '#fff',
-              display: 'flex', flexDirection: 'column',
-            }}>
-              <Box sx={{
-                px: 2.5, py: 1.5,
-                background: `linear-gradient(135deg, ${pink[500]} 0%, ${purple[600]} 100%)`,
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              }}>
-                <Typography sx={{ fontFamily: '"Nunito", sans-serif', fontSize: '0.82rem', fontWeight: 800, color: '#fff' }}>
-                  ✨ Generate with AI
-                </Typography>
-                <Stack direction="row" spacing={0.75}>
-                  {[0, 1, 2].map(i => (
-                    <Box key={i} sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: alpha('#fff', 0.35) }} />
-                  ))}
-                </Stack>
+
+          {/* ── Left: Add Cards modal demo ── */}
+          <Box sx={{ flex: '0 0 auto', width: { xs: '100%', lg: '46%' } }}>
+            <Paper elevation={0} sx={{ borderRadius: '18px', overflow: 'hidden', height: '100%', boxShadow: `0 20px 64px ${alpha(pink[300], 0.2)}, 0 4px 16px ${alpha(purple[300], 0.1)}`, border: `1px solid ${alpha(pink[200], 0.7)}`, background: '#fff', display: 'flex', flexDirection: 'column' }}>
+              {/* Chrome bar */}
+              <Box sx={{ px: 2.5, py: 1.25, background: `linear-gradient(135deg, ${pink[500]} 0%, ${purple[600]} 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography sx={{ fontFamily: '"Nunito", sans-serif', fontSize: '0.8rem', fontWeight: 800, color: '#fff' }}>✨ Add Cards</Typography>
+                <Stack direction="row" spacing={0.75}>{[0,1,2].map(i => <Box key={i} sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: alpha('#fff', 0.35) }} />)}</Stack>
               </Box>
 
-              <Box sx={{ p: { xs: 2.5, sm: 3 }, flex: 1 }}>
-                <Typography sx={{
-                  fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.14em',
-                  textTransform: 'uppercase', color: '#EC4899',
-                  fontFamily: '"Nunito", sans-serif', mb: 1.25,
-                }}>
-                  Generate with AI
-                </Typography>
+              <Box sx={{ p: { xs: 2, sm: 2.5 }, flex: 1, display: 'flex', flexDirection: 'column' }}>
 
-                {/* Mock word chip input */}
-                <Box sx={{
-                  display: 'flex', flexWrap: 'wrap', gap: 0.5,
-                  p: '9px 11px', mb: 1.25,
-                  border: `1.5px solid ${wordsPhase === 'idle' && chipsShown > 0 ? alpha(pink[400], 0.6) : alpha(pink[300], 0.35)}`,
-                  borderRadius: '10px', minHeight: 46,
-                  bgcolor: '#fff',
-                  transition: 'border-color 0.3s ease',
-                }}>
-                  {DEMO_CHIP_WORDS.slice(0, chipsShown).map((w) => (
-                    <Chip key={w} label={w} size="small" sx={{
-                      height: 22, fontSize: '0.72rem',
-                      fontFamily: '"Nunito", sans-serif', fontWeight: 700,
-                      bgcolor: alpha(pink[100], 0.6), color: pink[700],
-                      border: `1px solid ${alpha(pink[400], 0.4)}`,
-                      animation: 'chipPopIn 0.3s ease forwards',
-                    }} />
-                  ))}
-                  {wordsPhase === 'idle' && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, minWidth: 80 }}>
-                      {chipsShown === 0 && (
-                        <Typography sx={{
-                          fontSize: '0.8rem', color: 'text.secondary', opacity: 0.6,
-                          fontFamily: '"Nunito", sans-serif',
-                        }}>
-                          Type words or phrases, press Enter…
-                        </Typography>
-                      )}
-                      <Box component="span" sx={{
-                        display: 'inline-block', width: '2px', height: '1em',
-                        bgcolor: purple[400], ml: '2px',
-                        animation: 'cursorBlink 0.75s steps(1) infinite',
-                      }} />
+                {/* View mode toggle row — matches actual AddCardsSection */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, color: 'text.secondary', fontFamily: '"Nunito", sans-serif', flexShrink: 0 }}>
+                    Main display mode:
+                  </Typography>
+                  <Box sx={{ display: 'flex', ml: 'auto' }}>
+                    {[['ひ Hiragana', false], ['漢 Kanji', false]].map(([lbl]) => (
+                      <Box key={String(lbl)} sx={{ px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700, fontFamily: '"Nunito", sans-serif', border: '1px solid rgba(249,168,212,0.5)', color: '#BE185D', cursor: 'default', '&:first-of-type': { borderRadius: '4px 0 0 4px' }, '&:last-of-type': { borderRadius: '0 4px 4px 0' } }}>{lbl}</Box>
+                    ))}
+                  </Box>
+                </Box>
+
+                {/* Generate with AI container — matches AddCardsSection */}
+                <Box sx={{ bgcolor: '#FFF8FC', border: '1.5px solid rgba(249,168,212,0.35)', borderRadius: '14px', p: 2, mb: 2, flex: wordsState === 'generating' ? 1 : 'none' }}>
+                  <Typography sx={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#EC4899', fontFamily: '"Nunito", sans-serif', mb: 1.25 }}>
+                    Generate with AI
+                  </Typography>
+
+                  {/* Loading state — use real Loading component */}
+                  {wordsState === 'generating' && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mx: -2, mb: -2 }}>
+                      <Loading message="Generating cards…" />
                     </Box>
+                  )}
+
+                  {/* Chip input (idle / done states) */}
+                  {wordsState !== 'generating' && (
+                    <>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, p: '8px 10px', mb: 1.25, border: `1.5px solid ${chipsShown > 0 ? alpha(pink[400], 0.55) : alpha(pink[300], 0.3)}`, borderRadius: '10px', minHeight: 52, bgcolor: '#fff', transition: 'border-color 0.3s ease' }}>
+                        {DEMO_WORDS.slice(0, chipsShown).map((w) => (
+                          <Chip key={w} label={w} size="small" sx={{ height: 22, fontSize: '0.78rem', fontFamily: '"Nunito", sans-serif', fontWeight: 700, bgcolor: alpha(pink[100], 0.6), color: pink[700], border: `1px solid ${alpha(pink[400], 0.4)}`, animation: 'chipPopIn 0.3s ease forwards' }} />
+                        ))}
+                        {!allChipsIn && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, minWidth: 60 }}>
+                            {chipsShown === 0 && <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', opacity: 0.55, fontFamily: '"Nunito", sans-serif' }}>Type words in any language…</Typography>}
+                            <Box component="span" sx={{ display: 'inline-block', width: '2px', height: '1em', bgcolor: purple[400], ml: '2px', animation: 'cursorBlink 0.75s steps(1) infinite' }} />
+                          </Box>
+                        )}
+                      </Box>
+
+                      <Button variant="contained" fullWidth
+                        disabled={!allChipsIn || wordsState === 'done'}
+                        startIcon={<AutoAwesomeIcon sx={{ fontSize: 14 }} />}
+                        sx={{
+                          borderRadius: '10px', py: '9px',
+                          fontFamily: '"Nunito", sans-serif', fontWeight: 800, fontSize: '0.82rem', textTransform: 'none',
+                          background: allChipsIn && wordsState !== 'done' ? 'linear-gradient(135deg, #F472B6 0%, #EC4899 50%, #A855F7 100%)' : undefined,
+                          boxShadow: allChipsIn && wordsState !== 'done' ? `0 4px 14px ${alpha(pink[500], 0.35)}` : 'none',
+                          '&.Mui-disabled': { background: alpha(purple[100], 0.8), color: alpha(purple[700], 0.4) },
+                        }}
+                      >
+                        {wordsState === 'done' ? `✓ ${DEMO_WORDS.length} cards generated!` : 'Generate Cards'}
+                      </Button>
+                    </>
                   )}
                 </Box>
 
-                {/* Generate button */}
-                <Button
-                  variant="contained" fullWidth
-                  disabled={!allChipsIn || wordsPhase === 'done'}
-                  startIcon={wordsPhase === 'generating' ? <CircularProgress size={14} color="inherit" /> : <AutoAwesomeIcon sx={{ fontSize: 14 }} />}
-                  sx={{
-                    borderRadius: '10px', py: '9px', mb: 2,
-                    fontFamily: '"Nunito", sans-serif', fontWeight: 800,
-                    fontSize: '0.82rem', textTransform: 'none',
-                    background: allChipsIn && wordsPhase !== 'done'
-                      ? 'linear-gradient(135deg, #F472B6 0%, #EC4899 50%, #A855F7 100%)'
-                      : undefined,
-                    boxShadow: allChipsIn && wordsPhase !== 'done'
-                      ? `0 4px 14px ${alpha(pink[500], 0.35)}`
-                      : 'none',
-                    transition: 'all 0.4s ease',
-                    '&.Mui-disabled': { background: alpha(purple[100], 0.8), color: alpha(purple[700], 0.4) },
-                  }}
-                >
-                  {wordsPhase === 'generating' ? 'Generating…' : 'Generate Cards'}
-                </Button>
-
-                {chipsShown > 0 && wordsPhase === 'idle' && (
-                  <Typography sx={{
-                    textAlign: 'center', fontSize: '0.67rem',
-                    color: '#C2709A', fontFamily: '"Nunito", sans-serif', fontWeight: 600, mb: 1.5,
-                  }}>
-                    {chipsShown} word{chipsShown > 1 ? 's' : ''} queued
-                  </Typography>
-                )}
-
-                {wordsPhase === 'done' && (
-                  <Box>
-                    <Typography sx={{
-                      textAlign: 'center', fontSize: '0.72rem', fontWeight: 800,
-                      color: emerald[600], fontFamily: '"Nunito", sans-serif', mb: 1.5,
-                    }}>
-                      ✓ {DEMO_CHIP_WORDS.length} cards generated!
-                    </Typography>
-                    <Stack spacing={0.75}>
-                      {DEMO_GENERATED_CARDS.map((card, i) => (
-                        <MiniCardRow key={card.word} {...card} delay={i * 0.1} />
+                {/* ── "or" divider + option buttons — matches AddCardOptionButtons ── */}
+                {wordsState !== 'generating' && (
+                  <>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                      <Box sx={{ flexGrow: 1, height: '1px', bgcolor: 'rgba(249,168,212,0.3)' }} />
+                      <Typography sx={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(194,112,154,0.6)', fontFamily: '"Nunito", sans-serif' }}>or</Typography>
+                      <Box sx={{ flexGrow: 1, height: '1px', bgcolor: 'rgba(249,168,212,0.3)' }} />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {[
+                        { icon: '📚', title: 'Add Existing Cards', desc: 'Copy from your other decks' },
+                        { icon: '📄', title: 'Import from PDF', desc: 'Extract vocabulary from a document' },
+                      ].map(btn => (
+                        <Box key={btn.title} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: '12px 14px', border: '1.5px solid rgba(249,168,212,0.35)', borderRadius: '12px', bgcolor: '#FFFFFF', cursor: 'default' }}>
+                          <Box sx={{ width: 36, height: 36, borderRadius: '10px', bgcolor: btn.title.includes('PDF') ? '#F3E8FF' : '#FCE7F3', border: `1px solid ${btn.title.includes('PDF') ? 'rgba(196,181,253,0.45)' : 'rgba(244,114,182,0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1rem' }}>
+                            {btn.icon}
+                          </Box>
+                          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                            <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: '#9D174D', fontFamily: '"Nunito", sans-serif', lineHeight: 1.2 }}>{btn.title}</Typography>
+                            <Typography sx={{ fontSize: '0.68rem', color: '#C2709A', fontFamily: '"Nunito", sans-serif', fontWeight: 500, mt: 0.2 }}>{btn.desc}</Typography>
+                          </Box>
+                          <Typography sx={{ fontSize: '0.75rem', color: 'rgba(194,112,154,0.5)' }}>›</Typography>
+                        </Box>
                       ))}
-                      <Typography sx={{
-                        textAlign: 'center', fontSize: '0.65rem',
-                        color: alpha(purple[500], 0.4), mt: 0.5,
-                      }}>
-                        + 2 more cards
-                      </Typography>
-                    </Stack>
-                  </Box>
+                    </Box>
+                  </>
                 )}
               </Box>
             </Paper>
           </Box>
 
-          {/* Panel 2: Import from PDF */}
+          {/* ── Right: ReviewCardsDialog inline replica ── */}
           <Box sx={{ flex: 1 }}>
-            <Paper elevation={0} sx={{
-              borderRadius: 4, overflow: 'hidden', height: '100%',
-              boxShadow: `0 24px 80px ${alpha(pink[300], 0.22)}, 0 4px 16px ${alpha(purple[300], 0.12)}`,
-              border: `1px solid ${alpha(pink[200], 0.7)}`,
-              background: '#fff',
-              display: 'flex', flexDirection: 'column',
-            }}>
-              <Box sx={{
-                px: 2.5, py: 1.5,
-                background: `linear-gradient(135deg, ${purple[500]} 0%, ${pink[600]} 100%)`,
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              }}>
-                <Typography sx={{ fontFamily: '"Nunito", sans-serif', fontSize: '0.82rem', fontWeight: 800, color: '#fff' }}>
-                  📄 Import from PDF
-                </Typography>
-                <Stack direction="row" spacing={0.75}>
-                  {[0, 1, 2].map(i => (
-                    <Box key={i} sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: alpha('#fff', 0.35) }} />
-                  ))}
-                </Stack>
+            <Paper elevation={0} sx={{ borderRadius: '20px', overflow: 'hidden', height: '100%', border: '1.5px solid rgba(249,168,212,0.4)', boxShadow: '0 20px 60px rgba(236,72,153,0.14), 0 4px 16px rgba(249,168,212,0.2)', background: '#FFFBFE', display: 'flex', flexDirection: 'column' }}>
+              {/* Dialog header */}
+              <Box sx={{ background: 'linear-gradient(135deg, #FFF0F8 0%, #F3E8FF 100%)', borderBottom: '1.5px solid rgba(249,168,212,0.25)', px: { xs: 2, sm: 3 }, pt: 2.5, pb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1.5 }}>
+                  <Box>
+                    <Typography sx={{ fontSize: '1.05rem', fontWeight: 900, color: '#9D174D', fontFamily: '"Nunito", sans-serif', lineHeight: 1.2, mb: 0.4 }}>📋 Review Cards</Typography>
+                    <Typography sx={{ fontSize: '0.7rem', color: '#C2709A', fontFamily: '"Nunito", sans-serif', fontWeight: 600 }}>
+                      {showReview ? `${DEMO_WORDS.length} cards generated — edit before adding` : 'Waiting for generation…'}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(190,24,93,0.3)', fontSize: '0.75rem', flexShrink: 0 }}>✕</Box>
+                </Box>
+                {/* Global view toggle — matches real ToggleButtonGroup in app */}
+                <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.6)', border: '1px solid rgba(249,168,212,0.25)', borderRadius: '10px', px: 1.5, py: 0.75, gap: 1, flexWrap: 'wrap', opacity: showReview ? 1 : 0.4, transition: 'opacity 0.5s ease' }}>
+                  <Typography sx={{ fontSize: '0.57rem', fontWeight: 700, color: '#C2709A', fontFamily: '"Nunito", sans-serif', whiteSpace: 'nowrap' }}>Set main view mode for all cards:</Typography>
+                  <ToggleButtonGroup
+                    value="hiragana"
+                    exclusive
+                    size="small"
+                    sx={{
+                      '& .MuiToggleButton-root': {
+                        px: 0.9, py: 0.3, fontSize: '0.6rem', fontWeight: 800,
+                        fontFamily: '"Nunito", sans-serif', lineHeight: 1, minWidth: 0,
+                        border: '1px solid rgba(249,168,212,0.4)', color: '#C2709A',
+                        '&.Mui-selected': { bgcolor: 'rgba(249,168,212,0.2)', color: '#BE185D', borderColor: 'rgba(236,72,153,0.5)' },
+                        '&:hover': { bgcolor: 'rgba(249,168,212,0.06)' },
+                      },
+                    }}
+                  >
+                    <ToggleButton value="hiragana">ひ Hiragana</ToggleButton>
+                    <ToggleButton value="kanji">漢 Kanji</ToggleButton>
+                  </ToggleButtonGroup>
+                </Box>
               </Box>
 
-              <Box sx={{ p: { xs: 2.5, sm: 3 }, flex: 1 }}>
-                {/* PDF upload area */}
-                <Box sx={{
-                  border: `2px dashed ${pdfPhase === 'done' ? alpha(emerald[400], 0.5) : alpha(purple[300], 0.4)}`,
-                  borderRadius: 3, p: 3, mb: 2,
-                  textAlign: 'center',
-                  bgcolor: pdfPhase === 'done' ? alpha(emerald[50], 0.5) : alpha(purple[50], 0.3),
-                  transition: 'all 0.5s ease',
-                }}>
-                  {pdfPhase === 'idle' && (
-                    <>
-                      <Box sx={{ fontSize: '2rem', mb: 1, lineHeight: 1 }}>📄</Box>
-                      <Typography sx={{ fontSize: '0.78rem', color: purple[600], fontWeight: 700, fontFamily: '"Nunito", sans-serif' }}>
-                        Drop a PDF here or click to upload
-                      </Typography>
-                      <Typography sx={{ fontSize: '0.68rem', color: alpha(purple[500], 0.5), fontFamily: '"Nunito", sans-serif', mt: 0.5 }}>
-                        Textbooks, word lists, study guides
-                      </Typography>
-                    </>
-                  )}
-
-                  {pdfPhase === 'generating' && (
-                    <>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 1.5 }}>
-                        <Box sx={{
-                          width: 36, height: 44, borderRadius: 1,
-                          bgcolor: alpha(purple[100], 0.8),
-                          border: `1px solid ${alpha(purple[300], 0.4)}`,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}>
-                          <Typography sx={{ fontSize: '0.6rem', color: purple[500], fontWeight: 700 }}>PDF</Typography>
-                        </Box>
-                        <Box sx={{ textAlign: 'left' }}>
-                          <Typography sx={{ fontSize: '0.78rem', color: 'text.primary', fontWeight: 700, fontFamily: '"Nunito", sans-serif' }}>
-                            JLPT_N3_vocab.pdf
-                          </Typography>
-                          <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary', fontFamily: '"Nunito", sans-serif' }}>
-                            2.4 MB
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                        <CircularProgress size={16} sx={{ color: purple[400] }} />
-                        <Typography sx={{ fontSize: '0.72rem', color: purple[500], fontWeight: 700, fontFamily: '"Nunito", sans-serif' }}>
-                          Scanning & extracting vocabulary…
-                        </Typography>
-                      </Box>
-                    </>
-                  )}
-
-                  {pdfPhase === 'done' && (
-                    <>
-                      <Box sx={{ fontSize: '1.5rem', mb: 0.5, lineHeight: 1 }}>✅</Box>
-                      <Typography sx={{ fontSize: '0.82rem', color: emerald[700], fontWeight: 800, fontFamily: '"Nunito", sans-serif' }}>
-                        52 words extracted!
-                      </Typography>
-                      <Typography sx={{ fontSize: '0.68rem', color: alpha(emerald[600], 0.6), fontFamily: '"Nunito", sans-serif', mt: 0.5 }}>
-                        From JLPT_N3_vocab.pdf
-                      </Typography>
-                    </>
-                  )}
-                </Box>
-
-                {/* Extracted card previews */}
-                {pdfPhase === 'done' && (
-                  <Box>
-                    <Typography sx={{
-                      textAlign: 'center', fontSize: '0.72rem', fontWeight: 800,
-                      color: emerald[600], fontFamily: '"Nunito", sans-serif', mb: 1.5,
-                    }}>
-                      ✓ 52 cards ready to study
-                    </Typography>
-                    <Stack spacing={0.75}>
-                      {PDF_EXTRACTED_CARDS.map((card, i) => (
-                        <MiniCardRow key={card.word} {...card} delay={i * 0.1} />
-                      ))}
-                      <Typography sx={{
-                        textAlign: 'center', fontSize: '0.65rem',
-                        color: alpha(purple[500], 0.4), mt: 0.5,
-                      }}>
-                        + 48 more cards
-                      </Typography>
-                    </Stack>
+              {/* Card rows */}
+              <Box sx={{ px: { xs: 1.5, sm: 2 }, py: 1.5, display: 'flex', flexDirection: 'column', gap: 0.75, flex: 1 }}>
+                {/* Placeholder skeleton rows before generation */}
+                {!showReview && [0,1,2,3,4].map(i => (
+                  <Box key={i} sx={{ border: '1.5px solid rgba(249,168,212,0.15)', borderRadius: '14px', bgcolor: 'rgba(255,248,252,0.7)', display: 'flex', alignItems: 'center', gap: 1.5, px: 1.5, py: 0.875 }}>
+                    <Box sx={{ width: 36, height: 36, borderRadius: '7px', bgcolor: 'rgba(249,168,212,0.08)', flexShrink: 0 }} />
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Box sx={{ height: 12, borderRadius: 1, bgcolor: 'rgba(249,168,212,0.12)', mb: 0.6, width: `${55 + i * 7}%` }} />
+                      <Box sx={{ height: 9, borderRadius: 1, bgcolor: 'rgba(249,168,212,0.08)', width: `${40 + i * 4}%` }} />
+                    </Box>
                   </Box>
-                )}
+                ))}
+
+                {/* Real card rows, appear one-by-one — matches CardRow in ReviewCardsDialog */}
+                {showReview && DEMO_REVIEW_CARDS.map((card, i) => (
+                  <Box key={card.word} sx={{
+                    border: '1.5px solid rgba(249,168,212,0.3)', borderRadius: '14px',
+                    bgcolor: '#FFFBFE', overflow: 'hidden',
+                    opacity: reviewFilled > i ? 1 : 0,
+                    transform: reviewFilled > i ? 'translateX(0)' : 'translateX(-12px)',
+                    transition: 'opacity 0.35s ease, transform 0.35s ease, box-shadow 0.15s ease',
+                    '&:hover': { boxShadow: '0 2px 12px rgba(249,168,212,0.2)' },
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1.5, py: 1, cursor: 'default', userSelect: 'none' }}>
+                      {/* Thumbnail — shows actual card image */}
+                      <Box sx={{ width: 40, height: 40, borderRadius: '8px', flexShrink: 0, overflow: 'hidden', bgcolor: 'rgba(249,168,212,0.12)' }}>
+                        {DEMO_IMAGE_CARDS[i]?.imageUrl ? (
+                          <Box component="img" src={DEMO_IMAGE_CARDS[i].imageUrl} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Typography sx={{ fontSize: '0.68rem', color: '#C2709A' }}>—</Typography>
+                          </Box>
+                        )}
+                      </Box>
+                      {/* Word + reading */}
+                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                        <Typography noWrap sx={{ fontSize: '0.88rem', fontWeight: 800, color: '#9D174D', fontFamily: '"Nunito", sans-serif', lineHeight: 1.25 }}>{card.word}</Typography>
+                        <Typography noWrap sx={{ fontSize: '0.68rem', color: '#C2709A', fontFamily: '"Nunito", sans-serif', fontWeight: 600, lineHeight: 1.2 }}>{card.reading} · {card.meaning}</Typography>
+                      </Box>
+                      {/* Delete + expand — matches CardRow action area */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, ml: -0.5, flexShrink: 0 }}>
+                        <Box sx={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(248,113,113,0.4)' }}>
+                          <DeleteOutlineIcon sx={{ fontSize: 14 }} />
+                        </Box>
+                        <Box sx={{ color: '#C2709A', display: 'flex', alignItems: 'center' }}>
+                          <ExpandMoreIcon sx={{ fontSize: 18 }} />
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+
+              {/* Footer buttons */}
+              <Box sx={{ px: { xs: 1.5, sm: 2.5 }, py: 1.75, borderTop: '1.5px solid rgba(249,168,212,0.2)', display: 'flex', gap: 1.5, justifyContent: 'flex-end', background: 'linear-gradient(0deg, #FFFBFE 0%, transparent 100%)', opacity: showReview ? 1 : 0.4, transition: 'opacity 0.5s ease' }}>
+                <Box sx={{ px: 2, py: 0.7, borderRadius: '10px', border: '1px solid rgba(249,168,212,0.5)', color: '#BE185D', fontSize: '0.76rem', fontFamily: '"Nunito", sans-serif', fontWeight: 700 }}>Cancel</Box>
+                <Box sx={{ px: 2.25, py: 0.7, borderRadius: '10px', background: showReview ? 'linear-gradient(135deg, #F472B6 0%, #EC4899 50%, #A855F7 100%)' : alpha(purple[100], 0.8), color: showReview ? '#fff' : alpha(purple[700], 0.4), fontSize: '0.76rem', fontFamily: '"Nunito", sans-serif', fontWeight: 800, boxShadow: showReview ? '0 4px 14px rgba(236,72,153,0.35)' : 'none', transition: 'all 0.5s ease' }}>
+                  ✓ Add {DEMO_WORDS.length} Cards to Deck
+                </Box>
               </Box>
             </Paper>
           </Box>
         </Box>
+
+        {/* ── ROW 2: ImageCard grid ── */}
+        <Box sx={{
+          opacity: phase === 'cards' ? 1 : 0,
+          transform: phase === 'cards' ? 'translateY(0)' : 'translateY(28px)',
+          transition: 'opacity 0.7s ease, transform 0.7s ease',
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+            <Box sx={{ flex: 1, height: 1, bgcolor: alpha(pink[300], 0.3) }} />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{
+                width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                background: `linear-gradient(135deg, ${pink[400]} 0%, ${purple[500]} 100%)`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: `0 2px 8px ${alpha(pink[500], 0.38)}`,
+              }}>
+                <Typography sx={{ color: '#fff', fontSize: '0.65rem', fontWeight: 900, fontFamily: '"Nunito", sans-serif', lineHeight: 1 }}>3</Typography>
+              </Box>
+              <Typography sx={{ fontSize: '0.6rem', fontWeight: 800, color: pink[500], fontFamily: '"Nunito", sans-serif', letterSpacing: '0.12em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                Study your deck
+              </Typography>
+            </Box>
+            <Box sx={{ flex: 1, height: 1, bgcolor: alpha(pink[300], 0.3) }} />
+          </Box>
+
+          {/* Card row — wraps on smaller screens, no scroll */}
+          <Box sx={{
+            display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'stretch',
+            justifyContent: 'center',
+          }}>
+            <ThemeProvider theme={sakuraTheme}>
+              {DEMO_IMAGE_CARDS.map((card, i) => (
+                <Box key={card.id} sx={{
+                  width: 240,
+                  // Force ImageCard root + inner card to fill unified row height
+                  '& > div': { height: '100%' },
+                  '& > div > div': { height: '100%' },
+                  opacity: cardsVisible > i ? 1 : 0,
+                  transform: cardsVisible > i ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.94)',
+                  transition: 'opacity 0.45s ease, transform 0.45s cubic-bezier(0.34,1.56,0.64,1)',
+                }}>
+                  <ImageCard card={card} onDelete={() => {}} />
+                </Box>
+              ))}
+            </ThemeProvider>
+          </Box>
+        </Box>
+
       </Box>
     </Box>
   );
