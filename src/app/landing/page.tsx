@@ -423,58 +423,101 @@ function FeaturesSection() {
 
 // ─── Section 3: AI card generation demo ──────────────────────────────────────
 
-const DEMO_WORDS = [
-  { word: '食べる',    reading: 'たべる',        meaning: 'to eat',          example_jp: '毎日野菜を食べています。',          example_en: 'I eat vegetables every day.',       jlpt: 'N5', color: emerald[500] },
-  { word: '楽しい',   reading: 'たのしい',       meaning: 'fun; enjoyable',  example_jp: '日本語の勉強は楽しいです。',          example_en: 'Studying Japanese is fun.',         jlpt: 'N4', color: purple[400] },
-  { word: '集中する', reading: 'しゅうちゅうする', meaning: 'to concentrate', example_jp: '試験のために集中して勉強しました。', example_en: 'I studied hard for the exam.',      jlpt: 'N3', color: sky[500]    },
+const DEMO_CHIP_WORDS = ['食べる', '楽しい', '夢', '桜', '集中する', '先生', '勉強'];
+
+const DEMO_GENERATED_CARDS = [
+  { word: '食べる', reading: 'たべる', meaning: 'to eat' },
+  { word: '楽しい', reading: 'たのしい', meaning: 'fun' },
+  { word: '夢', reading: 'ゆめ', meaning: 'dream' },
+  { word: '桜', reading: 'さくら', meaning: 'cherry blossom' },
+  { word: '集中する', reading: 'しゅうちゅう', meaning: 'to concentrate' },
 ];
 
-type DemoPhase = 'typing' | 'generating' | 'done';
+const PDF_EXTRACTED_CARDS = [
+  { word: '経験', reading: 'けいけん', meaning: 'experience' },
+  { word: '届ける', reading: 'とどける', meaning: 'to deliver' },
+  { word: '正直', reading: 'しょうじき', meaning: 'honest' },
+  { word: '増える', reading: 'ふえる', meaning: 'to increase' },
+];
+
+type DemoPhase = 'idle' | 'generating' | 'done';
+
+function MiniCardRow({ word, reading, meaning, delay }: { word: string; reading: string; meaning: string; delay: number }) {
+  return (
+    <Box sx={{
+      display: 'flex', alignItems: 'center', gap: 1.5,
+      px: 1.5, py: 0.8,
+      bgcolor: alpha(emerald[50], 0.8),
+      border: `1px solid ${alpha(emerald[300], 0.3)}`,
+      borderRadius: 1.5,
+      opacity: 0,
+      animation: `chipPopIn 0.4s ease ${delay}s forwards`,
+    }}>
+      <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '0.95rem', color: 'text.primary' }}>
+        {word}
+      </Typography>
+      <Typography sx={{ fontSize: '0.75rem', color: alpha(purple[600], 0.6), fontFamily: '"Noto Serif JP", serif' }}>
+        {reading}
+      </Typography>
+      <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 'auto', fontStyle: 'italic' }}>
+        {meaning}
+      </Typography>
+    </Box>
+  );
+}
 
 function AiDemoSection() {
   const { ref, inView } = useInView(0.12);
-  const [wordIdx, setWordIdx] = useState(0);
-  const [typedLen, setTypedLen] = useState(0);
-  const [phase, setPhase] = useState<DemoPhase>('typing');
-
-  const demo = DEMO_WORDS[wordIdx];
+  const [chipsShown, setChipsShown] = useState(0);
+  const [wordsPhase, setWordsPhase] = useState<DemoPhase>('idle');
+  const [pdfPhase, setPdfPhase] = useState<DemoPhase>('idle');
 
   useEffect(() => {
     if (!inView) return;
     let cancelled = false;
-    let t: ReturnType<typeof setTimeout>;
-    let interval: ReturnType<typeof setInterval>;
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
-    setTypedLen(0);
-    setPhase('typing');
+    setChipsShown(0);
+    setWordsPhase('idle');
+    setPdfPhase('idle');
 
-    let i = 0;
-    interval = setInterval(() => {
-      if (cancelled) return;
-      i++;
-      setTypedLen(i);
-      if (i >= demo.word.length) {
-        clearInterval(interval);
-        t = setTimeout(() => {
+    // Words flow: chips appear one by one → generating → done
+    let chipCount = 0;
+    const chipInterval = setInterval(() => {
+      if (cancelled) { clearInterval(chipInterval); return; }
+      chipCount++;
+      setChipsShown(chipCount);
+      if (chipCount >= DEMO_CHIP_WORDS.length) {
+        clearInterval(chipInterval);
+        timers.push(setTimeout(() => {
           if (cancelled) return;
-          setPhase('generating');
-          t = setTimeout(() => {
+          setWordsPhase('generating');
+          timers.push(setTimeout(() => {
             if (cancelled) return;
-            setPhase('done');
-            t = setTimeout(() => {
-              if (cancelled) return;
-              setWordIdx(prev => (prev + 1) % DEMO_WORDS.length);
-            }, 4500);
-          }, 1800);
-        }, 600);
+            setWordsPhase('done');
+          }, 2200));
+        }, 800));
       }
-    }, 180);
+    }, 420);
 
-    return () => { cancelled = true; clearInterval(interval); clearTimeout(t); };
-  }, [inView, wordIdx]);
+    // PDF flow: delayed start → generating → done
+    timers.push(setTimeout(() => {
+      if (cancelled) return;
+      setPdfPhase('generating');
+      timers.push(setTimeout(() => {
+        if (cancelled) return;
+        setPdfPhase('done');
+      }, 3500));
+    }, 2000));
 
-  const accent = demo.color;
-  const fieldsVisible = phase === 'done';
+    return () => {
+      cancelled = true;
+      clearInterval(chipInterval);
+      timers.forEach(clearTimeout);
+    };
+  }, [inView]);
+
+  const allChipsIn = chipsShown >= DEMO_CHIP_WORDS.length;
 
   return (
     <Box ref={ref} sx={{
@@ -507,176 +550,258 @@ function AiDemoSection() {
             fontSize: { xs: '2.2rem', sm: '3rem', md: '3.8rem' },
             color: pink[700], mb: 1.5, lineHeight: 1.05,
           }}>
-            A flashcard in seconds,<br />not minutes
+            Generate a full deck<br />in minutes
           </Typography>
-          <Typography sx={{ fontSize: '1rem', color: alpha(pink[700], 0.62), maxWidth: 520, mx: 'auto', lineHeight: 1.7 }}>
-            Type any Japanese word and hit Generate. Gemini AI fills in the reading,
-            meaning, and bilingual example sentences — instantly.
+          <Typography sx={{ fontSize: '1rem', color: alpha(pink[700], 0.62), maxWidth: 560, mx: 'auto', lineHeight: 1.7 }}>
+            Type a list of words or upload a PDF — Gemini AI generates readings,
+            meanings, and bilingual example sentences for 50+ cards at once.
           </Typography>
         </Box>
 
-        {/* Two-column demo */}
+        {/* Two panels */}
         <Box sx={{
           display: 'flex', flexDirection: { xs: 'column', lg: 'row' },
-          gap: { xs: 5, lg: 8 }, alignItems: 'center',
+          gap: { xs: 4, lg: 5 }, alignItems: 'stretch',
           opacity: inView ? 1 : 0, transform: inView ? 'translateY(0)' : 'translateY(32px)',
           transition: 'opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s',
         }}>
-          {/* Left: mock app UI */}
+          {/* Panel 1: Generate with AI */}
           <Box sx={{ flex: 1 }}>
             <Paper elevation={0} sx={{
-              borderRadius: 4, overflow: 'hidden',
+              borderRadius: 4, overflow: 'hidden', height: '100%',
               boxShadow: `0 24px 80px ${alpha(pink[300], 0.22)}, 0 4px 16px ${alpha(purple[300], 0.12)}`,
               border: `1px solid ${alpha(pink[200], 0.7)}`,
               background: '#fff',
+              display: 'flex', flexDirection: 'column',
             }}>
-              {/* App chrome bar */}
               <Box sx={{
                 px: 2.5, py: 1.5,
                 background: `linear-gradient(135deg, ${pink[500]} 0%, ${purple[600]} 100%)`,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               }}>
-                <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '0.9rem', color: '#fff' }}>
-                  🌸 Add a new card
+                <Typography sx={{ fontFamily: '"Nunito", sans-serif', fontSize: '0.82rem', fontWeight: 800, color: '#fff' }}>
+                  ✨ Generate with AI
                 </Typography>
                 <Stack direction="row" spacing={0.75}>
-                  {[alpha('#fff', 0.35), alpha('#fff', 0.35), alpha('#fff', 0.35)].map((c, i) => (
-                    <Box key={i} sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: c }} />
+                  {[0, 1, 2].map(i => (
+                    <Box key={i} sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: alpha('#fff', 0.35) }} />
                   ))}
                 </Stack>
               </Box>
 
-              <Box sx={{ p: { xs: 2.5, sm: 3.5 } }}>
-                {/* Word input */}
-                <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: 'text.secondary', mb: 0.75, letterSpacing: '0.09em', textTransform: 'uppercase' }}>
-                  Japanese word or phrase
-                </Typography>
-                <Box sx={{
-                  px: 2, py: 1.25, mb: 2.5,
-                  border: `2px solid ${phase === 'typing' ? alpha(purple[400], 0.7) : alpha(purple[200], 0.35)}`,
-                  borderRadius: 2,
-                  display: 'flex', alignItems: 'center',
-                  fontFamily: '"Noto Serif JP", serif', fontSize: '1.4rem', color: 'text.primary',
-                  minHeight: 56, transition: 'border-color 0.4s ease',
+              <Box sx={{ p: { xs: 2.5, sm: 3 }, flex: 1 }}>
+                <Typography sx={{
+                  fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.14em',
+                  textTransform: 'uppercase', color: '#EC4899',
+                  fontFamily: '"Nunito", sans-serif', mb: 1.25,
                 }}>
-                  {demo.word.slice(0, typedLen)}
-                  {phase === 'typing' && (
-                    <Box component="span" sx={{
-                      display: 'inline-block', width: '2px', height: '1.2em',
-                      bgcolor: purple[500], ml: '2px', verticalAlign: 'middle',
-                      animation: 'cursorBlink 0.75s steps(1) infinite',
+                  Generate with AI
+                </Typography>
+
+                {/* Mock word chip input */}
+                <Box sx={{
+                  display: 'flex', flexWrap: 'wrap', gap: 0.5,
+                  p: '9px 11px', mb: 1.25,
+                  border: `1.5px solid ${wordsPhase === 'idle' && chipsShown > 0 ? alpha(pink[400], 0.6) : alpha(pink[300], 0.35)}`,
+                  borderRadius: '10px', minHeight: 46,
+                  bgcolor: '#fff',
+                  transition: 'border-color 0.3s ease',
+                }}>
+                  {DEMO_CHIP_WORDS.slice(0, chipsShown).map((w) => (
+                    <Chip key={w} label={w} size="small" sx={{
+                      height: 22, fontSize: '0.72rem',
+                      fontFamily: '"Nunito", sans-serif', fontWeight: 700,
+                      bgcolor: alpha(pink[100], 0.6), color: pink[700],
+                      border: `1px solid ${alpha(pink[400], 0.4)}`,
+                      animation: 'chipPopIn 0.3s ease forwards',
                     }} />
+                  ))}
+                  {wordsPhase === 'idle' && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, minWidth: 80 }}>
+                      {chipsShown === 0 && (
+                        <Typography sx={{
+                          fontSize: '0.8rem', color: 'text.secondary', opacity: 0.6,
+                          fontFamily: '"Nunito", sans-serif',
+                        }}>
+                          Type words or phrases, press Enter…
+                        </Typography>
+                      )}
+                      <Box component="span" sx={{
+                        display: 'inline-block', width: '2px', height: '1em',
+                        bgcolor: purple[400], ml: '2px',
+                        animation: 'cursorBlink 0.75s steps(1) infinite',
+                      }} />
+                    </Box>
                   )}
                 </Box>
 
                 {/* Generate button */}
                 <Button
                   variant="contained" fullWidth
-                  disabled={phase === 'typing'}
-                  startIcon={phase === 'generating' ? <CircularProgress size={15} color="inherit" /> : undefined}
+                  disabled={!allChipsIn || wordsPhase === 'done'}
+                  startIcon={wordsPhase === 'generating' ? <CircularProgress size={14} color="inherit" /> : <AutoAwesomeIcon sx={{ fontSize: 14 }} />}
                   sx={{
-                    fontFamily: '"DM Serif Display", serif',
-                    textTransform: 'none', borderRadius: 2, py: 1.3, mb: 3, fontSize: '0.95rem',
-                    background: phase === 'typing'
-                      ? alpha(purple[100], 0.8)
-                      : `linear-gradient(135deg, ${purple[500]} 0%, ${pink[500]} 100%)`,
-                    color: phase === 'typing' ? alpha(purple[700], 0.4) : '#fff',
-                    boxShadow: phase !== 'typing' ? `0 6px 24px ${alpha(purple[500], 0.35)}` : 'none',
+                    borderRadius: '10px', py: '9px', mb: 2,
+                    fontFamily: '"Nunito", sans-serif', fontWeight: 800,
+                    fontSize: '0.82rem', textTransform: 'none',
+                    background: allChipsIn && wordsPhase !== 'done'
+                      ? 'linear-gradient(135deg, #F472B6 0%, #EC4899 50%, #A855F7 100%)'
+                      : undefined,
+                    boxShadow: allChipsIn && wordsPhase !== 'done'
+                      ? `0 4px 14px ${alpha(pink[500], 0.35)}`
+                      : 'none',
                     transition: 'all 0.4s ease',
                     '&.Mui-disabled': { background: alpha(purple[100], 0.8), color: alpha(purple[700], 0.4) },
                   }}
                 >
-                  {phase === 'generating' ? 'Generating…' : '🤖 Generate with AI'}
+                  {wordsPhase === 'generating' ? 'Generating…' : 'Generate Cards'}
                 </Button>
 
-                {/* Generated fields */}
-                {([
-                  { label: 'Reading',    value: demo.reading,     font: '"Noto Serif JP", serif', size: '1.05rem' },
-                  { label: 'Meaning',    value: demo.meaning,     font: 'inherit',                 size: '0.88rem' },
-                  { label: 'Example JP', value: demo.example_jp,  font: '"Noto Serif JP", serif', size: '0.82rem' },
-                  { label: 'Example EN', value: demo.example_en,  font: 'inherit',                 size: '0.82rem' },
-                ] as Array<{ label: string; value: string; font: string; size: string }>).map(({ label, value, font, size }, i) => (
-                  <Box key={label} sx={{
-                    mb: 1.5,
-                    opacity: fieldsVisible ? 1 : 0,
-                    transform: fieldsVisible ? 'translateY(0)' : 'translateY(8px)',
-                    transition: `opacity 0.45s ease ${0.14 * i}s, transform 0.45s ease ${0.14 * i}s`,
+                {chipsShown > 0 && wordsPhase === 'idle' && (
+                  <Typography sx={{
+                    textAlign: 'center', fontSize: '0.67rem',
+                    color: '#C2709A', fontFamily: '"Nunito", sans-serif', fontWeight: 600, mb: 1.5,
                   }}>
-                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, color: 'text.secondary', mb: 0.4, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                      {label}
-                    </Typography>
-                    <Box sx={{
-                      px: 1.5, py: 0.9,
-                      bgcolor: alpha(accent, 0.06), border: `1px solid ${alpha(accent, 0.22)}`,
-                      borderRadius: 1.5, display: 'flex', alignItems: 'center', gap: 1,
+                    {chipsShown} word{chipsShown > 1 ? 's' : ''} queued
+                  </Typography>
+                )}
+
+                {wordsPhase === 'done' && (
+                  <Box>
+                    <Typography sx={{
+                      textAlign: 'center', fontSize: '0.72rem', fontWeight: 800,
+                      color: emerald[600], fontFamily: '"Nunito", sans-serif', mb: 1.5,
                     }}>
-                      <Typography sx={{ fontFamily: font, fontSize: size, color: 'text.primary', flex: 1, fontStyle: label === 'Example EN' ? 'italic' : 'normal' }}>
-                        {value}
-                      </Typography>
-                      <Box sx={{
-                        width: 18, height: 18, borderRadius: '50%', bgcolor: accent, flexShrink: 0,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      ✓ {DEMO_CHIP_WORDS.length} cards generated!
+                    </Typography>
+                    <Stack spacing={0.75}>
+                      {DEMO_GENERATED_CARDS.map((card, i) => (
+                        <MiniCardRow key={card.word} {...card} delay={i * 0.1} />
+                      ))}
+                      <Typography sx={{
+                        textAlign: 'center', fontSize: '0.65rem',
+                        color: alpha(purple[500], 0.4), mt: 0.5,
                       }}>
-                        <Typography sx={{ fontSize: '0.6rem', color: '#fff', lineHeight: 1, fontWeight: 700 }}>✓</Typography>
-                      </Box>
-                    </Box>
+                        + 2 more cards
+                      </Typography>
+                    </Stack>
                   </Box>
-                ))}
+                )}
               </Box>
             </Paper>
           </Box>
 
-          {/* Right: result card preview */}
-          <Box sx={{ flex: '0 0 auto', width: { xs: '100%', sm: 360, lg: 320 } }}>
-            <Box sx={{
-              opacity: fieldsVisible ? 1 : 0,
-              transform: fieldsVisible ? 'scale(1) translateY(0)' : 'scale(0.94) translateY(24px)',
-              transition: 'opacity 0.7s ease 0.55s, transform 0.7s ease 0.55s',
+          {/* Panel 2: Import from PDF */}
+          <Box sx={{ flex: 1 }}>
+            <Paper elevation={0} sx={{
+              borderRadius: 4, overflow: 'hidden', height: '100%',
+              boxShadow: `0 24px 80px ${alpha(pink[300], 0.22)}, 0 4px 16px ${alpha(purple[300], 0.12)}`,
+              border: `1px solid ${alpha(pink[200], 0.7)}`,
+              background: '#fff',
+              display: 'flex', flexDirection: 'column',
             }}>
-              <Typography sx={{
-                textAlign: 'center', mb: 1.5,
-                fontSize: '0.7rem', color: alpha(pink[600], 0.45), letterSpacing: '0.14em', textTransform: 'uppercase',
+              <Box sx={{
+                px: 2.5, py: 1.5,
+                background: `linear-gradient(135deg, ${purple[500]} 0%, ${pink[600]} 100%)`,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               }}>
-                ✦ card created ✦
-              </Typography>
+                <Typography sx={{ fontFamily: '"Nunito", sans-serif', fontSize: '0.82rem', fontWeight: 800, color: '#fff' }}>
+                  📄 Import from PDF
+                </Typography>
+                <Stack direction="row" spacing={0.75}>
+                  {[0, 1, 2].map(i => (
+                    <Box key={i} sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: alpha('#fff', 0.35) }} />
+                  ))}
+                </Stack>
+              </Box>
 
-              <Paper elevation={0} sx={{
-                borderRadius: 4, overflow: 'hidden',
-                boxShadow: `0 20px 60px ${alpha(purple[300], 0.28)}, 0 4px 16px ${alpha(pink[300], 0.15)}`,
-                border: `1px solid ${alpha(purple[200], 0.5)}`,
-              }}>
-                <Box sx={{ height: 7, background: `linear-gradient(90deg, ${accent}, ${pink[400]})` }} />
+              <Box sx={{ p: { xs: 2.5, sm: 3 }, flex: 1 }}>
+                {/* PDF upload area */}
                 <Box sx={{
-                  p: { xs: 4, sm: 5 }, textAlign: 'center',
-                  background: `linear-gradient(160deg, ${purple[50]} 0%, ${pink[50]} 100%)`,
+                  border: `2px dashed ${pdfPhase === 'done' ? alpha(emerald[400], 0.5) : alpha(purple[300], 0.4)}`,
+                  borderRadius: 3, p: 3, mb: 2,
+                  textAlign: 'center',
+                  bgcolor: pdfPhase === 'done' ? alpha(emerald[50], 0.5) : alpha(purple[50], 0.3),
+                  transition: 'all 0.5s ease',
                 }}>
-                  <Chip label={demo.jlpt} size="small" sx={{
-                    mb: 2, bgcolor: alpha(accent, 0.1), color: accent,
-                    border: `1px solid ${alpha(accent, 0.3)}`, fontSize: '0.7rem', fontWeight: 700,
-                  }} />
-                  <Typography sx={{
-                    fontFamily: '"Noto Serif JP", serif',
-                    fontSize: { xs: '3.5rem', sm: '4rem' },
-                    color: purple[800], lineHeight: 1, mb: 1.5,
-                  }}>
-                    {demo.word}
-                  </Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.15rem', color: alpha(purple[600], 0.8), mb: 1 }}>
-                    {demo.reading}
-                  </Typography>
-                  <Typography sx={{ fontSize: '1rem', color: alpha(purple[800], 0.55), fontStyle: 'italic' }}>
-                    {demo.meaning}
-                  </Typography>
-                </Box>
-              </Paper>
+                  {pdfPhase === 'idle' && (
+                    <>
+                      <Box sx={{ fontSize: '2rem', mb: 1, lineHeight: 1 }}>📄</Box>
+                      <Typography sx={{ fontSize: '0.78rem', color: purple[600], fontWeight: 700, fontFamily: '"Nunito", sans-serif' }}>
+                        Drop a PDF here or click to upload
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.68rem', color: alpha(purple[500], 0.5), fontFamily: '"Nunito", sans-serif', mt: 0.5 }}>
+                        Textbooks, word lists, study guides
+                      </Typography>
+                    </>
+                  )}
 
-              <Typography sx={{
-                textAlign: 'center', mt: 1.5,
-                fontSize: '0.7rem', color: alpha(pink[600], 0.4), letterSpacing: '0.1em', textTransform: 'uppercase',
-              }}>
-                ✦ click the card to flip it ✦
-              </Typography>
-            </Box>
+                  {pdfPhase === 'generating' && (
+                    <>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 1.5 }}>
+                        <Box sx={{
+                          width: 36, height: 44, borderRadius: 1,
+                          bgcolor: alpha(purple[100], 0.8),
+                          border: `1px solid ${alpha(purple[300], 0.4)}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <Typography sx={{ fontSize: '0.6rem', color: purple[500], fontWeight: 700 }}>PDF</Typography>
+                        </Box>
+                        <Box sx={{ textAlign: 'left' }}>
+                          <Typography sx={{ fontSize: '0.78rem', color: 'text.primary', fontWeight: 700, fontFamily: '"Nunito", sans-serif' }}>
+                            JLPT_N3_vocab.pdf
+                          </Typography>
+                          <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary', fontFamily: '"Nunito", sans-serif' }}>
+                            2.4 MB
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                        <CircularProgress size={16} sx={{ color: purple[400] }} />
+                        <Typography sx={{ fontSize: '0.72rem', color: purple[500], fontWeight: 700, fontFamily: '"Nunito", sans-serif' }}>
+                          Scanning & extracting vocabulary…
+                        </Typography>
+                      </Box>
+                    </>
+                  )}
+
+                  {pdfPhase === 'done' && (
+                    <>
+                      <Box sx={{ fontSize: '1.5rem', mb: 0.5, lineHeight: 1 }}>✅</Box>
+                      <Typography sx={{ fontSize: '0.82rem', color: emerald[700], fontWeight: 800, fontFamily: '"Nunito", sans-serif' }}>
+                        52 words extracted!
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.68rem', color: alpha(emerald[600], 0.6), fontFamily: '"Nunito", sans-serif', mt: 0.5 }}>
+                        From JLPT_N3_vocab.pdf
+                      </Typography>
+                    </>
+                  )}
+                </Box>
+
+                {/* Extracted card previews */}
+                {pdfPhase === 'done' && (
+                  <Box>
+                    <Typography sx={{
+                      textAlign: 'center', fontSize: '0.72rem', fontWeight: 800,
+                      color: emerald[600], fontFamily: '"Nunito", sans-serif', mb: 1.5,
+                    }}>
+                      ✓ 52 cards ready to study
+                    </Typography>
+                    <Stack spacing={0.75}>
+                      {PDF_EXTRACTED_CARDS.map((card, i) => (
+                        <MiniCardRow key={card.word} {...card} delay={i * 0.1} />
+                      ))}
+                      <Typography sx={{
+                        textAlign: 'center', fontSize: '0.65rem',
+                        color: alpha(purple[500], 0.4), mt: 0.5,
+                      }}>
+                        + 48 more cards
+                      </Typography>
+                    </Stack>
+                  </Box>
+                )}
+              </Box>
+            </Paper>
           </Box>
         </Box>
       </Box>
@@ -1136,6 +1261,11 @@ export default function LandingPage() {
         '@keyframes cursorBlink': {
           '0%,49%': { opacity: '1' },
           '50%,100%': { opacity: '0' },
+        },
+        '@keyframes chipPopIn': {
+          '0%':   { opacity: '0', transform: 'scale(0.7)' },
+          '70%':  { transform: 'scale(1.05)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
         },
       }} />
       <HeroSection session={session} />
