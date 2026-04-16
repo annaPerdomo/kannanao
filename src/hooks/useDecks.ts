@@ -7,6 +7,7 @@ import {
   dbRenameDeck,
   dbUpdateDeckEmoji,
   dbPinDeck,
+  dbSetDeckPublic,
   isConfigured,
   loadDecks,
   showConfigBanner,
@@ -104,6 +105,15 @@ export function useDecks() {
     }
   }, []);
 
+  const setDeckPublic = useCallback(async (id: string, isPublic: boolean): Promise<void> => {
+    setDecks((ds) => ds.map((d) => (d.id === id ? { ...d, isPublic } : d)));
+    try {
+      await dbSetDeckPublic(id, isPublic);
+    } catch {
+      setDecks((ds) => ds.map((d) => (d.id === id ? { ...d, isPublic: !isPublic } : d)));
+    }
+  }, []);
+
   return {
     decks,
     loading,
@@ -113,5 +123,6 @@ export function useDecks() {
     updateDeckCount,
     updateDeckEmoji,
     pinDeck,
+    setDeckPublic,
   };
 }
