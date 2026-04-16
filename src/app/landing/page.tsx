@@ -1150,15 +1150,15 @@ function CtaSection({ session }: { session: unknown }) {
           fontSize: { xs: '2.6rem', sm: '3.4rem', md: '4.2rem' },
           color: 'white', lineHeight: 1.02, mb: 2.5,
         }}>
-          Ready to fall in love<br />with Japanese?
+          Ready to level up your<br />Japanese skills?
         </Typography>
 
         <Typography sx={{
           fontSize: '1rem', color: alpha('#fff', 0.52),
           mb: 5, maxWidth: 520, mx: 'auto', lineHeight: 1.8,
         }}>
-          Kannanao is currently in closed beta. Drop your email and we&apos;ll let
-          you know the moment new sign-ups open.
+          Kannanao is currently in closed beta. Drop your email and we&apos;ll
+          notify you the moment new spots open up.
         </Typography>
 
         {session ? (
