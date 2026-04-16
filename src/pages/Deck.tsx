@@ -22,6 +22,7 @@ import PushPinIcon from "@mui/icons-material/PushPin";
 import PushPinOutlinedIcon from "@mui/icons-material/PushPinOutlined";
 import CodeIcon from "@mui/icons-material/Code";
 import { AddCardsModal } from "@/components/AddCardsModal";
+import { ReviewCardsDialog } from "@/components/ReviewCardsDialog";
 import { EmbedDeckDialog } from "@/components/EmbedDeckDialog";
 import { ImageCard } from "@/components/ImageCard";
 import { Loading } from "@/components/Loading";
@@ -127,6 +128,8 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const [addCardsOpen, setAddCardsOpen] = useState(false);
   const [embedOpen, setEmbedOpen] = useState(false);
   const [pendingMainViewMode, setPendingMainViewMode] = useState<'hiragana' | 'kanji'>('hiragana');
+  const [reviewCards, setReviewCards] = useState<(Omit<import('@/types/flashcard').Flashcard, 'id' | 'deckId'> & { image_query: string })[]>([]);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   const handlePdfCards = async (extracted: GeneratedCard[]) => {
     const withImages = await Promise.all(
@@ -135,15 +138,15 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         return {
           ...card,
           imageUrl: imageUrl ?? undefined,
-          deckId,
           mainViewMode: pendingMainViewMode,
           cardType: card.card_type,
           jlptLevel: card.jlpt_level ?? undefined,
         };
       }),
     );
-    await addCards(withImages);
     setPdfImportOpen(false);
+    setReviewCards(withImages);
+    setReviewOpen(true);
   };
 
   // ── Rename state ──────────────────────────────────────────────────────────
@@ -217,7 +220,9 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
 
   const handleGenerate = async (words: string[], mainViewMode: 'hiragana' | 'kanji') => {
     const generated = await generate(words, deckId, mainViewMode);
-    addCards(generated.map((card) => ({ ...card, deckId })));
+    setAddCardsOpen(false);
+    setReviewCards(generated as typeof reviewCards);
+    setReviewOpen(true);
   };
 
   if (decksLoading || cardsLoading) {
@@ -830,6 +835,17 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         open={pdfImportOpen}
         onClose={() => setPdfImportOpen(false)}
         onAddCards={handlePdfCards}
+      />
+
+      <ReviewCardsDialog
+        open={reviewOpen}
+        cards={reviewCards}
+        onClose={() => setReviewOpen(false)}
+        onConfirm={(confirmed) => {
+          addCards(confirmed.map((c) => ({ ...c, deckId })));
+          setReviewOpen(false);
+          setReviewCards([]);
+        }}
       />
 
       <EmbedDeckDialog
