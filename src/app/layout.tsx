@@ -4,9 +4,27 @@ import Providers from "./providers";
 import { ConditionalShell } from "@/components/ConditionalShell";
 import { AppBackground } from "@/components/AppBackground";
 
+const TITLE = "Kannanao — AI Japanese Flashcard Studio";
+const DESCRIPTION =
+  "Create Japanese flashcards with AI, practice with Match, Fill-in-the-blank & Recall modes, track XP & streaks, import PDFs, and share decks.";
+
 export const metadata: Metadata = {
-  title: "語学 — Japanese Flashcards",
-  description: "AI-powered Japanese flashcard studio",
+  metadataBase: new URL("https://kannanao.vercel.app"),
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: "https://kannanao.vercel.app",
+    siteName: "Kannanao",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({
@@ -32,7 +50,6 @@ export default function RootLayout({
           name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover"
         />
-        <title>Kannanao: Japanese Flashcards</title>
         <link
           rel="icon"
           href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>"

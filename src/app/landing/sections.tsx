@@ -306,12 +306,6 @@ export function HeroSection() {
               <Flashcard card={SAKURA_CARD} height={450} />
             </ThemeProvider>
           </Box>
-          <Typography sx={{
-            textAlign: 'center', mt: 2,
-            fontSize: '0.72rem', color: alpha(pink[600], 0.55), letterSpacing: '0.12em', textTransform: 'uppercase',
-          }}>
-            ✦ click the card to flip it ✦
-          </Typography>
         </Box>
       </Box>
 
