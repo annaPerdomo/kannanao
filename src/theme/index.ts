@@ -33,7 +33,7 @@ declare module '@mui/material/styles' {
 
 // ─── Color scales ─────────────────────────────────────────────────────────────
 
-const pink: ColorScale = {
+export const pink: ColorScale = {
   50:  '#FFF5FB',
   100: '#FDE8F3',
   200: '#FBCFE8',
@@ -46,7 +46,7 @@ const pink: ColorScale = {
   900: '#831843',
 };
 
-const purple: ColorScale = {
+export const purple: ColorScale = {
   50:  '#F5F3FF',
   100: '#EDE9FE',
   200: '#DDD6FE',
@@ -59,7 +59,7 @@ const purple: ColorScale = {
   900: '#4C1D95',
 };
 
-const sky: ColorScale = {
+export const sky: ColorScale = {
   50:  '#F0F9FF',
   100: '#E0F2FE',
   200: '#BAE6FD',
@@ -70,6 +70,68 @@ const sky: ColorScale = {
   700: '#0369A1',
   800: '#075985',
   900: '#0C4A6E',
+};
+
+export const emerald: ColorScale = {
+  50:  '#ECFDF5',
+  100: '#D1FAE5',
+  200: '#A7F3D0',
+  300: '#6EE7B7',
+  400: '#34D399',
+  500: '#10B981',
+  600: '#059669',
+  700: '#047857',
+  800: '#065F46',
+  900: '#064E3B',
+};
+
+export const amber: ColorScale = {
+  50:  '#FFFBEB',
+  100: '#FEF3C7',
+  200: '#FDE68A',
+  300: '#FCD34D',
+  400: '#FBBF24',
+  500: '#F59E0B',
+  600: '#D97706',
+  700: '#B45309',
+  800: '#92400E',
+  900: '#78350F',
+};
+
+export const neutral: ColorScale = {
+  50:  '#FAFAFA',
+  100: '#F5F5F5',
+  200: '#E5E5E5',
+  300: '#D4D4D4',
+  400: '#A3A3A3',
+  500: '#737373',
+  600: '#525252',
+  700: '#404040',
+  800: '#262626',
+  900: '#171717',
+};
+
+/** Mac-style browser chrome colours used in the embed mockup */
+export const macChrome = {
+  bar:         '#F5F5F7',
+  border:      '#E5E5EA',
+  addressBg:   '#FFFFFF',
+  addressBorder:'#E0E0E0',
+  text:        '#9E9EA7',
+  footerBg:    '#FAFAFA',
+  footerBorder:'#EFEFEF',
+  red:         '#FF5F57',
+  yellow:      '#FFBD2E',
+  green:       '#28C840',
+};
+
+/** Very-dark purple shades for the Murasaki hero/CTA backgrounds */
+export const darkPurple = {
+  base:    '#1A0A3C',
+  mid:     '#2E1065',
+  midAlt:  '#200B46',
+  deeper:  '#1e0a4a',
+  deepest: '#0f0624',
 };
 
 // Theme-specific rainbow week tab colors (Mon–Sun)

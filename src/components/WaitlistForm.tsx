@@ -12,9 +12,11 @@ import { alpha } from '@mui/material/styles';
 interface WaitlistFormProps {
   /** Compact layout for inline use (e.g. login page) */
   compact?: boolean;
+  /** Dark background mode — brightens text and button for contrast */
+  dark?: boolean;
 }
 
-export default function WaitlistForm({ compact }: WaitlistFormProps) {
+export default function WaitlistForm({ compact, dark }: WaitlistFormProps) {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
@@ -68,7 +70,7 @@ export default function WaitlistForm({ compact }: WaitlistFormProps) {
           sx={{
             fontFamily: '"DM Serif Display", serif',
             fontSize: '1.1rem',
-            color: 'primary.dark',
+            color: dark ? alpha('#fff', 0.9) : 'primary.dark',
             textAlign: 'center',
             mb: 0.5,
           }}
@@ -120,13 +122,19 @@ export default function WaitlistForm({ compact }: WaitlistFormProps) {
         variant="contained"
         disabled={busy}
         sx={{
-          bgcolor: 'primary.dark',
+          background: dark
+            ? 'linear-gradient(135deg, #F472B6 0%, #EC4899 100%)'
+            : undefined,
+          bgcolor: dark ? undefined : 'primary.dark',
           color: '#fff',
           fontFamily: '"DM Serif Display", serif',
           textTransform: 'none',
           borderRadius: 6,
           py: 1.2,
-          '&:hover': { bgcolor: 'primary.dark', filter: 'brightness(0.9)' },
+          boxShadow: dark ? '0 8px 28px rgba(236,72,153,0.45)' : undefined,
+          '&:hover': dark
+            ? { filter: 'brightness(1.08)', transform: 'translateY(-2px)', boxShadow: '0 12px 36px rgba(236,72,153,0.55)' }
+            : { bgcolor: 'primary.dark', filter: 'brightness(0.9)' },
         }}
       >
         {busy ? <CircularProgress size={20} color="inherit" /> : 'Notify me when spots open 🌸'}
