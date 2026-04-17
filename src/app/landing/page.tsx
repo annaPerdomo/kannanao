@@ -17,7 +17,7 @@ const jsonLd = {
   operatingSystem: 'Web',
   description:
     'Create Japanese flashcards with AI, practice with Match, Fill-in-the-blank & Recall modes, track XP & streaks, import PDFs, and share decks.',
-  url: 'https://kannanao.vercel.app',
+  url: 'https://kannanao.com',
   offers: {
     '@type': 'Offer',
     price: '0',

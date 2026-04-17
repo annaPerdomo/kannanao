@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/dashboard', '/decks', '/study', '/stats', '/profile', '/api'],
     },
-    sitemap: 'https://kannanao.vercel.app/sitemap.xml',
+    sitemap: 'https://kannanao.com/sitemap.xml',
   }
 }

@@ -9,13 +9,13 @@ const DESCRIPTION =
   "Create Japanese flashcards with AI, practice with Match, Fill-in-the-blank & Recall modes, track XP & streaks, import PDFs, and share decks.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://kannanao.vercel.app"),
+  metadataBase: new URL("https://kannanao.com"),
   title: TITLE,
   description: DESCRIPTION,
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
-    url: "https://kannanao.vercel.app",
+    url: "https://kannanao.com",
     siteName: "Kannanao",
     type: "website",
     locale: "en_US",

@@ -1056,7 +1056,7 @@ export function PracticeSection() {
                   display: 'flex', alignItems: 'center',
                 }}>
                   <Typography sx={{ fontSize: '0.62rem', color: macChrome.text, letterSpacing: '0.02em', fontFamily: '"DM Mono", monospace' }}>
-                    kannanao.vercel.app/embed/demo-yume
+                    kannanao.com/embed/demo-yume
                   </Typography>
                 </Box>
               </Box>
