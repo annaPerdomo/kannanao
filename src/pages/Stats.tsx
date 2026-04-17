@@ -20,7 +20,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import IconButton from '@mui/material/IconButton';
-import { useProgress, xpProgressInLevel, ACHIEVEMENTS, StudySession } from '@/hooks/useProgess';
+import { useProgress, xpProgressInLevel, ACHIEVEMENTS, StudySession, SessionMode } from '@/hooks/useProgess';
 
 // ─── Small stat card ─────────────────────────────────────────────────────────
 
@@ -245,10 +245,10 @@ function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
   const [viewYear, setViewYear] = useState<number>(todayReal.getFullYear());
   const [viewMonth, setViewMonth] = useState<number>(todayReal.getMonth()); // 0-indexed
 
-  // cards studied per local date
+  // cards studied per local date — count any session with cards, even if not formally ended
   const activityMap = new Map<string, number>();
   sessions.forEach((s) => {
-    if (!s.ended_at) return;
+    if (s.cards_studied === 0) return;
     const key = sessionLocalDate(s.started_at);
     activityMap.set(key, (activityMap.get(key) ?? 0) + s.cards_studied);
   });
@@ -398,10 +398,11 @@ function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
 
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
 
-  const completed = sessions.filter((s) => s.ended_at);
+  // Count any session with cards recorded, whether or not it has ended_at
+  const withCards = sessions.filter((s) => s.cards_studied > 0);
 
   const forPeriod = (start: Date) =>
-    completed.filter((s) => new Date(s.started_at) >= start);
+    withCards.filter((s) => new Date(s.started_at) >= start);
 
   const aggregate = (list: StudySession[]) => ({
     sessions: list.length,
@@ -414,6 +415,15 @@ function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
   const month = aggregate(forPeriod(monthStart));
 
   const monthName = today.toLocaleDateString(undefined, { month: 'long' });
+
+  // Mode breakdown for the current month
+  const monthSessions = forPeriod(monthStart);
+  const modeCounts = monthSessions.reduce<Record<string, number>>((acc, s) => {
+    const key = s.practice_mode ?? 'study';
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+  }, {});
+  const modeBreakdown = Object.entries(modeCounts).sort((a, b) => b[1] - a[1]);
 
   const PeriodCard = ({
     title,
@@ -460,11 +470,85 @@ function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
   );
 
   return (
-    <Box sx={{ display: 'flex', gap: 1.5 }}>
-      <PeriodCard title="This Week" data={week} />
-      <PeriodCard title={monthName} data={month} />
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <Box sx={{ display: 'flex', gap: 1.5 }}>
+        <PeriodCard title="This Week" data={week} />
+        <PeriodCard title={monthName} data={month} />
+      </Box>
+
+      {modeBreakdown.length > 0 && (
+        <Box
+          sx={{
+            background: alpha(brand[300], 0.22),
+            border: `1px solid ${alpha(brand[300], 0.40)}`,
+            borderRadius: 3,
+            p: 2,
+          }}
+        >
+          <Typography
+            sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '0.78rem', color: brand[700], mb: 1 }}
+          >
+            {monthName} by mode
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+            {modeBreakdown.map(([mode, count]) => {
+              const color = modeColor(mode as SessionMode);
+              return (
+                <Box
+                  key={mode}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    px: 1.25,
+                    py: 0.4,
+                    borderRadius: 99,
+                    bgcolor: alpha(color, 0.12),
+                    border: `1px solid ${alpha(color, 0.30)}`,
+                  }}
+                >
+                  <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color }}>
+                    {modeLabel(mode as SessionMode)}
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.68rem', color: 'text.secondary' }}>
+                    ×{count}
+                  </Typography>
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
+      )}
     </Box>
   );
+}
+
+// ─── Mode helpers ─────────────────────────────────────────────────────────────
+
+const MODE_LABELS: Record<SessionMode, string> = {
+  study:         'Study',
+  match:         'Match',
+  fill:          'Fill',
+  recall:        'Recall',
+  speech_read:   'Read-Through',
+  speech_recall: 'Line Recall',
+};
+
+const MODE_COLORS: Record<SessionMode, string> = {
+  study:         '#6366F1',
+  match:         '#10B981',
+  fill:          '#F59E0B',
+  recall:        '#3B82F6',
+  speech_read:   '#EC4899',
+  speech_recall: '#8B5CF6',
+};
+
+function modeLabel(mode: SessionMode | null | undefined): string {
+  return mode ? (MODE_LABELS[mode] ?? mode) : 'Study';
+}
+
+function modeColor(mode: SessionMode | null | undefined): string {
+  return mode ? (MODE_COLORS[mode] ?? '#6366F1') : '#6366F1';
 }
 
 // ─── Recent sessions ──────────────────────────────────────────────────────────
@@ -475,12 +559,14 @@ function SessionRow({
   xp,
   date,
   secs,
+  mode,
 }: {
   correct: number;
   studied: number;
   xp: number;
   date: string;
   secs: number;
+  mode: SessionMode | null;
 }) {
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -501,6 +587,20 @@ function SessionRow({
       <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', minWidth: 72 }}>
         {new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
       </Typography>
+
+      <Chip
+        label={modeLabel(mode)}
+        size="small"
+        sx={{
+          bgcolor: alpha(modeColor(mode), 0.12),
+          color: modeColor(mode),
+          fontWeight: 700,
+          fontSize: '0.62rem',
+          height: 20,
+          border: `1px solid ${alpha(modeColor(mode), 0.30)}`,
+          flexShrink: 0,
+        }}
+      />
 
       <Box sx={{ flex: 1 }}>
         <LinearProgress
@@ -725,6 +825,7 @@ export default function Stats() {
                 xp={s.xp_earned}
                 date={s.started_at}
                 secs={s.duration_secs}
+                mode={s.practice_mode}
               />
             ))
         )}

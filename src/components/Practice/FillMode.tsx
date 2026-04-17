@@ -30,7 +30,7 @@ export function FillMode({ cards, deckId, onExit }: FillModeProps) {
   const correctCountRef = useRef(0);
 
   useEffect(() => {
-    startSession(deckId).then((id) => { sessionIdRef.current = id; startTimeRef.current = Date.now(); });
+    startSession(deckId, 'fill').then((id) => { sessionIdRef.current = id; startTimeRef.current = Date.now(); });
   }, [deckId, startSession]);
 
   const card = pool[index];

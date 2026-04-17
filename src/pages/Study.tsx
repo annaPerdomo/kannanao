@@ -185,7 +185,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
   const endedRef = useRef(false);
 
   useEffect(() => {
-    startSession(deckId).then((id) => {
+    startSession(deckId, 'study').then((id) => {
       sessionIdRef.current = id;
       startTimeRef.current = Date.now();
     });

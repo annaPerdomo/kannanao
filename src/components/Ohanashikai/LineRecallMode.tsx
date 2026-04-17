@@ -59,7 +59,7 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
   const correctCountRef = useRef(0);
 
   useEffect(() => {
-    startSession(null).then((id) => {
+    startSession(null, 'speech_recall').then((id) => {
       sessionIdRef.current = id;
       startTimeRef.current = Date.now();
     });

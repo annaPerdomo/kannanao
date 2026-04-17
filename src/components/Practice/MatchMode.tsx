@@ -57,7 +57,7 @@ export function MatchMode({ cards, deckId, onExit }: MatchModeProps) {
   const recordedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    startSession(deckId).then((id) => {
+    startSession(deckId, 'match').then((id) => {
       sessionIdRef.current = id;
       startTimeRef.current = Date.now();
     });

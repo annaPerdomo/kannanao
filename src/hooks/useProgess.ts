@@ -19,9 +19,12 @@ export interface UserProgress {
   total_sessions: number;
 }
 
+export type SessionMode = 'study' | 'match' | 'fill' | 'recall' | 'speech_read' | 'speech_recall';
+
 export interface StudySession {
   id: string;
   deck_id: string | null;
+  practice_mode: SessionMode | null;
   cards_studied: number;
   cards_correct: number;
   xp_earned: number;
@@ -156,6 +159,17 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
 ];
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Returns a YYYY-MM-DD string in the user's local timezone (not UTC). */
+function toLocalDateString(date: Date): string {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-');
+}
+
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
 export function useProgress() {
@@ -191,7 +205,19 @@ export function useProgress() {
         .single();
       if (newProg) setProgress(newProg);
     } else {
-      setProgress(prog);
+      // Detect a broken streak on load — if last_study_date is neither today nor
+      // yesterday (local time), the streak should already be 0 in the display.
+      // We also write it back to the DB so subsequent reads are correct.
+      const todayLocal = toLocalDateString(new Date());
+      const yesterdayLocal = toLocalDateString(new Date(Date.now() - 86400000));
+      const lastDate = prog.last_study_date;
+      if (lastDate && lastDate !== todayLocal && lastDate !== yesterdayLocal && prog.streak_days > 0) {
+        const reset = { ...prog, streak_days: 0 };
+        setProgress(reset);
+        await supabase.from('user_progress').update({ streak_days: 0 }).eq('id', prog.id);
+      } else {
+        setProgress(prog);
+      }
     }
 
     if (ach) setAchievements(ach);
@@ -217,10 +243,10 @@ export function useProgress() {
       const newStudied = progress.total_cards_studied + 1;
       const newCorrect = progress.total_correct + (correct ? 1 : 0);
 
-      // Streak logic
-      const today = new Date().toISOString().split('T')[0];
+      // Streak logic — use local dates so midnight rolls over at the user's clock
+      const today = toLocalDateString(new Date());
       const lastDate = progress.last_study_date;
-      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const yesterday = toLocalDateString(new Date(Date.now() - 86400000));
 
       let newStreak = progress.streak_days;
       if (lastDate !== today) {
@@ -342,11 +368,11 @@ export function useProgress() {
 
   /** Call at the beginning of a study session to create a session row */
   const startSession = useCallback(
-    async (deckId: string | null): Promise<string> => {
+    async (deckId: string | null, mode?: SessionMode): Promise<string> => {
       const { data: { user } } = await supabase.auth.getUser();
       const { data } = await supabase
         .from('study_sessions')
-        .insert({ deck_id: deckId ?? null, user_id: user?.id })
+        .insert({ deck_id: deckId ?? null, user_id: user?.id, practice_mode: mode ?? null })
         .select('id')
         .single();
 

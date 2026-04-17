@@ -44,7 +44,7 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
   const correctCountRef = useRef(0);
 
   useEffect(() => {
-    startSession(deckId).then((id) => {
+    startSession(deckId, 'recall').then((id) => {
       sessionIdRef.current = id;
       startTimeRef.current = Date.now();
     });

@@ -38,7 +38,7 @@ export function ReadThroughMode({ lines, ohanashikaiId, onExit }: ReadThroughMod
   const seenRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
-    startSession(null).then((id) => {
+    startSession(null, 'speech_read').then((id) => {
       sessionIdRef.current = id;
       startTimeRef.current = Date.now();
     });
