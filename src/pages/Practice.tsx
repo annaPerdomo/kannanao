@@ -18,7 +18,7 @@ interface PracticeProps {
 const LABELS: Record<PracticeMode, string> = {
   match: 'Match JP ↔ EN',
   fill: 'Fill in the Blank',
-  recall: 'Recall Typing',
+  recall: 'Guess It!',
 };
 
 export default function Practice({ deckId, mode, onBack }: PracticeProps) {

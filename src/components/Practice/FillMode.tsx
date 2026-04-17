@@ -1,14 +1,28 @@
 'use client';
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { Box, Typography, TextField, Button, LinearProgress, Chip, Stack } from '@mui/material';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  LinearProgress,
+  Chip,
+  Stack,
+} from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import type { Flashcard } from '@/types/flashcard';
 import { useProgress } from '@/hooks/useProgess';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import { CelebrationScreen } from './CelebrationScreen';
 
-interface FillModeProps { cards: Flashcard[]; deckId: string; onExit: () => void; }
+interface FillModeProps {
+  cards: Flashcard[];
+  deckId: string;
+  onExit: () => void;
+}
 
 function maskWord(sentence: string, word: string, reading?: string): string {
   if (sentence.includes(word)) return sentence.replace(word, '＿'.repeat(word.length));
@@ -18,11 +32,16 @@ function maskWord(sentence: string, word: string, reading?: string): string {
 }
 
 export function FillMode({ cards, deckId, onExit }: FillModeProps) {
+  const theme = useTheme();
+  const { brand, surfaces } = theme.palette;
+
   const pool = useMemo(() => [...cards].sort(() => Math.random() - 0.5), [cards]);
   const [index, setIndex] = useState(0);
   const [input, setInput] = useState('');
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
   const [score, setScore] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
 
   const { startSession, recordAnswer, endSession } = useProgress();
   const sessionIdRef = useRef<string>('');
@@ -30,100 +49,244 @@ export function FillMode({ cards, deckId, onExit }: FillModeProps) {
   const correctCountRef = useRef(0);
 
   useEffect(() => {
-    startSession(deckId, 'fill').then((id) => { sessionIdRef.current = id; startTimeRef.current = Date.now(); });
+    startSession(deckId, 'fill').then((id) => {
+      sessionIdRef.current = id;
+      startTimeRef.current = Date.now();
+    });
   }, [deckId, startSession]);
 
   const card = pool[index];
   const done = index >= pool.length;
 
+  const next = useCallback(() => {
+    setIndex((i) => i + 1);
+    setInput('');
+    setResult(null);
+  }, []);
+
+  // Auto-advance 1.5 s after a correct answer
+  useEffect(() => {
+    if (result === 'correct') {
+      const t = setTimeout(next, 1500);
+      return () => clearTimeout(t);
+    }
+  }, [result, next]);
+
   const check = async () => {
     const correct = input.trim() === card.word || input.trim() === card.reading;
     setResult(correct ? 'correct' : 'wrong');
-    if (correct) { setScore((s) => s + 1); correctCountRef.current += 1; }
+    if (correct) {
+      setScore((s) => s + 1);
+      correctCountRef.current += 1;
+      setStreak((s) => {
+        const next = s + 1;
+        setBestStreak((b) => Math.max(b, next));
+        return next;
+      });
+    } else {
+      setStreak(0);
+    }
     if (sessionIdRef.current) await recordAnswer(sessionIdRef.current, correct, card.jlptLevel);
   };
 
-  const next = () => { setIndex((i) => i + 1); setInput(''); setResult(null); };
-
   const handleExit = async () => {
     if (sessionIdRef.current) {
-      await endSession(sessionIdRef.current, { cardsStudied: index, cardsCorrect: correctCountRef.current, durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000) });
+      await endSession(sessionIdRef.current, {
+        cardsStudied: index,
+        cardsCorrect: correctCountRef.current,
+        durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+      });
     }
     onExit();
   };
 
   useEffect(() => {
     if (done && sessionIdRef.current) {
-      endSession(sessionIdRef.current, { cardsStudied: pool.length, cardsCorrect: correctCountRef.current, durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000) });
+      endSession(sessionIdRef.current, {
+        cardsStudied: pool.length,
+        cardsCorrect: correctCountRef.current,
+        durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done]);
 
+  // ── Completion screen ──────────────────────────────────────────────────────
   if (done) {
+    const pct = pool.length > 0 ? score / pool.length : 0;
+    const heading = pct === 1 ? 'Perfect!' : pct >= 0.7 ? 'Great job!' : 'Keep going!';
     return (
-      <Box sx={{ textAlign: 'center', py: 6 }}>
-        <CheckIcon sx={{ fontSize: 56, color: 'success.main', mb: 2 }} />
-        <Typography variant="h4" sx={{ mb: 1 }}>Complete!</Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>{score} / {pool.length} correct</Typography>
-        <Button variant="outlined" onClick={onExit}>Back to Deck</Button>
-      </Box>
+      <CelebrationScreen
+        heading={heading}
+        subheading={`${score} / ${pool.length} correct`}
+        extra={bestStreak >= 3 ? `🔥 Best streak: ${bestStreak} in a row!` : undefined}
+        mode="fill"
+        onExit={onExit}
+      />
     );
   }
 
+  // ── Fill card ──────────────────────────────────────────────────────────────
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5">Fill in the Blank</Typography>
-        <Chip label={`${index + 1} / ${pool.length}`} />
+      {/* Header */}
+      <Box
+        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="h5">Fill in the Blank</Typography>
+          {streak >= 2 && (
+            <Chip label={`🔥 ${streak}`} size="small" color="warning" sx={{ fontWeight: 700 }} />
+          )}
+        </Box>
+        <Chip label={`${score} / ${pool.length}`} />
       </Box>
 
-      <LinearProgress variant="determinate" value={(index / pool.length) * 100} sx={{ mb: 4 }} />
+      <LinearProgress
+        variant="determinate"
+        value={(index / pool.length) * 100}
+        sx={{
+          mb: 3,
+          height: 8,
+          borderRadius: 4,
+          bgcolor: alpha(brand[300], 0.12),
+          '& .MuiLinearProgress-bar': { bgcolor: 'primary.main', borderRadius: 4 },
+        }}
+      />
 
-      <Box sx={(theme) => ({
-        border: `1px solid ${alpha(theme.palette.brand[300], 0.45)}`,
-        borderRadius: 3, p: 3, mb: 3,
-        bgcolor: theme.palette.surfaces.input,
-        boxShadow: `0 8px 24px ${alpha(theme.palette.brand[300], 0.12)}`,
-      })}>
-        <Typography variant="caption" sx={{ color: 'primary.main', letterSpacing: '0.12em', display: 'block', mb: 2 }}>
-          FILL IN THE BLANK
-        </Typography>
-        <Typography component="div" sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.3rem', color: 'text.primary', mb: 1, lineHeight: 1.8 }}>
-          {result
-            ? <FuriganaText text={card.example_jp} showFurigana={card.mainViewMode === 'hiragana'} />
-            : maskWord(stripFurigana(card.example_jp), card.word, card.reading)
-          }
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>{card.example_en}</Typography>
-        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1 }}>Meaning: {card.meaning}</Typography>
+      {/* Card */}
+      <Box
+        sx={{
+          border: '2px solid',
+          borderColor: result
+            ? result === 'correct'
+              ? 'success.main'
+              : 'error.main'
+            : alpha(brand[300], 0.45),
+          borderRadius: 3,
+          overflow: 'hidden',
+          mb: 3,
+          boxShadow: `0 8px 24px ${alpha(brand[300], 0.12)}`,
+          transition: 'border-color 0.25s',
+        }}
+      >
+        {/* Card image */}
+        {card.imageUrl && (
+          <Box
+            component="img"
+            src={card.imageUrl}
+            alt={card.word}
+            sx={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }}
+          />
+        )}
+
+        <Box sx={{ p: 3, bgcolor: surfaces.input }}>
+          <Typography
+            variant="caption"
+            sx={{ color: 'primary.main', letterSpacing: '0.12em', display: 'block', mb: 2 }}
+          >
+            FILL IN THE BLANK
+          </Typography>
+
+          {/* Sentence with blank (or revealed after answer) */}
+          <Typography
+            component="div"
+            sx={{
+              fontFamily: '"Noto Serif JP", serif',
+              fontSize: '1.3rem',
+              color: 'text.primary',
+              mb: 1,
+              lineHeight: 1.8,
+            }}
+          >
+            {result ? (
+              <FuriganaText
+                text={card.example_jp}
+                showFurigana={card.mainViewMode === 'hiragana'}
+              />
+            ) : (
+              maskWord(stripFurigana(card.example_jp), card.word, card.reading)
+            )}
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+            {card.example_en}
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1 }}>
+            Meaning: {card.meaning}
+          </Typography>
+        </Box>
       </Box>
 
+      {/* Feedback row */}
       {result && (
-        <Box sx={{
-          p: 2, borderRadius: 3, border: '1px solid',
-          borderColor: result === 'correct' ? 'success.main' : 'error.main',
-          bgcolor: result === 'correct' ? 'rgba(126,184,154,0.12)' : 'rgba(255,209,220,0.18)',
-          mb: 2, display: 'flex', alignItems: 'center', gap: 1.5,
-        }}>
-          {result === 'correct' ? <CheckIcon sx={{ color: 'success.main' }} /> : <CloseIcon sx={{ color: 'error.main' }} />}
-          <Typography variant="body2" color={result === 'correct' ? 'success.main' : 'error.main'}>
-            {result === 'correct' ? 'Correct!' : `Incorrect — answer: ${card.word} (${card.reading})`}
+        <Box
+          sx={{
+            p: 2,
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: result === 'correct' ? 'success.main' : 'error.main',
+            bgcolor:
+              result === 'correct'
+                ? alpha(theme.palette.success.main, 0.1)
+                : alpha(theme.palette.error.main, 0.08),
+            mb: 2,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+          }}
+        >
+          {result === 'correct' ? (
+            <CheckIcon sx={{ color: 'success.main' }} />
+          ) : (
+            <CloseIcon sx={{ color: 'error.main' }} />
+          )}
+          <Typography
+            variant="body2"
+            color={result === 'correct' ? 'success.main' : 'error.main'}
+          >
+            {result === 'correct'
+              ? '✓ Correct — moving on…'
+              : `Incorrect — answer: ${card.word}${card.reading !== card.word ? ` (${card.reading})` : ''}`}
           </Typography>
         </Box>
       )}
 
+      {/* Input row */}
       <Stack direction="row" spacing={1.5} alignItems="flex-end">
-        <TextField value={input} onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter' && !result) check(); }}
-          label="Your answer" placeholder="Word or reading…" disabled={!!result} fullWidth size="small" autoFocus />
-        {!result
-          ? <Button variant="contained" onClick={check} disabled={!input.trim()} sx={{ flexShrink: 0 }}>Check</Button>
-          : <Button variant="outlined" onClick={next} sx={{ flexShrink: 0 }}>Next</Button>
-        }
+        <TextField
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !result) check();
+          }}
+          label="Your answer"
+          placeholder="Word or reading…"
+          disabled={!!result}
+          fullWidth
+          size="small"
+          autoFocus
+        />
+        {!result ? (
+          <Button
+            variant="contained"
+            onClick={check}
+            disabled={!input.trim()}
+            sx={{ flexShrink: 0 }}
+          >
+            Check
+          </Button>
+        ) : result === 'wrong' ? (
+          <Button variant="outlined" onClick={next} sx={{ flexShrink: 0 }}>
+            Next
+          </Button>
+        ) : null}
       </Stack>
 
       <Box sx={{ mt: 3, textAlign: 'right' }}>
-        <Button size="small" color="inherit" onClick={handleExit} sx={{ opacity: 0.5 }}>Quit &amp; Save Progress</Button>
+        <Button size="small" color="inherit" onClick={handleExit} sx={{ opacity: 0.5 }}>
+          Quit &amp; Save Progress
+        </Button>
       </Box>
     </Box>
   );

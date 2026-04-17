@@ -79,8 +79,8 @@ const practiceConfig: {
   },
   {
     mode: "recall",
-    label: "Recall Typing",
-    description: "Type from memory",
+    label: "Guess It!",
+    description: "Pick the right meaning",
     emoji: "🌟",
     watermark: "思",
     color: "#B45309",
