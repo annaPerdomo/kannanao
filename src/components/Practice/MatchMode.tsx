@@ -15,13 +15,14 @@ import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined';
 import type { Flashcard } from '@/types/flashcard';
 import { getFlashcardDisplayText } from '@/lib/flashcardUtils';
 import { useProgress } from '@/hooks/useProgess';
+import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { CelebrationScreen } from './CelebrationScreen';
-
-const ROUND_SIZE = 10;
+import { RoundTransition } from './RoundTransition';
 
 interface MatchModeProps {
   cards: Flashcard[];
   deckId: string;
+  batchSize: number;
   onExit: () => void;
 }
 
@@ -45,7 +46,6 @@ function formatTime(secs: number): string {
 }
 
 function speedLabel(secs: number, pairs: number): string {
-  // normalise to 10-pair equivalent so speed feels consistent regardless of round size
   const norm = (secs / pairs) * 10;
   if (norm < 30) return 'Lightning fast! ⚡';
   if (norm < 60) return 'Nice speed! 🚀';
@@ -53,40 +53,26 @@ function speedLabel(secs: number, pairs: number): string {
   return 'Keep it up! 💪';
 }
 
-export function MatchMode({ cards, deckId, onExit }: MatchModeProps) {
+export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
 
-  // Shuffle once and split into rounds
-  const pool = useMemo(() => shuffle([...cards]), [cards]);
-  const rounds = useMemo<Flashcard[][]>(() => {
-    const result: Flashcard[][] = [];
-    for (let i = 0; i < pool.length; i += ROUND_SIZE) {
-      result.push(pool.slice(i, i + ROUND_SIZE));
-    }
-    return result;
-  }, [pool]);
+  const queue = usePracticeQueue(cards, batchSize);
 
-  const [roundIndex, setRoundIndex] = useState(0);
-  const [roundDone, setRoundDone] = useState(false);
-
-  // Per-round state
+  // Per-round matching state
   const [selected, setSelected] = useState<Tile | null>(null);
   const [matched, setMatched] = useState<Set<string>>(new Set());
   const [wrong, setWrong] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
-  const [roundTime, setRoundTime] = useState<number | null>(null);
 
-  // Total across all rounds
-  const [totalScore, setTotalScore] = useState(0);
+  // Totals across all rounds
   const [totalTime, setTotalTime] = useState(0);
 
   const { startSession, recordAnswer, endSession } = useProgress();
   const sessionIdRef = useRef<string>('');
   const startTimeRef = useRef<number>(Date.now());
   const correctCountRef = useRef(0);
-  const totalStudiedRef = useRef(0);
-  const recordedRef = useRef<Set<string>>(new Set());
+  const totalAnsweredRef = useRef(0);
 
   useEffect(() => {
     startSession(deckId, 'match').then((id) => {
@@ -95,61 +81,56 @@ export function MatchMode({ cards, deckId, onExit }: MatchModeProps) {
     });
   }, [deckId, startSession]);
 
-  const currentCards = rounds[roundIndex] ?? [];
-  const allDone = roundIndex >= rounds.length;
-
-  // Build tiles for the current round (key includes roundIndex so tiles re-render on round change)
+  // Build tiles for the current round
   const tiles = useMemo<Tile[]>(() => {
-    const t: Tile[] = currentCards.flatMap((c) => {
+    const t: Tile[] = queue.currentCards.flatMap((c) => {
       const { titleText } = getFlashcardDisplayText(c);
       return [
-        { id: `jp-${c.id}-r${roundIndex}`, cardId: c.id, side: 'jp', label: titleText },
-        { id: `en-${c.id}-r${roundIndex}`, cardId: c.id, side: 'en', label: c.meaning },
+        { id: `jp-${c.id}-r${queue.roundKey}`, cardId: c.id, side: 'jp' as Side, label: titleText },
+        { id: `en-${c.id}-r${queue.roundKey}`, cardId: c.id, side: 'en' as Side, label: c.meaning },
       ];
     });
     return shuffle(t);
-  }, [currentCards, roundIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [queue.currentCards, queue.roundKey]);
 
-  const roundComplete = !allDone && matched.size === currentCards.length;
+  const roundComplete = matched.size === queue.currentCards.length && queue.phase === 'playing';
 
-  // Live timer — reset when round advances
+  // Reset per-round state when a new round starts
   useEffect(() => {
-    if (roundComplete || allDone) return;
+    if (queue.roundKey === 0) return;
+    setSelected(null);
+    setMatched(new Set());
+    setWrong(null);
+    setElapsed(0);
+  }, [queue.roundKey]);
+
+  // Live timer
+  useEffect(() => {
+    if (roundComplete || queue.phase !== 'playing') return;
     const t = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(t);
-  }, [roundComplete, allDone, roundIndex]);
+  }, [roundComplete, queue.phase]);
 
-  // When a round is completed, record the time and mark done
+  // When round is complete, save time and tell the queue
   useEffect(() => {
-    if (roundComplete && !roundDone) {
-      setRoundDone(true);
-      setRoundTime(elapsed);
+    if (roundComplete) {
       setTotalTime((t) => t + elapsed);
+      queue.finishRound();
     }
-  }, [roundComplete, roundDone, elapsed]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roundComplete]);
 
-  // End the session when all rounds are done
+  // End session when all rounds done
   useEffect(() => {
-    if (allDone && sessionIdRef.current) {
+    if (queue.phase === 'allDone' && sessionIdRef.current) {
       endSession(sessionIdRef.current, {
-        cardsStudied: totalStudiedRef.current,
+        cardsStudied: totalAnsweredRef.current,
         cardsCorrect: correctCountRef.current,
         durationSecs: totalTime,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allDone]);
-
-  const advanceRound = () => {
-    setRoundIndex((i) => i + 1);
-    setRoundDone(false);
-    setSelected(null);
-    setMatched(new Set());
-    setWrong(null);
-    setElapsed(0);
-    setRoundTime(null);
-    recordedRef.current = new Set();
-  };
+  }, [queue.phase]);
 
   const handleSelect = async (tile: Tile) => {
     if (matched.has(tile.cardId)) return;
@@ -159,22 +140,25 @@ export function MatchMode({ cards, deckId, onExit }: MatchModeProps) {
     if (selected.cardId === tile.cardId && selected.side !== tile.side) {
       // Correct match
       setMatched((prev) => new Set([...prev, tile.cardId]));
-      setTotalScore((s) => s + 1);
       correctCountRef.current += 1;
+      totalAnsweredRef.current += 1;
+      queue.reportResult(tile.cardId, true);
       setSelected(null);
 
-      if (sessionIdRef.current && !recordedRef.current.has(tile.cardId)) {
-        recordedRef.current.add(tile.cardId);
-        const matchedCard = currentCards.find((c) => c.id === tile.cardId);
+      if (sessionIdRef.current) {
+        const matchedCard = queue.currentCards.find((c) => c.id === tile.cardId);
         await recordAnswer(sessionIdRef.current, true, matchedCard?.jlptLevel);
       }
     } else {
-      // Wrong match
+      // Wrong match — mark both cards as struggled
       setWrong(tile.id);
-      if (sessionIdRef.current && selected) {
-        const attemptedCard = currentCards.find((c) => c.id === tile.cardId);
+      totalAnsweredRef.current += 1;
+      queue.reportResult(selected.cardId, false);
+      queue.reportResult(tile.cardId, false);
+
+      if (sessionIdRef.current) {
+        const attemptedCard = queue.currentCards.find((c) => c.id === tile.cardId);
         await recordAnswer(sessionIdRef.current, false, attemptedCard?.jlptLevel);
-        totalStudiedRef.current += 1;
       }
       setTimeout(() => { setWrong(null); setSelected(null); }, 600);
     }
@@ -183,7 +167,7 @@ export function MatchMode({ cards, deckId, onExit }: MatchModeProps) {
   const handleExit = async () => {
     if (sessionIdRef.current) {
       await endSession(sessionIdRef.current, {
-        cardsStudied: totalStudiedRef.current,
+        cardsStudied: totalAnsweredRef.current,
         cardsCorrect: correctCountRef.current,
         durationSecs: totalTime + elapsed,
       });
@@ -192,105 +176,59 @@ export function MatchMode({ cards, deckId, onExit }: MatchModeProps) {
   };
 
   // ── All rounds complete ────────────────────────────────────────────────────
-  if (allDone) {
-    const roundsLabel = rounds.length > 1 ? `${rounds.length} rounds` : '1 round';
+  if (queue.phase === 'allDone') {
+    const batchLabel =
+      queue.totalBatches > 1 ? `${queue.totalBatches} rounds` : '1 round';
     return (
       <CelebrationScreen
         heading="All matched!"
-        subheading={`${pool.length} pairs · ${roundsLabel}`}
-        extra={`⏱ ${formatTime(totalTime)} · ${speedLabel(totalTime, pool.length)}`}
+        subheading={`${queue.totalCards} pairs · ${batchLabel}`}
+        extra={`⏱ ${formatTime(totalTime)} · ${speedLabel(totalTime, queue.totalCards)}`}
         mode="match"
         onExit={onExit}
       />
     );
   }
 
-  // ── Between rounds ────────────────────────────────────────────────────────
-  if (roundDone) {
-    const isLastRound = roundIndex === rounds.length - 1;
+  // ── Between rounds ─────────────────────────────────────────────────────────
+  if (queue.phase === 'roundEnd') {
     return (
-      <Box
-        sx={{
-          textAlign: 'center',
-          py: 6,
-          animation: 'roundSlideIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
-          '@keyframes roundSlideIn': {
-            from: { transform: 'scale(0.8) translateY(20px)', opacity: 0 },
-            to:   { transform: 'scale(1)   translateY(0)',    opacity: 1 },
-          },
-        }}
-      >
-        <Box
-          sx={{
-            fontSize: 64,
-            lineHeight: 1,
-            mb: 2,
-            userSelect: 'none',
-            display: 'inline-block',
-            animation: 'spinIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both',
-            '@keyframes spinIn': {
-              from: { transform: 'scale(0) rotate(-180deg)', opacity: 0 },
-              to:   { transform: 'scale(1) rotate(0deg)',    opacity: 1 },
-            },
-          }}
-        >
-          ✨
-        </Box>
-        <Typography variant="h4" sx={{ mb: 1, fontWeight: 700 }}>
-          Round {roundIndex + 1} done!
-        </Typography>
-        {rounds.length > 1 && (
-          <Typography color="text.secondary" sx={{ mb: 1 }}>
-            {roundIndex + 1} of {rounds.length} rounds
-          </Typography>
-        )}
-        {roundTime !== null && (
-          <Box
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 1,
-              px: 2.5,
-              py: 1,
-              borderRadius: 3,
-              bgcolor: alpha(brand[300], 0.12),
-              border: `1px solid ${alpha(brand[300], 0.3)}`,
-              mb: 3,
-              mt: 1,
-            }}
-          >
-            <TimerOutlinedIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-            <Typography variant="body1" sx={{ fontWeight: 700 }}>
-              {formatTime(roundTime)}
-            </Typography>
-          </Box>
-        )}
-        <Box>
-          <Button variant="contained" size="large" onClick={advanceRound}>
-            {isLastRound ? 'Last round — go! 🚀' : `Round ${roundIndex + 2} →`}
-          </Button>
-        </Box>
-      </Box>
+      <RoundTransition
+        batchIndex={queue.batchIndex}
+        totalBatches={queue.totalBatches}
+        isRetryRound={queue.isRetryRound}
+        wrongCount={queue.lastRoundWrong}
+        totalInRound={queue.lastRoundTotal}
+        willRetry={queue.willRetry}
+        onContinue={queue.nextRound}
+        onExit={handleExit}
+      />
     );
   }
 
   // ── Match grid ──────────────────────────────────────────────────────────────
   const overallProgress =
-    (roundIndex * ROUND_SIZE + matched.size) / pool.length;
+    queue.totalBatches > 1
+      ? (queue.batchIndex / queue.totalBatches +
+          matched.size / queue.currentCards.length / queue.totalBatches)
+      : matched.size / queue.currentCards.length;
 
   return (
     <Box>
       <Box
         sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h5">Match</Typography>
-          {rounds.length > 1 && (
+          {queue.totalBatches > 1 && (
             <Chip
-              label={`Round ${roundIndex + 1}/${rounds.length}`}
+              label={`Batch ${queue.batchIndex + 1}/${queue.totalBatches}`}
               size="small"
               variant="outlined"
             />
+          )}
+          {queue.isRetryRound && (
+            <Chip label="Review" size="small" color="warning" variant="outlined" />
           )}
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -303,7 +241,7 @@ export function MatchMode({ cards, deckId, onExit }: MatchModeProps) {
               {formatTime(elapsed)}
             </Typography>
           </Box>
-          <Chip label={`${matched.size} / ${currentCards.length}`} />
+          <Chip label={`${matched.size} / ${queue.currentCards.length}`} />
         </Box>
       </Box>
 

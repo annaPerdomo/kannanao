@@ -1,6 +1,8 @@
 import { createTheme, alpha, Theme } from '@mui/material/styles';
 
-export type ColorScheme = 'sakura' | 'murasaki' | 'yuki';
+export type ColorScheme =
+  | 'sakura' | 'murasaki' | 'yuki'
+  | 'ocean' | 'forest' | 'sunset' | 'lavender' | 'midnight' | 'matcha' | 'rosegold';
 
 type ColorScale = {
   50: string; 100: string; 200: string; 300: string; 400: string;
@@ -111,6 +113,56 @@ export const neutral: ColorScale = {
   900: '#171717',
 };
 
+// ─── Shop theme color scales ─────────────────────────────────────────────────
+
+export const ocean: ColorScale = {
+  50:  '#EFF6FF', 100: '#DBEAFE', 200: '#BFDBFE', 300: '#93C5FD',
+  400: '#60A5FA', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8',
+  800: '#1E40AF', 900: '#1E3A8A',
+};
+
+export const teal: ColorScale = {
+  50:  '#F0FDFA', 100: '#CCFBF1', 200: '#99F6E4', 300: '#5EEAD4',
+  400: '#2DD4BF', 500: '#14B8A6', 600: '#0D9488', 700: '#0F766E',
+  800: '#115E59', 900: '#134E4A',
+};
+
+export const forest: ColorScale = {
+  50:  '#F0FDF4', 100: '#DCFCE7', 200: '#BBF7D0', 300: '#86EFAC',
+  400: '#4ADE80', 500: '#22C55E', 600: '#16A34A', 700: '#15803D',
+  800: '#166534', 900: '#14532D',
+};
+
+export const sunset: ColorScale = {
+  50:  '#FFF7ED', 100: '#FFEDD5', 200: '#FED7AA', 300: '#FDBA74',
+  400: '#FB923C', 500: '#F97316', 600: '#EA580C', 700: '#C2410C',
+  800: '#9A3412', 900: '#7C2D12',
+};
+
+export const lavender: ColorScale = {
+  50:  '#FAF5FF', 100: '#F3E8FF', 200: '#E9D5FF', 300: '#D8B4FE',
+  400: '#C084FC', 500: '#A855F7', 600: '#9333EA', 700: '#7E22CE',
+  800: '#6B21A8', 900: '#581C87',
+};
+
+export const slate: ColorScale = {
+  50:  '#F8FAFC', 100: '#F1F5F9', 200: '#E2E8F0', 300: '#CBD5E1',
+  400: '#94A3B8', 500: '#64748B', 600: '#475569', 700: '#334155',
+  800: '#1E293B', 900: '#0F172A',
+};
+
+export const matcha: ColorScale = {
+  50:  '#FEFCE8', 100: '#FEF9C3', 200: '#FEF08A', 300: '#BEF264',
+  400: '#A3E635', 500: '#84CC16', 600: '#65A30D', 700: '#4D7C0F',
+  800: '#3F6212', 900: '#365314',
+};
+
+export const rose: ColorScale = {
+  50:  '#FFF1F2', 100: '#FFE4E6', 200: '#FECDD3', 300: '#FDA4AF',
+  400: '#FB7185', 500: '#F43F5E', 600: '#E11D48', 700: '#BE123C',
+  800: '#9F1239', 900: '#881337',
+};
+
 /** Mac-style browser chrome colours used in the embed mockup */
 export const macChrome = {
   bar:         '#F5F5F7',
@@ -213,6 +265,62 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
     secondaryMain: purple[300], secondaryLight: purple[100], secondaryDark: purple[700],
     bgDefault: '#F0F9FF', bgPaper: '#FFFFFF',
     textPrimary: '#0C4A6E', textSecondary: '#0284C7',
+  },
+  /** 🌊 Ocean — deep blue & teal */
+  ocean: {
+    brand: ocean, accent: teal, rainbow: rainbowYuki,
+    primaryMain: ocean[400], primaryLight: ocean[100], primaryDark: ocean[700],
+    secondaryMain: teal[300], secondaryLight: teal[100], secondaryDark: teal[600],
+    bgDefault: '#EFF6FF', bgPaper: '#FFFFFF',
+    textPrimary: '#1E3A8A', textSecondary: '#2563EB',
+  },
+  /** 🌲 Forest — lush green & emerald */
+  forest: {
+    brand: forest, accent: emerald, rainbow: rainbowYuki,
+    primaryMain: forest[400], primaryLight: forest[100], primaryDark: forest[700],
+    secondaryMain: emerald[300], secondaryLight: emerald[100], secondaryDark: emerald[600],
+    bgDefault: '#F0FDF4', bgPaper: '#FFFFFF',
+    textPrimary: '#14532D', textSecondary: '#16A34A',
+  },
+  /** 🌅 Sunset — warm orange & amber */
+  sunset: {
+    brand: sunset, accent: amber, rainbow: rainbowSakura,
+    primaryMain: sunset[400], primaryLight: sunset[100], primaryDark: sunset[700],
+    secondaryMain: amber[300], secondaryLight: amber[100], secondaryDark: amber[600],
+    bgDefault: '#FFF7ED', bgPaper: '#FFFFFF',
+    textPrimary: '#7C2D12', textSecondary: '#EA580C',
+  },
+  /** 💐 Lavender — soft purple & pink */
+  lavender: {
+    brand: lavender, accent: pink, rainbow: rainbowMurasaki,
+    primaryMain: lavender[400], primaryLight: lavender[100], primaryDark: lavender[700],
+    secondaryMain: pink[300], secondaryLight: pink[100], secondaryDark: pink[600],
+    bgDefault: '#FAF5FF', bgPaper: '#FFFFFF',
+    textPrimary: '#581C87', textSecondary: '#9333EA',
+  },
+  /** 🌙 Midnight — dark slate & sky blue */
+  midnight: {
+    brand: slate, accent: sky, rainbow: rainbowYuki,
+    primaryMain: slate[400], primaryLight: slate[100], primaryDark: slate[700],
+    secondaryMain: sky[300], secondaryLight: sky[100], secondaryDark: sky[600],
+    bgDefault: '#F8FAFC', bgPaper: '#FFFFFF',
+    textPrimary: '#0F172A', textSecondary: '#475569',
+  },
+  /** 🍵 Matcha — earthy green & lime */
+  matcha: {
+    brand: matcha, accent: emerald, rainbow: rainbowYuki,
+    primaryMain: matcha[500], primaryLight: matcha[100], primaryDark: matcha[700],
+    secondaryMain: emerald[300], secondaryLight: emerald[100], secondaryDark: emerald[600],
+    bgDefault: '#FEFCE8', bgPaper: '#FFFFFF',
+    textPrimary: '#365314', textSecondary: '#65A30D',
+  },
+  /** 🌹 Rose Gold — warm rose & amber */
+  rosegold: {
+    brand: rose, accent: amber, rainbow: rainbowSakura,
+    primaryMain: rose[400], primaryLight: rose[100], primaryDark: rose[700],
+    secondaryMain: amber[300], secondaryLight: amber[100], secondaryDark: amber[600],
+    bgDefault: '#FFF1F2', bgPaper: '#FFFFFF',
+    textPrimary: '#881337', textSecondary: '#E11D48',
   },
 };
 

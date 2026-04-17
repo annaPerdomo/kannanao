@@ -647,7 +647,7 @@ function SessionRow({
 export default function Stats() {
   const theme = useTheme();
   const { brand } = theme.palette;
-  const { progress, achievements, recentSessions, loading } = useProgress();
+  const { progress, spendableXp, achievements, recentSessions, loading } = useProgress();
 
   const accuracy =
     progress && progress.total_cards_studied > 0
@@ -724,7 +724,7 @@ export default function Stats() {
               icon={<AutoAwesomeIcon sx={{ fontSize: '1.1rem' }} />}
               label="Total XP"
               value={progress.total_xp.toLocaleString()}
-              sub={`Level ${progress.level}`}
+              sub={`${spendableXp.toLocaleString()} spendable · Level ${progress.level}`}
             />
           </>
         ) : null}
@@ -816,7 +816,7 @@ export default function Stats() {
           </Typography>
         ) : (
           recentSessions
-            .filter((s) => s.ended_at)
+            .filter((s) => s.ended_at && s.cards_studied > 0)
             .map((s) => (
               <SessionRow
                 key={s.id}

@@ -37,7 +37,10 @@ function toEmail(username: string) {
   return `${username.trim().toLowerCase()}@${FAKE_DOMAIN}`;
 }
 
-const VALID_SCHEMES: ColorScheme[] = ["sakura", "murasaki", "yuki"];
+const VALID_SCHEMES: ColorScheme[] = [
+  "sakura", "murasaki", "yuki",
+  "ocean", "forest", "sunset", "lavender", "midnight", "matcha", "rosegold",
+];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);

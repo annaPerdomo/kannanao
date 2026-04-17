@@ -10,6 +10,7 @@ import type { JlptLevel } from '@/types/flashcard';
 export interface UserProgress {
   id: string;
   total_xp: number;
+  total_xp_spent: number;
   level: number;
   streak_days: number;
   longest_streak: number;
@@ -80,6 +81,7 @@ export interface AchievementDef {
 }
 
 export const ACHIEVEMENTS: AchievementDef[] = [
+  // ── Cards studied milestones ──
   {
     key: 'first_card',
     label: 'First Step!',
@@ -109,12 +111,35 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     color: '#E91E63',
   },
   {
+    key: 'cards_250',
+    label: 'Knowledge Seeker',
+    description: 'Study 250 cards total',
+    emoji: '📖',
+    color: '#7C4DFF',
+  },
+  {
     key: 'cards_500',
     label: 'Study Superstar',
     description: 'Study 500 cards total',
     emoji: '🏆',
     color: '#FFD700',
   },
+  {
+    key: 'cards_1000',
+    label: 'Grand Scholar',
+    description: 'Study 1,000 cards total',
+    emoji: '🎓',
+    color: '#1565C0',
+  },
+  {
+    key: 'cards_2500',
+    label: 'Legendary Learner',
+    description: 'Study 2,500 cards total',
+    emoji: '🐉',
+    color: '#B71C1C',
+  },
+
+  // ── Streak milestones ──
   {
     key: 'streak_3',
     label: '3-Day Streak',
@@ -130,6 +155,13 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     color: '#FF5722',
   },
   {
+    key: 'streak_14',
+    label: 'Two-Week Warrior',
+    description: 'Study 14 days in a row',
+    emoji: '⚔️',
+    color: '#D84315',
+  },
+  {
     key: 'streak_30',
     label: 'Month Master',
     description: '30-day streak — incredible!',
@@ -137,12 +169,21 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     color: '#9C27B0',
   },
   {
-    key: 'perfect_session',
-    label: 'Perfect Score!',
-    description: 'Get 100% in a session (5+ cards)',
-    emoji: '💎',
-    color: '#2196F3',
+    key: 'streak_60',
+    label: 'Unstoppable!',
+    description: '60-day streak — truly dedicated',
+    emoji: '🌋',
+    color: '#BF360C',
   },
+  {
+    key: 'streak_100',
+    label: '100 Days Strong',
+    description: '100-day streak — you are a legend',
+    emoji: '💫',
+    color: '#FFD700',
+  },
+
+  // ── Level milestones ──
   {
     key: 'level_5',
     label: 'Level 5 Reached!',
@@ -156,6 +197,96 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     description: 'Reach level 10',
     emoji: '🎆',
     color: '#9C27B0',
+  },
+  {
+    key: 'level_15',
+    label: 'Rising Star',
+    description: 'Reach level 15',
+    emoji: '🌠',
+    color: '#1976D2',
+  },
+  {
+    key: 'level_20',
+    label: 'Sakura Master',
+    description: 'Reach level 20',
+    emoji: '🌸',
+    color: '#EC407A',
+  },
+  {
+    key: 'level_30',
+    label: 'Elite Scholar',
+    description: 'Reach level 30',
+    emoji: '🏅',
+    color: '#FF6F00',
+  },
+  {
+    key: 'level_50',
+    label: 'Grandmaster',
+    description: 'Reach level 50 — the pinnacle!',
+    emoji: '🐲',
+    color: '#D50000',
+  },
+
+  // ── XP milestones ──
+  {
+    key: 'xp_1000',
+    label: 'First Thousand',
+    description: 'Earn 1,000 total XP',
+    emoji: '🪙',
+    color: '#FFA000',
+  },
+  {
+    key: 'xp_5000',
+    label: 'XP Collector',
+    description: 'Earn 5,000 total XP',
+    emoji: '💰',
+    color: '#F57F17',
+  },
+  {
+    key: 'xp_10000',
+    label: 'XP Hoarder',
+    description: 'Earn 10,000 total XP',
+    emoji: '💎',
+    color: '#00BCD4',
+  },
+  {
+    key: 'xp_50000',
+    label: 'XP Tycoon',
+    description: 'Earn 50,000 total XP',
+    emoji: '👸',
+    color: '#6A1B9A',
+  },
+
+  // ── Session milestones ──
+  {
+    key: 'sessions_10',
+    label: 'Getting Consistent',
+    description: 'Complete 10 study sessions',
+    emoji: '📝',
+    color: '#0097A7',
+  },
+  {
+    key: 'sessions_50',
+    label: 'Dedicated Student',
+    description: 'Complete 50 study sessions',
+    emoji: '📚',
+    color: '#00695C',
+  },
+  {
+    key: 'sessions_100',
+    label: 'Session Centurion',
+    description: 'Complete 100 study sessions',
+    emoji: '🏛️',
+    color: '#4E342E',
+  },
+
+  // ── Special ──
+  {
+    key: 'perfect_session',
+    label: 'Perfect Score!',
+    description: 'Get 100% in a session (5+ cards)',
+    emoji: '💎',
+    color: '#2196F3',
   },
 ];
 
@@ -279,16 +410,43 @@ export function useProgress() {
       const unlocked = achievements.map((a) => a.achievement_key);
       const toUnlock: string[] = [];
 
+      // Card milestones
       if (newStudied >= 1 && !unlocked.includes('first_card')) toUnlock.push('first_card');
       if (newStudied >= 10 && !unlocked.includes('cards_10')) toUnlock.push('cards_10');
       if (newStudied >= 50 && !unlocked.includes('cards_50')) toUnlock.push('cards_50');
       if (newStudied >= 100 && !unlocked.includes('cards_100')) toUnlock.push('cards_100');
+      if (newStudied >= 250 && !unlocked.includes('cards_250')) toUnlock.push('cards_250');
       if (newStudied >= 500 && !unlocked.includes('cards_500')) toUnlock.push('cards_500');
+      if (newStudied >= 1000 && !unlocked.includes('cards_1000')) toUnlock.push('cards_1000');
+      if (newStudied >= 2500 && !unlocked.includes('cards_2500')) toUnlock.push('cards_2500');
+
+      // Streak milestones
       if (newStreak >= 3 && !unlocked.includes('streak_3')) toUnlock.push('streak_3');
       if (newStreak >= 7 && !unlocked.includes('streak_7')) toUnlock.push('streak_7');
+      if (newStreak >= 14 && !unlocked.includes('streak_14')) toUnlock.push('streak_14');
       if (newStreak >= 30 && !unlocked.includes('streak_30')) toUnlock.push('streak_30');
+      if (newStreak >= 60 && !unlocked.includes('streak_60')) toUnlock.push('streak_60');
+      if (newStreak >= 100 && !unlocked.includes('streak_100')) toUnlock.push('streak_100');
+
+      // Level milestones
       if (newLevel >= 5 && !unlocked.includes('level_5')) toUnlock.push('level_5');
       if (newLevel >= 10 && !unlocked.includes('level_10')) toUnlock.push('level_10');
+      if (newLevel >= 15 && !unlocked.includes('level_15')) toUnlock.push('level_15');
+      if (newLevel >= 20 && !unlocked.includes('level_20')) toUnlock.push('level_20');
+      if (newLevel >= 30 && !unlocked.includes('level_30')) toUnlock.push('level_30');
+      if (newLevel >= 50 && !unlocked.includes('level_50')) toUnlock.push('level_50');
+
+      // XP milestones
+      if (newXp >= 1000 && !unlocked.includes('xp_1000')) toUnlock.push('xp_1000');
+      if (newXp >= 5000 && !unlocked.includes('xp_5000')) toUnlock.push('xp_5000');
+      if (newXp >= 10000 && !unlocked.includes('xp_10000')) toUnlock.push('xp_10000');
+      if (newXp >= 50000 && !unlocked.includes('xp_50000')) toUnlock.push('xp_50000');
+
+      // Session milestones
+      const sessionCount = progress.total_sessions;
+      if (sessionCount >= 10 && !unlocked.includes('sessions_10')) toUnlock.push('sessions_10');
+      if (sessionCount >= 50 && !unlocked.includes('sessions_50')) toUnlock.push('sessions_50');
+      if (sessionCount >= 100 && !unlocked.includes('sessions_100')) toUnlock.push('sessions_100');
 
       if (toUnlock.length > 0) {
         const { data: { user } } = await supabase.auth.getUser();
@@ -401,8 +559,11 @@ export function useProgress() {
     setProgress((p) => p ? { ...p, total_xp: newXp, level: newLevel } : p);
   }, [progress, supabase]);
 
+  const spendableXp = progress ? progress.total_xp - (progress.total_xp_spent ?? 0) : 0;
+
   return {
     progress,
+    spendableXp,
     achievements,
     recentSessions,
     loading,

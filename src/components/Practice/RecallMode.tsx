@@ -1,5 +1,5 @@
 'use client';
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -15,11 +15,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import type { Flashcard } from '@/types/flashcard';
 import { getFlashcardDisplayText } from '@/lib/flashcardUtils';
 import { useProgress } from '@/hooks/useProgess';
+import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { CelebrationScreen } from './CelebrationScreen';
+import { RoundTransition } from './RoundTransition';
 
 interface RecallModeProps {
   cards: Flashcard[];
   deckId: string;
+  batchSize: number;
   onExit: () => void;
 }
 
@@ -35,15 +38,16 @@ function buildChoices(correct: Flashcard, allCards: Flashcard[]): string[] {
 
 const CHOICE_LABELS = ['A', 'B', 'C', 'D'];
 
-export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
+export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps) {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
 
-  const pool = useMemo(() => [...cards].sort(() => Math.random() - 0.5), [cards]);
+  const queue = usePracticeQueue(cards, batchSize);
+
   const [index, setIndex] = useState(0);
   const [choices, setChoices] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
-  const [score, setScore] = useState(0);
+  const [roundScore, setRoundScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
 
@@ -51,6 +55,7 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
   const sessionIdRef = useRef<string>('');
   const startTimeRef = useRef<number>(Date.now());
   const correctCountRef = useRef(0);
+  const totalAnsweredRef = useRef(0);
 
   useEffect(() => {
     startSession(deckId, 'recall').then((id) => {
@@ -59,13 +64,28 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
     });
   }, [deckId, startSession]);
 
-  const card = pool[index];
-  const done = index >= pool.length;
+  // Reset per-round state when a new round starts
+  useEffect(() => {
+    if (queue.roundKey === 0) return;
+    setIndex(0);
+    setSelected(null);
+    setRoundScore(0);
+  }, [queue.roundKey]);
+
+  const card = queue.currentCards[index];
+  const roundDone = index >= queue.currentCards.length;
 
   // Rebuild choices whenever the card changes
   useEffect(() => {
     if (card) setChoices(buildChoices(card, cards));
-  }, [index, cards]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [index, cards, queue.roundKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // When all cards in the round are answered, tell the queue
+  useEffect(() => {
+    if (roundDone && queue.phase === 'playing') {
+      queue.finishRound();
+    }
+  }, [roundDone, queue.phase, queue.finishRound]);
 
   const next = useCallback(() => {
     setIndex((i) => i + 1);
@@ -85,8 +105,11 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
       if (selected || !card) return;
       setSelected(choice);
       const correct = choice === card.meaning;
+      queue.reportResult(card.id, correct);
+      totalAnsweredRef.current += 1;
+
       if (correct) {
-        setScore((s) => s + 1);
+        setRoundScore((s) => s + 1);
         correctCountRef.current += 1;
         setStreak((s) => {
           const next = s + 1;
@@ -100,13 +123,13 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
         await recordAnswer(sessionIdRef.current, correct, card.jlptLevel);
       }
     },
-    [selected, card, recordAnswer],
+    [selected, card, recordAnswer, queue],
   );
 
   const handleExit = async () => {
     if (sessionIdRef.current) {
       await endSession(sessionIdRef.current, {
-        cardsStudied: index,
+        cardsStudied: totalAnsweredRef.current,
         cardsCorrect: correctCountRef.current,
         durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
       });
@@ -114,25 +137,42 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
     onExit();
   };
 
+  // End session when practice is fully complete
   useEffect(() => {
-    if (done && sessionIdRef.current) {
+    if (queue.phase === 'allDone' && sessionIdRef.current) {
       endSession(sessionIdRef.current, {
-        cardsStudied: pool.length,
+        cardsStudied: totalAnsweredRef.current,
         cardsCorrect: correctCountRef.current,
         durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [done]);
+  }, [queue.phase]);
+
+  // ── Round transition screen ────────────────────────────────────────────────
+  if (queue.phase === 'roundEnd') {
+    return (
+      <RoundTransition
+        batchIndex={queue.batchIndex}
+        totalBatches={queue.totalBatches}
+        isRetryRound={queue.isRetryRound}
+        wrongCount={queue.lastRoundWrong}
+        totalInRound={queue.lastRoundTotal}
+        willRetry={queue.willRetry}
+        onContinue={queue.nextRound}
+        onExit={handleExit}
+      />
+    );
+  }
 
   // ── Completion screen ──────────────────────────────────────────────────────
-  if (done) {
-    const pct = pool.length > 0 ? score / pool.length : 0;
+  if (queue.phase === 'allDone') {
+    const pct = queue.totalCards > 0 ? queue.firstAttemptCorrect / queue.totalCards : 0;
     const heading = pct === 1 ? 'Perfect!' : pct >= 0.7 ? 'Great job!' : 'Keep going!';
     return (
       <CelebrationScreen
         heading={heading}
-        subheading={`${score} / ${pool.length} correct`}
+        subheading={`${queue.firstAttemptCorrect} / ${queue.totalCards} correct`}
         extra={bestStreak >= 3 ? `🔥 Best streak: ${bestStreak} in a row!` : undefined}
         mode="recall"
         onExit={onExit}
@@ -151,18 +191,30 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
       <Box
         sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h5">Guess It!</Typography>
+          {queue.isRetryRound && (
+            <Chip label="Review" size="small" color="warning" variant="outlined" />
+          )}
           {streak >= 2 && (
             <Chip label={`🔥 ${streak}`} size="small" color="warning" sx={{ fontWeight: 700 }} />
           )}
         </Box>
-        <Chip label={`${score} / ${pool.length}`} />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {queue.totalBatches > 1 && (
+            <Chip
+              label={`${queue.batchIndex + 1}/${queue.totalBatches}`}
+              size="small"
+              variant="outlined"
+            />
+          )}
+          <Chip label={`${roundScore} / ${queue.currentCards.length}`} />
+        </Box>
       </Box>
 
       <LinearProgress
         variant="determinate"
-        value={(index / pool.length) * 100}
+        value={(index / queue.currentCards.length) * 100}
         sx={{
           mb: 3,
           height: 8,
@@ -347,7 +399,7 @@ export function RecallMode({ cards, deckId, onExit }: RecallModeProps) {
       {answeredWrong && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
           <Button variant="contained" onClick={next} size="large">
-            {index + 1 >= pool.length ? 'See Results' : 'Next →'}
+            {index + 1 >= queue.currentCards.length ? 'See Results' : 'Next →'}
           </Button>
         </Box>
       )}

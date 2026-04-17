@@ -11,12 +11,22 @@ import { useAuth } from '@/contexts/AuthContext';
 export type { ColorScheme };
 
 const STORAGE_KEY = 'kannanao-color-scheme';
-const VALID_SCHEMES: ColorScheme[] = ['sakura', 'murasaki', 'yuki'];
+const VALID_SCHEMES: ColorScheme[] = [
+  'sakura', 'murasaki', 'yuki',
+  'ocean', 'forest', 'sunset', 'lavender', 'midnight', 'matcha', 'rosegold',
+];
 
 export const schemeInfo: Record<ColorScheme, { label: string; emoji: string; preview: string }> = {
-  sakura:   { label: 'Sakura',   emoji: '🌸', preview: '#F472B6' },
-  murasaki: { label: 'Murasaki', emoji: '💜', preview: '#A78BFA' },
-  yuki:        { label: 'Yuki',        emoji: '❄️', preview: '#38BDF8' },
+  sakura:   { label: 'Sakura',        emoji: '🌸', preview: '#F472B6' },
+  murasaki: { label: 'Murasaki',      emoji: '💜', preview: '#A78BFA' },
+  yuki:     { label: 'Yuki',          emoji: '❄️', preview: '#38BDF8' },
+  ocean:    { label: 'Ocean Blue',    emoji: '🌊', preview: '#60A5FA' },
+  forest:   { label: 'Forest Green',  emoji: '���', preview: '#4ADE80' },
+  sunset:   { label: 'Sunset Orange', emoji: '🌅', preview: '#FB923C' },
+  lavender: { label: 'Lavender',      emoji: '💐', preview: '#C084FC' },
+  midnight: { label: 'Midnight',      emoji: '🌙', preview: '#475569' },
+  matcha:   { label: 'Matcha',        emoji: '🍵', preview: '#84CC16' },
+  rosegold: { label: 'Rose Gold',     emoji: '🌹', preview: '#FB7185' },
 };
 
 interface ThemeContextValue {

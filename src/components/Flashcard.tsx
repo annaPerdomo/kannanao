@@ -7,6 +7,7 @@ import type { Flashcard as FlashcardType } from '@/types/flashcard';
 import { getFlashcardDisplayText, cardXp } from '@/lib/flashcardUtils';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
+import { useCardBorder } from '@/contexts/CardBorderContext';
 
 interface FlashcardProps {
   card: FlashcardType;
@@ -20,6 +21,7 @@ const PLACEHOLDER =
 export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const { borderStyle: equippedBorder } = useCardBorder();
 
   const [flipped, setFlipped] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -67,19 +69,24 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
     ${brand[300]}  100%
   )`;
 
+  const hasCustomBorder = equippedBorder && Object.keys(equippedBorder).length > 0;
+
   const frameBox = {
     position: 'absolute' as const,
     inset: 0,
     backfaceVisibility: 'hidden' as const,
     WebkitBackfaceVisibility: 'hidden' as const,
-    background: CARD_FRAME,
-    backgroundSize: '350% 350%',
-    animation: 'holoFrame 7s ease infinite',
+    background: hasCustomBorder ? (equippedBorder.background ?? brand[50]) : CARD_FRAME,
+    backgroundSize: hasCustomBorder ? undefined : '350% 350%',
+    animation: hasCustomBorder ? undefined : 'holoFrame 7s ease infinite',
     borderRadius: '20px',
     p: { xs: '5px', sm: '6px' },
-    boxShadow: hovered
-      ? `0 24px 64px rgba(0,0,0,0.28), 0 8px 28px ${alpha(brand[400], 0.4)}, 0 0 48px ${alpha(accent[300], 0.35)}`
-      : `0 8px 40px rgba(0,0,0,0.18), 0 4px 12px ${alpha(brand[400], 0.28)}`,
+    border: hasCustomBorder ? equippedBorder.border : undefined,
+    boxShadow: hasCustomBorder
+      ? equippedBorder.boxShadow
+      : hovered
+        ? `0 24px 64px rgba(0,0,0,0.28), 0 8px 28px ${alpha(brand[400], 0.4)}, 0 0 48px ${alpha(accent[300], 0.35)}`
+        : `0 8px 40px rgba(0,0,0,0.18), 0 4px 12px ${alpha(brand[400], 0.28)}`,
     transition: 'box-shadow 0.35s ease',
   };
 

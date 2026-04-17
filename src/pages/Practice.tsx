@@ -1,9 +1,11 @@
 'use client';
+import { useState } from 'react';
 import { Box, Typography } from '@mui/material';
 
 import { MatchMode } from '@/components/Practice/MatchMode';
 import { FillMode } from '@/components/Practice/FillMode';
 import { RecallMode } from '@/components/Practice/RecallMode';
+import { BatchPicker } from '@/components/Practice/BatchPicker';
 import { SectionHeader } from '@/components/SectionHeader';
 import { useCards } from '@/hooks/useCards';
 import { Loading } from '@/components/Loading';
@@ -21,8 +23,12 @@ const LABELS: Record<PracticeMode, string> = {
   recall: 'Guess It!',
 };
 
+/** Show the batch picker when the deck exceeds this many cards. */
+const BATCH_PICKER_THRESHOLD = 10;
+
 export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   const { cards, loading } = useCards(deckId);
+  const [batchSize, setBatchSize] = useState<number | null>(null);
 
   if (loading) {
     return (
@@ -32,6 +38,32 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
     );
   }
 
+  if (cards.length < 2) {
+    return (
+      <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
+        <SectionHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} />
+        <Box sx={{ textAlign: 'center', py: 8 }}>
+          <Typography color="text.secondary">
+            Not enough cards to practice. Add more cards to this deck.
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Show batch picker for large decks
+  const needsPicker = cards.length > BATCH_PICKER_THRESHOLD;
+  if (needsPicker && batchSize === null) {
+    return (
+      <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
+        <SectionHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} />
+        <BatchPicker totalCards={cards.length} mode={mode} onSelect={setBatchSize} onBack={onBack} />
+      </Box>
+    );
+  }
+
+  const effectiveBatchSize = batchSize ?? cards.length;
+
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
       <SectionHeader
@@ -40,18 +72,14 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
         badge={`${cards.length} cards`}
       />
 
-      {cards.length < 2 ? (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Typography color="text.secondary">
-            Not enough cards to practice. Add more cards to this deck.
-          </Typography>
-        </Box>
-      ) : (
-        <>
-          {mode === 'match' && <MatchMode cards={cards} deckId={deckId} onExit={onBack} />}
-          {mode === 'fill' && <FillMode deckId={deckId} cards={cards} onExit={onBack} />}
-          {mode === 'recall' && <RecallMode cards={cards} deckId={deckId} onExit={onBack} />}
-        </>
+      {mode === 'match' && (
+        <MatchMode cards={cards} deckId={deckId} batchSize={effectiveBatchSize} onExit={onBack} />
+      )}
+      {mode === 'fill' && (
+        <FillMode cards={cards} deckId={deckId} batchSize={effectiveBatchSize} onExit={onBack} />
+      )}
+      {mode === 'recall' && (
+        <RecallMode cards={cards} deckId={deckId} batchSize={effectiveBatchSize} onExit={onBack} />
       )}
     </Box>
   );

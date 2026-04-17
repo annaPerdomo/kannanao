@@ -12,6 +12,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import MicIcon from '@mui/icons-material/Mic';
 import HomeIcon from '@mui/icons-material/Home';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@mui/material/styles';
@@ -29,6 +30,7 @@ export function NavBar() {
   const router = useRouter();
   const isHome        = pathname === '/';
   const isStats       = pathname === '/stats';
+  const isShop        = pathname === '/shop';
   const isOhanashikai = pathname?.startsWith('/ohanashikai') ?? false;
   const isDecks       = pathname?.startsWith('/decks') ?? false;
 
@@ -221,6 +223,21 @@ export function NavBar() {
             </Button>
           )}
 
+          {/* Shop */}
+          {user && !isShop && (
+            <Button
+              onClick={() => router.push('/shop')}
+              size="small"
+              startIcon={<StorefrontIcon sx={{ fontSize: '1rem !important' }} />}
+              sx={{
+                ...navBtn,
+                '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
+              }}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Shop</Box>
+            </Button>
+          )}
+
           {/* Auth */}
           {user ? (
             <>
@@ -275,7 +292,7 @@ export function NavBar() {
                     Theme
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 0.75 }}>
-                    {(Object.keys(schemeInfo) as ColorScheme[]).map((s) => (
+                    {(['sakura', 'murasaki', 'yuki'] as ColorScheme[]).map((s) => (
                       <Box
                         key={s}
                         onClick={() => setScheme(s)}
