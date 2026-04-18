@@ -17,8 +17,11 @@ import { Loading } from '@/components/Loading';
 import { TodoList } from '@/components/TodoList';
 import { useDecks } from '@/hooks/useDecks';
 import { useAuth } from '@/contexts/AuthContext';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useProgress, xpProgressInLevel } from '@/hooks/useProgess';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
+import { SHOP_ITEMS, useShop } from '@/hooks/useShop';
 
 function getGreeting(name: string): { text: string; emoji: string } {
   const h = new Date().getHours();
@@ -27,14 +30,21 @@ function getGreeting(name: string): { text: string; emoji: string } {
   return           { text: `Good evening, ${name}!`,   emoji: '🌙' };
 }
 
-function WelcomeBanner({ username, level, streak, totalXp }: {
+function WelcomeBanner({ username, level, streak, totalXp, spendableXp, ownedItemKeys, onShopClick }: {
   username: string; level: number; streak: number; totalXp: number;
+  spendableXp: number; ownedItemKeys: string[]; onShopClick: () => void;
 }) {
   const { text, emoji } = getGreeting(username);
   const { current, needed } = xpProgressInLevel(totalXp);
   const pct = Math.round((current / needed) * 100);
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+
+  // Find the cheapest shop item the user hasn't bought yet
+  const nextItem = SHOP_ITEMS
+    .filter((i) => i.price > 0 && !ownedItemKeys.includes(i.key))
+    .sort((a, b) => a.price - b.price)[0] ?? null;
+  const xpNeeded = nextItem ? Math.max(0, nextItem.price - spendableXp) : 0;
 
   return (
     <Box
@@ -88,9 +98,26 @@ function WelcomeBanner({ username, level, streak, totalXp }: {
           </Stack>
         </Box>
 
-        {/* XP bar */}
-        <Box sx={{ minWidth: { sm: 200 }, width: { xs: '100%', sm: 220 } }}>
-          <Stack direction="row" justifyContent="space-between" mb={0.5}>
+        {/* XP bar + Shop teaser — clickable */}
+        <Box
+          role="button"
+          onClick={onShopClick}
+          sx={{
+            minWidth: { sm: 220 },
+            width: { xs: '100%', sm: 260 },
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            '& *': { pointerEvents: 'none' },
+            '&:hover': {
+              opacity: 0.85,
+            },
+            '@keyframes shimmer': {
+              '0%': { backgroundPosition: '-200% 0' },
+              '100%': { backgroundPosition: '200% 0' },
+            },
+          }}
+        >
+          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
             <Typography variant="caption" sx={{ fontWeight: 700, color: brand[700] }}>XP Progress</Typography>
             <Typography variant="caption" sx={{ fontWeight: 700, color: brand[600] }}>{current} / {needed}</Typography>
           </Stack>
@@ -98,12 +125,14 @@ function WelcomeBanner({ username, level, streak, totalXp }: {
             variant="determinate"
             value={pct}
             sx={{
-              height: 10,
-              borderRadius: 5,
+              height: 12,
+              borderRadius: 6,
               bgcolor: alpha(brand[200], 0.5),
               '& .MuiLinearProgress-bar': {
-                background: `linear-gradient(90deg, ${brand[400]}, ${accent[400]})`,
-                borderRadius: 5,
+                borderRadius: 6,
+                background: `linear-gradient(90deg, ${brand[400]}, ${accent[400]}, ${brand[300]}, ${accent[400]}, ${brand[400]})`,
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 3s ease-in-out infinite',
                 transition: 'width 0.6s ease',
               },
             }}
@@ -111,6 +140,30 @@ function WelcomeBanner({ username, level, streak, totalXp }: {
           <Typography variant="caption" sx={{ color: brand[600], fontWeight: 600, mt: 0.5, display: 'block' }}>
             {needed - current} XP to level {level + 1} 🚀
           </Typography>
+
+          {/* Spendable XP + next unlock teaser */}
+          <Box sx={{ mt: 1, pt: 1, borderTop: `1px solid ${alpha(brand[300], 0.25)}` }}>
+            <Stack direction="row" alignItems="center" spacing={0.5} mb={nextItem ? 0.5 : 0}>
+              <AutoAwesomeIcon sx={{ fontSize: '0.85rem', color: accent[500] }} />
+              <Typography variant="caption" sx={{ fontWeight: 800, color: accent[600] }}>
+                {spendableXp.toLocaleString()} XP to spend
+              </Typography>
+              <StorefrontIcon sx={{ fontSize: '0.85rem', color: brand[500], ml: 'auto' }} />
+            </Stack>
+            {nextItem && xpNeeded > 0 && (
+              <Typography
+                variant="caption"
+                sx={{
+                  color: brand[500],
+                  fontWeight: 600,
+                  fontSize: '0.7rem',
+                  display: 'block',
+                }}
+              >
+                {nextItem.emoji} {nextItem.name} — {xpNeeded.toLocaleString()} more XP!
+              </Typography>
+            )}
+          </Box>
         </Box>
       </Stack>
     </Box>
@@ -120,9 +173,11 @@ function WelcomeBanner({ username, level, streak, totalXp }: {
 export default function Home() {
   const { decks, deleteDeck, updateDeckEmoji, pinDeck, loading } = useDecks();
   const { user, displayName } = useAuth();
-  const { progress, addBonusXp } = useProgress();
+  const { progress, spendableXp, addBonusXp } = useProgress();
   const { ohanashikais } = useOhanashikais();
+  const { purchases } = useShop();
   const router = useRouter();
+  const ownedItemKeys = purchases.map((p) => p.item_key);
 
   const [shareDeckId, setShareDeckId] = useState<string | null>(null);
   const [shareDeckName, setShareDeckName] = useState('');
@@ -150,6 +205,9 @@ export default function Home() {
           level={progress.level}
           streak={progress.streak_days}
           totalXp={progress.total_xp}
+          spendableXp={spendableXp}
+          ownedItemKeys={ownedItemKeys}
+          onShopClick={() => router.push('/shop')}
         />
       )}
 
@@ -339,6 +397,44 @@ export default function Home() {
           </Stack>
         )}
       </Box>
+
+      {/* ── Shop shortcut ── */}
+      {progress && (
+        <Box sx={{ mt: 5 }}>
+          <Box
+            onClick={() => router.push('/shop')}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2.5,
+              p: { xs: 2.5, sm: 3 },
+              borderRadius: 3,
+              bgcolor: 'rgba(255,243,249,0.7)',
+              border: '1.5px solid rgba(249,168,212,0.3)',
+              boxShadow: '0 2px 10px rgba(249,168,212,0.1)',
+              cursor: 'pointer',
+              transition: 'all 0.18s ease',
+              '&:hover': { boxShadow: '0 5px 20px rgba(249,168,212,0.2)', transform: 'translateY(-1px)', borderColor: 'rgba(244,114,182,0.55)' },
+            }}
+          >
+            <StorefrontIcon sx={{ fontSize: '2rem', color: 'text.secondary', flexShrink: 0 }} />
+            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+              <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                Shop
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Spend your XP on themes and card borders
+              </Typography>
+            </Box>
+            <Chip
+              icon={<AutoAwesomeIcon sx={{ fontSize: '0.8rem !important' }} />}
+              label={`${(progress.total_xp - (progress.total_xp_spent ?? 0)).toLocaleString()} XP`}
+              size="small"
+              sx={{ fontWeight: 700, fontSize: '0.75rem' }}
+            />
+          </Box>
+        </Box>
+      )}
 
       <ShareDeckDialog
         open={shareDeckId !== null}

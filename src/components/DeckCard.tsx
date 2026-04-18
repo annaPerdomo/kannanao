@@ -101,7 +101,7 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-              <Typography sx={{ fontSize: '0.5rem', fontWeight: 700, color: 'rgba(255,255,255,0.8)', lineHeight: 1 }}>HP</Typography>
+              <Typography sx={{ fontSize: '0.5rem', fontWeight: 700, color: 'rgba(255,255,255,0.8)', lineHeight: 1 }}>XP</Typography>
               <Typography sx={{ fontSize: '0.68rem', fontWeight: 900, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: 1 }}>
                 {deck.cardCount * 10}
               </Typography>

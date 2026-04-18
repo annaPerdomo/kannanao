@@ -163,7 +163,7 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
                   {isKanji ? '漢字' : 'かな'}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-                  <Typography sx={{ fontSize: '0.55rem', fontWeight: 700, color: 'rgba(255,255,255,0.82)' }}>HP</Typography>
+                  <Typography sx={{ fontSize: '0.55rem', fontWeight: 700, color: 'rgba(255,255,255,0.82)' }}>XP</Typography>
                   <Typography sx={{ fontSize: { xs: '0.78rem', sm: '0.88rem' }, fontWeight: 900, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
                     {cardXp(card.jlptLevel)}
                   </Typography>
