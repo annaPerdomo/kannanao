@@ -13,9 +13,10 @@ import { alpha } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined';
 import type { Flashcard } from '@/types/flashcard';
-import { getFlashcardDisplayText } from '@/lib/flashcardUtils';
-import { useProgress } from '@/hooks/useProgess';
+import { getFlashcardDisplayText, cardXp } from '@/lib/flashcardUtils';
+import { useProgress, XP_PER_WRONG } from '@/hooks/useProgess';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
+import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { CelebrationScreen } from './CelebrationScreen';
 import { RoundTransition } from './RoundTransition';
 
@@ -69,6 +70,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
   const [totalTime, setTotalTime] = useState(0);
 
   const { startSession, recordAnswer, endSession } = useProgress();
+  const { triggerXpEarned } = useXpAnimation();
   const sessionIdRef = useRef<string>('');
   const startTimeRef = useRef<number>(Date.now());
   const correctCountRef = useRef(0);
@@ -145,8 +147,11 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
       queue.reportResult(tile.cardId, true);
       setSelected(null);
 
+      const matchedCard = queue.currentCards.find((c) => c.id === tile.cardId);
+      const xpAmount = cardXp(matchedCard?.jlptLevel);
+      triggerXpEarned(xpAmount);
+
       if (sessionIdRef.current) {
-        const matchedCard = queue.currentCards.find((c) => c.id === tile.cardId);
         await recordAnswer(sessionIdRef.current, true, matchedCard?.jlptLevel);
       }
     } else {
@@ -155,6 +160,8 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
       totalAnsweredRef.current += 1;
       queue.reportResult(selected.cardId, false);
       queue.reportResult(tile.cardId, false);
+
+      triggerXpEarned(XP_PER_WRONG);
 
       if (sessionIdRef.current) {
         const attemptedCard = queue.currentCards.find((c) => c.id === tile.cardId);

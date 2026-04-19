@@ -19,6 +19,7 @@ import { useDecks } from '@/hooks/useDecks';
 import { useAuth } from '@/contexts/AuthContext';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import NewReleasesIcon from '@mui/icons-material/NewReleases';
 import { useProgress, xpProgressInLevel } from '@/hooks/useProgess';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { SHOP_ITEMS, useShop } from '@/hooks/useShop';
@@ -404,26 +405,53 @@ export default function Home() {
           <Box
             onClick={() => router.push('/shop')}
             sx={{
+              position: 'relative',
               display: 'flex',
               alignItems: 'center',
               gap: 2.5,
               p: { xs: 2.5, sm: 3 },
               borderRadius: 3,
-              bgcolor: 'rgba(255,243,249,0.7)',
-              border: '1.5px solid rgba(249,168,212,0.3)',
-              boxShadow: '0 2px 10px rgba(249,168,212,0.1)',
+              background: (theme) => `linear-gradient(135deg, ${alpha(theme.palette.brand[100], 0.9)}, ${alpha(theme.palette.accent[100], 0.6)})`,
+              border: (theme) => `2px solid ${alpha(theme.palette.brand[400], 0.4)}`,
+              boxShadow: (theme) => `0 4px 20px ${alpha(theme.palette.brand[300], 0.25)}`,
               cursor: 'pointer',
-              transition: 'all 0.18s ease',
-              '&:hover': { boxShadow: '0 5px 20px rgba(249,168,212,0.2)', transform: 'translateY(-1px)', borderColor: 'rgba(244,114,182,0.55)' },
+              transition: 'all 0.2s ease',
+              overflow: 'hidden',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: (theme) => `0 8px 28px ${alpha(theme.palette.brand[300], 0.35)}`,
+              },
+              '@keyframes newPulse': {
+                '0%, 100%': { transform: 'scale(1)' },
+                '50%': { transform: 'scale(1.08)' },
+              },
             }}
           >
-            <StorefrontIcon sx={{ fontSize: '2rem', color: 'text.secondary', flexShrink: 0 }} />
+            <Box sx={{ fontSize: '2rem', flexShrink: 0, animation: 'newPulse 2s ease-in-out infinite' }}>
+              🎁
+            </Box>
             <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-              <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                Shop
-              </Typography>
+              <Stack direction="row" alignItems="center" spacing={0.75}>
+                <Typography variant="body1" sx={{ fontWeight: 800, color: 'text.primary' }}>
+                  Shop
+                </Typography>
+                <Chip
+                  icon={<NewReleasesIcon sx={{ fontSize: '0.75rem !important' }} />}
+                  label="New items!"
+                  size="small"
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: '0.6rem',
+                    height: 20,
+                    bgcolor: (theme) => alpha(theme.palette.brand[500], 0.15),
+                    color: (theme) => theme.palette.brand[700],
+                    border: (theme) => `1.5px solid ${alpha(theme.palette.brand[400], 0.4)}`,
+                    animation: 'newPulse 3s ease-in-out infinite 0.5s',
+                  }}
+                />
+              </Stack>
               <Typography variant="body2" color="text.secondary">
-                Spend your XP on themes and card borders
+                Spend your XP on themes and card borders — more coming soon!
               </Typography>
             </Box>
             <Chip

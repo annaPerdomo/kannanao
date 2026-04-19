@@ -9,7 +9,7 @@ interface CardBorderContextValue {
   equippedBorderKey: string | null;
 }
 
-const CardBorderCtx = createContext<CardBorderContextValue>({
+export const CardBorderCtx = createContext<CardBorderContextValue>({
   borderStyle: {},
   equippedBorderKey: null,
 });

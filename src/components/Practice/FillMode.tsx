@@ -14,11 +14,14 @@ import { useTheme } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import type { Flashcard } from '@/types/flashcard';
-import { useProgress } from '@/hooks/useProgess';
+import { cardXp } from '@/lib/flashcardUtils';
+import { useProgress, XP_PER_WRONG } from '@/hooks/useProgess';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
+import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { CelebrationScreen } from './CelebrationScreen';
 import { RoundTransition } from './RoundTransition';
+import { XpEarnedPop } from './XpEarnedPop';
 
 interface FillModeProps {
   cards: Flashcard[];
@@ -46,8 +49,10 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
   const [roundScore, setRoundScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
+  const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(null);
 
   const { startSession, recordAnswer, endSession } = useProgress();
+  const { triggerXpEarned } = useXpAnimation();
   const sessionIdRef = useRef<string>('');
   const startTimeRef = useRef<number>(Date.now());
   const correctCountRef = useRef(0);
@@ -98,6 +103,11 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
     setResult(correct ? 'correct' : 'wrong');
     queue.reportResult(card.id, correct);
     totalAnsweredRef.current += 1;
+
+    const xpAmount = correct ? cardXp(card.jlptLevel) : XP_PER_WRONG;
+    setXpPop({ amount: xpAmount, correct, key: Date.now() });
+    setTimeout(() => setXpPop(null), 1300);
+    triggerXpEarned(xpAmount);
 
     if (correct) {
       setRoundScore((s) => s + 1);
@@ -210,6 +220,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
       {/* Card */}
       <Box
         sx={{
+          position: 'relative',
           border: '2px solid',
           borderColor: result
             ? result === 'correct'
@@ -217,12 +228,13 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
               : 'error.main'
             : alpha(brand[300], 0.45),
           borderRadius: 3,
-          overflow: 'hidden',
+          overflow: 'visible',
           mb: 3,
           boxShadow: `0 8px 24px ${alpha(brand[300], 0.12)}`,
           transition: 'border-color 0.25s',
         }}
       >
+        {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
         {/* Card image */}
         {card.imageUrl && (
           <Box

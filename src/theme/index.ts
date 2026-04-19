@@ -9,6 +9,8 @@ type ColorScale = {
   500: string; 600: string; 700: string; 800: string; 900: string;
 };
 
+export const CUTE_FONT = '"Fredoka", "Nunito", sans-serif';
+
 declare module '@mui/material/styles' {
   interface Palette {
     /** Primary brand color scale (50–900) — changes per scheme */

@@ -12,7 +12,8 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import type { OhanashikaiLine } from '@/types/ohanashikai';
-import { useProgress } from '@/hooks/useProgess';
+import { useProgress, XP_PER_CORRECT } from '@/hooks/useProgess';
+import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 
@@ -32,6 +33,7 @@ export function ReadThroughMode({ lines, ohanashikaiId, onExit }: ReadThroughMod
   const [done, setDone] = useState(false);
 
   const { startSession, recordAnswer, endSession } = useProgress();
+  const { triggerXpEarned } = useXpAnimation();
   const sessionIdRef = useRef<string>('');
   const startTimeRef = useRef<number>(Date.now());
   const correctCountRef = useRef(0);
@@ -52,6 +54,7 @@ export function ReadThroughMode({ lines, ohanashikaiId, onExit }: ReadThroughMod
     if (!seenRef.current.has(index) && sessionIdRef.current) {
       seenRef.current.add(index);
       correctCountRef.current += 1;
+      triggerXpEarned(XP_PER_CORRECT);
       await recordAnswer(sessionIdRef.current, true);
     }
   };

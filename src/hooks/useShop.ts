@@ -12,23 +12,29 @@ export const SHOP_ITEMS: ShopItem[] = [
   { key: 'theme_murasaki', name: 'Murasaki',     description: 'Dreamy violet & pink',                    category: 'theme', price: 0,    preview: '#A78BFA', emoji: '💜' },
   { key: 'theme_yuki',     name: 'Yuki',         description: 'Frosty sky blue & violet',                category: 'theme', price: 0,    preview: '#38BDF8', emoji: '❄️' },
   { key: 'theme_ocean',    name: 'Ocean Blue',   description: 'Deep blue seas & teal waves',             category: 'theme', price: 500,  preview: '#60A5FA', emoji: '🌊' },
-  { key: 'theme_forest',   name: 'Forest Green', description: 'Lush green canopy & emerald accents',     category: 'theme', price: 500,  preview: '#4ADE80', emoji: '🌲' },
-  { key: 'theme_sunset',   name: 'Sunset Orange',description: 'Warm golden hour glow',                   category: 'theme', price: 1000, preview: '#FB923C', emoji: '🌅' },
-  { key: 'theme_lavender', name: 'Lavender',     description: 'Soft purple fields & delicate pink',      category: 'theme', price: 1500, preview: '#C084FC', emoji: '💐' },
-  { key: 'theme_midnight', name: 'Midnight',     description: 'Cool slate & starlit blue',               category: 'theme', price: 2000, preview: '#475569', emoji: '🌙' },
-  { key: 'theme_matcha',   name: 'Matcha',       description: 'Earthy green tea & fresh lime',           category: 'theme', price: 3000, preview: '#84CC16', emoji: '🍵' },
-  { key: 'theme_rosegold', name: 'Rose Gold',    description: 'Elegant rose & warm amber shimmer',       category: 'theme', price: 5000, preview: '#FB7185', emoji: '🌹' },
+  { key: 'theme_forest',   name: 'Forest Green', description: 'Lush green canopy & emerald accents',     category: 'theme', price: 1200, preview: '#4ADE80', emoji: '🌲' },
+  { key: 'theme_sunset',   name: 'Sunset Orange',description: 'Warm golden hour glow',                   category: 'theme', price: 2500, preview: '#FB923C', emoji: '🌅' },
+  { key: 'theme_lavender', name: 'Lavender',     description: 'Soft purple fields & delicate pink',      category: 'theme', price: 4000, preview: '#C084FC', emoji: '💐' },
+  { key: 'theme_midnight', name: 'Midnight',     description: 'Cool slate & starlit blue',               category: 'theme', price: 6000, preview: '#475569', emoji: '🌙' },
+  { key: 'theme_matcha',   name: 'Matcha',       description: 'Earthy green tea & fresh lime',           category: 'theme', price: 9000, preview: '#84CC16', emoji: '🍵' },
+  { key: 'theme_rosegold', name: 'Rose Gold',    description: 'Elegant rose & warm amber shimmer',       category: 'theme', price: 15000, preview: '#FB7185', emoji: '🌹' },
 
   // ── Card borders ──
   { key: 'border_none',       name: 'Default',         description: 'Clean, no extra border',                       category: 'card_border', price: 0,    preview: 'none',                                          emoji: '📋' },
-  { key: 'border_golden',     name: 'Golden Frame',    description: 'Luxurious gold border with warm glow',         category: 'card_border', price: 200,  preview: 'linear-gradient(135deg, #FFD700, #FFA500)',     emoji: '✨' },
-  { key: 'border_rainbow',    name: 'Rainbow',         description: 'Shifting rainbow gradient border',             category: 'card_border', price: 500,  preview: 'linear-gradient(135deg, #FF6B6B, #FECA57, #48DBFB, #FF9FF3)', emoji: '🌈' },
-  { key: 'border_sakura',     name: 'Cherry Blossom',  description: 'Soft pink petals with gentle glow',            category: 'card_border', price: 800,  preview: 'linear-gradient(135deg, #FFC0CB, #FF69B4)',     emoji: '🌸' },
-  { key: 'border_starry',     name: 'Starry Night',    description: 'Deep blue with twinkling star shimmer',        category: 'card_border', price: 1000, preview: 'linear-gradient(135deg, #191970, #4169E1)',     emoji: '🌃' },
-  { key: 'border_neon',       name: 'Neon Glow',       description: 'Electric neon cyan with bright glow',          category: 'card_border', price: 1500, preview: 'linear-gradient(135deg, #00FFFF, #FF00FF)',     emoji: '💡' },
-  { key: 'border_watercolor', name: 'Watercolor',      description: 'Soft pastel watercolor wash',                  category: 'card_border', price: 2000, preview: 'linear-gradient(135deg, #A8E6CF, #DCEDC1, #FFD3B6, #FFAAA5)', emoji: '🎨' },
-  { key: 'border_origami',    name: 'Origami',         description: 'Geometric paper-fold pattern in warm tones',   category: 'card_border', price: 2500, preview: 'linear-gradient(135deg, #E8D5B7, #F5E6CC, #D4A574)', emoji: '🦢' },
-  { key: 'border_dragon',     name: 'Dragon Scale',    description: 'Fiery red & gold with blazing glow',           category: 'card_border', price: 3000, preview: 'linear-gradient(135deg, #8B0000, #FF4500, #FFD700)', emoji: '🐉' },
+  { key: 'border_golden',     name: 'Golden Frame',    description: 'Luxurious gold border with warm glow',         category: 'card_border', price: 300,  preview: 'linear-gradient(135deg, #FFD700, #FFA500)',     emoji: '✨' },
+  { key: 'border_rainbow',    name: 'Rainbow',         description: 'Shifting rainbow gradient border',             category: 'card_border', price: 800,  preview: 'linear-gradient(135deg, #FF6B6B, #FECA57, #48DBFB, #FF9FF3)', emoji: '🌈' },
+  { key: 'border_sakura',     name: 'Cherry Blossom',  description: 'Soft pink petals with gentle glow',            category: 'card_border', price: 1500, preview: 'linear-gradient(135deg, #FFC0CB, #FF69B4)',     emoji: '🌸' },
+  { key: 'border_starry',     name: 'Starry Night',    description: 'Deep blue with twinkling star shimmer',        category: 'card_border', price: 2500, preview: 'linear-gradient(135deg, #191970, #4169E1)',     emoji: '🌃' },
+  { key: 'border_neon',       name: 'Neon Glow',       description: 'Electric neon cyan with bright glow',          category: 'card_border', price: 4000, preview: 'linear-gradient(135deg, #00FFFF, #FF00FF)',     emoji: '💡' },
+  { key: 'border_watercolor', name: 'Watercolor',      description: 'Soft pastel watercolor wash',                  category: 'card_border', price: 6000, preview: 'linear-gradient(135deg, #A8E6CF, #DCEDC1, #FFD3B6, #FFAAA5)', emoji: '🎨' },
+  { key: 'border_origami',    name: 'Origami',         description: 'Geometric paper-fold pattern in warm tones',   category: 'card_border', price: 8500, preview: 'linear-gradient(135deg, #E8D5B7, #F5E6CC, #D4A574)', emoji: '🦢' },
+  { key: 'border_dragon',     name: 'Dragon Scale',    description: 'Fiery red & gold with blazing glow',           category: 'card_border', price: 12000, preview: 'linear-gradient(135deg, #8B0000, #FF4500, #FFD700)', emoji: '🐉' },
+
+  // ── Coming Soon ──
+  { key: 'theme_cottagecore', name: 'Cottagecore',     description: 'Cozy countryside warmth — coming soon!',        category: 'theme',       price: 0, preview: '#D2B48C', emoji: '🧸', comingSoon: true },
+  { key: 'theme_galaxy',     name: 'Galaxy',          description: 'Deep space sparkles — coming soon!',            category: 'theme',       price: 0, preview: '#6B21A8', emoji: '🪐', comingSoon: true },
+  { key: 'border_crystal',   name: 'Crystal Ice',     description: 'Shimmering frozen crystal edges — coming soon!', category: 'card_border', price: 0, preview: 'linear-gradient(135deg, #E0F7FA, #80DEEA, #B2EBF2)', emoji: '💎', comingSoon: true },
+  { key: 'border_floral',    name: 'Floral Garden',   description: 'Blooming flower frame — coming soon!',          category: 'card_border', price: 0, preview: 'linear-gradient(135deg, #F8BBD0, #CE93D8, #F48FB1)', emoji: '🌺', comingSoon: true },
 ];
 
 /** Map item key → CSS styles for card borders */
@@ -85,7 +91,7 @@ export const THEME_KEY_TO_SCHEME: Record<string, string> = {
 };
 
 // Free items that every user owns by default
-const FREE_ITEM_KEYS = SHOP_ITEMS.filter((i) => i.price === 0).map((i) => i.key);
+const FREE_ITEM_KEYS = SHOP_ITEMS.filter((i) => i.price === 0 && !i.comingSoon).map((i) => i.key);
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
 

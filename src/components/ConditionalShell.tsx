@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import { NavBar } from './NavBar';
 import { Footer } from './Footer';
 import { AuthGuard } from './AuthGuard';
+import { XpAnimationProvider } from '@/contexts/XpAnimationContext';
 
 export function ConditionalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -12,12 +13,12 @@ export function ConditionalShell({ children }: { children: React.ReactNode }) {
   if (isEmbed) return <>{children}</>;
 
   return (
-    <>
+    <XpAnimationProvider>
       <NavBar />
       <Box sx={{ flex: 1 }}>
         <AuthGuard>{children}</AuthGuard>
       </Box>
       <Footer />
-    </>
+    </XpAnimationProvider>
   );
 }

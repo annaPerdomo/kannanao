@@ -14,7 +14,8 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import type { OhanashikaiLine } from '@/types/ohanashikai';
-import { useProgress } from '@/hooks/useProgess';
+import { useProgress, XP_PER_CORRECT, XP_PER_WRONG } from '@/hooks/useProgess';
+import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 
@@ -54,6 +55,7 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
   const [score, setScore] = useState(0);
 
   const { startSession, recordAnswer, endSession } = useProgress();
+  const { triggerXpEarned } = useXpAnimation();
   const sessionIdRef = useRef<string>('');
   const startTimeRef = useRef<number>(Date.now());
   const correctCountRef = useRef(0);
@@ -71,6 +73,7 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
   const check = async () => {
     const correct = normalize(input) === normalize(stripFurigana(current.text));
     setResult(correct ? 'correct' : 'wrong');
+    triggerXpEarned(correct ? XP_PER_CORRECT : XP_PER_WRONG);
     if (correct) {
       setScore((s) => s + 1);
       correctCountRef.current += 1;
@@ -83,6 +86,7 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
   const reveal = async () => {
     setRevealed(true);
     if (!result && sessionIdRef.current) {
+      triggerXpEarned(XP_PER_WRONG);
       await recordAnswer(sessionIdRef.current, false);
       setResult('wrong');
     }

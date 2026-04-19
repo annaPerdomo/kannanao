@@ -10,6 +10,7 @@ import { EditCardDialog } from "@/components/EditCardDialog";
 import { getFlashcardDisplayText, cardXp } from "@/lib/flashcardUtils";
 import FuriganaText, { stripFurigana } from "@/components/FuriganaText";
 import { SpeakButton } from "@/components/SpeakButton";
+import { useCardBorder } from "@/contexts/CardBorderContext";
 
 interface ImageCardProps {
   card: Flashcard;
@@ -22,6 +23,8 @@ interface ImageCardProps {
 export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const { borderStyle: equippedBorder } = useCardBorder();
+  const hasCustomBorder = equippedBorder && Object.keys(equippedBorder).length > 0;
   const CARD_FRAME = `linear-gradient(145deg, ${brand[100]} 0%, ${brand[300]} 25%, ${brand[50]} 50%, ${brand[400]} 75%, ${brand[100]} 100%)`;
   const [editOpen, setEditOpen] = useState(false);
   const [localCard, setLocalCard] = useState<Flashcard>(card);
@@ -42,10 +45,13 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
       <Box
         sx={{
           position: "relative",
-          background: CARD_FRAME,
+          background: hasCustomBorder ? (equippedBorder.background ?? brand[50]) : CARD_FRAME,
           borderRadius: "14px",
           p: "5px",
-          boxShadow: `0 6px 24px rgba(0,0,0,0.16), 0 2px 8px ${alpha(brand[400], 0.28)}`,
+          border: hasCustomBorder ? equippedBorder.border : undefined,
+          boxShadow: hasCustomBorder
+            ? equippedBorder.boxShadow
+            : `0 6px 24px rgba(0,0,0,0.16), 0 2px 8px ${alpha(brand[400], 0.28)}`,
           transition: "transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s ease",
           "&:hover": {
             transform: "translateY(-6px) rotate(-0.5deg)",

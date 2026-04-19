@@ -10,6 +10,7 @@ export interface ShopItem {
   price: number;
   preview: string;
   emoji: string;
+  comingSoon?: boolean;
 }
 
 export interface CardBorderStyle {
