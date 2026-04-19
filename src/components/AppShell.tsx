@@ -6,7 +6,7 @@ import { Footer } from './Footer';
 import { AuthGuard } from './AuthGuard';
 import { XpAnimationProvider } from '@/contexts/XpAnimationContext';
 
-export function ConditionalShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isEmbed = pathname?.startsWith('/embed/');
 

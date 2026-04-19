@@ -16,7 +16,7 @@ import { Loading } from "@/components/Loading";
 import { SectionHeader } from "@/components/SectionHeader";
 import { useCards } from "@/hooks/useCards";
 import { useDecks } from "@/hooks/useDecks";
-import { useProgress } from "@/hooks/useProgess";
+import { useProgress } from "@/hooks/useProgress";
 import { useShop, CELEBRATION_THEMES } from "@/hooks/useShop";
 
 interface StudyProps {

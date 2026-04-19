@@ -16,7 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { dbInsertCards, dbCopyCardsIntoDeck } from "@/lib/supabase";
 import { AddExistingCardsDialog } from "@/components/AddExistingCardsDialog";
 import { PdfImportModal } from "@/components/PdfImportModal";
-import { AddCardsSection } from "@/components/AddCardsSection";
+import { AddCardsSection } from "@/components/AddCards";
 import { Loading } from "@/components/Loading";
 import { useRouter } from "next/navigation";
 import type { Flashcard, GeneratedCard } from '@/types/flashcard';

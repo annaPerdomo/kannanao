@@ -1,7 +1,7 @@
 'use client';
 import { Box, Button, Typography, Alert, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import { AddCardOptionButtons } from '@/components/AddCardOptionButtons';
+import { AddCardOptionButtons } from './AddCardOptionButtons';
 import { WordChipInput } from '@/components/WordChipInput';
 import type { SxProps, Theme } from '@mui/material/styles';
 

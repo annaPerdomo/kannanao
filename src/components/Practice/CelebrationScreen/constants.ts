@@ -1,0 +1,110 @@
+export type PracticeMode = 'match' | 'fill' | 'recall';
+export type CelebTheme = 'confetti' | 'fireworks' | 'stars' | 'bubbles' | 'emojiRain';
+
+export interface ThemeConfig {
+  bg: string;
+  emoji: string;
+  cardBg: string;
+  cardBorder: string;
+  textColor: string;
+  subTextColor: string;
+  btnBg: string;
+  btnText: string;
+}
+
+export const CONFETTI_COLORS = [
+  '#ff6b9d', '#ff9f43', '#ffd32a', '#0be881', '#18dcff',
+  '#a29bfe', '#fd79a8', '#fdcb6e', '#55efc4', '#74b9ff',
+];
+
+export const FIREWORK_COLORS = [
+  '#ff0080', '#00ffff', '#ff9900', '#00ff41',
+  '#ff3366', '#ffcc00', '#cc00ff', '#ff6600',
+];
+
+export const BUBBLE_COLORS = [
+  'rgba(255,182,193,0.55)',
+  'rgba(173,216,230,0.55)',
+  'rgba(221,160,221,0.55)',
+  'rgba(144,238,144,0.55)',
+  'rgba(255,255,180,0.65)',
+  'rgba(230,230,250,0.65)',
+];
+
+export const MODE_EMOJIS: Record<PracticeMode, string[]> = {
+  recall: ['🌟', '✨', '💫', '⭐', '🎯', '🏆'],
+  fill:   ['✏️', '📝', '🌸', '💐', '✨', '🎨'],
+  match:  ['🎯', '🎊', '🎉', '🎈', '⭐', '🔗'],
+};
+
+export const THEME_CONFIGS: Record<CelebTheme, ThemeConfig> = {
+  confetti: {
+    bg: 'radial-gradient(ellipse at 60% 30%, #3d1e6e 0%, #1a0a3e 55%, #0d0624 100%)',
+    emoji: '🎊',
+    cardBg: 'rgba(255,255,255,0.09)',
+    cardBorder: 'rgba(255,255,255,0.2)',
+    textColor: '#ffffff',
+    subTextColor: 'rgba(255,255,255,0.72)',
+    btnBg: '#ff6b9d',
+    btnText: '#fff',
+  },
+  fireworks: {
+    bg: 'radial-gradient(ellipse at 50% 60%, #001233 0%, #000d1f 60%, #000508 100%)',
+    emoji: '🎆',
+    cardBg: 'rgba(255,255,255,0.07)',
+    cardBorder: 'rgba(255,255,255,0.14)',
+    textColor: '#ffffff',
+    subTextColor: 'rgba(255,255,255,0.68)',
+    btnBg: '#00e5ff',
+    btnText: '#001233',
+  },
+  stars: {
+    bg: 'linear-gradient(160deg, #0d0d2b 0%, #0d1b4b 50%, #1a2a6c 100%)',
+    emoji: '⭐',
+    cardBg: 'rgba(255,255,255,0.09)',
+    cardBorder: 'rgba(255,215,0,0.28)',
+    textColor: '#ffffff',
+    subTextColor: 'rgba(255,255,255,0.72)',
+    btnBg: '#ffd700',
+    btnText: '#1a1000',
+  },
+  bubbles: {
+    bg: 'linear-gradient(135deg, #c8e6fa 0%, #e8d5f5 55%, #fde8f0 100%)',
+    emoji: '🎈',
+    cardBg: 'rgba(255,255,255,0.72)',
+    cardBorder: 'rgba(255,255,255,0.92)',
+    textColor: '#2d1b69',
+    subTextColor: 'rgba(45,27,105,0.65)',
+    btnBg: '#7c3aed',
+    btnText: '#fff',
+  },
+  emojiRain: {
+    bg: 'linear-gradient(145deg, #1a0533 0%, #3d0f6e 35%, #6b1a8a 70%, #a63a6e 100%)',
+    emoji: '🌟',
+    cardBg: 'rgba(255,255,255,0.09)',
+    cardBorder: 'rgba(255,255,255,0.2)',
+    textColor: '#ffffff',
+    subTextColor: 'rgba(255,255,255,0.72)',
+    btnBg: '#ff6e40',
+    btnText: '#fff',
+  },
+};
+
+export const ALL_THEMES: CelebTheme[] = ['confetti', 'fireworks', 'stars', 'bubbles', 'emojiRain'];
+
+export const CELEBRATION_KEY_TO_THEME: Record<string, CelebTheme> = {
+  celeb_hearts:       'bubbles',
+  celeb_stars:        'stars',
+  celeb_bunnies:      'emojiRain',
+  celeb_rainbow:      'confetti',
+  celeb_sparkle_pink: 'emojiRain',
+  celeb_galaxy:       'fireworks',
+};
+
+export const CELEB_PARTICLE_BG: Record<string, string> = {
+  confetti:  'radial-gradient(ellipse at 60% 30%, #3d1e6e 0%, #1a0a3e 55%, #0d0624 100%)',
+  fireworks: 'radial-gradient(ellipse at 50% 60%, #001233 0%, #000d1f 60%, #000508 100%)',
+  stars:     'linear-gradient(160deg, #0d0d2b 0%, #0d1b4b 50%, #1a2a6c 100%)',
+  bubbles:   'linear-gradient(135deg, #c8e6fa 0%, #e8d5f5 55%, #fde8f0 100%)',
+  emojiRain: 'linear-gradient(145deg, #1a0533 0%, #3d0f6e 35%, #6b1a8a 70%, #a63a6e 100%)',
+};

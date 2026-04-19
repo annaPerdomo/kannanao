@@ -14,7 +14,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import type { OhanashikaiLine } from '@/types/ohanashikai';
-import { useProgress, XP_PER_CORRECT, XP_PER_WRONG } from '@/hooks/useProgess';
+import { useProgress, XP_PER_CORRECT, XP_PER_WRONG } from '@/hooks/useProgress';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';

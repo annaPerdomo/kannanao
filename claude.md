@@ -23,6 +23,17 @@ Next.js 15 app with React 19, MUI 7, Supabase, TypeScript.
 - `app/` — Next.js App Router pages and API routes
 - `pages/` — legacy page components (do not add new files here)
 
+## File Size & Structure
+
+- **Max ~300 lines per component file.** If a component grows past this, extract it into a folder.
+- When extracting, convert `ComponentName.tsx` → `ComponentName/index.tsx` + sub-components. This preserves existing import paths.
+- Each folder must have a barrel export (`index.ts` or `index.tsx`) that re-exports all public members.
+- Extract into the folder: constants/config arrays → `constants.ts`, shared `sx` style objects → `styles.ts`, particle/animation sub-components → their own files.
+- Types used only within the folder stay in `constants.ts` or the file that uses them. Shared types go in `src/types/`.
+- Sub-components that are only used by the parent don't need their own folder — a flat file in the parent's folder is fine.
+- Reuse components across feature folders via imports (e.g. `import { Label } from '@/components/Deck'`) rather than duplicating.
+- After any extraction, run `pnpm build` to verify nothing broke.
+
 ## Component Patterns
 
 - Add `'use client'` directive for interactive components

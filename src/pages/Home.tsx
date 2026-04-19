@@ -20,7 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import NewReleasesIcon from '@mui/icons-material/NewReleases';
-import { useProgress, xpProgressInLevel } from '@/hooks/useProgess';
+import { useProgress, xpProgressInLevel } from '@/hooks/useProgress';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { SHOP_ITEMS, useShop } from '@/hooks/useShop';
 

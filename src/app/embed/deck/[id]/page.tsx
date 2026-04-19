@@ -1,5 +1,5 @@
 import { use } from "react";
-import EmbedStudy from "@/components/EmbedStudy";
+import PublicStudyViewer from "@/components/PublicStudyViewer";
 
 export default function EmbedDeckPage({
   params,
@@ -7,5 +7,5 @@ export default function EmbedDeckPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  return <EmbedStudy deckId={id} />;
+  return <PublicStudyViewer deckId={id} />;
 }

@@ -12,7 +12,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { dbSetDeckPublic } from "@/lib/supabase";
 
-interface EmbedDeckDialogProps {
+interface ShareEmbedDialogProps {
   open: boolean;
   onClose: () => void;
   deckId: string;
@@ -21,9 +21,9 @@ interface EmbedDeckDialogProps {
   onPublicChange: (isPublic: boolean) => void;
 }
 
-export function EmbedDeckDialog({
+export function ShareEmbedDialog({
   open, onClose, deckId, deckName, isPublic, onPublicChange,
-}: EmbedDeckDialogProps) {
+}: ShareEmbedDialogProps) {
   const theme = useTheme();
   const { brand, accent, surfaces } = theme.palette;
 

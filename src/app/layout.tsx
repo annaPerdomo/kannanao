@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import Providers from "./providers";
-import { ConditionalShell } from "@/components/ConditionalShell";
+import { AppShell } from "@/components/AppShell";
 import { AppBackground } from "@/components/AppBackground";
 
 const TITLE = "Kannanao — AI Japanese Flashcard Studio";
@@ -69,7 +69,7 @@ export default function RootLayout({
         <AppRouterCacheProvider>
           <Providers>
             <AppBackground>
-              <ConditionalShell>{children}</ConditionalShell>
+              <AppShell>{children}</AppShell>
             </AppBackground>
           </Providers>
         </AppRouterCacheProvider>

@@ -8,13 +8,13 @@ import type { Flashcard as FlashcardType } from '@/types/flashcard';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 
-interface EmbedFlashcardProps {
+interface PublicFlashcardProps {
   card: FlashcardType;
   width?: number | string;
   height?: number | string;
 }
 
-export function EmbedFlashcard({ card, width = '100%', height = 300 }: EmbedFlashcardProps) {
+export function PublicFlashcard({ card, width = '100%', height = 300 }: PublicFlashcardProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const [flipped, setFlipped] = useState(false);

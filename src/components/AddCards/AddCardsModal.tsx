@@ -9,7 +9,7 @@ import {
   IconButton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { AddCardsSection } from '@/components/AddCardsSection';
+import { AddCardsSection } from './AddCardsSection';
 import { Loading } from '@/components/Loading';
 
 interface AddCardsModalProps {

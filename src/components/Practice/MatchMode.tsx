@@ -14,7 +14,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined';
 import type { Flashcard } from '@/types/flashcard';
 import { getFlashcardDisplayText, cardXp } from '@/lib/flashcardUtils';
-import { useProgress, XP_PER_WRONG } from '@/hooks/useProgess';
+import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { CelebrationScreen } from './CelebrationScreen';

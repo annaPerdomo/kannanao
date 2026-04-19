@@ -8,7 +8,7 @@ import Chip from "@mui/material/Chip";
 import { ThemeProvider, alpha, createTheme } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { EmbedFlashcard } from "@/components/EmbedFlashcard";
+import { PublicFlashcard } from "@/components/PublicFlashcard";
 import { IndexCard } from "@/components/IndexCard";
 import { Loading } from "@/components/Loading";
 import { dbCardToApp } from "@/lib/supabase";
@@ -36,7 +36,7 @@ const plainTheme = createTheme({
   typography: { fontFamily: '"Nunito", "Noto Sans JP", sans-serif' },
 });
 
-interface EmbedStudyProps {
+interface PublicStudyViewerProps {
   deckId: string;
 }
 
@@ -137,7 +137,7 @@ function CelebrationOverlay({ cardCount, onReset }: { cardCount: number; onReset
   );
 }
 
-export default function EmbedStudy({ deckId }: EmbedStudyProps) {
+export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
   const [cards, setCards] = useState<FlashcardType[]>([]);
   const [deckName, setDeckName] = useState("Flashcards");
   const [deckEmoji, setDeckEmoji] = useState("📘");
@@ -449,7 +449,7 @@ export default function EmbedStudy({ deckId }: EmbedStudyProps) {
             }}
           >
             {card && cardTheme !== "plain" && (
-              <EmbedFlashcard card={card} width={CARD_W} height={CARD_H} />
+              <PublicFlashcard card={card} width={CARD_W} height={CARD_H} />
             )}
             {card && cardTheme === "plain" && (
               <IndexCard card={card} width={CARD_W} height={CARD_H} />
