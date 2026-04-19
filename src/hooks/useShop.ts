@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { sb } from '@/lib/supabase';
-import type { ShopItem, CardBorderStyle, UserPurchase, UserEquipped } from '@/types/shop';
+import type { ShopItem, CardBorderStyle, CelebTheme, UserPurchase, UserEquipped } from '@/types/shop';
 
 // ─── Shop catalog ────────────────────────────────────────────────────────────
 
@@ -29,6 +29,14 @@ export const SHOP_ITEMS: ShopItem[] = [
   { key: 'border_watercolor', name: 'Watercolor',      description: 'Soft pastel watercolor wash',                  category: 'card_border', price: 6000, preview: 'linear-gradient(135deg, #A8E6CF, #DCEDC1, #FFD3B6, #FFAAA5)', emoji: '🎨' },
   { key: 'border_origami',    name: 'Origami',         description: 'Geometric paper-fold pattern in warm tones',   category: 'card_border', price: 8500, preview: 'linear-gradient(135deg, #E8D5B7, #F5E6CC, #D4A574)', emoji: '🦢' },
   { key: 'border_dragon',     name: 'Dragon Scale',    description: 'Fiery red & gold with blazing glow',           category: 'card_border', price: 12000, preview: 'linear-gradient(135deg, #8B0000, #FF4500, #FFD700)', emoji: '🐉' },
+
+  // ── Celebrations ──
+  { key: 'celeb_hearts',       name: 'Heart Burst',     description: 'Fill the screen with cascading hearts!',        category: 'celebration', price: 200,  emoji: '💖' },
+  { key: 'celeb_stars',        name: 'Star Shower',     description: 'A golden rain of twinkling stars',              category: 'celebration', price: 500,  emoji: '⭐' },
+  { key: 'celeb_bunnies',      name: 'Bunny Parade',    description: 'Adorable bunnies hop across your screen',       category: 'celebration', price: 1000, emoji: '🐰' },
+  { key: 'celeb_rainbow',      name: 'Rainbow Pop',     description: 'Explode with all the colors of the rainbow',    category: 'celebration', price: 2000, emoji: '🌈' },
+  { key: 'celeb_sparkle_pink', name: 'Sparkle Pink',    description: 'Dreamy pink sparkles and glitter cascade',      category: 'celebration', price: 3500, emoji: '✨' },
+  { key: 'celeb_galaxy',       name: 'Galaxy Burst',    description: 'Deep space fireworks with cosmic shimmer',      category: 'celebration', price: 5000, emoji: '🌌' },
 
   // ── Coming Soon ──
   { key: 'theme_cottagecore', name: 'Cottagecore',     description: 'Cozy countryside warmth — coming soon!',        category: 'theme',       price: 0, preview: '#D2B48C', emoji: '🧸', comingSoon: true },
@@ -74,6 +82,16 @@ export const CARD_BORDER_STYLES: Record<string, CardBorderStyle> = {
     border: '2.5px solid #FF4500',
     boxShadow: '0 0 12px rgba(255, 69, 0, 0.35), 0 0 24px rgba(139, 0, 0, 0.20), 0 0 4px rgba(255, 215, 0, 0.3)',
   },
+};
+
+/** Map celebration item key → CelebTheme config (colors + emoji set) */
+export const CELEBRATION_THEMES: Record<string, CelebTheme> = {
+  celeb_hearts:       { colors: ['#FF69B4', '#FF1493', '#FFB6C1', '#FF4D94'], emojis: ['💖', '💗', '💕', '❤️', '💝'] },
+  celeb_stars:        { colors: ['#FFD700', '#FFA500', '#FFEC3D', '#FFB300'], emojis: ['⭐', '🌟', '✨', '💫', '🌠'] },
+  celeb_bunnies:      { colors: ['#FFB6C1', '#DDA0DD', '#F8BBD0', '#FF69B4'], emojis: ['🐰', '🐇', '🌸', '💐', '🥕'] },
+  celeb_rainbow:      { colors: ['#FF6B6B', '#FFA500', '#FFD700', '#4ADE80', '#38BDF8', '#818CF8'], emojis: ['🌈', '🎨', '🦋', '🌊', '🌟'] },
+  celeb_sparkle_pink: { colors: ['#FF69B4', '#FF1493', '#C084FC', '#F472B6', '#FB7185'], emojis: ['✨', '💖', '🌸', '🦩', '💅'] },
+  celeb_galaxy:       { colors: ['#6B21A8', '#4338CA', '#0EA5E9', '#818CF8', '#C084FC'], emojis: ['🌌', '🪐', '⭐', '🚀', '💫'] },
 };
 
 /** Map theme item key → ColorScheme value used by the app */

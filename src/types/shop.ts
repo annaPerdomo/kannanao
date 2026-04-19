@@ -1,6 +1,11 @@
 import type { SxProps, Theme } from '@mui/material/styles';
 
-export type ShopCategory = 'theme' | 'card_border';
+export type ShopCategory = 'theme' | 'card_border' | 'celebration';
+
+export interface CelebTheme {
+  colors: string[];
+  emojis: string[];
+}
 
 export interface ShopItem {
   key: string;
@@ -8,7 +13,7 @@ export interface ShopItem {
   description: string;
   category: ShopCategory;
   price: number;
-  preview: string;
+  preview?: string;
   emoji: string;
   comingSoon?: boolean;
 }

@@ -1,6 +1,7 @@
 'use client';
 import { useMemo } from 'react';
 import { Box, Typography, Button } from '@mui/material';
+import { useShop, CELEBRATION_THEMES } from '@/hooks/useShop';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -120,7 +121,8 @@ const THEME_CONFIGS: Record<CelebTheme, ThemeConfig> = {
 // definition covers all particles while still giving per-particle values.
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ConfettiParticles() {
+function ConfettiParticles({ colors }: { colors?: string[] }) {
+  const palette = colors ?? CONFETTI_COLORS;
   const pieces = useMemo(
     () =>
       Array.from({ length: 58 }, (_, i) => ({
@@ -129,12 +131,12 @@ function ConfettiParticles() {
         delay: `${(i * 0.055) % 2}s`,
         duration: `${1.8 + (i % 6) * 0.22}s`,
         size: `${8 + (i % 5) * 3}px`,
-        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+        color: palette[i % palette.length],
         isCircle: i % 3 === 0,
         rotateEnd: `${(i % 2 === 0 ? 1 : -1) * (360 + (i % 5) * 120)}deg`,
         wobble: `${(i % 2 === 0 ? 1 : -1) * (8 + (i % 6) * 7)}px`,
       })),
-    [],
+    [palette],
   );
 
   return (
@@ -166,7 +168,8 @@ function ConfettiParticles() {
   );
 }
 
-function FireworkParticles() {
+function FireworkParticles({ colors }: { colors?: string[] }) {
+  const palette = colors ?? FIREWORK_COLORS;
   const bursts = useMemo(
     () =>
       Array.from({ length: 5 }, (_, i) => ({
@@ -174,9 +177,9 @@ function FireworkParticles() {
         x: [18, 72, 42, 80, 14][i],
         y: [18, 14, 52, 44, 68][i],
         delay: i * 0.38,
-        color: FIREWORK_COLORS[i % FIREWORK_COLORS.length],
+        color: palette[i % palette.length],
       })),
-    [],
+    [palette],
   );
 
   const sparks = useMemo(
@@ -331,7 +334,8 @@ function StarParticles() {
   );
 }
 
-function BubbleParticles() {
+function BubbleParticles({ colors }: { colors?: string[] }) {
+  const palette = colors ?? BUBBLE_COLORS;
   const bubbles = useMemo(
     () =>
       Array.from({ length: 24 }, (_, i) => ({
@@ -340,10 +344,10 @@ function BubbleParticles() {
         size: `${22 + (i % 5) * 13}px`,
         delay: `${(i * 0.16) % 2.8}s`,
         dur: `${2.8 + (i % 5) * 0.45}s`,
-        color: BUBBLE_COLORS[i % BUBBLE_COLORS.length],
+        color: palette[i % palette.length],
         wobble: `${(i % 2 === 0 ? 1 : -1) * (12 + (i % 5) * 9)}px`,
       })),
-    [],
+    [palette],
   );
 
   return (
@@ -377,8 +381,8 @@ function BubbleParticles() {
   );
 }
 
-function EmojiRainParticles({ mode }: { mode: PracticeMode }) {
-  const emojiSet = MODE_EMOJIS[mode];
+function EmojiRainParticles({ mode, emojis }: { mode: PracticeMode; emojis?: string[] }) {
+  const emojiSet = emojis ?? MODE_EMOJIS[mode];
   const pieces = useMemo(
     () =>
       Array.from({ length: 30 }, (_, i) => ({
@@ -428,6 +432,39 @@ function EmojiRainParticles({ mode }: { mode: PracticeMode }) {
 
 const ALL_THEMES: CelebTheme[] = ['confetti', 'fireworks', 'stars', 'bubbles', 'emojiRain'];
 
+export const CELEBRATION_KEY_TO_THEME: Record<string, CelebTheme> = {
+  celeb_hearts:       'bubbles',
+  celeb_stars:        'stars',
+  celeb_bunnies:      'emojiRain',
+  celeb_rainbow:      'confetti',
+  celeb_sparkle_pink: 'emojiRain',
+  celeb_galaxy:       'fireworks',
+};
+
+// Background gradient per particle type — used by the shop preview modal
+export const CELEB_PARTICLE_BG: Record<string, string> = {
+  confetti:  'radial-gradient(ellipse at 60% 30%, #3d1e6e 0%, #1a0a3e 55%, #0d0624 100%)',
+  fireworks: 'radial-gradient(ellipse at 50% 60%, #001233 0%, #000d1f 60%, #000508 100%)',
+  stars:     'linear-gradient(160deg, #0d0d2b 0%, #0d1b4b 50%, #1a2a6c 100%)',
+  bubbles:   'linear-gradient(135deg, #c8e6fa 0%, #e8d5f5 55%, #fde8f0 100%)',
+  emojiRain: 'linear-gradient(145deg, #1a0533 0%, #3d0f6e 35%, #6b1a8a 70%, #a63a6e 100%)',
+};
+
+/** Renders the correct particle layer for a shop celebration item key. */
+export function CelebParticleStage({ itemKey }: { itemKey: string }) {
+  const celebData = CELEBRATION_THEMES[itemKey];
+  const particleType: CelebTheme = CELEBRATION_KEY_TO_THEME[itemKey] ?? 'emojiRain';
+  return (
+    <>
+      {particleType === 'confetti'  && <ConfettiParticles  colors={celebData?.colors} />}
+      {particleType === 'fireworks' && <FireworkParticles  colors={celebData?.colors} />}
+      {particleType === 'stars'     && <StarParticles />}
+      {particleType === 'bubbles'   && <BubbleParticles    colors={celebData?.colors} />}
+      {particleType === 'emojiRain' && <EmojiRainParticles mode="recall" emojis={celebData?.emojis} />}
+    </>
+  );
+}
+
 export function CelebrationScreen({
   heading,
   subheading,
@@ -435,11 +472,17 @@ export function CelebrationScreen({
   mode,
   onExit,
 }: CelebrationScreenProps) {
-  // Pick once on mount — stable for the lifetime of this session completion
-  const theme = useMemo<CelebTheme>(
+  const { equipped } = useShop();
+
+  // Stable random fallback — picked once on mount
+  const randomTheme = useMemo<CelebTheme>(
     () => ALL_THEMES[Math.floor(Math.random() * ALL_THEMES.length)],
     [],
   );
+
+  const equippedKey = equipped['celebration'];
+  const theme: CelebTheme = (equippedKey ? CELEBRATION_KEY_TO_THEME[equippedKey] : undefined) ?? randomTheme;
+  const celebData = equippedKey ? CELEBRATION_THEMES[equippedKey] : undefined;
 
   const cfg = THEME_CONFIGS[theme];
 
@@ -458,11 +501,11 @@ export function CelebrationScreen({
       }}
     >
       {/* ── Particle layer ── */}
-      {theme === 'confetti'  && <ConfettiParticles />}
-      {theme === 'fireworks' && <FireworkParticles />}
+      {theme === 'confetti'  && <ConfettiParticles  colors={celebData?.colors} />}
+      {theme === 'fireworks' && <FireworkParticles  colors={celebData?.colors} />}
       {theme === 'stars'     && <StarParticles />}
-      {theme === 'bubbles'   && <BubbleParticles />}
-      {theme === 'emojiRain' && <EmojiRainParticles mode={mode} />}
+      {theme === 'bubbles'   && <BubbleParticles    colors={celebData?.colors} />}
+      {theme === 'emojiRain' && <EmojiRainParticles mode={mode} emojis={celebData?.emojis} />}
 
       {/* ── Central card ── */}
       <Box

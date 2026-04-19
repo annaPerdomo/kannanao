@@ -17,6 +17,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { useCards } from "@/hooks/useCards";
 import { useDecks } from "@/hooks/useDecks";
 import { useProgress } from "@/hooks/useProgess";
+import { useShop, CELEBRATION_THEMES } from "@/hooks/useShop";
 
 interface StudyProps {
   deckId: string;
@@ -57,6 +58,14 @@ const SPARKLE_ITEMS = [
 
 // ── CelebrationOverlay ────────────────────────────────────────────────────────
 function CelebrationOverlay({ cardCount, onDone }: { cardCount: number; onDone: () => void }) {
+  const { equipped } = useShop();
+  const equippedKey = equipped['celebration'];
+  const celebData = equippedKey ? CELEBRATION_THEMES[equippedKey] : undefined;
+  const confettiColors = celebData?.colors ?? CONFETTI_COLORS;
+  const starRow = celebData?.emojis
+    ? Array.from({ length: 5 }, (_, i) => celebData.emojis[i % celebData.emojis.length])
+    : ['⭐', '✨', '⭐', '✨', '⭐'];
+
   // Auto-dismiss after 3.6 s
   useEffect(() => {
     const t = setTimeout(onDone, 3600);
@@ -73,9 +82,9 @@ function CelebrationOverlay({ cardCount, onDone }: { cardCount: number; onDone: 
       delay: `${(i * 0.11) % 2}s`,
       duration: `${1.8 + (i % 5) * 0.28}s`,
       size: `${9 + (i % 4) * 4}px`,
-      color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-      round: i % 3 !== 1,   // circles and squares
-    })), []);
+      color: confettiColors[i % confettiColors.length],
+      round: i % 3 !== 1,
+    })), [confettiColors]);
 
   return (
     <Box
@@ -149,7 +158,7 @@ function CelebrationOverlay({ cardCount, onDone }: { cardCount: number; onDone: 
         </Typography>
         {/* Floating mini stars row */}
         <Box sx={{ mt: 1.5, display: 'flex', justifyContent: 'center', gap: 0.5 }}>
-          {['⭐','✨','⭐','✨','⭐'].map((s, i) => (
+          {starRow.map((s, i) => (
             <Box key={i} component="span" sx={{
               fontSize: '1.1rem',
               animation: `starWiggle 1.2s ${i * 0.12}s ease-in-out infinite alternate`,

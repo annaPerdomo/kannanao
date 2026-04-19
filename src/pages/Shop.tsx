@@ -25,9 +25,11 @@ import LockIcon from '@mui/icons-material/Lock';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
 import BorderStyleIcon from '@mui/icons-material/BorderStyle';
+import CelebrationIcon from '@mui/icons-material/Celebration';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useProgress } from '@/hooks/useProgess';
-import { useShop, SHOP_ITEMS, CARD_BORDER_STYLES, THEME_KEY_TO_SCHEME } from '@/hooks/useShop';
+import { useShop, SHOP_ITEMS, CARD_BORDER_STYLES, THEME_KEY_TO_SCHEME, CELEBRATION_THEMES } from '@/hooks/useShop';
+import { CelebParticleStage, CELEB_PARTICLE_BG, CELEBRATION_KEY_TO_THEME } from '@/components/Practice/CelebrationScreen';
 import { useColorScheme } from '@/contexts/ThemeContext';
 import { CUTE_FONT, createAppTheme, type ColorScheme } from '@/theme';
 import type { ShopItem } from '@/types/shop';
@@ -423,6 +425,7 @@ function ShopItemCard({
   const { brand, accent } = theme.palette;
   const canAfford = spendableXp >= item.price;
   const isTheme = item.category === 'theme';
+  const isCelebration = item.category === 'celebration';
 
   if (item.comingSoon) {
     return (
@@ -527,6 +530,8 @@ function ShopItemCard({
       >
         {isTheme ? (
           <ThemeCardPreview themeKey={item.key} />
+        ) : isCelebration ? (
+          <Typography sx={{ fontSize: '3rem', lineHeight: 1 }}>{item.emoji}</Typography>
         ) : (
           <BorderCardPreview borderKey={item.key} />
         )}
@@ -765,6 +770,116 @@ function CoinBurst({ active }: { active: boolean }) {
   );
 }
 
+// ─── Celebration preview modal ───────────────────────────────────────────────
+
+function CelebrationPreviewModal({
+  open,
+  onClose,
+  item,
+}: {
+  open: boolean;
+  onClose: () => void;
+  item: ShopItem | null;
+}) {
+  const theme = useTheme();
+  const { brand } = theme.palette;
+
+  if (!item) return null;
+
+  const particleType = CELEBRATION_KEY_TO_THEME[item.key] ?? 'emojiRain';
+  const celebData = CELEBRATION_THEMES[item.key];
+  const bg = CELEB_PARTICLE_BG[particleType] ?? CELEB_PARTICLE_BG.emojiRain;
+  const isDark = particleType !== 'bubbles';
+  const textColor = isDark ? '#ffffff' : '#2d1b69';
+  const subTextColor = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(45,27,105,0.7)';
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="xs"
+      fullWidth
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: 4,
+            overflow: 'hidden',
+            border: `2px solid ${alpha(brand[300], 0.35)}`,
+            boxShadow: `0 12px 48px ${alpha(brand[700], 0.18)}`,
+          },
+        },
+      }}
+    >
+      {/* Particle stage */}
+      <Box
+        sx={{
+          position: 'relative',
+          height: 300,
+          background: bg,
+          overflow: 'hidden',
+        }}
+      >
+        <CelebParticleStage itemKey={item.key} />
+
+        {/* Overlay content */}
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 0.75,
+            px: 3,
+          }}
+        >
+          <Typography sx={{ fontSize: '4rem', lineHeight: 1 }}>{item.emoji}</Typography>
+          <Typography
+            sx={{
+              fontFamily: CUTE_FONT,
+              fontSize: '1.3rem',
+              fontWeight: 700,
+              color: textColor,
+              textShadow: isDark ? '0 2px 10px rgba(0,0,0,0.5)' : 'none',
+            }}
+          >
+            {item.name}
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: '0.78rem',
+              color: subTextColor,
+              textAlign: 'center',
+              textShadow: isDark ? '0 1px 6px rgba(0,0,0,0.4)' : 'none',
+            }}
+          >
+            {item.description}
+          </Typography>
+          {celebData && (
+            <Box sx={{ display: 'flex', gap: 0.75, mt: 0.5 }}>
+              {celebData.emojis.slice(0, 5).map((e, i) => (
+                <Typography key={i} sx={{ fontSize: '1.4rem' }}>{e}</Typography>
+              ))}
+            </Box>
+          )}
+        </Box>
+      </Box>
+
+      <DialogActions sx={{ justifyContent: 'center', py: 2 }}>
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          sx={{ borderRadius: 2, px: 4, fontFamily: CUTE_FONT }}
+        >
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 // ─── Category section ────────────────────────────────────────────────────────
 
 function CategorySection({
@@ -895,7 +1010,7 @@ export default function Shop() {
   } = useShop();
   const { scheme, setScheme } = useColorScheme();
 
-  const [activeCategory, setActiveCategory] = useState<'all' | 'theme' | 'card_border'>('all');
+  const [activeCategory, setActiveCategory] = useState<'all' | 'theme' | 'card_border' | 'celebration'>('all');
   const [confirmItem, setConfirmItem] = useState<ShopItem | null>(null);
   const [purchasing, setPurchasing] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -903,10 +1018,12 @@ export default function Shop() {
   const [showCoinBurst, setShowCoinBurst] = useState(false);
   const [previewingTheme, setPreviewingTheme] = useState<{ item: ShopItem; originalScheme: ColorScheme } | null>(null);
   const [borderPreviewItem, setBorderPreviewItem] = useState<ShopItem | null>(null);
+  const [celebPreviewItem, setCelebPreviewItem] = useState<ShopItem | null>(null);
 
   const loading = progressLoading || shopLoading;
   const themes = SHOP_ITEMS.filter((i) => i.category === 'theme');
   const borders = SHOP_ITEMS.filter((i) => i.category === 'card_border');
+  const celebrations = SHOP_ITEMS.filter((i) => i.category === 'celebration');
 
   const handleBuy = async () => {
     if (!confirmItem) return;
@@ -952,6 +1069,8 @@ export default function Shop() {
         setPreviewingTheme({ item, originalScheme: scheme });
         setScheme(targetScheme);
       }
+    } else if (item.category === 'celebration') {
+      setCelebPreviewItem(item);
     } else {
       setBorderPreviewItem(item);
     }
@@ -1152,6 +1271,13 @@ export default function Shop() {
           onClick={() => setActiveCategory('card_border')}
           color={brand[500]}
         />
+        <CategoryButton
+          icon={<CelebrationIcon />}
+          label="Celebrations"
+          active={activeCategory === 'celebration'}
+          onClick={() => setActiveCategory('celebration')}
+          color={brand[500]}
+        />
       </Box>
 
       {/* ── Alerts ── */}
@@ -1219,31 +1345,46 @@ export default function Shop() {
           ))}
         </Box>
       ) : activeCategory === 'all' ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-            gap: 2.5,
-            alignItems: 'start',
-          }}
-        >
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gap: 2.5,
+              alignItems: 'start',
+            }}
+          >
+            <CategorySection
+              title="Themes"
+              icon={<ColorLensIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />}
+              items={themes}
+              ownsItem={ownsItem}
+              equipped={equipped}
+              spendableXp={spendableXp}
+              onBuy={setConfirmItem}
+              onEquip={handleEquip}
+              onPreview={handlePreview}
+              brandColor={brand[600]}
+              compact
+            />
+            <CategorySection
+              title="Card Borders"
+              icon={<BorderStyleIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />}
+              items={borders}
+              ownsItem={ownsItem}
+              equipped={equipped}
+              spendableXp={spendableXp}
+              onBuy={setConfirmItem}
+              onEquip={handleEquip}
+              onPreview={handlePreview}
+              brandColor={brand[600]}
+              compact
+            />
+          </Box>
           <CategorySection
-            title="Themes"
-            icon={<ColorLensIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />}
-            items={themes}
-            ownsItem={ownsItem}
-            equipped={equipped}
-            spendableXp={spendableXp}
-            onBuy={setConfirmItem}
-            onEquip={handleEquip}
-            onPreview={handlePreview}
-            brandColor={brand[600]}
-            compact
-          />
-          <CategorySection
-            title="Card Borders"
-            icon={<BorderStyleIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />}
-            items={borders}
+            title="Celebrations"
+            icon={<CelebrationIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />}
+            items={celebrations}
             ownsItem={ownsItem}
             equipped={equipped}
             spendableXp={spendableXp}
@@ -1266,7 +1407,7 @@ export default function Shop() {
               spendableXp={spendableXp}
               onBuy={setConfirmItem}
               onEquip={handleEquip}
-            onPreview={handlePreview}
+              onPreview={handlePreview}
               brandColor={brand[600]}
               expanded
             />
@@ -1281,7 +1422,22 @@ export default function Shop() {
               spendableXp={spendableXp}
               onBuy={setConfirmItem}
               onEquip={handleEquip}
-            onPreview={handlePreview}
+              onPreview={handlePreview}
+              brandColor={brand[600]}
+              expanded
+            />
+          )}
+          {activeCategory === 'celebration' && (
+            <CategorySection
+              title="Celebrations"
+              icon={<CelebrationIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />}
+              items={celebrations}
+              ownsItem={ownsItem}
+              equipped={equipped}
+              spendableXp={spendableXp}
+              onBuy={setConfirmItem}
+              onEquip={handleEquip}
+              onPreview={handlePreview}
               brandColor={brand[600]}
               expanded
             />
@@ -1364,6 +1520,8 @@ export default function Shop() {
             >
               {confirmItem.category === 'theme' ? (
                 <ThemeCardPreview themeKey={confirmItem.key} />
+              ) : confirmItem.category === 'celebration' ? (
+                <Typography sx={{ fontSize: '2.2rem', lineHeight: 1 }}>{confirmItem.emoji}</Typography>
               ) : (
                 <BorderCardPreview borderKey={confirmItem.key} />
               )}
@@ -1517,6 +1675,13 @@ export default function Shop() {
         onClose={() => setBorderPreviewItem(null)}
         borderKey={borderPreviewItem?.key ?? 'border_none'}
         borderName={borderPreviewItem?.name ?? ''}
+      />
+
+      {/* ── Celebration preview modal ── */}
+      <CelebrationPreviewModal
+        open={!!celebPreviewItem}
+        onClose={() => setCelebPreviewItem(null)}
+        item={celebPreviewItem}
       />
     </Box>
   );
