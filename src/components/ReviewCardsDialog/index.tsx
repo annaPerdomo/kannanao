@@ -84,10 +84,10 @@ export function ReviewCardsDialog({ open, cards: initialCards, onConfirm, onClos
       >
         <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1.5 }}>
           <Box>
-            <Typography sx={{ fontSize: '1.15rem', fontWeight: 900, color: '#9D174D', fontFamily: '"Nunito", sans-serif', lineHeight: 1.2, mb: 0.4 }}>
+            <Typography sx={{ fontSize: '1.15rem', fontWeight: 900, color: '#9D174D', lineHeight: 1.2, mb: 0.4 }}>
               📋 Review Cards
             </Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: '#C2709A', fontFamily: '"Nunito", sans-serif', fontWeight: 600 }}>
+            <Typography sx={{ fontSize: '0.75rem', color: '#C2709A', fontWeight: 600 }}>
               {cards.length} card{cards.length !== 1 ? 's' : ''} generated — edit before adding
             </Typography>
           </Box>
@@ -102,7 +102,7 @@ export function ReviewCardsDialog({ open, cards: initialCards, onConfirm, onClos
         {/* Global controls bar */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, bgcolor: 'rgba(255,255,255,0.6)', border: '1px solid rgba(249,168,212,0.25)', borderRadius: '10px', px: 1.5, py: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-            <Typography sx={{ fontSize: '0.6rem', fontWeight: 700, color: '#C2709A', fontFamily: '"Nunito", sans-serif', whiteSpace: 'nowrap' }}>
+            <Typography sx={{ fontSize: '0.6rem', fontWeight: 700, color: '#C2709A', whiteSpace: 'nowrap' }}>
               Set main view mode for all cards:
             </Typography>
             <ToggleButtonGroup value={allViewMode} exclusive size="small" onChange={(_, v) => { if (v) handleSetAllViewMode(v); }} sx={compactToggleSx}>
@@ -116,7 +116,7 @@ export function ReviewCardsDialog({ open, cards: initialCards, onConfirm, onClos
       {/* Card list */}
       <DialogContent sx={{ px: 2, pt: 2, pb: 0, display: 'flex', flexDirection: 'column', gap: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {cards.length === 0 && (
-          <Typography sx={{ textAlign: 'center', color: '#C2709A', fontFamily: '"Nunito", sans-serif', fontSize: '0.85rem', py: 4 }}>
+          <Typography sx={{ textAlign: 'center', color: '#C2709A', fontSize: '0.85rem', py: 4 }}>
             All cards have been removed.
           </Typography>
         )}
@@ -138,7 +138,7 @@ export function ReviewCardsDialog({ open, cards: initialCards, onConfirm, onClos
       <Box sx={{ px: 2.5, py: 2, borderTop: '1.5px solid rgba(249,168,212,0.2)', display: 'flex', gap: 1.5, justifyContent: 'flex-end', background: 'linear-gradient(0deg, #FFFBFE 0%, transparent 100%)' }}>
         <Button
           variant="outlined" onClick={onClose}
-          sx={{ borderRadius: '10px', fontFamily: '"Nunito", sans-serif', fontWeight: 700, fontSize: '0.82rem', textTransform: 'none', borderColor: 'rgba(249,168,212,0.5)', color: '#BE185D', '&:hover': { borderColor: '#F472B6', bgcolor: 'rgba(249,168,212,0.06)' } }}
+          sx={{ borderRadius: '10px', fontWeight: 700, fontSize: '0.82rem', textTransform: 'none', borderColor: 'rgba(249,168,212,0.5)', color: '#BE185D', '&:hover': { borderColor: '#F472B6', bgcolor: 'rgba(249,168,212,0.06)' } }}
         >
           Cancel
         </Button>
@@ -146,7 +146,7 @@ export function ReviewCardsDialog({ open, cards: initialCards, onConfirm, onClos
           variant="contained" disabled={cards.length === 0} onClick={handleConfirm}
           startIcon={<CheckIcon sx={{ fontSize: 16 }} />}
           sx={{
-            borderRadius: '10px', fontFamily: '"Nunito", sans-serif', fontWeight: 800, fontSize: '0.82rem', textTransform: 'none',
+            borderRadius: '10px', fontWeight: 800, fontSize: '0.82rem', textTransform: 'none',
             background: cards.length > 0 ? 'linear-gradient(135deg, #F472B6 0%, #EC4899 50%, #A855F7 100%)' : undefined,
             boxShadow: cards.length > 0 ? '0 4px 14px rgba(236,72,153,0.35)' : undefined,
             '&:hover': { boxShadow: '0 6px 20px rgba(236,72,153,0.45)' },

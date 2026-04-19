@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import { Label } from '@/components/Deck';
+import { FONT_JP } from '@/theme';
 import { PRACTICE_CONFIG } from './constants';
 import type { OhanashikaiPracticeMode } from '@/types/ohanashikai';
 
@@ -45,21 +46,21 @@ export function SpeechPracticeTiles({ canPractice, onPractice }: SpeechPracticeT
               aria-hidden
               sx={{
                 position: 'absolute', bottom: -16, right: 6, fontSize: '5rem', lineHeight: 1,
-                color, opacity: 0.08, fontFamily: '"Noto Serif JP", serif', fontWeight: 900, userSelect: 'none',
+                color, opacity: 0.08, fontFamily: FONT_JP, fontWeight: 900, userSelect: 'none',
               }}
             >
               {watermark}
             </Typography>
             <Box>
               <Typography sx={{ fontSize: '1.75rem', lineHeight: 1, mb: 1 }}>{emoji}</Typography>
-              <Typography sx={{ fontWeight: 900, fontSize: { xs: '0.9rem', sm: '0.98rem' }, color, fontFamily: '"Nunito", sans-serif', lineHeight: 1.2 }}>
+              <Typography sx={{ fontWeight: 900, fontSize: { xs: '0.9rem', sm: '0.98rem' }, color, lineHeight: 1.2 }}>
                 {label}
               </Typography>
-              <Typography sx={{ fontSize: '0.7rem', color: `${color}BB`, fontFamily: '"Nunito", sans-serif', mt: 0.4 }}>
+              <Typography sx={{ fontSize: '0.7rem', color: `${color}BB`, mt: 0.4 }}>
                 {description}
               </Typography>
             </Box>
-            <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, color: canPractice ? color : 'text.disabled', fontFamily: '"Nunito", sans-serif', letterSpacing: '0.04em', opacity: canPractice ? 0.8 : 0.5, alignSelf: 'flex-end' }}>
+            <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, color: canPractice ? color : 'text.disabled', letterSpacing: '0.04em', opacity: canPractice ? 0.8 : 0.5, alignSelf: 'flex-end' }}>
               {canPractice ? 'Start →' : 'Add lines first 🔒'}
             </Typography>
           </Box>

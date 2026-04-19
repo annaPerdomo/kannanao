@@ -16,6 +16,7 @@ import { useProgress, XP_PER_CORRECT } from '@/hooks/useProgress';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
+import { FONT_JP } from '@/theme';
 
 interface ReadThroughModeProps {
   lines: OhanashikaiLine[];
@@ -183,7 +184,7 @@ export function ReadThroughMode({ lines, ohanashikaiId, onExit }: ReadThroughMod
           text={currentLine?.text ?? ''}
           showFurigana
           sx={{
-            fontFamily: '"Noto Serif JP", "Noto Sans JP", serif',
+            fontFamily: FONT_JP,
             fontSize: { xs: '1.3rem', sm: '1.6rem' },
             lineHeight: 2.8,
             color: 'text.primary',

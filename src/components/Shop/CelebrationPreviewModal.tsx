@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import { useTheme, alpha } from '@mui/material/styles';
 import { CELEBRATION_THEMES } from '@/hooks/useShop';
 import { CelebParticleStage, CELEB_PARTICLE_BG, CELEBRATION_KEY_TO_THEME } from '@/components/Practice/CelebrationScreen';
-import { CUTE_FONT } from '@/theme';
+import { FONT_CUTE } from '@/theme';
 import type { ShopItem } from '@/types/shop';
 
 export function CelebrationPreviewModal({
@@ -75,7 +75,7 @@ export function CelebrationPreviewModal({
           <Typography sx={{ fontSize: '4rem', lineHeight: 1 }}>{item.emoji}</Typography>
           <Typography
             sx={{
-              fontFamily: CUTE_FONT,
+              fontFamily: FONT_CUTE,
               fontSize: '1.3rem',
               fontWeight: 700,
               color: textColor,
@@ -108,7 +108,7 @@ export function CelebrationPreviewModal({
         <Button
           onClick={onClose}
           variant="outlined"
-          sx={{ borderRadius: 2, px: 4, fontFamily: CUTE_FONT }}
+          sx={{ borderRadius: 2, px: 4, fontFamily: FONT_CUTE }}
         >
           Close
         </Button>

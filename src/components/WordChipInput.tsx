@@ -54,7 +54,7 @@ export function WordChipInput({
           onDelete={disabled ? undefined : () => onWordsChange(words.filter((x) => x !== w))}
           sx={{
             height: 22, fontSize: '0.72rem',
-            fontFamily: '"Nunito", sans-serif', fontWeight: 700,
+            fontWeight: 700,
             bgcolor: theme.palette.surfaces.chip,
             color: brand[700],
             border: `1px solid ${alpha(brand[400], 0.4)}`,
@@ -72,7 +72,7 @@ export function WordChipInput({
         sx={{
           flexGrow: 1, minWidth: 90,
           '& .MuiInput-root': {
-            fontFamily: '"Nunito", sans-serif', fontWeight: 600, fontSize: '0.82rem',
+            fontWeight: 600, fontSize: '0.82rem',
             color: 'text.primary', '&:before, &:after': { display: 'none' },
           },
           '& input': { p: 0.25 },

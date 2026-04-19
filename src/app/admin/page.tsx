@@ -22,6 +22,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loading } from '@/components/Loading';
+import { FONT_DISPLAY, FONT_MONO } from '@/theme';
 
 interface UserStat {
   id: string;
@@ -92,7 +93,7 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
       }}
     >
       <Box sx={{ color: brand[500], mb: 0.5 }}>{icon}</Box>
-      <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1.8rem', color: brand[700], lineHeight: 1.1 }}>
+      <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1.8rem', color: brand[700], lineHeight: 1.1 }}>
         {value}
       </Typography>
       <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', mt: 0.5 }}>{label}</Typography>
@@ -208,7 +209,7 @@ export default function AdminPage() {
   };
 
   const headerCellSx = {
-    fontFamily: '"DM Serif Display", serif',
+    fontFamily: FONT_DISPLAY,
     color: brand[700],
     fontSize: '0.82rem',
     borderBottom: `2px solid ${alpha(brand[300], 0.3)}`,
@@ -224,7 +225,7 @@ export default function AdminPage() {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography
         sx={{
-          fontFamily: '"DM Serif Display", serif',
+          fontFamily: FONT_DISPLAY,
           fontSize: { xs: '1.6rem', sm: '2rem' },
           color: brand[700],
           mb: 3,
@@ -247,7 +248,7 @@ export default function AdminPage() {
       {/* Users Table */}
       <Typography
         sx={{
-          fontFamily: '"DM Serif Display", serif',
+          fontFamily: FONT_DISPLAY,
           fontSize: '1.2rem',
           color: brand[700],
           mb: 2,
@@ -328,7 +329,7 @@ export default function AdminPage() {
       {/* Waitlist Table */}
       <Typography
         sx={{
-          fontFamily: '"DM Serif Display", serif',
+          fontFamily: FONT_DISPLAY,
           fontSize: '1.2rem',
           color: brand[700],
           mb: 2,
@@ -375,7 +376,7 @@ export default function AdminPage() {
       {/* Embed Analytics */}
       <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 2 }}>
         <BarChartIcon sx={{ color: brand[500] }} />
-        <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1.2rem', color: brand[700] }}>
+        <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1.2rem', color: brand[700] }}>
           Embed Analytics
         </Typography>
       </Stack>
@@ -413,7 +414,7 @@ export default function AdminPage() {
                       <Typography sx={{ fontSize: '1rem' }}>{d.deckEmoji}</Typography>
                       <Box>
                         <Typography sx={{ fontWeight: 600, fontSize: '0.82rem' }}>{d.deckName}</Typography>
-                        <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', fontFamily: '"DM Mono", monospace' }}>
+                        <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', fontFamily: FONT_MONO }}>
                           {d.deckId.slice(0, 8)}…
                         </Typography>
                       </Box>
@@ -461,7 +462,7 @@ export default function AdminPage() {
           },
         }}
       >
-        <DialogTitle sx={{ fontFamily: '"DM Serif Display", serif', color: brand[700], pb: 1 }}>
+        <DialogTitle sx={{ fontFamily: FONT_DISPLAY, color: brand[700], pb: 1 }}>
           {editType === 'password' ? 'Change Password' : editType === 'displayName' ? 'Change Display Name' : 'Change Username'}
           {editUser && (
             <Typography variant="body2" sx={{ color: 'text.secondary', fontFamily: 'inherit', mt: 0.25 }}>
@@ -506,7 +507,7 @@ export default function AdminPage() {
               color: '#fff',
               textTransform: 'none',
               borderRadius: 6,
-              fontFamily: '"DM Serif Display", serif',
+              fontFamily: FONT_DISPLAY,
               '&:hover': { bgcolor: brand[800] },
             }}
           >

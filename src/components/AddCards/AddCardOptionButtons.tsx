@@ -21,8 +21,7 @@ export function OrDivider() {
           letterSpacing: '0.1em',
           textTransform: 'uppercase',
           color: 'rgba(194,112,154,0.6)',
-          fontFamily: '"Nunito", sans-serif',
-        }}
+                 }}
       >
         or
       </Typography>
@@ -81,8 +80,7 @@ export function AddCardOptionButtons({ disabled = false, onAddExisting, onImport
               fontSize: '0.8rem',
               fontWeight: 800,
               color: '#9D174D',
-              fontFamily: '"Nunito", sans-serif',
-              lineHeight: 1.2,
+                           lineHeight: 1.2,
             }}
           >
             Add Existing Cards
@@ -91,8 +89,7 @@ export function AddCardOptionButtons({ disabled = false, onAddExisting, onImport
             sx={{
               fontSize: '0.68rem',
               color: '#C2709A',
-              fontFamily: '"Nunito", sans-serif',
-              fontWeight: 500,
+                           fontWeight: 500,
               mt: 0.2,
             }}
           >
@@ -129,8 +126,7 @@ export function AddCardOptionButtons({ disabled = false, onAddExisting, onImport
               fontSize: '0.8rem',
               fontWeight: 800,
               color: '#9D174D',
-              fontFamily: '"Nunito", sans-serif',
-              lineHeight: 1.2,
+                           lineHeight: 1.2,
             }}
           >
             Import from PDF
@@ -139,8 +135,7 @@ export function AddCardOptionButtons({ disabled = false, onAddExisting, onImport
             sx={{
               fontSize: '0.68rem',
               color: '#C2709A',
-              fontFamily: '"Nunito", sans-serif',
-              fontWeight: 500,
+                           fontWeight: 500,
               mt: 0.2,
             }}
           >

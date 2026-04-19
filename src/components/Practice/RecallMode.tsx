@@ -12,6 +12,7 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import { FONT_JP } from '@/theme';
 import type { Flashcard } from '@/types/flashcard';
 import { getFlashcardDisplayText, cardXp } from '@/lib/flashcardUtils';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
@@ -270,7 +271,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
         <Box sx={{ p: 3, textAlign: 'center', bgcolor: surfaces.input }}>
           <Typography
             sx={{
-              fontFamily: '"Noto Serif JP", serif',
+              fontFamily: FONT_JP,
               fontSize: '2.2rem',
               fontWeight: 700,
               color: 'text.primary',
@@ -291,7 +292,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
                 color: 'text.secondary',
                 display: 'block',
                 mt: 1,
-                fontFamily: '"Noto Serif JP", serif',
+                fontFamily: FONT_JP,
                 fontSize: '0.9rem',
               }}
             >

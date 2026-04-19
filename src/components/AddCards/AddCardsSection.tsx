@@ -67,8 +67,7 @@ export function AddCardsSection({
             fontSize: '0.65rem',
             fontWeight: 700,
             color: 'text.secondary',
-            fontFamily: '"Nunito", sans-serif',
-            flexShrink: 0,
+                       flexShrink: 0,
           }}
         >
           Main display mode:
@@ -85,7 +84,7 @@ export function AddCardsSection({
             value="hiragana"
             sx={{
               px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700,
-              fontFamily: '"Nunito", sans-serif', textTransform: 'none',
+              textTransform: 'none',
               borderColor: 'rgba(249,168,212,0.5)',
               '&.Mui-selected': { bgcolor: 'rgba(249,168,212,0.25)', color: '#BE185D', borderColor: 'rgba(236,72,153,0.5)' },
             }}
@@ -96,7 +95,7 @@ export function AddCardsSection({
             value="kanji"
             sx={{
               px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700,
-              fontFamily: '"Nunito", sans-serif', textTransform: 'none',
+              textTransform: 'none',
               borderColor: 'rgba(249,168,212,0.5)',
               '&.Mui-selected': { bgcolor: 'rgba(249,168,212,0.25)', color: '#BE185D', borderColor: 'rgba(236,72,153,0.5)' },
             }}
@@ -116,8 +115,7 @@ export function AddCardsSection({
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
             color: titleColor,
-            fontFamily: '"Nunito", sans-serif',
-            mb: 1.25,
+                       mb: 1.25,
             display: 'flex',
             alignItems: 'center',
             gap: 0.5,
@@ -151,8 +149,7 @@ export function AddCardsSection({
             sx={{
               borderRadius: '10px',
               py: '9px',
-              fontFamily: '"Nunito", sans-serif',
-              fontWeight: 800,
+                           fontWeight: 800,
               fontSize: '0.82rem',
               letterSpacing: '0.02em',
               textTransform: 'none',
@@ -178,8 +175,7 @@ export function AddCardsSection({
               textAlign: 'center',
               fontSize: '0.67rem',
               color: '#C2709A',
-              fontFamily: '"Nunito", sans-serif',
-              fontWeight: 600,
+                           fontWeight: 600,
             }}
           >
             {words.length} word{words.length > 1 ? 's' : ''} queued

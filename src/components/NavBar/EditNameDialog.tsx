@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import { FONT_DISPLAY } from '@/theme';
 
 interface EditNameDialogProps {
   open: boolean;
@@ -36,7 +37,7 @@ export function EditNameDialog({
         },
       }}
     >
-      <DialogTitle sx={{ fontFamily: '"DM Serif Display", serif', color: brand[700], pb: 1 }}>
+      <DialogTitle sx={{ fontFamily: FONT_DISPLAY, color: brand[700], pb: 1 }}>
         Edit your name
       </DialogTitle>
       <DialogContent sx={{ pt: '8px !important' }}>
@@ -67,7 +68,6 @@ export function EditNameDialog({
             color: '#fff',
             textTransform: 'none',
             borderRadius: 6,
-            fontFamily: '"DM Serif Display", serif',
             '&:hover': { bgcolor: brand[800] },
           }}
         >

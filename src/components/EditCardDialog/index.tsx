@@ -60,11 +60,11 @@ export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogPr
     >
       <DialogTitle sx={{ p: '16px 20px 14px', background: 'linear-gradient(135deg, #FFF0F8 0%, #FAF5FF 100%)', borderBottom: '1.5px solid rgba(249,168,212,0.2)', display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <Box sx={{ flexGrow: 1 }}>
-          <Typography sx={{ fontSize: '1rem', fontWeight: 800, color: '#9D174D', fontFamily: '"Nunito", sans-serif', lineHeight: 1.2 }}>
+          <Typography sx={{ fontSize: '1rem', fontWeight: 800, color: '#9D174D', lineHeight: 1.2 }}>
             Edit Card
           </Typography>
           {card?.word && (
-            <Typography sx={{ fontSize: '0.72rem', color: '#C2709A', fontFamily: '"Nunito", sans-serif', mt: 0.25 }}>
+            <Typography sx={{ fontSize: '0.72rem', color: '#C2709A', mt: 0.25 }}>
               {card.word} {card.reading ? `· ${card.reading}` : ''}
             </Typography>
           )}
@@ -107,13 +107,13 @@ export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogPr
       </DialogContent>
 
       <DialogActions sx={{ px: '20px', pb: '16px', pt: 0, gap: 1 }}>
-        <Button onClick={onClose} disabled={saving} sx={{ borderRadius: '9px', color: '#BE185D', fontWeight: 700, fontFamily: '"Nunito", sans-serif', textTransform: 'none', fontSize: '0.8rem' }}>
+        <Button onClick={onClose} disabled={saving} sx={{ borderRadius: '9px', color: '#BE185D', fontWeight: 700, textTransform: 'none', fontSize: '0.8rem' }}>
           Cancel
         </Button>
         <Button
           variant="contained" onClick={handleSave} disabled={saving || !fields.word.trim()}
           startIcon={saving ? <CircularProgress size={13} sx={{ color: 'white' }} /> : <SaveIcon sx={{ fontSize: 15 }} />}
-          sx={{ borderRadius: '9px', px: 2.5, fontWeight: 700, fontFamily: '"Nunito", sans-serif', textTransform: 'none', fontSize: '0.8rem' }}
+          sx={{ borderRadius: '9px', px: 2.5, fontWeight: 700, textTransform: 'none', fontSize: '0.8rem' }}
         >
           {saving ? 'Saving…' : 'Save Changes'}
         </Button>

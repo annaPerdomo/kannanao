@@ -9,7 +9,14 @@ type ColorScale = {
   500: string; 600: string; 700: string; 800: string; 900: string;
 };
 
-export const CUTE_FONT = '"Fredoka", "Nunito", sans-serif';
+// ─── Font stacks ──────────────────────────────────────────────────────────────
+export const FONT_PRIMARY = '"Nunito", sans-serif';
+export const FONT_DISPLAY = '"DM Serif Display", serif';
+export const FONT_JP = '"Noto Serif JP", serif';
+export const FONT_MONO = '"DM Mono", monospace';
+export const FONT_CUTE = '"Fredoka", sans-serif';
+/** @deprecated Use FONT_CUTE instead */
+export const CUTE_FONT = FONT_CUTE;
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -358,17 +365,17 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
     },
 
     typography: {
-      fontFamily: '"Nunito", "Noto Sans JP", sans-serif',
-      h1: { fontFamily: '"Nunito", sans-serif', fontWeight: 800, letterSpacing: '-0.02em' },
-      h2: { fontFamily: '"Nunito", sans-serif', fontWeight: 800, letterSpacing: '-0.015em' },
-      h3: { fontFamily: '"Nunito", sans-serif', fontWeight: 700 },
-      h4: { fontFamily: '"Nunito", sans-serif', fontWeight: 800, letterSpacing: '-0.02em' },
-      h5: { fontFamily: '"Nunito", sans-serif', fontWeight: 700 },
-      h6: { fontFamily: '"Nunito", sans-serif', fontWeight: 600 },
-      body1:  { fontFamily: '"Nunito", sans-serif', fontSize: '0.95rem', fontWeight: 500 },
-      body2:  { fontFamily: '"Nunito", sans-serif', fontSize: '0.85rem', fontWeight: 500 },
-      button: { fontFamily: '"Nunito", sans-serif', fontWeight: 700, letterSpacing: '0.02em', textTransform: 'none', fontSize: '0.875rem' },
-      caption:{ fontFamily: '"Nunito", sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em' },
+      fontFamily: FONT_PRIMARY,
+      h1: { fontFamily: FONT_DISPLAY, fontWeight: 400, letterSpacing: '-0.02em' },
+      h2: { fontFamily: FONT_DISPLAY, fontWeight: 400, letterSpacing: '-0.015em' },
+      h3: { fontFamily: FONT_PRIMARY, fontWeight: 700 },
+      h4: { fontFamily: FONT_PRIMARY, fontWeight: 700, letterSpacing: '-0.02em' },
+      h5: { fontFamily: FONT_PRIMARY, fontWeight: 700 },
+      h6: { fontFamily: FONT_PRIMARY, fontWeight: 600 },
+      body1:  { fontFamily: FONT_PRIMARY, fontSize: '0.95rem', fontWeight: 500 },
+      body2:  { fontFamily: FONT_PRIMARY, fontSize: '0.85rem', fontWeight: 500 },
+      button: { fontFamily: FONT_PRIMARY, fontWeight: 700, letterSpacing: '0.02em', textTransform: 'none', fontSize: '0.875rem' },
+      caption:{ fontFamily: FONT_MONO, fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em' },
     },
 
     shape: { borderRadius: 12 },
@@ -435,7 +442,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
         styleOverrides: {
           root: ({ theme }) => ({
             '& .MuiOutlinedInput-root': {
-              fontFamily: '"Nunito", sans-serif',
+              fontFamily: FONT_PRIMARY,
               fontWeight: 600,
               fontSize: '0.9rem',
               borderRadius: 10,
@@ -454,7 +461,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
               },
             },
             '& .MuiInputLabel-root': {
-              fontFamily: '"Nunito", sans-serif',
+              fontFamily: FONT_PRIMARY,
               fontWeight: 700,
               fontSize: '0.85rem',
               color: alpha(theme.palette.brand[700], 0.65),
@@ -467,7 +474,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
       MuiChip: {
         styleOverrides: {
           root: ({ theme }) => ({
-            fontFamily: '"Nunito", sans-serif',
+            fontFamily: FONT_PRIMARY,
             fontWeight: 700,
             fontSize: '0.75rem',
             borderRadius: 8,
@@ -520,7 +527,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
       MuiTooltip: {
         styleOverrides: {
           tooltip: ({ theme }) => ({
-            fontFamily: '"Nunito", sans-serif',
+            fontFamily: FONT_PRIMARY,
             fontWeight: 600,
             fontSize: '0.78rem',
             backgroundColor: theme.palette.brand[700],
@@ -546,7 +553,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
       MuiAlert: {
         styleOverrides: {
           root: ({ theme }) => ({
-            fontFamily: '"Nunito", sans-serif',
+            fontFamily: FONT_PRIMARY,
             fontWeight: 600,
             borderRadius: 10,
             border: `1.5px solid ${alpha(theme.palette.brand[300], 0.4)}`,

@@ -10,6 +10,7 @@ import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined';
 import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
 import type { Deck } from '@/types/deck';
+import { FONT_MONO } from '@/theme';
 
 interface DeckCardProps {
   deck: Deck;
@@ -132,11 +133,11 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
 
           {/* Name */}
           <Box sx={{ px: 1.5, pt: '9px', pb: '7px', borderBottom: `2px solid ${brand[400]}` }}>
-            <Typography sx={{ fontWeight: 900, color: '#111', lineHeight: 1.15, fontSize: '1.05rem', letterSpacing: '-0.01em', fontFamily: '"Nunito", sans-serif' }}>
+            <Typography sx={{ fontWeight: 900, color: '#111', lineHeight: 1.15, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
               {deck.name}
             </Typography>
             {deck.description && (
-              <Typography sx={{ color: '#777', lineHeight: 1.3, fontSize: '0.65rem', fontStyle: 'italic', mt: '2px', fontFamily: '"Nunito", sans-serif' }}>
+              <Typography sx={{ color: '#777', lineHeight: 1.3, fontSize: '0.65rem', fontStyle: 'italic', mt: '2px' }}>
                 {deck.description}
               </Typography>
             )}
@@ -149,15 +150,15 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
               borderRadius: '6px', px: 1.2, py: '7px',
               border: `1px solid ${alpha(brand[400], 0.22)}`,
             }}>
-              <Typography sx={{ fontSize: '0.54rem', fontWeight: 900, color: brand[500], letterSpacing: '0.12em', textTransform: 'uppercase', mb: '3px', fontFamily: '"DM Mono", monospace' }}>
+              <Typography sx={{ fontSize: '0.54rem', fontWeight: 900, color: brand[500], letterSpacing: '0.12em', textTransform: 'uppercase', mb: '3px', fontFamily: FONT_MONO }}>
                 ★ Cards
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#1A1A1A', fontFamily: '"Nunito", sans-serif', lineHeight: 1.3 }}>
+                <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#1A1A1A', lineHeight: 1.3 }}>
                   {deck.cardCount} cards in this deck
                 </Typography>
                 {deck.isShared && (
-                  <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: accent[600], fontFamily: '"Nunito", sans-serif' }}>
+                  <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: accent[600] }}>
                     · ✨ Shared
                   </Typography>
                 )}
@@ -171,7 +172,7 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             borderTop: `1px solid ${alpha(brand[300], 0.25)}`,
           }}>
-            <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[500], 0.6), fontFamily: '"DM Mono", monospace', letterSpacing: '0.06em' }}>
+            <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[500], 0.6), fontFamily: FONT_MONO, letterSpacing: '0.06em' }}>
               CARD DECK
             </Typography>
             <Box sx={{ display: 'flex', gap: 0.25 }} onClick={(e) => e.stopPropagation()}>

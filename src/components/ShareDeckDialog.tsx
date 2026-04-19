@@ -9,6 +9,7 @@ import { alpha } from "@mui/material/styles";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import IosShareIcon from "@mui/icons-material/IosShare";
+import { FONT_DISPLAY } from "@/theme";
 import type { DeckShare } from "@/lib/supabase";
 import { dbShareDeck, dbGetDeckShares, dbUnShareDeck } from "@/lib/supabase";
 
@@ -53,7 +54,7 @@ export function ShareDeckDialog({ open, onClose, deckId, deckName }: Props) {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth slotProps={{ paper: { sx: dialogPaperSx } }}>
-      <DialogTitle sx={{ fontFamily: '"DM Serif Display", serif', fontWeight: 400, pb: 0 }}>
+      <DialogTitle sx={{ fontFamily: FONT_DISPLAY, fontWeight: 400, pb: 0 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <IosShareIcon sx={{ color: accent[600], fontSize: 20, mt: "-2px" }} />
           Share Deck
@@ -112,7 +113,7 @@ export function ShareDeckDialog({ open, onClose, deckId, deckName }: Props) {
                 bgcolor: alpha(accent[100], 0.5),
                 border: `1px solid ${alpha(accent[300], 0.3)}`,
               }}>
-                <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: "0.95rem", color: "text.primary" }}>
+                <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: "0.95rem", color: "text.primary" }}>
                   {share.username}
                 </Typography>
                 <IconButton size="small" onClick={() => handleRemove(share.id)} aria-label="Remove share"

@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
+import { FONT_DISPLAY } from "@/theme";
 import type { Flashcard } from "@/types/flashcard";
 import type { Deck } from "@/types/deck";
 import { loadAllCards, loadDecks } from "@/lib/supabase";
@@ -160,7 +161,7 @@ export function AddExistingCardsDialog({
     >
       {/* ── Header ── */}
       <DialogTitle
-        sx={{ fontFamily: '"DM Serif Display", serif', fontWeight: 400, pb: 0 }}
+        sx={{ fontFamily: FONT_DISPLAY, fontWeight: 400, pb: 0 }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <LibraryAddIcon sx={{ color: "#BE185D", fontSize: 22, mt: "-2px" }} />
@@ -305,7 +306,7 @@ export function AddExistingCardsDialog({
                     >
                       <Typography
                         sx={{
-                          fontFamily: '"DM Serif Display", serif',
+                          fontFamily: FONT_DISPLAY,
                           fontSize: "1rem",
                           lineHeight: 1.3,
                           color: "text.primary",

@@ -95,14 +95,12 @@ export function EditEntryDialog({
 
   const datePickerSx = {
     '& .MuiPickersSectionList-root': {
-      fontFamily: '"Nunito", sans-serif',
       fontWeight: 700,
       fontSize: '0.85rem',
     },
   };
 
   const daySlotSx = {
-    fontFamily: '"Nunito", sans-serif',
     fontWeight: 700,
     color: brand[700],
     '&:hover:not(.Mui-selected)': { background: alpha(brand[200], 0.5), color: brand[700] },
@@ -126,12 +124,11 @@ export function EditEntryDialog({
     boxShadow: `0 8px 32px ${alpha(brand[400], 0.2)}, 0 2px 8px ${alpha(accent[200], 0.1)}`,
     background: `linear-gradient(160deg, ${alpha(brand[50], 0.98)} 0%, ${alpha(accent[50], 0.92)} 100%)`,
     overflow: 'hidden',
-    '& .MuiPickersCalendarHeader-label': { fontWeight: 800, color: brand[700], fontFamily: '"Nunito", sans-serif' },
+    '& .MuiPickersCalendarHeader-label': { fontWeight: 800, color: brand[700] },
     '& .MuiPickersCalendarHeader-switchViewButton': { color: brand[500] },
     '& .MuiPickersArrowSwitcher-button': { color: brand[500], '&:hover': { color: brand[700], background: alpha(brand[100], 0.5) } },
-    '& .MuiDayCalendar-weekDayLabel': { color: brand[400], fontWeight: 700, fontFamily: '"Nunito", sans-serif' },
+    '& .MuiDayCalendar-weekDayLabel': { color: brand[400], fontWeight: 700 },
     '& .MuiPickersYear-yearButton': {
-      fontFamily: '"Nunito", sans-serif',
       fontWeight: 700,
       color: brand[700],
       '&.Mui-selected': {

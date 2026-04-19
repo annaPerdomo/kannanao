@@ -74,7 +74,7 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
         {user.email?.split('@')[0] === (process.env.NEXT_PUBLIC_ADMIN_USERNAME ?? 'test') && (
           <MenuItem
             onClick={() => { setMenuAnchor(null); router.push('/admin'); }}
-            sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontFamily: '"DM Serif Display", serif' }}
+            sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontWeight: 600 }}
           >
             <AdminPanelSettingsIcon sx={{ fontSize: '1rem' }} /> Admin
           </MenuItem>
@@ -82,14 +82,14 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
 
         <MenuItem
           onClick={() => { setMenuAnchor(null); router.push('/settings'); }}
-          sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontFamily: '"DM Serif Display", serif' }}
+          sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontWeight: 600 }}
         >
           <SettingsIcon sx={{ fontSize: '1rem' }} /> Account
         </MenuItem>
 
         <MenuItem
           onClick={signOut}
-          sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontFamily: '"DM Serif Display", serif' }}
+          sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontWeight: 600 }}
         >
           <LogoutIcon sx={{ fontSize: '1rem' }} /> Sign out
         </MenuItem>
@@ -99,7 +99,7 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
         <MenuItem disableRipple sx={{ gap: 1, cursor: 'default', '&:hover': { bgcolor: 'transparent' } }}>
           <Typography
             variant="caption"
-            sx={{ color: 'text.secondary', fontFamily: '"DM Serif Display", serif', flex: 1 }}
+            sx={{ color: 'text.secondary', fontWeight: 600, flex: 1 }}
           >
             Theme
           </Typography>

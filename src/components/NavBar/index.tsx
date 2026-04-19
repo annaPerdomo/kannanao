@@ -11,6 +11,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import { FONT_CUTE } from '@/theme';
 import { useProgress } from '@/hooks/useProgress';
 import { useAuth } from '@/contexts/AuthContext';
 import { XpDisplay } from './XpDisplay';
@@ -58,8 +59,7 @@ export function NavBar() {
 
   const navBtn = {
     color: brand[700],
-    fontFamily: '"DM Serif Display", serif',
-    fontWeight: 400,
+    fontWeight: 600,
     fontSize: '0.9rem',
     textTransform: 'none' as const,
     letterSpacing: '0.01em',
@@ -104,7 +104,8 @@ export function NavBar() {
           >
             <Typography
               sx={{
-                fontFamily: '"DM Serif Display", serif',
+                fontFamily: FONT_CUTE,
+                fontWeight: 600,
                 fontSize: { xs: '1.2rem', sm: '1.4rem' },
                 color: brand[700],
                 lineHeight: 1,
@@ -168,8 +169,8 @@ export function NavBar() {
                   <Typography sx={{ fontSize: '0.85rem' }}>🔥</Typography>
                   <Typography
                     sx={{
-                      fontFamily: '"DM Serif Display", serif',
                       fontSize: '0.85rem',
+                      fontWeight: 700,
                       color: '#DC2626',
                       lineHeight: 1,
                     }}
@@ -212,7 +213,6 @@ export function NavBar() {
               borderRadius: 3,
               boxShadow: `0 8px 32px ${alpha(brand[700], 0.18)}`,
               color: brand[700],
-              fontFamily: '"DM Serif Display", serif',
               fontSize: '0.95rem',
               px: 2.5,
               py: 1,

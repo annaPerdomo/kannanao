@@ -107,10 +107,10 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
         </Box>
 
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-          <Typography noWrap sx={{ fontSize: '0.88rem', fontWeight: 800, color: '#9D174D', fontFamily: '"Nunito", sans-serif', lineHeight: 1.25 }}>
+          <Typography noWrap sx={{ fontSize: '0.88rem', fontWeight: 800, color: '#9D174D', lineHeight: 1.25 }}>
             {titleText}
           </Typography>
-          <Typography noWrap sx={{ fontSize: '0.72rem', color: '#C2709A', fontFamily: '"Nunito", sans-serif', fontWeight: 600, lineHeight: 1.2 }}>
+          <Typography noWrap sx={{ fontSize: '0.72rem', color: '#C2709A', fontWeight: 600, lineHeight: 1.2 }}>
             {subtitleText}
           </Typography>
         </Box>
@@ -156,7 +156,7 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
             </Box>
 
             <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-              <Typography sx={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#EC4899', fontFamily: '"Nunito", sans-serif' }}>
+              <Typography sx={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#EC4899' }}>
                 Image Search
               </Typography>
               <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
@@ -168,8 +168,7 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
                   sx={{
                     flexGrow: 1,
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: '8px', fontSize: '0.78rem', fontFamily: '"Nunito", sans-serif',
-                      '& fieldset': { borderColor: 'rgba(249,168,212,0.35)' },
+                      borderRadius: '8px', fontSize: '0.78rem',                      '& fieldset': { borderColor: 'rgba(249,168,212,0.35)' },
                       '&:hover fieldset': { borderColor: '#F472B6' },
                       '&.Mui-focused fieldset': { borderColor: '#EC4899', borderWidth: '1.5px' },
                     },
@@ -192,21 +191,21 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
           {/* Card settings row */}
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap', bgcolor: 'rgba(249,168,212,0.05)', border: '1px solid rgba(249,168,212,0.18)', borderRadius: '10px', px: 1.25, py: 0.75 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, color: '#C2709A', fontFamily: '"Nunito", sans-serif', whiteSpace: 'nowrap' }}>Display:</Typography>
+              <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, color: '#C2709A', whiteSpace: 'nowrap' }}>Display:</Typography>
               <ToggleButtonGroup value={card.mainViewMode} exclusive size="small" onChange={(_, v) => { if (v) onUpdate(index, { mainViewMode: v }); }} sx={compactToggleSx}>
                 <ToggleButton value="hiragana">ひ</ToggleButton>
                 <ToggleButton value="kanji">漢</ToggleButton>
               </ToggleButtonGroup>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, color: '#C2709A', fontFamily: '"Nunito", sans-serif', whiteSpace: 'nowrap' }}>Type:</Typography>
+              <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, color: '#C2709A', whiteSpace: 'nowrap' }}>Type:</Typography>
               <ToggleButtonGroup value={card.cardType ?? 'word'} exclusive size="small" onChange={(_, v) => { if (v) onUpdate(index, { cardType: v }); }} sx={compactToggleSx}>
                 <ToggleButton value="word">Word</ToggleButton>
                 <ToggleButton value="phrase">Phrase</ToggleButton>
               </ToggleButtonGroup>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, color: '#C2709A', fontFamily: '"Nunito", sans-serif', whiteSpace: 'nowrap' }}>JLPT:</Typography>
+              <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, color: '#C2709A', whiteSpace: 'nowrap' }}>JLPT:</Typography>
               <ToggleButtonGroup value={card.jlptLevel ?? 'none'} exclusive size="small" onChange={(_, v) => { if (v) onUpdate(index, { jlptLevel: v === 'none' ? undefined : v }); }} sx={compactToggleSx}>
                 {JLPT_LEVELS.map((lvl) => (
                   <ToggleButton key={lvl} value={lvl}>{lvl === 'none' ? '—' : lvl}</ToggleButton>
@@ -223,7 +222,7 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
           <SmallField label="Meaning" value={card.meaning} onChange={handleField('meaning')} />
 
           <Box sx={{ mt: 0.5 }}>
-            <Typography sx={{ fontSize: '0.6rem', color: '#9D74B0', fontFamily: '"Nunito", sans-serif', fontWeight: 600, mb: 1, lineHeight: 1.4 }}>
+            <Typography sx={{ fontSize: '0.6rem', color: '#9D74B0', fontWeight: 600, mb: 1, lineHeight: 1.4 }}>
               💡 Use{' '}
               <Box component="code" sx={{ bgcolor: 'rgba(168,85,247,0.08)', px: 0.4, borderRadius: '3px', fontSize: '0.58rem' }}>
                 {'{漢字|かんじ}'}

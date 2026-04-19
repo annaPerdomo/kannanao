@@ -18,6 +18,7 @@ import { useCards } from "@/hooks/useCards";
 import { useDecks } from "@/hooks/useDecks";
 import { useProgress } from "@/hooks/useProgress";
 import { useShop, CELEBRATION_THEMES } from "@/hooks/useShop";
+import { FONT_MONO } from '@/theme';
 import { StudyBuddy } from "@/components/StudyBuddy";
 
 interface StudyProps {
@@ -151,10 +152,10 @@ function CelebrationOverlay({ cardCount, onDone }: { cardCount: number; onDone: 
         }}>
           {msg.big}
         </Box>
-        <Typography sx={{ mt: 1.5, fontSize: '1.9rem', fontWeight: 900, color: '#fff', textShadow: '0 2px 12px rgba(0,0,0,0.4)', fontFamily: '"Nunito", sans-serif' }}>
+        <Typography sx={{ mt: 1.5, fontSize: '1.9rem', fontWeight: 900, color: '#fff', textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
           {msg.heading}
         </Typography>
-        <Typography sx={{ mt: 0.5, fontSize: '1rem', color: 'rgba(255,255,255,0.88)', fontFamily: '"Nunito", sans-serif' }}>
+        <Typography sx={{ mt: 0.5, fontSize: '1rem', color: 'rgba(255,255,255,0.88)' }}>
           You practiced all <b>{cardCount}</b> cards!
         </Typography>
         {/* Floating mini stars row */}
@@ -170,7 +171,7 @@ function CelebrationOverlay({ cardCount, onDone }: { cardCount: number; onDone: 
             }}>{s}</Box>
           ))}
         </Box>
-        <Typography sx={{ mt: 2, fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace' }}>
+        <Typography sx={{ mt: 2, fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.1em', fontFamily: FONT_MONO }}>
           TAP ANYWHERE TO CONTINUE
         </Typography>
       </Box>

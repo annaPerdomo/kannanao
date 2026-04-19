@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { useTheme, alpha } from '@mui/material/styles';
+import { FONT_DISPLAY } from '@/theme';
 
 export function StatCard({
   icon,
@@ -43,7 +44,7 @@ export function StatCard({
         {icon}
         <Typography
           sx={{
-            fontFamily: '"DM Serif Display", serif',
+            fontFamily: FONT_DISPLAY,
             fontSize: '0.78rem',
             color: 'text.secondary',
             letterSpacing: '0.02em',
@@ -54,7 +55,7 @@ export function StatCard({
       </Box>
       <Typography
         sx={{
-          fontFamily: '"DM Serif Display", serif',
+          fontFamily: FONT_DISPLAY,
           fontSize: '2rem',
           color,
           lineHeight: 1.1,

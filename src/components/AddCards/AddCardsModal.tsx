@@ -93,8 +93,7 @@ export function AddCardsModal({
             fontSize: '1.15rem',
             fontWeight: 900,
             color: '#9D174D',
-            fontFamily: '"Nunito", sans-serif',
-            lineHeight: 1.2,
+                       lineHeight: 1.2,
             mb: 0.4,
           }}
         >
@@ -104,8 +103,7 @@ export function AddCardsModal({
           sx={{
             fontSize: '0.75rem',
             color: '#C2709A',
-            fontFamily: '"Nunito", sans-serif',
-            fontWeight: 600,
+                       fontWeight: 600,
           }}
         >
           Generate, copy, or import new flashcards

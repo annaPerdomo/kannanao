@@ -85,7 +85,7 @@ export function CelebrationScreen({ heading, subheading, extra, mode, onExit }: 
 
         <Typography sx={{
           fontSize: { xs: '1.7rem', sm: '2.1rem' }, fontWeight: 900, color: cfg.textColor,
-          textShadow: '0 2px 14px rgba(0,0,0,0.3)', fontFamily: '"Nunito", "DM Sans", sans-serif',
+          textShadow: '0 2px 14px rgba(0,0,0,0.3)',
           lineHeight: 1.2, mb: 0.75,
           animation: 'fadeUp 0.5s 0.38s ease both',
           '@keyframes fadeUp': { from: { transform: 'translateY(14px)', opacity: 0 }, to: { transform: 'translateY(0)', opacity: 1 } },
@@ -94,7 +94,7 @@ export function CelebrationScreen({ heading, subheading, extra, mode, onExit }: 
         </Typography>
 
         <Typography sx={{
-          fontSize: '1.05rem', color: cfg.subTextColor, fontFamily: '"DM Sans", sans-serif',
+          fontSize: '1.05rem', color: cfg.subTextColor,
           mb: extra ? 0.5 : 0, animation: 'fadeUp 0.5s 0.5s ease both',
         }}>
           {subheading}
@@ -103,7 +103,7 @@ export function CelebrationScreen({ heading, subheading, extra, mode, onExit }: 
         {extra && (
           <Typography sx={{
             fontSize: '1rem', fontWeight: 700, color: cfg.textColor,
-            fontFamily: '"DM Sans", sans-serif', animation: 'fadeUp 0.5s 0.6s ease both',
+            animation: 'fadeUp 0.5s 0.6s ease both',
           }}>
             {extra}
           </Typography>

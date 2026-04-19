@@ -12,6 +12,7 @@ import PushPinOutlinedIcon from "@mui/icons-material/PushPinOutlined";
 import PushPinIcon from "@mui/icons-material/PushPin";
 import { useDecks } from "@/hooks/useDecks";
 import { useGenerateFlashcards } from "@/hooks/useGenerateFlashcards";
+import { FONT_DISPLAY } from "@/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { dbInsertCards, dbCopyCardsIntoDeck } from "@/lib/supabase";
 import { AddExistingCardsDialog } from "@/components/AddExistingCardsDialog";
@@ -123,7 +124,7 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
   return (
     <>
       <Dialog open={open} onClose={busy ? undefined : onClose} maxWidth="xs" fullWidth slotProps={{ paper: { sx: dialogPaperSx } }}>
-        <DialogTitle sx={{ fontFamily: '"DM Serif Display", serif', fontWeight: 400, pb: 0 }}>
+        <DialogTitle sx={{ fontFamily: FONT_DISPLAY, fontWeight: 400, pb: 0 }}>
           New Deck
           <Typography variant="body2" color="text.secondary" sx={{ fontFamily: "inherit", fontWeight: 400, fontSize: "0.8rem", mt: 0.25 }}>
             Give your deck a name to get started
@@ -191,7 +192,7 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
               <Box sx={{ flexGrow: 1, height: "1px", bgcolor: alpha(brand[300], 0.3) }} />
-              <Typography sx={{ fontSize: "0.65rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: alpha(brand[700], 0.7), fontFamily: '"Nunito", sans-serif' }}>
+              <Typography sx={{ fontSize: "0.65rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: alpha(brand[700], 0.7) }}>
                 add cards (optional)
               </Typography>
               <Box sx={{ flexGrow: 1, height: "1px", bgcolor: alpha(brand[300], 0.3) }} />

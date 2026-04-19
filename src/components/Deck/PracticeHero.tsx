@@ -2,6 +2,7 @@
 import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import { FONT_JP } from '@/theme';
 import { PRACTICE_CONFIG } from './constants';
 import { Label } from './Label';
 import type { PracticeMode } from '@/types/app';
@@ -69,7 +70,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
             sx={{
               position: 'absolute', bottom: -16, right: 6,
               fontSize: '5.5rem', lineHeight: 1, opacity: 0.18,
-              userSelect: 'none', fontFamily: '"Noto Serif JP", serif', fontWeight: 900,
+              userSelect: 'none', fontFamily: FONT_JP, fontWeight: 900,
             }}
           >
             学
@@ -80,7 +81,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
             <Typography
               sx={{
                 fontWeight: 900, fontSize: { xs: '1rem', sm: '1.05rem' },
-                color: '#FFFFFF', fontFamily: '"Nunito", sans-serif',
+                color: '#FFFFFF',
                 lineHeight: 1.2, textShadow: '0 1px 4px rgba(0,0,0,0.15)',
               }}
             >
@@ -89,7 +90,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
             <Typography
               sx={{
                 fontSize: '0.72rem', color: 'rgba(255,255,255,0.85)',
-                fontFamily: '"Nunito", sans-serif', mt: 0.4,
+                mt: 0.4,
               }}
             >
               Flip & learn every card
@@ -99,7 +100,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
           <Typography
             sx={{
               fontSize: '0.72rem', fontWeight: 800,
-              color: 'rgba(255,255,255,0.9)', fontFamily: '"Nunito", sans-serif',
+              color: 'rgba(255,255,255,0.9)',
               letterSpacing: '0.04em', alignSelf: 'flex-end',
             }}
           >
@@ -140,7 +141,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
               sx={{
                 position: 'absolute', bottom: -16, right: 6,
                 fontSize: '5.5rem', lineHeight: 1, color, opacity: 0.08,
-                fontFamily: '"Noto Serif JP", serif', fontWeight: 900, userSelect: 'none',
+                fontFamily: FONT_JP, fontWeight: 900, userSelect: 'none',
               }}
             >
               {watermark}
@@ -151,7 +152,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
               <Typography
                 sx={{
                   fontWeight: 900, fontSize: { xs: '0.92rem', sm: '0.98rem' },
-                  color, fontFamily: '"Nunito", sans-serif', lineHeight: 1.2,
+                  color, lineHeight: 1.2,
                 }}
               >
                 {label}
@@ -159,7 +160,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
               <Typography
                 sx={{
                   fontSize: '0.7rem', color: `${color}BB`,
-                  fontFamily: '"Nunito", sans-serif', mt: 0.4,
+                  mt: 0.4,
                 }}
               >
                 {description}
@@ -170,7 +171,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
               sx={{
                 fontSize: '0.7rem', fontWeight: 800,
                 color: practiceDisabled ? 'text.disabled' : color,
-                fontFamily: '"Nunito", sans-serif', letterSpacing: '0.04em',
+                letterSpacing: '0.04em',
                 opacity: practiceDisabled ? 0.5 : 0.8, alignSelf: 'flex-end',
               }}
             >
@@ -183,7 +184,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
         <Typography
           sx={{
             fontSize: '0.7rem', color: 'text.secondary',
-            fontFamily: '"Nunito", sans-serif', mt: 1.5, textAlign: 'center',
+            mt: 1.5, textAlign: 'center',
           }}
         >
           Add at least 2 cards to unlock practice modes.

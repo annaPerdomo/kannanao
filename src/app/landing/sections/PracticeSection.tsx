@@ -7,7 +7,7 @@ import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
 import { ThemeProvider, alpha } from '@mui/material/styles';
 import { PublicFlashcard } from '@/components/PublicFlashcard';
-import { createAppTheme, pink, purple, emerald, macChrome } from '@/theme';
+import { createAppTheme, pink, purple, emerald, macChrome, FONT_DISPLAY, FONT_MONO } from '@/theme';
 import { useInView } from './useInView';
 import { Blob } from './Blob';
 import { YUME_CARD } from './demoData';
@@ -54,7 +54,7 @@ export function PracticeSection() {
           transition: 'opacity 0.8s ease, transform 0.8s ease',
         }}>
           <Typography sx={{
-            fontFamily: '"DM Serif Display", serif',
+            fontFamily: FONT_DISPLAY,
             fontSize: { xs: '2.2rem', sm: '2.8rem', md: '3.4rem' },
             color: pink[700], mb: 1.5, lineHeight: 1.05,
           }}>
@@ -87,7 +87,7 @@ export function PracticeSection() {
               }}
             >
               <Typography sx={{ fontSize: '2.6rem', lineHeight: 1 }}>{m.emoji}</Typography>
-              <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1.3rem', color: m.color }}>
+              <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1.3rem', color: m.color }}>
                 {m.title}
               </Typography>
               <Typography sx={{ fontSize: '0.87rem', color: 'text.secondary', lineHeight: 1.72 }}>
@@ -127,7 +127,7 @@ export function PracticeSection() {
                   px: 1.5, py: 0.5, border: `1px solid ${macChrome.addressBorder}`,
                   display: 'flex', alignItems: 'center',
                 }}>
-                  <Typography sx={{ fontSize: '0.62rem', color: macChrome.text, letterSpacing: '0.02em', fontFamily: '"DM Mono", monospace' }}>
+                  <Typography sx={{ fontSize: '0.62rem', color: macChrome.text, letterSpacing: '0.02em', fontFamily: FONT_MONO }}>
                     kannanao.com/embed/demo-yume
                   </Typography>
                 </Box>
@@ -138,7 +138,7 @@ export function PracticeSection() {
                 </ThemeProvider>
               </Box>
               <Box sx={{ px: 2, py: 1.25, bgcolor: macChrome.footerBg, borderTop: `1px solid ${macChrome.footerBorder}` }}>
-                <Typography sx={{ fontSize: '0.62rem', color: macChrome.text, textAlign: 'center', fontFamily: '"DM Mono", monospace' }}>
+                <Typography sx={{ fontSize: '0.62rem', color: macChrome.text, textAlign: 'center', fontFamily: FONT_MONO }}>
                   Powered by 🌸 Kannanao
                 </Typography>
               </Box>
@@ -152,7 +152,7 @@ export function PracticeSection() {
             transition: 'opacity 0.75s ease 0.42s, transform 0.75s ease 0.42s',
           }}>
             <Typography sx={{
-              fontFamily: '"DM Serif Display", serif',
+              fontFamily: FONT_DISPLAY,
               fontSize: { xs: '2rem', sm: '2.6rem', md: '3rem' },
               color: pink[700], mb: 1.5, lineHeight: 1.08,
             }}>

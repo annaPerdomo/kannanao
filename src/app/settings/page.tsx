@@ -12,6 +12,7 @@ import { useTheme, alpha } from '@mui/material/styles';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loading } from '@/components/Loading';
 import { useRouter } from 'next/navigation';
+import { FONT_DISPLAY } from '@/theme';
 
 interface SectionProps {
   icon: React.ReactNode;
@@ -34,7 +35,7 @@ function Section({ icon, title, description, children }: SectionProps) {
     >
       <Stack direction="row" alignItems="center" gap={1.5} sx={{ mb: 0.5 }}>
         <Box sx={{ color: brand[500], display: 'flex' }}>{icon}</Box>
-        <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1.05rem', color: brand[700] }}>
+        <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1.05rem', color: brand[700] }}>
           {title}
         </Typography>
       </Stack>
@@ -77,7 +78,7 @@ export default function SettingsPage() {
     color: '#fff',
     textTransform: 'none' as const,
     borderRadius: 6,
-    fontFamily: '"DM Serif Display", serif',
+    fontFamily: FONT_DISPLAY,
     '&:hover': { bgcolor: brand[800] },
     '&.Mui-disabled': { opacity: 0.5 },
   };
@@ -174,7 +175,7 @@ export default function SettingsPage() {
     <Container maxWidth="sm" sx={{ py: 4 }}>
       <Typography
         sx={{
-          fontFamily: '"DM Serif Display", serif',
+          fontFamily: FONT_DISPLAY,
           fontSize: { xs: '1.6rem', sm: '2rem' },
           color: brand[700],
           mb: 3,

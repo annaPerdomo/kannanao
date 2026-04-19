@@ -5,6 +5,7 @@ import Link from '@mui/material/Link';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import { useRouter, usePathname } from 'next/navigation';
+import { FONT_DISPLAY } from '@/theme';
 
 export function Footer() {
   const theme = useTheme();
@@ -43,7 +44,7 @@ export function Footer() {
           onClick={() => router.push('/landing')}
           underline="hover"
           sx={{
-            fontFamily: '"DM Serif Display", serif',
+            fontFamily: FONT_DISPLAY,
             fontSize: '0.85rem',
             color: alpha(brand[700], 0.7),
             cursor: 'pointer',
@@ -58,7 +59,7 @@ export function Footer() {
 
         <Typography
           sx={{
-            fontFamily: '"DM Serif Display", serif',
+            fontFamily: FONT_DISPLAY,
             fontSize: '0.82rem',
             color: alpha(brand[700], 0.55),
           }}
@@ -70,7 +71,7 @@ export function Footer() {
             rel="noopener noreferrer"
             underline="hover"
             sx={{
-              fontFamily: '"DM Serif Display", serif',
+              fontFamily: FONT_DISPLAY,
               fontSize: '0.82rem',
               color: alpha(brand[700], 0.7),
               fontStyle: 'italic',

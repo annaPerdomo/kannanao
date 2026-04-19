@@ -13,6 +13,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SchoolIcon from '@mui/icons-material/School';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import { FONT_DISPLAY } from '@/theme';
 import { useProgress, ACHIEVEMENTS } from '@/hooks/useProgress';
 import { StatCard } from '@/components/Stats/StatCard';
 import { LevelBar } from '@/components/Stats/LevelBar';
@@ -48,7 +49,7 @@ export default function Stats() {
       <Box>
         <Typography
           sx={{
-            fontFamily: '"DM Serif Display", serif',
+            fontFamily: FONT_DISPLAY,
             fontSize: { xs: '1.6rem', sm: '2rem' },
             color: brand[700],
             lineHeight: 1.1,
@@ -93,7 +94,7 @@ export default function Stats() {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
           <EmojiEventsIcon sx={{ color: brand[700], fontSize: '1.1rem' }} />
-          <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: brand[700] }}>
+          <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1rem', color: brand[700] }}>
             Achievements
           </Typography>
           <Chip
@@ -141,7 +142,7 @@ export default function Stats() {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <CalendarTodayIcon sx={{ color: brand[700], fontSize: '1rem' }} />
-          <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: brand[700] }}>
+          <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1rem', color: brand[700] }}>
             Recent Sessions
           </Typography>
         </Box>
@@ -185,7 +186,7 @@ export default function Stats() {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <CalendarTodayIcon sx={{ color: brand[700], fontSize: '1rem' }} />
-          <Typography sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1rem', color: brand[700] }}>
+          <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1rem', color: brand[700] }}>
             Study Activity
           </Typography>
         </Box>

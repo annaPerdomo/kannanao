@@ -7,6 +7,7 @@ import { alpha } from '@mui/material/styles';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
+import { FONT_MONO, FONT_JP } from '@/theme';
 
 interface PublicFlashcardProps {
   card: FlashcardType;
@@ -117,7 +118,7 @@ export function PublicFlashcard({ card, width = '100%', height = 300 }: PublicFl
               borderBottom: `2.5px solid ${typeAccent}`,
             }}>
               <Typography sx={{
-                fontFamily: '"Noto Serif JP", serif',
+                fontFamily: FONT_JP,
                 fontSize: '3rem', fontWeight: 700, color: '#111', lineHeight: 1.1, textAlign: 'center',
               }}>
                 {frontMainText}
@@ -158,29 +159,29 @@ export function PublicFlashcard({ card, width = '100%', height = 300 }: PublicFl
               }}>
                 {isKanji && card.reading && (
                   <Box>
-                    <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
+                    <Typography sx={{ fontFamily: FONT_MONO, fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
                       ★ Reading
                     </Typography>
-                    <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.1rem', fontWeight: 700, color: '#111', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                    <Typography sx={{ fontFamily: FONT_JP, fontSize: '1.1rem', fontWeight: 700, color: '#111', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
                       {card.reading}
                     </Typography>
                   </Box>
                 )}
                 {card.mainViewMode === 'hiragana' && (
                   <Box>
-                    <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
+                    <Typography sx={{ fontFamily: FONT_MONO, fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
                       ★ Kanji
                     </Typography>
-                    <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.1rem', fontWeight: 700, color: '#111', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                    <Typography sx={{ fontFamily: FONT_JP, fontSize: '1.1rem', fontWeight: 700, color: '#111', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
                       {card.word}
                     </Typography>
                   </Box>
                 )}
                 <Box>
-                  <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
+                  <Typography sx={{ fontFamily: FONT_MONO, fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
                     ★ Meaning
                   </Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.1rem', fontWeight: 700, color: '#111', fontStyle: 'italic', lineHeight: 1.3, whiteSpace: 'nowrap' }}>
+                  <Typography sx={{ fontFamily: FONT_JP, fontSize: '1.1rem', fontWeight: 700, color: '#111', fontStyle: 'italic', lineHeight: 1.3, whiteSpace: 'nowrap' }}>
                     {card.meaning}
                   </Typography>
                 </Box>
@@ -189,12 +190,12 @@ export function PublicFlashcard({ card, width = '100%', height = 300 }: PublicFl
               {/* Right: Example with furigana always shown */}
               <Box sx={{ flex: 1, px: 2, py: 1.5, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 0.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-                  <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, textTransform: 'uppercase' }}>
+                  <Typography sx={{ fontFamily: FONT_MONO, fontSize: '0.58rem', color: brand[500], letterSpacing: '0.12em', fontWeight: 700, textTransform: 'uppercase' }}>
                     ★ Example
                   </Typography>
                   <SpeakButton text={stripFurigana(card.example_jp)} iconSize="0.85rem" />
                 </Box>
-                <Typography component="div" sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '0.95rem', color: '#111', lineHeight: 2.2 }}>
+                <Typography component="div" sx={{ fontFamily: FONT_JP, fontSize: '0.95rem', color: '#111', lineHeight: 2.2 }}>
                   <FuriganaText text={card.example_jp} showFurigana={true} />
                 </Typography>
                 <Typography sx={{ fontSize: '0.9rem', color: alpha('#000', 0.5), fontStyle: 'italic', lineHeight: 1.5 }}>

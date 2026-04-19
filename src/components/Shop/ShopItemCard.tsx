@@ -12,7 +12,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LockIcon from '@mui/icons-material/Lock';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { CUTE_FONT } from '@/theme';
+import { FONT_CUTE } from '@/theme';
 import type { ShopItem } from '@/types/shop';
 import { THEME_COLORS } from './constants';
 import { ThemeCardPreview } from './ThemeCardPreview';
@@ -78,7 +78,7 @@ export function ShopItemCard({
         <Box sx={{ p: { xs: 1.25, sm: 1.5 }, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           <Typography
             sx={{
-              fontFamily: CUTE_FONT,
+              fontFamily: FONT_CUTE,
               fontSize: { xs: '0.82rem', sm: '0.92rem' },
               color: alpha(brand[700], 0.6),
               lineHeight: 1.2,
@@ -233,7 +233,7 @@ export function ShopItemCard({
       <Box sx={{ p: mini ? { xs: 0.75, sm: 1 } : { xs: 1.25, sm: 1.5 }, display: 'flex', flexDirection: 'column', gap: mini ? 0.25 : 0.75, flex: 1 }}>
         <Typography
           sx={{
-            fontFamily: CUTE_FONT,
+            fontFamily: FONT_CUTE,
             fontSize: mini ? { xs: '0.72rem', sm: '0.78rem' } : { xs: '0.82rem', sm: '0.92rem' },
             color: brand[700],
             lineHeight: 1.2,

@@ -68,7 +68,7 @@ export function GenerateForm({ onGenerate, generating, error }: GenerateFormProp
           sx={{
             flexGrow: 1, minWidth: 90,
             '& .MuiInput-root': {
-              fontFamily: '"Nunito", sans-serif', fontWeight: 600, fontSize: '0.85rem',
+              fontWeight: 600, fontSize: '0.85rem',
               color: 'text.primary', '&:before, &:after': { display: 'none' },
             },
             '& input': { p: 0.25 },
@@ -94,7 +94,7 @@ export function GenerateForm({ onGenerate, generating, error }: GenerateFormProp
       </Button>
 
       {words.length > 0 && (
-        <Typography sx={{ mt: 1, textAlign: 'center', fontSize: '0.67rem', color: 'text.secondary', fontFamily: '"Nunito", sans-serif' }}>
+        <Typography sx={{ mt: 1, textAlign: 'center', fontSize: '0.67rem', color: 'text.secondary' }}>
           {words.length} item{words.length > 1 ? 's' : ''} queued
         </Typography>
       )}

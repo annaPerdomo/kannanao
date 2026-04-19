@@ -117,7 +117,7 @@ export function DeckHeader({ deck, cardCount, onBack, onRename, onPin, onEmbedOp
                     flexGrow: 1,
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '9px', fontSize: '1.25rem', fontWeight: 700,
-                      color: brand[800], fontFamily: '"Nunito", sans-serif',
+                      color: brand[800],
                       '& fieldset': { borderColor: alpha(brand[400], 0.5) },
                       '&:hover fieldset': { borderColor: brand[400] },
                       '&.Mui-focused fieldset': { borderColor: brand[500] },
@@ -168,7 +168,7 @@ export function DeckHeader({ deck, cardCount, onBack, onRename, onPin, onEmbedOp
                   pr: '76px',
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '9px', fontSize: '0.82rem',
-                    color: brand[500], fontFamily: '"Nunito", sans-serif',
+                    color: brand[500],
                     '& fieldset': { borderColor: alpha(brand[400], 0.35) },
                     '&:hover fieldset': { borderColor: brand[400] },
                     '&.Mui-focused fieldset': { borderColor: brand[500] },

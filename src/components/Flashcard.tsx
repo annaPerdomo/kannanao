@@ -8,6 +8,7 @@ import { getFlashcardDisplayText, cardXp } from '@/lib/flashcardUtils';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useCardBorder } from '@/contexts/CardBorderContext';
+import { FONT_MONO, FONT_JP } from '@/theme';
 
 interface FlashcardProps {
   card: FlashcardType;
@@ -191,13 +192,13 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
               {/* Card name */}
               <Box sx={{ px: { xs: 2, sm: 2.5 }, pt: { xs: 1.25, sm: 1.5 }, pb: 1, borderBottom: `2.5px solid ${typeAccent}`, flexShrink: 0 }}>
                 {subtitleText && (
-                  <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.65rem', color: '#888', letterSpacing: '0.08em', mb: 0.25, lineHeight: 1 }}>
+                  <Typography sx={{ fontFamily: FONT_MONO, fontSize: '0.65rem', color: '#888', letterSpacing: '0.08em', mb: 0.25, lineHeight: 1 }}>
                     {subtitleText}
                   </Typography>
                 )}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Typography sx={{
-                    fontFamily: '"Noto Serif JP", serif',
+                    fontFamily: FONT_JP,
                     fontSize: '2.2rem',
                     fontWeight: 700, color: '#111', lineHeight: 1.05,
                   }}>
@@ -217,11 +218,11 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
               {/* Footer */}
               <Box sx={{ px: { xs: 2, sm: 2.5 }, pb: { xs: 1, sm: 1.25 }, display: 'flex', justifyContent: 'space-between', borderTop: `1px solid ${alpha(brand[300], 0.25)}`, pt: 0.75 }}>
                 {card.jlptLevel && (
-                  <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[600], 0.7), fontFamily: '"DM Mono", monospace', letterSpacing: '0.06em' }}>
+                  <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[600], 0.7), fontFamily: FONT_MONO, letterSpacing: '0.06em' }}>
                     JLPT {card.jlptLevel}
                   </Typography>
                 )}
-                <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[500], 0.5), fontFamily: '"DM Mono", monospace' }}>★</Typography>
+                <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[500], 0.5), fontFamily: FONT_MONO }}>★</Typography>
               </Box>
             </Box>
           </Box>
@@ -247,32 +248,32 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
 
                 {card.mainViewMode === 'hiragana' && (
                   <Box>
-                    <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.62rem', color: brand[500], letterSpacing: '0.14em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
+                    <Typography sx={{ fontFamily: FONT_MONO, fontSize: '0.62rem', color: brand[500], letterSpacing: '0.14em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
                       ★ Kanji
                     </Typography>
-                    <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: { xs: '1.8rem', sm: '2.1rem' }, fontWeight: 700, color: '#111', lineHeight: 1.2 }}>
+                    <Typography sx={{ fontFamily: FONT_JP, fontSize: { xs: '1.8rem', sm: '2.1rem' }, fontWeight: 700, color: '#111', lineHeight: 1.2 }}>
                       {card.word}
                     </Typography>
                   </Box>
                 )}
 
                 <Box>
-                  <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.62rem', color: brand[500], letterSpacing: '0.14em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
+                  <Typography sx={{ fontFamily: FONT_MONO, fontSize: '0.62rem', color: brand[500], letterSpacing: '0.14em', fontWeight: 700, mb: 0.5, textTransform: 'uppercase' }}>
                     ★ Meaning
                   </Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: { xs: '1.5rem', sm: '1.9rem' }, fontWeight: 700, color: '#111', fontStyle: 'italic', lineHeight: 1.25 }}>
+                  <Typography sx={{ fontFamily: FONT_JP, fontSize: { xs: '1.5rem', sm: '1.9rem' }, fontWeight: 700, color: '#111', fontStyle: 'italic', lineHeight: 1.25 }}>
                     {card.meaning}
                   </Typography>
                 </Box>
 
                 <Box sx={{ borderTop: `2px solid ${alpha(brand[300], 0.22)}`, pt: { xs: 1.25, sm: 1.75 } }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.75 }}>
-                    <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.62rem', color: brand[500], letterSpacing: '0.14em', fontWeight: 700, textTransform: 'uppercase' }}>
+                    <Typography sx={{ fontFamily: FONT_MONO, fontSize: '0.62rem', color: brand[500], letterSpacing: '0.14em', fontWeight: 700, textTransform: 'uppercase' }}>
                       ★ Example
                     </Typography>
                     <SpeakButton text={stripFurigana(card.example_jp)} iconSize="0.85rem" />
                   </Box>
-                  <Typography component="div" sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: { xs: '0.95rem', sm: '1.05rem' }, color: '#111', lineHeight: 1.8 }}>
+                  <Typography component="div" sx={{ fontFamily: FONT_JP, fontSize: { xs: '0.95rem', sm: '1.05rem' }, color: '#111', lineHeight: 1.8 }}>
                     <FuriganaText text={card.example_jp} showFurigana={card.mainViewMode === 'hiragana'} />
                   </Typography>
                   <Typography sx={{ fontSize: { xs: '0.82rem', sm: '0.9rem' }, color: alpha('#000', 0.5), mt: 0.75, fontStyle: 'italic', lineHeight: 1.6 }}>
@@ -284,11 +285,11 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
               {/* Footer */}
               <Box sx={{ px: { xs: 2, sm: 2.5 }, pb: { xs: 1, sm: 1.25 }, borderTop: `1px solid ${alpha(brand[300], 0.25)}`, pt: 0.75, display: 'flex', justifyContent: 'space-between', flexShrink: 0 }}>
                 {card.jlptLevel && (
-                  <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[600], 0.7), fontFamily: '"DM Mono", monospace', letterSpacing: '0.06em' }}>
+                  <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[600], 0.7), fontFamily: FONT_MONO, letterSpacing: '0.06em' }}>
                     JLPT {card.jlptLevel}
                   </Typography>
                 )}
-                <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[500], 0.5), fontFamily: '"DM Mono", monospace' }}>tap to flip back</Typography>
+                <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[500], 0.5), fontFamily: FONT_MONO }}>tap to flip back</Typography>
               </Box>
             </Box>
           </Box>

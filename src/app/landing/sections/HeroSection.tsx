@@ -9,7 +9,7 @@ import Chip from '@mui/material/Chip';
 import { ThemeProvider, alpha } from '@mui/material/styles';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { Flashcard } from '@/components/Flashcard';
-import { createAppTheme, pink, purple, sky, amber } from '@/theme';
+import { createAppTheme, pink, purple, sky, amber, FONT_DISPLAY, FONT_JP } from '@/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInView } from './useInView';
 import { Blob } from './Blob';
@@ -61,7 +61,7 @@ export function HeroSection() {
       ] as Array<{ char: string; size: number; top?: string; bottom?: string; left?: string; right?: string; opacity: number; delay: string }>).map(({ char, size, top, bottom, left, right, opacity, delay }) => (
         <Box key={char} sx={{
           position: 'absolute',
-          fontFamily: '"Noto Serif JP", serif',
+          fontFamily: FONT_JP,
           fontSize: size, color: pink[400], opacity,
           top, bottom, left, right,
           pointerEvents: 'none', userSelect: 'none', lineHeight: 1,
@@ -97,7 +97,7 @@ export function HeroSection() {
           />
 
           <Typography component="h1" sx={{
-            fontFamily: '"DM Serif Display", serif',
+            fontFamily: FONT_DISPLAY,
             fontSize: { xs: '3.4rem', sm: '4.2rem', lg: '5.2rem' },
             lineHeight: 0.98, mb: 2.5,
             background: `linear-gradient(135deg, ${pink[600]} 0%, ${purple[500]} 50%, ${sky[500]} 100%)`,
@@ -120,7 +120,7 @@ export function HeroSection() {
             justifyContent={{ xs: 'center', lg: 'flex-start' }} sx={{ mb: 3.5 }}>
             {session ? (
               <Button variant="contained" size="large" onClick={() => router.push('/')}
-                sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1.05rem', textTransform: 'none', borderRadius: 8, px: 4, py: 1.5,
+                sx={{ fontFamily: FONT_DISPLAY, fontSize: '1.05rem', textTransform: 'none', borderRadius: 8, px: 4, py: 1.5,
                   background: `linear-gradient(135deg, ${pink[400]} 0%, ${pink[600]} 100%)`,
                   boxShadow: `0 8px 28px ${alpha(pink[500], 0.42)}`,
                   '&:hover': { transform: 'translateY(-3px)', boxShadow: `0 14px 40px ${alpha(pink[500], 0.52)}` },
@@ -131,7 +131,7 @@ export function HeroSection() {
               <>
                 <Button variant="contained" size="large"
                   onClick={() => document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' })}
-                  sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1.05rem', textTransform: 'none', borderRadius: 8, px: 4, py: 1.5,
+                  sx={{ fontFamily: FONT_DISPLAY, fontSize: '1.05rem', textTransform: 'none', borderRadius: 8, px: 4, py: 1.5,
                     background: `linear-gradient(135deg, ${pink[400]} 0%, ${pink[600]} 100%)`,
                     boxShadow: `0 8px 28px ${alpha(pink[500], 0.42)}`,
                     '&:hover': { transform: 'translateY(-3px)', boxShadow: `0 14px 40px ${alpha(pink[500], 0.52)}` },
@@ -139,7 +139,7 @@ export function HeroSection() {
                   Join the waitlist 🌸
                 </Button>
                 <Button variant="outlined" size="large" onClick={() => router.push('/login')}
-                  sx={{ fontFamily: '"DM Serif Display", serif', fontSize: '1.05rem', textTransform: 'none', borderRadius: 8, px: 3.5, py: 1.5,
+                  sx={{ fontFamily: FONT_DISPLAY, fontSize: '1.05rem', textTransform: 'none', borderRadius: 8, px: 3.5, py: 1.5,
                     borderColor: alpha(pink[400], 0.6), color: pink[700],
                     '&:hover': { borderColor: pink[500], bgcolor: alpha(pink[100], 0.6) },
                   }}>

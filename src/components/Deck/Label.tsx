@@ -11,7 +11,6 @@ export function Label({ children }: { children: React.ReactNode }) {
         letterSpacing: '0.16em',
         textTransform: 'uppercase',
         color: 'primary.main',
-        fontFamily: '"Nunito", sans-serif',
       }}
     >
       {children}

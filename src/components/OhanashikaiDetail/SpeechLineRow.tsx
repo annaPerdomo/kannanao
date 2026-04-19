@@ -12,6 +12,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
+import { FONT_JP } from '@/theme';
 
 interface SpeechLineRowProps {
   lineId: string;
@@ -66,14 +67,14 @@ export function SpeechLineRow({
               if (e.key === 'Escape') onCancelEdit();
             }}
             size="small" fullWidth multiline autoFocus
-            sx={{ '& .MuiOutlinedInput-root': { fontFamily: '"Noto Serif JP", serif', fontSize: '0.95rem' } }}
+            sx={{ '& .MuiOutlinedInput-root': { fontFamily: FONT_JP, fontSize: '0.95rem' } }}
           />
         ) : (
           <FuriganaText
             text={text}
             showFurigana
             sx={{
-              fontFamily: '"Noto Serif JP", "Noto Sans JP", serif',
+              fontFamily: FONT_JP,
               fontSize: { xs: '1.1rem', sm: '1.25rem' },
               lineHeight: 2.8, color: 'text.primary', wordBreak: 'break-all',
             }}

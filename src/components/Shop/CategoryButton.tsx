@@ -3,7 +3,7 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
-import { CUTE_FONT } from '@/theme';
+import { FONT_CUTE } from '@/theme';
 
 export function CategoryButton({
   icon,
@@ -53,7 +53,7 @@ export function CategoryButton({
       </Box>
       <Typography
         sx={{
-          fontFamily: CUTE_FONT,
+          fontFamily: FONT_CUTE,
           fontSize: { xs: '0.65rem', sm: '0.75rem' },
           fontWeight: active ? 700 : 500,
           color: active ? color : 'text.secondary',

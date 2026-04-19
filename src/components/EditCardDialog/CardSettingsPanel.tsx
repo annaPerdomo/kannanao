@@ -26,10 +26,10 @@ export function CardSettingsPanel({
   const labelSx = {
     fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.12em',
     textTransform: 'uppercase' as const, color: '#EC4899',
-    fontFamily: '"Nunito", sans-serif', lineHeight: 1, mb: 0.4,
+    lineHeight: 1, mb: 0.4,
   };
 
-  const descSx = { fontSize: '0.68rem', color: '#C2709A', fontFamily: '"Nunito", sans-serif' };
+  const descSx = { fontSize: '0.68rem', color: '#C2709A' };
 
   return (
     <>

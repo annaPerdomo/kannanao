@@ -18,6 +18,7 @@ import { useProgress, XP_PER_CORRECT, XP_PER_WRONG } from '@/hooks/useProgress';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
+import { FONT_JP } from '@/theme';
 
 interface LineRecallModeProps {
   lines: OhanashikaiLine[];
@@ -222,7 +223,7 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
               border: `1px solid ${alpha(brand[300], 0.4)}`,
             }}
           >
-            <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1rem', color: brand[700] }}>
+            <Typography sx={{ fontFamily: FONT_JP, fontSize: '1rem', color: brand[700] }}>
               {hint}
             </Typography>
           </Box>
@@ -250,7 +251,7 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
               text={current.text}
               showFurigana
               sx={{
-                fontFamily: '"Noto Serif JP", serif',
+                fontFamily: FONT_JP,
                 fontSize: '1.1rem',
                 lineHeight: 2.4,
                 color: 'text.primary',

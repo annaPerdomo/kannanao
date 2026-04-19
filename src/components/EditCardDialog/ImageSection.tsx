@@ -41,7 +41,7 @@ export function ImageSection({ imageUrl, word, initialQuery, onImageChange }: Im
 
   return (
     <Box>
-      <Typography sx={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#EC4899', fontFamily: '"Nunito", sans-serif', mb: 1.25 }}>
+      <Typography sx={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#EC4899', mb: 1.25 }}>
         Card Image
       </Typography>
 

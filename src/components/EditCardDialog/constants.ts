@@ -22,21 +22,18 @@ export const FIELD_CONFIG: {
 export const sharedTextFieldSx = {
   '& .MuiOutlinedInput-root': {
     borderRadius: '10px',
-    fontFamily: '"Nunito", sans-serif',
-    fontSize: '0.875rem',
+        fontSize: '0.875rem',
     '& fieldset': { borderColor: 'rgba(249,168,212,0.4)' },
     '&:hover fieldset': { borderColor: '#F472B6' },
     '&.Mui-focused fieldset': { borderColor: '#EC4899', borderWidth: '1.5px' },
   },
   '& .MuiInputLabel-root': {
-    fontFamily: '"Nunito", sans-serif',
-    fontSize: '0.8rem',
+        fontSize: '0.8rem',
     color: '#BE185D',
     '&.Mui-focused': { color: '#EC4899' },
   },
   '& .MuiFormHelperText-root': {
-    fontFamily: '"Nunito", sans-serif',
-    fontSize: '0.68rem',
+        fontSize: '0.68rem',
     color: '#C2709A',
   },
 } as const;
@@ -48,8 +45,7 @@ export const toggleGroupSx = {
     py: 0.6,
     fontWeight: 800,
     fontSize: '0.78rem',
-    fontFamily: '"Nunito", sans-serif',
-    lineHeight: 1,
+        lineHeight: 1,
     border: '1.5px solid rgba(249,168,212,0.45)',
     color: '#C2709A',
     transition: 'all 0.18s ease',

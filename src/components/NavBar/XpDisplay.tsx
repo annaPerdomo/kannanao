@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { FONT_CUTE } from '@/theme';
 import { useProgress } from '@/hooks/useProgress';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 
@@ -88,12 +89,11 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
       <Typography sx={{ fontSize: '0.8rem', lineHeight: 1 }}>✨</Typography>
       <Typography
         sx={{
-          fontFamily: '"DM Serif Display", serif',
           fontSize: '0.85rem',
           color: '#b45309',
           lineHeight: 1,
           fontVariantNumeric: 'tabular-nums',
-          fontWeight: 600,
+          fontWeight: 700,
         }}
       >
         {displayXp.toLocaleString()} XP
@@ -120,7 +120,7 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
         >
           <Typography
             sx={{
-              fontFamily: '"Fredoka", sans-serif',
+              fontFamily: FONT_CUTE,
               fontWeight: 700,
               fontSize: '0.9rem',
               color: '#fff',
