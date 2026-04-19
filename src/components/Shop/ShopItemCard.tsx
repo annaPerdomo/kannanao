@@ -17,6 +17,7 @@ import type { ShopItem } from '@/types/shop';
 import { THEME_COLORS } from './constants';
 import { ThemeCardPreview } from './ThemeCardPreview';
 import { BorderCardPreview } from './BorderCardPreview';
+import { BuddyCardPreview } from './BuddyCardPreview';
 
 export function ShopItemCard({
   item,
@@ -26,6 +27,7 @@ export function ShopItemCard({
   onBuy,
   onEquip,
   onPreview,
+  mini,
 }: {
   item: ShopItem;
   owned: boolean;
@@ -34,12 +36,14 @@ export function ShopItemCard({
   onBuy: () => void;
   onEquip: () => void;
   onPreview: () => void;
+  mini?: boolean;
 }) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const canAfford = spendableXp >= item.price;
   const isTheme = item.category === 'theme';
   const isCelebration = item.category === 'celebration';
+  const isBuddy = item.category === 'study_buddy';
 
   if (item.comingSoon) {
     return (
@@ -132,7 +136,7 @@ export function ShopItemCard({
       <Box
         sx={{
           position: 'relative',
-          height: { xs: 100, sm: 120 },
+          height: mini ? { xs: 60, sm: 70 } : { xs: 100, sm: 120 },
           background: isTheme
             ? `linear-gradient(135deg, ${alpha(THEME_COLORS[item.key]?.bg || brand[50], 0.8)}, ${alpha(THEME_COLORS[item.key]?.brand || brand[200], 0.15)})`
             : `linear-gradient(135deg, ${alpha(brand[100], 0.5)}, ${alpha(brand[200], 0.3)})`,
@@ -142,10 +146,16 @@ export function ShopItemCard({
           overflow: 'hidden',
         }}
       >
-        {isTheme ? (
+        {mini && (isTheme || (!isCelebration && !isBuddy)) ? (
+          <Box sx={{ transform: 'scale(0.65)', transformOrigin: 'center', width: '100%', height: '100%' }}>
+            {isTheme ? <ThemeCardPreview themeKey={item.key} /> : <BorderCardPreview borderKey={item.key} />}
+          </Box>
+        ) : isTheme ? (
           <ThemeCardPreview themeKey={item.key} />
         ) : isCelebration ? (
-          <Typography sx={{ fontSize: '3rem', lineHeight: 1 }}>{item.emoji}</Typography>
+          <Typography sx={{ fontSize: mini ? '1.8rem' : '3rem', lineHeight: 1 }}>{item.emoji}</Typography>
+        ) : isBuddy ? (
+          <BuddyCardPreview buddyKey={item.key} />
         ) : (
           <BorderCardPreview borderKey={item.key} />
         )}
@@ -154,22 +164,22 @@ export function ShopItemCard({
           <Box
             sx={{
               position: 'absolute',
-              top: 6,
-              right: 6,
+              top: mini ? 3 : 6,
+              right: mini ? 3 : 6,
               bgcolor: '#fff',
               borderRadius: '50%',
-              width: 22,
-              height: 22,
+              width: mini ? 18 : 22,
+              height: mini ? 18 : 22,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               boxShadow: `0 2px 8px ${alpha(brand[400], 0.3)}`,
             }}
           >
-            <CheckCircleIcon sx={{ fontSize: '0.9rem', color: brand[500] }} />
+            <CheckCircleIcon sx={{ fontSize: mini ? '0.75rem' : '0.9rem', color: brand[500] }} />
           </Box>
         )}
-        {!owned && !canAfford && item.price > 0 && (
+        {!owned && !canAfford && item.price > 0 && !mini && (
           <Box
             sx={{
               position: 'absolute',
@@ -191,59 +201,63 @@ export function ShopItemCard({
           </Box>
         )}
 
-        <Tooltip title="Preview" arrow>
-          <IconButton
-            size="small"
-            onClick={(e) => { e.stopPropagation(); onPreview(); }}
-            sx={{
-              position: 'absolute',
-              bottom: 6,
-              right: 6,
-              width: 24,
-              height: 24,
-              bgcolor: 'rgba(255,255,255,0.9)',
-              backdropFilter: 'blur(4px)',
-              border: `1px solid ${alpha(brand[300], 0.4)}`,
-              color: brand[600],
-              opacity: 0,
-              transition: 'opacity 0.2s ease',
-              '.MuiPaper-root:hover &': { opacity: 1 },
-              '&:hover': { bgcolor: brand[50], color: brand[700] },
-            }}
-          >
-            <VisibilityIcon sx={{ fontSize: '0.8rem' }} />
-          </IconButton>
-        </Tooltip>
+        {!mini && (
+          <Tooltip title="Preview" arrow>
+            <IconButton
+              size="small"
+              onClick={(e) => { e.stopPropagation(); onPreview(); }}
+              sx={{
+                position: 'absolute',
+                bottom: 6,
+                right: 6,
+                width: 24,
+                height: 24,
+                bgcolor: 'rgba(255,255,255,0.9)',
+                backdropFilter: 'blur(4px)',
+                border: `1px solid ${alpha(brand[300], 0.4)}`,
+                color: brand[600],
+                opacity: 0,
+                transition: 'opacity 0.2s ease',
+                '.MuiPaper-root:hover &': { opacity: 1 },
+                '&:hover': { bgcolor: brand[50], color: brand[700] },
+              }}
+            >
+              <VisibilityIcon sx={{ fontSize: '0.8rem' }} />
+            </IconButton>
+          </Tooltip>
+        )}
       </Box>
 
       {/* Info + action area */}
-      <Box sx={{ p: { xs: 1.25, sm: 1.5 }, display: 'flex', flexDirection: 'column', gap: 0.75, flex: 1 }}>
+      <Box sx={{ p: mini ? { xs: 0.75, sm: 1 } : { xs: 1.25, sm: 1.5 }, display: 'flex', flexDirection: 'column', gap: mini ? 0.25 : 0.75, flex: 1 }}>
         <Typography
           sx={{
             fontFamily: CUTE_FONT,
-            fontSize: { xs: '0.82rem', sm: '0.92rem' },
+            fontSize: mini ? { xs: '0.72rem', sm: '0.78rem' } : { xs: '0.82rem', sm: '0.92rem' },
             color: brand[700],
             lineHeight: 1.2,
           }}
         >
           {item.name}
         </Typography>
-        <Typography
-          sx={{
-            fontSize: '0.65rem',
-            color: 'text.secondary',
-            lineHeight: 1.3,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}
-        >
-          {item.description}
-        </Typography>
+        {!mini && (
+          <Typography
+            sx={{
+              fontSize: '0.65rem',
+              color: 'text.secondary',
+              lineHeight: 1.3,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {item.description}
+          </Typography>
+        )}
 
         {/* Price + action row */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 0.5, mt: 'auto', pt: 0.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 0.5, mt: 'auto', pt: mini ? 0 : 0.5 }}>
           <Box>
             {item.price > 0 && !owned && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>

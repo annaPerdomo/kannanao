@@ -19,12 +19,13 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
 import BorderStyleIcon from '@mui/icons-material/BorderStyle';
 import CelebrationIcon from '@mui/icons-material/Celebration';
+import PetsIcon from '@mui/icons-material/Pets';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useProgress } from '@/hooks/useProgress';
 import { useShop, SHOP_ITEMS, THEME_KEY_TO_SCHEME } from '@/hooks/useShop';
 import { useColorScheme } from '@/contexts/ThemeContext';
 import { CUTE_FONT, type ColorScheme } from '@/theme';
-import type { ShopItem } from '@/types/shop';
+import type { ShopCategory, ShopItem } from '@/types/shop';
 import { float, celebrate } from '@/components/Shop/animations';
 import { Sparkles } from '@/components/Shop/Sparkles';
 import { CoinBurst } from '@/components/Shop/CoinBurst';
@@ -34,6 +35,7 @@ import { BorderPreviewModal } from '@/components/Shop/BorderPreviewModal';
 import { CelebrationPreviewModal } from '@/components/Shop/CelebrationPreviewModal';
 import { CategoryButton } from '@/components/Shop/CategoryButton';
 import { CategorySection } from '@/components/Shop/CategorySection';
+import { BuddyPreviewModal } from '@/components/Shop/BuddyPreviewModal';
 
 export default function Shop() {
   const theme = useTheme();
@@ -49,7 +51,7 @@ export default function Shop() {
   } = useShop();
   const { scheme, setScheme } = useColorScheme();
 
-  const [activeCategory, setActiveCategory] = useState<'all' | 'theme' | 'card_border' | 'celebration'>('all');
+  const [activeCategory, setActiveCategory] = useState<'all' | ShopCategory>('all');
   const [confirmItem, setConfirmItem] = useState<ShopItem | null>(null);
   const [purchasing, setPurchasing] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -58,11 +60,23 @@ export default function Shop() {
   const [previewingTheme, setPreviewingTheme] = useState<{ item: ShopItem; originalScheme: ColorScheme } | null>(null);
   const [borderPreviewItem, setBorderPreviewItem] = useState<ShopItem | null>(null);
   const [celebPreviewItem, setCelebPreviewItem] = useState<ShopItem | null>(null);
+  const [buddyPreviewItem, setBuddyPreviewItem] = useState<ShopItem | null>(null);
 
   const loading = progressLoading || shopLoading;
-  const themes = useMemo(() => SHOP_ITEMS.filter((i) => i.category === 'theme'), []);
-  const borders = useMemo(() => SHOP_ITEMS.filter((i) => i.category === 'card_border'), []);
-  const celebrations = useMemo(() => SHOP_ITEMS.filter((i) => i.category === 'celebration'), []);
+  const categories = useMemo(() => [
+    { key: 'theme' as const, title: 'Themes', icon: <ColorLensIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />, filterIcon: <ColorLensIcon />, filterLabel: 'Themes' },
+    { key: 'card_border' as const, title: 'Card Borders', icon: <BorderStyleIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />, filterIcon: <BorderStyleIcon />, filterLabel: 'Borders' },
+    { key: 'celebration' as const, title: 'Celebrations', icon: <CelebrationIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />, filterIcon: <CelebrationIcon />, filterLabel: 'Celebrations' },
+    { key: 'study_buddy' as const, title: 'Study Buddies', icon: <PetsIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />, filterIcon: <PetsIcon />, filterLabel: 'Buddies' },
+  ], [brand]);
+
+  const itemsByCategory = useMemo(() => {
+    const map = new Map<string, ShopItem[]>();
+    for (const cat of categories) {
+      map.set(cat.key, SHOP_ITEMS.filter((i) => i.category === cat.key));
+    }
+    return map;
+  }, [categories]);
 
   const handleBuy = async () => {
     if (!confirmItem) return;
@@ -110,6 +124,8 @@ export default function Shop() {
       }
     } else if (item.category === 'celebration') {
       setCelebPreviewItem(item);
+    } else if (item.category === 'study_buddy') {
+      setBuddyPreviewItem(item);
     } else {
       setBorderPreviewItem(item);
     }
@@ -259,9 +275,9 @@ export default function Shop() {
         }}
       >
         <CategoryButton icon={<AutoAwesomeIcon />} label="All" active={activeCategory === 'all'} onClick={() => setActiveCategory('all')} color={brand[500]} />
-        <CategoryButton icon={<ColorLensIcon />} label="Themes" active={activeCategory === 'theme'} onClick={() => setActiveCategory('theme')} color={brand[500]} />
-        <CategoryButton icon={<BorderStyleIcon />} label="Borders" active={activeCategory === 'card_border'} onClick={() => setActiveCategory('card_border')} color={brand[500]} />
-        <CategoryButton icon={<CelebrationIcon />} label="Celebrations" active={activeCategory === 'celebration'} onClick={() => setActiveCategory('celebration')} color={brand[500]} />
+        {categories.map((cat) => (
+          <CategoryButton key={cat.key} icon={cat.filterIcon} label={cat.filterLabel} active={activeCategory === cat.key} onClick={() => setActiveCategory(cat.key)} color={brand[500]} />
+        ))}
       </Box>
 
       {/* Alerts */}
@@ -305,24 +321,53 @@ export default function Shop() {
           ))}
         </Box>
       ) : activeCategory === 'all' ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2.5, alignItems: 'start' }}>
-            <CategorySection title="Themes" icon={<ColorLensIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />} items={themes} ownsItem={ownsItem} equipped={equipped} spendableXp={spendableXp} onBuy={setConfirmItem} onEquip={handleEquip} onPreview={handlePreview} brandColor={brand[600]} compact />
-            <CategorySection title="Card Borders" icon={<BorderStyleIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />} items={borders} ownsItem={ownsItem} equipped={equipped} spendableXp={spendableXp} onBuy={setConfirmItem} onEquip={handleEquip} onPreview={handlePreview} brandColor={brand[600]} compact />
-          </Box>
-          <CategorySection title="Celebrations" icon={<CelebrationIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />} items={celebrations} ownsItem={ownsItem} equipped={equipped} spendableXp={spendableXp} onBuy={setConfirmItem} onEquip={handleEquip} onPreview={handlePreview} brandColor={brand[600]} compact />
+        <Box
+          sx={{
+            maxWidth: 1200,
+            mx: 'auto',
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' },
+            gap: 2,
+            alignItems: 'start',
+          }}
+        >
+          {categories.map((cat) => (
+            <CategorySection
+              key={cat.key}
+              title={cat.title}
+              icon={cat.icon}
+              items={itemsByCategory.get(cat.key) ?? []}
+              ownsItem={ownsItem}
+              equipped={equipped}
+              spendableXp={spendableXp}
+              onBuy={setConfirmItem}
+              onEquip={handleEquip}
+              onPreview={handlePreview}
+              brandColor={brand[600]}
+              overview
+              onSeeAll={() => setActiveCategory(cat.key)}
+            />
+          ))}
         </Box>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          {activeCategory === 'theme' && (
-            <CategorySection title="Themes" icon={<ColorLensIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />} items={themes} ownsItem={ownsItem} equipped={equipped} spendableXp={spendableXp} onBuy={setConfirmItem} onEquip={handleEquip} onPreview={handlePreview} brandColor={brand[600]} expanded />
-          )}
-          {activeCategory === 'card_border' && (
-            <CategorySection title="Card Borders" icon={<BorderStyleIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />} items={borders} ownsItem={ownsItem} equipped={equipped} spendableXp={spendableXp} onBuy={setConfirmItem} onEquip={handleEquip} onPreview={handlePreview} brandColor={brand[600]} expanded />
-          )}
-          {activeCategory === 'celebration' && (
-            <CategorySection title="Celebrations" icon={<CelebrationIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />} items={celebrations} ownsItem={ownsItem} equipped={equipped} spendableXp={spendableXp} onBuy={setConfirmItem} onEquip={handleEquip} onPreview={handlePreview} brandColor={brand[600]} expanded />
-          )}
+          {categories.filter((cat) => cat.key === activeCategory).map((cat) => (
+            <CategorySection
+              key={cat.key}
+              title={cat.title}
+              icon={cat.icon}
+              items={itemsByCategory.get(cat.key) ?? []}
+              ownsItem={ownsItem}
+              equipped={equipped}
+              spendableXp={spendableXp}
+              onBuy={setConfirmItem}
+              onEquip={handleEquip}
+              onPreview={handlePreview}
+              brandColor={brand[600]}
+              expanded
+            />
+          ))}
         </Box>
       )}
 
@@ -393,7 +438,7 @@ export default function Shop() {
             >
               {confirmItem.category === 'theme' ? (
                 <ThemeCardPreview themeKey={confirmItem.key} />
-              ) : confirmItem.category === 'celebration' ? (
+              ) : confirmItem.category === 'celebration' || confirmItem.category === 'study_buddy' ? (
                 <Typography sx={{ fontSize: '2.2rem', lineHeight: 1 }}>{confirmItem.emoji}</Typography>
               ) : (
                 <BorderCardPreview borderKey={confirmItem.key} />
@@ -526,6 +571,12 @@ export default function Shop() {
         open={!!celebPreviewItem}
         onClose={() => setCelebPreviewItem(null)}
         item={celebPreviewItem}
+      />
+
+      <BuddyPreviewModal
+        open={!!buddyPreviewItem}
+        onClose={() => setBuddyPreviewItem(null)}
+        item={buddyPreviewItem}
       />
     </Box>
   );

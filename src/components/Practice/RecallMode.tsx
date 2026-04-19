@@ -20,6 +20,8 @@ import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { CelebrationScreen } from './CelebrationScreen';
 import { RoundTransition } from './RoundTransition';
 import { XpEarnedPop } from './XpEarnedPop';
+import { StudyBuddy, type BuddyReaction } from '@/components/StudyBuddy';
+import { useShop } from '@/hooks/useShop';
 
 interface RecallModeProps {
   cards: Flashcard[];
@@ -53,6 +55,10 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
   const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(null);
+
+  const { equipped } = useShop();
+  const equippedBuddy = equipped['study_buddy'];
+  const [buddyReaction, setBuddyReaction] = useState<BuddyReaction>('idle');
 
   const { startSession, recordAnswer, endSession } = useProgress();
   const { triggerXpEarned } = useXpAnimation();
@@ -116,6 +122,8 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
       setXpPop({ amount: xpAmount, correct, key: Date.now() });
       setTimeout(() => setXpPop(null), 1300);
       triggerXpEarned(xpAmount);
+
+      setBuddyReaction(correct ? 'correct' : 'wrong');
 
       if (correct) {
         setRoundScore((s) => s + 1);
@@ -427,6 +435,8 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
           Quit &amp; Save Progress
         </Button>
       </Box>
+
+      {equippedBuddy && <StudyBuddy buddyKey={equippedBuddy} reaction={buddyReaction} />}
     </Box>
   );
 }

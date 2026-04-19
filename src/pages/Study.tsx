@@ -18,6 +18,7 @@ import { useCards } from "@/hooks/useCards";
 import { useDecks } from "@/hooks/useDecks";
 import { useProgress } from "@/hooks/useProgress";
 import { useShop, CELEBRATION_THEMES } from "@/hooks/useShop";
+import { StudyBuddy } from "@/components/StudyBuddy";
 
 interface StudyProps {
   deckId: string;
@@ -180,6 +181,8 @@ function CelebrationOverlay({ cardCount, onDone }: { cardCount: number; onDone: 
 export default function Study({ deckId, onBack }: StudyProps) {
   const { cards, loading: cardsLoading } = useCards(deckId);
   const { decks, loading: decksLoading } = useDecks();
+  const { equipped } = useShop();
+  const equippedBuddy = equipped['study_buddy'];
   const [index, setIndex] = useState(0);
   const [navigating, setNavigating] = useState(false);
   // 1 = navigating forward (new card enters from right), -1 = backward (from left)
@@ -434,6 +437,8 @@ export default function Study({ deckId, onBack }: StudyProps) {
           onDone={handleBack}
         />
       )}
+
+      {equippedBuddy && <StudyBuddy buddyKey={equippedBuddy} reaction="idle" />}
     </Box>
   );
 }

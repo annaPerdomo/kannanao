@@ -19,6 +19,8 @@ import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { CelebrationScreen } from './CelebrationScreen';
 import { RoundTransition } from './RoundTransition';
+import { StudyBuddy, type BuddyReaction } from '@/components/StudyBuddy';
+import { useShop } from '@/hooks/useShop';
 
 interface MatchModeProps {
   cards: Flashcard[];
@@ -68,6 +70,10 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
 
   // Totals across all rounds
   const [totalTime, setTotalTime] = useState(0);
+
+  const { equipped } = useShop();
+  const equippedBuddy = equipped['study_buddy'];
+  const [buddyReaction, setBuddyReaction] = useState<BuddyReaction>('idle');
 
   const { startSession, recordAnswer, endSession } = useProgress();
   const { triggerXpEarned } = useXpAnimation();
@@ -141,6 +147,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
 
     if (selected.cardId === tile.cardId && selected.side !== tile.side) {
       // Correct match
+      setBuddyReaction('correct');
       setMatched((prev) => new Set([...prev, tile.cardId]));
       correctCountRef.current += 1;
       totalAnsweredRef.current += 1;
@@ -156,6 +163,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
       }
     } else {
       // Wrong match — mark both cards as struggled
+      setBuddyReaction('wrong');
       setWrong(tile.id);
       totalAnsweredRef.current += 1;
       queue.reportResult(selected.cardId, false);
@@ -331,6 +339,8 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
           Quit &amp; Save Progress
         </Button>
       </Box>
+
+      {equippedBuddy && <StudyBuddy buddyKey={equippedBuddy} reaction={buddyReaction} />}
     </Box>
   );
 }

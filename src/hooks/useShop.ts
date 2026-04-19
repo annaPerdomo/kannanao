@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { sb } from '@/lib/supabase';
-import type { ShopItem, CardBorderStyle, CelebTheme, UserPurchase, UserEquipped } from '@/types/shop';
+import type { ShopItem, CardBorderStyle, CelebTheme, BuddyConfig, UserPurchase, UserEquipped } from '@/types/shop';
 
 // ─── Shop catalog ────────────────────────────────────────────────────────────
 
@@ -31,12 +31,19 @@ export const SHOP_ITEMS: ShopItem[] = [
   { key: 'border_dragon',     name: 'Dragon Scale',    description: 'Fiery red & gold with blazing glow',           category: 'card_border', price: 12000, preview: 'linear-gradient(135deg, #8B0000, #FF4500, #FFD700)', emoji: '🐉' },
 
   // ── Celebrations ──
-  { key: 'celeb_hearts',       name: 'Heart Burst',     description: 'Fill the screen with cascading hearts!',        category: 'celebration', price: 200,  emoji: '💖' },
-  { key: 'celeb_stars',        name: 'Star Shower',     description: 'A golden rain of twinkling stars',              category: 'celebration', price: 500,  emoji: '⭐' },
-  { key: 'celeb_bunnies',      name: 'Bunny Parade',    description: 'Adorable bunnies hop across your screen',       category: 'celebration', price: 1000, emoji: '🐰' },
-  { key: 'celeb_rainbow',      name: 'Rainbow Pop',     description: 'Explode with all the colors of the rainbow',    category: 'celebration', price: 2000, emoji: '🌈' },
-  { key: 'celeb_sparkle_pink', name: 'Sparkle Pink',    description: 'Dreamy pink sparkles and glitter cascade',      category: 'celebration', price: 3500, emoji: '✨' },
-  { key: 'celeb_galaxy',       name: 'Galaxy Burst',    description: 'Deep space fireworks with cosmic shimmer',      category: 'celebration', price: 5000, emoji: '🌌' },
+  { key: 'celeb_hearts',       name: 'Heart Burst',     description: 'Fill the screen with cascading hearts!',        category: 'celebration', price: 2000,  emoji: '💖' },
+  { key: 'celeb_stars',        name: 'Star Shower',     description: 'A golden rain of twinkling stars',              category: 'celebration', price: 5000,  emoji: '⭐' },
+  { key: 'celeb_bunnies',      name: 'Bunny Parade',    description: 'Adorable bunnies hop across your screen',       category: 'celebration', price: 12000, emoji: '🐰' },
+  { key: 'celeb_rainbow',      name: 'Rainbow Pop',     description: 'Explode with all the colors of the rainbow',    category: 'celebration', price: 25000, emoji: '🌈' },
+  { key: 'celeb_sparkle_pink', name: 'Sparkle Pink',    description: 'Dreamy pink sparkles and glitter cascade',      category: 'celebration', price: 40000, emoji: '✨' },
+  { key: 'celeb_galaxy',       name: 'Galaxy Burst',    description: 'Deep space fireworks with cosmic shimmer',      category: 'celebration', price: 60000, emoji: '🌌' },
+
+  // ── Study Buddies ──
+  { key: 'buddy_bunny',    name: 'Bunny',     description: 'An adorable bunny hopping with encouragement', category: 'study_buddy', price: 8000,   emoji: '🐰' },
+  { key: 'buddy_penguin',  name: 'Penguin',   description: 'A cool penguin who loves learning!',           category: 'study_buddy', price: 20000,  emoji: '🐧' },
+  { key: 'buddy_panda',    name: 'Panda',     description: 'A gentle panda with wise study vibes',         category: 'study_buddy', price: 40000,  emoji: '🐼' },
+  { key: 'buddy_fox',      name: 'Fox',       description: 'A clever fox that keeps you sharp!',           category: 'study_buddy', price: 65000,  emoji: '🦊' },
+  { key: 'buddy_pink_cat', name: 'Pink Cat',  description: 'A cheerful pink kitty that cheers you on!',   category: 'study_buddy', price: 100000, emoji: '🐱' },
 
   // ── Coming Soon ──
   { key: 'theme_cottagecore', name: 'Cottagecore',     description: 'Cozy countryside warmth — coming soon!',        category: 'theme',       price: 0, preview: '#D2B48C', emoji: '🧸', comingSoon: true },
@@ -92,6 +99,15 @@ export const CELEBRATION_THEMES: Record<string, CelebTheme> = {
   celeb_rainbow:      { colors: ['#FF6B6B', '#FFA500', '#FFD700', '#4ADE80', '#38BDF8', '#818CF8'], emojis: ['🌈', '🎨', '🦋', '🌊', '🌟'] },
   celeb_sparkle_pink: { colors: ['#FF69B4', '#FF1493', '#C084FC', '#F472B6', '#FB7185'], emojis: ['✨', '💖', '🌸', '🦩', '💅'] },
   celeb_galaxy:       { colors: ['#6B21A8', '#4338CA', '#0EA5E9', '#818CF8', '#C084FC'], emojis: ['🌌', '🪐', '⭐', '🚀', '💫'] },
+};
+
+/** Map buddy item key → config with emoji and reaction text */
+export const BUDDY_CONFIG: Record<string, BuddyConfig> = {
+  buddy_pink_cat: { emoji: '🐱', reactions: { correct: 'Nyaa~ Perfect!', wrong: 'Mew… try again!', idle: '♪ zzZ~' } },
+  buddy_bunny:    { emoji: '🐰', reactions: { correct: 'Hop hop hooray!', wrong: 'Oops, one more time!', idle: '~munches carrot~' } },
+  buddy_penguin:  { emoji: '🐧', reactions: { correct: 'Cool! Nailed it!', wrong: 'Brrr, not quite…', idle: '~waddles~' } },
+  buddy_panda:    { emoji: '🐼', reactions: { correct: 'Bamboo-tiful!', wrong: 'Hmm, keep going!', idle: '~noms bamboo~' } },
+  buddy_fox:      { emoji: '🦊', reactions: { correct: 'Clever answer!', wrong: 'Almost, think again!', idle: '~curls up~' } },
 };
 
 /** Map theme item key → ColorScheme value used by the app */

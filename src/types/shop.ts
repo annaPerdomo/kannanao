@@ -1,6 +1,6 @@
 import type { SxProps, Theme } from '@mui/material/styles';
 
-export type ShopCategory = 'theme' | 'card_border' | 'celebration';
+export type ShopCategory = 'theme' | 'card_border' | 'celebration' | 'study_buddy';
 
 export interface CelebTheme {
   colors: string[];
@@ -16,6 +16,17 @@ export interface ShopItem {
   preview?: string;
   emoji: string;
   comingSoon?: boolean;
+}
+
+export interface BuddyReactions {
+  correct: string;
+  wrong: string;
+  idle: string;
+}
+
+export interface BuddyConfig {
+  emoji: string;
+  reactions: BuddyReactions;
 }
 
 export interface CardBorderStyle {

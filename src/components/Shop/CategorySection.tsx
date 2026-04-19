@@ -3,10 +3,14 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
 import { alpha } from '@mui/material/styles';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { CUTE_FONT } from '@/theme';
 import type { ShopItem } from '@/types/shop';
 import { ShopItemCard } from './ShopItemCard';
+
+const OVERVIEW_COUNT = 4;
 
 export function CategorySection({
   title,
@@ -21,6 +25,8 @@ export function CategorySection({
   brandColor,
   expanded,
   compact,
+  overview,
+  onSeeAll,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -34,7 +40,11 @@ export function CategorySection({
   brandColor: string;
   expanded?: boolean;
   compact?: boolean;
+  overview?: boolean;
+  onSeeAll?: () => void;
 }) {
+  const displayItems = overview ? items.filter((i) => !i.comingSoon).slice(0, OVERVIEW_COUNT) : items;
+
   return (
     <Paper
       elevation={0}
@@ -48,8 +58,8 @@ export function CategorySection({
     >
       <Box
         sx={{
-          px: 2.5,
-          py: 1.5,
+          px: 2,
+          py: 1.25,
           borderBottom: `1px solid ${alpha(brandColor, 0.15)}`,
           display: 'flex',
           alignItems: 'center',
@@ -71,32 +81,34 @@ export function CategorySection({
 
       <Box
         sx={{
-          p: { xs: 1.5, sm: 2 },
+          p: overview ? { xs: 1, sm: 1.25 } : { xs: 1.5, sm: 2 },
           display: 'grid',
-          gridTemplateColumns: compact
-            ? {
-                xs: 'repeat(2, 1fr)',
-                sm: 'repeat(2, 1fr)',
-                md: 'repeat(2, 1fr)',
-                lg: 'repeat(3, 1fr)',
-              }
-            : expanded
+          gridTemplateColumns: overview
+            ? 'repeat(2, 1fr)'
+            : compact
               ? {
                   xs: 'repeat(2, 1fr)',
-                  sm: 'repeat(3, 1fr)',
-                  md: 'repeat(5, 1fr)',
-                  lg: 'repeat(6, 1fr)',
+                  sm: 'repeat(2, 1fr)',
+                  md: 'repeat(2, 1fr)',
+                  lg: 'repeat(3, 1fr)',
                 }
-              : {
-                  xs: 'repeat(2, 1fr)',
-                  sm: 'repeat(3, 1fr)',
-                  md: 'repeat(4, 1fr)',
-                  lg: 'repeat(5, 1fr)',
-                },
-          gap: 1.5,
+              : expanded
+                ? {
+                    xs: 'repeat(2, 1fr)',
+                    sm: 'repeat(3, 1fr)',
+                    md: 'repeat(5, 1fr)',
+                    lg: 'repeat(6, 1fr)',
+                  }
+                : {
+                    xs: 'repeat(2, 1fr)',
+                    sm: 'repeat(3, 1fr)',
+                    md: 'repeat(4, 1fr)',
+                    lg: 'repeat(5, 1fr)',
+                  },
+          gap: overview ? 1 : 1.5,
         }}
       >
-        {items.map((item) => {
+        {displayItems.map((item) => {
           const owned = ownsItem(item.key);
           const slot = item.category;
           const isEquipped = equipped[slot] === item.key
@@ -112,10 +124,40 @@ export function CategorySection({
               onBuy={() => onBuy(item)}
               onEquip={() => onEquip(item)}
               onPreview={() => onPreview(item)}
+              mini={overview}
             />
           );
         })}
       </Box>
+
+      {onSeeAll && (
+        <Box
+          sx={{
+            px: 2,
+            py: 1,
+            borderTop: `1px solid ${alpha(brandColor, 0.12)}`,
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
+          <Button
+            onClick={onSeeAll}
+            size="small"
+            endIcon={<ArrowForwardIcon sx={{ fontSize: '0.85rem !important' }} />}
+            sx={{
+              fontFamily: CUTE_FONT,
+              fontSize: '0.78rem',
+              textTransform: 'none',
+              color: brandColor,
+              minWidth: 0,
+              px: 1.5,
+              borderRadius: 2,
+            }}
+          >
+            See all {items.filter((i) => !i.comingSoon).length} items
+          </Button>
+        </Box>
+      )}
     </Paper>
   );
 }
