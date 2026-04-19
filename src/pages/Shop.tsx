@@ -296,26 +296,37 @@ export default function Shop() {
 
       {/* Item sections */}
       {loading ? (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2.5, alignItems: 'start' }}>
-          {[0, 1].map((section) => (
-            <Paper key={section} elevation={0} sx={{ border: `1.5px solid ${alpha(brand[300], 0.2)}`, borderRadius: 3, overflow: 'hidden', bgcolor: alpha(brand[50], 0.3) }}>
-              <Box sx={{ px: 2.5, py: 1.5, borderBottom: `1px solid ${alpha(brand[300], 0.1)}` }}>
-                <Skeleton width={100} height={24} />
+        <Box sx={{
+          maxWidth: 1200,
+          mx: 'auto',
+          width: '100%',
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: `repeat(${categories.length}, 1fr)` },
+          gap: 2,
+          alignItems: 'start',
+        }}>
+          {categories.map((cat) => (
+            <Paper key={cat.key} elevation={0} sx={{ border: `1.5px solid ${alpha(brand[300], 0.2)}`, borderRadius: 3, overflow: 'hidden', bgcolor: alpha(brand[50], 0.3) }}>
+              <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${alpha(brand[300], 0.1)}`, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Skeleton variant="circular" width={20} height={20} />
+                <Skeleton width={80} height={22} />
               </Box>
-              <Box sx={{ p: 2, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1.5 }}>
+              <Box sx={{ p: 1.5, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}>
                 {[0, 1, 2, 3].map((item) => (
-                  <Box key={item} sx={{ borderRadius: 3, overflow: 'hidden' }}>
-                    <Skeleton variant="rounded" height={90} sx={{ borderRadius: '12px 12px 0 0' }} />
-                    <Box sx={{ p: 1.25 }}>
-                      <Skeleton width="60%" height={16} />
-                      <Skeleton width="80%" height={12} sx={{ mt: 0.5 }} />
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                        <Skeleton width={40} height={20} />
-                        <Skeleton variant="rounded" width={50} height={24} sx={{ borderRadius: 2 }} />
+                  <Box key={item} sx={{ borderRadius: 2.5, overflow: 'hidden', bgcolor: alpha(brand[50], 0.5), border: `1px solid ${alpha(brand[300], 0.15)}` }}>
+                    <Skeleton variant="rounded" height={65} sx={{ borderRadius: 0 }} />
+                    <Box sx={{ p: 0.75 }}>
+                      <Skeleton width="65%" height={14} />
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.5 }}>
+                        <Skeleton width={30} height={16} />
+                        <Skeleton variant="rounded" width={38} height={20} sx={{ borderRadius: 1.5 }} />
                       </Box>
                     </Box>
                   </Box>
                 ))}
+              </Box>
+              <Box sx={{ px: 2, pb: 1.5, pt: 0.5 }}>
+                <Skeleton width={90} height={16} />
               </Box>
             </Paper>
           ))}
@@ -327,7 +338,7 @@ export default function Shop() {
             mx: 'auto',
             width: '100%',
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' },
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: `repeat(${categories.length}, 1fr)` },
             gap: 2,
             alignItems: 'start',
           }}

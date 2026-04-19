@@ -132,6 +132,26 @@ export function ShopItemCard({
         },
       }}
     >
+      {isEquipped && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: mini ? -6 : -8,
+            right: mini ? -6 : -8,
+            bgcolor: '#fff',
+            borderRadius: '50%',
+            width: mini ? 20 : 26,
+            height: mini ? 20 : 26,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: `0 2px 8px ${alpha(brand[400], 0.3)}`,
+            zIndex: 2,
+          }}
+        >
+          <CheckCircleIcon sx={{ fontSize: mini ? '0.85rem' : '1.1rem', color: brand[500] }} />
+        </Box>
+      )}
       {/* Preview area */}
       <Box
         sx={{
@@ -160,25 +180,6 @@ export function ShopItemCard({
           <BorderCardPreview borderKey={item.key} />
         )}
 
-        {isEquipped && (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: mini ? 3 : 6,
-              right: mini ? 3 : 6,
-              bgcolor: '#fff',
-              borderRadius: '50%',
-              width: mini ? 18 : 22,
-              height: mini ? 18 : 22,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: `0 2px 8px ${alpha(brand[400], 0.3)}`,
-            }}
-          >
-            <CheckCircleIcon sx={{ fontSize: mini ? '0.75rem' : '0.9rem', color: brand[500] }} />
-          </Box>
-        )}
         {!owned && !canAfford && item.price > 0 && !mini && (
           <Box
             sx={{

@@ -39,7 +39,7 @@ export const SHOP_ITEMS: ShopItem[] = [
   { key: 'celeb_galaxy',       name: 'Galaxy Burst',    description: 'Deep space fireworks with cosmic shimmer',      category: 'celebration', price: 60000, emoji: '🌌' },
 
   // ── Study Buddies ──
-  { key: 'buddy_bunny',    name: 'Bunny',     description: 'An adorable bunny hopping with encouragement', category: 'study_buddy', price: 8000,   emoji: '🐰' },
+  { key: 'buddy_bunny',    name: 'Bunny',     description: 'An adorable bunny hopping with encouragement', category: 'study_buddy', price: 10000,   emoji: '🐰' },
   { key: 'buddy_penguin',  name: 'Penguin',   description: 'A cool penguin who loves learning!',           category: 'study_buddy', price: 20000,  emoji: '🐧' },
   { key: 'buddy_panda',    name: 'Panda',     description: 'A gentle panda with wise study vibes',         category: 'study_buddy', price: 40000,  emoji: '🐼' },
   { key: 'buddy_fox',      name: 'Fox',       description: 'A clever fox that keeps you sharp!',           category: 'study_buddy', price: 65000,  emoji: '🦊' },

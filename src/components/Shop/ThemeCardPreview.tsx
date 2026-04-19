@@ -1,6 +1,7 @@
 'use client';
 
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
 import { THEME_COLORS } from './constants';
 
@@ -15,29 +16,41 @@ export function ThemeCardPreview({ themeKey }: { themeKey: string }) {
           width: '80%',
           maxWidth: 120,
           bgcolor: colors.bg,
-          borderRadius: '6px',
+          borderRadius: '8px',
           overflow: 'hidden',
           border: `1.5px solid ${alpha(colors.brand, 0.3)}`,
           boxShadow: `0 2px 8px ${alpha(colors.brand, 0.2)}`,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
         }}
       >
-        <Box sx={{ height: 10, background: `linear-gradient(135deg, ${colors.brand}, ${colors.accent})` }} />
+        {/* Image area with gradient */}
         <Box sx={{
-          mx: '4px', mt: '3px', height: 32, borderRadius: '3px',
-          background: `linear-gradient(135deg, ${alpha(colors.brand, 0.15)}, ${alpha(colors.accent, 0.15)})`,
-          border: `1px solid ${alpha(colors.brand, 0.15)}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: '100%',
+          height: 28,
+          background: `linear-gradient(135deg, ${alpha(colors.brand, 0.25)}, ${alpha(colors.accent, 0.25)})`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}>
-          <Box sx={{ width: 14, height: 14, borderRadius: '50%', bgcolor: alpha(colors.brand, 0.25) }} />
+          <Typography sx={{ fontSize: '1rem', lineHeight: 1, color: alpha(colors.text, 0.7) }}>
+            桜
+          </Typography>
         </Box>
-        <Box sx={{ px: '5px', py: '3px' }}>
-          <Box sx={{ height: 5, width: '60%', bgcolor: alpha(colors.text, 0.6), borderRadius: 1 }} />
-          <Box sx={{ height: 3, width: '80%', bgcolor: alpha(colors.text, 0.2), borderRadius: 1, mt: '2px' }} />
+
+        {/* Card content */}
+        <Box sx={{ width: '100%', px: '6px', py: '4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <Box sx={{ height: 4, width: '40%', bgcolor: alpha(colors.text, 0.55), borderRadius: 1, alignSelf: 'center' }} />
+          <Box sx={{ height: 3, width: '60%', bgcolor: alpha(colors.text, 0.2), borderRadius: 1, alignSelf: 'center' }} />
         </Box>
-        <Box sx={{ mx: '4px', mb: '4px', p: '3px', bgcolor: alpha(colors.brand, 0.06), borderRadius: '3px', border: `1px solid ${alpha(colors.brand, 0.1)}` }}>
-          <Box sx={{ height: 3, width: '50%', bgcolor: alpha(colors.brand, 0.4), borderRadius: 1 }} />
-          <Box sx={{ height: 3, width: '70%', bgcolor: alpha(colors.text, 0.15), borderRadius: 1, mt: '2px' }} />
-        </Box>
+
+        {/* Bottom accent bar */}
+        <Box sx={{
+          width: '100%',
+          height: 5,
+          background: `linear-gradient(90deg, ${colors.brand}, ${colors.accent})`,
+        }} />
       </Box>
     </Box>
   );
