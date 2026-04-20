@@ -24,7 +24,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useProgress } from '@/hooks/useProgress';
 import { useShop, SHOP_ITEMS, THEME_KEY_TO_SCHEME } from '@/hooks/useShop';
 import { useColorScheme } from '@/contexts/ThemeContext';
-import { FONT_CUTE, type ColorScheme } from '@/theme';
+import { FONT_CUTE, LAYOUT, type ColorScheme } from '@/theme';
 import type { ShopCategory, ShopItem } from '@/types/shop';
 import { float, celebrate } from '@/components/Shop/animations';
 import { Sparkles } from '@/components/Shop/Sparkles';
@@ -142,9 +142,9 @@ export default function Shop() {
   return (
     <Box
       sx={{
-        maxWidth: 1440,
+        maxWidth: LAYOUT.contentMaxWidth,
         mx: 'auto',
-        px: { xs: 1.5, sm: 3, lg: 6 },
+        px: LAYOUT.pagePx,
         py: { xs: 2, sm: 4 },
         display: 'flex',
         flexDirection: 'column',
@@ -155,7 +155,7 @@ export default function Shop() {
       <CoinBurst active={showCoinBurst} />
 
       {/* Hero header */}
-      <Box sx={{ maxWidth: 1200, mx: 'auto', width: '100%', position: 'relative' }}>
+      <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto', width: '100%', position: 'relative' }}>
         <Sparkles color={brand[300]} count={10} />
         <PageHeader
           emoji="🎁"
@@ -215,7 +215,7 @@ export default function Shop() {
       {/* Category filter buttons */}
       <Box
         sx={{
-          maxWidth: 1200,
+          maxWidth: LAYOUT.headerMaxWidth,
           mx: 'auto',
           width: '100%',
           display: 'flex',
@@ -230,7 +230,7 @@ export default function Shop() {
       </Box>
 
       {/* Alerts */}
-      <Box sx={{ maxWidth: 1200, mx: 'auto', width: '100%', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto', width: '100%', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         {successMsg && (
           <Alert severity="success" onClose={() => setSuccessMsg(null)} sx={{ animation: `${celebrate} 0.4s ease-out`, fontSize: '0.88rem', fontWeight: 700 }}>
             {successMsg}

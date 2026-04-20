@@ -120,12 +120,12 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
             {localCard.imageUrl ? (
               <Box
                 component="img" src={localCard.imageUrl} alt={localCard.word}
-                sx={{ width: "100%", height: 185, objectFit: "cover", display: "block" }}
+                sx={{ width: "100%", height: 120, objectFit: "cover", display: "block" }}
               />
             ) : (
               <Box
                 sx={{
-                  width: "100%", height: 185,
+                  width: "100%", height: 120,
                   background: `linear-gradient(135deg, ${brand[100]} 0%, ${accent[100]} 50%, ${brand[100]} 100%)`,
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}
@@ -140,7 +140,7 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
               <Typography
                 sx={{
-                  fontSize: "1.05rem", fontWeight: 900, color: "#111",
+                  fontSize: "0.85rem", fontWeight: 900, color: "#111",
                   lineHeight: 1.15, letterSpacing: "-0.01em",
                 }}
               >
@@ -167,7 +167,7 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
               <Typography sx={{ fontSize: "0.54rem", fontWeight: 900, color: typeAccent, letterSpacing: "0.12em", textTransform: "uppercase", mb: "3px", fontFamily: FONT_MONO }}>
                 ★ Meaning
               </Typography>
-              <Typography sx={{ fontSize: "0.78rem", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.3 }}>
+              <Typography sx={{ fontSize: "0.7rem", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.3 }}>
                 {localCard.meaning}
               </Typography>
             </Box>
@@ -189,11 +189,11 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                   </Typography>
                   <SpeakButton text={stripFurigana(localCard.example_jp)} iconSize="0.75rem" />
                 </Box>
-                <Typography component="div" sx={{ fontSize: "0.85rem", color: accent[700], lineHeight: 1.6, fontWeight: 600 }}>
+                <Typography component="div" sx={{ fontSize: "0.75rem", color: accent[700], lineHeight: 1.5, fontWeight: 600 }}>
                   <FuriganaText text={localCard.example_jp} showFurigana={localCard.mainViewMode === "hiragana"} />
                 </Typography>
                 {localCard.example_en && (
-                  <Typography sx={{ fontSize: "0.78rem", color: "#555", mt: "4px", fontStyle: "italic", lineHeight: 1.5 }}>
+                  <Typography sx={{ fontSize: "0.7rem", color: "#555", mt: "3px", fontStyle: "italic", lineHeight: 1.4 }}>
                     {localCard.example_en}
                   </Typography>
                 )}

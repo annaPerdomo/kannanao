@@ -18,6 +18,13 @@ export const FONT_CUTE = '"Fredoka", sans-serif';
 /** @deprecated Use FONT_CUTE instead */
 export const CUTE_FONT = FONT_CUTE;
 
+export const LAYOUT = {
+  contentMaxWidth: 1440,
+  headerMaxWidth: 1100,
+  narrowMaxWidth: 900,
+  pagePx: { xs: 2, sm: 4, lg: 6 } as const,
+} as const;
+
 declare module '@mui/material/styles' {
   interface Palette {
     /** Primary brand color scale (50–900) — changes per scheme */

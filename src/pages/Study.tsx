@@ -18,7 +18,7 @@ import { useCards } from "@/hooks/useCards";
 import { useDecks } from "@/hooks/useDecks";
 import { useProgress } from "@/hooks/useProgress";
 import { useShop, CELEBRATION_THEMES } from "@/hooks/useShop";
-import { FONT_MONO } from '@/theme';
+import { FONT_MONO, LAYOUT } from '@/theme';
 import { StudyBuddy } from "@/components/StudyBuddy";
 
 interface StudyProps {
@@ -259,7 +259,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
 
   if (cardsLoading || decksLoading) {
     return (
-      <Box sx={{ maxWidth: 800, mx: "auto", px: { xs: 2, sm: 4 }, py: 6 }}>
+      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: "auto", px: LAYOUT.pagePx, py: 6 }}>
         <Loading message="Loading your decks…" />
       </Box>
     );
@@ -267,7 +267,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
 
   if (cards.length === 0) {
     return (
-      <Box sx={{ maxWidth: 800, mx: "auto", px: { xs: 2, sm: 4 }, py: 6, textAlign: "center" }}>
+      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: "auto", px: LAYOUT.pagePx, py: 6, textAlign: "center" }}>
         <Button startIcon={<ArrowBackIcon />} onClick={handleBack}>
           Back to Deck
         </Button>
@@ -281,9 +281,9 @@ export default function Study({ deckId, onBack }: StudyProps) {
   return (
     <Box
       sx={{
-        maxWidth: 800,
+        maxWidth: LAYOUT.narrowMaxWidth,
         mx: "auto",
-        px: { xs: 2, sm: 4 },
+        px: LAYOUT.pagePx,
         py: 4,
         display: "flex",
         flexDirection: "column",

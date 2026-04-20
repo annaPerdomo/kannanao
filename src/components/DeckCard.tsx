@@ -114,7 +114,7 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
             mx: '8px', mt: '6px', borderRadius: '6px', overflow: 'hidden',
             border: '2px solid rgba(0,0,0,0.14)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.1)',
             background: `linear-gradient(135deg, ${brand[100]} 0%, ${accent[100]} 50%, ${brand[100]} 100%)`,
-            height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center',
             position: 'relative',
           }}>
             <Box sx={{ position: 'absolute', top: 8, right: 12, fontSize: '0.65rem', color: alpha(brand[300], 0.6), pointerEvents: 'none' }}>✦</Box>
@@ -122,7 +122,7 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
             <Box
               className="emoji-art"
               sx={{
-                fontSize: '3.6rem', lineHeight: 1, display: 'block',
+                fontSize: '2.8rem', lineHeight: 1, display: 'block',
                 transition: 'transform 0.35s cubic-bezier(.34,1.56,.64,1)',
                 userSelect: 'none',
               }}

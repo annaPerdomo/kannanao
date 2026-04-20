@@ -13,7 +13,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SchoolIcon from '@mui/icons-material/School';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import { FONT_DISPLAY } from '@/theme';
+import { FONT_DISPLAY, LAYOUT } from '@/theme';
 import { PageHeader } from '@/components/PageHeader';
 import { useProgress, ACHIEVEMENTS } from '@/hooks/useProgress';
 import { StatCard } from '@/components/Stats/StatCard';
@@ -38,9 +38,9 @@ export default function Stats() {
   return (
     <Box
       sx={{
-        maxWidth: 860,
+        maxWidth: LAYOUT.narrowMaxWidth,
         mx: 'auto',
-        px: { xs: 2, sm: 4 },
+        px: LAYOUT.pagePx,
         py: 4,
         display: 'flex',
         flexDirection: 'column',

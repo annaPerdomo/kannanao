@@ -20,6 +20,7 @@ import { fetchImage } from "@/services/api";
 import type { GeneratedCard } from "@/types/flashcard";
 import { useAuth } from "@/contexts/AuthContext";
 import type { PracticeMode } from "@/types/app";
+import { LAYOUT } from "@/theme";
 
 interface DeckProps {
   deckId: string;
@@ -76,7 +77,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
 
   if (decksLoading || cardsLoading) {
     return (
-      <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 4 }, py: 4 }}>
+      <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: "auto", px: { xs: 1.5, sm: 2, lg: 3 }, py: 4 }}>
         <Loading message="Loading cards…" />
       </Box>
     );
@@ -92,17 +93,19 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   }
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 4 }, py: { xs: 3, sm: 4 } }}>
-      <DeckHeader
-        deck={deck}
-        cardCount={cards.length}
-        onBack={onBack}
-        onRename={renameDeck}
-        onPin={pinDeck}
-        onEmbedOpen={() => setEmbedOpen(true)}
-      />
+    <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: "auto", px: { xs: 1.5, sm: 2, lg: 3 }, py: { xs: 3, sm: 4 } }}>
+      <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: "auto" }}>
+        <DeckHeader
+          deck={deck}
+          cardCount={cards.length}
+          onBack={onBack}
+          onRename={renameDeck}
+          onPin={pinDeck}
+          onEmbedOpen={() => setEmbedOpen(true)}
+        />
 
-      <PracticeHero cardCount={cards.length} onStudy={onStudy} onPractice={onPractice} />
+        <PracticeHero cardCount={cards.length} onStudy={onStudy} onPractice={onPractice} />
+      </Box>
 
       {/* ── CARDS ── */}
       <Box>
@@ -147,8 +150,8 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(3, 1fr)", lg: "repeat(4, 1fr)" },
-              gap: 1.75,
+              gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(3, 1fr)", md: "repeat(4, 1fr)", lg: "repeat(5, 1fr)" },
+              gap: 1.5,
             }}
           >
             {cards.map((card) => (

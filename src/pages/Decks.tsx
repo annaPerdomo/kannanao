@@ -16,6 +16,7 @@ import { CreateDeckDialog } from '@/components/CreateDeckDialog';
 import { PageHeader } from '@/components/PageHeader';
 import { useDecks } from '@/hooks/useDecks';
 import { useAuth } from '@/contexts/AuthContext';
+import { LAYOUT } from '@/theme';
 
 export default function Decks() {
   const theme = useTheme();
@@ -33,7 +34,7 @@ export default function Decks() {
 
   if (loading) {
     return (
-      <Box sx={{ maxWidth: 1100, mx: 'auto', px: { xs: 2, sm: 4 }, py: 6 }}>
+      <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
         <Loading message="Loading your decks…" />
       </Box>
     );
@@ -43,8 +44,9 @@ export default function Decks() {
   const unpinnedDecks = decks.filter((d) => !d.pinned);
 
   return (
-    <Box sx={{ maxWidth: 1100, mx: 'auto', px: { xs: 2, sm: 4 }, py: { xs: 3, sm: 5 } }}>
+    <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 5 } }}>
 
+      <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
       <PageHeader
         emoji="📚"
         title="Your Decks"
@@ -72,6 +74,7 @@ export default function Decks() {
           </Button>
         }
       />
+      </Box>
 
       {decks.length === 0 ? (
         <Box

@@ -5,7 +5,7 @@ import Link from '@mui/material/Link';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import { useRouter, usePathname } from 'next/navigation';
-import { FONT_DISPLAY } from '@/theme';
+import { FONT_DISPLAY, LAYOUT } from '@/theme';
 
 export function Footer() {
   const theme = useTheme();
@@ -25,12 +25,12 @@ export function Footer() {
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         py: 2.5,
-        px: { xs: 2, sm: 4 },
+        px: LAYOUT.pagePx,
       }}
     >
       <Box
         sx={{
-          maxWidth: 1100,
+          maxWidth: LAYOUT.headerMaxWidth,
           mx: 'auto',
           display: 'flex',
           flexDirection: { xs: 'column', sm: 'row' },

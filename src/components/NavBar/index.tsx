@@ -11,7 +11,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import { FONT_CUTE } from '@/theme';
+import { FONT_CUTE, LAYOUT } from '@/theme';
 import { useProgress } from '@/hooks/useProgress';
 import { useAuth } from '@/contexts/AuthContext';
 import { XpDisplay } from './XpDisplay';
@@ -89,10 +89,10 @@ export function NavBar() {
       >
         <Toolbar
           sx={{
-            maxWidth: 1100,
+            maxWidth: LAYOUT.headerMaxWidth,
             width: '100%',
             mx: 'auto',
-            px: { xs: 2, sm: 4 },
+            px: LAYOUT.pagePx,
             minHeight: { xs: 56, sm: 64 },
             gap: 1.5,
           }}

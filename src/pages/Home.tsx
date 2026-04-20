@@ -23,6 +23,7 @@ import { useProgress, xpProgressInLevel } from '@/hooks/useProgress';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { SHOP_ITEMS, useShop } from '@/hooks/useShop';
 import { PageHeader } from '@/components/PageHeader';
+import { LAYOUT } from '@/theme';
 
 function getGreeting(name: string): { text: string; emoji: string } {
   const h = new Date().getHours();
@@ -147,17 +148,17 @@ export default function Home() {
 
   if (loading) {
     return (
-      <Box sx={{ maxWidth: 1440, mx: 'auto', px: { xs: 2, sm: 4, lg: 6 }, py: 6 }}>
+      <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: { xs: 1.5, sm: 2, lg: 3 }, py: 6 }}>
         <Loading message="Loading your decks…" />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ maxWidth: 1440, mx: 'auto', px: { xs: 2, sm: 4, lg: 6 }, py: { xs: 3, sm: 5 } }}>
+    <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: { xs: 1.5, sm: 2, lg: 3 }, py: { xs: 3, sm: 5 } }}>
       {/* Welcome banner — constrained to match other page headers */}
       {progress && (
-        <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+        <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
           <WelcomeBanner
             username={username}
             level={progress.level}

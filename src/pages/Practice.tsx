@@ -7,6 +7,7 @@ import { FillMode } from '@/components/Practice/FillMode';
 import { RecallMode } from '@/components/Practice/RecallMode';
 import { BatchPicker } from '@/components/Practice/BatchPicker';
 import { PageHeader } from '@/components/PageHeader';
+import { LAYOUT } from '@/theme';
 import { useCards } from '@/hooks/useCards';
 import { Loading } from '@/components/Loading';
 import type { PracticeMode } from '@/types/app';
@@ -32,7 +33,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
 
   if (loading) {
     return (
-      <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
+      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <Loading message="Loading your practice session…" />
       </Box>
     );
@@ -40,7 +41,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
 
   if (cards.length < 2) {
     return (
-      <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
+      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} compact mb={3} />
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography color="text.secondary">
@@ -55,7 +56,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   const needsPicker = cards.length > BATCH_PICKER_THRESHOLD;
   if (needsPicker && batchSize === null) {
     return (
-      <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
+      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} compact mb={3} />
         <BatchPicker totalCards={cards.length} mode={mode} onSelect={setBatchSize} onBack={onBack} />
       </Box>
@@ -65,7 +66,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   const effectiveBatchSize = batchSize ?? cards.length;
 
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
+    <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
       <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} compact mb={3} />
 
       {mode === 'match' && (
