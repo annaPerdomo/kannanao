@@ -41,6 +41,7 @@ Next.js 15 app with React 19, MUI 7, Supabase, TypeScript.
 - Extract data/logic into `src/hooks/`; use Context API to avoid prop drilling
 - Performance: `React.memo()`, `useCallback` for stable refs, `useMemo` for expensive computations
 - Composition over inheritance
+- Use `<StyledDialog>` (`@/components/StyledDialog`) for all modal/dialog UI. It provides the shared gradient header, close button, rounded borders, and theme-aware colors. Pass `title`, `subtitle`, `icon`, `actions`, and children. Only skip it for highly custom layouts (e.g. Shop purchase confirmation).
 
 ## MUI & Styling
 

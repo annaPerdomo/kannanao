@@ -6,10 +6,6 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
@@ -23,11 +19,12 @@ import { alpha } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { Loading } from '@/components/Loading';
 import { PageHeroHeader } from '@/components/PageHeroHeader';
+import { StyledDialog } from '@/components/StyledDialog';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
 
 export default function OhanashikaiHome() {
   const theme = useTheme();
-  const { brand, accent, surfaces } = theme.palette;
+  const { brand, accent } = theme.palette;
   const router = useRouter();
 
   const { ohanashikais, loading, createOhanashikai, deleteOhanashikai, pinOhanashikai } = useOhanashikais();
@@ -206,59 +203,53 @@ export default function OhanashikaiHome() {
       )}
 
       {/* ── Create Dialog ── */}
-      <Dialog
+      <StyledDialog
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        slotProps={{
-          paper: {
-            sx: {
-              borderRadius: 4,
-              border: `1.5px solid ${alpha(brand[300], 0.35)}`,
-              boxShadow: `0 8px 40px ${alpha(brand[700], 0.14)}`,
-              bgcolor: surfaces.overlay,
-              minWidth: { xs: 320, sm: 400 },
-            },
-          },
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 800, color: brand[700], pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-          New Speech
-        </DialogTitle>
-        <DialogContent sx={{ pt: '8px !important' }}>
-          <Stack spacing={2}>
-            <TextField
-              autoFocus
-              fullWidth
-              size="small"
-              label="Speech title"
-              placeholder="e.g. Spring Ohanashikai 2026"
-              value={titleVal}
-              onChange={(e) => setTitleVal(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') void handleCreate(); }}
-            />
-            <TextField
-              fullWidth
-              size="small"
-              label="Description (optional)"
-              placeholder="e.g. School speech festival"
-              value={descVal}
-              onChange={(e) => setDescVal(e.target.value)}
-            />
+        title="🎤 New Speech"
+        subtitle="Give your speech a name to get started"
+        closeDisabled={creating}
+        actions={
+          <Stack direction="row" spacing={1}>
+            <Button onClick={() => setCreateOpen(false)} sx={{ color: 'text.secondary', textTransform: 'none' }}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleCreate}
+              disabled={creating || !titleVal.trim()}
+              sx={{
+                bgcolor: brand[700], color: '#fff', textTransform: 'none', borderRadius: 6, px: 2.5,
+                '&:hover': { bgcolor: brand[800] },
+                '&:disabled': { bgcolor: alpha(brand[700], 0.2), color: alpha('#fff', 0.5) },
+              }}
+            >
+              {creating ? 'Creating…' : 'Create ✨'}
+            </Button>
           </Stack>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
-          <Button onClick={() => setCreateOpen(false)} sx={{ color: 'text.secondary' }}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleCreate}
-            disabled={creating || !titleVal.trim()}
-          >
-            {creating ? 'Creating…' : 'Create ✨'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        }
+      >
+        <Stack spacing={2}>
+          <TextField
+            autoFocus
+            fullWidth
+            size="small"
+            label="Speech title"
+            placeholder="e.g. Spring Ohanashikai 2026"
+            value={titleVal}
+            onChange={(e) => setTitleVal(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') void handleCreate(); }}
+          />
+          <TextField
+            fullWidth
+            size="small"
+            label="Description (optional)"
+            placeholder="e.g. School speech festival"
+            value={descVal}
+            onChange={(e) => setDescVal(e.target.value)}
+          />
+        </Stack>
+      </StyledDialog>
     </Box>
   );
 }
