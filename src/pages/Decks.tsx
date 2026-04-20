@@ -13,7 +13,7 @@ import { Loading } from '@/components/Loading';
 import { DeckCard } from '@/components/DeckCard';
 import { ShareDeckDialog } from '@/components/ShareDeckDialog';
 import { CreateDeckDialog } from '@/components/CreateDeckDialog';
-import { PageHeroHeader } from '@/components/PageHeroHeader';
+import { PageHeader } from '@/components/PageHeader';
 import { useDecks } from '@/hooks/useDecks';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -45,7 +45,7 @@ export default function Decks() {
   return (
     <Box sx={{ maxWidth: 1100, mx: 'auto', px: { xs: 2, sm: 4 }, py: { xs: 3, sm: 5 } }}>
 
-      <PageHeroHeader
+      <PageHeader
         emoji="📚"
         title="Your Decks"
         subtitle="Flashcard Collections"

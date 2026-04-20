@@ -14,6 +14,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SchoolIcon from '@mui/icons-material/School';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { FONT_DISPLAY } from '@/theme';
+import { PageHeader } from '@/components/PageHeader';
 import { useProgress, ACHIEVEMENTS } from '@/hooks/useProgress';
 import { StatCard } from '@/components/Stats/StatCard';
 import { LevelBar } from '@/components/Stats/LevelBar';
@@ -46,21 +47,12 @@ export default function Stats() {
         gap: 3,
       }}
     >
-      <Box>
-        <Typography
-          sx={{
-            fontFamily: FONT_DISPLAY,
-            fontSize: { xs: '1.6rem', sm: '2rem' },
-            color: brand[700],
-            lineHeight: 1.1,
-          }}
-        >
-          🌸 My Progress
-        </Typography>
-        <Typography sx={{ fontSize: '0.88rem', color: 'text.secondary', mt: 0.5 }}>
-          Keep studying every day to build your streak!
-        </Typography>
-      </Box>
+      <PageHeader
+        emoji="🌸"
+        title="My Progress"
+        subtitle="Keep studying every day to build your streak!"
+        mb={3}
+      />
 
       {loading ? (
         <Skeleton variant="rounded" height={96} sx={{ borderRadius: 4 }} />

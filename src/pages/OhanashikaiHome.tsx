@@ -18,7 +18,7 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { Loading } from '@/components/Loading';
-import { PageHeroHeader } from '@/components/PageHeroHeader';
+import { PageHeader } from '@/components/PageHeader';
 import { StyledDialog } from '@/components/StyledDialog';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
 
@@ -60,7 +60,7 @@ export default function OhanashikaiHome() {
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', px: { xs: 2, sm: 4 }, py: { xs: 3, sm: 5 } }}>
 
-      <PageHeroHeader
+      <PageHeader
         emoji="🎤"
         title="お話し会"
         subtitle="Speech Practice"

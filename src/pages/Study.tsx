@@ -13,7 +13,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 import { Flashcard } from "@/components/Flashcard";
 import { Loading } from "@/components/Loading";
-import { SectionHeader } from "@/components/SectionHeader";
+import { PageHeader } from "@/components/PageHeader";
 import { useCards } from "@/hooks/useCards";
 import { useDecks } from "@/hooks/useDecks";
 import { useProgress } from "@/hooks/useProgress";
@@ -290,11 +290,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
       }}
     >
       {/* Header — same container as Practice page */}
-      <SectionHeader
-        title={deckName}
-        onBack={handleBack}
-        badge={`${cards.length} cards`}
-      />
+      <PageHeader title={deckName} onBack={handleBack} badge={`${cards.length} cards`} compact mb={3} />
 
       {/* Progress bar */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>

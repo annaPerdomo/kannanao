@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import { SectionHeader } from '@/components/SectionHeader';
+import { PageHeader } from '@/components/PageHeader';
 import { Loading } from '@/components/Loading';
 import { ReadThroughMode } from '@/components/Ohanashikai/ReadThroughMode';
 import { LineRecallMode } from '@/components/Ohanashikai/LineRecallMode';
@@ -53,10 +53,12 @@ export default function OhanashikaiPracticePage({
 
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
-      <SectionHeader
+      <PageHeader
         title={MODE_LABELS[practiceMode]}
         onBack={() => router.push(backUrl)}
         badge={item?.title ?? ''}
+        compact
+        mb={3}
       />
 
       {lines.length === 0 ? (

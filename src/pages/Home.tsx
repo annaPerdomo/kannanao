@@ -19,10 +19,10 @@ import { useDecks } from '@/hooks/useDecks';
 import { useAuth } from '@/contexts/AuthContext';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import NewReleasesIcon from '@mui/icons-material/NewReleases';
 import { useProgress, xpProgressInLevel } from '@/hooks/useProgress';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { SHOP_ITEMS, useShop } from '@/hooks/useShop';
+import { PageHeader } from '@/components/PageHeader';
 
 function getGreeting(name: string): { text: string; emoji: string } {
   const h = new Date().getHours();
@@ -41,65 +41,17 @@ function WelcomeBanner({ username, level, streak, totalXp, spendableXp, ownedIte
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
-  // Find the cheapest shop item the user hasn't bought yet
   const nextItem = SHOP_ITEMS
     .filter((i) => i.price > 0 && !ownedItemKeys.includes(i.key))
     .sort((a, b) => a.price - b.price)[0] ?? null;
   const xpNeeded = nextItem ? Math.max(0, nextItem.price - spendableXp) : 0;
 
   return (
-    <Box
-      sx={{
-        position: 'relative',
-        overflow: 'hidden',
-        borderRadius: 4,
-        mb: 4,
-        p: { xs: 3, sm: 3.5 },
-        background: `linear-gradient(135deg, ${brand[200]} 0%, ${accent[100]} 45%, ${brand[100]} 100%)`,
-        border: `2px solid ${alpha(brand[300], 0.35)}`,
-        boxShadow: `0 8px 40px ${alpha(brand[300], 0.28)}, 0 2px 12px ${alpha(accent[300], 0.18)}`,
-      }}
-    >
-      {/* Decorative blobs */}
-      <Box sx={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: `radial-gradient(circle, ${alpha(brand[300], 0.35)} 0%, transparent 70%)`, pointerEvents: 'none' }} />
-      <Box sx={{ position: 'absolute', bottom: -25, left: '35%', width: 110, height: 110, borderRadius: '50%', background: `radial-gradient(circle, ${alpha(accent[300], 0.3)} 0%, transparent 70%)`, pointerEvents: 'none' }} />
-      <Box sx={{ position: 'absolute', top: '10%', left: -20, width: 80, height: 80, borderRadius: '50%', background: `radial-gradient(circle, ${alpha(accent[200], 0.25)} 0%, transparent 70%)`, pointerEvents: 'none' }} />
-
-      <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} justifyContent="space-between" spacing={2}>
-        <Box>
-          <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
-            <Typography sx={{ fontSize: { xs: '1.6rem', sm: '1.9rem' } }}>{emoji}</Typography>
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: 800,
-                fontSize: { xs: '1.4rem', sm: '1.7rem' },
-                background: `linear-gradient(90deg, ${brand[700]} 0%, ${accent[500]} 100%)`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              {text}
-            </Typography>
-          </Stack>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <Chip
-              label={`✨ Level ${level}`}
-              size="small"
-              sx={{ fontWeight: 800, bgcolor: alpha(brand[100], 0.9), color: brand[700], border: `1.5px solid ${alpha(brand[400], 0.4)}` }}
-            />
-            {streak > 0 && (
-              <Chip
-                label={`🔥 ${streak} day streak`}
-                size="small"
-                sx={{ fontWeight: 800, bgcolor: 'rgba(251,191,36,0.15)', color: '#B45309', border: '1.5px solid rgba(251,191,36,0.35)' }}
-              />
-            )}
-          </Stack>
-        </Box>
-
-        {/* XP bar + Shop teaser — clickable */}
+    <PageHeader
+      emoji={emoji}
+      title={text}
+      gradientTitle
+      endContent={
         <Box
           role="button"
           onClick={onShopClick}
@@ -109,9 +61,7 @@ function WelcomeBanner({ username, level, streak, totalXp, spendableXp, ownedIte
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             '& *': { pointerEvents: 'none' },
-            '&:hover': {
-              opacity: 0.85,
-            },
+            '&:hover': { opacity: 0.85 },
             '@keyframes shimmer': {
               '0%': { backgroundPosition: '-200% 0' },
               '100%': { backgroundPosition: '200% 0' },
@@ -142,7 +92,6 @@ function WelcomeBanner({ username, level, streak, totalXp, spendableXp, ownedIte
             {needed - current} XP to level {level + 1} 🚀
           </Typography>
 
-          {/* Spendable XP + next unlock teaser */}
           <Box sx={{ mt: 1, pt: 1, borderTop: `1px solid ${alpha(brand[300], 0.25)}` }}>
             <Stack direction="row" alignItems="center" spacing={0.5} mb={nextItem ? 0.5 : 0}>
               <AutoAwesomeIcon sx={{ fontSize: '0.85rem', color: accent[500] }} />
@@ -152,22 +101,29 @@ function WelcomeBanner({ username, level, streak, totalXp, spendableXp, ownedIte
               <StorefrontIcon sx={{ fontSize: '0.85rem', color: brand[500], ml: 'auto' }} />
             </Stack>
             {nextItem && xpNeeded > 0 && (
-              <Typography
-                variant="caption"
-                sx={{
-                  color: brand[500],
-                  fontWeight: 600,
-                  fontSize: '0.7rem',
-                  display: 'block',
-                }}
-              >
+              <Typography variant="caption" sx={{ color: brand[500], fontWeight: 600, fontSize: '0.7rem', display: 'block' }}>
                 {nextItem.emoji} {nextItem.name} — {xpNeeded.toLocaleString()} more XP!
               </Typography>
             )}
           </Box>
         </Box>
+      }
+    >
+      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+        <Chip
+          label={`✨ Level ${level}`}
+          size="small"
+          sx={{ fontWeight: 800, bgcolor: alpha(brand[100], 0.9), color: brand[700], border: `1.5px solid ${alpha(brand[400], 0.4)}` }}
+        />
+        {streak > 0 && (
+          <Chip
+            label={`🔥 ${streak} day streak`}
+            size="small"
+            sx={{ fontWeight: 800, bgcolor: 'rgba(251,191,36,0.15)', color: '#B45309', border: '1.5px solid rgba(251,191,36,0.35)' }}
+          />
+        )}
       </Stack>
-    </Box>
+    </PageHeader>
   );
 }
 
@@ -191,213 +147,201 @@ export default function Home() {
 
   if (loading) {
     return (
-      <Box sx={{ maxWidth: 1100, mx: 'auto', px: { xs: 2, sm: 4 }, py: 6 }}>
+      <Box sx={{ maxWidth: 1440, mx: 'auto', px: { xs: 2, sm: 4, lg: 6 }, py: 6 }}>
         <Loading message="Loading your decks…" />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ maxWidth: 1100, mx: 'auto', px: { xs: 2, sm: 4 }, py: { xs: 3, sm: 5 } }}>
-      {/* Welcome banner — full width */}
+    <Box sx={{ maxWidth: 1440, mx: 'auto', px: { xs: 2, sm: 4, lg: 6 }, py: { xs: 3, sm: 5 } }}>
+      {/* Welcome banner — constrained to match other page headers */}
       {progress && (
-        <WelcomeBanner
-          username={username}
-          level={progress.level}
-          streak={progress.streak_days}
-          totalXp={progress.total_xp}
-          spendableXp={spendableXp}
-          ownedItemKeys={ownedItemKeys}
-          onShopClick={() => router.push('/shop')}
-        />
+        <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+          <WelcomeBanner
+            username={username}
+            level={progress.level}
+            streak={progress.streak_days}
+            totalXp={progress.total_xp}
+            spendableXp={spendableXp}
+            ownedItemKeys={ownedItemKeys}
+            onShopClick={() => router.push('/shop')}
+          />
+        </Box>
       )}
 
-      {/* To-Do Section — centered with side decorations */}
-      <Box sx={{ mb: 5, position: 'relative' }}>
-        {/* Left decorations */}
-        <Box sx={{
-          display: { xs: 'none', lg: 'block' },
-          position: 'absolute', left: 0, top: 0, bottom: 0,
-          width: 'calc((100% - 860px) / 2)',
-          pointerEvents: 'none',
-          '@keyframes float-a': { '0%,100%': { transform: 'translateY(0px) rotate(-8deg)' }, '50%': { transform: 'translateY(-10px) rotate(-4deg)' } },
-          '@keyframes float-b': { '0%,100%': { transform: 'translateY(0px) rotate(6deg)' }, '50%': { transform: 'translateY(-14px) rotate(10deg)' } },
-          '@keyframes float-c': { '0%,100%': { transform: 'translateY(0px) rotate(0deg)' }, '50%': { transform: 'translateY(-8px) rotate(-6deg)' } },
-        }}>
-          <Typography sx={{ position: 'absolute', top: '8%',  left: '55%', fontSize: '2rem',   animation: 'float-a 4.2s ease-in-out infinite' }}>🌸</Typography>
-          <Typography sx={{ position: 'absolute', top: '28%', left: '20%', fontSize: '1.4rem', animation: 'float-b 5.1s ease-in-out infinite' }}>✨</Typography>
-          <Typography sx={{ position: 'absolute', top: '50%', left: '65%', fontSize: '1.6rem', animation: 'float-c 3.8s ease-in-out infinite' }}>🌷</Typography>
-          <Typography sx={{ position: 'absolute', top: '70%', left: '30%', fontSize: '1.2rem', animation: 'float-a 4.8s ease-in-out infinite 0.5s' }}>💫</Typography>
-          <Typography sx={{ position: 'absolute', top: '88%', left: '60%', fontSize: '1.5rem', animation: 'float-b 5.5s ease-in-out infinite 1s' }}>🌺</Typography>
-        </Box>
-
-        {/* Right decorations */}
-        <Box sx={{
-          display: { xs: 'none', lg: 'block' },
-          position: 'absolute', right: 0, top: 0, bottom: 0,
-          width: 'calc((100% - 860px) / 2)',
-          pointerEvents: 'none',
-        }}>
-          <Typography sx={{ position: 'absolute', top: '5%',  right: '50%', fontSize: '1.5rem', animation: 'float-b 4.6s ease-in-out infinite 0.3s' }}>🦋</Typography>
-          <Typography sx={{ position: 'absolute', top: '25%', right: '20%', fontSize: '1.8rem', animation: 'float-c 5.0s ease-in-out infinite' }}>🌟</Typography>
-          <Typography sx={{ position: 'absolute', top: '48%', right: '55%', fontSize: '1.3rem', animation: 'float-a 3.9s ease-in-out infinite 0.7s' }}>💕</Typography>
-          <Typography sx={{ position: 'absolute', top: '68%', right: '25%', fontSize: '1.6rem', animation: 'float-b 4.3s ease-in-out infinite' }}>🌸</Typography>
-          <Typography sx={{ position: 'absolute', top: '85%', right: '50%', fontSize: '1.2rem', animation: 'float-c 5.2s ease-in-out infinite 1.2s' }}>✨</Typography>
-        </Box>
-
-        <Box sx={{ maxWidth: 860, mx: 'auto', width: '100%' }}>
+      {/* ── Main content: two-column on md+, stacked on mobile ── */}
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        spacing={{ xs: 3, md: 4 }}
+        alignItems="flex-start"
+      >
+        {/* Left column — To-Do List */}
+        <Box sx={{ width: { xs: '100%', md: '50%', lg: '45%' }, flexShrink: 0 }}>
           <TodoList onXpEarned={addBonusXp} />
         </Box>
-      </Box>
 
-      {/* ── Pinned Decks Section ── */}
-      <Box sx={{ mb: 5 }}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
-          <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 800 }}>
-            📚 Decks
-          </Typography>
-          <Button
-            size="small"
-            variant="text"
-            onClick={() => router.push('/decks')}
-            sx={{ fontSize: '0.78rem', color: 'text.secondary' }}
-          >
-            Manage all decks →
-          </Button>
-        </Stack>
+        {/* Right column — Pinned Decks & Speeches */}
+        <Box sx={{ width: { xs: '100%', md: '50%', lg: '55%' }, minWidth: 0 }}>
+          {/* ── Pinned Decks ── */}
+          <Box sx={{ mb: 3 }}>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.5}>
+              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800 }}>
+                📚 Decks
+              </Typography>
+              <Button
+                size="small"
+                variant="text"
+                onClick={() => router.push('/decks')}
+                sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
+              >
+                All decks →
+              </Button>
+            </Stack>
 
-        {pinnedDecks.length === 0 ? (
-          <Box
-            onClick={() => router.push('/decks')}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2.5,
-              p: { xs: 2.5, sm: 3 },
-              borderRadius: 3,
-              border: '1.5px dashed rgba(249,168,212,0.4)',
-              bgcolor: 'rgba(255,243,249,0.7)',
-              cursor: 'pointer',
-              transition: 'all 0.18s ease',
-              '&:hover': { bgcolor: 'rgba(255,236,246,0.9)', borderColor: 'rgba(244,114,182,0.55)' },
-            }}
-          >
-            <Typography sx={{ fontSize: '2.2rem', flexShrink: 0 }}>📌</Typography>
-            <Box>
-              <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                {decks.length === 0 ? 'Create your first deck!' : 'Pin a deck to see it here'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {decks.length === 0
-                  ? 'Head to Decks to start building flashcards ✨'
-                  : 'Open Decks and tap the pin icon on any deck ✨'}
-              </Typography>
-            </Box>
-          </Box>
-        ) : (
-          <Grid container spacing={2}>
-            {pinnedDecks.map((deck) => {
-              const owned = isOwner(deck);
-              return (
-                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={deck.id}>
-                  <DeckCard
-                    deck={deck}
-                    onOpen={(id) => router.push(`/deck/${id}?from=home`)}
-                    onDelete={owned ? deleteDeck : () => {}}
-                    onShare={owned ? (id) => { setShareDeckId(id); setShareDeckName(deck.name); } : undefined}
-                    onEditEmoji={owned ? updateDeckEmoji : undefined}
-                    onPin={pinDeck}
-                    isOwner={owned}
-                  />
-                </Grid>
-              );
-            })}
-          </Grid>
-        )}
-      </Box>
-
-      {/* ── Pinned Speeches Section ── */}
-      <Box>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
-          <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 800 }}>
-            ✨ Speech Practice
-          </Typography>
-          <Button
-            size="small"
-            variant="text"
-            onClick={() => router.push('/ohanashikai')}
-            sx={{ fontSize: '0.78rem', color: 'text.secondary' }}
-          >
-            Manage speeches →
-          </Button>
-        </Stack>
-
-        {pinnedSpeeches.length === 0 ? (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2.5,
-              p: { xs: 2.5, sm: 3 },
-              borderRadius: 3,
-              border: '1.5px dashed rgba(249,168,212,0.4)',
-              bgcolor: 'rgba(255,243,249,0.7)',
-              cursor: 'pointer',
-              transition: 'all 0.18s ease',
-              '&:hover': { bgcolor: 'rgba(255,236,246,0.9)', borderColor: 'rgba(244,114,182,0.55)' },
-            }}
-            onClick={() => router.push('/ohanashikai')}
-          >
-            <Typography sx={{ fontSize: '2.2rem', flexShrink: 0 }}>🌸</Typography>
-            <Box>
-              <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                {ohanashikais.length === 0 ? 'Practice your お話し会 speech!' : 'Pin a speech to see it here'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {ohanashikais.length === 0
-                  ? 'Add your lines and start memorizing — tap to get started ✨'
-                  : 'Open Speeches and tap the pin icon on any speech ✨'}
-              </Typography>
-            </Box>
-          </Box>
-        ) : (
-          <Stack spacing={1.5}>
-            {pinnedSpeeches.map((item, i) => {
-              const cardEmojis = ['🌸', '✨', '🌟', '💫', '🎀'];
-              const emoji = cardEmojis[i % cardEmojis.length];
-              return (
-                <Box
-                  key={item.id}
-                  onClick={() => router.push(`/ohanashikai/${item.id}?from=home`)}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 2,
-                    p: { xs: 1.75, sm: 2 },
-                    borderRadius: 3,
-                    bgcolor: '#FFFFFF',
-                    border: '1.5px solid rgba(249,168,212,0.3)',
-                    boxShadow: '0 2px 10px rgba(249,168,212,0.1)',
-                    transition: 'all 0.18s ease',
-                    cursor: 'pointer',
-                    '&:hover': { boxShadow: '0 5px 20px rgba(249,168,212,0.2)', transform: 'translateY(-1px)' },
-                  }}
-                >
-                  <Typography sx={{ fontSize: '1.4rem', flexShrink: 0 }}>{emoji}</Typography>
-                  <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                    <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.2 }} noWrap>
-                      {item.title}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {item.lineCount} line{item.lineCount !== 1 ? 's' : ''}
-                    </Typography>
-                  </Box>
+            {pinnedDecks.length === 0 ? (
+              <Box
+                onClick={() => router.push('/decks')}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  p: 2,
+                  borderRadius: 3,
+                  border: (t) => `1.5px dashed ${alpha(t.palette.brand[300], 0.4)}`,
+                  bgcolor: (t) => alpha(t.palette.brand[50], 0.7),
+                  cursor: 'pointer',
+                  transition: 'all 0.18s ease',
+                  '&:hover': {
+                    bgcolor: (t) => alpha(t.palette.brand[100], 0.9),
+                    borderColor: (t) => alpha(t.palette.brand[400], 0.55),
+                  },
+                }}
+              >
+                <Typography sx={{ fontSize: '1.8rem', flexShrink: 0 }}>📌</Typography>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                    {decks.length === 0 ? 'Create your first deck!' : 'Pin a deck to see it here'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {decks.length === 0
+                      ? 'Head to Decks to start building flashcards ✨'
+                      : 'Tap the pin icon on any deck ✨'}
+                  </Typography>
                 </Box>
-              );
-            })}
-          </Stack>
-        )}
-      </Box>
+              </Box>
+            ) : (
+              <Grid container spacing={1.5}>
+                {pinnedDecks.map((deck) => {
+                  const owned = isOwner(deck);
+                  return (
+                    <Grid size={{ xs: 12, sm: 6 }} key={deck.id}>
+                      <DeckCard
+                        deck={deck}
+                        onOpen={(id) => router.push(`/deck/${id}?from=home`)}
+                        onDelete={owned ? deleteDeck : () => {}}
+                        onShare={owned ? (id) => { setShareDeckId(id); setShareDeckName(deck.name); } : undefined}
+                        onEditEmoji={owned ? updateDeckEmoji : undefined}
+                        onPin={pinDeck}
+                        isOwner={owned}
+                      />
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            )}
+          </Box>
+
+          {/* ── Pinned Speeches ── */}
+          <Box>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.5}>
+              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800 }}>
+                ✨ Speech Practice
+              </Typography>
+              <Button
+                size="small"
+                variant="text"
+                onClick={() => router.push('/ohanashikai')}
+                sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
+              >
+                All speeches →
+              </Button>
+            </Stack>
+
+            {pinnedSpeeches.length === 0 ? (
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  p: 2,
+                  borderRadius: 3,
+                  border: (t) => `1.5px dashed ${alpha(t.palette.brand[300], 0.4)}`,
+                  bgcolor: (t) => alpha(t.palette.brand[50], 0.7),
+                  cursor: 'pointer',
+                  transition: 'all 0.18s ease',
+                  '&:hover': {
+                    bgcolor: (t) => alpha(t.palette.brand[100], 0.9),
+                    borderColor: (t) => alpha(t.palette.brand[400], 0.55),
+                  },
+                }}
+                onClick={() => router.push('/ohanashikai')}
+              >
+                <Typography sx={{ fontSize: '1.8rem', flexShrink: 0 }}>🌸</Typography>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                    {ohanashikais.length === 0 ? 'Practice your お話し会 speech!' : 'Pin a speech to see it here'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {ohanashikais.length === 0
+                      ? 'Add your lines and start memorizing ✨'
+                      : 'Tap the pin icon on any speech ✨'}
+                  </Typography>
+                </Box>
+              </Box>
+            ) : (
+              <Stack spacing={1}>
+                {pinnedSpeeches.map((item, i) => {
+                  const cardEmojis = ['🌸', '✨', '🌟', '💫', '🎀'];
+                  const emoji = cardEmojis[i % cardEmojis.length];
+                  return (
+                    <Box
+                      key={item.id}
+                      onClick={() => router.push(`/ohanashikai/${item.id}?from=home`)}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        p: 1.5,
+                        borderRadius: 3,
+                        bgcolor: 'background.paper',
+                        border: (t) => `1.5px solid ${alpha(t.palette.brand[300], 0.3)}`,
+                        boxShadow: (t) => `0 2px 10px ${alpha(t.palette.brand[300], 0.1)}`,
+                        transition: 'all 0.18s ease',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          boxShadow: (t) => `0 5px 20px ${alpha(t.palette.brand[300], 0.2)}`,
+                          transform: 'translateY(-1px)',
+                        },
+                      }}
+                    >
+                      <Typography sx={{ fontSize: '1.2rem', flexShrink: 0 }}>{emoji}</Typography>
+                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.2 }} noWrap>
+                          {item.title}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                          {item.lineCount} line{item.lineCount !== 1 ? 's' : ''}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            )}
+          </Box>
+        </Box>
+      </Stack>
 
       <ShareDeckDialog
         open={shareDeckId !== null}

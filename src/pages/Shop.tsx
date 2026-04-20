@@ -36,6 +36,7 @@ import { CelebrationPreviewModal } from '@/components/Shop/CelebrationPreviewMod
 import { CategoryButton } from '@/components/Shop/CategoryButton';
 import { CategorySection } from '@/components/Shop/CategorySection';
 import { BuddyPreviewModal } from '@/components/Shop/BuddyPreviewModal';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function Shop() {
   const theme = useTheme();
@@ -141,7 +142,9 @@ export default function Shop() {
   return (
     <Box
       sx={{
-        px: { xs: 1.5, sm: 3 },
+        maxWidth: 1440,
+        mx: 'auto',
+        px: { xs: 1.5, sm: 3, lg: 6 },
         py: { xs: 2, sm: 4 },
         display: 'flex',
         flexDirection: 'column',
@@ -152,116 +155,62 @@ export default function Shop() {
       <CoinBurst active={showCoinBurst} />
 
       {/* Hero header */}
-      <Paper
-        elevation={0}
-        sx={{
-          maxWidth: 1200,
-          mx: 'auto',
-          width: '100%',
-          position: 'relative',
-          overflow: 'hidden',
-          background: `linear-gradient(145deg, ${alpha(brand[100], 0.9)} 0%, ${alpha(brand[200], 0.6)} 50%, ${alpha(accent[100], 0.4)} 100%)`,
-          border: `2px solid ${alpha(brand[300], 0.35)}`,
-          borderRadius: 4,
-          p: { xs: 2.5, sm: 4 },
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          alignItems: 'center',
-          gap: { xs: 2, sm: 3 },
-        }}
-      >
+      <Box sx={{ maxWidth: 1200, mx: 'auto', width: '100%', position: 'relative' }}>
         <Sparkles color={brand[300]} count={10} />
-
-        <Box
-          sx={{
-            position: 'relative',
-            width: { xs: 80, sm: 110 },
-            height: { xs: 80, sm: 110 },
-            flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            animation: `${float} 4s ease-in-out infinite`,
-          }}
-        >
-          <Box sx={{ fontSize: { xs: '3.5rem', sm: '5rem' }, lineHeight: 1, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.1))' }}>
-            🎁
-          </Box>
-        </Box>
-
-        <Box sx={{ textAlign: { xs: 'center', sm: 'left' }, position: 'relative', zIndex: 1 }}>
-          <Typography
-            sx={{
-              fontFamily: FONT_CUTE,
-              fontSize: { xs: '2rem', sm: '2.8rem' },
-              color: brand[700],
-              lineHeight: 1,
-              letterSpacing: '-0.02em',
-            }}
-          >
-            Shop
-          </Typography>
-          <Typography
-            sx={{
-              fontFamily: FONT_CUTE,
-              fontSize: { xs: '0.82rem', sm: '0.95rem' },
-              color: 'text.secondary',
-              mt: 0.5,
-              fontWeight: 500,
-            }}
-          >
-            Earn XP by studying and unlock treasures!
-          </Typography>
-        </Box>
-
-        <Box sx={{ ml: { sm: 'auto' }, position: 'relative', zIndex: 1 }}>
-          {loading ? (
-            <Skeleton variant="rounded" width={120} height={60} sx={{ borderRadius: 3 }} />
-          ) : progress ? (
-            <Box
-              sx={{
-                background: `linear-gradient(135deg, ${alpha('#FFF', 0.9)}, ${alpha(brand[50], 0.9)})`,
-                border: `2px solid ${alpha(brand[300], 0.4)}`,
-                borderRadius: 3,
-                px: 3,
-                py: 1.5,
-                textAlign: 'center',
-                backdropFilter: 'blur(8px)',
-                boxShadow: `0 4px 20px ${alpha(brand[400], 0.15)}`,
-              }}
-            >
-              <Typography
+        <PageHeader
+          emoji="🎁"
+          title="Shop"
+          subtitle="Earn XP by studying and unlock treasures!"
+          mb={0}
+          endContent={
+            loading ? (
+              <Skeleton variant="rounded" width={120} height={60} sx={{ borderRadius: 3 }} />
+            ) : progress ? (
+              <Box
                 sx={{
-                  fontSize: '0.65rem',
-                  fontWeight: 700,
-                  color: 'text.secondary',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
+                  background: `linear-gradient(135deg, ${alpha('#FFF', 0.9)}, ${alpha(brand[50], 0.9)})`,
+                  border: `2px solid ${alpha(brand[300], 0.4)}`,
+                  borderRadius: 3,
+                  px: 3,
+                  py: 1.5,
+                  textAlign: 'center',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: `0 4px 20px ${alpha(brand[400], 0.15)}`,
                 }}
               >
-                Your XP
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-                <AutoAwesomeIcon sx={{ fontSize: '1rem', color: '#D97706' }} />
                 <Typography
                   sx={{
-                    fontFamily: FONT_CUTE,
-                    fontSize: { xs: '1.6rem', sm: '2rem' },
-                    color: '#D97706',
-                    lineHeight: 1,
+                    fontSize: '0.65rem',
                     fontWeight: 700,
+                    color: 'text.secondary',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
                   }}
                 >
-                  {spendableXp.toLocaleString()}
+                  Your XP
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                  <AutoAwesomeIcon sx={{ fontSize: '1rem', color: '#D97706' }} />
+                  <Typography
+                    sx={{
+                      fontFamily: FONT_CUTE,
+                      fontSize: { xs: '1.6rem', sm: '2rem' },
+                      color: '#D97706',
+                      lineHeight: 1,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {spendableXp.toLocaleString()}
+                  </Typography>
+                </Box>
+                <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary', mt: 0.25 }}>
+                  Level {progress.level}
                 </Typography>
               </Box>
-              <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary', mt: 0.25 }}>
-                Level {progress.level}
-              </Typography>
-            </Box>
-          ) : null}
-        </Box>
-      </Paper>
+            ) : null
+          }
+        />
+      </Box>
 
       {/* Category filter buttons */}
       <Box
@@ -297,8 +246,6 @@ export default function Shop() {
       {/* Item sections */}
       {loading ? (
         <Box sx={{
-          maxWidth: 1200,
-          mx: 'auto',
           width: '100%',
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: `repeat(${categories.length}, 1fr)` },
@@ -334,8 +281,6 @@ export default function Shop() {
       ) : activeCategory === 'all' ? (
         <Box
           sx={{
-            maxWidth: 1200,
-            mx: 'auto',
             width: '100%',
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: `repeat(${categories.length}, 1fr)` },
@@ -387,8 +332,6 @@ export default function Shop() {
         <Paper
           elevation={0}
           sx={{
-            maxWidth: 1200,
-            mx: 'auto',
             width: '100%',
             textAlign: 'center',
             py: 2,

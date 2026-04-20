@@ -13,7 +13,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
@@ -24,6 +23,7 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import StopIcon from '@mui/icons-material/Stop';
 import { Loading } from '@/components/Loading';
+import { PageHeader } from '@/components/PageHeader';
 import { stripFurigana } from '@/components/FuriganaText';
 import { Label } from '@/components/Deck';
 import { SpeechPracticeTiles, SpeechLineRow, BulkImportArea } from '@/components/OhanashikaiDetail';
@@ -114,34 +114,29 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', px: { xs: 2, sm: 4 }, py: { xs: 3, sm: 4 } }}>
       {/* Header */}
-      <Box sx={{ mb: 3, borderRadius: 3, overflow: 'hidden', bgcolor: '#FFFFFF', border: `1.5px solid ${alpha(brand[300], 0.35)}`, boxShadow: `0 2px 12px ${alpha(brand[300], 0.1)}` }}>
-        <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: `linear-gradient(180deg, ${brand[200]}, ${accent[300]})`, borderRadius: '3px 0 0 3px' }} />
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: { xs: 2.5, sm: 3 }, pl: { xs: 3.5, sm: 4 }, py: { xs: 2, sm: 2.5 }, position: 'relative' }}>
-          <IconButton onClick={onBack} size="small" sx={{ border: `1.5px solid ${alpha(brand[300], 0.45)}`, borderRadius: '9px', width: 32, height: 32, flexShrink: 0, color: brand[700], '&:hover': { bgcolor: brand[50], borderColor: brand[400] } }}>
-            <ArrowBackIcon sx={{ fontSize: 15 }} />
-          </IconButton>
-
-          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-            {renamingTitle ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <TextField value={titleVal} onChange={(e) => setTitleVal(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void commitRename(); if (e.key === 'Escape') setRenamingTitle(false); }} size="small" autoFocus sx={{ flexGrow: 1, '& .MuiOutlinedInput-root': { borderRadius: '9px', fontSize: '1.2rem', fontWeight: 700, color: brand[800] } }} />
-                <Tooltip title="Save"><IconButton size="small" onClick={commitRename} sx={{ width: 30, height: 30, borderRadius: '8px', bgcolor: brand[50] }}><CheckIcon sx={{ fontSize: 15 }} /></IconButton></Tooltip>
-                <Tooltip title="Cancel"><IconButton size="small" onClick={() => setRenamingTitle(false)} sx={{ width: 30, height: 30, borderRadius: '8px' }}><CloseIcon sx={{ fontSize: 15 }} /></IconButton></Tooltip>
-              </Box>
-            ) : (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                <Typography variant="h5" sx={{ color: brand[800], lineHeight: 1.1, fontWeight: 800 }}>{item?.title ?? 'Speech'}</Typography>
-                <Tooltip title="Rename"><IconButton size="small" onClick={startRename} sx={{ width: 24, height: 24, borderRadius: '7px', color: alpha(brand[700], 0.4), '&:hover': { bgcolor: brand[50], color: brand[700] } }}><EditIcon sx={{ fontSize: 12 }} /></IconButton></Tooltip>
-              </Box>
-            )}
-            {item?.description && !renamingTitle && <Typography variant="body2" sx={{ color: brand[500], mt: 0.25 }}>{item.description}</Typography>}
+      {renamingTitle ? (
+        <PageHeader onBack={onBack} title="" compact mb={3}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+            <TextField value={titleVal} onChange={(e) => setTitleVal(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void commitRename(); if (e.key === 'Escape') setRenamingTitle(false); }} size="small" autoFocus sx={{ flexGrow: 1, '& .MuiOutlinedInput-root': { borderRadius: '9px', fontSize: '1.2rem', fontWeight: 700, color: brand[800], bgcolor: alpha('#FFFFFF', 0.6) } }} />
+            <Tooltip title="Save"><IconButton size="small" onClick={commitRename} sx={{ width: 30, height: 30, borderRadius: '8px', bgcolor: alpha('#FFFFFF', 0.6), border: `1.5px solid ${alpha(brand[400], 0.4)}`, color: brand[700], '&:hover': { bgcolor: alpha('#FFFFFF', 0.8) } }}><CheckIcon sx={{ fontSize: 15 }} /></IconButton></Tooltip>
+            <Tooltip title="Cancel"><IconButton size="small" onClick={() => setRenamingTitle(false)} sx={{ width: 30, height: 30, borderRadius: '8px', bgcolor: alpha('#FFFFFF', 0.4), border: `1.5px solid ${alpha(brand[300], 0.3)}`, '&:hover': { bgcolor: alpha('#FFFFFF', 0.7) } }}><CloseIcon sx={{ fontSize: 15 }} /></IconButton></Tooltip>
           </Box>
-
-          {!renamingTitle && (
-            <Chip label={`${lines.length} line${lines.length !== 1 ? 's' : ''}`} size="small" sx={{ borderRadius: '8px', bgcolor: brand[50], border: `1.5px solid ${alpha(brand[400], 0.4)}`, color: brand[700], fontWeight: 800, fontSize: '0.7rem', flexShrink: 0 }} />
-          )}
-        </Box>
-      </Box>
+        </PageHeader>
+      ) : (
+        <PageHeader
+          onBack={onBack}
+          title={
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <Typography variant="h5" sx={{ color: brand[800], lineHeight: 1.1, fontWeight: 800 }}>{item?.title ?? 'Speech'}</Typography>
+              <Tooltip title="Rename"><IconButton size="small" onClick={startRename} sx={{ width: 24, height: 24, borderRadius: '7px', color: alpha(brand[700], 0.4), '&:hover': { bgcolor: alpha('#FFFFFF', 0.5), color: brand[700] } }}><EditIcon sx={{ fontSize: 12 }} /></IconButton></Tooltip>
+            </Box>
+          }
+          subtitle={item?.description ?? undefined}
+          badge={`${lines.length} line${lines.length !== 1 ? 's' : ''}`}
+          compact
+          mb={3}
+        />
+      )}
 
       <SpeechPracticeTiles canPractice={lines.length > 0} onPractice={onPractice} />
 
