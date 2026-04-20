@@ -13,7 +13,7 @@ export function Footer() {
   const router = useRouter();
   const pathname = usePathname();
 
-  if (pathname === '/login' || pathname === '/landing' || pathname === '/') return null;
+  if (pathname === '/login' || pathname === '/landing') return null;
 
   return (
     <Box
