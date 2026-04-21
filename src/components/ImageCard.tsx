@@ -61,16 +61,18 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
           },
         }}
       >
-        {/* Holographic rainbow sheen on hover */}
-        <Box
-          className="holo-sheen"
-          sx={{
-            position: "absolute", inset: 0, borderRadius: "14px",
-            background: "linear-gradient(115deg, transparent 0%, rgba(255,50,180,0.18) 20%, rgba(255,220,50,0.18) 35%, rgba(50,255,150,0.18) 50%, rgba(50,150,255,0.18) 65%, rgba(180,50,255,0.18) 80%, transparent 100%)",
-            opacity: 0, transition: "opacity 0.35s ease",
-            pointerEvents: "none", zIndex: 5, mixBlendMode: "screen",
-          }}
-        />
+        {/* Holographic rainbow sheen on hover — only with custom border */}
+        {hasCustomBorder && (
+          <Box
+            className="holo-sheen"
+            sx={{
+              position: "absolute", inset: 0, borderRadius: "14px",
+              background: "linear-gradient(115deg, transparent 0%, rgba(255,50,180,0.18) 20%, rgba(255,220,50,0.18) 35%, rgba(50,255,150,0.18) 50%, rgba(50,150,255,0.18) 65%, rgba(180,50,255,0.18) 80%, transparent 100%)",
+              opacity: 0, transition: "opacity 0.35s ease",
+              pointerEvents: "none", zIndex: 5, mixBlendMode: "screen",
+            }}
+          />
+        )}
 
         {/* Inner card */}
         <Box

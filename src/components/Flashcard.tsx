@@ -56,18 +56,7 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
     : `linear-gradient(135deg, ${brand[400]} 0%, ${brand[600]} 100%)`;
   const typeAccent = isKanji ? accent[400] : brand[400];
 
-  // Holographic foil rainbow border — anchored with brand colors so it respects the theme
-  const CARD_FRAME = `linear-gradient(145deg,
-    ${brand[300]}  0%,
-    #ffd700        10%,
-    ${accent[300]} 22%,
-    #7dd3fc        35%,
-    #6ee7b7        48%,
-    ${brand[400]}  60%,
-    #ffd700        72%,
-    ${accent[400]} 84%,
-    ${brand[300]}  100%
-  )`;
+  const CARD_FRAME = `linear-gradient(145deg, ${brand[100]} 0%, ${brand[300]} 25%, ${brand[50]} 50%, ${brand[400]} 75%, ${brand[100]} 100%)`;
 
   const hasCustomBorder = equippedBorder && Object.keys(equippedBorder).length > 0;
 
@@ -77,8 +66,6 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
     backfaceVisibility: 'hidden' as const,
     WebkitBackfaceVisibility: 'hidden' as const,
     background: hasCustomBorder ? (equippedBorder.background ?? brand[50]) : CARD_FRAME,
-    backgroundSize: hasCustomBorder ? undefined : '350% 350%',
-    animation: hasCustomBorder ? undefined : 'holoFrame 7s ease infinite',
     borderRadius: '20px',
     p: { xs: '5px', sm: '6px' },
     border: hasCustomBorder ? equippedBorder.border : undefined,
@@ -114,12 +101,6 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
         perspective: '1200px',
         userSelect: 'none',
         flexShrink: 0,
-        // Keyframe definitions (available to all descendants)
-        '@keyframes holoFrame': {
-          '0%':   { backgroundPosition: '0% 50%' },
-          '50%':  { backgroundPosition: '100% 50%' },
-          '100%': { backgroundPosition: '0% 50%' },
-        },
       }}
     >
       {/* Tilt wrapper — applies 3-D tilt from mouse position */}
