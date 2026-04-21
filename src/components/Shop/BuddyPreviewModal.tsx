@@ -54,7 +54,8 @@ export function BuddyPreviewModal({
   if (!config) return null;
 
   const currentPhase = DEMO_SEQUENCE[phase];
-  const reactionText = config.reactions[currentPhase];
+  const rawReaction = config.reactions[currentPhase];
+  const reactionText = Array.isArray(rawReaction) ? rawReaction[phase % rawReaction.length] : rawReaction;
 
   return (
     <Dialog

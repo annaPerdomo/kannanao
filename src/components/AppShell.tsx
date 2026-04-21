@@ -5,6 +5,7 @@ import { NavBar } from './NavBar';
 import { Footer } from './Footer';
 import { AuthGuard } from './AuthGuard';
 import { XpAnimationProvider } from '@/contexts/XpAnimationContext';
+import { GlobalBuddy } from './GlobalBuddy';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -19,6 +20,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <AuthGuard>{children}</AuthGuard>
       </Box>
       <Footer />
+      <GlobalBuddy />
     </XpAnimationProvider>
   );
 }

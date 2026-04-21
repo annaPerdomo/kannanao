@@ -8,7 +8,8 @@ import {
 } from './constants';
 import {
   ConfettiParticles, FireworkParticles, StarParticles,
-  BubbleParticles, EmojiRainParticles,
+  BubbleParticles, EmojiRainParticles, HeartParticles,
+  BunnyParticles, SparkleParticles,
 } from './Particles';
 
 export type { PracticeMode } from './constants';
@@ -22,18 +23,24 @@ export interface CelebrationScreenProps {
   onExit: () => void;
 }
 
+function RenderParticles({ theme, celebData, mode }: { theme: CelebTheme; celebData?: { colors: string[]; emojis: string[] }; mode: PracticeMode }) {
+  switch (theme) {
+    case 'hearts':    return <HeartParticles colors={celebData?.colors} />;
+    case 'bunnies':   return <BunnyParticles />;
+    case 'sparkle':   return <SparkleParticles colors={celebData?.colors} />;
+    case 'confetti':  return <ConfettiParticles colors={celebData?.colors} />;
+    case 'fireworks': return <FireworkParticles colors={celebData?.colors} />;
+    case 'stars':     return <StarParticles />;
+    case 'bubbles':   return <BubbleParticles colors={celebData?.colors} />;
+    case 'emojiRain': return <EmojiRainParticles mode={mode} emojis={celebData?.emojis} />;
+    default:          return <ConfettiParticles colors={celebData?.colors} />;
+  }
+}
+
 export function CelebParticleStage({ itemKey }: { itemKey: string }) {
   const celebData = CELEBRATION_THEMES[itemKey];
   const particleType: CelebTheme = CELEBRATION_KEY_TO_THEME[itemKey] ?? 'emojiRain';
-  return (
-    <>
-      {particleType === 'confetti'  && <ConfettiParticles  colors={celebData?.colors} />}
-      {particleType === 'fireworks' && <FireworkParticles  colors={celebData?.colors} />}
-      {particleType === 'stars'     && <StarParticles />}
-      {particleType === 'bubbles'   && <BubbleParticles    colors={celebData?.colors} />}
-      {particleType === 'emojiRain' && <EmojiRainParticles mode="recall" emojis={celebData?.emojis} />}
-    </>
-  );
+  return <RenderParticles theme={particleType} celebData={celebData} mode="recall" />;
 }
 
 export function CelebrationScreen({ heading, subheading, extra, mode, onExit }: CelebrationScreenProps) {
@@ -43,21 +50,28 @@ export function CelebrationScreen({ heading, subheading, extra, mode, onExit }: 
   const equippedKey = equipped['celebration'];
   const theme: CelebTheme = (equippedKey ? CELEBRATION_KEY_TO_THEME[equippedKey] : undefined) ?? randomTheme;
   const celebData = equippedKey ? CELEBRATION_THEMES[equippedKey] : undefined;
-  const cfg = THEME_CONFIGS[theme];
+  const cfg = THEME_CONFIGS[theme] ?? THEME_CONFIGS.confetti;
 
   return (
     <Box
       sx={{
-        position: 'relative', overflow: 'hidden', minHeight: 500, borderRadius: 4,
-        background: cfg.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        p: { xs: 3, sm: 5 },
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1400,
+        overflow: 'hidden',
+        background: cfg.bg,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: { xs: 2, sm: 5 },
+        animation: 'celebFadeIn 0.4s ease-out',
+        '@keyframes celebFadeIn': {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
       }}
     >
-      {theme === 'confetti'  && <ConfettiParticles  colors={celebData?.colors} />}
-      {theme === 'fireworks' && <FireworkParticles  colors={celebData?.colors} />}
-      {theme === 'stars'     && <StarParticles />}
-      {theme === 'bubbles'   && <BubbleParticles    colors={celebData?.colors} />}
-      {theme === 'emojiRain' && <EmojiRainParticles mode={mode} emojis={celebData?.emojis} />}
+      <RenderParticles theme={theme} celebData={celebData} mode={mode} />
 
       <Box
         sx={{

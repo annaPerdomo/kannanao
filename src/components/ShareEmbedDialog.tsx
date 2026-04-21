@@ -25,7 +25,7 @@ export function ShareEmbedDialog({
   open, onClose, deckId, deckName, isPublic, onPublicChange,
 }: ShareEmbedDialogProps) {
   const { palette } = useTheme();
-  const { brand, accent } = palette;
+  const { brand } = palette;
 
   const [toggling, setToggling] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -61,7 +61,7 @@ export function ShareEmbedDialog({
       onClose={onClose}
       title="Embed Deck"
       subtitle={deckName}
-      icon={<CodeIcon sx={{ color: accent[600], fontSize: 20 }} />}
+      icon={<CodeIcon sx={{ color: brand[600], fontSize: 20 }} />}
       maxWidth="sm"
       actions={
         <Button onClick={onClose} sx={{ color: 'text.secondary', textTransform: 'none', fontWeight: 700 }}>
@@ -73,8 +73,8 @@ export function ShareEmbedDialog({
       <Box sx={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         p: 2, borderRadius: 3,
-        bgcolor: isPublic ? alpha(accent[100], 0.6) : alpha(brand[100], 0.3),
-        border: `1.5px solid ${isPublic ? alpha(accent[300], 0.5) : alpha(brand[300], 0.3)}`,
+        bgcolor: isPublic ? alpha(brand[100], 0.6) : alpha(brand[100], 0.3),
+        border: `1.5px solid ${isPublic ? alpha(brand[300], 0.5) : alpha(brand[300], 0.3)}`,
         mb: 2.5,
         transition: 'all 0.2s ease',
       }}>
@@ -91,13 +91,13 @@ export function ShareEmbedDialog({
         <FormControlLabel
           control={
             toggling
-              ? <CircularProgress size={20} sx={{ color: accent[600], mr: 1 }} />
+              ? <CircularProgress size={20} sx={{ color: brand[600], mr: 1 }} />
               : <Switch
                   checked={isPublic}
                   onChange={handleToggle}
                   sx={{
-                    '& .MuiSwitch-switchBase.Mui-checked': { color: accent[600] },
-                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: accent[400] },
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: brand[500] },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: brand[400] },
                   }}
                 />
           }
@@ -136,10 +136,10 @@ export function ShareEmbedDialog({
                 onClick={handleCopy}
                 sx={{
                   position: 'absolute', top: 8, right: 8,
-                  bgcolor: copied ? alpha(accent[500], 0.15) : alpha(brand[100], 0.8),
-                  border: `1.5px solid ${copied ? alpha(accent[400], 0.5) : alpha(brand[300], 0.4)}`,
-                  color: copied ? accent[600] : brand[600],
-                  '&:hover': { bgcolor: alpha(accent[100], 0.8) },
+                  bgcolor: copied ? alpha(brand[200], 0.5) : alpha(brand[100], 0.8),
+                  border: `1.5px solid ${copied ? alpha(brand[400], 0.5) : alpha(brand[300], 0.4)}`,
+                  color: copied ? brand[600] : brand[600],
+                  '&:hover': { bgcolor: alpha(brand[100], 0.8) },
                   transition: 'all 0.2s ease',
                 }}
               >
@@ -180,9 +180,9 @@ export function ShareEmbedDialog({
               target="_blank"
               rel="noopener noreferrer"
               sx={{
-                fontSize: '0.72rem', textTransform: 'none', color: accent[600],
+                fontSize: '0.72rem', textTransform: 'none', color: brand[600],
                 fontWeight: 700,
-                '&:hover': { bgcolor: alpha(accent[100], 0.6) },
+                '&:hover': { bgcolor: alpha(brand[100], 0.6) },
               }}
             >
               Preview embed

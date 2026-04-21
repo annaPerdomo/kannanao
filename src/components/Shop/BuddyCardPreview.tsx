@@ -92,7 +92,7 @@ export function BuddyCardPreview({ buddyKey }: { buddyKey: string }) {
         }}
       >
         <Typography sx={{ fontSize: '0.55rem', fontWeight: 600, color: alpha('#000', 0.6) }}>
-          {config.reactions.idle}
+          {Array.isArray(config.reactions.idle) ? config.reactions.idle[0] : config.reactions.idle}
         </Typography>
       </Box>
 

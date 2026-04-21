@@ -5,12 +5,15 @@ import { alpha } from '@mui/material/styles';
 import { useProgress } from '@/hooks/useProgress';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 
+const BURST_EMOJIS = ['✨', '⭐', '🌟', '💫', '🎉'];
+
 export function XpDisplay({ onClick }: { onClick: () => void }) {
   const { spendableXp } = useProgress();
   const { pendingXp } = useXpAnimation();
 
   const [xpBounce, setXpBounce] = useState(false);
   const [displayXp, setDisplayXp] = useState(0);
+  const [showRing, setShowRing] = useState(false);
   const animatingRef = useRef(false);
   const seenEventsRef = useRef(0);
 
@@ -32,9 +35,10 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
       const targetXp = startXp + totalGain;
 
       setXpBounce(true);
+      setShowRing(true);
       animatingRef.current = true;
 
-      const duration = 600;
+      const duration = 800;
       const startTime = Date.now();
 
       const tick = () => {
@@ -53,8 +57,9 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
       return startXp;
     });
 
-    const bounceTimer = setTimeout(() => setXpBounce(false), 800);
-    return () => clearTimeout(bounceTimer);
+    const bounceTimer = setTimeout(() => setXpBounce(false), 1000);
+    const ringTimer = setTimeout(() => setShowRing(false), 600);
+    return () => { clearTimeout(bounceTimer); clearTimeout(ringTimer); };
   }, [pendingXp]);
 
   return (
@@ -74,18 +79,53 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
         cursor: 'pointer',
         overflow: 'visible',
         transition: 'transform 0.15s, box-shadow 0.15s',
-        animation: xpBounce ? 'xpPillBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none',
-        boxShadow: xpBounce ? `0 0 16px ${alpha('#f59e0b', 0.5)}` : 'none',
+        animation: xpBounce ? 'xpPillBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none',
+        boxShadow: xpBounce
+          ? `0 0 20px ${alpha('#f59e0b', 0.6)}, 0 0 40px ${alpha('#f59e0b', 0.3)}`
+          : 'none',
         '@keyframes xpPillBounce': {
           '0%': { transform: 'scale(1)' },
-          '30%': { transform: 'scale(1.2)' },
-          '60%': { transform: 'scale(0.95)' },
+          '20%': { transform: 'scale(1.3)' },
+          '40%': { transform: 'scale(0.9)' },
+          '60%': { transform: 'scale(1.15)' },
+          '80%': { transform: 'scale(0.97)' },
           '100%': { transform: 'scale(1)' },
         },
         '&:hover': { transform: 'scale(1.05)' },
       }}
     >
-      <Typography sx={{ fontSize: '0.8rem', lineHeight: 1 }}>✨</Typography>
+      {/* Expanding ring effect */}
+      {showRing && (
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: -4,
+            borderRadius: 8,
+            border: `2px solid ${alpha('#f59e0b', 0.6)}`,
+            pointerEvents: 'none',
+            animation: 'xpRingExpand 0.6s ease-out forwards',
+            '@keyframes xpRingExpand': {
+              '0%': { transform: 'scale(0.8)', opacity: 1 },
+              '100%': { transform: 'scale(1.5)', opacity: 0 },
+            },
+          }}
+        />
+      )}
+
+      <Typography
+        sx={{
+          fontSize: '0.8rem',
+          lineHeight: 1,
+          animation: xpBounce ? 'xpStarSpin 0.6s ease-in-out' : 'none',
+          '@keyframes xpStarSpin': {
+            '0%': { transform: 'rotate(0deg) scale(1)' },
+            '50%': { transform: 'rotate(180deg) scale(1.5)' },
+            '100%': { transform: 'rotate(360deg) scale(1)' },
+          },
+        }}
+      >
+        ✨
+      </Typography>
       <Typography
         sx={{
           fontSize: '0.85rem',
@@ -98,6 +138,7 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
         {displayXp.toLocaleString()} XP
       </Typography>
 
+      {/* Floating XP pills */}
       {pendingXp.map((evt) => (
         <Box
           key={evt.key}
@@ -107,12 +148,12 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
             bottom: '100%',
             pointerEvents: 'none',
             zIndex: 20,
-            animation: 'xpFlyToNav 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+            animation: 'xpFlyToNav 1.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
             '@keyframes xpFlyToNav': {
               '0%': { opacity: 0, transform: 'translateX(-50%) translateY(20px) scale(0.3)' },
-              '20%': { opacity: 1, transform: 'translateX(-50%) translateY(-18px) scale(1.3)' },
-              '50%': { opacity: 1, transform: 'translateX(-50%) translateY(-30px) scale(1.1)' },
-              '80%': { opacity: 0.8, transform: 'translateX(-50%) translateY(-8px) scale(0.9)' },
+              '15%': { opacity: 1, transform: 'translateX(-50%) translateY(-22px) scale(1.4)' },
+              '35%': { opacity: 1, transform: 'translateX(-50%) translateY(-36px) scale(1.2)' },
+              '65%': { opacity: 0.9, transform: 'translateX(-50%) translateY(-12px) scale(0.95)' },
               '100%': { opacity: 0, transform: 'translateX(-50%) translateY(0px) scale(0.5)' },
             },
           }}
@@ -120,14 +161,14 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
           <Typography
             sx={{
               fontFamily: (t) => t.fonts.cute,
-              fontWeight: 700,
-              fontSize: '0.9rem',
+              fontWeight: 800,
+              fontSize: '1rem',
               color: '#fff',
-              textShadow: '0 1px 8px rgba(245,158,11,0.7), 0 0 4px rgba(245,158,11,0.5)',
+              textShadow: '0 1px 10px rgba(245,158,11,0.8), 0 0 6px rgba(245,158,11,0.6)',
               background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
               borderRadius: 2,
-              px: 1,
-              py: 0.25,
+              px: 1.25,
+              py: 0.3,
               whiteSpace: 'nowrap',
             }}
           >
@@ -135,6 +176,37 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
           </Typography>
         </Box>
       ))}
+
+      {/* Emoji burst on gain */}
+      {xpBounce &&
+        BURST_EMOJIS.map((emoji, i) => {
+          const angle = (i / BURST_EMOJIS.length) * Math.PI * 2 - Math.PI / 2;
+          const dx = Math.round(Math.cos(angle) * 28);
+          const dy = Math.round(Math.sin(angle) * 28);
+          return (
+            <Box
+              key={`burst-${i}`}
+              style={{ '--dx': `${dx}px`, '--dy': `${dy}px` } as React.CSSProperties}
+              sx={{
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                fontSize: '0.65rem',
+                lineHeight: 1,
+                pointerEvents: 'none',
+                animation: `xpEmojiBurst 0.7s ${i * 0.05}s ease-out forwards`,
+                opacity: 0,
+                '@keyframes xpEmojiBurst': {
+                  '0%': { opacity: 0, transform: 'translate(-50%, -50%) scale(0)' },
+                  '40%': { opacity: 1, transform: 'translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2)' },
+                  '100%': { opacity: 0, transform: 'translate(calc(-50% + var(--dx) * 1.5), calc(-50% + var(--dy) * 1.5)) scale(0)' },
+                },
+              }}
+            >
+              {emoji}
+            </Box>
+          );
+        })}
     </Box>
   );
 }

@@ -25,7 +25,7 @@ interface DeckHeaderProps {
 }
 
 export function DeckHeader({ deck, cardCount, onBack, onRename, onPin, onEmbedOpen }: DeckHeaderProps) {
-  const { brand, accent } = useTheme().palette;
+  const { brand } = useTheme().palette;
 
   const [editing, setEditing] = useState(false);
   const [renaming, setRenaming] = useState(false);
@@ -182,13 +182,13 @@ export function DeckHeader({ deck, cardCount, onBack, onRename, onPin, onEmbedOp
               size="small" onClick={onEmbedOpen}
               sx={{
                 width: 30, height: 30, borderRadius: '8px',
-                border: `1.5px solid ${deck.isPublic ? alpha(accent[500], 0.6) : alpha(brand[300], 0.45)}`,
-                bgcolor: deck.isPublic ? alpha(accent[100], 0.8) : alpha('#FFFFFF', 0.4),
-                color: deck.isPublic ? accent[600] : alpha(brand[500], 0.55),
+                border: `1.5px solid ${deck.isPublic ? alpha(brand[500], 0.6) : alpha(brand[300], 0.45)}`,
+                bgcolor: deck.isPublic ? alpha(brand[100], 0.8) : alpha('#FFFFFF', 0.4),
+                color: deck.isPublic ? brand[600] : alpha(brand[500], 0.55),
                 '&:hover': {
-                  bgcolor: alpha(accent[100], 0.8),
-                  color: accent[600],
-                  borderColor: alpha(accent[500], 0.6),
+                  bgcolor: alpha(brand[100], 0.8),
+                  color: brand[600],
+                  borderColor: alpha(brand[500], 0.6),
                 },
               }}
             >

@@ -27,7 +27,7 @@ export function CelebrationPreviewModal({
   const particleType = CELEBRATION_KEY_TO_THEME[item.key] ?? 'emojiRain';
   const celebData = CELEBRATION_THEMES[item.key];
   const bg = CELEB_PARTICLE_BG[particleType] ?? CELEB_PARTICLE_BG.emojiRain;
-  const isDark = particleType !== 'bubbles';
+  const isDark = particleType !== 'bubbles' && particleType !== 'bunnies';
   const textColor = isDark ? '#ffffff' : '#2d1b69';
   const subTextColor = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(45,27,105,0.7)';
 

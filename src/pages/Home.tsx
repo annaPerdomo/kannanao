@@ -350,6 +350,7 @@ export default function Home() {
         deckId={shareDeckId ?? ''}
         deckName={shareDeckName}
       />
+
     </Box>
   );
 }

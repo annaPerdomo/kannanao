@@ -19,9 +19,9 @@ export interface ShopItem {
 }
 
 export interface BuddyReactions {
-  correct: string;
-  wrong: string;
-  idle: string;
+  correct: string | string[];
+  wrong: string | string[];
+  idle: string | string[];
 }
 
 export interface BuddyConfig {

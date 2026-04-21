@@ -104,11 +104,100 @@ export const CELEBRATION_THEMES: Record<string, CelebTheme> = {
 
 /** Map buddy item key → config with emoji and reaction text */
 export const BUDDY_CONFIG: Record<string, BuddyConfig> = {
-  buddy_pink_cat: { emoji: '🐱', reactions: { correct: 'Nyaa~ Perfect!', wrong: 'Mew… try again!', idle: '♪ zzZ~' } },
-  buddy_bunny:    { emoji: '🐰', reactions: { correct: 'Hop hop hooray!', wrong: 'Oops, one more time!', idle: '~munches carrot~' } },
-  buddy_penguin:  { emoji: '🐧', reactions: { correct: 'Cool! Nailed it!', wrong: 'Brrr, not quite…', idle: '~waddles~' } },
-  buddy_panda:    { emoji: '🐼', reactions: { correct: 'Bamboo-tiful!', wrong: 'Hmm, keep going!', idle: '~noms bamboo~' } },
-  buddy_fox:      { emoji: '🦊', reactions: { correct: 'Clever answer!', wrong: 'Almost, think again!', idle: '~curls up~' } },
+  buddy_pink_cat: {
+    emoji: '🐱',
+    reactions: {
+      correct: ['Nyaa~ Perfect!', 'Purr-fect answer!', 'Meow yeah!', 'You\'re paw-some!', 'Nyan~ So smart!', 'Kitty is proud! ✨', 'Sugoi nya~!', 'That\'s right, nya!'],
+      wrong: ['Mew… try again!', 'Don\'t give up, nya~', 'Almost there, meow!', 'One more try, nya!', 'Kitty believes in you!', 'Hmm, not quite nya~'],
+      idle: ['♪ zzZ~', '~purrs softly~', '~chases yarn~', 'Nya~ let\'s study!', '~stretches~', '~grooms paws~', '♪ la la nya~', '~bats at butterfly~'],
+    },
+  },
+  buddy_bunny: {
+    emoji: '🐰',
+    reactions: {
+      correct: ['Hop hop hooray!', 'Bunny bounce! 🎉', 'That\'s amazing!', 'Ear-resistible answer!', 'You did it!', 'So proud of you!', 'Sugoi! Sugoi!', 'Happy hops!'],
+      wrong: ['Oops, one more time!', 'Try again, friend!', 'Don\'t worry, hop to it!', 'Almost! Keep going!', 'You\'ll get it next hop!', 'Bunny believes in you!'],
+      idle: ['~munches carrot~', '~wiggles nose~', '~does a little hop~', 'Let\'s learn together!', '~flops over~', '~thumps foot~', '~sniff sniff~', '~hides in flowers~'],
+    },
+  },
+  buddy_penguin: {
+    emoji: '🐧',
+    reactions: {
+      correct: ['Cool! Nailed it!', 'Ice-credible!', 'Waddle yeah!', 'Penguin approved! 🧊', 'You\'re on fire… wait, I melt!', 'Spectacular!', 'Chill answer! 🎉', 'Flipper high-five!'],
+      wrong: ['Brrr, not quite…', 'Slide into another try!', 'Keep waddling forward!', 'Almost! Try once more!', 'Don\'t slip up now!', 'You got this, friend!'],
+      idle: ['~waddles~', '~slides on tummy~', '~looks at fish~', 'Brr, study time!', '~flaps flippers~', '~huddles for warmth~', '~catches snowflake~', '~does penguin dance~'],
+    },
+  },
+  buddy_panda: {
+    emoji: '🐼',
+    reactions: {
+      correct: ['Bamboo-tiful!', 'Panda-stic work!', 'You rock! 🎋', 'That\'s the way!', 'So wise! Like bamboo~', 'Amazing answer!', 'Panda proud moment!', 'Subarashii!'],
+      wrong: ['Hmm, keep going!', 'Roll with it, try again!', 'Don\'t give up!', 'Almost there!', 'Panda patience~', 'Take your time!'],
+      idle: ['~noms bamboo~', '~rolls around~', '~takes a nap~', 'Mmm, study break?', '~stretches lazily~', '~climbs tree~', '~sits and thinks~', '~munches thoughtfully~'],
+    },
+  },
+  buddy_fox: {
+    emoji: '🦊',
+    reactions: {
+      correct: ['Clever answer!', 'Fox-tastic!', 'Sharp as always!', 'Brilliant mind! 🌟', 'What does the fox say? YAY!', 'Smarty-paws!', 'Quick thinking!', 'Sly and smart!'],
+      wrong: ['Almost, think again!', 'Fox tip: try once more!', 'So close! Be cunning!', 'Don\'t worry, be foxy!', 'Tricky, but you\'ve got this!', 'A clever fox never gives up!'],
+      idle: ['~curls up~', '~sniffs the air~', '~chases leaves~', 'What shall we learn?', '~flicks tail~', '~yawns softly~', '~perks ears up~', '~does a little trot~'],
+    },
+  },
+};
+
+/** Home page encouragement phrases per buddy */
+export const BUDDY_HOME_PHRASES: Record<string, string[]> = {
+  buddy_pink_cat: [
+    'Nya~ Time to study! 📚',
+    'Let\'s practice together!',
+    'Kitty wants to learn too~',
+    'Pick a deck, nya!',
+    'Study makes us stronger!',
+    '日本語 time, meow!',
+    'I\'ll cheer you on, nya~',
+    'Tap a deck to start! ✨',
+  ],
+  buddy_bunny: [
+    'Let\'s hop into studying! 🥕',
+    'Time to practice!',
+    'Pick a deck and let\'s go!',
+    'Study time is fun time!',
+    'I\'ll hop along with you!',
+    'Ready to learn together?',
+    'Every card makes you smarter!',
+    'がんばろう! Let\'s go!',
+  ],
+  buddy_penguin: [
+    'Cool study session ahead! 🧊',
+    'Let\'s slide into learning!',
+    'Pick a deck, friend!',
+    'Waddle we learn today?',
+    'Time to chill and study!',
+    'I\'ll keep you company!',
+    'Study buddies forever!',
+    'Let\'s practice 日本語!',
+  ],
+  buddy_panda: [
+    'Study time~ 🎋',
+    'Let\'s munch on knowledge!',
+    'Pick a deck to practice!',
+    'Learning is bamboo-tiful!',
+    'Take it one card at a time~',
+    'Wise pandas always study!',
+    'Ready when you are!',
+    'いっしょに がんばろう!',
+  ],
+  buddy_fox: [
+    'Clever foxes always study! 🌟',
+    'Time to sharpen our minds!',
+    'Pick a deck, smarty-paws!',
+    'Let\'s outsmart those cards!',
+    'Knowledge is power!',
+    'A quick study session?',
+    'Stay sharp, stay foxy!',
+    'べんきょう しましょう!',
+  ],
 };
 
 /** Map theme item key → ColorScheme value used by the app */

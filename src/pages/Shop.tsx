@@ -23,6 +23,7 @@ import PetsIcon from '@mui/icons-material/Pets';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useProgress } from '@/hooks/useProgress';
 import { useShop, SHOP_ITEMS, THEME_KEY_TO_SCHEME } from '@/hooks/useShop';
+import { Loading } from '@/components/Loading';
 import { useColorScheme } from '@/contexts/ThemeContext';
 import { LAYOUT, type ColorScheme } from '@/theme';
 import type { ShopCategory, ShopItem } from '@/types/shop';
@@ -51,6 +52,11 @@ export default function Shop() {
     equipItem,
   } = useShop();
   const { scheme, setScheme } = useColorScheme();
+
+  const activeThemeKey = useMemo(() => {
+    const entry = Object.entries(THEME_KEY_TO_SCHEME).find(([, s]) => s === scheme);
+    return entry?.[0] ?? 'theme_sakura';
+  }, [scheme]);
 
   const [activeCategory, setActiveCategory] = useState<'all' | ShopCategory>('all');
   const [confirmItem, setConfirmItem] = useState<ShopItem | null>(null);
@@ -245,38 +251,52 @@ export default function Shop() {
 
       {/* Item sections */}
       {loading ? (
-        <Box sx={{
-          width: '100%',
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: `repeat(${categories.length}, 1fr)` },
-          gap: 2,
-          alignItems: 'start',
-        }}>
-          {categories.map((cat) => (
-            <Paper key={cat.key} elevation={0} sx={{ border: `1.5px solid ${alpha(brand[300], 0.2)}`, borderRadius: 3, overflow: 'hidden', bgcolor: alpha(brand[50], 0.3) }}>
-              <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${alpha(brand[300], 0.1)}`, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Skeleton variant="circular" width={20} height={20} />
-                <Skeleton width={80} height={22} />
-              </Box>
-              <Box sx={{ p: 1.5, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}>
-                {[0, 1, 2, 3].map((item) => (
-                  <Box key={item} sx={{ borderRadius: 2.5, overflow: 'hidden', bgcolor: alpha(brand[50], 0.5), border: `1px solid ${alpha(brand[300], 0.15)}` }}>
-                    <Skeleton variant="rounded" height={65} sx={{ borderRadius: 0 }} />
-                    <Box sx={{ p: 0.75 }}>
-                      <Skeleton width="65%" height={14} />
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.5 }}>
-                        <Skeleton width={30} height={16} />
-                        <Skeleton variant="rounded" width={38} height={20} sx={{ borderRadius: 1.5 }} />
+        <Box sx={{ position: 'relative' }}>
+          <Box sx={{
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: `repeat(${categories.length}, 1fr)` },
+            gap: 2,
+            alignItems: 'start',
+            filter: 'blur(2px)',
+            opacity: 0.6,
+          }}>
+            {categories.map((cat) => (
+              <Paper key={cat.key} elevation={0} sx={{ border: `1.5px solid ${alpha(brand[300], 0.2)}`, borderRadius: 3, overflow: 'hidden', bgcolor: alpha(brand[50], 0.3) }}>
+                <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${alpha(brand[300], 0.1)}`, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Skeleton variant="circular" width={20} height={20} />
+                  <Skeleton width={80} height={22} />
+                </Box>
+                <Box sx={{ p: 1.5, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}>
+                  {[0, 1, 2, 3].map((item) => (
+                    <Box key={item} sx={{ borderRadius: 2.5, overflow: 'hidden', bgcolor: alpha(brand[50], 0.5), border: `1px solid ${alpha(brand[300], 0.15)}` }}>
+                      <Skeleton variant="rounded" height={65} sx={{ borderRadius: 0 }} />
+                      <Box sx={{ p: 0.75 }}>
+                        <Skeleton width="65%" height={14} />
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.5 }}>
+                          <Skeleton width={30} height={16} />
+                          <Skeleton variant="rounded" width={38} height={20} sx={{ borderRadius: 1.5 }} />
+                        </Box>
                       </Box>
                     </Box>
-                  </Box>
-                ))}
-              </Box>
-              <Box sx={{ px: 2, pb: 1.5, pt: 0.5 }}>
-                <Skeleton width={90} height={16} />
-              </Box>
-            </Paper>
-          ))}
+                  ))}
+                </Box>
+                <Box sx={{ px: 2, pb: 1.5, pt: 0.5 }}>
+                  <Skeleton width={90} height={16} />
+                </Box>
+              </Paper>
+            ))}
+          </Box>
+          <Box sx={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1,
+          }}>
+            <Loading message="Loading shop…" />
+          </Box>
         </Box>
       ) : activeCategory === 'all' ? (
         <Box
@@ -296,6 +316,7 @@ export default function Shop() {
               items={itemsByCategory.get(cat.key) ?? []}
               ownsItem={ownsItem}
               equipped={equipped}
+              activeThemeKey={activeThemeKey}
               spendableXp={spendableXp}
               onBuy={setConfirmItem}
               onEquip={handleEquip}
@@ -316,6 +337,7 @@ export default function Shop() {
               items={itemsByCategory.get(cat.key) ?? []}
               ownsItem={ownsItem}
               equipped={equipped}
+              activeThemeKey={activeThemeKey}
               spendableXp={spendableXp}
               onBuy={setConfirmItem}
               onEquip={handleEquip}

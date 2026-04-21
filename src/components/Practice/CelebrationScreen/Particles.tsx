@@ -2,7 +2,8 @@
 import { useMemo } from 'react';
 import { Box } from '@mui/material';
 import {
-  CONFETTI_COLORS, FIREWORK_COLORS, BUBBLE_COLORS, MODE_EMOJIS,
+  CONFETTI_COLORS, FIREWORK_COLORS, BUBBLE_COLORS, HEART_COLORS, SPARKLE_COLORS,
+  MODE_EMOJIS,
   type PracticeMode,
 } from './constants';
 
@@ -218,6 +219,211 @@ export function EmojiRainParticles({ mode, emojis }: { mode: PracticeMode; emoji
             '100%': { transform: 'translateY(118vh) rotate(var(--re))', opacity: 0 },
           },
         }}>{p.emoji}</Box>
+      ))}
+    </>
+  );
+}
+
+export function HeartParticles({ colors }: { colors?: string[] }) {
+  const palette = colors ?? HEART_COLORS;
+  const hearts = useMemo(
+    () => Array.from({ length: 40 }, (_, i) => ({
+      id: i,
+      left: `${((i / 40) * 100 + (i % 7) * 2) % 100}%`,
+      delay: `${(i * 0.08) % 2.5}s`,
+      dur: `${2.5 + (i % 5) * 0.4}s`,
+      size: `${18 + (i % 6) * 8}px`,
+      color: palette[i % palette.length],
+      wobble: `${(i % 2 === 0 ? 1 : -1) * (15 + (i % 5) * 10)}px`,
+      rotateEnd: `${(i % 2 === 0 ? 1 : -1) * (20 + (i % 4) * 15)}deg`,
+      useEmoji: i % 3 === 0,
+      emoji: ['💖', '💗', '💕', '❤️', '💝', '💓', '💞', '🩷'][i % 8],
+    })),
+    [palette],
+  );
+
+  return (
+    <>
+      {hearts.map((h) => (
+        <Box
+          key={h.id}
+          style={{ '--wb': h.wobble, '--re': h.rotateEnd } as React.CSSProperties}
+          sx={{
+            position: 'absolute',
+            left: h.left,
+            top: '-30px',
+            pointerEvents: 'none',
+            animation: `heartFall ${h.dur} ${h.delay} ease-in infinite`,
+            '@keyframes heartFall': {
+              '0%': { transform: 'translateY(0) translateX(0) rotate(0deg) scale(0)', opacity: 0 },
+              '5%': { transform: 'translateY(2vh) translateX(0) rotate(0deg) scale(1.2)', opacity: 1 },
+              '10%': { transform: 'translateY(5vh) translateX(calc(var(--wb) * 0.3)) rotate(calc(var(--re) * 0.2)) scale(1)' },
+              '50%': { transform: 'translateY(50vh) translateX(var(--wb)) rotate(calc(var(--re) * 0.6))', opacity: 0.9 },
+              '85%': { opacity: 0.5 },
+              '100%': { transform: 'translateY(110vh) translateX(calc(var(--wb) * -0.5)) rotate(var(--re)) scale(0.6)', opacity: 0 },
+            },
+          }}
+        >
+          {h.useEmoji ? (
+            <Box sx={{ fontSize: h.size, lineHeight: 1 }}>{h.emoji}</Box>
+          ) : (
+            <Box sx={{
+              width: h.size,
+              height: h.size,
+              position: 'relative',
+              animation: `heartPulse ${0.8 + (h.id % 3) * 0.2}s ease-in-out infinite alternate`,
+              '@keyframes heartPulse': {
+                '0%': { transform: 'scale(0.85)' },
+                '100%': { transform: 'scale(1.1)' },
+              },
+              '&::before, &::after': {
+                content: '""',
+                position: 'absolute',
+                width: h.size,
+                height: h.size,
+                borderRadius: '50%',
+                bgcolor: h.color,
+              },
+              '&::before': {
+                top: '-50%',
+                left: 0,
+              },
+              '&::after': {
+                top: 0,
+                left: '50%',
+              },
+              bgcolor: h.color,
+              transform: 'rotate(-45deg)',
+              transformOrigin: 'center center',
+              filter: `drop-shadow(0 0 ${4 + (h.id % 3) * 2}px ${h.color}80)`,
+            }} />
+          )}
+        </Box>
+      ))}
+    </>
+  );
+}
+
+export function BunnyParticles() {
+  const bunnies = useMemo(
+    () => Array.from({ length: 24 }, (_, i) => {
+      const emojis = ['🐰', '🐇', '🌸', '🥕', '🌷', '💐', '🎀', '🍡'];
+      return {
+        id: i,
+        left: `${((i / 24) * 100 + (i % 5) * 3) % 100}%`,
+        delay: `${(i * 0.14) % 3}s`,
+        dur: `${3 + (i % 4) * 0.5}s`,
+        size: `${22 + (i % 5) * 8}px`,
+        emoji: emojis[i % emojis.length],
+        isBunny: i % 3 === 0,
+        hopHeight: `${30 + (i % 4) * 15}px`,
+        wobble: `${(i % 2 === 0 ? 1 : -1) * (20 + (i % 4) * 12)}px`,
+      };
+    }),
+    [],
+  );
+
+  return (
+    <>
+      {bunnies.map((b) => (
+        <Box
+          key={b.id}
+          style={{ '--hop': b.hopHeight, '--wb': b.wobble } as React.CSSProperties}
+          sx={{
+            position: 'absolute',
+            left: b.left,
+            top: '-40px',
+            fontSize: b.size,
+            lineHeight: 1,
+            pointerEvents: 'none',
+            animation: b.isBunny
+              ? `bunnyHopFall ${b.dur} ${b.delay} ease-in-out infinite`
+              : `bunnyDrift ${b.dur} ${b.delay} ease-in infinite`,
+            '@keyframes bunnyHopFall': {
+              '0%':   { transform: 'translateY(0) translateX(0) scaleX(1)', opacity: 0 },
+              '5%':   { opacity: 1 },
+              '15%':  { transform: 'translateY(12vh) translateX(calc(var(--wb) * 0.2)) scaleX(1)' },
+              '20%':  { transform: 'translateY(calc(12vh - var(--hop))) translateX(calc(var(--wb) * 0.3)) scaleX(-1)' },
+              '25%':  { transform: 'translateY(25vh) translateX(calc(var(--wb) * 0.5)) scaleX(-1)' },
+              '30%':  { transform: 'translateY(calc(25vh - var(--hop))) translateX(calc(var(--wb) * 0.6)) scaleX(1)' },
+              '40%':  { transform: 'translateY(40vh) translateX(calc(var(--wb) * 0.7)) scaleX(1)' },
+              '45%':  { transform: 'translateY(calc(40vh - var(--hop))) translateX(var(--wb)) scaleX(-1)' },
+              '55%':  { transform: 'translateY(55vh) translateX(calc(var(--wb) * 0.8)) scaleX(-1)' },
+              '60%':  { transform: 'translateY(calc(55vh - var(--hop) * 0.7)) translateX(calc(var(--wb) * 0.6)) scaleX(1)' },
+              '75%':  { transform: 'translateY(75vh) translateX(calc(var(--wb) * 0.3)) scaleX(1)', opacity: 0.8 },
+              '100%': { transform: 'translateY(115vh) translateX(0) scaleX(-1)', opacity: 0 },
+            },
+            '@keyframes bunnyDrift': {
+              '0%':   { transform: 'translateY(0) translateX(0) rotate(0deg)', opacity: 0 },
+              '7%':   { opacity: 1 },
+              '50%':  { transform: 'translateY(55vh) translateX(var(--wb)) rotate(15deg)' },
+              '85%':  { opacity: 0.7 },
+              '100%': { transform: 'translateY(115vh) translateX(calc(var(--wb) * -0.5)) rotate(-10deg)', opacity: 0 },
+            },
+          }}
+        >
+          {b.emoji}
+        </Box>
+      ))}
+    </>
+  );
+}
+
+export function SparkleParticles({ colors }: { colors?: string[] }) {
+  const palette = colors ?? SPARKLE_COLORS;
+  const particles = useMemo(
+    () => Array.from({ length: 50 }, (_, i) => {
+      const isEmoji = i % 4 === 0;
+      const emojis = ['✨', '💖', '🌸', '🦩', '💅', '💎', '🩷', '⭐'];
+      return {
+        id: i,
+        left: `${(i / 50) * 100}%`,
+        top: `${(i * 7.3) % 100}%`,
+        delay: `${(i * 0.07) % 2.5}s`,
+        dur: `${1.2 + (i % 5) * 0.35}s`,
+        size: isEmoji ? `${16 + (i % 4) * 6}px` : `${4 + (i % 4) * 3}px`,
+        color: palette[i % palette.length],
+        isEmoji,
+        emoji: emojis[i % emojis.length],
+        dx: `${(i % 2 === 0 ? 1 : -1) * (10 + (i % 5) * 8)}px`,
+      };
+    }),
+    [palette],
+  );
+
+  return (
+    <>
+      {particles.map((p) => (
+        <Box
+          key={p.id}
+          style={{ '--dx': p.dx } as React.CSSProperties}
+          sx={{
+            position: 'absolute',
+            left: p.left,
+            top: p.top,
+            pointerEvents: 'none',
+            animation: `sparkleGlow ${p.dur} ${p.delay} ease-in-out infinite`,
+            '@keyframes sparkleGlow': {
+              '0%':   { transform: 'translateX(0) scale(0)', opacity: 0 },
+              '20%':  { transform: 'translateX(calc(var(--dx) * 0.3)) scale(1.4)', opacity: 1 },
+              '50%':  { transform: 'translateX(var(--dx)) scale(0.8)', opacity: 0.9 },
+              '80%':  { transform: 'translateX(calc(var(--dx) * 0.5)) scale(1.2)', opacity: 0.6 },
+              '100%': { transform: 'translateX(0) scale(0)', opacity: 0 },
+            },
+          }}
+        >
+          {p.isEmoji ? (
+            <Box sx={{ fontSize: p.size, lineHeight: 1 }}>{p.emoji}</Box>
+          ) : (
+            <Box sx={{
+              width: p.size,
+              height: p.size,
+              borderRadius: '50%',
+              bgcolor: p.color,
+              boxShadow: `0 0 ${6 + (p.id % 3) * 4}px ${p.color}, 0 0 ${12 + (p.id % 3) * 6}px ${p.color}60`,
+            }} />
+          )}
+        </Box>
       ))}
     </>
   );

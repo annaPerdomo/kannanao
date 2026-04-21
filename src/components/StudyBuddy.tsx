@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme, alpha, keyframes } from '@mui/material/styles';
@@ -43,6 +43,20 @@ const pulseGlow = keyframes`
   50% { box-shadow: 0 4px 24px rgba(0,0,0,0.15), 0 0 16px rgba(244,114,182,0.2); }
 `;
 
+const tapSpin = keyframes`
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.2) rotate(-15deg); }
+  50% { transform: scale(0.9) rotate(10deg); }
+  75% { transform: scale(1.15) rotate(-5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+`;
+
+const heartBurst = keyframes`
+  0% { transform: scale(0); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.8; }
+  100% { transform: scale(0.5) translateY(-18px); opacity: 0; }
+`;
+
 const BUDDY_ACCENTS: Record<string, string> = {
   buddy_pink_cat: '#F472B6',
   buddy_bunny: '#FDA4AF',
@@ -50,6 +64,22 @@ const BUDDY_ACCENTS: Record<string, string> = {
   buddy_panda: '#86EFAC',
   buddy_fox: '#FCD34D',
 };
+
+const TAP_PHRASES = [
+  'Hehe! That tickles!',
+  'Again! Again!',
+  'Hey~!',
+  'Wheee!',
+  'So much fun!',
+  'You found me!',
+  'Let\'s play!',
+  'Tee-hee!',
+];
+
+function pickRandom(items: string | string[]): string {
+  if (typeof items === 'string') return items;
+  return items[Math.floor(Math.random() * items.length)];
+}
 
 export type BuddyReaction = 'correct' | 'wrong' | 'idle';
 
@@ -66,10 +96,64 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
   const [showBubble, setShowBubble] = useState(false);
   const [bubbleText, setBubbleText] = useState('');
   const [sparkles, setSparkles] = useState(false);
+  const [tapped, setTapped] = useState(false);
+  const [tapHearts, setTapHearts] = useState(false);
+  const [tapCount, setTapCount] = useState(0);
+
+  // Dragging state
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  const dragging = useRef(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
+  const lastPos = useRef({ x: 0, y: 0 });
+
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    dragging.current = true;
+    const el = e.currentTarget as HTMLElement;
+    const rect = el.getBoundingClientRect();
+    dragOffset.current = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+    lastPos.current = { x: e.clientX, y: e.clientY };
+    el.setPointerCapture(e.pointerId);
+  }, []);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!dragging.current) return;
+    const x = e.clientX - dragOffset.current.x;
+    const y = e.clientY - dragOffset.current.y;
+    const maxX = window.innerWidth - 70;
+    const maxY = window.innerHeight - 70;
+    setPos({
+      x: Math.max(0, Math.min(x, maxX)),
+      y: Math.max(0, Math.min(y, maxY)),
+    });
+  }, []);
+
+  const handlePointerUp = useCallback((e: React.PointerEvent) => {
+    const moved = Math.abs(e.clientX - lastPos.current.x) + Math.abs(e.clientY - lastPos.current.y);
+    dragging.current = false;
+    if (moved < 8) {
+      handleTap();
+    }
+  }, []);
+
+  const handleTap = () => {
+    if (!config) return;
+    setTapped(true);
+    setTapHearts(true);
+    setTapCount((c) => c + 1);
+    setBubbleText(TAP_PHRASES[Math.floor(Math.random() * TAP_PHRASES.length)]);
+    setShowBubble(true);
+
+    setTimeout(() => setTapped(false), 500);
+    setTimeout(() => setTapHearts(false), 600);
+    setTimeout(() => setShowBubble(false), 2000);
+  };
 
   useEffect(() => {
     if (!config) return;
-    setBubbleText(config.reactions[reaction]);
+    setBubbleText(pickRandom(config.reactions[reaction]));
     setShowBubble(true);
     setSparkles(reaction === 'correct');
 
@@ -82,8 +166,9 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
 
   if (!config) return null;
 
-  const emojiAnimation =
-    reaction === 'correct'
+  const emojiAnimation = tapped
+    ? `${tapSpin} 0.5s ease-in-out`
+    : reaction === 'correct'
       ? `${bounce} 0.7s ease-in-out`
       : reaction === 'wrong'
         ? `${wobble} 0.5s ease-in-out`
@@ -99,23 +184,32 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
       : reaction === 'wrong' ? alpha('#DC2626', 0.25)
         : alpha(brand[300], 0.4);
 
+  const positionStyle = pos
+    ? { left: pos.x, top: pos.y, bottom: 'auto', right: 'auto' }
+    : { bottom: { xs: 16, sm: 24 }, left: { xs: 12, sm: 20 } };
+
   return (
     <Box
       sx={{
         position: 'fixed',
-        bottom: { xs: 16, sm: 24 },
-        left: { xs: 12, sm: 20 },
+        ...positionStyle,
         zIndex: 1200,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        pointerEvents: 'none',
         gap: 0.5,
+        cursor: 'grab',
+        touchAction: 'none',
+        userSelect: 'none',
+        '&:active': { cursor: 'grabbing' },
       }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
     >
       {showBubble && (
         <Box
-          key={`${reaction}-${Date.now()}`}
+          key={`${reaction}-${tapCount}-${Date.now()}`}
           sx={{
             position: 'relative',
             bgcolor: bubbleColor,
@@ -127,6 +221,7 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
             maxWidth: 150,
             boxShadow: `0 4px 16px ${alpha(brand[400], 0.12)}`,
             animation: `${bubbleIn} 0.35s ease-out`,
+            pointerEvents: 'none',
             '&::after': {
               content: '""',
               position: 'absolute',
@@ -172,9 +267,30 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
               transform: 'scale(0)',
               ml: `${Math.cos(i * 1.25) * 16}px`,
               mt: `${Math.sin(i * 1.25) * 10}px`,
+              pointerEvents: 'none',
             }}
           >
             {['✨', '⭐', '💖', '🌟', '✨'][i]}
+          </Box>
+        ))}
+
+        {/* Heart burst on tap */}
+        {tapHearts && [0, 1, 2, 3, 4, 5].map((i) => (
+          <Box
+            key={`heart-${i}`}
+            sx={{
+              position: 'absolute',
+              top: '30%',
+              left: '50%',
+              fontSize: '0.9rem',
+              animation: `${heartBurst} 0.6s ease-out forwards`,
+              animationDelay: `${i * 0.06}s`,
+              ml: `${Math.cos(i * 1.05) * 22}px`,
+              mt: `${Math.sin(i * 1.05) * 18}px`,
+              pointerEvents: 'none',
+            }}
+          >
+            {['💕', '💖', '✨', '💗', '🌟', '💞'][i]}
           </Box>
         ))}
 
@@ -188,11 +304,11 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            animation: `${emojiAnimation}, ${reaction === 'idle' ? pulseGlow : 'none'} 3s ease-in-out infinite`,
+            animation: `${emojiAnimation}, ${reaction === 'idle' && !tapped ? pulseGlow : 'none'} 3s ease-in-out infinite`,
             fontSize: { xs: '1.8rem', sm: '2.1rem' },
             lineHeight: 1,
-            cursor: 'default',
             boxShadow: `0 4px 16px ${alpha(accent, 0.2)}`,
+            transition: 'box-shadow 0.2s',
           }}
         >
           {config.emoji}

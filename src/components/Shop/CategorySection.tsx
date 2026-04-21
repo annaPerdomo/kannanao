@@ -17,6 +17,7 @@ export function CategorySection({
   items,
   ownsItem,
   equipped,
+  activeThemeKey,
   spendableXp,
   onBuy,
   onEquip,
@@ -32,6 +33,7 @@ export function CategorySection({
   items: ShopItem[];
   ownsItem: (key: string) => boolean;
   equipped: Record<string, string>;
+  activeThemeKey?: string;
   spendableXp: number;
   onBuy: (item: ShopItem) => void;
   onEquip: (item: ShopItem) => void;
@@ -110,8 +112,10 @@ export function CategorySection({
         {displayItems.map((item) => {
           const owned = ownsItem(item.key);
           const slot = item.category;
-          const isEquipped = equipped[slot] === item.key
-            || (item.price === 0 && !equipped[slot] && item.key === (slot === 'theme' ? 'theme_sakura' : 'border_none'));
+          const isEquipped = slot === 'theme' && activeThemeKey
+            ? item.key === activeThemeKey
+            : equipped[slot] === item.key
+              || (item.price === 0 && !equipped[slot] && item.key === 'border_none');
 
           return (
             <ShopItemCard
