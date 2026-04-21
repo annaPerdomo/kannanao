@@ -8,6 +8,7 @@ import {
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { sb, upsertProfile, loadProfile, updateProfileColorScheme } from "@/lib/supabase";
+import { isAdminUser } from "@/lib/admin";
 import type { ColorScheme } from "@/theme";
 
 const FAKE_DOMAIN = "kannanao.local";
@@ -15,6 +16,7 @@ const FAKE_DOMAIN = "kannanao.local";
 interface AuthContextValue {
   session: Session | null;
   user: User | null;
+  isAdmin: boolean;
   displayName: string | null;
   colorScheme: ColorScheme | null;
   loading: boolean;
@@ -120,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         session,
         user: session?.user ?? null,
+        isAdmin: isAdminUser(session?.user?.email ?? undefined),
         displayName,
         colorScheme,
         loading,

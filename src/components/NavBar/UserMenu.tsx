@@ -22,7 +22,7 @@ interface UserMenuProps {
 export function UserMenu({ navBtnSx }: UserMenuProps) {
   const router = useRouter();
   const { brand, surfaces } = useTheme().palette;
-  const { user, displayName, signOut } = useAuth();
+  const { user, isAdmin, displayName, signOut } = useAuth();
   const { scheme, setScheme } = useColorScheme();
 
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
@@ -71,7 +71,7 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
         onClose={() => setMenuAnchor(null)}
         slotProps={{ paper: { sx: menuPaperSx } }}
       >
-        {user.email?.split('@')[0] === (process.env.NEXT_PUBLIC_ADMIN_USERNAME ?? 'test') && (
+        {isAdmin && (
           <MenuItem
             onClick={() => { setMenuAnchor(null); router.push('/admin'); }}
             sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontWeight: 600 }}

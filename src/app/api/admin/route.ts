@@ -1,20 +1,17 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import {
-  FAKE_DOMAIN,
   getSupabaseConfig,
   authenticateUser,
   handleProfileAction,
 } from "../_lib/profile-actions";
-
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME ?? "test";
+import { isAdminEmail } from "@/lib/admin";
 
 async function authenticateAdmin(req: Request) {
   const auth = await authenticateUser(req);
   if ("error" in auth) return auth;
 
-  const username = auth.user.email?.split("@")[0] ?? "";
-  if (username !== ADMIN_USERNAME || !auth.user.email?.endsWith(`@${FAKE_DOMAIN}`)) {
+  if (!isAdminEmail(auth.user.email ?? undefined)) {
     return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
   }
 

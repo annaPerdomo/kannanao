@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { sb } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 import type { ShopItem, CardBorderStyle, CelebTheme, BuddyConfig, UserPurchase, UserEquipped } from '@/types/shop';
 
 // ─── Shop catalog ────────────────────────────────────────────────────────────
@@ -130,6 +131,7 @@ const FREE_ITEM_KEYS = SHOP_ITEMS.filter((i) => i.price === 0 && !i.comingSoon).
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
 export function useShop() {
+  const { isAdmin } = useAuth();
   const supabase = sb;
   const [purchases, setPurchases] = useState<UserPurchase[]>([]);
   const [equipped, setEquipped] = useState<Record<string, string>>({});
@@ -159,10 +161,11 @@ export function useShop() {
   /** Check if a user owns a given item (purchased or free) */
   const ownsItem = useCallback(
     (itemKey: string): boolean => {
+      if (isAdmin) return true;
       if (FREE_ITEM_KEYS.includes(itemKey)) return true;
       return purchases.some((p) => p.item_key === itemKey);
     },
-    [purchases],
+    [isAdmin, purchases],
   );
 
   /** Purchase an item — deducts XP via total_xp_spent, inserts purchase, auto-equips */
