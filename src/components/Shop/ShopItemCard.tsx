@@ -153,6 +153,7 @@ export function ShopItemCard({
       )}
       {/* Preview area */}
       <Box
+        onClick={mini ? onPreview : undefined}
         sx={{
           position: 'relative',
           height: mini ? { xs: 60, sm: 70 } : { xs: 100, sm: 120 },
@@ -163,6 +164,7 @@ export function ShopItemCard({
           alignItems: 'center',
           justifyContent: 'center',
           overflow: 'hidden',
+          ...(mini && { cursor: 'pointer' }),
         }}
       >
         {mini && (isTheme || (!isCelebration && !isBuddy)) ? (
@@ -201,7 +203,26 @@ export function ShopItemCard({
           </Box>
         )}
 
-        {!mini && (
+        {mini ? (
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 3,
+              right: 3,
+              width: 18,
+              height: 18,
+              borderRadius: '50%',
+              bgcolor: 'rgba(255,255,255,0.85)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: `1px solid ${alpha(brand[300], 0.3)}`,
+              color: brand[500],
+            }}
+          >
+            <VisibilityIcon sx={{ fontSize: '0.6rem' }} />
+          </Box>
+        ) : (
           <Tooltip title="Preview" arrow>
             <IconButton
               size="small"

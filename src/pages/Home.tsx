@@ -236,7 +236,7 @@ export default function Home() {
                 {pinnedDecks.map((deck) => {
                   const owned = isOwner(deck);
                   return (
-                    <Grid size={{ xs: 12, sm: 6 }} key={deck.id}>
+                    <Grid size={{ xs: 6, sm: 4 }} key={deck.id}>
                       <DeckCard
                         deck={deck}
                         onOpen={(id) => router.push(`/deck/${id}?from=home`)}

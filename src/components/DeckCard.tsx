@@ -10,6 +10,7 @@ import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined';
 import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
 import type { Deck } from '@/types/deck';
+import { useCardBorder } from '@/contexts/CardBorderContext';
 
 interface DeckCardProps {
   deck: Deck;
@@ -24,6 +25,8 @@ interface DeckCardProps {
 export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, isOwner = true }: DeckCardProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const { borderStyle: equippedBorder } = useCardBorder();
+  const hasCustomBorder = equippedBorder && Object.keys(equippedBorder).length > 0;
   const [emojiAnchor, setEmojiAnchor] = useState<HTMLElement | null>(null);
   const CARD_FRAME = `linear-gradient(145deg, ${brand[100]} 0%, ${brand[300]} 25%, ${brand[50]} 50%, ${brand[400]} 75%, ${brand[100]} 100%)`;
 
@@ -43,7 +46,10 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
       {/* Card back: bottom layer */}
       <Box className="deck-stack-2" sx={{
         position: 'absolute', bottom: 0, left: '8px', right: '8px', height: '88%',
-        borderRadius: '14px', background: CARD_FRAME, p: '5px',
+        borderRadius: '14px',
+        background: hasCustomBorder ? (equippedBorder.background ?? brand[50]) : CARD_FRAME,
+        border: hasCustomBorder ? equippedBorder.border : undefined,
+        p: '5px',
         transition: 'transform 0.3s cubic-bezier(.34,1.56,.64,1)', zIndex: 1,
       }}>
         <Box sx={{
@@ -56,7 +62,10 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
       {/* Card back: middle layer */}
       <Box className="deck-stack-1" sx={{
         position: 'absolute', bottom: '6px', left: '4px', right: '4px', height: '92%',
-        borderRadius: '14px', background: CARD_FRAME, p: '5px',
+        borderRadius: '14px',
+        background: hasCustomBorder ? (equippedBorder.background ?? brand[50]) : CARD_FRAME,
+        border: hasCustomBorder ? equippedBorder.border : undefined,
+        p: '5px',
         transition: 'transform 0.3s cubic-bezier(.34,1.56,.64,1)', zIndex: 2,
       }}>
         <Box sx={{
@@ -67,18 +76,25 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
 
       {/* Front card */}
       <Box sx={{
-        position: 'relative', zIndex: 3, background: CARD_FRAME, borderRadius: '14px', p: '5px',
-        boxShadow: `0 6px 24px rgba(0,0,0,0.16), 0 2px 8px ${alpha(brand[400], 0.28)}`,
+        position: 'relative', zIndex: 3,
+        background: hasCustomBorder ? (equippedBorder.background ?? brand[50]) : CARD_FRAME,
+        borderRadius: '14px', p: '5px',
+        border: hasCustomBorder ? equippedBorder.border : undefined,
+        boxShadow: hasCustomBorder
+          ? equippedBorder.boxShadow
+          : `0 6px 24px rgba(0,0,0,0.16), 0 2px 8px ${alpha(brand[400], 0.28)}`,
         transition: 'box-shadow 0.25s ease',
-        '&:hover': { boxShadow: `0 16px 40px rgba(0,0,0,0.24), 0 4px 12px ${alpha(brand[400], 0.38)}` },
+        '&:hover': hasCustomBorder ? {} : { boxShadow: `0 16px 40px rgba(0,0,0,0.24), 0 4px 12px ${alpha(brand[400], 0.38)}` },
       }}>
-        {/* Holographic sheen */}
-        <Box className="holo-sheen" sx={{
-          position: 'absolute', inset: 0, borderRadius: '14px',
-          background: 'linear-gradient(115deg, transparent 0%, rgba(255,50,180,0.2) 20%, rgba(255,220,50,0.2) 35%, rgba(50,255,150,0.2) 50%, rgba(50,150,255,0.2) 65%, rgba(180,50,255,0.2) 80%, transparent 100%)',
-          opacity: 0, transition: 'opacity 0.35s ease',
-          pointerEvents: 'none', zIndex: 10, mixBlendMode: 'screen',
-        }} />
+        {/* Holographic sheen — only on default border */}
+        {!hasCustomBorder && (
+          <Box className="holo-sheen" sx={{
+            position: 'absolute', inset: 0, borderRadius: '14px',
+            background: 'linear-gradient(115deg, transparent 0%, rgba(255,50,180,0.2) 20%, rgba(255,220,50,0.2) 35%, rgba(50,255,150,0.2) 50%, rgba(50,150,255,0.2) 65%, rgba(180,50,255,0.2) 80%, transparent 100%)',
+            opacity: 0, transition: 'opacity 0.35s ease',
+            pointerEvents: 'none', zIndex: 10, mixBlendMode: 'screen',
+          }} />
+        )}
 
         {/* Inner card */}
         <Box
@@ -113,7 +129,7 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
             mx: '8px', mt: '6px', borderRadius: '6px', overflow: 'hidden',
             border: '2px solid rgba(0,0,0,0.14)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.1)',
             background: `linear-gradient(135deg, ${brand[100]} 0%, ${accent[100]} 50%, ${brand[100]} 100%)`,
-            height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center',
             position: 'relative',
           }}>
             <Box sx={{ position: 'absolute', top: 8, right: 12, fontSize: '0.65rem', color: alpha(brand[300], 0.6), pointerEvents: 'none' }}>✦</Box>
@@ -132,7 +148,7 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
 
           {/* Name */}
           <Box sx={{ px: 1.5, pt: '9px', pb: '7px', borderBottom: `2px solid ${brand[400]}` }}>
-            <Typography sx={{ fontWeight: 900, color: '#111', lineHeight: 1.15, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
+            <Typography sx={{ fontWeight: 900, color: '#111', lineHeight: 1.15, fontSize: '0.85rem', letterSpacing: '-0.01em' }}>
               {deck.name}
             </Typography>
             {deck.description && (

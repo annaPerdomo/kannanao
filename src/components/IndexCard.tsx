@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
+import { useCardBorder } from '@/contexts/CardBorderContext';
 
 interface IndexCardProps {
   card: FlashcardType;
@@ -13,20 +15,31 @@ interface IndexCardProps {
   height?: number | string;
 }
 
-const faceStyle = {
+const baseFaceStyle = {
   position: 'absolute' as const,
   inset: 0,
   backfaceVisibility: 'hidden' as const,
   WebkitBackfaceVisibility: 'hidden' as const,
   borderRadius: '14px',
-  border: '2px solid #e4e4ec',
-  boxShadow: '0 4px 24px rgba(0,0,0,0.08), 0 1px 6px rgba(0,0,0,0.04)',
   display: 'flex',
   flexDirection: 'column' as const,
   overflow: 'hidden',
 };
 
 export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps) {
+  const theme = useTheme();
+  const { brand } = theme.palette;
+  const { borderStyle: equippedBorder } = useCardBorder();
+  const hasCustomBorder = equippedBorder && Object.keys(equippedBorder).length > 0;
+
+  const faceStyle = {
+    ...baseFaceStyle,
+    border: hasCustomBorder ? equippedBorder.border : '2px solid #e4e4ec',
+    boxShadow: hasCustomBorder
+      ? equippedBorder.boxShadow
+      : '0 4px 24px rgba(0,0,0,0.08), 0 1px 6px rgba(0,0,0,0.04)',
+    background: hasCustomBorder ? (equippedBorder.background ?? undefined) : undefined,
+  };
   const [flipped, setFlipped] = useState(false);
   useEffect(() => { setFlipped(false); }, [card]);
 

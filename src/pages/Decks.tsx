@@ -112,7 +112,7 @@ export default function Decks() {
                 {pinnedDecks.map((deck) => {
                   const owned = isOwner(deck);
                   return (
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={deck.id}>
+                    <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2.4 }} key={deck.id}>
                       <DeckCard
                         deck={deck}
                         onOpen={(id) => router.push(`/deck/${id}`)}
@@ -141,7 +141,7 @@ export default function Decks() {
                 {unpinnedDecks.map((deck) => {
                   const owned = isOwner(deck);
                   return (
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={deck.id}>
+                    <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2.4 }} key={deck.id}>
                       <DeckCard
                         deck={deck}
                         onOpen={(id) => router.push(`/deck/${id}`)}
