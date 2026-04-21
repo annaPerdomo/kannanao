@@ -198,6 +198,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
   }
 
   // ── Quiz card ──────────────────────────────────────────────────────────────
+  if (!card) return null;
   const display = getFlashcardDisplayText(card);
   const answeredCorrectly = selected === card.meaning;
   const answeredWrong = !!selected && !answeredCorrectly;

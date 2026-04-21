@@ -1,6 +1,6 @@
 "use client";
 import { useRef } from "react";
-import { Box, Typography, keyframes } from "@mui/material";
+import { Box, Typography, keyframes, useTheme, alpha } from "@mui/material";
 
 // --- Animations ---
 const float = keyframes`
@@ -55,22 +55,24 @@ const orbit4 = keyframes`
 const SPARKLE_ORBITS = [orbit0, orbit1, orbit2, orbit3, orbit4];
 const SPARKLE_DURATIONS = ["3.2s", "2.8s", "3.8s", "3s", "2.6s"];
 const SPARKLE_CHARS = ["✦", "⋆", "✸", "✺", "✷"];
-const SPARKLE_COLORS = ["#F9A8D4", "#F472B6", "#FBCFE8", "#BE185D", "#FDF2F8"];
+const SPARKLE_COLOR_KEYS = [300, 400, 200, 700, 100] as const;
+
+const CYCLE_SECONDS = 0.8;
 
 const slowFade = keyframes`
-  0%, 12%   { opacity: 1; }
-  14%, 100% { opacity: 0; }
+  0%, 10%  { opacity: 1; }
+  12.5%, 100% { opacity: 0; }
 `;
 
 const KANJI = [
-  { char: "学", label: "learn" },
-  { char: "語", label: "language" },
-  { char: "花", label: "flower" },
-  { char: "星", label: "star" },
-  { char: "夢", label: "dream" },
-  { char: "心", label: "heart" },
-  { char: "空", label: "sky" },
-  { char: "愛", label: "love" },
+  { char: "学", label: "まなぶ" },
+  { char: "語", label: "かたる" },
+  { char: "花", label: "はな" },
+  { char: "星", label: "ほし" },
+  { char: "夢", label: "ゆめ" },
+  { char: "心", label: "こころ" },
+  { char: "空", label: "そら" },
+  { char: "愛", label: "あい" },
 ];
 
 interface LoadingProps {
@@ -78,6 +80,8 @@ interface LoadingProps {
 }
 
 export function Loading({ message = "Loading…" }: LoadingProps) {
+  const theme = useTheme();
+  const brand = theme.palette.brand;
   const kanjiRef = useRef([...KANJI].sort(() => Math.random() - 0.5));
   const shuffledKanji = kanjiRef.current;
   return (
@@ -91,7 +95,6 @@ export function Loading({ message = "Loading…" }: LoadingProps) {
         gap: 2,
       }}
     >
-      {/* Kanji + orbiting sparkles */}
       <Box
         sx={{
           position: "relative",
@@ -102,20 +105,17 @@ export function Loading({ message = "Loading…" }: LoadingProps) {
           height: 140,
         }}
       >
-        {/* Soft glow behind the character */}
         <Box
           sx={{
             position: "absolute",
             width: 90,
             height: 90,
             borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(249,168,212,0.35) 0%, transparent 70%)",
+            background: `radial-gradient(circle, ${alpha(brand[300], 0.35)} 0%, transparent 70%)`,
             animation: `${pulse} 2s ease-in-out infinite`,
           }}
         />
 
-        {/* Orbiting sparkle particles */}
         {SPARKLE_CHARS.map((s, i) => (
           <Box
             key={i}
@@ -130,10 +130,10 @@ export function Loading({ message = "Loading…" }: LoadingProps) {
               component="span"
               sx={{
                 fontSize: i % 2 === 0 ? "0.75rem" : "0.55rem",
-                color: SPARKLE_COLORS[i],
+                color: brand[SPARKLE_COLOR_KEYS[i]],
                 display: "block",
                 transform: "translateX(-50%) translateY(-50%)",
-                filter: "drop-shadow(0 0 4px rgba(249,168,212,0.9))",
+                filter: `drop-shadow(0 0 4px ${alpha(brand[300], 0.9)})`,
                 lineHeight: 1,
               }}
             >
@@ -142,7 +142,6 @@ export function Loading({ message = "Loading…" }: LoadingProps) {
           </Box>
         ))}
 
-        {/* The kanji itself */}
         <Box sx={{ position: "relative", width: "4.5rem", height: "4.5rem" }}>
           {shuffledKanji.map((k, i) => (
             <Box
@@ -155,8 +154,8 @@ export function Loading({ message = "Loading…" }: LoadingProps) {
                 alignItems: "center",
                 gap: 0.75,
                 opacity: 0,
-                animation: `${slowFade} ${KANJI.length * 3}s ease-in-out infinite`,
-                animationDelay: `${i * 3}s`,
+                animation: `${slowFade} ${KANJI.length * CYCLE_SECONDS}s ease-in-out infinite`,
+                animationDelay: `${i * CYCLE_SECONDS}s`,
               }}
             >
               <Typography
@@ -164,24 +163,23 @@ export function Loading({ message = "Loading…" }: LoadingProps) {
                   fontFamily: (t) => t.fonts.jp,
                   fontSize: "4.5rem",
                   lineHeight: 1,
-                  background:
-                    "linear-gradient(135deg, #F9A8D4 0%, #BE185D 35%, #F472B6 60%, #FBCFE8 100%)",
+                  background: `linear-gradient(135deg, ${brand[300]} 0%, ${brand[700]} 35%, ${brand[400]} 60%, ${brand[200]} 100%)`,
                   backgroundSize: "300% auto",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
                   animation: `${popIn} 0.5s cubic-bezier(0.34,1.56,0.64,1) both, ${shimmer} 4s linear infinite`,
-                  filter: "drop-shadow(0 4px 12px rgba(249,168,212,0.6))",
+                  filter: `drop-shadow(0 4px 12px ${alpha(brand[300], 0.6)})`,
                 }}
               >
                 {k.char}
               </Typography>
               <Typography
                 sx={{
-                  fontSize: "0.6rem",
-                  letterSpacing: "0.18em",
-                  textTransform: "uppercase",
-                  color: "rgba(190,24,93,0.5)",
+                  fontFamily: (t) => t.fonts.jp,
+                  fontSize: "0.7rem",
+                  letterSpacing: "0.12em",
+                  color: alpha(brand[700], 0.5),
                   animation: `${pulse} 2.2s ease-in-out infinite`,
                 }}
               >
@@ -192,7 +190,6 @@ export function Loading({ message = "Loading…" }: LoadingProps) {
         </Box>
       </Box>
 
-      {/* Bouncing dots */}
       <Box sx={{ display: "flex", gap: 0.75 }}>
         {[0, 1, 2].map((i) => (
           <Box
@@ -201,7 +198,7 @@ export function Loading({ message = "Loading…" }: LoadingProps) {
               width: 5,
               height: 5,
               borderRadius: "50%",
-              bgcolor: i === 1 ? "#F472B6" : "#F9A8D4",
+              bgcolor: i === 1 ? brand[400] : brand[300],
               animation: `${pulse} 1s ease-in-out infinite`,
               animationDelay: `${i * 0.2}s`,
             }}
@@ -212,9 +209,8 @@ export function Loading({ message = "Loading…" }: LoadingProps) {
       <Typography
         variant="caption"
         sx={{
-          color: "rgba(190,24,93,0.5)",
+          color: alpha(brand[700], 0.5),
           letterSpacing: "0.14em",
-          textTransform: "uppercase",
           fontSize: "0.62rem",
         }}
       >
