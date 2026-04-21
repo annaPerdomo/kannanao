@@ -138,23 +138,23 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
         {displayXp.toLocaleString()} XP
       </Typography>
 
-      {/* Floating XP pills */}
+      {/* Floating XP pills — fly downward so they aren't clipped by navbar top */}
       {pendingXp.map((evt) => (
         <Box
           key={evt.key}
           sx={{
             position: 'absolute',
             left: '50%',
-            bottom: '100%',
+            top: '100%',
             pointerEvents: 'none',
             zIndex: 20,
-            animation: 'xpFlyToNav 1.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
-            '@keyframes xpFlyToNav': {
-              '0%': { opacity: 0, transform: 'translateX(-50%) translateY(20px) scale(0.3)' },
-              '15%': { opacity: 1, transform: 'translateX(-50%) translateY(-22px) scale(1.4)' },
-              '35%': { opacity: 1, transform: 'translateX(-50%) translateY(-36px) scale(1.2)' },
-              '65%': { opacity: 0.9, transform: 'translateX(-50%) translateY(-12px) scale(0.95)' },
-              '100%': { opacity: 0, transform: 'translateX(-50%) translateY(0px) scale(0.5)' },
+            animation: 'xpFlyDown 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+            '@keyframes xpFlyDown': {
+              '0%':  { opacity: 0, transform: 'translateX(-50%) translateY(-8px) scale(0.2)' },
+              '12%': { opacity: 1, transform: 'translateX(-50%) translateY(14px) scale(1.5)' },
+              '30%': { opacity: 1, transform: 'translateX(-50%) translateY(28px) scale(1.25)' },
+              '55%': { opacity: 1, transform: 'translateX(-50%) translateY(38px) scale(1.1)' },
+              '100%': { opacity: 0, transform: 'translateX(-50%) translateY(56px) scale(0.6)' },
             },
           }}
         >
@@ -162,14 +162,15 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
             sx={{
               fontFamily: (t) => t.fonts.cute,
               fontWeight: 800,
-              fontSize: '1rem',
+              fontSize: '1.15rem',
               color: '#fff',
-              textShadow: '0 1px 10px rgba(245,158,11,0.8), 0 0 6px rgba(245,158,11,0.6)',
-              background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
-              borderRadius: 2,
-              px: 1.25,
-              py: 0.3,
+              textShadow: '0 1px 12px rgba(245,158,11,0.9), 0 0 8px rgba(245,158,11,0.7)',
+              background: 'linear-gradient(135deg, #f59e0b, #ef4444, #ec4899)',
+              borderRadius: 2.5,
+              px: 1.5,
+              py: 0.4,
               whiteSpace: 'nowrap',
+              boxShadow: '0 4px 16px rgba(245,158,11,0.45)',
             }}
           >
             +{evt.amount} XP

@@ -1,4 +1,4 @@
-export type PracticeMode = 'match' | 'fill' | 'recall';
+export type PracticeMode = 'match' | 'fill' | 'recall' | 'study' | 'speech_read' | 'speech_recall';
 export type CelebTheme = 'confetti' | 'fireworks' | 'stars' | 'bubbles' | 'emojiRain' | 'hearts' | 'bunnies' | 'sparkle';
 
 export interface ThemeConfig {
@@ -42,9 +42,12 @@ export const SPARKLE_COLORS = [
 ];
 
 export const MODE_EMOJIS: Record<PracticeMode, string[]> = {
-  recall: ['🌟', '✨', '💫', '⭐', '🎯', '🏆'],
-  fill:   ['✏️', '📝', '🌸', '💐', '✨', '🎨'],
-  match:  ['🎯', '🎊', '🎉', '🎈', '⭐', '🔗'],
+  recall:        ['🌟', '✨', '💫', '⭐', '🎯', '🏆'],
+  fill:          ['✏️', '📝', '🌸', '💐', '✨', '🎨'],
+  match:         ['🎯', '🎊', '🎉', '🎈', '⭐', '🔗'],
+  study:         ['📚', '🌸', '✨', '💫', '🦋', '⭐'],
+  speech_read:   ['🎤', '🌸', '✨', '📖', '🌟', '🎀'],
+  speech_recall: ['🎤', '🌟', '💪', '⭐', '🎯', '✨'],
 };
 
 export const THEME_CONFIGS: Record<CelebTheme, ThemeConfig> = {
