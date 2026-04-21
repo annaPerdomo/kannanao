@@ -1,4 +1,5 @@
 import { TextField } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 
 interface SmallFieldProps {
   label: string;
@@ -10,6 +11,9 @@ interface SmallFieldProps {
 }
 
 export function SmallField({ label, value, onChange, multiline, endAdornment, helperText }: SmallFieldProps) {
+  const { palette } = useTheme();
+  const { brand } = palette;
+
   return (
     <TextField
       size="small"
@@ -25,19 +29,19 @@ export function SmallField({ label, value, onChange, multiline, endAdornment, he
         '& .MuiOutlinedInput-root': {
           borderRadius: '8px',
           fontSize: '0.78rem',
-                   '& fieldset': { borderColor: 'rgba(249,168,212,0.35)' },
-          '&:hover fieldset': { borderColor: '#F472B6' },
-          '&.Mui-focused fieldset': { borderColor: '#EC4899', borderWidth: '1.5px' },
+          '& fieldset': { borderColor: alpha(brand[300], 0.35) },
+          '&:hover fieldset': { borderColor: brand[400] },
+          '&.Mui-focused fieldset': { borderColor: brand[500], borderWidth: '1.5px' },
         },
         '& .MuiOutlinedInput-input': { py: '6px', px: '10px' },
         '& .MuiInputLabel-root': {
           fontSize: '0.72rem',
-                   color: '#BE185D',
-          '&.Mui-focused': { color: '#EC4899' },
+          color: brand[700],
+          '&.Mui-focused': { color: brand[500] },
         },
         '& .MuiFormHelperText-root': {
           fontSize: '0.62rem',
-                   color: '#C2709A',
+          color: alpha(brand[700], 0.6),
           mx: 0.5,
         },
       }}

@@ -5,6 +5,7 @@ import {
   Box, Typography, IconButton, TextField, Tooltip,
   CircularProgress, Collapse, ToggleButtonGroup, ToggleButton,
 } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -31,6 +32,8 @@ interface CardRowProps {
 }
 
 export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpand, onUpdate, onDelete }: CardRowProps) {
+  const theme = useTheme();
+  const { brand, accent } = theme.palette;
   const [refreshingImage, setRefreshingImage] = useState(false);
   const [formattingFurigana, setFormattingFurigana] = useState(false);
   const [imageQuery, setImageQuery] = useState(card.image_query || card.word);
@@ -73,15 +76,17 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
   const subtitleText =
     card.mainViewMode === 'kanji' && card.reading ? card.reading : card.meaning;
 
+  const toggleSx = compactToggleSx(theme);
+
   return (
     <Box
       sx={{
-        border: '1.5px solid rgba(249,168,212,0.3)',
+        border: `1.5px solid ${alpha(brand[300], 0.3)}`,
         borderRadius: '14px',
-        bgcolor: '#FFFBFE',
+        bgcolor: brand[50],
         overflow: 'hidden',
         transition: 'box-shadow 0.15s ease',
-        '&:hover': { boxShadow: '0 2px 12px rgba(249,168,212,0.18)' },
+        '&:hover': { boxShadow: `0 2px 12px ${alpha(brand[300], 0.18)}` },
       }}
     >
       {/* Summary row */}
@@ -95,22 +100,22 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
         <Box
           sx={{
             width: 40, height: 40, borderRadius: '8px', flexShrink: 0,
-            overflow: 'hidden', bgcolor: 'rgba(249,168,212,0.12)',
+            overflow: 'hidden', bgcolor: alpha(brand[300], 0.12),
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
           {card.imageUrl ? (
             <Box component="img" src={card.imageUrl} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
-            <Typography sx={{ fontSize: '0.7rem', color: '#C2709A' }}>—</Typography>
+            <Typography sx={{ fontSize: '0.7rem', color: alpha(brand[700], 0.6) }}>—</Typography>
           )}
         </Box>
 
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-          <Typography noWrap sx={{ fontSize: '0.88rem', fontWeight: 800, color: '#9D174D', lineHeight: 1.25 }}>
+          <Typography noWrap sx={{ fontSize: '0.88rem', fontWeight: 800, color: brand[800], lineHeight: 1.25 }}>
             {titleText}
           </Typography>
-          <Typography noWrap sx={{ fontSize: '0.72rem', color: '#C2709A', fontWeight: 600, lineHeight: 1.2 }}>
+          <Typography noWrap sx={{ fontSize: '0.72rem', color: alpha(brand[700], 0.6), fontWeight: 600, lineHeight: 1.2 }}>
             {subtitleText}
           </Typography>
         </Box>
@@ -125,7 +130,7 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
               <DeleteOutlineIcon sx={{ fontSize: 14 }} />
             </IconButton>
           </Tooltip>
-          <IconButton size="small" sx={{ color: '#C2709A' }}>
+          <IconButton size="small" sx={{ color: alpha(brand[700], 0.6) }}>
             {expanded ? <ExpandLessIcon sx={{ fontSize: 18 }} /> : <ExpandMoreIcon sx={{ fontSize: 18 }} />}
           </IconButton>
         </Box>
@@ -133,30 +138,30 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
 
       {/* Expanded edit area */}
       <Collapse in={expanded}>
-        <Box sx={{ px: 1.5, pb: 1.5, pt: 1, borderTop: '1px solid rgba(249,168,212,0.2)', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Box sx={{ px: 1.5, pb: 1.5, pt: 1, borderTop: `1px solid ${alpha(brand[300], 0.2)}`, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {/* Image section */}
           <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
             <Box
               sx={{
                 width: 80, height: 80, borderRadius: '10px', overflow: 'hidden', flexShrink: 0,
-                bgcolor: 'rgba(249,168,212,0.08)', border: '1px solid rgba(249,168,212,0.25)',
+                bgcolor: alpha(brand[300], 0.08), border: `1px solid ${alpha(brand[300], 0.25)}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
               }}
             >
               {refreshingImage && (
-                <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(255,251,254,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
-                  <CircularProgress size={20} sx={{ color: '#EC4899' }} />
+                <Box sx={{ position: 'absolute', inset: 0, bgcolor: alpha(brand[50], 0.8), display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                  <CircularProgress size={20} sx={{ color: brand[500] }} />
                 </Box>
               )}
               {card.imageUrl ? (
                 <Box component="img" src={card.imageUrl} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
-                <ImageSearchIcon sx={{ fontSize: 28, color: 'rgba(249,168,212,0.4)' }} />
+                <ImageSearchIcon sx={{ fontSize: 28, color: alpha(brand[300], 0.4) }} />
               )}
             </Box>
 
             <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-              <Typography sx={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#EC4899' }}>
+              <Typography sx={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: brand[500] }}>
                 Image Search
               </Typography>
               <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
@@ -168,9 +173,10 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
                   sx={{
                     flexGrow: 1,
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: '8px', fontSize: '0.78rem',                      '& fieldset': { borderColor: 'rgba(249,168,212,0.35)' },
-                      '&:hover fieldset': { borderColor: '#F472B6' },
-                      '&.Mui-focused fieldset': { borderColor: '#EC4899', borderWidth: '1.5px' },
+                      borderRadius: '8px', fontSize: '0.78rem',
+                      '& fieldset': { borderColor: alpha(brand[300], 0.35) },
+                      '&:hover fieldset': { borderColor: brand[400] },
+                      '&.Mui-focused fieldset': { borderColor: brand[500], borderWidth: '1.5px' },
                     },
                     '& .MuiOutlinedInput-input': { py: '6px', px: '10px' },
                   }}
@@ -179,7 +185,7 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
                 <Tooltip title="Fetch new image">
                   <IconButton
                     size="small" onClick={handleRefreshImage} disabled={refreshingImage}
-                    sx={{ width: 30, height: 30, border: '1.5px solid rgba(249,168,212,0.4)', borderRadius: '8px', color: '#EC4899', '&:hover': { bgcolor: 'rgba(249,168,212,0.1)' } }}
+                    sx={{ width: 30, height: 30, border: `1.5px solid ${alpha(brand[300], 0.4)}`, borderRadius: '8px', color: brand[500], '&:hover': { bgcolor: alpha(brand[300], 0.1) } }}
                   >
                     <AutorenewIcon sx={{ fontSize: 16 }} />
                   </IconButton>
@@ -189,24 +195,24 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
           </Box>
 
           {/* Card settings row */}
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap', bgcolor: 'rgba(249,168,212,0.05)', border: '1px solid rgba(249,168,212,0.18)', borderRadius: '10px', px: 1.25, py: 0.75 }}>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap', bgcolor: alpha(brand[300], 0.05), border: `1px solid ${alpha(brand[300], 0.18)}`, borderRadius: '10px', px: 1.25, py: 0.75 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, color: '#C2709A', whiteSpace: 'nowrap' }}>Display:</Typography>
-              <ToggleButtonGroup value={card.mainViewMode} exclusive size="small" onChange={(_, v) => { if (v) onUpdate(index, { mainViewMode: v }); }} sx={compactToggleSx}>
+              <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, color: alpha(brand[700], 0.6), whiteSpace: 'nowrap' }}>Display:</Typography>
+              <ToggleButtonGroup value={card.mainViewMode} exclusive size="small" onChange={(_, v) => { if (v) onUpdate(index, { mainViewMode: v }); }} sx={toggleSx}>
                 <ToggleButton value="hiragana">ひ</ToggleButton>
                 <ToggleButton value="kanji">漢</ToggleButton>
               </ToggleButtonGroup>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, color: '#C2709A', whiteSpace: 'nowrap' }}>Type:</Typography>
-              <ToggleButtonGroup value={card.cardType ?? 'word'} exclusive size="small" onChange={(_, v) => { if (v) onUpdate(index, { cardType: v }); }} sx={compactToggleSx}>
+              <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, color: alpha(brand[700], 0.6), whiteSpace: 'nowrap' }}>Type:</Typography>
+              <ToggleButtonGroup value={card.cardType ?? 'word'} exclusive size="small" onChange={(_, v) => { if (v) onUpdate(index, { cardType: v }); }} sx={toggleSx}>
                 <ToggleButton value="word">Word</ToggleButton>
                 <ToggleButton value="phrase">Phrase</ToggleButton>
               </ToggleButtonGroup>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, color: '#C2709A', whiteSpace: 'nowrap' }}>JLPT:</Typography>
-              <ToggleButtonGroup value={card.jlptLevel ?? 'none'} exclusive size="small" onChange={(_, v) => { if (v) onUpdate(index, { jlptLevel: v === 'none' ? undefined : v }); }} sx={compactToggleSx}>
+              <Typography sx={{ fontSize: '0.58rem', fontWeight: 700, color: alpha(brand[700], 0.6), whiteSpace: 'nowrap' }}>JLPT:</Typography>
+              <ToggleButtonGroup value={card.jlptLevel ?? 'none'} exclusive size="small" onChange={(_, v) => { if (v) onUpdate(index, { jlptLevel: v === 'none' ? undefined : v }); }} sx={toggleSx}>
                 {JLPT_LEVELS.map((lvl) => (
                   <ToggleButton key={lvl} value={lvl}>{lvl === 'none' ? '—' : lvl}</ToggleButton>
                 ))}
@@ -222,9 +228,9 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
           <SmallField label="Meaning" value={card.meaning} onChange={handleField('meaning')} />
 
           <Box sx={{ mt: 0.5 }}>
-            <Typography sx={{ fontSize: '0.6rem', color: '#9D74B0', fontWeight: 600, mb: 1, lineHeight: 1.4 }}>
+            <Typography sx={{ fontSize: '0.6rem', color: alpha(accent[700], 0.7), fontWeight: 600, mb: 1, lineHeight: 1.4 }}>
               💡 Use{' '}
-              <Box component="code" sx={{ bgcolor: 'rgba(168,85,247,0.08)', px: 0.4, borderRadius: '3px', fontSize: '0.58rem' }}>
+              <Box component="code" sx={{ bgcolor: alpha(accent[500], 0.08), px: 0.4, borderRadius: '3px', fontSize: '0.58rem' }}>
                 {'{漢字|かんじ}'}
               </Box>{' '}
               to show readings above kanji on the card
@@ -240,10 +246,10 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
                     <IconButton
                       size="small" onClick={handleAutoFurigana}
                       disabled={formattingFurigana || !card.example_jp.trim()}
-                      sx={{ color: '#A855F7', '&:hover': { bgcolor: 'rgba(168,85,247,0.08)' } }}
+                      sx={{ color: accent[500], '&:hover': { bgcolor: alpha(accent[500], 0.08) } }}
                     >
                       {formattingFurigana
-                        ? <CircularProgress size={14} sx={{ color: '#A855F7' }} />
+                        ? <CircularProgress size={14} sx={{ color: accent[500] }} />
                         : <AutoFixHighIcon sx={{ fontSize: 16 }} />}
                     </IconButton>
                   </Tooltip>

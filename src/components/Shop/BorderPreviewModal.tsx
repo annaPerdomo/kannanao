@@ -9,13 +9,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
-import { ThemeProvider, useTheme, alpha } from '@mui/material/styles';
+import { useTheme, alpha } from '@mui/material/styles';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { CARD_BORDER_STYLES } from '@/hooks/useShop';
 import { CardBorderCtx } from '@/contexts/CardBorderContext';
 import { ImageCard } from '@/components/ImageCard';
 import { Flashcard } from '@/components/Flashcard';
-import { createAppTheme } from '@/theme';
 import { SAMPLE_CARD } from './constants';
 
 export function BorderPreviewModal({
@@ -34,7 +33,6 @@ export function BorderPreviewModal({
   const [cardView, setCardView] = useState<'collection' | 'study'>('study');
 
   const borderStyle = CARD_BORDER_STYLES[borderKey] ?? {};
-  const previewTheme = useMemo(() => createAppTheme('sakura'), []);
 
   const mockBorderCtx = useMemo(
     () => ({ borderStyle, equippedBorderKey: borderKey }),
@@ -107,22 +105,20 @@ export function BorderPreviewModal({
       </Box>
 
       <DialogContent sx={{ display: 'flex', justifyContent: 'center', pt: 0, pb: 3, px: { xs: 2, sm: 3 } }}>
-        <ThemeProvider theme={previewTheme}>
-          <CardBorderCtx.Provider value={mockBorderCtx}>
-            {cardView === 'study' ? (
-              <Box sx={{ width: 280, height: 420 }}>
-                <Flashcard card={SAMPLE_CARD} width={280} height={420} />
-              </Box>
-            ) : (
-              <Box sx={{ width: 240 }}>
-                <ImageCard
-                  card={SAMPLE_CARD}
-                  onDelete={() => {}}
-                />
-              </Box>
-            )}
-          </CardBorderCtx.Provider>
-        </ThemeProvider>
+        <CardBorderCtx.Provider value={mockBorderCtx}>
+          {cardView === 'study' ? (
+            <Box sx={{ width: 280, height: 420 }}>
+              <Flashcard card={SAMPLE_CARD} width={280} height={420} />
+            </Box>
+          ) : (
+            <Box sx={{ width: 240 }}>
+              <ImageCard
+                card={SAMPLE_CARD}
+                onDelete={() => {}}
+              />
+            </Box>
+          )}
+        </CardBorderCtx.Provider>
       </DialogContent>
 
       <DialogActions sx={{ justifyContent: 'center', pb: 2.5 }}>
