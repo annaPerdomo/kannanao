@@ -13,7 +13,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SchoolIcon from '@mui/icons-material/School';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import { FONT_DISPLAY, LAYOUT } from '@/theme';
+import { FONT_CUTE, LAYOUT } from '@/theme';
 import { PageHeader } from '@/components/PageHeader';
 import { useProgress, ACHIEVEMENTS } from '@/hooks/useProgress';
 import { StatCard } from '@/components/Stats/StatCard';
@@ -86,7 +86,7 @@ export default function Stats() {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
           <EmojiEventsIcon sx={{ color: brand[700], fontSize: '1.1rem' }} />
-          <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1rem', color: brand[700] }}>
+          <Typography sx={{ fontFamily: FONT_CUTE, fontWeight: 600, fontSize: '1rem', color: brand[700] }}>
             Achievements
           </Typography>
           <Chip
@@ -134,7 +134,7 @@ export default function Stats() {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <CalendarTodayIcon sx={{ color: brand[700], fontSize: '1rem' }} />
-          <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1rem', color: brand[700] }}>
+          <Typography sx={{ fontFamily: FONT_CUTE, fontWeight: 600, fontSize: '1rem', color: brand[700] }}>
             Recent Sessions
           </Typography>
         </Box>
@@ -178,7 +178,7 @@ export default function Stats() {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <CalendarTodayIcon sx={{ color: brand[700], fontSize: '1rem' }} />
-          <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1rem', color: brand[700] }}>
+          <Typography sx={{ fontFamily: FONT_CUTE, fontWeight: 600, fontSize: '1rem', color: brand[700] }}>
             Study Activity
           </Typography>
         </Box>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import {
-  Box, Container, Typography, Paper, Alert,
+  Box, Typography, Paper, Alert,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Chip, Stack, Divider, IconButton, Dialog, DialogTitle,
   DialogContent, DialogActions, TextField, Button, Snackbar,
@@ -22,7 +22,8 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loading } from '@/components/Loading';
-import { FONT_DISPLAY, FONT_MONO } from '@/theme';
+import { FONT_CUTE, FONT_MONO, LAYOUT } from '@/theme';
+import { PageHeader } from '@/components/PageHeader';
 
 interface UserStat {
   id: string;
@@ -93,7 +94,7 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
       }}
     >
       <Box sx={{ color: brand[500], mb: 0.5 }}>{icon}</Box>
-      <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1.8rem', color: brand[700], lineHeight: 1.1 }}>
+      <Typography sx={{ fontFamily: FONT_CUTE, fontSize: '1.8rem', color: brand[700], lineHeight: 1.1, fontWeight: 700 }}>
         {value}
       </Typography>
       <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', mt: 0.5 }}>{label}</Typography>
@@ -198,7 +199,7 @@ export default function AdminPage() {
   }, [fetchData]);
 
   if (loading) return <Loading />;
-  if (error) return <Container maxWidth="md" sx={{ mt: 6 }}><Alert severity="error">{error}</Alert></Container>;
+  if (error) return <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, mt: 6 }}><Alert severity="error">{error}</Alert></Box>;
   if (!data) return null;
 
   const tablePaperSx = {
@@ -209,7 +210,8 @@ export default function AdminPage() {
   };
 
   const headerCellSx = {
-    fontFamily: FONT_DISPLAY,
+    fontFamily: FONT_CUTE,
+    fontWeight: 600,
     color: brand[700],
     fontSize: '0.82rem',
     borderBottom: `2px solid ${alpha(brand[300], 0.3)}`,
@@ -222,17 +224,23 @@ export default function AdminPage() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography
-        sx={{
-          fontFamily: FONT_DISPLAY,
-          fontSize: { xs: '1.6rem', sm: '2rem' },
-          color: brand[700],
-          mb: 3,
-        }}
-      >
-        Admin Dashboard
-      </Typography>
+    <Box
+      sx={{
+        maxWidth: LAYOUT.contentMaxWidth,
+        mx: 'auto',
+        px: LAYOUT.pagePx,
+        py: { xs: 2, sm: 4 },
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 3,
+      }}
+    >
+      <PageHeader
+        emoji="🔧"
+        title="Admin Dashboard"
+        subtitle="Manage users, analytics, and waitlist"
+        mb={0}
+      />
 
       {/* Overview Stats */}
       <Stack direction="row" flexWrap="wrap" gap={2} sx={{ mb: 4 }}>
@@ -248,7 +256,8 @@ export default function AdminPage() {
       {/* Users Table */}
       <Typography
         sx={{
-          fontFamily: FONT_DISPLAY,
+          fontFamily: FONT_CUTE,
+          fontWeight: 600,
           fontSize: '1.2rem',
           color: brand[700],
           mb: 2,
@@ -329,7 +338,8 @@ export default function AdminPage() {
       {/* Waitlist Table */}
       <Typography
         sx={{
-          fontFamily: FONT_DISPLAY,
+          fontFamily: FONT_CUTE,
+          fontWeight: 600,
           fontSize: '1.2rem',
           color: brand[700],
           mb: 2,
@@ -376,7 +386,7 @@ export default function AdminPage() {
       {/* Embed Analytics */}
       <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 2 }}>
         <BarChartIcon sx={{ color: brand[500] }} />
-        <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1.2rem', color: brand[700] }}>
+        <Typography sx={{ fontFamily: FONT_CUTE, fontWeight: 600, fontSize: '1.2rem', color: brand[700] }}>
           Embed Analytics
         </Typography>
       </Stack>
@@ -462,7 +472,7 @@ export default function AdminPage() {
           },
         }}
       >
-        <DialogTitle sx={{ fontFamily: FONT_DISPLAY, color: brand[700], pb: 1 }}>
+        <DialogTitle sx={{ fontFamily: FONT_CUTE, fontWeight: 600, color: brand[700], pb: 1 }}>
           {editType === 'password' ? 'Change Password' : editType === 'displayName' ? 'Change Display Name' : 'Change Username'}
           {editUser && (
             <Typography variant="body2" sx={{ color: 'text.secondary', fontFamily: 'inherit', mt: 0.25 }}>
@@ -507,7 +517,7 @@ export default function AdminPage() {
               color: '#fff',
               textTransform: 'none',
               borderRadius: 6,
-              fontFamily: FONT_DISPLAY,
+              fontFamily: FONT_CUTE,
               '&:hover': { bgcolor: brand[800] },
             }}
           >
@@ -527,6 +537,6 @@ export default function AdminPage() {
           {snack?.msg}
         </Alert>
       </Snackbar>
-    </Container>
+    </Box>
   );
 }
