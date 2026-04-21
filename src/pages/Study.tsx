@@ -8,6 +8,7 @@ import {
   LinearProgress,
   Chip,
 } from "@mui/material";
+import { useTheme, alpha } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
@@ -180,6 +181,8 @@ function CelebrationOverlay({ cardCount, onDone }: { cardCount: number; onDone: 
 }
 
 export default function Study({ deckId, onBack }: StudyProps) {
+  const theme = useTheme();
+  const { brand, accent } = theme.palette;
   const { cards, loading: cardsLoading } = useCards(deckId);
   const { decks, loading: decksLoading } = useDecks();
   const { equipped } = useShop();
@@ -301,10 +304,10 @@ export default function Study({ deckId, onBack }: StudyProps) {
             flexGrow: 1,
             height: 6,
             borderRadius: 99,
-            bgcolor: "rgba(249,168,212,0.18)",
+            bgcolor: alpha(brand[300], 0.18),
             "& .MuiLinearProgress-bar": {
               borderRadius: 99,
-              background: "linear-gradient(90deg, #FBCFE8 0%, #F472B6 50%, #C4B5FD 100%)",
+              background: `linear-gradient(90deg, ${brand[200]} 0%, ${brand[400]} 50%, ${accent[300]} 100%)`,
             },
           }}
         />
@@ -312,10 +315,10 @@ export default function Study({ deckId, onBack }: StudyProps) {
           label={`${index + 1} / ${cards.length}`}
           size="small"
           sx={{
-            bgcolor: "rgba(249,168,212,0.18)",
-            color: "#BE185D",
+            bgcolor: alpha(brand[300], 0.18),
+            color: brand[700],
             fontWeight: 600,
-            border: "1px solid rgba(249,168,212,0.4)",
+            border: `1px solid ${alpha(brand[300], 0.4)}`,
           }}
         />
       </Box>
@@ -391,9 +394,9 @@ export default function Study({ deckId, onBack }: StudyProps) {
           onClick={() => navigate(-1)}
           disabled={index === 0 || navigating}
           sx={{
-            border: "1px solid rgba(249,168,212,0.45)",
-            bgcolor: "#FFF3F9",
-            "&:not(:disabled):hover": { borderColor: "#EC4899" },
+            border: `1px solid ${alpha(brand[300], 0.45)}`,
+            bgcolor: brand[50],
+            "&:not(:disabled):hover": { borderColor: brand[500] },
           }}
         >
           <ArrowBackIcon />
@@ -411,9 +414,9 @@ export default function Study({ deckId, onBack }: StudyProps) {
           onClick={() => navigate(1)}
           disabled={index === cards.length - 1 || navigating}
           sx={{
-            border: "1px solid rgba(249,168,212,0.45)",
-            bgcolor: "#FFF3F9",
-            "&:not(:disabled):hover": { borderColor: "#EC4899" },
+            border: `1px solid ${alpha(brand[300], 0.45)}`,
+            bgcolor: brand[50],
+            "&:not(:disabled):hover": { borderColor: brand[500] },
           }}
         >
           <ArrowForwardIcon />

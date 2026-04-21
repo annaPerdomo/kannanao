@@ -50,8 +50,7 @@ export default function Decks() {
       <PageHeader
         emoji="📚"
         title="Your Decks"
-        subtitle="Flashcard Collections"
-        description="Pin decks to see them on your home page. ✨"
+        subtitle="Pin decks to see them on your home page. ✨"
         onBack={() => router.push('/')}
         action={
           <Button

@@ -1,5 +1,6 @@
 'use client';
 import { Box, Button, Typography, Alert, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { AddCardOptionButtons } from './AddCardOptionButtons';
 import { WordChipInput } from '@/components/WordChipInput';
@@ -37,9 +38,12 @@ export function AddCardsSection({
   onImportPdf,
   containerSx,
   title = 'Generate with AI',
-  titleColor = '#EC4899',
+  titleColor,
   generateButtonLabel = 'Generate Cards',
 }: AddCardsSectionProps) {
+  const { palette } = useTheme();
+  const { brand, accent } = palette;
+  const resolvedTitleColor = titleColor ?? brand[500];
   const canGenerate = words.length > 0 || input.trim().length > 0;
 
   const handleGenerate = async () => {
@@ -50,14 +54,21 @@ export function AddCardsSection({
   };
 
   const defaultContainerSx: SxProps<Theme> = {
-    bgcolor: '#FFF8FC',
-    border: '1.5px solid rgba(249,168,212,0.35)',
+    bgcolor: alpha(brand[50], 0.85),
+    border: `1.5px solid ${alpha(brand[300], 0.35)}`,
     borderRadius: '14px',
     p: 2,
     mb: 2,
   };
 
   const mergedContainerSx: SxProps<Theme> = containerSx ? ([defaultContainerSx, containerSx] as SxProps<Theme>) : defaultContainerSx;
+
+  const toggleBtnSx = {
+    px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700,
+    textTransform: 'none',
+    borderColor: alpha(brand[300], 0.5),
+    '&.Mui-selected': { bgcolor: alpha(brand[300], 0.25), color: brand[700], borderColor: alpha(brand[500], 0.5) },
+  };
 
   return (
     <>
@@ -67,7 +78,7 @@ export function AddCardsSection({
             fontSize: '0.65rem',
             fontWeight: 700,
             color: 'text.secondary',
-                       flexShrink: 0,
+            flexShrink: 0,
           }}
         >
           Main display mode:
@@ -80,26 +91,10 @@ export function AddCardsSection({
           disabled={disabled}
           sx={{ ml: 'auto' }}
         >
-          <ToggleButton
-            value="hiragana"
-            sx={{
-              px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700,
-              textTransform: 'none',
-              borderColor: 'rgba(249,168,212,0.5)',
-              '&.Mui-selected': { bgcolor: 'rgba(249,168,212,0.25)', color: '#BE185D', borderColor: 'rgba(236,72,153,0.5)' },
-            }}
-          >
+          <ToggleButton value="hiragana" sx={toggleBtnSx}>
             ひ Hiragana
           </ToggleButton>
-          <ToggleButton
-            value="kanji"
-            sx={{
-              px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700,
-              textTransform: 'none',
-              borderColor: 'rgba(249,168,212,0.5)',
-              '&.Mui-selected': { bgcolor: 'rgba(249,168,212,0.25)', color: '#BE185D', borderColor: 'rgba(236,72,153,0.5)' },
-            }}
-          >
+          <ToggleButton value="kanji" sx={toggleBtnSx}>
             漢 Kanji
           </ToggleButton>
         </ToggleButtonGroup>
@@ -114,8 +109,8 @@ export function AddCardsSection({
             fontWeight: 800,
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
-            color: titleColor,
-                       mb: 1.25,
+            color: resolvedTitleColor,
+            mb: 1.25,
             display: 'flex',
             alignItems: 'center',
             gap: 0.5,
@@ -149,18 +144,18 @@ export function AddCardsSection({
             sx={{
               borderRadius: '10px',
               py: '9px',
-                           fontWeight: 800,
+              fontWeight: 800,
               fontSize: '0.82rem',
               letterSpacing: '0.02em',
               textTransform: 'none',
               background: !disabled && canGenerate
-                ? 'linear-gradient(135deg, #F472B6 0%, #EC4899 50%, #A855F7 100%)'
+                ? `linear-gradient(135deg, ${brand[400]} 0%, ${brand[500]} 50%, ${accent[500]} 100%)`
                 : undefined,
               boxShadow: !disabled && canGenerate
-                ? '0 4px 14px rgba(236,72,153,0.35)'
+                ? `0 4px 14px ${alpha(brand[500], 0.35)}`
                 : undefined,
               '&:hover': {
-                boxShadow: !disabled ? '0 6px 20px rgba(236,72,153,0.45)' : undefined,
+                boxShadow: !disabled ? `0 6px 20px ${alpha(brand[500], 0.45)}` : undefined,
               },
             }}
           >
@@ -174,8 +169,8 @@ export function AddCardsSection({
               mt: 1,
               textAlign: 'center',
               fontSize: '0.67rem',
-              color: '#C2709A',
-                           fontWeight: 600,
+              color: alpha(brand[700], 0.6),
+              fontWeight: 600,
             }}
           >
             {words.length} word{words.length > 1 ? 's' : ''} queued

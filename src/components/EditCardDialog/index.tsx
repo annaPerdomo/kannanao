@@ -10,7 +10,7 @@ import { useTheme, alpha } from '@mui/material/styles';
 import type { Flashcard, JlptLevel } from '@/types/flashcard';
 import { CardSettingsPanel } from './CardSettingsPanel';
 import { ImageSection } from './ImageSection';
-import { FIELD_CONFIG, sharedTextFieldSx, type EditableFields } from './constants';
+import { FIELD_CONFIG, sharedTextFieldSx as sharedTextFieldSxFn, type EditableFields } from './constants';
 import { StyledDialog } from '@/components/StyledDialog';
 
 interface EditCardDialogProps {
@@ -21,8 +21,9 @@ interface EditCardDialogProps {
 }
 
 export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogProps) {
-  const { palette } = useTheme();
-  const { brand, accent } = palette;
+  const theme = useTheme();
+  const { brand, accent } = theme.palette;
+  const sharedTextFieldSx = sharedTextFieldSxFn(theme);
 
   const [fields, setFields] = useState<EditableFields>({
     word: '', reading: '', meaning: '', example_jp: '', example_en: '', imageUrl: undefined,

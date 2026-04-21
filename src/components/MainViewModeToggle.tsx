@@ -1,6 +1,6 @@
-// components/TestModeToggle.tsx
 'use client';
 import { ToggleButton, ToggleButtonGroup, Typography, Box } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 
 interface Props {
   value: 'hiragana' | 'kanji';
@@ -8,6 +8,9 @@ interface Props {
 }
 
 export function MainModeToggle({ value, onChange }: Props) {
+  const { palette } = useTheme();
+  const { brand, accent } = palette;
+
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
       <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
@@ -24,12 +27,12 @@ export function MainModeToggle({ value, onChange }: Props) {
             py: 0.5,
             fontWeight: 700,
             fontSize: '0.85rem',
-            border: '1.5px solid rgba(249,168,212,0.5)',
+            border: `1.5px solid ${alpha(brand[300], 0.5)}`,
             color: 'text.secondary',
             '&.Mui-selected': {
-              background: 'linear-gradient(90deg, #fce7f3, #ede9fe)',
-              color: '#be185d',
-              borderColor: 'rgba(249,168,212,0.7)',
+              background: `linear-gradient(90deg, ${alpha(brand[100], 0.8)}, ${alpha(accent[100], 0.8)})`,
+              color: brand[700],
+              borderColor: alpha(brand[300], 0.7),
             },
           },
         }}

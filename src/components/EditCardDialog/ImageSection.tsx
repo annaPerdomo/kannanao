@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Box, Typography, TextField, Button, Tooltip, CircularProgress } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import ImageSearchIcon from '@mui/icons-material/ImageSearch';
 import { fetchImage } from '@/services/api';
@@ -14,6 +15,8 @@ interface ImageSectionProps {
 }
 
 export function ImageSection({ imageUrl, word, initialQuery, onImageChange }: ImageSectionProps) {
+  const theme = useTheme();
+  const { brand } = theme.palette;
   const [imageQuery, setImageQuery] = useState(initialQuery);
   const [savingImage, setSavingImage] = useState(false);
   const [imageError, setImageError] = useState('');
@@ -39,14 +42,16 @@ export function ImageSection({ imageUrl, word, initialQuery, onImageChange }: Im
     }
   };
 
+  const tfSx = sharedTextFieldSx(theme);
+
   return (
     <Box>
-      <Typography sx={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#EC4899', mb: 1.25 }}>
+      <Typography sx={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: brand[500], mb: 1.25 }}>
         Card Image
       </Typography>
 
       {previewUrl && (
-        <Box sx={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1.5px solid rgba(249,168,212,0.35)', mb: 1.5, height: 140, bgcolor: '#FFF0F8' }}>
+        <Box sx={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: `1.5px solid ${alpha(brand[300], 0.35)}`, mb: 1.5, height: 140, bgcolor: alpha(brand[50], 0.8) }}>
           <Box component="img" src={previewUrl} alt="Card image preview" sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         </Box>
       )}
@@ -62,10 +67,10 @@ export function ImageSection({ imageUrl, word, initialQuery, onImageChange }: Im
           error={!!imageError}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleRegenerateImage(); } }}
           sx={{
-            ...sharedTextFieldSx,
+            ...tfSx,
             '& .MuiFormHelperText-root': {
-              ...sharedTextFieldSx['& .MuiFormHelperText-root'],
-              color: imageError ? 'error.main' : '#C2709A',
+              ...tfSx['& .MuiFormHelperText-root'],
+              color: imageError ? 'error.main' : alpha(brand[700], 0.6),
             },
           }}
         />
@@ -74,15 +79,15 @@ export function ImageSection({ imageUrl, word, initialQuery, onImageChange }: Im
             <Button
               variant="outlined" onClick={handleRegenerateImage} disabled={savingImage}
               startIcon={
-                savingImage ? <CircularProgress size={13} sx={{ color: '#EC4899' }} />
+                savingImage ? <CircularProgress size={13} sx={{ color: brand[500] }} />
                 : previewUrl ? <AutorenewIcon sx={{ fontSize: 15 }} />
                 : <ImageSearchIcon sx={{ fontSize: 15 }} />
               }
               sx={{
                 borderRadius: '10px', height: 40, minWidth: 'auto', px: 1.5, flexShrink: 0,
                 fontSize: '0.72rem', fontWeight: 700, whiteSpace: 'nowrap', textTransform: 'none',
-                borderColor: 'rgba(249,168,212,0.5)', color: '#BE185D',
-                '&:hover': { borderColor: '#F472B6', bgcolor: '#FFF0F8' },
+                borderColor: alpha(brand[300], 0.5), color: brand[700],
+                '&:hover': { borderColor: brand[400], bgcolor: brand[50] },
               }}
             >
               {savingImage ? 'Searching…' : previewUrl ? 'Regen' : 'Fetch'}
