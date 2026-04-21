@@ -7,7 +7,6 @@ import { useTheme, alpha } from '@mui/material/styles';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import IosShareIcon from '@mui/icons-material/IosShare';
-import { FONT_DISPLAY } from '@/theme';
 import type { DeckShare } from '@/lib/supabase';
 import { dbShareDeck, dbGetDeckShares, dbUnShareDeck } from '@/lib/supabase';
 import { StyledDialog } from '@/components/StyledDialog';
@@ -105,7 +104,7 @@ export function ShareDeckDialog({ open, onClose, deckId, deckName }: Props) {
               bgcolor: alpha(accent[100], 0.5),
               border: `1.5px solid ${alpha(accent[300], 0.3)}`,
             }}>
-              <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '0.95rem', color: 'text.primary' }}>
+              <Typography sx={{ fontFamily: (t) => t.fonts.display, fontSize: '0.95rem', color: 'text.primary' }}>
                 {share.username}
               </Typography>
               <IconButton size="small" onClick={() => handleRemove(share.id)} aria-label="Remove share"

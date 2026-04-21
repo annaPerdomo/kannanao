@@ -24,7 +24,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useProgress } from '@/hooks/useProgress';
 import { useShop, SHOP_ITEMS, THEME_KEY_TO_SCHEME } from '@/hooks/useShop';
 import { useColorScheme } from '@/contexts/ThemeContext';
-import { FONT_CUTE, LAYOUT, type ColorScheme } from '@/theme';
+import { LAYOUT, type ColorScheme } from '@/theme';
 import type { ShopCategory, ShopItem } from '@/types/shop';
 import { float, celebrate } from '@/components/Shop/animations';
 import { Sparkles } from '@/components/Shop/Sparkles';
@@ -193,7 +193,7 @@ export default function Shop() {
                   <AutoAwesomeIcon sx={{ fontSize: '1rem', color: '#D97706' }} />
                   <Typography
                     sx={{
-                      fontFamily: FONT_CUTE,
+                      fontFamily: (t) => t.fonts.cute,
                       fontSize: { xs: '1.6rem', sm: '2rem' },
                       color: '#D97706',
                       lineHeight: 1,
@@ -342,7 +342,7 @@ export default function Shop() {
           }}
         >
           <AutoAwesomeIcon sx={{ fontSize: '1.4rem', color: brand[400], mb: 0.5 }} />
-          <Typography sx={{ fontFamily: FONT_CUTE, fontSize: '0.82rem', color: brand[700], fontWeight: 600 }}>
+          <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontSize: '0.82rem', color: brand[700], fontWeight: 600 }}>
             Keep studying to earn more XP!
           </Typography>
           <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary', mt: 0.25 }}>
@@ -399,7 +399,7 @@ export default function Shop() {
               )}
             </Box>
 
-            <DialogTitle sx={{ fontFamily: FONT_CUTE, color: brand[700], textAlign: 'center', pt: 6, pb: 1, fontSize: '1.2rem' }}>
+            <DialogTitle sx={{ fontFamily: (t) => t.fonts.cute, color: brand[700], textAlign: 'center', pt: 6, pb: 1, fontSize: '1.2rem' }}>
               Unlock {confirmItem.name}?
             </DialogTitle>
             <DialogContent>
@@ -459,7 +459,7 @@ export default function Shop() {
                   borderRadius: 2,
                   px: 4,
                   py: 1,
-                  fontFamily: FONT_CUTE,
+                  fontFamily: (t) => t.fonts.cute,
                   fontSize: '0.95rem',
                   background: `linear-gradient(135deg, ${brand[300]}, ${brand[500]})`,
                   boxShadow: `0 4px 16px ${alpha(brand[400], 0.3)}`,
@@ -500,14 +500,14 @@ export default function Shop() {
           }}
         >
           <VisibilityIcon sx={{ color: brand[500], fontSize: '1.2rem' }} />
-          <Typography sx={{ fontFamily: FONT_CUTE, fontSize: '0.9rem', color: brand[700] }}>
+          <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontSize: '0.9rem', color: brand[700] }}>
             Previewing <strong>{previewingTheme.item.name}</strong>
           </Typography>
           <Button
             onClick={handleEndThemePreview}
             size="small"
             variant="outlined"
-            sx={{ borderRadius: 2, fontFamily: FONT_CUTE, fontSize: '0.78rem', px: 2, minWidth: 0 }}
+            sx={{ borderRadius: 2, fontFamily: (t) => t.fonts.cute, fontSize: '0.78rem', px: 2, minWidth: 0 }}
           >
             End Preview
           </Button>

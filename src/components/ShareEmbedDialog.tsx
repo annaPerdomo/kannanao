@@ -9,7 +9,6 @@ import CodeIcon from '@mui/icons-material/Code';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckIcon from '@mui/icons-material/Check';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { FONT_MONO } from '@/theme';
 import { dbSetDeckPublic } from '@/lib/supabase';
 import { StyledDialog } from '@/components/StyledDialog';
 
@@ -124,7 +123,7 @@ export function ShareEmbedDialog({
             <Typography
               component="pre"
               sx={{
-                fontFamily: FONT_MONO, fontSize: '0.72rem',
+                fontFamily: (t) => t.fonts.mono, fontSize: '0.72rem',
                 color: 'text.primary', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
                 m: 0, lineHeight: 1.6,
               }}
@@ -165,7 +164,7 @@ export function ShareEmbedDialog({
               'Save — students can flip cards without logging in',
             ].map((step, i) => (
               <Box key={i} sx={{ display: 'flex', gap: 1, mb: 0.5 }}>
-                <Typography sx={{ fontSize: '0.68rem', color: brand[500], fontWeight: 800, minWidth: 14, fontFamily: FONT_MONO }}>
+                <Typography sx={{ fontSize: '0.68rem', color: brand[500], fontWeight: 800, minWidth: 14, fontFamily: (t) => t.fonts.mono }}>
                   {i + 1}.
                 </Typography>
                 <Typography sx={{ fontSize: '0.68rem', color: 'text.secondary' }}>{step}</Typography>

@@ -22,7 +22,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loading } from '@/components/Loading';
-import { FONT_CUTE, FONT_MONO, LAYOUT } from '@/theme';
+import { LAYOUT } from '@/theme';
 import { PageHeader } from '@/components/PageHeader';
 
 interface UserStat {
@@ -94,7 +94,7 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
       }}
     >
       <Box sx={{ color: brand[500], mb: 0.5 }}>{icon}</Box>
-      <Typography sx={{ fontFamily: FONT_CUTE, fontSize: '1.8rem', color: brand[700], lineHeight: 1.1, fontWeight: 700 }}>
+      <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontSize: '1.8rem', color: brand[700], lineHeight: 1.1, fontWeight: 700 }}>
         {value}
       </Typography>
       <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', mt: 0.5 }}>{label}</Typography>
@@ -210,7 +210,7 @@ export default function AdminPage() {
   };
 
   const headerCellSx = {
-    fontFamily: FONT_CUTE,
+    fontFamily: theme.fonts.cute,
     fontWeight: 600,
     color: brand[700],
     fontSize: '0.82rem',
@@ -256,7 +256,7 @@ export default function AdminPage() {
       {/* Users Table */}
       <Typography
         sx={{
-          fontFamily: FONT_CUTE,
+          fontFamily: (t) => t.fonts.cute,
           fontWeight: 600,
           fontSize: '1.2rem',
           color: brand[700],
@@ -338,7 +338,7 @@ export default function AdminPage() {
       {/* Waitlist Table */}
       <Typography
         sx={{
-          fontFamily: FONT_CUTE,
+          fontFamily: (t) => t.fonts.cute,
           fontWeight: 600,
           fontSize: '1.2rem',
           color: brand[700],
@@ -386,7 +386,7 @@ export default function AdminPage() {
       {/* Embed Analytics */}
       <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 2 }}>
         <BarChartIcon sx={{ color: brand[500] }} />
-        <Typography sx={{ fontFamily: FONT_CUTE, fontWeight: 600, fontSize: '1.2rem', color: brand[700] }}>
+        <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, fontSize: '1.2rem', color: brand[700] }}>
           Embed Analytics
         </Typography>
       </Stack>
@@ -424,7 +424,7 @@ export default function AdminPage() {
                       <Typography sx={{ fontSize: '1rem' }}>{d.deckEmoji}</Typography>
                       <Box>
                         <Typography sx={{ fontWeight: 600, fontSize: '0.82rem' }}>{d.deckName}</Typography>
-                        <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', fontFamily: FONT_MONO }}>
+                        <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', fontFamily: (t) => t.fonts.mono }}>
                           {d.deckId.slice(0, 8)}…
                         </Typography>
                       </Box>
@@ -472,7 +472,7 @@ export default function AdminPage() {
           },
         }}
       >
-        <DialogTitle sx={{ fontFamily: FONT_CUTE, fontWeight: 600, color: brand[700], pb: 1 }}>
+        <DialogTitle sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, color: brand[700], pb: 1 }}>
           {editType === 'password' ? 'Change Password' : editType === 'displayName' ? 'Change Display Name' : 'Change Username'}
           {editUser && (
             <Typography variant="body2" sx={{ color: 'text.secondary', fontFamily: 'inherit', mt: 0.25 }}>
@@ -517,7 +517,7 @@ export default function AdminPage() {
               color: '#fff',
               textTransform: 'none',
               borderRadius: 6,
-              fontFamily: FONT_CUTE,
+              fontFamily: (t) => t.fonts.cute,
               '&:hover': { bgcolor: brand[800] },
             }}
           >

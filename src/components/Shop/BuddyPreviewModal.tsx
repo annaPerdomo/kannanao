@@ -8,7 +8,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import { useTheme, alpha, keyframes } from '@mui/material/styles';
 import { BUDDY_CONFIG } from '@/hooks/useShop';
-import { FONT_CUTE } from '@/theme';
 import type { ShopItem } from '@/types/shop';
 
 const float = keyframes`
@@ -134,7 +133,7 @@ export function BuddyPreviewModal({
 
         <Typography
           sx={{
-            fontFamily: FONT_CUTE,
+            fontFamily: (t) => t.fonts.cute,
             fontSize: '1.2rem',
             fontWeight: 700,
             color: brand[700],
@@ -184,7 +183,7 @@ export function BuddyPreviewModal({
         <Button
           onClick={onClose}
           variant="outlined"
-          sx={{ borderRadius: 2, px: 4, fontFamily: FONT_CUTE }}
+          sx={{ borderRadius: 2, px: 4, fontFamily: (t) => t.fonts.cute }}
         >
           Close
         </Button>

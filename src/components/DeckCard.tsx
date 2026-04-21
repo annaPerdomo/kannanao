@@ -10,7 +10,6 @@ import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined';
 import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
 import type { Deck } from '@/types/deck';
-import { FONT_MONO } from '@/theme';
 
 interface DeckCardProps {
   deck: Deck;
@@ -150,7 +149,7 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
               borderRadius: '6px', px: 1.2, py: '7px',
               border: `1px solid ${alpha(brand[400], 0.22)}`,
             }}>
-              <Typography sx={{ fontSize: '0.54rem', fontWeight: 900, color: brand[500], letterSpacing: '0.12em', textTransform: 'uppercase', mb: '3px', fontFamily: FONT_MONO }}>
+              <Typography sx={{ fontSize: '0.54rem', fontWeight: 900, color: brand[500], letterSpacing: '0.12em', textTransform: 'uppercase', mb: '3px', fontFamily: (t) => t.fonts.mono }}>
                 ★ Cards
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -172,7 +171,7 @@ export function DeckCard({ deck, onOpen, onDelete, onShare, onEditEmoji, onPin, 
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             borderTop: `1px solid ${alpha(brand[300], 0.25)}`,
           }}>
-            <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[500], 0.6), fontFamily: FONT_MONO, letterSpacing: '0.06em' }}>
+            <Typography sx={{ fontSize: '0.52rem', color: alpha(brand[500], 0.6), fontFamily: (t) => t.fonts.mono, letterSpacing: '0.06em' }}>
               CARD DECK
             </Typography>
             <Box sx={{ display: 'flex', gap: 0.25 }} onClick={(e) => e.stopPropagation()}>

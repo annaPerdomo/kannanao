@@ -2,7 +2,6 @@
 import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import { FONT_JP } from '@/theme';
 import { PRACTICE_CONFIG } from './constants';
 import { Label } from './Label';
 import type { PracticeMode } from '@/types/app';
@@ -70,7 +69,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
             sx={{
               position: 'absolute', bottom: -16, right: 6,
               fontSize: '5.5rem', lineHeight: 1, opacity: 0.18,
-              userSelect: 'none', fontFamily: FONT_JP, fontWeight: 900,
+              userSelect: 'none', fontFamily: (t) => t.fonts.jp, fontWeight: 900,
             }}
           >
             学
@@ -141,7 +140,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
               sx={{
                 position: 'absolute', bottom: -16, right: 6,
                 fontSize: '5.5rem', lineHeight: 1, color, opacity: 0.08,
-                fontFamily: FONT_JP, fontWeight: 900, userSelect: 'none',
+                fontFamily: (t) => t.fonts.jp, fontWeight: 900, userSelect: 'none',
               }}
             >
               {watermark}

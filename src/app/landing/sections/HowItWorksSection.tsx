@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
-import { sky, purple, FONT_DISPLAY } from '@/theme';
+import { sky, purple } from '@/theme';
 import { useInView } from './useInView';
 import { Blob } from './Blob';
 
@@ -49,7 +49,7 @@ export function HowItWorksSection() {
           transition: 'opacity 0.8s ease, transform 0.8s ease',
         }}>
           <Typography sx={{
-            fontFamily: FONT_DISPLAY,
+            fontFamily: (t) => t.fonts.display,
             fontSize: { xs: '2.4rem', sm: '3rem', lg: '3.6rem' },
             color: sky[700], lineHeight: 1.05, mb: 2,
           }}>
@@ -62,7 +62,7 @@ export function HowItWorksSection() {
           <Stack direction="row" spacing={4} flexWrap="wrap" useFlexGap>
             {[['3', 'practice modes'], ['5', 'JLPT levels'], ['∞', 'vocab words']].map(([n, label]) => (
               <Box key={label}>
-                <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '2.6rem', color: sky[600], lineHeight: 1 }}>{n}</Typography>
+                <Typography sx={{ fontFamily: (t) => t.fonts.display, fontSize: '2.6rem', color: sky[600], lineHeight: 1 }}>{n}</Typography>
                 <Typography sx={{ fontSize: '0.72rem', color: alpha(sky[700], 0.52), letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</Typography>
               </Box>
             ))}
@@ -85,7 +85,7 @@ export function HowItWorksSection() {
                   boxShadow: `0 6px 24px ${alpha(sky[500], 0.42)}`,
                   flexShrink: 0,
                 }}>
-                  <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1.4rem', color: '#fff', lineHeight: 1 }}>
+                  <Typography sx={{ fontFamily: (t) => t.fonts.display, fontSize: '1.4rem', color: '#fff', lineHeight: 1 }}>
                     {s.n}
                   </Typography>
                 </Box>
@@ -98,7 +98,7 @@ export function HowItWorksSection() {
                 )}
               </Box>
               <Box sx={{ pb: i < STEPS.length - 1 ? 5 : 0, pt: 0.5 }}>
-                <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1.25rem', color: sky[700], mb: 0.75 }}>
+                <Typography sx={{ fontFamily: (t) => t.fonts.display, fontSize: '1.25rem', color: sky[700], mb: 0.75 }}>
                   {s.emoji} {s.title}
                 </Typography>
                 <Typography sx={{ fontSize: '0.9rem', color: alpha(sky[700], 0.62), lineHeight: 1.75 }}>

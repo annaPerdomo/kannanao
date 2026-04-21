@@ -11,7 +11,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import { FONT_CUTE, LAYOUT } from '@/theme';
+import { LAYOUT } from '@/theme';
 import { useProgress } from '@/hooks/useProgress';
 import { useAuth } from '@/contexts/AuthContext';
 import { XpDisplay } from './XpDisplay';
@@ -104,7 +104,7 @@ export function NavBar() {
           >
             <Typography
               sx={{
-                fontFamily: FONT_CUTE,
+                fontFamily: (t) => t.fonts.cute,
                 fontWeight: 600,
                 fontSize: { xs: '1.2rem', sm: '1.4rem' },
                 color: brand[700],

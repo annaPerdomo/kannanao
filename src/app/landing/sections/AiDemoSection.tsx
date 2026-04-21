@@ -15,7 +15,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { ImageCard } from '@/components/ImageCard';
 import { Loading } from '@/components/Loading';
-import { createAppTheme, pink, purple, sky, FONT_DISPLAY } from '@/theme';
+import { createAppTheme, pink, purple, sky } from '@/theme';
 import { useInView } from './useInView';
 import { Blob } from './Blob';
 import { DEMO_WORDS, DEMO_REVIEW_CARDS, DEMO_IMAGE_CARDS } from './demoData';
@@ -88,7 +88,7 @@ export function AiDemoSection() {
       <Box sx={{ maxWidth: 1280, mx: 'auto', width: '100%', position: 'relative', zIndex: 1 }}>
 
         <Box sx={{ textAlign: 'center', mb: { xs: 6, md: 7 }, opacity: inView ? 1 : 0, transform: inView ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.8s ease, transform 0.8s ease' }}>
-          <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: { xs: '2.2rem', sm: '3rem', md: '3.8rem' }, color: pink[700], mb: 1.5, lineHeight: 1.05 }}>
+          <Typography sx={{ fontFamily: (t) => t.fonts.display, fontSize: { xs: '2.2rem', sm: '3rem', md: '3.8rem' }, color: pink[700], mb: 1.5, lineHeight: 1.05 }}>
             Generate a full deck<br />in minutes
           </Typography>
           <Typography sx={{ fontSize: '1rem', color: alpha(pink[700], 0.62), maxWidth: 560, mx: 'auto', lineHeight: 1.7 }}>

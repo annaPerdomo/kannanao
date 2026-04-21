@@ -4,7 +4,6 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { useTheme, alpha } from '@mui/material/styles';
-import { FONT_CUTE } from '@/theme';
 
 export function StatCard({
   icon,
@@ -44,7 +43,7 @@ export function StatCard({
         {icon}
         <Typography
           sx={{
-            fontFamily: FONT_CUTE,
+            fontFamily: (t) => t.fonts.cute,
             fontWeight: 600,
             fontSize: '0.78rem',
             color: 'text.secondary',
@@ -56,7 +55,7 @@ export function StatCard({
       </Box>
       <Typography
         sx={{
-          fontFamily: FONT_CUTE,
+          fontFamily: (t) => t.fonts.cute,
           fontSize: '2rem',
           color,
           lineHeight: 1.1,

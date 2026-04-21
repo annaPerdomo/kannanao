@@ -1,7 +1,6 @@
 "use client";
 import { useRef } from "react";
 import { Box, Typography, keyframes } from "@mui/material";
-import { FONT_JP } from "@/theme";
 
 // --- Animations ---
 const float = keyframes`
@@ -162,7 +161,7 @@ export function Loading({ message = "Loading…" }: LoadingProps) {
             >
               <Typography
                 sx={{
-                  fontFamily: FONT_JP,
+                  fontFamily: (t) => t.fonts.jp,
                   fontSize: "4.5rem",
                   lineHeight: 1,
                   background:

@@ -41,8 +41,47 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
+        {/* Per-theme Google Fonts — 20 families covering all 10 color themes */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Fredoka:wght@400;500;600;700&family=Noto+Serif+JP:wght@300;400;600&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap"
+          href={[
+            'https://fonts.googleapis.com/css2?',
+            // Sakura / Sunset / Yuki·Forest·Midnight cute
+            'family=Nunito:wght@400;500;600;700;800',
+            'family=DM+Serif+Display:ital@0;1',
+            'family=Fredoka:wght@400;500;600;700',
+            // Shared JP fonts
+            'family=Noto+Serif+JP:wght@300;400;600',
+            'family=Noto+Sans+JP:wght@300;400;500;700',
+            // Shared mono fonts
+            'family=DM+Mono:wght@400;500',
+            'family=Space+Mono:wght@400;700',
+            'family=JetBrains+Mono:wght@400;500;700',
+            // Murasaki / Rose Gold body
+            'family=Raleway:wght@400;500;600;700',
+            // Murasaki / Forest display
+            'family=Playfair+Display:wght@400;700',
+            // Yuki / Midnight display
+            'family=Space+Grotesk:wght@400;500;600;700',
+            // Yuki body
+            'family=Inter:wght@400;500;600;700',
+            // Ocean body
+            'family=Outfit:wght@400;500;600;700',
+            // Ocean display / Midnight body
+            'family=Sora:wght@400;500;600;700',
+            // Forest body
+            'family=Lora:wght@400;500;600;700',
+            // Sunset display
+            'family=Abril+Fatface',
+            // Lavender display / Rose Gold display
+            'family=Cormorant+Garamond:wght@400;600;700',
+            // Lavender body / Murasaki·Matcha·Rose Gold cute
+            'family=Quicksand:wght@400;500;600;700',
+            // Matcha body + JP
+            'family=Zen+Maru+Gothic:wght@400;500;700',
+            // Matcha display
+            'family=Shippori+Mincho:wght@400;600',
+            'display=swap',
+          ].join('&')}
           rel="stylesheet"
         />
         <meta charSet="UTF-8" />

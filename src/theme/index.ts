@@ -9,14 +9,27 @@ type ColorScale = {
   500: string; 600: string; 700: string; 800: string; 900: string;
 };
 
-// ─── Font stacks ──────────────────────────────────────────────────────────────
-export const FONT_PRIMARY = '"Nunito", sans-serif';
-export const FONT_DISPLAY = '"DM Serif Display", serif';
-export const FONT_JP = '"Noto Serif JP", serif';
-export const FONT_MONO = '"DM Mono", monospace';
-export const FONT_CUTE = '"Fredoka", sans-serif';
-/** @deprecated Use FONT_CUTE instead */
-export const CUTE_FONT = FONT_CUTE;
+// ─── Per-theme font stacks ───────────────────────────────────────────────────
+export type FontConfig = {
+  primary: string;  // body / UI text
+  display: string;  // h1 / h2 headings
+  jp:      string;  // Japanese text
+  mono:    string;  // captions / code
+  cute:    string;  // decorative / playful accents
+};
+
+export const themeFonts: Record<ColorScheme, FontConfig> = {
+  sakura:   { primary: '"Nunito", sans-serif',           display: '"DM Serif Display", serif',      jp: '"Noto Serif JP", serif',        mono: '"DM Mono", monospace',         cute: '"Fredoka", sans-serif' },
+  murasaki: { primary: '"Raleway", sans-serif',          display: '"Playfair Display", serif',      jp: '"Noto Serif JP", serif',        mono: '"JetBrains Mono", monospace',  cute: '"Quicksand", sans-serif' },
+  yuki:     { primary: '"Inter", sans-serif',            display: '"Space Grotesk", sans-serif',    jp: '"Noto Sans JP", sans-serif',    mono: '"Space Mono", monospace',      cute: '"Nunito", sans-serif' },
+  ocean:    { primary: '"Outfit", sans-serif',           display: '"Sora", sans-serif',             jp: '"Noto Sans JP", sans-serif',    mono: '"Space Mono", monospace',      cute: '"Fredoka", sans-serif' },
+  forest:   { primary: '"Lora", serif',                  display: '"Playfair Display", serif',      jp: '"Noto Serif JP", serif',        mono: '"DM Mono", monospace',         cute: '"Nunito", sans-serif' },
+  sunset:   { primary: '"Nunito", sans-serif',           display: '"Abril Fatface", serif',         jp: '"Noto Sans JP", sans-serif',    mono: '"DM Mono", monospace',         cute: '"Fredoka", sans-serif' },
+  lavender: { primary: '"Quicksand", sans-serif',        display: '"Cormorant Garamond", serif',    jp: '"Noto Serif JP", serif',        mono: '"DM Mono", monospace',         cute: '"Fredoka", sans-serif' },
+  midnight: { primary: '"Sora", sans-serif',             display: '"Space Grotesk", sans-serif',    jp: '"Noto Sans JP", sans-serif',    mono: '"JetBrains Mono", monospace',  cute: '"Nunito", sans-serif' },
+  matcha:   { primary: '"Zen Maru Gothic", sans-serif',  display: '"Shippori Mincho", serif',       jp: '"Zen Maru Gothic", sans-serif', mono: '"DM Mono", monospace',         cute: '"Quicksand", sans-serif' },
+  rosegold: { primary: '"Raleway", sans-serif',          display: '"Cormorant Garamond", serif',    jp: '"Noto Serif JP", serif',        mono: '"DM Mono", monospace',         cute: '"Quicksand", sans-serif' },
+};
 
 export const LAYOUT = {
   contentMaxWidth: 1440,
@@ -26,6 +39,8 @@ export const LAYOUT = {
 } as const;
 
 declare module '@mui/material/styles' {
+  interface Theme { fonts: FontConfig; }
+  interface ThemeOptions { fonts?: FontConfig; }
   interface Palette {
     /** Primary brand color scale (50–900) — changes per scheme */
     brand: ColorScale;
@@ -251,6 +266,7 @@ type SchemeConfig = {
   brand: ColorScale;
   accent: ColorScale;
   rainbow: ColorScale;
+  fonts: FontConfig;
   primaryMain: string; primaryLight: string; primaryDark: string;
   secondaryMain: string; secondaryLight: string; secondaryDark: string;
   bgDefault: string; bgPaper: string;
@@ -260,7 +276,7 @@ type SchemeConfig = {
 const schemes: Record<ColorScheme, SchemeConfig> = {
   /** 🌸 Sakura — classic kawaii pink & lavender */
   sakura: {
-    brand: pink, accent: purple, rainbow: rainbowSakura,
+    brand: pink, accent: purple, rainbow: rainbowSakura, fonts: themeFonts.sakura,
     primaryMain: pink[400], primaryLight: pink[100], primaryDark: pink[700],
     secondaryMain: purple[300], secondaryLight: purple[100], secondaryDark: purple[500],
     bgDefault: '#FFF5FB', bgPaper: '#FFFFFF',
@@ -268,7 +284,7 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
   },
   /** 💜 Murasaki — dreamy violet & pink */
   murasaki: {
-    brand: purple, accent: pink, rainbow: rainbowMurasaki,
+    brand: purple, accent: pink, rainbow: rainbowMurasaki, fonts: themeFonts.murasaki,
     primaryMain: purple[400], primaryLight: purple[100], primaryDark: purple[700],
     secondaryMain: pink[300], secondaryLight: pink[100], secondaryDark: pink[700],
     bgDefault: '#F5F3FF', bgPaper: '#FFFFFF',
@@ -276,7 +292,7 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
   },
   /** ❄️ Yuki — frosty sky blue & violet */
   yuki: {
-    brand: sky, accent: purple, rainbow: rainbowYuki,
+    brand: sky, accent: purple, rainbow: rainbowYuki, fonts: themeFonts.yuki,
     primaryMain: sky[400], primaryLight: sky[100], primaryDark: sky[700],
     secondaryMain: purple[300], secondaryLight: purple[100], secondaryDark: purple[700],
     bgDefault: '#F0F9FF', bgPaper: '#FFFFFF',
@@ -284,7 +300,7 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
   },
   /** 🌊 Ocean — deep blue & teal */
   ocean: {
-    brand: ocean, accent: teal, rainbow: rainbowYuki,
+    brand: ocean, accent: teal, rainbow: rainbowYuki, fonts: themeFonts.ocean,
     primaryMain: ocean[400], primaryLight: ocean[100], primaryDark: ocean[700],
     secondaryMain: teal[300], secondaryLight: teal[100], secondaryDark: teal[600],
     bgDefault: '#EFF6FF', bgPaper: '#FFFFFF',
@@ -292,7 +308,7 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
   },
   /** 🌲 Forest — lush green & emerald */
   forest: {
-    brand: forest, accent: emerald, rainbow: rainbowYuki,
+    brand: forest, accent: emerald, rainbow: rainbowYuki, fonts: themeFonts.forest,
     primaryMain: forest[400], primaryLight: forest[100], primaryDark: forest[700],
     secondaryMain: emerald[300], secondaryLight: emerald[100], secondaryDark: emerald[600],
     bgDefault: '#F0FDF4', bgPaper: '#FFFFFF',
@@ -300,7 +316,7 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
   },
   /** 🌅 Sunset — warm orange & amber */
   sunset: {
-    brand: sunset, accent: amber, rainbow: rainbowSakura,
+    brand: sunset, accent: amber, rainbow: rainbowSakura, fonts: themeFonts.sunset,
     primaryMain: sunset[400], primaryLight: sunset[100], primaryDark: sunset[700],
     secondaryMain: amber[300], secondaryLight: amber[100], secondaryDark: amber[600],
     bgDefault: '#FFF7ED', bgPaper: '#FFFFFF',
@@ -308,7 +324,7 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
   },
   /** 💐 Lavender — soft purple & pink */
   lavender: {
-    brand: lavender, accent: pink, rainbow: rainbowMurasaki,
+    brand: lavender, accent: pink, rainbow: rainbowMurasaki, fonts: themeFonts.lavender,
     primaryMain: lavender[400], primaryLight: lavender[100], primaryDark: lavender[700],
     secondaryMain: pink[300], secondaryLight: pink[100], secondaryDark: pink[600],
     bgDefault: '#FAF5FF', bgPaper: '#FFFFFF',
@@ -316,7 +332,7 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
   },
   /** 🌙 Midnight — dark slate & sky blue */
   midnight: {
-    brand: slate, accent: sky, rainbow: rainbowYuki,
+    brand: slate, accent: sky, rainbow: rainbowYuki, fonts: themeFonts.midnight,
     primaryMain: slate[400], primaryLight: slate[100], primaryDark: slate[700],
     secondaryMain: sky[300], secondaryLight: sky[100], secondaryDark: sky[600],
     bgDefault: '#F8FAFC', bgPaper: '#FFFFFF',
@@ -324,7 +340,7 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
   },
   /** 🍵 Matcha — earthy green & lime */
   matcha: {
-    brand: matcha, accent: emerald, rainbow: rainbowYuki,
+    brand: matcha, accent: emerald, rainbow: rainbowYuki, fonts: themeFonts.matcha,
     primaryMain: matcha[500], primaryLight: matcha[100], primaryDark: matcha[700],
     secondaryMain: emerald[300], secondaryLight: emerald[100], secondaryDark: emerald[600],
     bgDefault: '#FEFCE8', bgPaper: '#FFFFFF',
@@ -332,7 +348,7 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
   },
   /** 🌹 Rose Gold — warm rose & amber */
   rosegold: {
-    brand: rose, accent: amber, rainbow: rainbowSakura,
+    brand: rose, accent: amber, rainbow: rainbowSakura, fonts: themeFonts.rosegold,
     primaryMain: rose[400], primaryLight: rose[100], primaryDark: rose[700],
     secondaryMain: amber[300], secondaryLight: amber[100], secondaryDark: amber[600],
     bgDefault: '#FFF1F2', bgPaper: '#FFFFFF',
@@ -344,7 +360,7 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
 
 export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
   const s = schemes[scheme];
-  const { brand, accent, rainbow } = s;
+  const { brand, accent, rainbow, fonts } = s;
 
   const surfaces = {
     glass:   alpha(brand[50], 0.82),
@@ -354,6 +370,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
   };
 
   return createTheme({
+    fonts,
     palette: {
       mode: 'light',
       primary:    { main: s.primaryMain,   light: s.primaryLight,   dark: s.primaryDark   },
@@ -372,17 +389,17 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
     },
 
     typography: {
-      fontFamily: FONT_PRIMARY,
-      h1: { fontFamily: FONT_DISPLAY, fontWeight: 400, letterSpacing: '-0.02em' },
-      h2: { fontFamily: FONT_DISPLAY, fontWeight: 400, letterSpacing: '-0.015em' },
-      h3: { fontFamily: FONT_PRIMARY, fontWeight: 700 },
-      h4: { fontFamily: FONT_PRIMARY, fontWeight: 700, letterSpacing: '-0.02em' },
-      h5: { fontFamily: FONT_PRIMARY, fontWeight: 700 },
-      h6: { fontFamily: FONT_PRIMARY, fontWeight: 600 },
-      body1:  { fontFamily: FONT_PRIMARY, fontSize: '0.95rem', fontWeight: 500 },
-      body2:  { fontFamily: FONT_PRIMARY, fontSize: '0.85rem', fontWeight: 500 },
-      button: { fontFamily: FONT_PRIMARY, fontWeight: 700, letterSpacing: '0.02em', textTransform: 'none', fontSize: '0.875rem' },
-      caption:{ fontFamily: FONT_MONO, fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em' },
+      fontFamily: fonts.primary,
+      h1: { fontFamily: fonts.display, fontWeight: 400, letterSpacing: '-0.02em' },
+      h2: { fontFamily: fonts.display, fontWeight: 400, letterSpacing: '-0.015em' },
+      h3: { fontFamily: fonts.primary, fontWeight: 700 },
+      h4: { fontFamily: fonts.primary, fontWeight: 700, letterSpacing: '-0.02em' },
+      h5: { fontFamily: fonts.primary, fontWeight: 700 },
+      h6: { fontFamily: fonts.primary, fontWeight: 600 },
+      body1:  { fontFamily: fonts.primary, fontSize: '0.95rem', fontWeight: 500 },
+      body2:  { fontFamily: fonts.primary, fontSize: '0.85rem', fontWeight: 500 },
+      button: { fontFamily: fonts.primary, fontWeight: 700, letterSpacing: '0.02em', textTransform: 'none', fontSize: '0.875rem' },
+      caption:{ fontFamily: fonts.mono, fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em' },
     },
 
     shape: { borderRadius: 12 },
@@ -449,7 +466,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
         styleOverrides: {
           root: ({ theme }) => ({
             '& .MuiOutlinedInput-root': {
-              fontFamily: FONT_PRIMARY,
+              fontFamily: theme.typography.fontFamily,
               fontWeight: 600,
               fontSize: '0.9rem',
               borderRadius: 10,
@@ -468,7 +485,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
               },
             },
             '& .MuiInputLabel-root': {
-              fontFamily: FONT_PRIMARY,
+              fontFamily: theme.typography.fontFamily,
               fontWeight: 700,
               fontSize: '0.85rem',
               color: alpha(theme.palette.brand[700], 0.65),
@@ -481,7 +498,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
       MuiChip: {
         styleOverrides: {
           root: ({ theme }) => ({
-            fontFamily: FONT_PRIMARY,
+            fontFamily: theme.typography.fontFamily,
             fontWeight: 700,
             fontSize: '0.75rem',
             borderRadius: 8,
@@ -534,7 +551,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
       MuiTooltip: {
         styleOverrides: {
           tooltip: ({ theme }) => ({
-            fontFamily: FONT_PRIMARY,
+            fontFamily: theme.typography.fontFamily,
             fontWeight: 600,
             fontSize: '0.78rem',
             backgroundColor: theme.palette.brand[700],
@@ -560,7 +577,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
       MuiAlert: {
         styleOverrides: {
           root: ({ theme }) => ({
-            fontFamily: FONT_PRIMARY,
+            fontFamily: theme.typography.fontFamily,
             fontWeight: 600,
             borderRadius: 10,
             border: `1.5px solid ${alpha(theme.palette.brand[300], 0.4)}`,

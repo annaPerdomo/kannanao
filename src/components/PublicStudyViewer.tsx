@@ -12,7 +12,7 @@ import { PublicFlashcard } from "@/components/PublicFlashcard";
 import { IndexCard } from "@/components/IndexCard";
 import { Loading } from "@/components/Loading";
 import { dbCardToApp } from "@/lib/supabase";
-import { createAppTheme, FONT_PRIMARY, FONT_MONO, type ColorScheme } from "@/theme";
+import { createAppTheme, themeFonts, type ColorScheme } from "@/theme";
 import { schemeInfo } from "@/contexts/ThemeContext";
 import type { Flashcard as FlashcardType } from "@/types/flashcard";
 
@@ -33,7 +33,8 @@ const plainTheme = createTheme({
     surfaces:   { glass: gray[50], overlay: gray[50], input: gray[50], chip: gray[100] },
   } as never,
   shape: { borderRadius: 12 },
-  typography: { fontFamily: FONT_PRIMARY },
+  fonts: themeFonts.sakura,
+  typography: { fontFamily: themeFonts.sakura.primary },
 });
 
 interface PublicStudyViewerProps {
@@ -129,7 +130,7 @@ function CelebrationOverlay({ cardCount, onReset }: { cardCount: number; onReset
         <Typography sx={{ mt: 0.5, fontSize: "0.95rem", color: "rgba(255,255,255,0.88)" }}>
           You reviewed all <b>{cardCount}</b> cards!
         </Typography>
-        <Typography sx={{ mt: 2, fontSize: "0.68rem", color: "rgba(255,255,255,0.45)", letterSpacing: "0.1em", fontFamily: FONT_MONO }}>
+        <Typography sx={{ mt: 2, fontSize: "0.68rem", color: "rgba(255,255,255,0.45)", letterSpacing: "0.1em", fontFamily: (t) => t.fonts.mono }}>
           TAP TO REVIEW AGAIN
         </Typography>
       </Box>
@@ -348,7 +349,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
                   color: cardTheme === scheme ? t.palette.brand[700] : "#aaa",
                   cursor: "pointer",
                   fontSize: "0.65rem",
-                  fontFamily: FONT_MONO,
+                  fontFamily: (t) => t.fonts.mono,
                   letterSpacing: "0.05em",
                   fontWeight: cardTheme === scheme ? 700 : 400,
                   transition: "all 0.18s ease",
@@ -372,7 +373,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
                 color: cardTheme === "plain" ? t.palette.brand[700] : "#aaa",
                 cursor: "pointer",
                 fontSize: "0.65rem",
-                fontFamily: FONT_MONO,
+                fontFamily: (t) => t.fonts.mono,
                 letterSpacing: "0.05em",
                 fontWeight: cardTheme === "plain" ? 700 : 400,
                 transition: "all 0.18s ease",
@@ -501,7 +502,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
         {/* Branding: Powered by Kannanao first, then Made by Variations on a String */}
         <Box sx={{ mt: 1, pb: 0.25, display: "flex", flexDirection: "column", alignItems: "center", gap: 0.25, flexShrink: 0 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <Typography sx={{ fontSize: "0.6rem", color: "text.disabled", fontFamily: FONT_MONO, letterSpacing: "0.06em" }}>
+            <Typography sx={{ fontSize: "0.6rem", color: "text.disabled", fontFamily: (t) => t.fonts.mono, letterSpacing: "0.06em" }}>
               Powered by
             </Typography>
             <Typography
@@ -510,7 +511,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
               target="_blank"
               rel="noopener noreferrer"
               sx={{
-                fontSize: "0.6rem", color: "primary.main", fontFamily: FONT_MONO,
+                fontSize: "0.6rem", color: "primary.main", fontFamily: (t) => t.fonts.mono,
                 letterSpacing: "0.06em", textDecoration: "none", fontWeight: 700,
                 "&:hover": { textDecoration: "underline" },
               }}
@@ -524,7 +525,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
             target="_blank"
             rel="noopener noreferrer"
             sx={{
-              fontSize: "0.62rem", color: "text.disabled", fontFamily: FONT_MONO,
+              fontSize: "0.62rem", color: "text.disabled", fontFamily: (t) => t.fonts.mono,
               letterSpacing: "0.06em", textDecoration: "none",
               "&:hover": { color: "text.secondary", textDecoration: "underline" },
             }}

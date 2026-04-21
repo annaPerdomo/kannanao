@@ -10,7 +10,7 @@ import { alpha } from '@mui/material/styles';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import WaitlistForm from '@/components/WaitlistForm';
 import { useAuth } from '@/contexts/AuthContext';
-import { pink, purple, sky, darkPurple, FONT_DISPLAY, FONT_JP } from '@/theme';
+import { pink, purple, sky, darkPurple } from '@/theme';
 import { useInView } from './useInView';
 import { Blob } from './Blob';
 
@@ -45,7 +45,7 @@ export function CtaSection() {
         transition: 'opacity 0.9s ease, transform 0.9s ease',
       }}>
         <Typography sx={{
-          fontFamily: FONT_JP,
+          fontFamily: (t) => t.fonts.jp,
           fontSize: { xs: '5rem', sm: '7rem', md: '9rem' },
           color: alpha('#fff', 0.05), lineHeight: 1,
           mb: 1.5, userSelect: 'none',
@@ -65,7 +65,7 @@ export function CtaSection() {
         />
 
         <Typography sx={{
-          fontFamily: FONT_DISPLAY,
+          fontFamily: (t) => t.fonts.display,
           fontSize: { xs: '2.6rem', sm: '3.4rem', md: '4.2rem' },
           color: 'white', lineHeight: 1.02, mb: 2.5,
         }}>
@@ -83,7 +83,7 @@ export function CtaSection() {
         {session ? (
           <Button variant="contained" size="large" onClick={() => router.push('/')}
             sx={{
-              fontFamily: FONT_DISPLAY, fontSize: '1.1rem',
+              fontFamily: (t) => t.fonts.display, fontSize: '1.1rem',
               textTransform: 'none', borderRadius: 8, px: 5, py: 1.6,
               background: `linear-gradient(135deg, ${pink[400]} 0%, ${pink[600]} 100%)`,
               boxShadow: `0 10px 36px ${alpha(pink[500], 0.48)}`,
@@ -106,14 +106,14 @@ export function CtaSection() {
           width: '100%',
         }}>
           <Box sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
-            <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '0.9rem', color: alpha('#fff', 0.35) }}>
+            <Typography sx={{ fontFamily: (t) => t.fonts.display, fontSize: '0.9rem', color: alpha('#fff', 0.35) }}>
               🌸 Kannanao
             </Typography>
             <Typography sx={{ fontSize: '0.68rem', color: alpha('#fff', 0.2), letterSpacing: '0.1em', textTransform: 'uppercase' }}>
               AI-powered Japanese flashcard studio
             </Typography>
           </Box>
-          <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '0.75rem', color: alpha('#fff', 0.25) }}>
+          <Typography sx={{ fontFamily: (t) => t.fonts.display, fontSize: '0.75rem', color: alpha('#fff', 0.25) }}>
             Made with 💕 by{' '}
             <Link
               href="https://www.variationsonastring.com"
@@ -121,7 +121,7 @@ export function CtaSection() {
               rel="noopener noreferrer"
               underline="hover"
               sx={{
-                fontFamily: FONT_DISPLAY,
+                fontFamily: (t) => t.fonts.display,
                 fontSize: '0.75rem',
                 color: alpha('#fff', 0.4),
                 fontStyle: 'italic',

@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { FONT_CUTE } from '@/theme';
 import { useProgress } from '@/hooks/useProgress';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 
@@ -120,7 +119,7 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
         >
           <Typography
             sx={{
-              fontFamily: FONT_CUTE,
+              fontFamily: (t) => t.fonts.cute,
               fontWeight: 700,
               fontSize: '0.9rem',
               color: '#fff',

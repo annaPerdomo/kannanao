@@ -15,7 +15,7 @@ import { CARD_BORDER_STYLES } from '@/hooks/useShop';
 import { CardBorderCtx } from '@/contexts/CardBorderContext';
 import { ImageCard } from '@/components/ImageCard';
 import { Flashcard } from '@/components/Flashcard';
-import { FONT_CUTE, createAppTheme } from '@/theme';
+import { createAppTheme } from '@/theme';
 import { SAMPLE_CARD } from './constants';
 
 export function BorderPreviewModal({
@@ -62,7 +62,7 @@ export function BorderPreviewModal({
     >
       <DialogTitle
         sx={{
-          fontFamily: FONT_CUTE,
+          fontFamily: (t) => t.fonts.cute,
           color: brand[700],
           textAlign: 'center',
           pb: 0.5,
@@ -85,7 +85,7 @@ export function BorderPreviewModal({
           size="small"
           sx={{
             '& .MuiToggleButton-root': {
-              fontFamily: FONT_CUTE,
+              fontFamily: (t) => t.fonts.cute,
               fontSize: '0.75rem',
               px: 2,
               py: 0.4,
@@ -129,7 +129,7 @@ export function BorderPreviewModal({
         <Button
           onClick={onClose}
           variant="outlined"
-          sx={{ borderRadius: 2, px: 4, fontFamily: FONT_CUTE }}
+          sx={{ borderRadius: 2, px: 4, fontFamily: (t) => t.fonts.cute }}
         >
           Close
         </Button>

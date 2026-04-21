@@ -3,7 +3,6 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme, alpha } from '@mui/material/styles';
-import { FONT_CUTE } from '@/theme';
 import type { StudySession, SessionMode } from '@/hooks/useProgress';
 import { modeLabel, modeColor, sessionLocalDate } from './constants';
 
@@ -66,7 +65,7 @@ export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
       }}
     >
       <Typography
-        sx={{ fontFamily: FONT_CUTE, fontWeight: 600, fontSize: '0.78rem', color: brand[700] }}
+        sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, fontSize: '0.78rem', color: brand[700] }}
       >
         {title}
       </Typography>
@@ -80,7 +79,7 @@ export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
           <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
             <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>{label}</Typography>
             <Typography
-              sx={{ fontFamily: FONT_CUTE, fontWeight: 700, fontSize: '1rem', color: brand[700] }}
+              sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 700, fontSize: '1rem', color: brand[700] }}
             >
               {value}
             </Typography>
@@ -107,7 +106,7 @@ export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
           }}
         >
           <Typography
-            sx={{ fontFamily: FONT_CUTE, fontWeight: 600, fontSize: '0.78rem', color: brand[700], mb: 1 }}
+            sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, fontSize: '0.78rem', color: brand[700], mb: 1 }}
           >
             {monthName} by mode
           </Typography>

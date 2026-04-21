@@ -6,7 +6,6 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import { alpha } from '@mui/material/styles';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { FONT_CUTE } from '@/theme';
 import type { ShopItem } from '@/types/shop';
 import { ShopItemCard } from './ShopItemCard';
 
@@ -69,7 +68,7 @@ export function CategorySection({
         {icon}
         <Typography
           sx={{
-            fontFamily: FONT_CUTE,
+            fontFamily: (t) => t.fonts.cute,
             fontSize: { xs: '1rem', sm: '1.15rem' },
             color: brandColor,
             fontWeight: 700,
@@ -145,7 +144,7 @@ export function CategorySection({
             size="small"
             endIcon={<ArrowForwardIcon sx={{ fontSize: '0.85rem !important' }} />}
             sx={{
-              fontFamily: FONT_CUTE,
+              fontFamily: (t) => t.fonts.cute,
               fontSize: '0.78rem',
               textTransform: 'none',
               color: brandColor,

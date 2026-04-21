@@ -18,7 +18,7 @@ import { useCards } from "@/hooks/useCards";
 import { useDecks } from "@/hooks/useDecks";
 import { useProgress } from "@/hooks/useProgress";
 import { useShop, CELEBRATION_THEMES } from "@/hooks/useShop";
-import { FONT_MONO, LAYOUT } from '@/theme';
+import { LAYOUT } from '@/theme';
 import { StudyBuddy } from "@/components/StudyBuddy";
 
 interface StudyProps {
@@ -171,7 +171,7 @@ function CelebrationOverlay({ cardCount, onDone }: { cardCount: number; onDone: 
             }}>{s}</Box>
           ))}
         </Box>
-        <Typography sx={{ mt: 2, fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.1em', fontFamily: FONT_MONO }}>
+        <Typography sx={{ mt: 2, fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.1em', fontFamily: (t) => t.fonts.mono }}>
           TAP ANYWHERE TO CONTINUE
         </Typography>
       </Box>

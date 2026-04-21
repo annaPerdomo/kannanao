@@ -1,7 +1,6 @@
 'use client';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { FONT_CUTE } from '@/theme';
 
 interface XpEarnedPopProps {
   amount: number;
@@ -63,7 +62,7 @@ export function XpEarnedPop({ amount, correct, show }: XpEarnedPopProps) {
         </Typography>
         <Typography
           sx={{
-            fontFamily: FONT_CUTE,
+            fontFamily: (t) => t.fonts.cute,
             fontWeight: 700,
             fontSize: correct ? '1.3rem' : '1rem',
             background: correct

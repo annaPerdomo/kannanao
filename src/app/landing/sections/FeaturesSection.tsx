@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { alpha } from '@mui/material/styles';
-import { purple, pink, sky, darkPurple, FONT_DISPLAY } from '@/theme';
+import { purple, pink, sky, darkPurple } from '@/theme';
 import { useInView } from './useInView';
 import { Blob } from './Blob';
 
@@ -48,7 +48,7 @@ export function FeaturesSection() {
           transition: 'opacity 0.8s ease, transform 0.8s ease',
         }}>
           <Typography sx={{
-            fontFamily: FONT_DISPLAY,
+            fontFamily: (t) => t.fonts.display,
             fontSize: { xs: '2.2rem', sm: '3rem', md: '3.8rem' },
             color: 'white', mb: 1.5, lineHeight: 1.05,
           }}>
@@ -86,7 +86,7 @@ export function FeaturesSection() {
               }}
             >
               <Typography sx={{ fontSize: '2rem', lineHeight: 1 }}>{f.emoji}</Typography>
-              <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1.02rem', color: alpha(purple[200], 0.95), lineHeight: 1.2 }}>
+              <Typography sx={{ fontFamily: (t) => t.fonts.display, fontSize: '1.02rem', color: alpha(purple[200], 0.95), lineHeight: 1.2 }}>
                 {f.title}
               </Typography>
               <Typography sx={{ fontSize: '0.82rem', color: alpha('#fff', 0.48), lineHeight: 1.65 }}>

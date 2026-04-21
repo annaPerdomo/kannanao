@@ -3,7 +3,6 @@ import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import { Label } from '@/components/Deck';
-import { FONT_JP } from '@/theme';
 import { PRACTICE_CONFIG } from './constants';
 import type { OhanashikaiPracticeMode } from '@/types/ohanashikai';
 
@@ -46,7 +45,7 @@ export function SpeechPracticeTiles({ canPractice, onPractice }: SpeechPracticeT
               aria-hidden
               sx={{
                 position: 'absolute', bottom: -16, right: 6, fontSize: '5rem', lineHeight: 1,
-                color, opacity: 0.08, fontFamily: FONT_JP, fontWeight: 900, userSelect: 'none',
+                color, opacity: 0.08, fontFamily: (t) => t.fonts.jp, fontWeight: 900, userSelect: 'none',
               }}
             >
               {watermark}

@@ -11,7 +11,6 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useAuth } from "@/contexts/AuthContext";
 import WaitlistForm from "@/components/WaitlistForm";
-import { FONT_DISPLAY } from "@/theme";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -49,7 +48,7 @@ export default function LoginPage() {
         <CardContent sx={{ p: 4 }}>
           <Typography
             variant="h5"
-            sx={{ fontFamily: FONT_DISPLAY, color: "primary.dark", mb: 1.5, textAlign: "center" }}
+            sx={{ fontFamily: (t) => t.fonts.display, color: "primary.dark", mb: 1.5, textAlign: "center" }}
           >
             🌸 Kannanao
           </Typography>
@@ -106,7 +105,7 @@ export default function LoginPage() {
                 type="submit" variant="contained" disabled={busy}
                 sx={{
                   bgcolor: "primary.dark", color: "#fff",
-                  fontFamily: FONT_DISPLAY,
+                  fontFamily: (t) => t.fonts.display,
                   textTransform: "none", borderRadius: 6,
                   "&:hover": { bgcolor: "primary.dark", filter: "brightness(0.9)" },
                 }}

@@ -6,7 +6,6 @@ import Paper from '@mui/material/Paper';
 import LinearProgress from '@mui/material/LinearProgress';
 import { useTheme, alpha } from '@mui/material/styles';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import { FONT_CUTE } from '@/theme';
 import { xpProgressInLevel } from '@/hooks/useProgress';
 
 export function LevelBar({ totalXp, level }: { totalXp: number; level: number }) {
@@ -32,7 +31,7 @@ export function LevelBar({ totalXp, level }: { totalXp: number; level: number })
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <AutoAwesomeIcon sx={{ color: brand[700], fontSize: '1.1rem' }} />
           <Typography
-            sx={{ fontFamily: FONT_CUTE, fontSize: '1rem', color: brand[700], fontWeight: 600 }}
+            sx={{ fontFamily: (t) => t.fonts.cute, fontSize: '1rem', color: brand[700], fontWeight: 600 }}
           >
             Level {level}
           </Typography>

@@ -12,7 +12,7 @@ import { useTheme, alpha } from '@mui/material/styles';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loading } from '@/components/Loading';
 import { useRouter } from 'next/navigation';
-import { FONT_CUTE, LAYOUT } from '@/theme';
+import { LAYOUT } from '@/theme';
 import { PageHeader } from '@/components/PageHeader';
 
 interface SectionProps {
@@ -36,7 +36,7 @@ function Section({ icon, title, description, children }: SectionProps) {
     >
       <Stack direction="row" alignItems="center" gap={1.5} sx={{ mb: 0.5 }}>
         <Box sx={{ color: brand[500], display: 'flex' }}>{icon}</Box>
-        <Typography sx={{ fontFamily: FONT_CUTE, fontWeight: 600, fontSize: '1.05rem', color: brand[700] }}>
+        <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, fontSize: '1.05rem', color: brand[700] }}>
           {title}
         </Typography>
       </Stack>
@@ -79,7 +79,7 @@ export default function SettingsPage() {
     color: '#fff',
     textTransform: 'none' as const,
     borderRadius: 6,
-    fontFamily: FONT_CUTE,
+    fontFamily: theme.fonts.cute,
     '&:hover': { bgcolor: brand[800] },
     '&.Mui-disabled': { opacity: 0.5 },
   };

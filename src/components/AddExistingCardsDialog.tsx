@@ -8,7 +8,6 @@ import {
 import { useTheme, alpha } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
-import { FONT_DISPLAY } from '@/theme';
 import type { Flashcard } from '@/types/flashcard';
 import type { Deck } from '@/types/deck';
 import { loadAllCards, loadDecks } from '@/lib/supabase';
@@ -170,7 +169,7 @@ export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, on
                 <CardThumbnail card={card} />
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75 }}>
-                    <Typography sx={{ fontFamily: FONT_DISPLAY, fontSize: '1rem', lineHeight: 1.3, color: 'text.primary' }}>
+                    <Typography sx={{ fontFamily: (t) => t.fonts.display, fontSize: '1rem', lineHeight: 1.3, color: 'text.primary' }}>
                       {card.word}
                     </Typography>
                     {card.reading && (

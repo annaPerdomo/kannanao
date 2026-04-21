@@ -12,7 +12,6 @@ import AddIcon from '@mui/icons-material/Add';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { Loading } from '@/components/Loading';
 import { formatFurigana } from '@/services/api';
-import { FONT_JP } from '@/theme';
 
 interface BulkImportAreaProps {
   brandPalette: Record<number, string>;
@@ -77,7 +76,7 @@ export function BulkImportArea({ brandPalette, onImport }: BulkImportAreaProps) 
           onChange={(e) => { setPasteText(e.target.value); setFuriganaError(null); }}
           placeholder={'Line 1 of your speech\nLine 2 of your speech\n…'}
           fullWidth multiline minRows={6} maxRows={16} autoFocus
-          sx={{ mb: 1, '& .MuiOutlinedInput-root': { fontFamily: FONT_JP, fontSize: '0.95rem' } }}
+          sx={{ mb: 1, '& .MuiOutlinedInput-root': { fontFamily: (t) => t.fonts.jp, fontSize: '0.95rem' } }}
         />
       </Box>
 

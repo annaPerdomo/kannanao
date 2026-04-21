@@ -7,7 +7,6 @@ import { useTheme, alpha } from '@mui/material/styles';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import type { Todo, CalendarEntry } from '@/types/todo';
-import { FONT_CUTE } from '@/theme';
 import {
   DAY_LABELS, toISODate, todayISO,
   isScheduledForDate, isCompletedOnDate, isEntryOnDate, formatWeekRange,
@@ -107,14 +106,14 @@ export function WeekStrip({
                 {allDone ? '💖' : DAY_MASCOTS[i]}
               </Typography>
               <Typography sx={{
-                fontFamily: FONT_CUTE, fontSize: '0.6rem', fontWeight: 800,
+                fontFamily: (t) => t.fonts.cute, fontSize: '0.6rem', fontWeight: 800,
                 color: isSelected ? 'rgba(255,255,255,0.9)' : 'text.disabled',
                 lineHeight: 1,
               }}>
                 {DAY_LABELS[i]}
               </Typography>
               <Typography sx={{
-                fontFamily: FONT_CUTE, fontSize: '0.9rem', fontWeight: 900,
+                fontFamily: (t) => t.fonts.cute, fontSize: '0.9rem', fontWeight: 900,
                 color: isSelected ? 'white' : isToday ? brand[700] : brand[500],
                 lineHeight: 1.2,
               }}>
@@ -137,7 +136,7 @@ export function WeekStrip({
         <IconButton size="small" onClick={() => onWeekChange(weekOffset - 1)} sx={{ color: brand[500], p: 0.25 }}>
           <ChevronLeftRoundedIcon sx={{ fontSize: '1rem' }} />
         </IconButton>
-        <Typography variant="caption" sx={{ fontFamily: FONT_CUTE, fontWeight: 800, color: brand[600], fontSize: '0.72rem' }}>
+        <Typography variant="caption" sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 800, color: brand[600], fontSize: '0.72rem' }}>
           {formatWeekRange(weekDates)}
         </Typography>
         <IconButton size="small" onClick={() => onWeekChange(weekOffset + 1)} sx={{ color: brand[500], p: 0.25 }}>

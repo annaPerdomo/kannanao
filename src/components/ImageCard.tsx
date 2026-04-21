@@ -11,7 +11,6 @@ import { getFlashcardDisplayText, cardXp } from "@/lib/flashcardUtils";
 import FuriganaText, { stripFurigana } from "@/components/FuriganaText";
 import { SpeakButton } from "@/components/SpeakButton";
 import { useCardBorder } from "@/contexts/CardBorderContext";
-import { FONT_MONO } from '@/theme';
 
 interface ImageCardProps {
   card: Flashcard;
@@ -164,7 +163,7 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                 border: `1px solid ${alpha(typeAccent, 0.22)}`,
               }}
             >
-              <Typography sx={{ fontSize: "0.54rem", fontWeight: 900, color: typeAccent, letterSpacing: "0.12em", textTransform: "uppercase", mb: "3px", fontFamily: FONT_MONO }}>
+              <Typography sx={{ fontSize: "0.54rem", fontWeight: 900, color: typeAccent, letterSpacing: "0.12em", textTransform: "uppercase", mb: "3px", fontFamily: (t) => t.fonts.mono }}>
                 ★ Meaning
               </Typography>
               <Typography sx={{ fontSize: "0.7rem", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.3 }}>
@@ -184,7 +183,7 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: "3px" }}>
-                  <Typography sx={{ fontSize: "0.54rem", fontWeight: 900, color: typeAccent, letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: FONT_MONO }}>
+                  <Typography sx={{ fontSize: "0.54rem", fontWeight: 900, color: typeAccent, letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: (t) => t.fonts.mono }}>
                     * SAMPLE SENTENCE
                   </Typography>
                   <SpeakButton text={stripFurigana(localCard.example_jp)} iconSize="0.75rem" />
@@ -210,11 +209,11 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
             }}
           >
             {localCard.jlptLevel && (
-              <Typography sx={{ fontSize: "0.52rem", color: alpha(brand[600], 0.7), fontFamily: FONT_MONO, letterSpacing: "0.06em" }}>
+              <Typography sx={{ fontSize: "0.52rem", color: alpha(brand[600], 0.7), fontFamily: (t) => t.fonts.mono, letterSpacing: "0.06em" }}>
                 JLPT {localCard.jlptLevel}
               </Typography>
             )}
-            <Typography sx={{ fontSize: "0.52rem", color: alpha(brand[500], 0.5), fontFamily: FONT_MONO }}>★</Typography>
+            <Typography sx={{ fontSize: "0.52rem", color: alpha(brand[500], 0.5), fontFamily: (t) => t.fonts.mono }}>★</Typography>
           </Box>
         </Box>
 

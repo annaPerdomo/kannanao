@@ -31,7 +31,6 @@ import { SpeechPracticeTiles, SpeechLineRow, BulkImportArea } from '@/components
 import { formatFurigana } from '@/services/api';
 import { useOhanashikais, useOhanashikaiLines } from '@/hooks/useOhanashikais';
 import { useSpeech } from '@/hooks/useSpeech';
-import { FONT_JP } from '@/theme';
 import type { OhanashikaiPracticeMode } from '@/types/ohanashikai';
 
 interface OhanashikaiDetailProps {
@@ -218,7 +217,7 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
                 inputRef={inputRef} value={newLineText} onChange={(e) => setNewLineText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) void handleAddLine(); }}
                 placeholder="Type a new line and press Enter…" size="small" fullWidth multiline minRows={1} disabled={adding}
-                sx={{ '& .MuiOutlinedInput-root': { fontFamily: FONT_JP, fontSize: '0.95rem' } }}
+                sx={{ '& .MuiOutlinedInput-root': { fontFamily: (t) => t.fonts.jp, fontSize: '0.95rem' } }}
               />
               <Button variant="contained" size="small" startIcon={adding ? <CircularProgress size={12} sx={{ color: '#fff' }} /> : <AddIcon sx={{ fontSize: 14 }} />} onClick={handleAddLine} disabled={adding || !newLineText.trim()} sx={{ flexShrink: 0, borderRadius: '10px', px: 2 }}>
                 Add

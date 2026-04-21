@@ -4,7 +4,6 @@ import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
 import { alpha } from '@mui/material/styles';
-import { FONT_CUTE } from '@/theme';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import ViewWeekRoundedIcon from '@mui/icons-material/ViewWeekRounded';
 import LocalFireDepartmentRoundedIcon from '@mui/icons-material/LocalFireDepartmentRounded';
@@ -65,7 +64,7 @@ export function TodoHeader({ view, onViewChange, streak, brandPalette: brand, ac
                 px: 1, py: 0.4, borderRadius: 2, border: 'none',
                 background: view === v ? `linear-gradient(135deg, ${brand[400]}, ${accent[300]})` : 'transparent',
                 color: view === v ? 'white' : brand[500],
-                fontFamily: FONT_CUTE, fontSize: '0.68rem', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s ease',
+                fontFamily: (t) => t.fonts.cute, fontSize: '0.68rem', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s ease',
               }}
             >
               {v === 'week' ? <ViewWeekRoundedIcon sx={{ fontSize: '0.82rem' }} /> : <CalendarMonthRoundedIcon sx={{ fontSize: '0.82rem' }} />}

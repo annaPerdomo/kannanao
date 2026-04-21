@@ -13,7 +13,6 @@ import { alpha } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import { FONT_JP } from '@/theme';
 import type { Flashcard } from '@/types/flashcard';
 import { cardXp } from '@/lib/flashcardUtils';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
@@ -265,7 +264,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
           <Typography
             component="div"
             sx={{
-              fontFamily: FONT_JP,
+              fontFamily: (t) => t.fonts.jp,
               fontSize: '1.3rem',
               color: 'text.primary',
               mb: 1,

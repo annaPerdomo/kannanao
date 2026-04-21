@@ -6,7 +6,6 @@ import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { useTheme, alpha } from '@mui/material/styles';
-import { FONT_CUTE } from '@/theme';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import type { StudySession } from '@/hooks/useProgress';
@@ -72,7 +71,7 @@ export function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
         <IconButton size="small" onClick={goBack} sx={{ color: brand[700] }}>
           <ChevronLeftIcon fontSize="small" />
         </IconButton>
-        <Typography sx={{ fontFamily: FONT_CUTE, fontWeight: 600, fontSize: '0.9rem', color: brand[700] }}>
+        <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, fontSize: '0.9rem', color: brand[700] }}>
           {monthLabel}
         </Typography>
         <IconButton size="small" onClick={goForward} disabled={isCurrentMonth} sx={{ color: brand[700] }}>

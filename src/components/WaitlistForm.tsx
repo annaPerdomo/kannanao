@@ -8,7 +8,6 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
-import { FONT_DISPLAY } from '@/theme';
 
 interface WaitlistFormProps {
   /** Compact layout for inline use (e.g. login page) */
@@ -69,7 +68,7 @@ export default function WaitlistForm({ compact, dark }: WaitlistFormProps) {
       {!compact && (
         <Typography
           sx={{
-            fontFamily: FONT_DISPLAY,
+            fontFamily: (t) => t.fonts.display,
             fontSize: '1.1rem',
             color: dark ? alpha('#fff', 0.9) : 'primary.dark',
             textAlign: 'center',
@@ -128,7 +127,7 @@ export default function WaitlistForm({ compact, dark }: WaitlistFormProps) {
             : undefined,
           bgcolor: dark ? undefined : 'primary.dark',
           color: '#fff',
-          fontFamily: FONT_DISPLAY,
+          fontFamily: (t) => t.fonts.display,
           textTransform: 'none',
           borderRadius: 6,
           py: 1.2,
