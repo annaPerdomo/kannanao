@@ -23,6 +23,41 @@ export async function formatFurigana(lines: string[]): Promise<string[]> {
   return data.lines as string[];
 }
 
+export async function uploadImage(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  const base64 = btoa(
+    new Uint8Array(buffer).reduce((s, b) => s + String.fromCharCode(b), ''),
+  );
+
+  const res = await fetch(`${BASE}/generate-image`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ base64, mimeType: file.type }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to upload image');
+  }
+  const data = await res.json();
+  return data.url;
+}
+
+export function isStorageImage(url: string | undefined): boolean {
+  return !!url && url.includes('card-images');
+}
+
+export async function deleteStorageImage(url: string): Promise<void> {
+  const res = await fetch(`${BASE}/generate-image`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to delete image');
+  }
+}
+
 export async function fetchImage(query: string): Promise<string | null> {
   const res = await fetch(`${BASE}/images?query=${encodeURIComponent(query)}`);
   if (!res.ok) {

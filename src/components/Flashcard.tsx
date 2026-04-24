@@ -15,9 +15,6 @@ interface FlashcardProps {
   height?: number | string;
 }
 
-const PLACEHOLDER =
-  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400"%3E%3Crect fill="%23FFF0F6" width="600" height="400"/%3E%3C/svg%3E';
-
 export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
@@ -152,22 +149,24 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
               </Box>
 
               {/* Art frame */}
-              <Box sx={{
-                mx: { xs: '8px', sm: '10px' }, mt: { xs: '6px', sm: '8px' },
-                borderRadius: '7px', overflow: 'hidden',
-                border: '2px solid rgba(0,0,0,0.18)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.12)',
-                flexShrink: 0, position: 'relative',
-              }}>
-                {!imgLoaded && (
-                  <Skeleton variant="rectangular" width="100%" height={175}
-                    sx={{ bgcolor: alpha(brand[300], 0.1), position: 'absolute', inset: 0 }} />
-                )}
-                <Box
-                  component="img" ref={imgRef} src={card.imageUrl ?? PLACEHOLDER} alt={card.word}
-                  onLoad={() => setImgLoaded(true)} onError={() => setImgLoaded(true)}
-                  sx={{ width: '100%', height: 175, objectFit: 'cover', display: imgLoaded ? 'block' : 'none' }}
-                />
-              </Box>
+              {card.imageUrl && (
+                <Box sx={{
+                  mx: { xs: '8px', sm: '10px' }, mt: { xs: '6px', sm: '8px' },
+                  borderRadius: '7px', overflow: 'hidden',
+                  border: '2px solid rgba(0,0,0,0.18)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.12)',
+                  flexShrink: 0, position: 'relative',
+                }}>
+                  {!imgLoaded && (
+                    <Skeleton variant="rectangular" width="100%" height={175}
+                      sx={{ bgcolor: alpha(brand[300], 0.1), position: 'absolute', inset: 0 }} />
+                  )}
+                  <Box
+                    component="img" ref={imgRef} src={card.imageUrl} alt={card.word}
+                    onLoad={() => setImgLoaded(true)} onError={() => setImgLoaded(true)}
+                    sx={{ width: '100%', height: 175, objectFit: 'cover', display: imgLoaded ? 'block' : 'none' }}
+                  />
+                </Box>
+              )}
 
               {/* Card name */}
               <Box sx={{ px: { xs: 2, sm: 2.5 }, pt: { xs: 1.25, sm: 1.5 }, pb: 1, borderBottom: `2.5px solid ${typeAccent}`, flexShrink: 0 }}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import {
   Box, Typography, IconButton, TextField, Tooltip,
   CircularProgress, Collapse, ToggleButtonGroup, ToggleButton,
@@ -11,9 +11,12 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ImageSearchIcon from '@mui/icons-material/ImageSearch';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import HideImageIcon from '@mui/icons-material/HideImage';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import type { Flashcard, JlptLevel } from '@/types/flashcard';
-import { fetchImage, formatFurigana } from '@/services/api';
+import { fetchImage, uploadImage, deleteStorageImage, isStorageImage, formatFurigana } from '@/services/api';
+import { ConfirmRemoveImageDialog } from '@/components/ConfirmRemoveImageDialog';
 import { SmallField } from './SmallField';
 import { compactToggleSx } from './styles';
 
@@ -35,9 +38,14 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const [refreshingImage, setRefreshingImage] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formattingFurigana, setFormattingFurigana] = useState(false);
   const [imageQuery, setImageQuery] = useState(card.image_query || card.word);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const imageBusy = refreshingImage || uploading;
   const exampleJpEdited = card.example_jp !== originalExampleJp;
 
   const handleRefreshImage = useCallback(async () => {
@@ -53,6 +61,41 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
       setRefreshingImage(false);
     }
   }, [imageQuery, card.word, index, onUpdate]);
+
+  const handleUploadImage = useCallback(async (file: File) => {
+    setUploading(true);
+    try {
+      const url = await uploadImage(file);
+      onUpdate(index, { imageUrl: url });
+    } catch {
+      // keep existing image if upload fails
+    } finally {
+      setUploading(false);
+    }
+  }, [index, onUpdate]);
+
+  const handleRemoveClick = useCallback(() => {
+    if (isStorageImage(card.imageUrl)) {
+      setConfirmOpen(true);
+    } else {
+      onUpdate(index, { imageUrl: undefined });
+    }
+  }, [card.imageUrl, index, onUpdate]);
+
+  const handleConfirmRemove = useCallback(async () => {
+    setDeleting(true);
+    try {
+      if (isStorageImage(card.imageUrl)) {
+        await deleteStorageImage(card.imageUrl!);
+      }
+      onUpdate(index, { imageUrl: undefined });
+      setConfirmOpen(false);
+    } catch {
+      setConfirmOpen(false);
+    } finally {
+      setDeleting(false);
+    }
+  }, [card.imageUrl, index, onUpdate]);
 
   const handleAutoFurigana = useCallback(async () => {
     if (!card.example_jp.trim()) return;
@@ -182,14 +225,43 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
                   }}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); handleRefreshImage(); } }}
                 />
-                <Tooltip title="Fetch new image">
+                <Tooltip title="Fetch from Unsplash">
                   <IconButton
-                    size="small" onClick={handleRefreshImage} disabled={refreshingImage}
+                    size="small" onClick={handleRefreshImage} disabled={imageBusy}
                     sx={{ width: 30, height: 30, border: `1.5px solid ${alpha(brand[300], 0.4)}`, borderRadius: '8px', color: brand[500], '&:hover': { bgcolor: alpha(brand[300], 0.1) } }}
                   >
-                    <AutorenewIcon sx={{ fontSize: 16 }} />
+                    {refreshingImage ? <CircularProgress size={14} sx={{ color: brand[500] }} /> : <AutorenewIcon sx={{ fontSize: 16 }} />}
                   </IconButton>
                 </Tooltip>
+                <Tooltip title="Upload image">
+                  <IconButton
+                    size="small" onClick={() => fileInputRef.current?.click()} disabled={imageBusy}
+                    sx={{ width: 30, height: 30, border: `1.5px solid ${alpha(brand[300], 0.4)}`, borderRadius: '8px', color: brand[500], '&:hover': { bgcolor: alpha(brand[300], 0.1) } }}
+                  >
+                    {uploading ? <CircularProgress size={14} sx={{ color: brand[500] }} /> : <FileUploadIcon sx={{ fontSize: 16 }} />}
+                  </IconButton>
+                </Tooltip>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  hidden
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleUploadImage(file);
+                    e.target.value = '';
+                  }}
+                />
+                {card.imageUrl && (
+                  <Tooltip title="Remove image">
+                    <IconButton
+                      size="small" onClick={handleRemoveClick}
+                      sx={{ width: 30, height: 30, border: `1.5px solid ${alpha(brand[300], 0.4)}`, borderRadius: '8px', color: alpha(brand[500], 0.5), '&:hover': { bgcolor: alpha(brand[300], 0.1), color: 'error.main' } }}
+                    >
+                      <HideImageIcon sx={{ fontSize: 16 }} />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </Box>
             </Box>
           </Box>
@@ -261,6 +333,13 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
           <SmallField label="Example (EN)" value={card.example_en} onChange={handleField('example_en')} multiline />
         </Box>
       </Collapse>
+
+      <ConfirmRemoveImageDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleConfirmRemove}
+        deleting={deleting}
+      />
     </Box>
   );
 }

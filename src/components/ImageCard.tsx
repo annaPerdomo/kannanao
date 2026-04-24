@@ -127,12 +127,9 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
               <Box
                 sx={{
                   width: "100%", height: 120,
-                  background: `linear-gradient(135deg, ${brand[100]} 0%, ${accent[100]} 50%, ${brand[100]} 100%)`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: `linear-gradient(135deg, ${alpha(brand[200], 0.5)} 0%, ${alpha(accent[200], 0.3)} 50%, ${alpha(brand[200], 0.5)} 100%)`,
                 }}
-              >
-                <Typography sx={{ fontSize: "3.5rem" }}>🌸</Typography>
-              </Box>
+              />
             )}
           </Box>
 
