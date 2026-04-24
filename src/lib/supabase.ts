@@ -49,6 +49,7 @@ interface SupabaseCardRow {
   reading: string | null;
   meaning: string | null;
   image_url: string | null;
+  image_query: string | null;
   example_jp: string | null;
   example_en: string | null;
   main_view_mode: "hiragana" | "kanji";
@@ -69,7 +70,7 @@ export function dbCardToApp(card: SupabaseCardRow): Flashcard {
     word: card.word,
     reading: card.reading ?? "",
     meaning: card.meaning ?? "",
-    image_query: "",
+    image_query: card.image_query ?? "",
     example_jp: card.example_jp ?? "",
     example_en: card.example_en ?? "",
     imageUrl: card.image_url ?? undefined,
@@ -226,6 +227,7 @@ export async function dbInsertCards(
     reading: card.reading || "",
     meaning: card.meaning || "",
     image_url: card.imageUrl || "",
+    image_query: card.image_query || "",
     example_jp: card.example_jp || "",
     example_en: card.example_en || "",
     main_view_mode: card.mainViewMode || "hiragana",
@@ -263,6 +265,7 @@ export async function dbUpdateCard(
   if (patch.reading !== undefined) payload.reading = patch.reading;
   if (patch.meaning !== undefined) payload.meaning = patch.meaning;
   if (patch.imageUrl !== undefined) payload.image_url = patch.imageUrl;
+  if (patch.image_query !== undefined) payload.image_query = patch.image_query;
   if (patch.example_jp !== undefined) payload.example_jp = patch.example_jp;
   if (patch.example_en !== undefined) payload.example_en = patch.example_en;
   if (patch.mainViewMode !== undefined)
@@ -334,6 +337,7 @@ export async function dbCopyCardsIntoDeck(
     reading: card.reading || "",
     meaning: card.meaning || "",
     image_url: card.imageUrl || "",
+    image_query: card.image_query || "",
     example_jp: card.example_jp || "",
     example_en: card.example_en || "",
     main_view_mode: card.mainViewMode ?? 'hiragana',

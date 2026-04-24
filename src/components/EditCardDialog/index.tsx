@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import {
-  Box, TextField, Button, Typography,
+  Box, TextField, Button,
   CircularProgress, Divider,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
@@ -26,7 +26,7 @@ export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogPr
   const sharedTextFieldSx = sharedTextFieldSxFn(theme);
 
   const [fields, setFields] = useState<EditableFields>({
-    word: '', reading: '', meaning: '', example_jp: '', example_en: '', imageUrl: undefined,
+    word: '', reading: '', meaning: '', example_jp: '', example_en: '', imageUrl: undefined, image_query: '',
   });
   const [mainViewMode, setMainViewMode] = useState<'hiragana' | 'kanji'>('hiragana');
   const [cardType, setCardType] = useState<'word' | 'phrase'>('word');
@@ -35,7 +35,7 @@ export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogPr
 
   useEffect(() => {
     if (card) {
-      setFields({ word: card.word, reading: card.reading, meaning: card.meaning, example_jp: card.example_jp, example_en: card.example_en, imageUrl: card.imageUrl });
+      setFields({ word: card.word, reading: card.reading, meaning: card.meaning, example_jp: card.example_jp, example_en: card.example_en, imageUrl: card.imageUrl, image_query: card.image_query ?? '' });
       setMainViewMode(card.mainViewMode ?? 'hiragana');
       setCardType(card.cardType ?? 'word');
       setJlptLevel(card.jlptLevel);
@@ -112,8 +112,9 @@ export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogPr
         <ImageSection
           imageUrl={fields.imageUrl}
           word={fields.word}
-          initialQuery={card?.image_query || card?.word || ''}
+          initialQuery={card?.image_query || ''}
           onImageChange={(url) => setFields((prev) => ({ ...prev, imageUrl: url }))}
+          onQueryChange={(q) => setFields((prev) => ({ ...prev, image_query: q }))}
         />
       </Box>
     </StyledDialog>

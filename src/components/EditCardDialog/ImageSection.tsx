@@ -15,9 +15,10 @@ interface ImageSectionProps {
   word: string;
   initialQuery: string;
   onImageChange: (url: string | undefined) => void;
+  onQueryChange?: (query: string) => void;
 }
 
-export function ImageSection({ imageUrl, word, initialQuery, onImageChange }: ImageSectionProps) {
+export function ImageSection({ imageUrl, word, initialQuery, onImageChange, onQueryChange }: ImageSectionProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
   const [imageQuery, setImageQuery] = useState(initialQuery);
@@ -131,10 +132,11 @@ export function ImageSection({ imageUrl, word, initialQuery, onImageChange }: Im
         <TextField
           label="Image Search Query"
           value={imageQuery}
-          onChange={(e) => { setImageQuery(e.target.value); setImageError(''); }}
-          placeholder={`e.g. ${word || 'sakura'}`}
+          onChange={(e) => { setImageQuery(e.target.value); setImageError(''); onQueryChange?.(e.target.value); }}
+          placeholder="Phrase that describes this definition"
           size="small" fullWidth
-          helperText={imageError || 'Search term for Unsplash image'}
+          slotProps={{ inputLabel: { shrink: true } }}
+          helperText={imageError}
           error={!!imageError}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleRegenerateImage(); } }}
           sx={{
@@ -145,35 +147,37 @@ export function ImageSection({ imageUrl, word, initialQuery, onImageChange }: Im
             },
           }}
         />
-        <Tooltip title={previewUrl ? 'Regenerate from Unsplash' : 'Search Unsplash'}>
-          <span>
-            <Button
-              variant="outlined" onClick={handleRegenerateImage} disabled={busy}
-              startIcon={
-                savingImage ? <CircularProgress size={13} sx={{ color: brand[500] }} />
-                : previewUrl ? <AutorenewIcon sx={{ fontSize: 15 }} />
-                : <ImageSearchIcon sx={{ fontSize: 15 }} />
-              }
-              sx={btnSx}
-            >
-              {savingImage ? 'Searching...' : previewUrl ? 'Regen' : 'Fetch'}
-            </Button>
-          </span>
-        </Tooltip>
-        <Tooltip title="Upload your own image">
-          <span>
-            <Button
-              variant="outlined" onClick={() => fileInputRef.current?.click()} disabled={busy}
-              startIcon={
-                uploading ? <CircularProgress size={13} sx={{ color: brand[500] }} />
-                : <FileUploadIcon sx={{ fontSize: 15 }} />
-              }
-              sx={btnSx}
-            >
-              {uploading ? 'Uploading...' : 'Upload'}
-            </Button>
-          </span>
-        </Tooltip>
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+          <Tooltip title={previewUrl ? 'Regenerate from Unsplash' : 'Search Unsplash'}>
+            <span>
+              <Button
+                variant="outlined" onClick={handleRegenerateImage} disabled={busy}
+                startIcon={
+                  savingImage ? <CircularProgress size={13} sx={{ color: brand[500] }} />
+                  : previewUrl ? <AutorenewIcon sx={{ fontSize: 15 }} />
+                  : <ImageSearchIcon sx={{ fontSize: 15 }} />
+                }
+                sx={btnSx}
+              >
+                {savingImage ? 'Searching...' : previewUrl ? 'Regen' : 'Fetch'}
+              </Button>
+            </span>
+          </Tooltip>
+          <Tooltip title="Upload your own image">
+            <span>
+              <Button
+                variant="outlined" onClick={() => fileInputRef.current?.click()} disabled={busy}
+                startIcon={
+                  uploading ? <CircularProgress size={13} sx={{ color: brand[500] }} />
+                  : <FileUploadIcon sx={{ fontSize: 15 }} />
+                }
+                sx={btnSx}
+              >
+                {uploading ? 'Uploading...' : 'Upload'}
+              </Button>
+            </span>
+          </Tooltip>
+        </Box>
         <input
           ref={fileInputRef}
           type="file"

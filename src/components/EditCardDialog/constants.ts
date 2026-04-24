@@ -1,7 +1,7 @@
 import { alpha, type Theme } from '@mui/material/styles';
 import type { Flashcard, JlptLevel } from '@/types/flashcard';
 
-export type EditableFields = Pick<Flashcard, 'word' | 'reading' | 'meaning' | 'example_jp' | 'example_en' | 'imageUrl'>;
+export type EditableFields = Pick<Flashcard, 'word' | 'reading' | 'meaning' | 'example_jp' | 'example_en' | 'imageUrl' | 'image_query'>;
 
 export const JLPT_LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
