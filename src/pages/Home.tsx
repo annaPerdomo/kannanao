@@ -1,40 +1,53 @@
 'use client';
-import { useState } from 'react';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Grid from '@mui/material/Grid';
+import LinearProgress from '@mui/material/LinearProgress';
+import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
-import LinearProgress from '@mui/material/LinearProgress';
-import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import { DeckCard } from '@/components/DeckCard';
-import { ShareDeckDialog } from '@/components/ShareDeckDialog';
 import { Loading } from '@/components/Loading';
-import { TodoList } from '@/components/TodoList';
-import { useDecks } from '@/hooks/useDecks';
-import { useAuth } from '@/contexts/AuthContext';
-import StorefrontIcon from '@mui/icons-material/Storefront';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import { useProgress, xpProgressInLevel } from '@/hooks/useProgress';
-import { useOhanashikais } from '@/hooks/useOhanashikais';
-import { SHOP_ITEMS, useShop } from '@/hooks/useShop';
 import { PageHeader } from '@/components/PageHeader';
+import { ShareDeckDialog } from '@/components/ShareDeckDialog';
+import { TodoList } from '@/components/TodoList';
+import { useAuth } from '@/contexts/AuthContext';
+import { useDecks } from '@/hooks/useDecks';
+import { useOhanashikais } from '@/hooks/useOhanashikais';
+import { useProgress, xpProgressInLevel } from '@/hooks/useProgress';
+import { SHOP_ITEMS, useShop } from '@/hooks/useShop';
 import { LAYOUT } from '@/theme';
 
 function getGreeting(name: string): { text: string; emoji: string } {
   const h = new Date().getHours();
   if (h < 12) return { text: `Good morning, ${name}!`, emoji: '🌸' };
-  if (h < 17) return { text: `Hey there, ${name}!`,    emoji: '☀️' };
-  return           { text: `Good evening, ${name}!`,   emoji: '🌙' };
+  if (h < 17) return { text: `Hey there, ${name}!`, emoji: '☀️' };
+  return { text: `Good evening, ${name}!`, emoji: '🌙' };
 }
 
-function WelcomeBanner({ username, level, streak, totalXp, spendableXp, ownedItemKeys, onShopClick }: {
-  username: string; level: number; streak: number; totalXp: number;
-  spendableXp: number; ownedItemKeys: string[]; onShopClick: () => void;
+function WelcomeBanner({
+  username,
+  level,
+  streak,
+  totalXp,
+  spendableXp,
+  ownedItemKeys,
+  onShopClick,
+}: {
+  username: string;
+  level: number;
+  streak: number;
+  totalXp: number;
+  spendableXp: number;
+  ownedItemKeys: string[];
+  onShopClick: () => void;
 }) {
   const { text, emoji } = getGreeting(username);
   const { current, needed } = xpProgressInLevel(totalXp);
@@ -42,9 +55,10 @@ function WelcomeBanner({ username, level, streak, totalXp, spendableXp, ownedIte
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
-  const nextItem = SHOP_ITEMS
-    .filter((i) => i.price > 0 && !ownedItemKeys.includes(i.key))
-    .sort((a, b) => a.price - b.price)[0] ?? null;
+  const nextItem =
+    SHOP_ITEMS.filter((i) => i.price > 0 && !ownedItemKeys.includes(i.key)).sort(
+      (a, b) => a.price - b.price,
+    )[0] ?? null;
   const xpNeeded = nextItem ? Math.max(0, nextItem.price - spendableXp) : 0;
 
   return (
@@ -70,8 +84,12 @@ function WelcomeBanner({ username, level, streak, totalXp, spendableXp, ownedIte
           }}
         >
           <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: brand[700] }}>XP Progress</Typography>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: brand[600] }}>{current} / {needed}</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: brand[700] }}>
+              XP Progress
+            </Typography>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: brand[600] }}>
+              {current} / {needed}
+            </Typography>
           </Stack>
           <LinearProgress
             variant="determinate"
@@ -89,7 +107,10 @@ function WelcomeBanner({ username, level, streak, totalXp, spendableXp, ownedIte
               },
             }}
           />
-          <Typography variant="caption" sx={{ color: brand[600], fontWeight: 600, mt: 0.5, display: 'block' }}>
+          <Typography
+            variant="caption"
+            sx={{ color: brand[600], fontWeight: 600, mt: 0.5, display: 'block' }}
+          >
             {needed - current} XP to level {level + 1} 🚀
           </Typography>
 
@@ -102,7 +123,10 @@ function WelcomeBanner({ username, level, streak, totalXp, spendableXp, ownedIte
               <StorefrontIcon sx={{ fontSize: '0.85rem', color: brand[500], ml: 'auto' }} />
             </Stack>
             {nextItem && xpNeeded > 0 && (
-              <Typography variant="caption" sx={{ color: brand[500], fontWeight: 600, fontSize: '0.7rem', display: 'block' }}>
+              <Typography
+                variant="caption"
+                sx={{ color: brand[500], fontWeight: 600, fontSize: '0.7rem', display: 'block' }}
+              >
                 {nextItem.emoji} {nextItem.name} — {xpNeeded.toLocaleString()} more XP!
               </Typography>
             )}
@@ -114,13 +138,23 @@ function WelcomeBanner({ username, level, streak, totalXp, spendableXp, ownedIte
         <Chip
           label={`✨ Level ${level}`}
           size="small"
-          sx={{ fontWeight: 800, bgcolor: alpha(brand[100], 0.9), color: brand[700], border: `1.5px solid ${alpha(brand[400], 0.4)}` }}
+          sx={{
+            fontWeight: 800,
+            bgcolor: alpha(brand[100], 0.9),
+            color: brand[700],
+            border: `1.5px solid ${alpha(brand[400], 0.4)}`,
+          }}
         />
         {streak > 0 && (
           <Chip
             label={`🔥 ${streak} day streak`}
             size="small"
-            sx={{ fontWeight: 800, bgcolor: 'rgba(251,191,36,0.15)', color: '#B45309', border: '1.5px solid rgba(251,191,36,0.35)' }}
+            sx={{
+              fontWeight: 800,
+              bgcolor: 'rgba(251,191,36,0.15)',
+              color: '#B45309',
+              border: '1.5px solid rgba(251,191,36,0.35)',
+            }}
           />
         )}
       </Stack>
@@ -148,14 +182,23 @@ export default function Home() {
 
   if (loading) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: { xs: 1.5, sm: 2, lg: 3 }, py: 6 }}>
+      <Box
+        sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: { xs: 1.5, sm: 2, lg: 3 }, py: 6 }}
+      >
         <Loading message="Loading your decks…" />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: { xs: 1.5, sm: 2, lg: 3 }, py: { xs: 3, sm: 5 } }}>
+    <Box
+      sx={{
+        maxWidth: LAYOUT.contentMaxWidth,
+        mx: 'auto',
+        px: { xs: 1.5, sm: 2, lg: 3 },
+        py: { xs: 3, sm: 5 },
+      }}
+    >
       {/* Welcome banner — constrained to match other page headers */}
       {progress && (
         <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
@@ -243,7 +286,14 @@ export default function Home() {
                         deck={deck}
                         onOpen={(id) => router.push(`/deck/${id}?from=home`)}
                         onDelete={owned ? deleteDeck : () => {}}
-                        onShare={owned ? (id) => { setShareDeckId(id); setShareDeckName(deck.name); } : undefined}
+                        onShare={
+                          owned
+                            ? (id) => {
+                                setShareDeckId(id);
+                                setShareDeckName(deck.name);
+                              }
+                            : undefined
+                        }
                         onEditEmoji={owned ? updateDeckEmoji : undefined}
                         onPin={pinDeck}
                         isOwner={owned}
@@ -293,7 +343,9 @@ export default function Home() {
                 <Typography sx={{ fontSize: '1.8rem', flexShrink: 0 }}>🌸</Typography>
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                    {ohanashikais.length === 0 ? 'Practice your お話し会 speech!' : 'Pin a speech to see it here'}
+                    {ohanashikais.length === 0
+                      ? 'Practice your お話し会 speech!'
+                      : 'Pin a speech to see it here'}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {ohanashikais.length === 0
@@ -330,10 +382,18 @@ export default function Home() {
                     >
                       <Typography sx={{ fontSize: '1.2rem', flexShrink: 0 }}>{emoji}</Typography>
                       <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.2 }} noWrap>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.2 }}
+                          noWrap
+                        >
                           {item.title}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: '0.65rem' }}
+                        >
                           {item.lineCount} line{item.lineCount !== 1 ? 's' : ''}
                         </Typography>
                       </Box>
@@ -352,7 +412,6 @@ export default function Home() {
         deckId={shareDeckId ?? ''}
         deckName={shareDeckName}
       />
-
     </Box>
   );
 }

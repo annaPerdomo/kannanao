@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent, act } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { renderWithProviders } from '@/test/renderWithProviders';
-import { createAppTheme, type ColorScheme } from '@/theme';
+import { type ColorScheme, createAppTheme } from '@/theme';
 
 // ─── Mock AuthContext (ThemeContext depends on it) ────────────────────────────
 
@@ -14,7 +15,7 @@ vi.mock('@/contexts/AuthContext', () => ({
   }),
 }));
 
-import { useColorScheme, AppThemeProvider, schemeInfo } from '@/contexts/ThemeContext';
+import { AppThemeProvider, schemeInfo, useColorScheme } from '@/contexts/ThemeContext';
 
 // ─── Test component ───────────────────────────────────────────────────────────
 
@@ -89,8 +90,16 @@ describe('ThemeContext / AppThemeProvider', () => {
 
 describe('createAppTheme', () => {
   const ALL_SCHEMES: ColorScheme[] = [
-    'sakura', 'murasaki', 'yuki', 'ocean', 'forest',
-    'sunset', 'lavender', 'midnight', 'matcha', 'rosegold',
+    'sakura',
+    'murasaki',
+    'yuki',
+    'ocean',
+    'forest',
+    'sunset',
+    'lavender',
+    'midnight',
+    'matcha',
+    'rosegold',
   ];
 
   ALL_SCHEMES.forEach((scheme) => {
@@ -109,8 +118,16 @@ describe('createAppTheme', () => {
 
   it('should export schemeInfo for all 10 schemes', () => {
     const ALL_SCHEMES: ColorScheme[] = [
-      'sakura', 'murasaki', 'yuki', 'ocean', 'forest',
-      'sunset', 'lavender', 'midnight', 'matcha', 'rosegold',
+      'sakura',
+      'murasaki',
+      'yuki',
+      'ocean',
+      'forest',
+      'sunset',
+      'lavender',
+      'midnight',
+      'matcha',
+      'rosegold',
     ];
     ALL_SCHEMES.forEach((scheme) => {
       expect(schemeInfo[scheme]).toBeDefined();

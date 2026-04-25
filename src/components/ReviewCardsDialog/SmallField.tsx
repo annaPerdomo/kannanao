@@ -1,5 +1,5 @@
 import { TextField } from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 
 interface SmallFieldProps {
   label: string;
@@ -10,7 +10,14 @@ interface SmallFieldProps {
   helperText?: React.ReactNode;
 }
 
-export function SmallField({ label, value, onChange, multiline, endAdornment, helperText }: SmallFieldProps) {
+export function SmallField({
+  label,
+  value,
+  onChange,
+  multiline,
+  endAdornment,
+  helperText,
+}: SmallFieldProps) {
   const { palette } = useTheme();
   const { brand } = palette;
 

@@ -1,27 +1,22 @@
 'use client';
-import { useState, useMemo, useEffect, useRef } from 'react';
-import {
-  Box,
-  Typography,
-  Button,
-  Grid,
-  Chip,
-  LinearProgress,
-} from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { alpha } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined';
-import type { Flashcard } from '@/types/flashcard';
-import { getFlashcardDisplayText, cardXp } from '@/lib/flashcardUtils';
-import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
-import { usePracticeQueue } from '@/hooks/usePracticeQueue';
+import { Box, Button, Chip, Grid, LinearProgress, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { SpeakButton } from '@/components/SpeakButton';
+import { type BuddyReaction, StudyBuddy } from '@/components/StudyBuddy';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import { usePracticeQueue } from '@/hooks/usePracticeQueue';
+import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
+import { useShop } from '@/hooks/useShop';
+import { cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
+import type { Flashcard } from '@/types/flashcard';
+
 import { CelebrationScreen } from './CelebrationScreen';
 import { RoundTransition } from './RoundTransition';
-import { StudyBuddy, type BuddyReaction } from '@/components/StudyBuddy';
-import { useShop } from '@/hooks/useShop';
-import { SpeakButton } from '@/components/SpeakButton';
 
 interface MatchModeProps {
   cards: Flashcard[];
@@ -143,8 +138,14 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
 
   const handleSelect = async (tile: Tile) => {
     if (matched.has(tile.cardId)) return;
-    if (tile.id === selected?.id) { setSelected(null); return; }
-    if (!selected) { setSelected(tile); return; }
+    if (tile.id === selected?.id) {
+      setSelected(null);
+      return;
+    }
+    if (!selected) {
+      setSelected(tile);
+      return;
+    }
 
     if (selected.cardId === tile.cardId && selected.side !== tile.side) {
       // Correct match
@@ -176,7 +177,10 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
         const attemptedCard = queue.currentCards.find((c) => c.id === tile.cardId);
         await recordAnswer(sessionIdRef.current, false, attemptedCard?.jlptLevel);
       }
-      setTimeout(() => { setWrong(null); setSelected(null); }, 600);
+      setTimeout(() => {
+        setWrong(null);
+        setSelected(null);
+      }, 600);
     }
   };
 
@@ -193,8 +197,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
 
   // ── All rounds complete ────────────────────────────────────────────────────
   if (queue.phase === 'allDone') {
-    const batchLabel =
-      queue.totalBatches > 1 ? `${queue.totalBatches} rounds` : '1 round';
+    const batchLabel = queue.totalBatches > 1 ? `${queue.totalBatches} rounds` : '1 round';
     return (
       <CelebrationScreen
         heading="All matched!"
@@ -225,15 +228,13 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
   // ── Match grid ──────────────────────────────────────────────────────────────
   const overallProgress =
     queue.totalBatches > 1
-      ? (queue.batchIndex / queue.totalBatches +
-          matched.size / queue.currentCards.length / queue.totalBatches)
+      ? queue.batchIndex / queue.totalBatches +
+        matched.size / queue.currentCards.length / queue.totalBatches
       : matched.size / queue.currentCards.length;
 
   return (
     <Box>
-      <Box
-        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
-      >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h5">Match</Typography>
           {queue.totalBatches > 1 && (
@@ -297,17 +298,17 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                   borderColor: isMatched
                     ? 'success.main'
                     : isWrong
-                    ? 'error.main'
-                    : isSelected
-                    ? 'primary.main'
-                    : alpha(brand[200], 0.7),
+                      ? 'error.main'
+                      : isSelected
+                        ? 'primary.main'
+                        : alpha(brand[200], 0.7),
                   bgcolor: isMatched
                     ? alpha(theme.palette.success.main, 0.1)
                     : isWrong
-                    ? alpha(theme.palette.error.main, 0.08)
-                    : isSelected
-                    ? alpha(brand[300], 0.16)
-                    : surfaces.input,
+                      ? alpha(theme.palette.error.main, 0.08)
+                      : isSelected
+                        ? alpha(brand[300], 0.16)
+                        : surfaces.input,
                   opacity: isMatched ? 0.75 : 1,
                   transform: isSelected ? 'scale(1.04)' : 'scale(1)',
                   '&:hover': !isMatched
@@ -320,7 +321,11 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                 ) : tile.side === 'jp' ? (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <Typography
-                      sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.1rem', color: 'text.primary' }}
+                      sx={{
+                        fontFamily: '"Noto Serif JP", serif',
+                        fontSize: '1.1rem',
+                        color: 'text.primary',
+                      }}
                     >
                       {tile.label}
                     </Typography>
@@ -328,7 +333,11 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                   </Box>
                 ) : (
                   <Typography
-                    sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.8rem', color: 'text.primary' }}
+                    sx={{
+                      fontFamily: '"DM Mono", monospace',
+                      fontSize: '0.8rem',
+                      color: 'text.primary',
+                    }}
                   >
                     {tile.label}
                   </Typography>

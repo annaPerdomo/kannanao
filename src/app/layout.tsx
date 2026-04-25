@@ -1,46 +1,40 @@
-import type { Metadata } from "next";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
-import Providers from "./providers";
-import { AppShell } from "@/components/AppShell";
-import { AppBackground } from "@/components/AppBackground";
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
+import type { Metadata } from 'next';
 
-const TITLE = "Kannanao — AI Japanese Flashcard Studio";
+import { AppBackground } from '@/components/AppBackground';
+import { AppShell } from '@/components/AppShell';
+
+import Providers from './providers';
+
+const TITLE = 'Kannanao — AI Japanese Flashcard Studio';
 const DESCRIPTION =
-  "Create Japanese flashcards with AI, practice with Match, Fill-in-the-blank & Recall modes, track XP & streaks, import PDFs, and share decks.";
+  'Create Japanese flashcards with AI, practice with Match, Fill-in-the-blank & Recall modes, track XP & streaks, import PDFs, and share decks.';
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://kannanao.com"),
+  metadataBase: new URL('https://kannanao.com'),
   title: TITLE,
   description: DESCRIPTION,
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
-    url: "https://kannanao.com",
-    siteName: "Kannanao",
-    type: "website",
-    locale: "en_US",
+    url: 'https://kannanao.com',
+    siteName: 'Kannanao',
+    type: 'website',
+    locale: 'en_US',
   },
   twitter: {
-    card: "summary_large_image",
+    card: 'summary_large_image',
     title: TITLE,
     description: DESCRIPTION,
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* Per-theme Google Fonts — 20 families covering all 10 color themes */}
         <link
           href={[
@@ -85,10 +79,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
         <meta charSet="UTF-8" />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, viewport-fit=cover"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link
           rel="icon"
           href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>"

@@ -1,48 +1,54 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import BorderStyleIcon from '@mui/icons-material/BorderStyle';
+import CelebrationIcon from '@mui/icons-material/Celebration';
+import ColorLensIcon from '@mui/icons-material/ColorLens';
+import PetsIcon from '@mui/icons-material/Pets';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  Skeleton,
   Alert,
+  Box,
+  Button,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
+  DialogContent,
+  DialogTitle,
+  Paper,
+  Skeleton,
+  Typography,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import ColorLensIcon from '@mui/icons-material/ColorLens';
-import BorderStyleIcon from '@mui/icons-material/BorderStyle';
-import CelebrationIcon from '@mui/icons-material/Celebration';
-import PetsIcon from '@mui/icons-material/Pets';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import { useProgress } from '@/hooks/useProgress';
-import { useShop, SHOP_ITEMS, THEME_KEY_TO_SCHEME } from '@/hooks/useShop';
+import { useMemo, useState } from 'react';
+
 import { Loading } from '@/components/Loading';
-import { useColorScheme } from '@/contexts/ThemeContext';
-import { LAYOUT, type ColorScheme } from '@/theme';
-import type { ShopCategory, ShopItem } from '@/types/shop';
-import { float, celebrate } from '@/components/Shop/animations';
-import { Sparkles } from '@/components/Shop/Sparkles';
-import { CoinBurst } from '@/components/Shop/CoinBurst';
-import { ThemeCardPreview } from '@/components/Shop/ThemeCardPreview';
+import { PageHeader } from '@/components/PageHeader';
+import { celebrate, float } from '@/components/Shop/animations';
 import { BorderCardPreview } from '@/components/Shop/BorderCardPreview';
 import { BorderPreviewModal } from '@/components/Shop/BorderPreviewModal';
-import { CelebrationPreviewModal } from '@/components/Shop/CelebrationPreviewModal';
+import { BuddyPreviewModal } from '@/components/Shop/BuddyPreviewModal';
 import { CategoryButton } from '@/components/Shop/CategoryButton';
 import { CategorySection } from '@/components/Shop/CategorySection';
-import { BuddyPreviewModal } from '@/components/Shop/BuddyPreviewModal';
-import { PageHeader } from '@/components/PageHeader';
+import { CelebrationPreviewModal } from '@/components/Shop/CelebrationPreviewModal';
+import { CoinBurst } from '@/components/Shop/CoinBurst';
+import { Sparkles } from '@/components/Shop/Sparkles';
+import { ThemeCardPreview } from '@/components/Shop/ThemeCardPreview';
+import { useColorScheme } from '@/contexts/ThemeContext';
+import { useProgress } from '@/hooks/useProgress';
+import { SHOP_ITEMS, THEME_KEY_TO_SCHEME, useShop } from '@/hooks/useShop';
+import { type ColorScheme, LAYOUT } from '@/theme';
+import type { ShopCategory, ShopItem } from '@/types/shop';
 
 export default function Shop() {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
-  const { progress, spendableXp, loading: progressLoading, refetch: refetchProgress } = useProgress();
+  const {
+    progress,
+    spendableXp,
+    loading: progressLoading,
+    refetch: refetchProgress,
+  } = useProgress();
   const {
     equipped,
     loading: shopLoading,
@@ -64,23 +70,56 @@ export default function Shop() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showCoinBurst, setShowCoinBurst] = useState(false);
-  const [previewingTheme, setPreviewingTheme] = useState<{ item: ShopItem; originalScheme: ColorScheme } | null>(null);
+  const [previewingTheme, setPreviewingTheme] = useState<{
+    item: ShopItem;
+    originalScheme: ColorScheme;
+  } | null>(null);
   const [borderPreviewItem, setBorderPreviewItem] = useState<ShopItem | null>(null);
   const [celebPreviewItem, setCelebPreviewItem] = useState<ShopItem | null>(null);
   const [buddyPreviewItem, setBuddyPreviewItem] = useState<ShopItem | null>(null);
 
   const loading = progressLoading || shopLoading;
-  const categories = useMemo(() => [
-    { key: 'theme' as const, title: 'Themes', icon: <ColorLensIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />, filterIcon: <ColorLensIcon />, filterLabel: 'Themes' },
-    { key: 'card_border' as const, title: 'Card Borders', icon: <BorderStyleIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />, filterIcon: <BorderStyleIcon />, filterLabel: 'Borders' },
-    { key: 'celebration' as const, title: 'Celebrations', icon: <CelebrationIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />, filterIcon: <CelebrationIcon />, filterLabel: 'Celebrations' },
-    { key: 'study_buddy' as const, title: 'Study Buddies', icon: <PetsIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />, filterIcon: <PetsIcon />, filterLabel: 'Buddies' },
-  ], [brand]);
+  const categories = useMemo(
+    () => [
+      {
+        key: 'theme' as const,
+        title: 'Themes',
+        icon: <ColorLensIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />,
+        filterIcon: <ColorLensIcon />,
+        filterLabel: 'Themes',
+      },
+      {
+        key: 'card_border' as const,
+        title: 'Card Borders',
+        icon: <BorderStyleIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />,
+        filterIcon: <BorderStyleIcon />,
+        filterLabel: 'Borders',
+      },
+      {
+        key: 'celebration' as const,
+        title: 'Celebrations',
+        icon: <CelebrationIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />,
+        filterIcon: <CelebrationIcon />,
+        filterLabel: 'Celebrations',
+      },
+      {
+        key: 'study_buddy' as const,
+        title: 'Study Buddies',
+        icon: <PetsIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />,
+        filterIcon: <PetsIcon />,
+        filterLabel: 'Buddies',
+      },
+    ],
+    [brand],
+  );
 
   const itemsByCategory = useMemo(() => {
     const map = new Map<string, ShopItem[]>();
     for (const cat of categories) {
-      map.set(cat.key, SHOP_ITEMS.filter((i) => i.category === cat.key));
+      map.set(
+        cat.key,
+        SHOP_ITEMS.filter((i) => i.category === cat.key),
+      );
     }
     return map;
   }, [categories]);
@@ -161,7 +200,9 @@ export default function Shop() {
       <CoinBurst active={showCoinBurst} />
 
       {/* Hero header */}
-      <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto', width: '100%', position: 'relative' }}>
+      <Box
+        sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto', width: '100%', position: 'relative' }}
+      >
         <Sparkles color={brand[300]} count={10} />
         <PageHeader
           emoji="🎁"
@@ -195,7 +236,9 @@ export default function Shop() {
                 >
                   Your XP
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}
+                >
                   <AutoAwesomeIcon sx={{ fontSize: '1rem', color: '#D97706' }} />
                   <Typography
                     sx={{
@@ -229,16 +272,42 @@ export default function Shop() {
           gap: { xs: 2, sm: 3 },
         }}
       >
-        <CategoryButton icon={<AutoAwesomeIcon />} label="All" active={activeCategory === 'all'} onClick={() => setActiveCategory('all')} color={brand[500]} />
+        <CategoryButton
+          icon={<AutoAwesomeIcon />}
+          label="All"
+          active={activeCategory === 'all'}
+          onClick={() => setActiveCategory('all')}
+          color={brand[500]}
+        />
         {categories.map((cat) => (
-          <CategoryButton key={cat.key} icon={cat.filterIcon} label={cat.filterLabel} active={activeCategory === cat.key} onClick={() => setActiveCategory(cat.key)} color={brand[500]} />
+          <CategoryButton
+            key={cat.key}
+            icon={cat.filterIcon}
+            label={cat.filterLabel}
+            active={activeCategory === cat.key}
+            onClick={() => setActiveCategory(cat.key)}
+            color={brand[500]}
+          />
         ))}
       </Box>
 
       {/* Alerts */}
-      <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto', width: '100%', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <Box
+        sx={{
+          maxWidth: LAYOUT.headerMaxWidth,
+          mx: 'auto',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1.5,
+        }}
+      >
         {successMsg && (
-          <Alert severity="success" onClose={() => setSuccessMsg(null)} sx={{ animation: `${celebrate} 0.4s ease-out`, fontSize: '0.88rem', fontWeight: 700 }}>
+          <Alert
+            severity="success"
+            onClose={() => setSuccessMsg(null)}
+            sx={{ animation: `${celebrate} 0.4s ease-out`, fontSize: '0.88rem', fontWeight: 700 }}
+          >
             {successMsg}
           </Alert>
         )}
@@ -252,30 +321,76 @@ export default function Shop() {
       {/* Item sections */}
       {loading ? (
         <Box sx={{ position: 'relative' }}>
-          <Box sx={{
-            width: '100%',
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: `repeat(${categories.length}, 1fr)` },
-            gap: 2,
-            alignItems: 'start',
-            filter: 'blur(2px)',
-            opacity: 0.6,
-          }}>
+          <Box
+            sx={{
+              width: '100%',
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: '1fr 1fr',
+                lg: `repeat(${categories.length}, 1fr)`,
+              },
+              gap: 2,
+              alignItems: 'start',
+              filter: 'blur(2px)',
+              opacity: 0.6,
+            }}
+          >
             {categories.map((cat) => (
-              <Paper key={cat.key} elevation={0} sx={{ border: `1.5px solid ${alpha(brand[300], 0.2)}`, borderRadius: 3, overflow: 'hidden', bgcolor: alpha(brand[50], 0.3) }}>
-                <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${alpha(brand[300], 0.1)}`, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Paper
+                key={cat.key}
+                elevation={0}
+                sx={{
+                  border: `1.5px solid ${alpha(brand[300], 0.2)}`,
+                  borderRadius: 3,
+                  overflow: 'hidden',
+                  bgcolor: alpha(brand[50], 0.3),
+                }}
+              >
+                <Box
+                  sx={{
+                    px: 2,
+                    py: 1.5,
+                    borderBottom: `1px solid ${alpha(brand[300], 0.1)}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
                   <Skeleton variant="circular" width={20} height={20} />
                   <Skeleton width={80} height={22} />
                 </Box>
-                <Box sx={{ p: 1.5, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}>
+                <Box
+                  sx={{ p: 1.5, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}
+                >
                   {[0, 1, 2, 3].map((item) => (
-                    <Box key={item} sx={{ borderRadius: 2.5, overflow: 'hidden', bgcolor: alpha(brand[50], 0.5), border: `1px solid ${alpha(brand[300], 0.15)}` }}>
+                    <Box
+                      key={item}
+                      sx={{
+                        borderRadius: 2.5,
+                        overflow: 'hidden',
+                        bgcolor: alpha(brand[50], 0.5),
+                        border: `1px solid ${alpha(brand[300], 0.15)}`,
+                      }}
+                    >
                       <Skeleton variant="rounded" height={65} sx={{ borderRadius: 0 }} />
                       <Box sx={{ p: 0.75 }}>
                         <Skeleton width="65%" height={14} />
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.5 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            mt: 0.5,
+                          }}
+                        >
                           <Skeleton width={30} height={16} />
-                          <Skeleton variant="rounded" width={38} height={20} sx={{ borderRadius: 1.5 }} />
+                          <Skeleton
+                            variant="rounded"
+                            width={38}
+                            height={20}
+                            sx={{ borderRadius: 1.5 }}
+                          />
                         </Box>
                       </Box>
                     </Box>
@@ -287,14 +402,16 @@ export default function Shop() {
               </Paper>
             ))}
           </Box>
-          <Box sx={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1,
-          }}>
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1,
+            }}
+          >
             <Loading message="Loading shop…" />
           </Box>
         </Box>
@@ -303,7 +420,11 @@ export default function Shop() {
           sx={{
             width: '100%',
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: `repeat(${categories.length}, 1fr)` },
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: '1fr 1fr',
+              lg: `repeat(${categories.length}, 1fr)`,
+            },
             gap: 2,
             alignItems: 'start',
           }}
@@ -329,23 +450,25 @@ export default function Shop() {
         </Box>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          {categories.filter((cat) => cat.key === activeCategory).map((cat) => (
-            <CategorySection
-              key={cat.key}
-              title={cat.title}
-              icon={cat.icon}
-              items={itemsByCategory.get(cat.key) ?? []}
-              ownsItem={ownsItem}
-              equipped={equipped}
-              activeThemeKey={activeThemeKey}
-              spendableXp={spendableXp}
-              onBuy={setConfirmItem}
-              onEquip={handleEquip}
-              onPreview={handlePreview}
-              brandColor={brand[600]}
-              expanded
-            />
-          ))}
+          {categories
+            .filter((cat) => cat.key === activeCategory)
+            .map((cat) => (
+              <CategorySection
+                key={cat.key}
+                title={cat.title}
+                icon={cat.icon}
+                items={itemsByCategory.get(cat.key) ?? []}
+                ownsItem={ownsItem}
+                equipped={equipped}
+                activeThemeKey={activeThemeKey}
+                spendableXp={spendableXp}
+                onBuy={setConfirmItem}
+                onEquip={handleEquip}
+                onPreview={handlePreview}
+                brandColor={brand[600]}
+                expanded
+              />
+            ))}
         </Box>
       )}
 
@@ -364,7 +487,14 @@ export default function Shop() {
           }}
         >
           <AutoAwesomeIcon sx={{ fontSize: '1.4rem', color: brand[400], mb: 0.5 }} />
-          <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontSize: '0.82rem', color: brand[700], fontWeight: 600 }}>
+          <Typography
+            sx={{
+              fontFamily: (t) => t.fonts.cute,
+              fontSize: '0.82rem',
+              color: brand[700],
+              fontWeight: 600,
+            }}
+          >
             Keep studying to earn more XP!
           </Typography>
           <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary', mt: 0.25 }}>
@@ -376,7 +506,9 @@ export default function Shop() {
       {/* Purchase confirmation dialog */}
       <Dialog
         open={!!confirmItem}
-        onClose={() => { if (!purchasing) setConfirmItem(null); }}
+        onClose={() => {
+          if (!purchasing) setConfirmItem(null);
+        }}
         slotProps={{
           paper: {
             sx: {
@@ -414,18 +546,32 @@ export default function Shop() {
             >
               {confirmItem.category === 'theme' ? (
                 <ThemeCardPreview themeKey={confirmItem.key} />
-              ) : confirmItem.category === 'celebration' || confirmItem.category === 'study_buddy' ? (
-                <Typography sx={{ fontSize: '2.2rem', lineHeight: 1 }}>{confirmItem.emoji}</Typography>
+              ) : confirmItem.category === 'celebration' ||
+                confirmItem.category === 'study_buddy' ? (
+                <Typography sx={{ fontSize: '2.2rem', lineHeight: 1 }}>
+                  {confirmItem.emoji}
+                </Typography>
               ) : (
                 <BorderCardPreview borderKey={confirmItem.key} />
               )}
             </Box>
 
-            <DialogTitle sx={{ fontFamily: (t) => t.fonts.cute, color: brand[700], textAlign: 'center', pt: 6, pb: 1, fontSize: '1.2rem' }}>
+            <DialogTitle
+              sx={{
+                fontFamily: (t) => t.fonts.cute,
+                color: brand[700],
+                textAlign: 'center',
+                pt: 6,
+                pb: 1,
+                fontSize: '1.2rem',
+              }}
+            >
               Unlock {confirmItem.name}?
             </DialogTitle>
             <DialogContent>
-              <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary', textAlign: 'center', mb: 2.5 }}>
+              <Typography
+                sx={{ fontSize: '0.82rem', color: 'text.secondary', textAlign: 'center', mb: 2.5 }}
+              >
                 {confirmItem.description}
               </Typography>
               <Box
@@ -439,8 +585,12 @@ export default function Shop() {
                   border: `1.5px solid ${alpha(brand[300], 0.25)}`,
                 }}
               >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary' }}>Cost</Typography>
+                <Box
+                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
+                  <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary' }}>
+                    Cost
+                  </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
                     <AutoAwesomeIcon sx={{ fontSize: '0.8rem', color: '#D97706' }} />
                     <Typography sx={{ fontSize: '0.88rem', fontWeight: 800, color: '#D97706' }}>
@@ -449,13 +599,24 @@ export default function Shop() {
                   </Box>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary' }}>Your balance</Typography>
+                  <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary' }}>
+                    Your balance
+                  </Typography>
                   <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: 'text.primary' }}>
                     {spendableXp.toLocaleString()} XP
                   </Typography>
                 </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 0.75, borderTop: `1px solid ${alpha(brand[300], 0.25)}` }}>
-                  <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary' }}>After purchase</Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    pt: 0.75,
+                    borderTop: `1px solid ${alpha(brand[300], 0.25)}`,
+                  }}
+                >
+                  <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary' }}>
+                    After purchase
+                  </Typography>
                   <Typography
                     sx={{
                       fontSize: '0.88rem',
@@ -469,7 +630,11 @@ export default function Shop() {
               </Box>
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 3, gap: 1, justifyContent: 'center' }}>
-              <Button onClick={() => setConfirmItem(null)} disabled={purchasing} sx={{ color: 'text.secondary', textTransform: 'none', borderRadius: 2, px: 3 }}>
+              <Button
+                onClick={() => setConfirmItem(null)}
+                disabled={purchasing}
+                sx={{ color: 'text.secondary', textTransform: 'none', borderRadius: 2, px: 3 }}
+              >
                 Maybe later
               </Button>
               <Button
@@ -522,14 +687,22 @@ export default function Shop() {
           }}
         >
           <VisibilityIcon sx={{ color: brand[500], fontSize: '1.2rem' }} />
-          <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontSize: '0.9rem', color: brand[700] }}>
+          <Typography
+            sx={{ fontFamily: (t) => t.fonts.cute, fontSize: '0.9rem', color: brand[700] }}
+          >
             Previewing <strong>{previewingTheme.item.name}</strong>
           </Typography>
           <Button
             onClick={handleEndThemePreview}
             size="small"
             variant="outlined"
-            sx={{ borderRadius: 2, fontFamily: (t) => t.fonts.cute, fontSize: '0.78rem', px: 2, minWidth: 0 }}
+            sx={{
+              borderRadius: 2,
+              fontFamily: (t) => t.fonts.cute,
+              fontSize: '0.78rem',
+              px: 2,
+              minWidth: 0,
+            }}
           >
             End Preview
           </Button>

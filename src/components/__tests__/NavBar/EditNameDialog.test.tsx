@@ -1,12 +1,17 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
 vi.mock('@/components/StyledDialog', () => ({
   StyledDialog: ({
-    open, children, title, actions, onClose,
+    open,
+    children,
+    title,
+    actions,
+    onClose,
   }: {
     open: boolean;
     children: React.ReactNode;
@@ -73,9 +78,7 @@ describe('EditNameDialog', () => {
 
   it('should call onSave when Save is clicked with a non-empty name', () => {
     const onSave = vi.fn();
-    renderWithProviders(
-      <EditNameDialog {...defaultProps} nameInput="Hana" onSave={onSave} />,
-    );
+    renderWithProviders(<EditNameDialog {...defaultProps} nameInput="Hana" onSave={onSave} />);
     fireEvent.click(screen.getByText('Save'));
     expect(onSave).toHaveBeenCalledTimes(1);
   });
@@ -87,18 +90,14 @@ describe('EditNameDialog', () => {
   });
 
   it('should disable Save when saving is true', () => {
-    renderWithProviders(
-      <EditNameDialog {...defaultProps} nameInput="Hana" saving={true} />,
-    );
+    renderWithProviders(<EditNameDialog {...defaultProps} nameInput="Hana" saving={true} />);
     // When saving, button shows "Saving…" and is disabled
     const saveBtn = screen.getByText('Saving…').closest('button');
     expect(saveBtn).toBeDisabled();
   });
 
   it('should show "Saving…" label while saving', () => {
-    renderWithProviders(
-      <EditNameDialog {...defaultProps} nameInput="Hana" saving={true} />,
-    );
+    renderWithProviders(<EditNameDialog {...defaultProps} nameInput="Hana" saving={true} />);
     expect(screen.getByText('Saving…')).toBeInTheDocument();
   });
 
@@ -114,9 +113,7 @@ describe('EditNameDialog', () => {
 
   it('should call onSave when Enter is pressed in the text field', () => {
     const onSave = vi.fn();
-    renderWithProviders(
-      <EditNameDialog {...defaultProps} nameInput="Hana" onSave={onSave} />,
-    );
+    renderWithProviders(<EditNameDialog {...defaultProps} nameInput="Hana" onSave={onSave} />);
     const input = screen.getByLabelText('Display name');
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
     expect(onSave).toHaveBeenCalledTimes(1);
@@ -128,9 +125,7 @@ describe('EditNameDialog', () => {
   });
 
   it('should show the current nameInput value in the field', () => {
-    renderWithProviders(
-      <EditNameDialog {...defaultProps} nameInput="Current Name" />,
-    );
+    renderWithProviders(<EditNameDialog {...defaultProps} nameInput="Current Name" />);
     const input = screen.getByLabelText('Display name') as HTMLInputElement;
     expect(input.value).toBe('Current Name');
   });

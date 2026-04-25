@@ -1,12 +1,12 @@
 'use client';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import Chip from '@mui/material/Chip';
-import { alpha } from '@mui/material/styles';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
-import ViewWeekRoundedIcon from '@mui/icons-material/ViewWeekRounded';
 import LocalFireDepartmentRoundedIcon from '@mui/icons-material/LocalFireDepartmentRounded';
+import ViewWeekRoundedIcon from '@mui/icons-material/ViewWeekRounded';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
+import { alpha } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 
 interface TodoHeaderProps {
   view: 'week' | 'month';
@@ -16,7 +16,13 @@ interface TodoHeaderProps {
   accentPalette: Record<number, string>;
 }
 
-export function TodoHeader({ view, onViewChange, streak, brandPalette: brand, accentPalette: accent }: TodoHeaderProps) {
+export function TodoHeader({
+  view,
+  onViewChange,
+  streak,
+  brandPalette: brand,
+  accentPalette: accent,
+}: TodoHeaderProps) {
   return (
     <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.25}>
       <Stack direction="row" alignItems="center" spacing={0.75}>
@@ -44,8 +50,11 @@ export function TodoHeader({ view, onViewChange, streak, brandPalette: brand, ac
             label={`${streak}`}
             size="small"
             sx={{
-              height: 24, fontWeight: 800, fontSize: '0.72rem',
-              bgcolor: 'rgba(251,191,36,0.18)', color: '#B45309',
+              height: 24,
+              fontWeight: 800,
+              fontSize: '0.72rem',
+              bgcolor: 'rgba(251,191,36,0.18)',
+              color: '#B45309',
               border: '1.5px solid rgba(251,191,36,0.4)',
               '& .MuiChip-icon': { color: '#F59E0B' },
             }}
@@ -53,21 +62,45 @@ export function TodoHeader({ view, onViewChange, streak, brandPalette: brand, ac
         )}
 
         <Stack
-          direction="row" spacing={0.25}
-          sx={{ background: alpha(brand[100], 0.5), borderRadius: 2.5, p: 0.25, border: `1.5px solid ${alpha(brand[200], 0.35)}` }}
+          direction="row"
+          spacing={0.25}
+          sx={{
+            background: alpha(brand[100], 0.5),
+            borderRadius: 2.5,
+            p: 0.25,
+            border: `1.5px solid ${alpha(brand[200], 0.35)}`,
+          }}
         >
           {(['week', 'month'] as const).map((v) => (
             <Box
-              key={v} component="button" onClick={() => onViewChange(v)}
+              key={v}
+              component="button"
+              onClick={() => onViewChange(v)}
               sx={{
-                display: 'flex', alignItems: 'center', gap: 0.35,
-                px: 1, py: 0.4, borderRadius: 2, border: 'none',
-                background: view === v ? `linear-gradient(135deg, ${brand[400]}, ${accent[300]})` : 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.35,
+                px: 1,
+                py: 0.4,
+                borderRadius: 2,
+                border: 'none',
+                background:
+                  view === v
+                    ? `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`
+                    : 'transparent',
                 color: view === v ? 'white' : brand[500],
-                fontFamily: (t) => t.fonts.cute, fontSize: '0.68rem', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s ease',
+                fontFamily: (t) => t.fonts.cute,
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
               }}
             >
-              {v === 'week' ? <ViewWeekRoundedIcon sx={{ fontSize: '0.82rem' }} /> : <CalendarMonthRoundedIcon sx={{ fontSize: '0.82rem' }} />}
+              {v === 'week' ? (
+                <ViewWeekRoundedIcon sx={{ fontSize: '0.82rem' }} />
+              ) : (
+                <CalendarMonthRoundedIcon sx={{ fontSize: '0.82rem' }} />
+              )}
               <span style={{ textTransform: 'capitalize' }}>{v}</span>
             </Box>
           ))}

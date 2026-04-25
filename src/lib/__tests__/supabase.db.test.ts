@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mock setup ───────────────────────────────────────────────────────────────
 
@@ -20,10 +20,8 @@ function makeChain(table: string) {
   chain.single = vi.fn(() => asPromise());
   chain.maybeSingle = vi.fn(() => asPromise());
   // Make the chain itself thenable so `await chain` works
-  chain.then = (
-    onfulfilled: (v: unknown) => unknown,
-    onrejected?: (e: unknown) => unknown,
-  ) => asPromise().then(onfulfilled, onrejected);
+  chain.then = (onfulfilled: (v: unknown) => unknown, onrejected?: (e: unknown) => unknown) =>
+    asPromise().then(onfulfilled, onrejected);
   return chain;
 }
 
@@ -42,12 +40,32 @@ vi.mock('@supabase/supabase-js', () => ({
 }));
 
 import {
-  loadDecks, dbCreateDeck, dbDeleteDeck, dbUpdateDeckEmoji, dbPinDeck, dbSetDeckPublic,
-  dbRenameDeck, loadCards, dbInsertCards, dbDeleteCard, dbUpdateCard,
-  upsertProfile, loadProfile, updateProfileColorScheme, updateProfileShowTodo,
-  dbShareDeck, loadTodos, dbCreateTodo, dbUpdateTodo, dbDeleteTodo,
-  loadAllCards, dbCopyCardsIntoDeck,
-  loadEventTypes, dbCreateEventType, dbUpdateEventType, dbDeleteEventType,
+  dbCopyCardsIntoDeck,
+  dbCreateDeck,
+  dbCreateEventType,
+  dbCreateTodo,
+  dbDeleteCard,
+  dbDeleteDeck,
+  dbDeleteEventType,
+  dbDeleteTodo,
+  dbInsertCards,
+  dbPinDeck,
+  dbRenameDeck,
+  dbSetDeckPublic,
+  dbShareDeck,
+  dbUpdateCard,
+  dbUpdateDeckEmoji,
+  dbUpdateEventType,
+  dbUpdateTodo,
+  loadAllCards,
+  loadCards,
+  loadDecks,
+  loadEventTypes,
+  loadProfile,
+  loadTodos,
+  updateProfileColorScheme,
+  updateProfileShowTodo,
+  upsertProfile,
 } from '@/lib/supabase';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -55,24 +73,49 @@ import type { Flashcard } from '@/types/flashcard';
 
 function makeDeckRow(overrides: Record<string, unknown> = {}) {
   return {
-    id: 'deck-1', name: 'Test Deck', description: null, created_at: null,
-    user_id: 'u1', emoji: '🌸', pinned: false, is_public: false, ...overrides,
+    id: 'deck-1',
+    name: 'Test Deck',
+    description: null,
+    created_at: null,
+    user_id: 'u1',
+    emoji: '🌸',
+    pinned: false,
+    is_public: false,
+    ...overrides,
   };
 }
 
 function makeCardRow(overrides: Record<string, unknown> = {}) {
   return {
-    id: 'card-1', deck_id: 'deck-1', word: '猫', reading: 'ねこ', meaning: 'cat',
-    image_url: null, image_query: null, example_jp: null, example_en: null,
-    main_view_mode: 'hiragana', card_type: 'word', jlpt_level: 'N5', ...overrides,
+    id: 'card-1',
+    deck_id: 'deck-1',
+    word: '猫',
+    reading: 'ねこ',
+    meaning: 'cat',
+    image_url: null,
+    image_query: null,
+    example_jp: null,
+    example_en: null,
+    main_view_mode: 'hiragana',
+    card_type: 'word',
+    jlpt_level: 'N5',
+    ...overrides,
   };
 }
 
 function makeCard(overrides: Partial<Flashcard> = {}): Omit<Flashcard, 'id'> {
   return {
-    deckId: 'deck-1', word: '猫', reading: 'ねこ', meaning: 'cat', image_query: '',
-    example_jp: '', example_en: '', mainViewMode: 'hiragana', cardType: 'word',
-    jlptLevel: 'N5', ...overrides,
+    deckId: 'deck-1',
+    word: '猫',
+    reading: 'ねこ',
+    meaning: 'cat',
+    image_query: '',
+    example_jp: '',
+    example_en: '',
+    mainViewMode: 'hiragana',
+    cardType: 'word',
+    jlptLevel: 'N5',
+    ...overrides,
   } as Omit<Flashcard, 'id'>;
 }
 
@@ -465,7 +508,10 @@ describe('loadProfile', () => {
 
   it('should return mapped profile on success', async () => {
     setTable('profiles', {
-      username: 'testuser', display_name: 'Test User', color_scheme: 'sakura', show_todo: true,
+      username: 'testuser',
+      display_name: 'Test User',
+      color_scheme: 'sakura',
+      show_todo: true,
     });
     const result = await loadProfile('u1');
     expect(result?.username).toBe('testuser');
@@ -476,7 +522,10 @@ describe('loadProfile', () => {
 
   it('should return showTodo=true when show_todo is null', async () => {
     setTable('profiles', {
-      username: 'u', display_name: null, color_scheme: null, show_todo: null,
+      username: 'u',
+      display_name: null,
+      color_scheme: null,
+      show_todo: null,
     });
     const result = await loadProfile('u1');
     expect(result?.showTodo).toBe(true);
@@ -569,11 +618,20 @@ describe('loadTodos', () => {
   });
 
   it('should return mapped todos', async () => {
-    setTable('todos', [{
-      id: 't1', user_id: 'u1', text: 'Study', completed: false, emoji: '📚',
-      created_at: null, frequency_days: [], completed_dates: [], sort_order: 0,
-      repeat_until_done: false,
-    }]);
+    setTable('todos', [
+      {
+        id: 't1',
+        user_id: 'u1',
+        text: 'Study',
+        completed: false,
+        emoji: '📚',
+        created_at: null,
+        frequency_days: [],
+        completed_dates: [],
+        sort_order: 0,
+        repeat_until_done: false,
+      },
+    ]);
     const todos = await loadTodos('u1');
     expect(todos).toHaveLength(1);
     expect(todos[0].text).toBe('Study');
@@ -596,8 +654,15 @@ describe('dbCreateTodo', () => {
 
   it('should return a mapped todo on success', async () => {
     setTable('todos', {
-      id: 't1', user_id: 'u1', text: 'Study kanji', completed: false, emoji: '🗾',
-      created_at: null, frequency_days: [], completed_dates: [], sort_order: null,
+      id: 't1',
+      user_id: 'u1',
+      text: 'Study kanji',
+      completed: false,
+      emoji: '🗾',
+      created_at: null,
+      frequency_days: [],
+      completed_dates: [],
+      sort_order: null,
       repeat_until_done: false,
     });
     const todo = await dbCreateTodo('Study kanji');
@@ -615,8 +680,15 @@ describe('dbUpdateTodo', () => {
 
   it('should return the updated todo on success', async () => {
     setTable('todos', {
-      id: 't1', user_id: 'u1', text: 'Updated', completed: true, emoji: '✅',
-      created_at: null, frequency_days: [], completed_dates: [], sort_order: 0,
+      id: 't1',
+      user_id: 'u1',
+      text: 'Updated',
+      completed: true,
+      emoji: '✅',
+      created_at: null,
+      frequency_days: [],
+      completed_dates: [],
+      sort_order: 0,
       repeat_until_done: false,
     });
     const todo = await dbUpdateTodo('t1', { completed: true });
@@ -712,7 +784,9 @@ describe('dbCreateEventType', () => {
 
   it('should throw when data is null', async () => {
     setTable('event_types', null, null);
-    await expect(dbCreateEventType('u1', 'Swim', '🏊', '#2196F3')).rejects.toThrow('Unable to create event type');
+    await expect(dbCreateEventType('u1', 'Swim', '🏊', '#2196F3')).rejects.toThrow(
+      'Unable to create event type',
+    );
   });
 });
 
@@ -737,7 +811,9 @@ describe('dbUpdateEventType', () => {
 
   it('should throw when data is null', async () => {
     setTable('event_types', null, null);
-    await expect(dbUpdateEventType('et-1', 'Jog', '🏃')).rejects.toThrow('Unable to update event type');
+    await expect(dbUpdateEventType('et-1', 'Jog', '🏃')).rejects.toThrow(
+      'Unable to update event type',
+    );
   });
 });
 

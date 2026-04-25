@@ -1,29 +1,47 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import {
-  Box, Typography, Paper, Alert,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Chip, Stack, Divider, IconButton, Dialog, DialogTitle,
-  DialogContent, DialogActions, TextField, Button, Snackbar,
-} from '@mui/material';
-import PeopleIcon from '@mui/icons-material/People';
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-import StyleIcon from '@mui/icons-material/Style';
-import ChecklistIcon from '@mui/icons-material/Checklist';
-import MailOutlineIcon from '@mui/icons-material/MailOutline';
-import EditIcon from '@mui/icons-material/Edit';
-import KeyIcon from '@mui/icons-material/Key';
 import BadgeIcon from '@mui/icons-material/Badge';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import GroupIcon from '@mui/icons-material/Group';
+import ChecklistIcon from '@mui/icons-material/Checklist';
+import EditIcon from '@mui/icons-material/Edit';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import { useTheme, alpha } from '@mui/material/styles';
-import { useAuth } from '@/contexts/AuthContext';
+import GroupIcon from '@mui/icons-material/Group';
+import KeyIcon from '@mui/icons-material/Key';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import PeopleIcon from '@mui/icons-material/People';
+import StyleIcon from '@mui/icons-material/Style';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  IconButton,
+  Paper,
+  Snackbar,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useCallback, useEffect, useState } from 'react';
+
 import { Loading } from '@/components/Loading';
-import { LAYOUT } from '@/theme';
 import { PageHeader } from '@/components/PageHeader';
+import { useAuth } from '@/contexts/AuthContext';
+import { LAYOUT } from '@/theme';
 
 interface UserStat {
   id: string;
@@ -94,10 +112,20 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
       }}
     >
       <Box sx={{ color: brand[500], mb: 0.5 }}>{icon}</Box>
-      <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontSize: '1.8rem', color: brand[700], lineHeight: 1.1, fontWeight: 700 }}>
+      <Typography
+        sx={{
+          fontFamily: (t) => t.fonts.cute,
+          fontSize: '1.8rem',
+          color: brand[700],
+          lineHeight: 1.1,
+          fontWeight: 700,
+        }}
+      >
         {value}
       </Typography>
-      <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', mt: 0.5 }}>{label}</Typography>
+      <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', mt: 0.5 }}>
+        {label}
+      </Typography>
     </Paper>
   );
 }
@@ -129,7 +157,9 @@ export default function AdminPage() {
   const openEdit = (user: UserStat, type: 'username' | 'password' | 'displayName') => {
     setEditUser(user);
     setEditType(type);
-    setInputValue(type === 'username' ? user.username : type === 'displayName' ? (user.displayName ?? '') : '');
+    setInputValue(
+      type === 'username' ? user.username : type === 'displayName' ? (user.displayName ?? '') : '',
+    );
   };
 
   const closeEdit = () => {
@@ -143,11 +173,12 @@ export default function AdminPage() {
     if (!editUser || !editType || !session?.access_token) return;
     setSaving(true);
     try {
-      const body = editType === 'password'
-        ? { userId: editUser.id, action: 'changePassword', password: inputValue }
-        : editType === 'displayName'
-          ? { userId: editUser.id, action: 'changeDisplayName', displayName: inputValue }
-          : { userId: editUser.id, action: 'changeUsername', username: inputValue };
+      const body =
+        editType === 'password'
+          ? { userId: editUser.id, action: 'changePassword', password: inputValue }
+          : editType === 'displayName'
+            ? { userId: editUser.id, action: 'changeDisplayName', displayName: inputValue }
+            : { userId: editUser.id, action: 'changeUsername', username: inputValue };
 
       const res = await fetch('/api/admin', {
         method: 'PATCH',
@@ -199,7 +230,12 @@ export default function AdminPage() {
   }, [fetchData]);
 
   if (loading) return <Loading />;
-  if (error) return <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, mt: 6 }}><Alert severity="error">{error}</Alert></Box>;
+  if (error)
+    return (
+      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, mt: 6 }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
   if (!data) return null;
 
   const tablePaperSx = {
@@ -271,14 +307,28 @@ export default function AdminPage() {
           <TableHead>
             <TableRow>
               <TableCell sx={headerCellSx}>User</TableCell>
-              <TableCell sx={headerCellSx} align="center">Decks</TableCell>
-              <TableCell sx={headerCellSx} align="center">Cards</TableCell>
-              <TableCell sx={headerCellSx} align="center">Public</TableCell>
-              <TableCell sx={headerCellSx} align="center">Todos</TableCell>
-              <TableCell sx={headerCellSx} align="center">Completions</TableCell>
-              <TableCell sx={headerCellSx} align="center">Theme</TableCell>
+              <TableCell sx={headerCellSx} align="center">
+                Decks
+              </TableCell>
+              <TableCell sx={headerCellSx} align="center">
+                Cards
+              </TableCell>
+              <TableCell sx={headerCellSx} align="center">
+                Public
+              </TableCell>
+              <TableCell sx={headerCellSx} align="center">
+                Todos
+              </TableCell>
+              <TableCell sx={headerCellSx} align="center">
+                Completions
+              </TableCell>
+              <TableCell sx={headerCellSx} align="center">
+                Theme
+              </TableCell>
               <TableCell sx={headerCellSx}>Joined</TableCell>
-              <TableCell sx={headerCellSx} align="center">Actions</TableCell>
+              <TableCell sx={headerCellSx} align="center">
+                Actions
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -296,11 +346,21 @@ export default function AdminPage() {
                     )}
                   </Box>
                 </TableCell>
-                <TableCell sx={bodyCellSx} align="center">{u.deckCount}</TableCell>
-                <TableCell sx={bodyCellSx} align="center">{u.cardCount}</TableCell>
-                <TableCell sx={bodyCellSx} align="center">{u.publicDecks}</TableCell>
-                <TableCell sx={bodyCellSx} align="center">{u.todoCount}</TableCell>
-                <TableCell sx={bodyCellSx} align="center">{u.todoCompletions}</TableCell>
+                <TableCell sx={bodyCellSx} align="center">
+                  {u.deckCount}
+                </TableCell>
+                <TableCell sx={bodyCellSx} align="center">
+                  {u.cardCount}
+                </TableCell>
+                <TableCell sx={bodyCellSx} align="center">
+                  {u.publicDecks}
+                </TableCell>
+                <TableCell sx={bodyCellSx} align="center">
+                  {u.todoCount}
+                </TableCell>
+                <TableCell sx={bodyCellSx} align="center">
+                  {u.todoCompletions}
+                </TableCell>
                 <TableCell sx={bodyCellSx} align="center">
                   {u.colorScheme ? (
                     <Chip
@@ -313,17 +373,34 @@ export default function AdminPage() {
                         color: brand[700],
                       }}
                     />
-                  ) : '—'}
+                  ) : (
+                    '—'
+                  )}
                 </TableCell>
                 <TableCell sx={bodyCellSx}>{formatDate(u.createdAt)}</TableCell>
                 <TableCell sx={bodyCellSx} align="center">
-                  <IconButton size="small" title="Change display name" onClick={() => openEdit(u, 'displayName')} sx={{ color: brand[500] }}>
+                  <IconButton
+                    size="small"
+                    title="Change display name"
+                    onClick={() => openEdit(u, 'displayName')}
+                    sx={{ color: brand[500] }}
+                  >
                     <BadgeIcon sx={{ fontSize: '1rem' }} />
                   </IconButton>
-                  <IconButton size="small" title="Change username" onClick={() => openEdit(u, 'username')} sx={{ color: brand[500] }}>
+                  <IconButton
+                    size="small"
+                    title="Change username"
+                    onClick={() => openEdit(u, 'username')}
+                    sx={{ color: brand[500] }}
+                  >
                     <EditIcon sx={{ fontSize: '1rem' }} />
                   </IconButton>
-                  <IconButton size="small" title="Change password" onClick={() => openEdit(u, 'password')} sx={{ color: brand[500] }}>
+                  <IconButton
+                    size="small"
+                    title="Change password"
+                    onClick={() => openEdit(u, 'password')}
+                    sx={{ color: brand[500] }}
+                  >
                     <KeyIcon sx={{ fontSize: '1rem' }} />
                   </IconButton>
                 </TableCell>
@@ -370,7 +447,15 @@ export default function AdminPage() {
                 <TableRow key={w.id} hover>
                   <TableCell sx={bodyCellSx}>{w.email}</TableCell>
                   <TableCell sx={bodyCellSx}>{w.name ?? '—'}</TableCell>
-                  <TableCell sx={{ ...bodyCellSx, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <TableCell
+                    sx={{
+                      ...bodyCellSx,
+                      maxWidth: 260,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     {w.message ?? '—'}
                   </TableCell>
                   <TableCell sx={bodyCellSx}>{formatDate(w.created_at)}</TableCell>
@@ -386,21 +471,40 @@ export default function AdminPage() {
       {/* Embed Analytics */}
       <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 2 }}>
         <BarChartIcon sx={{ color: brand[500] }} />
-        <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, fontSize: '1.2rem', color: brand[700] }}>
+        <Typography
+          sx={{
+            fontFamily: (t) => t.fonts.cute,
+            fontWeight: 600,
+            fontSize: '1.2rem',
+            color: brand[700],
+          }}
+        >
           Embed Analytics
         </Typography>
       </Stack>
 
       <Stack direction="row" flexWrap="wrap" gap={2} sx={{ mb: 3 }}>
-        <StatCard icon={<VisibilityIcon />} label="Total Views" value={data.embedAnalytics.overview.totalViews} />
-        <StatCard icon={<GroupIcon />} label="Unique Sessions" value={data.embedAnalytics.overview.totalSessions} />
-        <StatCard icon={<EmojiEventsIcon />} label="Completions" value={data.embedAnalytics.overview.totalCompletions} />
+        <StatCard
+          icon={<VisibilityIcon />}
+          label="Total Views"
+          value={data.embedAnalytics.overview.totalViews}
+        />
+        <StatCard
+          icon={<GroupIcon />}
+          label="Unique Sessions"
+          value={data.embedAnalytics.overview.totalSessions}
+        />
+        <StatCard
+          icon={<EmojiEventsIcon />}
+          label="Completions"
+          value={data.embedAnalytics.overview.totalCompletions}
+        />
       </Stack>
 
       {data.embedAnalytics.decks.length === 0 ? (
         <Paper sx={{ ...tablePaperSx, p: 3, textAlign: 'center', mb: 4 }}>
           <Typography sx={{ color: 'text.secondary', fontSize: '0.88rem' }}>
-            No embed views yet. Share a public deck's embed link to start collecting data.
+            No embed views yet. Share a public deck&apos;s embed link to start collecting data.
           </Typography>
         </Paper>
       ) : (
@@ -409,10 +513,18 @@ export default function AdminPage() {
             <TableHead>
               <TableRow>
                 <TableCell sx={headerCellSx}>Deck</TableCell>
-                <TableCell sx={headerCellSx} align="center">Views</TableCell>
-                <TableCell sx={headerCellSx} align="center">Sessions</TableCell>
-                <TableCell sx={headerCellSx} align="center">Completions</TableCell>
-                <TableCell sx={headerCellSx} align="center">Avg Duration</TableCell>
+                <TableCell sx={headerCellSx} align="center">
+                  Views
+                </TableCell>
+                <TableCell sx={headerCellSx} align="center">
+                  Sessions
+                </TableCell>
+                <TableCell sx={headerCellSx} align="center">
+                  Completions
+                </TableCell>
+                <TableCell sx={headerCellSx} align="center">
+                  Avg Duration
+                </TableCell>
                 <TableCell sx={headerCellSx}>Last Viewed</TableCell>
               </TableRow>
             </TableHead>
@@ -423,23 +535,42 @@ export default function AdminPage() {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Typography sx={{ fontSize: '1rem' }}>{d.deckEmoji}</Typography>
                       <Box>
-                        <Typography sx={{ fontWeight: 600, fontSize: '0.82rem' }}>{d.deckName}</Typography>
-                        <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', fontFamily: (t) => t.fonts.mono }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: '0.82rem' }}>
+                          {d.deckName}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontSize: '0.7rem',
+                            color: 'text.secondary',
+                            fontFamily: (t) => t.fonts.mono,
+                          }}
+                        >
                           {d.deckId.slice(0, 8)}…
                         </Typography>
                       </Box>
                     </Box>
                   </TableCell>
-                  <TableCell sx={bodyCellSx} align="center">{d.totalViews}</TableCell>
-                  <TableCell sx={bodyCellSx} align="center">{d.uniqueSessions}</TableCell>
+                  <TableCell sx={bodyCellSx} align="center">
+                    {d.totalViews}
+                  </TableCell>
+                  <TableCell sx={bodyCellSx} align="center">
+                    {d.uniqueSessions}
+                  </TableCell>
                   <TableCell sx={bodyCellSx} align="center">
                     {d.completions > 0 ? (
                       <Chip
                         label={d.completions}
                         size="small"
-                        sx={{ fontSize: '0.7rem', height: 22, bgcolor: alpha(brand[100], 0.5), color: brand[700] }}
+                        sx={{
+                          fontSize: '0.7rem',
+                          height: 22,
+                          bgcolor: alpha(brand[100], 0.5),
+                          color: brand[700],
+                        }}
                       />
-                    ) : '—'}
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
                   <TableCell sx={bodyCellSx} align="center">
                     {d.avgDurationSeconds != null
@@ -472,10 +603,19 @@ export default function AdminPage() {
           },
         }}
       >
-        <DialogTitle sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, color: brand[700], pb: 1 }}>
-          {editType === 'password' ? 'Change Password' : editType === 'displayName' ? 'Change Display Name' : 'Change Username'}
+        <DialogTitle
+          sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, color: brand[700], pb: 1 }}
+        >
+          {editType === 'password'
+            ? 'Change Password'
+            : editType === 'displayName'
+              ? 'Change Display Name'
+              : 'Change Username'}
           {editUser && (
-            <Typography variant="body2" sx={{ color: 'text.secondary', fontFamily: 'inherit', mt: 0.25 }}>
+            <Typography
+              variant="body2"
+              sx={{ color: 'text.secondary', fontFamily: 'inherit', mt: 0.25 }}
+            >
               {editUser.displayName ?? editUser.username}
               {editUser.displayName && ` (@${editUser.username})`}
             </Typography>
@@ -487,10 +627,18 @@ export default function AdminPage() {
             fullWidth
             size="small"
             type={editType === 'password' ? 'password' : 'text'}
-            label={editType === 'password' ? 'New password' : editType === 'displayName' ? 'New display name' : 'New username'}
+            label={
+              editType === 'password'
+                ? 'New password'
+                : editType === 'displayName'
+                  ? 'New display name'
+                  : 'New username'
+            }
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') void handleSaveEdit(); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void handleSaveEdit();
+            }}
             helperText={
               editType === 'password'
                 ? 'Minimum 6 characters'
@@ -533,7 +681,11 @@ export default function AdminPage() {
         onClose={() => setSnack(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert severity={snack?.severity ?? 'success'} onClose={() => setSnack(null)} sx={{ width: '100%' }}>
+        <Alert
+          severity={snack?.severity ?? 'success'}
+          onClose={() => setSnack(null)}
+          sx={{ width: '100%' }}
+        >
           {snack?.msg}
         </Alert>
       </Snackbar>

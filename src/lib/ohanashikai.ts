@@ -1,6 +1,6 @@
 'use client';
 
-import { sb, isConfigured, showConfigBanner } from '@/lib/supabase';
+import { isConfigured, sb, showConfigBanner } from '@/lib/supabase';
 import type { Ohanashikai, OhanashikaiLine } from '@/types/ohanashikai';
 
 // ─── Row types ────────────────────────────────────────────────────────────────
@@ -52,7 +52,10 @@ function rowToLine(row: OhanashikaiLineRow): OhanashikaiLine {
 // ─── Ohanashikai CRUD ─────────────────────────────────────────────────────────
 
 export async function loadOhanashikais(userId: string): Promise<Ohanashikai[]> {
-  if (!isConfigured()) { showConfigBanner(); return []; }
+  if (!isConfigured()) {
+    showConfigBanner();
+    return [];
+  }
 
   const { data: rows, error } = await sb
     .from('ohanashikais')
@@ -60,7 +63,10 @@ export async function loadOhanashikais(userId: string): Promise<Ohanashikai[]> {
     .eq('user_id', userId)
     .order('created_at', { ascending: true });
 
-  if (error) { console.error('Error loading ohanashikais', error); return []; }
+  if (error) {
+    console.error('Error loading ohanashikais', error);
+    return [];
+  }
 
   const items = rows ?? [];
   if (items.length === 0) return [];
@@ -76,18 +82,21 @@ export async function loadOhanashikais(userId: string): Promise<Ohanashikai[]> {
     countMap[l.ohanashikai_id] = (countMap[l.ohanashikai_id] ?? 0) + 1;
   });
 
-  return items.map((row: OhanashikaiRow) =>
-    rowToOhanashikai(row, countMap[row.id] ?? 0)
-  );
+  return items.map((row: OhanashikaiRow) => rowToOhanashikai(row, countMap[row.id] ?? 0));
 }
 
 export async function dbCreateOhanashikai(
   title: string,
   description?: string,
 ): Promise<Ohanashikai> {
-  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  if (!isConfigured()) {
+    showConfigBanner();
+    throw new Error('Supabase not configured');
+  }
 
-  const { data: { user } } = await sb.auth.getUser();
+  const {
+    data: { user },
+  } = await sb.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 
   const { data, error } = await sb
@@ -101,13 +110,19 @@ export async function dbCreateOhanashikai(
 }
 
 export async function dbDeleteOhanashikai(id: string): Promise<void> {
-  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  if (!isConfigured()) {
+    showConfigBanner();
+    throw new Error('Supabase not configured');
+  }
   const { error } = await sb.from('ohanashikais').delete().eq('id', id);
   if (error) throw error;
 }
 
 export async function dbPinOhanashikai(id: string, pinned: boolean): Promise<void> {
-  if (!isConfigured()) { showConfigBanner(); return; }
+  if (!isConfigured()) {
+    showConfigBanner();
+    return;
+  }
   const { error } = await sb.from('ohanashikais').update({ pinned }).eq('id', id);
   if (error) console.error('Error pinning ohanashikai', error);
 }
@@ -117,7 +132,10 @@ export async function dbUpdateOhanashikaiTitle(
   title: string,
   description?: string,
 ): Promise<void> {
-  if (!isConfigured()) { showConfigBanner(); return; }
+  if (!isConfigured()) {
+    showConfigBanner();
+    return;
+  }
   const { error } = await sb
     .from('ohanashikais')
     .update({ title, description: description ?? null })
@@ -128,7 +146,10 @@ export async function dbUpdateOhanashikaiTitle(
 // ─── Lines CRUD ───────────────────────────────────────────────────────────────
 
 export async function loadOhanashikaiLines(ohanashikaiId: string): Promise<OhanashikaiLine[]> {
-  if (!isConfigured()) { showConfigBanner(); return []; }
+  if (!isConfigured()) {
+    showConfigBanner();
+    return [];
+  }
 
   const { data, error } = await sb
     .from('ohanashikai_lines')
@@ -136,7 +157,10 @@ export async function loadOhanashikaiLines(ohanashikaiId: string): Promise<Ohana
     .eq('ohanashikai_id', ohanashikaiId)
     .order('order_index', { ascending: true });
 
-  if (error) { console.error('Error loading lines', error); return []; }
+  if (error) {
+    console.error('Error loading lines', error);
+    return [];
+  }
   return (data ?? []).map(rowToLine);
 }
 
@@ -145,7 +169,10 @@ export async function dbCreateOhanashikaiLine(
   text: string,
   orderIndex: number,
 ): Promise<OhanashikaiLine> {
-  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  if (!isConfigured()) {
+    showConfigBanner();
+    throw new Error('Supabase not configured');
+  }
 
   const { data, error } = await sb
     .from('ohanashikai_lines')
@@ -161,7 +188,10 @@ export async function dbUpdateOhanashikaiLine(
   id: string,
   text: string,
 ): Promise<OhanashikaiLine | null> {
-  if (!isConfigured()) { showConfigBanner(); return null; }
+  if (!isConfigured()) {
+    showConfigBanner();
+    return null;
+  }
 
   const { data, error } = await sb
     .from('ohanashikai_lines')
@@ -170,12 +200,18 @@ export async function dbUpdateOhanashikaiLine(
     .select()
     .single();
 
-  if (error || !data) { console.error('Error updating line', error); return null; }
+  if (error || !data) {
+    console.error('Error updating line', error);
+    return null;
+  }
   return rowToLine(data as OhanashikaiLineRow);
 }
 
 export async function dbDeleteOhanashikaiLine(id: string): Promise<void> {
-  if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
+  if (!isConfigured()) {
+    showConfigBanner();
+    throw new Error('Supabase not configured');
+  }
   const { error } = await sb.from('ohanashikai_lines').delete().eq('id', id);
   if (error) throw error;
 }
@@ -186,7 +222,10 @@ export async function dbImportOhanashikaiLines(
   texts: string[],
   startOrderIndex: number,
 ): Promise<OhanashikaiLine[]> {
-  if (!isConfigured()) { showConfigBanner(); return []; }
+  if (!isConfigured()) {
+    showConfigBanner();
+    return [];
+  }
 
   const rows = texts
     .map((t) => t.trim())
@@ -199,11 +238,11 @@ export async function dbImportOhanashikaiLines(
 
   if (rows.length === 0) return [];
 
-  const { data, error } = await sb
-    .from('ohanashikai_lines')
-    .insert(rows)
-    .select();
+  const { data, error } = await sb.from('ohanashikai_lines').insert(rows).select();
 
-  if (error) { console.error('Error importing lines', error); return []; }
+  if (error) {
+    console.error('Error importing lines', error);
+    return [];
+  }
   return (data ?? []).map(rowToLine);
 }

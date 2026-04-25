@@ -1,20 +1,21 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
 import { useAuth } from '@/contexts/AuthContext';
-import type { Ohanashikai, OhanashikaiLine } from '@/types/ohanashikai';
 import {
-  loadOhanashikais,
   dbCreateOhanashikai,
-  dbDeleteOhanashikai,
-  dbUpdateOhanashikaiTitle,
-  dbPinOhanashikai,
-  loadOhanashikaiLines,
   dbCreateOhanashikaiLine,
-  dbUpdateOhanashikaiLine,
+  dbDeleteOhanashikai,
   dbDeleteOhanashikaiLine,
   dbImportOhanashikaiLines,
+  dbPinOhanashikai,
+  dbUpdateOhanashikaiLine,
+  dbUpdateOhanashikaiTitle,
+  loadOhanashikaiLines,
+  loadOhanashikais,
 } from '@/lib/ohanashikai';
+import type { Ohanashikai, OhanashikaiLine } from '@/types/ohanashikai';
 
 // ─── useOhanashikais ──────────────────────────────────────────────────────────
 
@@ -24,14 +25,19 @@ export function useOhanashikais() {
   const [loading, setLoading] = useState(true);
 
   const fetchAll = useCallback(async () => {
-    if (!user) { setLoading(false); return; }
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const data = await loadOhanashikais(user.id);
     setOhanashikais(data);
     setLoading(false);
   }, [user]);
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
   const createOhanashikai = useCallback(async (title: string, description?: string) => {
     const item = await dbCreateOhanashikai(title, description);
@@ -44,15 +50,10 @@ export function useOhanashikais() {
     setOhanashikais((prev) => prev.filter((o) => o.id !== id));
   }, []);
 
-  const renameOhanashikai = useCallback(
-    async (id: string, title: string, description?: string) => {
-      await dbUpdateOhanashikaiTitle(id, title, description);
-      setOhanashikais((prev) =>
-        prev.map((o) => (o.id === id ? { ...o, title, description } : o))
-      );
-    },
-    [],
-  );
+  const renameOhanashikai = useCallback(async (id: string, title: string, description?: string) => {
+    await dbUpdateOhanashikaiTitle(id, title, description);
+    setOhanashikais((prev) => prev.map((o) => (o.id === id ? { ...o, title, description } : o)));
+  }, []);
 
   const pinOhanashikai = useCallback(async (id: string, pinned: boolean) => {
     setOhanashikais((prev) => prev.map((o) => (o.id === id ? { ...o, pinned } : o)));
@@ -63,7 +64,15 @@ export function useOhanashikais() {
     }
   }, []);
 
-  return { ohanashikais, loading, createOhanashikai, deleteOhanashikai, renameOhanashikai, pinOhanashikai, refetch: fetchAll };
+  return {
+    ohanashikais,
+    loading,
+    createOhanashikai,
+    deleteOhanashikai,
+    renameOhanashikai,
+    pinOhanashikai,
+    refetch: fetchAll,
+  };
 }
 
 // ─── useOhanashikaiLines ──────────────────────────────────────────────────────
@@ -79,7 +88,9 @@ export function useOhanashikaiLines(ohanashikaiId: string) {
     setLoading(false);
   }, [ohanashikaiId]);
 
-  useEffect(() => { fetchLines(); }, [fetchLines]);
+  useEffect(() => {
+    fetchLines();
+  }, [fetchLines]);
 
   const addLine = useCallback(
     async (text: string) => {

@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import { useTheme, alpha } from '@mui/material/styles';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import { alpha, useTheme } from '@mui/material/styles';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import { useState } from 'react';
+
 import type { StudySession } from '@/hooks/useProgress';
-import { toLocalDateStr, sessionLocalDate } from './constants';
+
+import { sessionLocalDate, toLocalDateStr } from './constants';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -32,12 +34,16 @@ export function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
   });
 
   const goBack = () => {
-    if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); }
-    else setViewMonth((m) => m - 1);
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear((y) => y - 1);
+    } else setViewMonth((m) => m - 1);
   };
   const goForward = () => {
-    if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); }
-    else setViewMonth((m) => m + 1);
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear((y) => y + 1);
+    } else setViewMonth((m) => m + 1);
   };
 
   const isCurrentMonth = viewYear === todayReal.getFullYear() && viewMonth === todayReal.getMonth();
@@ -57,7 +63,7 @@ export function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
 
   const cellBg = (cards: number) => {
     if (cards === 0) return undefined;
-    if (cards < 5)  return alpha(brand[300], 0.35);
+    if (cards < 5) return alpha(brand[300], 0.35);
     if (cards < 15) return alpha(brand[300], 0.65);
     if (cards < 30) return brand[300];
     return brand[700];
@@ -71,24 +77,47 @@ export function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
         <IconButton size="small" onClick={goBack} sx={{ color: brand[700] }}>
           <ChevronLeftIcon fontSize="small" />
         </IconButton>
-        <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, fontSize: '0.9rem', color: brand[700] }}>
+        <Typography
+          sx={{
+            fontFamily: (t) => t.fonts.cute,
+            fontWeight: 600,
+            fontSize: '0.9rem',
+            color: brand[700],
+          }}
+        >
           {monthLabel}
         </Typography>
-        <IconButton size="small" onClick={goForward} disabled={isCurrentMonth} sx={{ color: brand[700] }}>
+        <IconButton
+          size="small"
+          onClick={goForward}
+          disabled={isCurrentMonth}
+          sx={{ color: brand[700] }}
+        >
           <ChevronRightIcon fontSize="small" />
         </IconButton>
       </Box>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5, mb: 0.5 }}>
         {DAY_LABELS.map((d) => (
-          <Typography key={d} sx={{ fontSize: '0.62rem', color: 'text.secondary', textAlign: 'center', fontWeight: 600 }}>
+          <Typography
+            key={d}
+            sx={{
+              fontSize: '0.62rem',
+              color: 'text.secondary',
+              textAlign: 'center',
+              fontWeight: 600,
+            }}
+          >
             {d}
           </Typography>
         ))}
       </Box>
 
       {weeks.map((week, wi) => (
-        <Box key={wi} sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5, mb: 0.5 }}>
+        <Box
+          key={wi}
+          sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5, mb: 0.5 }}
+        >
           {week.map((day, di) => {
             if (day === null) return <Box key={di} />;
 
@@ -100,7 +129,11 @@ export function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
             const textColor = cards >= 30 ? '#fff' : isToday ? brand[700] : 'text.primary';
 
             return (
-              <Tooltip key={dateStr} title={isFuture || cards === 0 ? '' : `${cards} cards studied`} arrow>
+              <Tooltip
+                key={dateStr}
+                title={isFuture || cards === 0 ? '' : `${cards} cards studied`}
+                arrow
+              >
                 <Box
                   sx={{
                     position: 'relative',

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
   try {
@@ -20,7 +20,12 @@ export async function GET(req: NextRequest) {
     if (!res.ok) {
       const errorText = await res.text();
       return NextResponse.json(
-        { error: 'Unsplash error', status: res.status, statusText: res.statusText, detail: errorText },
+        {
+          error: 'Unsplash error',
+          status: res.status,
+          statusText: res.statusText,
+          detail: errorText,
+        },
         { status: 502 },
       );
     }
@@ -32,15 +37,18 @@ export async function GET(req: NextRequest) {
     }
 
     const photo = results[0];
-    return NextResponse.json({
-      result: {
-        url: photo.urls?.regular,
-        downloadLocation: photo.links?.download_location,
-        photographerName: photo.user?.name,
-        photographerUrl: `${photo.user?.links?.html}?utm_source=kannanao&utm_medium=referral`,
-        photoPageUrl: `${photo.links?.html}?utm_source=kannanao&utm_medium=referral`,
+    return NextResponse.json(
+      {
+        result: {
+          url: photo.urls?.regular,
+          downloadLocation: photo.links?.download_location,
+          photographerName: photo.user?.name,
+          photographerUrl: `${photo.user?.links?.html}?utm_source=kannanao&utm_medium=referral`,
+          photoPageUrl: `${photo.links?.html}?utm_source=kannanao&utm_medium=referral`,
+        },
       },
-    }, { status: 200 });
+      { status: 200 },
+    );
   } catch (err) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

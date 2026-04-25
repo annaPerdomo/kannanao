@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -29,8 +29,8 @@ vi.mock('@/contexts/AuthContext', () => ({
 }));
 
 import { useDecks } from '@/hooks/useDecks';
-import type { Deck } from '@/types/deck';
 import { isConfigured, showConfigBanner } from '@/lib/supabase';
+import type { Deck } from '@/types/deck';
 
 const mockIsConfigured = vi.mocked(isConfigured);
 const mockShowConfigBanner = vi.mocked(showConfigBanner);
@@ -114,7 +114,9 @@ describe('useDecks', () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       await expect(
-        act(async () => { await result.current.createDeck('Bad Deck'); }),
+        act(async () => {
+          await result.current.createDeck('Bad Deck');
+        }),
       ).rejects.toThrow('DB error');
     });
   });
@@ -128,7 +130,9 @@ describe('useDecks', () => {
       const { result } = renderHook(() => useDecks());
       await waitFor(() => expect(result.current.loading).toBe(false));
 
-      await act(async () => { await result.current.deleteDeck('deck-del'); });
+      await act(async () => {
+        await result.current.deleteDeck('deck-del');
+      });
 
       expect(result.current.decks).toHaveLength(0);
     });
@@ -139,7 +143,9 @@ describe('useDecks', () => {
       const { result } = renderHook(() => useDecks());
       await waitFor(() => expect(result.current.loading).toBe(false));
 
-      await act(async () => { await result.current.deleteDeck('deck-xyz'); });
+      await act(async () => {
+        await result.current.deleteDeck('deck-xyz');
+      });
 
       expect(mockDeleteDeck).toHaveBeenCalledWith('deck-xyz');
     });
@@ -154,7 +160,9 @@ describe('useDecks', () => {
       const { result } = renderHook(() => useDecks());
       await waitFor(() => expect(result.current.loading).toBe(false));
 
-      await act(async () => { await result.current.updateDeckEmoji('deck-1', '🎀'); });
+      await act(async () => {
+        await result.current.updateDeckEmoji('deck-1', '🎀');
+      });
 
       expect(result.current.decks[0].emoji).toBe('🎀');
     });
@@ -167,7 +175,9 @@ describe('useDecks', () => {
       const { result } = renderHook(() => useDecks());
       await waitFor(() => expect(result.current.loading).toBe(false));
 
-      await act(async () => { await result.current.updateDeckEmoji('deck-1', '🎀'); });
+      await act(async () => {
+        await result.current.updateDeckEmoji('deck-1', '🎀');
+      });
 
       // After rollback, emoji should revert
       expect(result.current.decks[0].emoji).toBe('🌸');
@@ -183,7 +193,9 @@ describe('useDecks', () => {
       const { result } = renderHook(() => useDecks());
       await waitFor(() => expect(result.current.loading).toBe(false));
 
-      await act(async () => { await result.current.pinDeck('deck-1', true); });
+      await act(async () => {
+        await result.current.pinDeck('deck-1', true);
+      });
 
       expect(result.current.decks[0].pinned).toBe(true);
     });
@@ -196,7 +208,9 @@ describe('useDecks', () => {
       const { result } = renderHook(() => useDecks());
       await waitFor(() => expect(result.current.loading).toBe(false));
 
-      await act(async () => { await result.current.pinDeck('deck-1', true); });
+      await act(async () => {
+        await result.current.pinDeck('deck-1', true);
+      });
 
       expect(result.current.decks[0].pinned).toBe(false);
     });
@@ -243,7 +257,9 @@ describe('useDecks', () => {
       const { result } = renderHook(() => useDecks());
       await waitFor(() => expect(result.current.loading).toBe(false));
 
-      act(() => { result.current.updateDeckCount('deck-1', 10); });
+      act(() => {
+        result.current.updateDeckCount('deck-1', 10);
+      });
 
       expect(result.current.decks[0].cardCount).toBe(10);
     });
@@ -258,7 +274,9 @@ describe('useDecks', () => {
       const { result } = renderHook(() => useDecks());
       await waitFor(() => expect(result.current.loading).toBe(false));
 
-      await act(async () => { await result.current.setDeckPublic('deck-1', true); });
+      await act(async () => {
+        await result.current.setDeckPublic('deck-1', true);
+      });
 
       expect(result.current.decks[0].isPublic).toBe(true);
     });
@@ -271,7 +289,9 @@ describe('useDecks', () => {
       const { result } = renderHook(() => useDecks());
       await waitFor(() => expect(result.current.loading).toBe(false));
 
-      await act(async () => { await result.current.setDeckPublic('deck-1', true); });
+      await act(async () => {
+        await result.current.setDeckPublic('deck-1', true);
+      });
 
       expect(result.current.decks[0].isPublic).toBe(false);
     });
@@ -296,7 +316,9 @@ describe('useDecks', () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       // Should not throw and should not call the DB
-      await act(async () => { await result.current.updateDeckEmoji('nonexistent', '🎀'); });
+      await act(async () => {
+        await result.current.updateDeckEmoji('nonexistent', '🎀');
+      });
 
       expect(mockUpdateDeckEmoji).not.toHaveBeenCalled();
     });
@@ -316,7 +338,9 @@ describe('useDecks', () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       await expect(
-        act(async () => { await result.current.createDeck('My Deck'); }),
+        act(async () => {
+          await result.current.createDeck('My Deck');
+        }),
       ).rejects.toThrow();
 
       expect(mockShowConfigBanner).toHaveBeenCalled();
@@ -328,7 +352,9 @@ describe('useDecks', () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       await expect(
-        act(async () => { await result.current.deleteDeck('deck-1'); }),
+        act(async () => {
+          await result.current.deleteDeck('deck-1');
+        }),
       ).rejects.toThrow();
 
       expect(mockShowConfigBanner).toHaveBeenCalled();
@@ -340,7 +366,9 @@ describe('useDecks', () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       await expect(
-        act(async () => { await result.current.renameDeck('deck-1', 'New Name'); }),
+        act(async () => {
+          await result.current.renameDeck('deck-1', 'New Name');
+        }),
       ).rejects.toThrow();
 
       expect(mockShowConfigBanner).toHaveBeenCalled();

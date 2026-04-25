@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
-import { renderWithProviders } from '@/test/renderWithProviders';
-import { StyledDialog } from '@/components/StyledDialog';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import { fireEvent, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+
+import { StyledDialog } from '@/components/StyledDialog';
+import { renderWithProviders } from '@/test/renderWithProviders';
 
 function renderDialog(props: {
   open?: boolean;

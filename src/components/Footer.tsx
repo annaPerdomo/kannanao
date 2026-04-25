@@ -1,10 +1,11 @@
 'use client';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import { useRouter, usePathname } from 'next/navigation';
+import Typography from '@mui/material/Typography';
+import { usePathname, useRouter } from 'next/navigation';
+
 import { LAYOUT } from '@/theme';
 
 export function Footer() {

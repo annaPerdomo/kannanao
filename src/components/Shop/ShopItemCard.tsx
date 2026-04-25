@@ -1,22 +1,24 @@
 'use client';
 
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import { useTheme, alpha } from '@mui/material/styles';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LockIcon from '@mui/icons-material/Lock';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
+import { alpha, useTheme } from '@mui/material/styles';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+
 import type { ShopItem } from '@/types/shop';
-import { THEME_COLORS } from './constants';
-import { ThemeCardPreview } from './ThemeCardPreview';
+
 import { BorderCardPreview } from './BorderCardPreview';
 import { BuddyCardPreview } from './BuddyCardPreview';
+import { THEME_COLORS } from './constants';
+import { ThemeCardPreview } from './ThemeCardPreview';
 
 export function ShopItemCard({
   item,
@@ -115,9 +117,7 @@ export function ShopItemCard({
         background: isEquipped
           ? `linear-gradient(135deg, ${alpha(brand[100], 0.9)}, ${alpha(accent[100], 0.5)})`
           : alpha(brand[50], 0.7),
-        border: isEquipped
-          ? `2.5px solid ${brand[400]}`
-          : `1.5px solid ${alpha(brand[300], 0.35)}`,
+        border: isEquipped ? `2.5px solid ${brand[400]}` : `1.5px solid ${alpha(brand[300], 0.35)}`,
         borderRadius: 3,
         p: 0,
         overflow: 'hidden',
@@ -168,13 +168,26 @@ export function ShopItemCard({
         }}
       >
         {mini && (isTheme || (!isCelebration && !isBuddy)) ? (
-          <Box sx={{ transform: 'scale(0.65)', transformOrigin: 'center', width: '100%', height: '100%' }}>
-            {isTheme ? <ThemeCardPreview themeKey={item.key} /> : <BorderCardPreview borderKey={item.key} />}
+          <Box
+            sx={{
+              transform: 'scale(0.65)',
+              transformOrigin: 'center',
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            {isTheme ? (
+              <ThemeCardPreview themeKey={item.key} />
+            ) : (
+              <BorderCardPreview borderKey={item.key} />
+            )}
           </Box>
         ) : isTheme ? (
           <ThemeCardPreview themeKey={item.key} />
         ) : isCelebration ? (
-          <Typography sx={{ fontSize: mini ? '1.8rem' : '3rem', lineHeight: 1 }}>{item.emoji}</Typography>
+          <Typography sx={{ fontSize: mini ? '1.8rem' : '3rem', lineHeight: 1 }}>
+            {item.emoji}
+          </Typography>
         ) : isBuddy ? (
           <BuddyCardPreview buddyKey={item.key} />
         ) : (
@@ -226,7 +239,10 @@ export function ShopItemCard({
           <Tooltip title="Preview" arrow>
             <IconButton
               size="small"
-              onClick={(e) => { e.stopPropagation(); onPreview(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onPreview();
+              }}
               sx={{
                 position: 'absolute',
                 bottom: 6,
@@ -250,7 +266,15 @@ export function ShopItemCard({
       </Box>
 
       {/* Info + action area */}
-      <Box sx={{ p: mini ? { xs: 0.75, sm: 1 } : { xs: 1.25, sm: 1.5 }, display: 'flex', flexDirection: 'column', gap: mini ? 0.25 : 0.75, flex: 1 }}>
+      <Box
+        sx={{
+          p: mini ? { xs: 0.75, sm: 1 } : { xs: 1.25, sm: 1.5 },
+          display: 'flex',
+          flexDirection: 'column',
+          gap: mini ? 0.25 : 0.75,
+          flex: 1,
+        }}
+      >
         <Typography
           sx={{
             fontFamily: (t) => t.fonts.cute,
@@ -278,11 +302,25 @@ export function ShopItemCard({
         )}
 
         {/* Price + action row */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 0.5, mt: 'auto', pt: mini ? 0 : 0.5 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 0.5,
+            mt: 'auto',
+            pt: mini ? 0 : 0.5,
+          }}
+        >
           <Box>
             {item.price > 0 && !owned && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
-                <AutoAwesomeIcon sx={{ fontSize: '0.75rem', color: canAfford ? '#D97706' : alpha(brand[400], 0.5) }} />
+                <AutoAwesomeIcon
+                  sx={{
+                    fontSize: '0.75rem',
+                    color: canAfford ? '#D97706' : alpha(brand[400], 0.5),
+                  }}
+                />
                 <Typography
                   sx={{
                     fontSize: '0.78rem',
@@ -355,10 +393,7 @@ export function ShopItemCard({
               Equip
             </Button>
           ) : (
-            <Tooltip
-              title={canAfford ? '' : 'Keep studying to earn more XP!'}
-              arrow
-            >
+            <Tooltip title={canAfford ? '' : 'Keep studying to earn more XP!'} arrow>
               <span>
                 <Button
                   onClick={onBuy}
@@ -375,9 +410,11 @@ export function ShopItemCard({
                     background: canAfford
                       ? `linear-gradient(135deg, ${brand[300]}, ${brand[500]})`
                       : undefined,
-                    '&:hover': canAfford ? {
-                      background: `linear-gradient(135deg, ${brand[400]}, ${brand[600]})`,
-                    } : undefined,
+                    '&:hover': canAfford
+                      ? {
+                          background: `linear-gradient(135deg, ${brand[400]}, ${brand[600]})`,
+                        }
+                      : undefined,
                   }}
                 >
                   Buy

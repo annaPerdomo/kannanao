@@ -1,5 +1,6 @@
-import { createContext } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
+import { createContext } from 'react';
+
 import type { ColorScheme } from '@/theme';
 
 export interface MockAuthValue {
@@ -11,7 +12,11 @@ export interface MockAuthValue {
   showTodo: boolean;
   loading: boolean;
   signInWithUsername: (username: string, password: string) => Promise<{ error: string | null }>;
-  signUpWithUsername: (username: string, password: string, name?: string) => Promise<{ error: string | null }>;
+  signUpWithUsername: (
+    username: string,
+    password: string,
+    name?: string,
+  ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   updateDisplayName: (name: string) => Promise<{ error: string | null }>;
   updateColorScheme: (scheme: ColorScheme) => Promise<void>;

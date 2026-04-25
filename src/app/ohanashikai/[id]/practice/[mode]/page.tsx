@@ -1,23 +1,24 @@
 'use client';
 
-import { use } from 'react';
-import { useRouter } from 'next/navigation';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import { PageHeader } from '@/components/PageHeader';
+import Typography from '@mui/material/Typography';
+import { useRouter } from 'next/navigation';
+import { use } from 'react';
+
 import { Loading } from '@/components/Loading';
-import { ReadThroughMode } from '@/components/Ohanashikai/ReadThroughMode';
 import { LineRecallMode } from '@/components/Ohanashikai/LineRecallMode';
-import { useOhanashikais, useOhanashikaiLines } from '@/hooks/useOhanashikais';
+import { ReadThroughMode } from '@/components/Ohanashikai/ReadThroughMode';
+import { PageHeader } from '@/components/PageHeader';
+import { useOhanashikaiLines, useOhanashikais } from '@/hooks/useOhanashikais';
 import type { OhanashikaiPracticeMode } from '@/types/ohanashikai';
 
 const VALID_MODES: OhanashikaiPracticeMode[] = ['readthrough', 'linerecall'];
 
 const MODE_LABELS: Record<OhanashikaiPracticeMode, string> = {
   readthrough: '📖 Read Through',
-  linerecall:  '🎯 Line Recall',
+  linerecall: '🎯 Line Recall',
 };
 
 export default function OhanashikaiPracticePage({
@@ -79,18 +80,10 @@ export default function OhanashikaiPracticePage({
       ) : (
         <>
           {practiceMode === 'readthrough' && (
-            <ReadThroughMode
-              lines={lines}
-              ohanashikaiId={id}
-              onExit={() => router.push(backUrl)}
-            />
+            <ReadThroughMode lines={lines} ohanashikaiId={id} onExit={() => router.push(backUrl)} />
           )}
           {practiceMode === 'linerecall' && (
-            <LineRecallMode
-              lines={lines}
-              ohanashikaiId={id}
-              onExit={() => router.push(backUrl)}
-            />
+            <LineRecallMode lines={lines} ohanashikaiId={id} onExit={() => router.push(backUrl)} />
           )}
         </>
       )}

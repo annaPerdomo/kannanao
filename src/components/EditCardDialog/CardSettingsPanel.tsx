@@ -1,8 +1,10 @@
 'use client';
-import { Box, Typography, Tooltip, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
+import { Box, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+
 import type { JlptLevel } from '@/types/flashcard';
-import { JLPT_LEVELS, toggleGroupSx, settingsRowSx } from './constants';
+
+import { JLPT_LEVELS, settingsRowSx, toggleGroupSx } from './constants';
 
 interface CardSettingsPanelProps {
   mainViewMode: 'hiragana' | 'kanji';
@@ -16,20 +18,31 @@ interface CardSettingsPanelProps {
 }
 
 export function CardSettingsPanel({
-  mainViewMode, onMainViewModeChange, cardType, onCardTypeChange,
-  jlptLevel, onJlptLevelChange, word, reading,
+  mainViewMode,
+  onMainViewModeChange,
+  cardType,
+  onCardTypeChange,
+  jlptLevel,
+  onJlptLevelChange,
+  word,
+  reading,
 }: CardSettingsPanelProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
   const modeField = mainViewMode === 'hiragana' ? reading : word;
-  const modeHint = mainViewMode === 'hiragana'
-    ? 'The hiragana reading will be the card title'
-    : 'The kanji reading will be the card title';
+  const modeHint =
+    mainViewMode === 'hiragana'
+      ? 'The hiragana reading will be the card title'
+      : 'The kanji reading will be the card title';
 
   const labelSx = {
-    fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.12em',
-    textTransform: 'uppercase' as const, color: brand[500],
-    lineHeight: 1, mb: 0.4,
+    fontSize: '0.72rem',
+    fontWeight: 800,
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase' as const,
+    color: brand[500],
+    lineHeight: 1,
+    mb: 0.4,
   };
 
   const descSx = { fontSize: '0.68rem', color: alpha(brand[700], 0.6) };
@@ -45,13 +58,24 @@ export function CardSettingsPanel({
           <Typography sx={labelSx}>Main View Mode</Typography>
           <Typography sx={{ ...descSx, transition: 'opacity 0.15s ease' }}>
             {modeHint}
-            {modeField ? <Box component="span" sx={{ ml: 0.5, fontWeight: 700, color: brand[700] }}>· {modeField}</Box> : null}
+            {modeField ? (
+              <Box component="span" sx={{ ml: 0.5, fontWeight: 700, color: brand[700] }}>
+                · {modeField}
+              </Box>
+            ) : null}
           </Typography>
         </Box>
         <ToggleButtonGroup
-          value={mainViewMode} exclusive size="small"
-          onChange={(_, v) => { if (v) onMainViewModeChange(v); }}
-          sx={{ ...tgSx, '& .MuiToggleButton-root': { ...tgSx['& .MuiToggleButton-root'], fontSize: '0.9rem' } }}
+          value={mainViewMode}
+          exclusive
+          size="small"
+          onChange={(_, v) => {
+            if (v) onMainViewModeChange(v);
+          }}
+          sx={{
+            ...tgSx,
+            '& .MuiToggleButton-root': { ...tgSx['& .MuiToggleButton-root'], fontSize: '0.9rem' },
+          }}
         >
           <Tooltip title="Display hiragana as the primary text" placement="top">
             <ToggleButton value="hiragana">{reading || 'ひ'}</ToggleButton>
@@ -70,7 +94,15 @@ export function CardSettingsPanel({
             {cardType === 'phrase' ? 'Multi-word expression or sentence' : 'Single vocabulary word'}
           </Typography>
         </Box>
-        <ToggleButtonGroup value={cardType} exclusive size="small" onChange={(_, v) => { if (v) onCardTypeChange(v); }} sx={tgSx}>
+        <ToggleButtonGroup
+          value={cardType}
+          exclusive
+          size="small"
+          onChange={(_, v) => {
+            if (v) onCardTypeChange(v);
+          }}
+          sx={tgSx}
+        >
           <ToggleButton value="word">単語</ToggleButton>
           <ToggleButton value="phrase">フレーズ</ToggleButton>
         </ToggleButtonGroup>
@@ -85,12 +117,23 @@ export function CardSettingsPanel({
           </Typography>
         </Box>
         <ToggleButtonGroup
-          value={jlptLevel ?? null} exclusive size="small"
+          value={jlptLevel ?? null}
+          exclusive
+          size="small"
           onChange={(_, v) => onJlptLevelChange(v ?? undefined)}
-          sx={{ ...tgSx, '& .MuiToggleButton-root': { ...tgSx['& .MuiToggleButton-root'], px: 1.25, fontSize: '0.72rem' } }}
+          sx={{
+            ...tgSx,
+            '& .MuiToggleButton-root': {
+              ...tgSx['& .MuiToggleButton-root'],
+              px: 1.25,
+              fontSize: '0.72rem',
+            },
+          }}
         >
           {JLPT_LEVELS.map((level) => (
-            <ToggleButton key={level} value={level}>{level}</ToggleButton>
+            <ToggleButton key={level} value={level}>
+              {level}
+            </ToggleButton>
           ))}
         </ToggleButtonGroup>
       </Box>

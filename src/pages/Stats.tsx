@@ -1,27 +1,22 @@
 'use client';
 
-import {
-  Box,
-  Typography,
-  Chip,
-  Skeleton,
-  Paper,
-} from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import SchoolIcon from '@mui/icons-material/School';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import { LAYOUT } from '@/theme';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import SchoolIcon from '@mui/icons-material/School';
+import { Box, Chip, Paper, Skeleton, Typography } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+
 import { PageHeader } from '@/components/PageHeader';
-import { useProgress, ACHIEVEMENTS } from '@/hooks/useProgress';
-import { StatCard } from '@/components/Stats/StatCard';
-import { LevelBar } from '@/components/Stats/LevelBar';
 import { AchievementBadge } from '@/components/Stats/AchievementBadge';
-import { StudyCalendar } from '@/components/Stats/StudyCalendar';
+import { LevelBar } from '@/components/Stats/LevelBar';
 import { PeriodSummary } from '@/components/Stats/PeriodSummary';
 import { SessionRow } from '@/components/Stats/SessionRow';
+import { StatCard } from '@/components/Stats/StatCard';
+import { StudyCalendar } from '@/components/Stats/StudyCalendar';
+import { ACHIEVEMENTS, useProgress } from '@/hooks/useProgress';
+import { LAYOUT } from '@/theme';
 
 export default function Stats() {
   const theme = useTheme();
@@ -63,14 +58,41 @@ export default function Stats() {
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} variant="rounded" height={110} sx={{ flex: '1 1 160px', borderRadius: 4 }} />
+            <Skeleton
+              key={i}
+              variant="rounded"
+              height={110}
+              sx={{ flex: '1 1 160px', borderRadius: 4 }}
+            />
           ))
         ) : progress ? (
           <>
-            <StatCard icon={<LocalFireDepartmentIcon sx={{ fontSize: '1.1rem' }} />} label="Day Streak" value={progress.streak_days} sub={`Best: ${progress.longest_streak} days`} accent="#EF4444" />
-            <StatCard icon={<SchoolIcon sx={{ fontSize: '1.1rem' }} />} label="Cards Studied" value={progress.total_cards_studied.toLocaleString()} sub={`${progress.total_sessions} sessions`} />
-            <StatCard icon={<EmojiEventsIcon sx={{ fontSize: '1.1rem' }} />} label="Accuracy" value={`${accuracy}%`} sub={`${progress.total_correct} correct`} accent="#F59E0B" />
-            <StatCard icon={<AutoAwesomeIcon sx={{ fontSize: '1.1rem' }} />} label="Total XP" value={progress.total_xp.toLocaleString()} sub={`${spendableXp.toLocaleString()} spendable · Level ${progress.level}`} />
+            <StatCard
+              icon={<LocalFireDepartmentIcon sx={{ fontSize: '1.1rem' }} />}
+              label="Day Streak"
+              value={progress.streak_days}
+              sub={`Best: ${progress.longest_streak} days`}
+              accent="#EF4444"
+            />
+            <StatCard
+              icon={<SchoolIcon sx={{ fontSize: '1.1rem' }} />}
+              label="Cards Studied"
+              value={progress.total_cards_studied.toLocaleString()}
+              sub={`${progress.total_sessions} sessions`}
+            />
+            <StatCard
+              icon={<EmojiEventsIcon sx={{ fontSize: '1.1rem' }} />}
+              label="Accuracy"
+              value={`${accuracy}%`}
+              sub={`${progress.total_correct} correct`}
+              accent="#F59E0B"
+            />
+            <StatCard
+              icon={<AutoAwesomeIcon sx={{ fontSize: '1.1rem' }} />}
+              label="Total XP"
+              value={progress.total_xp.toLocaleString()}
+              sub={`${spendableXp.toLocaleString()} spendable · Level ${progress.level}`}
+            />
           </>
         ) : null}
       </Box>
@@ -79,14 +101,21 @@ export default function Stats() {
         elevation={0}
         sx={{
           background: alpha(brand[50], 0.6),
-          border: `1px solid ${alpha(brand[300], 0.40)}`,
+          border: `1px solid ${alpha(brand[300], 0.4)}`,
           borderRadius: 4,
           p: 3,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
           <EmojiEventsIcon sx={{ color: brand[700], fontSize: '1.1rem' }} />
-          <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, fontSize: '1rem', color: brand[700] }}>
+          <Typography
+            sx={{
+              fontFamily: (t) => t.fonts.cute,
+              fontWeight: 600,
+              fontSize: '1rem',
+              color: brand[700],
+            }}
+          >
             Achievements
           </Typography>
           <Chip
@@ -99,7 +128,7 @@ export default function Stats() {
               fontWeight: 700,
               fontSize: '0.68rem',
               height: 22,
-              border: `1px solid ${alpha(brand[300], 0.40)}`,
+              border: `1px solid ${alpha(brand[300], 0.4)}`,
             }}
           />
         </Box>
@@ -127,24 +156,31 @@ export default function Stats() {
         elevation={0}
         sx={{
           background: alpha(brand[50], 0.6),
-          border: `1px solid ${alpha(brand[300], 0.40)}`,
+          border: `1px solid ${alpha(brand[300], 0.4)}`,
           borderRadius: 4,
           p: 3,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <CalendarTodayIcon sx={{ color: brand[700], fontSize: '1rem' }} />
-          <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, fontSize: '1rem', color: brand[700] }}>
+          <Typography
+            sx={{
+              fontFamily: (t) => t.fonts.cute,
+              fontWeight: 600,
+              fontSize: '1rem',
+              color: brand[700],
+            }}
+          >
             Recent Sessions
           </Typography>
         </Box>
 
         {loading ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} height={44} sx={{ my: 0.5 }} />
-          ))
+          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} height={44} sx={{ my: 0.5 }} />)
         ) : recentSessions.length === 0 ? (
-          <Typography sx={{ fontSize: '0.88rem', color: 'text.secondary', py: 2, textAlign: 'center' }}>
+          <Typography
+            sx={{ fontSize: '0.88rem', color: 'text.secondary', py: 2, textAlign: 'center' }}
+          >
             No sessions yet — start studying to see your history! 🌸
           </Typography>
         ) : (
@@ -168,7 +204,7 @@ export default function Stats() {
         elevation={0}
         sx={{
           background: alpha(brand[50], 0.6),
-          border: `1px solid ${alpha(brand[300], 0.40)}`,
+          border: `1px solid ${alpha(brand[300], 0.4)}`,
           borderRadius: 4,
           p: 3,
           display: 'flex',
@@ -178,7 +214,14 @@ export default function Stats() {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <CalendarTodayIcon sx={{ color: brand[700], fontSize: '1rem' }} />
-          <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, fontSize: '1rem', color: brand[700] }}>
+          <Typography
+            sx={{
+              fontFamily: (t) => t.fonts.cute,
+              fontWeight: 600,
+              fontSize: '1rem',
+              color: brand[700],
+            }}
+          >
             Study Activity
           </Typography>
         </Box>

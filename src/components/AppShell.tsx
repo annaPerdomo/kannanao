@@ -1,11 +1,13 @@
 'use client';
-import { usePathname } from 'next/navigation';
 import Box from '@mui/material/Box';
-import { NavBar } from './NavBar';
-import { Footer } from './Footer';
-import { AuthGuard } from './AuthGuard';
+import { usePathname } from 'next/navigation';
+
 import { XpAnimationProvider } from '@/contexts/XpAnimationContext';
+
+import { AuthGuard } from './AuthGuard';
+import { Footer } from './Footer';
 import { GlobalBuddy } from './GlobalBuddy';
+import { NavBar } from './NavBar';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

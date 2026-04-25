@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { isAdminUser, isAdminEmail } from '@/lib/admin';
+import { describe, expect, it } from 'vitest';
+
+import { isAdminEmail, isAdminUser } from '@/lib/admin';
 
 // NEXT_PUBLIC_ADMIN_USERNAME is not set in tests → falls back to 'test'
 // ADMIN_DOMAIN is 'kannanao.local' (hardcoded in admin.ts)

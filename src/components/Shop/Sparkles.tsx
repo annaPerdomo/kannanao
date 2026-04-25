@@ -1,6 +1,7 @@
 'use client';
 
 import Box from '@mui/material/Box';
+
 import { sparkle } from './animations';
 
 export function Sparkles({ color, count = 8 }: { color: string; count?: number }) {

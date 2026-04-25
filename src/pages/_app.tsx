@@ -1,7 +1,8 @@
-"use client";
+'use client';
 
-import type { AppProps } from "next/app";
-import Providers from "@/app/providers";
+import type { AppProps } from 'next/app';
+
+import Providers from '@/app/providers';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (

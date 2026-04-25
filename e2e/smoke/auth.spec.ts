@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Smoke tests for auth flows.
@@ -16,7 +16,9 @@ test.describe('Auth smoke tests', () => {
     await expect(page).toHaveURL(/login/);
 
     // Should have an input for username/email
-    const usernameInput = page.locator('input[type="text"], input[type="email"], input[placeholder*="username" i], input[placeholder*="Username" i]');
+    const usernameInput = page.locator(
+      'input[type="text"], input[type="email"], input[placeholder*="username" i], input[placeholder*="Username" i]',
+    );
     await expect(usernameInput.first()).toBeVisible({ timeout: 10000 });
 
     // Should have a password field
@@ -35,13 +37,15 @@ test.describe('Auth smoke tests', () => {
     await passwordInput.fill('wrongpassword123');
 
     // Click submit
-    const submitBtn = page.locator('button[type="submit"], button:has-text("Sign"), button:has-text("Log")').first();
+    const submitBtn = page
+      .locator('button[type="submit"], button:has-text("Sign"), button:has-text("Log")')
+      .first();
     await submitBtn.click();
 
     // An error message should appear
-    await expect(
-      page.locator('[role="alert"], .MuiAlert-root, [data-testid="error"]'),
-    ).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[role="alert"], .MuiAlert-root, [data-testid="error"]')).toBeVisible(
+      { timeout: 10000 },
+    );
   });
 
   test('should show the Kannanao branding on the login page', async ({ page }) => {

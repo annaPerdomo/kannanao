@@ -1,22 +1,22 @@
 'use client';
-import { useState, useEffect } from 'react';
-import {
-  AppBar, Toolbar, Box, Typography, Button, Snackbar, Alert,
-} from '@mui/material';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import MicIcon from '@mui/icons-material/Mic';
 import HomeIcon from '@mui/icons-material/Home';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import MicIcon from '@mui/icons-material/Mic';
 import StorefrontIcon from '@mui/icons-material/Storefront';
-import { usePathname, useRouter } from 'next/navigation';
+import { Alert, AppBar, Box, Button, Snackbar, Toolbar, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import { LAYOUT } from '@/theme';
-import { useProgress } from '@/hooks/useProgress';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
 import { useAuth } from '@/contexts/AuthContext';
-import { XpDisplay } from './XpDisplay';
-import { UserMenu } from './UserMenu';
+import { useProgress } from '@/hooks/useProgress';
+import { LAYOUT } from '@/theme';
+
 import { EditNameDialog } from './EditNameDialog';
+import { UserMenu } from './UserMenu';
+import { XpDisplay } from './XpDisplay';
 
 export function NavBar() {
   const theme = useTheme();
@@ -24,11 +24,11 @@ export function NavBar() {
 
   const pathname = usePathname();
   const router = useRouter();
-  const isHome        = pathname === '/';
-  const isStats       = pathname === '/stats';
-  const isShop        = pathname === '/shop';
+  const isHome = pathname === '/';
+  const isStats = pathname === '/stats';
+  const isShop = pathname === '/shop';
   const isOhanashikai = pathname?.startsWith('/ohanashikai') ?? false;
-  const isDecks       = pathname?.startsWith('/decks') ?? false;
+  const isDecks = pathname?.startsWith('/decks') ?? false;
 
   const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgress();
   const { user, displayName, updateDisplayName } = useAuth();
@@ -118,32 +118,67 @@ export function NavBar() {
           </Box>
 
           {user && !isHome && (
-            <Button onClick={() => router.push('/')} size="small" startIcon={<HomeIcon sx={{ fontSize: '1rem !important' }} />} sx={navBtnWithIcon}>
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Home</Box>
+            <Button
+              onClick={() => router.push('/')}
+              size="small"
+              startIcon={<HomeIcon sx={{ fontSize: '1rem !important' }} />}
+              sx={navBtnWithIcon}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                Home
+              </Box>
             </Button>
           )}
 
           {user && !isDecks && (
-            <Button onClick={() => router.push('/decks')} size="small" startIcon={<LibraryBooksIcon sx={{ fontSize: '1rem !important' }} />} sx={navBtnWithIcon}>
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Decks</Box>
+            <Button
+              onClick={() => router.push('/decks')}
+              size="small"
+              startIcon={<LibraryBooksIcon sx={{ fontSize: '1rem !important' }} />}
+              sx={navBtnWithIcon}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                Decks
+              </Box>
             </Button>
           )}
 
           {user && !isOhanashikai && (
-            <Button onClick={() => router.push('/ohanashikai')} size="small" startIcon={<MicIcon sx={{ fontSize: '1rem !important' }} />} sx={navBtnWithIcon}>
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Speech</Box>
+            <Button
+              onClick={() => router.push('/ohanashikai')}
+              size="small"
+              startIcon={<MicIcon sx={{ fontSize: '1rem !important' }} />}
+              sx={navBtnWithIcon}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                Speech
+              </Box>
             </Button>
           )}
 
           {user && !isStats && (
-            <Button onClick={() => router.push('/stats')} size="small" startIcon={<BarChartIcon sx={{ fontSize: '1rem !important' }} />} sx={navBtnWithIcon}>
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Stats</Box>
+            <Button
+              onClick={() => router.push('/stats')}
+              size="small"
+              startIcon={<BarChartIcon sx={{ fontSize: '1rem !important' }} />}
+              sx={navBtnWithIcon}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                Stats
+              </Box>
             </Button>
           )}
 
           {user && !isShop && (
-            <Button onClick={() => router.push('/shop')} size="small" startIcon={<StorefrontIcon sx={{ fontSize: '1rem !important' }} />} sx={navBtnWithIcon}>
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Shop</Box>
+            <Button
+              onClick={() => router.push('/shop')}
+              size="small"
+              startIcon={<StorefrontIcon sx={{ fontSize: '1rem !important' }} />}
+              sx={navBtnWithIcon}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                Shop
+              </Box>
             </Button>
           )}
 

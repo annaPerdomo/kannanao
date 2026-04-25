@@ -1,32 +1,38 @@
 'use client';
-import {
-  createContext, useContext, useMemo,
-  useState, useEffect, type ReactNode,
-} from 'react';
-import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { createAppTheme, type ColorScheme } from '@/theme';
+import { ThemeProvider } from '@mui/material/styles';
+import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+
 import { useAuth } from '@/contexts/AuthContext';
+import { type ColorScheme, createAppTheme } from '@/theme';
 
 export type { ColorScheme };
 
 const STORAGE_KEY = 'kannanao-color-scheme';
 const VALID_SCHEMES: ColorScheme[] = [
-  'sakura', 'murasaki', 'yuki',
-  'ocean', 'forest', 'sunset', 'lavender', 'midnight', 'matcha', 'rosegold',
+  'sakura',
+  'murasaki',
+  'yuki',
+  'ocean',
+  'forest',
+  'sunset',
+  'lavender',
+  'midnight',
+  'matcha',
+  'rosegold',
 ];
 
 export const schemeInfo: Record<ColorScheme, { label: string; emoji: string; preview: string }> = {
-  sakura:   { label: 'Sakura',        emoji: '🌸', preview: '#F472B6' },
-  murasaki: { label: 'Murasaki',      emoji: '💜', preview: '#A78BFA' },
-  yuki:     { label: 'Yuki',          emoji: '❄️', preview: '#38BDF8' },
-  ocean:    { label: 'Ocean Blue',    emoji: '🌊', preview: '#60A5FA' },
-  forest:   { label: 'Forest Green',  emoji: '���', preview: '#4ADE80' },
-  sunset:   { label: 'Sunset Orange', emoji: '🌅', preview: '#FB923C' },
-  lavender: { label: 'Lavender',      emoji: '💐', preview: '#C084FC' },
-  midnight: { label: 'Midnight',      emoji: '🌙', preview: '#475569' },
-  matcha:   { label: 'Matcha',        emoji: '🍵', preview: '#84CC16' },
-  rosegold: { label: 'Rose Gold',     emoji: '🌹', preview: '#FB7185' },
+  sakura: { label: 'Sakura', emoji: '🌸', preview: '#F472B6' },
+  murasaki: { label: 'Murasaki', emoji: '💜', preview: '#A78BFA' },
+  yuki: { label: 'Yuki', emoji: '❄️', preview: '#38BDF8' },
+  ocean: { label: 'Ocean Blue', emoji: '🌊', preview: '#60A5FA' },
+  forest: { label: 'Forest Green', emoji: '���', preview: '#4ADE80' },
+  sunset: { label: 'Sunset Orange', emoji: '🌅', preview: '#FB923C' },
+  lavender: { label: 'Lavender', emoji: '💐', preview: '#C084FC' },
+  midnight: { label: 'Midnight', emoji: '🌙', preview: '#475569' },
+  matcha: { label: 'Matcha', emoji: '🍵', preview: '#84CC16' },
+  rosegold: { label: 'Rose Gold', emoji: '🌹', preview: '#FB7185' },
 };
 
 interface ThemeContextValue {

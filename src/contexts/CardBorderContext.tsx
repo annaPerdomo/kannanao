@@ -1,7 +1,8 @@
 'use client';
 
-import { createContext, useContext, type ReactNode } from 'react';
-import { useShop, CARD_BORDER_STYLES } from '@/hooks/useShop';
+import { createContext, type ReactNode, useContext } from 'react';
+
+import { CARD_BORDER_STYLES, useShop } from '@/hooks/useShop';
 import type { CardBorderStyle } from '@/types/shop';
 
 interface CardBorderContextValue {
@@ -17,9 +18,7 @@ export const CardBorderCtx = createContext<CardBorderContextValue>({
 export function CardBorderProvider({ children }: { children: ReactNode }) {
   const { equipped } = useShop();
   const equippedBorderKey = equipped.card_border ?? null;
-  const borderStyle = equippedBorderKey
-    ? (CARD_BORDER_STYLES[equippedBorderKey] ?? {})
-    : {};
+  const borderStyle = equippedBorderKey ? (CARD_BORDER_STYLES[equippedBorderKey] ?? {}) : {};
 
   return (
     <CardBorderCtx.Provider value={{ borderStyle, equippedBorderKey }}>

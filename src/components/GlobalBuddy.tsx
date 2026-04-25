@@ -1,7 +1,9 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+
 import { useShop } from '@/hooks/useShop';
+
 import { HomeBuddy } from './HomeBuddy';
 
 const HIDE_ON_ROUTES = ['/practice/', '/study', '/login', '/landing', '/embed/'];

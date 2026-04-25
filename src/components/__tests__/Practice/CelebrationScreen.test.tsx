@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
@@ -33,14 +34,24 @@ describe('CelebrationScreen', () => {
 
   it('should render the heading', () => {
     renderWithProviders(
-      <CelebrationScreen heading="Perfect!" subheading="5 / 5 correct" mode="recall" onExit={vi.fn()} />,
+      <CelebrationScreen
+        heading="Perfect!"
+        subheading="5 / 5 correct"
+        mode="recall"
+        onExit={vi.fn()}
+      />,
     );
     expect(screen.getByText('Perfect!')).toBeInTheDocument();
   });
 
   it('should render the subheading', () => {
     renderWithProviders(
-      <CelebrationScreen heading="Great job!" subheading="4 / 5 correct" mode="recall" onExit={vi.fn()} />,
+      <CelebrationScreen
+        heading="Great job!"
+        subheading="4 / 5 correct"
+        mode="recall"
+        onExit={vi.fn()}
+      />,
     );
     expect(screen.getByText('4 / 5 correct')).toBeInTheDocument();
   });
@@ -60,14 +71,24 @@ describe('CelebrationScreen', () => {
 
   it('should not render extra text when not provided', () => {
     renderWithProviders(
-      <CelebrationScreen heading="Perfect!" subheading="5 / 5 correct" mode="recall" onExit={vi.fn()} />,
+      <CelebrationScreen
+        heading="Perfect!"
+        subheading="5 / 5 correct"
+        mode="recall"
+        onExit={vi.fn()}
+      />,
     );
     expect(screen.queryByText(/Best streak/)).not.toBeInTheDocument();
   });
 
   it('should render a "Back to Deck" button', () => {
     renderWithProviders(
-      <CelebrationScreen heading="Perfect!" subheading="5 / 5 correct" mode="recall" onExit={vi.fn()} />,
+      <CelebrationScreen
+        heading="Perfect!"
+        subheading="5 / 5 correct"
+        mode="recall"
+        onExit={vi.fn()}
+      />,
     );
     expect(screen.getByText('Back to Deck')).toBeInTheDocument();
   });
@@ -75,7 +96,12 @@ describe('CelebrationScreen', () => {
   it('should call onExit when "Back to Deck" is clicked', () => {
     const onExit = vi.fn();
     renderWithProviders(
-      <CelebrationScreen heading="Perfect!" subheading="5 / 5 correct" mode="recall" onExit={onExit} />,
+      <CelebrationScreen
+        heading="Perfect!"
+        subheading="5 / 5 correct"
+        mode="recall"
+        onExit={onExit}
+      />,
     );
     fireEvent.click(screen.getByText('Back to Deck'));
     expect(onExit).toHaveBeenCalledTimes(1);
@@ -83,7 +109,12 @@ describe('CelebrationScreen', () => {
 
   it('should render correctly for match mode heading', () => {
     renderWithProviders(
-      <CelebrationScreen heading="All matched!" subheading="4 pairs · 1 round" mode="match" onExit={vi.fn()} />,
+      <CelebrationScreen
+        heading="All matched!"
+        subheading="4 pairs · 1 round"
+        mode="match"
+        onExit={vi.fn()}
+      />,
     );
     expect(screen.getByText('All matched!')).toBeInTheDocument();
     expect(screen.getByText('4 pairs · 1 round')).toBeInTheDocument();
@@ -91,14 +122,24 @@ describe('CelebrationScreen', () => {
 
   it('should render correctly for fill mode', () => {
     renderWithProviders(
-      <CelebrationScreen heading="Keep going!" subheading="3 / 5 correct" mode="fill" onExit={vi.fn()} />,
+      <CelebrationScreen
+        heading="Keep going!"
+        subheading="3 / 5 correct"
+        mode="fill"
+        onExit={vi.fn()}
+      />,
     );
     expect(screen.getByText('Keep going!')).toBeInTheDocument();
   });
 
   it('should render star decorations', () => {
     renderWithProviders(
-      <CelebrationScreen heading="Perfect!" subheading="5 / 5 correct" mode="recall" onExit={vi.fn()} />,
+      <CelebrationScreen
+        heading="Perfect!"
+        subheading="5 / 5 correct"
+        mode="recall"
+        onExit={vi.fn()}
+      />,
     );
     // The ⭐ and ✨ stars are rendered as decoration
     const body = document.body.textContent ?? '';

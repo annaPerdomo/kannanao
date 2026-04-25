@@ -1,21 +1,22 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import AutoStoriesIcon from '@mui/icons-material/AutoStories';
-import type { OhanashikaiLine } from '@/types/ohanashikai';
-import { useProgress, XP_PER_CORRECT } from '@/hooks/useProgress';
-import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import Typography from '@mui/material/Typography';
+import { useEffect, useRef, useState } from 'react';
+
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
+import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import { useProgress, XP_PER_CORRECT } from '@/hooks/useProgress';
+import type { OhanashikaiLine } from '@/types/ohanashikai';
 
 interface ReadThroughModeProps {
   lines: OhanashikaiLine[];
@@ -102,7 +103,15 @@ export function ReadThroughMode({ lines, ohanashikaiId, onExit }: ReadThroughMod
           Keep practicing to memorize your speech ✨
         </Typography>
         <Stack direction="row" spacing={2} justifyContent="center">
-          <Button variant="outlined" onClick={() => { setIndex(0); setDone(false); seenRef.current = new Set(); correctCountRef.current = 0; }}>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              setIndex(0);
+              setDone(false);
+              seenRef.current = new Set();
+              correctCountRef.current = 0;
+            }}
+          >
             Read Again
           </Button>
           <Button variant="contained" onClick={onExit}>
@@ -170,12 +179,19 @@ export function ReadThroughMode({ lines, ohanashikaiId, onExit }: ReadThroughMod
         {/* Line label */}
         <Stack direction="row" alignItems="center" spacing={1} mb={2}>
           <AutoStoriesIcon sx={{ fontSize: '1rem', color: brand[400] }} />
-          <Typography variant="caption" sx={{ color: brand[500], letterSpacing: '0.12em', fontWeight: 800 }}>
+          <Typography
+            variant="caption"
+            sx={{ color: brand[500], letterSpacing: '0.12em', fontWeight: 800 }}
+          >
             LINE {index + 1}
           </Typography>
           <Typography sx={{ fontSize: '0.9rem' }}>{decoEmoji}</Typography>
           <Box sx={{ flexGrow: 1 }} />
-          <SpeakButton text={stripFurigana(currentLine?.text ?? '')} iconSize="1.1rem" sx={{ color: brand[400], '&:hover': { color: brand[600] } }} />
+          <SpeakButton
+            text={stripFurigana(currentLine?.text ?? '')}
+            iconSize="1.1rem"
+            sx={{ color: brand[400], '&:hover': { color: brand[600] } }}
+          />
         </Stack>
 
         {/* The actual sentence */}
@@ -203,7 +219,14 @@ export function ReadThroughMode({ lines, ohanashikaiId, onExit }: ReadThroughMod
       </Box>
 
       {/* Dot indicators */}
-      <Stack direction="row" spacing={0.75} justifyContent="center" mb={3} flexWrap="wrap" useFlexGap>
+      <Stack
+        direction="row"
+        spacing={0.75}
+        justifyContent="center"
+        mb={3}
+        flexWrap="wrap"
+        useFlexGap
+      >
         {lines.map((_, i) => (
           <Box
             key={i}
@@ -234,7 +257,12 @@ export function ReadThroughMode({ lines, ohanashikaiId, onExit }: ReadThroughMod
           Back
         </Button>
 
-        <Button size="small" color="inherit" onClick={handleExit} sx={{ opacity: 0.45, fontSize: '0.75rem' }}>
+        <Button
+          size="small"
+          color="inherit"
+          onClick={handleExit}
+          sx={{ opacity: 0.45, fontSize: '0.75rem' }}
+        >
           Quit &amp; Save
         </Button>
 

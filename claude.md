@@ -13,6 +13,7 @@ Next.js 15 app with React 19, MUI 7, Supabase, TypeScript.
 **Path Alias**: `@/*` → `./src/*` (e.g. `@/components/DeckCard`, `@/lib/supabase`)
 
 **Folders**:
+
 - `components/` — reusable UI components
 - `hooks/` — custom React hooks (data fetching + logic)
 - `lib/` — Supabase client + DB adapter functions
@@ -54,12 +55,14 @@ Next.js 15 app with React 19, MUI 7, Supabase, TypeScript.
 ## Data Layer
 
 **Supabase** (`src/lib/supabase.ts`):
+
 - Client exported as `sb`
 - DB-to-app adapter functions: `dbCardToApp`, `dbDeckToApp`
 - Tables: `decks` (id, name, description, created_at) and `cards` (id, deck_id, word, reading, meaning, image_url, example_jp, example_en, main_view_mode)
 - Check `isConfigured()` before making DB calls
 
 **API routes** (`src/app/api/`):
+
 - `/api/generate` — calls Google Gemini API to generate flashcard fields (POST)
 - `/api/images` — fetches images from Unsplash by query (GET)
 - `/api/furigana` — calls Google Gemini API to add furigana readings to Japanese text using `{kanji|reading}` format (POST)
@@ -67,12 +70,14 @@ Next.js 15 app with React 19, MUI 7, Supabase, TypeScript.
 - `/api/public/deck/[id]` — public read-only endpoint to fetch a deck and its cards by ID without auth (GET)
 
 **API client** (`src/services/api.ts`):
+
 - `generateFlashcards()` — calls `/api/generate`
 - `fetchImage()` — calls `/api/images`
 
 ## Hooks Pattern
 
 Hooks in `src/hooks/` follow this pattern:
+
 - Load data on mount, expose async action functions with optimistic updates
 - Always return `{ data, loading, error, ...actions }`
 - Use `useCallback` for all action functions
@@ -82,6 +87,7 @@ Hooks in `src/hooks/` follow this pattern:
 ## State Handling in Components
 
 Every component that fetches or mutates data must:
+
 - Show a loading state using `<Loading />` (`@/components/Loading`) while `loading` is true
 - Show an error state (e.g. `<Alert severity="error">`) when `error` is set
 - Confirm success visually (e.g. `<Alert severity="success">` or snackbar) after mutations
@@ -104,6 +110,7 @@ External APIs: Google Gemini (flashcard generation) | Unsplash (card images)
 **Framework**: Vitest + React Testing Library. Test files live in `__tests__/` directories next to the source they cover (e.g. `src/hooks/__tests__/useShop.test.ts`).
 
 **Scripts**:
+
 - `pnpm test` — watch mode
 - `pnpm test:run` — single run, no coverage
 - `pnpm test:summary` — run with coverage, print only totals (**use this for a quick check**)
@@ -113,15 +120,15 @@ External APIs: Google Gemini (flashcard generation) | Unsplash (card images)
 
 ### What to test for every new feature or change
 
-| Area | Test it | Skip it |
-|------|---------|---------|
-| **Pure functions** — XP math, formatters, validators | Yes — always. No mocks needed, highest ROI | — |
-| **Hook logic** — CRUD actions, optimistic updates, rollback | Yes — mock `@/lib/supabase` directly, test the state changes | Don't test the Supabase queries themselves, that's the DB layer's job |
-| **DB adapter functions** (`lib/supabase.ts`) | Yes — mock `@supabase/supabase-js`. Verify happy path + error path per function | Don't test internal helpers (`dbCardToApp` etc.) directly; they're covered by the function tests |
-| **Context providers** — auth state, XP animation, settings | Yes — test via `renderHook` with the real provider as wrapper | Don't render full pages to test context |
-| **Critical UI interactions** — form submit, button callbacks, answer validation | Yes — `fireEvent` or `userEvent`, assert the right handler was called | Don't test MUI rendering details (classes, colors, sx props) |
-| **Animation / canvas components** | No — mock them as `() => null` in consumer tests | — |
-| **One-line wrappers** and thin context bridges | No — coverage via consumers is enough | — |
+| Area                                                                            | Test it                                                                         | Skip it                                                                                          |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| **Pure functions** — XP math, formatters, validators                            | Yes — always. No mocks needed, highest ROI                                      | —                                                                                                |
+| **Hook logic** — CRUD actions, optimistic updates, rollback                     | Yes — mock `@/lib/supabase` directly, test the state changes                    | Don't test the Supabase queries themselves, that's the DB layer's job                            |
+| **DB adapter functions** (`lib/supabase.ts`)                                    | Yes — mock `@supabase/supabase-js`. Verify happy path + error path per function | Don't test internal helpers (`dbCardToApp` etc.) directly; they're covered by the function tests |
+| **Context providers** — auth state, XP animation, settings                      | Yes — test via `renderHook` with the real provider as wrapper                   | Don't render full pages to test context                                                          |
+| **Critical UI interactions** — form submit, button callbacks, answer validation | Yes — `fireEvent` or `userEvent`, assert the right handler was called           | Don't test MUI rendering details (classes, colors, sx props)                                     |
+| **Animation / canvas components**                                               | No — mock them as `() => null` in consumer tests                                | —                                                                                                |
+| **One-line wrappers** and thin context bridges                                  | No — coverage via consumers is enough                                           | —                                                                                                |
 
 ### Mock patterns
 

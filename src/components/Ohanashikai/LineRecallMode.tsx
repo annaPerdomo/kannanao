@@ -1,23 +1,24 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import LinearProgress from '@mui/material/LinearProgress';
-import Stack from '@mui/material/Stack';
-import Chip from '@mui/material/Chip';
-import { useTheme } from '@mui/material/styles';
-import { alpha } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import type { OhanashikaiLine } from '@/types/ohanashikai';
-import { useProgress, XP_PER_CORRECT, XP_PER_WRONG } from '@/hooks/useProgress';
-import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import LinearProgress from '@mui/material/LinearProgress';
+import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
+import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import { useProgress, XP_PER_CORRECT, XP_PER_WRONG } from '@/hooks/useProgress';
+import type { OhanashikaiLine } from '@/types/ohanashikai';
 
 interface LineRecallModeProps {
   lines: OhanashikaiLine[];
@@ -140,7 +141,14 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
           </Typography>
         )}
         <Stack direction="row" spacing={2} justifyContent="center" mt={4}>
-          <Button variant="outlined" onClick={() => { setIndex(0); setScore(0); correctCountRef.current = 0; }}>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              setIndex(0);
+              setScore(0);
+              correctCountRef.current = 0;
+            }}
+          >
             Try Again
           </Button>
           <Button variant="contained" onClick={onExit}>
@@ -208,7 +216,16 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
           }}
         />
 
-        <Typography variant="caption" sx={{ color: brand[500], letterSpacing: '0.14em', display: 'block', mb: 2, fontWeight: 800 }}>
+        <Typography
+          variant="caption"
+          sx={{
+            color: brand[500],
+            letterSpacing: '0.14em',
+            display: 'block',
+            mb: 2,
+            fontWeight: 800,
+          }}
+        >
           🎯 WHAT IS LINE {current.orderIndex + 1}?
         </Typography>
 
@@ -226,7 +243,9 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
               {hint}
             </Typography>
           </Box>
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>← hint</Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            ← hint
+          </Typography>
         </Stack>
 
         {/* Revealed answer */}
@@ -244,7 +263,11 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
               <Typography variant="caption" sx={{ color: accent[600], fontWeight: 800 }}>
                 The answer:
               </Typography>
-              <SpeakButton text={stripFurigana(current.text)} iconSize="1rem" sx={{ color: accent[400], '&:hover': { color: accent[700] } }} />
+              <SpeakButton
+                text={stripFurigana(current.text)}
+                iconSize="1rem"
+                sx={{ color: accent[400], '&:hover': { color: accent[700] } }}
+              />
             </Stack>
             <FuriganaText
               text={current.text}
@@ -274,10 +297,16 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
               gap: 1,
             }}
           >
-            {result === 'correct'
-              ? <CheckIcon sx={{ color: 'success.main', fontSize: '1.1rem' }} />
-              : <CloseIcon sx={{ color: 'error.main', fontSize: '1.1rem' }} />}
-            <Typography variant="body2" color={result === 'correct' ? 'success.main' : 'error.main'} sx={{ fontWeight: 700 }}>
+            {result === 'correct' ? (
+              <CheckIcon sx={{ color: 'success.main', fontSize: '1.1rem' }} />
+            ) : (
+              <CloseIcon sx={{ color: 'error.main', fontSize: '1.1rem' }} />
+            )}
+            <Typography
+              variant="body2"
+              color={result === 'correct' ? 'success.main' : 'error.main'}
+              sx={{ fontWeight: 700 }}
+            >
               {result === 'correct' ? 'Perfect! +10 XP ✨' : 'Not quite… but keep going! +2 XP'}
             </Typography>
           </Box>
@@ -289,7 +318,9 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
         <TextField
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter' && !result && !revealed) void check(); }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !result && !revealed) void check();
+          }}
           label="Type the full line from memory…"
           placeholder="Type here…"
           disabled={!!result || revealed}
@@ -330,7 +361,12 @@ export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeP
       </Stack>
 
       <Box sx={{ textAlign: 'right' }}>
-        <Button size="small" color="inherit" onClick={handleExit} sx={{ opacity: 0.45, fontSize: '0.75rem' }}>
+        <Button
+          size="small"
+          color="inherit"
+          onClick={handleExit}
+          sx={{ opacity: 0.45, fontSize: '0.75rem' }}
+        >
           Quit &amp; Save Progress
         </Button>
       </Box>

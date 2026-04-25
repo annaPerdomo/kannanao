@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { useState } from 'react';
 
 interface WaitlistFormProps {
   /** Compact layout for inline use (e.g. login page) */
@@ -122,9 +122,7 @@ export default function WaitlistForm({ compact, dark }: WaitlistFormProps) {
         variant="contained"
         disabled={busy}
         sx={{
-          background: dark
-            ? 'linear-gradient(135deg, #F472B6 0%, #EC4899 100%)'
-            : undefined,
+          background: dark ? 'linear-gradient(135deg, #F472B6 0%, #EC4899 100%)' : undefined,
           bgcolor: dark ? undefined : 'primary.dark',
           color: '#fff',
           fontFamily: (t) => t.fonts.display,
@@ -133,7 +131,11 @@ export default function WaitlistForm({ compact, dark }: WaitlistFormProps) {
           py: 1.2,
           boxShadow: dark ? '0 8px 28px rgba(236,72,153,0.45)' : undefined,
           '&:hover': dark
-            ? { filter: 'brightness(1.08)', transform: 'translateY(-2px)', boxShadow: '0 12px 36px rgba(236,72,153,0.55)' }
+            ? {
+                filter: 'brightness(1.08)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 12px 36px rgba(236,72,153,0.55)',
+              }
             : { bgcolor: 'primary.dark', filter: 'brightness(0.9)' },
         }}
       >

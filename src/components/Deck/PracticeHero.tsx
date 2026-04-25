@@ -2,9 +2,11 @@
 import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+
+import type { PracticeMode } from '@/types/app';
+
 import { PRACTICE_CONFIG } from './constants';
 import { Label } from './Label';
-import type { PracticeMode } from '@/types/app';
 
 interface PracticeHeroProps {
   cardCount: number;
@@ -47,15 +49,14 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            background: cardCount > 0
-              ? `linear-gradient(145deg, ${brand[400]} 0%, ${brand[500]} 40%, ${accent[400]} 100%)`
-              : 'rgba(200,200,200,0.3)',
+            background:
+              cardCount > 0
+                ? `linear-gradient(145deg, ${brand[400]} 0%, ${brand[500]} 40%, ${accent[400]} 100%)`
+                : 'rgba(200,200,200,0.3)',
             border: '1.5px solid transparent',
             opacity: cardCount > 0 ? 1 : 0.5,
             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            boxShadow: cardCount > 0
-              ? `0 6px 24px ${alpha(brand[500], 0.35)}`
-              : 'none',
+            boxShadow: cardCount > 0 ? `0 6px 24px ${alpha(brand[500], 0.35)}` : 'none',
             ...(cardCount > 0 && {
               '&:hover': {
                 transform: 'translateY(-5px) scale(1.02)',
@@ -67,9 +68,15 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
           <Typography
             aria-hidden
             sx={{
-              position: 'absolute', bottom: -16, right: 6,
-              fontSize: '5.5rem', lineHeight: 1, opacity: 0.18,
-              userSelect: 'none', fontFamily: (t) => t.fonts.jp, fontWeight: 900,
+              position: 'absolute',
+              bottom: -16,
+              right: 6,
+              fontSize: '5.5rem',
+              lineHeight: 1,
+              opacity: 0.18,
+              userSelect: 'none',
+              fontFamily: (t) => t.fonts.jp,
+              fontWeight: 900,
             }}
           >
             学
@@ -79,16 +86,19 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
             <Typography sx={{ fontSize: '2rem', lineHeight: 1, mb: 1 }}>✨</Typography>
             <Typography
               sx={{
-                fontWeight: 900, fontSize: { xs: '1rem', sm: '1.05rem' },
+                fontWeight: 900,
+                fontSize: { xs: '1rem', sm: '1.05rem' },
                 color: '#FFFFFF',
-                lineHeight: 1.2, textShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                lineHeight: 1.2,
+                textShadow: '0 1px 4px rgba(0,0,0,0.15)',
               }}
             >
               Flashcards
             </Typography>
             <Typography
               sx={{
-                fontSize: '0.72rem', color: 'rgba(255,255,255,0.85)',
+                fontSize: '0.72rem',
+                color: 'rgba(255,255,255,0.85)',
                 mt: 0.4,
               }}
             >
@@ -132,82 +142,98 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
         </Box>
 
         {/* Practice mode tiles */}
-        {PRACTICE_CONFIG.map(({ mode, label, description, emoji, watermark, color, bg, border, shadowColor }) => (
-          <Box
-            key={mode}
-            onClick={!practiceDisabled ? () => onPractice(mode) : undefined}
-            sx={{
-              cursor: practiceDisabled ? 'default' : 'pointer',
-              position: 'relative',
-              overflow: 'hidden',
-              borderRadius: '18px',
-              p: { xs: '20px 18px', sm: '24px 22px' },
-              minHeight: 160,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              background: bg,
-              border: '1.5px solid',
-              borderColor: border,
-              opacity: practiceDisabled ? 0.45 : 1,
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-              ...(!practiceDisabled && {
-                '&:hover': {
-                  transform: 'translateY(-5px) scale(1.02)',
-                  boxShadow: `0 12px 32px ${shadowColor}`,
-                },
-              }),
-            }}
-          >
-            <Typography
-              aria-hidden
+        {PRACTICE_CONFIG.map(
+          ({ mode, label, description, emoji, watermark, color, bg, border, shadowColor }) => (
+            <Box
+              key={mode}
+              onClick={!practiceDisabled ? () => onPractice(mode) : undefined}
               sx={{
-                position: 'absolute', bottom: -16, right: 6,
-                fontSize: '5.5rem', lineHeight: 1, color, opacity: 0.08,
-                fontFamily: (t) => t.fonts.jp, fontWeight: 900, userSelect: 'none',
+                cursor: practiceDisabled ? 'default' : 'pointer',
+                position: 'relative',
+                overflow: 'hidden',
+                borderRadius: '18px',
+                p: { xs: '20px 18px', sm: '24px 22px' },
+                minHeight: 160,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                background: bg,
+                border: '1.5px solid',
+                borderColor: border,
+                opacity: practiceDisabled ? 0.45 : 1,
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                ...(!practiceDisabled && {
+                  '&:hover': {
+                    transform: 'translateY(-5px) scale(1.02)',
+                    boxShadow: `0 12px 32px ${shadowColor}`,
+                  },
+                }),
               }}
             >
-              {watermark}
-            </Typography>
-
-            <Box>
-              <Typography sx={{ fontSize: '1.85rem', lineHeight: 1, mb: 1 }}>{emoji}</Typography>
               <Typography
+                aria-hidden
                 sx={{
-                  fontWeight: 900, fontSize: { xs: '0.92rem', sm: '0.98rem' },
-                  color, lineHeight: 1.2,
+                  position: 'absolute',
+                  bottom: -16,
+                  right: 6,
+                  fontSize: '5.5rem',
+                  lineHeight: 1,
+                  color,
+                  opacity: 0.08,
+                  fontFamily: (t) => t.fonts.jp,
+                  fontWeight: 900,
+                  userSelect: 'none',
                 }}
               >
-                {label}
+                {watermark}
               </Typography>
+
+              <Box>
+                <Typography sx={{ fontSize: '1.85rem', lineHeight: 1, mb: 1 }}>{emoji}</Typography>
+                <Typography
+                  sx={{
+                    fontWeight: 900,
+                    fontSize: { xs: '0.92rem', sm: '0.98rem' },
+                    color,
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {label}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: '0.7rem',
+                    color: `${color}BB`,
+                    mt: 0.4,
+                  }}
+                >
+                  {description}
+                </Typography>
+              </Box>
+
               <Typography
                 sx={{
-                  fontSize: '0.7rem', color: `${color}BB`,
-                  mt: 0.4,
+                  fontSize: '0.7rem',
+                  fontWeight: 800,
+                  color: practiceDisabled ? 'text.disabled' : color,
+                  letterSpacing: '0.04em',
+                  opacity: practiceDisabled ? 0.5 : 0.8,
+                  alignSelf: 'flex-end',
                 }}
               >
-                {description}
+                {practiceDisabled ? 'Locked 🔒' : 'Play →'}
               </Typography>
             </Box>
-
-            <Typography
-              sx={{
-                fontSize: '0.7rem', fontWeight: 800,
-                color: practiceDisabled ? 'text.disabled' : color,
-                letterSpacing: '0.04em',
-                opacity: practiceDisabled ? 0.5 : 0.8, alignSelf: 'flex-end',
-              }}
-            >
-              {practiceDisabled ? 'Locked 🔒' : 'Play →'}
-            </Typography>
-          </Box>
-        ))}
+          ),
+        )}
       </Box>
       {practiceDisabled && cardCount > 0 && (
         <Typography
           sx={{
-            fontSize: '0.7rem', color: 'text.secondary',
-            mt: 1.5, textAlign: 'center',
+            fontSize: '0.7rem',
+            color: 'text.secondary',
+            mt: 1.5,
+            textAlign: 'center',
           }}
         >
           Add at least 2 cards to unlock practice modes.

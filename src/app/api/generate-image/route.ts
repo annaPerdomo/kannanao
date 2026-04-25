@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { type NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -13,7 +13,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (!ALLOWED_TYPES.includes(mimeType)) {
-      return NextResponse.json({ error: 'Only JPEG, PNG, and WebP images are allowed' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Only JPEG, PNG, and WebP images are allowed' },
+        { status: 400 },
+      );
     }
 
     const imageBuffer = Buffer.from(base64, 'base64');
@@ -47,9 +50,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { data: { publicUrl } } = sb.storage
-      .from('card-images')
-      .getPublicUrl(fileName);
+    const {
+      data: { publicUrl },
+    } = sb.storage.from('card-images').getPublicUrl(fileName);
 
     return NextResponse.json({ url: publicUrl });
   } catch (err) {

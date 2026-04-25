@@ -1,31 +1,25 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  LinearProgress,
-  Chip,
-  Stack,
-} from '@mui/material';
-import { alpha } from '@mui/material/styles';
-import { useTheme } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import type { Flashcard } from '@/types/flashcard';
-import { cardXp } from '@/lib/flashcardUtils';
-import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
-import { usePracticeQueue } from '@/hooks/usePracticeQueue';
-import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import { Box, Button, Chip, LinearProgress, Stack, TextField, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import { SpeakButton } from '@/components/SpeakButton';
+import { type BuddyReaction, StudyBuddy } from '@/components/StudyBuddy';
+import { UnsplashAttribution } from '@/components/UnsplashAttribution';
+import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import { usePracticeQueue } from '@/hooks/usePracticeQueue';
+import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
+import { useShop } from '@/hooks/useShop';
+import { cardXp } from '@/lib/flashcardUtils';
+import type { Flashcard } from '@/types/flashcard';
+
 import { CelebrationScreen } from './CelebrationScreen';
 import { RoundTransition } from './RoundTransition';
 import { XpEarnedPop } from './XpEarnedPop';
-import { StudyBuddy, type BuddyReaction } from '@/components/StudyBuddy';
-import { useShop } from '@/hooks/useShop';
-import { UnsplashAttribution } from '@/components/UnsplashAttribution';
-import { SpeakButton } from '@/components/SpeakButton';
 
 interface FillModeProps {
   cards: Flashcard[];
@@ -37,7 +31,8 @@ interface FillModeProps {
 function maskWord(sentence: string, word: string, reading?: string): string {
   if (sentence.includes(word)) return sentence.replace(word, '＿'.repeat(word.length));
   const target = reading || word;
-  if (target && sentence.includes(target)) return sentence.replace(target, '＿'.repeat(target.length));
+  if (target && sentence.includes(target))
+    return sentence.replace(target, '＿'.repeat(target.length));
   return sentence;
 }
 
@@ -53,7 +48,9 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
   const [roundScore, setRoundScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
-  const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(null);
+  const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(
+    null,
+  );
 
   const { equipped } = useShop();
   const equippedBuddy = equipped['study_buddy'];
@@ -191,9 +188,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
     <Box sx={{ position: 'relative' }}>
       {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
       {/* Header */}
-      <Box
-        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
-      >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h5">Fill in the Blank</Typography>
           {queue.isRetryRound && (

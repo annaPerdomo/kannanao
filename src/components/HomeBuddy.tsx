@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
 import Box from '@mui/material/Box';
+import { alpha, keyframes, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { useTheme, alpha, keyframes } from '@mui/material/styles';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { BUDDY_CONFIG, BUDDY_HOME_PHRASES } from '@/hooks/useShop';
 
 const idleFloat = keyframes`
@@ -54,7 +55,7 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const { brand } = theme.palette;
   const config = BUDDY_CONFIG[buddyKey];
   const accent = BUDDY_ACCENTS[buddyKey] ?? brand[300];
-  const phrases = BUDDY_HOME_PHRASES[buddyKey] ?? ['Let\'s study!'];
+  const phrases = BUDDY_HOME_PHRASES[buddyKey] ?? ["Let's study!"];
 
   const [bubbleText, setBubbleText] = useState('');
   const [showBubble, setShowBubble] = useState(true);
@@ -97,19 +98,23 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     });
   }, []);
 
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    const moved = Math.abs(e.clientX - lastPos.current.x) + Math.abs(e.clientY - lastPos.current.y);
-    dragging.current = false;
-    if (moved < 8) {
-      setTapped(true);
-      setTapHearts(true);
-      phraseIndex.current = (phraseIndex.current + 1) % phrases.length;
-      setBubbleText(phrases[phraseIndex.current]);
-      setShowBubble(true);
-      setTimeout(() => setTapped(false), 500);
-      setTimeout(() => setTapHearts(false), 600);
-    }
-  }, [phrases]);
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      const moved =
+        Math.abs(e.clientX - lastPos.current.x) + Math.abs(e.clientY - lastPos.current.y);
+      dragging.current = false;
+      if (moved < 8) {
+        setTapped(true);
+        setTapHearts(true);
+        phraseIndex.current = (phraseIndex.current + 1) % phrases.length;
+        setBubbleText(phrases[phraseIndex.current]);
+        setShowBubble(true);
+        setTimeout(() => setTapped(false), 500);
+        setTimeout(() => setTapHearts(false), 600);
+      }
+    },
+    [phrases],
+  );
 
   if (!config) return null;
 
@@ -181,24 +186,25 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
 
       <Box sx={{ position: 'relative' }}>
         {/* Heart burst on tap */}
-        {tapHearts && [0, 1, 2, 3, 4, 5].map((i) => (
-          <Box
-            key={`heart-${i}`}
-            sx={{
-              position: 'absolute',
-              top: '25%',
-              left: '50%',
-              fontSize: '1rem',
-              animation: `${heartPop} 0.6s ease-out forwards`,
-              animationDelay: `${i * 0.06}s`,
-              ml: `${Math.cos(i * 1.05) * 24}px`,
-              mt: `${Math.sin(i * 1.05) * 20}px`,
-              pointerEvents: 'none',
-            }}
-          >
-            {['💕', '💖', '✨', '💗', '🌟', '💞'][i]}
-          </Box>
-        ))}
+        {tapHearts &&
+          [0, 1, 2, 3, 4, 5].map((i) => (
+            <Box
+              key={`heart-${i}`}
+              sx={{
+                position: 'absolute',
+                top: '25%',
+                left: '50%',
+                fontSize: '1rem',
+                animation: `${heartPop} 0.6s ease-out forwards`,
+                animationDelay: `${i * 0.06}s`,
+                ml: `${Math.cos(i * 1.05) * 24}px`,
+                mt: `${Math.sin(i * 1.05) * 20}px`,
+                pointerEvents: 'none',
+              }}
+            >
+              {['💕', '💖', '✨', '💗', '🌟', '💞'][i]}
+            </Box>
+          ))}
 
         <Box
           sx={{

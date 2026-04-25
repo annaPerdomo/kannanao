@@ -1,9 +1,10 @@
 'use client';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
 import LinearProgress from '@mui/material/LinearProgress';
-import { useTheme, alpha } from '@mui/material/styles';
+import Stack from '@mui/material/Stack';
+import { alpha, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+
 import { XP_PER_TODO } from './helpers';
 
 interface DayProgressProps {
@@ -29,19 +30,19 @@ export function DayProgress({ completedCount, totalCount }: DayProgressProps) {
         </Typography>
       </Stack>
       <LinearProgress
-      variant="determinate"
-      value={progress}
-      sx={{
-        height: 10,
-        borderRadius: 5,
-        bgcolor: alpha(brand[200], 0.25),
-        '& .MuiLinearProgress-bar': {
-          background: `linear-gradient(90deg, ${brand[400]} 0%, ${brand[500]} 40%, ${accent[400]} 100%)`,
+        variant="determinate"
+        value={progress}
+        sx={{
+          height: 10,
           borderRadius: 5,
-          transition: 'width 0.6s ease',
-        },
-      }}
-    />
+          bgcolor: alpha(brand[200], 0.25),
+          '& .MuiLinearProgress-bar': {
+            background: `linear-gradient(90deg, ${brand[400]} 0%, ${brand[500]} 40%, ${accent[400]} 100%)`,
+            borderRadius: 5,
+            transition: 'width 0.6s ease',
+          },
+        }}
+      />
     </Box>
   );
 }

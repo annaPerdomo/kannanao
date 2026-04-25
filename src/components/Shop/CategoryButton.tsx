@@ -1,8 +1,8 @@
 'use client';
 
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 
 export function CategoryButton({
   icon,

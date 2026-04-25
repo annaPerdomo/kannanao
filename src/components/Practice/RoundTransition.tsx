@@ -1,8 +1,8 @@
 'use client';
-import { Box, Typography, Button, Chip, LinearProgress } from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
-import ReplayIcon from '@mui/icons-material/Replay';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ReplayIcon from '@mui/icons-material/Replay';
+import { Box, Button, Chip, LinearProgress, Typography } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 
 interface RoundTransitionProps {
   batchIndex: number;
@@ -156,9 +156,7 @@ export function RoundTransition({
           onClick={onContinue}
           startIcon={willRetry ? <ReplayIcon /> : <ArrowForwardIcon />}
         >
-          {willRetry
-            ? `Review ${wrongCount} ${wrongCount === 1 ? 'card' : 'cards'}`
-            : `Next batch`}
+          {willRetry ? `Review ${wrongCount} ${wrongCount === 1 ? 'card' : 'cards'}` : `Next batch`}
         </Button>
       </Box>
 

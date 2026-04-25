@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mock setup ───────────────────────────────────────────────────────────────
 
@@ -21,10 +21,8 @@ function makeChain(table: string) {
   });
   chain.single = vi.fn(() => asPromise());
   chain.maybeSingle = vi.fn(() => asPromise());
-  chain.then = (
-    onfulfilled: (v: unknown) => unknown,
-    onrejected?: (e: unknown) => unknown,
-  ) => asPromise().then(onfulfilled, onrejected);
+  chain.then = (onfulfilled: (v: unknown) => unknown, onrejected?: (e: unknown) => unknown) =>
+    asPromise().then(onfulfilled, onrejected);
   return chain;
 }
 
@@ -45,7 +43,7 @@ vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
-import { useShop, SHOP_ITEMS } from '@/hooks/useShop';
+import { SHOP_ITEMS, useShop } from '@/hooks/useShop';
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
@@ -199,7 +197,7 @@ describe('useShop', () => {
       // First call (mount) succeeds, second (purchase getUser) returns null
       mockGetUser
         .mockResolvedValueOnce({ data: { user: { id: 'u1' } } }) // fetchShopData on mount
-        .mockResolvedValueOnce({ data: { user: null } });         // purchaseItem getUser
+        .mockResolvedValueOnce({ data: { user: null } }); // purchaseItem getUser
 
       const { result } = renderHook(() => useShop());
       await waitFor(() => expect(result.current.loading).toBe(false));
@@ -321,7 +319,7 @@ describe('useShop', () => {
     it('should return "Not authenticated" when user is null during unequip', async () => {
       mockGetUser
         .mockResolvedValueOnce({ data: { user: { id: 'u1' } } }) // mount
-        .mockResolvedValueOnce({ data: { user: null } });          // unequip
+        .mockResolvedValueOnce({ data: { user: null } }); // unequip
 
       const { result } = renderHook(() => useShop());
       await waitFor(() => expect(result.current.loading).toBe(false));

@@ -1,8 +1,8 @@
 'use client';
-import { type KeyboardEvent } from 'react';
 import { Box, Chip, TextField } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import { type KeyboardEvent } from 'react';
 
 interface WordChipInputProps {
   words: string[];
@@ -14,7 +14,12 @@ interface WordChipInputProps {
 }
 
 export function WordChipInput({
-  words, onWordsChange, input, onInputChange, disabled = false, inputId = 'word-chip-input',
+  words,
+  onWordsChange,
+  input,
+  onInputChange,
+  disabled = false,
+  inputId = 'word-chip-input',
 }: WordChipInputProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -26,19 +31,26 @@ export function WordChipInput({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addWord(); }
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addWord();
+    }
     if (e.key === 'Backspace' && !input && words.length > 0) onWordsChange(words.slice(0, -1));
   };
 
   return (
     <Box
       sx={{
-        display: 'flex', flexWrap: 'wrap', gap: 0.5,
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 0.5,
         p: '9px 11px',
         border: '1.5px solid',
         borderColor: disabled ? alpha(brand[300], 0.3) : alpha(brand[300], 0.5),
-        borderRadius: '10px', minHeight: 46,
-        cursor: disabled ? 'default' : 'text', mb: 1.25,
+        borderRadius: '10px',
+        minHeight: 46,
+        cursor: disabled ? 'default' : 'text',
+        mb: 1.25,
         bgcolor: disabled ? alpha('#fff', 0.5) : '#fff',
         transition: 'border-color 0.18s, background-color 0.18s',
         '&:focus-within': {
@@ -50,10 +62,13 @@ export function WordChipInput({
     >
       {words.map((w) => (
         <Chip
-          key={w} label={w} size="small"
+          key={w}
+          label={w}
+          size="small"
           onDelete={disabled ? undefined : () => onWordsChange(words.filter((x) => x !== w))}
           sx={{
-            height: 22, fontSize: '0.72rem',
+            height: 22,
+            fontSize: '0.72rem',
             fontWeight: 700,
             bgcolor: theme.palette.surfaces.chip,
             color: brand[700],
@@ -68,12 +83,17 @@ export function WordChipInput({
         onChange={(e) => !disabled && onInputChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={words.length === 0 ? 'Type words or phrases, press Enter…' : ''}
-        variant="standard" size="small" disabled={disabled}
+        variant="standard"
+        size="small"
+        disabled={disabled}
         sx={{
-          flexGrow: 1, minWidth: 90,
+          flexGrow: 1,
+          minWidth: 90,
           '& .MuiInput-root': {
-            fontWeight: 600, fontSize: '0.82rem',
-            color: 'text.primary', '&:before, &:after': { display: 'none' },
+            fontWeight: 600,
+            fontSize: '0.82rem',
+            color: 'text.primary',
+            '&:before, &:after': { display: 'none' },
           },
           '& input': { p: 0.25 },
           '& input::placeholder': { color: 'text.secondary', opacity: 1, fontSize: '0.8rem' },

@@ -25,9 +25,7 @@ export async function formatFurigana(lines: string[]): Promise<string[]> {
 
 export async function uploadImage(file: File): Promise<string> {
   const buffer = await file.arrayBuffer();
-  const base64 = btoa(
-    new Uint8Array(buffer).reduce((s, b) => s + String.fromCharCode(b), ''),
-  );
+  const base64 = btoa(new Uint8Array(buffer).reduce((s, b) => s + String.fromCharCode(b), ''));
 
   const res = await fetch(`${BASE}/generate-image`, {
     method: 'POST',

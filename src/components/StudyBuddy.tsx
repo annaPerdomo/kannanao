@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
 import Box from '@mui/material/Box';
+import { alpha, keyframes, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { useTheme, alpha, keyframes } from '@mui/material/styles';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { BUDDY_CONFIG } from '@/hooks/useShop';
 
 const bounce = keyframes`
@@ -72,7 +73,7 @@ const TAP_PHRASES = [
   'Wheee!',
   'So much fun!',
   'You found me!',
-  'Let\'s play!',
+  "Let's play!",
   'Tee-hee!',
 ];
 
@@ -160,7 +161,10 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
     if (reaction !== 'idle') {
       const t = setTimeout(() => setShowBubble(false), 2500);
       const s = setTimeout(() => setSparkles(false), 800);
-      return () => { clearTimeout(t); clearTimeout(s); };
+      return () => {
+        clearTimeout(t);
+        clearTimeout(s);
+      };
     }
   }, [reaction, config]);
 
@@ -175,13 +179,17 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
         : `${idleFloat} 3s ease-in-out infinite`;
 
   const bubbleColor =
-    reaction === 'correct' ? alpha('#059669', 0.08)
-      : reaction === 'wrong' ? alpha('#DC2626', 0.06)
+    reaction === 'correct'
+      ? alpha('#059669', 0.08)
+      : reaction === 'wrong'
+        ? alpha('#DC2626', 0.06)
         : alpha('#fff', 0.95);
 
   const bubbleBorder =
-    reaction === 'correct' ? alpha('#059669', 0.3)
-      : reaction === 'wrong' ? alpha('#DC2626', 0.25)
+    reaction === 'correct'
+      ? alpha('#059669', 0.3)
+      : reaction === 'wrong'
+        ? alpha('#DC2626', 0.25)
         : alpha(brand[300], 0.4);
 
   const positionStyle = pos
@@ -240,9 +248,12 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
             sx={{
               fontSize: '0.7rem',
               fontWeight: 700,
-              color: reaction === 'correct' ? '#059669'
-                : reaction === 'wrong' ? '#DC2626'
-                  : 'text.secondary',
+              color:
+                reaction === 'correct'
+                  ? '#059669'
+                  : reaction === 'wrong'
+                    ? '#DC2626'
+                    : 'text.secondary',
               textAlign: 'center',
               lineHeight: 1.3,
             }}
@@ -254,45 +265,47 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
 
       <Box sx={{ position: 'relative' }}>
         {/* Sparkle particles on correct */}
-        {sparkles && [0, 1, 2, 3, 4].map((i) => (
-          <Box
-            key={i}
-            sx={{
-              position: 'absolute',
-              top: '20%',
-              left: '50%',
-              fontSize: '0.7rem',
-              animation: `${sparkleFloat} 0.6s ease-out forwards`,
-              animationDelay: `${i * 0.08}s`,
-              transform: 'scale(0)',
-              ml: `${Math.cos(i * 1.25) * 16}px`,
-              mt: `${Math.sin(i * 1.25) * 10}px`,
-              pointerEvents: 'none',
-            }}
-          >
-            {['✨', '⭐', '💖', '🌟', '✨'][i]}
-          </Box>
-        ))}
+        {sparkles &&
+          [0, 1, 2, 3, 4].map((i) => (
+            <Box
+              key={i}
+              sx={{
+                position: 'absolute',
+                top: '20%',
+                left: '50%',
+                fontSize: '0.7rem',
+                animation: `${sparkleFloat} 0.6s ease-out forwards`,
+                animationDelay: `${i * 0.08}s`,
+                transform: 'scale(0)',
+                ml: `${Math.cos(i * 1.25) * 16}px`,
+                mt: `${Math.sin(i * 1.25) * 10}px`,
+                pointerEvents: 'none',
+              }}
+            >
+              {['✨', '⭐', '💖', '🌟', '✨'][i]}
+            </Box>
+          ))}
 
         {/* Heart burst on tap */}
-        {tapHearts && [0, 1, 2, 3, 4, 5].map((i) => (
-          <Box
-            key={`heart-${i}`}
-            sx={{
-              position: 'absolute',
-              top: '30%',
-              left: '50%',
-              fontSize: '0.9rem',
-              animation: `${heartBurst} 0.6s ease-out forwards`,
-              animationDelay: `${i * 0.06}s`,
-              ml: `${Math.cos(i * 1.05) * 22}px`,
-              mt: `${Math.sin(i * 1.05) * 18}px`,
-              pointerEvents: 'none',
-            }}
-          >
-            {['💕', '💖', '✨', '💗', '🌟', '💞'][i]}
-          </Box>
-        ))}
+        {tapHearts &&
+          [0, 1, 2, 3, 4, 5].map((i) => (
+            <Box
+              key={`heart-${i}`}
+              sx={{
+                position: 'absolute',
+                top: '30%',
+                left: '50%',
+                fontSize: '0.9rem',
+                animation: `${heartBurst} 0.6s ease-out forwards`,
+                animationDelay: `${i * 0.06}s`,
+                ml: `${Math.cos(i * 1.05) * 22}px`,
+                mt: `${Math.sin(i * 1.05) * 18}px`,
+                pointerEvents: 'none',
+              }}
+            >
+              {['💕', '💖', '✨', '💗', '🌟', '💞'][i]}
+            </Box>
+          ))}
 
         <Box
           sx={{

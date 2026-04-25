@@ -1,10 +1,12 @@
 'use client';
-import { Box, Button, Typography, Alert, ToggleButtonGroup, ToggleButton } from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import { AddCardOptionButtons } from './AddCardOptionButtons';
-import { WordChipInput } from '@/components/WordChipInput';
+import { Alert, Box, Button, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+
+import { WordChipInput } from '@/components/WordChipInput';
+
+import { AddCardOptionButtons } from './AddCardOptionButtons';
 
 interface AddCardsSectionProps {
   words: string[];
@@ -61,13 +63,22 @@ export function AddCardsSection({
     mb: 2,
   };
 
-  const mergedContainerSx: SxProps<Theme> = containerSx ? ([defaultContainerSx, containerSx] as SxProps<Theme>) : defaultContainerSx;
+  const mergedContainerSx: SxProps<Theme> = containerSx
+    ? ([defaultContainerSx, containerSx] as SxProps<Theme>)
+    : defaultContainerSx;
 
   const toggleBtnSx = {
-    px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700,
+    px: 1.5,
+    py: 0.4,
+    fontSize: '0.72rem',
+    fontWeight: 700,
     textTransform: 'none',
     borderColor: alpha(brand[300], 0.5),
-    '&.Mui-selected': { bgcolor: alpha(brand[300], 0.25), color: brand[700], borderColor: alpha(brand[500], 0.5) },
+    '&.Mui-selected': {
+      bgcolor: alpha(brand[300], 0.25),
+      color: brand[700],
+      borderColor: alpha(brand[500], 0.5),
+    },
   };
 
   return (
@@ -87,7 +98,9 @@ export function AddCardsSection({
           value={mainViewMode}
           exclusive
           size="small"
-          onChange={(_, v) => { if (v) onMainViewModeChange(v); }}
+          onChange={(_, v) => {
+            if (v) onMainViewModeChange(v);
+          }}
           disabled={disabled}
           sx={{ ml: 'auto' }}
         >
@@ -100,9 +113,7 @@ export function AddCardsSection({
         </ToggleButtonGroup>
       </Box>
 
-      <Box
-        sx={mergedContainerSx}
-      >
+      <Box sx={mergedContainerSx}>
         <Typography
           sx={{
             fontSize: '0.6rem',
@@ -129,7 +140,10 @@ export function AddCardsSection({
         />
 
         {error && (
-          <Alert severity="error" sx={{ mb: 1.25, fontSize: '0.73rem', py: 0.4, borderRadius: '9px' }}>
+          <Alert
+            severity="error"
+            sx={{ mb: 1.25, fontSize: '0.73rem', py: 0.4, borderRadius: '9px' }}
+          >
             {error}
           </Alert>
         )}
@@ -148,12 +162,12 @@ export function AddCardsSection({
               fontSize: '0.82rem',
               letterSpacing: '0.02em',
               textTransform: 'none',
-              background: !disabled && canGenerate
-                ? `linear-gradient(135deg, ${brand[400]} 0%, ${brand[500]} 50%, ${accent[500]} 100%)`
-                : undefined,
-              boxShadow: !disabled && canGenerate
-                ? `0 4px 14px ${alpha(brand[500], 0.35)}`
-                : undefined,
+              background:
+                !disabled && canGenerate
+                  ? `linear-gradient(135deg, ${brand[400]} 0%, ${brand[500]} 50%, ${accent[500]} 100%)`
+                  : undefined,
+              boxShadow:
+                !disabled && canGenerate ? `0 4px 14px ${alpha(brand[500], 0.35)}` : undefined,
               '&:hover': {
                 boxShadow: !disabled ? `0 6px 20px ${alpha(brand[500], 0.45)}` : undefined,
               },
@@ -178,7 +192,11 @@ export function AddCardsSection({
         )}
       </Box>
 
-      <AddCardOptionButtons disabled={disabled} onAddExisting={onAddExisting} onImportPdf={onImportPdf} />
+      <AddCardOptionButtons
+        disabled={disabled}
+        onAddExisting={onAddExisting}
+        onImportPdf={onImportPdf}
+      />
     </>
   );
 }

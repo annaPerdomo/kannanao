@@ -1,11 +1,8 @@
-import { use } from "react";
-import PublicStudyViewer from "@/components/PublicStudyViewer";
+import { use } from 'react';
 
-export default function EmbedDeckPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+import PublicStudyViewer from '@/components/PublicStudyViewer';
+
+export default function EmbedDeckPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   return <PublicStudyViewer deckId={id} />;
 }

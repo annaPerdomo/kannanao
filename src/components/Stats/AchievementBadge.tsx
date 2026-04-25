@@ -1,8 +1,9 @@
 'use client';
 
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+
 import { ACHIEVEMENTS } from '@/hooks/useProgress';
 
 export function AchievementBadge({

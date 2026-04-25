@@ -1,9 +1,9 @@
 'use client';
 
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import { useTheme, alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 
 export function StatCard({
   icon,
@@ -29,7 +29,7 @@ export function StatCard({
         flex: '1 1 160px',
         minWidth: 140,
         background: alpha(brand[50], 0.6),
-        border: `1px solid ${alpha(brand[300], 0.40)}`,
+        border: `1px solid ${alpha(brand[300], 0.4)}`,
         borderRadius: 4,
         p: 2.5,
         display: 'flex',
@@ -64,9 +64,7 @@ export function StatCard({
       >
         {value}
       </Typography>
-      {sub && (
-        <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>{sub}</Typography>
-      )}
+      {sub && <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>{sub}</Typography>}
     </Paper>
   );
 }

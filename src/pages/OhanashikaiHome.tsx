@@ -1,34 +1,36 @@
 'use client';
 
-import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
-import Chip from '@mui/material/Chip';
-import { LAYOUT } from '@/theme';
-import Tooltip from '@mui/material/Tooltip';
 import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import DeleteIcon from '@mui/icons-material/Delete';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { StyledDialog } from '@/components/StyledDialog';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
+import { LAYOUT } from '@/theme';
 
 export default function OhanashikaiHome() {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const router = useRouter();
 
-  const { ohanashikais, loading, createOhanashikai, deleteOhanashikai, pinOhanashikai } = useOhanashikais();
+  const { ohanashikais, loading, createOhanashikai, deleteOhanashikai, pinOhanashikai } =
+    useOhanashikais();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [titleVal, setTitleVal] = useState('');
@@ -59,8 +61,9 @@ export default function OhanashikaiHome() {
   }
 
   return (
-    <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 5 } }}>
-
+    <Box
+      sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 5 } }}
+    >
       <PageHeader
         emoji="🎤"
         title="お話し会"
@@ -107,11 +110,7 @@ export default function OhanashikaiHome() {
           <Typography color="text.secondary" sx={{ mb: 3, fontSize: '0.875rem' }}>
             Create your first speech to start practicing
           </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setCreateOpen(true)}
-          >
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}>
             Create Speech
           </Button>
         </Box>
@@ -161,7 +160,16 @@ export default function OhanashikaiHome() {
 
                 {/* Info */}
                 <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: brand[800], lineHeight: 1.2, fontSize: { xs: '0.95rem', sm: '1.05rem' } }} noWrap>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 800,
+                      color: brand[800],
+                      lineHeight: 1.2,
+                      fontSize: { xs: '0.95rem', sm: '1.05rem' },
+                    }}
+                    noWrap
+                  >
                     {item.title}
                   </Typography>
                   {item.description && (
@@ -177,14 +185,26 @@ export default function OhanashikaiHome() {
                 </Box>
 
                 {/* Actions */}
-                <Stack direction="row" spacing={0.5} flexShrink={0} onClick={(e) => e.stopPropagation()}>
+                <Stack
+                  direction="row"
+                  spacing={0.5}
+                  flexShrink={0}
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Tooltip title={item.pinned ? 'Unpin from home' : 'Pin to home'}>
                     <IconButton
                       size="small"
                       onClick={() => pinOhanashikai(item.id, !item.pinned)}
-                      sx={{ color: item.pinned ? brand[500] : alpha(brand[300], 0.6), '&:hover': { color: brand[600], bgcolor: alpha(brand[100], 0.5) } }}
+                      sx={{
+                        color: item.pinned ? brand[500] : alpha(brand[300], 0.6),
+                        '&:hover': { color: brand[600], bgcolor: alpha(brand[100], 0.5) },
+                      }}
                     >
-                      {item.pinned ? <PushPinIcon sx={{ fontSize: '1rem' }} /> : <PushPinOutlinedIcon sx={{ fontSize: '1rem' }} />}
+                      {item.pinned ? (
+                        <PushPinIcon sx={{ fontSize: '1rem' }} />
+                      ) : (
+                        <PushPinOutlinedIcon sx={{ fontSize: '1rem' }} />
+                      )}
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Delete">
@@ -212,7 +232,10 @@ export default function OhanashikaiHome() {
         closeDisabled={creating}
         actions={
           <Stack direction="row" spacing={1}>
-            <Button onClick={() => setCreateOpen(false)} sx={{ color: 'text.secondary', textTransform: 'none' }}>
+            <Button
+              onClick={() => setCreateOpen(false)}
+              sx={{ color: 'text.secondary', textTransform: 'none' }}
+            >
               Cancel
             </Button>
             <Button
@@ -220,7 +243,11 @@ export default function OhanashikaiHome() {
               onClick={handleCreate}
               disabled={creating || !titleVal.trim()}
               sx={{
-                bgcolor: brand[700], color: '#fff', textTransform: 'none', borderRadius: 6, px: 2.5,
+                bgcolor: brand[700],
+                color: '#fff',
+                textTransform: 'none',
+                borderRadius: 6,
+                px: 2.5,
                 '&:hover': { bgcolor: brand[800] },
                 '&:disabled': { bgcolor: alpha(brand[700], 0.2), color: alpha('#fff', 0.5) },
               }}
@@ -239,7 +266,9 @@ export default function OhanashikaiHome() {
             placeholder="e.g. Spring Ohanashikai 2026"
             value={titleVal}
             onChange={(e) => setTitleVal(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') void handleCreate(); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void handleCreate();
+            }}
           />
           <TextField
             fullWidth

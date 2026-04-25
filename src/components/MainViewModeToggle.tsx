@@ -1,6 +1,6 @@
 'use client';
-import { ToggleButton, ToggleButtonGroup, Typography, Box } from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
+import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 
 interface Props {
   value: 'hiragana' | 'kanji';
@@ -19,7 +19,9 @@ export function MainModeToggle({ value, onChange }: Props) {
       <ToggleButtonGroup
         value={value}
         exclusive
-        onChange={(_, v) => { if (v) onChange(v); }}
+        onChange={(_, v) => {
+          if (v) onChange(v);
+        }}
         size="small"
         sx={{
           '& .MuiToggleButton-root': {

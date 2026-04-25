@@ -1,36 +1,37 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Chip from '@mui/material/Chip';
-import { LAYOUT } from '@/theme';
-import Tooltip from '@mui/material/Tooltip';
-import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import { useTheme } from '@mui/material/styles';
-import { alpha } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
-import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
-import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import EditIcon from '@mui/icons-material/Edit';
 import StopIcon from '@mui/icons-material/Stop';
-import { Loading } from '@/components/Loading';
-import { PageHeader } from '@/components/PageHeader';
-import { stripFurigana } from '@/components/FuriganaText';
+import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import { useCallback, useRef, useState } from 'react';
+
 import { Label } from '@/components/Deck';
-import { SpeechPracticeTiles, SpeechLineRow, BulkImportArea } from '@/components/OhanashikaiDetail';
-import { formatFurigana } from '@/services/api';
-import { useOhanashikais, useOhanashikaiLines } from '@/hooks/useOhanashikais';
+import { stripFurigana } from '@/components/FuriganaText';
+import { Loading } from '@/components/Loading';
+import { BulkImportArea, SpeechLineRow, SpeechPracticeTiles } from '@/components/OhanashikaiDetail';
+import { PageHeader } from '@/components/PageHeader';
+import { useOhanashikaiLines, useOhanashikais } from '@/hooks/useOhanashikais';
 import { useSpeech } from '@/hooks/useSpeech';
+import { formatFurigana } from '@/services/api';
+import { LAYOUT } from '@/theme';
 import type { OhanashikaiPracticeMode } from '@/types/ohanashikai';
 
 interface OhanashikaiDetailProps {
@@ -39,12 +40,17 @@ interface OhanashikaiDetailProps {
   onPractice: (mode: OhanashikaiPracticeMode) => void;
 }
 
-export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }: OhanashikaiDetailProps) {
+export default function OhanashikaiDetail({
+  ohanashikaiId,
+  onBack,
+  onPractice,
+}: OhanashikaiDetailProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
   const { ohanashikais, renameOhanashikai } = useOhanashikais();
-  const { lines, loading, addLine, updateLine, deleteLine, importLines } = useOhanashikaiLines(ohanashikaiId);
+  const { lines, loading, addLine, updateLine, deleteLine, importLines } =
+    useOhanashikaiLines(ohanashikaiId);
   const { speakAll, stop, speaking } = useSpeech();
   const item = ohanashikais.find((o) => o.id === ohanashikaiId);
 
@@ -56,17 +62,28 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
     const text = newLineText.trim();
     if (!text) return;
     setAdding(true);
-    try { await addLine(text); setNewLineText(''); inputRef.current?.focus(); }
-    finally { setAdding(false); }
+    try {
+      await addLine(text);
+      setNewLineText('');
+      inputRef.current?.focus();
+    } finally {
+      setAdding(false);
+    }
   }, [newLineText, addLine]);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editVal, setEditVal] = useState('');
 
-  const startEdit = (id: string, currentText: string) => { setEditingId(id); setEditVal(currentText); };
+  const startEdit = (id: string, currentText: string) => {
+    setEditingId(id);
+    setEditVal(currentText);
+  };
 
   const commitEdit = useCallback(async () => {
-    if (!editingId || !editVal.trim()) { setEditingId(null); return; }
+    if (!editingId || !editVal.trim()) {
+      setEditingId(null);
+      return;
+    }
     await updateLine(editingId, editVal.trim());
     setEditingId(null);
   }, [editingId, editVal, updateLine]);
@@ -84,7 +101,9 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
       const formatted = await formatFurigana(lines.map((l) => l.text));
       await Promise.all(lines.map((line, i) => updateLine(line.id, formatted[i])));
     } catch (err) {
-      setAutoFormatAllError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setAutoFormatAllError(
+        err instanceof Error ? err.message : 'Something went wrong. Please try again.',
+      );
     } finally {
       setAutoFormattingAll(false);
     }
@@ -93,12 +112,21 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [titleVal, setTitleVal] = useState('');
 
-  const startRename = () => { setTitleVal(item?.title ?? ''); setRenamingTitle(true); };
+  const startRename = () => {
+    setTitleVal(item?.title ?? '');
+    setRenamingTitle(true);
+  };
 
   const commitRename = useCallback(async () => {
     const t = titleVal.trim();
-    if (!t || !item) { setRenamingTitle(false); return; }
-    if (t === item.title) { setRenamingTitle(false); return; }
+    if (!t || !item) {
+      setRenamingTitle(false);
+      return;
+    }
+    if (t === item.title) {
+      setRenamingTitle(false);
+      return;
+    }
     await renameOhanashikai(ohanashikaiId, t, item.description);
     setRenamingTitle(false);
   }, [titleVal, item, ohanashikaiId, renameOhanashikai]);
@@ -112,14 +140,66 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
   }
 
   return (
-    <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 4 } }}>
+    <Box
+      sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 4 } }}
+    >
       {/* Header */}
       {renamingTitle ? (
         <PageHeader onBack={onBack} title="" compact mb={3}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-            <TextField value={titleVal} onChange={(e) => setTitleVal(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void commitRename(); if (e.key === 'Escape') setRenamingTitle(false); }} size="small" autoFocus sx={{ flexGrow: 1, '& .MuiOutlinedInput-root': { borderRadius: '9px', fontSize: '1.2rem', fontWeight: 700, color: brand[800], bgcolor: alpha('#FFFFFF', 0.6) } }} />
-            <Tooltip title="Save"><IconButton size="small" onClick={commitRename} sx={{ width: 30, height: 30, borderRadius: '8px', bgcolor: alpha('#FFFFFF', 0.6), border: `1.5px solid ${alpha(brand[400], 0.4)}`, color: brand[700], '&:hover': { bgcolor: alpha('#FFFFFF', 0.8) } }}><CheckIcon sx={{ fontSize: 15 }} /></IconButton></Tooltip>
-            <Tooltip title="Cancel"><IconButton size="small" onClick={() => setRenamingTitle(false)} sx={{ width: 30, height: 30, borderRadius: '8px', bgcolor: alpha('#FFFFFF', 0.4), border: `1.5px solid ${alpha(brand[300], 0.3)}`, '&:hover': { bgcolor: alpha('#FFFFFF', 0.7) } }}><CloseIcon sx={{ fontSize: 15 }} /></IconButton></Tooltip>
+            <TextField
+              value={titleVal}
+              onChange={(e) => setTitleVal(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void commitRename();
+                if (e.key === 'Escape') setRenamingTitle(false);
+              }}
+              size="small"
+              autoFocus
+              sx={{
+                flexGrow: 1,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '9px',
+                  fontSize: '1.2rem',
+                  fontWeight: 700,
+                  color: brand[800],
+                  bgcolor: alpha('#FFFFFF', 0.6),
+                },
+              }}
+            />
+            <Tooltip title="Save">
+              <IconButton
+                size="small"
+                onClick={commitRename}
+                sx={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: '8px',
+                  bgcolor: alpha('#FFFFFF', 0.6),
+                  border: `1.5px solid ${alpha(brand[400], 0.4)}`,
+                  color: brand[700],
+                  '&:hover': { bgcolor: alpha('#FFFFFF', 0.8) },
+                }}
+              >
+                <CheckIcon sx={{ fontSize: 15 }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Cancel">
+              <IconButton
+                size="small"
+                onClick={() => setRenamingTitle(false)}
+                sx={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: '8px',
+                  bgcolor: alpha('#FFFFFF', 0.4),
+                  border: `1.5px solid ${alpha(brand[300], 0.3)}`,
+                  '&:hover': { bgcolor: alpha('#FFFFFF', 0.7) },
+                }}
+              >
+                <CloseIcon sx={{ fontSize: 15 }} />
+              </IconButton>
+            </Tooltip>
           </Box>
         </PageHeader>
       ) : (
@@ -127,8 +207,24 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
           onBack={onBack}
           title={
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-              <Typography variant="h5" sx={{ color: brand[800], lineHeight: 1.1, fontWeight: 800 }}>{item?.title ?? 'Speech'}</Typography>
-              <Tooltip title="Rename"><IconButton size="small" onClick={startRename} sx={{ width: 24, height: 24, borderRadius: '7px', color: alpha(brand[700], 0.4), '&:hover': { bgcolor: alpha('#FFFFFF', 0.5), color: brand[700] } }}><EditIcon sx={{ fontSize: 12 }} /></IconButton></Tooltip>
+              <Typography variant="h5" sx={{ color: brand[800], lineHeight: 1.1, fontWeight: 800 }}>
+                {item?.title ?? 'Speech'}
+              </Typography>
+              <Tooltip title="Rename">
+                <IconButton
+                  size="small"
+                  onClick={startRename}
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: '7px',
+                    color: alpha(brand[700], 0.4),
+                    '&:hover': { bgcolor: alpha('#FFFFFF', 0.5), color: brand[700] },
+                  }}
+                >
+                  <EditIcon sx={{ fontSize: 12 }} />
+                </IconButton>
+              </Tooltip>
             </Box>
           }
           subtitle={item?.description ?? undefined}
@@ -142,31 +238,88 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
 
       {/* Lines section */}
       <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}
+        >
           <Label>Speech Lines</Label>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
             {lines.length > 0 && !bulkMode && (
               <>
                 <Tooltip title={speaking ? 'Stop' : 'Listen to full speech'}>
-                  <Button variant="outlined" size="small" startIcon={speaking ? <StopIcon sx={{ fontSize: 14 }} /> : <VolumeUpIcon sx={{ fontSize: 14 }} />} onClick={speaking ? stop : () => speakAll(lines.map((l) => stripFurigana(l.text)))} sx={{ borderRadius: '9px', px: 1.5, py: '4px', fontSize: '0.72rem', fontWeight: 700 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={
+                      speaking ? (
+                        <StopIcon sx={{ fontSize: 14 }} />
+                      ) : (
+                        <VolumeUpIcon sx={{ fontSize: 14 }} />
+                      )
+                    }
+                    onClick={
+                      speaking ? stop : () => speakAll(lines.map((l) => stripFurigana(l.text)))
+                    }
+                    sx={{
+                      borderRadius: '9px',
+                      px: 1.5,
+                      py: '4px',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                    }}
+                  >
                     {speaking ? 'Stop' : 'Listen'}
                   </Button>
                 </Tooltip>
                 <Tooltip title="Auto-add kanji + furigana to all saved lines">
-                  <Button variant="outlined" size="small" startIcon={autoFormattingAll ? <CircularProgress size={12} /> : <AutoFixHighIcon sx={{ fontSize: 14 }} />} onClick={handleAutoFormatAll} disabled={autoFormattingAll} sx={{ borderRadius: '9px', px: 1.5, py: '4px', fontSize: '0.72rem', fontWeight: 700 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={
+                      autoFormattingAll ? (
+                        <CircularProgress size={12} />
+                      ) : (
+                        <AutoFixHighIcon sx={{ fontSize: 14 }} />
+                      )
+                    }
+                    onClick={handleAutoFormatAll}
+                    disabled={autoFormattingAll}
+                    sx={{
+                      borderRadius: '9px',
+                      px: 1.5,
+                      py: '4px',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                    }}
+                  >
                     {autoFormattingAll ? 'Formatting…' : 'Auto Furigana All'}
                   </Button>
                 </Tooltip>
               </>
             )}
-            <Button variant={bulkMode ? 'contained' : 'outlined'} size="small" startIcon={bulkMode ? <ViewHeadlineIcon sx={{ fontSize: 14 }} /> : <ContentPasteIcon sx={{ fontSize: 14 }} />} onClick={() => setBulkMode((v) => !v)} sx={{ borderRadius: '9px', px: 1.5, py: '4px', fontSize: '0.72rem', fontWeight: 700 }}>
+            <Button
+              variant={bulkMode ? 'contained' : 'outlined'}
+              size="small"
+              startIcon={
+                bulkMode ? (
+                  <ViewHeadlineIcon sx={{ fontSize: 14 }} />
+                ) : (
+                  <ContentPasteIcon sx={{ fontSize: 14 }} />
+                )
+              }
+              onClick={() => setBulkMode((v) => !v)}
+              sx={{ borderRadius: '9px', px: 1.5, py: '4px', fontSize: '0.72rem', fontWeight: 700 }}
+            >
               {bulkMode ? 'Line by Line' : 'Import Lines'}
             </Button>
           </Stack>
         </Box>
 
         {autoFormatAllError && (
-          <Alert severity="error" onClose={() => setAutoFormatAllError(null)} sx={{ mb: 1.5, borderRadius: 2, fontSize: '0.75rem' }}>
+          <Alert
+            severity="error"
+            onClose={() => setAutoFormatAllError(null)}
+            sx={{ mb: 1.5, borderRadius: 2, fontSize: '0.75rem' }}
+          >
             Auto Furigana failed: {autoFormatAllError}
           </Alert>
         )}
@@ -174,7 +327,19 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
         {lines.length > 0 && (
           <Box sx={{ position: 'relative', mb: 2 }}>
             {autoFormattingAll && (
-              <Box sx={{ position: 'absolute', inset: 0, zIndex: 10, borderRadius: 2.5, bgcolor: alpha('#FFFFFF', 0.75), backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  zIndex: 10,
+                  borderRadius: 2.5,
+                  bgcolor: alpha('#FFFFFF', 0.75),
+                  backdropFilter: 'blur(2px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
                 <Loading message="Adding furigana to all lines…" />
               </Box>
             )}
@@ -202,24 +367,82 @@ export default function OhanashikaiDetail({ ohanashikaiId, onBack, onPractice }:
         {bulkMode ? (
           <BulkImportArea brandPalette={brand} onImport={importLines} />
         ) : (
-          <Box sx={{ p: 2, borderRadius: 2.5, border: `1.5px dashed ${alpha(brand[300], 0.45)}`, bgcolor: alpha(brand[50], 0.5) }}>
-            <Box sx={{ mb: 1.5, p: 1.5, borderRadius: 2, bgcolor: alpha(brand[100], 0.5), border: `1px solid ${alpha(brand[300], 0.3)}` }}>
-              <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: brand[700], mb: 0.5 }}>How to add furigana</Typography>
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 2.5,
+              border: `1.5px dashed ${alpha(brand[300], 0.45)}`,
+              bgcolor: alpha(brand[50], 0.5),
+            }}
+          >
+            <Box
+              sx={{
+                mb: 1.5,
+                p: 1.5,
+                borderRadius: 2,
+                bgcolor: alpha(brand[100], 0.5),
+                border: `1px solid ${alpha(brand[300], 0.3)}`,
+              }}
+            >
+              <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: brand[700], mb: 0.5 }}>
+                How to add furigana
+              </Typography>
               <Typography sx={{ fontSize: '0.7rem', color: brand[600], lineHeight: 1.6 }}>
-                <strong>Auto:</strong> Type plain Japanese, add the line, then use <em>Auto Furigana All</em> ✨ above to format everything at once.
+                <strong>Auto:</strong> Type plain Japanese, add the line, then use{' '}
+                <em>Auto Furigana All</em> ✨ above to format everything at once.
               </Typography>
               <Typography sx={{ fontSize: '0.7rem', color: brand[600], lineHeight: 1.6, mt: 0.25 }}>
-                <strong>Manual:</strong> Use <code style={{ background: alpha(brand[200], 0.5), padding: '0 3px', borderRadius: 3 }}>{'{kanji|reading}'}</code> format, e.g. <code style={{ background: alpha(brand[200], 0.5), padding: '0 3px', borderRadius: 3 }}>{'{私|わたし}'}</code>. Plain hiragana works too!
+                <strong>Manual:</strong> Use{' '}
+                <code
+                  style={{ background: alpha(brand[200], 0.5), padding: '0 3px', borderRadius: 3 }}
+                >
+                  {'{kanji|reading}'}
+                </code>{' '}
+                format, e.g.{' '}
+                <code
+                  style={{ background: alpha(brand[200], 0.5), padding: '0 3px', borderRadius: 3 }}
+                >
+                  {'{私|わたし}'}
+                </code>
+                . Plain hiragana works too!
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <TextField
-                inputRef={inputRef} value={newLineText} onChange={(e) => setNewLineText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) void handleAddLine(); }}
-                placeholder="Type a new line and press Enter…" size="small" fullWidth multiline minRows={1} disabled={adding}
-                sx={{ '& .MuiOutlinedInput-root': { fontFamily: (t) => t.fonts.jp, fontSize: '0.95rem' } }}
+                inputRef={inputRef}
+                value={newLineText}
+                onChange={(e) => setNewLineText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing)
+                    void handleAddLine();
+                }}
+                placeholder="Type a new line and press Enter…"
+                size="small"
+                fullWidth
+                multiline
+                minRows={1}
+                disabled={adding}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    fontFamily: (t) => t.fonts.jp,
+                    fontSize: '0.95rem',
+                  },
+                }}
               />
-              <Button variant="contained" size="small" startIcon={adding ? <CircularProgress size={12} sx={{ color: '#fff' }} /> : <AddIcon sx={{ fontSize: 14 }} />} onClick={handleAddLine} disabled={adding || !newLineText.trim()} sx={{ flexShrink: 0, borderRadius: '10px', px: 2 }}>
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={
+                  adding ? (
+                    <CircularProgress size={12} sx={{ color: '#fff' }} />
+                  ) : (
+                    <AddIcon sx={{ fontSize: 14 }} />
+                  )
+                }
+                onClick={handleAddLine}
+                disabled={adding || !newLineText.trim()}
+                sx={{ flexShrink: 0, borderRadius: '10px', px: 2 }}
+              >
                 Add
               </Button>
             </Box>

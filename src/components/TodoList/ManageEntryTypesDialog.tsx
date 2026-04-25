@@ -1,26 +1,28 @@
 'use client';
-import { useState, useCallback } from 'react';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import Chip from '@mui/material/Chip';
-import Alert from '@mui/material/Alert';
-import Divider from '@mui/material/Divider';
-import CircularProgress from '@mui/material/CircularProgress';
-import Tooltip from '@mui/material/Tooltip';
-import Popover from '@mui/material/Popover';
-import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import CloseIcon from '@mui/icons-material/Close';
-import { useTheme, alpha } from '@mui/material/styles';
+import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import Popover from '@mui/material/Popover';
+import Stack from '@mui/material/Stack';
+import { alpha, useTheme } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
-import type { EntryType } from '@/types/todo';
-import { DEFAULT_ENTRY_TYPES } from './helpers';
+import { useCallback, useState } from 'react';
+
 import { StyledDialog } from '@/components/StyledDialog';
+import type { EntryType } from '@/types/todo';
+
+import { DEFAULT_ENTRY_TYPES } from './helpers';
 
 interface ManageEntryTypesDialogProps {
   open: boolean;
@@ -33,22 +35,37 @@ interface ManageEntryTypesDialogProps {
 
 const defaultTypeIds = new Set(DEFAULT_ENTRY_TYPES.map((t) => t.id));
 
-function EmojiButton({ emoji, onClick }: { emoji: string; onClick: (e: React.MouseEvent<HTMLButtonElement>) => void }) {
+function EmojiButton({
+  emoji,
+  onClick,
+}: {
+  emoji: string;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+}) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   return (
     <Box
-      component="button" onClick={onClick}
+      component="button"
+      onClick={onClick}
       sx={{
-        width: 52, height: 52, borderRadius: 3, flexShrink: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '1.8rem', lineHeight: 1, cursor: 'pointer',
+        width: 52,
+        height: 52,
+        borderRadius: 3,
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '1.8rem',
+        lineHeight: 1,
+        cursor: 'pointer',
         background: `linear-gradient(135deg, ${alpha(brand[100], 0.8)}, ${alpha(accent[100], 0.6)})`,
         border: `2px dashed ${alpha(brand[400], 0.4)}`,
         boxShadow: `0 2px 8px ${alpha(brand[200], 0.3)}`,
         transition: 'all 0.15s ease',
         '&:hover': {
-          border: `2px solid ${brand[400]}`, transform: 'scale(1.08)',
+          border: `2px solid ${brand[400]}`,
+          transform: 'scale(1.08)',
           boxShadow: `0 4px 12px ${alpha(brand[300], 0.4)}`,
         },
       }}
@@ -59,15 +76,25 @@ function EmojiButton({ emoji, onClick }: { emoji: string; onClick: (e: React.Mou
 }
 
 export function ManageEntryTypesDialog({
-  open, onClose, allEntryTypes, onAddEntryType, onUpdateEntryType, onDeleteEntryType,
+  open,
+  onClose,
+  allEntryTypes,
+  onAddEntryType,
+  onUpdateEntryType,
+  onDeleteEntryType,
 }: ManageEntryTypesDialogProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
   const TYPE_COLORS = [
-    brand[400], brand[600], accent[400], accent[600],
-    theme.palette.error.main, theme.palette.warning.main,
-    theme.palette.success.main, theme.palette.info.main,
+    brand[400],
+    brand[600],
+    accent[400],
+    accent[600],
+    theme.palette.error.main,
+    theme.palette.warning.main,
+    theme.palette.success.main,
+    theme.palette.info.main,
   ];
 
   const pickerSx = {
@@ -81,7 +108,8 @@ export function ManageEntryTypesDialog({
     '--epr-category-icon-active-color': accent[500],
     '--epr-search-input-bg-color': '#fff',
     '--epr-emoji-size': '24px',
-    borderRadius: 3, overflow: 'hidden',
+    borderRadius: 3,
+    overflow: 'hidden',
   };
 
   const [newTypeName, setNewTypeName] = useState('');
@@ -106,43 +134,73 @@ export function ManageEntryTypesDialog({
   const handleAdd = useCallback(async () => {
     const name = newTypeName.trim();
     if (!name) return;
-    setAdding(true); setAddError(null); setAddSuccess(false);
+    setAdding(true);
+    setAddError(null);
+    setAddSuccess(false);
     try {
       const color = TYPE_COLORS[Math.floor(Math.random() * TYPE_COLORS.length)];
       await onAddEntryType(name, newTypeEmoji || '🎉', color);
-      setNewTypeName(''); setNewTypeEmoji('🎉');
-      setAddSuccess(true); setTimeout(() => setAddSuccess(false), 2000);
-    } catch { setAddError('Oops! Couldn\'t add that. Try again?'); }
-    finally { setAdding(false); }
+      setNewTypeName('');
+      setNewTypeEmoji('🎉');
+      setAddSuccess(true);
+      setTimeout(() => setAddSuccess(false), 2000);
+    } catch {
+      setAddError("Oops! Couldn't add that. Try again?");
+    } finally {
+      setAdding(false);
+    }
   }, [newTypeName, newTypeEmoji, onAddEntryType, TYPE_COLORS]);
 
   const startEdit = useCallback((type: EntryType) => {
-    setEditingId(type.id); setEditName(type.name); setEditEmoji(type.emoji); setEditError(null);
+    setEditingId(type.id);
+    setEditName(type.name);
+    setEditEmoji(type.emoji);
+    setEditError(null);
   }, []);
 
   const cancelEdit = useCallback(() => {
-    setEditingId(null); setEditPickerAnchor(null); setEditError(null);
+    setEditingId(null);
+    setEditPickerAnchor(null);
+    setEditError(null);
   }, []);
 
   const handleSaveEdit = useCallback(async () => {
     if (!editingId) return;
     const name = editName.trim();
     if (!name) return;
-    setSaving(true); setEditError(null);
-    try { await onUpdateEntryType(editingId, name, editEmoji || '🎉'); setEditingId(null); }
-    catch { setEditError('Oops! Couldn\'t save. Try again?'); }
-    finally { setSaving(false); }
+    setSaving(true);
+    setEditError(null);
+    try {
+      await onUpdateEntryType(editingId, name, editEmoji || '🎉');
+      setEditingId(null);
+    } catch {
+      setEditError("Oops! Couldn't save. Try again?");
+    } finally {
+      setSaving(false);
+    }
   }, [editingId, editName, editEmoji, onUpdateEntryType]);
 
-  const handleDelete = useCallback(async (id: string) => {
-    setDeleting(id); setDeleteError(null);
-    try { await onDeleteEntryType(id); }
-    catch { setDeleteError('Oops! Couldn\'t delete. Try again?'); }
-    finally { setDeleting(null); }
-  }, [onDeleteEntryType]);
+  const handleDelete = useCallback(
+    async (id: string) => {
+      setDeleting(id);
+      setDeleteError(null);
+      try {
+        await onDeleteEntryType(id);
+      } catch {
+        setDeleteError("Oops! Couldn't delete. Try again?");
+      } finally {
+        setDeleting(null);
+      }
+    },
+    [onDeleteEntryType],
+  );
 
   const inputSx = {
-    '& .MuiOutlinedInput-root': { borderRadius: 2.5, background: alpha('#fff', 0.65), fontSize: '0.85rem' },
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 2.5,
+      background: alpha('#fff', 0.65),
+      fontSize: '0.85rem',
+    },
   };
 
   return (
@@ -152,10 +210,15 @@ export function ManageEntryTypesDialog({
       title="My Event Labels"
       actions={
         <Button
-          onClick={onClose} variant="contained"
+          onClick={onClose}
+          variant="contained"
           sx={{
             background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
-            color: 'white', fontWeight: 700, textTransform: 'none', borderRadius: 2.5, px: 3,
+            color: 'white',
+            fontWeight: 700,
+            textTransform: 'none',
+            borderRadius: 2.5,
+            px: 3,
             '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
           }}
         >
@@ -165,15 +228,29 @@ export function ManageEntryTypesDialog({
     >
       <Stack spacing={2}>
         <Box>
-          <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: 'text.disabled', mb: 0.75, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          <Typography
+            sx={{
+              fontSize: '0.68rem',
+              fontWeight: 800,
+              color: 'text.disabled',
+              mb: 0.75,
+              textTransform: 'uppercase',
+              letterSpacing: 0.5,
+            }}
+          >
             Built-in labels
           </Typography>
           <Stack direction="row" flexWrap="wrap" gap={0.5}>
             {DEFAULT_ENTRY_TYPES.map((type) => (
               <Chip
-                key={type.id} label={`${type.emoji} ${type.name}`} size="small"
+                key={type.id}
+                label={`${type.emoji} ${type.name}`}
+                size="small"
                 sx={{
-                  background: alpha(type.color, 0.12), fontWeight: 700, fontSize: '0.72rem', height: 26,
+                  background: alpha(type.color, 0.12),
+                  fontWeight: 700,
+                  fontSize: '0.72rem',
+                  height: 26,
                   border: `1px solid ${alpha(type.color, 0.25)}`,
                 }}
               />
@@ -184,77 +261,200 @@ export function ManageEntryTypesDialog({
         <Divider sx={{ borderColor: alpha(brand[200], 0.35) }} />
 
         <Box>
-          <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: 'text.disabled', mb: 0.75, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          <Typography
+            sx={{
+              fontSize: '0.68rem',
+              fontWeight: 800,
+              color: 'text.disabled',
+              mb: 0.75,
+              textTransform: 'uppercase',
+              letterSpacing: 0.5,
+            }}
+          >
             My labels
           </Typography>
-          {deleteError && <Alert severity="error" onClose={() => setDeleteError(null)} sx={{ mb: 0.75, borderRadius: 2, fontSize: '0.78rem' }}>{deleteError}</Alert>}
-          {editError && <Alert severity="error" onClose={() => setEditError(null)} sx={{ mb: 0.75, borderRadius: 2, fontSize: '0.78rem' }}>{editError}</Alert>}
+          {deleteError && (
+            <Alert
+              severity="error"
+              onClose={() => setDeleteError(null)}
+              sx={{ mb: 0.75, borderRadius: 2, fontSize: '0.78rem' }}
+            >
+              {deleteError}
+            </Alert>
+          )}
+          {editError && (
+            <Alert
+              severity="error"
+              onClose={() => setEditError(null)}
+              sx={{ mb: 0.75, borderRadius: 2, fontSize: '0.78rem' }}
+            >
+              {editError}
+            </Alert>
+          )}
           {customTypes.length === 0 ? (
-            <Typography sx={{ fontSize: '0.78rem', color: 'text.disabled', fontStyle: 'italic' }}>No custom labels yet — make one below!</Typography>
+            <Typography sx={{ fontSize: '0.78rem', color: 'text.disabled', fontStyle: 'italic' }}>
+              No custom labels yet — make one below!
+            </Typography>
           ) : (
             <Stack spacing={0.75}>
               {customTypes.map((type) => {
                 const isEditing = editingId === type.id;
                 return (
-                  <Box key={type.id} sx={{
-                    borderRadius: 2.5,
-                    border: `1.5px solid ${isEditing ? alpha(brand[400], 0.45) : alpha(brand[200], 0.4)}`,
-                    background: isEditing ? alpha(brand[50], 0.8) : alpha('#fff', 0.55),
-                    p: isEditing ? 1.25 : 0.75, transition: 'all 0.18s ease',
-                  }}>
+                  <Box
+                    key={type.id}
+                    sx={{
+                      borderRadius: 2.5,
+                      border: `1.5px solid ${isEditing ? alpha(brand[400], 0.45) : alpha(brand[200], 0.4)}`,
+                      background: isEditing ? alpha(brand[50], 0.8) : alpha('#fff', 0.55),
+                      p: isEditing ? 1.25 : 0.75,
+                      transition: 'all 0.18s ease',
+                    }}
+                  >
                     {isEditing ? (
                       <Stack spacing={1.25}>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Tooltip title="Pick emoji">
-                            <span><EmojiButton emoji={editEmoji || '🎉'} onClick={(e) => setEditPickerAnchor(e.currentTarget)} /></span>
+                            <span>
+                              <EmojiButton
+                                emoji={editEmoji || '🎉'}
+                                onClick={(e) => setEditPickerAnchor(e.currentTarget)}
+                              />
+                            </span>
                           </Tooltip>
-                          <TextField label="Name" value={editName} onChange={(e) => setEditName(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === 'Enter') void handleSaveEdit(); if (e.key === 'Escape') cancelEdit(); }}
-                            size="small" fullWidth autoFocus sx={inputSx}
+                          <TextField
+                            label="Name"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') void handleSaveEdit();
+                              if (e.key === 'Escape') cancelEdit();
+                            }}
+                            size="small"
+                            fullWidth
+                            autoFocus
+                            sx={inputSx}
                           />
                         </Stack>
-                        <Popover open={Boolean(editPickerAnchor)} anchorEl={editPickerAnchor} onClose={() => setEditPickerAnchor(null)}
-                          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                        <Popover
+                          open={Boolean(editPickerAnchor)}
+                          anchorEl={editPickerAnchor}
+                          onClose={() => setEditPickerAnchor(null)}
+                          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
                         >
                           <Box sx={pickerSx}>
-                            <EmojiPicker theme={Theme.LIGHT} onEmojiClick={(data: EmojiClickData) => { setEditEmoji(data.emoji); setEditPickerAnchor(null); }} lazyLoadEmojis />
+                            <EmojiPicker
+                              theme={Theme.LIGHT}
+                              onEmojiClick={(data: EmojiClickData) => {
+                                setEditEmoji(data.emoji);
+                                setEditPickerAnchor(null);
+                              }}
+                              lazyLoadEmojis
+                            />
                           </Box>
                         </Popover>
                         <Stack direction="row" spacing={0.75} justifyContent="flex-end">
-                          <Button size="small" onClick={cancelEdit}
+                          <Button
+                            size="small"
+                            onClick={cancelEdit}
                             startIcon={<CloseIcon sx={{ fontSize: '0.9rem !important' }} />}
-                            sx={{ borderRadius: 2, fontSize: '0.75rem', color: 'text.secondary', textTransform: 'none' }}
-                          >Cancel</Button>
-                          <Button size="small" onClick={handleSaveEdit} disabled={!editName.trim() || saving}
-                            startIcon={saving ? <CircularProgress size={12} /> : <CheckRoundedIcon sx={{ fontSize: '0.9rem !important' }} />}
                             sx={{
-                              borderRadius: 2, fontSize: '0.75rem', textTransform: 'none', fontWeight: 700,
-                              background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`, color: '#fff',
-                              '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
-                              '&:disabled': { background: alpha(brand[200], 0.3), color: alpha(brand[400], 0.4) },
+                              borderRadius: 2,
+                              fontSize: '0.75rem',
+                              color: 'text.secondary',
+                              textTransform: 'none',
                             }}
-                          >Save</Button>
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            size="small"
+                            onClick={handleSaveEdit}
+                            disabled={!editName.trim() || saving}
+                            startIcon={
+                              saving ? (
+                                <CircularProgress size={12} />
+                              ) : (
+                                <CheckRoundedIcon sx={{ fontSize: '0.9rem !important' }} />
+                              )
+                            }
+                            sx={{
+                              borderRadius: 2,
+                              fontSize: '0.75rem',
+                              textTransform: 'none',
+                              fontWeight: 700,
+                              background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
+                              color: '#fff',
+                              '&:hover': {
+                                background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})`,
+                              },
+                              '&:disabled': {
+                                background: alpha(brand[200], 0.3),
+                                color: alpha(brand[400], 0.4),
+                              },
+                            }}
+                          >
+                            Save
+                          </Button>
                         </Stack>
                       </Stack>
                     ) : (
                       <Stack direction="row" alignItems="center" spacing={1}>
-                        <Box sx={{
-                          width: 32, height: 32, borderRadius: 2, flexShrink: 0,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '1.1rem', background: alpha(type.color, 0.12),
-                          border: `1.5px solid ${alpha(type.color, 0.28)}`,
-                        }}>{type.emoji}</Box>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: 'text.primary', flex: 1 }}>{type.name}</Typography>
+                        <Box
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 2,
+                            flexShrink: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '1.1rem',
+                            background: alpha(type.color, 0.12),
+                            border: `1.5px solid ${alpha(type.color, 0.28)}`,
+                          }}
+                        >
+                          {type.emoji}
+                        </Box>
+                        <Typography
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: '0.82rem',
+                            color: 'text.primary',
+                            flex: 1,
+                          }}
+                        >
+                          {type.name}
+                        </Typography>
                         <Tooltip title="Edit">
-                          <IconButton size="small" onClick={() => startEdit(type)}
-                            sx={{ color: brand[400], p: 0.4, '&:hover': { color: brand[600], background: alpha(brand[100], 0.6) } }}
-                          ><EditRoundedIcon sx={{ fontSize: '0.95rem' }} /></IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => startEdit(type)}
+                            sx={{
+                              color: brand[400],
+                              p: 0.4,
+                              '&:hover': { color: brand[600], background: alpha(brand[100], 0.6) },
+                            }}
+                          >
+                            <EditRoundedIcon sx={{ fontSize: '0.95rem' }} />
+                          </IconButton>
                         </Tooltip>
                         <Tooltip title="Delete">
-                          <IconButton size="small" onClick={() => void handleDelete(type.id)} disabled={deleting === type.id}
-                            sx={{ color: theme.palette.error.main, p: 0.4, '&:hover': { background: alpha(theme.palette.error.main, 0.1) } }}
+                          <IconButton
+                            size="small"
+                            onClick={() => void handleDelete(type.id)}
+                            disabled={deleting === type.id}
+                            sx={{
+                              color: theme.palette.error.main,
+                              p: 0.4,
+                              '&:hover': { background: alpha(theme.palette.error.main, 0.1) },
+                            }}
                           >
-                            {deleting === type.id ? <CircularProgress size={13} color="inherit" /> : <DeleteRoundedIcon sx={{ fontSize: '0.95rem' }} />}
+                            {deleting === type.id ? (
+                              <CircularProgress size={13} color="inherit" />
+                            ) : (
+                              <DeleteRoundedIcon sx={{ fontSize: '0.95rem' }} />
+                            )}
                           </IconButton>
                         </Tooltip>
                       </Stack>
@@ -269,23 +469,65 @@ export function ManageEntryTypesDialog({
         <Divider sx={{ borderColor: alpha(brand[200], 0.35) }} />
 
         <Box>
-          <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: 'text.disabled', mb: 0.75, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          <Typography
+            sx={{
+              fontSize: '0.68rem',
+              fontWeight: 800,
+              color: 'text.disabled',
+              mb: 0.75,
+              textTransform: 'uppercase',
+              letterSpacing: 0.5,
+            }}
+          >
             Make a new label
           </Typography>
-          {addError && <Alert severity="error" onClose={() => setAddError(null)} sx={{ mb: 0.75, borderRadius: 2, fontSize: '0.78rem' }}>{addError}</Alert>}
-          {addSuccess && <Alert severity="success" sx={{ mb: 0.75, borderRadius: 2, fontSize: '0.78rem' }}>Label added! ✨</Alert>}
+          {addError && (
+            <Alert
+              severity="error"
+              onClose={() => setAddError(null)}
+              sx={{ mb: 0.75, borderRadius: 2, fontSize: '0.78rem' }}
+            >
+              {addError}
+            </Alert>
+          )}
+          {addSuccess && (
+            <Alert severity="success" sx={{ mb: 0.75, borderRadius: 2, fontSize: '0.78rem' }}>
+              Label added! ✨
+            </Alert>
+          )}
           <Stack direction="row" spacing={1} alignItems="center">
             <Tooltip title="Pick emoji">
-              <span><EmojiButton emoji={newTypeEmoji || '🎉'} onClick={(e) => setNewPickerAnchor(e.currentTarget)} /></span>
+              <span>
+                <EmojiButton
+                  emoji={newTypeEmoji || '🎉'}
+                  onClick={(e) => setNewPickerAnchor(e.currentTarget)}
+                />
+              </span>
             </Tooltip>
-            <TextField label="Label name" value={newTypeName} onChange={(e) => setNewTypeName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') void handleAdd(); }}
-              size="small" fullWidth sx={inputSx}
+            <TextField
+              label="Label name"
+              value={newTypeName}
+              onChange={(e) => setNewTypeName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void handleAdd();
+              }}
+              size="small"
+              fullWidth
+              sx={inputSx}
             />
-            <Button onClick={handleAdd} disabled={!newTypeName.trim() || adding} variant="contained"
+            <Button
+              onClick={handleAdd}
+              disabled={!newTypeName.trim() || adding}
+              variant="contained"
               sx={{
-                borderRadius: 2.5, fontWeight: 700, fontSize: '0.8rem', flexShrink: 0, whiteSpace: 'nowrap', px: 2,
-                background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`, color: '#fff',
+                borderRadius: 2.5,
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                flexShrink: 0,
+                whiteSpace: 'nowrap',
+                px: 2,
+                background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
+                color: '#fff',
                 '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
                 '&:disabled': { background: alpha(brand[200], 0.3), color: alpha(brand[400], 0.4) },
               }}
@@ -293,11 +535,22 @@ export function ManageEntryTypesDialog({
               {adding ? <CircularProgress size={14} sx={{ color: '#fff' }} /> : 'Add'}
             </Button>
           </Stack>
-          <Popover open={Boolean(newPickerAnchor)} anchorEl={newPickerAnchor} onClose={() => setNewPickerAnchor(null)}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          <Popover
+            open={Boolean(newPickerAnchor)}
+            anchorEl={newPickerAnchor}
+            onClose={() => setNewPickerAnchor(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
           >
             <Box sx={pickerSx}>
-              <EmojiPicker theme={Theme.LIGHT} onEmojiClick={(data: EmojiClickData) => { setNewTypeEmoji(data.emoji); setNewPickerAnchor(null); }} lazyLoadEmojis />
+              <EmojiPicker
+                theme={Theme.LIGHT}
+                onEmojiClick={(data: EmojiClickData) => {
+                  setNewTypeEmoji(data.emoji);
+                  setNewPickerAnchor(null);
+                }}
+                lazyLoadEmojis
+              />
             </Box>
           </Popover>
         </Box>

@@ -2,12 +2,17 @@
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import { useTheme, alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+
+import {
+  CELEB_PARTICLE_BG,
+  CelebParticleStage,
+  CELEBRATION_KEY_TO_THEME,
+} from '@/components/Practice/CelebrationScreen';
 import { CELEBRATION_THEMES } from '@/hooks/useShop';
-import { CelebParticleStage, CELEB_PARTICLE_BG, CELEBRATION_KEY_TO_THEME } from '@/components/Practice/CelebrationScreen';
 import type { ShopItem } from '@/types/shop';
 
 export function CelebrationPreviewModal({
@@ -96,7 +101,9 @@ export function CelebrationPreviewModal({
           {celebData && (
             <Box sx={{ display: 'flex', gap: 0.75, mt: 0.5 }}>
               {celebData.emojis.slice(0, 5).map((e, i) => (
-                <Typography key={i} sx={{ fontSize: '1.4rem' }}>{e}</Typography>
+                <Typography key={i} sx={{ fontSize: '1.4rem' }}>
+                  {e}
+                </Typography>
               ))}
             </Box>
           )}

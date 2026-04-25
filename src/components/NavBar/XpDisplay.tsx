@@ -1,9 +1,10 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { useProgress } from '@/hooks/useProgress';
+import { useEffect, useRef, useState } from 'react';
+
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import { useProgress } from '@/hooks/useProgress';
 
 const BURST_EMOJIS = ['✨', '⭐', '🌟', '💫', '🎉'];
 
@@ -59,7 +60,10 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
 
     const bounceTimer = setTimeout(() => setXpBounce(false), 1000);
     const ringTimer = setTimeout(() => setShowRing(false), 600);
-    return () => { clearTimeout(bounceTimer); clearTimeout(ringTimer); };
+    return () => {
+      clearTimeout(bounceTimer);
+      clearTimeout(ringTimer);
+    };
   }, [pendingXp]);
 
   return (
@@ -150,7 +154,7 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
             zIndex: 20,
             animation: 'xpFlyDown 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards',
             '@keyframes xpFlyDown': {
-              '0%':  { opacity: 0, transform: 'translateX(-50%) translateY(-8px) scale(0.2)' },
+              '0%': { opacity: 0, transform: 'translateX(-50%) translateY(-8px) scale(0.2)' },
               '12%': { opacity: 1, transform: 'translateX(-50%) translateY(14px) scale(1.5)' },
               '30%': { opacity: 1, transform: 'translateX(-50%) translateY(28px) scale(1.25)' },
               '55%': { opacity: 1, transform: 'translateX(-50%) translateY(38px) scale(1.1)' },
@@ -199,8 +203,16 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
                 opacity: 0,
                 '@keyframes xpEmojiBurst': {
                   '0%': { opacity: 0, transform: 'translate(-50%, -50%) scale(0)' },
-                  '40%': { opacity: 1, transform: 'translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2)' },
-                  '100%': { opacity: 0, transform: 'translate(calc(-50% + var(--dx) * 1.5), calc(-50% + var(--dy) * 1.5)) scale(0)' },
+                  '40%': {
+                    opacity: 1,
+                    transform:
+                      'translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2)',
+                  },
+                  '100%': {
+                    opacity: 0,
+                    transform:
+                      'translate(calc(-50% + var(--dx) * 1.5), calc(-50% + var(--dy) * 1.5)) scale(0)',
+                  },
                 },
               }}
             >

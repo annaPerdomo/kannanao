@@ -1,15 +1,22 @@
 'use client';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import IconButton from '@mui/material/IconButton';
-import { useTheme, alpha } from '@mui/material/styles';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import type { Todo, CalendarEntry } from '@/types/todo';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import { alpha, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+
+import type { CalendarEntry, Todo } from '@/types/todo';
+
 import {
-  DAY_LABELS, toISODate, todayISO,
-  isScheduledForDate, isCompletedOnDate, isEntryOnDate, formatWeekRange,
+  DAY_LABELS,
+  formatWeekRange,
+  isCompletedOnDate,
+  isEntryOnDate,
+  isScheduledForDate,
+  todayISO,
+  toISODate,
 } from './helpers';
 
 interface WeekStripProps {
@@ -26,8 +33,13 @@ interface WeekStripProps {
 const DAY_MASCOTS = ['🐱', '🐰', '🌸', '🧸', '⭐', '🦋', '☀️'];
 
 export function WeekStrip({
-  weekDates, selectedDayIndex, onSelectDay,
-  weekOffset, onWeekChange, todos, entries,
+  weekDates,
+  selectedDayIndex,
+  onSelectDay,
+  weekOffset,
+  onWeekChange,
+  todos,
+  entries,
 }: WeekStripProps) {
   const theme = useTheme();
   const { brand, accent, rainbow } = theme.palette;
@@ -46,14 +58,16 @@ export function WeekStrip({
   return (
     <Box>
       {/* Horizontal Day Tabs */}
-      <Box sx={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(7, 1fr)',
-        gap: 0.75,
-        mb: 1,
-        position: 'relative',
-        height: 80, // Provide space for tabs to "stick out"
-      }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(7, 1fr)',
+          gap: 0.75,
+          mb: 1,
+          position: 'relative',
+          height: 80, // Provide space for tabs to "stick out"
+        }}
+      >
         {weekDates.map((date, i) => {
           const dateISO = toISODate(date);
           const isSelected = i === selectedDayIndex;
@@ -97,33 +111,45 @@ export function WeekStrip({
                 },
               }}
             >
-              <Typography sx={{
-                fontSize: '1.1rem',
-                lineHeight: 1,
-                filter: isSelected ? 'saturate(1.2)' : 'saturate(0.8) opacity(0.7)',
-                transition: 'filter 0.3s',
-              }}>
+              <Typography
+                sx={{
+                  fontSize: '1.1rem',
+                  lineHeight: 1,
+                  filter: isSelected ? 'saturate(1.2)' : 'saturate(0.8) opacity(0.7)',
+                  transition: 'filter 0.3s',
+                }}
+              >
                 {allDone ? '💖' : DAY_MASCOTS[i]}
               </Typography>
-              <Typography sx={{
-                fontFamily: (t) => t.fonts.cute, fontSize: '0.6rem', fontWeight: 800,
-                color: isSelected ? 'rgba(255,255,255,0.9)' : theme.palette.text.primary,
-                lineHeight: 1,
-              }}>
+              <Typography
+                sx={{
+                  fontFamily: (t) => t.fonts.cute,
+                  fontSize: '0.6rem',
+                  fontWeight: 800,
+                  color: isSelected ? 'rgba(255,255,255,0.9)' : theme.palette.text.primary,
+                  lineHeight: 1,
+                }}
+              >
                 {DAY_LABELS[i]}
               </Typography>
-              <Typography sx={{
-                fontFamily: (t) => t.fonts.cute, fontSize: '0.9rem', fontWeight: 900,
-                color: isSelected ? 'white' : isToday ? brand[700] : theme.palette.text.primary,
-                lineHeight: 1.2,
-              }}>
+              <Typography
+                sx={{
+                  fontFamily: (t) => t.fonts.cute,
+                  fontSize: '0.9rem',
+                  fontWeight: 900,
+                  color: isSelected ? 'white' : isToday ? brand[700] : theme.palette.text.primary,
+                  lineHeight: 1.2,
+                }}
+              >
                 {date.getDate()}
               </Typography>
-              
+
               {/* Status indicator */}
               <Box sx={{ position: 'absolute', bottom: 8, display: 'flex', alignItems: 'center' }}>
                 {!allDone && dayEntries.length > 0 ? (
-                  <Typography sx={{ fontSize: '0.65rem', lineHeight: 1 }}>{dayEntries[0].emoji}</Typography>
+                  <Typography sx={{ fontSize: '0.65rem', lineHeight: 1 }}>
+                    {dayEntries[0].emoji}
+                  </Typography>
                 ) : null}
               </Box>
             </Box>
@@ -133,13 +159,29 @@ export function WeekStrip({
 
       {/* Week navigation */}
       <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} mb={0.5}>
-        <IconButton size="small" onClick={() => onWeekChange(weekOffset - 1)} sx={{ color: brand[500], p: 0.25 }}>
+        <IconButton
+          size="small"
+          onClick={() => onWeekChange(weekOffset - 1)}
+          sx={{ color: brand[500], p: 0.25 }}
+        >
           <ChevronLeftRoundedIcon sx={{ fontSize: '1rem' }} />
         </IconButton>
-        <Typography variant="caption" sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 800, color: brand[600], fontSize: '0.72rem' }}>
+        <Typography
+          variant="caption"
+          sx={{
+            fontFamily: (t) => t.fonts.cute,
+            fontWeight: 800,
+            color: brand[600],
+            fontSize: '0.72rem',
+          }}
+        >
           {formatWeekRange(weekDates)}
         </Typography>
-        <IconButton size="small" onClick={() => onWeekChange(weekOffset + 1)} sx={{ color: brand[500], p: 0.25 }}>
+        <IconButton
+          size="small"
+          onClick={() => onWeekChange(weekOffset + 1)}
+          sx={{ color: brand[500], p: 0.25 }}
+        >
           <ChevronRightRoundedIcon sx={{ fontSize: '1rem' }} />
         </IconButton>
       </Stack>

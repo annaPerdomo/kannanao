@@ -1,5 +1,6 @@
 'use client';
 import Box from '@mui/material/Box';
+
 import { decodeUnsplashAttribution } from '@/services/api';
 
 interface UnsplashAttributionProps {
@@ -38,8 +39,8 @@ export function UnsplashAttribution({ url }: UnsplashAttributionProps) {
         sx={{ color: 'white', textDecoration: 'underline', '&:hover': { opacity: 0.85 } }}
       >
         {attribution.name}
-      </Box>
-      {' '}on{' '}
+      </Box>{' '}
+      on{' '}
       <Box
         component="a"
         href={attribution.photoPageUrl}

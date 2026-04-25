@@ -1,9 +1,9 @@
 'use client';
-import { useEffect } from 'react';
-import * as Sentry from '@sentry/nextjs';
-import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import * as Sentry from '@sentry/nextjs';
+import { useEffect } from 'react';
 
 // Catches React rendering errors in the root layout that escape all other error boundaries.
 // Must include its own <html>/<body> since the root layout is unavailable when this renders.

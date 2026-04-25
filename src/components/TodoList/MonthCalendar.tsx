@@ -1,17 +1,25 @@
 'use client';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import IconButton from '@mui/material/IconButton';
-import { useTheme, alpha } from '@mui/material/styles';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import TodayRoundedIcon from '@mui/icons-material/TodayRounded';
-import type { Todo, CalendarEntry, EntryType } from '@/types/todo';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import { alpha, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+
+import type { CalendarEntry, EntryType, Todo } from '@/types/todo';
+
 import {
-  MONTH_NAMES, DEFAULT_ENTRY_TYPES,
-  toISODate, todayISO, getMonthCalendarDates,
-  isScheduledForDate, isCompletedOnDate, isEntryOnDate, getEntryType,
+  DEFAULT_ENTRY_TYPES,
+  getEntryType,
+  getMonthCalendarDates,
+  isCompletedOnDate,
+  isEntryOnDate,
+  isScheduledForDate,
+  MONTH_NAMES,
+  todayISO,
+  toISODate,
 } from './helpers';
 
 interface MonthCalendarProps {
@@ -25,8 +33,13 @@ interface MonthCalendarProps {
 }
 
 export function MonthCalendar({
-  todos, entries, entryTypes, monthOffset, onMonthChange,
-  selectedDateISO, onSelectDate,
+  todos,
+  entries,
+  entryTypes,
+  monthOffset,
+  onMonthChange,
+  selectedDateISO,
+  onSelectDate,
 }: MonthCalendarProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
@@ -74,13 +87,21 @@ export function MonthCalendar({
     <Box>
       {/* Month navigation */}
       <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} mb={1.5}>
-        <IconButton size="small" onClick={() => onMonthChange(monthOffset - 1)} sx={{ color: brand[500], p: 0.25 }}>
+        <IconButton
+          size="small"
+          onClick={() => onMonthChange(monthOffset - 1)}
+          sx={{ color: brand[500], p: 0.25 }}
+        >
           <ChevronLeftRoundedIcon sx={{ fontSize: '1.1rem' }} />
         </IconButton>
         <Typography sx={{ fontWeight: 800, fontSize: '0.92rem', color: brand[700] }}>
           {MONTH_NAMES[month]} {year}
         </Typography>
-        <IconButton size="small" onClick={() => onMonthChange(monthOffset + 1)} sx={{ color: brand[500], p: 0.25 }}>
+        <IconButton
+          size="small"
+          onClick={() => onMonthChange(monthOffset + 1)}
+          sx={{ color: brand[500], p: 0.25 }}
+        >
           <ChevronRightRoundedIcon sx={{ fontSize: '1.1rem' }} />
         </IconButton>
         {monthOffset !== 0 && (
@@ -93,7 +114,10 @@ export function MonthCalendar({
       {/* Day-of-week headers */}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5, mb: 0.5 }}>
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-          <Typography key={d} sx={{ textAlign: 'center', fontSize: '0.68rem', fontWeight: 800, color: brand[500] }}>
+          <Typography
+            key={d}
+            sx={{ textAlign: 'center', fontSize: '0.68rem', fontWeight: 800, color: brand[500] }}
+          >
             {d}
           </Typography>
         ))}
@@ -139,34 +163,41 @@ export function MonthCalendar({
                 },
               }}
             >
-              <Typography sx={{
-                fontSize: '0.75rem',
-                fontWeight: isToday || isSelected ? 900 : 600,
-                color: isSelected ? 'white' : isToday ? brand[700] : 'text.secondary',
-                lineHeight: 1.2,
-              }}>
+              <Typography
+                sx={{
+                  fontSize: '0.75rem',
+                  fontWeight: isToday || isSelected ? 900 : 600,
+                  color: isSelected ? 'white' : isToday ? brand[700] : 'text.secondary',
+                  lineHeight: 1.2,
+                }}
+              >
                 {date.getDate()}
               </Typography>
 
               {/* Status indicators */}
               <Box sx={{ display: 'flex', gap: 0.2, alignItems: 'center', minHeight: 12 }}>
-                {allDone && (
-                  <Typography sx={{ fontSize: '0.55rem', lineHeight: 1 }}>⭐</Typography>
-                )}
+                {allDone && <Typography sx={{ fontSize: '0.55rem', lineHeight: 1 }}>⭐</Typography>}
                 {someDone && !allDone && (
-                  <Typography sx={{
-                    fontSize: '0.5rem',
-                    color: isSelected ? 'rgba(255,255,255,0.9)' : accent[600],
-                    fontWeight: 700, lineHeight: 1,
-                  }}>
+                  <Typography
+                    sx={{
+                      fontSize: '0.5rem',
+                      color: isSelected ? 'rgba(255,255,255,0.9)' : accent[600],
+                      fontWeight: 700,
+                      lineHeight: 1,
+                    }}
+                  >
                     {completed}/{scheduled}
                   </Typography>
                 )}
                 {!allDone && !someDone && scheduled > 0 && !isFuture && (
-                  <Box sx={{
-                    width: 4, height: 4, borderRadius: '50%',
-                    bgcolor: isSelected ? 'rgba(255,255,255,0.7)' : alpha(brand[300], 0.6),
-                  }} />
+                  <Box
+                    sx={{
+                      width: 4,
+                      height: 4,
+                      borderRadius: '50%',
+                      bgcolor: isSelected ? 'rgba(255,255,255,0.7)' : alpha(brand[300], 0.6),
+                    }}
+                  />
                 )}
                 {dayEntries.length > 0 && (
                   <Typography sx={{ fontSize: '0.5rem', lineHeight: 1 }}>
@@ -180,7 +211,14 @@ export function MonthCalendar({
       </Box>
 
       {/* Legend */}
-      <Stack direction="row" spacing={1.5} justifyContent="center" mt={1.5} flexWrap="wrap" useFlexGap>
+      <Stack
+        direction="row"
+        spacing={1.5}
+        justifyContent="center"
+        mt={1.5}
+        flexWrap="wrap"
+        useFlexGap
+      >
         {[
           { label: 'All done', icon: '⭐' },
           { label: 'Some done', color: alpha(accent[200], 0.5) },
@@ -191,13 +229,19 @@ export function MonthCalendar({
             {icon ? (
               <Typography sx={{ fontSize: '0.55rem', lineHeight: 1 }}>{icon}</Typography>
             ) : (
-              <Box sx={{
-                width: 8, height: 8, borderRadius: 1,
-                bgcolor: color || 'transparent',
-                border: border ? `2px solid ${border}` : 'none',
-              }} />
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 1,
+                  bgcolor: color || 'transparent',
+                  border: border ? `2px solid ${border}` : 'none',
+                }}
+              />
             )}
-            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6rem' }}>{label}</Typography>
+            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6rem' }}>
+              {label}
+            </Typography>
           </Stack>
         ))}
       </Stack>

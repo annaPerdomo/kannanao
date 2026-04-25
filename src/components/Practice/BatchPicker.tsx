@@ -1,7 +1,8 @@
 'use client';
-import { Box, Typography, Button, Stack, Chip } from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
 import StyleIcon from '@mui/icons-material/Style';
+import { Box, Button, Chip, Stack, Typography } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+
 import type { PracticeMode } from '@/types/app';
 
 interface BatchPickerProps {

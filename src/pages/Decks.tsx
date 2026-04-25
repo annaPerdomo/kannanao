@@ -1,21 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import AddIcon from '@mui/icons-material/Add';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-import AddIcon from '@mui/icons-material/Add';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
-import { Loading } from '@/components/Loading';
-import { DeckCard } from '@/components/DeckCard';
-import { ShareDeckDialog } from '@/components/ShareDeckDialog';
+import { useState } from 'react';
+
 import { CreateDeckDialog } from '@/components/CreateDeckDialog';
+import { DeckCard } from '@/components/DeckCard';
+import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
-import { useDecks } from '@/hooks/useDecks';
+import { ShareDeckDialog } from '@/components/ShareDeckDialog';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDecks } from '@/hooks/useDecks';
 import { LAYOUT } from '@/theme';
 
 export default function Decks() {
@@ -44,35 +45,36 @@ export default function Decks() {
   const unpinnedDecks = decks.filter((d) => !d.pinned);
 
   return (
-    <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 5 } }}>
-
+    <Box
+      sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 5 } }}
+    >
       <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
-      <PageHeader
-        emoji="📚"
-        title="Your Decks"
-        subtitle="Pin decks to see them on your home page. ✨"
-        onBack={() => router.push('/')}
-        action={
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setCreateOpen(true)}
-            sx={{
-              borderRadius: 3,
-              px: 2.5,
-              py: 1,
-              fontWeight: 800,
-              background: `linear-gradient(135deg, ${brand[400]}, ${accent[400]})`,
-              boxShadow: `0 4px 16px ${alpha(brand[400], 0.35)}`,
-              '&:hover': {
-                background: `linear-gradient(135deg, ${brand[500]}, ${accent[500]})`,
-              },
-            }}
-          >
-            New Deck
-          </Button>
-        }
-      />
+        <PageHeader
+          emoji="📚"
+          title="Your Decks"
+          subtitle="Pin decks to see them on your home page. ✨"
+          onBack={() => router.push('/')}
+          action={
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setCreateOpen(true)}
+              sx={{
+                borderRadius: 3,
+                px: 2.5,
+                py: 1,
+                fontWeight: 800,
+                background: `linear-gradient(135deg, ${brand[400]}, ${accent[400]})`,
+                boxShadow: `0 4px 16px ${alpha(brand[400], 0.35)}`,
+                '&:hover': {
+                  background: `linear-gradient(135deg, ${brand[500]}, ${accent[500]})`,
+                },
+              }}
+            >
+              New Deck
+            </Button>
+          }
+        />
       </Box>
 
       {decks.length === 0 ? (
@@ -92,11 +94,7 @@ export default function Decks() {
           <Typography color="text.secondary" sx={{ mb: 3, fontSize: '0.875rem' }}>
             Create your first deck to start building flashcards
           </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setCreateOpen(true)}
-          >
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}>
             Create Deck
           </Button>
         </Box>
@@ -105,7 +103,17 @@ export default function Decks() {
           {/* Pinned section */}
           {pinnedDecks.length > 0 && (
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: brand[700], fontWeight: 800, mb: 2, fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: brand[700],
+                  fontWeight: 800,
+                  mb: 2,
+                  fontSize: '0.95rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                }}
+              >
                 📌 Pinned to Home
               </Typography>
               <Grid container spacing={2}>
@@ -117,7 +125,14 @@ export default function Decks() {
                         deck={deck}
                         onOpen={(id) => router.push(`/deck/${id}`)}
                         onDelete={owned ? deleteDeck : () => {}}
-                        onShare={owned ? (id) => { setShareDeckId(id); setShareDeckName(deck.name); } : undefined}
+                        onShare={
+                          owned
+                            ? (id) => {
+                                setShareDeckId(id);
+                                setShareDeckName(deck.name);
+                              }
+                            : undefined
+                        }
                         onEditEmoji={owned ? updateDeckEmoji : undefined}
                         onPin={pinDeck}
                         isOwner={owned}
@@ -133,7 +148,17 @@ export default function Decks() {
           {unpinnedDecks.length > 0 && (
             <Box>
               {pinnedDecks.length > 0 && (
-                <Typography variant="h6" sx={{ color: brand[700], fontWeight: 800, mb: 2, fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: brand[700],
+                    fontWeight: 800,
+                    mb: 2,
+                    fontSize: '0.95rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                  }}
+                >
                   All Decks
                 </Typography>
               )}
@@ -146,7 +171,14 @@ export default function Decks() {
                         deck={deck}
                         onOpen={(id) => router.push(`/deck/${id}`)}
                         onDelete={owned ? deleteDeck : () => {}}
-                        onShare={owned ? (id) => { setShareDeckId(id); setShareDeckName(deck.name); } : undefined}
+                        onShare={
+                          owned
+                            ? (id) => {
+                                setShareDeckId(id);
+                                setShareDeckName(deck.name);
+                              }
+                            : undefined
+                        }
                         onEditEmoji={owned ? updateDeckEmoji : undefined}
                         onPin={pinDeck}
                         isOwner={owned}

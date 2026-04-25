@@ -1,17 +1,18 @@
-"use client";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { sb, upsertProfile, loadProfile, updateProfileColorScheme, updateProfileShowTodo } from "@/lib/supabase";
-import { isAdminUser } from "@/lib/admin";
-import type { ColorScheme } from "@/theme";
+'use client';
+import type { Session, User } from '@supabase/supabase-js';
+import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 
-const FAKE_DOMAIN = "kannanao.local";
+import { isAdminUser } from '@/lib/admin';
+import {
+  loadProfile,
+  sb,
+  updateProfileColorScheme,
+  updateProfileShowTodo,
+  upsertProfile,
+} from '@/lib/supabase';
+import type { ColorScheme } from '@/theme';
+
+const FAKE_DOMAIN = 'kannanao.local';
 
 interface AuthContextValue {
   session: Session | null;
@@ -22,7 +23,11 @@ interface AuthContextValue {
   showTodo: boolean;
   loading: boolean;
   signInWithUsername: (username: string, password: string) => Promise<{ error: string | null }>;
-  signUpWithUsername: (username: string, password: string, name?: string) => Promise<{ error: string | null }>;
+  signUpWithUsername: (
+    username: string,
+    password: string,
+    name?: string,
+  ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   updateDisplayName: (name: string) => Promise<{ error: string | null }>;
   updateColorScheme: (scheme: ColorScheme) => Promise<void>;
@@ -33,7 +38,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
 
@@ -42,8 +47,16 @@ function toEmail(username: string) {
 }
 
 const VALID_SCHEMES: ColorScheme[] = [
-  "sakura", "murasaki", "yuki",
-  "ocean", "forest", "sunset", "lavender", "midnight", "matcha", "rosegold",
+  'sakura',
+  'murasaki',
+  'yuki',
+  'ocean',
+  'forest',
+  'sunset',
+  'lavender',
+  'midnight',
+  'matcha',
+  'rosegold',
 ];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -72,14 +85,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    const { data: { subscription } } = sb.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = sb.auth.onAuthStateChange((event, session) => {
       setSession(session);
-      if (event === "SIGNED_IN" && session?.user) {
-        const username = session.user.email?.split("@")[0] ?? "";
+      if (event === 'SIGNED_IN' && session?.user) {
+        const username = session.user.email?.split('@')[0] ?? '';
         void upsertProfile(session.user.id, username);
         void fetchProfile(session.user.id);
       }
-      if (event === "SIGNED_OUT") {
+      if (event === 'SIGNED_OUT') {
         setDisplayName(null);
         setColorScheme(null);
         setShowTodo(true);
@@ -98,13 +113,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUpWithUsername = async (_username: string, _password: string, _name?: string) => {
-    return { error: "Sign-ups are currently closed. Join the waitlist at the landing page." };
+    return { error: 'Sign-ups are currently closed. Join the waitlist at the landing page.' };
   };
 
   const updateDisplayName = async (name: string) => {
-    const { data: { user } } = await sb.auth.getUser();
-    if (!user) return { error: "Not authenticated" };
-    const username = user.email?.split("@")[0] ?? "";
+    const {
+      data: { user },
+    } = await sb.auth.getUser();
+    if (!user) return { error: 'Not authenticated' };
+    const username = user.email?.split('@')[0] ?? '';
     await upsertProfile(user.id, username, name.trim());
     setDisplayName(name.trim());
     return { error: null };
@@ -112,7 +129,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateColorScheme = async (scheme: ColorScheme) => {
     setColorScheme(scheme);
-    const { data: { user } } = await sb.auth.getUser();
+    const {
+      data: { user },
+    } = await sb.auth.getUser();
     if (user) {
       await updateProfileColorScheme(user.id, scheme);
     }
@@ -120,7 +139,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateShowTodo = async (show: boolean) => {
     setShowTodo(show);
-    const { data: { user } } = await sb.auth.getUser();
+    const {
+      data: { user },
+    } = await sb.auth.getUser();
     if (user) {
       await updateProfileShowTodo(user.id, show);
     }

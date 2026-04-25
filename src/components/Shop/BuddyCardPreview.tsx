@@ -1,8 +1,9 @@
 'use client';
 
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { alpha, keyframes } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+
 import { BUDDY_CONFIG } from '@/hooks/useShop';
 
 const gentleBounce = keyframes`
@@ -22,10 +23,10 @@ const bubblePulse = keyframes`
 
 const BUDDY_COLORS: Record<string, { bg: string; accent: string }> = {
   buddy_pink_cat: { bg: '#FFF0F5', accent: '#F472B6' },
-  buddy_bunny:    { bg: '#FFF5F5', accent: '#FDA4AF' },
-  buddy_penguin:  { bg: '#F0F9FF', accent: '#7DD3FC' },
-  buddy_panda:    { bg: '#F0FDF4', accent: '#86EFAC' },
-  buddy_fox:      { bg: '#FFFBEB', accent: '#FCD34D' },
+  buddy_bunny: { bg: '#FFF5F5', accent: '#FDA4AF' },
+  buddy_penguin: { bg: '#F0F9FF', accent: '#7DD3FC' },
+  buddy_panda: { bg: '#F0FDF4', accent: '#86EFAC' },
+  buddy_fox: { bg: '#FFFBEB', accent: '#FCD34D' },
 };
 
 export function BuddyCardPreview({ buddyKey }: { buddyKey: string }) {
@@ -59,8 +60,8 @@ export function BuddyCardPreview({ buddyKey }: { buddyKey: string }) {
             height: 4 + (i % 3) * 2,
             borderRadius: '50%',
             bgcolor: alpha(colors.accent, 0.2 + (i % 3) * 0.1),
-            top: `${15 + (i * 13) % 70}%`,
-            left: `${10 + (i * 17) % 80}%`,
+            top: `${15 + ((i * 13) % 70)}%`,
+            left: `${10 + ((i * 17) % 80)}%`,
             animation: `${wobbleFloat} ${2 + i * 0.3}s ease-in-out infinite`,
             animationDelay: `${i * 0.2}s`,
           }}

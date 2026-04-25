@@ -1,5 +1,6 @@
 'use client';
 import { ErrorBoundary as SentryErrorBoundary } from '@sentry/nextjs';
+
 import { ErrorFallback } from './ErrorFallback';
 
 interface ErrorBoundaryProps {

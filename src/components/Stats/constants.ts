@@ -1,20 +1,20 @@
 import type { SessionMode } from '@/hooks/useProgress';
 
 export const MODE_LABELS: Record<SessionMode, string> = {
-  study:         'Study',
-  match:         'Match',
-  fill:          'Fill',
-  recall:        'Recall',
-  speech_read:   'Read-Through',
+  study: 'Study',
+  match: 'Match',
+  fill: 'Fill',
+  recall: 'Recall',
+  speech_read: 'Read-Through',
   speech_recall: 'Line Recall',
 };
 
 export const MODE_COLORS: Record<SessionMode, string> = {
-  study:         '#6366F1',
-  match:         '#10B981',
-  fill:          '#F59E0B',
-  recall:        '#3B82F6',
-  speech_read:   '#EC4899',
+  study: '#6366F1',
+  match: '#10B981',
+  fill: '#F59E0B',
+  recall: '#3B82F6',
+  speech_read: '#EC4899',
   speech_recall: '#8B5CF6',
 };
 

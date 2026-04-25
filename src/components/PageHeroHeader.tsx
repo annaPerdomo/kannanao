@@ -1,13 +1,13 @@
 'use client';
 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 
 interface PageHeroHeaderProps {
   emoji: string;
@@ -18,7 +18,14 @@ interface PageHeroHeaderProps {
   action?: React.ReactNode;
 }
 
-export function PageHeroHeader({ emoji, title, subtitle, description, onBack, action }: PageHeroHeaderProps) {
+export function PageHeroHeader({
+  emoji,
+  title,
+  subtitle,
+  description,
+  onBack,
+  action,
+}: PageHeroHeaderProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
@@ -36,10 +43,37 @@ export function PageHeroHeader({ emoji, title, subtitle, description, onBack, ac
       }}
     >
       {/* Decorative blobs */}
-      <Box sx={{ position: 'absolute', top: -30, right: -30, width: 150, height: 150, borderRadius: '50%', background: alpha(accent[200], 0.2), pointerEvents: 'none' }} />
-      <Box sx={{ position: 'absolute', bottom: -20, left: '30%', width: 100, height: 100, borderRadius: '50%', background: alpha(brand[200], 0.2), pointerEvents: 'none' }} />
+      <Box
+        sx={{
+          position: 'absolute',
+          top: -30,
+          right: -30,
+          width: 150,
+          height: 150,
+          borderRadius: '50%',
+          background: alpha(accent[200], 0.2),
+          pointerEvents: 'none',
+        }}
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: -20,
+          left: '30%',
+          width: 100,
+          height: 100,
+          borderRadius: '50%',
+          background: alpha(brand[200], 0.2),
+          pointerEvents: 'none',
+        }}
+      />
 
-      <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} justifyContent="space-between" spacing={2}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ sm: 'center' }}
+        justifyContent="space-between"
+        spacing={2}
+      >
         <Box>
           <Stack direction="row" alignItems="center" spacing={1.5} mb={0.75}>
             {onBack && (

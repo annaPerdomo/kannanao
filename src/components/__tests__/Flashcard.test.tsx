@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+
 import { renderWithProviders } from '@/test/renderWithProviders';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
 

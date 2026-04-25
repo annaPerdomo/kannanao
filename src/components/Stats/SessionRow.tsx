@@ -1,12 +1,14 @@
 'use client';
 
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
-import { useTheme, alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+
 import type { SessionMode } from '@/hooks/useProgress';
-import { modeLabel, modeColor } from './constants';
+
+import { modeColor, modeLabel } from './constants';
 
 export function SessionRow({
   correct,
@@ -35,7 +37,7 @@ export function SessionRow({
         alignItems: 'center',
         gap: 2,
         py: 1.25,
-        borderBottom: `1px solid ${alpha(brand[300], 0.40)}`,
+        borderBottom: `1px solid ${alpha(brand[300], 0.4)}`,
         '&:last-child': { borderBottom: 'none' },
       }}
     >
@@ -52,7 +54,7 @@ export function SessionRow({
           fontWeight: 700,
           fontSize: '0.62rem',
           height: 20,
-          border: `1px solid ${alpha(modeColor(mode), 0.30)}`,
+          border: `1px solid ${alpha(modeColor(mode), 0.3)}`,
           flexShrink: 0,
         }}
       />
@@ -86,7 +88,7 @@ export function SessionRow({
           fontWeight: 700,
           fontSize: '0.68rem',
           height: 22,
-          border: `1px solid ${alpha(brand[300], 0.40)}`,
+          border: `1px solid ${alpha(brand[300], 0.4)}`,
         }}
       />
 

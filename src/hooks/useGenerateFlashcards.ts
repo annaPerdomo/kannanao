@@ -1,12 +1,22 @@
 'use client';
-import { useState, useCallback } from 'react';
-import { generateFlashcards, fetchImage, triggerUnsplashDownload, encodeUnsplashUrl } from '@/services/api';
+import { useCallback, useState } from 'react';
+
+import {
+  encodeUnsplashUrl,
+  fetchImage,
+  generateFlashcards,
+  triggerUnsplashDownload,
+} from '@/services/api';
 import type { Flashcard } from '@/types/flashcard';
 
 interface UseGenerateResult {
   generating: boolean;
   error: string | null;
-  generate: (words: string[], deckId: string, mainViewMode?: 'hiragana' | 'kanji') => Promise<Omit<Flashcard, 'id' | 'deckId'>[]>;
+  generate: (
+    words: string[],
+    deckId: string,
+    mainViewMode?: 'hiragana' | 'kanji',
+  ) => Promise<Omit<Flashcard, 'id' | 'deckId'>[]>;
 }
 
 export function useGenerateFlashcards(): UseGenerateResult {
@@ -14,7 +24,11 @@ export function useGenerateFlashcards(): UseGenerateResult {
   const [error, setError] = useState<string | null>(null);
 
   const generate = useCallback(
-    async (words: string[], deckId: string, mainViewMode: 'hiragana' | 'kanji' = 'hiragana'): Promise<Omit<Flashcard, 'id' | 'deckId'>[]> => {
+    async (
+      words: string[],
+      deckId: string,
+      mainViewMode: 'hiragana' | 'kanji' = 'hiragana',
+    ): Promise<Omit<Flashcard, 'id' | 'deckId'>[]> => {
       setGenerating(true);
       setError(null);
       try {

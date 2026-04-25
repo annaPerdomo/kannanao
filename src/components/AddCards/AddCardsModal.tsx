@@ -1,10 +1,12 @@
 'use client';
-import { useState } from 'react';
 import Box from '@mui/material/Box';
-import { useTheme, alpha } from '@mui/material/styles';
-import { StyledDialog } from '@/components/StyledDialog';
-import { AddCardsSection } from './AddCardsSection';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useState } from 'react';
+
 import { Loading } from '@/components/Loading';
+import { StyledDialog } from '@/components/StyledDialog';
+
+import { AddCardsSection } from './AddCardsSection';
 
 interface AddCardsModalProps {
   open: boolean;
@@ -17,7 +19,13 @@ interface AddCardsModalProps {
 }
 
 export function AddCardsModal({
-  open, onClose, onGenerate, generating, error, onAddExisting, onImportPdf,
+  open,
+  onClose,
+  onGenerate,
+  generating,
+  error,
+  onAddExisting,
+  onImportPdf,
 }: AddCardsModalProps) {
   const { palette } = useTheme();
   const { brand } = palette;
@@ -42,9 +50,13 @@ export function AddCardsModal({
         {generating && (
           <Box
             sx={{
-              position: 'absolute', inset: 0, zIndex: 10,
+              position: 'absolute',
+              inset: 0,
+              zIndex: 10,
               bgcolor: alpha(brand[50], 0.92),
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               borderRadius: '0 0 20px 20px',
             }}
           >
@@ -67,7 +79,8 @@ export function AddCardsModal({
             bgcolor: alpha(brand[50], 0.7),
             border: `1.5px solid ${alpha(brand[300], 0.35)}`,
             borderRadius: '14px',
-            p: 2, mb: 2,
+            p: 2,
+            mb: 2,
           }}
           titleColor={brand[500]}
         />

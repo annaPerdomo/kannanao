@@ -1,7 +1,7 @@
 'use client';
-import { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { useMemo } from 'react';
 
 interface XpEarnedPopProps {
   amount: number;
@@ -49,8 +49,13 @@ export function XpEarnedPop({ amount, correct, show }: XpEarnedPopProps) {
           zIndex: 29,
           animation: correct ? 'xpScreenFlash 0.6s ease-out forwards' : 'none',
           '@keyframes xpScreenFlash': {
-            '0%': { background: 'radial-gradient(circle at 50% 50%, rgba(245,158,11,0.25), transparent 70%)' },
-            '100%': { background: 'radial-gradient(circle at 50% 50%, rgba(245,158,11,0), transparent 70%)' },
+            '0%': {
+              background:
+                'radial-gradient(circle at 50% 50%, rgba(245,158,11,0.25), transparent 70%)',
+            },
+            '100%': {
+              background: 'radial-gradient(circle at 50% 50%, rgba(245,158,11,0), transparent 70%)',
+            },
           },
         }}
       />
@@ -71,9 +76,20 @@ export function XpEarnedPop({ amount, correct, show }: XpEarnedPopProps) {
               opacity: 0,
               '@keyframes xpSparkleBurst': {
                 '0%': { opacity: 0, transform: 'translate(-50%, -50%) scale(0)' },
-                '30%': { opacity: 1, transform: 'translate(calc(-50% + var(--dx) * 0.6), calc(-50% + var(--dy) * 0.6)) scale(1.3)' },
-                '70%': { opacity: 0.8, transform: 'translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1)' },
-                '100%': { opacity: 0, transform: 'translate(calc(-50% + var(--dx) * 1.2), calc(-50% + var(--dy) * 1.2)) scale(0)' },
+                '30%': {
+                  opacity: 1,
+                  transform:
+                    'translate(calc(-50% + var(--dx) * 0.6), calc(-50% + var(--dy) * 0.6)) scale(1.3)',
+                },
+                '70%': {
+                  opacity: 0.8,
+                  transform: 'translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1)',
+                },
+                '100%': {
+                  opacity: 0,
+                  transform:
+                    'translate(calc(-50% + var(--dx) * 1.2), calc(-50% + var(--dy) * 1.2)) scale(0)',
+                },
               },
             }}
           >

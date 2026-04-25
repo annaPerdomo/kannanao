@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { renderWithProviders } from '@/test/renderWithProviders';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -65,9 +66,14 @@ function makeCard(id: string, overrides: Partial<Flashcard> = {}): Flashcard {
 }
 
 const CARDS: Flashcard[] = [
-  makeCard('c1', { word: 'ねこ', reading: 'ねこ', meaning: 'cat',  example_jp: 'ねこが好きです' }),
-  makeCard('c2', { word: 'いぬ', reading: 'いぬ', meaning: 'dog',  example_jp: 'いぬが走ります' }),
-  makeCard('c3', { word: 'さかな', reading: 'さかな', meaning: 'fish', example_jp: 'さかなを食べます' }),
+  makeCard('c1', { word: 'ねこ', reading: 'ねこ', meaning: 'cat', example_jp: 'ねこが好きです' }),
+  makeCard('c2', { word: 'いぬ', reading: 'いぬ', meaning: 'dog', example_jp: 'いぬが走ります' }),
+  makeCard('c3', {
+    word: 'さかな',
+    reading: 'さかな',
+    meaning: 'fish',
+    example_jp: 'さかなを食べます',
+  }),
 ];
 
 describe('FillMode', () => {
@@ -76,9 +82,7 @@ describe('FillMode', () => {
   });
 
   it('should render a text input', async () => {
-    renderWithProviders(
-      <FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
-    );
+    renderWithProviders(<FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByRole('textbox')).toBeInTheDocument();
@@ -86,9 +90,7 @@ describe('FillMode', () => {
   });
 
   it('should render a sentence with a blank', async () => {
-    renderWithProviders(
-      <FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
-    );
+    renderWithProviders(<FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />);
 
     await waitFor(() => {
       // The masked sentence should show ＿＿＿ or the sentence with blank
@@ -98,9 +100,7 @@ describe('FillMode', () => {
   });
 
   it('should allow user to type in the input', async () => {
-    renderWithProviders(
-      <FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
-    );
+    renderWithProviders(<FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByRole('textbox')).toBeInTheDocument();
@@ -112,9 +112,7 @@ describe('FillMode', () => {
   });
 
   it('should render a submit/check button', async () => {
-    renderWithProviders(
-      <FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
-    );
+    renderWithProviders(<FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />);
 
     await waitFor(() => {
       const buttons = screen.getAllByRole('button');
@@ -123,9 +121,7 @@ describe('FillMode', () => {
   });
 
   it('should show success feedback on correct answer', async () => {
-    renderWithProviders(
-      <FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
-    );
+    renderWithProviders(<FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByRole('textbox')).toBeInTheDocument();
@@ -137,9 +133,12 @@ describe('FillMode', () => {
     // Submit by pressing Enter
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
     // Or find and click the check/submit button
-    const checkBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('check') || b.getAttribute('type') === 'submit',
-    );
+    const checkBtn = screen
+      .getAllByRole('button')
+      .find(
+        (b) =>
+          b.textContent?.toLowerCase().includes('check') || b.getAttribute('type') === 'submit',
+      );
     if (checkBtn) fireEvent.click(checkBtn);
 
     // Wait for result to appear (correct or wrong feedback)
@@ -151,9 +150,7 @@ describe('FillMode', () => {
   });
 
   it('should render a progress bar', async () => {
-    renderWithProviders(
-      <FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
-    );
+    renderWithProviders(<FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -161,9 +158,7 @@ describe('FillMode', () => {
   });
 
   it('should show correct feedback after a right answer', async () => {
-    renderWithProviders(
-      <FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
-    );
+    renderWithProviders(<FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />);
 
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
 
@@ -184,9 +179,7 @@ describe('FillMode', () => {
   });
 
   it('should show incorrect feedback after a wrong answer', async () => {
-    renderWithProviders(
-      <FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
-    );
+    renderWithProviders(<FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />);
 
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
 
@@ -201,9 +194,7 @@ describe('FillMode', () => {
   });
 
   it('should show Next button after a wrong answer', async () => {
-    renderWithProviders(
-      <FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
-    );
+    renderWithProviders(<FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />);
 
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'wrong' } });
@@ -215,9 +206,7 @@ describe('FillMode', () => {
   });
 
   it('should disable the input after submitting', async () => {
-    renderWithProviders(
-      <FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
-    );
+    renderWithProviders(<FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />);
 
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'wrong' } });
@@ -229,18 +218,14 @@ describe('FillMode', () => {
   });
 
   it('should show the "Fill in the Blank" heading', async () => {
-    renderWithProviders(
-      <FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
-    );
+    renderWithProviders(<FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />);
     await waitFor(() => {
       expect(screen.getByText('Fill in the Blank')).toBeInTheDocument();
     });
   });
 
   it('should keep Check button disabled when input is empty', async () => {
-    renderWithProviders(
-      <FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
-    );
+    renderWithProviders(<FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />);
     await waitFor(() => expect(screen.getByText('Check')).toBeInTheDocument());
     expect(screen.getByText('Check').closest('button')).toBeDisabled();
   });

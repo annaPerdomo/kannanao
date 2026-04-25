@@ -1,29 +1,22 @@
-"use client";
-import { useState, useCallback, useEffect, useRef } from "react";
-import {
-  Box,
-  Typography,
-  IconButton,
-  Button,
-  LinearProgress,
-  Chip,
-} from "@mui/material";
-import { useTheme, alpha } from "@mui/material/styles";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+'use client';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { Box, Button, Chip, IconButton, LinearProgress, Typography } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Flashcard } from "@/components/Flashcard";
-import { Loading } from "@/components/Loading";
-import { PageHeader } from "@/components/PageHeader";
-import { XpEarnedPop } from "@/components/Practice/XpEarnedPop";
-import { CelebrationScreen } from "@/components/Practice/CelebrationScreen";
-import { useCards } from "@/hooks/useCards";
-import { useDecks } from "@/hooks/useDecks";
-import { useProgress, XP_PER_CORRECT } from "@/hooks/useProgress";
-import { useShop } from "@/hooks/useShop";
-import { useXpAnimation } from "@/contexts/XpAnimationContext";
+import { Flashcard } from '@/components/Flashcard';
+import { Loading } from '@/components/Loading';
+import { PageHeader } from '@/components/PageHeader';
+import { CelebrationScreen } from '@/components/Practice/CelebrationScreen';
+import { XpEarnedPop } from '@/components/Practice/XpEarnedPop';
+import { StudyBuddy } from '@/components/StudyBuddy';
+import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import { useCards } from '@/hooks/useCards';
+import { useDecks } from '@/hooks/useDecks';
+import { useProgress, XP_PER_CORRECT } from '@/hooks/useProgress';
+import { useShop } from '@/hooks/useShop';
 import { LAYOUT } from '@/theme';
-import { StudyBuddy } from "@/components/StudyBuddy";
 
 interface StudyProps {
   deckId: string;
@@ -41,7 +34,7 @@ const CARD_H = 452;
 const SPARKLE_ITEMS = [
   { emoji: '✨', left: 10, delay: 0.04 },
   { emoji: '⭐', left: 24, delay: 0 },
-  { emoji: '💫', left: 40, delay: 0.10 },
+  { emoji: '💫', left: 40, delay: 0.1 },
   { emoji: '✨', left: 57, delay: 0.06 },
   { emoji: '🌟', left: 72, delay: 0.02 },
   { emoji: '⭐', left: 87, delay: 0.12 },
@@ -76,11 +69,14 @@ export default function Study({ deckId, onBack }: StudyProps) {
     });
   }, [deckId, startSession]);
 
-  const showXpPop = useCallback((amount: number) => {
-    setXpPop({ amount, key: Date.now() });
-    triggerXpEarned(amount);
-    setTimeout(() => setXpPop(null), 1300);
-  }, [triggerXpEarned]);
+  const showXpPop = useCallback(
+    (amount: number) => {
+      setXpPop({ amount, key: Date.now() });
+      triggerXpEarned(amount);
+      setTimeout(() => setXpPop(null), 1300);
+    },
+    [triggerXpEarned],
+  );
 
   // Mark the first card as seen on mount (once cards load)
   useEffect(() => {
@@ -110,7 +106,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
 
   const card = cards[index];
   const deck = decks.find((d) => d.id === deckId);
-  const deckName = deck ? deck.name : "Deck";
+  const deckName = deck ? deck.name : 'Deck';
 
   // Slide the current card out, then swap content and slide the new card in.
   // `navigating` blocks further clicks mid-transition.
@@ -139,7 +135,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
 
   if (cardsLoading || decksLoading) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: "auto", px: LAYOUT.pagePx, py: 6 }}>
+      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
         <Loading message="Loading your decks…" />
       </Box>
     );
@@ -147,7 +143,15 @@ export default function Study({ deckId, onBack }: StudyProps) {
 
   if (cards.length === 0) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: "auto", px: LAYOUT.pagePx, py: 6, textAlign: "center" }}>
+      <Box
+        sx={{
+          maxWidth: LAYOUT.narrowMaxWidth,
+          mx: 'auto',
+          px: LAYOUT.pagePx,
+          py: 6,
+          textAlign: 'center',
+        }}
+      >
         <Button startIcon={<ArrowBackIcon />} onClick={handleBack}>
           Back to Deck
         </Button>
@@ -162,18 +166,24 @@ export default function Study({ deckId, onBack }: StudyProps) {
     <Box
       sx={{
         maxWidth: LAYOUT.narrowMaxWidth,
-        mx: "auto",
+        mx: 'auto',
         px: LAYOUT.pagePx,
         py: 4,
-        display: "flex",
-        flexDirection: "column",
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       {/* Header — same container as Practice page */}
-      <PageHeader title={deckName} onBack={handleBack} badge={`${cards.length} cards`} compact mb={3} />
+      <PageHeader
+        title={deckName}
+        onBack={handleBack}
+        badge={`${cards.length} cards`}
+        compact
+        mb={3}
+      />
 
       {/* Progress bar */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
         <LinearProgress
           variant="determinate"
           value={((index + 1) / cards.length) * 100}
@@ -182,7 +192,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
             height: 6,
             borderRadius: 99,
             bgcolor: alpha(brand[300], 0.18),
-            "& .MuiLinearProgress-bar": {
+            '& .MuiLinearProgress-bar': {
               borderRadius: 99,
               background: `linear-gradient(90deg, ${brand[200]} 0%, ${brand[400]} 50%, ${accent[300]} 100%)`,
             },
@@ -201,7 +211,14 @@ export default function Study({ deckId, onBack }: StudyProps) {
       </Box>
 
       {/* Card — dealer-deal animation: new card flips in from above like tossed onto a pile */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', perspective: '1000px', position: 'relative' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          perspective: '1000px',
+          position: 'relative',
+        }}
+      >
         <Box
           key={index}
           sx={{
@@ -211,18 +228,30 @@ export default function Study({ deckId, onBack }: StudyProps) {
             position: 'relative',
             transformOrigin: 'top center',
             '@keyframes dealIn': {
-              '0%':   { transform: 'translateY(-90px) rotateX(-42deg) rotateZ(4deg) scale(0.82)', opacity: 0 },
-              '55%':  { opacity: 1 },
-              '100%': { transform: 'translateY(0) rotateX(0deg) rotateZ(0deg) scale(1)', opacity: 1 },
+              '0%': {
+                transform: 'translateY(-90px) rotateX(-42deg) rotateZ(4deg) scale(0.82)',
+                opacity: 0,
+              },
+              '55%': { opacity: 1 },
+              '100%': {
+                transform: 'translateY(0) rotateX(0deg) rotateZ(0deg) scale(1)',
+                opacity: 1,
+              },
             },
             '@keyframes dealInBack': {
-              '0%':   { transform: 'translateY(-90px) rotateX(-42deg) rotateZ(-4deg) scale(0.82)', opacity: 0 },
-              '55%':  { opacity: 1 },
-              '100%': { transform: 'translateY(0) rotateX(0deg) rotateZ(0deg) scale(1)', opacity: 1 },
+              '0%': {
+                transform: 'translateY(-90px) rotateX(-42deg) rotateZ(-4deg) scale(0.82)',
+                opacity: 0,
+              },
+              '55%': { opacity: 1 },
+              '100%': {
+                transform: 'translateY(0) rotateX(0deg) rotateZ(0deg) scale(1)',
+                opacity: 1,
+              },
             },
             '@keyframes sparkleUp': {
               from: { transform: 'translateY(0) scale(1)', opacity: 0.9 },
-              to:   { transform: 'translateY(-64px) scale(0)', opacity: 0 },
+              to: { transform: 'translateY(-64px) scale(0)', opacity: 0 },
             },
             ...(navigating
               ? {
@@ -241,30 +270,31 @@ export default function Study({ deckId, onBack }: StudyProps) {
           {xpPop && <XpEarnedPop amount={xpPop.amount} correct show key={xpPop.key} />}
 
           {/* Sparkle burst — float up from bottom of card on each new card */}
-          {!navigating && SPARKLE_ITEMS.map((s, i) => (
-            <Box
-              key={i}
-              sx={{
-                position: 'absolute',
-                bottom: 16,
-                left: `${s.left}%`,
-                fontSize: '1rem',
-                pointerEvents: 'none',
-                animation: `sparkleUp 0.72s ${s.delay}s ease-out both`,
-              }}
-            >
-              {s.emoji}
-            </Box>
-          ))}
+          {!navigating &&
+            SPARKLE_ITEMS.map((s, i) => (
+              <Box
+                key={i}
+                sx={{
+                  position: 'absolute',
+                  bottom: 16,
+                  left: `${s.left}%`,
+                  fontSize: '1rem',
+                  pointerEvents: 'none',
+                  animation: `sparkleUp 0.72s ${s.delay}s ease-out both`,
+                }}
+              >
+                {s.emoji}
+              </Box>
+            ))}
         </Box>
       </Box>
 
       {/* Navigation */}
       <Box
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           gap: 4,
           mt: 3,
         }}
@@ -275,17 +305,13 @@ export default function Study({ deckId, onBack }: StudyProps) {
           sx={{
             border: `1px solid ${alpha(brand[300], 0.45)}`,
             bgcolor: brand[50],
-            "&:not(:disabled):hover": { borderColor: brand[500] },
+            '&:not(:disabled):hover': { borderColor: brand[500] },
           }}
         >
           <ArrowBackIcon />
         </IconButton>
 
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ letterSpacing: "0.08em" }}
-        >
+        <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: '0.08em' }}>
           TAP CARD TO FLIP
         </Typography>
 
@@ -295,7 +321,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
           sx={{
             border: `1px solid ${alpha(brand[300], 0.45)}`,
             bgcolor: brand[50],
-            "&:not(:disabled):hover": { borderColor: brand[500] },
+            '&:not(:disabled):hover': { borderColor: brand[500] },
           }}
         >
           <ArrowForwardIcon />
@@ -303,7 +329,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
       </Box>
 
       {index === cards.length - 1 && (
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
           <Button variant="outlined" onClick={() => setShowCelebration(true)}>
             Finish Session ✨
           </Button>

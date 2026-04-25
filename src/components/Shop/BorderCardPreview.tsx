@@ -1,7 +1,8 @@
 'use client';
 
 import Box from '@mui/material/Box';
-import { useTheme, alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+
 import { CARD_BORDER_STYLES } from '@/hooks/useShop';
 
 export function BorderCardPreview({ borderKey }: { borderKey: string }) {
@@ -11,7 +12,16 @@ export function BorderCardPreview({ borderKey }: { borderKey: string }) {
   const hasBorder = borderKey !== 'border_none' && Object.keys(borderStyle).length > 0;
 
   return (
-    <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 1 }}>
+    <Box
+      sx={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: 1,
+      }}
+    >
       <Box
         sx={{
           width: '80%',
@@ -24,27 +34,70 @@ export function BorderCardPreview({ borderKey }: { borderKey: string }) {
           ...(borderStyle.background ? { background: borderStyle.background } : {}),
         }}
       >
-        <Box sx={{
-          bgcolor: brand[50],
-          borderRadius: hasBorder ? '6px' : '7px',
-          overflow: 'hidden',
-        }}>
-          <Box sx={{ height: 10, background: `linear-gradient(135deg, ${brand[400]}, ${accent[400]})` }} />
-          <Box sx={{
-            mx: '4px', mt: '3px', height: 32, borderRadius: '3px',
-            background: `linear-gradient(135deg, ${alpha(brand[100], 0.8)}, ${alpha(accent[100], 0.5)})`,
-            border: `1px solid ${alpha(brand[300], 0.15)}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Box sx={{ width: 14, height: 14, borderRadius: '50%', bgcolor: alpha(brand[300], 0.3) }} />
+        <Box
+          sx={{
+            bgcolor: brand[50],
+            borderRadius: hasBorder ? '6px' : '7px',
+            overflow: 'hidden',
+          }}
+        >
+          <Box
+            sx={{
+              height: 10,
+              background: `linear-gradient(135deg, ${brand[400]}, ${accent[400]})`,
+            }}
+          />
+          <Box
+            sx={{
+              mx: '4px',
+              mt: '3px',
+              height: 32,
+              borderRadius: '3px',
+              background: `linear-gradient(135deg, ${alpha(brand[100], 0.8)}, ${alpha(accent[100], 0.5)})`,
+              border: `1px solid ${alpha(brand[300], 0.15)}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Box
+              sx={{ width: 14, height: 14, borderRadius: '50%', bgcolor: alpha(brand[300], 0.3) }}
+            />
           </Box>
           <Box sx={{ px: '5px', py: '3px' }}>
             <Box sx={{ height: 5, width: '55%', bgcolor: alpha('#000', 0.5), borderRadius: 1 }} />
-            <Box sx={{ height: 3, width: '75%', bgcolor: alpha('#000', 0.15), borderRadius: 1, mt: '2px' }} />
+            <Box
+              sx={{
+                height: 3,
+                width: '75%',
+                bgcolor: alpha('#000', 0.15),
+                borderRadius: 1,
+                mt: '2px',
+              }}
+            />
           </Box>
-          <Box sx={{ mx: '4px', mb: '4px', p: '3px', bgcolor: alpha(brand[50], 0.8), borderRadius: '3px', border: `1px solid ${alpha(brand[300], 0.1)}` }}>
-            <Box sx={{ height: 3, width: '45%', bgcolor: alpha(brand[400], 0.4), borderRadius: 1 }} />
-            <Box sx={{ height: 3, width: '65%', bgcolor: alpha('#000', 0.1), borderRadius: 1, mt: '2px' }} />
+          <Box
+            sx={{
+              mx: '4px',
+              mb: '4px',
+              p: '3px',
+              bgcolor: alpha(brand[50], 0.8),
+              borderRadius: '3px',
+              border: `1px solid ${alpha(brand[300], 0.1)}`,
+            }}
+          >
+            <Box
+              sx={{ height: 3, width: '45%', bgcolor: alpha(brand[400], 0.4), borderRadius: 1 }}
+            />
+            <Box
+              sx={{
+                height: 3,
+                width: '65%',
+                bgcolor: alpha('#000', 0.1),
+                borderRadius: 1,
+                mt: '2px',
+              }}
+            />
           </Box>
         </Box>
       </Box>

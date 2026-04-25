@@ -1,27 +1,25 @@
-import { NextRequest, NextResponse } from "next/server";
-import { sb } from "@/lib/supabase";
+import { type NextRequest, NextResponse } from 'next/server';
+
+import { sb } from '@/lib/supabase';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const email = (body.email ?? "").trim().toLowerCase();
-    const name = (body.name ?? "").trim().slice(0, 100);
-    const message = (body.message ?? "").trim().slice(0, 500);
+    const email = (body.email ?? '').trim().toLowerCase();
+    const name = (body.name ?? '').trim().slice(0, 100);
+    const message = (body.message ?? '').trim().slice(0, 500);
 
     if (!email || !EMAIL_RE.test(email)) {
-      return NextResponse.json(
-        { error: "Please provide a valid email address." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Please provide a valid email address.' }, { status: 400 });
     }
 
     // Check for duplicate
     const { data: existing } = await sb
-      .from("waitlist")
-      .select("id")
-      .eq("email", email)
+      .from('waitlist')
+      .select('id')
+      .eq('email', email)
       .maybeSingle();
 
     if (existing) {
@@ -31,16 +29,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { error } = await sb.from("waitlist").insert({
+    const { error } = await sb.from('waitlist').insert({
       email,
       name: name || null,
       message: message || null,
     });
 
     if (error) {
-      console.error("Waitlist insert error:", error);
+      console.error('Waitlist insert error:', error);
       return NextResponse.json(
-        { error: "Something went wrong. Please try again." },
+        { error: 'Something went wrong. Please try again.' },
         { status: 500 },
       );
     }
@@ -50,9 +48,6 @@ export async function POST(req: NextRequest) {
       { status: 201 },
     );
   } catch {
-    return NextResponse.json(
-      { error: "Invalid request." },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: 'Invalid request.' }, { status: 400 });
   }
 }

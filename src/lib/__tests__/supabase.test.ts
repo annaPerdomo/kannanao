@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the Supabase client before importing the module under test
 vi.mock('@supabase/supabase-js', () => ({
@@ -113,39 +113,48 @@ describe('dbCardToApp', () => {
   });
 });
 
-  it('should handle phrase card type correctly', () => {
+it('should handle phrase card type correctly', () => {
+  const row = {
+    id: 'c3',
+    deck_id: 'deck-1',
+    word: 'お元気ですか',
+    reading: 'おげんきですか',
+    meaning: 'How are you?',
+    image_url: null,
+    image_query: null,
+    example_jp: null,
+    example_en: null,
+    main_view_mode: 'kanji' as const,
+    card_type: 'phrase' as const,
+    jlpt_level: 'N5' as const,
+  };
+
+  const card = dbCardToApp(row);
+  expect(card.cardType).toBe('phrase');
+  expect(card.jlptLevel).toBe('N5');
+  expect(card.mainViewMode).toBe('kanji');
+});
+
+it('should map all JLPT levels correctly', () => {
+  const levels = ['N1', 'N2', 'N3', 'N4', 'N5'] as const;
+  levels.forEach((level) => {
     const row = {
-      id: 'c3',
-      deck_id: 'deck-1',
-      word: 'お元気ですか',
-      reading: 'おげんきですか',
-      meaning: 'How are you?',
+      id: 'c1',
+      deck_id: 'd1',
+      word: 'test',
+      reading: null,
+      meaning: null,
       image_url: null,
       image_query: null,
       example_jp: null,
       example_en: null,
-      main_view_mode: 'kanji' as const,
-      card_type: 'phrase' as const,
-      jlpt_level: 'N5' as const,
+      main_view_mode: 'hiragana' as const,
+      card_type: 'word' as const,
+      jlpt_level: level,
     };
-
-    const card = dbCardToApp(row);
-    expect(card.cardType).toBe('phrase');
-    expect(card.jlptLevel).toBe('N5');
-    expect(card.mainViewMode).toBe('kanji');
+    expect(dbCardToApp(row).jlptLevel).toBe(level);
   });
-
-  it('should map all JLPT levels correctly', () => {
-    const levels = ['N1', 'N2', 'N3', 'N4', 'N5'] as const;
-    levels.forEach((level) => {
-      const row = {
-        id: 'c1', deck_id: 'd1', word: 'test', reading: null, meaning: null,
-        image_url: null, image_query: null, example_jp: null, example_en: null,
-        main_view_mode: 'hiragana' as const, card_type: 'word' as const, jlpt_level: level,
-      };
-      expect(dbCardToApp(row).jlptLevel).toBe(level);
-    });
-  });
+});
 
 // ─── dbDeckToApp ─────────────────────────────────────────────────────────────
 

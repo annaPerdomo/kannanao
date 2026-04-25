@@ -1,12 +1,13 @@
 import Box from '@mui/material/Box';
+
 import LandingGlobalStyles from './LandingGlobalStyles';
 import {
-  HeroSection,
-  FeaturesSection,
   AiDemoSection,
+  CtaSection,
+  FeaturesSection,
+  HeroSection,
   HowItWorksSection,
   PracticeSection,
-  CtaSection,
 } from './sections';
 
 const jsonLd = {

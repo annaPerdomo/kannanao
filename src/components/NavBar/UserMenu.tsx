@@ -1,19 +1,18 @@
 'use client';
-import { useState } from 'react';
-import {
-  Box, Typography, Button, Menu, MenuItem, Divider,
-} from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import SettingsIcon from '@mui/icons-material/Settings';
-import LogoutIcon from '@mui/icons-material/Logout';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import { useRouter } from 'next/navigation';
+import LogoutIcon from '@mui/icons-material/Logout';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { Box, Button, Divider, Menu, MenuItem, Typography } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import { useAuth } from '@/contexts/AuthContext';
-import { useColorScheme, schemeInfo, type ColorScheme } from '@/contexts/ThemeContext';
-import type { SxProps, Theme } from '@mui/material/styles';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useEffect } from 'react';
+
+import { useAuth } from '@/contexts/AuthContext';
+import { type ColorScheme, schemeInfo, useColorScheme } from '@/contexts/ThemeContext';
 
 interface UserMenuProps {
   navBtnSx: SxProps<Theme>;
@@ -47,7 +46,9 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
         startIcon={<AccountCircleIcon sx={{ fontSize: '1.1rem !important' }} />}
         sx={{ ...(navBtnSx as object), '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } } }}
       >
-        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Sign In</Box>
+        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+          Sign In
+        </Box>
       </Button>
     );
   }
@@ -73,7 +74,10 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
       >
         {isAdmin && (
           <MenuItem
-            onClick={() => { setMenuAnchor(null); router.push('/admin'); }}
+            onClick={() => {
+              setMenuAnchor(null);
+              router.push('/admin');
+            }}
             sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontWeight: 600 }}
           >
             <AdminPanelSettingsIcon sx={{ fontSize: '1rem' }} /> Admin
@@ -81,7 +85,10 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
         )}
 
         <MenuItem
-          onClick={() => { setMenuAnchor(null); router.push('/settings'); }}
+          onClick={() => {
+            setMenuAnchor(null);
+            router.push('/settings');
+          }}
           sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontWeight: 600 }}
         >
           <SettingsIcon sx={{ fontSize: '1rem' }} /> Account
@@ -96,11 +103,11 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
 
         <Divider sx={{ my: 0.5 }} />
 
-        <MenuItem disableRipple sx={{ gap: 1, cursor: 'default', '&:hover': { bgcolor: 'transparent' } }}>
-          <Typography
-            variant="caption"
-            sx={{ color: 'text.secondary', fontWeight: 600, flex: 1 }}
-          >
+        <MenuItem
+          disableRipple
+          sx={{ gap: 1, cursor: 'default', '&:hover': { bgcolor: 'transparent' } }}
+        >
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, flex: 1 }}>
             Theme
           </Typography>
           <Box sx={{ display: 'flex', gap: 0.75 }}>

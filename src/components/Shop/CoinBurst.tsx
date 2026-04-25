@@ -2,6 +2,7 @@
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+
 import { coinBounce } from './animations';
 
 export function CoinBurst({ active }: { active: boolean }) {

@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+
 import { vi } from 'vitest';
 
 // ─── Supabase env vars (must come before any module that calls createClient) ──
@@ -23,7 +24,7 @@ vi.mock('next/navigation', () => ({
 // ─── next/image mock ─────────────────────────────────────────────────────────
 vi.mock('next/image', () => ({
   default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: unknown }) => {
-    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const React = require('react');
     return React.createElement('img', { src, alt, ...props });
   },
@@ -56,9 +57,15 @@ const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
     getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => { store[key] = value; },
-    removeItem: (key: string) => { delete store[key]; },
-    clear: () => { store = {}; },
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
   };
 })();
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });

@@ -1,20 +1,30 @@
 'use client';
 
-import { useState } from 'react';
-import {
-  Box, Typography, Paper, Stack, TextField,
-  Button, Alert, Snackbar, Divider, Switch, FormControlLabel,
-} from '@mui/material';
 import BadgeIcon from '@mui/icons-material/Badge';
+import ChecklistIcon from '@mui/icons-material/Checklist';
 import EditIcon from '@mui/icons-material/Edit';
 import KeyIcon from '@mui/icons-material/Key';
-import ChecklistIcon from '@mui/icons-material/Checklist';
-import { useTheme, alpha } from '@mui/material/styles';
-import { useAuth } from '@/contexts/AuthContext';
-import { Loading } from '@/components/Loading';
+import {
+  Alert,
+  Box,
+  Button,
+  Divider,
+  FormControlLabel,
+  Paper,
+  Snackbar,
+  Stack,
+  Switch,
+  TextField,
+  Typography,
+} from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
-import { LAYOUT } from '@/theme';
+import { useState } from 'react';
+
+import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
+import { useAuth } from '@/contexts/AuthContext';
+import { LAYOUT } from '@/theme';
 
 interface SectionProps {
   icon: React.ReactNode;
@@ -37,7 +47,14 @@ function Section({ icon, title, description, children }: SectionProps) {
     >
       <Stack direction="row" alignItems="center" gap={1.5} sx={{ mb: 0.5 }}>
         <Box sx={{ color: brand[500], display: 'flex' }}>{icon}</Box>
-        <Typography sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, fontSize: '1.05rem', color: brand[700] }}>
+        <Typography
+          sx={{
+            fontFamily: (t) => t.fonts.cute,
+            fontWeight: 600,
+            fontSize: '1.05rem',
+            color: brand[700],
+          }}
+        >
           {title}
         </Typography>
       </Stack>
@@ -52,7 +69,16 @@ function Section({ icon, title, description, children }: SectionProps) {
 export default function SettingsPage() {
   const theme = useTheme();
   const { brand } = theme.palette;
-  const { user, loading, displayName, updateDisplayName, session, signOut, showTodo, updateShowTodo } = useAuth();
+  const {
+    user,
+    loading,
+    displayName,
+    updateDisplayName,
+    session,
+    signOut,
+    showTodo,
+    updateShowTodo,
+  } = useAuth();
   const router = useRouter();
 
   const currentUsername = user?.email?.split('@')[0] ?? '';
@@ -206,8 +232,16 @@ export default function SettingsPage() {
             <Button
               size="small"
               variant="outlined"
-              onClick={() => { setNewDisplayName(displayName ?? ''); setDisplayNameOpen(true); }}
-              sx={{ borderRadius: 6, textTransform: 'none', borderColor: alpha(brand[400], 0.5), color: brand[700] }}
+              onClick={() => {
+                setNewDisplayName(displayName ?? '');
+                setDisplayNameOpen(true);
+              }}
+              sx={{
+                borderRadius: 6,
+                textTransform: 'none',
+                borderColor: alpha(brand[400], 0.5),
+                color: brand[700],
+              }}
             >
               Change display name
             </Button>
@@ -220,12 +254,16 @@ export default function SettingsPage() {
                 label="New display name"
                 value={newDisplayName}
                 onChange={(e) => setNewDisplayName(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') void handleSaveDisplayName(); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void handleSaveDisplayName();
+                }}
                 helperText="The name shown in the app (max 100 characters)"
                 sx={fieldSx}
               />
               <Stack direction="row" gap={1}>
-                <Button onClick={() => setDisplayNameOpen(false)} sx={cancelBtnSx}>Cancel</Button>
+                <Button onClick={() => setDisplayNameOpen(false)} sx={cancelBtnSx}>
+                  Cancel
+                </Button>
                 <Button
                   onClick={handleSaveDisplayName}
                   disabled={displayNameSaving}
@@ -254,8 +292,16 @@ export default function SettingsPage() {
             <Button
               size="small"
               variant="outlined"
-              onClick={() => { setNewUsername(''); setUsernameOpen(true); }}
-              sx={{ borderRadius: 6, textTransform: 'none', borderColor: alpha(brand[400], 0.5), color: brand[700] }}
+              onClick={() => {
+                setNewUsername('');
+                setUsernameOpen(true);
+              }}
+              sx={{
+                borderRadius: 6,
+                textTransform: 'none',
+                borderColor: alpha(brand[400], 0.5),
+                color: brand[700],
+              }}
             >
               Change username
             </Button>
@@ -268,12 +314,16 @@ export default function SettingsPage() {
                 label="New username"
                 value={newUsername}
                 onChange={(e) => setNewUsername(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') void handleSaveUsername(); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void handleSaveUsername();
+                }}
                 helperText="Letters, numbers, _ or - (2–30 chars). You will be signed out after saving."
                 sx={fieldSx}
               />
               <Stack direction="row" gap={1}>
-                <Button onClick={() => setUsernameOpen(false)} sx={cancelBtnSx}>Cancel</Button>
+                <Button onClick={() => setUsernameOpen(false)} sx={cancelBtnSx}>
+                  Cancel
+                </Button>
                 <Button
                   onClick={handleSaveUsername}
                   disabled={usernameSaving || !newUsername.trim()}
@@ -326,8 +376,17 @@ export default function SettingsPage() {
             <Button
               size="small"
               variant="outlined"
-              onClick={() => { setNewPassword(''); setConfirmPassword(''); setPasswordOpen(true); }}
-              sx={{ borderRadius: 6, textTransform: 'none', borderColor: alpha(brand[400], 0.5), color: brand[700] }}
+              onClick={() => {
+                setNewPassword('');
+                setConfirmPassword('');
+                setPasswordOpen(true);
+              }}
+              sx={{
+                borderRadius: 6,
+                textTransform: 'none',
+                borderColor: alpha(brand[400], 0.5),
+                color: brand[700],
+              }}
             >
               Change password
             </Button>
@@ -351,11 +410,15 @@ export default function SettingsPage() {
                 label="Confirm new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') void handleSavePassword(); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void handleSavePassword();
+                }}
                 sx={fieldSx}
               />
               <Stack direction="row" gap={1}>
-                <Button onClick={() => setPasswordOpen(false)} sx={cancelBtnSx}>Cancel</Button>
+                <Button onClick={() => setPasswordOpen(false)} sx={cancelBtnSx}>
+                  Cancel
+                </Button>
                 <Button
                   onClick={handleSavePassword}
                   disabled={passwordSaving || !newPassword || !confirmPassword}
@@ -376,7 +439,11 @@ export default function SettingsPage() {
         onClose={() => setSnack(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert severity={snack?.severity ?? 'success'} onClose={() => setSnack(null)} sx={{ width: '100%' }}>
+        <Alert
+          severity={snack?.severity ?? 'success'}
+          onClose={() => setSnack(null)}
+          sx={{ width: '100%' }}
+        >
           {snack?.msg}
         </Alert>
       </Snackbar>

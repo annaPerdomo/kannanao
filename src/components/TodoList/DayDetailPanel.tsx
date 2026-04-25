@@ -1,22 +1,24 @@
 'use client';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import LinearProgress from '@mui/material/LinearProgress';
-import Collapse from '@mui/material/Collapse';
-import Alert from '@mui/material/Alert';
-import Divider from '@mui/material/Divider';
-import { alpha } from '@mui/material/styles';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { DayProgress } from './DayProgress';
-import { CalendarEntrySection } from './CalendarEntrySection';
+import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Collapse from '@mui/material/Collapse';
+import Divider from '@mui/material/Divider';
+import LinearProgress from '@mui/material/LinearProgress';
+import Stack from '@mui/material/Stack';
+import { alpha } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+
+import type { CalendarEntry, EntryType, Todo } from '@/types/todo';
+
 import { AddTodoInput } from './AddTodoInput';
-import { TodoItem } from './TodoItem';
-import { SortableTodoItem } from './SortableTodoItem';
+import { CalendarEntrySection } from './CalendarEntrySection';
+import { DayProgress } from './DayProgress';
 import { isCompletedOnDate } from './helpers';
-import type { Todo, CalendarEntry, EntryType } from '@/types/todo';
+import { SortableTodoItem } from './SortableTodoItem';
+import { TodoItem } from './TodoItem';
 
 interface DayDetailPanelProps {
   view: 'week' | 'month';
@@ -57,14 +59,41 @@ interface DayDetailPanelProps {
 }
 
 export function DayDetailPanel({
-  view, activeDateLabel, activeDateISO, isPastDate,
-  todosForDay, completedCount, totalCount,
-  loading, error, clearError, celebration,
-  input, onInputChange, onAdd, frequencyDays, onFrequencyChange, repeatUntilDone, onRepeatUntilDoneChange,
-  onToggle, onEditEmoji, onDelete, onAdvancedEdit, onReorder, onXpEarned,
-  entries, onAddEntry, onEditEntry, onDeleteEntry,
-  allEntryTypes, onAddEntryType, onUpdateEntryType, onDeleteEntryType,
-  selectedDate, brandPalette: brand, accentPalette: accent,
+  view,
+  activeDateLabel,
+  activeDateISO,
+  isPastDate,
+  todosForDay,
+  completedCount,
+  totalCount,
+  loading,
+  error,
+  clearError,
+  celebration,
+  input,
+  onInputChange,
+  onAdd,
+  frequencyDays,
+  onFrequencyChange,
+  repeatUntilDone,
+  onRepeatUntilDoneChange,
+  onToggle,
+  onEditEmoji,
+  onDelete,
+  onAdvancedEdit,
+  onReorder,
+  onXpEarned,
+  entries,
+  onAddEntry,
+  onEditEntry,
+  onDeleteEntry,
+  allEntryTypes,
+  onAddEntryType,
+  onUpdateEntryType,
+  onDeleteEntryType,
+  selectedDate,
+  brandPalette: brand,
+  accentPalette: accent,
 }: DayDetailPanelProps) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -106,27 +135,44 @@ export function DayDetailPanel({
 
       <Stack spacing={1} useFlexGap>
         <Box>
-          <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: brand[600], textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          <Typography
+            sx={{
+              fontSize: '0.72rem',
+              fontWeight: 800,
+              color: brand[600],
+              textTransform: 'uppercase',
+              letterSpacing: 0.5,
+            }}
+          >
             ✅ My To-Do List
           </Typography>
           <DayProgress completedCount={completedCount} totalCount={totalCount} />
         </Box>
 
-        <Box sx={{ mt: 0.75, }}>
+        <Box sx={{ mt: 0.75 }}>
           <AddTodoInput
-            value={input} onChange={onInputChange} onAdd={onAdd} disabled={loading}
-            frequencyDays={frequencyDays} onFrequencyChange={onFrequencyChange}
-            repeatUntilDone={repeatUntilDone} onRepeatUntilDoneChange={onRepeatUntilDoneChange}
+            value={input}
+            onChange={onInputChange}
+            onAdd={onAdd}
+            disabled={loading}
+            frequencyDays={frequencyDays}
+            onFrequencyChange={onFrequencyChange}
+            repeatUntilDone={repeatUntilDone}
+            onRepeatUntilDoneChange={onRepeatUntilDoneChange}
           />
         </Box>
 
         <Collapse in={!!celebration}>
-          <Box sx={{
-            textAlign: 'center', py: 0.75, borderRadius: 3,
-            background: `linear-gradient(90deg, ${alpha(brand[300], 0.15)}, ${alpha(accent[200], 0.2)}, ${alpha(brand[300], 0.15)})`,
-            animation: 'pulse-soft 1s ease infinite',
-            '@keyframes pulse-soft': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.75 } },
-          }}>
+          <Box
+            sx={{
+              textAlign: 'center',
+              py: 0.75,
+              borderRadius: 3,
+              background: `linear-gradient(90deg, ${alpha(brand[300], 0.15)}, ${alpha(accent[200], 0.2)}, ${alpha(brand[300], 0.15)})`,
+              animation: 'pulse-soft 1s ease infinite',
+              '@keyframes pulse-soft': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.75 } },
+            }}
+          >
             <Typography sx={{ fontWeight: 800, fontSize: '0.88rem', color: brand[700] }}>
               {celebration} All done! 🎊
             </Typography>
@@ -134,18 +180,30 @@ export function DayDetailPanel({
         </Collapse>
 
         <Collapse in={!!error}>
-          <Alert severity="error" onClose={clearError} sx={{ borderRadius: 2.5, fontSize: '0.78rem' }}>
+          <Alert
+            severity="error"
+            onClose={clearError}
+            sx={{ borderRadius: 2.5, fontSize: '0.78rem' }}
+          >
             {error}
           </Alert>
         </Collapse>
 
         {loading ? (
           <Box sx={{ py: 2 }}>
-            <LinearProgress sx={{
-              borderRadius: 2, bgcolor: alpha(brand[200], 0.15),
-              '& .MuiLinearProgress-bar': { background: `linear-gradient(90deg, ${brand[400]}, ${accent[300]})` },
-            }} />
-            <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 1, color: 'text.disabled' }}>
+            <LinearProgress
+              sx={{
+                borderRadius: 2,
+                bgcolor: alpha(brand[200], 0.15),
+                '& .MuiLinearProgress-bar': {
+                  background: `linear-gradient(90deg, ${brand[400]}, ${accent[300]})`,
+                },
+              }}
+            />
+            <Typography
+              variant="caption"
+              sx={{ display: 'block', textAlign: 'center', mt: 1, color: 'text.disabled' }}
+            >
               Loading your list... 🌸
             </Typography>
           </Box>
@@ -163,13 +221,25 @@ export function DayDetailPanel({
           </Box>
         ) : (
           <Stack spacing={0.5}>
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={incompleteTodos.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={incompleteTodos.map((t) => t.id)}
+                strategy={verticalListSortingStrategy}
+              >
                 {incompleteTodos.map((todo) => (
                   <SortableTodoItem
-                    key={todo.id} todo={todo} viewDateISO={activeDateISO}
-                    onToggle={onToggle} onEditEmoji={onEditEmoji} onDelete={onDelete}
-                    onAdvancedEdit={onAdvancedEdit} onXpEarned={onXpEarned}
+                    key={todo.id}
+                    todo={todo}
+                    viewDateISO={activeDateISO}
+                    onToggle={onToggle}
+                    onEditEmoji={onEditEmoji}
+                    onDelete={onDelete}
+                    onAdvancedEdit={onAdvancedEdit}
+                    onXpEarned={onXpEarned}
                     brand={brand}
                   />
                 ))}
@@ -177,9 +247,14 @@ export function DayDetailPanel({
             </DndContext>
             {completedTodos.map((todo) => (
               <TodoItem
-                key={todo.id} todo={todo} viewDateISO={activeDateISO}
-                onToggle={onToggle} onEditEmoji={onEditEmoji} onDelete={onDelete}
-                onAdvancedEdit={onAdvancedEdit} onXpEarned={onXpEarned}
+                key={todo.id}
+                todo={todo}
+                viewDateISO={activeDateISO}
+                onToggle={onToggle}
+                onEditEmoji={onEditEmoji}
+                onDelete={onDelete}
+                onAdvancedEdit={onAdvancedEdit}
+                onXpEarned={onXpEarned}
               />
             ))}
           </Stack>

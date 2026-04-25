@@ -1,12 +1,14 @@
 'use client';
 
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Button from '@mui/material/Button';
-import { alpha } from '@mui/material/styles';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
+import { alpha } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+
 import type { ShopItem } from '@/types/shop';
+
 import { ShopItemCard } from './ShopItemCard';
 
 const OVERVIEW_COUNT = 4;
@@ -44,7 +46,9 @@ export function CategorySection({
   overview?: boolean;
   onSeeAll?: () => void;
 }) {
-  const displayItems = overview ? items.filter((i) => !i.comingSoon).slice(0, OVERVIEW_COUNT) : items;
+  const displayItems = overview
+    ? items.filter((i) => !i.comingSoon).slice(0, OVERVIEW_COUNT)
+    : items;
 
   return (
     <Paper
@@ -112,10 +116,11 @@ export function CategorySection({
         {displayItems.map((item) => {
           const owned = ownsItem(item.key);
           const slot = item.category;
-          const isEquipped = slot === 'theme' && activeThemeKey
-            ? item.key === activeThemeKey
-            : equipped[slot] === item.key
-              || (item.price === 0 && !equipped[slot] && item.key === 'border_none');
+          const isEquipped =
+            slot === 'theme' && activeThemeKey
+              ? item.key === activeThemeKey
+              : equipped[slot] === item.key ||
+                (item.price === 0 && !equipped[slot] && item.key === 'border_none');
 
           return (
             <ShopItemCard

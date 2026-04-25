@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { type NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 
 const GenerateSchema = z.object({
   pendingWords: z
     .array(z.string().min(1).max(200))
-    .min(1, "No words provided")
-    .max(50, "Too many words — max 50 per request"),
+    .min(1, 'No words provided')
+    .max(50, 'Too many words — max 50 per request'),
 });
 
 export async function POST(req: NextRequest) {
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const parsed = GenerateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Invalid request" },
+      { error: parsed.error.issues[0]?.message ?? 'Invalid request' },
       { status: 400 },
     );
   }
@@ -21,14 +21,11 @@ export async function POST(req: NextRequest) {
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return NextResponse.json(
-      { error: "GEMINI_API_KEY not configured" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
   }
 
   try {
-    const prompt = `Japanese language teacher. Create exactly one card per item for: ${pendingWords.join(", ")}.
+    const prompt = `Japanese language teacher. Create exactly one card per item for: ${pendingWords.join(', ')}.
 - card_type: "word" for single vocabulary words, "phrase" for multi-word expressions or full phrases.
 - reading: kana pronunciation (empty if already kana)
 - image_query: 2-4 word English noun phrase for Unsplash (concrete, photographic, child-friendly). Verbs→scene (食べる="child eating noodles"), abstracts→closest visual (楽しい="children laughing"). For phrases, pick the most concrete noun in the phrase.
@@ -40,8 +37,8 @@ If a word has multiple translations, use the most common/natural one.`;
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
       {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [
             {
@@ -49,30 +46,34 @@ If a word has multiple translations, use the most common/natural one.`;
             },
           ],
           generationConfig: {
-            response_mime_type: "application/json",
+            response_mime_type: 'application/json',
             response_schema: {
-              type: "array",
+              type: 'array',
               items: {
-                type: "object",
+                type: 'object',
                 properties: {
-                  word: { type: "string" },
-                  reading: { type: "string" },
-                  meaning: { type: "string" },
-                  image_query: { type: "string" },
-                  example_jp: { type: "string" },
-                  example_en: { type: "string" },
-                  card_type: { type: "string", enum: ["word", "phrase"] },
-                  jlpt_level: { type: "string", enum: ["N5", "N4", "N3", "N2", "N1"], nullable: true },
+                  word: { type: 'string' },
+                  reading: { type: 'string' },
+                  meaning: { type: 'string' },
+                  image_query: { type: 'string' },
+                  example_jp: { type: 'string' },
+                  example_en: { type: 'string' },
+                  card_type: { type: 'string', enum: ['word', 'phrase'] },
+                  jlpt_level: {
+                    type: 'string',
+                    enum: ['N5', 'N4', 'N3', 'N2', 'N1'],
+                    nullable: true,
+                  },
                 },
                 required: [
-                  "word",
-                  "reading",
-                  "meaning",
-                  "image_query",
-                  "example_jp",
-                  "example_en",
-                  "card_type",
-                  "jlpt_level",
+                  'word',
+                  'reading',
+                  'meaning',
+                  'image_query',
+                  'example_jp',
+                  'example_en',
+                  'card_type',
+                  'jlpt_level',
                 ],
               },
             },
@@ -84,16 +85,16 @@ If a word has multiple translations, use the most common/natural one.`;
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Gemini Error:", JSON.stringify(data, null, 2));
+      console.error('Gemini Error:', JSON.stringify(data, null, 2));
       return NextResponse.json(data, { status: response.status });
     }
 
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "[]";
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]';
     return NextResponse.json(JSON.parse(rawText));
   } catch (err) {
-    console.error("[/api/generate]", err);
+    console.error('[/api/generate]', err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Internal server error" },
+      { error: err instanceof Error ? err.message : 'Internal server error' },
       { status: 500 },
     );
   }

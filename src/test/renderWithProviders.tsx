@@ -1,15 +1,18 @@
-import React, { type ReactNode } from 'react';
-import { render, type RenderOptions } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { createAppTheme, type ColorScheme } from '@/theme';
-import { CardBorderCtx } from '@/contexts/CardBorderContext';
-
+import { ThemeProvider } from '@mui/material/styles';
+import { render, type RenderOptions } from '@testing-library/react';
+import React, { type ReactNode } from 'react';
 // ─── XpAnimation inline mock context ─────────────────────────────────────────
 // We recreate the context shape here so we don't depend on the real module
 import { createContext, useContext } from 'react';
 
-interface XpEvent { key: number; amount: number }
+import { CardBorderCtx } from '@/contexts/CardBorderContext';
+import { type ColorScheme, createAppTheme } from '@/theme';
+
+interface XpEvent {
+  key: number;
+  amount: number;
+}
 interface XpAnimationContextValue {
   pendingXp: XpEvent[];
   triggerXpEarned: (amount: number) => void;
@@ -27,13 +30,21 @@ interface WrapperOptions {
   scheme?: ColorScheme;
 }
 
-function AllProviders({ children, scheme = 'sakura' }: { children: ReactNode; scheme?: ColorScheme }) {
+function AllProviders({
+  children,
+  scheme = 'sakura',
+}: {
+  children: ReactNode;
+  scheme?: ColorScheme;
+}) {
   const theme = createAppTheme(scheme);
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <CardBorderCtx.Provider value={{ borderStyle: {}, equippedBorderKey: null }}>
-        <MockXpAnimationContext.Provider value={{ pendingXp: [], triggerXpEarned: () => {}, dismissXpEvent: () => {} }}>
+        <MockXpAnimationContext.Provider
+          value={{ pendingXp: [], triggerXpEarned: () => {}, dismissXpEvent: () => {} }}
+        >
           {children}
         </MockXpAnimationContext.Provider>
       </CardBorderCtx.Provider>

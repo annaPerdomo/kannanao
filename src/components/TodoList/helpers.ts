@@ -1,4 +1,4 @@
-import type { Todo, CalendarEntry, EntryType } from '@/types/todo';
+import type { CalendarEntry, EntryType, Todo } from '@/types/todo';
 
 export const XP_PER_TODO = 5;
 
@@ -7,13 +7,29 @@ export const DAY_LABELS_SHORT = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 // weekday index in DAY_LABELS → JS getDay() value
 export const DAY_INDEX_TO_JS = [1, 2, 3, 4, 5, 6, 0]; // Mon=1, Tue=2, ..., Sun=0
 export const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 export const CELEBRATION_MESSAGES = [
-  '🎉 Amazing work!', "⭐ You're on fire!", '🌸 So productive!', '✨ Keep it up!',
-  '🦋 Unstoppable!', '🌈 You did it!', '💕 Wonderful!', '🎀 Fabulous!',
+  '🎉 Amazing work!',
+  "⭐ You're on fire!",
+  '🌸 So productive!',
+  '✨ Keep it up!',
+  '🦋 Unstoppable!',
+  '🌈 You did it!',
+  '💕 Wonderful!',
+  '🎀 Fabulous!',
 ];
 
 export const DEFAULT_ENTRY_TYPES: EntryType[] = [
@@ -103,7 +119,11 @@ export function getEntryType(typeId: string, entryTypes: EntryType[]): EntryType
 
 export function parseJson<T>(value: string | null, fallback: T): T {
   if (!value) return fallback;
-  try { return JSON.parse(value) as T; } catch { return fallback; }
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return fallback;
+  }
 }
 
 export function formatWeekRange(weekDates: Date[]): string {

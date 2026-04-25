@@ -1,14 +1,31 @@
 'use client';
-import { useState, useRef } from 'react';
-import { Box, Typography, TextField, Button, Tooltip, CircularProgress, IconButton } from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
-import ImageSearchIcon from '@mui/icons-material/ImageSearch';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
 import CloseIcon from '@mui/icons-material/Close';
-import { fetchImage, uploadImage, deleteStorageImage, isStorageImage, triggerUnsplashDownload, encodeUnsplashUrl } from '@/services/api';
-import { UnsplashAttribution } from '@/components/UnsplashAttribution';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import ImageSearchIcon from '@mui/icons-material/ImageSearch';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useRef, useState } from 'react';
+
 import { ConfirmRemoveImageDialog } from '@/components/ConfirmRemoveImageDialog';
+import { UnsplashAttribution } from '@/components/UnsplashAttribution';
+import {
+  deleteStorageImage,
+  encodeUnsplashUrl,
+  fetchImage,
+  isStorageImage,
+  triggerUnsplashDownload,
+  uploadImage,
+} from '@/services/api';
+
 import { sharedTextFieldSx } from './constants';
 
 interface ImageSectionProps {
@@ -19,7 +36,13 @@ interface ImageSectionProps {
   onQueryChange?: (query: string) => void;
 }
 
-export function ImageSection({ imageUrl, word, initialQuery, onImageChange, onQueryChange }: ImageSectionProps) {
+export function ImageSection({
+  imageUrl,
+  word,
+  initialQuery,
+  onImageChange,
+  onQueryChange,
+}: ImageSectionProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
   const [imageQuery, setImageQuery] = useState(initialQuery);
@@ -49,7 +72,9 @@ export function ImageSection({ imageUrl, word, initialQuery, onImageChange, onQu
         setImageError('No image found for that query. Try a different search term.');
       }
     } catch (err) {
-      setImageError(err instanceof Error ? err.message : 'Failed to fetch image. Please try again.');
+      setImageError(
+        err instanceof Error ? err.message : 'Failed to fetch image. Please try again.',
+      );
     } finally {
       setSavingImage(false);
     }
@@ -63,7 +88,9 @@ export function ImageSection({ imageUrl, word, initialQuery, onImageChange, onQu
       setPreviewUrl(url);
       onImageChange(url);
     } catch (err) {
-      setImageError(err instanceof Error ? err.message : 'Failed to upload image. Please try again.');
+      setImageError(
+        err instanceof Error ? err.message : 'Failed to upload image. Please try again.',
+      );
     } finally {
       setUploading(false);
     }
@@ -100,29 +127,66 @@ export function ImageSection({ imageUrl, word, initialQuery, onImageChange, onQu
   const tfSx = sharedTextFieldSx(theme);
 
   const btnSx = {
-    borderRadius: '10px', height: 40, minWidth: 'auto', px: 1.5, flexShrink: 0,
-    fontSize: '0.72rem', fontWeight: 700, whiteSpace: 'nowrap', textTransform: 'none',
-    borderColor: alpha(brand[300], 0.5), color: brand[700],
+    borderRadius: '10px',
+    height: 40,
+    minWidth: 'auto',
+    px: 1.5,
+    flexShrink: 0,
+    fontSize: '0.72rem',
+    fontWeight: 700,
+    whiteSpace: 'nowrap',
+    textTransform: 'none',
+    borderColor: alpha(brand[300], 0.5),
+    color: brand[700],
     '&:hover': { borderColor: brand[400], bgcolor: brand[50] },
   };
 
   return (
     <Box>
-      <Typography sx={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: brand[500], mb: 1.25 }}>
+      <Typography
+        sx={{
+          fontSize: '0.6rem',
+          fontWeight: 800,
+          letterSpacing: '0.16em',
+          textTransform: 'uppercase',
+          color: brand[500],
+          mb: 1.25,
+        }}
+      >
         Card Image
       </Typography>
 
       {previewUrl && (
-        <Box sx={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: `1.5px solid ${alpha(brand[300], 0.35)}`, mb: 1.5, height: 140, bgcolor: alpha(brand[50], 0.8) }}>
-          <Box component="img" src={previewUrl} alt="Card image preview" sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        <Box
+          sx={{
+            position: 'relative',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            border: `1.5px solid ${alpha(brand[300], 0.35)}`,
+            mb: 1.5,
+            height: 140,
+            bgcolor: alpha(brand[50], 0.8),
+          }}
+        >
+          <Box
+            component="img"
+            src={previewUrl}
+            alt="Card image preview"
+            sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
           <UnsplashAttribution url={previewUrl} />
           <Tooltip title="Remove image">
             <IconButton
-              size="small" onClick={handleRemoveClick}
+              size="small"
+              onClick={handleRemoveClick}
               sx={{
-                position: 'absolute', top: 6, right: 6,
-                width: 26, height: 26,
-                bgcolor: 'rgba(0,0,0,0.5)', color: 'white',
+                position: 'absolute',
+                top: 6,
+                right: 6,
+                width: 26,
+                height: 26,
+                bgcolor: 'rgba(0,0,0,0.5)',
+                color: 'white',
                 '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
               }}
             >
@@ -136,13 +200,23 @@ export function ImageSection({ imageUrl, word, initialQuery, onImageChange, onQu
         <TextField
           label="Image Search Query"
           value={imageQuery}
-          onChange={(e) => { setImageQuery(e.target.value); setImageError(''); onQueryChange?.(e.target.value); }}
+          onChange={(e) => {
+            setImageQuery(e.target.value);
+            setImageError('');
+            onQueryChange?.(e.target.value);
+          }}
           placeholder="Phrase that describes this definition"
-          size="small" fullWidth
+          size="small"
+          fullWidth
           slotProps={{ inputLabel: { shrink: true } }}
           helperText={imageError}
           error={!!imageError}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleRegenerateImage(); } }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleRegenerateImage();
+            }
+          }}
           sx={{
             ...tfSx,
             '& .MuiFormHelperText-root': {
@@ -155,11 +229,17 @@ export function ImageSection({ imageUrl, word, initialQuery, onImageChange, onQu
           <Tooltip title={previewUrl ? 'Regenerate from Unsplash' : 'Search Unsplash'}>
             <span>
               <Button
-                variant="outlined" onClick={handleRegenerateImage} disabled={busy}
+                variant="outlined"
+                onClick={handleRegenerateImage}
+                disabled={busy}
                 startIcon={
-                  savingImage ? <CircularProgress size={13} sx={{ color: brand[500] }} />
-                  : previewUrl ? <AutorenewIcon sx={{ fontSize: 15 }} />
-                  : <ImageSearchIcon sx={{ fontSize: 15 }} />
+                  savingImage ? (
+                    <CircularProgress size={13} sx={{ color: brand[500] }} />
+                  ) : previewUrl ? (
+                    <AutorenewIcon sx={{ fontSize: 15 }} />
+                  ) : (
+                    <ImageSearchIcon sx={{ fontSize: 15 }} />
+                  )
                 }
                 sx={btnSx}
               >
@@ -170,10 +250,15 @@ export function ImageSection({ imageUrl, word, initialQuery, onImageChange, onQu
           <Tooltip title="Upload your own image">
             <span>
               <Button
-                variant="outlined" onClick={() => fileInputRef.current?.click()} disabled={busy}
+                variant="outlined"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={busy}
                 startIcon={
-                  uploading ? <CircularProgress size={13} sx={{ color: brand[500] }} />
-                  : <FileUploadIcon sx={{ fontSize: 15 }} />
+                  uploading ? (
+                    <CircularProgress size={13} sx={{ color: brand[500] }} />
+                  ) : (
+                    <FileUploadIcon sx={{ fontSize: 15 }} />
+                  )
                 }
                 sx={btnSx}
               >

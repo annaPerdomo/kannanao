@@ -1,6 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
 import { useAuth } from '@/contexts/AuthContext';
-import { loadEventTypes, dbCreateEventType, dbUpdateEventType, dbDeleteEventType } from '@/lib/supabase';
+import {
+  dbCreateEventType,
+  dbDeleteEventType,
+  dbUpdateEventType,
+  loadEventTypes,
+} from '@/lib/supabase';
 import type { EntryType } from '@/types/todo';
 
 export function useEventTypes() {
@@ -23,13 +29,16 @@ export function useEventTypes() {
       .finally(() => setLoading(false));
   }, [user]);
 
-  const addEntryType = useCallback(async (name: string, emoji: string, color: string) => {
-    if (!user) throw new Error('Not authenticated');
-    setError(null);
-    const type = await dbCreateEventType(user.id, name, emoji, color);
-    setEntryTypes((prev) => [...prev, type]);
-    return type;
-  }, [user]);
+  const addEntryType = useCallback(
+    async (name: string, emoji: string, color: string) => {
+      if (!user) throw new Error('Not authenticated');
+      setError(null);
+      const type = await dbCreateEventType(user.id, name, emoji, color);
+      setEntryTypes((prev) => [...prev, type]);
+      return type;
+    },
+    [user],
+  );
 
   const updateEntryType = useCallback(async (id: string, name: string, emoji: string) => {
     setError(null);

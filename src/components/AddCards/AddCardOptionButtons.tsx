@@ -1,9 +1,9 @@
 'use client';
-import { Box, Typography } from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { Box, Typography } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 
 interface AddCardOptionButtonsProps {
   disabled?: boolean;
@@ -34,7 +34,11 @@ export function OrDivider() {
   );
 }
 
-export function AddCardOptionButtons({ disabled = false, onAddExisting, onImportPdf }: AddCardOptionButtonsProps) {
+export function AddCardOptionButtons({
+  disabled = false,
+  onAddExisting,
+  onImportPdf,
+}: AddCardOptionButtonsProps) {
   const { palette } = useTheme();
   const { brand, accent } = palette;
 

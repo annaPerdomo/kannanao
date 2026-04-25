@@ -1,4 +1,4 @@
-import type { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,5 +8,5 @@ export default function robots(): MetadataRoute.Robots {
       disallow: ['/dashboard', '/decks', '/study', '/stats', '/profile', '/api'],
     },
     sitemap: 'https://kannanao.com/sitemap.xml',
-  }
+  };
 }

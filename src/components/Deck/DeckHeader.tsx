@@ -1,17 +1,23 @@
 'use client';
-import { useCallback, useState, useRef } from 'react';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import CodeIcon from '@mui/icons-material/Code';
+import EditIcon from '@mui/icons-material/Edit';
+import PushPinIcon from '@mui/icons-material/PushPin';
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import {
-  Box, Typography, Chip, IconButton, TextField,
-  CircularProgress, Tooltip,
+  Box,
+  Chip,
+  CircularProgress,
+  IconButton,
+  TextField,
+  Tooltip,
+  Typography,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import EditIcon from '@mui/icons-material/Edit';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import PushPinIcon from '@mui/icons-material/PushPin';
-import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
-import CodeIcon from '@mui/icons-material/Code';
+import { useCallback, useRef, useState } from 'react';
+
 import { PageHeader } from '@/components/PageHeader';
 import type { Deck } from '@/types/deck';
 
@@ -24,7 +30,14 @@ interface DeckHeaderProps {
   onEmbedOpen: () => void;
 }
 
-export function DeckHeader({ deck, cardCount, onBack, onRename, onPin, onEmbedOpen }: DeckHeaderProps) {
+export function DeckHeader({
+  deck,
+  cardCount,
+  onBack,
+  onRename,
+  onPin,
+  onEmbedOpen,
+}: DeckHeaderProps) {
   const { brand } = useTheme().palette;
 
   const [editing, setEditing] = useState(false);
@@ -45,30 +58,38 @@ export function DeckHeader({ deck, cardCount, onBack, onRename, onPin, onEmbedOp
   const commitEdit = useCallback(async () => {
     const trimmedName = nameVal.trim();
     const trimmedDesc = descVal.trim();
-    if (!trimmedName) { setEditing(false); return; }
+    if (!trimmedName) {
+      setEditing(false);
+      return;
+    }
 
     const nameChanged = trimmedName !== deck.name;
     const descChanged = trimmedDesc !== (deck.description ?? '');
-    if (!nameChanged && !descChanged) { setEditing(false); return; }
+    if (!nameChanged && !descChanged) {
+      setEditing(false);
+      return;
+    }
 
     setRenaming(true);
-    try { await onRename(deck.id, trimmedName, trimmedDesc || undefined); }
-    finally { setRenaming(false); setEditing(false); }
+    try {
+      await onRename(deck.id, trimmedName, trimmedDesc || undefined);
+    } finally {
+      setRenaming(false);
+      setEditing(false);
+    }
   }, [nameVal, descVal, deck, onRename]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') void commitEdit();
-    if (e.key === 'Escape') cancelEdit();
-  }, [commitEdit, cancelEdit]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') void commitEdit();
+      if (e.key === 'Escape') cancelEdit();
+    },
+    [commitEdit, cancelEdit],
+  );
 
   if (editing) {
     return (
-      <PageHeader
-        onBack={onBack}
-        title=""
-        compact
-        mb={3}
-      >
+      <PageHeader onBack={onBack} title="" compact mb={3}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 0.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <TextField
@@ -83,7 +104,9 @@ export function DeckHeader({ deck, cardCount, onBack, onRename, onPin, onEmbedOp
               sx={{
                 flexGrow: 1,
                 '& .MuiOutlinedInput-root': {
-                  borderRadius: '9px', fontSize: '1.25rem', fontWeight: 700,
+                  borderRadius: '9px',
+                  fontSize: '1.25rem',
+                  fontWeight: 700,
                   color: brand[800],
                   bgcolor: alpha('#FFFFFF', 0.6),
                   '& fieldset': { borderColor: alpha(brand[400], 0.5) },
@@ -98,10 +121,14 @@ export function DeckHeader({ deck, cardCount, onBack, onRename, onPin, onEmbedOp
               <>
                 <Tooltip title="Save (Enter)">
                   <IconButton
-                    size="small" onClick={commitEdit}
+                    size="small"
+                    onClick={commitEdit}
                     sx={{
-                      width: 30, height: 30, borderRadius: '8px',
-                      bgcolor: alpha('#FFFFFF', 0.6), border: `1.5px solid ${alpha(brand[400], 0.4)}`,
+                      width: 30,
+                      height: 30,
+                      borderRadius: '8px',
+                      bgcolor: alpha('#FFFFFF', 0.6),
+                      border: `1.5px solid ${alpha(brand[400], 0.4)}`,
                       color: brand[700],
                       '&:hover': { bgcolor: alpha('#FFFFFF', 0.8), borderColor: brand[400] },
                     }}
@@ -111,10 +138,14 @@ export function DeckHeader({ deck, cardCount, onBack, onRename, onPin, onEmbedOp
                 </Tooltip>
                 <Tooltip title="Cancel (Esc)">
                   <IconButton
-                    size="small" onClick={cancelEdit}
+                    size="small"
+                    onClick={cancelEdit}
                     sx={{
-                      width: 30, height: 30, borderRadius: '8px',
-                      color: 'text.secondary', border: `1.5px solid ${alpha(brand[300], 0.3)}`,
+                      width: 30,
+                      height: 30,
+                      borderRadius: '8px',
+                      color: 'text.secondary',
+                      border: `1.5px solid ${alpha(brand[300], 0.3)}`,
                       bgcolor: alpha('#FFFFFF', 0.4),
                       '&:hover': { bgcolor: alpha('#FFFFFF', 0.7) },
                     }}
@@ -135,7 +166,8 @@ export function DeckHeader({ deck, cardCount, onBack, onRename, onPin, onEmbedOp
             placeholder="Description (optional)"
             sx={{
               '& .MuiOutlinedInput-root': {
-                borderRadius: '9px', fontSize: '0.82rem',
+                borderRadius: '9px',
+                fontSize: '0.82rem',
                 color: brand[600],
                 bgcolor: alpha('#FFFFFF', 0.5),
                 '& fieldset': { borderColor: alpha(brand[400], 0.35) },
@@ -159,9 +191,13 @@ export function DeckHeader({ deck, cardCount, onBack, onRename, onPin, onEmbedOp
           </Typography>
           <Tooltip title="Rename deck">
             <IconButton
-              size="small" onClick={startEdit}
+              size="small"
+              onClick={startEdit}
               sx={{
-                width: 26, height: 26, borderRadius: '7px', flexShrink: 0,
+                width: 26,
+                height: 26,
+                borderRadius: '7px',
+                flexShrink: 0,
                 color: alpha(brand[700], 0.45),
                 '&:hover': { bgcolor: alpha('#FFFFFF', 0.5), color: brand[700] },
               }}
@@ -179,9 +215,12 @@ export function DeckHeader({ deck, cardCount, onBack, onRename, onPin, onEmbedOp
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Tooltip title={deck.isPublic ? 'Embed (public)' : 'Embed deck'}>
             <IconButton
-              size="small" onClick={onEmbedOpen}
+              size="small"
+              onClick={onEmbedOpen}
               sx={{
-                width: 30, height: 30, borderRadius: '8px',
+                width: 30,
+                height: 30,
+                borderRadius: '8px',
                 border: `1.5px solid ${deck.isPublic ? alpha(brand[500], 0.6) : alpha(brand[300], 0.45)}`,
                 bgcolor: deck.isPublic ? alpha(brand[100], 0.8) : alpha('#FFFFFF', 0.4),
                 color: deck.isPublic ? brand[600] : alpha(brand[500], 0.55),
@@ -200,7 +239,9 @@ export function DeckHeader({ deck, cardCount, onBack, onRename, onPin, onEmbedOp
               size="small"
               onClick={() => onPin(deck.id, !deck.pinned)}
               sx={{
-                width: 30, height: 30, borderRadius: '8px',
+                width: 30,
+                height: 30,
+                borderRadius: '8px',
                 border: `1.5px solid ${deck.pinned ? alpha(brand[500], 0.6) : alpha(brand[300], 0.45)}`,
                 bgcolor: deck.pinned ? alpha(brand[100], 0.8) : alpha('#FFFFFF', 0.4),
                 color: deck.pinned ? brand[600] : alpha(brand[500], 0.55),
@@ -211,10 +252,11 @@ export function DeckHeader({ deck, cardCount, onBack, onRename, onPin, onEmbedOp
                 },
               }}
             >
-              {deck.pinned
-                ? <PushPinIcon sx={{ fontSize: 14 }} />
-                : <PushPinOutlinedIcon sx={{ fontSize: 14 }} />
-              }
+              {deck.pinned ? (
+                <PushPinIcon sx={{ fontSize: 14 }} />
+              ) : (
+                <PushPinOutlinedIcon sx={{ fontSize: 14 }} />
+              )}
             </IconButton>
           </Tooltip>
         </Box>

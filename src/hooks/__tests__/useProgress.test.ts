@@ -1,5 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { cardXp, XP_PER_CORRECT, XP_PER_WRONG, XP_PERFECT_BONUS, xpForLevel, levelFromXp, xpProgressInLevel } from '@/hooks/useProgress';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  cardXp,
+  levelFromXp,
+  XP_PER_CORRECT,
+  XP_PER_WRONG,
+  XP_PERFECT_BONUS,
+  xpForLevel,
+  xpProgressInLevel,
+} from '@/hooks/useProgress';
 
 // Note: useProgress hook itself requires Supabase. We test its pure exports here.
 
@@ -53,7 +62,7 @@ describe('XP and Level utilities (from useProgress)', () => {
       // 200 XP to reach level 2, then need 400 more for level 3
       const { current, needed } = xpProgressInLevel(300);
       expect(current).toBe(100); // 100 XP into level 2
-      expect(needed).toBe(400);  // need 400 to reach level 3
+      expect(needed).toBe(400); // need 400 to reach level 3
     });
   });
 

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -20,8 +20,8 @@ vi.mock('@/lib/supabase', () => ({
 }));
 
 import { useCards } from '@/hooks/useCards';
-import type { Flashcard } from '@/types/flashcard';
 import { isConfigured, showConfigBanner } from '@/lib/supabase';
+import type { Flashcard } from '@/types/flashcard';
 
 const mockIsConfigured = vi.mocked(isConfigured);
 const mockShowConfigBanner = vi.mocked(showConfigBanner);
@@ -249,7 +249,17 @@ describe('useCards', () => {
 
       let returned: Flashcard | undefined;
       await act(async () => {
-        returned = await result.current.addCard({ word: 'x', reading: '', meaning: '', image_query: '', example_jp: '', example_en: '', deckId: 'deck-1', mainViewMode: 'hiragana', cardType: 'word' });
+        returned = await result.current.addCard({
+          word: 'x',
+          reading: '',
+          meaning: '',
+          image_query: '',
+          example_jp: '',
+          example_en: '',
+          deckId: 'deck-1',
+          mainViewMode: 'hiragana',
+          cardType: 'word',
+        });
       });
 
       expect(mockShowConfigBanner).toHaveBeenCalled();
@@ -261,7 +271,19 @@ describe('useCards', () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       await act(async () => {
-        await result.current.addCards([{ word: 'x', reading: '', meaning: '', image_query: '', example_jp: '', example_en: '', deckId: 'deck-1', mainViewMode: 'hiragana', cardType: 'word' }]);
+        await result.current.addCards([
+          {
+            word: 'x',
+            reading: '',
+            meaning: '',
+            image_query: '',
+            example_jp: '',
+            example_en: '',
+            deckId: 'deck-1',
+            mainViewMode: 'hiragana',
+            cardType: 'word',
+          },
+        ]);
       });
 
       expect(mockShowConfigBanner).toHaveBeenCalled();
@@ -315,7 +337,17 @@ describe('useCards', () => {
 
       let returned: Flashcard | undefined;
       await act(async () => {
-        returned = await result.current.addCard({ word: 'x', reading: '', meaning: '', image_query: '', example_jp: '', example_en: '', deckId: 'deck-1', mainViewMode: 'hiragana', cardType: 'word' });
+        returned = await result.current.addCard({
+          word: 'x',
+          reading: '',
+          meaning: '',
+          image_query: '',
+          example_jp: '',
+          example_en: '',
+          deckId: 'deck-1',
+          mainViewMode: 'hiragana',
+          cardType: 'word',
+        });
       });
 
       expect(returned).toBeUndefined();

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import { useTheme, alpha, keyframes } from '@mui/material/styles';
+import { alpha, keyframes, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+import { useEffect, useState } from 'react';
+
 import { BUDDY_CONFIG } from '@/hooks/useShop';
 import type { ShopItem } from '@/types/shop';
 
@@ -43,7 +44,10 @@ export function BuddyPreviewModal({
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
-    if (!open) { setPhase(0); return; }
+    if (!open) {
+      setPhase(0);
+      return;
+    }
     const t = setInterval(() => setPhase((p) => (p + 1) % DEMO_SEQUENCE.length), 2000);
     return () => clearInterval(t);
   }, [open]);
@@ -55,7 +59,9 @@ export function BuddyPreviewModal({
 
   const currentPhase = DEMO_SEQUENCE[phase];
   const rawReaction = config.reactions[currentPhase];
-  const reactionText = Array.isArray(rawReaction) ? rawReaction[phase % rawReaction.length] : rawReaction;
+  const reactionText = Array.isArray(rawReaction)
+    ? rawReaction[phase % rawReaction.length]
+    : rawReaction;
 
   return (
     <Dialog
@@ -124,9 +130,10 @@ export function BuddyPreviewModal({
             fontSize: '2.8rem',
             lineHeight: 1,
             boxShadow: `0 6px 24px ${alpha(brand[400], 0.2)}`,
-            animation: currentPhase === 'correct'
-              ? `${bounce} 0.6s ease-in-out infinite`
-              : `${float} 3s ease-in-out infinite`,
+            animation:
+              currentPhase === 'correct'
+                ? `${bounce} 0.6s ease-in-out infinite`
+                : `${float} 3s ease-in-out infinite`,
           }}
         >
           {config.emoji}
@@ -172,7 +179,14 @@ export function BuddyPreviewModal({
                 transition: 'all 0.2s',
               }}
             >
-              <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: brand[600], textTransform: 'capitalize' }}>
+              <Typography
+                sx={{
+                  fontSize: '0.65rem',
+                  fontWeight: 600,
+                  color: brand[600],
+                  textTransform: 'capitalize',
+                }}
+              >
                 {r}
               </Typography>
             </Box>

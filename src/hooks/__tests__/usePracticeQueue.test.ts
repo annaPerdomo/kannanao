@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -65,7 +66,9 @@ describe('usePracticeQueue', () => {
         CARDS.forEach((c) => result.current.reportResult(c.id, true));
       });
 
-      act(() => { result.current.finishRound(); });
+      act(() => {
+        result.current.finishRound();
+      });
 
       // All correct + last batch → allDone directly (no retry needed)
       expect(result.current.phase).toBe('allDone');
@@ -87,7 +90,9 @@ describe('usePracticeQueue', () => {
         result.current.reportResult('c5', true);
       });
 
-      act(() => { result.current.finishRound(); });
+      act(() => {
+        result.current.finishRound();
+      });
 
       // c1 was wrong (sticky) → 1 card wrong
       expect(result.current.lastRoundWrong).toBe(1);
@@ -102,7 +107,9 @@ describe('usePracticeQueue', () => {
         CARDS.forEach((c) => result.current.reportResult(c.id, true));
       });
 
-      act(() => { result.current.finishRound(); });
+      act(() => {
+        result.current.finishRound();
+      });
 
       // Single batch, all correct → goes straight to allDone
       expect(result.current.phase).toBe('allDone');
@@ -119,7 +126,9 @@ describe('usePracticeQueue', () => {
         result.current.reportResult('c5', true);
       });
 
-      act(() => { result.current.finishRound(); });
+      act(() => {
+        result.current.finishRound();
+      });
 
       expect(result.current.phase).toBe('roundEnd');
     });
@@ -131,7 +140,9 @@ describe('usePracticeQueue', () => {
         CARDS.forEach((c) => result.current.reportResult(c.id, true));
       });
 
-      act(() => { result.current.finishRound(); });
+      act(() => {
+        result.current.finishRound();
+      });
 
       expect(result.current.lastRoundTotal).toBe(CARDS.length);
     });
@@ -144,7 +155,9 @@ describe('usePracticeQueue', () => {
       act(() => {
         CARDS.forEach((c) => result.current.reportResult(c.id, true));
       });
-      act(() => { result.current.finishRound(); });
+      act(() => {
+        result.current.finishRound();
+      });
 
       // finishRound goes straight to allDone — nextRound isn't needed
       expect(result.current.phase).toBe('allDone');
@@ -157,10 +170,14 @@ describe('usePracticeQueue', () => {
       act(() => {
         CARDS.forEach((c) => result.current.reportResult(c.id, false));
       });
-      act(() => { result.current.finishRound(); });
+      act(() => {
+        result.current.finishRound();
+      });
       expect(result.current.phase).toBe('roundEnd');
 
-      act(() => { result.current.nextRound(); });
+      act(() => {
+        result.current.nextRound();
+      });
       expect(result.current.phase).toBe('playing');
     });
 
@@ -174,8 +191,12 @@ describe('usePracticeQueue', () => {
         result.current.reportResult('c4', true);
         result.current.reportResult('c5', true);
       });
-      act(() => { result.current.finishRound(); });
-      act(() => { result.current.nextRound(); });
+      act(() => {
+        result.current.finishRound();
+      });
+      act(() => {
+        result.current.nextRound();
+      });
 
       expect(result.current.isRetryRound).toBe(true);
       expect(result.current.retryCount).toBe(1);
@@ -187,8 +208,12 @@ describe('usePracticeQueue', () => {
       act(() => {
         CARDS.forEach((c) => result.current.reportResult(c.id, false));
       });
-      act(() => { result.current.finishRound(); });
-      act(() => { result.current.nextRound(); });
+      act(() => {
+        result.current.finishRound();
+      });
+      act(() => {
+        result.current.nextRound();
+      });
 
       expect(result.current.phase).toBe('playing');
     });
@@ -211,8 +236,12 @@ describe('usePracticeQueue', () => {
       act(() => {
         result.current.currentCards.forEach((c) => result.current.reportResult(c.id, true));
       });
-      act(() => { result.current.finishRound(); });
-      act(() => { result.current.nextRound(); });
+      act(() => {
+        result.current.finishRound();
+      });
+      act(() => {
+        result.current.nextRound();
+      });
 
       expect(result.current.batchIndex).toBe(1);
     });
@@ -227,13 +256,19 @@ describe('usePracticeQueue', () => {
         result.current.reportResult('c1', true);
         result.current.reportResult('c2', false);
       });
-      act(() => { result.current.finishRound(); });
+      act(() => {
+        result.current.finishRound();
+      });
       act(() => {
         // c2 retry - mark correct this time
         result.current.reportResult('c2', true);
       });
-      act(() => { result.current.finishRound(); });
-      act(() => { result.current.nextRound(); });
+      act(() => {
+        result.current.finishRound();
+      });
+      act(() => {
+        result.current.nextRound();
+      });
 
       // Phase should be allDone now; c1 was correct on first attempt
       if (result.current.phase === 'allDone') {

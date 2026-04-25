@@ -1,10 +1,12 @@
 'use client';
 
 import Box from '@mui/material/Box';
+import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { useTheme, alpha } from '@mui/material/styles';
-import type { StudySession, SessionMode } from '@/hooks/useProgress';
-import { modeLabel, modeColor, sessionLocalDate } from './constants';
+
+import type { SessionMode, StudySession } from '@/hooks/useProgress';
+
+import { modeColor, modeLabel, sessionLocalDate } from './constants';
 
 export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
   const theme = useTheme();
@@ -22,8 +24,7 @@ export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
 
   const withCards = sessions.filter((s) => s.cards_studied > 0);
 
-  const forPeriod = (start: Date) =>
-    withCards.filter((s) => new Date(s.started_at) >= start);
+  const forPeriod = (start: Date) => withCards.filter((s) => new Date(s.started_at) >= start);
 
   const aggregate = (list: StudySession[]) => ({
     sessions: list.length,
@@ -56,7 +57,7 @@ export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
       sx={{
         flex: '1 1 0',
         background: alpha(brand[300], 0.22),
-        border: `1px solid ${alpha(brand[300], 0.40)}`,
+        border: `1px solid ${alpha(brand[300], 0.4)}`,
         borderRadius: 3,
         p: 2,
         display: 'flex',
@@ -65,7 +66,12 @@ export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
       }}
     >
       <Typography
-        sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, fontSize: '0.78rem', color: brand[700] }}
+        sx={{
+          fontFamily: (t) => t.fonts.cute,
+          fontWeight: 600,
+          fontSize: '0.78rem',
+          color: brand[700],
+        }}
       >
         {title}
       </Typography>
@@ -76,10 +82,18 @@ export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
           { label: 'XP earned', value: `+${data.xp.toLocaleString()}` },
           { label: 'Sessions', value: data.sessions },
         ].map(({ label, value }) => (
-          <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <Box
+            key={label}
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}
+          >
             <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>{label}</Typography>
             <Typography
-              sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 700, fontSize: '1rem', color: brand[700] }}
+              sx={{
+                fontFamily: (t) => t.fonts.cute,
+                fontWeight: 700,
+                fontSize: '1rem',
+                color: brand[700],
+              }}
             >
               {value}
             </Typography>
@@ -100,13 +114,19 @@ export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
         <Box
           sx={{
             background: alpha(brand[300], 0.22),
-            border: `1px solid ${alpha(brand[300], 0.40)}`,
+            border: `1px solid ${alpha(brand[300], 0.4)}`,
             borderRadius: 3,
             p: 2,
           }}
         >
           <Typography
-            sx={{ fontFamily: (t) => t.fonts.cute, fontWeight: 600, fontSize: '0.78rem', color: brand[700], mb: 1 }}
+            sx={{
+              fontFamily: (t) => t.fonts.cute,
+              fontWeight: 600,
+              fontSize: '0.78rem',
+              color: brand[700],
+              mb: 1,
+            }}
           >
             {monthName} by mode
           </Typography>
@@ -124,7 +144,7 @@ export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
                     py: 0.4,
                     borderRadius: 99,
                     bgcolor: alpha(color, 0.12),
-                    border: `1px solid ${alpha(color, 0.30)}`,
+                    border: `1px solid ${alpha(color, 0.3)}`,
                   }}
                 >
                   <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color }}>

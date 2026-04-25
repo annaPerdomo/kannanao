@@ -13,6 +13,7 @@ export function isAdminEmail(email: string | undefined): boolean {
   if (!email) return false;
   const [username, domain] = email.split('@');
   if (domain !== ADMIN_DOMAIN) return false;
-  const adminUsername = process.env.ADMIN_USERNAME ?? process.env.NEXT_PUBLIC_ADMIN_USERNAME ?? 'test';
+  const adminUsername =
+    process.env.ADMIN_USERNAME ?? process.env.NEXT_PUBLIC_ADMIN_USERNAME ?? 'test';
   return username === adminUsername;
 }

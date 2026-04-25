@@ -1,7 +1,8 @@
 'use client';
-import IconButton from '@mui/material/IconButton';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import IconButton from '@mui/material/IconButton';
 import type { SxProps, Theme } from '@mui/material/styles';
+
 import { useSpeech } from '@/hooks/useSpeech';
 
 interface SpeakButtonProps {
@@ -15,7 +16,10 @@ export function SpeakButton({ text, iconSize = '1rem', sx }: SpeakButtonProps) {
   return (
     <IconButton
       size="small"
-      onClick={(e) => { e.stopPropagation(); speak(text); }}
+      onClick={(e) => {
+        e.stopPropagation();
+        speak(text);
+      }}
       disabled={speaking}
       sx={{ p: 0.5, color: '#aaa', '&:hover': { color: '#555' }, flexShrink: 0, ...sx }}
     >

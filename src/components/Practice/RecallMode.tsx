@@ -1,30 +1,25 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  LinearProgress,
-  Chip,
-  Grid,
-  Button,
-} from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { alpha } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import type { Flashcard } from '@/types/flashcard';
-import { getFlashcardDisplayText, cardXp } from '@/lib/flashcardUtils';
-import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
-import { usePracticeQueue } from '@/hooks/usePracticeQueue';
+import { Box, Button, Chip, Grid, LinearProgress, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import { SpeakButton } from '@/components/SpeakButton';
+import { type BuddyReaction, StudyBuddy } from '@/components/StudyBuddy';
+import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import { usePracticeQueue } from '@/hooks/usePracticeQueue';
+import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
+import { useShop } from '@/hooks/useShop';
+import { cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
+import type { Flashcard } from '@/types/flashcard';
+
 import { CelebrationScreen } from './CelebrationScreen';
 import { RoundTransition } from './RoundTransition';
 import { XpEarnedPop } from './XpEarnedPop';
-import { StudyBuddy, type BuddyReaction } from '@/components/StudyBuddy';
-import { useShop } from '@/hooks/useShop';
-import { UnsplashAttribution } from '@/components/UnsplashAttribution';
-import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
-import { SpeakButton } from '@/components/SpeakButton';
 
 interface RecallModeProps {
   cards: Flashcard[];
@@ -57,7 +52,9 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
   const [roundScore, setRoundScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
-  const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(null);
+  const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(
+    null,
+  );
 
   const { equipped } = useShop();
   const equippedBuddy = equipped['study_buddy'];
@@ -210,9 +207,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
     <Box sx={{ position: 'relative' }}>
       {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
       {/* Header */}
-      <Box
-        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
-      >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h5">Guess It!</Typography>
           {queue.isRetryRound && (
@@ -295,7 +290,15 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
             </Typography>
           )}
           {!card.imageUrl && card.example_jp && (
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mt: 1 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 0.5,
+                mt: 1,
+              }}
+            >
               <FuriganaText
                 text={card.example_jp}
                 showFurigana
@@ -363,8 +366,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
                   gap: 1.5,
                   minHeight: 64,
                   transition: 'all 0.2s',
-                  transform:
-                    selected && isThisCorrect ? 'scale(1.02)' : 'scale(1)',
+                  transform: selected && isThisCorrect ? 'scale(1.02)' : 'scale(1)',
                   '&:hover': !selected
                     ? {
                         borderColor: brand[500],
@@ -376,7 +378,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
               >
                 {/* Circle label or result icon */}
                 {selected ? (
-                  iconEl ?? (
+                  (iconEl ?? (
                     <Box
                       sx={{
                         width: 28,
@@ -394,7 +396,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
                         {CHOICE_LABELS[i]}
                       </Typography>
                     </Box>
-                  )
+                  ))
                 ) : (
                   <Box
                     sx={{

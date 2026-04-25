@@ -1,8 +1,9 @@
 'use client';
-import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import { useTheme, alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
+
 import { StyledDialog } from '@/components/StyledDialog';
 
 interface EditNameDialogProps {
@@ -15,7 +16,12 @@ interface EditNameDialogProps {
 }
 
 export function EditNameDialog({
-  open, onClose, nameInput, onNameInputChange, onSave, saving,
+  open,
+  onClose,
+  nameInput,
+  onNameInputChange,
+  onSave,
+  saving,
 }: EditNameDialogProps) {
   const { brand } = useTheme().palette;
 
@@ -37,7 +43,10 @@ export function EditNameDialog({
             disabled={saving || !nameInput.trim()}
             variant="contained"
             sx={{
-              bgcolor: brand[700], color: '#fff', textTransform: 'none', borderRadius: 6,
+              bgcolor: brand[700],
+              color: '#fff',
+              textTransform: 'none',
+              borderRadius: 6,
               '&:hover': { bgcolor: brand[800] },
             }}
           >
@@ -53,7 +62,9 @@ export function EditNameDialog({
         label="Display name"
         value={nameInput}
         onChange={(e) => onNameInputChange(e.target.value)}
-        onKeyDown={(e) => { if (e.key === 'Enter') void onSave(); }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') void onSave();
+        }}
         sx={{ mt: 0.5 }}
       />
     </StyledDialog>

@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor, act } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 // ─── Mock Supabase ────────────────────────────────────────────────────────────
@@ -50,13 +51,7 @@ function AuthDisplay() {
 
 function SignInForm() {
   const { signInWithUsername } = useAuth();
-  return (
-    <button
-      onClick={() => signInWithUsername('testuser', 'password123')}
-    >
-      Sign In
-    </button>
-  );
+  return <button onClick={() => signInWithUsername('testuser', 'password123')}>Sign In</button>;
 }
 
 // ─── Setup ────────────────────────────────────────────────────────────────────
@@ -135,9 +130,7 @@ describe('AuthContext / AuthProvider', () => {
         error: { message: 'Invalid credentials' },
       });
 
-      const result = await act(async () =>
-        signInWithUsername?.('bad', 'credentials'),
-      );
+      const result = await act(async () => signInWithUsername?.('bad', 'credentials'));
 
       expect(result?.error).toBe('Invalid credentials');
     });
@@ -152,9 +145,7 @@ describe('AuthContext / AuthProvider', () => {
       }
       renderWithAuth(<Capture />);
 
-      const result = await act(async () =>
-        capturedHook?.signInWithUsername('user', 'pass'),
-      );
+      const result = await act(async () => capturedHook?.signInWithUsername('user', 'pass'));
 
       expect(result?.error).toBeNull();
     });
@@ -169,9 +160,7 @@ describe('AuthContext / AuthProvider', () => {
       }
       renderWithAuth(<Capture />);
 
-      const result = await act(async () =>
-        capturedHook?.signUpWithUsername('newuser', 'password'),
-      );
+      const result = await act(async () => capturedHook?.signUpWithUsername('newuser', 'password'));
 
       expect(result?.error).toBeTruthy();
       expect(result?.error).toContain('waitlist');
@@ -190,7 +179,9 @@ describe('AuthContext / AuthProvider', () => {
       renderWithAuth(<Capture />);
       await waitFor(() => expect(capturedHook?.loading).toBe(false));
 
-      await act(async () => { await capturedHook?.signOut(); });
+      await act(async () => {
+        await capturedHook?.signOut();
+      });
 
       expect(mockSignOut).toHaveBeenCalledTimes(1);
     });
@@ -208,9 +199,7 @@ describe('AuthContext / AuthProvider', () => {
       renderWithAuth(<Capture />);
       await waitFor(() => expect(capturedHook?.loading).toBe(false));
 
-      const result = await act(async () =>
-        capturedHook?.updateDisplayName('New Name'),
-      );
+      const result = await act(async () => capturedHook?.updateDisplayName('New Name'));
 
       expect(result?.error).toBe('Not authenticated');
     });
@@ -238,8 +227,8 @@ describe('AuthContext / AuthProvider', () => {
   describe('loading state', () => {
     it('should show loading initially then resolve', async () => {
       // Delay the getSession call
-      mockGetSession.mockImplementationOnce(() =>
-        new Promise((resolve) => setTimeout(() => resolve({ data: { session: null } }), 50)),
+      mockGetSession.mockImplementationOnce(
+        () => new Promise((resolve) => setTimeout(() => resolve({ data: { session: null } }), 50)),
       );
 
       renderWithAuth(<AuthDisplay />);
@@ -298,7 +287,12 @@ describe('AuthContext / AuthProvider', () => {
   describe('onAuthStateChange — SIGNED_OUT', () => {
     it('should clear displayName on SIGNED_OUT', async () => {
       const { loadProfile } = await import('@/lib/supabase');
-      (loadProfile as ReturnType<typeof vi.fn>).mockResolvedValue({ username: 'u', displayName: 'Hana', colorScheme: null, showTodo: true });
+      (loadProfile as ReturnType<typeof vi.fn>).mockResolvedValue({
+        username: 'u',
+        displayName: 'Hana',
+        colorScheme: null,
+        showTodo: true,
+      });
 
       let authCallback: ((event: string, session: unknown) => void) | null = null;
       mockOnAuthStateChange.mockImplementation((cb) => {
@@ -331,7 +325,10 @@ describe('AuthContext / AuthProvider', () => {
     it('should set colorScheme from profile when it is a valid scheme', async () => {
       const { loadProfile } = await import('@/lib/supabase');
       (loadProfile as ReturnType<typeof vi.fn>).mockResolvedValue({
-        username: 'u', displayName: null, colorScheme: 'ocean', showTodo: true,
+        username: 'u',
+        displayName: null,
+        colorScheme: 'ocean',
+        showTodo: true,
       });
 
       mockGetSession.mockResolvedValue({
@@ -353,7 +350,10 @@ describe('AuthContext / AuthProvider', () => {
     it('should NOT set colorScheme when profile returns an invalid scheme', async () => {
       const { loadProfile } = await import('@/lib/supabase');
       (loadProfile as ReturnType<typeof vi.fn>).mockResolvedValue({
-        username: 'u', displayName: null, colorScheme: 'invalidscheme', showTodo: true,
+        username: 'u',
+        displayName: null,
+        colorScheme: 'invalidscheme',
+        showTodo: true,
       });
 
       mockGetSession.mockResolvedValue({

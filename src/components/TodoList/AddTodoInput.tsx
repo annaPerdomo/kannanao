@@ -1,13 +1,14 @@
 'use client';
-import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import Collapse from '@mui/material/Collapse';
-import { useTheme, alpha } from '@mui/material/styles';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import Box from '@mui/material/Box';
+import Collapse from '@mui/material/Collapse';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import { alpha, useTheme } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
+import { useState } from 'react';
+
 import { FrequencyPicker } from './FrequencyPicker';
 
 interface AddTodoInputProps {
@@ -21,7 +22,16 @@ interface AddTodoInputProps {
   onRepeatUntilDoneChange: (val: boolean) => void;
 }
 
-export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, onFrequencyChange, repeatUntilDone, onRepeatUntilDoneChange }: AddTodoInputProps) {
+export function AddTodoInput({
+  value,
+  onChange,
+  onAdd,
+  disabled,
+  frequencyDays,
+  onFrequencyChange,
+  repeatUntilDone,
+  onRepeatUntilDoneChange,
+}: AddTodoInputProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const [focused, setFocused] = useState(false);
@@ -33,7 +43,9 @@ export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, 
         <TextField
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') onAdd(); }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') onAdd();
+          }}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           placeholder="Write a new to-do..."
@@ -62,14 +74,22 @@ export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, 
               disabled={!value.trim() || disabled}
               sx={{
                 background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
-                color: 'white', borderRadius: 2.5, width: 38, height: 38, flexShrink: 0,
+                color: 'white',
+                borderRadius: 2.5,
+                width: 38,
+                height: 38,
+                flexShrink: 0,
                 boxShadow: `0 4px 12px ${alpha(brand[400], 0.3)}`,
                 '&:hover': {
                   background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})`,
                   transform: 'scale(1.1)',
                   boxShadow: `0 6px 16px ${alpha(brand[400], 0.4)}`,
                 },
-                '&:disabled': { background: alpha(brand[200], 0.35), color: alpha(brand[400], 0.3), boxShadow: 'none' },
+                '&:disabled': {
+                  background: alpha(brand[200], 0.35),
+                  color: alpha(brand[400], 0.3),
+                  boxShadow: 'none',
+                },
                 transition: 'all 0.2s ease',
               }}
             >
@@ -80,7 +100,12 @@ export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, 
       </Stack>
       <Collapse in={showOptions}>
         <Box mt={0.75}>
-          <FrequencyPicker value={frequencyDays} onChange={onFrequencyChange} repeatUntilDone={repeatUntilDone} onRepeatUntilDoneChange={onRepeatUntilDoneChange} />
+          <FrequencyPicker
+            value={frequencyDays}
+            onChange={onFrequencyChange}
+            repeatUntilDone={repeatUntilDone}
+            onRepeatUntilDoneChange={onRepeatUntilDoneChange}
+          />
         </Box>
       </Collapse>
     </Box>

@@ -1,13 +1,13 @@
 'use client';
 
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import Chip from '@mui/material/Chip';
-import Stack from '@mui/material/Stack';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 
 interface PageHeaderProps {
   title: React.ReactNode;
@@ -59,10 +59,48 @@ export function PageHeader({
       }}
     >
       {/* Decorative blobs — clipped to border radius */}
-      <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit', pointerEvents: 'none' }}>
-        <Box sx={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: `radial-gradient(circle, ${alpha(brand[300], 0.35)} 0%, transparent 70%)` }} />
-        <Box sx={{ position: 'absolute', bottom: -25, left: '35%', width: 110, height: 110, borderRadius: '50%', background: `radial-gradient(circle, ${alpha(accent[300], 0.3)} 0%, transparent 70%)` }} />
-        <Box sx={{ position: 'absolute', top: '10%', left: -20, width: 80, height: 80, borderRadius: '50%', background: `radial-gradient(circle, ${alpha(accent[200], 0.25)} 0%, transparent 70%)` }} />
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          overflow: 'hidden',
+          borderRadius: 'inherit',
+          pointerEvents: 'none',
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: -40,
+            right: -40,
+            width: 160,
+            height: 160,
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${alpha(brand[300], 0.35)} 0%, transparent 70%)`,
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: -25,
+            left: '35%',
+            width: 110,
+            height: 110,
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${alpha(accent[300], 0.3)} 0%, transparent 70%)`,
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '10%',
+            left: -20,
+            width: 80,
+            height: 80,
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${alpha(accent[200], 0.25)} 0%, transparent 70%)`,
+          }}
+        />
       </Box>
 
       <Stack
@@ -72,7 +110,12 @@ export function PageHeader({
         spacing={2}
       >
         <Box sx={{ position: 'relative', zIndex: 1, minWidth: 0 }}>
-          <Stack direction="row" alignItems="center" spacing={compact ? 1 : 1.5} mb={children ? 0.5 : 0}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={compact ? 1 : 1.5}
+            mb={children ? 0.5 : 0}
+          >
             {onBack && (
               <IconButton
                 onClick={onBack}
@@ -92,7 +135,12 @@ export function PageHeader({
               </IconButton>
             )}
             {emoji && (
-              <Typography sx={{ fontSize: compact ? { xs: '1.4rem', sm: '1.6rem' } : { xs: '1.6rem', sm: '2rem' }, flexShrink: 0 }}>
+              <Typography
+                sx={{
+                  fontSize: compact ? { xs: '1.4rem', sm: '1.6rem' } : { xs: '1.6rem', sm: '2rem' },
+                  flexShrink: 0,
+                }}
+              >
                 {emoji}
               </Typography>
             )}
@@ -145,9 +193,7 @@ export function PageHeader({
         </Box>
 
         {(action || endContent) && (
-          <Box sx={{ flexShrink: 0, position: 'relative', zIndex: 1 }}>
-            {endContent ?? action}
-          </Box>
+          <Box sx={{ flexShrink: 0, position: 'relative', zIndex: 1 }}>{endContent ?? action}</Box>
         )}
       </Stack>
     </Box>

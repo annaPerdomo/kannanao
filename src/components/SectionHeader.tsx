@@ -1,6 +1,6 @@
 'use client';
-import { Box, Typography, IconButton, Chip } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import { Box, Chip, IconButton, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
 interface SectionHeaderProps {

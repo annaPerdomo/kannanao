@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export function useInView(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
@@ -9,7 +9,9 @@ export function useInView(threshold = 0.12) {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([e]) => { setInView(e.isIntersecting); },
+      ([e]) => {
+        setInView(e.isIntersecting);
+      },
       { threshold },
     );
     obs.observe(el);

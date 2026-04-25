@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 // Voice names to try in order of preference.
 // Chrome ships "Google 日本語" — a cloud-backed neural voice that's free and natural.
@@ -8,10 +8,10 @@ import { useState, useCallback, useRef } from 'react';
 const PREFERRED_VOICE_NAMES = [
   'Google 日本語',
   'Google Japanese',
-  'Microsoft Nanami',       // Edge: ja-JP-NanamiNeural
-  'Microsoft Keita',        // Edge: ja-JP-KeitaNeural
-  'O-Ren',                  // macOS enhanced
-  'Kyoko',                  // macOS standard
+  'Microsoft Nanami', // Edge: ja-JP-NanamiNeural
+  'Microsoft Keita', // Edge: ja-JP-KeitaNeural
+  'O-Ren', // macOS enhanced
+  'Kyoko', // macOS standard
 ];
 
 // Resolved once voices are available; shared across all hook instances so
@@ -20,7 +20,7 @@ let voicesReady: Promise<void> | null = null;
 
 function waitForVoices(): Promise<void> {
   if (voicesReady) return voicesReady;
-  voicesReady = new Promise(resolve => {
+  voicesReady = new Promise((resolve) => {
     if (window.speechSynthesis.getVoices().length > 0) {
       resolve();
     } else {
@@ -36,11 +36,11 @@ function waitForVoices(): Promise<void> {
 
 function getBestJapaneseVoice(): SpeechSynthesisVoice | null {
   const voices = window.speechSynthesis.getVoices();
-  const jp = voices.filter(v => v.lang.startsWith('ja'));
+  const jp = voices.filter((v) => v.lang.startsWith('ja'));
   if (!jp.length) return null;
 
   for (const name of PREFERRED_VOICE_NAMES) {
-    const match = jp.find(v => v.name.includes(name));
+    const match = jp.find((v) => v.name.includes(name));
     if (match) return match;
   }
 

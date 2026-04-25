@@ -1,9 +1,9 @@
 'use client';
-import { AppThemeProvider } from '@/contexts/ThemeContext';
-import { DeckDialogProvider } from '@/contexts/DeckDialogContext';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { CardBorderProvider } from '@/contexts/CardBorderContext';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { DeckDialogProvider } from '@/contexts/DeckDialogContext';
+import { AppThemeProvider } from '@/contexts/ThemeContext';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -11,9 +11,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <AppThemeProvider>
         <ErrorBoundary>
           <CardBorderProvider>
-            <DeckDialogProvider>
-              {children}
-            </DeckDialogProvider>
+            <DeckDialogProvider>{children}</DeckDialogProvider>
           </CardBorderProvider>
         </ErrorBoundary>
       </AppThemeProvider>

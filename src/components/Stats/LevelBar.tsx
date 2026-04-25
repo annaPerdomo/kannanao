@@ -1,11 +1,12 @@
 'use client';
 
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import LinearProgress from '@mui/material/LinearProgress';
-import { useTheme, alpha } from '@mui/material/styles';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import Box from '@mui/material/Box';
+import LinearProgress from '@mui/material/LinearProgress';
+import Paper from '@mui/material/Paper';
+import { alpha, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+
 import { xpProgressInLevel } from '@/hooks/useProgress';
 
 export function LevelBar({ totalXp, level }: { totalXp: number; level: number }) {
@@ -19,7 +20,7 @@ export function LevelBar({ totalXp, level }: { totalXp: number; level: number })
       elevation={0}
       sx={{
         background: alpha(brand[50], 0.6),
-        border: `1px solid ${alpha(brand[300], 0.40)}`,
+        border: `1px solid ${alpha(brand[300], 0.4)}`,
         borderRadius: 4,
         p: 3,
         display: 'flex',
@@ -31,7 +32,12 @@ export function LevelBar({ totalXp, level }: { totalXp: number; level: number })
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <AutoAwesomeIcon sx={{ color: brand[700], fontSize: '1.1rem' }} />
           <Typography
-            sx={{ fontFamily: (t) => t.fonts.cute, fontSize: '1rem', color: brand[700], fontWeight: 600 }}
+            sx={{
+              fontFamily: (t) => t.fonts.cute,
+              fontSize: '1rem',
+              color: brand[700],
+              fontWeight: 600,
+            }}
           >
             Level {level}
           </Typography>

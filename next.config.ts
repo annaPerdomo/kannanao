@@ -1,24 +1,24 @@
-import type { NextConfig } from 'next';
 import withPWA from '@ducanh2912/next-pwa';
 import { withSentryConfig } from '@sentry/nextjs';
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   async headers() {
     return [
       {
         // Allow /embed/* routes to be framed inside Canvas and other LMS platforms
-        source: "/embed/:path*",
+        source: '/embed/:path*',
         headers: [
           {
-            key: "Content-Security-Policy",
+            key: 'Content-Security-Policy',
             value: [
               "frame-ancestors 'self'",
-              "http://localhost:*",
-              "https://localhost:*",
-              "https://*.instructure.com",
-              "https://*.canvas.net",
-              "https://*.canvaslms.com",
-            ].join(" "),
+              'http://localhost:*',
+              'https://localhost:*',
+              'https://*.instructure.com',
+              'https://*.canvas.net',
+              'https://*.canvaslms.com',
+            ].join(' '),
           },
         ],
       },

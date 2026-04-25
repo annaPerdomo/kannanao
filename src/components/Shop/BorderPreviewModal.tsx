@@ -1,20 +1,22 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { alpha, useTheme } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
-import { useTheme, alpha } from '@mui/material/styles';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import { CARD_BORDER_STYLES } from '@/hooks/useShop';
-import { CardBorderCtx } from '@/contexts/CardBorderContext';
-import { ImageCard } from '@/components/ImageCard';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { useMemo, useState } from 'react';
+
 import { Flashcard } from '@/components/Flashcard';
+import { ImageCard } from '@/components/ImageCard';
+import { CardBorderCtx } from '@/contexts/CardBorderContext';
+import { CARD_BORDER_STYLES } from '@/hooks/useShop';
+
 import { SAMPLE_CARD } from './constants';
 
 export function BorderPreviewModal({
@@ -79,7 +81,9 @@ export function BorderPreviewModal({
         <ToggleButtonGroup
           value={cardView}
           exclusive
-          onChange={(_, v) => { if (v) setCardView(v); }}
+          onChange={(_, v) => {
+            if (v) setCardView(v);
+          }}
           size="small"
           sx={{
             '& .MuiToggleButton-root': {
@@ -104,7 +108,9 @@ export function BorderPreviewModal({
         </ToggleButtonGroup>
       </Box>
 
-      <DialogContent sx={{ display: 'flex', justifyContent: 'center', pt: 0, pb: 3, px: { xs: 2, sm: 3 } }}>
+      <DialogContent
+        sx={{ display: 'flex', justifyContent: 'center', pt: 0, pb: 3, px: { xs: 2, sm: 3 } }}
+      >
         <CardBorderCtx.Provider value={mockBorderCtx}>
           {cardView === 'study' ? (
             <Box sx={{ width: 280, height: 420 }}>
@@ -112,10 +118,7 @@ export function BorderPreviewModal({
             </Box>
           ) : (
             <Box sx={{ width: 240 }}>
-              <ImageCard
-                card={SAMPLE_CARD}
-                onDelete={() => {}}
-              />
+              <ImageCard card={SAMPLE_CARD} onDelete={() => {}} />
             </Box>
           )}
         </CardBorderCtx.Provider>

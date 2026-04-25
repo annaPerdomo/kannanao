@@ -1,15 +1,15 @@
 'use client';
-import { useState } from 'react';
 import { Box, Typography } from '@mui/material';
+import { useState } from 'react';
 
-import { MatchMode } from '@/components/Practice/MatchMode';
-import { FillMode } from '@/components/Practice/FillMode';
-import { RecallMode } from '@/components/Practice/RecallMode';
-import { BatchPicker } from '@/components/Practice/BatchPicker';
-import { PageHeader } from '@/components/PageHeader';
-import { LAYOUT } from '@/theme';
-import { useCards } from '@/hooks/useCards';
 import { Loading } from '@/components/Loading';
+import { PageHeader } from '@/components/PageHeader';
+import { BatchPicker } from '@/components/Practice/BatchPicker';
+import { FillMode } from '@/components/Practice/FillMode';
+import { MatchMode } from '@/components/Practice/MatchMode';
+import { RecallMode } from '@/components/Practice/RecallMode';
+import { useCards } from '@/hooks/useCards';
+import { LAYOUT } from '@/theme';
 import type { PracticeMode } from '@/types/app';
 
 interface PracticeProps {
@@ -42,7 +42,13 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   if (cards.length < 2) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
-        <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} compact mb={3} />
+        <PageHeader
+          title={LABELS[mode]}
+          onBack={onBack}
+          badge={`${cards.length} cards`}
+          compact
+          mb={3}
+        />
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography color="text.secondary">
             Not enough cards to practice. Add more cards to this deck.
@@ -57,8 +63,19 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   if (needsPicker && batchSize === null) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
-        <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} compact mb={3} />
-        <BatchPicker totalCards={cards.length} mode={mode} onSelect={setBatchSize} onBack={onBack} />
+        <PageHeader
+          title={LABELS[mode]}
+          onBack={onBack}
+          badge={`${cards.length} cards`}
+          compact
+          mb={3}
+        />
+        <BatchPicker
+          totalCards={cards.length}
+          mode={mode}
+          onSelect={setBatchSize}
+          onBack={onBack}
+        />
       </Box>
     );
   }
@@ -67,7 +84,13 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
 
   return (
     <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
-      <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} compact mb={3} />
+      <PageHeader
+        title={LABELS[mode]}
+        onBack={onBack}
+        badge={`${cards.length} cards`}
+        compact
+        mb={3}
+      />
 
       {mode === 'match' && (
         <MatchMode cards={cards} deckId={deckId} batchSize={effectiveBatchSize} onExit={onBack} />
