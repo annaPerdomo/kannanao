@@ -25,14 +25,21 @@ export function useDecks() {
       setLoading(false);
       return;
     }
+    let cancelled = false;
     setLoading(true);
+
     const fetchDecks = async () => {
       const loaded = await loadDecks(user.id);
+      if (cancelled) return;
       setDecks(loaded);
       setLoading(false);
     };
 
     void fetchDecks();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
 
   const createDeck = useCallback(

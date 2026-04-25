@@ -19,14 +19,21 @@ export function useCards(
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchCards = async () => {
       const loaded = await loadCards(deckId);
+      if (cancelled) return;
       setCards(loaded);
       onCountChange?.(loaded.length);
       setLoading(false);
     };
 
     void fetchCards();
+
+    return () => {
+      cancelled = true;
+    };
   }, [deckId, onCountChange]);
 
   const addCard = useCallback(
