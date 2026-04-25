@@ -1,0 +1,454 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { screen, waitFor, act } from '@testing-library/react';
+import { renderWithProviders } from '@/test/renderWithProviders';
+
+// ─── Mock Supabase ────────────────────────────────────────────────────────────
+
+const mockGetSession = vi.fn();
+const mockOnAuthStateChange = vi.fn();
+const mockSignInWithPassword = vi.fn();
+const mockSignOut = vi.fn();
+const mockGetUser = vi.fn();
+
+vi.mock('@/lib/supabase', () => ({
+  sb: {
+    auth: {
+      getSession: (...args: unknown[]) => mockGetSession(...args),
+      onAuthStateChange: (...args: unknown[]) => mockOnAuthStateChange(...args),
+      signInWithPassword: (...args: unknown[]) => mockSignInWithPassword(...args),
+      signOut: (...args: unknown[]) => mockSignOut(...args),
+      getUser: (...args: unknown[]) => mockGetUser(...args),
+    },
+  },
+  isConfigured: vi.fn(() => true),
+  showConfigBanner: vi.fn(),
+  upsertProfile: vi.fn().mockResolvedValue(undefined),
+  loadProfile: vi.fn().mockResolvedValue(null),
+  updateProfileColorScheme: vi.fn().mockResolvedValue(undefined),
+  updateProfileShowTodo: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('@/lib/admin', () => ({
+  isAdminUser: vi.fn(() => false),
+}));
+
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+
+// ─── Test component ───────────────────────────────────────────────────────────
+
+function AuthDisplay() {
+  const { user, isAdmin, displayName, loading } = useAuth();
+  if (loading) return <div>Loading auth...</div>;
+  return (
+    <div>
+      <span data-testid="user">{user ? user.email : 'null'}</span>
+      <span data-testid="isAdmin">{String(isAdmin)}</span>
+      <span data-testid="displayName">{displayName ?? 'null'}</span>
+    </div>
+  );
+}
+
+function SignInForm() {
+  const { signInWithUsername } = useAuth();
+  return (
+    <button
+      onClick={() => signInWithUsername('testuser', 'password123')}
+    >
+      Sign In
+    </button>
+  );
+}
+
+// ─── Setup ────────────────────────────────────────────────────────────────────
+
+function renderWithAuth(ui: React.ReactElement) {
+  return renderWithProviders(<AuthProvider>{ui}</AuthProvider>);
+}
+
+// ─── Tests ────────────────────────────────────────────────────────────────────
+
+describe('AuthContext / AuthProvider', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Default: no session
+    mockGetSession.mockResolvedValue({ data: { session: null } });
+    mockOnAuthStateChange.mockReturnValue({
+      data: { subscription: { unsubscribe: vi.fn() } },
+    });
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+  });
+
+  describe('unauthenticated state', () => {
+    it('should expose user=null when no session exists', async () => {
+      renderWithAuth(<AuthDisplay />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('user').textContent).toBe('null');
+      });
+    });
+
+    it('should expose isAdmin=false when no session exists', async () => {
+      renderWithAuth(<AuthDisplay />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('isAdmin').textContent).toBe('false');
+      });
+    });
+
+    it('should finish loading and show non-loading state', async () => {
+      renderWithAuth(<AuthDisplay />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('Loading auth...')).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('signInWithUsername', () => {
+    it('should call supabase signInWithPassword with email derived from username', async () => {
+      mockSignInWithPassword.mockResolvedValue({ error: null });
+
+      renderWithAuth(<SignInForm />);
+
+      await act(async () => {
+        screen.getByRole('button', { name: 'Sign In' }).click();
+      });
+
+      expect(mockSignInWithPassword).toHaveBeenCalledWith({
+        email: 'testuser@kannanao.local',
+        password: 'password123',
+      });
+    });
+
+    it('should return error message on failed sign in', async () => {
+      const { signInWithUsername } = (() => {
+        let capturedHook: ReturnType<typeof useAuth> | null = null;
+        function Capture() {
+          capturedHook = useAuth();
+          return null;
+        }
+        renderWithAuth(<Capture />);
+        return { signInWithUsername: capturedHook?.signInWithUsername };
+      })();
+
+      mockSignInWithPassword.mockResolvedValue({
+        error: { message: 'Invalid credentials' },
+      });
+
+      const result = await act(async () =>
+        signInWithUsername?.('bad', 'credentials'),
+      );
+
+      expect(result?.error).toBe('Invalid credentials');
+    });
+
+    it('should return error: null on successful sign in', async () => {
+      mockSignInWithPassword.mockResolvedValue({ error: null });
+
+      let capturedHook: ReturnType<typeof useAuth> | null = null;
+      function Capture() {
+        capturedHook = useAuth();
+        return null;
+      }
+      renderWithAuth(<Capture />);
+
+      const result = await act(async () =>
+        capturedHook?.signInWithUsername('user', 'pass'),
+      );
+
+      expect(result?.error).toBeNull();
+    });
+  });
+
+  describe('signUpWithUsername', () => {
+    it('should return an error (sign-ups are closed)', async () => {
+      let capturedHook: ReturnType<typeof useAuth> | null = null;
+      function Capture() {
+        capturedHook = useAuth();
+        return null;
+      }
+      renderWithAuth(<Capture />);
+
+      const result = await act(async () =>
+        capturedHook?.signUpWithUsername('newuser', 'password'),
+      );
+
+      expect(result?.error).toBeTruthy();
+      expect(result?.error).toContain('waitlist');
+    });
+  });
+
+  describe('signOut', () => {
+    it('should call supabase signOut', async () => {
+      mockSignOut.mockResolvedValue({});
+
+      let capturedHook: ReturnType<typeof useAuth> | null = null;
+      function Capture() {
+        capturedHook = useAuth();
+        return null;
+      }
+      renderWithAuth(<Capture />);
+      await waitFor(() => expect(capturedHook?.loading).toBe(false));
+
+      await act(async () => { await capturedHook?.signOut(); });
+
+      expect(mockSignOut).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('updateDisplayName', () => {
+    it('should return error when not authenticated', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+
+      let capturedHook: ReturnType<typeof useAuth> | null = null;
+      function Capture() {
+        capturedHook = useAuth();
+        return null;
+      }
+      renderWithAuth(<Capture />);
+      await waitFor(() => expect(capturedHook?.loading).toBe(false));
+
+      const result = await act(async () =>
+        capturedHook?.updateDisplayName('New Name'),
+      );
+
+      expect(result?.error).toBe('Not authenticated');
+    });
+
+    it('should call upsertProfile when authenticated', async () => {
+      const { upsertProfile } = await import('@/lib/supabase');
+      mockGetUser.mockResolvedValue({ data: { user: { id: 'u1', email: 'test@kannanao.local' } } });
+
+      let capturedHook: ReturnType<typeof useAuth> | null = null;
+      function Capture() {
+        capturedHook = useAuth();
+        return null;
+      }
+      renderWithAuth(<Capture />);
+      await waitFor(() => expect(capturedHook?.loading).toBe(false));
+
+      await act(async () => {
+        await capturedHook?.updateDisplayName('Hana');
+      });
+
+      expect(upsertProfile).toHaveBeenCalledWith('u1', 'test', 'Hana');
+    });
+  });
+
+  describe('loading state', () => {
+    it('should show loading initially then resolve', async () => {
+      // Delay the getSession call
+      mockGetSession.mockImplementationOnce(() =>
+        new Promise((resolve) => setTimeout(() => resolve({ data: { session: null } }), 50)),
+      );
+
+      renderWithAuth(<AuthDisplay />);
+      expect(screen.getByText('Loading auth...')).toBeInTheDocument();
+
+      await waitFor(() => {
+        expect(screen.queryByText('Loading auth...')).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('onAuthStateChange — SIGNED_IN', () => {
+    it('should call upsertProfile when SIGNED_IN fires', async () => {
+      const { upsertProfile } = await import('@/lib/supabase');
+
+      let authCallback: ((event: string, session: unknown) => void) | null = null;
+      mockOnAuthStateChange.mockImplementation((cb) => {
+        authCallback = cb;
+        return { data: { subscription: { unsubscribe: vi.fn() } } };
+      });
+
+      renderWithAuth(<AuthDisplay />);
+      await waitFor(() => expect(screen.queryByText('Loading auth...')).not.toBeInTheDocument());
+
+      await act(async () => {
+        authCallback!('SIGNED_IN', {
+          user: { id: 'u1', email: 'test@kannanao.local' },
+        });
+      });
+
+      expect(upsertProfile).toHaveBeenCalledWith('u1', 'test');
+    });
+
+    it('should call loadProfile when SIGNED_IN fires', async () => {
+      const { loadProfile } = await import('@/lib/supabase');
+
+      let authCallback: ((event: string, session: unknown) => void) | null = null;
+      mockOnAuthStateChange.mockImplementation((cb) => {
+        authCallback = cb;
+        return { data: { subscription: { unsubscribe: vi.fn() } } };
+      });
+
+      renderWithAuth(<AuthDisplay />);
+      await waitFor(() => expect(screen.queryByText('Loading auth...')).not.toBeInTheDocument());
+
+      await act(async () => {
+        authCallback!('SIGNED_IN', {
+          user: { id: 'u1', email: 'test@kannanao.local' },
+        });
+      });
+
+      await waitFor(() => expect(loadProfile).toHaveBeenCalledWith('u1'));
+    });
+  });
+
+  describe('onAuthStateChange — SIGNED_OUT', () => {
+    it('should clear displayName on SIGNED_OUT', async () => {
+      const { loadProfile } = await import('@/lib/supabase');
+      (loadProfile as ReturnType<typeof vi.fn>).mockResolvedValue({ username: 'u', displayName: 'Hana', colorScheme: null, showTodo: true });
+
+      let authCallback: ((event: string, session: unknown) => void) | null = null;
+      mockOnAuthStateChange.mockImplementation((cb) => {
+        authCallback = cb;
+        return { data: { subscription: { unsubscribe: vi.fn() } } };
+      });
+      mockGetSession.mockResolvedValue({
+        data: { session: { user: { id: 'u1', email: 'test@kannanao.local' } } },
+      });
+
+      function NameDisplay() {
+        const { displayName, loading } = useAuth();
+        if (loading) return <div>Loading auth...</div>;
+        return <span data-testid="name">{displayName ?? 'null'}</span>;
+      }
+
+      renderWithAuth(<NameDisplay />);
+      await waitFor(() => expect(screen.queryByText('Loading auth...')).not.toBeInTheDocument());
+      await waitFor(() => expect(screen.getByTestId('name').textContent).toBe('Hana'));
+
+      await act(async () => {
+        authCallback!('SIGNED_OUT', null);
+      });
+
+      expect(screen.getByTestId('name').textContent).toBe('null');
+    });
+  });
+
+  describe('fetchProfile — colorScheme loading', () => {
+    it('should set colorScheme from profile when it is a valid scheme', async () => {
+      const { loadProfile } = await import('@/lib/supabase');
+      (loadProfile as ReturnType<typeof vi.fn>).mockResolvedValue({
+        username: 'u', displayName: null, colorScheme: 'ocean', showTodo: true,
+      });
+
+      mockGetSession.mockResolvedValue({
+        data: { session: { user: { id: 'u1', email: 'test@kannanao.local' } } },
+      });
+
+      function SchemeDisplay() {
+        const { colorScheme, loading } = useAuth();
+        if (loading) return <div>Loading auth...</div>;
+        return <span data-testid="scheme">{colorScheme ?? 'null'}</span>;
+      }
+
+      renderWithAuth(<SchemeDisplay />);
+      await waitFor(() => {
+        expect(screen.getByTestId('scheme').textContent).toBe('ocean');
+      });
+    });
+
+    it('should NOT set colorScheme when profile returns an invalid scheme', async () => {
+      const { loadProfile } = await import('@/lib/supabase');
+      (loadProfile as ReturnType<typeof vi.fn>).mockResolvedValue({
+        username: 'u', displayName: null, colorScheme: 'invalidscheme', showTodo: true,
+      });
+
+      mockGetSession.mockResolvedValue({
+        data: { session: { user: { id: 'u1', email: 'test@kannanao.local' } } },
+      });
+
+      function SchemeDisplay() {
+        const { colorScheme, loading } = useAuth();
+        if (loading) return <div>Loading auth...</div>;
+        return <span data-testid="scheme">{colorScheme ?? 'null'}</span>;
+      }
+
+      renderWithAuth(<SchemeDisplay />);
+      await waitFor(() => expect(screen.queryByText('Loading auth...')).not.toBeInTheDocument());
+      expect(screen.getByTestId('scheme').textContent).toBe('null');
+    });
+  });
+
+  describe('updateColorScheme', () => {
+    it('should call updateProfileColorScheme when user is authenticated', async () => {
+      const { updateProfileColorScheme } = await import('@/lib/supabase');
+      mockGetUser.mockResolvedValue({ data: { user: { id: 'u1', email: 'test@kannanao.local' } } });
+
+      let capturedHook: ReturnType<typeof useAuth> | null = null;
+      function Capture() {
+        capturedHook = useAuth();
+        return null;
+      }
+      renderWithAuth(<Capture />);
+      await waitFor(() => expect(capturedHook?.loading).toBe(false));
+
+      await act(async () => {
+        await capturedHook?.updateColorScheme('murasaki');
+      });
+
+      expect(updateProfileColorScheme).toHaveBeenCalledWith('u1', 'murasaki');
+    });
+
+    it('should not call updateProfileColorScheme when not authenticated', async () => {
+      const { updateProfileColorScheme } = await import('@/lib/supabase');
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+
+      let capturedHook: ReturnType<typeof useAuth> | null = null;
+      function Capture() {
+        capturedHook = useAuth();
+        return null;
+      }
+      renderWithAuth(<Capture />);
+      await waitFor(() => expect(capturedHook?.loading).toBe(false));
+
+      await act(async () => {
+        await capturedHook?.updateColorScheme('murasaki');
+      });
+
+      expect(updateProfileColorScheme).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateShowTodo', () => {
+    it('should call updateProfileShowTodo when user is authenticated', async () => {
+      const { updateProfileShowTodo } = await import('@/lib/supabase');
+      mockGetUser.mockResolvedValue({ data: { user: { id: 'u1', email: 'test@kannanao.local' } } });
+
+      let capturedHook: ReturnType<typeof useAuth> | null = null;
+      function Capture() {
+        capturedHook = useAuth();
+        return null;
+      }
+      renderWithAuth(<Capture />);
+      await waitFor(() => expect(capturedHook?.loading).toBe(false));
+
+      await act(async () => {
+        await capturedHook?.updateShowTodo(false);
+      });
+
+      expect(updateProfileShowTodo).toHaveBeenCalledWith('u1', false);
+    });
+
+    it('should not call updateProfileShowTodo when not authenticated', async () => {
+      const { updateProfileShowTodo } = await import('@/lib/supabase');
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+
+      let capturedHook: ReturnType<typeof useAuth> | null = null;
+      function Capture() {
+        capturedHook = useAuth();
+        return null;
+      }
+      renderWithAuth(<Capture />);
+      await waitFor(() => expect(capturedHook?.loading).toBe(false));
+
+      await act(async () => {
+        await capturedHook?.updateShowTodo(false);
+      });
+
+      expect(updateProfileShowTodo).not.toHaveBeenCalled();
+    });
+  });
+});

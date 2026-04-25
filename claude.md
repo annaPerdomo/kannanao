@@ -98,3 +98,46 @@ Keep functions < 50 lines. Check `src/types/` for existing types before creating
 `@supabase/supabase-js` (database) | `uuid` (ID generation) | `@mui/material` + `@mui/icons-material` (UI)
 
 External APIs: Google Gemini (flashcard generation) | Unsplash (card images)
+
+## Testing
+
+**Framework**: Vitest + React Testing Library. Test files live in `__tests__/` directories next to the source they cover (e.g. `src/hooks/__tests__/useShop.test.ts`).
+
+**Scripts**:
+- `pnpm test` — watch mode
+- `pnpm test:run` — single run, no coverage
+- `pnpm test:summary` — run with coverage, print only totals (**use this for a quick check**)
+- `pnpm test:coverage` — full coverage table with per-file breakdown
+
+**Coverage thresholds** are enforced in `vitest.config.ts` (statements 70%, branches 60%, functions 65%, lines 75%). `pnpm test:coverage` will fail if any threshold is breached.
+
+### What to test for every new feature or change
+
+| Area | Test it | Skip it |
+|------|---------|---------|
+| **Pure functions** — XP math, formatters, validators | Yes — always. No mocks needed, highest ROI | — |
+| **Hook logic** — CRUD actions, optimistic updates, rollback | Yes — mock `@/lib/supabase` directly, test the state changes | Don't test the Supabase queries themselves, that's the DB layer's job |
+| **DB adapter functions** (`lib/supabase.ts`) | Yes — mock `@supabase/supabase-js`. Verify happy path + error path per function | Don't test internal helpers (`dbCardToApp` etc.) directly; they're covered by the function tests |
+| **Context providers** — auth state, XP animation, settings | Yes — test via `renderHook` with the real provider as wrapper | Don't render full pages to test context |
+| **Critical UI interactions** — form submit, button callbacks, answer validation | Yes — `fireEvent` or `userEvent`, assert the right handler was called | Don't test MUI rendering details (classes, colors, sx props) |
+| **Animation / canvas components** | No — mock them as `() => null` in consumer tests | — |
+| **One-line wrappers** and thin context bridges | No — coverage via consumers is enough | — |
+
+### Mock patterns
+
+```ts
+// Supabase DB functions — mock the whole module
+vi.mock('@/lib/supabase', () => ({ sb: { auth: ..., from: ... }, isConfigured: vi.fn(() => true) }));
+
+// Hooks used by components — mock the hook module
+vi.mock('@/hooks/useProgress', () => ({ useProgress: () => ({ startSession: vi.fn(), ... }) }));
+
+// Heavy/animated child components — stub to null
+vi.mock('@/components/SpeakButton', () => ({ SpeakButton: () => null }));
+```
+
+When testing a hook that makes Supabase calls, use the **thenable chain** pattern from `src/lib/__tests__/supabase.db.test.ts` so `await sb.from(...).select()...` resolves correctly.
+
+### One rule
+
+**New feature = new `__tests__` file (or additions to the existing one).** If you add a hook, add tests for its action functions. If you add a DB function to `lib/supabase.ts`, add it to `supabase.db.test.ts`. Run `pnpm test:summary` before and after to confirm coverage hasn't dropped.
