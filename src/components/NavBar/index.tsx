@@ -31,7 +31,7 @@ export function NavBar() {
   const isDecks = pathname?.startsWith('/decks') ?? false;
 
   const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgress();
-  const { user, displayName, updateDisplayName } = useAuth();
+  const { user, updateDisplayName } = useAuth();
 
   const [editOpen, setEditOpen] = useState(false);
   const [nameInput, setNameInput] = useState('');
@@ -43,11 +43,6 @@ export function NavBar() {
       return () => clearTimeout(t);
     }
   }, [newlyUnlocked, clearNewlyUnlocked]);
-
-  const openEdit = () => {
-    setNameInput(displayName ?? '');
-    setEditOpen(true);
-  };
 
   const handleSave = async () => {
     if (!nameInput.trim()) return;

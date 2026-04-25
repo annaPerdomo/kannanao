@@ -12,7 +12,6 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
@@ -46,7 +45,7 @@ export default function OhanashikaiDetail({
   onPractice,
 }: OhanashikaiDetailProps) {
   const theme = useTheme();
-  const { brand, accent } = theme.palette;
+  const { brand } = theme.palette;
 
   const { ohanashikais, renameOhanashikai } = useOhanashikais();
   const { lines, loading, addLine, updateLine, deleteLine, importLines } =

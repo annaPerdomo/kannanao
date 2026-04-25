@@ -34,7 +34,7 @@ export function BorderPreviewModal({
   const { brand } = theme.palette;
   const [cardView, setCardView] = useState<'collection' | 'study'>('study');
 
-  const borderStyle = CARD_BORDER_STYLES[borderKey] ?? {};
+  const borderStyle = useMemo(() => CARD_BORDER_STYLES[borderKey] ?? {}, [borderKey]);
 
   const mockBorderCtx = useMemo(
     () => ({ borderStyle, equippedBorderKey: borderKey }),

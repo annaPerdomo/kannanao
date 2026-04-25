@@ -41,7 +41,7 @@ export function useDecks() {
     return () => {
       cancelled = true;
     };
-  }, [user?.id]);
+  }, [user]);
 
   const createDeck = useCallback(async (name: string, description?: string): Promise<Deck> => {
     if (!isConfigured()) {

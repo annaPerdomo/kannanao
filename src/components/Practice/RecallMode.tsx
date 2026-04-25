@@ -95,6 +95,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
     if (roundDone && queue.phase === 'playing') {
       queue.finishRound();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roundDone, queue.phase, queue.finishRound]);
 
   const next = useCallback(() => {

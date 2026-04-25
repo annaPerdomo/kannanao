@@ -21,7 +21,7 @@ import { useGenerateFlashcards } from '@/hooks/useGenerateFlashcards';
 import { encodeUnsplashUrl, fetchImage, triggerUnsplashDownload } from '@/services/api';
 import { LAYOUT } from '@/theme';
 import type { PracticeMode } from '@/types/app';
-import type { GeneratedCard } from '@/types/flashcard';
+import type { Flashcard, GeneratedCard } from '@/types/flashcard';
 
 interface DeckProps {
   deckId: string;
@@ -48,7 +48,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pendingMainViewMode, setPendingMainViewMode] = useState<'hiragana' | 'kanji'>('hiragana');
   const [reviewCards, setReviewCards] = useState<
-    (Omit<import('@/types/flashcard').Flashcard, 'id' | 'deckId'> & { image_query: string })[]
+    (Omit<Flashcard, 'id' | 'deckId'> & { image_query: string })[]
   >([]);
   const [reviewOpen, setReviewOpen] = useState(false);
 

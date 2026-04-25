@@ -16,8 +16,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useEffect, useMemo, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
-import { loadAllCards, loadDecks } from '@/lib/supabase';
-import type { Deck } from '@/types/deck';
+import { loadAllCards } from '@/lib/supabase';
 import type { Flashcard } from '@/types/flashcard';
 
 interface Props {
@@ -67,10 +66,9 @@ function CardThumbnail({ card }: { card: Flashcard }) {
 
 export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, onConfirm }: Props) {
   const { palette } = useTheme();
-  const { brand, accent } = palette;
+  const { brand } = palette;
 
   const [allCards, setAllCards] = useState<Flashcard[]>([]);
-  const [deckMap, setDeckMap] = useState<Record<string, string>>({});
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -81,13 +79,8 @@ export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, on
     setLoading(true);
     setSelected(new Set());
     setSearch('');
-    Promise.all([loadAllCards(), loadDecks(userId)]).then(([cards, decks]) => {
+    loadAllCards().then((cards) => {
       setAllCards(cards.filter((c) => c.deckId !== targetDeckId));
-      const map: Record<string, string> = {};
-      decks.forEach((d: Deck) => {
-        map[d.id] = d.name;
-      });
-      setDeckMap(map);
       setLoading(false);
     });
   }, [open, targetDeckId, userId]);
@@ -106,7 +99,11 @@ export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, on
   const toggle = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   };

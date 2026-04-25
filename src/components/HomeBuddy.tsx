@@ -3,7 +3,7 @@
 import Box from '@mui/material/Box';
 import { alpha, keyframes, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BUDDY_CONFIG, BUDDY_HOME_PHRASES } from '@/hooks/useShop';
 
@@ -55,7 +55,7 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const { brand } = theme.palette;
   const config = BUDDY_CONFIG[buddyKey];
   const accent = BUDDY_ACCENTS[buddyKey] ?? brand[300];
-  const phrases = BUDDY_HOME_PHRASES[buddyKey] ?? ["Let's study!"];
+  const phrases = useMemo(() => BUDDY_HOME_PHRASES[buddyKey] ?? ["Let's study!"], [buddyKey]);
 
   const [bubbleText, setBubbleText] = useState('');
   const [showBubble, setShowBubble] = useState(true);

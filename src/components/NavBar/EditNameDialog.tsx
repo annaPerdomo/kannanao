@@ -1,7 +1,7 @@
 'use client';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import { alpha, useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 
 import { StyledDialog } from '@/components/StyledDialog';

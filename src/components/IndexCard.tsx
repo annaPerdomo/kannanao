@@ -1,7 +1,6 @@
 'use client';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material/styles';
-import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 
@@ -28,8 +27,6 @@ const baseFaceStyle = {
 };
 
 export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps) {
-  const theme = useTheme();
-  const { brand } = theme.palette;
   const { borderStyle: equippedBorder } = useCardBorder();
   const hasCustomBorder = equippedBorder && Object.keys(equippedBorder).length > 0;
 

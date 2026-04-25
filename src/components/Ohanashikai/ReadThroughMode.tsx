@@ -26,7 +26,11 @@ interface ReadThroughModeProps {
 
 const DECORATION_EMOJIS = ['🌸', '✨', '🌟', '💫', '🎀', '🌺', '⭐', '🌷'];
 
-export function ReadThroughMode({ lines, ohanashikaiId, onExit }: ReadThroughModeProps) {
+export function ReadThroughMode({
+  lines,
+  ohanashikaiId: _ohanashikaiId,
+  onExit,
+}: ReadThroughModeProps) {
   const theme = useTheme();
   const { brand, accent, surfaces } = theme.palette;
 

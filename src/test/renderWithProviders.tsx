@@ -4,7 +4,7 @@ import { render, type RenderOptions } from '@testing-library/react';
 import React, { type ReactNode } from 'react';
 // ─── XpAnimation inline mock context ─────────────────────────────────────────
 // We recreate the context shape here so we don't depend on the real module
-import { createContext, useContext } from 'react';
+import { createContext } from 'react';
 
 import { CardBorderCtx } from '@/contexts/CardBorderContext';
 import { type ColorScheme, createAppTheme } from '@/theme';

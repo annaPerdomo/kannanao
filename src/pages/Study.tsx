@@ -130,7 +130,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
         }
       }, SLIDE_DURATION_MS);
     },
-    [navigating, index, cards.length, recordAnswer, showXpPop],
+    [navigating, index, cards, recordAnswer, showXpPop],
   );
 
   if (cardsLoading || decksLoading) {

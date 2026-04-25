@@ -1,5 +1,3 @@
-import type { SxProps, Theme } from '@mui/material/styles';
-
 export type ShopCategory = 'theme' | 'card_border' | 'celebration' | 'study_buddy';
 
 export interface CelebTheme {

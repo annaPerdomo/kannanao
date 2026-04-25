@@ -167,7 +167,7 @@ export function useTodos() {
 
   // Reorder a subset of todos (e.g. todos visible on a given day) and persist.
   const reorderTodos = useCallback(
-    async (reorderedSubset: import('@/types/todo').Todo[]) => {
+    async (reorderedSubset: Todo[]) => {
       const snapshot = todos;
       const subsetIds = new Set(reorderedSubset.map((t) => t.id));
 

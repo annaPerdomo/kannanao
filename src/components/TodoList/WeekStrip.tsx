@@ -42,7 +42,7 @@ export function WeekStrip({
   entries,
 }: WeekStripProps) {
   const theme = useTheme();
-  const { brand, accent, rainbow } = theme.palette;
+  const { brand, rainbow } = theme.palette;
   const todayStr = todayISO();
 
   const TAB_COLORS = [

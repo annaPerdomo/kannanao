@@ -17,7 +17,7 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
 import type { EntryType } from '@/types/todo';
@@ -86,16 +86,26 @@ export function ManageEntryTypesDialog({
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
-  const TYPE_COLORS = [
-    brand[400],
-    brand[600],
-    accent[400],
-    accent[600],
-    theme.palette.error.main,
-    theme.palette.warning.main,
-    theme.palette.success.main,
-    theme.palette.info.main,
-  ];
+  const TYPE_COLORS = useMemo(
+    () => [
+      brand[400],
+      brand[600],
+      accent[400],
+      accent[600],
+      theme.palette.error.main,
+      theme.palette.warning.main,
+      theme.palette.success.main,
+      theme.palette.info.main,
+    ],
+    [
+      brand,
+      accent,
+      theme.palette.error.main,
+      theme.palette.warning.main,
+      theme.palette.success.main,
+      theme.palette.info.main,
+    ],
+  );
 
   const pickerSx = {
     '--epr-bg-color': brand[50],

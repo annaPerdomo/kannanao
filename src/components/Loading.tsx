@@ -3,12 +3,6 @@ import { alpha, Box, keyframes, Typography, useTheme } from '@mui/material';
 import { useRef } from 'react';
 
 // --- Animations ---
-const float = keyframes`
-  0%, 100% { transform: translateY(0px) rotate(-5deg) scale(1); }
-  30%       { transform: translateY(-20px) rotate(4deg) scale(1.08); }
-  60%       { transform: translateY(-10px) rotate(-3deg) scale(1.04); }
-`;
-
 const shimmer = keyframes`
   0%   { background-position: -300% center; }
   100% { background-position:  300% center; }

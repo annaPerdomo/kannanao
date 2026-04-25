@@ -28,7 +28,7 @@ import type { Flashcard, GeneratedCard } from '@/types/flashcard';
 
 export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { palette } = useTheme();
-  const { brand, accent, surfaces } = palette;
+  const { brand, surfaces } = palette;
 
   const { createDeck, pinDeck } = useDecks();
   const { user } = useAuth();

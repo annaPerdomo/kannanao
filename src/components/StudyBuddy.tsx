@@ -131,15 +131,7 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
     });
   }, []);
 
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    const moved = Math.abs(e.clientX - lastPos.current.x) + Math.abs(e.clientY - lastPos.current.y);
-    dragging.current = false;
-    if (moved < 8) {
-      handleTap();
-    }
-  }, []);
-
-  const handleTap = () => {
+  const handleTap = useCallback(() => {
     if (!config) return;
     setTapped(true);
     setTapHearts(true);
@@ -150,7 +142,19 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
     setTimeout(() => setTapped(false), 500);
     setTimeout(() => setTapHearts(false), 600);
     setTimeout(() => setShowBubble(false), 2000);
-  };
+  }, [config]);
+
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      const moved =
+        Math.abs(e.clientX - lastPos.current.x) + Math.abs(e.clientY - lastPos.current.y);
+      dragging.current = false;
+      if (moved < 8) {
+        handleTap();
+      }
+    },
+    [handleTap],
+  );
 
   useEffect(() => {
     if (!config) return;

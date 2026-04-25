@@ -27,7 +27,7 @@ interface Props {
 
 export function ShareDeckDialog({ open, onClose, deckId, deckName }: Props) {
   const { palette } = useTheme();
-  const { brand, accent } = palette;
+  const { accent } = palette;
 
   const [username, setUsername] = useState('');
   const [shares, setShares] = useState<DeckShare[]>([]);

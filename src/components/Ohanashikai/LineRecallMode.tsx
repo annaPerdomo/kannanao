@@ -42,7 +42,11 @@ function getHint(text: string): string {
   return chars.slice(0, Math.min(5, Math.ceil(chars.length * 0.2))).join('') + '…';
 }
 
-export function LineRecallMode({ lines, ohanashikaiId, onExit }: LineRecallModeProps) {
+export function LineRecallMode({
+  lines,
+  ohanashikaiId: _ohanashikaiId,
+  onExit,
+}: LineRecallModeProps) {
   const theme = useTheme();
   const { brand, accent, surfaces } = theme.palette;
 
