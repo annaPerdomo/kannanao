@@ -30,6 +30,10 @@ vi.mock('@/contexts/AuthContext', () => ({
 
 import { useDecks } from '@/hooks/useDecks';
 import type { Deck } from '@/types/deck';
+import { isConfigured, showConfigBanner } from '@/lib/supabase';
+
+const mockIsConfigured = vi.mocked(isConfigured);
+const mockShowConfigBanner = vi.mocked(showConfigBanner);
 
 // ─── Test data ────────────────────────────────────────────────────────────────
 
@@ -213,6 +217,22 @@ describe('useDecks', () => {
 
       expect(result.current.decks[0].name).toBe('New Name');
     });
+
+    it('should update both name and description when description is provided', async () => {
+      const deck = makeDeck({ id: 'deck-1', name: 'Old Name', description: 'Old desc' });
+      mockLoadDecks.mockResolvedValue([deck]);
+      mockRenameDeck.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.renameDeck('deck-1', 'New Name', 'New desc');
+      });
+
+      expect(result.current.decks[0].name).toBe('New Name');
+      expect(result.current.decks[0].description).toBe('New desc');
+    });
   });
 
   describe('updateDeckCount', () => {
@@ -229,6 +249,34 @@ describe('useDecks', () => {
     });
   });
 
+  describe('setDeckPublic', () => {
+    it('should optimistically update isPublic state', async () => {
+      const deck = makeDeck({ id: 'deck-1', isPublic: false });
+      mockLoadDecks.mockResolvedValue([deck]);
+      mockSetDeckPublic.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => { await result.current.setDeckPublic('deck-1', true); });
+
+      expect(result.current.decks[0].isPublic).toBe(true);
+    });
+
+    it('should roll back isPublic on error', async () => {
+      const deck = makeDeck({ id: 'deck-1', isPublic: false });
+      mockLoadDecks.mockResolvedValue([deck]);
+      mockSetDeckPublic.mockRejectedValue(new Error('DB error'));
+
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => { await result.current.setDeckPublic('deck-1', true); });
+
+      expect(result.current.decks[0].isPublic).toBe(false);
+    });
+  });
+
   describe('error state', () => {
     it('should return empty decks array when load fails', async () => {
       mockLoadDecks.mockResolvedValue([]);
@@ -237,6 +285,66 @@ describe('useDecks', () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       expect(result.current.decks).toHaveLength(0);
+    });
+  });
+
+  describe('updateDeckEmoji edge cases', () => {
+    it('should do nothing when deck id is not found', async () => {
+      mockLoadDecks.mockResolvedValue([makeDeck({ id: 'deck-1' })]);
+
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      // Should not throw and should not call the DB
+      await act(async () => { await result.current.updateDeckEmoji('nonexistent', '🎀'); });
+
+      expect(mockUpdateDeckEmoji).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when Supabase is not configured', () => {
+    beforeEach(() => {
+      mockIsConfigured.mockReturnValue(false);
+    });
+
+    afterEach(() => {
+      mockIsConfigured.mockReturnValue(true);
+    });
+
+    it('createDeck should call showConfigBanner and throw', async () => {
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await expect(
+        act(async () => { await result.current.createDeck('My Deck'); }),
+      ).rejects.toThrow();
+
+      expect(mockShowConfigBanner).toHaveBeenCalled();
+      expect(mockCreateDeck).not.toHaveBeenCalled();
+    });
+
+    it('deleteDeck should call showConfigBanner and throw', async () => {
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await expect(
+        act(async () => { await result.current.deleteDeck('deck-1'); }),
+      ).rejects.toThrow();
+
+      expect(mockShowConfigBanner).toHaveBeenCalled();
+      expect(mockDeleteDeck).not.toHaveBeenCalled();
+    });
+
+    it('renameDeck should call showConfigBanner and throw', async () => {
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await expect(
+        act(async () => { await result.current.renameDeck('deck-1', 'New Name'); }),
+      ).rejects.toThrow();
+
+      expect(mockShowConfigBanner).toHaveBeenCalled();
+      expect(mockRenameDeck).not.toHaveBeenCalled();
     });
   });
 });

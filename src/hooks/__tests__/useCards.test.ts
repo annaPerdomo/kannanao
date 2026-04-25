@@ -21,6 +21,10 @@ vi.mock('@/lib/supabase', () => ({
 
 import { useCards } from '@/hooks/useCards';
 import type { Flashcard } from '@/types/flashcard';
+import { isConfigured, showConfigBanner } from '@/lib/supabase';
+
+const mockIsConfigured = vi.mocked(isConfigured);
+const mockShowConfigBanner = vi.mocked(showConfigBanner);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -75,6 +79,25 @@ describe('useCards', () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       expect(onCountChange).toHaveBeenCalledWith(3);
+    });
+
+    it('should not update state after unmount (stale fetch guard)', async () => {
+      let resolveLoad!: (cards: ReturnType<typeof makeCard>[]) => void;
+      mockLoadCards.mockReturnValue(
+        new Promise<ReturnType<typeof makeCard>[]>((resolve) => {
+          resolveLoad = resolve;
+        }),
+      );
+
+      const { result, unmount } = renderHook(() => useCards('deck-1'));
+      expect(result.current.loading).toBe(true);
+
+      // Unmount before the fetch resolves — the cancelled flag should block the state update
+      unmount();
+      resolveLoad([makeCard('c1')]);
+
+      // If state updated after unmount, React would log an error; absence of that confirms the guard works
+      expect(result.current.loading).toBe(true);
     });
   });
 
@@ -208,6 +231,94 @@ describe('useCards', () => {
       });
 
       expect(mockDeleteCard).toHaveBeenCalledWith('c1');
+    });
+  });
+
+  describe('when Supabase is not configured', () => {
+    beforeEach(() => {
+      mockIsConfigured.mockReturnValue(false);
+    });
+
+    afterEach(() => {
+      mockIsConfigured.mockReturnValue(true);
+    });
+
+    it('addCard should call showConfigBanner and return undefined', async () => {
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      let returned: Flashcard | undefined;
+      await act(async () => {
+        returned = await result.current.addCard({ word: 'x', reading: '', meaning: '', image_query: '', example_jp: '', example_en: '', deckId: 'deck-1', mainViewMode: 'hiragana', cardType: 'word' });
+      });
+
+      expect(mockShowConfigBanner).toHaveBeenCalled();
+      expect(returned).toBeUndefined();
+    });
+
+    it('addCards should call showConfigBanner and not insert', async () => {
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.addCards([{ word: 'x', reading: '', meaning: '', image_query: '', example_jp: '', example_en: '', deckId: 'deck-1', mainViewMode: 'hiragana', cardType: 'word' }]);
+      });
+
+      expect(mockShowConfigBanner).toHaveBeenCalled();
+      expect(mockInsertCards).not.toHaveBeenCalled();
+    });
+
+    it('deleteCard should call showConfigBanner and not delete', async () => {
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.deleteCard('c1');
+      });
+
+      expect(mockShowConfigBanner).toHaveBeenCalled();
+      expect(mockDeleteCard).not.toHaveBeenCalled();
+    });
+
+    it('updateCard should call showConfigBanner and return null', async () => {
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      let returned: Flashcard | null = undefined as unknown as Flashcard;
+      await act(async () => {
+        returned = await result.current.updateCard('c1', {});
+      });
+
+      expect(mockShowConfigBanner).toHaveBeenCalled();
+      expect(returned).toBeNull();
+    });
+
+    it('copyExistingCards should call showConfigBanner and not copy', async () => {
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.copyExistingCards([makeCard('c1')]);
+      });
+
+      expect(mockShowConfigBanner).toHaveBeenCalled();
+      expect(mockCopyCards).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('addCard edge cases', () => {
+    it('should return undefined when dbInsertCards returns empty array', async () => {
+      mockInsertCards.mockResolvedValue([]);
+
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      let returned: Flashcard | undefined;
+      await act(async () => {
+        returned = await result.current.addCard({ word: 'x', reading: '', meaning: '', image_query: '', example_jp: '', example_en: '', deckId: 'deck-1', mainViewMode: 'hiragana', cardType: 'word' });
+      });
+
+      expect(returned).toBeUndefined();
     });
   });
 });

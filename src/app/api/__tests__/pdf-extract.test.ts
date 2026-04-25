@@ -11,53 +11,41 @@ beforeEach(() => {
   process.env.GEMINI_API_KEY = 'test-gemini-key';
 });
 
-import { POST } from '@/app/api/furigana/route';
+import { POST } from '@/app/api/pdf-extract/route';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function makeRequest(body: unknown) {
-  return new NextRequest('http://localhost/api/furigana', {
+  return new NextRequest('http://localhost/api/pdf-extract', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
 }
 
-function mockGeminiSuccess(lines: string[]) {
+function mockGeminiSuccess(cards: unknown[]) {
   mockFetch.mockResolvedValueOnce({
     ok: true,
     status: 200,
     json: async () => ({
-      candidates: [
-        {
-          content: {
-            parts: [{ text: JSON.stringify({ lines }) }],
-          },
-        },
-      ],
+      candidates: [{ content: { parts: [{ text: JSON.stringify(cards) }] } }],
     }),
   });
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe('POST /api/furigana', () => {
-  it('should return 400 when lines is empty', async () => {
-    const req = makeRequest({ lines: [] });
+describe('POST /api/pdf-extract', () => {
+  it('should return 400 when pdfBase64 is missing', async () => {
+    const req = makeRequest({});
     const res = await POST(req);
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toBeDefined();
   });
 
-  it('should return 400 when lines is missing', async () => {
-    const req = makeRequest({});
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-  });
-
   it('should return 400 when body is not valid JSON', async () => {
-    const req = new NextRequest('http://localhost/api/furigana', {
+    const req = new NextRequest('http://localhost/api/pdf-extract', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: 'not-json',
@@ -68,40 +56,55 @@ describe('POST /api/furigana', () => {
 
   it('should return 500 when GEMINI_API_KEY is not set', async () => {
     delete process.env.GEMINI_API_KEY;
-    const req = makeRequest({ lines: ['わたしはねこがすきです'] });
+    const req = makeRequest({ pdfBase64: 'dGVzdA==' });
     const res = await POST(req);
     expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toContain('GEMINI_API_KEY');
   });
 
-  it('should return annotated lines on success', async () => {
-    mockGeminiSuccess(['{私|わたし}は{猫|ねこ}が好きです']);
+  it('should strip periods from card fields and return cards on success', async () => {
+    mockGeminiSuccess([
+      {
+        word: '猫.',
+        reading: 'ねこ.',
+        meaning: 'cat.',
+        image_query: 'cute cat',
+        example_jp: '{猫|ねこ}が好きです',
+        example_en: 'I like cats.',
+        card_type: 'word',
+        jlpt_level: 'N5',
+      },
+    ]);
 
-    const req = makeRequest({ lines: ['わたしはねこがすきです'] });
+    const req = makeRequest({ pdfBase64: 'dGVzdA==' });
     const res = await POST(req);
     expect(res.status).toBe(200);
 
     const body = await res.json();
-    expect(body.lines).toBeDefined();
-    expect(Array.isArray(body.lines)).toBe(true);
-    expect(body.lines[0]).toContain('{');
-  });
-
-  it('should preserve the number of output lines matching input', async () => {
-    const inputLines = ['ねこがすきです', 'いぬがいます'];
-    mockGeminiSuccess(['{猫|ねこ}が好きです', '{犬|いぬ}がいます']);
-
-    const req = makeRequest({ lines: inputLines });
-    const res = await POST(req);
-    const body = await res.json();
-
-    expect(body.lines).toHaveLength(2);
+    expect(Array.isArray(body)).toBe(true);
+    expect(body[0].word).toBe('猫');
+    expect(body[0].meaning).toBe('cat');
+    expect(body[0].example_en).toBe('I like cats');
   });
 
   it('should return 500 when Gemini throws', async () => {
     mockFetch.mockRejectedValueOnce(new Error('Gemini down'));
 
-    const req = makeRequest({ lines: ['ねこ'] });
+    const req = makeRequest({ pdfBase64: 'dGVzdA==' });
     const res = await POST(req);
     expect(res.status).toBe(500);
+  });
+
+  it('should return Gemini error status when API call fails', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 429,
+      json: async () => ({ error: { message: 'Rate limit exceeded' } }),
+    });
+
+    const req = makeRequest({ pdfBase64: 'dGVzdA==' });
+    const res = await POST(req);
+    expect(res.status).toBe(429);
   });
 });

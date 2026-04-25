@@ -58,6 +58,24 @@ describe('POST /api/generate', () => {
     expect(res.status).toBe(400);
   });
 
+  it('should return 400 when body is not valid JSON', async () => {
+    const req = new NextRequest('http://localhost/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: 'not-json',
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+  });
+
+  it('should return 400 when too many words are provided', async () => {
+    const req = makeRequest({ pendingWords: Array.from({ length: 51 }, (_, i) => `word${i}`) });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toContain('max 50');
+  });
+
   it('should return 500 when GEMINI_API_KEY is not set', async () => {
     delete process.env.GEMINI_API_KEY;
     const req = makeRequest({ pendingWords: ['猫'] });
@@ -118,13 +136,23 @@ describe('POST /api/generate', () => {
     });
   });
 
-  it('should return 500 when Gemini throws', async () => {
+  it('should return 500 when Gemini throws an Error', async () => {
     mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
     const req = makeRequest({ pendingWords: ['猫'] });
     const res = await POST(req);
     expect(res.status).toBe(500);
     const body = await res.json();
-    expect(body.error).toBeDefined();
+    expect(body.error).toBe('Network error');
+  });
+
+  it('should return generic message when a non-Error is thrown', async () => {
+    mockFetch.mockRejectedValueOnce('unexpected string rejection');
+
+    const req = makeRequest({ pendingWords: ['猫'] });
+    const res = await POST(req);
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toBe('Internal server error');
   });
 });
