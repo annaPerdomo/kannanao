@@ -372,7 +372,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
       </Stack>
 
       <Box sx={{ mt: 3, textAlign: 'right' }}>
-        <Button size="small" color="inherit" onClick={handleExit} sx={{ opacity: 0.5 }}>
+        <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
           Quit &amp; Save Progress
         </Button>
       </Box>

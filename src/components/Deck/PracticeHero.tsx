@@ -96,15 +96,39 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
             </Typography>
           </Box>
 
-          <Typography
+          <Box
             sx={{
-              fontSize: '0.72rem', fontWeight: 800,
-              color: 'rgba(255,255,255,0.9)',
-              letterSpacing: '0.04em', alignSelf: 'flex-end',
+              alignSelf: 'flex-end',
+              position: 'relative',
+              zIndex: 1,
+              borderRadius: '24px',
+              p: '2px',
+              background: `linear-gradient(90deg, ${brand[200]}, ${accent[300]})`,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.22)',
             }}
           >
-            Let&apos;s go →
-          </Typography>
+            <Box
+              sx={{
+                bgcolor: '#fff',
+                borderRadius: '22px',
+                px: 1.75,
+                py: 0.65,
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: '0.82rem',
+                  fontWeight: 900,
+                  color: brand[700],
+                  fontFamily: (t) => t.fonts.cute,
+                  letterSpacing: '0.02em',
+                  lineHeight: 1,
+                }}
+              >
+                Let&apos;s go →
+              </Typography>
+            </Box>
+          </Box>
         </Box>
 
         {/* Practice mode tiles */}

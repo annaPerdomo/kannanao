@@ -315,7 +315,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
           )}
           <Typography
             variant="caption"
-            sx={{ color: 'text.disabled', letterSpacing: '0.12em', display: 'block', mt: 1.5 }}
+            sx={{ color: 'text.secondary', letterSpacing: '0.12em', display: 'block', mt: 1.5 }}
           >
             WHAT DOES THIS MEAN?
           </Typography>
@@ -446,7 +446,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
       )}
 
       <Box sx={{ mt: 2, textAlign: 'right' }}>
-        <Button size="small" color="inherit" onClick={handleExit} sx={{ opacity: 0.5 }}>
+        <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
           Quit &amp; Save Progress
         </Button>
       </Box>
