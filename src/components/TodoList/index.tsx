@@ -50,6 +50,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
   const [monthSelectedDateISO, setMonthSelectedDateISO] = useState(todayISO());
   const [input, setInput] = useState("");
   const [frequencyDays, setFrequencyDays] = useState<number[]>([]);
+  const [repeatUntilDone, setRepeatUntilDone] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
   const [entries, setEntries] = useState<CalendarEntry[]>([]);
   const { entryTypes: persistedEntryTypes, addEntryType, updateEntryType, deleteEntryType } = useEventTypes();
@@ -92,9 +93,10 @@ export function TodoList({ onXpEarned }: TodoListProps) {
 
   const handleAdd = useCallback(() => {
     if (!input.trim()) return;
-    addTodo(input, frequencyDays, activeDateISO);
+    addTodo(input, frequencyDays, activeDateISO, repeatUntilDone);
     setInput("");
-  }, [input, frequencyDays, activeDateISO, addTodo]);
+    setRepeatUntilDone(false);
+  }, [input, frequencyDays, activeDateISO, repeatUntilDone, addTodo]);
 
   const handleAddEntry = useCallback((entry: CalendarEntry) => { setEntries((prev) => [...prev, entry]); }, []);
   const handleEditEntry = useCallback((updated: CalendarEntry) => { setEntries((prev) => prev.map((e) => (e.id === updated.id ? updated : e))); }, []);
@@ -103,8 +105,8 @@ export function TodoList({ onXpEarned }: TodoListProps) {
   const handleUpdateEntryType = useCallback(async (id: string, name: string, emoji: string) => updateEntryType(id, name, emoji), [updateEntryType]);
   const handleDeleteEntryType = useCallback(async (typeId: string) => { await deleteEntryType(typeId); setEntries((prev) => prev.filter((e) => e.typeId !== typeId)); }, [deleteEntryType]);
 
-  const handleSaveAdvancedEdit = useCallback(async (id: string, text: string, freq: number[], assignedDate: string | null) => {
-    await editTodoAdvanced(id, text, freq, assignedDate);
+  const handleSaveAdvancedEdit = useCallback(async (id: string, text: string, freq: number[], assignedDate: string | null, repeatUntilDone: boolean) => {
+    await editTodoAdvanced(id, text, freq, assignedDate, repeatUntilDone);
     setEditingTodo(null);
   }, [editTodoAdvanced]);
 
@@ -150,6 +152,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
                   loading={loading} error={error} clearError={clearError} celebration={celebration}
                   input={input} onInputChange={setInput} onAdd={handleAdd}
                   frequencyDays={frequencyDays} onFrequencyChange={setFrequencyDays}
+                  repeatUntilDone={repeatUntilDone} onRepeatUntilDoneChange={setRepeatUntilDone}
                   onToggle={toggleTodo} onEditEmoji={editEmoji} onDelete={deleteTodo}
                   onAdvancedEdit={setEditingTodo} onReorder={reorderTodos} onXpEarned={onXpEarned}
                   entries={entries} onAddEntry={handleAddEntry} onEditEntry={handleEditEntry} onDeleteEntry={handleDeleteEntry}
@@ -166,6 +169,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
                 loading={loading} error={error} clearError={clearError} celebration={celebration}
                 input={input} onInputChange={setInput} onAdd={handleAdd}
                 frequencyDays={frequencyDays} onFrequencyChange={setFrequencyDays}
+                repeatUntilDone={repeatUntilDone} onRepeatUntilDoneChange={setRepeatUntilDone}
                 onToggle={toggleTodo} onEditEmoji={editEmoji} onDelete={deleteTodo}
                 onAdvancedEdit={setEditingTodo} onReorder={reorderTodos} onXpEarned={onXpEarned}
                 entries={entries} onAddEntry={handleAddEntry} onEditEntry={handleEditEntry} onDeleteEntry={handleDeleteEntry}

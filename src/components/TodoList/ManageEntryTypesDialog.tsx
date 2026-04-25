@@ -112,7 +112,7 @@ export function ManageEntryTypesDialog({
       await onAddEntryType(name, newTypeEmoji || '🎉', color);
       setNewTypeName(''); setNewTypeEmoji('🎉');
       setAddSuccess(true); setTimeout(() => setAddSuccess(false), 2000);
-    } catch { setAddError('Could not add type. Please try again.'); }
+    } catch { setAddError('Oops! Couldn\'t add that. Try again?'); }
     finally { setAdding(false); }
   }, [newTypeName, newTypeEmoji, onAddEntryType, TYPE_COLORS]);
 
@@ -130,14 +130,14 @@ export function ManageEntryTypesDialog({
     if (!name) return;
     setSaving(true); setEditError(null);
     try { await onUpdateEntryType(editingId, name, editEmoji || '🎉'); setEditingId(null); }
-    catch { setEditError('Could not save changes. Please try again.'); }
+    catch { setEditError('Oops! Couldn\'t save. Try again?'); }
     finally { setSaving(false); }
   }, [editingId, editName, editEmoji, onUpdateEntryType]);
 
   const handleDelete = useCallback(async (id: string) => {
     setDeleting(id); setDeleteError(null);
     try { await onDeleteEntryType(id); }
-    catch { setDeleteError('Could not delete type. Please try again.'); }
+    catch { setDeleteError('Oops! Couldn\'t delete. Try again?'); }
     finally { setDeleting(null); }
   }, [onDeleteEntryType]);
 
@@ -149,7 +149,7 @@ export function ManageEntryTypesDialog({
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Manage Entry Types"
+      title="My Event Labels"
       actions={
         <Button
           onClick={onClose} variant="contained"
@@ -166,7 +166,7 @@ export function ManageEntryTypesDialog({
       <Stack spacing={2}>
         <Box>
           <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: 'text.disabled', mb: 0.75, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-            Default types
+            Built-in labels
           </Typography>
           <Stack direction="row" flexWrap="wrap" gap={0.5}>
             {DEFAULT_ENTRY_TYPES.map((type) => (
@@ -185,12 +185,12 @@ export function ManageEntryTypesDialog({
 
         <Box>
           <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: 'text.disabled', mb: 0.75, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-            Custom types
+            My labels
           </Typography>
           {deleteError && <Alert severity="error" onClose={() => setDeleteError(null)} sx={{ mb: 0.75, borderRadius: 2, fontSize: '0.78rem' }}>{deleteError}</Alert>}
           {editError && <Alert severity="error" onClose={() => setEditError(null)} sx={{ mb: 0.75, borderRadius: 2, fontSize: '0.78rem' }}>{editError}</Alert>}
           {customTypes.length === 0 ? (
-            <Typography sx={{ fontSize: '0.78rem', color: 'text.disabled', fontStyle: 'italic' }}>No custom types yet</Typography>
+            <Typography sx={{ fontSize: '0.78rem', color: 'text.disabled', fontStyle: 'italic' }}>No custom labels yet — make one below!</Typography>
           ) : (
             <Stack spacing={0.75}>
               {customTypes.map((type) => {
@@ -270,15 +270,15 @@ export function ManageEntryTypesDialog({
 
         <Box>
           <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: 'text.disabled', mb: 0.75, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-            Add custom type
+            Make a new label
           </Typography>
           {addError && <Alert severity="error" onClose={() => setAddError(null)} sx={{ mb: 0.75, borderRadius: 2, fontSize: '0.78rem' }}>{addError}</Alert>}
-          {addSuccess && <Alert severity="success" sx={{ mb: 0.75, borderRadius: 2, fontSize: '0.78rem' }}>Type added! ✨</Alert>}
+          {addSuccess && <Alert severity="success" sx={{ mb: 0.75, borderRadius: 2, fontSize: '0.78rem' }}>Label added! ✨</Alert>}
           <Stack direction="row" spacing={1} alignItems="center">
             <Tooltip title="Pick emoji">
               <span><EmojiButton emoji={newTypeEmoji || '🎉'} onClick={(e) => setNewPickerAnchor(e.currentTarget)} /></span>
             </Tooltip>
-            <TextField label="Type name" value={newTypeName} onChange={(e) => setNewTypeName(e.target.value)}
+            <TextField label="Label name" value={newTypeName} onChange={(e) => setNewTypeName(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') void handleAdd(); }}
               size="small" fullWidth sx={inputSx}
             />

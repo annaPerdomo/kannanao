@@ -15,6 +15,19 @@ import type { Todo } from '@/types/todo';
 import { isCompletedOnDate, todayISO, XP_PER_TODO } from './helpers';
 import { XpPop } from './XpPop';
 
+const JS_DAY_LABEL: Record<number, string> = { 0: 'Su', 1: 'Mo', 2: 'Tu', 3: 'We', 4: 'Th', 5: 'Fr', 6: 'Sa' };
+const MON_TO_SUN_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
+function getFrequencyLabel(todo: Todo): string | null {
+  if (todo.repeatUntilDone) return '↻ Daily until done';
+  if (todo.frequencyDays.length === 0) return null;
+  if (todo.frequencyDays.length === 7) return '↻ Every day';
+  if (todo.frequencyDays.length === 5 && [1, 2, 3, 4, 5].every(d => todo.frequencyDays.includes(d))) return '↻ Weekdays';
+  if (todo.frequencyDays.length === 2 && [0, 6].every(d => todo.frequencyDays.includes(d))) return '↻ Weekends';
+  const ordered = MON_TO_SUN_ORDER.filter(d => todo.frequencyDays.includes(d));
+  return '↻ ' + ordered.map(d => JS_DAY_LABEL[d]).join(' · ');
+}
+
 interface TodoItemProps {
   todo: Todo;
   viewDateISO: string;
@@ -34,6 +47,7 @@ export function TodoItem({ todo, viewDateISO, onToggle, onEditEmoji, onDelete, o
   const [emojiAnchor, setEmojiAnchor] = useState<HTMLElement | null>(null);
 
   const completed = isCompletedOnDate(todo, viewDateISO);
+  const frequencyLabel = getFrequencyLabel(todo);
 
   const handleToggle = async () => {
     const justCompleted = await onToggle(todo.id, viewDateISO);
@@ -47,7 +61,7 @@ export function TodoItem({ todo, viewDateISO, onToggle, onEditEmoji, onDelete, o
   return (
     <Box sx={{
       position: 'relative', display: 'flex', alignItems: 'center', gap: 0.75,
-      px: 1.5, py: 1, borderRadius: 3.5,
+      px: 1.25, py: 0.6, borderRadius: 3.5,
       background: completed
         ? alpha(brand[100], 0.3)
         : `linear-gradient(135deg, ${alpha(brand[50], 0.9)} 0%, ${alpha(accent[50], 0.6)} 100%)`,
@@ -72,7 +86,7 @@ export function TodoItem({ todo, viewDateISO, onToggle, onEditEmoji, onDelete, o
       {dragHandle}
 
       {/* Emoji button */}
-      <Tooltip title="Pick emoji">
+      <Tooltip title="Change picture">
         <Box
           component="button"
           onClick={(e) => setEmojiAnchor(e.currentTarget)}
@@ -131,20 +145,31 @@ export function TodoItem({ todo, viewDateISO, onToggle, onEditEmoji, onDelete, o
         }}
       />
 
-      {/* Text */}
-      <Typography sx={{
-        flex: 1, fontSize: '0.85rem', fontWeight: 600,
-        color: completed ? 'text.disabled' : 'text.primary',
-        textDecoration: completed ? 'line-through' : 'none',
-        wordBreak: 'break-word',
-      }}>
-        {todo.text}
-      </Typography>
+      {/* Text + frequency indicator */}
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography sx={{
+          fontSize: '0.85rem', fontWeight: 600,
+          color: completed ? 'text.disabled' : 'text.primary',
+          textDecoration: completed ? 'line-through' : 'none',
+          wordBreak: 'break-word',
+        }}>
+          {todo.text}
+        </Typography>
+        {frequencyLabel && (
+          <Typography sx={{
+            fontSize: '0.68rem', fontWeight: 500, mt: 0.2,
+            color: completed ? alpha(brand[300], 0.5) : alpha(brand[500], 0.75),
+            letterSpacing: '0.01em',
+          }}>
+            {frequencyLabel}
+          </Typography>
+        )}
+      </Box>
 
       {/* Action buttons */}
-      <Stack className="todo-actions" direction="row" spacing={0} sx={{ flexShrink: 0, opacity: 0, transition: 'opacity 0.2s' }}>
+      <Stack className="todo-actions" direction="row" spacing={0} sx={{ flexShrink: 0, opacity: 0.3, transition: 'opacity 0.2s' }}>
         <Tooltip title="Edit"><IconButton size="small" onClick={() => onAdvancedEdit(todo)} sx={{ color: brand[500] }}><EditRoundedIcon sx={{ fontSize: '0.95rem' }} /></IconButton></Tooltip>
-        <Tooltip title="Delete"><IconButton size="small" onClick={() => onDelete(todo.id)} sx={{ color: 'error.main' }}><DeleteRoundedIcon sx={{ fontSize: '0.95rem' }} /></IconButton></Tooltip>
+        <Tooltip title="Remove"><IconButton size="small" onClick={() => onDelete(todo.id)} sx={{ color: 'error.main' }}><DeleteRoundedIcon sx={{ fontSize: '0.95rem' }} /></IconButton></Tooltip>
       </Stack>
     </Box>
   );

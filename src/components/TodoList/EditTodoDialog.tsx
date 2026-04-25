@@ -15,7 +15,7 @@ interface EditTodoDialogProps {
   open: boolean;
   onClose: () => void;
   todo: Todo | null;
-  onSave: (id: string, text: string, frequencyDays: number[], assignedDate: string | null) => Promise<void>;
+  onSave: (id: string, text: string, frequencyDays: number[], assignedDate: string | null, repeatUntilDone: boolean) => Promise<void>;
 }
 
 export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogProps) {
@@ -25,6 +25,7 @@ export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogPr
   const [text, setText] = useState('');
   const [frequencyDays, setFrequencyDays] = useState<number[]>([]);
   const [assignedDate, setAssignedDate] = useState('');
+  const [repeatUntilDone, setRepeatUntilDone] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,8 +33,9 @@ export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogPr
     if (todo) {
       setText(todo.text);
       setFrequencyDays(todo.frequencyDays);
+      setRepeatUntilDone(todo.repeatUntilDone);
       setError(null);
-      if (todo.frequencyDays.length === 0) {
+      if (todo.frequencyDays.length === 0 && !todo.repeatUntilDone) {
         setAssignedDate(toISODate(new Date(todo.createdAt)));
       } else {
         setAssignedDate('');
@@ -45,8 +47,8 @@ export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogPr
     if (!todo || !text.trim()) return;
     setSaving(true);
     try {
-      const finalAssignedDate = frequencyDays.length === 0 ? assignedDate : null;
-      await onSave(todo.id, text.trim(), frequencyDays, finalAssignedDate);
+      const finalAssignedDate = frequencyDays.length === 0 && !repeatUntilDone ? assignedDate : null;
+      await onSave(todo.id, text.trim(), frequencyDays, finalAssignedDate, repeatUntilDone);
       onClose();
     } catch (err) {
       console.error('Failed to save todo:', err);
@@ -102,11 +104,11 @@ export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogPr
           }}
         />
         <Box>
-          <FrequencyPicker value={frequencyDays} onChange={setFrequencyDays} />
+          <FrequencyPicker value={frequencyDays} onChange={setFrequencyDays} repeatUntilDone={repeatUntilDone} onRepeatUntilDoneChange={setRepeatUntilDone} />
         </Box>
-        {frequencyDays.length === 0 && (
+        {frequencyDays.length === 0 && !repeatUntilDone && (
           <TextField
-            label="Assigned Date" type="date" value={assignedDate}
+            label="Which day?" type="date" value={assignedDate}
             onChange={(e) => setAssignedDate(e.target.value)} fullWidth
             InputLabelProps={{ shrink: true }}
             sx={{

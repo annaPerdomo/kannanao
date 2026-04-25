@@ -19,13 +19,13 @@ export function useTodos() {
       .finally(() => setLoading(false));
   }, [user]);
 
-  const addTodo = useCallback(async (text: string, frequencyDays: number[] = [], assignedDateISO?: string) => {
+  const addTodo = useCallback(async (text: string, frequencyDays: number[] = [], assignedDateISO?: string, repeatUntilDone = false) => {
     const trimmed = text.trim();
     if (!trimmed) return;
     setError(null);
     try {
       const maxOrder = todos.reduce((max, t) => Math.max(max, t.sortOrder), 0);
-      const todo = await dbCreateTodo(trimmed, frequencyDays, assignedDateISO, maxOrder + 10);
+      const todo = await dbCreateTodo(trimmed, frequencyDays, assignedDateISO, maxOrder + 10, repeatUntilDone);
       setTodos((prev) => [...prev, todo]);
     } catch {
       setError('Could not add item — please try again');
@@ -83,7 +83,8 @@ export function useTodos() {
     id: string,
     text: string,
     frequencyDays: number[],
-    assignedDateISO: string | null
+    assignedDateISO: string | null,
+    repeatUntilDone = false,
   ) => {
     const trimmed = text.trim();
     if (!trimmed) return;
@@ -91,13 +92,13 @@ export function useTodos() {
     if (!prev_todo) return;
     // Calculate new createdAt if assignedDateISO is different and it's a single-day task
     let newCreatedAt = prev_todo.createdAt;
-    if (frequencyDays.length === 0 && assignedDateISO) {
+    if (frequencyDays.length === 0 && !repeatUntilDone && assignedDateISO) {
       newCreatedAt = new Date(`${assignedDateISO}T12:00:00.000Z`).getTime();
     }
-    const updated = { ...prev_todo, text: trimmed, frequencyDays, createdAt: newCreatedAt };
+    const updated = { ...prev_todo, text: trimmed, frequencyDays, createdAt: newCreatedAt, repeatUntilDone };
     setTodos((prev) => prev.map((t) => (t.id === id ? updated : t)));
     try {
-      const dbPatch: Parameters<typeof dbUpdateTodo>[1] = { text: trimmed, frequencyDays };
+      const dbPatch: Parameters<typeof dbUpdateTodo>[1] = { text: trimmed, frequencyDays, repeatUntilDone };
       // Only update createdAt in DB if it changed
       if (newCreatedAt !== prev_todo.createdAt) {
         dbPatch.createdAt = newCreatedAt;

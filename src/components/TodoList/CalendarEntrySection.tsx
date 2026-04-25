@@ -13,7 +13,7 @@ import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import ExpandLessRoundedIcon from '@mui/icons-material/ExpandLessRounded';
 import type { CalendarEntry, EntryType } from '@/types/todo';
-import { getEntryType, isEntryOnDate, DAY_LABELS_SHORT, DAY_INDEX_TO_JS } from './helpers';
+import { getEntryType, isEntryOnDate, MONTH_NAMES } from './helpers';
 import { AddEntryDialog } from './AddEntryDialog';
 import { EditEntryDialog } from './EditEntryDialog';
 
@@ -61,7 +61,7 @@ export function CalendarEntrySection({
               : <ExpandLessRoundedIcon sx={{ fontSize: '0.95rem' }} />}
           </IconButton>
           <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: brand[600], textTransform: 'uppercase', letterSpacing: 0.5 }}>
-            📌 Events
+            🎊 Special Days
           </Typography>
         </Stack>
         <Button
@@ -83,7 +83,7 @@ export function CalendarEntrySection({
             transition: 'all 0.18s ease',
           }}
         >
-          Add event
+          Add
         </Button>
       </Stack>
 
@@ -104,7 +104,7 @@ export function CalendarEntrySection({
           }}
         >
           <AddRoundedIcon sx={{ fontSize: '0.9rem' }} />
-          No events — tap to add one
+          Nothing here — tap to add! ✨
         </Box>
       ) : (
         <Stack spacing={0.5}>
@@ -131,8 +131,11 @@ export function CalendarEntrySection({
                   </Typography>
                   {(hasRange || hasRepeat) && (
                     <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>
-                      {hasRange && `→ ${entry.endDateISO}`}
-                      {hasRepeat && ` 🔁 ${entry.frequencyDays!.map((d) => DAY_LABELS_SHORT[DAY_INDEX_TO_JS.indexOf(d)]).join('')}`}
+                      {hasRange && (() => {
+                        const [, m, d] = entry.endDateISO.split('-');
+                        return `until ${MONTH_NAMES[parseInt(m) - 1]} ${parseInt(d)}`;
+                      })()}
+                      {hasRepeat && ` 🔁 every week`}
                     </Typography>
                   )}
                 </Box>
@@ -166,7 +169,7 @@ export function CalendarEntrySection({
               alignSelf: 'flex-start',
             }}
           >
-            Add another
+            + Add another
           </Button>
         </Stack>
       )}

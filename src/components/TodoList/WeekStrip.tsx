@@ -107,14 +107,14 @@ export function WeekStrip({
               </Typography>
               <Typography sx={{
                 fontFamily: (t) => t.fonts.cute, fontSize: '0.6rem', fontWeight: 800,
-                color: isSelected ? 'rgba(255,255,255,0.9)' : 'text.disabled',
+                color: isSelected ? 'rgba(255,255,255,0.9)' : theme.palette.text.primary,
                 lineHeight: 1,
               }}>
                 {DAY_LABELS[i]}
               </Typography>
               <Typography sx={{
                 fontFamily: (t) => t.fonts.cute, fontSize: '0.9rem', fontWeight: 900,
-                color: isSelected ? 'white' : isToday ? brand[700] : brand[500],
+                color: isSelected ? 'white' : isToday ? brand[700] : theme.palette.text.primary,
                 lineHeight: 1.2,
               }}>
                 {date.getDate()}

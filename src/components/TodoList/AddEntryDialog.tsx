@@ -69,7 +69,7 @@ export function AddEntryDialog({
         emoji: type.emoji, color: type.color, startDateISO: startISO, endDateISO: safeEnd, frequencyDays,
       };
       onAddEntry(newEntry); onClose();
-    } catch { setError('Could not add entry. Please try again.'); }
+    } catch { setError('Oops! Couldn\'t add it. Please try again.'); }
   }, [title, typeId, startDate, endDate, frequencyDays, allEntryTypes, selectedDate, onAddEntry, onClose]);
 
   const datePickerSx = {
@@ -108,7 +108,7 @@ export function AddEntryDialog({
       <StyledDialog
         open={open}
         onClose={onClose}
-        title="📅 Add to Calendar"
+        title="📅 Add a Special Day"
         actions={
           <Stack direction="row" spacing={1}>
             <Button onClick={onClose} sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'none' }}>
@@ -138,7 +138,7 @@ export function AddEntryDialog({
           {error && <Alert severity="error" onClose={() => setError(null)} sx={{ borderRadius: 2.5, fontSize: '0.78rem' }}>{error}</Alert>}
 
           <TextField
-            label="What's happening? ✨" value={title}
+            label="What is it? ✨" value={title}
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) handleSave(); }}
             fullWidth autoFocus size="small"
@@ -156,9 +156,9 @@ export function AddEntryDialog({
           <Box>
             <Stack direction="row" alignItems="center" justifyContent="space-between" mb={0.75}>
               <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                Type
+                Kind
               </Typography>
-              <Tooltip title="Manage event types">
+              <Tooltip title="Manage labels">
                 <IconButton
                   size="small" onClick={() => setManageTypesOpen(true)}
                   sx={{ color: brand[400], p: 0.4, '&:hover': { color: brand[600], background: alpha(brand[100], 0.5) } }}
@@ -194,7 +194,7 @@ export function AddEntryDialog({
           </Box>
 
           <DatePicker
-            label="Date" value={startDate}
+            label="When? 📅" value={startDate}
             onChange={(val) => { setStartDate(val); if (val && (!endDate || endDate.isBefore(val))) setEndDate(val); }}
             slotProps={{
               textField: { size: 'small', fullWidth: true, sx: datePickerSx },
@@ -214,12 +214,12 @@ export function AddEntryDialog({
               }}
             >
               {showMore ? <ExpandLessRoundedIcon sx={{ fontSize: '1rem' }} /> : <ExpandMoreRoundedIcon sx={{ fontSize: '1rem' }} />}
-              {showMore ? 'Fewer options' : 'More options (end date, repeat)'}
+              {showMore ? 'Show less' : 'Lasts more than one day? Or repeat?'}
             </Box>
             <Collapse in={showMore}>
               <Stack spacing={1.75} mt={1.5}>
                 <DatePicker
-                  label="End date" value={endDate} onChange={(val) => setEndDate(val)}
+                  label="Last day 📅" value={endDate} onChange={(val) => setEndDate(val)}
                   minDate={startDate ?? undefined}
                   slotProps={{
                     textField: { size: 'small', fullWidth: true, sx: datePickerSx },
@@ -228,7 +228,7 @@ export function AddEntryDialog({
                     day: { sx: daySlotSx },
                   }}
                 />
-                <FrequencyPicker value={frequencyDays} onChange={setFrequencyDays} />
+                <FrequencyPicker value={frequencyDays} onChange={setFrequencyDays} repeatUntilDone={false} onRepeatUntilDoneChange={() => {}} showRepeatUntilDone={false} />
               </Stack>
             </Collapse>
           </Box>

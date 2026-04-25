@@ -92,7 +92,7 @@ export function MonthCalendar({
 
       {/* Day-of-week headers */}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5, mb: 0.5 }}>
-        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
           <Typography key={d} sx={{ textAlign: 'center', fontSize: '0.68rem', fontWeight: 800, color: brand[500] }}>
             {d}
           </Typography>
@@ -183,8 +183,8 @@ export function MonthCalendar({
       <Stack direction="row" spacing={1.5} justifyContent="center" mt={1.5} flexWrap="wrap" useFlexGap>
         {[
           { label: 'All done', icon: '⭐' },
-          { label: 'In progress', color: alpha(accent[200], 0.5) },
-          { label: 'Event', color: alpha(DEFAULT_ENTRY_TYPES[1].color, 0.35) },
+          { label: 'Some done', color: alpha(accent[200], 0.5) },
+          { label: 'Special day', color: alpha(DEFAULT_ENTRY_TYPES[1].color, 0.35) },
           { label: 'Today', border: brand[300] },
         ].map(({ label, color, icon, border }) => (
           <Stack key={label} direction="row" spacing={0.4} alignItems="center">

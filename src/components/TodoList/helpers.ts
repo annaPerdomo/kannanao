@@ -73,6 +73,13 @@ export function getMonthCalendarDates(year: number, month: number): (Date | null
 }
 
 export function isScheduledForDate(todo: Todo, date: Date): boolean {
+  if (todo.repeatUntilDone) {
+    const dateISO = toISODate(date);
+    const createdISO = toISODate(new Date(todo.createdAt));
+    if (dateISO < createdISO) return false;
+    if (todo.completedDates.length === 0) return true;
+    return todo.completedDates.includes(dateISO);
+  }
   if (todo.frequencyDays.length === 0) {
     return toISODate(new Date(todo.createdAt)) === toISODate(date);
   }

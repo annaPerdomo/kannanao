@@ -1,9 +1,11 @@
 'use client';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import Collapse from '@mui/material/Collapse';
 import { useTheme, alpha } from '@mui/material/styles';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { FrequencyPicker } from './FrequencyPicker';
@@ -15,11 +17,15 @@ interface AddTodoInputProps {
   disabled: boolean;
   frequencyDays: number[];
   onFrequencyChange: (days: number[]) => void;
+  repeatUntilDone: boolean;
+  onRepeatUntilDoneChange: (val: boolean) => void;
 }
 
-export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, onFrequencyChange }: AddTodoInputProps) {
+export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, onFrequencyChange, repeatUntilDone, onRepeatUntilDoneChange }: AddTodoInputProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const [focused, setFocused] = useState(false);
+  const showOptions = focused || value.length > 0;
 
   return (
     <Box>
@@ -28,7 +34,9 @@ export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, 
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') onAdd(); }}
-          placeholder="Add a to-do…"
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder="Write a new to-do..."
           size="small"
           fullWidth
           disabled={disabled}
@@ -47,7 +55,7 @@ export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, 
             '& .MuiInputBase-input::placeholder': { color: brand[400], opacity: 1 },
           }}
         />
-        <Tooltip title="Add (Enter)">
+        <Tooltip title="Add it!">
           <span>
             <IconButton
               onClick={onAdd}
@@ -70,9 +78,11 @@ export function AddTodoInput({ value, onChange, onAdd, disabled, frequencyDays, 
           </span>
         </Tooltip>
       </Stack>
-      <Box mt={0.85}>
-        <FrequencyPicker value={frequencyDays} onChange={onFrequencyChange} />
-      </Box>
+      <Collapse in={showOptions}>
+        <Box mt={0.75}>
+          <FrequencyPicker value={frequencyDays} onChange={onFrequencyChange} repeatUntilDone={repeatUntilDone} onRepeatUntilDoneChange={onRepeatUntilDoneChange} />
+        </Box>
+      </Collapse>
     </Box>
   );
 }

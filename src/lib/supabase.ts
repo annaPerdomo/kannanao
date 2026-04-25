@@ -524,6 +524,7 @@ interface SupabaseTodoRow {
   frequency_days: number[] | null;
   completed_dates: string[] | null;
   sort_order: number | null;
+  repeat_until_done: boolean | null;
 }
 
 interface SupabaseEventTypeRow {
@@ -554,6 +555,7 @@ function dbTodoToApp(row: SupabaseTodoRow): Todo {
     frequencyDays: row.frequency_days ?? [],
     completedDates: row.completed_dates ?? [],
     sortOrder: row.sort_order ?? 0,
+    repeatUntilDone: row.repeat_until_done ?? false,
   };
 }
 
@@ -609,7 +611,7 @@ export async function loadTodos(userId: string): Promise<Todo[]> {
   return (data ?? []).map(dbTodoToApp);
 }
 
-export async function dbCreateTodo(text: string, frequencyDays: number[] = [], assignedDateISO?: string, sortOrder?: number): Promise<Todo> {
+export async function dbCreateTodo(text: string, frequencyDays: number[] = [], assignedDateISO?: string, sortOrder?: number, repeatUntilDone = false): Promise<Todo> {
   if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
   const { data: { user } } = await sb.auth.getUser();
   if (!user) throw new Error('Not authenticated');
@@ -621,6 +623,7 @@ export async function dbCreateTodo(text: string, frequencyDays: number[] = [], a
     frequency_days: frequencyDays,
     completed_dates: [],
     sort_order: sortOrder ?? null,
+    repeat_until_done: repeatUntilDone,
   };
   if (assignedDateISO) {
     insertPayload.created_at = `${assignedDateISO}T12:00:00.000Z`;
@@ -636,7 +639,7 @@ export async function dbCreateTodo(text: string, frequencyDays: number[] = [], a
 
 export async function dbUpdateTodo(
   id: string,
-  patch: Partial<Pick<Todo, 'text' | 'completed' | 'emoji' | 'completedDates' | 'frequencyDays' | 'createdAt' | 'sortOrder'>>,
+  patch: Partial<Pick<Todo, 'text' | 'completed' | 'emoji' | 'completedDates' | 'frequencyDays' | 'createdAt' | 'sortOrder' | 'repeatUntilDone'>>,
 ): Promise<Todo> {
   if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
   const dbPatch: Record<string, unknown> = {};
@@ -647,6 +650,7 @@ export async function dbUpdateTodo(
   if (patch.frequencyDays !== undefined) dbPatch.frequency_days = patch.frequencyDays;
   if (patch.createdAt !== undefined) dbPatch.created_at = new Date(patch.createdAt).toISOString();
   if (patch.sortOrder !== undefined) dbPatch.sort_order = patch.sortOrder;
+  if (patch.repeatUntilDone !== undefined) dbPatch.repeat_until_done = patch.repeatUntilDone;
   const { data, error } = await sb
     .from('todos')
     .update(dbPatch)

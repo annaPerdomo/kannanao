@@ -35,6 +35,8 @@ interface DayDetailPanelProps {
   onAdd: () => void;
   frequencyDays: number[];
   onFrequencyChange: (days: number[]) => void;
+  repeatUntilDone: boolean;
+  onRepeatUntilDoneChange: (val: boolean) => void;
   onToggle: (id: string, dateISO: string) => Promise<boolean>;
   onEditEmoji: (id: string, emoji: string) => void;
   onDelete: (id: string) => void;
@@ -58,7 +60,7 @@ export function DayDetailPanel({
   view, activeDateLabel, activeDateISO, isPastDate,
   todosForDay, completedCount, totalCount,
   loading, error, clearError, celebration,
-  input, onInputChange, onAdd, frequencyDays, onFrequencyChange,
+  input, onInputChange, onAdd, frequencyDays, onFrequencyChange, repeatUntilDone, onRepeatUntilDoneChange,
   onToggle, onEditEmoji, onDelete, onAdvancedEdit, onReorder, onXpEarned,
   entries, onAddEntry, onEditEntry, onDeleteEntry,
   allEntryTypes, onAddEntryType, onUpdateEntryType, onDeleteEntryType,
@@ -105,15 +107,16 @@ export function DayDetailPanel({
       <Stack spacing={1} useFlexGap>
         <Box>
           <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: brand[600], textTransform: 'uppercase', letterSpacing: 0.5 }}>
-            ✅ To-Dos
+            ✅ My To-Do List
           </Typography>
           <DayProgress completedCount={completedCount} totalCount={totalCount} />
         </Box>
 
-        <Box sx={{ mt: 1.5 }}>
+        <Box sx={{ mt: 0.75, }}>
           <AddTodoInput
             value={input} onChange={onInputChange} onAdd={onAdd} disabled={loading}
             frequencyDays={frequencyDays} onFrequencyChange={onFrequencyChange}
+            repeatUntilDone={repeatUntilDone} onRepeatUntilDoneChange={onRepeatUntilDoneChange}
           />
         </Box>
 
@@ -150,16 +153,16 @@ export function DayDetailPanel({
           <Box sx={{ textAlign: 'center', py: 2.5 }}>
             <Typography sx={{ fontSize: '1.75rem', mb: 0.5 }}>🌷</Typography>
             <Typography sx={{ color: 'text.secondary', fontSize: '0.82rem', fontWeight: 700 }}>
-              {isPastDate ? 'Nothing scheduled for this day' : 'Nothing here yet!'}
+              {isPastDate ? 'Nothing planned for this day 🌸' : 'Nothing here yet!'}
             </Typography>
             {!isPastDate && (
               <Typography sx={{ color: 'text.disabled', fontSize: '0.72rem', mt: 0.25 }}>
-                Type a task above and press Enter ⭐
+                Write a to-do above and tap + to add it! ⭐
               </Typography>
             )}
           </Box>
         ) : (
-          <Stack spacing={0.75}>
+          <Stack spacing={0.5}>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={incompleteTodos.map((t) => t.id)} strategy={verticalListSortingStrategy}>
                 {incompleteTodos.map((todo) => (
