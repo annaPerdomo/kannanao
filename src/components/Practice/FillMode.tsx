@@ -25,6 +25,7 @@ import { XpEarnedPop } from './XpEarnedPop';
 import { StudyBuddy, type BuddyReaction } from '@/components/StudyBuddy';
 import { useShop } from '@/hooks/useShop';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
+import { SpeakButton } from '@/components/SpeakButton';
 
 interface FillModeProps {
   cards: Flashcard[];
@@ -187,7 +188,8 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
 
   // ── Fill card ──────────────────────────────────────────────────────────────
   return (
-    <Box>
+    <Box sx={{ position: 'relative' }}>
+      {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
       {/* Header */}
       <Box
         sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
@@ -236,13 +238,12 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
               : 'error.main'
             : alpha(brand[300], 0.45),
           borderRadius: 3,
-          overflow: 'visible',
+          overflow: 'hidden',
           mb: 3,
           boxShadow: `0 8px 24px ${alpha(brand[300], 0.12)}`,
           transition: 'border-color 0.25s',
         }}
       >
-        {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
         {/* Card image */}
         {card.imageUrl && (
           <Box sx={{ position: 'relative' }}>
@@ -265,25 +266,34 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
           </Typography>
 
           {/* Sentence with blank (or revealed after answer) */}
-          <Typography
-            component="div"
-            sx={{
-              fontFamily: (t) => t.fonts.jp,
-              fontSize: '1.3rem',
-              color: 'text.primary',
-              mb: 1,
-              lineHeight: 1.8,
-            }}
-          >
-            {result ? (
-              <FuriganaText
-                text={card.example_jp}
-                showFurigana={card.mainViewMode === 'hiragana'}
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5, mb: 1 }}>
+            <Typography
+              component="div"
+              sx={{
+                fontFamily: (t) => t.fonts.jp,
+                fontSize: '1.3rem',
+                color: 'text.primary',
+                lineHeight: 1.8,
+                flexGrow: 1,
+              }}
+            >
+              {result ? (
+                <FuriganaText
+                  text={card.example_jp}
+                  showFurigana={card.mainViewMode === 'hiragana'}
+                />
+              ) : (
+                maskWord(stripFurigana(card.example_jp), card.word, card.reading)
+              )}
+            </Typography>
+            {result && (
+              <SpeakButton
+                text={stripFurigana(card.example_jp)}
+                iconSize="1.2rem"
+                sx={{ mt: 0.5, flexShrink: 0 }}
               />
-            ) : (
-              maskWord(stripFurigana(card.example_jp), card.word, card.reading)
             )}
-          </Typography>
+          </Box>
 
           <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
             {card.example_en}
@@ -320,11 +330,13 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
           <Typography
             variant="body2"
             color={result === 'correct' ? 'success.main' : 'error.main'}
+            sx={{ flexGrow: 1 }}
           >
             {result === 'correct'
               ? '✓ Correct — moving on…'
               : `Incorrect — answer: ${card.word}${card.reading !== card.word ? ` (${card.reading})` : ''}`}
           </Typography>
+          <SpeakButton text={card.word} iconSize="1.1rem" />
         </Box>
       )}
 

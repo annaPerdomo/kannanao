@@ -21,6 +21,7 @@ import { CelebrationScreen } from './CelebrationScreen';
 import { RoundTransition } from './RoundTransition';
 import { StudyBuddy, type BuddyReaction } from '@/components/StudyBuddy';
 import { useShop } from '@/hooks/useShop';
+import { SpeakButton } from '@/components/SpeakButton';
 
 interface MatchModeProps {
   cards: Flashcard[];
@@ -316,14 +317,18 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
               >
                 {isMatched ? (
                   <CheckIcon sx={{ fontSize: '1.2rem', color: 'success.main' }} />
+                ) : tile.side === 'jp' ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Typography
+                      sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.1rem', color: 'text.primary' }}
+                    >
+                      {tile.label}
+                    </Typography>
+                    <SpeakButton text={tile.label} iconSize="0.9rem" />
+                  </Box>
                 ) : (
                   <Typography
-                    sx={{
-                      fontFamily:
-                        tile.side === 'jp' ? '"Noto Serif JP", serif' : '"DM Mono", monospace',
-                      fontSize: tile.side === 'jp' ? '1.1rem' : '0.8rem',
-                      color: 'text.primary',
-                    }}
+                    sx={{ fontFamily: '"DM Mono", monospace', fontSize: '0.8rem', color: 'text.primary' }}
                   >
                     {tile.label}
                   </Typography>

@@ -23,6 +23,8 @@ import { XpEarnedPop } from './XpEarnedPop';
 import { StudyBuddy, type BuddyReaction } from '@/components/StudyBuddy';
 import { useShop } from '@/hooks/useShop';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
+import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import { SpeakButton } from '@/components/SpeakButton';
 
 interface RecallModeProps {
   cards: Flashcard[];
@@ -205,7 +207,8 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
   const answeredWrong = !!selected && !answeredCorrectly;
 
   return (
-    <Box>
+    <Box sx={{ position: 'relative' }}>
+      {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
       {/* Header */}
       <Box
         sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
@@ -254,13 +257,12 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
               : 'error.main'
             : alpha(brand[300], 0.45),
           borderRadius: 3,
-          overflow: 'visible',
+          overflow: 'hidden',
           mb: 3,
           boxShadow: `0 8px 24px ${alpha(brand[300], 0.12)}`,
           transition: 'border-color 0.25s',
         }}
       >
-        {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
         {card.imageUrl && (
           <Box sx={{ position: 'relative' }}>
             <Box
@@ -273,35 +275,43 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
           </Box>
         )}
         <Box sx={{ p: 3, textAlign: 'center', bgcolor: surfaces.input }}>
-          <Typography
-            sx={{
-              fontFamily: (t) => t.fonts.jp,
-              fontSize: '2.2rem',
-              fontWeight: 700,
-              color: 'text.primary',
-              mb: 0.5,
-            }}
-          >
-            {display.titleText}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+            <Typography
+              sx={{
+                fontFamily: (t) => t.fonts.jp,
+                fontSize: '2.2rem',
+                fontWeight: 700,
+                color: 'text.primary',
+                mb: 0.5,
+              }}
+            >
+              {display.titleText}
+            </Typography>
+            <SpeakButton text={card.word} iconSize="1.4rem" sx={{ mb: 0.5 }} />
+          </Box>
           {display.subtitleText && (
             <Typography variant="body1" color="text.secondary">
               {display.subtitleText}
             </Typography>
           )}
           {!card.imageUrl && card.example_jp && (
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'text.secondary',
-                display: 'block',
-                mt: 1,
-                fontFamily: (t) => t.fonts.jp,
-                fontSize: '0.9rem',
-              }}
-            >
-              {card.example_jp}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mt: 1 }}>
+              <FuriganaText
+                text={card.example_jp}
+                showFurigana
+                sx={{
+                  color: 'text.secondary',
+                  fontFamily: (t) => t.fonts.jp,
+                  fontSize: '0.9rem',
+                }}
+              />
+              <SpeakButton text={stripFurigana(card.example_jp)} iconSize="1.1rem" />
+            </Box>
+          )}
+          {card.imageUrl && card.example_jp && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 0.5 }}>
+              <SpeakButton text={stripFurigana(card.example_jp)} iconSize="1.1rem" />
+            </Box>
           )}
           <Typography
             variant="caption"
