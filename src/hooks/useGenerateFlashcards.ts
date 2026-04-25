@@ -1,6 +1,6 @@
 'use client';
 import { useState, useCallback } from 'react';
-import { generateFlashcards, fetchImage } from '@/services/api';
+import { generateFlashcards, fetchImage, triggerUnsplashDownload, encodeUnsplashUrl } from '@/services/api';
 import type { Flashcard } from '@/types/flashcard';
 
 interface UseGenerateResult {
@@ -23,10 +23,11 @@ export function useGenerateFlashcards(): UseGenerateResult {
         // Fetch images in parallel
         const withImages = await Promise.all(
           generated.map(async (card) => {
-            const imageUrl = await fetchImage(card.image_query).catch(() => null);
+            const result = await fetchImage(card.image_query).catch(() => null);
+            if (result) triggerUnsplashDownload(result.downloadLocation);
             return {
               ...card,
-              imageUrl: imageUrl ?? undefined,
+              imageUrl: result ? encodeUnsplashUrl(result) : undefined,
               deckId,
               mainViewMode,
               cardType: card.card_type,

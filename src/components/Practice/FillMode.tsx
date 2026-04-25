@@ -24,6 +24,7 @@ import { RoundTransition } from './RoundTransition';
 import { XpEarnedPop } from './XpEarnedPop';
 import { StudyBuddy, type BuddyReaction } from '@/components/StudyBuddy';
 import { useShop } from '@/hooks/useShop';
+import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 
 interface FillModeProps {
   cards: Flashcard[];
@@ -244,12 +245,15 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
         {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
         {/* Card image */}
         {card.imageUrl && (
-          <Box
-            component="img"
-            src={card.imageUrl}
-            alt={card.word}
-            sx={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }}
-          />
+          <Box sx={{ position: 'relative' }}>
+            <Box
+              component="img"
+              src={card.imageUrl}
+              alt={card.word}
+              sx={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }}
+            />
+            <UnsplashAttribution url={card.imageUrl} />
+          </Box>
         )}
 
         <Box sx={{ p: 3, bgcolor: surfaces.input }}>

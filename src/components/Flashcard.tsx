@@ -8,6 +8,7 @@ import { getFlashcardDisplayText, cardXp } from '@/lib/flashcardUtils';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useCardBorder } from '@/contexts/CardBorderContext';
+import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 
 interface FlashcardProps {
   card: FlashcardType;
@@ -165,6 +166,7 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
                     onLoad={() => setImgLoaded(true)} onError={() => setImgLoaded(true)}
                     sx={{ width: '100%', height: 175, objectFit: 'cover', display: imgLoaded ? 'block' : 'none' }}
                   />
+                  {imgLoaded && <UnsplashAttribution url={card.imageUrl} />}
                 </Box>
               )}
 

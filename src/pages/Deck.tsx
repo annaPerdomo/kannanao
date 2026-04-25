@@ -16,7 +16,7 @@ import { AddExistingCardsDialog } from "@/components/AddExistingCardsDialog";
 import { useDecks } from "@/hooks/useDecks";
 import { useCards } from "@/hooks/useCards";
 import { useGenerateFlashcards } from "@/hooks/useGenerateFlashcards";
-import { fetchImage } from "@/services/api";
+import { fetchImage, triggerUnsplashDownload, encodeUnsplashUrl } from "@/services/api";
 import type { GeneratedCard } from "@/types/flashcard";
 import { useAuth } from "@/contexts/AuthContext";
 import type { PracticeMode } from "@/types/app";
@@ -60,10 +60,11 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const handlePdfCards = async (extracted: GeneratedCard[]) => {
     const withImages = await Promise.all(
       extracted.map(async (card) => {
-        const imageUrl = await fetchImage(card.image_query).catch(() => null);
+        const result = await fetchImage(card.image_query).catch(() => null);
+        if (result) triggerUnsplashDownload(result.downloadLocation);
         return {
           ...card,
-          imageUrl: imageUrl ?? undefined,
+          imageUrl: result ? encodeUnsplashUrl(result) : undefined,
           mainViewMode: pendingMainViewMode,
           cardType: card.card_type,
           jlptLevel: card.jlpt_level ?? undefined,

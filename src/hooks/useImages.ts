@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { fetchImage } from '@/services/api';
+import { fetchImage, triggerUnsplashDownload, encodeUnsplashUrl } from '@/services/api';
 
 export function useImage(query: string | undefined) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -10,7 +10,14 @@ export function useImage(query: string | undefined) {
     if (!query) return;
     setLoading(true);
     fetchImage(query)
-      .then((url) => setImageUrl(url))
+      .then((result) => {
+        if (result) {
+          triggerUnsplashDownload(result.downloadLocation);
+          setImageUrl(encodeUnsplashUrl(result));
+        } else {
+          setImageUrl(null);
+        }
+      })
       .catch(() => setImageUrl(null))
       .finally(() => setLoading(false));
   }, [query]);

@@ -15,7 +15,7 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import HideImageIcon from '@mui/icons-material/HideImage';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import type { Flashcard, JlptLevel } from '@/types/flashcard';
-import { fetchImage, uploadImage, deleteStorageImage, isStorageImage, formatFurigana } from '@/services/api';
+import { fetchImage, uploadImage, deleteStorageImage, isStorageImage, formatFurigana, triggerUnsplashDownload, encodeUnsplashUrl } from '@/services/api';
 import { ConfirmRemoveImageDialog } from '@/components/ConfirmRemoveImageDialog';
 import { SmallField } from './SmallField';
 import { compactToggleSx } from './styles';
@@ -53,8 +53,11 @@ export function CardRow({ card, originalExampleJp, index, expanded, onToggleExpa
     if (!query) return;
     setRefreshingImage(true);
     try {
-      const url = await fetchImage(query);
-      onUpdate(index, { imageUrl: url ?? undefined });
+      const result = await fetchImage(query);
+      if (result) {
+        triggerUnsplashDownload(result.downloadLocation);
+        onUpdate(index, { imageUrl: encodeUnsplashUrl(result) });
+      }
     } catch {
       // keep existing image if fetch fails
     } finally {

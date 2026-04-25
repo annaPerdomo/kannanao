@@ -6,7 +6,8 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import ImageSearchIcon from '@mui/icons-material/ImageSearch';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import CloseIcon from '@mui/icons-material/Close';
-import { fetchImage, uploadImage, deleteStorageImage, isStorageImage } from '@/services/api';
+import { fetchImage, uploadImage, deleteStorageImage, isStorageImage, triggerUnsplashDownload, encodeUnsplashUrl } from '@/services/api';
+import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { ConfirmRemoveImageDialog } from '@/components/ConfirmRemoveImageDialog';
 import { sharedTextFieldSx } from './constants';
 
@@ -38,10 +39,12 @@ export function ImageSection({ imageUrl, word, initialQuery, onImageChange, onQu
     setImageError('');
     setSavingImage(true);
     try {
-      const url = await fetchImage(query);
-      if (url) {
-        setPreviewUrl(url);
-        onImageChange(url);
+      const result = await fetchImage(query);
+      if (result) {
+        triggerUnsplashDownload(result.downloadLocation);
+        const encodedUrl = encodeUnsplashUrl(result);
+        setPreviewUrl(encodedUrl);
+        onImageChange(encodedUrl);
       } else {
         setImageError('No image found for that query. Try a different search term.');
       }
@@ -112,6 +115,7 @@ export function ImageSection({ imageUrl, word, initialQuery, onImageChange, onQu
       {previewUrl && (
         <Box sx={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: `1.5px solid ${alpha(brand[300], 0.35)}`, mb: 1.5, height: 140, bgcolor: alpha(brand[50], 0.8) }}>
           <Box component="img" src={previewUrl} alt="Card image preview" sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <UnsplashAttribution url={previewUrl} />
           <Tooltip title="Remove image">
             <IconButton
               size="small" onClick={handleRemoveClick}

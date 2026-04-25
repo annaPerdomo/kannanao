@@ -11,6 +11,7 @@ import { getFlashcardDisplayText, cardXp } from "@/lib/flashcardUtils";
 import FuriganaText, { stripFurigana } from "@/components/FuriganaText";
 import { SpeakButton } from "@/components/SpeakButton";
 import { useCardBorder } from "@/contexts/CardBorderContext";
+import { UnsplashAttribution } from "@/components/UnsplashAttribution";
 
 interface ImageCardProps {
   card: Flashcard;
@@ -116,13 +117,17 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
               borderRadius: "6px", overflow: "hidden",
               border: "2px solid rgba(0,0,0,0.14)",
               boxShadow: "inset 0 2px 8px rgba(0,0,0,0.1)",
+              position: "relative",
             }}
           >
             {localCard.imageUrl ? (
-              <Box
-                component="img" src={localCard.imageUrl} alt={localCard.word}
-                sx={{ width: "100%", height: 120, objectFit: "cover", display: "block" }}
-              />
+              <>
+                <Box
+                  component="img" src={localCard.imageUrl} alt={localCard.word}
+                  sx={{ width: "100%", height: 120, objectFit: "cover", display: "block" }}
+                />
+                <UnsplashAttribution url={localCard.imageUrl} />
+              </>
             ) : (
               <Box
                 sx={{

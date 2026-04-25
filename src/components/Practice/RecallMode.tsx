@@ -22,6 +22,7 @@ import { RoundTransition } from './RoundTransition';
 import { XpEarnedPop } from './XpEarnedPop';
 import { StudyBuddy, type BuddyReaction } from '@/components/StudyBuddy';
 import { useShop } from '@/hooks/useShop';
+import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 
 interface RecallModeProps {
   cards: Flashcard[];
@@ -261,12 +262,15 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
       >
         {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
         {card.imageUrl && (
-          <Box
-            component="img"
-            src={card.imageUrl}
-            alt={card.word}
-            sx={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }}
-          />
+          <Box sx={{ position: 'relative' }}>
+            <Box
+              component="img"
+              src={card.imageUrl}
+              alt={card.word}
+              sx={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }}
+            />
+            <UnsplashAttribution url={card.imageUrl} />
+          </Box>
         )}
         <Box sx={{ p: 3, textAlign: 'center', bgcolor: surfaces.input }}>
           <Typography

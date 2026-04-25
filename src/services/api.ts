@@ -58,18 +58,53 @@ export async function deleteStorageImage(url: string): Promise<void> {
   }
 }
 
-export async function fetchImage(query: string): Promise<string | null> {
+export interface UnsplashImageResult {
+  url: string;
+  downloadLocation: string;
+  photographerName: string;
+  photographerUrl: string;
+  photoPageUrl: string;
+}
+
+export interface UnsplashAttribution {
+  name: string;
+  photographerUrl: string;
+  photoPageUrl: string;
+}
+
+// Encodes Unsplash attribution into the URL hash so it persists when stored in DB.
+// Browsers strip the hash before making HTTP requests, so the image still loads correctly.
+export function encodeUnsplashUrl(result: UnsplashImageResult): string {
+  const fragment = `unsplash:name=${encodeURIComponent(result.photographerName)}&pu=${encodeURIComponent(result.photographerUrl)}&pp=${encodeURIComponent(result.photoPageUrl)}`;
+  return `${result.url}#${fragment}`;
+}
+
+export function decodeUnsplashAttribution(url: string): UnsplashAttribution | null {
+  const hashIndex = url.indexOf('#unsplash:');
+  if (hashIndex === -1) return null;
+  const params = new URLSearchParams(url.slice(hashIndex + '#unsplash:'.length));
+  const name = params.get('name');
+  const photographerUrl = params.get('pu');
+  const photoPageUrl = params.get('pp');
+  if (!name) return null;
+  return { name, photographerUrl: photographerUrl ?? '', photoPageUrl: photoPageUrl ?? '' };
+}
+
+export async function fetchImage(query: string): Promise<UnsplashImageResult | null> {
   const res = await fetch(`${BASE}/images?query=${encodeURIComponent(query)}`);
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    const detail = body?.detail ?? body?.error ?? res.statusText;
-    throw new Error(detail);
+    throw new Error(body?.detail ?? body?.error ?? res.statusText);
   }
   const data = await res.json();
-  // Unsplash search API returns an object with a results array.
-  const results = Array.isArray(data) ? data : data?.results;
-  if (Array.isArray(results) && results.length > 0) {
-    return results[0]?.urls?.regular ?? results[0]?.url ?? null;
-  }
-  return null;
+  return data.result ?? null;
+}
+
+export async function triggerUnsplashDownload(downloadLocation: string): Promise<void> {
+  // Fire-and-forget — errors are non-critical
+  fetch(`${BASE}/images/trigger`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ downloadLocation }),
+  }).catch(() => {});
 }
