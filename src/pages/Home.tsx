@@ -130,7 +130,7 @@ function WelcomeBanner({ username, level, streak, totalXp, spendableXp, ownedIte
 
 export default function Home() {
   const { decks, deleteDeck, updateDeckEmoji, pinDeck, loading } = useDecks();
-  const { user, displayName } = useAuth();
+  const { user, displayName, showTodo } = useAuth();
   const { progress, spendableXp, addBonusXp } = useProgress();
   const { ohanashikais } = useOhanashikais();
   const { purchases } = useShop();
@@ -178,9 +178,11 @@ export default function Home() {
         alignItems="flex-start"
       >
         {/* Left column — To-Do List */}
-        <Box sx={{ width: { xs: '100%', md: '50%', lg: '45%' }, flexShrink: 0 }}>
-          <TodoList onXpEarned={addBonusXp} />
-        </Box>
+        {showTodo && (
+          <Box sx={{ width: { xs: '100%', md: '50%', lg: '45%' }, flexShrink: 0 }}>
+            <TodoList onXpEarned={addBonusXp} />
+          </Box>
+        )}
 
         {/* Right column — Pinned Decks & Speeches */}
         <Box sx={{ width: { xs: '100%', md: '50%', lg: '55%' }, minWidth: 0 }}>

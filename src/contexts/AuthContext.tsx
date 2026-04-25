@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
-import { sb, upsertProfile, loadProfile, updateProfileColorScheme } from "@/lib/supabase";
+import { sb, upsertProfile, loadProfile, updateProfileColorScheme, updateProfileShowTodo } from "@/lib/supabase";
 import { isAdminUser } from "@/lib/admin";
 import type { ColorScheme } from "@/theme";
 
@@ -19,12 +19,14 @@ interface AuthContextValue {
   isAdmin: boolean;
   displayName: string | null;
   colorScheme: ColorScheme | null;
+  showTodo: boolean;
   loading: boolean;
   signInWithUsername: (username: string, password: string) => Promise<{ error: string | null }>;
   signUpWithUsername: (username: string, password: string, name?: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   updateDisplayName: (name: string) => Promise<{ error: string | null }>;
   updateColorScheme: (scheme: ColorScheme) => Promise<void>;
+  updateShowTodo: (show: boolean) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -48,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [colorScheme, setColorScheme] = useState<ColorScheme | null>(null);
+  const [showTodo, setShowTodo] = useState(true);
   const [loading, setLoading] = useState(true);
 
   async function fetchProfile(userId: string) {
@@ -57,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (saved && VALID_SCHEMES.includes(saved as ColorScheme)) {
       setColorScheme(saved as ColorScheme);
     }
+    setShowTodo(profile?.showTodo !== false);
   }
 
   useEffect(() => {
@@ -78,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event === "SIGNED_OUT") {
         setDisplayName(null);
         setColorScheme(null);
+        setShowTodo(true);
       }
     });
 
@@ -113,6 +118,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateShowTodo = async (show: boolean) => {
+    setShowTodo(show);
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+      await updateProfileShowTodo(user.id, show);
+    }
+  };
+
   const signOut = async () => {
     await sb.auth.signOut();
   };
@@ -125,12 +138,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin: isAdminUser(session?.user?.email ?? undefined),
         displayName,
         colorScheme,
+        showTodo,
         loading,
         signInWithUsername,
         signUpWithUsername,
         signOut,
         updateDisplayName,
         updateColorScheme,
+        updateShowTodo,
       }}
     >
       {children}

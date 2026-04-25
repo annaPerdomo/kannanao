@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import {
   Box, Typography, Paper, Stack, TextField,
-  Button, Alert, Snackbar, Divider,
+  Button, Alert, Snackbar, Divider, Switch, FormControlLabel,
 } from '@mui/material';
 import BadgeIcon from '@mui/icons-material/Badge';
 import EditIcon from '@mui/icons-material/Edit';
 import KeyIcon from '@mui/icons-material/Key';
+import ChecklistIcon from '@mui/icons-material/Checklist';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loading } from '@/components/Loading';
@@ -51,7 +52,7 @@ function Section({ icon, title, description, children }: SectionProps) {
 export default function SettingsPage() {
   const theme = useTheme();
   const { brand } = theme.palette;
-  const { user, loading, displayName, updateDisplayName, session, signOut } = useAuth();
+  const { user, loading, displayName, updateDisplayName, session, signOut, showTodo, updateShowTodo } = useAuth();
   const router = useRouter();
 
   const currentUsername = user?.email?.split('@')[0] ?? '';
@@ -284,6 +285,33 @@ export default function SettingsPage() {
               </Stack>
             </Stack>
           )}
+        </Section>
+
+        <Divider />
+
+        {/* To-Do List */}
+        <Section
+          icon={<ChecklistIcon />}
+          title="To-Do List"
+          description="Show or hide the to-do list on your home page."
+        >
+          <FormControlLabel
+            control={
+              <Switch
+                checked={showTodo}
+                onChange={(e) => void updateShowTodo(e.target.checked)}
+                sx={{
+                  '& .MuiSwitch-switchBase.Mui-checked': { color: brand[600] },
+                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: brand[400] },
+                }}
+              />
+            }
+            label={
+              <Typography sx={{ fontSize: '0.85rem', color: 'text.primary' }}>
+                {showTodo ? 'Shown on home page' : 'Hidden from home page'}
+              </Typography>
+            }
+          />
         </Section>
 
         <Divider />
