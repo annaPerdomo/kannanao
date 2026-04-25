@@ -8,7 +8,7 @@ on:
 
 jobs:
   ci:
-    name: Lint, Type-check, Test & Build
+    name: CI checks
     runs-on: ubuntu-latest
 
     steps:
