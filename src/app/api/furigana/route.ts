@@ -1,11 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+
+const FuriganaSchema = z.object({
+  lines: z
+    .array(z.string().min(1).max(2000))
+    .min(1, 'No lines provided')
+    .max(200, 'Too many lines — max 200 per request'),
+});
 
 export async function POST(req: NextRequest) {
-  const { lines } = (await req.json()) as { lines: string[] };
-
-  if (!lines?.length) {
-    return NextResponse.json({ error: 'No lines provided' }, { status: 400 });
+  const body = await req.json().catch(() => null);
+  const parsed = FuriganaSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? 'Invalid request' },
+      { status: 400 },
+    );
   }
+  const { lines } = parsed.data;
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {

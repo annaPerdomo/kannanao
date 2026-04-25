@@ -1,30 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-interface GeneratePayload {
-  pendingWords: string[];
-}
-
-interface GeneratedCard {
-  word: string;
-  reading: string;
-  meaning: string;
-  image_query: string;
-  example_jp: string;
-  example_en: string;
-  card_type: 'word' | 'phrase';
-  jlpt_level: 'N5' | 'N4' | 'N3' | 'N2' | 'N1' | null;
-}
+const GenerateSchema = z.object({
+  pendingWords: z
+    .array(z.string().min(1).max(200))
+    .min(1, "No words provided")
+    .max(50, "Too many words — max 50 per request"),
+});
 
 export async function POST(req: NextRequest) {
-  if (req.method !== "POST") {
-    return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+  const body = await req.json().catch(() => null);
+  const parsed = GenerateSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Invalid request" },
+      { status: 400 },
+    );
   }
-
-  const { pendingWords } = (await req.json()) as GeneratePayload;
-
-  if (!pendingWords?.length) {
-    return NextResponse.json({ error: "No words provided" }, { status: 400 });
-  }
+  const { pendingWords } = parsed.data;
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {

@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import type { GeneratedCard } from "@/types/flashcard";
+
+const PdfExtractSchema = z.object({
+  // ~10 MB PDF fits comfortably within 13.3 MB of base64
+  pdfBase64: z.string().min(1, "pdfBase64 is required").max(14_000_000, "PDF too large — max 10 MB"),
+});
 
 function stripPeriods(s: string) {
   return s.replace(/\./g, "");
@@ -28,17 +34,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let pdfBase64: string;
-  try {
-    const body = await req.json();
-    pdfBase64 = body.pdfBase64;
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  const body = await req.json().catch(() => null);
+  const parsed = PdfExtractSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Invalid request body" },
+      { status: 400 },
+    );
   }
-
-  if (!pdfBase64) {
-    return NextResponse.json({ error: "pdfBase64 is required" }, { status: 400 });
-  }
+  const { pdfBase64 } = parsed.data;
 
   try {
     const response = await fetch(
