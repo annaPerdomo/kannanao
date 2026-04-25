@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import withPWA from '@ducanh2912/next-pwa';
+import { withSentryConfig } from '@sentry/nextjs';
 
 const nextConfig: NextConfig = {
   async headers() {
@@ -43,7 +44,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA({
+const pwaConfig = withPWA({
   dest: 'public',
   cacheOnFrontEndNav: true,
   aggressiveFrontEndNavCaching: true,
@@ -53,3 +54,9 @@ export default withPWA({
     disableDevLogs: true,
   },
 })(nextConfig);
+
+export default withSentryConfig(pwaConfig, {
+  // Source map uploads require SENTRY_AUTH_TOKEN + org/project — skipped here
+  silent: true,
+  telemetry: false,
+});
