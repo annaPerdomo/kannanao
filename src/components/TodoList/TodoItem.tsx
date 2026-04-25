@@ -23,9 +23,10 @@ interface TodoItemProps {
   onDelete: (id: string) => void;
   onAdvancedEdit: (todo: Todo) => void;
   onXpEarned?: (xp: number) => void;
+  dragHandle?: React.ReactNode;
 }
 
-export function TodoItem({ todo, viewDateISO, onToggle, onEditEmoji, onDelete, onAdvancedEdit, onXpEarned }: TodoItemProps) {
+export function TodoItem({ todo, viewDateISO, onToggle, onEditEmoji, onDelete, onAdvancedEdit, onXpEarned, dragHandle }: TodoItemProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
@@ -67,6 +68,8 @@ export function TodoItem({ todo, viewDateISO, onToggle, onEditEmoji, onDelete, o
       },
     }}>
       <XpPop show={showXp} />
+
+      {dragHandle}
 
       {/* Emoji button */}
       <Tooltip title="Pick emoji">

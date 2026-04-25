@@ -41,7 +41,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
-  const { todos, loading, error, addTodo, toggleTodo, editEmoji, editTodoAdvanced, deleteTodo, clearError } = useTodos();
+  const { todos, loading, error, addTodo, toggleTodo, editEmoji, editTodoAdvanced, deleteTodo, reorderTodos, clearError } = useTodos();
 
   const [view, setView] = useState<"week" | "month">("week");
   const [weekOffset, setWeekOffset] = useState(0);
@@ -151,7 +151,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
                   input={input} onInputChange={setInput} onAdd={handleAdd}
                   frequencyDays={frequencyDays} onFrequencyChange={setFrequencyDays}
                   onToggle={toggleTodo} onEditEmoji={editEmoji} onDelete={deleteTodo}
-                  onAdvancedEdit={setEditingTodo} onXpEarned={onXpEarned}
+                  onAdvancedEdit={setEditingTodo} onReorder={reorderTodos} onXpEarned={onXpEarned}
                   entries={entries} onAddEntry={handleAddEntry} onEditEntry={handleEditEntry} onDeleteEntry={handleDeleteEntry}
                   allEntryTypes={allEntryTypes} onAddEntryType={handleAddEntryType} onUpdateEntryType={handleUpdateEntryType} onDeleteEntryType={handleDeleteEntryType}
                   selectedDate={activeDate} brandPalette={brand} accentPalette={accent}
@@ -167,7 +167,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
                 input={input} onInputChange={setInput} onAdd={handleAdd}
                 frequencyDays={frequencyDays} onFrequencyChange={setFrequencyDays}
                 onToggle={toggleTodo} onEditEmoji={editEmoji} onDelete={deleteTodo}
-                onAdvancedEdit={setEditingTodo} onXpEarned={onXpEarned}
+                onAdvancedEdit={setEditingTodo} onReorder={reorderTodos} onXpEarned={onXpEarned}
                 entries={entries} onAddEntry={handleAddEntry} onEditEntry={handleEditEntry} onDeleteEntry={handleDeleteEntry}
                 allEntryTypes={allEntryTypes} onAddEntryType={handleAddEntryType} onUpdateEntryType={handleUpdateEntryType} onDeleteEntryType={handleDeleteEntryType}
                 selectedDate={activeDate} brandPalette={brand} accentPalette={accent}

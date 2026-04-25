@@ -24,12 +24,13 @@ export function useTodos() {
     if (!trimmed) return;
     setError(null);
     try {
-      const todo = await dbCreateTodo(trimmed, frequencyDays, assignedDateISO);
+      const maxOrder = todos.reduce((max, t) => Math.max(max, t.sortOrder), 0);
+      const todo = await dbCreateTodo(trimmed, frequencyDays, assignedDateISO, maxOrder + 10);
       setTodos((prev) => [...prev, todo]);
     } catch {
       setError('Could not add item — please try again');
     }
-  }, []);
+  }, [todos]);
 
   // Returns true if the task was just marked as completed (for XP award)
   const toggleTodo = useCallback(async (id: string, date: string): Promise<boolean> => {
@@ -119,7 +120,36 @@ export function useTodos() {
     }
   }, [todos]);
 
+  // Reorder a subset of todos (e.g. todos visible on a given day) and persist.
+  const reorderTodos = useCallback(async (reorderedSubset: import('@/types/todo').Todo[]) => {
+    const snapshot = todos;
+    const subsetIds = new Set(reorderedSubset.map((t) => t.id));
+
+    // Find the global positions occupied by the subset (todos is sorted by sortOrder)
+    const positions: number[] = [];
+    todos.forEach((t, i) => { if (subsetIds.has(t.id)) positions.push(i); });
+
+    // Place the subset in new order at those same positions
+    const newTodos = [...todos];
+    reorderedSubset.forEach((todo, i) => { newTodos[positions[i]] = todo; });
+
+    // Assign fresh sort orders (×10 spacing)
+    const withNewOrders = newTodos.map((t, i) => ({ ...t, sortOrder: (i + 1) * 10 }));
+    setTodos(withNewOrders);
+
+    // Only persist the items whose sortOrder actually changed
+    const oldOrderMap = new Map(snapshot.map((t) => [t.id, t.sortOrder]));
+    const changed = withNewOrders.filter((t) => oldOrderMap.get(t.id) !== t.sortOrder);
+
+    try {
+      await Promise.all(changed.map((t) => dbUpdateTodo(t.id, { sortOrder: t.sortOrder })));
+    } catch {
+      setTodos(snapshot);
+      setError('Could not save order — please try again');
+    }
+  }, [todos]);
+
   const clearError = useCallback(() => setError(null), []);
 
-  return { todos, loading, error, addTodo, toggleTodo, editTodo, editEmoji, editTodoAdvanced, deleteTodo, clearError };
+  return { todos, loading, error, addTodo, toggleTodo, editTodo, editEmoji, editTodoAdvanced, deleteTodo, reorderTodos, clearError };
 }

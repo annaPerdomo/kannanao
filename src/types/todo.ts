@@ -7,6 +7,7 @@ export interface Todo {
   createdAt: number;
   frequencyDays: number[]; // 0=Sun, 1=Mon, ..., 6=Sat; empty = single-day task on createdAt
   completedDates: string[]; // 'YYYY-MM-DD' ISO date strings
+  sortOrder: number;
 }
 
 export interface EntryType {

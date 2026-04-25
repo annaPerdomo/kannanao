@@ -523,6 +523,7 @@ interface SupabaseTodoRow {
   created_at: string | null;
   frequency_days: number[] | null;
   completed_dates: string[] | null;
+  sort_order: number | null;
 }
 
 interface SupabaseEventTypeRow {
@@ -552,6 +553,7 @@ function dbTodoToApp(row: SupabaseTodoRow): Todo {
     createdAt: toNumber(row.created_at),
     frequencyDays: row.frequency_days ?? [],
     completedDates: row.completed_dates ?? [],
+    sortOrder: row.sort_order ?? 0,
   };
 }
 
@@ -601,12 +603,13 @@ export async function loadTodos(userId: string): Promise<Todo[]> {
     .from('todos')
     .select('*')
     .eq('user_id', userId)
+    .order('sort_order', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: true });
   if (error) { console.error('Error loading todos', error); return []; }
   return (data ?? []).map(dbTodoToApp);
 }
 
-export async function dbCreateTodo(text: string, frequencyDays: number[] = [], assignedDateISO?: string): Promise<Todo> {
+export async function dbCreateTodo(text: string, frequencyDays: number[] = [], assignedDateISO?: string, sortOrder?: number): Promise<Todo> {
   if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
   const { data: { user } } = await sb.auth.getUser();
   if (!user) throw new Error('Not authenticated');
@@ -617,6 +620,7 @@ export async function dbCreateTodo(text: string, frequencyDays: number[] = [], a
     emoji: pickEmojiForText(text),
     frequency_days: frequencyDays,
     completed_dates: [],
+    sort_order: sortOrder ?? null,
   };
   if (assignedDateISO) {
     insertPayload.created_at = `${assignedDateISO}T12:00:00.000Z`;
@@ -632,7 +636,7 @@ export async function dbCreateTodo(text: string, frequencyDays: number[] = [], a
 
 export async function dbUpdateTodo(
   id: string,
-  patch: Partial<Pick<Todo, 'text' | 'completed' | 'emoji' | 'completedDates' | 'frequencyDays' | 'createdAt'>>,
+  patch: Partial<Pick<Todo, 'text' | 'completed' | 'emoji' | 'completedDates' | 'frequencyDays' | 'createdAt' | 'sortOrder'>>,
 ): Promise<Todo> {
   if (!isConfigured()) { showConfigBanner(); throw new Error('Supabase not configured'); }
   const dbPatch: Record<string, unknown> = {};
@@ -642,6 +646,7 @@ export async function dbUpdateTodo(
   if (patch.completedDates !== undefined) dbPatch.completed_dates = patch.completedDates;
   if (patch.frequencyDays !== undefined) dbPatch.frequency_days = patch.frequencyDays;
   if (patch.createdAt !== undefined) dbPatch.created_at = new Date(patch.createdAt).toISOString();
+  if (patch.sortOrder !== undefined) dbPatch.sort_order = patch.sortOrder;
   const { data, error } = await sb
     .from('todos')
     .update(dbPatch)

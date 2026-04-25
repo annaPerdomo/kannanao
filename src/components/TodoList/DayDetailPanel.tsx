@@ -7,10 +7,14 @@ import Collapse from '@mui/material/Collapse';
 import Alert from '@mui/material/Alert';
 import Divider from '@mui/material/Divider';
 import { alpha } from '@mui/material/styles';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { DayProgress } from './DayProgress';
 import { CalendarEntrySection } from './CalendarEntrySection';
 import { AddTodoInput } from './AddTodoInput';
 import { TodoItem } from './TodoItem';
+import { SortableTodoItem } from './SortableTodoItem';
 import { isCompletedOnDate } from './helpers';
 import type { Todo, CalendarEntry, EntryType } from '@/types/todo';
 
@@ -35,6 +39,7 @@ interface DayDetailPanelProps {
   onEditEmoji: (id: string, emoji: string) => void;
   onDelete: (id: string) => void;
   onAdvancedEdit: (todo: Todo) => void;
+  onReorder: (reorderedSubset: Todo[]) => Promise<void>;
   onXpEarned?: (xp: number) => void;
   entries: CalendarEntry[];
   onAddEntry: (entry: CalendarEntry) => void;
@@ -54,11 +59,25 @@ export function DayDetailPanel({
   todosForDay, completedCount, totalCount,
   loading, error, clearError, celebration,
   input, onInputChange, onAdd, frequencyDays, onFrequencyChange,
-  onToggle, onEditEmoji, onDelete, onAdvancedEdit, onXpEarned,
+  onToggle, onEditEmoji, onDelete, onAdvancedEdit, onReorder, onXpEarned,
   entries, onAddEntry, onEditEntry, onDeleteEntry,
   allEntryTypes, onAddEntryType, onUpdateEntryType, onDeleteEntryType,
   selectedDate, brandPalette: brand, accentPalette: accent,
 }: DayDetailPanelProps) {
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  const incompleteTodos = todosForDay.filter((t) => !isCompletedOnDate(t, activeDateISO));
+  const completedTodos = todosForDay.filter((t) => isCompletedOnDate(t, activeDateISO));
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = incompleteTodos.findIndex((t) => t.id === active.id);
+    const newIndex = incompleteTodos.findIndex((t) => t.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    onReorder(arrayMove(incompleteTodos, oldIndex, newIndex));
+  };
+
   return (
     <Stack spacing={1.5}>
       {view === 'month' && (
@@ -141,10 +160,19 @@ export function DayDetailPanel({
           </Box>
         ) : (
           <Stack spacing={0.75}>
-            {[
-              ...todosForDay.filter((t) => !isCompletedOnDate(t, activeDateISO)),
-              ...todosForDay.filter((t) => isCompletedOnDate(t, activeDateISO)),
-            ].map((todo) => (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={incompleteTodos.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+                {incompleteTodos.map((todo) => (
+                  <SortableTodoItem
+                    key={todo.id} todo={todo} viewDateISO={activeDateISO}
+                    onToggle={onToggle} onEditEmoji={onEditEmoji} onDelete={onDelete}
+                    onAdvancedEdit={onAdvancedEdit} onXpEarned={onXpEarned}
+                    brand={brand}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+            {completedTodos.map((todo) => (
               <TodoItem
                 key={todo.id} todo={todo} viewDateISO={activeDateISO}
                 onToggle={onToggle} onEditEmoji={onEditEmoji} onDelete={onDelete}
