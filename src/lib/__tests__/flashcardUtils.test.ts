@@ -65,7 +65,7 @@ describe('getFlashcardDisplayText', () => {
 
   it('should return word as titleText in kanji mode', () => {
     const card = makeCard({ mainViewMode: 'kanji', word: '猫', reading: 'ねこ' });
-    const { titleText, subtitleText } = getFlashcardDisplayText(card);
+    const { titleText, subtitleText: _subtitleText } = getFlashcardDisplayText(card);
     expect(titleText).toBe('猫');
   });
 

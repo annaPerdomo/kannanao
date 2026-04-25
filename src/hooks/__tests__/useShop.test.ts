@@ -31,7 +31,7 @@ const mockFrom = vi.fn((table: string) => makeChain(table));
 vi.mock('@/lib/supabase', () => ({
   sb: {
     auth: { getUser: (...args: unknown[]) => mockGetUser(...args) },
-    from: (...args: unknown[]) => mockFrom(...args),
+    from: (table: string) => mockFrom(table),
     rpc: (...args: unknown[]) => mockRpc(...args),
   },
   isConfigured: vi.fn(() => true),

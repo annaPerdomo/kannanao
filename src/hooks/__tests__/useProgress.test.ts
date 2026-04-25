@@ -1,7 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import {
-  cardXp,
   levelFromXp,
   XP_PER_CORRECT,
   XP_PER_WRONG,

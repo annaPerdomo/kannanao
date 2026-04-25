@@ -116,21 +116,19 @@ describe('AuthContext / AuthProvider', () => {
     });
 
     it('should return error message on failed sign in', async () => {
-      const { signInWithUsername } = (() => {
-        let capturedHook: ReturnType<typeof useAuth> | null = null;
-        function Capture() {
-          capturedHook = useAuth();
-          return null;
-        }
-        renderWithAuth(<Capture />);
-        return { signInWithUsername: capturedHook?.signInWithUsername };
-      })();
+      let capturedHook: ReturnType<typeof useAuth> | null = null;
+      function Capture() {
+        capturedHook = useAuth();
+        return null;
+      }
+      renderWithAuth(<Capture />);
+      const hook = capturedHook as unknown as ReturnType<typeof useAuth>;
 
       mockSignInWithPassword.mockResolvedValue({
         error: { message: 'Invalid credentials' },
       });
 
-      const result = await act(async () => signInWithUsername?.('bad', 'credentials'));
+      const result = await act(async () => hook.signInWithUsername('bad', 'credentials'));
 
       expect(result?.error).toBe('Invalid credentials');
     });
