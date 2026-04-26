@@ -124,9 +124,7 @@ export function CreateAssignmentDialog({
       }
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {error && (
-          <Typography sx={{ color: 'error.main', fontSize: '0.8rem' }}>{error}</Typography>
-        )}
+        {error && <Typography sx={{ color: 'error.main', fontSize: '0.8rem' }}>{error}</Typography>}
 
         {/* Deck selection */}
         <Box>

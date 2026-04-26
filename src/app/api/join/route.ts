@@ -51,11 +51,17 @@ export async function POST(req: NextRequest) {
   }
 
   if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
-    return NextResponse.json({ error: 'This invite has expired. Ask for a new one!' }, { status: 410 });
+    return NextResponse.json(
+      { error: 'This invite has expired. Ask for a new one!' },
+      { status: 410 },
+    );
   }
 
   if (invite.max_uses !== null && invite.times_used >= invite.max_uses) {
-    return NextResponse.json({ error: 'This invite has been fully used. Ask for a new one!' }, { status: 410 });
+    return NextResponse.json(
+      { error: 'This invite has been fully used. Ask for a new one!' },
+      { status: 410 },
+    );
   }
 
   // 2. Check username uniqueness
@@ -107,10 +113,7 @@ export async function POST(req: NextRequest) {
     .eq('id', invite.id);
 
   // 6. Auto-share all organizer's decks with the new member
-  const { data: orgDecks } = await sb
-    .from('decks')
-    .select('id')
-    .eq('user_id', invite.organizer_id);
+  const { data: orgDecks } = await sb.from('decks').select('id').eq('user_id', invite.organizer_id);
 
   if (orgDecks && orgDecks.length > 0) {
     const shares = orgDecks.map((d: { id: string }) => ({
@@ -132,7 +135,10 @@ export async function POST(req: NextRequest) {
 
   if (signInError || !signInData.session) {
     // Account was created successfully, but auto-sign-in failed — user can sign in manually
-    logger.warn('Auto sign-in failed after join', { route: '/api/join', error: signInError?.message });
+    logger.warn('Auto sign-in failed after join', {
+      route: '/api/join',
+      error: signInError?.message,
+    });
     return NextResponse.json({ success: true, session: null }, { status: 201 });
   }
 
@@ -168,11 +174,17 @@ export async function GET(req: NextRequest) {
   }
 
   if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
-    return NextResponse.json({ valid: false, reason: 'This invite has expired. Ask for a new one!' });
+    return NextResponse.json({
+      valid: false,
+      reason: 'This invite has expired. Ask for a new one!',
+    });
   }
 
   if (invite.max_uses !== null && invite.times_used >= invite.max_uses) {
-    return NextResponse.json({ valid: false, reason: 'This invite has been fully used. Ask for a new one!' });
+    return NextResponse.json({
+      valid: false,
+      reason: 'This invite has been fully used. Ask for a new one!',
+    });
   }
 
   // Fetch organizer display name

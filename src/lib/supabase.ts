@@ -395,7 +395,9 @@ export async function loadProfile(userId: string): Promise<{
 } | null> {
   const { data, error } = await sb
     .from('profiles')
-    .select('username, display_name, color_scheme, show_todo, show_leaderboard, account_type, organizer_id')
+    .select(
+      'username, display_name, color_scheme, show_todo, show_leaderboard, account_type, organizer_id',
+    )
     .eq('id', userId)
     .single();
   if (error || !data) return null;

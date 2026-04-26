@@ -80,7 +80,9 @@ export function EncouragementInbox({
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                   <Typography sx={{ fontSize: '1.2rem' }}>{e.emoji}</Typography>
-                  <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: brand[800], flex: 1 }}>
+                  <Typography
+                    sx={{ fontWeight: 700, fontSize: '0.82rem', color: brand[800], flex: 1 }}
+                  >
                     {from}
                   </Typography>
                   <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>

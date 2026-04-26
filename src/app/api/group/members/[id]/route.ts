@@ -40,7 +40,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       .maybeSingle(),
     sb
       .from('study_sessions')
-      .select('id, deck_id, practice_mode, cards_studied, cards_correct, xp_earned, duration_secs, started_at, ended_at')
+      .select(
+        'id, deck_id, practice_mode, cards_studied, cards_correct, xp_earned, duration_secs, started_at, ended_at',
+      )
       .eq('user_id', memberId)
       .order('started_at', { ascending: false })
       .limit(20),
@@ -68,7 +70,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const deckShares = deckSharesRes.data ?? [];
 
   // Aggregate sessions by deck
-  const deckStats = new Map<string, { studied: number; correct: number; lastStudied: string | null }>();
+  const deckStats = new Map<
+    string,
+    { studied: number; correct: number; lastStudied: string | null }
+  >();
   for (const s of sessions) {
     if (!s.deck_id) continue;
     const existing = deckStats.get(s.deck_id) ?? { studied: 0, correct: 0, lastStudied: null };

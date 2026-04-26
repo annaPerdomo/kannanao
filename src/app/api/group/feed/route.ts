@@ -101,9 +101,7 @@ export async function GET(req: NextRequest) {
       type: 'achievement',
       memberId: ach.user_id,
       memberName: name,
-      description: info
-        ? `unlocked "${info.label}"!`
-        : `earned an achievement!`,
+      description: info ? `unlocked "${info.label}"!` : `earned an achievement!`,
       emoji: info?.emoji ?? '🏆',
       timestamp: ach.unlocked_at,
     });
@@ -111,11 +109,7 @@ export async function GET(req: NextRequest) {
 
   // Perfect score events
   for (const s of sessionsRes.data ?? []) {
-    if (
-      s.cards_studied &&
-      s.cards_studied > 0 &&
-      s.cards_correct === s.cards_studied
-    ) {
+    if (s.cards_studied && s.cards_studied > 0 && s.cards_correct === s.cards_studied) {
       feed.push({
         type: 'perfect_score',
         memberId: s.user_id,

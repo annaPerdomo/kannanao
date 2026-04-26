@@ -167,9 +167,7 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
-                    <Typography sx={{ fontSize: '1.1rem' }}>
-                      {dp.deckEmoji || '📚'}
-                    </Typography>
+                    <Typography sx={{ fontSize: '1.1rem' }}>{dp.deckEmoji || '📚'}</Typography>
                     <Typography
                       sx={{ fontWeight: 700, fontSize: '0.82rem', color: brand[800] }}
                       noWrap
@@ -177,7 +175,9 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
                       {dp.deckName}
                     </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 2, fontSize: '0.7rem', color: 'text.secondary' }}>
+                  <Box
+                    sx={{ display: 'flex', gap: 2, fontSize: '0.7rem', color: 'text.secondary' }}
+                  >
                     <span>{dp.cardsStudied} studied</span>
                     <span>{dp.accuracy}% accuracy</span>
                     <span>{formatDate(dp.lastStudied)}</span>

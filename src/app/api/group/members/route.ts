@@ -42,7 +42,9 @@ export async function GET(req: NextRequest) {
   // Fetch progress for all members
   const { data: progressRows } = await sb
     .from('user_progress')
-    .select('user_id, total_xp, level, streak_days, total_cards_studied, total_correct, total_sessions')
+    .select(
+      'user_id, total_xp, level, streak_days, total_cards_studied, total_correct, total_sessions',
+    )
     .in('user_id', memberIds);
 
   // Fetch last session per member
@@ -52,9 +54,7 @@ export async function GET(req: NextRequest) {
     .in('user_id', memberIds)
     .order('started_at', { ascending: false });
 
-  const progressMap = new Map(
-    (progressRows ?? []).map((p) => [p.user_id, p]),
-  );
+  const progressMap = new Map((progressRows ?? []).map((p) => [p.user_id, p]));
 
   // Get most recent session per member
   const lastActiveMap = new Map<string, string>();

@@ -82,9 +82,7 @@ export function useAssignments() {
   const updateAssignment = useCallback(
     async (id: string, updates: { title?: string; note?: string; dueDate?: string | null }) => {
       const prev = assignments;
-      setAssignments((a) =>
-        a.map((item) => (item.id === id ? { ...item, ...updates } : item)),
-      );
+      setAssignments((a) => a.map((item) => (item.id === id ? { ...item, ...updates } : item)));
       try {
         const res = await fetch(`/api/group/assignments/${id}`, {
           method: 'PATCH',

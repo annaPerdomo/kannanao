@@ -26,7 +26,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     .eq('organizer_id', orgCheck.id);
 
   if (error) {
-    logger.error('Failed to revoke invite', { route: `/api/group/invite/${id}`, error: error.message });
+    logger.error('Failed to revoke invite', {
+      route: `/api/group/invite/${id}`,
+      error: error.message,
+    });
     return NextResponse.json({ error: 'Failed to revoke invite.' }, { status: 500 });
   }
 

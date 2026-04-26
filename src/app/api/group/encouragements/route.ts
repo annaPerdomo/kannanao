@@ -29,10 +29,7 @@ export async function POST(req: NextRequest) {
   };
 
   if (!memberId || !message?.trim()) {
-    return NextResponse.json(
-      { error: 'memberId and message are required.' },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: 'memberId and message are required.' }, { status: 400 });
   }
 
   const sb = getServiceSupabase();

@@ -74,6 +74,7 @@ A Husky pre-push hook runs `format:check`, `lint`, `tsc --noEmit`, and `test:run
 Kannanao supports **organizer** and **member** account types. Organizers have full access and can create invite codes (displayed as QR codes) to onboard members. Members get a focused study experience — they can practice shared decks, earn XP, and view leaderboards, but cannot access AI generation or create decks.
 
 Key features:
+
 - **QR invite flow** — organizers generate invite codes; members scan/visit a join link to create their account
 - **Group dashboard** (`/group`) — organizer sees member progress, stats, achievements, and recent activity
 - **Study assignments** — organizers assign decks with optional due dates; auto-completed when the member studies the deck

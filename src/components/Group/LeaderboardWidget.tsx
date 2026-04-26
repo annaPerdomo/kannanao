@@ -42,7 +42,9 @@ export function LeaderboardWidget({ entries, compact }: LeaderboardWidgetProps) 
             transition: 'all 0.15s ease',
           }}
         >
-          <Typography sx={{ fontSize: compact ? '1rem' : '1.2rem', width: 28, textAlign: 'center' }}>
+          <Typography
+            sx={{ fontSize: compact ? '1rem' : '1.2rem', width: 28, textAlign: 'center' }}
+          >
             {i < 3 ? MEDALS[i] : `${i + 1}.`}
           </Typography>
           <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -60,7 +62,9 @@ export function LeaderboardWidget({ entries, compact }: LeaderboardWidgetProps) 
             )}
           </Box>
           <Box sx={{ textAlign: 'right' }}>
-            <Typography sx={{ fontWeight: 800, fontSize: compact ? '0.78rem' : '0.85rem', color: brand[700] }}>
+            <Typography
+              sx={{ fontWeight: 800, fontSize: compact ? '0.78rem' : '0.85rem', color: brand[700] }}
+            >
               {entry.weeklyXp.toLocaleString()} XP
             </Typography>
             {!compact && (

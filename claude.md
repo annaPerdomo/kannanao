@@ -124,23 +124,23 @@ Two account types: **organizer** (full access) and **member** (limited, no paid 
 
 ### Group API routes (`src/app/api/group/`)
 
-| Route | Auth | Purpose |
-|-------|------|---------|
-| `POST /api/group/invite` | Organizer | Create invite code |
-| `GET /api/group/invite` | Organizer | List invites |
-| `DELETE /api/group/invite/[id]` | Organizer | Revoke invite |
-| `GET /api/group/members` | Organizer | List members with progress |
-| `GET /api/group/members/[id]` | Organizer | Detailed member stats |
-| `POST /api/group/assignments` | Organizer | Create assignment(s) |
-| `GET /api/group/assignments` | Both (filtered) | List assignments |
-| `PATCH /api/group/assignments/[id]` | Organizer | Update assignment |
-| `DELETE /api/group/assignments/[id]` | Organizer | Remove assignment |
-| `POST /api/group/assignments/complete` | Any auth | Auto-complete on study |
-| `POST /api/group/encouragements` | Organizer | Send encouragement |
-| `GET /api/group/encouragements` | Member | Get messages |
-| `PATCH /api/group/encouragements/[id]/read` | Member | Mark as read |
-| `GET /api/group/leaderboard` | Both | Weekly rankings |
-| `GET /api/group/feed` | Organizer | Activity feed |
+| Route                                       | Auth            | Purpose                    |
+| ------------------------------------------- | --------------- | -------------------------- |
+| `POST /api/group/invite`                    | Organizer       | Create invite code         |
+| `GET /api/group/invite`                     | Organizer       | List invites               |
+| `DELETE /api/group/invite/[id]`             | Organizer       | Revoke invite              |
+| `GET /api/group/members`                    | Organizer       | List members with progress |
+| `GET /api/group/members/[id]`               | Organizer       | Detailed member stats      |
+| `POST /api/group/assignments`               | Organizer       | Create assignment(s)       |
+| `GET /api/group/assignments`                | Both (filtered) | List assignments           |
+| `PATCH /api/group/assignments/[id]`         | Organizer       | Update assignment          |
+| `DELETE /api/group/assignments/[id]`        | Organizer       | Remove assignment          |
+| `POST /api/group/assignments/complete`      | Any auth        | Auto-complete on study     |
+| `POST /api/group/encouragements`            | Organizer       | Send encouragement         |
+| `GET /api/group/encouragements`             | Member          | Get messages               |
+| `PATCH /api/group/encouragements/[id]/read` | Member          | Mark as read               |
+| `GET /api/group/leaderboard`                | Both            | Weekly rankings            |
+| `GET /api/group/feed`                       | Organizer       | Activity feed              |
 
 All group routes follow: rate limit check → auth check → service supabase.
 

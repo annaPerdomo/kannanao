@@ -52,8 +52,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Determine the organizer ID (group root)
-  const organizerId =
-    profile.account_type === 'organizer' ? profile.id : profile.organizer_id;
+  const organizerId = profile.account_type === 'organizer' ? profile.id : profile.organizer_id;
 
   if (!organizerId) {
     return NextResponse.json({ error: 'Not part of a group.' }, { status: 400 });
@@ -115,9 +114,7 @@ export async function GET(req: NextRequest) {
     .select('user_id, streak_days, level')
     .in('user_id', memberIds);
 
-  const progressMap = new Map(
-    (progressRows ?? []).map((p) => [p.user_id, p]),
-  );
+  const progressMap = new Map((progressRows ?? []).map((p) => [p.user_id, p]));
 
   // Aggregate weekly XP and cards per user
   const weeklyStats = new Map<string, { xp: number; cards: number }>();

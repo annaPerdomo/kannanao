@@ -123,9 +123,7 @@ export function AssignmentCard({ assignment, onStudy }: AssignmentCardProps) {
           Study
         </Button>
       )}
-      {isCompleted && (
-        <CheckCircleIcon sx={{ color: '#22C55E', fontSize: 20, flexShrink: 0 }} />
-      )}
+      {isCompleted && <CheckCircleIcon sx={{ color: '#22C55E', fontSize: 20, flexShrink: 0 }} />}
     </Paper>
   );
 }

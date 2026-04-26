@@ -212,11 +212,7 @@ export default function GroupPage() {
         >
           Recent Activity
         </Typography>
-        {feedLoading ? (
-          <Loading message="Loading activity..." />
-        ) : (
-          <ActivityFeed items={feed} />
-        )}
+        {feedLoading ? <Loading message="Loading activity..." /> : <ActivityFeed items={feed} />}
       </Box>
 
       <CreateAssignmentDialog

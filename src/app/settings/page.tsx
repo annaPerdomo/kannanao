@@ -394,7 +394,9 @@ export default function SettingsPage() {
                     onChange={(e) => void updateShowLeaderboard(e.target.checked)}
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': { color: brand[600] },
-                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: brand[400] },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        bgcolor: brand[400],
+                      },
                     }}
                   />
                 }

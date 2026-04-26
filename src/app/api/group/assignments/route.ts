@@ -124,7 +124,9 @@ export async function GET(req: NextRequest) {
     // Organizers see all assignments they created
     query = sb
       .from('assignments')
-      .select('*, decks(id, name, emoji), profiles!assignments_member_id_fkey(display_name, username)')
+      .select(
+        '*, decks(id, name, emoji), profiles!assignments_member_id_fkey(display_name, username)',
+      )
       .eq('organizer_id', user.id)
       .order('created_at', { ascending: false });
   }

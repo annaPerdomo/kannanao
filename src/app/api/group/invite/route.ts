@@ -23,7 +23,8 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => null);
   const label = typeof body?.label === 'string' ? body.label.trim().slice(0, 100) : null;
-  const maxUses = body?.maxUses === null ? null : Math.min(Math.max(Number(body?.maxUses) || 1, 1), 999);
+  const maxUses =
+    body?.maxUses === null ? null : Math.min(Math.max(Number(body?.maxUses) || 1, 1), 999);
 
   let expiresAt: string | null = null;
   if (body?.expiresIn === '24h') {
@@ -51,7 +52,10 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) {
-    logger.error('Failed to create invite code', { route: '/api/group/invite', error: error.message });
+    logger.error('Failed to create invite code', {
+      route: '/api/group/invite',
+      error: error.message,
+    });
     return NextResponse.json({ error: 'Failed to create invite.' }, { status: 500 });
   }
 

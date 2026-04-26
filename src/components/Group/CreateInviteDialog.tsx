@@ -1,15 +1,7 @@
 'use client';
 
 import QrCode2Icon from '@mui/icons-material/QrCode2';
-import {
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Stack,
-  TextField,
-} from '@mui/material';
+import { Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useState } from 'react';
 
@@ -23,7 +15,12 @@ interface CreateInviteDialogProps {
   onCreate: (params: CreateInviteParams) => Promise<InviteCode>;
 }
 
-export function CreateInviteDialog({ open, onClose, onCreated, onCreate }: CreateInviteDialogProps) {
+export function CreateInviteDialog({
+  open,
+  onClose,
+  onCreated,
+  onCreate,
+}: CreateInviteDialogProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
 
@@ -103,11 +100,7 @@ export function CreateInviteDialog({ open, onClose, onCreated, onCreate }: Creat
 
         <FormControl fullWidth size="small">
           <InputLabel>Max uses</InputLabel>
-          <Select
-            value={maxUses}
-            label="Max uses"
-            onChange={(e) => setMaxUses(e.target.value)}
-          >
+          <Select value={maxUses} label="Max uses" onChange={(e) => setMaxUses(e.target.value)}>
             <MenuItem value="1">1 member</MenuItem>
             <MenuItem value="5">5 members</MenuItem>
             <MenuItem value="10">10 members</MenuItem>

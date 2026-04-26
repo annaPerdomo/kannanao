@@ -63,7 +63,12 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
             </Typography>
           </Box>
           <Typography
-            sx={{ fontSize: '0.63rem', color: 'text.secondary', flexShrink: 0, whiteSpace: 'nowrap' }}
+            sx={{
+              fontSize: '0.63rem',
+              color: 'text.secondary',
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
+            }}
           >
             {timeAgo(item.timestamp)}
           </Typography>

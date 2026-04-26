@@ -65,31 +65,34 @@ export default function JoinPage() {
   }, [code]);
 
   // Debounced username uniqueness check
-  const checkUsername = useCallback(async (value: string) => {
-    if (value.length < 2) {
-      setUsernameError(null);
-      return;
-    }
-    if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
-      setUsernameError('Letters, numbers, _ or - only');
-      return;
-    }
-    setCheckingUsername(true);
-    try {
-      // Quick check via the join validation endpoint — the server will catch
-      // duplicates on submit, but we give real-time feedback via profiles query
-      const res = await fetch(`/api/join?code=${encodeURIComponent(code)}`);
-      if (res.ok) {
-        // We can't query profiles without auth, so just validate format client-side
-        // The server will reject duplicates on submit
+  const checkUsername = useCallback(
+    async (value: string) => {
+      if (value.length < 2) {
         setUsernameError(null);
+        return;
       }
-    } catch {
-      // Ignore — server will catch on submit
-    } finally {
-      setCheckingUsername(false);
-    }
-  }, [code]);
+      if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
+        setUsernameError('Letters, numbers, _ or - only');
+        return;
+      }
+      setCheckingUsername(true);
+      try {
+        // Quick check via the join validation endpoint — the server will catch
+        // duplicates on submit, but we give real-time feedback via profiles query
+        const res = await fetch(`/api/join?code=${encodeURIComponent(code)}`);
+        if (res.ok) {
+          // We can't query profiles without auth, so just validate format client-side
+          // The server will reject duplicates on submit
+          setUsernameError(null);
+        }
+      } catch {
+        // Ignore — server will catch on submit
+      } finally {
+        setCheckingUsername(false);
+      }
+    },
+    [code],
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -294,7 +297,8 @@ export default function JoinPage() {
               required
               error={Boolean(usernameError)}
               helperText={
-                usernameError ?? (checkingUsername ? 'Checking...' : 'Letters, numbers, _ or - (2-30 chars)')
+                usernameError ??
+                (checkingUsername ? 'Checking...' : 'Letters, numbers, _ or - (2-30 chars)')
               }
               autoComplete="username"
             />
@@ -329,7 +333,11 @@ export default function JoinPage() {
                         edge="end"
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
-                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        {showPassword ? (
+                          <VisibilityOff fontSize="small" />
+                        ) : (
+                          <Visibility fontSize="small" />
+                        )}
                       </IconButton>
                     </InputAdornment>
                   ),

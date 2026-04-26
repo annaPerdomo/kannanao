@@ -260,10 +260,7 @@ export default function Home() {
           {/* Assignments */}
           {pendingAssignments.length > 0 && (
             <Box>
-              <Typography
-                variant="h6"
-                sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}
-              >
+              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}>
                 📋 Assignments
               </Typography>
               <Stack spacing={1}>
@@ -281,10 +278,7 @@ export default function Home() {
           {/* Leaderboard */}
           {showLeaderboard && leaderboard.length > 0 && (
             <Box>
-              <Typography
-                variant="h6"
-                sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}
-              >
+              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}>
                 🏆 Weekly Leaderboard
               </Typography>
               <LeaderboardWidget entries={leaderboard} compact />
