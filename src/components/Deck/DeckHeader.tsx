@@ -1,11 +1,19 @@
 'use client';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import CodeIcon from '@mui/icons-material/Code';
 import EditIcon from '@mui/icons-material/Edit';
+import IosShareIcon from '@mui/icons-material/IosShare';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
-import { Box, CircularProgress, IconButton, TextField, Tooltip, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import { useCallback, useRef, useState } from 'react';
@@ -208,28 +216,37 @@ export function DeckHeader({
       mb={3}
       action={
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Tooltip title={deck.isPublic ? 'Embed (public)' : 'Embed deck'}>
-            <IconButton
-              size="small"
-              aria-label={deck.isPublic ? 'Embed (public)' : 'Embed deck'}
-              onClick={onEmbedOpen}
-              sx={{
-                width: 30,
-                height: 30,
-                borderRadius: '8px',
-                border: `1.5px solid ${deck.isPublic ? alpha(brand[500], 0.6) : alpha(brand[300], 0.45)}`,
-                bgcolor: deck.isPublic ? alpha(brand[100], 0.8) : alpha('#FFFFFF', 0.4),
-                color: deck.isPublic ? brand[600] : alpha(brand[500], 0.55),
+          <Button
+            variant={deck.isPublic ? 'outlined' : 'contained'}
+            size="small"
+            startIcon={
+              deck.isPublic ? (
+                <CheckIcon sx={{ fontSize: 15 }} />
+              ) : (
+                <IosShareIcon sx={{ fontSize: 15 }} />
+              )
+            }
+            onClick={onEmbedOpen}
+            sx={{
+              borderRadius: '9px',
+              px: 2,
+              py: '5px',
+              fontSize: '0.76rem',
+              textTransform: 'none',
+              fontWeight: 700,
+              ...(deck.isPublic && {
+                borderColor: alpha(brand[500], 0.5),
+                color: brand[700],
+                bgcolor: alpha(brand[100], 0.6),
                 '&:hover': {
-                  bgcolor: alpha(brand[100], 0.8),
-                  color: brand[600],
-                  borderColor: alpha(brand[500], 0.6),
+                  borderColor: brand[500],
+                  bgcolor: alpha(brand[100], 0.9),
                 },
-              }}
-            >
-              <CodeIcon sx={{ fontSize: 14 }} />
-            </IconButton>
-          </Tooltip>
+              }),
+            }}
+          >
+            {deck.isPublic ? 'Shared' : 'Share'}
+          </Button>
           <Tooltip title={deck.pinned ? 'Unpin from home' : 'Pin to home'}>
             <IconButton
               size="small"
