@@ -17,7 +17,11 @@ interface FlashcardProps {
   height?: number | string;
 }
 
-export function Flashcard({ card, width: widthProp = '100%', height: heightProp = 420 }: FlashcardProps) {
+export function Flashcard({
+  card,
+  width: widthProp = '100%',
+  height: heightProp = 420,
+}: FlashcardProps) {
   const width = card.imageUrl ? widthProp : 420;
   const height = card.imageUrl ? heightProp : 280;
   const theme = useTheme();

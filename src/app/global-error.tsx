@@ -40,10 +40,7 @@ export default function GlobalError({
               bgcolor: 'background.default',
             }}
           >
-            <Typography
-              variant="h5"
-              sx={{ fontWeight: 800, color: 'text.primary' }}
-            >
+            <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary' }}>
               Something went wrong
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 400 }}>

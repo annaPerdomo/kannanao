@@ -277,7 +277,12 @@ export function DeckCard({
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography
-                  sx={{ fontSize: '0.78rem', fontWeight: 700, color: 'text.primary', lineHeight: 1.3 }}
+                  sx={{
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    color: 'text.primary',
+                    lineHeight: 1.3,
+                  }}
                 >
                   {deck.cardCount} cards
                 </Typography>
