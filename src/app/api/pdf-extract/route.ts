@@ -1,7 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { logger } from '@/lib/logger';
 import type { GeneratedCard } from '@/types/flashcard';
+
+import { rateLimit } from '../_lib/rateLimit';
+
+const RATE_LIMIT = { windowMs: 60_000, max: 3 };
 
 const PdfExtractSchema = z.object({
   // ~10 MB PDF fits comfortably within 13.3 MB of base64
@@ -29,6 +34,9 @@ For each vocabulary word or phrase found, return a JSON object with:
 Skip section headers and meta-content. Focus only on actual vocabulary words and phrases a student would need to memorize. Do not include periods in any field.`;
 
 export async function POST(req: NextRequest) {
+  const limited = await rateLimit(req, RATE_LIMIT);
+  if (limited) return limited;
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
@@ -104,7 +112,11 @@ export async function POST(req: NextRequest) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('[/api/pdf-extract] Gemini error:', JSON.stringify(data));
+      logger.error('Gemini API error', {
+        route: '/api/pdf-extract',
+        status: response.status,
+        body: data,
+      });
       return NextResponse.json(
         { error: data.error?.message ?? 'Gemini API error' },
         { status: response.status },
@@ -123,7 +135,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(cleaned);
   } catch (err) {
-    console.error('[/api/pdf-extract]', err);
+    logger.error('Unhandled error', {
+      route: '/api/pdf-extract',
+      error: err instanceof Error ? err.message : String(err),
+    });
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Internal server error' },
       { status: 500 },

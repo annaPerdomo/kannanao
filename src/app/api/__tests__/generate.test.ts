@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { _resetStore } from '@/app/api/_lib/rateLimit';
+
 // ─── Mock fetch ───────────────────────────────────────────────────────────────
 
 const mockFetch = vi.fn();
@@ -10,6 +12,7 @@ global.fetch = mockFetch;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  _resetStore();
   process.env.GEMINI_API_KEY = 'test-gemini-key';
 });
 

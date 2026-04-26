@@ -1,6 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { logger } from '@/lib/logger';
+
+import { rateLimit } from '../_lib/rateLimit';
+
+const RATE_LIMIT = { windowMs: 60_000, max: 10 };
+
 const FuriganaSchema = z.object({
   lines: z
     .array(z.string().min(1).max(2000))
@@ -9,6 +15,9 @@ const FuriganaSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const limited = await rateLimit(req, RATE_LIMIT);
+  if (limited) return limited;
+
   const body = await req.json().catch(() => null);
   const parsed = FuriganaSchema.safeParse(body);
   if (!parsed.success) {
@@ -68,14 +77,21 @@ ${lines.map((l, i) => `${i + 1}. ${l}`).join('\n')}`;
 
     const data = await response.json();
     if (!response.ok) {
-      console.error('Gemini Error:', JSON.stringify(data, null, 2));
+      logger.error('Gemini API error', {
+        route: '/api/furigana',
+        status: response.status,
+        body: data,
+      });
       return NextResponse.json(data, { status: response.status });
     }
 
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '{"lines":[]}';
     return NextResponse.json(JSON.parse(rawText));
   } catch (err) {
-    console.error('[/api/furigana]', err);
+    logger.error('Unhandled error', {
+      route: '/api/furigana',
+      error: err instanceof Error ? err.message : String(err),
+    });
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Internal server error' },
       { status: 500 },

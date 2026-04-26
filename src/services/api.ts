@@ -1,11 +1,19 @@
+import { sb } from '@/lib/supabase';
 import type { GeneratedCard, GeneratePayload } from '@/types/flashcard';
 
 const BASE = '/api';
 
+/** Returns Authorization header with the current Supabase session token, if available. */
+async function authHeaders(): Promise<Record<string, string>> {
+  const { data } = await sb.auth.getSession();
+  const token = data.session?.access_token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export async function generateFlashcards(payload: GeneratePayload): Promise<GeneratedCard[]> {
   const res = await fetch(`${BASE}/generate`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`Generate failed: ${res.statusText}`);
@@ -15,7 +23,7 @@ export async function generateFlashcards(payload: GeneratePayload): Promise<Gene
 export async function formatFurigana(lines: string[]): Promise<string[]> {
   const res = await fetch(`${BASE}/furigana`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
     body: JSON.stringify({ lines }),
   });
   if (!res.ok) throw new Error(`Furigana formatting failed: ${res.statusText}`);
@@ -29,7 +37,7 @@ export async function uploadImage(file: File): Promise<string> {
 
   const res = await fetch(`${BASE}/generate-image`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
     body: JSON.stringify({ base64, mimeType: file.type }),
   });
   if (!res.ok) {
@@ -47,7 +55,7 @@ export function isStorageImage(url: string | undefined): boolean {
 export async function deleteStorageImage(url: string): Promise<void> {
   const res = await fetch(`${BASE}/generate-image`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
     body: JSON.stringify({ url }),
   });
   if (!res.ok) {
@@ -89,7 +97,9 @@ export function decodeUnsplashAttribution(url: string): UnsplashAttribution | nu
 }
 
 export async function fetchImage(query: string): Promise<UnsplashImageResult | null> {
-  const res = await fetch(`${BASE}/images?query=${encodeURIComponent(query)}`);
+  const res = await fetch(`${BASE}/images?query=${encodeURIComponent(query)}`, {
+    headers: await authHeaders(),
+  });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body?.detail ?? body?.error ?? res.statusText);
@@ -99,10 +109,11 @@ export async function fetchImage(query: string): Promise<UnsplashImageResult | n
 }
 
 export async function triggerUnsplashDownload(downloadLocation: string): Promise<void> {
+  const headers = await authHeaders();
   // Fire-and-forget — errors are non-critical
   fetch(`${BASE}/images/trigger`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...headers },
     body: JSON.stringify({ downloadLocation }),
   }).catch(() => {});
 }

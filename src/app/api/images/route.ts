@@ -1,6 +1,13 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { rateLimit } from '../_lib/rateLimit';
+
+const RATE_LIMIT = { windowMs: 60_000, max: 20 };
+
 export async function GET(req: NextRequest) {
+  const limited = await rateLimit(req, RATE_LIMIT);
+  if (limited) return limited;
+
   try {
     const query = req.nextUrl.searchParams.get('query');
     if (!query) {
