@@ -20,7 +20,7 @@ vi.mock('@/contexts/AuthContext', () => ({
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-import { useGroupMembers, useMemberDetail, useGroupFeed } from '@/hooks/useGroup';
+import { useGroupFeed, useGroupMembers, useMemberDetail } from '@/hooks/useGroup';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 

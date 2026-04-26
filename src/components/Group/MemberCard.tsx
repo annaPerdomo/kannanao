@@ -5,8 +5,8 @@ import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
-import { xpProgressInLevel } from '@/hooks/useProgress';
 import type { GroupMember } from '@/hooks/useGroup';
+import { xpProgressInLevel } from '@/hooks/useProgress';
 
 function timeAgo(dateStr: string | null): string {
   if (!dateStr) return 'Never';

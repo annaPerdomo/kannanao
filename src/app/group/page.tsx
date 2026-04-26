@@ -24,7 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
 import { useEncouragements } from '@/hooks/useEncouragements';
-import { useGroupMembers, useMemberDetail, useGroupFeed } from '@/hooks/useGroup';
+import { useGroupFeed, useGroupMembers, useMemberDetail } from '@/hooks/useGroup';
 import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
 import { LAYOUT } from '@/theme';
 

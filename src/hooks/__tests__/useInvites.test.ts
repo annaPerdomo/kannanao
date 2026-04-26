@@ -68,9 +68,8 @@ describe('useInvites', () => {
 
   it('does not fetch when no session token', async () => {
     mockUseAuth.mockReturnValue({ session: null });
-    const { result } = renderHook(() => useInvites());
-    // Should stay in loading state but not call fetch
-    // Give it a tick to settle
+    renderHook(() => useInvites());
+    // Should not call fetch without a session
     await new Promise((r) => setTimeout(r, 50));
     expect(mockFetch).not.toHaveBeenCalled();
   });

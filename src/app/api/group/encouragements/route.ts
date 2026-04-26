@@ -94,13 +94,6 @@ export async function GET(req: NextRequest) {
 
   const sb = getServiceSupabase();
 
-  // Get organizer name for display
-  const { data: profile } = await sb
-    .from('profiles')
-    .select('organizer_id')
-    .eq('id', user.id)
-    .single();
-
   const { data, error } = await sb
     .from('encouragements')
     .select('*, profiles!encouragements_organizer_id_fkey(display_name, username)')

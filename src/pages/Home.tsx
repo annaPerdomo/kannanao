@@ -13,8 +13,8 @@ import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { AssignmentCard, LeaderboardWidget } from '@/components/Group';
 import { DeckCard } from '@/components/DeckCard';
+import { AssignmentCard, LeaderboardWidget } from '@/components/Group';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { ShareEmbedDialog } from '@/components/ShareEmbedDialog';

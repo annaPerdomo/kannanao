@@ -1,5 +1,9 @@
 'use client';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import SchoolIcon from '@mui/icons-material/School';
+import TargetIcon from '@mui/icons-material/TrackChanges';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -11,15 +15,10 @@ import Typography from '@mui/material/Typography';
 import { Loading } from '@/components/Loading';
 import { AchievementBadge } from '@/components/Stats/AchievementBadge';
 import { StatCard } from '@/components/Stats/StatCard';
-import { ACHIEVEMENTS, xpProgressInLevel } from '@/hooks/useProgress';
 import type { MemberDetail as MemberDetailData } from '@/hooks/useGroup';
+import { ACHIEVEMENTS, xpProgressInLevel } from '@/hooks/useProgress';
 
 import { EncouragementForm } from './EncouragementForm';
-
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
-import SchoolIcon from '@mui/icons-material/School';
-import TargetIcon from '@mui/icons-material/TrackChanges';
 
 function formatDuration(secs: number | null): string {
   if (!secs) return '--';
