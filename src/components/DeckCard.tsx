@@ -1,14 +1,11 @@
 'use client';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
-import { Box, IconButton, Popover, Tooltip, Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { alpha } from '@mui/material/styles';
-import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
-import { useCallback, useState } from 'react';
+import { Box, IconButton, Tooltip, Typography } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useCallback } from 'react';
 
 import { useCardBorder } from '@/contexts/CardBorderContext';
 import type { Deck } from '@/types/deck';
@@ -18,7 +15,6 @@ interface DeckCardProps {
   onOpen: (id: string) => void;
   onDelete: (id: string) => void;
   onShare?: (id: string) => void;
-  onEditEmoji?: (id: string, emoji: string) => void;
   onPin?: (id: string, pinned: boolean) => void;
   isOwner?: boolean;
 }
@@ -28,7 +24,6 @@ export function DeckCard({
   onOpen,
   onDelete,
   onShare,
-  onEditEmoji,
   onPin,
   isOwner = true,
 }: DeckCardProps) {
@@ -36,7 +31,6 @@ export function DeckCard({
   const { brand, accent } = theme.palette;
   const { borderStyle: equippedBorder } = useCardBorder();
   const hasCustomBorder = equippedBorder && Object.keys(equippedBorder).length > 0;
-  const [emojiAnchor, setEmojiAnchor] = useState<HTMLElement | null>(null);
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -60,8 +54,6 @@ export function DeckCard({
         '&:hover .deck-stack-2': { transform: 'rotate(-6deg) translateY(8px)' },
         '&:hover .deck-stack-1': { transform: 'rotate(6deg) translateY(12px)' },
         '&:hover .holo-sheen': { opacity: 1 },
-        '&:hover .emoji-art': { transform: 'rotate(-10deg) scale(1.18)' },
-        '&:hover .card-actions': { opacity: 1 },
       }}
     >
       {/* Card back: bottom layer */}
@@ -172,7 +164,7 @@ export function DeckCard({
             flexDirection: 'column',
           }}
         >
-          {/* Top bar */}
+          {/* Top bar — matches ImageCard */}
           <Box
             sx={{
               px: 1.5,
@@ -183,20 +175,18 @@ export function DeckCard({
               alignItems: 'center',
             }}
           >
-            <Box sx={{ display: 'flex', gap: 0.7, alignItems: 'center' }}>
-              <Typography
-                sx={{
-                  fontSize: '0.6rem',
-                  fontWeight: 900,
-                  color: 'white',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.07em',
-                  textShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                }}
-              >
-                Card Deck
-              </Typography>
-            </Box>
+            <Typography
+              sx={{
+                fontSize: '0.6rem',
+                fontWeight: 900,
+                color: 'white',
+                textTransform: 'uppercase',
+                letterSpacing: '0.07em',
+                textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+              }}
+            >
+              Card Deck
+            </Typography>
             <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
               <Typography
                 sx={{
@@ -222,70 +212,25 @@ export function DeckCard({
             </Box>
           </Box>
 
-          {/* Art frame */}
+          {/* Deck name — centered, fixed height for consistency */}
           <Box
             sx={{
-              mx: '8px',
-              mt: '6px',
-              borderRadius: '6px',
-              overflow: 'hidden',
-              border: '2px solid rgba(0,0,0,0.14)',
-              boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.1)',
-              background: `linear-gradient(135deg, ${brand[100]} 0%, ${accent[100]} 50%, ${brand[100]} 100%)`,
-              height: 120,
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              position: 'relative',
+              px: 2,
+              height: 120,
+              borderBottom: `2px solid ${brand[400]}`,
             }}
           >
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 8,
-                right: 12,
-                fontSize: '0.65rem',
-                color: alpha(brand[300], 0.6),
-                pointerEvents: 'none',
-              }}
-            >
-              ✦
-            </Box>
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: 8,
-                left: 12,
-                fontSize: '0.5rem',
-                color: alpha(accent[300], 0.7),
-                pointerEvents: 'none',
-              }}
-            >
-              ✦
-            </Box>
-            <Box
-              className="emoji-art"
-              sx={{
-                fontSize: '2.8rem',
-                lineHeight: 1,
-                display: 'block',
-                transition: 'transform 0.35s cubic-bezier(.34,1.56,.64,1)',
-                userSelect: 'none',
-              }}
-            >
-              {deck.emoji}
-            </Box>
-          </Box>
-
-          {/* Name */}
-          <Box sx={{ px: 1.5, pt: '9px', pb: '7px', borderBottom: `2px solid ${brand[400]}` }}>
             <Typography
               sx={{
+                fontSize: '1.3rem',
                 fontWeight: 900,
-                color: '#111',
+                color: 'text.primary',
                 lineHeight: 1.15,
-                fontSize: '0.85rem',
-                letterSpacing: '-0.01em',
+                textAlign: 'center',
               }}
             >
               {deck.name}
@@ -293,11 +238,12 @@ export function DeckCard({
             {deck.description && (
               <Typography
                 sx={{
-                  color: '#777',
-                  lineHeight: 1.3,
                   fontSize: '0.65rem',
+                  color: '#888',
                   fontStyle: 'italic',
-                  mt: '2px',
+                  lineHeight: 1.3,
+                  mt: 0.5,
+                  textAlign: 'center',
                 }}
               >
                 {deck.description}
@@ -306,7 +252,7 @@ export function DeckCard({
           </Box>
 
           {/* Stats — ability box style matching ImageCard */}
-          <Box sx={{ px: 1.5, pt: '8px', pb: '10px' }}>
+          <Box sx={{ px: 1.5, pt: '8px' }}>
             <Box
               sx={{
                 bgcolor: alpha(brand[50], 0.75),
@@ -331,13 +277,13 @@ export function DeckCard({
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography
-                  sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#1A1A1A', lineHeight: 1.3 }}
+                  sx={{ fontSize: '0.78rem', fontWeight: 700, color: 'text.primary', lineHeight: 1.3 }}
                 >
-                  {deck.cardCount} cards in this deck
+                  {deck.cardCount} cards
                 </Typography>
                 {deck.isShared && (
                   <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: accent[600] }}>
-                    · ✨ Shared
+                    · Shared
                   </Typography>
                 )}
               </Box>
@@ -356,80 +302,30 @@ export function DeckCard({
               borderTop: `1px solid ${alpha(brand[300], 0.25)}`,
             }}
           >
-            <Typography
-              sx={{
-                fontSize: '0.52rem',
-                color: alpha(brand[500], 0.6),
-                fontFamily: (t) => t.fonts.mono,
-                letterSpacing: '0.06em',
-              }}
-            >
-              CARD DECK
-            </Typography>
+            {deck.isPublic ? (
+              <Typography
+                sx={{
+                  fontSize: '0.54rem',
+                  fontWeight: 800,
+                  color: accent[600],
+                  fontFamily: (t) => t.fonts.mono,
+                  letterSpacing: '0.06em',
+                }}
+              >
+                ✦ Shared
+              </Typography>
+            ) : (
+              <Typography
+                sx={{
+                  fontSize: '0.52rem',
+                  color: alpha(brand[500], 0.5),
+                  fontFamily: (t) => t.fonts.mono,
+                }}
+              >
+                ★
+              </Typography>
+            )}
             <Box sx={{ display: 'flex', gap: 0.25 }} onClick={(e) => e.stopPropagation()}>
-              {isOwner && onEditEmoji && (
-                <>
-                  <Tooltip title="Change emoji">
-                    <IconButton
-                      size="small"
-                      aria-label="Change emoji"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEmojiAnchor(e.currentTarget);
-                      }}
-                      sx={{
-                        width: 26,
-                        height: 26,
-                        color: accent[500],
-                        bgcolor: 'transparent',
-                        border: `1px solid ${alpha(accent[400], 0.35)}`,
-                        borderRadius: '6px',
-                        '&:hover': {
-                          color: accent[700],
-                          bgcolor: alpha(accent[100], 0.5),
-                          borderColor: alpha(accent[500], 0.6),
-                        },
-                      }}
-                    >
-                      <EmojiEmotionsOutlinedIcon sx={{ fontSize: 14 }} />
-                    </IconButton>
-                  </Tooltip>
-                  <Popover
-                    open={Boolean(emojiAnchor)}
-                    anchorEl={emojiAnchor}
-                    onClose={() => setEmojiAnchor(null)}
-                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                    transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Box
-                      sx={{
-                        '--epr-bg-color': brand[50],
-                        '--epr-category-label-bg-color': brand[100],
-                        '--epr-hover-bg-color': alpha(brand[300], 0.25),
-                        '--epr-focus-bg-color': alpha(brand[300], 0.35),
-                        '--epr-highlight-color': brand[400],
-                        '--epr-search-border-color': alpha(brand[400], 0.4),
-                        '--epr-header-overlay-color': brand[50],
-                        '--epr-category-icon-active-color': accent[500],
-                        '--epr-search-input-bg-color': '#fff',
-                        '--epr-emoji-size': '24px',
-                        borderRadius: 3,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <EmojiPicker
-                        theme={Theme.LIGHT}
-                        onEmojiClick={(data: EmojiClickData) => {
-                          onEditEmoji(deck.id, data.emoji);
-                          setEmojiAnchor(null);
-                        }}
-                        lazyLoadEmojis
-                      />
-                    </Box>
-                  </Popover>
-                </>
-              )}
               {onPin && (
                 <Tooltip title={deck.pinned ? 'Unpin from home' : 'Pin to home'}>
                   <IconButton
@@ -462,29 +358,54 @@ export function DeckCard({
                 </Tooltip>
               )}
               {isOwner && onShare && (
-                <Tooltip title="Share deck">
+                <Tooltip title={deck.isPublic ? 'Shared' : 'Share deck'}>
                   <IconButton
                     size="small"
-                    aria-label="Share deck"
+                    aria-label={deck.isPublic ? 'Shared' : 'Share deck'}
                     onClick={(e) => {
                       e.stopPropagation();
                       onShare(deck.id);
                     }}
                     sx={{
+                      position: 'relative',
                       width: 26,
                       height: 26,
-                      color: brand[500],
-                      bgcolor: 'transparent',
-                      border: `1px solid ${alpha(brand[400], 0.35)}`,
+                      color: deck.isPublic ? brand[600] : brand[500],
+                      bgcolor: deck.isPublic ? alpha(brand[200], 0.6) : 'transparent',
+                      border: `1px solid ${deck.isPublic ? alpha(brand[400], 0.6) : alpha(brand[400], 0.35)}`,
                       borderRadius: '6px',
                       '&:hover': {
                         color: brand[700],
-                        bgcolor: alpha(brand[100], 0.5),
+                        bgcolor: deck.isPublic ? alpha(brand[200], 0.7) : alpha(brand[100], 0.5),
                         borderColor: alpha(brand[500], 0.6),
                       },
                     }}
                   >
                     <IosShareIcon sx={{ fontSize: 14 }} />
+                    {deck.isPublic && (
+                      <Box
+                        component="span"
+                        sx={{
+                          position: 'absolute',
+                          top: -4,
+                          right: -4,
+                          width: 12,
+                          height: 12,
+                          borderRadius: '50%',
+                          bgcolor: '#059669',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '8px',
+                          color: 'white',
+                          fontWeight: 900,
+                          lineHeight: 1,
+                          border: `1.5px solid ${brand[50]}`,
+                        }}
+                      >
+                        ✓
+                      </Box>
+                    )}
                   </IconButton>
                 </Tooltip>
               )}

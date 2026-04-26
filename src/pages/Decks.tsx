@@ -14,7 +14,7 @@ import { CreateDeckDialog } from '@/components/CreateDeckDialog';
 import { DeckCard } from '@/components/DeckCard';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
-import { ShareDeckDialog } from '@/components/ShareDeckDialog';
+import { ShareEmbedDialog } from '@/components/ShareEmbedDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDecks } from '@/hooks/useDecks';
 import { LAYOUT } from '@/theme';
@@ -24,7 +24,7 @@ export default function Decks() {
   const { brand, accent } = theme.palette;
   const router = useRouter();
 
-  const { decks, loading, deleteDeck, updateDeckEmoji, pinDeck } = useDecks();
+  const { decks, loading, deleteDeck, pinDeck, setDeckPublic } = useDecks();
   const { user } = useAuth();
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -133,7 +133,6 @@ export default function Decks() {
                               }
                             : undefined
                         }
-                        onEditEmoji={owned ? updateDeckEmoji : undefined}
                         onPin={pinDeck}
                         isOwner={owned}
                       />
@@ -179,7 +178,6 @@ export default function Decks() {
                               }
                             : undefined
                         }
-                        onEditEmoji={owned ? updateDeckEmoji : undefined}
                         onPin={pinDeck}
                         isOwner={owned}
                       />
@@ -194,11 +192,15 @@ export default function Decks() {
 
       <CreateDeckDialog open={createOpen} onClose={() => setCreateOpen(false)} />
 
-      <ShareDeckDialog
+      <ShareEmbedDialog
         open={shareDeckId !== null}
         onClose={() => setShareDeckId(null)}
         deckId={shareDeckId ?? ''}
         deckName={shareDeckName}
+        isPublic={decks.find((d) => d.id === shareDeckId)?.isPublic ?? false}
+        onPublicChange={(val) => {
+          if (shareDeckId) setDeckPublic(shareDeckId, val);
+        }}
       />
     </Box>
   );

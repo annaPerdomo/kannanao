@@ -30,16 +30,10 @@ describe('DeckCard', () => {
     expect(screen.getByText('My Test Deck')).toBeInTheDocument();
   });
 
-  it('should render the deck emoji', () => {
-    const deck = makeDeck({ emoji: '🎯' });
-    renderWithProviders(<DeckCard deck={deck} onOpen={vi.fn()} onDelete={vi.fn()} />);
-    expect(screen.getByText('🎯')).toBeInTheDocument();
-  });
-
   it('should render the card count', () => {
     const deck = makeDeck({ cardCount: 42 });
     renderWithProviders(<DeckCard deck={deck} onOpen={vi.fn()} onDelete={vi.fn()} />);
-    expect(screen.getByText(/42 cards in this deck/)).toBeInTheDocument();
+    expect(screen.getByText(/42 cards/)).toBeInTheDocument();
   });
 
   it('should call onOpen with deck id when card body is clicked', () => {
@@ -82,11 +76,11 @@ describe('DeckCard', () => {
     expect(screen.getByText(/Shared/)).toBeInTheDocument();
   });
 
-  it('should not show delete or emoji buttons when isOwner=false', () => {
+  it('should not show delete button when isOwner=false', () => {
     const deck = makeDeck();
     renderWithProviders(
       <DeckCard deck={deck} onOpen={vi.fn()} onDelete={vi.fn()} isOwner={false} />,
     );
-    expect(screen.queryByTitle('Delete deck')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete deck' })).not.toBeInTheDocument();
   });
 });

@@ -16,7 +16,7 @@ import { useState } from 'react';
 import { DeckCard } from '@/components/DeckCard';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
-import { ShareDeckDialog } from '@/components/ShareDeckDialog';
+import { ShareEmbedDialog } from '@/components/ShareEmbedDialog';
 import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDecks } from '@/hooks/useDecks';
@@ -163,7 +163,7 @@ function WelcomeBanner({
 }
 
 export default function Home() {
-  const { decks, deleteDeck, updateDeckEmoji, pinDeck, loading } = useDecks();
+  const { decks, deleteDeck, pinDeck, setDeckPublic, loading } = useDecks();
   const { user, displayName, showTodo } = useAuth();
   const { progress, spendableXp, addBonusXp } = useProgress();
   const { ohanashikais } = useOhanashikais();
@@ -294,7 +294,6 @@ export default function Home() {
                               }
                             : undefined
                         }
-                        onEditEmoji={owned ? updateDeckEmoji : undefined}
                         onPin={pinDeck}
                         isOwner={owned}
                       />
@@ -406,11 +405,15 @@ export default function Home() {
         </Box>
       </Stack>
 
-      <ShareDeckDialog
+      <ShareEmbedDialog
         open={shareDeckId !== null}
         onClose={() => setShareDeckId(null)}
         deckId={shareDeckId ?? ''}
         deckName={shareDeckName}
+        isPublic={decks.find((d) => d.id === shareDeckId)?.isPublic ?? false}
+        onPublicChange={(val) => {
+          if (shareDeckId) setDeckPublic(shareDeckId, val);
+        }}
       />
     </Box>
   );
