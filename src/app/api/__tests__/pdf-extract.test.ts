@@ -3,6 +3,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
 
+// ─── Mock requireOrganizerAccount to pass through ────────────────────────────
+
+vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
+  requireOrganizerAccount: vi.fn().mockResolvedValue({
+    id: 'org1',
+    username: 'organizer',
+    account_type: 'organizer',
+  }),
+}));
+
 // ─── Mock fetch ───────────────────────────────────────────────────────────────
 
 const mockFetch = vi.fn();

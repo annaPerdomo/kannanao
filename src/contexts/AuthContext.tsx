@@ -3,10 +3,12 @@ import type { Session, User } from '@supabase/supabase-js';
 import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 
 import { isAdminUser } from '@/lib/admin';
+import type { AccountType } from '@/lib/supabase';
 import {
   loadProfile,
   sb,
   updateProfileColorScheme,
+  updateProfileShowLeaderboard,
   updateProfileShowTodo,
   upsertProfile,
 } from '@/lib/supabase';
@@ -18,9 +20,13 @@ interface AuthContextValue {
   session: Session | null;
   user: User | null;
   isAdmin: boolean;
+  accountType: AccountType;
+  isMemberAccount: boolean;
+  organizerId: string | null;
   displayName: string | null;
   colorScheme: ColorScheme | null;
   showTodo: boolean;
+  showLeaderboard: boolean;
   loading: boolean;
   signInWithUsername: (username: string, password: string) => Promise<{ error: string | null }>;
   signUpWithUsername: (
@@ -32,6 +38,7 @@ interface AuthContextValue {
   updateDisplayName: (name: string) => Promise<{ error: string | null }>;
   updateColorScheme: (scheme: ColorScheme) => Promise<void>;
   updateShowTodo: (show: boolean) => Promise<void>;
+  updateShowLeaderboard: (show: boolean) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -64,6 +71,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [colorScheme, setColorScheme] = useState<ColorScheme | null>(null);
   const [showTodo, setShowTodo] = useState(true);
+  const [showLeaderboard, setShowLeaderboard] = useState(true);
+  const [accountType, setAccountType] = useState<AccountType>('organizer');
+  const [organizerId, setOrganizerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   async function fetchProfile(userId: string) {
@@ -74,6 +84,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setColorScheme(saved as ColorScheme);
     }
     setShowTodo(profile?.showTodo !== false);
+    setShowLeaderboard(profile?.showLeaderboard !== false);
+    setAccountType(profile?.accountType ?? 'organizer');
+    setOrganizerId(profile?.organizerId ?? null);
   }
 
   useEffect(() => {
@@ -98,6 +111,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setDisplayName(null);
         setColorScheme(null);
         setShowTodo(true);
+        setShowLeaderboard(true);
+        setAccountType('organizer');
+        setOrganizerId(null);
       }
     });
 
@@ -147,6 +163,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateShowLeaderboard = async (show: boolean) => {
+    setShowLeaderboard(show);
+    const {
+      data: { user },
+    } = await sb.auth.getUser();
+    if (user) {
+      await updateProfileShowLeaderboard(user.id, show);
+    }
+  };
+
   const signOut = async () => {
     await sb.auth.signOut();
   };
@@ -157,9 +183,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         user: session?.user ?? null,
         isAdmin: isAdminUser(session?.user?.email ?? undefined),
+        accountType,
+        isMemberAccount: accountType === 'member',
+        organizerId,
         displayName,
         colorScheme,
         showTodo,
+        showLeaderboard,
         loading,
         signInWithUsername,
         signUpWithUsername,
@@ -167,6 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updateDisplayName,
         updateColorScheme,
         updateShowTodo,
+        updateShowLeaderboard,
       }}
     >
       {children}
