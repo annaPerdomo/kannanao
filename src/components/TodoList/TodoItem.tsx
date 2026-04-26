@@ -10,7 +10,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
 import type { Todo } from '@/types/todo';
 
@@ -54,7 +54,7 @@ interface TodoItemProps {
   dragHandle?: React.ReactNode;
 }
 
-export function TodoItem({
+export const TodoItem = memo(function TodoItem({
   todo,
   viewDateISO,
   onToggle,
@@ -234,4 +234,4 @@ export function TodoItem({
       </Stack>
     </Box>
   );
-}
+});

@@ -171,25 +171,29 @@ export function useTodos() {
       const snapshot = todos;
       const subsetIds = new Set(reorderedSubset.map((t) => t.id));
 
-      // Find the global positions occupied by the subset (todos is sorted by sortOrder)
-      const positions: number[] = [];
-      todos.forEach((t, i) => {
-        if (subsetIds.has(t.id)) positions.push(i);
+      // Collect the sortOrders currently held by the subset items (in global order)
+      const existingSortOrders: number[] = [];
+      todos.forEach((t) => {
+        if (subsetIds.has(t.id)) existingSortOrders.push(t.sortOrder);
       });
 
-      // Place the subset in new order at those same positions
-      const newTodos = [...todos];
-      reorderedSubset.forEach((todo, i) => {
-        newTodos[positions[i]] = todo;
+      // Assign those same sortOrders to the reordered items (swap, not renumber)
+      const idToNewOrder = new Map<string, number>();
+      reorderedSubset.forEach((t, i) => {
+        idToNewOrder.set(t.id, existingSortOrders[i]);
       });
 
-      // Assign fresh sort orders (×10 spacing)
-      const withNewOrders = newTodos.map((t, i) => ({ ...t, sortOrder: (i + 1) * 10 }));
-      setTodos(withNewOrders);
+      const newTodos = todos.map((t) =>
+        idToNewOrder.has(t.id) ? { ...t, sortOrder: idToNewOrder.get(t.id)! } : t,
+      );
+      newTodos.sort((a, b) => a.sortOrder - b.sortOrder);
+      setTodos(newTodos);
 
-      // Only persist the items whose sortOrder actually changed
+      // Only persist the items whose sortOrder actually changed (typically just 2)
       const oldOrderMap = new Map(snapshot.map((t) => [t.id, t.sortOrder]));
-      const changed = withNewOrders.filter((t) => oldOrderMap.get(t.id) !== t.sortOrder);
+      const changed = newTodos.filter(
+        (t) => idToNewOrder.has(t.id) && oldOrderMap.get(t.id) !== t.sortOrder,
+      );
 
       try {
         await Promise.all(changed.map((t) => dbUpdateTodo(t.id, { sortOrder: t.sortOrder })));

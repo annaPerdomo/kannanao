@@ -1,6 +1,13 @@
 'use client';
 import type { DragEndEvent } from '@dnd-kit/core';
-import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import {
+  closestCenter,
+  DndContext,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -95,7 +102,10 @@ export function DayDetailPanel({
   brandPalette: brand,
   accentPalette: accent,
 }: DayDetailPanelProps) {
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  );
 
   const incompleteTodos = todosForDay.filter((t) => !isCompletedOnDate(t, activeDateISO));
   const completedTodos = todosForDay.filter((t) => isCompletedOnDate(t, activeDateISO));

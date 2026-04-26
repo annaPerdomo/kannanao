@@ -4,6 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import DragIndicatorRoundedIcon from '@mui/icons-material/DragIndicatorRounded';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material/styles';
+import { memo } from 'react';
 
 import type { Todo } from '@/types/todo';
 
@@ -20,7 +21,7 @@ interface SortableTodoItemProps {
   brand: Record<number, string>;
 }
 
-export function SortableTodoItem({
+export const SortableTodoItem = memo(function SortableTodoItem({
   todo,
   viewDateISO,
   onToggle,
@@ -78,4 +79,4 @@ export function SortableTodoItem({
       />
     </Box>
   );
-}
+});
