@@ -24,7 +24,7 @@ const EXTRACT_PROMPT = `Japanese language teacher. Extract all vocabulary entrie
 For each vocabulary word or phrase found, return a JSON object with:
 - "word": the Japanese word/phrase (in kana or kanji)
 - "reading": kana pronunciation (empty string if already kana)
-- "meaning": English meaning — most common/natural one, no periods
+- "meaning": English meanings — include all common meanings separated by ", " (e.g. "front, surface, outside" for 表). List the most common meaning first, no periods
 - "image_query": 2-4 word English noun phrase for Unsplash (concrete, photographic, child-friendly). Verbs→scene (食べる="child eating noodles"), abstracts→closest visual (楽しい="children laughing"). For phrases, pick the most concrete noun.
 - "example_jp": simple sentence for a young learner using the word naturally. Wrap every kanji (or kanji compound) with its hiragana reading using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです。 Pure kana words need no wrapping.
 - "example_en": English translation of the example sentence, no trailing period.

@@ -212,7 +212,7 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
               </Box>
             </>
           ) : (
-            /* No-image: embed-style centered word */
+            /* No-image: embed-style centered word — match image version height */
             <Box
               sx={{
                 display: 'flex',
@@ -220,7 +220,7 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 px: 2,
-                py: 3,
+                minHeight: 160,
                 borderBottom: `2px solid ${typeAccent}`,
               }}
             >

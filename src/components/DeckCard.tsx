@@ -286,11 +286,6 @@ export function DeckCard({
                 >
                   {deck.cardCount} cards
                 </Typography>
-                {deck.isShared && (
-                  <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: accent[600] }}>
-                    · Shared
-                  </Typography>
-                )}
               </Box>
             </Box>
           </Box>
@@ -304,32 +299,9 @@ export function DeckCard({
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              borderTop: `1px solid ${alpha(brand[300], 0.25)}`,
             }}
           >
-            {deck.isPublic ? (
-              <Typography
-                sx={{
-                  fontSize: '0.54rem',
-                  fontWeight: 800,
-                  color: accent[600],
-                  fontFamily: (t) => t.fonts.mono,
-                  letterSpacing: '0.06em',
-                }}
-              >
-                ✦ Shared
-              </Typography>
-            ) : (
-              <Typography
-                sx={{
-                  fontSize: '0.52rem',
-                  color: alpha(brand[500], 0.5),
-                  fontFamily: (t) => t.fonts.mono,
-                }}
-              >
-                ★
-              </Typography>
-            )}
+            <Box />
             <Box sx={{ display: 'flex', gap: 0.25 }} onClick={(e) => e.stopPropagation()}>
               {onPin && (
                 <Tooltip title={deck.pinned ? 'Unpin from home' : 'Pin to home'}>
