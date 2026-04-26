@@ -17,7 +17,9 @@ interface FlashcardProps {
   height?: number | string;
 }
 
-export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps) {
+export function Flashcard({ card, width: widthProp = '100%', height: heightProp = 420 }: FlashcardProps) {
+  const width = card.imageUrl ? widthProp : 420;
+  const height = card.imageUrl ? heightProp : 280;
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const { borderStyle: equippedBorder } = useCardBorder();
@@ -176,107 +178,174 @@ export function Flashcard({ card, width = '100%', height = 420 }: FlashcardProps
                 </Box>
               </Box>
 
-              {/* Art frame */}
-              {card.imageUrl && (
-                <Box
-                  sx={{
-                    mx: { xs: '8px', sm: '10px' },
-                    mt: { xs: '6px', sm: '8px' },
-                    borderRadius: '7px',
-                    overflow: 'hidden',
-                    border: '2px solid rgba(0,0,0,0.18)',
-                    boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.12)',
-                    flexShrink: 0,
-                    position: 'relative',
-                  }}
-                >
-                  {!imgLoaded && (
-                    <Skeleton
-                      variant="rectangular"
-                      width="100%"
-                      height={175}
-                      sx={{ bgcolor: alpha(brand[300], 0.1), position: 'absolute', inset: 0 }}
-                    />
-                  )}
+              {card.imageUrl ? (
+                <>
+                  {/* Art frame */}
                   <Box
-                    component="img"
-                    ref={imgRef}
-                    src={card.imageUrl}
-                    alt={card.word}
-                    onLoad={() => setImgLoaded(true)}
-                    onError={() => setImgLoaded(true)}
                     sx={{
-                      width: '100%',
-                      height: 175,
-                      objectFit: 'cover',
-                      display: imgLoaded ? 'block' : 'none',
+                      mx: { xs: '8px', sm: '10px' },
+                      mt: { xs: '6px', sm: '8px' },
+                      borderRadius: '7px',
+                      overflow: 'hidden',
+                      border: '2px solid rgba(0,0,0,0.18)',
+                      boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.12)',
+                      flexShrink: 0,
+                      position: 'relative',
                     }}
-                  />
-                  {imgLoaded && <UnsplashAttribution url={card.imageUrl} />}
-                </Box>
+                  >
+                    {!imgLoaded && (
+                      <Skeleton
+                        variant="rectangular"
+                        width="100%"
+                        height={175}
+                        sx={{ bgcolor: alpha(brand[300], 0.1), position: 'absolute', inset: 0 }}
+                      />
+                    )}
+                    <Box
+                      component="img"
+                      ref={imgRef}
+                      src={card.imageUrl}
+                      alt={card.word}
+                      onLoad={() => setImgLoaded(true)}
+                      onError={() => setImgLoaded(true)}
+                      sx={{
+                        width: '100%',
+                        height: 175,
+                        objectFit: 'cover',
+                        display: imgLoaded ? 'block' : 'none',
+                      }}
+                    />
+                    {imgLoaded && <UnsplashAttribution url={card.imageUrl} />}
+                  </Box>
+
+                  {/* Card name */}
+                  <Box
+                    sx={{
+                      px: { xs: 2, sm: 2.5 },
+                      pt: { xs: 1.25, sm: 1.5 },
+                      pb: 1,
+                      borderBottom: `2.5px solid ${typeAccent}`,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {subtitleText && (
+                      <Typography
+                        sx={{
+                          fontFamily: (t) => t.fonts.mono,
+                          fontSize: '0.65rem',
+                          color: '#888',
+                          letterSpacing: '0.08em',
+                          mb: 0.25,
+                          lineHeight: 1,
+                        }}
+                      >
+                        {subtitleText}
+                      </Typography>
+                    )}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Typography
+                        sx={{
+                          fontFamily: (t) => t.fonts.jp,
+                          fontSize: '2.2rem',
+                          fontWeight: 700,
+                          color: '#111',
+                          lineHeight: 1.05,
+                        }}
+                      >
+                        {titleText}
+                      </Typography>
+                      <SpeakButton text={titleText} sx={{ alignSelf: 'flex-end', mb: 0.5 }} />
+                    </Box>
+                  </Box>
+
+                  {/* Tap hint */}
+                  <Box
+                    sx={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      px: 2,
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: '0.63rem',
+                        color: alpha(brand[500], 0.55),
+                        letterSpacing: '0.15em',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      ✦ tap to flip ✦
+                    </Typography>
+                  </Box>
+                </>
+              ) : (
+                <>
+                  {/* No-image: embed-style centered word */}
+                  <Box
+                    sx={{
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      px: 3,
+                      borderBottom: `2.5px solid ${typeAccent}`,
+                    }}
+                  >
+                    {subtitleText && (
+                      <Typography
+                        sx={{
+                          fontFamily: (t) => t.fonts.mono,
+                          fontSize: '0.7rem',
+                          color: '#888',
+                          letterSpacing: '0.08em',
+                          mb: 0.5,
+                        }}
+                      >
+                        {subtitleText}
+                      </Typography>
+                    )}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Typography
+                        sx={{
+                          fontFamily: (t) => t.fonts.jp,
+                          fontSize: '3rem',
+                          fontWeight: 700,
+                          color: '#111',
+                          lineHeight: 1.1,
+                          textAlign: 'center',
+                        }}
+                      >
+                        {titleText}
+                      </Typography>
+                      <SpeakButton text={titleText} sx={{ alignSelf: 'flex-end', mb: 0.5 }} />
+                    </Box>
+                  </Box>
+
+                  {/* Tap hint */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      py: 1,
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: '0.63rem',
+                        color: alpha(brand[500], 0.55),
+                        letterSpacing: '0.15em',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      ✦ tap to flip ✦
+                    </Typography>
+                  </Box>
+                </>
               )}
-
-              {/* Card name */}
-              <Box
-                sx={{
-                  px: { xs: 2, sm: 2.5 },
-                  pt: { xs: 1.25, sm: 1.5 },
-                  pb: 1,
-                  borderBottom: `2.5px solid ${typeAccent}`,
-                  flexShrink: 0,
-                }}
-              >
-                {subtitleText && (
-                  <Typography
-                    sx={{
-                      fontFamily: (t) => t.fonts.mono,
-                      fontSize: '0.65rem',
-                      color: '#888',
-                      letterSpacing: '0.08em',
-                      mb: 0.25,
-                      lineHeight: 1,
-                    }}
-                  >
-                    {subtitleText}
-                  </Typography>
-                )}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Typography
-                    sx={{
-                      fontFamily: (t) => t.fonts.jp,
-                      fontSize: '2.2rem',
-                      fontWeight: 700,
-                      color: '#111',
-                      lineHeight: 1.05,
-                    }}
-                  >
-                    {titleText}
-                  </Typography>
-                  <SpeakButton text={titleText} sx={{ alignSelf: 'flex-end', mb: 0.5 }} />
-                </Box>
-              </Box>
-
-              {/* Tap hint */}
-              <Box
-                sx={{
-                  flex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  px: 2,
-                }}
-              >
-                <Typography
-                  sx={{
-                    fontSize: '0.63rem',
-                    color: alpha(brand[500], 0.55),
-                    letterSpacing: '0.15em',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  ✦ tap to flip ✦
-                </Typography>
-              </Box>
 
               {/* Footer */}
               <Box

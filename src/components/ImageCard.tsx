@@ -157,20 +157,20 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
             </Box>
           </Box>
 
-          {/* Art frame */}
-          <Box
-            sx={{
-              mx: '8px',
-              mt: '6px',
-              borderRadius: '6px',
-              overflow: 'hidden',
-              border: '2px solid rgba(0,0,0,0.14)',
-              boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.1)',
-              position: 'relative',
-            }}
-          >
-            {localCard.imageUrl ? (
-              <>
+          {localCard.imageUrl ? (
+            <>
+              {/* Art frame */}
+              <Box
+                sx={{
+                  mx: '8px',
+                  mt: '6px',
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  border: '2px solid rgba(0,0,0,0.14)',
+                  boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.1)',
+                  position: 'relative',
+                }}
+              >
                 <Box
                   component="img"
                   src={localCard.imageUrl}
@@ -178,48 +178,82 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
                   sx={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }}
                 />
                 <UnsplashAttribution url={localCard.imageUrl} />
-              </>
-            ) : (
-              <Box
-                sx={{
-                  width: '100%',
-                  height: 120,
-                  background: `linear-gradient(135deg, ${alpha(brand[200], 0.5)} 0%, ${alpha(accent[200], 0.3)} 50%, ${alpha(brand[200], 0.5)} 100%)`,
-                }}
-              />
-            )}
-          </Box>
+              </Box>
 
-          {/* Card name */}
-          <Box sx={{ px: 1.5, pt: '9px', pb: '7px', borderBottom: `2px solid ${typeAccent}` }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Typography
-                sx={{
-                  fontSize: '0.85rem',
-                  fontWeight: 900,
-                  color: '#111',
-                  lineHeight: 1.15,
-                  letterSpacing: '-0.01em',
-                }}
-              >
-                {titleText}
-              </Typography>
-              <SpeakButton text={titleText} iconSize="0.85rem" />
+              {/* Card name */}
+              <Box sx={{ px: 1.5, pt: '9px', pb: '7px', borderBottom: `2px solid ${typeAccent}` }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Typography
+                    sx={{
+                      fontSize: '0.85rem',
+                      fontWeight: 900,
+                      color: '#111',
+                      lineHeight: 1.15,
+                      letterSpacing: '-0.01em',
+                    }}
+                  >
+                    {titleText}
+                  </Typography>
+                  <SpeakButton text={titleText} iconSize="0.85rem" />
+                </Box>
+                {subtitleText && (
+                  <Typography
+                    sx={{
+                      fontSize: '0.65rem',
+                      color: '#777',
+                      fontStyle: 'italic',
+                      lineHeight: 1.3,
+                      mt: '2px',
+                    }}
+                  >
+                    {subtitleText}
+                  </Typography>
+                )}
+              </Box>
+            </>
+          ) : (
+            /* No-image: embed-style centered word */
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                px: 2,
+                py: 3,
+                borderBottom: `2px solid ${typeAccent}`,
+              }}
+            >
+              {subtitleText && (
+                <Typography
+                  sx={{
+                    fontSize: '0.6rem',
+                    color: '#888',
+                    fontFamily: (t) => t.fonts.mono,
+                    letterSpacing: '0.08em',
+                    mb: 0.5,
+                  }}
+                >
+                  {subtitleText}
+                </Typography>
+              )}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Typography
+                  sx={{
+                    fontFamily: (t) => t.fonts.jp,
+                    fontSize: '1.6rem',
+                    fontWeight: 900,
+                    color: '#111',
+                    lineHeight: 1.15,
+                    textAlign: 'center',
+                  }}
+                >
+                  {titleText}
+                </Typography>
+                <SpeakButton text={titleText} iconSize="0.85rem" />
+              </Box>
             </Box>
-            {subtitleText && (
-              <Typography
-                sx={{
-                  fontSize: '0.65rem',
-                  color: '#777',
-                  fontStyle: 'italic',
-                  lineHeight: 1.3,
-                  mt: '2px',
-                }}
-              >
-                {subtitleText}
-              </Typography>
-            )}
-          </Box>
+          )}
 
           {/* Meaning as "ability" */}
           <Box sx={{ px: 1.5, pt: '8px' }}>
