@@ -50,7 +50,7 @@ export function PageHeader({
     <Box
       sx={{
         position: 'relative',
-        borderRadius: compact ? 3 : 4,
+        borderRadius: '36px',
         mb,
         p: compact ? { xs: 2, sm: 2.5 } : { xs: 3, sm: 3.5 },
         background: `linear-gradient(135deg, ${brand[200]} 0%, ${accent[100]} 45%, ${brand[100]} 100%)`,
