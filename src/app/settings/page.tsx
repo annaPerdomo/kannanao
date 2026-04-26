@@ -3,7 +3,9 @@
 import BadgeIcon from '@mui/icons-material/Badge';
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import EditIcon from '@mui/icons-material/Edit';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import KeyIcon from '@mui/icons-material/Key';
+import QrCode2Icon from '@mui/icons-material/QrCode2';
 import {
   Alert,
   Box,
@@ -21,9 +23,12 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { CreateInviteDialog, InviteList, InviteQRCode } from '@/components/Group';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { useAuth } from '@/contexts/AuthContext';
+import type { InviteCode } from '@/hooks/useInvites';
+import { useInvites } from '@/hooks/useInvites';
 import { LAYOUT } from '@/theme';
 
 interface SectionProps {
@@ -77,9 +82,13 @@ export default function SettingsPage() {
     session,
     signOut,
     showTodo,
+    showLeaderboard,
     updateShowTodo,
+    updateShowLeaderboard,
+    isMemberAccount,
   } = useAuth();
   const router = useRouter();
+  const { invites, createInvite, revokeInvite } = useInvites();
 
   const currentUsername = user?.email?.split('@')[0] ?? '';
 
@@ -98,6 +107,10 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
+
+  // Invite dialogs
+  const [createInviteOpen, setCreateInviteOpen] = useState(false);
+  const [qrInvite, setQrInvite] = useState<InviteCode | null>(null);
 
   const [snack, setSnack] = useState<{ msg: string; severity: 'success' | 'error' } | null>(null);
 
@@ -364,6 +377,68 @@ export default function SettingsPage() {
           />
         </Section>
 
+        {!isMemberAccount && (
+          <>
+            <Divider />
+
+            {/* Group Leaderboard */}
+            <Section
+              icon={<EmojiEventsIcon />}
+              title="Group Leaderboard"
+              description="Show or hide the weekly leaderboard for your group members."
+            >
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={showLeaderboard}
+                    onChange={(e) => void updateShowLeaderboard(e.target.checked)}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': { color: brand[600] },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: brand[400] },
+                    }}
+                  />
+                }
+                label={
+                  <Typography sx={{ fontSize: '0.85rem', color: 'text.primary' }}>
+                    {showLeaderboard ? 'Leaderboard visible to group' : 'Leaderboard hidden'}
+                  </Typography>
+                }
+              />
+            </Section>
+
+            <Divider />
+
+            {/* Invite Members */}
+            <Section
+              icon={<QrCode2Icon />}
+              title="Invite Members"
+              description="Create invite links to onboard members to your study group via QR code."
+            >
+              <Stack gap={2}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => setCreateInviteOpen(true)}
+                  sx={{
+                    borderRadius: 6,
+                    textTransform: 'none',
+                    borderColor: alpha(brand[400], 0.5),
+                    color: brand[700],
+                    alignSelf: 'flex-start',
+                  }}
+                >
+                  Create Invite Link
+                </Button>
+                <InviteList
+                  invites={invites}
+                  onRevoke={revokeInvite}
+                  onShowQR={(invite) => setQrInvite(invite)}
+                />
+              </Stack>
+            </Section>
+          </>
+        )}
+
         <Divider />
 
         {/* Password */}
@@ -432,6 +507,26 @@ export default function SettingsPage() {
           )}
         </Section>
       </Stack>
+
+      <CreateInviteDialog
+        open={createInviteOpen}
+        onClose={() => setCreateInviteOpen(false)}
+        onCreate={createInvite}
+        onCreated={(invite) => {
+          setCreateInviteOpen(false);
+          setQrInvite(invite);
+        }}
+      />
+
+      {qrInvite && (
+        <InviteQRCode
+          open={Boolean(qrInvite)}
+          onClose={() => setQrInvite(null)}
+          code={qrInvite.code}
+          label={qrInvite.label}
+          organizerName={displayName ?? currentUsername}
+        />
+      )}
 
       <Snackbar
         open={Boolean(snack)}
