@@ -542,6 +542,31 @@ export function useProgress() {
       }
 
       await fetchAll();
+
+      // Auto-complete any pending assignment for the deck that was just studied
+      try {
+        const { data: session } = await supabase
+          .from('study_sessions')
+          .select('deck_id')
+          .eq('id', sessionId)
+          .single();
+        if (session?.deck_id) {
+          const { data: authData } = await supabase.auth.getSession();
+          const token = authData.session?.access_token;
+          if (token) {
+            fetch('/api/group/assignments/complete', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ deckId: session.deck_id }),
+            }).catch(() => {});
+          }
+        }
+      } catch {
+        // Non-critical — don't block the session end flow
+      }
     },
     [achievements, progress, supabase, fetchAll],
   );

@@ -13,13 +13,17 @@ import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { AssignmentCard, LeaderboardWidget } from '@/components/Group';
 import { DeckCard } from '@/components/DeckCard';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { ShareEmbedDialog } from '@/components/ShareEmbedDialog';
 import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
+import { useEncouragements } from '@/hooks/useEncouragements';
+import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { useProgress, xpProgressInLevel } from '@/hooks/useProgress';
 import { SHOP_ITEMS, useShop } from '@/hooks/useShop';
@@ -164,12 +168,18 @@ function WelcomeBanner({
 
 export default function Home() {
   const { decks, deleteDeck, pinDeck, setDeckPublic, loading } = useDecks();
-  const { user, displayName, showTodo } = useAuth();
+  const { user, displayName, showTodo, isMemberAccount, showLeaderboard } = useAuth();
   const { progress, spendableXp, addBonusXp } = useProgress();
   const { ohanashikais } = useOhanashikais();
   const { purchases } = useShop();
+  const { assignments } = useAssignments();
+  const { encouragements } = useEncouragements();
+  const { leaderboard } = useGroupLeaderboard();
   const router = useRouter();
   const ownedItemKeys = purchases.map((p) => p.item_key);
+
+  const pendingAssignments = assignments.filter((a) => !a.completed_at);
+  const latestEncouragement = encouragements.find((e) => !e.read_at) ?? encouragements[0];
 
   const [shareDeckId, setShareDeckId] = useState<string | null>(null);
   const [shareDeckName, setShareDeckName] = useState('');
@@ -212,6 +222,75 @@ export default function Home() {
             onShopClick={() => router.push('/shop')}
           />
         </Box>
+      )}
+
+      {/* ── Member widgets: encouragement, assignments, leaderboard ── */}
+      {isMemberAccount && (
+        <Stack spacing={2.5} sx={{ mb: 3 }}>
+          {/* Latest encouragement */}
+          {latestEncouragement && (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                p: 2,
+                borderRadius: 3,
+                bgcolor: (t) => alpha(t.palette.brand[100], 0.5),
+                border: (t) => `1.5px solid ${alpha(t.palette.brand[400], 0.4)}`,
+              }}
+            >
+              <Typography sx={{ fontSize: '1.5rem', flexShrink: 0 }}>
+                {latestEncouragement.emoji}
+              </Typography>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: 'text.primary' }}>
+                  {latestEncouragement.profiles?.display_name ||
+                    latestEncouragement.profiles?.username ||
+                    'Your organizer'}{' '}
+                  says:
+                </Typography>
+                <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary' }}>
+                  &ldquo;{latestEncouragement.message}&rdquo;
+                </Typography>
+              </Box>
+            </Box>
+          )}
+
+          {/* Assignments */}
+          {pendingAssignments.length > 0 && (
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}
+              >
+                📋 Assignments
+              </Typography>
+              <Stack spacing={1}>
+                {pendingAssignments.map((a) => (
+                  <AssignmentCard
+                    key={a.id}
+                    assignment={a}
+                    onStudy={(deckId) => router.push(`/deck/${deckId}`)}
+                  />
+                ))}
+              </Stack>
+            </Box>
+          )}
+
+          {/* Leaderboard */}
+          {showLeaderboard && leaderboard.length > 0 && (
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}
+              >
+                🏆 Weekly Leaderboard
+              </Typography>
+              <LeaderboardWidget entries={leaderboard} compact />
+            </Box>
+          )}
+        </Stack>
       )}
 
       {/* ── Main content: two-column on md+, stacked on mobile ── */}
