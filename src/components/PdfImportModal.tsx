@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { StyledDialog } from '@/components/StyledDialog';
+import { sb } from '@/lib/supabase';
 import type { GeneratedCard } from '@/types/flashcard';
 
 const EXTRACTED_FIELDS = [
@@ -70,9 +71,14 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
     setExtracted(null);
     try {
       const pdfBase64 = await toBase64(file);
+      const { data: sessionData } = await sb.auth.getSession();
+      const token = sessionData.session?.access_token;
       const response = await fetch('/api/pdf-extract', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ pdfBase64 }),
       });
       const data = await response.json();

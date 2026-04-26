@@ -21,6 +21,7 @@ export function SpeakButton({ text, iconSize = '1rem', sx }: SpeakButtonProps) {
         speak(text);
       }}
       disabled={speaking}
+      aria-label="Read aloud"
       sx={{ p: 0.5, color: '#aaa', '&:hover': { color: '#555' }, flexShrink: 0, ...sx }}
     >
       <VolumeUpIcon sx={{ fontSize: iconSize }} />

@@ -8,7 +8,7 @@ import { Box, IconButton, Popover, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useCardBorder } from '@/contexts/CardBorderContext';
 import type { Deck } from '@/types/deck';
@@ -37,6 +37,15 @@ export function DeckCard({
   const { borderStyle: equippedBorder } = useCardBorder();
   const hasCustomBorder = equippedBorder && Object.keys(equippedBorder).length > 0;
   const [emojiAnchor, setEmojiAnchor] = useState<HTMLElement | null>(null);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onOpen(deck.id);
+      }
+    },
+    [onOpen, deck.id],
+  );
   const CARD_FRAME = `linear-gradient(145deg, ${brand[100]} 0%, ${brand[300]} 25%, ${brand[50]} 50%, ${brand[400]} 75%, ${brand[100]} 100%)`;
 
   return (
@@ -149,7 +158,11 @@ export function DeckCard({
 
         {/* Inner card */}
         <Box
+          role="button"
+          tabIndex={0}
           onClick={() => onOpen(deck.id)}
+          onKeyDown={handleKeyDown}
+          aria-label={`Open deck: ${deck.name}`}
           sx={{
             bgcolor: brand[50],
             borderRadius: '10px',
@@ -359,6 +372,7 @@ export function DeckCard({
                   <Tooltip title="Change emoji">
                     <IconButton
                       size="small"
+                      aria-label="Change emoji"
                       onClick={(e) => {
                         e.stopPropagation();
                         setEmojiAnchor(e.currentTarget);
@@ -420,6 +434,7 @@ export function DeckCard({
                 <Tooltip title={deck.pinned ? 'Unpin from home' : 'Pin to home'}>
                   <IconButton
                     size="small"
+                    aria-label={deck.pinned ? 'Unpin from home' : 'Pin to home'}
                     onClick={(e) => {
                       e.stopPropagation();
                       onPin(deck.id, !deck.pinned);
@@ -450,6 +465,7 @@ export function DeckCard({
                 <Tooltip title="Share deck">
                   <IconButton
                     size="small"
+                    aria-label="Share deck"
                     onClick={(e) => {
                       e.stopPropagation();
                       onShare(deck.id);
@@ -476,6 +492,7 @@ export function DeckCard({
                 <Tooltip title="Delete deck">
                   <IconButton
                     size="small"
+                    aria-label="Delete deck"
                     onClick={(e) => {
                       e.stopPropagation();
                       onDelete(deck.id);

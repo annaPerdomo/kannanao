@@ -360,6 +360,7 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
           <Tooltip title="Edit card">
             <IconButton
               size="small"
+              aria-label="Edit card"
               onClick={() => setEditOpen(true)}
               sx={{
                 width: 26,
@@ -377,6 +378,7 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
           <Tooltip title="Delete card">
             <IconButton
               size="small"
+              aria-label="Delete card"
               onClick={() => onDelete(localCard.id)}
               sx={{
                 width: 26,

@@ -18,7 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <XpAnimationProvider>
       <NavBar />
-      <Box sx={{ flex: 1 }}>
+      <Box component="main" id="main-content" sx={{ flex: 1 }}>
         <AuthGuard>{children}</AuthGuard>
       </Box>
       <Footer />

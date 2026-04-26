@@ -21,6 +21,8 @@ interface StyledDialogProps {
   actionsJustify?: 'flex-end' | 'space-between' | 'center';
   paperSx?: SxProps<Theme>;
   contentSx?: SxProps<Theme>;
+  /** Unique id for aria-labelledby. Falls back to auto-generated id. */
+  titleId?: string;
 }
 
 export function StyledDialog({
@@ -36,9 +38,11 @@ export function StyledDialog({
   actionsJustify = 'flex-end',
   paperSx,
   contentSx,
+  titleId: titleIdProp,
 }: StyledDialogProps) {
   const { palette } = useTheme();
   const { brand, accent } = palette;
+  const titleId = titleIdProp ?? 'styled-dialog-title';
 
   return (
     <Dialog
@@ -46,6 +50,7 @@ export function StyledDialog({
       onClose={closeDisabled ? undefined : onClose}
       maxWidth={maxWidth}
       fullWidth
+      aria-labelledby={titleId}
       slotProps={{
         paper: {
           sx: {
@@ -74,6 +79,7 @@ export function StyledDialog({
           size="small"
           onClick={onClose}
           disabled={closeDisabled}
+          aria-label="Close"
           sx={{
             position: 'absolute',
             top: 14,
@@ -91,6 +97,7 @@ export function StyledDialog({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {icon}
           <Typography
+            id={titleId}
             sx={{
               fontSize: '1.15rem',
               fontWeight: 900,

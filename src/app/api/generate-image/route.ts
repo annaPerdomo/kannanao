@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
+import { logger } from '@/lib/logger';
+
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -56,7 +58,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: publicUrl });
   } catch (err) {
-    console.error('[/api/generate-image]', err);
+    logger.error('Unhandled error', {
+      route: '/api/generate-image',
+      error: err instanceof Error ? err.message : String(err),
+    });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

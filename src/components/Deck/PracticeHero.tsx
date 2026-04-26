@@ -38,7 +38,20 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
       >
         {/* Flashcards – primary CTA */}
         <Box
+          role={cardCount > 0 ? 'button' : undefined}
+          tabIndex={cardCount > 0 ? 0 : undefined}
           onClick={cardCount > 0 ? onStudy : undefined}
+          onKeyDown={
+            cardCount > 0
+              ? (e: React.KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onStudy();
+                  }
+                }
+              : undefined
+          }
+          aria-label={cardCount > 0 ? 'Start flashcard study' : undefined}
           sx={{
             cursor: cardCount > 0 ? 'pointer' : 'default',
             position: 'relative',
@@ -146,7 +159,20 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
           ({ mode, label, description, emoji, watermark, color, bg, border, shadowColor }) => (
             <Box
               key={mode}
+              role={!practiceDisabled ? 'button' : undefined}
+              tabIndex={!practiceDisabled ? 0 : undefined}
               onClick={!practiceDisabled ? () => onPractice(mode) : undefined}
+              onKeyDown={
+                !practiceDisabled
+                  ? (e: React.KeyboardEvent) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onPractice(mode);
+                      }
+                    }
+                  : undefined
+              }
+              aria-label={!practiceDisabled ? `Start ${label} practice` : `${label} (locked)`}
               sx={{
                 cursor: practiceDisabled ? 'default' : 'pointer',
                 position: 'relative',

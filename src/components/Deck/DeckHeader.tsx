@@ -114,6 +114,7 @@ export function DeckHeader({
                 <Tooltip title="Save (Enter)">
                   <IconButton
                     size="small"
+                    aria-label="Save"
                     onClick={commitEdit}
                     sx={{
                       width: 30,
@@ -131,6 +132,7 @@ export function DeckHeader({
                 <Tooltip title="Cancel (Esc)">
                   <IconButton
                     size="small"
+                    aria-label="Cancel"
                     onClick={cancelEdit}
                     sx={{
                       width: 30,
@@ -184,6 +186,7 @@ export function DeckHeader({
           <Tooltip title="Rename deck">
             <IconButton
               size="small"
+              aria-label="Rename deck"
               onClick={startEdit}
               sx={{
                 width: 26,
@@ -208,6 +211,7 @@ export function DeckHeader({
           <Tooltip title={deck.isPublic ? 'Embed (public)' : 'Embed deck'}>
             <IconButton
               size="small"
+              aria-label={deck.isPublic ? 'Embed (public)' : 'Embed deck'}
               onClick={onEmbedOpen}
               sx={{
                 width: 30,
@@ -229,6 +233,7 @@ export function DeckHeader({
           <Tooltip title={deck.pinned ? 'Unpin from home' : 'Pin to home'}>
             <IconButton
               size="small"
+              aria-label={deck.pinned ? 'Unpin from home' : 'Pin to home'}
               onClick={() => onPin(deck.id, !deck.pinned)}
               sx={{
                 width: 30,

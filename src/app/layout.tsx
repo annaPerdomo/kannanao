@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 
 import { AppBackground } from '@/components/AppBackground';
 import { AppShell } from '@/components/AppShell';
+import { SkipToContent } from '@/components/SkipToContent';
 
 import Providers from './providers';
 
@@ -96,6 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png" />
       </head>
       <body>
+        <SkipToContent />
         <AppRouterCacheProvider>
           <Providers>
             <AppBackground>

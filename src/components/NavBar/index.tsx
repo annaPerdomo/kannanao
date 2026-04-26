@@ -7,6 +7,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import { Alert, AppBar, Box, Button, Snackbar, Toolbar, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -93,9 +94,9 @@ export function NavBar() {
           }}
         >
           {/* Brand */}
-          <Box
-            onClick={() => router.push('/')}
-            sx={{ cursor: 'pointer', userSelect: 'none', mr: 'auto' }}
+          <Link
+            href="/"
+            style={{ textDecoration: 'none', marginRight: 'auto', userSelect: 'none' }}
           >
             <Typography
               sx={{
@@ -110,7 +111,7 @@ export function NavBar() {
             >
               🌸 Kannanao
             </Typography>
-          </Box>
+          </Link>
 
           {user && !isHome && (
             <Button
