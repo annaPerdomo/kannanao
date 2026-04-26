@@ -79,3 +79,7 @@ A Husky pre-push hook runs `format:check`, `lint`, `tsc --noEmit`, and `test:run
 - **Server-side sessions** — Cookie-based auth would enable SSR for authenticated pages, improving time-to-interactive and enabling server-side data fetching.
 - **Storybook for component development** — With 10 themes and many component variants, visual regression testing would catch styling issues that unit tests miss.
 - **Integration tests for AI generation** — The Gemini prompt is the most fragile part of the system. Snapshot tests for representative inputs would catch regressions in card quality.
+
+## License
+
+All rights reserved. See [LICENSE](./LICENSE).
