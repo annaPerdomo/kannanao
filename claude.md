@@ -44,6 +44,13 @@ Next.js 15 app with React 19, MUI 7, Supabase, TypeScript.
 - Composition over inheritance
 - Use `<StyledDialog>` (`@/components/StyledDialog`) for all modal/dialog UI. It provides the shared gradient header, close button, rounded borders, and theme-aware colors. Pass `title`, `subtitle`, `icon`, `actions`, and children. Only skip it for highly custom layouts (e.g. Shop purchase confirmation).
 
+## Accessibility
+
+- All `IconButton` components must have an `aria-label`
+- Clickable non-semantic elements (`Box` with `onClick`) must have `role="button"`, `tabIndex={0}`, and an `onKeyDown` handler for Enter/Space
+- Dialogs should use `aria-labelledby` referencing the title element's `id` (StyledDialog supports a `titleId` prop)
+- The app has a skip-to-content link (`SkipToContent` component) and a `<main id="main-content">` landmark in `AppShell`
+
 ## MUI & Styling
 
 - Use `sx` prop with theme tokens (`theme.palette`, `theme.spacing`, `theme.typography`)
@@ -69,10 +76,34 @@ Next.js 15 app with React 19, MUI 7, Supabase, TypeScript.
 - `/api/pdf-extract` — calls Google Gemini API to extract vocabulary from a PDF and generate full flashcard data (POST)
 - `/api/public/deck/[id]` — public read-only endpoint to fetch a deck and its cards by ID without auth (GET)
 
+All API routes that call external services use **rate limiting** (`src/app/api/_lib/rateLimit.ts`) and **structured logging** (`src/lib/logger.ts`). New API routes should follow the same pattern:
+
+```ts
+import { logger } from '@/lib/logger';
+import { rateLimit } from '../_lib/rateLimit';
+
+const RATE_LIMIT = { windowMs: 60_000, max: 10 };
+
+export async function POST(req: NextRequest) {
+  const limited = await rateLimit(req, RATE_LIMIT);
+  if (limited) return limited;
+  // ... handler logic, use logger.error/logger.info instead of console
+}
+```
+
+Rate limiting is IP-based and automatically bypassed for the admin user (verified server-side via Supabase auth token). Admin bypass is checked in `rateLimit.ts` using `isAdminEmail()` from `@/lib/admin`.
+
 **API client** (`src/services/api.ts`):
 
 - `generateFlashcards()` — calls `/api/generate`
 - `fetchImage()` — calls `/api/images`
+- All client-side API calls include the Supabase auth token via `authHeaders()` so the rate limiter can identify admin requests
+
+**Database migrations** (`supabase/migrations/`):
+
+- Baseline migration captures the full production schema
+- Supabase CLI is linked to the project (`supabase link`)
+- New schema changes should be added as incremental migration files
 
 ## Hooks Pattern
 
@@ -107,7 +138,9 @@ External APIs: Google Gemini (flashcard generation) | Unsplash (card images)
 
 ## Testing
 
-**Framework**: Vitest + React Testing Library. Test files live in `__tests__/` directories next to the source they cover (e.g. `src/hooks/__tests__/useShop.test.ts`).
+**Unit tests**: Vitest + React Testing Library. Test files live in `__tests__/` directories next to the source they cover (e.g. `src/hooks/__tests__/useShop.test.ts`).
+
+**E2E tests**: Playwright. Tests live in `e2e/smoke/` and run against a dev server (`pnpm dev` must be running). Covers navigation, auth flows, accessibility, and public deck embeds.
 
 **Scripts**:
 
@@ -115,6 +148,7 @@ External APIs: Google Gemini (flashcard generation) | Unsplash (card images)
 - `pnpm test:run` — single run, no coverage
 - `pnpm test:summary` — run with coverage, print only totals (**use this for a quick check**)
 - `pnpm test:coverage` — full coverage table with per-file breakdown
+- `pnpm test:e2e` — Playwright E2E smoke tests (requires `pnpm dev` running)
 
 **Coverage thresholds** are enforced in `vitest.config.ts` (statements 70%, branches 60%, functions 65%, lines 75%). `pnpm test:coverage` will fail if any threshold is breached.
 
