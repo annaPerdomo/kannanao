@@ -39,6 +39,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     renameDeck,
     pinDeck,
     setDeckPublic,
+    updateDeckEmoji,
   } = useDecks();
   const deck = decks.find((d) => d.id === deckId);
 
@@ -133,6 +134,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           onRename={renameDeck}
           onPin={pinDeck}
           onEmbedOpen={() => setEmbedOpen(true)}
+          onEmojiChange={updateDeckEmoji}
         />
 
         <PracticeHero cardCount={cards.length} onStudy={onStudy} onPractice={onPractice} />
