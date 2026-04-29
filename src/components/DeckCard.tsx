@@ -229,10 +229,7 @@ export function DeckCard({
             }}
           >
             {deck.emoji && (
-              <Box
-                component="span"
-                sx={{ fontSize: '1.6rem', lineHeight: 1, mb: 0.5 }}
-              >
+              <Box component="span" sx={{ fontSize: '1.6rem', lineHeight: 1, mb: 0.5 }}>
                 {deck.emoji}
               </Box>
             )}
