@@ -218,9 +218,8 @@ describe('dbDeckToApp', () => {
     expect(deck.description).toBe('');
     expect(deck.pinned).toBe(false);
     expect(deck.isPublic).toBe(false);
-    // Should get a fallback emoji (non-empty)
-    expect(deck.emoji).toBeTruthy();
-    expect(deck.emoji.length).toBeGreaterThan(0);
+    // Null DB emoji means no emoji (empty string)
+    expect(deck.emoji).toBe('');
   });
 
   it('should parse created_at into a numeric timestamp', () => {

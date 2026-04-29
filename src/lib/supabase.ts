@@ -95,7 +95,7 @@ export function dbDeckToApp(deck: SupabaseDeckRow, cardCount: number, currentUse
     cardCount,
     ownerId: deck.user_id,
     isShared: deck.user_id !== currentUserId,
-    emoji: deck.emoji ?? deckFallbackEmoji(deck.id),
+    emoji: deck.emoji ?? '',
     pinned: deck.pinned ?? false,
     isPublic: deck.is_public ?? false,
   };
@@ -168,7 +168,7 @@ export async function dbDeleteDeck(id: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function dbUpdateDeckEmoji(id: string, emoji: string): Promise<void> {
+export async function dbUpdateDeckEmoji(id: string, emoji: string | null): Promise<void> {
   if (!isConfigured()) {
     showConfigBanner();
     throw new Error('Supabase not configured');

@@ -87,10 +87,10 @@ export function useDecks() {
   );
 
   const updateDeckEmoji = useCallback(
-    async (id: string, emoji: string): Promise<void> => {
+    async (id: string, emoji: string | null): Promise<void> => {
       const prev = decks.find((d) => d.id === id);
       if (!prev) return;
-      setDecks((ds) => ds.map((d) => (d.id === id ? { ...d, emoji } : d)));
+      setDecks((ds) => ds.map((d) => (d.id === id ? { ...d, emoji: emoji ?? '' } : d)));
       try {
         await dbUpdateDeckEmoji(id, emoji);
       } catch {

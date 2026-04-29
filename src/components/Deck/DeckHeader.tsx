@@ -186,6 +186,7 @@ export function DeckHeader({
   return (
     <PageHeader
       onBack={onBack}
+      emoji={deck.emoji || undefined}
       title={
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
           <Typography variant="h4" sx={{ color: brand[800], lineHeight: 1.1, minWidth: 0 }}>
