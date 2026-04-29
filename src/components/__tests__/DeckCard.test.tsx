@@ -70,12 +70,6 @@ describe('DeckCard', () => {
     expect(onDelete).toHaveBeenCalledWith('deck-del');
   });
 
-  it('should show shared indicator when deck is shared', () => {
-    const deck = makeDeck({ isShared: true });
-    renderWithProviders(<DeckCard deck={deck} onOpen={vi.fn()} onDelete={vi.fn()} />);
-    expect(screen.getByText(/Shared/)).toBeInTheDocument();
-  });
-
   it('should not show delete button when isOwner=false', () => {
     const deck = makeDeck();
     renderWithProviders(

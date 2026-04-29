@@ -167,7 +167,7 @@ function WelcomeBanner({
 }
 
 export default function Home() {
-  const { decks, deleteDeck, pinDeck, setDeckPublic, loading } = useDecks();
+  const { decks, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, loading } = useDecks();
   const { user, displayName, showTodo, isMemberAccount, showLeaderboard } = useAuth();
   const { progress, spendableXp, addBonusXp } = useProgress();
   const { ohanashikais } = useOhanashikais();
@@ -368,6 +368,7 @@ export default function Home() {
                             : undefined
                         }
                         onPin={pinDeck}
+                        onEmojiChange={owned ? updateDeckEmoji : undefined}
                         isOwner={owned}
                       />
                     </Grid>

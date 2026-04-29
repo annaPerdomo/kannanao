@@ -3,9 +3,10 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
-import { Box, IconButton, Tooltip, Typography } from '@mui/material';
+import { Box, IconButton, Popover, Tooltip, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
-import { useCallback } from 'react';
+import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
+import { useCallback, useState } from 'react';
 
 import { useCardBorder } from '@/contexts/CardBorderContext';
 import type { Deck } from '@/types/deck';
@@ -16,6 +17,7 @@ interface DeckCardProps {
   onDelete: (id: string) => void;
   onShare?: (id: string) => void;
   onPin?: (id: string, pinned: boolean) => void;
+  onEmojiChange?: (id: string, emoji: string | null) => void;
   isOwner?: boolean;
 }
 
@@ -25,12 +27,14 @@ export function DeckCard({
   onDelete,
   onShare,
   onPin,
+  onEmojiChange,
   isOwner = true,
 }: DeckCardProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const { borderStyle: equippedBorder } = useCardBorder();
   const hasCustomBorder = equippedBorder && Object.keys(equippedBorder).length > 0;
+  const [emojiAnchor, setEmojiAnchor] = useState<HTMLElement | null>(null);
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -224,6 +228,11 @@ export function DeckCard({
               borderBottom: `2px solid ${brand[400]}`,
             }}
           >
+            {deck.emoji && (
+              <Box component="span" sx={{ fontSize: '1.6rem', lineHeight: 1, mb: 0.5 }}>
+                {deck.emoji}
+              </Box>
+            )}
             <Typography
               sx={{
                 fontSize: '1.3rem',
@@ -286,11 +295,6 @@ export function DeckCard({
                 >
                   {deck.cardCount} cards
                 </Typography>
-                {deck.isShared && (
-                  <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: accent[600] }}>
-                    · Shared
-                  </Typography>
-                )}
               </Box>
             </Box>
           </Box>
@@ -304,33 +308,112 @@ export function DeckCard({
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              borderTop: `1px solid ${alpha(brand[300], 0.25)}`,
             }}
           >
-            {deck.isPublic ? (
-              <Typography
-                sx={{
-                  fontSize: '0.54rem',
-                  fontWeight: 800,
-                  color: accent[600],
-                  fontFamily: (t) => t.fonts.mono,
-                  letterSpacing: '0.06em',
-                }}
-              >
-                ✦ Shared
-              </Typography>
-            ) : (
-              <Typography
-                sx={{
-                  fontSize: '0.52rem',
-                  color: alpha(brand[500], 0.5),
-                  fontFamily: (t) => t.fonts.mono,
-                }}
-              >
-                ★
-              </Typography>
-            )}
+            <Box />
             <Box sx={{ display: 'flex', gap: 0.25 }} onClick={(e) => e.stopPropagation()}>
+              {onEmojiChange && (
+                <>
+                  <Tooltip title={deck.emoji ? 'Change emoji' : 'Add emoji'}>
+                    <IconButton
+                      size="small"
+                      aria-label={deck.emoji ? 'Change deck emoji' : 'Add deck emoji'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEmojiAnchor(e.currentTarget);
+                      }}
+                      sx={{
+                        width: 26,
+                        height: 26,
+                        fontSize: '13px',
+                        color: brand[500],
+                        bgcolor: 'transparent',
+                        border: `1px solid ${alpha(brand[400], 0.35)}`,
+                        borderRadius: '6px',
+                        '&:hover': {
+                          color: brand[700],
+                          bgcolor: alpha(brand[200], 0.7),
+                          borderColor: alpha(brand[500], 0.6),
+                        },
+                      }}
+                    >
+                      😀
+                    </IconButton>
+                  </Tooltip>
+                  <Popover
+                    open={Boolean(emojiAnchor)}
+                    anchorEl={emojiAnchor}
+                    onClose={() => setEmojiAnchor(null)}
+                    onClick={(e) => e.stopPropagation()}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                    transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                  >
+                    <Box
+                      sx={{
+                        '--epr-bg-color': brand[50],
+                        '--epr-category-label-bg-color': brand[100],
+                        '--epr-hover-bg-color': alpha(brand[300], 0.25),
+                        '--epr-focus-bg-color': alpha(brand[300], 0.35),
+                        '--epr-highlight-color': brand[400],
+                        '--epr-search-border-color': alpha(brand[400], 0.4),
+                        '--epr-header-overlay-color': brand[50],
+                        '--epr-text-color': 'text.primary',
+                        '--epr-category-icon-active-color': accent[500],
+                        '--epr-search-input-bg-color': '#fff',
+                        '--epr-emoji-size': '24px',
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <EmojiPicker
+                        theme={Theme.LIGHT}
+                        onEmojiClick={(data: EmojiClickData) => {
+                          onEmojiChange(deck.id, data.emoji);
+                          setEmojiAnchor(null);
+                        }}
+                        lazyLoadEmojis
+                      />
+                    </Box>
+                    {deck.emoji && (
+                      <Box
+                        sx={{
+                          px: 1.5,
+                          py: 1,
+                          borderTop: `1px solid ${alpha(brand[300], 0.25)}`,
+                          display: 'flex',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Box
+                          component="button"
+                          onClick={() => {
+                            onEmojiChange(deck.id, null);
+                            setEmojiAnchor(null);
+                          }}
+                          sx={{
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: brand[500],
+                            background: 'none',
+                            border: `1.5px solid ${alpha(brand[400], 0.35)}`,
+                            borderRadius: 2,
+                            px: 2,
+                            py: 0.5,
+                            cursor: 'pointer',
+                            transition: 'all 0.12s ease',
+                            '&:hover': {
+                              bgcolor: alpha(brand[100], 0.6),
+                              borderColor: brand[400],
+                            },
+                          }}
+                        >
+                          Remove emoji
+                        </Box>
+                      </Box>
+                    )}
+                  </Popover>
+                </>
+              )}
               {onPin && (
                 <Tooltip title={deck.pinned ? 'Unpin from home' : 'Pin to home'}>
                   <IconButton

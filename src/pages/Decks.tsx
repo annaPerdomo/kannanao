@@ -24,7 +24,7 @@ export default function Decks() {
   const { brand, accent } = theme.palette;
   const router = useRouter();
 
-  const { decks, loading, deleteDeck, pinDeck, setDeckPublic } = useDecks();
+  const { decks, loading, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji } = useDecks();
   const { user, isMemberAccount } = useAuth();
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -140,6 +140,7 @@ export default function Decks() {
                             : undefined
                         }
                         onPin={pinDeck}
+                        onEmojiChange={owned ? updateDeckEmoji : undefined}
                         isOwner={owned}
                       />
                     </Grid>
@@ -185,6 +186,7 @@ export default function Decks() {
                             : undefined
                         }
                         onPin={pinDeck}
+                        onEmojiChange={owned ? updateDeckEmoji : undefined}
                         isOwner={owned}
                       />
                     </Grid>
