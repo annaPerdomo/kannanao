@@ -164,7 +164,7 @@ export function NavBar() {
               sx={navBtnWithIcon}
             >
               <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                Group
+                Groups
               </Box>
             </Button>
           )}
