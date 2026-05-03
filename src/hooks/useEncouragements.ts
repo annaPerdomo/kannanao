@@ -24,12 +24,12 @@ async function authHeaders(): Promise<Record<string, string>> {
 export function useEncouragements() {
   const [encouragements, setEncouragements] = useState<Encouragement[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, isMemberAccount } = useAuth();
 
   const unreadCount = encouragements.filter((e) => !e.read_at).length;
 
   const fetchEncouragements = useCallback(async () => {
-    if (!user) {
+    if (!user || !isMemberAccount) {
       setEncouragements([]);
       setLoading(false);
       return;
@@ -44,7 +44,7 @@ export function useEncouragements() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, isMemberAccount]);
 
   useEffect(() => {
     void fetchEncouragements();

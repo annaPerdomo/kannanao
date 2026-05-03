@@ -1,8 +1,7 @@
--- Add organizer/member account model to profiles and create invite_codes table.
+-- Group system: organizer/member accounts, invite codes, assignments, encouragements.
+-- Existing accounts default to 'organizer' so nothing breaks.
 
--- =============================================================================
--- profiles: add account_type and organizer_id
--- =============================================================================
+-- New profile columns for the organizer/member relationship
 ALTER TABLE profiles
   ADD COLUMN account_type text NOT NULL DEFAULT 'organizer'
     CHECK (account_type IN ('organizer', 'member')),
@@ -11,9 +10,7 @@ ALTER TABLE profiles
 
 CREATE INDEX idx_profiles_organizer_id ON profiles(organizer_id);
 
--- =============================================================================
--- invite_codes: QR invite codes with usage limits and expiry
--- =============================================================================
+-- Invite codes: organizers generate these for QR-based member onboarding
 CREATE TABLE invite_codes (
   id            uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   code          text        UNIQUE NOT NULL,
@@ -28,9 +25,7 @@ CREATE TABLE invite_codes (
 CREATE INDEX idx_invite_codes_code ON invite_codes(code);
 CREATE INDEX idx_invite_codes_organizer_id ON invite_codes(organizer_id);
 
--- =============================================================================
--- assignments: organizer-assigned decks with due dates
--- =============================================================================
+-- Assignments: organizers assign specific decks to members with optional due dates
 CREATE TABLE assignments (
   id            uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   organizer_id  uuid        NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -47,9 +42,7 @@ CREATE TABLE assignments (
 CREATE INDEX idx_assignments_member_id ON assignments(member_id);
 CREATE INDEX idx_assignments_organizer_id ON assignments(organizer_id);
 
--- =============================================================================
--- encouragements: motivational messages from organizer to member
--- =============================================================================
+-- Encouragements: short messages an organizer can send to a member
 CREATE TABLE encouragements (
   id            uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   organizer_id  uuid        NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,

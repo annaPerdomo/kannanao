@@ -25,7 +25,9 @@ export async function requireOrganizerAccount(
     return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
   }
 
-  const supabase = createClient(url, anonKey);
+  const supabase = createClient(url, anonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
   const {
     data: { user },
     error: authError,
