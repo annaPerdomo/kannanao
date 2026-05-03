@@ -224,48 +224,65 @@ export default function Home() {
         </Box>
       )}
 
-      {/* ── Organizer pinned groups ── */}
-      {!isMemberAccount && groups.length > 0 && (
-        <Box sx={{ mb: 3 }}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.5}>
-            <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800 }}>
-              👥 My Groups
-            </Typography>
-            <Button
-              size="small"
-              variant="text"
-              onClick={() => router.push('/group')}
-              sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
-            >
-              All groups →
-            </Button>
-          </Stack>
-          <Stack spacing={1.5}>
-            {(groups.filter((g) => g.pinned).length > 0
-              ? groups.filter((g) => g.pinned)
-              : groups.slice(0, 1)
-            ).map((group) => {
-              const members = groupMembers.filter(() => true); // All members shown for now
-              return (
-                <GroupHomeWidget
-                  key={group.id}
-                  members={members}
-                  groupName={group.name}
-                  groupEmoji={group.emoji ?? undefined}
-                  onViewDashboard={() => router.push(`/group/${group.id}`)}
-                />
-              );
-            })}
-          </Stack>
-        </Box>
-      )}
+      {/* ── Main content: two-column on md+, stacked on mobile ── */}
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        spacing={{ xs: 3, md: 4 }}
+        alignItems="flex-start"
+      >
+        {/* Left column — To-Do List */}
+        {showTodo && (
+          <Box sx={{ width: { xs: '100%', md: '50%', lg: '45%' }, flexShrink: 0 }}>
+            <TodoList onXpEarned={addBonusXp} />
+          </Box>
+        )}
 
-      {/* ── Member widgets: assignments, leaderboard ── */}
-      {isMemberAccount && (
-        <Stack spacing={2.5} sx={{ mb: 3 }}>
-          {/* Leaderboard */}
-          {leaderboard.length > 1 && (
-            <Box>
+        {/* Right column — Groups/Assignments + Pinned Decks & Speeches */}
+        <Box
+          sx={{
+            width: { xs: '100%', md: showTodo ? '50%' : '100%', lg: showTodo ? '55%' : '100%' },
+            minWidth: 0,
+          }}
+        >
+          {/* ── Organizer pinned groups ── */}
+          {!isMemberAccount && groups.length > 0 && (
+            <Box sx={{ mb: 3 }}>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.5}>
+                <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800 }}>
+                  👥 My Groups
+                </Typography>
+                <Button
+                  size="small"
+                  variant="text"
+                  onClick={() => router.push('/group')}
+                  sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
+                >
+                  All groups →
+                </Button>
+              </Stack>
+              <Stack spacing={1.5}>
+                {(groups.filter((g) => g.pinned).length > 0
+                  ? groups.filter((g) => g.pinned)
+                  : groups.slice(0, 1)
+                ).map((group) => {
+                  const members = groupMembers.filter(() => true); // All members shown for now
+                  return (
+                    <GroupHomeWidget
+                      key={group.id}
+                      members={members}
+                      groupName={group.name}
+                      groupEmoji={group.emoji ?? undefined}
+                      onViewDashboard={() => router.push(`/group/${group.id}`)}
+                    />
+                  );
+                })}
+              </Stack>
+            </Box>
+          )}
+
+          {/* ── Member widgets: leaderboard, assignments ── */}
+          {isMemberAccount && leaderboard.length > 1 && (
+            <Box sx={{ mb: 3 }}>
               <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}>
                 🏆 Weekly Leaderboard
               </Typography>
@@ -273,9 +290,8 @@ export default function Home() {
             </Box>
           )}
 
-          {/* Assignments */}
-          {pendingAssignments.length > 0 && (
-            <Box>
+          {isMemberAccount && pendingAssignments.length > 0 && (
+            <Box sx={{ mb: 3 }}>
               <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}>
                 📋 Assignments
               </Typography>
@@ -290,24 +306,7 @@ export default function Home() {
               </Stack>
             </Box>
           )}
-        </Stack>
-      )}
 
-      {/* ── Main content: two-column on md+, stacked on mobile ── */}
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        spacing={{ xs: 3, md: 4 }}
-        alignItems="flex-start"
-      >
-        {/* Left column — To-Do List */}
-        {showTodo && (
-          <Box sx={{ width: { xs: '100%', md: '50%', lg: '45%' }, flexShrink: 0 }}>
-            <TodoList onXpEarned={addBonusXp} />
-          </Box>
-        )}
-
-        {/* Right column — Pinned Decks & Speeches */}
-        <Box sx={{ width: { xs: '100%', md: '50%', lg: '55%' }, minWidth: 0 }}>
           {/* ── Pinned Decks ── */}
           <Box sx={{ mb: 3 }}>
             <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.5}>

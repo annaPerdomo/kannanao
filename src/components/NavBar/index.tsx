@@ -2,7 +2,6 @@
 import BarChartIcon from '@mui/icons-material/BarChart';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import GroupsIcon from '@mui/icons-material/Groups';
-import HomeIcon from '@mui/icons-material/Home';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import MicIcon from '@mui/icons-material/Mic';
 import StorefrontIcon from '@mui/icons-material/Storefront';
@@ -39,7 +38,6 @@ export function NavBar() {
 
   const pathname = usePathname();
   const router = useRouter();
-  const isHome = pathname === '/';
   const isStats = pathname === '/stats';
   const isShop = pathname === '/shop';
   const isOhanashikai = pathname?.startsWith('/ohanashikai') ?? false;
@@ -47,7 +45,7 @@ export function NavBar() {
   const isGroup = pathname?.startsWith('/group') ?? false;
 
   const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgress();
-  const { user, updateDisplayName, isMemberAccount } = useAuth();
+  const { user, loading: authLoading, updateDisplayName, isMemberAccount } = useAuth();
   const { encouragements, unreadCount, markAsRead, markAllAsRead } = useEncouragements();
 
   const [editOpen, setEditOpen] = useState(false);
@@ -82,8 +80,19 @@ export function NavBar() {
     '&:hover': { bgcolor: alpha(brand[300], 0.18) },
   };
 
+  const navBtnActive = {
+    ...navBtn,
+    bgcolor: alpha(brand[300], 0.22),
+    '&:hover': { bgcolor: alpha(brand[300], 0.3) },
+  };
+
   const navBtnWithIcon = {
     ...navBtn,
+    '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
+  };
+
+  const navBtnWithIconActive = {
+    ...navBtnActive,
     '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
   };
 
@@ -111,10 +120,7 @@ export function NavBar() {
           }}
         >
           {/* Brand */}
-          <Link
-            href="/"
-            style={{ textDecoration: 'none', marginRight: 'auto', userSelect: 'none' }}
-          >
+          <Link href="/" style={{ textDecoration: 'none', userSelect: 'none' }}>
             <Typography
               sx={{
                 fontFamily: (t) => t.fonts.cute,
@@ -130,84 +136,76 @@ export function NavBar() {
             </Typography>
           </Link>
 
-          {user && !isHome && (
-            <Button
-              onClick={() => router.push('/')}
-              size="small"
-              startIcon={<HomeIcon sx={{ fontSize: '1rem !important' }} />}
-              sx={navBtnWithIcon}
+          {/* Nav links — centered group */}
+          {user && (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                mx: 'auto',
+              }}
             >
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                Home
-              </Box>
-            </Button>
+              <Button
+                onClick={() => router.push('/decks')}
+                size="small"
+                startIcon={<LibraryBooksIcon sx={{ fontSize: '1rem !important' }} />}
+                sx={isDecks ? navBtnWithIconActive : navBtnWithIcon}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Decks
+                </Box>
+              </Button>
+
+              {!isMemberAccount && (
+                <Button
+                  onClick={() => router.push('/group')}
+                  size="small"
+                  startIcon={<GroupsIcon sx={{ fontSize: '1rem !important' }} />}
+                  sx={isGroup ? navBtnWithIconActive : navBtnWithIcon}
+                >
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                    Groups
+                  </Box>
+                </Button>
+              )}
+
+              <Button
+                onClick={() => router.push('/ohanashikai')}
+                size="small"
+                startIcon={<MicIcon sx={{ fontSize: '1rem !important' }} />}
+                sx={isOhanashikai ? navBtnWithIconActive : navBtnWithIcon}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Speech
+                </Box>
+              </Button>
+
+              <Button
+                onClick={() => router.push('/stats')}
+                size="small"
+                startIcon={<BarChartIcon sx={{ fontSize: '1rem !important' }} />}
+                sx={isStats ? navBtnWithIconActive : navBtnWithIcon}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Stats
+                </Box>
+              </Button>
+
+              <Button
+                onClick={() => router.push('/shop')}
+                size="small"
+                startIcon={<StorefrontIcon sx={{ fontSize: '1rem !important' }} />}
+                sx={isShop ? navBtnWithIconActive : navBtnWithIcon}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Shop
+                </Box>
+              </Button>
+            </Box>
           )}
 
-          {user && !isDecks && (
-            <Button
-              onClick={() => router.push('/decks')}
-              size="small"
-              startIcon={<LibraryBooksIcon sx={{ fontSize: '1rem !important' }} />}
-              sx={navBtnWithIcon}
-            >
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                Decks
-              </Box>
-            </Button>
-          )}
-
-          {user && !isMemberAccount && !isGroup && (
-            <Button
-              onClick={() => router.push('/group')}
-              size="small"
-              startIcon={<GroupsIcon sx={{ fontSize: '1rem !important' }} />}
-              sx={navBtnWithIcon}
-            >
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                Groups
-              </Box>
-            </Button>
-          )}
-
-          {user && !isOhanashikai && (
-            <Button
-              onClick={() => router.push('/ohanashikai')}
-              size="small"
-              startIcon={<MicIcon sx={{ fontSize: '1rem !important' }} />}
-              sx={navBtnWithIcon}
-            >
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                Speech
-              </Box>
-            </Button>
-          )}
-
-          {user && !isStats && (
-            <Button
-              onClick={() => router.push('/stats')}
-              size="small"
-              startIcon={<BarChartIcon sx={{ fontSize: '1rem !important' }} />}
-              sx={navBtnWithIcon}
-            >
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                Stats
-              </Box>
-            </Button>
-          )}
-
-          {user && !isShop && (
-            <Button
-              onClick={() => router.push('/shop')}
-              size="small"
-              startIcon={<StorefrontIcon sx={{ fontSize: '1rem !important' }} />}
-              sx={navBtnWithIcon}
-            >
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                Shop
-              </Box>
-            </Button>
-          )}
-
+          {/* User info — right group */}
           {user ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
               {isMemberAccount && (
@@ -259,7 +257,7 @@ export function NavBar() {
               <UserMenu navBtnSx={navBtn} />
             </Box>
           ) : (
-            <UserMenu navBtnSx={navBtn} />
+            !authLoading && <UserMenu navBtnSx={navBtn} />
           )}
         </Toolbar>
       </AppBar>

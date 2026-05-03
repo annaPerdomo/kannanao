@@ -9,7 +9,7 @@ import { useProgress } from '@/hooks/useProgress';
 const BURST_EMOJIS = ['✨', '⭐', '🌟', '💫', '🎉'];
 
 export function XpDisplay({ onClick }: { onClick: () => void }) {
-  const { spendableXp } = useProgress();
+  const { spendableXp, loading } = useProgress();
   const { pendingXp } = useXpAnimation();
 
   const [xpBounce, setXpBounce] = useState(false);
@@ -65,6 +65,8 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
       clearTimeout(ringTimer);
     };
   }, [pendingXp]);
+
+  if (loading) return null;
 
   return (
     <Box
