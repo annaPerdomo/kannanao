@@ -3,17 +3,20 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
 import CircularProgress from '@mui/material/CircularProgress';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
+import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -52,7 +55,7 @@ export default function GroupDashboardPage() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const groupId = params?.groupId ?? '';
-  const { isMemberAccount, showLeaderboard, displayName, user, loading: authLoading } = useAuth();
+  const { isMemberAccount, displayName, user, loading: authLoading } = useAuth();
 
   const { members, loading, error } = useGroupMembers(groupId);
   const { leaderboard, loading: lbLoading } = useGroupLeaderboard(groupId);
@@ -326,10 +329,56 @@ export default function GroupDashboardPage() {
       {/* Overview stat cards */}
       <GroupOverview members={members} />
 
-      {/* Members + Leaderboard side by side */}
-      <Grid container spacing={3}>
-        {/* Members grid */}
-        <Grid size={{ xs: 12, md: showLeaderboard ? 8 : 12 }}>
+      {/* Members */}
+      <Typography
+        sx={{
+          fontWeight: 800,
+          fontSize: '0.85rem',
+          color: brand[700],
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+          mb: 1.5,
+        }}
+      >
+        Members
+      </Typography>
+      {members.length === 0 ? (
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            textAlign: 'center',
+            border: `1.5px dashed ${alpha(brand[300], 0.4)}`,
+            borderRadius: 3,
+            bgcolor: alpha(brand[50], 0.6),
+          }}
+        >
+          <Typography sx={{ fontSize: '2.5rem', mb: 1 }}>👋</Typography>
+          <Typography sx={{ fontWeight: 700, color: brand[700], mb: 0.5 }}>
+            No members yet
+          </Typography>
+          <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
+            Create an invite code to add members to this group.
+          </Typography>
+        </Paper>
+      ) : (
+        <Grid container spacing={1.5}>
+          {members.map((member) => (
+            <Grid size={{ xs: 12, sm: 6 }} key={member.id}>
+              <MemberCard
+                member={member}
+                onClick={(id) => router.push(`/group/${groupId}/members/${id}`)}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      )}
+
+      {/* Leaderboard */}
+      <Box sx={{ mt: 4 }}>
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}
+        >
           <Typography
             sx={{
               fontWeight: 800,
@@ -337,67 +386,57 @@ export default function GroupDashboardPage() {
               color: brand[700],
               textTransform: 'uppercase',
               letterSpacing: '0.06em',
-              mb: 1.5,
             }}
           >
-            Members
+            🏆 Weekly Leaderboard
           </Typography>
-          {members.length === 0 ? (
-            <Paper
-              elevation={0}
-              sx={{
-                p: 4,
-                textAlign: 'center',
-                border: `1.5px dashed ${alpha(brand[300], 0.4)}`,
-                borderRadius: 3,
-                bgcolor: alpha(brand[50], 0.6),
-              }}
-            >
-              <Typography sx={{ fontSize: '2.5rem', mb: 1 }}>👋</Typography>
-              <Typography sx={{ fontWeight: 700, color: brand[700], mb: 0.5 }}>
-                No members yet
+          <FormControlLabel
+            control={
+              <Switch
+                size="small"
+                checked={group?.show_leaderboard !== false}
+                onChange={(e) => updateGroup(groupId, { show_leaderboard: e.target.checked })}
+                sx={{
+                  '& .MuiSwitch-switchBase.Mui-checked': { color: brand[600] },
+                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                    bgcolor: brand[400],
+                  },
+                }}
+              />
+            }
+            label={
+              <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                {group?.show_leaderboard !== false ? 'Visible' : 'Hidden'}
               </Typography>
-              <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
-                Create an invite code to add members to this group.
-              </Typography>
-            </Paper>
+            }
+            labelPlacement="start"
+            sx={{ mr: 0 }}
+          />
+        </Box>
+        {group?.show_leaderboard !== false ? (
+          lbLoading ? (
+            <Loading message="Loading leaderboard..." />
           ) : (
-            <Grid container spacing={1.5}>
-              {members.map((member) => (
-                <Grid size={{ xs: 12, sm: 6 }} key={member.id}>
-                  <MemberCard
-                    member={member}
-                    onClick={(id) => router.push(`/group/${groupId}/members/${id}`)}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          )}
-        </Grid>
-
-        {/* Leaderboard sidebar */}
-        {showLeaderboard && (
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Typography
-              sx={{
-                fontWeight: 800,
-                fontSize: '0.85rem',
-                color: brand[700],
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                mb: 1.5,
-              }}
-            >
-              🏆 Weekly Leaderboard
+            <LeaderboardWidget entries={leaderboard} />
+          )
+        ) : (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              textAlign: 'center',
+              border: `1.5px dashed ${alpha(brand[300], 0.4)}`,
+              borderRadius: 3,
+              bgcolor: alpha(brand[50], 0.6),
+            }}
+          >
+            <EmojiEventsIcon sx={{ fontSize: 32, color: alpha(brand[400], 0.5), mb: 0.5 }} />
+            <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
+              Leaderboard is hidden from members.
             </Typography>
-            {lbLoading ? (
-              <Loading message="Loading leaderboard..." />
-            ) : (
-              <LeaderboardWidget entries={leaderboard} />
-            )}
-          </Grid>
+          </Paper>
         )}
-      </Grid>
+      </Box>
 
       {/* Invite Codes */}
       {invites.length > 0 && (

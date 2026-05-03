@@ -35,6 +35,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   if (typeof body.emoji === 'string') updates.emoji = body.emoji.trim() || null;
   if (typeof body.pinned === 'boolean') updates.pinned = body.pinned;
+  if (typeof body.show_leaderboard === 'boolean') updates.show_leaderboard = body.show_leaderboard;
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: 'No valid fields to update.' }, { status: 400 });

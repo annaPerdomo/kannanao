@@ -3,7 +3,6 @@
 import BadgeIcon from '@mui/icons-material/Badge';
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import EditIcon from '@mui/icons-material/Edit';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import KeyIcon from '@mui/icons-material/Key';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import {
@@ -82,9 +81,7 @@ export default function SettingsPage() {
     session,
     signOut,
     showTodo,
-    showLeaderboard,
     updateShowTodo,
-    updateShowLeaderboard,
     isMemberAccount,
   } = useAuth();
   const router = useRouter();
@@ -379,35 +376,6 @@ export default function SettingsPage() {
 
         {!isMemberAccount && (
           <>
-            <Divider />
-
-            {/* Group Leaderboard */}
-            <Section
-              icon={<EmojiEventsIcon />}
-              title="Group Leaderboard"
-              description="Show or hide the weekly leaderboard for your group members."
-            >
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={showLeaderboard}
-                    onChange={(e) => void updateShowLeaderboard(e.target.checked)}
-                    sx={{
-                      '& .MuiSwitch-switchBase.Mui-checked': { color: brand[600] },
-                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        bgcolor: brand[400],
-                      },
-                    }}
-                  />
-                }
-                label={
-                  <Typography sx={{ fontSize: '0.85rem', color: 'text.primary' }}>
-                    {showLeaderboard ? 'Leaderboard visible to group' : 'Leaderboard hidden'}
-                  </Typography>
-                }
-              />
-            </Section>
-
             <Divider />
 
             {/* Invite Members */}

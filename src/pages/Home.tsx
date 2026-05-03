@@ -169,7 +169,7 @@ function WelcomeBanner({
 
 export default function Home() {
   const { decks, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, loading } = useDecks();
-  const { user, displayName, showTodo, isMemberAccount, showLeaderboard } = useAuth();
+  const { user, displayName, showTodo, isMemberAccount } = useAuth();
   const { progress, spendableXp, addBonusXp } = useProgress();
   const { ohanashikais } = useOhanashikais();
   const { purchases } = useShop();
@@ -264,7 +264,7 @@ export default function Home() {
       {isMemberAccount && (
         <Stack spacing={2.5} sx={{ mb: 3 }}>
           {/* Leaderboard */}
-          {showLeaderboard && leaderboard.length > 0 && (
+          {leaderboard.length > 1 && (
             <Box>
               <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}>
                 🏆 Weekly Leaderboard

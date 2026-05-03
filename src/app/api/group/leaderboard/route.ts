@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
   // Get the user's profile to determine group membership
   const { data: profile } = await sb
     .from('profiles')
-    .select('id, account_type, organizer_id, group_id, display_name, show_leaderboard')
+    .select('id, account_type, organizer_id, group_id, display_name')
     .eq('id', user.id)
     .single();
 
@@ -61,19 +61,14 @@ export async function GET(req: NextRequest) {
   // Optional groupId from query (organizers), or derive from member profile
   const groupId = req.nextUrl.searchParams.get('groupId') ?? profile.group_id ?? null;
 
-  // Check if the organizer has enabled the leaderboard
-  if (profile.account_type === 'organizer') {
-    if (profile.show_leaderboard === false) {
-      return NextResponse.json([]);
-    }
-  } else {
-    // Member — check the organizer's setting
-    const { data: organizer } = await sb
-      .from('profiles')
+  // Check if the group has the leaderboard enabled
+  if (groupId) {
+    const { data: group } = await sb
+      .from('groups')
       .select('show_leaderboard')
-      .eq('id', organizerId)
+      .eq('id', groupId)
       .single();
-    if (organizer?.show_leaderboard === false) {
+    if (group?.show_leaderboard === false) {
       return NextResponse.json([]);
     }
   }

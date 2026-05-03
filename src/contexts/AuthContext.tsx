@@ -8,7 +8,6 @@ import {
   loadProfile,
   sb,
   updateProfileColorScheme,
-  updateProfileShowLeaderboard,
   updateProfileShowTodo,
   upsertProfile,
 } from '@/lib/supabase';
@@ -27,7 +26,6 @@ interface AuthContextValue {
   displayName: string | null;
   colorScheme: ColorScheme | null;
   showTodo: boolean;
-  showLeaderboard: boolean;
   loading: boolean;
   signInWithUsername: (username: string, password: string) => Promise<{ error: string | null }>;
   signUpWithUsername: (
@@ -39,7 +37,6 @@ interface AuthContextValue {
   updateDisplayName: (name: string) => Promise<{ error: string | null }>;
   updateColorScheme: (scheme: ColorScheme) => Promise<void>;
   updateShowTodo: (show: boolean) => Promise<void>;
-  updateShowLeaderboard: (show: boolean) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -72,7 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [colorScheme, setColorScheme] = useState<ColorScheme | null>(null);
   const [showTodo, setShowTodo] = useState(true);
-  const [showLeaderboard, setShowLeaderboard] = useState(true);
   const [accountType, setAccountType] = useState<AccountType>('organizer');
   const [organizerId, setOrganizerId] = useState<string | null>(null);
   const [groupId, setGroupId] = useState<string | null>(null);
@@ -86,7 +82,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setColorScheme(saved as ColorScheme);
     }
     setShowTodo(profile?.showTodo !== false);
-    setShowLeaderboard(profile?.showLeaderboard !== false);
     setAccountType(profile?.accountType ?? 'organizer');
     setOrganizerId(profile?.organizerId ?? null);
     setGroupId(profile?.groupId ?? null);
@@ -114,7 +109,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setDisplayName(null);
         setColorScheme(null);
         setShowTodo(true);
-        setShowLeaderboard(true);
         setAccountType('organizer');
         setOrganizerId(null);
         setGroupId(null);
@@ -167,16 +161,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateShowLeaderboard = async (show: boolean) => {
-    setShowLeaderboard(show);
-    const {
-      data: { user },
-    } = await sb.auth.getUser();
-    if (user) {
-      await updateProfileShowLeaderboard(user.id, show);
-    }
-  };
-
   const signOut = async () => {
     await sb.auth.signOut();
   };
@@ -194,7 +178,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         displayName,
         colorScheme,
         showTodo,
-        showLeaderboard,
         loading,
         signInWithUsername,
         signUpWithUsername,
@@ -202,7 +185,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updateDisplayName,
         updateColorScheme,
         updateShowTodo,
-        updateShowLeaderboard,
       }}
     >
       {children}
