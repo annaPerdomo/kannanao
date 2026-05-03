@@ -251,7 +251,7 @@ export default function Home() {
                   key={group.id}
                   members={members}
                   groupName={group.name}
-                  groupEmoji={group.emoji}
+                  groupEmoji={group.emoji ?? undefined}
                   onViewDashboard={() => router.push(`/group/${group.id}`)}
                 />
               );

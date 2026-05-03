@@ -33,7 +33,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
     updates.name = name;
   }
-  if (typeof body.emoji === 'string') updates.emoji = body.emoji.trim() || '📚';
+  if (typeof body.emoji === 'string') updates.emoji = body.emoji.trim() || null;
   if (typeof body.pinned === 'boolean') updates.pinned = body.pinned;
 
   if (Object.keys(updates).length === 0) {

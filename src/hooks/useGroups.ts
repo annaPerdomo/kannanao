@@ -8,7 +8,7 @@ export interface Group {
   id: string;
   organizer_id: string;
   name: string;
-  emoji: string;
+  emoji: string | null;
   pinned: boolean;
   created_at: string;
   memberCount: number;
@@ -66,7 +66,7 @@ export function useGroups() {
   }, []);
 
   const updateGroup = useCallback(
-    async (id: string, updates: { name?: string; emoji?: string; pinned?: boolean }) => {
+    async (id: string, updates: { name?: string; emoji?: string | null; pinned?: boolean }) => {
       const prev = groups;
       setGroups((g) => g.map((item) => (item.id === id ? { ...item, ...updates } : item)));
       try {

@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const name = (body.name ?? '').trim();
-  const emoji = (body.emoji ?? '📚').trim();
+  const emoji = typeof body.emoji === 'string' && body.emoji.trim() ? body.emoji.trim() : null;
 
   if (!name) {
     return NextResponse.json({ error: 'Group name is required.' }, { status: 400 });

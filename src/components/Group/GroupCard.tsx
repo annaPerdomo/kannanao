@@ -41,7 +41,9 @@ export function GroupCard({ group, onClick, onPin }: GroupCardProps) {
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Stack direction="row" alignItems="center" spacing={1.5} sx={{ minWidth: 0, flex: 1 }}>
-          <Typography sx={{ fontSize: '1.5rem', flexShrink: 0 }}>{group.emoji}</Typography>
+          {group.emoji && (
+            <Typography sx={{ fontSize: '1.5rem', flexShrink: 0 }}>{group.emoji}</Typography>
+          )}
           <Box sx={{ minWidth: 0 }}>
             <Typography
               sx={{ fontWeight: 800, fontSize: '1rem', color: brand[800], lineHeight: 1.2 }}

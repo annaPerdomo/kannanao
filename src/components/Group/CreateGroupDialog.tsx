@@ -1,11 +1,13 @@
 'use client';
 
 import GroupsIcon from '@mui/icons-material/Groups';
-import { Button, Stack, TextField } from '@mui/material';
+import { Button, Stack, TextField, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
+
+import { EncouragementEmojiPicker } from './EncouragementEmojiPicker';
 
 interface CreateGroupDialogProps {
   open: boolean;
@@ -18,7 +20,7 @@ export function CreateGroupDialog({ open, onClose, onCreate }: CreateGroupDialog
   const { brand } = theme.palette;
 
   const [name, setName] = useState('');
-  const [emoji, setEmoji] = useState('📚');
+  const [emoji, setEmoji] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,9 +28,9 @@ export function CreateGroupDialog({ open, onClose, onCreate }: CreateGroupDialog
     setSaving(true);
     setError(null);
     try {
-      await onCreate(name.trim(), emoji.trim() || '📚');
+      await onCreate(name.trim(), emoji.trim() || undefined);
       setName('');
-      setEmoji('📚');
+      setEmoji('');
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create group');
@@ -84,16 +86,12 @@ export function CreateGroupDialog({ open, onClose, onCreate }: CreateGroupDialog
           autoFocus
         />
 
-        <TextField
-          fullWidth
-          size="small"
-          label="Emoji"
-          placeholder="📚"
-          value={emoji}
-          onChange={(e) => setEmoji(e.target.value)}
-          slotProps={{ htmlInput: { maxLength: 4 } }}
-          helperText="An emoji to identify this group"
-        />
+        <Stack gap={0.5}>
+          <Typography variant="body2" color="text.secondary">
+            Group emoji
+          </Typography>
+          <EncouragementEmojiPicker value={emoji} onChange={setEmoji} allowEmpty />
+        </Stack>
 
         {error && (
           <div style={{ color: theme.palette.error.main, fontSize: '0.85rem' }}>{error}</div>
