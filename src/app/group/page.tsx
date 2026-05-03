@@ -12,6 +12,7 @@ import { useState } from 'react';
 
 import {
   ActivityFeed,
+  AssignmentsList,
   CreateAssignmentDialog,
   GroupOverview,
   LeaderboardWidget,
@@ -38,7 +39,7 @@ export default function GroupPage() {
   const { leaderboard, loading: lbLoading } = useGroupLeaderboard();
   const { feed, loading: feedLoading } = useGroupFeed();
   const { decks } = useDecks();
-  const { createAssignment } = useAssignments();
+  const { assignments, createAssignment, updateAssignment, deleteAssignment } = useAssignments();
   const { sendEncouragement } = useEncouragements();
 
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
@@ -197,6 +198,27 @@ export default function GroupPage() {
           </Grid>
         )}
       </Grid>
+
+      {/* Assignments */}
+      <Box sx={{ mt: 4 }}>
+        <Typography
+          sx={{
+            fontWeight: 800,
+            fontSize: '0.85rem',
+            color: brand[700],
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            mb: 1.5,
+          }}
+        >
+          Assignments
+        </Typography>
+        <AssignmentsList
+          assignments={assignments}
+          onEdit={updateAssignment}
+          onDelete={deleteAssignment}
+        />
+      </Box>
 
       {/* Activity Feed */}
       <Box sx={{ mt: 4 }}>

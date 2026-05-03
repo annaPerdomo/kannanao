@@ -257,6 +257,16 @@ export default function Home() {
             </Box>
           )}
 
+          {/* Leaderboard */}
+          {showLeaderboard && leaderboard.length > 0 && (
+            <Box>
+              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}>
+                🏆 Weekly Leaderboard
+              </Typography>
+              <LeaderboardWidget entries={leaderboard} compact />
+            </Box>
+          )}
+
           {/* Assignments */}
           {pendingAssignments.length > 0 && (
             <Box>
@@ -272,16 +282,6 @@ export default function Home() {
                   />
                 ))}
               </Stack>
-            </Box>
-          )}
-
-          {/* Leaderboard */}
-          {showLeaderboard && leaderboard.length > 0 && (
-            <Box>
-              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}>
-                🏆 Weekly Leaderboard
-              </Typography>
-              <LeaderboardWidget entries={leaderboard} compact />
             </Box>
           )}
         </Stack>

@@ -222,6 +222,14 @@ export function CreateAssignmentDialog({
           size="small"
           fullWidth
           slotProps={{ inputLabel: { shrink: true } }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 2,
+              background: alpha('#fff', 0.6),
+              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: brand[400] },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: brand[500] },
+            },
+          }}
         />
       </Box>
     </StyledDialog>

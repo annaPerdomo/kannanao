@@ -82,7 +82,12 @@ export function useAssignments() {
   const updateAssignment = useCallback(
     async (id: string, updates: { title?: string; note?: string; dueDate?: string | null }) => {
       const prev = assignments;
-      setAssignments((a) => a.map((item) => (item.id === id ? { ...item, ...updates } : item)));
+      // Map API keys to DB column names for optimistic update
+      const mapped: Partial<Assignment> = {};
+      if ('title' in updates) mapped.title = updates.title ?? null;
+      if ('note' in updates) mapped.note = updates.note ?? null;
+      if ('dueDate' in updates) mapped.due_date = updates.dueDate ?? null;
+      setAssignments((a) => a.map((item) => (item.id === id ? { ...item, ...mapped } : item)));
       try {
         const res = await fetch(`/api/group/assignments/${id}`, {
           method: 'PATCH',
@@ -90,11 +95,12 @@ export function useAssignments() {
           body: JSON.stringify(updates),
         });
         if (!res.ok) throw new Error();
+        await fetchAssignments();
       } catch {
         setAssignments(prev);
       }
     },
-    [assignments],
+    [assignments, fetchAssignments],
   );
 
   const deleteAssignment = useCallback(

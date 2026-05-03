@@ -1,7 +1,9 @@
 export { ActivityFeed } from './ActivityFeed';
 export { AssignmentCard } from './AssignmentCard';
+export { AssignmentsList } from './AssignmentsList';
 export { CreateAssignmentDialog } from './CreateAssignmentDialog';
 export { CreateInviteDialog } from './CreateInviteDialog';
+export { EditAssignmentDialog } from './EditAssignmentDialog';
 export { EncouragementForm } from './EncouragementForm';
 export { EncouragementInbox } from './EncouragementInbox';
 export { GroupOverview } from './GroupOverview';
