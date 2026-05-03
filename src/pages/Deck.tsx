@@ -135,6 +135,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           onPin={pinDeck}
           onEmbedOpen={() => setEmbedOpen(true)}
           onEmojiChange={updateDeckEmoji}
+          readOnly={isMemberAccount}
         />
 
         <PracticeHero cardCount={cards.length} onStudy={onStudy} onPractice={onPractice} />
@@ -215,7 +216,13 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
             }}
           >
             {cards.map((card) => (
-              <ImageCard key={card.id} card={card} onDelete={deleteCard} onUpdate={updateCard} />
+              <ImageCard
+                key={card.id}
+                card={card}
+                onDelete={deleteCard}
+                onUpdate={updateCard}
+                readOnly={isMemberAccount}
+              />
             ))}
           </Box>
         )}
