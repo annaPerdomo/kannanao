@@ -31,7 +31,7 @@ interface DeckProps {
 }
 
 export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
-  const { user } = useAuth();
+  const { user, isMemberAccount } = useAuth();
   const {
     decks,
     loading: decksLoading,
@@ -135,6 +135,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           onPin={pinDeck}
           onEmbedOpen={() => setEmbedOpen(true)}
           onEmojiChange={updateDeckEmoji}
+          readOnly={isMemberAccount}
         />
 
         <PracticeHero cardCount={cards.length} onStudy={onStudy} onPractice={onPractice} />
@@ -146,23 +147,25 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}
         >
           <Label>Cards in Deck</Label>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<AddIcon sx={{ fontSize: 15 }} />}
-            onClick={() => setAddCardsOpen(true)}
-            sx={{
-              borderRadius: '9px',
-              px: 2,
-              py: '5px',
-              fontSize: '0.76rem',
-              textTransform: 'none',
-              fontWeight: 700,
-              mb: 1.5,
-            }}
-          >
-            Add Cards
-          </Button>
+          {!isMemberAccount && (
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<AddIcon sx={{ fontSize: 15 }} />}
+              onClick={() => setAddCardsOpen(true)}
+              sx={{
+                borderRadius: '9px',
+                px: 2,
+                py: '5px',
+                fontSize: '0.76rem',
+                textTransform: 'none',
+                fontWeight: 700,
+                mb: 1.5,
+              }}
+            >
+              Add Cards
+            </Button>
+          )}
         </Box>
 
         {cards.length === 0 ? (
@@ -176,21 +179,27 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
             }}
           >
             <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
-              No cards yet —{' '}
-              <Box
-                component="span"
-                onClick={() => setAddCardsOpen(true)}
-                sx={{
-                  color: 'primary.main',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                  textUnderlineOffset: 2,
-                }}
-              >
-                add some
-              </Box>{' '}
-              to get started.
+              {isMemberAccount ? (
+                'No cards yet — your organizer will add them soon!'
+              ) : (
+                <>
+                  No cards yet —{' '}
+                  <Box
+                    component="span"
+                    onClick={() => setAddCardsOpen(true)}
+                    sx={{
+                      color: 'primary.main',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: 2,
+                    }}
+                  >
+                    add some
+                  </Box>{' '}
+                  to get started.
+                </>
+              )}
             </Typography>
           </Box>
         ) : (
@@ -207,45 +216,55 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
             }}
           >
             {cards.map((card) => (
-              <ImageCard key={card.id} card={card} onDelete={deleteCard} onUpdate={updateCard} />
+              <ImageCard
+                key={card.id}
+                card={card}
+                onDelete={deleteCard}
+                onUpdate={updateCard}
+                readOnly={isMemberAccount}
+              />
             ))}
           </Box>
         )}
       </Box>
 
-      <AddCardsModal
-        open={addCardsOpen}
-        onClose={() => setAddCardsOpen(false)}
-        onGenerate={handleGenerate}
-        generating={generating}
-        error={error}
-        onAddExisting={(mainViewMode) => {
-          setPendingMainViewMode(mainViewMode);
-          setAddCardsOpen(false);
-          setPickerOpen(true);
-        }}
-        onImportPdf={(mainViewMode) => {
-          setPendingMainViewMode(mainViewMode);
-          setAddCardsOpen(false);
-          setPdfImportOpen(true);
-        }}
-      />
+      {!isMemberAccount && (
+        <>
+          <AddCardsModal
+            open={addCardsOpen}
+            onClose={() => setAddCardsOpen(false)}
+            onGenerate={handleGenerate}
+            generating={generating}
+            error={error}
+            onAddExisting={(mainViewMode) => {
+              setPendingMainViewMode(mainViewMode);
+              setAddCardsOpen(false);
+              setPickerOpen(true);
+            }}
+            onImportPdf={(mainViewMode) => {
+              setPendingMainViewMode(mainViewMode);
+              setAddCardsOpen(false);
+              setPdfImportOpen(true);
+            }}
+          />
 
-      <AddExistingCardsDialog
-        open={pickerOpen}
-        onClose={() => setPickerOpen(false)}
-        targetDeckId={deckId}
-        userId={user?.id ?? ''}
-        onConfirm={(cards) =>
-          copyExistingCards(cards.map((c) => ({ ...c, mainViewMode: pendingMainViewMode })))
-        }
-      />
+          <AddExistingCardsDialog
+            open={pickerOpen}
+            onClose={() => setPickerOpen(false)}
+            targetDeckId={deckId}
+            userId={user?.id ?? ''}
+            onConfirm={(cards) =>
+              copyExistingCards(cards.map((c) => ({ ...c, mainViewMode: pendingMainViewMode })))
+            }
+          />
 
-      <PdfImportModal
-        open={pdfImportOpen}
-        onClose={() => setPdfImportOpen(false)}
-        onAddCards={handlePdfCards}
-      />
+          <PdfImportModal
+            open={pdfImportOpen}
+            onClose={() => setPdfImportOpen(false)}
+            onAddCards={handlePdfCards}
+          />
+        </>
+      )}
 
       <ReviewCardsDialog
         open={reviewOpen}

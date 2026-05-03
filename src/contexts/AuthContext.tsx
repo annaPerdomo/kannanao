@@ -3,6 +3,7 @@ import type { Session, User } from '@supabase/supabase-js';
 import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 
 import { isAdminUser } from '@/lib/admin';
+import type { AccountType } from '@/lib/supabase';
 import {
   loadProfile,
   sb,
@@ -18,6 +19,10 @@ interface AuthContextValue {
   session: Session | null;
   user: User | null;
   isAdmin: boolean;
+  accountType: AccountType;
+  isMemberAccount: boolean;
+  organizerId: string | null;
+  groupId: string | null;
   displayName: string | null;
   colorScheme: ColorScheme | null;
   showTodo: boolean;
@@ -64,6 +69,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [colorScheme, setColorScheme] = useState<ColorScheme | null>(null);
   const [showTodo, setShowTodo] = useState(true);
+  const [accountType, setAccountType] = useState<AccountType>('organizer');
+  const [organizerId, setOrganizerId] = useState<string | null>(null);
+  const [groupId, setGroupId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   async function fetchProfile(userId: string) {
@@ -74,6 +82,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setColorScheme(saved as ColorScheme);
     }
     setShowTodo(profile?.showTodo !== false);
+    setAccountType(profile?.accountType ?? 'organizer');
+    setOrganizerId(profile?.organizerId ?? null);
+    setGroupId(profile?.groupId ?? null);
   }
 
   useEffect(() => {
@@ -98,6 +109,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setDisplayName(null);
         setColorScheme(null);
         setShowTodo(true);
+        setAccountType('organizer');
+        setOrganizerId(null);
+        setGroupId(null);
       }
     });
 
@@ -157,6 +171,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         user: session?.user ?? null,
         isAdmin: isAdminUser(session?.user?.email ?? undefined),
+        accountType,
+        isMemberAccount: accountType === 'member',
+        organizerId,
+        groupId,
         displayName,
         colorScheme,
         showTodo,

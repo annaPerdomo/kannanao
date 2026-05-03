@@ -112,7 +112,7 @@ export function PageHeader({
         <Box sx={{ position: 'relative', zIndex: 1, minWidth: 0 }}>
           <Stack
             direction="row"
-            alignItems="center"
+            alignItems="flex-start"
             spacing={compact ? 1 : 1.5}
             mb={children ? 0.5 : 0}
           >
@@ -139,6 +139,7 @@ export function PageHeader({
                 sx={{
                   fontSize: compact ? { xs: '1.4rem', sm: '1.6rem' } : { xs: '1.6rem', sm: '2rem' },
                   flexShrink: 0,
+                  mt: '2px',
                 }}
               >
                 {emoji}
@@ -163,7 +164,7 @@ export function PageHeader({
                 {title}
               </Typography>
               {subtitle && (
-                <Typography variant="body2" sx={{ color: brand[600], mt: 0.25 }}>
+                <Typography variant="body2" sx={{ color: brand[600], mt: 0.25, ml: '3px' }}>
                   {subtitle}
                 </Typography>
               )}

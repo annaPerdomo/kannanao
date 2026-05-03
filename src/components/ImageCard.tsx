@@ -18,9 +18,10 @@ interface ImageCardProps {
   card: Flashcard;
   onDelete: (id: string) => void;
   onUpdate?: (id: string, patch: Partial<Flashcard>) => Promise<Flashcard | null>;
+  readOnly?: boolean;
 }
 
-export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
+export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const { borderStyle: equippedBorder } = useCardBorder();
@@ -377,65 +378,69 @@ export function ImageCard({ card, onDelete, onUpdate }: ImageCardProps) {
         </Box>
 
         {/* Action buttons */}
-        <Box
-          className="card-actions"
-          sx={{
-            position: 'absolute',
-            top: 46,
-            right: 10,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 0.5,
-            opacity: 0,
-            transition: 'opacity 0.15s ease',
-            zIndex: 10,
-          }}
-        >
-          <Tooltip title="Edit card">
-            <IconButton
-              size="small"
-              aria-label="Edit card"
-              onClick={() => setEditOpen(true)}
-              sx={{
-                width: 26,
-                height: 26,
-                bgcolor: 'rgba(255,255,255,0.95)',
-                backdropFilter: 'blur(6px)',
-                border: `1px solid ${alpha(brand[300], 0.5)}`,
-                color: brand[700],
-                '&:hover': { bgcolor: brand[50] },
-              }}
-            >
-              <EditIcon sx={{ fontSize: 13 }} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete card">
-            <IconButton
-              size="small"
-              aria-label="Delete card"
-              onClick={() => onDelete(localCard.id)}
-              sx={{
-                width: 26,
-                height: 26,
-                bgcolor: 'rgba(255,255,255,0.95)',
-                backdropFilter: 'blur(6px)',
-                border: `1px solid ${alpha(brand[300], 0.5)}`,
-                color: brand[700],
-                '&:hover': { bgcolor: brand[50], color: '#DC2626' },
-              }}
-            >
-              <DeleteOutlineIcon sx={{ fontSize: 13 }} />
-            </IconButton>
-          </Tooltip>
-        </Box>
+        {!readOnly && (
+          <Box
+            className="card-actions"
+            sx={{
+              position: 'absolute',
+              top: 46,
+              right: 10,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 0.5,
+              opacity: 0,
+              transition: 'opacity 0.15s ease',
+              zIndex: 10,
+            }}
+          >
+            <Tooltip title="Edit card">
+              <IconButton
+                size="small"
+                aria-label="Edit card"
+                onClick={() => setEditOpen(true)}
+                sx={{
+                  width: 26,
+                  height: 26,
+                  bgcolor: 'rgba(255,255,255,0.95)',
+                  backdropFilter: 'blur(6px)',
+                  border: `1px solid ${alpha(brand[300], 0.5)}`,
+                  color: brand[700],
+                  '&:hover': { bgcolor: brand[50] },
+                }}
+              >
+                <EditIcon sx={{ fontSize: 13 }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete card">
+              <IconButton
+                size="small"
+                aria-label="Delete card"
+                onClick={() => onDelete(localCard.id)}
+                sx={{
+                  width: 26,
+                  height: 26,
+                  bgcolor: 'rgba(255,255,255,0.95)',
+                  backdropFilter: 'blur(6px)',
+                  border: `1px solid ${alpha(brand[300], 0.5)}`,
+                  color: brand[700],
+                  '&:hover': { bgcolor: brand[50], color: '#DC2626' },
+                }}
+              >
+                <DeleteOutlineIcon sx={{ fontSize: 13 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
       </Box>
 
-      <EditCardDialog
-        card={localCard}
-        open={editOpen}
-        onClose={() => setEditOpen(false)}
-        onSave={handleSave}
-      />
+      {!readOnly && (
+        <EditCardDialog
+          card={localCard}
+          open={editOpen}
+          onClose={() => setEditOpen(false)}
+          onSave={handleSave}
+        />
+      )}
     </>
   );
 }

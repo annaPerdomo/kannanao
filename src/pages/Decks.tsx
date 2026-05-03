@@ -25,7 +25,7 @@ export default function Decks() {
   const router = useRouter();
 
   const { decks, loading, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji } = useDecks();
-  const { user } = useAuth();
+  const { user, isMemberAccount } = useAuth();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [shareDeckId, setShareDeckId] = useState<string | null>(null);
@@ -55,24 +55,26 @@ export default function Decks() {
           subtitle="Pin decks to see them on your home page. ✨"
           onBack={() => router.push('/')}
           action={
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setCreateOpen(true)}
-              sx={{
-                borderRadius: 3,
-                px: 2.5,
-                py: 1,
-                fontWeight: 800,
-                background: `linear-gradient(135deg, ${brand[400]}, ${accent[400]})`,
-                boxShadow: `0 4px 16px ${alpha(brand[400], 0.35)}`,
-                '&:hover': {
-                  background: `linear-gradient(135deg, ${brand[500]}, ${accent[500]})`,
-                },
-              }}
-            >
-              New Deck
-            </Button>
+            !isMemberAccount ? (
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setCreateOpen(true)}
+                sx={{
+                  borderRadius: 3,
+                  px: 2.5,
+                  py: 1,
+                  fontWeight: 800,
+                  background: `linear-gradient(135deg, ${brand[400]}, ${accent[400]})`,
+                  boxShadow: `0 4px 16px ${alpha(brand[400], 0.35)}`,
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${brand[500]}, ${accent[500]})`,
+                  },
+                }}
+              >
+                New Deck
+              </Button>
+            ) : undefined
           }
         />
       </Box>
@@ -89,14 +91,18 @@ export default function Decks() {
         >
           <Typography sx={{ fontSize: '3.5rem', mb: 2 }}>📭</Typography>
           <Typography variant="h6" sx={{ color: brand[700], fontWeight: 700, mb: 1 }}>
-            No decks yet!
+            {isMemberAccount ? 'No decks shared yet!' : 'No decks yet!'}
           </Typography>
           <Typography color="text.secondary" sx={{ mb: 3, fontSize: '0.875rem' }}>
-            Create your first deck to start building flashcards
+            {isMemberAccount
+              ? 'Your organizer will share decks with you soon — check back later!'
+              : 'Create your first deck to start building flashcards'}
           </Typography>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}>
-            Create Deck
-          </Button>
+          {!isMemberAccount && (
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}>
+              Create Deck
+            </Button>
+          )}
         </Box>
       ) : (
         <>

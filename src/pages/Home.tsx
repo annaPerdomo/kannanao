@@ -14,12 +14,17 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { DeckCard } from '@/components/DeckCard';
+import { AssignmentCard, GroupHomeWidget, LeaderboardWidget } from '@/components/Group';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { ShareEmbedDialog } from '@/components/ShareEmbedDialog';
 import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
+import { useGroupMembers } from '@/hooks/useGroup';
+import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
+import { useGroups } from '@/hooks/useGroups';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { useProgress, xpProgressInLevel } from '@/hooks/useProgress';
 import { SHOP_ITEMS, useShop } from '@/hooks/useShop';
@@ -164,13 +169,18 @@ function WelcomeBanner({
 
 export default function Home() {
   const { decks, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, loading } = useDecks();
-  const { user, displayName, showTodo } = useAuth();
+  const { user, displayName, showTodo, isMemberAccount } = useAuth();
   const { progress, spendableXp, addBonusXp } = useProgress();
   const { ohanashikais } = useOhanashikais();
   const { purchases } = useShop();
+  const { assignments } = useAssignments();
+  const { groups } = useGroups();
+  const { members: groupMembers } = useGroupMembers();
+  const { leaderboard } = useGroupLeaderboard();
   const router = useRouter();
   const ownedItemKeys = purchases.map((p) => p.item_key);
 
+  const pendingAssignments = assignments.filter((a) => !a.completed_at);
   const [shareDeckId, setShareDeckId] = useState<string | null>(null);
   const [shareDeckName, setShareDeckName] = useState('');
 
@@ -227,8 +237,76 @@ export default function Home() {
           </Box>
         )}
 
-        {/* Right column — Pinned Decks & Speeches */}
-        <Box sx={{ width: { xs: '100%', md: '50%', lg: '55%' }, minWidth: 0 }}>
+        {/* Right column — Groups/Assignments + Pinned Decks & Speeches */}
+        <Box
+          sx={{
+            width: { xs: '100%', md: showTodo ? '50%' : '100%', lg: showTodo ? '55%' : '100%' },
+            minWidth: 0,
+          }}
+        >
+          {/* ── Organizer pinned groups ── */}
+          {!isMemberAccount && groups.length > 0 && (
+            <Box sx={{ mb: 3 }}>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.5}>
+                <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800 }}>
+                  👥 My Groups
+                </Typography>
+                <Button
+                  size="small"
+                  variant="text"
+                  onClick={() => router.push('/group')}
+                  sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
+                >
+                  All groups →
+                </Button>
+              </Stack>
+              <Stack spacing={1.5}>
+                {(groups.filter((g) => g.pinned).length > 0
+                  ? groups.filter((g) => g.pinned)
+                  : groups.slice(0, 1)
+                ).map((group) => {
+                  const members = groupMembers.filter(() => true); // All members shown for now
+                  return (
+                    <GroupHomeWidget
+                      key={group.id}
+                      members={members}
+                      groupName={group.name}
+                      groupEmoji={group.emoji ?? undefined}
+                      onViewDashboard={() => router.push(`/group/${group.id}`)}
+                    />
+                  );
+                })}
+              </Stack>
+            </Box>
+          )}
+
+          {/* ── Member widgets: leaderboard, assignments ── */}
+          {isMemberAccount && leaderboard.length > 1 && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}>
+                🏆 Weekly Leaderboard
+              </Typography>
+              <LeaderboardWidget entries={leaderboard} compact />
+            </Box>
+          )}
+
+          {isMemberAccount && pendingAssignments.length > 0 && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}>
+                📋 Assignments
+              </Typography>
+              <Stack spacing={1}>
+                {pendingAssignments.map((a) => (
+                  <AssignmentCard
+                    key={a.id}
+                    assignment={a}
+                    onStudy={(deckId) => router.push(`/deck/${deckId}`)}
+                  />
+                ))}
+              </Stack>
+            </Box>
+          )}
+
           {/* ── Pinned Decks ── */}
           <Box sx={{ mb: 3 }}>
             <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.5}>

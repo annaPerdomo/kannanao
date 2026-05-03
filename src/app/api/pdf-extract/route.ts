@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 import type { GeneratedCard } from '@/types/flashcard';
 
 import { rateLimit } from '../_lib/rateLimit';
+import { requireOrganizerAccount } from '../_lib/requireOrganizerAccount';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 3 };
 
@@ -36,6 +37,9 @@ Skip section headers and meta-content. Focus only on actual vocabulary words and
 export async function POST(req: NextRequest) {
   const limited = await rateLimit(req, RATE_LIMIT);
   if (limited) return limited;
+
+  const orgCheck = await requireOrganizerAccount(req);
+  if (orgCheck instanceof NextResponse) return orgCheck;
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {

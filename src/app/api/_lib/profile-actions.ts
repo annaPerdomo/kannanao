@@ -3,6 +3,22 @@ import { NextResponse } from 'next/server';
 
 export const FAKE_DOMAIN = 'kannanao.local';
 
+async function createGroupForOrganizer(
+  client: SupabaseClient,
+  organizerId: string,
+  name: string,
+): Promise<{ groupId: string } | { error: NextResponse }> {
+  const { data, error } = await client
+    .from('groups')
+    .insert({ organizer_id: organizerId, name })
+    .select('id')
+    .single();
+  if (error) {
+    return { error: NextResponse.json({ error: 'Failed to create group.' }, { status: 500 }) };
+  }
+  return { groupId: data.id };
+}
+
 export function getSupabaseConfig() {
   return {
     url: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '',
@@ -106,6 +122,71 @@ export async function handleProfileAction(
     if (profileErr) return NextResponse.json({ error: profileErr.message }, { status: 500 });
 
     return NextResponse.json({ message: 'Display name updated.' });
+  }
+
+  if (action === 'changeAccountType') {
+    const accountType = body.accountType as string | undefined;
+    if (!accountType || !['organizer', 'member'].includes(accountType)) {
+      return NextResponse.json(
+        { error: 'accountType must be "organizer" or "member".' },
+        { status: 400 },
+      );
+    }
+
+    const update: Record<string, unknown> = { account_type: accountType };
+    if (accountType === 'organizer') {
+      update.organizer_id = null;
+      update.group_id = null;
+    } else {
+      const organizerId = body.organizerId as string | undefined;
+      let groupId = body.groupId as string | undefined;
+      const newGroupName = ((body.newGroupName as string) ?? '').trim();
+      if (!organizerId) {
+        return NextResponse.json(
+          { error: 'Member accounts require an organizer.' },
+          { status: 400 },
+        );
+      }
+      if (!groupId && newGroupName) {
+        const created = await createGroupForOrganizer(serviceClient, organizerId, newGroupName);
+        if ('error' in created) return created.error;
+        groupId = created.groupId;
+      }
+      update.organizer_id = organizerId;
+      update.group_id = groupId ?? null;
+    }
+
+    const { error: profileErr } = await serviceClient
+      .from('profiles')
+      .update(update)
+      .eq('id', userId);
+    if (profileErr) return NextResponse.json({ error: profileErr.message }, { status: 500 });
+
+    return NextResponse.json({ message: `Account type changed to ${accountType}.` });
+  }
+
+  if (action === 'changeGroup') {
+    let groupId = body.groupId as string | undefined;
+    const newGroupName = ((body.newGroupName as string) ?? '').trim();
+    const organizerId = body.organizerId as string | undefined;
+
+    if (!groupId && newGroupName && organizerId) {
+      const created = await createGroupForOrganizer(serviceClient, organizerId, newGroupName);
+      if ('error' in created) return created.error;
+      groupId = created.groupId;
+    }
+
+    if (!groupId) {
+      return NextResponse.json({ error: 'groupId is required.' }, { status: 400 });
+    }
+
+    const { error: profileErr } = await serviceClient
+      .from('profiles')
+      .update({ group_id: groupId })
+      .eq('id', userId);
+    if (profileErr) return NextResponse.json({ error: profileErr.message }, { status: 500 });
+
+    return NextResponse.json({ message: 'Group updated.' });
   }
 
   return NextResponse.json({ error: 'Unknown action' }, { status: 400 });

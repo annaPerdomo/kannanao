@@ -1,10 +1,7 @@
--- Baseline migration: snapshot of production schema as of 2026-04-25
--- Generated from information_schema queries against the live Supabase database.
--- RLS policies are managed in the Supabase dashboard and are not captured here.
+-- Baseline schema snapshot (2026-04-25)
+-- RLS policies live in the Supabase dashboard and in later migrations.
 
--- =============================================================================
 -- profiles
--- =============================================================================
 CREATE TABLE profiles (
   id          uuid        PRIMARY KEY REFERENCES auth.users (id),
   username    text        NOT NULL UNIQUE,
@@ -14,9 +11,7 @@ CREATE TABLE profiles (
   created_at  timestamptz NOT NULL DEFAULT now()
 );
 
--- =============================================================================
 -- decks
--- =============================================================================
 CREATE TABLE decks (
   id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id     uuid        NOT NULL REFERENCES auth.users (id),
@@ -28,9 +23,7 @@ CREATE TABLE decks (
   created_at  timestamptz DEFAULT now()
 );
 
--- =============================================================================
 -- cards
--- =============================================================================
 CREATE TABLE cards (
   id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   deck_id         uuid        REFERENCES decks (id),
@@ -48,9 +41,7 @@ CREATE TABLE cards (
   created_at      timestamptz DEFAULT now()
 );
 
--- =============================================================================
 -- deck_shares
--- =============================================================================
 CREATE TABLE deck_shares (
   id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   deck_id     uuid        NOT NULL REFERENCES decks (id),
@@ -60,9 +51,7 @@ CREATE TABLE deck_shares (
   UNIQUE (deck_id, shared_with)
 );
 
--- =============================================================================
 -- ohanashikais (speech memorization scripts)
--- =============================================================================
 CREATE TABLE ohanashikais (
   id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id     uuid        NOT NULL REFERENCES auth.users (id),
@@ -72,9 +61,7 @@ CREATE TABLE ohanashikais (
   created_at  timestamptz DEFAULT now()
 );
 
--- =============================================================================
 -- ohanashikai_lines
--- =============================================================================
 CREATE TABLE ohanashikai_lines (
   id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   ohanashikai_id  uuid        NOT NULL REFERENCES ohanashikais (id),
@@ -83,9 +70,7 @@ CREATE TABLE ohanashikai_lines (
   created_at      timestamptz DEFAULT now()
 );
 
--- =============================================================================
 -- todos
--- =============================================================================
 CREATE TABLE todos (
   id               uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id          uuid        NOT NULL REFERENCES auth.users (id),
@@ -99,9 +84,7 @@ CREATE TABLE todos (
   created_at       timestamptz NOT NULL DEFAULT now()
 );
 
--- =============================================================================
 -- event_types (to-do calendar categories)
--- =============================================================================
 CREATE TABLE event_types (
   id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id     uuid        NOT NULL REFERENCES auth.users (id),
@@ -112,9 +95,7 @@ CREATE TABLE event_types (
   UNIQUE (user_id, name)
 );
 
--- =============================================================================
 -- user_progress
--- =============================================================================
 CREATE TABLE user_progress (
   id                  uuid    PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id             uuid    NOT NULL UNIQUE REFERENCES auth.users (id),
@@ -129,9 +110,7 @@ CREATE TABLE user_progress (
   total_xp_spent      integer NOT NULL DEFAULT 0
 );
 
--- =============================================================================
 -- study_sessions
--- =============================================================================
 CREATE TABLE study_sessions (
   id             uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id        uuid        NOT NULL REFERENCES auth.users (id),
@@ -145,9 +124,7 @@ CREATE TABLE study_sessions (
   ended_at       timestamptz
 );
 
--- =============================================================================
 -- user_achievements
--- =============================================================================
 CREATE TABLE user_achievements (
   id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         uuid        NOT NULL REFERENCES auth.users (id),
@@ -156,9 +133,7 @@ CREATE TABLE user_achievements (
   UNIQUE (user_id, achievement_key)
 );
 
--- =============================================================================
--- user_purchases (cosmetic shop)
--- =============================================================================
+-- user_purchases
 CREATE TABLE user_purchases (
   id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id      uuid        NOT NULL REFERENCES auth.users (id),
@@ -167,9 +142,7 @@ CREATE TABLE user_purchases (
   UNIQUE (user_id, item_key)
 );
 
--- =============================================================================
--- user_equipped (active cosmetics)
--- =============================================================================
+-- user_equipped
 CREATE TABLE user_equipped (
   id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id  uuid NOT NULL REFERENCES auth.users (id),
@@ -178,9 +151,7 @@ CREATE TABLE user_equipped (
   UNIQUE (user_id, slot)
 );
 
--- =============================================================================
--- embed_events (analytics for public deck embeds)
--- =============================================================================
+-- embed_events (public deck embed analytics)
 CREATE TABLE embed_events (
   id               uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   deck_id          text        NOT NULL,
@@ -192,9 +163,7 @@ CREATE TABLE embed_events (
   created_at       timestamptz DEFAULT now()
 );
 
--- =============================================================================
 -- waitlist
--- =============================================================================
 CREATE TABLE waitlist (
   id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   email      text        NOT NULL UNIQUE,

@@ -11,15 +11,14 @@ import {
   ButtonBase,
   CircularProgress,
   IconButton,
-  Popover,
   TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
-import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
 import { useCallback, useRef, useState } from 'react';
 
+import { EmojiPickerPopover } from '@/components/EmojiPickerPopover';
 import { PageHeader } from '@/components/PageHeader';
 import type { Deck } from '@/types/deck';
 
@@ -31,6 +30,7 @@ interface DeckHeaderProps {
   onPin: (id: string, pinned: boolean) => void;
   onEmbedOpen: () => void;
   onEmojiChange: (id: string, emoji: string | null) => void;
+  readOnly?: boolean;
 }
 
 export function DeckHeader({
@@ -41,8 +41,9 @@ export function DeckHeader({
   onPin,
   onEmbedOpen,
   onEmojiChange,
+  readOnly,
 }: DeckHeaderProps) {
-  const { brand, accent } = useTheme().palette;
+  const { brand } = useTheme().palette;
 
   const [editing, setEditing] = useState(false);
   const [renaming, setRenaming] = useState(false);
@@ -195,86 +196,105 @@ export function DeckHeader({
       <PageHeader
         onBack={onBack}
         title={
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Tooltip title={deck.emoji ? 'Change emoji' : 'Add emoji'}>
-              <ButtonBase
-                aria-label={deck.emoji ? 'Change deck emoji' : 'Add deck emoji'}
-                onClick={(e) => setEmojiAnchor(e.currentTarget)}
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+            {readOnly ? (
+              <Box
                 sx={{
-                  fontSize: { xs: '1.5rem', sm: '1.75rem' },
-                  lineHeight: 1,
-                  borderRadius: '10px',
-                  p: 0.5,
+                  fontSize: { xs: '1.4rem', sm: '1.6rem' },
+                  alignSelf: 'center',
                   flexShrink: 0,
-                  transition: 'transform 0.15s',
-                  '&:hover': { transform: 'scale(1.15)', bgcolor: alpha('#FFFFFF', 0.5) },
                 }}
               >
-                {deck.emoji || '📚'}
-              </ButtonBase>
-            </Tooltip>
+                {deck.emoji || ''}
+              </Box>
+            ) : (
+              <Tooltip title={deck.emoji ? 'Change emoji' : 'Add emoji'}>
+                <ButtonBase
+                  aria-label={deck.emoji ? 'Change deck emoji' : 'Add deck emoji'}
+                  onClick={(e) => setEmojiAnchor(e.currentTarget)}
+                  sx={{
+                    fontSize: { xs: '1.5rem', sm: '1.75rem' },
+                    lineHeight: 1,
+                    borderRadius: '10px',
+                    p: 0.5,
+                    alignSelf: 'center',
+                    flexShrink: 0,
+                    transition: 'transform 0.15s',
+                    '&:hover': { transform: 'scale(1.15)', bgcolor: alpha('#FFFFFF', 0.5) },
+                  }}
+                >
+                  {deck.emoji || ''}
+                </ButtonBase>
+              </Tooltip>
+            )}
             <Box sx={{ minWidth: 0 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                 <Typography variant="h4" sx={{ color: brand[800], lineHeight: 1.1, minWidth: 0 }}>
                   {deck.name}
                 </Typography>
-                <Tooltip title="Rename deck">
-                  <IconButton
-                    size="small"
-                    aria-label="Rename deck"
-                    onClick={startEdit}
-                    sx={{
-                      width: 26,
-                      height: 26,
-                      borderRadius: '7px',
-                      flexShrink: 0,
-                      color: alpha(brand[700], 0.45),
-                      '&:hover': { bgcolor: alpha('#FFFFFF', 0.5), color: brand[700] },
-                    }}
-                  >
-                    <EditIcon sx={{ fontSize: 13 }} />
-                  </IconButton>
-                </Tooltip>
+                {!readOnly && (
+                  <Tooltip title="Rename deck">
+                    <IconButton
+                      size="small"
+                      aria-label="Rename deck"
+                      onClick={startEdit}
+                      sx={{
+                        width: 26,
+                        height: 26,
+                        borderRadius: '7px',
+                        flexShrink: 0,
+                        color: alpha(brand[700], 0.45),
+                        '&:hover': { bgcolor: alpha('#FFFFFF', 0.5), color: brand[700] },
+                      }}
+                    >
+                      <EditIcon sx={{ fontSize: 13 }} />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </Box>
+              <Typography variant="body2" sx={{ color: brand[600], mt: 0.25 }}>
+                {deck.description ? `${deck.description}  ·  ${cardLabel}` : cardLabel}
+              </Typography>
             </Box>
           </Box>
         }
-        subtitle={deck.description ? `${deck.description}  ·  ${cardLabel}` : cardLabel}
         compact
         mb={3}
         action={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Button
-              variant={deck.isPublic ? 'outlined' : 'contained'}
-              size="small"
-              startIcon={
-                deck.isPublic ? (
-                  <CheckIcon sx={{ fontSize: 15 }} />
-                ) : (
-                  <IosShareIcon sx={{ fontSize: 15 }} />
-                )
-              }
-              onClick={onEmbedOpen}
-              sx={{
-                borderRadius: '9px',
-                px: 2,
-                py: '5px',
-                fontSize: '0.76rem',
-                textTransform: 'none',
-                fontWeight: 700,
-                ...(deck.isPublic && {
-                  borderColor: alpha(brand[500], 0.5),
-                  color: brand[700],
-                  bgcolor: alpha(brand[100], 0.6),
-                  '&:hover': {
-                    borderColor: brand[500],
-                    bgcolor: alpha(brand[100], 0.9),
-                  },
-                }),
-              }}
-            >
-              {deck.isPublic ? 'Shared' : 'Share'}
-            </Button>
+            {!readOnly && (
+              <Button
+                variant={deck.isPublic ? 'outlined' : 'contained'}
+                size="small"
+                startIcon={
+                  deck.isPublic ? (
+                    <CheckIcon sx={{ fontSize: 15 }} />
+                  ) : (
+                    <IosShareIcon sx={{ fontSize: 15 }} />
+                  )
+                }
+                onClick={onEmbedOpen}
+                sx={{
+                  borderRadius: '9px',
+                  px: 2,
+                  py: '5px',
+                  fontSize: '0.76rem',
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  ...(deck.isPublic && {
+                    borderColor: alpha(brand[500], 0.5),
+                    color: brand[700],
+                    bgcolor: alpha(brand[100], 0.6),
+                    '&:hover': {
+                      borderColor: brand[500],
+                      bgcolor: alpha(brand[100], 0.9),
+                    },
+                  }),
+                }}
+              >
+                {deck.isPublic ? 'Shared' : 'Share'}
+              </Button>
+            )}
             <Tooltip title={deck.pinned ? 'Unpin from home' : 'Pin to home'}>
               <IconButton
                 size="small"
@@ -305,73 +325,14 @@ export function DeckHeader({
         }
       />
 
-      <Popover
-        open={Boolean(emojiAnchor)}
-        anchorEl={emojiAnchor}
-        onClose={() => setEmojiAnchor(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Box
-          sx={{
-            '--epr-bg-color': brand[50],
-            '--epr-category-label-bg-color': brand[100],
-            '--epr-hover-bg-color': alpha(brand[300], 0.25),
-            '--epr-focus-bg-color': alpha(brand[300], 0.35),
-            '--epr-highlight-color': brand[400],
-            '--epr-search-border-color': alpha(brand[400], 0.4),
-            '--epr-header-overlay-color': brand[50],
-            '--epr-category-icon-active-color': accent[500],
-            '--epr-search-input-bg-color': '#fff',
-            '--epr-emoji-size': '24px',
-            borderRadius: 3,
-            overflow: 'hidden',
-          }}
-        >
-          <EmojiPicker
-            theme={Theme.LIGHT}
-            onEmojiClick={(data: EmojiClickData) => {
-              onEmojiChange(deck.id, data.emoji);
-              setEmojiAnchor(null);
-            }}
-            lazyLoadEmojis
-          />
-        </Box>
-        {deck.emoji && (
-          <Box
-            sx={{
-              px: 1.5,
-              py: 1,
-              borderTop: `1px solid ${alpha(brand[300], 0.25)}`,
-              display: 'flex',
-              justifyContent: 'center',
-            }}
-          >
-            <Box
-              component="button"
-              onClick={() => {
-                onEmojiChange(deck.id, null);
-                setEmojiAnchor(null);
-              }}
-              sx={{
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                color: brand[500],
-                background: 'none',
-                border: `1.5px solid ${alpha(brand[400], 0.35)}`,
-                borderRadius: 2,
-                px: 2,
-                py: 0.5,
-                cursor: 'pointer',
-                transition: 'all 0.12s ease',
-                '&:hover': { bgcolor: alpha(brand[100], 0.6), borderColor: brand[400] },
-              }}
-            >
-              Remove emoji
-            </Box>
-          </Box>
-        )}
-      </Popover>
+      {!readOnly && (
+        <EmojiPickerPopover
+          anchorEl={emojiAnchor}
+          onClose={() => setEmojiAnchor(null)}
+          onSelect={(emoji) => onEmojiChange(deck.id, emoji)}
+          onRemove={deck.emoji ? () => onEmojiChange(deck.id, null) : undefined}
+        />
+      )}
     </>
   );
 }

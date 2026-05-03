@@ -9,6 +9,7 @@ AI-powered Japanese flashcard studio with spaced practice modes, gamification, a
 - **Speech memorization** (Ohanashikai) — upload scripts line-by-line, practice with read-through and line-recall modes
 - **Gamification** — XP, levels, streaks, achievements, and a cosmetic shop (card borders, study buddies, themes)
 - **Deck sharing** — share decks with other users or embed them publicly via iframe
+- **Group management** — organizer/member accounts with QR code invites, group dashboard, study assignments, encouragement messages, weekly leaderboard, and activity feed
 - **To-do tracker** — recurring task system with calendar view, integrated into the home page
 - **10 color themes** — each with its own font pairing and design tokens
 
@@ -17,9 +18,13 @@ AI-powered Japanese flashcard studio with spaced practice modes, gamification, a
 ```
 src/
 ├── app/             # Next.js App Router (pages + API routes)
-│   └── api/         # Gemini, Unsplash, PDF extraction, public deck endpoints
+│   ├── api/         # Gemini, Unsplash, PDF extraction, public deck endpoints
+│   ├── api/group/   # Group management: invites, members, assignments, encouragements, leaderboard, feed
+│   ├── group/       # Organizer group dashboard page
+│   └── join/        # Public invite join page
 ├── components/      # React components (each folder ≤300 lines per file)
-├── contexts/        # Auth, XP animation, card border, theme providers
+│   └── Group/       # GroupOverview, MemberCard, MemberDetail, LeaderboardWidget, etc.
+├── contexts/        # Auth (with account roles), XP animation, card border, theme providers
 ├── hooks/           # Data-fetching hooks with optimistic updates
 ├── lib/             # Supabase client, DB adapters, logger, utilities
 ├── services/        # API client functions
@@ -27,9 +32,9 @@ src/
 └── types/           # Shared TypeScript interfaces
 ```
 
-**Data flow**: Components call hooks → hooks call Supabase directly (reads) or API routes (AI generation) → hooks expose optimistic state + rollback on error.
+**Data flow**: Components call hooks → hooks call Supabase directly (reads) or API routes (AI generation, group management) → hooks expose optimistic state + rollback on error.
 
-**API routes** are thin wrappers around external services (Gemini, Unsplash, Supabase Storage). Each route has input validation (Zod), rate limiting, and structured logging.
+**API routes** are thin wrappers around external services (Gemini, Unsplash, Supabase Storage). Each route has input validation (Zod), rate limiting, and structured logging. Group API routes use a service role Supabase client to bypass RLS and `requireOrganizerAccount()` for auth gating.
 
 ## Tech stack
 
@@ -51,7 +56,8 @@ pnpm install
 
 # Set up environment variables (see .env.example or create .env.local)
 # Required: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
-# Optional: GEMINI_API_KEY, UNSPLASH_ACCESS_KEY, SUPABASE_SERVICE_ROLE_KEY
+# Required for group features: SUPABASE_SERVICE_ROLE_KEY
+# Optional: GEMINI_API_KEY, UNSPLASH_ACCESS_KEY
 
 pnpm dev          # Start dev server on :3000
 pnpm build        # Production build
@@ -62,6 +68,20 @@ pnpm test:e2e     # Playwright E2E tests (requires dev server running)
 ```
 
 A Husky pre-push hook runs `format:check`, `lint`, `tsc --noEmit`, and `test:run` before every push.
+
+## Group system
+
+Kannanao supports **organizer** and **member** account types. Organizers have full access and can create invite codes (displayed as QR codes) to onboard members. Members get a focused study experience — they can practice shared decks, earn XP, and view leaderboards, but cannot access AI generation or create decks.
+
+Key features:
+
+- **QR invite flow** — organizers generate invite codes; members scan/visit a join link to create their account
+- **Group dashboard** (`/group`) — organizer sees member progress, stats, achievements, and recent activity
+- **Study assignments** — organizers assign decks with optional due dates; auto-completed when the member studies the deck
+- **Encouragement messages** — organizers send motivational messages; members see them via a NavBar inbox
+- **Weekly leaderboard** — toggleable per organizer, visible to the whole group
+
+Database: 3 new tables (`invite_codes`, `assignments`, `encouragements`) and 3 new columns on `profiles` (`account_type`, `organizer_id`, `show_leaderboard`). Migration: `supabase/migrations/20260426000000_add_group_system.sql`.
 
 ## Trade-offs
 

@@ -17,6 +17,7 @@ import { useRef, useState } from 'react';
 
 import { ConfirmRemoveImageDialog } from '@/components/ConfirmRemoveImageDialog';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   deleteStorageImage,
   encodeUnsplashUrl,
@@ -45,6 +46,7 @@ export function ImageSection({
 }: ImageSectionProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+  const { isMemberAccount } = useAuth();
   const [imageQuery, setImageQuery] = useState(initialQuery);
   const [savingImage, setSavingImage] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -196,89 +198,99 @@ export function ImageSection({
         </Box>
       )}
 
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
-        <TextField
-          label="Image Search Query"
-          value={imageQuery}
-          onChange={(e) => {
-            setImageQuery(e.target.value);
-            setImageError('');
-            onQueryChange?.(e.target.value);
-          }}
-          placeholder="Phrase that describes this definition"
-          size="small"
-          fullWidth
-          slotProps={{ inputLabel: { shrink: true } }}
-          helperText={imageError}
-          error={!!imageError}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              handleRegenerateImage();
-            }
-          }}
-          sx={{
-            ...tfSx,
-            '& .MuiFormHelperText-root': {
-              ...tfSx['& .MuiFormHelperText-root'],
-              color: imageError ? 'error.main' : alpha(brand[700], 0.6),
-            },
-          }}
-        />
-        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-          <Tooltip title={previewUrl ? 'Regenerate from Unsplash' : 'Search Unsplash'}>
-            <span>
-              <Button
-                variant="outlined"
-                onClick={handleRegenerateImage}
-                disabled={busy}
-                startIcon={
-                  savingImage ? (
-                    <CircularProgress size={13} sx={{ color: brand[500] }} />
-                  ) : previewUrl ? (
-                    <AutorenewIcon sx={{ fontSize: 15 }} />
-                  ) : (
-                    <ImageSearchIcon sx={{ fontSize: 15 }} />
-                  )
-                }
-                sx={btnSx}
-              >
-                {savingImage ? 'Searching...' : previewUrl ? 'Regen' : 'Fetch'}
-              </Button>
-            </span>
-          </Tooltip>
-          <Tooltip title="Upload your own image">
-            <span>
-              <Button
-                variant="outlined"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={busy}
-                startIcon={
-                  uploading ? (
-                    <CircularProgress size={13} sx={{ color: brand[500] }} />
-                  ) : (
-                    <FileUploadIcon sx={{ fontSize: 15 }} />
-                  )
-                }
-                sx={btnSx}
-              >
-                {uploading ? 'Uploading...' : 'Upload'}
-              </Button>
-            </span>
-          </Tooltip>
+      {isMemberAccount ? (
+        !previewUrl && (
+          <Typography
+            sx={{ fontSize: '0.75rem', color: alpha(brand[700], 0.6), fontStyle: 'italic' }}
+          >
+            Images are managed by your organizer.
+          </Typography>
+        )
+      ) : (
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+          <TextField
+            label="Image Search Query"
+            value={imageQuery}
+            onChange={(e) => {
+              setImageQuery(e.target.value);
+              setImageError('');
+              onQueryChange?.(e.target.value);
+            }}
+            placeholder="Phrase that describes this definition"
+            size="small"
+            fullWidth
+            slotProps={{ inputLabel: { shrink: true } }}
+            helperText={imageError}
+            error={!!imageError}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleRegenerateImage();
+              }
+            }}
+            sx={{
+              ...tfSx,
+              '& .MuiFormHelperText-root': {
+                ...tfSx['& .MuiFormHelperText-root'],
+                color: imageError ? 'error.main' : alpha(brand[700], 0.6),
+              },
+            }}
+          />
+          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+            <Tooltip title={previewUrl ? 'Regenerate from Unsplash' : 'Search Unsplash'}>
+              <span>
+                <Button
+                  variant="outlined"
+                  onClick={handleRegenerateImage}
+                  disabled={busy}
+                  startIcon={
+                    savingImage ? (
+                      <CircularProgress size={13} sx={{ color: brand[500] }} />
+                    ) : previewUrl ? (
+                      <AutorenewIcon sx={{ fontSize: 15 }} />
+                    ) : (
+                      <ImageSearchIcon sx={{ fontSize: 15 }} />
+                    )
+                  }
+                  sx={btnSx}
+                >
+                  {savingImage ? 'Searching...' : previewUrl ? 'Regen' : 'Fetch'}
+                </Button>
+              </span>
+            </Tooltip>
+            <Tooltip title="Upload your own image">
+              <span>
+                <Button
+                  variant="outlined"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={busy}
+                  startIcon={
+                    uploading ? (
+                      <CircularProgress size={13} sx={{ color: brand[500] }} />
+                    ) : (
+                      <FileUploadIcon sx={{ fontSize: 15 }} />
+                    )
+                  }
+                  sx={btnSx}
+                >
+                  {uploading ? 'Uploading...' : 'Upload'}
+                </Button>
+              </span>
+            </Tooltip>
+          </Box>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleUploadImage(file);
+              e.target.value = '';
+            }}
+          />
         </Box>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          hidden
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleUploadImage(file);
-            e.target.value = '';
-          }}
-        />
-      </Box>
+      )}
 
       <ConfirmRemoveImageDialog
         open={confirmOpen}

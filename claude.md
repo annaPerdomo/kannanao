@@ -66,15 +66,19 @@ Next.js 15 app with React 19, MUI 7, Supabase, TypeScript.
 - Client exported as `sb`
 - DB-to-app adapter functions: `dbCardToApp`, `dbDeckToApp`
 - Tables: `decks` (id, name, description, created_at) and `cards` (id, deck_id, word, reading, meaning, image_url, example_jp, example_en, main_view_mode)
+- Group tables: `invite_codes`, `assignments`, `encouragements` (see Group System section below)
+- `profiles` has `account_type` ('organizer'|'member'), `organizer_id` (FK), `show_leaderboard` (boolean)
 - Check `isConfigured()` before making DB calls
 
 **API routes** (`src/app/api/`):
 
-- `/api/generate` — calls Google Gemini API to generate flashcard fields (POST)
-- `/api/images` — fetches images from Unsplash by query (GET)
-- `/api/furigana` — calls Google Gemini API to add furigana readings to Japanese text using `{kanji|reading}` format (POST)
-- `/api/pdf-extract` — calls Google Gemini API to extract vocabulary from a PDF and generate full flashcard data (POST)
+- `/api/generate` — calls Google Gemini API to generate flashcard fields (POST, organizer-only)
+- `/api/images` — fetches images from Unsplash by query (GET, organizer-only)
+- `/api/furigana` — calls Google Gemini API to add furigana readings to Japanese text using `{kanji|reading}` format (POST, organizer-only)
+- `/api/pdf-extract` — calls Google Gemini API to extract vocabulary from a PDF and generate full flashcard data (POST, organizer-only)
 - `/api/public/deck/[id]` — public read-only endpoint to fetch a deck and its cards by ID without auth (GET)
+- `/api/group/*` — group management routes (see Group System section below)
+- `/api/join` — public invite code validation (GET) and member account creation (POST)
 
 All API routes that call external services use **rate limiting** (`src/app/api/_lib/rateLimit.ts`) and **structured logging** (`src/lib/logger.ts`). New API routes should follow the same pattern:
 
@@ -102,8 +106,60 @@ Rate limiting is IP-based and automatically bypassed for the admin user (verifie
 **Database migrations** (`supabase/migrations/`):
 
 - Baseline migration captures the full production schema
+- `20260426000000_add_group_system.sql` — adds group system tables and profile columns
 - Supabase CLI is linked to the project (`supabase link`)
 - New schema changes should be added as incremental migration files
+
+## Group System (Organizer/Member Accounts)
+
+Two account types: **organizer** (full access) and **member** (limited, no paid API access). Organizers invite members via QR codes, monitor progress, assign decks, and send encouragement.
+
+### Key patterns
+
+**Auth gating (server-side)**: `requireOrganizerAccount()` in `src/app/api/_lib/requireOrganizerAccount.ts` — extracts Bearer token, checks profile, returns 403 for members. Used by all 4 cost-incurring API routes and organizer-only group routes.
+
+**Auth gating (client-side)**: `isMemberAccount` from `useAuth()` — boolean from `AuthContext` that gates UI (hides deck creation, AI generation, group nav). Use this for conditional rendering, never for security.
+
+**Service role client**: `getServiceSupabase()` in `src/app/api/group/_lib/serviceSupabase.ts` — bypasses RLS for group API routes. Requires `SUPABASE_SERVICE_ROLE_KEY` env var.
+
+### Group API routes (`src/app/api/group/`)
+
+| Route                                       | Auth            | Purpose                    |
+| ------------------------------------------- | --------------- | -------------------------- |
+| `POST /api/group/invite`                    | Organizer       | Create invite code         |
+| `GET /api/group/invite`                     | Organizer       | List invites               |
+| `DELETE /api/group/invite/[id]`             | Organizer       | Revoke invite              |
+| `GET /api/group/members`                    | Organizer       | List members with progress |
+| `GET /api/group/members/[id]`               | Organizer       | Detailed member stats      |
+| `POST /api/group/assignments`               | Organizer       | Create assignment(s)       |
+| `GET /api/group/assignments`                | Both (filtered) | List assignments           |
+| `PATCH /api/group/assignments/[id]`         | Organizer       | Update assignment          |
+| `DELETE /api/group/assignments/[id]`        | Organizer       | Remove assignment          |
+| `POST /api/group/assignments/complete`      | Any auth        | Auto-complete on study     |
+| `POST /api/group/encouragements`            | Organizer       | Send encouragement         |
+| `GET /api/group/encouragements`             | Member          | Get messages               |
+| `PATCH /api/group/encouragements/[id]/read` | Member          | Mark as read               |
+| `GET /api/group/leaderboard`                | Both            | Weekly rankings            |
+| `GET /api/group/feed`                       | Organizer       | Activity feed              |
+
+All group routes follow: rate limit check → auth check → service supabase.
+
+### Group hooks
+
+- `useInvites()` — invite CRUD with optimistic revoke
+- `useGroupMembers()` / `useMemberDetail()` / `useGroupFeed()` — in `src/hooks/useGroup.ts`
+- `useGroupLeaderboard()` — weekly rankings
+- `useAssignments()` — assignment CRUD with optimistic updates
+- `useEncouragements()` — send, markAsRead, markAllAsRead, unreadCount
+
+### Group components (`src/components/Group/`)
+
+GroupOverview, MemberCard, MemberDetail, LeaderboardWidget, ActivityFeed, CreateAssignmentDialog, AssignmentCard, CreateInviteDialog, InviteQRCode, InviteList, EncouragementForm, EncouragementInbox — all barrel-exported from `index.ts`.
+
+### Group pages
+
+- `/group` — organizer dashboard (members, leaderboard, feed, assignments)
+- `/join/[code]` — public join page for QR invite flow
 
 ## Hooks Pattern
 
@@ -175,6 +231,11 @@ vi.mock('@/hooks/useProgress', () => ({ useProgress: () => ({ startSession: vi.f
 
 // Heavy/animated child components — stub to null
 vi.mock('@/components/SpeakButton', () => ({ SpeakButton: () => null }));
+
+// requireOrganizerAccount — pass through for API route tests
+vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
+  requireOrganizerAccount: vi.fn().mockResolvedValue({ id: 'org1', username: 'organizer', account_type: 'organizer' }),
+}));
 ```
 
 When testing a hook that makes Supabase calls, use the **thenable chain** pattern from `src/lib/__tests__/supabase.db.test.ts` so `await sb.from(...).select()...` resolves correctly.

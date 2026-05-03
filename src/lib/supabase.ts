@@ -79,13 +79,6 @@ export function dbCardToApp(card: SupabaseCardRow): Flashcard {
   };
 }
 
-const DECK_FALLBACK_EMOJIS = ['🌸', '🐱', '✨', '🌷', '🍡', '🎀', '🐰', '🌙', '🍓', '🦋'];
-function deckFallbackEmoji(id: string): string {
-  let n = 0;
-  for (let i = 0; i < id.length; i++) n += id.charCodeAt(i);
-  return DECK_FALLBACK_EMOJIS[n % DECK_FALLBACK_EMOJIS.length];
-}
-
 export function dbDeckToApp(deck: SupabaseDeckRow, cardCount: number, currentUserId: string): Deck {
   return {
     id: deck.id,
@@ -107,6 +100,7 @@ export async function loadDecks(userId: string): Promise<Deck[]> {
     return [];
   }
 
+  // Fetch user's own decks
   const { data: deckRows, error: deckError } = await sb
     .from('decks')
     .select('*')
@@ -117,9 +111,30 @@ export async function loadDecks(userId: string): Promise<Deck[]> {
     return [];
   }
 
+  // Fetch decks assigned to this user (member viewing organizer's decks)
+  const { data: assignedRows } = await sb
+    .from('assignments')
+    .select('deck_id')
+    .eq('member_id', userId);
+
+  const ownDeckIds = new Set((deckRows ?? []).map((d) => d.id));
+  const assignedDeckIds = (assignedRows ?? [])
+    .map((a) => a.deck_id as string)
+    .filter((id) => !ownDeckIds.has(id));
+
+  let assignedDecks: typeof deckRows = [];
+  if (assignedDeckIds.length > 0) {
+    const { data } = await sb.from('decks').select('*').in('id', assignedDeckIds);
+    assignedDecks = data ?? [];
+  }
+
+  const allDecks = [...(deckRows ?? []), ...assignedDecks];
+  const allDeckIds = allDecks.map((d) => d.id);
+
   const { data: cardRows, error: cardError } = await sb
     .from('cards')
     .select('*')
+    .in('deck_id', allDeckIds)
     .order('created_at', { ascending: true });
   if (cardError) {
     console.error('Error loading cards', cardError);
@@ -128,7 +143,7 @@ export async function loadDecks(userId: string): Promise<Deck[]> {
 
   const cards = cardRows ?? [];
 
-  return (deckRows ?? []).map((deck) => {
+  return allDecks.map((deck) => {
     const deckCards = cards.filter((card) => String(card.deck_id) === deck.id);
     return dbDeckToApp(deck, deckCards.length, userId);
   });
@@ -382,15 +397,20 @@ export async function upsertProfile(
   if (error) console.error('upsertProfile error', error);
 }
 
+export type AccountType = 'organizer' | 'member';
+
 export async function loadProfile(userId: string): Promise<{
   username: string;
   displayName: string | null;
   colorScheme: string | null;
   showTodo: boolean;
+  accountType: AccountType;
+  organizerId: string | null;
+  groupId: string | null;
 } | null> {
   const { data, error } = await sb
     .from('profiles')
-    .select('username, display_name, color_scheme, show_todo')
+    .select('username, display_name, color_scheme, show_todo, account_type, organizer_id, group_id')
     .eq('id', userId)
     .single();
   if (error || !data) return null;
@@ -399,6 +419,9 @@ export async function loadProfile(userId: string): Promise<{
     displayName: data.display_name ?? null,
     colorScheme: data.color_scheme ?? null,
     showTodo: data.show_todo !== false,
+    accountType: (data.account_type as AccountType) ?? 'organizer',
+    organizerId: data.organizer_id ?? null,
+    groupId: data.group_id ?? null,
   };
 }
 

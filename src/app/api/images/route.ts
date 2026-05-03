@@ -1,12 +1,16 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { rateLimit } from '../_lib/rateLimit';
+import { requireOrganizerAccount } from '../_lib/requireOrganizerAccount';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
 
 export async function GET(req: NextRequest) {
   const limited = await rateLimit(req, RATE_LIMIT);
   if (limited) return limited;
+
+  const orgCheck = await requireOrganizerAccount(req);
+  if (orgCheck instanceof NextResponse) return orgCheck;
 
   try {
     const query = req.nextUrl.searchParams.get('query');

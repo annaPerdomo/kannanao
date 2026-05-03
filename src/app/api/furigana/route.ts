@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../_lib/rateLimit';
+import { requireOrganizerAccount } from '../_lib/requireOrganizerAccount';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 10 };
 
@@ -17,6 +18,9 @@ const FuriganaSchema = z.object({
 export async function POST(req: NextRequest) {
   const limited = await rateLimit(req, RATE_LIMIT);
   if (limited) return limited;
+
+  const orgCheck = await requireOrganizerAccount(req);
+  if (orgCheck instanceof NextResponse) return orgCheck;
 
   const body = await req.json().catch(() => null);
   const parsed = FuriganaSchema.safeParse(body);

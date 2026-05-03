@@ -1,0 +1,237 @@
+'use client';
+import {
+  Box,
+  Button,
+  Checkbox,
+  CircularProgress,
+  FormControlLabel,
+  TextField,
+  Typography,
+} from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useState } from 'react';
+
+import { StyledDialog } from '@/components/StyledDialog';
+import type { GroupMember } from '@/hooks/useGroup';
+
+interface Deck {
+  id: string;
+  name: string;
+  emoji?: string | null;
+}
+
+interface CreateAssignmentDialogProps {
+  open: boolean;
+  onClose: () => void;
+  members: GroupMember[];
+  decks: Deck[];
+  /** Pre-selected member IDs (e.g. when opened from member detail) */
+  preSelectedMembers?: string[];
+  onCreate: (opts: {
+    memberIds: string[];
+    deckId: string;
+    title?: string;
+    note?: string;
+    dueDate?: string;
+  }) => Promise<void>;
+}
+
+export function CreateAssignmentDialog({
+  open,
+  onClose,
+  members,
+  decks,
+  preSelectedMembers,
+  onCreate,
+}: CreateAssignmentDialogProps) {
+  const theme = useTheme();
+  const { brand, accent } = theme.palette;
+
+  const [selectedMembers, setSelectedMembers] = useState<Set<string>>(
+    new Set(preSelectedMembers ?? []),
+  );
+  const [selectedDeck, setSelectedDeck] = useState<string>('');
+  const [note, setNote] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleToggleMember = (id: string) => {
+    setSelectedMembers((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleCreate = async () => {
+    if (selectedMembers.size === 0 || !selectedDeck) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await onCreate({
+        memberIds: Array.from(selectedMembers),
+        deckId: selectedDeck,
+        note: note.trim() || undefined,
+        dueDate: dueDate || undefined,
+      });
+      // Reset and close
+      setSelectedMembers(new Set(preSelectedMembers ?? []));
+      setSelectedDeck('');
+      setNote('');
+      setDueDate('');
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create assignment');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <StyledDialog
+      open={open}
+      onClose={onClose}
+      title="Assign a Deck"
+      subtitle="Choose a deck and members to assign it to"
+      maxWidth="sm"
+      actions={
+        <>
+          <Button
+            onClick={onClose}
+            disabled={saving}
+            sx={{ textTransform: 'none', color: 'text.secondary' }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleCreate}
+            disabled={saving || selectedMembers.size === 0 || !selectedDeck}
+            startIcon={saving ? <CircularProgress size={14} sx={{ color: 'white' }} /> : undefined}
+            sx={{
+              textTransform: 'none',
+              fontWeight: 700,
+              borderRadius: '10px',
+              background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
+              '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
+            }}
+          >
+            {saving ? 'Assigning...' : 'Assign'}
+          </Button>
+        </>
+      }
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {error && <Typography sx={{ color: 'error.main', fontSize: '0.8rem' }}>{error}</Typography>}
+
+        {/* Deck selection */}
+        <Box>
+          <Typography
+            sx={{
+              fontSize: '0.65rem',
+              fontWeight: 800,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: brand[500],
+              mb: 1,
+            }}
+          >
+            Select Deck
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+            {decks.map((deck) => (
+              <Box
+                key={deck.id}
+                onClick={() => setSelectedDeck(deck.id)}
+                sx={{
+                  px: 1.5,
+                  py: 0.75,
+                  borderRadius: 2,
+                  border: `1.5px solid ${selectedDeck === deck.id ? brand[500] : alpha(brand[300], 0.4)}`,
+                  bgcolor: selectedDeck === deck.id ? alpha(brand[100], 0.8) : 'transparent',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  '&:hover': { borderColor: brand[400] },
+                }}
+              >
+                <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: brand[800] }}>
+                  {deck.emoji || '📚'} {deck.name}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Member selection */}
+        <Box>
+          <Typography
+            sx={{
+              fontSize: '0.65rem',
+              fontWeight: 800,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: brand[500],
+              mb: 0.5,
+            }}
+          >
+            Assign To
+          </Typography>
+          <Box sx={{ maxHeight: 180, overflow: 'auto' }}>
+            {members.map((m) => (
+              <FormControlLabel
+                key={m.id}
+                control={
+                  <Checkbox
+                    checked={selectedMembers.has(m.id)}
+                    onChange={() => handleToggleMember(m.id)}
+                    size="small"
+                    sx={{ '&.Mui-checked': { color: brand[500] } }}
+                  />
+                }
+                label={
+                  <Typography sx={{ fontSize: '0.82rem' }}>
+                    {m.displayName || m.username}
+                  </Typography>
+                }
+              />
+            ))}
+          </Box>
+        </Box>
+
+        {/* Note */}
+        <TextField
+          label="Note (optional)"
+          placeholder="Focus on chapter 3 vocab"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          size="small"
+          fullWidth
+          multiline
+          rows={2}
+          slotProps={{ htmlInput: { maxLength: 500 } }}
+        />
+
+        {/* Due date */}
+        <TextField
+          label="Due Date (optional)"
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          size="small"
+          fullWidth
+          slotProps={{ inputLabel: { shrink: true } }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 2,
+              background: alpha('#fff', 0.6),
+              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: brand[400] },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: brand[500] },
+            },
+          }}
+        />
+      </Box>
+    </StyledDialog>
+  );
+}
