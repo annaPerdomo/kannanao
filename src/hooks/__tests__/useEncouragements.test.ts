@@ -51,7 +51,7 @@ const MSG_READ = {
 describe('useEncouragements', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseAuth.mockReturnValue({ user: { id: 'm1' } });
+    mockUseAuth.mockReturnValue({ user: { id: 'm1' }, isMemberAccount: true });
     mockGetSession.mockResolvedValue({
       data: { session: { access_token: 'tok123' } },
     });

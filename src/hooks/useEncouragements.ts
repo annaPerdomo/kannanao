@@ -51,11 +51,11 @@ export function useEncouragements() {
   }, [fetchEncouragements]);
 
   const sendEncouragement = useCallback(
-    async (memberId: string, message: string, emoji?: string) => {
+    async (memberId: string, message: string, emoji?: string, groupId?: string) => {
       const res = await fetch('/api/group/encouragements', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-        body: JSON.stringify({ memberId, message, emoji }),
+        body: JSON.stringify({ memberId, message, emoji, groupId }),
       });
       if (!res.ok) {
         const json = await res.json().catch(() => null);

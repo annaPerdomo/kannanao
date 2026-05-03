@@ -22,17 +22,43 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
   }
 
-  const { memberId, message, emoji } = body as {
+  const { memberId, message, emoji, groupId } = body as {
     memberId: string;
     message: string;
     emoji?: string;
+    groupId?: string;
   };
 
   if (!memberId || !message?.trim()) {
     return NextResponse.json({ error: 'memberId and message are required.' }, { status: 400 });
   }
-
   const sb = getServiceSupabase();
+
+  // Resolve group: use provided groupId or fall back to first group
+  let resolvedGroupId = groupId;
+  if (resolvedGroupId) {
+    const { data: group } = await sb
+      .from('groups')
+      .select('id')
+      .eq('id', resolvedGroupId)
+      .eq('organizer_id', orgCheck.id)
+      .single();
+    if (!group) {
+      return NextResponse.json({ error: 'Group not found.' }, { status: 404 });
+    }
+  } else {
+    const { data: firstGroup } = await sb
+      .from('groups')
+      .select('id')
+      .eq('organizer_id', orgCheck.id)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .single();
+    if (!firstGroup) {
+      return NextResponse.json({ error: 'No groups found.' }, { status: 400 });
+    }
+    resolvedGroupId = firstGroup.id;
+  }
 
   // Verify member belongs to organizer
   const { data: member } = await sb
@@ -50,6 +76,7 @@ export async function POST(req: NextRequest) {
     .from('encouragements')
     .insert({
       organizer_id: orgCheck.id,
+      group_id: resolvedGroupId,
       member_id: memberId,
       message: message.trim().slice(0, 200),
       emoji: emoji || '⭐',

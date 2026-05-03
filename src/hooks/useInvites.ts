@@ -21,7 +21,7 @@ export interface CreateInviteParams {
   expiresIn: '24h' | '7d' | '30d' | 'never';
 }
 
-export function useInvites() {
+export function useInvites(groupId?: string | null) {
   const { session } = useAuth();
   const [invites, setInvites] = useState<InviteCode[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +37,8 @@ export function useInvites() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/group/invite', { headers: headers() });
+      const url = groupId ? `/api/group/invite?groupId=${groupId}` : '/api/group/invite';
+      const res = await fetch(url, { headers: headers() });
       if (!res.ok) throw new Error('Failed to load invites');
       const data = await res.json();
       setInvites(data);
@@ -46,7 +47,7 @@ export function useInvites() {
     } finally {
       setLoading(false);
     }
-  }, [headers]);
+  }, [headers, groupId]);
 
   useEffect(() => {
     if (session?.access_token) void fetchInvites();
@@ -57,7 +58,7 @@ export function useInvites() {
       const res = await fetch('/api/group/invite', {
         method: 'POST',
         headers: headers(),
-        body: JSON.stringify(params),
+        body: JSON.stringify({ ...params, groupId }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -67,7 +68,7 @@ export function useInvites() {
       setInvites((prev) => [invite, ...prev]);
       return invite;
     },
-    [headers],
+    [headers, groupId],
   );
 
   const revokeInvite = useCallback(

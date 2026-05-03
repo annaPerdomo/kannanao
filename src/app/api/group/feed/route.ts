@@ -27,11 +27,17 @@ export async function GET(req: NextRequest) {
 
   const sb = getServiceSupabase();
 
+  // Optional group filter
+  const groupId = req.nextUrl.searchParams.get('groupId');
+
   // Get all members
-  const { data: members, error: membersErr } = await sb
+  let membersQuery = sb
     .from('profiles')
     .select('id, display_name, username')
     .eq('organizer_id', orgCheck.id);
+  if (groupId) membersQuery = membersQuery.eq('group_id', groupId);
+
+  const { data: members, error: membersErr } = await membersQuery;
 
   if (membersErr) {
     logger.error('Failed to fetch members for feed', {

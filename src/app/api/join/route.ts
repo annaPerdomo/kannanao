@@ -97,6 +97,7 @@ export async function POST(req: NextRequest) {
     display_name: displayName?.trim() || null,
     account_type: 'member',
     organizer_id: invite.organizer_id,
+    group_id: invite.group_id ?? null,
   });
 
   if (profileError) {
@@ -165,7 +166,7 @@ export async function GET(req: NextRequest) {
 
   const { data: invite, error } = await sb
     .from('invite_codes')
-    .select('id, organizer_id, max_uses, times_used, expires_at')
+    .select('id, organizer_id, group_id, max_uses, times_used, expires_at')
     .eq('code', code)
     .single();
 
@@ -187,15 +188,19 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // Fetch organizer display name
-  const { data: organizer } = await sb
-    .from('profiles')
-    .select('display_name, username')
-    .eq('id', invite.organizer_id)
-    .single();
+  // Fetch organizer display name and group name
+  const [organizerRes, groupRes] = await Promise.all([
+    sb.from('profiles').select('display_name, username').eq('id', invite.organizer_id).single(),
+    invite.group_id
+      ? sb.from('groups').select('name').eq('id', invite.group_id).single()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  const organizer = organizerRes.data;
 
   return NextResponse.json({
     valid: true,
     organizerName: organizer?.display_name || organizer?.username || 'your organizer',
+    groupName: groupRes.data?.name ?? null,
   });
 }

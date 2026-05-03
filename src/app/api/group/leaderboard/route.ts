@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
   // Get the user's profile to determine group membership
   const { data: profile } = await sb
     .from('profiles')
-    .select('id, account_type, organizer_id, display_name, show_leaderboard')
+    .select('id, account_type, organizer_id, group_id, display_name, show_leaderboard')
     .eq('id', user.id)
     .single();
 
@@ -57,6 +57,9 @@ export async function GET(req: NextRequest) {
   if (!organizerId) {
     return NextResponse.json({ error: 'Not part of a group.' }, { status: 400 });
   }
+
+  // Optional groupId from query (organizers), or derive from member profile
+  const groupId = req.nextUrl.searchParams.get('groupId') ?? profile.group_id ?? null;
 
   // Check if the organizer has enabled the leaderboard
   if (profile.account_type === 'organizer') {
@@ -76,10 +79,13 @@ export async function GET(req: NextRequest) {
   }
 
   // Get all group members + organizer
-  const { data: members } = await sb
+  let membersQuery = sb
     .from('profiles')
     .select('id, username, display_name')
     .or(`id.eq.${organizerId},organizer_id.eq.${organizerId}`);
+  if (groupId) membersQuery = membersQuery.or(`group_id.eq.${groupId},id.eq.${organizerId}`);
+
+  const { data: members } = await membersQuery;
 
   if (!members || members.length === 0) {
     return NextResponse.json([]);

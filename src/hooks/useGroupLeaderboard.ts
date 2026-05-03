@@ -20,7 +20,7 @@ async function authHeaders(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export function useGroupLeaderboard() {
+export function useGroupLeaderboard(groupId?: string | null) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -34,7 +34,10 @@ export function useGroupLeaderboard() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/group/leaderboard', { headers: await authHeaders() });
+        const url = groupId
+          ? `/api/group/leaderboard?groupId=${groupId}`
+          : '/api/group/leaderboard';
+        const res = await fetch(url, { headers: await authHeaders() });
         if (!res.ok) throw new Error();
         const data = await res.json();
         if (!cancelled) setLeaderboard(data);
@@ -47,7 +50,7 @@ export function useGroupLeaderboard() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, groupId]);
 
   return { leaderboard, loading };
 }

@@ -66,7 +66,7 @@ async function authHeaders(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export function useGroupMembers() {
+export function useGroupMembers(groupId?: string | null) {
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +81,8 @@ export function useGroupMembers() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/group/members', { headers: await authHeaders() });
+      const url = groupId ? `/api/group/members?groupId=${groupId}` : '/api/group/members';
+      const res = await fetch(url, { headers: await authHeaders() });
       if (!res.ok) throw new Error('Failed to load members');
       const data = await res.json();
       setMembers(data);
@@ -90,7 +91,7 @@ export function useGroupMembers() {
     } finally {
       setLoading(false);
     }
-  }, [user, isMemberAccount]);
+  }, [user, isMemberAccount, groupId]);
 
   useEffect(() => {
     void fetchMembers();
@@ -132,7 +133,7 @@ export function useMemberDetail(memberId: string | null) {
   return { detail, loading, error, refetch: fetchDetail };
 }
 
-export function useGroupFeed() {
+export function useGroupFeed(groupId?: string | null) {
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -146,7 +147,8 @@ export function useGroupFeed() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/group/feed', { headers: await authHeaders() });
+        const url = groupId ? `/api/group/feed?groupId=${groupId}` : '/api/group/feed';
+        const res = await fetch(url, { headers: await authHeaders() });
         if (!res.ok) throw new Error();
         const data = await res.json();
         if (!cancelled) setFeed(data);
@@ -159,7 +161,7 @@ export function useGroupFeed() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, groupId]);
 
   return { feed, loading };
 }

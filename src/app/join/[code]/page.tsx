@@ -30,6 +30,7 @@ export default function JoinPage() {
   const [valid, setValid] = useState(false);
   const [invalidReason, setInvalidReason] = useState('');
   const [organizerName, setOrganizerName] = useState('');
+  const [groupName, setGroupName] = useState<string | null>(null);
 
   // Form state
   const [username, setUsername] = useState('');
@@ -51,6 +52,7 @@ export default function JoinPage() {
         if (data.valid) {
           setValid(true);
           setOrganizerName(data.organizerName);
+          if (data.groupName) setGroupName(data.groupName);
         } else {
           setValid(false);
           setInvalidReason(data.reason || 'Invalid invite code.');
@@ -280,7 +282,8 @@ export default function JoinPage() {
               mb: 3,
             }}
           >
-            You&apos;re joining <strong>{organizerName}</strong>&apos;s study group
+            You&apos;re joining <strong>{organizerName}</strong>&apos;s
+            {groupName ? ` group "${groupName}"` : ' study group'}
           </Typography>
 
           <Box

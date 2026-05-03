@@ -24,7 +24,7 @@ async function authHeaders(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export function useAssignments() {
+export function useAssignments(groupId?: string | null) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +39,8 @@ export function useAssignments() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/group/assignments', { headers: await authHeaders() });
+      const url = groupId ? `/api/group/assignments?groupId=${groupId}` : '/api/group/assignments';
+      const res = await fetch(url, { headers: await authHeaders() });
       if (!res.ok) throw new Error('Failed to load assignments');
       const data = await res.json();
       setAssignments(data);
@@ -48,7 +49,7 @@ export function useAssignments() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, groupId]);
 
   useEffect(() => {
     void fetchAssignments();
@@ -65,7 +66,7 @@ export function useAssignments() {
       const res = await fetch('/api/group/assignments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-        body: JSON.stringify(opts),
+        body: JSON.stringify({ ...opts, groupId }),
       });
       if (!res.ok) {
         const json = await res.json().catch(() => null);

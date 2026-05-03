@@ -21,12 +21,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
   }
 
-  const { memberIds, deckId, title, note, dueDate } = body as {
+  const { memberIds, deckId, title, note, dueDate, groupId } = body as {
     memberIds: string[];
     deckId: string;
     title?: string;
     note?: string;
     dueDate?: string;
+    groupId?: string;
   };
 
   if (!Array.isArray(memberIds) || memberIds.length === 0 || !deckId) {
@@ -35,8 +36,36 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-
   const sb = getServiceSupabase();
+
+  // Resolve group: use provided groupId or fall back to first group
+  let resolvedGroupId = groupId;
+  if (resolvedGroupId) {
+    const { data: group } = await sb
+      .from('groups')
+      .select('id')
+      .eq('id', resolvedGroupId)
+      .eq('organizer_id', orgCheck.id)
+      .single();
+    if (!group) {
+      return NextResponse.json({ error: 'Group not found.' }, { status: 404 });
+    }
+  } else {
+    const { data: firstGroup } = await sb
+      .from('groups')
+      .select('id')
+      .eq('organizer_id', orgCheck.id)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .single();
+    if (!firstGroup) {
+      return NextResponse.json(
+        { error: 'No groups found. Create a group first.' },
+        { status: 400 },
+      );
+    }
+    resolvedGroupId = firstGroup.id;
+  }
 
   // Verify all members belong to this organizer
   const { data: validMembers } = await sb
@@ -50,6 +79,7 @@ export async function POST(req: NextRequest) {
     .filter((id) => validIds.has(id))
     .map((memberId) => ({
       organizer_id: orgCheck.id,
+      group_id: resolvedGroupId,
       member_id: memberId,
       deck_id: deckId,
       title: title?.trim().slice(0, 200) || null,
@@ -112,6 +142,9 @@ export async function GET(req: NextRequest) {
     .eq('id', user.id)
     .single();
 
+  // Optional group filter
+  const groupId = req.nextUrl.searchParams.get('groupId');
+
   let query;
   if (profile?.account_type === 'member') {
     // Members see their own assignments
@@ -129,6 +162,7 @@ export async function GET(req: NextRequest) {
       )
       .eq('organizer_id', user.id)
       .order('created_at', { ascending: false });
+    if (groupId) query = query.eq('group_id', groupId);
   }
 
   const { data, error } = await query;

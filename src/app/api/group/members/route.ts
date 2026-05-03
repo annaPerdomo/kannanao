@@ -18,12 +18,18 @@ export async function GET(req: NextRequest) {
 
   const sb = getServiceSupabase();
 
+  // Optional group filter
+  const groupId = req.nextUrl.searchParams.get('groupId');
+
   // Fetch member profiles
-  const { data: members, error: membersErr } = await sb
+  let query = sb
     .from('profiles')
     .select('id, username, display_name, created_at')
     .eq('organizer_id', orgCheck.id)
     .order('created_at', { ascending: true });
+  if (groupId) query = query.eq('group_id', groupId);
+
+  const { data: members, error: membersErr } = await query;
 
   if (membersErr) {
     logger.error('Failed to fetch members', {
