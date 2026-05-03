@@ -23,6 +23,7 @@ interface AuthContextValue {
   accountType: AccountType;
   isMemberAccount: boolean;
   organizerId: string | null;
+  groupId: string | null;
   displayName: string | null;
   colorScheme: ColorScheme | null;
   showTodo: boolean;
@@ -74,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [showLeaderboard, setShowLeaderboard] = useState(true);
   const [accountType, setAccountType] = useState<AccountType>('organizer');
   const [organizerId, setOrganizerId] = useState<string | null>(null);
+  const [groupId, setGroupId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   async function fetchProfile(userId: string) {
@@ -87,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setShowLeaderboard(profile?.showLeaderboard !== false);
     setAccountType(profile?.accountType ?? 'organizer');
     setOrganizerId(profile?.organizerId ?? null);
+    setGroupId(profile?.groupId ?? null);
   }
 
   useEffect(() => {
@@ -114,6 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setShowLeaderboard(true);
         setAccountType('organizer');
         setOrganizerId(null);
+        setGroupId(null);
       }
     });
 
@@ -186,6 +190,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         accountType,
         isMemberAccount: accountType === 'member',
         organizerId,
+        groupId,
         displayName,
         colorScheme,
         showTodo,

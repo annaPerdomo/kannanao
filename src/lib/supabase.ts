@@ -392,11 +392,12 @@ export async function loadProfile(userId: string): Promise<{
   showLeaderboard: boolean;
   accountType: AccountType;
   organizerId: string | null;
+  groupId: string | null;
 } | null> {
   const { data, error } = await sb
     .from('profiles')
     .select(
-      'username, display_name, color_scheme, show_todo, show_leaderboard, account_type, organizer_id',
+      'username, display_name, color_scheme, show_todo, show_leaderboard, account_type, organizer_id, group_id',
     )
     .eq('id', userId)
     .single();
@@ -409,6 +410,7 @@ export async function loadProfile(userId: string): Promise<{
     showLeaderboard: data.show_leaderboard !== false,
     accountType: (data.account_type as AccountType) ?? 'organizer',
     organizerId: data.organizer_id ?? null,
+    groupId: data.group_id ?? null,
   };
 }
 
