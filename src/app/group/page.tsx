@@ -1,10 +1,12 @@
 'use client';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import QrCode2Icon from '@mui/icons-material/QrCode2';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
@@ -14,8 +16,11 @@ import {
   ActivityFeed,
   AssignmentsList,
   CreateAssignmentDialog,
+  CreateInviteDialog,
   GroupEncouragementForm,
   GroupOverview,
+  InviteList,
+  InviteQRCode,
   LeaderboardWidget,
   MemberCard,
 } from '@/components/Group';
@@ -27,13 +32,15 @@ import { useDecks } from '@/hooks/useDecks';
 import { useEncouragements } from '@/hooks/useEncouragements';
 import { useGroupFeed, useGroupMembers } from '@/hooks/useGroup';
 import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
+import type { InviteCode } from '@/hooks/useInvites';
+import { useInvites } from '@/hooks/useInvites';
 import { LAYOUT } from '@/theme';
 
 export default function GroupPage() {
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
-  const { isMemberAccount, showLeaderboard, loading: authLoading } = useAuth();
+  const { isMemberAccount, showLeaderboard, displayName, user, loading: authLoading } = useAuth();
 
   const { members, loading, error } = useGroupMembers();
   const { leaderboard, loading: lbLoading } = useGroupLeaderboard();
@@ -41,8 +48,11 @@ export default function GroupPage() {
   const { decks } = useDecks();
   const { assignments, createAssignment, updateAssignment, deleteAssignment } = useAssignments();
   const { sendEncouragement } = useEncouragements();
+  const { invites, createInvite, revokeInvite } = useInvites();
 
   const [assignOpen, setAssignOpen] = useState(false);
+  const [createInviteOpen, setCreateInviteOpen] = useState(false);
+  const [qrInvite, setQrInvite] = useState<InviteCode | null>(null);
 
   // Redirect members away
   if (!authLoading && isMemberAccount) {
@@ -82,12 +92,12 @@ export default function GroupPage() {
           subtitle={`${members.length} member${members.length !== 1 ? 's' : ''} in your study group`}
           onBack={() => router.push('/')}
           action={
-            members.length > 0 ? (
+            <Stack direction="row" gap={1}>
               <Button
                 variant="outlined"
                 size="small"
-                startIcon={<AssignmentIcon sx={{ fontSize: 16 }} />}
-                onClick={() => setAssignOpen(true)}
+                startIcon={<QrCode2Icon sx={{ fontSize: 16 }} />}
+                onClick={() => setCreateInviteOpen(true)}
                 sx={{
                   borderRadius: 2.5,
                   textTransform: 'none',
@@ -96,9 +106,26 @@ export default function GroupPage() {
                   color: brand[700],
                 }}
               >
-                Assign Deck
+                Invite
               </Button>
-            ) : undefined
+              {members.length > 0 && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<AssignmentIcon sx={{ fontSize: 16 }} />}
+                  onClick={() => setAssignOpen(true)}
+                  sx={{
+                    borderRadius: 2.5,
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    borderColor: alpha(brand[400], 0.5),
+                    color: brand[700],
+                  }}
+                >
+                  Assign Deck
+                </Button>
+              )}
+            </Stack>
           }
         />
       </Box>
@@ -138,7 +165,7 @@ export default function GroupPage() {
                 No members yet
               </Typography>
               <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
-                Create an invite code in Settings to add members to your group.
+                Create an invite code to add members to your group.
               </Typography>
             </Paper>
           ) : (
@@ -178,6 +205,29 @@ export default function GroupPage() {
           </Grid>
         )}
       </Grid>
+
+      {/* Invite Codes */}
+      {invites.length > 0 && (
+        <Box sx={{ mt: 4 }}>
+          <Typography
+            sx={{
+              fontWeight: 800,
+              fontSize: '0.85rem',
+              color: brand[700],
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              mb: 1.5,
+            }}
+          >
+            Invite Codes
+          </Typography>
+          <InviteList
+            invites={invites}
+            onRevoke={revokeInvite}
+            onShowQR={(invite) => setQrInvite(invite)}
+          />
+        </Box>
+      )}
 
       {/* Group Encouragement */}
       {members.length > 0 && (
@@ -243,6 +293,26 @@ export default function GroupPage() {
         decks={decks.filter((d) => !d.isShared)}
         onCreate={createAssignment}
       />
+
+      <CreateInviteDialog
+        open={createInviteOpen}
+        onClose={() => setCreateInviteOpen(false)}
+        onCreate={createInvite}
+        onCreated={(invite) => {
+          setCreateInviteOpen(false);
+          setQrInvite(invite);
+        }}
+      />
+
+      {qrInvite && (
+        <InviteQRCode
+          open={Boolean(qrInvite)}
+          onClose={() => setQrInvite(null)}
+          code={qrInvite.code}
+          label={qrInvite.label}
+          organizerName={displayName ?? user?.email?.split('@')[0] ?? ''}
+        />
+      )}
     </Box>
   );
 }

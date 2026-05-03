@@ -89,11 +89,12 @@ export function useEncouragements() {
     setEncouragements((prev) =>
       prev.map((e) => (!e.read_at ? { ...e, read_at: new Date().toISOString() } : e)),
     );
+    const headers = await authHeaders();
     await Promise.all(
       unread.map((e) =>
         fetch(`/api/group/encouragements/${e.id}/read`, {
           method: 'PATCH',
-          headers: authHeaders() as unknown as HeadersInit,
+          headers,
         }).catch(() => {}),
       ),
     );
