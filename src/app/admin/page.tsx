@@ -1,5 +1,7 @@
 'use client';
 
+import AddIcon from '@mui/icons-material/Add';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import BadgeIcon from '@mui/icons-material/Badge';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import ChecklistIcon from '@mui/icons-material/Checklist';
@@ -43,11 +45,15 @@ import { PageHeader } from '@/components/PageHeader';
 import { useAuth } from '@/contexts/AuthContext';
 import { LAYOUT } from '@/theme';
 
+import { CreateUserDialog } from './CreateUserDialog';
+import { ManageAccountDialog } from './ManageAccountDialog';
+
 interface UserStat {
   id: string;
   username: string;
   displayName: string | null;
   colorScheme: string | null;
+  accountType: 'organizer' | 'member';
   createdAt: string;
   deckCount: number;
   cardCount: number;
@@ -76,6 +82,13 @@ interface WaitlistEntry {
   created_at: string;
 }
 
+interface GroupInfo {
+  id: string;
+  organizerId: string;
+  name: string;
+  emoji: string | null;
+}
+
 interface AdminData {
   overview: {
     totalUsers: number;
@@ -95,6 +108,7 @@ interface AdminData {
     };
     decks: EmbedDeckStat[];
   };
+  groups: GroupInfo[];
 }
 
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
@@ -153,6 +167,8 @@ export default function AdminPage() {
   const [inputValue, setInputValue] = useState('');
   const [saving, setSaving] = useState(false);
   const [snack, setSnack] = useState<{ msg: string; severity: 'success' | 'error' } | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [manageUser, setManageUser] = useState<UserStat | null>(null);
 
   const openEdit = (user: UserStat, type: 'username' | 'password' | 'displayName') => {
     setEditUser(user);
@@ -290,23 +306,43 @@ export default function AdminPage() {
       <Divider sx={{ mb: 4 }} />
 
       {/* Users Table */}
-      <Typography
-        sx={{
-          fontFamily: (t) => t.fonts.cute,
-          fontWeight: 600,
-          fontSize: '1.2rem',
-          color: brand[700],
-          mb: 2,
-        }}
-      >
-        Users ({data.users.length})
-      </Typography>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+        <Typography
+          sx={{
+            fontFamily: (t) => t.fonts.cute,
+            fontWeight: 600,
+            fontSize: '1.2rem',
+            color: brand[700],
+          }}
+        >
+          Users ({data.users.length})
+        </Typography>
+        <Button
+          startIcon={<AddIcon />}
+          onClick={() => setCreateOpen(true)}
+          variant="contained"
+          size="small"
+          sx={{
+            bgcolor: brand[700],
+            color: '#fff',
+            textTransform: 'none',
+            borderRadius: 6,
+            fontFamily: (t) => t.fonts.cute,
+            '&:hover': { bgcolor: brand[800] },
+          }}
+        >
+          Create User
+        </Button>
+      </Stack>
 
       <TableContainer component={Paper} sx={{ ...tablePaperSx, mb: 4 }}>
         <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell sx={headerCellSx}>User</TableCell>
+              <TableCell sx={headerCellSx} align="center">
+                Type
+              </TableCell>
               <TableCell sx={headerCellSx} align="center">
                 Decks
               </TableCell>
@@ -347,6 +383,26 @@ export default function AdminPage() {
                   </Box>
                 </TableCell>
                 <TableCell sx={bodyCellSx} align="center">
+                  <Chip
+                    label={u.accountType}
+                    size="small"
+                    variant={u.accountType === 'member' ? 'outlined' : 'filled'}
+                    sx={{
+                      fontSize: '0.7rem',
+                      height: 22,
+                      ...(u.accountType === 'organizer'
+                        ? {
+                            bgcolor: alpha(brand[100], 0.5),
+                            color: brand[700],
+                          }
+                        : {
+                            borderColor: alpha(brand[300], 0.6),
+                            color: brand[500],
+                          }),
+                    }}
+                  />
+                </TableCell>
+                <TableCell sx={bodyCellSx} align="center">
                   {u.deckCount}
                 </TableCell>
                 <TableCell sx={bodyCellSx} align="center">
@@ -381,6 +437,16 @@ export default function AdminPage() {
                 <TableCell sx={bodyCellSx} align="center">
                   <IconButton
                     size="small"
+                    aria-label={`Manage account for ${u.username}`}
+                    title="Manage account type & group"
+                    onClick={() => setManageUser(u)}
+                    sx={{ color: brand[500] }}
+                  >
+                    <AdminPanelSettingsIcon sx={{ fontSize: '1rem' }} />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    aria-label={`Change display name for ${u.username}`}
                     title="Change display name"
                     onClick={() => openEdit(u, 'displayName')}
                     sx={{ color: brand[500] }}
@@ -389,6 +455,7 @@ export default function AdminPage() {
                   </IconButton>
                   <IconButton
                     size="small"
+                    aria-label={`Change username for ${u.username}`}
                     title="Change username"
                     onClick={() => openEdit(u, 'username')}
                     sx={{ color: brand[500] }}
@@ -397,6 +464,7 @@ export default function AdminPage() {
                   </IconButton>
                   <IconButton
                     size="small"
+                    aria-label={`Change password for ${u.username}`}
                     title="Change password"
                     onClick={() => openEdit(u, 'password')}
                     sx={{ color: brand[500] }}
@@ -673,6 +741,43 @@ export default function AdminPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Create User Dialog */}
+      {session?.access_token && data && (
+        <CreateUserDialog
+          open={createOpen}
+          onClose={() => setCreateOpen(false)}
+          organizers={data.users
+            .filter((u) => u.accountType === 'organizer')
+            .map((u) => ({ id: u.id, username: u.username, displayName: u.displayName }))}
+          groups={data.groups}
+          accessToken={session.access_token}
+          onSuccess={(msg) => {
+            setSnack({ msg, severity: 'success' });
+            void fetchData();
+          }}
+          onError={(msg) => setSnack({ msg, severity: 'error' })}
+        />
+      )}
+
+      {/* Manage Account Dialog */}
+      {session?.access_token && data && (
+        <ManageAccountDialog
+          open={Boolean(manageUser)}
+          onClose={() => setManageUser(null)}
+          user={manageUser}
+          organizers={data.users
+            .filter((u) => u.accountType === 'organizer')
+            .map((u) => ({ id: u.id, username: u.username, displayName: u.displayName }))}
+          groups={data.groups}
+          accessToken={session.access_token}
+          onSuccess={(msg) => {
+            setSnack({ msg, severity: 'success' });
+            void fetchData();
+          }}
+          onError={(msg) => setSnack({ msg, severity: 'error' })}
+        />
+      )}
 
       {/* Snackbar */}
       <Snackbar
