@@ -222,7 +222,7 @@ export default function GroupDashboardPage() {
             <PageHeader
               onBack={() => router.push('/group')}
               title={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
                   <Tooltip title={group?.emoji ? 'Change emoji' : 'Add emoji'}>
                     <ButtonBase
                       aria-label={group?.emoji ? 'Change group emoji' : 'Add group emoji'}
@@ -232,6 +232,7 @@ export default function GroupDashboardPage() {
                         lineHeight: 1,
                         borderRadius: '10px',
                         p: 0.5,
+                        alignSelf: 'center',
                         flexShrink: 0,
                         transition: 'transform 0.15s',
                         '&:hover': { transform: 'scale(1.15)', bgcolor: alpha('#FFFFFF', 0.5) },
