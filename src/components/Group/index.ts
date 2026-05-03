@@ -4,6 +4,7 @@ export { AssignmentsList } from './AssignmentsList';
 export { CreateAssignmentDialog } from './CreateAssignmentDialog';
 export { CreateInviteDialog } from './CreateInviteDialog';
 export { EditAssignmentDialog } from './EditAssignmentDialog';
+export { EncouragementEmojiPicker } from './EncouragementEmojiPicker';
 export { EncouragementForm } from './EncouragementForm';
 export { EncouragementInbox } from './EncouragementInbox';
 export { GroupEncouragementForm } from './GroupEncouragementForm';

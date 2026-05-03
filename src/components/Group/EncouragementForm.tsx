@@ -4,7 +4,7 @@ import { Box, Button, CircularProgress, TextField, Typography } from '@mui/mater
 import { alpha, useTheme } from '@mui/material/styles';
 import { useState } from 'react';
 
-const EMOJI_OPTIONS = ['⭐', '❤️', '✨', '🔥', '🏆', '👏', '🌈', '🚀'];
+import { EncouragementEmojiPicker } from './EncouragementEmojiPicker';
 const QUICK_MESSAGES = ['Great job!', 'Keep going!', "I'm proud of you!", 'Amazing progress!'];
 
 interface EncouragementFormProps {
@@ -60,29 +60,11 @@ export function EncouragementForm({ memberId, memberName, onSend }: Encouragemen
       </Typography>
 
       {/* Emoji picker */}
-      <Box sx={{ display: 'flex', gap: 0.5, mb: 1 }}>
-        {EMOJI_OPTIONS.map((e) => (
-          <Box
-            key={e}
-            onClick={() => setEmoji(e)}
-            sx={{
-              width: 32,
-              height: 32,
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              border: `2px solid ${emoji === e ? brand[500] : 'transparent'}`,
-              bgcolor: emoji === e ? alpha(brand[100], 0.8) : 'transparent',
-              fontSize: '1rem',
-              transition: 'all 0.15s ease',
-              '&:hover': { bgcolor: alpha(brand[100], 0.6) },
-            }}
-          >
-            {e}
-          </Box>
-        ))}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        <EncouragementEmojiPicker value={emoji} onChange={setEmoji} />
+        <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+          Tap to change emoji
+        </Typography>
       </Box>
 
       {/* Quick messages */}
