@@ -14,10 +14,10 @@ import {
   ActivityFeed,
   AssignmentsList,
   CreateAssignmentDialog,
+  GroupEncouragementForm,
   GroupOverview,
   LeaderboardWidget,
   MemberCard,
-  MemberDetail,
 } from '@/components/Group';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
@@ -25,7 +25,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
 import { useEncouragements } from '@/hooks/useEncouragements';
-import { useGroupFeed, useGroupMembers, useMemberDetail } from '@/hooks/useGroup';
+import { useGroupFeed, useGroupMembers } from '@/hooks/useGroup';
 import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
 import { LAYOUT } from '@/theme';
 
@@ -42,8 +42,6 @@ export default function GroupPage() {
   const { assignments, createAssignment, updateAssignment, deleteAssignment } = useAssignments();
   const { sendEncouragement } = useEncouragements();
 
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
-  const { detail, loading: detailLoading } = useMemberDetail(selectedMemberId);
   const [assignOpen, setAssignOpen] = useState(false);
 
   // Redirect members away
@@ -64,27 +62,6 @@ export default function GroupPage() {
     return (
       <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <Alert severity="error">{error}</Alert>
-      </Box>
-    );
-  }
-
-  // Show member detail view
-  if (selectedMemberId) {
-    return (
-      <Box
-        sx={{
-          maxWidth: LAYOUT.contentMaxWidth,
-          mx: 'auto',
-          px: LAYOUT.pagePx,
-          py: { xs: 3, sm: 5 },
-        }}
-      >
-        <MemberDetail
-          detail={detail!}
-          loading={detailLoading}
-          onBack={() => setSelectedMemberId(null)}
-          onSendEncouragement={sendEncouragement}
-        />
       </Box>
     );
   }
@@ -168,7 +145,10 @@ export default function GroupPage() {
             <Grid container spacing={1.5}>
               {members.map((member) => (
                 <Grid size={{ xs: 12, sm: 6 }} key={member.id}>
-                  <MemberCard member={member} onClick={setSelectedMemberId} />
+                  <MemberCard
+                    member={member}
+                    onClick={(id) => router.push(`/group/members/${id}`)}
+                  />
                 </Grid>
               ))}
             </Grid>
@@ -198,6 +178,25 @@ export default function GroupPage() {
           </Grid>
         )}
       </Grid>
+
+      {/* Group Encouragement */}
+      {members.length > 0 && (
+        <Box sx={{ mt: 4 }}>
+          <Typography
+            sx={{
+              fontWeight: 800,
+              fontSize: '0.85rem',
+              color: brand[700],
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              mb: 1.5,
+            }}
+          >
+            💬 Encouragement
+          </Typography>
+          <GroupEncouragementForm members={members} onSend={sendEncouragement} />
+        </Box>
+      )}
 
       {/* Assignments */}
       <Box sx={{ mt: 4 }}>

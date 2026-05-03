@@ -6,6 +6,7 @@ export { CreateInviteDialog } from './CreateInviteDialog';
 export { EditAssignmentDialog } from './EditAssignmentDialog';
 export { EncouragementForm } from './EncouragementForm';
 export { EncouragementInbox } from './EncouragementInbox';
+export { GroupEncouragementForm } from './GroupEncouragementForm';
 export { GroupOverview } from './GroupOverview';
 export { InviteList } from './InviteList';
 export { InviteQRCode } from './InviteQRCode';
