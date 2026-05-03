@@ -43,7 +43,7 @@ export function DeckHeader({
   onEmojiChange,
   readOnly,
 }: DeckHeaderProps) {
-  const { brand, accent } = useTheme().palette;
+  const { brand } = useTheme().palette;
 
   const [editing, setEditing] = useState(false);
   const [renaming, setRenaming] = useState(false);

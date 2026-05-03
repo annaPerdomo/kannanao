@@ -79,13 +79,6 @@ export function dbCardToApp(card: SupabaseCardRow): Flashcard {
   };
 }
 
-const DECK_FALLBACK_EMOJIS = ['🌸', '🐱', '✨', '🌷', '🍡', '🎀', '🐰', '🌙', '🍓', '🦋'];
-function deckFallbackEmoji(id: string): string {
-  let n = 0;
-  for (let i = 0; i < id.length; i++) n += id.charCodeAt(i);
-  return DECK_FALLBACK_EMOJIS[n % DECK_FALLBACK_EMOJIS.length];
-}
-
 export function dbDeckToApp(deck: SupabaseDeckRow, cardCount: number, currentUserId: string): Deck {
   return {
     id: deck.id,

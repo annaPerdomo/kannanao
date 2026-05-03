@@ -34,7 +34,7 @@ export default function LegacyMemberDetailPage() {
           router.push('/group');
           return;
         }
-        const detail = await res.json();
+        await res.json();
         // Try to find a group for this member — fall back to group list
         const membersRes = await fetch('/api/group/groups', {
           headers: { Authorization: `Bearer ${token}` },

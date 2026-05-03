@@ -77,7 +77,7 @@ export function useAssignments(groupId?: string | null) {
       await fetchAssignments();
       return data;
     },
-    [fetchAssignments],
+    [fetchAssignments, groupId],
   );
 
   const updateAssignment = useCallback(
