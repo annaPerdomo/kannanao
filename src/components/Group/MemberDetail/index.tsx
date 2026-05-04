@@ -18,22 +18,11 @@ import { StatCard } from '@/components/Stats/StatCard';
 import type { MemberDetail as MemberDetailData } from '@/hooks/useGroup';
 import { ACHIEVEMENTS, xpProgressInLevel } from '@/hooks/useProgress';
 
-import { EncouragementForm } from './EncouragementForm';
-
-function formatDuration(secs: number | null): string {
-  if (!secs) return '--';
-  if (secs < 60) return `${secs}s`;
-  const mins = Math.floor(secs / 60);
-  return `${mins}m`;
-}
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return 'Never';
-  return new Date(dateStr).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-  });
-}
+import { EncouragementForm } from '../EncouragementForm';
+import { AssignmentsSection } from './AssignmentsSection';
+import { formatDate } from './helpers';
+import { PracticeModeBreakdown } from './PracticeModeBreakdown';
+import { RecentSessionsSection } from './RecentSessionsSection';
 
 interface MemberDetailProps {
   detail: MemberDetailData;
@@ -49,7 +38,8 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
   if (loading) return <Loading message="Loading member details..." />;
   if (!detail) return null;
 
-  const { member, progress, sessions, achievements, deckProgress } = detail;
+  const { member, progress, sessions, achievements, deckProgress, practiceModeStats, assignments } =
+    detail;
   const { current, needed } = xpProgressInLevel(progress.totalXp);
   const pct = Math.round((current / needed) * 100);
   const accuracy =
@@ -138,6 +128,9 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
         />
       </Box>
 
+      {/* Practice Mode Breakdown */}
+      <PracticeModeBreakdown stats={practiceModeStats} />
+
       {/* Deck Progress */}
       {deckProgress.length > 0 && (
         <Box sx={{ mb: 3 }}>
@@ -188,55 +181,10 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
         </Box>
       )}
 
-      {/* Recent Sessions */}
+      {assignments.total > 0 && <AssignmentsSection assignments={assignments} />}
+
       {sessions.length > 0 && (
-        <Box sx={{ mb: 3 }}>
-          <Typography
-            sx={{
-              fontWeight: 800,
-              fontSize: '0.85rem',
-              color: brand[700],
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              mb: 1.5,
-            }}
-          >
-            Recent Sessions
-          </Typography>
-          {sessions.slice(0, 10).map((s) => (
-            <Paper
-              key={s.id}
-              elevation={0}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                p: 1.25,
-                mb: 0.75,
-                border: `1px solid ${alpha(brand[300], 0.25)}`,
-                borderRadius: 2,
-                bgcolor: alpha(brand[50], 0.3),
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: brand[700] }}>
-                  {s.practiceMode || 'study'}
-                </Typography>
-                <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
-                  {s.cardsStudied} cards · {s.cardsCorrect}/{s.cardsStudied} correct
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Typography sx={{ fontSize: '0.7rem', color: accent[600], fontWeight: 600 }}>
-                  +{s.xpEarned} XP
-                </Typography>
-                <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
-                  {formatDuration(s.durationSecs)} · {formatDate(s.startedAt)}
-                </Typography>
-              </Box>
-            </Paper>
-          ))}
-        </Box>
+        <RecentSessionsSection memberId={member.id} initialSessions={sessions} />
       )}
 
       {/* Encouragement */}

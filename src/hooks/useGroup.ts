@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { sb } from '@/lib/supabase';
@@ -18,6 +18,18 @@ export interface GroupMember {
   lastActive: string | null;
 }
 
+export interface MemberSession {
+  id: string;
+  deckId: string | null;
+  practiceMode: string | null;
+  cardsStudied: number;
+  cardsCorrect: number;
+  xpEarned: number;
+  durationSecs: number;
+  startedAt: string;
+  endedAt: string | null;
+}
+
 export interface MemberDetail {
   member: { id: string; username: string; displayName: string | null };
   progress: {
@@ -28,17 +40,7 @@ export interface MemberDetail {
     totalCorrect: number;
     totalSessions: number;
   };
-  sessions: {
-    id: string;
-    deckId: string | null;
-    practiceMode: string | null;
-    cardsStudied: number;
-    cardsCorrect: number;
-    xpEarned: number;
-    durationSecs: number;
-    startedAt: string;
-    endedAt: string | null;
-  }[];
+  sessions: MemberSession[];
   achievements: { key: string; unlockedAt: string }[];
   deckProgress: {
     deckId: string;
@@ -49,6 +51,49 @@ export interface MemberDetail {
     accuracy: number;
     lastStudied: string | null;
   }[];
+  speechProgress: {
+    totalSessions: number;
+    totalLines: number;
+    totalCorrect: number;
+    totalXp: number;
+    accuracy: number;
+    lastPracticed: string | null;
+    byMode: {
+      mode: string;
+      sessions: number;
+      lines: number;
+      correct: number;
+      xp: number;
+      accuracy: number;
+      lastPracticed: string | null;
+    }[];
+  } | null;
+  practiceModeStats: {
+    mode: string;
+    source: 'deck' | 'speech';
+    sessions: number;
+    cardsStudied: number;
+    cardsCorrect: number;
+    accuracy: number;
+    xpEarned: number;
+    totalDurationSecs: number;
+  }[];
+  assignments: {
+    total: number;
+    completed: number;
+    pending: number;
+    overdue: number;
+    completionRate: number;
+    items: {
+      id: string;
+      title: string | null;
+      deckName: string;
+      deckEmoji: string | null;
+      dueDate: string | null;
+      completedAt: string | null;
+      createdAt: string;
+    }[];
+  };
 }
 
 export interface FeedItem {
@@ -164,4 +209,54 @@ export function useGroupFeed(groupId?: string | null) {
   }, [user, groupId]);
 
   return { feed, loading };
+}
+
+export function useMemberSessions(memberId: string | null) {
+  const [sessions, setSessions] = useState<MemberSession[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const cursorRef = useRef<string | null>(null);
+
+  const fetchPage = useCallback(
+    async (cursor: string | null) => {
+      if (!memberId) return;
+      const isFirstPage = !cursor;
+      if (isFirstPage) setLoading(true);
+      else setLoadingMore(true);
+
+      try {
+        const params = new URLSearchParams();
+        if (cursor) params.set('cursor', cursor);
+        const res = await fetch(`/api/group/members/${memberId}/sessions?${params.toString()}`, {
+          headers: await authHeaders(),
+        });
+        if (!res.ok) throw new Error('Failed to load sessions');
+        const data = await res.json();
+        setSessions((prev) => (isFirstPage ? data.sessions : [...prev, ...data.sessions]));
+        setHasMore(data.hasMore);
+        cursorRef.current = data.nextCursor;
+      } catch {
+        setHasMore(false);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [memberId],
+  );
+
+  useEffect(() => {
+    cursorRef.current = null;
+    setSessions([]);
+    setHasMore(true);
+    void fetchPage(null);
+  }, [fetchPage]);
+
+  const loadMore = useCallback(() => {
+    if (loadingMore || !hasMore) return;
+    void fetchPage(cursorRef.current);
+  }, [fetchPage, loadingMore, hasMore]);
+
+  return { sessions, loading, loadingMore, hasMore, loadMore };
 }
