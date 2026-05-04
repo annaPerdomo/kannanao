@@ -205,6 +205,9 @@ export function NavBar() {
             </Box>
           )}
 
+          {/* Spacer when nav links are hidden (unauthenticated) */}
+          {!user && <Box sx={{ flex: 1 }} />}
+
           {/* User info — right group */}
           {user ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
@@ -257,7 +260,7 @@ export function NavBar() {
               <UserMenu navBtnSx={navBtn} />
             </Box>
           ) : (
-            !authLoading && <UserMenu navBtnSx={navBtn} />
+            !authLoading && pathname !== '/login' && <UserMenu navBtnSx={navBtn} />
           )}
         </Toolbar>
       </AppBar>
