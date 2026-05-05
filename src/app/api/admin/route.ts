@@ -78,7 +78,8 @@ export async function GET(req: Request) {
       .from('study_sessions')
       .select(
         'user_id, deck_id, practice_mode, cards_studied, cards_correct, xp_earned, duration_secs, started_at',
-      ),
+      )
+      .gte('started_at', new Date(Date.now() - 90 * 86_400_000).toISOString()),
   ]);
 
   const profiles = profilesRes.data ?? [];
@@ -153,7 +154,11 @@ export async function GET(req: Request) {
       if (ev.card_index > prev) stat.sessionMaxCard.set(ev.session_id, ev.card_index);
       stat.cardFlipCounts.set(ev.card_index, (stat.cardFlipCounts.get(ev.card_index) ?? 0) + 1);
     }
-    if (ev.created_at && (!stat.lastViewedAt || ev.created_at > stat.lastViewedAt)) {
+    if (
+      ev.event_type === 'view' &&
+      ev.created_at &&
+      (!stat.lastViewedAt || ev.created_at > stat.lastViewedAt)
+    ) {
       stat.lastViewedAt = ev.created_at;
     }
   }
@@ -199,7 +204,9 @@ export async function GET(req: Request) {
   const embedAnalytics = {
     overview: {
       totalSessions: new Set(embedEvents.map((e) => e.session_id)).size,
-      totalCompletions: embedEvents.filter((e) => e.event_type === 'deck_complete').length,
+      totalCompletions: new Set(
+        embedEvents.filter((e) => e.event_type === 'deck_complete').map((e) => e.session_id),
+      ).size,
     },
     referrers,
     sessionsOverTime,
@@ -247,11 +254,19 @@ export async function GET(req: Request) {
       .sort((a, b) => b.sessions - a.sessions),
   };
 
+  // Pre-group study sessions by user_id for O(1) lookup
+  const sessionsByUser = new Map<string, typeof studySessions>();
+  for (const s of studySessions) {
+    const arr = sessionsByUser.get(s.user_id);
+    if (arr) arr.push(s);
+    else sessionsByUser.set(s.user_id, [s]);
+  }
+
   // Member activity summary
   const memberActivity = profiles
     .filter((p) => p.account_type === 'member')
     .map((p) => {
-      const sessions = studySessions.filter((s) => s.user_id === p.id);
+      const sessions = sessionsByUser.get(p.id) ?? [];
       const totalStudied = sessions.reduce((sum, s) => sum + (s.cards_studied || 0), 0);
       const totalCorrect = sessions.reduce((sum, s) => sum + (s.cards_correct || 0), 0);
       const totalDuration = sessions.reduce((sum, s) => sum + (s.duration_secs || 0), 0);
