@@ -1,1 +1,1 @@
-pnpm exec tsc --noEmit && pnpm test:run
+pnpm exec tsc --noEmit && pnpm test:run && pnpm build
