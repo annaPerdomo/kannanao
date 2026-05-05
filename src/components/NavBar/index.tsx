@@ -5,6 +5,7 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import MicIcon from '@mui/icons-material/Mic';
 import StorefrontIcon from '@mui/icons-material/Storefront';
+import StyleIcon from '@mui/icons-material/Style';
 import {
   Alert,
   AppBar,
@@ -43,6 +44,7 @@ export function NavBar() {
   const isOhanashikai = pathname?.startsWith('/ohanashikai') ?? false;
   const isDecks = pathname?.startsWith('/decks') ?? false;
   const isGroup = pathname?.startsWith('/group') ?? false;
+  const isTravel = pathname?.startsWith('/travel') ?? false;
 
   const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgress();
   const { user, loading: authLoading, updateDisplayName, isMemberAccount } = useAuth();
@@ -178,6 +180,17 @@ export function NavBar() {
               >
                 <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                   Speech
+                </Box>
+              </Button>
+
+              <Button
+                onClick={() => router.push('/travel')}
+                size="small"
+                startIcon={<StyleIcon sx={{ fontSize: '1rem !important' }} />}
+                sx={isTravel ? navBtnWithIconActive : navBtnWithIcon}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Travel
                 </Box>
               </Button>
 
