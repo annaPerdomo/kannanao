@@ -132,8 +132,8 @@ export function MemberActivity({
                         sx={{
                           fontSize: '0.7rem',
                           height: 22,
-                          bgcolor: alpha('#4caf50', 0.15),
-                          color: '#2e7d32',
+                          bgcolor: alpha(theme.palette.success.main, 0.15),
+                          color: theme.palette.success.dark,
                           fontWeight: 600,
                         }}
                       />
@@ -156,12 +156,16 @@ export function MemberActivity({
                           height: 22,
                           bgcolor:
                             m.accuracy >= 80
-                              ? alpha('#4caf50', 0.15)
+                              ? alpha(theme.palette.success.main, 0.15)
                               : m.accuracy >= 50
-                                ? alpha('#ff9800', 0.15)
-                                : alpha('#f44336', 0.12),
+                                ? alpha(theme.palette.warning.main, 0.15)
+                                : alpha(theme.palette.error.main, 0.12),
                           color:
-                            m.accuracy >= 80 ? '#2e7d32' : m.accuracy >= 50 ? '#e65100' : '#c62828',
+                            m.accuracy >= 80
+                              ? theme.palette.success.dark
+                              : m.accuracy >= 50
+                                ? theme.palette.warning.dark
+                                : theme.palette.error.dark,
                           fontWeight: 600,
                         }}
                       />
@@ -179,7 +183,11 @@ export function MemberActivity({
                           width: 8,
                           height: 8,
                           borderRadius: '50%',
-                          bgcolor: isRecent ? '#4caf50' : isInactive ? '#bdbdbd' : '#ff9800',
+                          bgcolor: isRecent
+                            ? theme.palette.success.main
+                            : isInactive
+                              ? theme.palette.grey[400]
+                              : theme.palette.warning.main,
                         }}
                       />
                       <Typography sx={{ fontSize: '0.82rem' }}>

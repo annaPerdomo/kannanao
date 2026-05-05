@@ -367,16 +367,16 @@ export function EmbedAnalytics({
                           height: 22,
                           bgcolor:
                             d.completionRate >= 50
-                              ? alpha('#4caf50', 0.15)
+                              ? alpha(theme.palette.success.main, 0.15)
                               : d.completionRate >= 20
-                                ? alpha('#ff9800', 0.15)
-                                : alpha('#f44336', 0.12),
+                                ? alpha(theme.palette.warning.main, 0.15)
+                                : alpha(theme.palette.error.main, 0.12),
                           color:
                             d.completionRate >= 50
-                              ? '#2e7d32'
+                              ? theme.palette.success.dark
                               : d.completionRate >= 20
-                                ? '#e65100'
-                                : '#c62828',
+                                ? theme.palette.warning.dark
+                                : theme.palette.error.dark,
                           fontWeight: 600,
                         }}
                       />
@@ -416,8 +416,8 @@ export function EmbedAnalytics({
                           sx={{
                             fontSize: '0.7rem',
                             height: 22,
-                            bgcolor: alpha('#ff9800', 0.15),
-                            color: '#e65100',
+                            bgcolor: alpha(theme.palette.warning.main, 0.15),
+                            color: theme.palette.warning.dark,
                           }}
                         />
                       </Tooltip>
