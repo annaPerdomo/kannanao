@@ -5,7 +5,22 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/dashboard', '/decks', '/study', '/stats', '/profile', '/api'],
+      disallow: [
+        '/api/',
+        '/admin',
+        '/decks',
+        '/deck/',
+        '/embed/',
+        '/group/',
+        '/join/',
+        '/landing',
+        '/ohanashikai',
+        '/profile',
+        '/settings',
+        '/shop',
+        '/stats',
+        '/study',
+      ],
     },
     sitemap: 'https://kannanao.com/sitemap.xml',
   };

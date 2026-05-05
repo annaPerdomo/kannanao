@@ -13,6 +13,9 @@ const DESCRIPTION =
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://kannanao.com'),
+  alternates: {
+    canonical: '/',
+  },
   title: TITLE,
   description: DESCRIPTION,
   openGraph: {
