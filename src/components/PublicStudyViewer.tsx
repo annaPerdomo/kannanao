@@ -290,13 +290,25 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
     }
   }, [loading, cards.length, trackEvent]);
 
-  // Fire "session_end" with elapsed duration when the embed unmounts
+  // Fire "session_end" with elapsed duration on unmount or page close.
+  // React cleanup alone is unreliable in iframes — the browser often kills the
+  // process before React unmounts. A pagehide listener with sendBeacon covers
+  // tab close, navigation away, and mobile app-switch.
+  const sessionEndFiredRef = useRef(false);
+
   useEffect(() => {
+    const fireSessionEnd = () => {
+      if (sessionEndFiredRef.current || !viewFiredRef.current) return;
+      sessionEndFiredRef.current = true;
+      const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
+      trackEvent('session_end', { durationSeconds });
+    };
+
+    window.addEventListener('pagehide', fireSessionEnd);
+
     return () => {
-      if (viewFiredRef.current) {
-        const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
-        trackEvent('session_end', { durationSeconds });
-      }
+      window.removeEventListener('pagehide', fireSessionEnd);
+      fireSessionEnd();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

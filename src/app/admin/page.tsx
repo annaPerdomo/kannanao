@@ -3,17 +3,13 @@
 import AddIcon from '@mui/icons-material/Add';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import BadgeIcon from '@mui/icons-material/Badge';
-import BarChartIcon from '@mui/icons-material/BarChart';
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import EditIcon from '@mui/icons-material/Edit';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import GroupIcon from '@mui/icons-material/Group';
 import KeyIcon from '@mui/icons-material/Key';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import PeopleIcon from '@mui/icons-material/People';
 import StyleIcon from '@mui/icons-material/Style';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
   Alert,
   Box,
@@ -46,7 +42,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LAYOUT } from '@/theme';
 
 import { CreateUserDialog } from './CreateUserDialog';
+import { EmbedAnalytics } from './EmbedAnalytics';
 import { ManageAccountDialog } from './ManageAccountDialog';
+import { MemberActivity } from './MemberActivity';
+import type { EmbedAnalyticsData, MemberActivityEntry } from './types';
 
 interface UserStat {
   id: string;
@@ -61,17 +60,6 @@ interface UserStat {
   todoCompletions: number;
   eventTypeCount: number;
   publicDecks: number;
-}
-
-interface EmbedDeckStat {
-  deckId: string;
-  deckName: string;
-  deckEmoji: string;
-  totalViews: number;
-  uniqueSessions: number;
-  completions: number;
-  avgDurationSeconds: number | null;
-  lastViewedAt: string | null;
 }
 
 interface WaitlistEntry {
@@ -100,14 +88,8 @@ interface AdminData {
   };
   users: UserStat[];
   waitlist: WaitlistEntry[];
-  embedAnalytics: {
-    overview: {
-      totalViews: number;
-      totalSessions: number;
-      totalCompletions: number;
-    };
-    decks: EmbedDeckStat[];
-  };
+  embedAnalytics: EmbedAnalyticsData;
+  memberActivity: MemberActivityEntry[];
   groups: GroupInfo[];
 }
 
@@ -225,15 +207,23 @@ export default function AdminPage() {
       const res = await fetch('/api/admin', {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
+      const text = await res.text();
+      let json: AdminData;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        setError(`Server returned non-JSON response (${res.status}).`);
+        return;
+      }
       if (res.status === 403) {
         setError('You do not have permission to view this page.');
         return;
       }
       if (!res.ok) {
-        setError('Failed to load admin data.');
+        setError((json as unknown as { error?: string }).error ?? 'Failed to load admin data.');
         return;
       }
-      setData(await res.json());
+      setData(json);
     } catch {
       setError('Failed to load admin data.');
     } finally {
@@ -537,122 +527,24 @@ export default function AdminPage() {
       <Divider sx={{ mb: 4, mt: 4 }} />
 
       {/* Embed Analytics */}
-      <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 2 }}>
-        <BarChartIcon sx={{ color: brand[500] }} />
-        <Typography
-          sx={{
-            fontFamily: (t) => t.fonts.cute,
-            fontWeight: 600,
-            fontSize: '1.2rem',
-            color: brand[700],
-          }}
-        >
-          Embed Analytics
-        </Typography>
-      </Stack>
+      <EmbedAnalytics
+        data={data.embedAnalytics}
+        tablePaperSx={tablePaperSx}
+        headerCellSx={headerCellSx}
+        bodyCellSx={bodyCellSx}
+      />
 
-      <Stack direction="row" flexWrap="wrap" gap={2} sx={{ mb: 3 }}>
-        <StatCard
-          icon={<VisibilityIcon />}
-          label="Total Views"
-          value={data.embedAnalytics.overview.totalViews}
-        />
-        <StatCard
-          icon={<GroupIcon />}
-          label="Unique Sessions"
-          value={data.embedAnalytics.overview.totalSessions}
-        />
-        <StatCard
-          icon={<EmojiEventsIcon />}
-          label="Completions"
-          value={data.embedAnalytics.overview.totalCompletions}
-        />
-      </Stack>
-
-      {data.embedAnalytics.decks.length === 0 ? (
-        <Paper sx={{ ...tablePaperSx, p: 3, textAlign: 'center', mb: 4 }}>
-          <Typography sx={{ color: 'text.secondary', fontSize: '0.88rem' }}>
-            No embed views yet. Share a public deck&apos;s embed link to start collecting data.
-          </Typography>
-        </Paper>
-      ) : (
-        <TableContainer component={Paper} sx={{ ...tablePaperSx, mb: 4 }}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={headerCellSx}>Deck</TableCell>
-                <TableCell sx={headerCellSx} align="center">
-                  Views
-                </TableCell>
-                <TableCell sx={headerCellSx} align="center">
-                  Sessions
-                </TableCell>
-                <TableCell sx={headerCellSx} align="center">
-                  Completions
-                </TableCell>
-                <TableCell sx={headerCellSx} align="center">
-                  Avg Duration
-                </TableCell>
-                <TableCell sx={headerCellSx}>Last Viewed</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {data.embedAnalytics.decks.map((d) => (
-                <TableRow key={d.deckId} hover>
-                  <TableCell sx={bodyCellSx}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography sx={{ fontSize: '1rem' }}>{d.deckEmoji}</Typography>
-                      <Box>
-                        <Typography sx={{ fontWeight: 600, fontSize: '0.82rem' }}>
-                          {d.deckName}
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontSize: '0.7rem',
-                            color: 'text.secondary',
-                            fontFamily: (t) => t.fonts.mono,
-                          }}
-                        >
-                          {d.deckId.slice(0, 8)}…
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={bodyCellSx} align="center">
-                    {d.totalViews}
-                  </TableCell>
-                  <TableCell sx={bodyCellSx} align="center">
-                    {d.uniqueSessions}
-                  </TableCell>
-                  <TableCell sx={bodyCellSx} align="center">
-                    {d.completions > 0 ? (
-                      <Chip
-                        label={d.completions}
-                        size="small"
-                        sx={{
-                          fontSize: '0.7rem',
-                          height: 22,
-                          bgcolor: alpha(brand[100], 0.5),
-                          color: brand[700],
-                        }}
-                      />
-                    ) : (
-                      '—'
-                    )}
-                  </TableCell>
-                  <TableCell sx={bodyCellSx} align="center">
-                    {d.avgDurationSeconds != null
-                      ? d.avgDurationSeconds >= 60
-                        ? `${Math.floor(d.avgDurationSeconds / 60)}m ${d.avgDurationSeconds % 60}s`
-                        : `${d.avgDurationSeconds}s`
-                      : '—'}
-                  </TableCell>
-                  <TableCell sx={bodyCellSx}>{formatDate(d.lastViewedAt)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+      {/* Member Activity */}
+      {data.memberActivity.length > 0 && (
+        <>
+          <Divider sx={{ mb: 4, mt: 2 }} />
+          <MemberActivity
+            members={data.memberActivity}
+            tablePaperSx={tablePaperSx}
+            headerCellSx={headerCellSx}
+            bodyCellSx={bodyCellSx}
+          />
+        </>
       )}
 
       {/* Edit User Dialog */}

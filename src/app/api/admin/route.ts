@@ -50,6 +50,7 @@ export async function GET(req: Request) {
     eventTypesRes,
     embedEventsRes,
     groupsRes,
+    studySessionsRes,
   ] = await Promise.all([
     client
       .from('profiles')
@@ -66,11 +67,19 @@ export async function GET(req: Request) {
     client.from('event_types').select('id, user_id, name, emoji, color'),
     client
       .from('embed_events')
-      .select('deck_id, session_id, event_type, card_index, duration_seconds, created_at'),
+      .select(
+        'deck_id, session_id, event_type, card_index, duration_seconds, referrer, created_at',
+      ),
     client
       .from('groups')
       .select('id, organizer_id, name, emoji')
       .order('created_at', { ascending: true }),
+    client
+      .from('study_sessions')
+      .select(
+        'user_id, deck_id, practice_mode, cards_studied, cards_correct, xp_earned, duration_secs, started_at',
+      )
+      .gte('started_at', new Date(Date.now() - 90 * 86_400_000).toISOString()),
   ]);
 
   const profiles = profilesRes.data ?? [];
@@ -80,6 +89,7 @@ export async function GET(req: Request) {
   const waitlist = waitlistRes.data ?? [];
   const eventTypes = eventTypesRes.data ?? [];
   const embedEvents = embedEventsRes.data ?? [];
+  const studySessions = studySessionsRes.data ?? [];
   const groups = (groupsRes.data ?? []).map((g) => ({
     id: g.id,
     organizerId: g.organizer_id,
@@ -91,68 +101,196 @@ export async function GET(req: Request) {
   const publicDecksById = Object.fromEntries(
     decks.filter((d) => d.is_public).map((d) => [d.id, d]),
   );
+  // Map user IDs to display names for deck owners
+  const profileById = Object.fromEntries(profiles.map((p) => [p.id, p]));
+  // Count cards per deck for drop-off analysis
+  const cardCountByDeck: Record<string, number> = {};
+  for (const c of cards) {
+    cardCountByDeck[c.deck_id] = (cardCountByDeck[c.deck_id] || 0) + 1;
+  }
 
-  const embedDeckMap: Record<
-    string,
-    {
-      deckId: string;
-      deckName: string;
-      deckEmoji: string;
-      totalViews: number;
-      uniqueSessions: Set<string>;
-      completions: number;
-      durations: number[];
-      lastViewedAt: string | null;
-    }
-  > = {};
+  interface EmbedDeckAccum {
+    deckId: string;
+    deckName: string;
+    deckEmoji: string;
+    deckOwner: string;
+    totalCards: number;
+    uniqueSessions: Set<string>;
+    completedSessions: Set<string>;
+    durations: number[];
+    lastViewedAt: string | null;
+    sessionMaxCard: Map<string, number>;
+    cardFlipCounts: Map<number, number>;
+  }
+
+  const embedDeckMap: Record<string, EmbedDeckAccum> = {};
 
   for (const ev of embedEvents) {
     if (!embedDeckMap[ev.deck_id]) {
       const deck = publicDecksById[ev.deck_id];
+      const owner = deck ? profileById[deck.user_id] : undefined;
       embedDeckMap[ev.deck_id] = {
         deckId: ev.deck_id,
         deckName: deck?.name ?? 'Unknown deck',
         deckEmoji: deck?.emoji ?? '📘',
-        totalViews: 0,
+        deckOwner: owner?.display_name ?? owner?.username ?? 'Unknown',
+        totalCards: cardCountByDeck[ev.deck_id] ?? 0,
         uniqueSessions: new Set(),
-        completions: 0,
+        completedSessions: new Set(),
         durations: [],
         lastViewedAt: null,
+        sessionMaxCard: new Map(),
+        cardFlipCounts: new Map(),
       };
     }
     const stat = embedDeckMap[ev.deck_id];
     stat.uniqueSessions.add(ev.session_id);
-    if (ev.event_type === 'view') stat.totalViews++;
-    if (ev.event_type === 'deck_complete') stat.completions++;
+    if (ev.event_type === 'deck_complete') stat.completedSessions.add(ev.session_id);
     if (ev.event_type === 'session_end' && ev.duration_seconds != null) {
       stat.durations.push(ev.duration_seconds);
     }
-    if (ev.created_at && (!stat.lastViewedAt || ev.created_at > stat.lastViewedAt)) {
+    if (ev.event_type === 'card_flip' && ev.card_index != null) {
+      const prev = stat.sessionMaxCard.get(ev.session_id) ?? -1;
+      if (ev.card_index > prev) stat.sessionMaxCard.set(ev.session_id, ev.card_index);
+      stat.cardFlipCounts.set(ev.card_index, (stat.cardFlipCounts.get(ev.card_index) ?? 0) + 1);
+    }
+    if (
+      ev.event_type === 'view' &&
+      ev.created_at &&
+      (!stat.lastViewedAt || ev.created_at > stat.lastViewedAt)
+    ) {
       stat.lastViewedAt = ev.created_at;
     }
   }
 
+  // Referrer breakdown — count unique sessions per referrer host
+  const referrerSessionMap: Record<string, Set<string>> = {};
+  for (const ev of embedEvents) {
+    if (ev.event_type === 'view' && ev.referrer) {
+      let host: string;
+      try {
+        host = new URL(ev.referrer).hostname || ev.referrer;
+      } catch {
+        host = ev.referrer;
+      }
+      if (!referrerSessionMap[host]) referrerSessionMap[host] = new Set();
+      referrerSessionMap[host].add(ev.session_id);
+    }
+  }
+  const referrers = Object.entries(referrerSessionMap)
+    .map(([source, sessions]) => ({ source, sessions: sessions.size }))
+    .sort((a, b) => b.sessions - a.sessions);
+
+  // Sessions over time (last 30 days)
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now);
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const sessionsByDate: Record<string, Set<string>> = {};
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(thirtyDaysAgo);
+    d.setDate(d.getDate() + i + 1);
+    sessionsByDate[d.toISOString().slice(0, 10)] = new Set();
+  }
+  for (const ev of embedEvents) {
+    if (ev.event_type === 'view' && ev.created_at) {
+      const dateKey = ev.created_at.slice(0, 10);
+      if (dateKey in sessionsByDate) sessionsByDate[dateKey].add(ev.session_id);
+    }
+  }
+  const sessionsOverTime = Object.entries(sessionsByDate)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, sessions]) => ({ date, sessions: sessions.size }));
+
   const embedAnalytics = {
     overview: {
-      totalViews: embedEvents.filter((e) => e.event_type === 'view').length,
       totalSessions: new Set(embedEvents.map((e) => e.session_id)).size,
-      totalCompletions: embedEvents.filter((e) => e.event_type === 'deck_complete').length,
+      totalCompletions: new Set(
+        embedEvents.filter((e) => e.event_type === 'deck_complete').map((e) => e.session_id),
+      ).size,
     },
+    referrers,
+    sessionsOverTime,
     decks: Object.values(embedDeckMap)
-      .map((s) => ({
-        deckId: s.deckId,
-        deckName: s.deckName,
-        deckEmoji: s.deckEmoji,
-        totalViews: s.totalViews,
-        uniqueSessions: s.uniqueSessions.size,
-        completions: s.completions,
-        avgDurationSeconds: s.durations.length
-          ? Math.round(s.durations.reduce((a, b) => a + b, 0) / s.durations.length)
-          : null,
-        lastViewedAt: s.lastViewedAt,
-      }))
-      .sort((a, b) => b.totalViews - a.totalViews),
+      .map((s) => {
+        const sessions = s.uniqueSessions.size;
+        const completions = s.completedSessions.size;
+        const maxCards = Array.from(s.sessionMaxCard.values());
+        const avgCardsFlipped = maxCards.length
+          ? Math.round((maxCards.reduce((a, b) => a + b, 0) / maxCards.length + 1) * 10) / 10
+          : null;
+        const incompleteSessions = Array.from(s.sessionMaxCard.entries()).filter(
+          ([sid]) => !s.completedSessions.has(sid),
+        );
+        const dropOffCounts: Record<number, number> = {};
+        for (const [, maxIdx] of incompleteSessions) {
+          dropOffCounts[maxIdx] = (dropOffCounts[maxIdx] || 0) + 1;
+        }
+        const dropOffEntries = Object.entries(dropOffCounts)
+          .map(([idx, count]) => ({ cardIndex: Number(idx), count }))
+          .sort((a, b) => b.count - a.count);
+        const topDropOff = dropOffEntries.length > 0 ? dropOffEntries[0].cardIndex : null;
+        const cardDifficulty = Array.from(s.cardFlipCounts.entries())
+          .map(([cardIndex, flips]) => ({ cardIndex, flips }))
+          .sort((a, b) => b.flips - a.flips);
+
+        return {
+          deckId: s.deckId,
+          deckName: s.deckName,
+          deckEmoji: s.deckEmoji,
+          deckOwner: s.deckOwner,
+          totalCards: s.totalCards,
+          sessions,
+          completions,
+          completionRate: sessions > 0 ? Math.round((completions / sessions) * 100) : null,
+          avgCardsFlipped,
+          avgDurationSeconds: s.durations.length
+            ? Math.round(s.durations.reduce((a, b) => a + b, 0) / s.durations.length)
+            : null,
+          topDropOffCard: topDropOff,
+          cardDifficulty: cardDifficulty.slice(0, 10),
+          lastViewedAt: s.lastViewedAt,
+        };
+      })
+      .sort((a, b) => b.sessions - a.sessions),
   };
+
+  // Pre-group study sessions by user_id for O(1) lookup
+  const sessionsByUser = new Map<string, typeof studySessions>();
+  for (const s of studySessions) {
+    const arr = sessionsByUser.get(s.user_id);
+    if (arr) arr.push(s);
+    else sessionsByUser.set(s.user_id, [s]);
+  }
+
+  // Member activity summary
+  const memberActivity = profiles
+    .filter((p) => p.account_type === 'member')
+    .map((p) => {
+      const sessions = sessionsByUser.get(p.id) ?? [];
+      const totalStudied = sessions.reduce((sum, s) => sum + (s.cards_studied || 0), 0);
+      const totalCorrect = sessions.reduce((sum, s) => sum + (s.cards_correct || 0), 0);
+      const totalDuration = sessions.reduce((sum, s) => sum + (s.duration_secs || 0), 0);
+      const lastSession = sessions.length
+        ? sessions.reduce((latest, s) => (s.started_at > latest.started_at ? s : latest)).started_at
+        : null;
+      // Sessions in the last 7 days
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const recentSessions = sessions.filter((s) => new Date(s.started_at) >= sevenDaysAgo).length;
+
+      return {
+        userId: p.id,
+        username: p.username,
+        displayName: p.display_name,
+        totalSessions: sessions.length,
+        recentSessions,
+        totalCardsStudied: totalStudied,
+        accuracy: totalStudied > 0 ? Math.round((totalCorrect / totalStudied) * 100) : null,
+        totalDurationMins: Math.round(totalDuration / 60),
+        lastActiveAt: lastSession,
+      };
+    })
+    .sort((a, b) => (b.lastActiveAt ?? '').localeCompare(a.lastActiveAt ?? ''));
 
   // Build per-user stats
   const userStats = profiles.map((p) => {
@@ -192,7 +330,14 @@ export async function GET(req: Request) {
     totalEventTypes: eventTypes.length,
   };
 
-  return NextResponse.json({ overview, users: userStats, waitlist, embedAnalytics, groups });
+  return NextResponse.json({
+    overview,
+    users: userStats,
+    waitlist,
+    embedAnalytics,
+    memberActivity,
+    groups,
+  });
 }
 
 export async function PATCH(req: Request) {
