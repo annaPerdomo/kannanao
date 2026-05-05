@@ -225,15 +225,16 @@ export default function AdminPage() {
       const res = await fetch('/api/admin', {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
+      const json = await res.json();
       if (res.status === 403) {
         setError('You do not have permission to view this page.');
         return;
       }
       if (!res.ok) {
-        setError('Failed to load admin data.');
+        setError(json?.error ?? 'Failed to load admin data.');
         return;
       }
-      setData(await res.json());
+      setData(json);
     } catch {
       setError('Failed to load admin data.');
     } finally {
