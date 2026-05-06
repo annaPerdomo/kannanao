@@ -57,8 +57,9 @@ export function Flashcard({
     setHovered(false);
   }, []);
 
-  const { titleText, subtitleText } = getFlashcardDisplayText(card);
+  const { titleText, subtitleText, speakText } = getFlashcardDisplayText(card);
   const isKanji = card.mainViewMode === 'kanji';
+  const isRomaji = card.mainViewMode === 'romaji';
   const typeGradient = isKanji
     ? `linear-gradient(135deg, ${accent[400]} 0%, ${accent[600]} 100%)`
     : `linear-gradient(135deg, ${brand[400]} 0%, ${brand[600]} 100%)`;
@@ -161,7 +162,7 @@ export function Flashcard({
                     textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                   }}
                 >
-                  {isKanji ? '漢字' : 'かな'}
+                  {isKanji ? '漢字' : isRomaji ? 'ABC' : 'かな'}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
                   <Typography
@@ -258,7 +259,7 @@ export function Flashcard({
                       >
                         {titleText}
                       </Typography>
-                      <SpeakButton text={titleText} sx={{ alignSelf: 'flex-end', mb: 0.5 }} />
+                      <SpeakButton text={speakText} sx={{ alignSelf: 'flex-end', mb: 0.5 }} />
                     </Box>
                   </Box>
 
@@ -324,7 +325,7 @@ export function Flashcard({
                       >
                         {titleText}
                       </Typography>
-                      <SpeakButton text={titleText} sx={{ alignSelf: 'flex-end', mb: 0.5 }} />
+                      <SpeakButton text={speakText} sx={{ alignSelf: 'flex-end', mb: 0.5 }} />
                     </Box>
                   </Box>
 
@@ -440,7 +441,7 @@ export function Flashcard({
                   }}
                 />
 
-                {card.mainViewMode === 'hiragana' && (
+                {card.mainViewMode !== 'kanji' && (
                   <Box>
                     <Typography
                       sx={{
@@ -529,7 +530,7 @@ export function Flashcard({
                   >
                     <FuriganaText
                       text={card.example_jp}
-                      showFurigana={card.mainViewMode === 'hiragana'}
+                      showFurigana={card.mainViewMode !== 'kanji'}
                     />
                   </Typography>
                   <Typography

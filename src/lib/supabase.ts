@@ -3,7 +3,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 import type { Deck } from '@/types/deck';
-import type { Flashcard, JlptLevel } from '@/types/flashcard';
+import type { Flashcard, JlptLevel, MainViewMode } from '@/types/flashcard';
 import type { EntryType, Todo } from '@/types/todo';
 
 const SUPABASE_URL =
@@ -51,7 +51,7 @@ interface SupabaseCardRow {
   image_query: string | null;
   example_jp: string | null;
   example_en: string | null;
-  main_view_mode: 'hiragana' | 'kanji';
+  main_view_mode: MainViewMode;
   card_type: 'word' | 'phrase' | null;
   jlpt_level: JlptLevel | null;
 }

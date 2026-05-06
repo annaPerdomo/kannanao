@@ -1,5 +1,7 @@
 export type JlptLevel = 'N5' | 'N4' | 'N3' | 'N2' | 'N1';
 
+export type MainViewMode = 'hiragana' | 'kanji' | 'romaji';
+
 export interface Flashcard {
   id: string;
   word: string;
@@ -10,7 +12,7 @@ export interface Flashcard {
   example_en: string;
   imageUrl?: string;
   deckId: string;
-  mainViewMode: 'hiragana' | 'kanji';
+  mainViewMode: MainViewMode;
   cardType: 'word' | 'phrase';
   jlptLevel?: JlptLevel;
 }

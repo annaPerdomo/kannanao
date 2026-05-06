@@ -15,6 +15,8 @@ import {
 import { alpha, useTheme } from '@mui/material/styles';
 import { useCallback, useState } from 'react';
 
+import type { MainViewMode } from '@/types/flashcard';
+
 import { CardRow, type PendingCard } from './CardRow';
 import { compactToggleSx } from './styles';
 
@@ -54,7 +56,7 @@ export function ReviewCardsDialog({
     setCards((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  const handleSetAllViewMode = useCallback((mode: 'hiragana' | 'kanji') => {
+  const handleSetAllViewMode = useCallback((mode: MainViewMode) => {
     setCards((prev) => prev.map((c) => ({ ...c, mainViewMode: mode })));
   }, []);
 
@@ -179,6 +181,7 @@ export function ReviewCardsDialog({
               }}
               sx={toggleSx}
             >
+              <ToggleButton value="romaji">ABC Romaji</ToggleButton>
               <ToggleButton value="hiragana">ひ Hiragana</ToggleButton>
               <ToggleButton value="kanji">漢 Kanji</ToggleButton>
             </ToggleButtonGroup>

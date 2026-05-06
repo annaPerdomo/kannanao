@@ -6,7 +6,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useEffect, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
-import type { Flashcard, JlptLevel } from '@/types/flashcard';
+import type { Flashcard, JlptLevel, MainViewMode } from '@/types/flashcard';
 
 import { CardSettingsPanel } from './CardSettingsPanel';
 import {
@@ -37,7 +37,7 @@ export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogPr
     imageUrl: undefined,
     image_query: '',
   });
-  const [mainViewMode, setMainViewMode] = useState<'hiragana' | 'kanji'>('hiragana');
+  const [mainViewMode, setMainViewMode] = useState<MainViewMode>('hiragana');
   const [cardType, setCardType] = useState<'word' | 'phrase'>('word');
   const [jlptLevel, setJlptLevel] = useState<JlptLevel | undefined>(undefined);
   const [saving, setSaving] = useState(false);

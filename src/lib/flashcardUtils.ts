@@ -1,3 +1,5 @@
+import { toRomaji } from 'wanakana';
+
 import type { Flashcard, JlptLevel } from '@/types/flashcard';
 
 /** XP earned (and HP displayed) per card, scaled by JLPT difficulty. */
@@ -21,18 +23,34 @@ export function cardXp(jlptLevel?: JlptLevel | null): number {
 export interface FlashcardDisplayText {
   titleText: string;
   subtitleText?: string;
+  /** Text to pass to TTS — always the Japanese text when available. */
+  speakText: string;
 }
 
 export function getFlashcardDisplayText(card: Flashcard): FlashcardDisplayText {
   const hasReading = Boolean(card.reading?.trim());
 
-  const titleText =
-    card.mainViewMode === 'kanji' ? card.word : hasReading ? card.reading : card.word;
+  let titleText: string;
+  let subtitleText: string | undefined;
 
-  const subtitleText = card.mainViewMode === 'kanji' && hasReading ? card.reading : undefined;
+  if (card.mainViewMode === 'kanji') {
+    titleText = card.word;
+    subtitleText = hasReading ? card.reading : undefined;
+  } else if (card.mainViewMode === 'romaji') {
+    titleText = hasReading ? toRomaji(card.reading) : card.word;
+    subtitleText = card.word;
+  } else {
+    // hiragana
+    titleText = hasReading ? card.reading : card.word;
+    subtitleText = undefined;
+  }
+
+  // TTS should always speak the Japanese text (card.word), not romaji
+  const speakText = card.word;
 
   return {
     titleText,
     subtitleText,
+    speakText,
   };
 }

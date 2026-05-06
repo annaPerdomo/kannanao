@@ -5,17 +5,18 @@ import { useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { StyledDialog } from '@/components/StyledDialog';
+import type { MainViewMode } from '@/types/flashcard';
 
 import { AddCardsSection } from './AddCardsSection';
 
 interface AddCardsModalProps {
   open: boolean;
   onClose: () => void;
-  onGenerate: (words: string[], mainViewMode: 'hiragana' | 'kanji') => Promise<void>;
+  onGenerate: (words: string[], mainViewMode: MainViewMode) => Promise<void>;
   generating: boolean;
   error: string | null;
-  onAddExisting: (mainViewMode: 'hiragana' | 'kanji') => void;
-  onImportPdf: (mainViewMode: 'hiragana' | 'kanji') => void;
+  onAddExisting: (mainViewMode: MainViewMode) => void;
+  onImportPdf: (mainViewMode: MainViewMode) => void;
 }
 
 export function AddCardsModal({
@@ -31,7 +32,7 @@ export function AddCardsModal({
   const { brand } = palette;
   const [input, setInput] = useState('');
   const [words, setWords] = useState<string[]>([]);
-  const [mainViewMode, setMainViewMode] = useState<'hiragana' | 'kanji'>('hiragana');
+  const [mainViewMode, setMainViewMode] = useState<MainViewMode>('hiragana');
 
   const handleClose = () => {
     if (generating) return;

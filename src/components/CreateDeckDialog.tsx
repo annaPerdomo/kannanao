@@ -24,7 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useDecks } from '@/hooks/useDecks';
 import { useGenerateFlashcards } from '@/hooks/useGenerateFlashcards';
 import { dbCopyCardsIntoDeck, dbInsertCards } from '@/lib/supabase';
-import type { Flashcard, GeneratedCard } from '@/types/flashcard';
+import type { Flashcard, GeneratedCard, MainViewMode } from '@/types/flashcard';
 
 export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { palette } = useTheme();
@@ -40,7 +40,7 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
   const [input, setInput] = useState('');
   const [words, setWords] = useState<string[]>([]);
   const [pinToHome, setPinToHome] = useState(false);
-  const [mainViewMode, setMainViewMode] = useState<'hiragana' | 'kanji'>('hiragana');
+  const [mainViewMode, setMainViewMode] = useState<MainViewMode>('hiragana');
   const [creating, setCreating] = useState(false);
   const [createdDeckId, setCreatedDeckId] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);

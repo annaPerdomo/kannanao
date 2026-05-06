@@ -21,7 +21,7 @@ import { useGenerateFlashcards } from '@/hooks/useGenerateFlashcards';
 import { encodeUnsplashUrl, fetchImage, triggerUnsplashDownload } from '@/services/api';
 import { LAYOUT } from '@/theme';
 import type { PracticeMode } from '@/types/app';
-import type { Flashcard, GeneratedCard } from '@/types/flashcard';
+import type { Flashcard, GeneratedCard, MainViewMode } from '@/types/flashcard';
 
 interface DeckProps {
   deckId: string;
@@ -47,7 +47,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const [addCardsOpen, setAddCardsOpen] = useState(false);
   const [embedOpen, setEmbedOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [pendingMainViewMode, setPendingMainViewMode] = useState<'hiragana' | 'kanji'>('hiragana');
+  const [pendingMainViewMode, setPendingMainViewMode] = useState<MainViewMode>('hiragana');
   const [reviewCards, setReviewCards] = useState<
     (Omit<Flashcard, 'id' | 'deckId'> & { image_query: string })[]
   >([]);
@@ -68,7 +68,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   } = useCards(deckId, handleCountChange);
   const { generating, error, generate } = useGenerateFlashcards();
 
-  const handleGenerate = async (words: string[], mainViewMode: 'hiragana' | 'kanji') => {
+  const handleGenerate = async (words: string[], mainViewMode: MainViewMode) => {
     const generated = await generate(words, deckId, mainViewMode);
     setAddCardsOpen(false);
     setReviewCards(generated as typeof reviewCards);

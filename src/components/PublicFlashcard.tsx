@@ -4,6 +4,7 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
+import { toRomaji } from 'wanakana';
 
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
@@ -25,13 +26,18 @@ export function PublicFlashcard({ card, width = '100%', height = 300 }: PublicFl
   }, [card]);
 
   const isKanji = card.mainViewMode === 'kanji';
+  const isRomaji = card.mainViewMode === 'romaji';
   // Top bar uses brand gradient so each theme has a distinct color (purple for murasaki, sky for yuki, pink for sakura).
   // The kanji/hiragana mode distinction is preserved via the bottom border color (typeAccent).
   const topBarGradient = `linear-gradient(135deg, ${brand[400]} 0%, ${brand[600]} 100%)`;
   const typeAccent = isKanji ? accent[400] : brand[400];
 
-  // Kanji front: show kanji without reading hint; hiragana front: show the reading
-  const frontMainText = isKanji ? card.word : card.reading || card.word;
+  // Kanji front: show kanji; hiragana front: show reading; romaji front: romanize reading
+  const frontMainText = isKanji
+    ? card.word
+    : isRomaji && card.reading
+      ? toRomaji(card.reading)
+      : card.reading || card.word;
 
   const CARD_FRAME = `linear-gradient(145deg,
     ${brand[200]}   0%,
@@ -240,7 +246,7 @@ export function PublicFlashcard({ card, width = '100%', height = 300 }: PublicFl
                     </Typography>
                   </Box>
                 )}
-                {card.mainViewMode === 'hiragana' && (
+                {card.mainViewMode !== 'kanji' && (
                   <Box>
                     <Typography
                       sx={{
