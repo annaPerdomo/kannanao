@@ -24,6 +24,7 @@ import { useCallback, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { useSpeech } from '@/hooks/useSpeech';
+import { sb } from '@/lib/supabase';
 
 import { SaveToDeckDialog } from './SaveToDeckDialog';
 
@@ -68,9 +69,14 @@ export function DailyPhrasePack() {
     setResult(null);
     setSaved(false);
     try {
+      const { data: sessionData } = await sb.auth.getSession();
+      const token = sessionData.session?.access_token;
       const res = await fetch('/api/travel/daily', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ plans: plans.trim() }),
       });
       if (!res.ok) throw new Error('Failed to generate phrases');

@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 
-import { dbCreateDeck, dbInsertCards, sb } from '@/lib/supabase';
+import { sb } from '@/lib/supabase';
 import type {
   CultureCard,
   CultureTopic,
@@ -129,7 +129,7 @@ export function useScenario() {
             setting,
             userIntent,
             history: [
-              ...history,
+              ...history.slice(-9),
               {
                 npcJapanese: lastTurn.npcJapanese,
                 npcEnglish: lastTurn.npcEnglish,
@@ -206,55 +206,6 @@ export function useScenario() {
   return { turns, loading, error, savedPhrases, startScenario, respond, savePhrase, reset };
 }
 
-// ─── Save to Deck Hook ────────────────────────────────────────────
-
-export function useSaveToDeck() {
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const savePhrases = useCallback(
-    async (
-      deckName: string,
-      phrases: Array<{ japanese: string; romaji: string; english: string }>,
-    ) => {
-      if (phrases.length === 0) return null;
-      setSaving(true);
-      setError(null);
-      try {
-        const deck = await dbCreateDeck(deckName, 'Created from Travel Mode');
-        const cards = phrases.map((p) => ({
-          word: p.japanese,
-          reading: p.romaji,
-          meaning: p.english,
-          image_query: '',
-          example_jp: '',
-          example_en: '',
-          deckId: deck.id,
-          mainViewMode: 'hiragana' as const,
-          cardType: 'phrase' as const,
-        }));
-        await dbInsertCards(deck.id, cards);
-        setSaved(true);
-        return deck;
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to save deck');
-        return null;
-      } finally {
-        setSaving(false);
-      }
-    },
-    [],
-  );
-
-  const reset = useCallback(() => {
-    setSaved(false);
-    setError(null);
-  }, []);
-
-  return { saving, saved, error, savePhrases, reset };
-}
-
 // ─── Show Cards Hook ──────────────────────────────────────────────
 
 export function useShowCards() {
@@ -291,6 +242,7 @@ export function useShowCards() {
   const filterByCategory = useCallback(
     (category: ShowCardCategory | 'all') => {
       if (category === 'all') return cards;
+      if (category === 'custom') return cards.filter((c) => c.isCustom);
       return cards.filter((c) => c.category === category);
     },
     [cards],

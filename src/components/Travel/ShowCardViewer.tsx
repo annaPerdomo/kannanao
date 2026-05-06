@@ -120,14 +120,24 @@ function ShowCardDisplay({ card, expanded }: { card: ShowCard; expanded: boolean
           <Tooltip title="Listen">
             <IconButton
               size="small"
-              onClick={() => speak(card.japanese)}
+              onClick={(e) => {
+                e.stopPropagation();
+                speak(card.japanese);
+              }}
               aria-label="Listen to pronunciation"
             >
               <VolumeUpIcon sx={{ fontSize: 16 }} />
             </IconButton>
           </Tooltip>
           <Tooltip title={copied ? 'Copied!' : 'Copy Japanese text'}>
-            <IconButton size="small" onClick={handleCopy} aria-label="Copy Japanese text">
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCopy();
+              }}
+              aria-label="Copy Japanese text"
+            >
               <ContentCopyIcon sx={{ fontSize: 14, color: copied ? '#10b981' : undefined }} />
             </IconButton>
           </Tooltip>
