@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
+import { requireAuth } from '../../_lib/requireAuth';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 8 };
 
@@ -14,6 +15,9 @@ const DailySchema = z.object({
 export async function POST(req: NextRequest) {
   const limited = await rateLimit(req, RATE_LIMIT);
   if (limited) return limited;
+
+  const auth = await requireAuth(req);
+  if (auth instanceof NextResponse) return auth;
 
   const body = await req.json().catch(() => null);
   const parsed = DailySchema.safeParse(body);
