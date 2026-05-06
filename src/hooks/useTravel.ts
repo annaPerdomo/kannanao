@@ -290,14 +290,7 @@ export function useShowCards() {
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
         const data = JSON.parse(cached);
-        // Still save to DB so it persists across sessions
-        const { data: session } = await sb.auth.getSession();
-        const userId = session.session?.user?.id;
-        if (userId) {
-          const saved = await dbSaveShowCard(data, userId);
-          setCards((prev) => [saved, ...prev]);
-          return saved;
-        }
+        // Return cached card without re-inserting into DB (already saved on first generate)
         const newCard: ShowCard = { id: `custom-${Date.now()}`, ...data, isCustom: true };
         setCards((prev) => [newCard, ...prev]);
         return newCard;

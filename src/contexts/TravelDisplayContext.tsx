@@ -31,6 +31,12 @@ export function TravelDisplayProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<TravelDisplayMode>(DEFAULT_MODE);
   const synced = useRef(false);
 
+  // Reset when user changes (sign-out / sign-in as different user)
+  useEffect(() => {
+    synced.current = false;
+    setModeState(DEFAULT_MODE);
+  }, [user?.id]);
+
   // Sync from DB profile on load
   useEffect(() => {
     if (synced.current) return;

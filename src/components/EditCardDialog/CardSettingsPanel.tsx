@@ -29,7 +29,7 @@ export function CardSettingsPanel({
 }: CardSettingsPanelProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
-  const modeField = mainViewMode === 'kanji' ? word : mainViewMode === 'romaji' ? reading : reading;
+  const modeField = mainViewMode === 'kanji' ? word : reading;
   const modeHint =
     mainViewMode === 'romaji'
       ? 'Romaji pronunciation will be the card title'
