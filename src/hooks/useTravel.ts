@@ -1,8 +1,14 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { sb } from '@/lib/supabase';
+import {
+  dbDeleteShowCard,
+  dbSaveShowCard,
+  dbUpdateShowCard,
+  loadShowCards,
+  sb,
+} from '@/lib/supabase';
 import type {
   CultureCard,
   CultureTopic,
@@ -10,8 +16,10 @@ import type {
   ScenarioCategory,
   ShowCard,
   ShowCardCategory,
-  SurvivalPhrase,
+  TravelDisplayMode,
 } from '@/types/travel';
+
+import { SURVIVAL_PHRASES } from './survivalPhrasesData';
 
 const BASE = '/api/travel';
 
@@ -80,40 +88,79 @@ export function useScenario() {
     Array<{ japanese: string; romaji: string; english: string }>
   >([]);
 
-  const startScenario = useCallback(async (category: ScenarioCategory, setting?: string) => {
-    setLoading(true);
-    setError(null);
-    setHistory([]);
-    setTurns([]);
-    setSavedPhrases([]);
-    try {
-      const res = await fetch(`${BASE}/scenario`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-        body: JSON.stringify({ category, setting, history: [] }),
-      });
-      if (!res.ok) throw new Error('Failed to start scenario');
-      const data: ScenarioResponse = await res.json();
-      setTurns([
-        {
-          npcJapanese: data.npcJapanese,
-          npcRomaji: data.npcRomaji,
-          npcEnglish: data.npcEnglish,
-          context: data.context,
-          culturalTip: data.culturalTip,
-          suggestedResponses: data.suggestedResponses ?? [],
-          isEnding: data.isEnding,
-        },
-      ]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start scenario');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const startScenario = useCallback(
+    async (category: ScenarioCategory, setting?: string, displayMode?: TravelDisplayMode) => {
+      setLoading(true);
+      setError(null);
+      setHistory([]);
+      setTurns([]);
+      setSavedPhrases([]);
+
+      // Cache the initial NPC greeting by category+setting
+      const cacheKey = `travel:scenario:${category}:${setting ?? ''}:${displayMode ?? ''}`;
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const data: ScenarioResponse = JSON.parse(cached);
+          setTurns([
+            {
+              npcJapanese: data.npcJapanese,
+              npcRomaji: data.npcRomaji,
+              npcEnglish: data.npcEnglish,
+              context: data.context,
+              culturalTip: data.culturalTip,
+              suggestedResponses: data.suggestedResponses ?? [],
+              isEnding: data.isEnding,
+            },
+          ]);
+          setLoading(false);
+          return;
+        }
+      } catch {
+        /* sessionStorage unavailable */
+      }
+
+      try {
+        const res = await fetch(`${BASE}/scenario`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+          body: JSON.stringify({ category, setting, history: [], displayMode }),
+        });
+        if (!res.ok) throw new Error('Failed to start scenario');
+        const data: ScenarioResponse = await res.json();
+        setTurns([
+          {
+            npcJapanese: data.npcJapanese,
+            npcRomaji: data.npcRomaji,
+            npcEnglish: data.npcEnglish,
+            context: data.context,
+            culturalTip: data.culturalTip,
+            suggestedResponses: data.suggestedResponses ?? [],
+            isEnding: data.isEnding,
+          },
+        ]);
+
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify(data));
+        } catch {
+          /* full */
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to start scenario');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   const respond = useCallback(
-    async (category: ScenarioCategory, setting: string, userIntent: string) => {
+    async (
+      category: ScenarioCategory,
+      setting: string,
+      userIntent: string,
+      displayMode?: TravelDisplayMode,
+    ) => {
       const lastTurn = turns[turns.length - 1];
       if (!lastTurn) return;
 
@@ -128,6 +175,7 @@ export function useScenario() {
             category,
             setting,
             userIntent,
+            displayMode,
             history: [
               ...history.slice(-9),
               {
@@ -211,24 +259,82 @@ export function useScenario() {
 export function useShowCards() {
   const [cards, setCards] = useState<ShowCard[]>(DEFAULT_SHOW_CARDS);
   const [generating, setGenerating] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const generateCard = useCallback(async (message: string) => {
+  // Load saved custom cards from DB on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const saved = await loadShowCards();
+        if (!cancelled && saved.length > 0) {
+          setCards((prev) => [...saved, ...prev]);
+        }
+      } catch {
+        // DB load failed — default cards still available
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const generateCard = useCallback(async (message: string, displayMode?: TravelDisplayMode) => {
+    const cacheKey = `travel:showcard:${displayMode ?? ''}:${message.trim().toLowerCase()}`;
+
+    // Check sessionStorage cache to avoid duplicate API calls
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const data = JSON.parse(cached);
+        // Still save to DB so it persists across sessions
+        const { data: session } = await sb.auth.getSession();
+        const userId = session.session?.user?.id;
+        if (userId) {
+          const saved = await dbSaveShowCard(data, userId);
+          setCards((prev) => [saved, ...prev]);
+          return saved;
+        }
+        const newCard: ShowCard = { id: `custom-${Date.now()}`, ...data, isCustom: true };
+        setCards((prev) => [newCard, ...prev]);
+        return newCard;
+      }
+    } catch {
+      /* sessionStorage unavailable */
+    }
+
     setGenerating(true);
     setError(null);
     try {
       const res = await fetch(`${BASE}/show-card`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, displayMode }),
       });
       if (!res.ok) throw new Error('Failed to generate show card');
       const data = await res.json();
-      const newCard: ShowCard = {
-        id: `custom-${Date.now()}`,
-        ...data,
-        isCustom: true,
-      };
+
+      // Cache to avoid duplicate API calls
+      try {
+        sessionStorage.setItem(cacheKey, JSON.stringify(data));
+      } catch {
+        /* full */
+      }
+
+      // Save to DB
+      const { data: session } = await sb.auth.getSession();
+      const userId = session.session?.user?.id;
+      if (userId) {
+        const saved = await dbSaveShowCard(data, userId);
+        setCards((prev) => [saved, ...prev]);
+        return saved;
+      }
+
+      // Fallback if no auth (shouldn't happen, but be safe)
+      const newCard: ShowCard = { id: `custom-${Date.now()}`, ...data, isCustom: true };
       setCards((prev) => [newCard, ...prev]);
       return newCard;
     } catch (err) {
@@ -236,6 +342,38 @@ export function useShowCards() {
       return null;
     } finally {
       setGenerating(false);
+    }
+  }, []);
+
+  const updateCard = useCallback(
+    async (
+      id: string,
+      patch: Partial<
+        Pick<ShowCard, 'english' | 'japanese' | 'romaji' | 'situation' | 'icon' | 'category'>
+      >,
+    ) => {
+      // Optimistic update
+      setCards((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+      try {
+        await dbUpdateShowCard(id, patch);
+      } catch {
+        // Rollback
+        const saved = await loadShowCards();
+        setCards([...saved, ...DEFAULT_SHOW_CARDS]);
+      }
+    },
+    [],
+  );
+
+  const deleteCard = useCallback(async (id: string) => {
+    // Optimistic remove
+    setCards((prev) => prev.filter((c) => c.id !== id));
+    try {
+      await dbDeleteShowCard(id);
+    } catch {
+      // Rollback: reload from DB
+      const saved = await loadShowCards();
+      setCards([...saved, ...DEFAULT_SHOW_CARDS]);
     }
   }, []);
 
@@ -248,52 +386,36 @@ export function useShowCards() {
     [cards],
   );
 
-  return { cards, generating, error, generateCard, filterByCategory };
+  return {
+    cards,
+    generating,
+    loading,
+    error,
+    generateCard,
+    updateCard,
+    deleteCard,
+    filterByCategory,
+  };
 }
 
 // ─── Survival Phrases Hook ────────────────────────────────────────
 
 export function useSurvivalPhrases() {
-  const [phrases, setPhrases] = useState<SurvivalPhrase[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [activeSituation, setActiveSituation] = useState<PhraseSituation | null>(null);
 
-  const loadPhrases = useCallback(async (situation: PhraseSituation, specificContext?: string) => {
-    setLoading(true);
-    setError(null);
+  const phrases = activeSituation
+    ? SURVIVAL_PHRASES.filter((p) => p.situation === activeSituation)
+    : [];
+
+  const loadPhrases = useCallback((situation: PhraseSituation) => {
     setActiveSituation(situation);
-    try {
-      const res = await fetch(`${BASE}/phrases`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-        body: JSON.stringify({ situation, specificContext }),
-      });
-      if (!res.ok) throw new Error('Failed to load phrases');
-      const data = await res.json();
-      const formatted: SurvivalPhrase[] = data.map(
-        (p: Record<string, unknown>, i: number) =>
-          ({
-            id: `${situation}-${i}`,
-            situation,
-            ...p,
-          }) as SurvivalPhrase,
-      );
-      setPhrases(formatted);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load phrases');
-    } finally {
-      setLoading(false);
-    }
   }, []);
 
   const reset = useCallback(() => {
-    setPhrases([]);
     setActiveSituation(null);
-    setError(null);
   }, []);
 
-  return { phrases, loading, error, activeSituation, loadPhrases, reset };
+  return { phrases, loading: false, error: null, activeSituation, loadPhrases, reset };
 }
 
 // ─── Culture Cards Hook ───────────────────────────────────────────

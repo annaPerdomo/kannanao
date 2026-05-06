@@ -22,6 +22,7 @@ const ScenarioSchema = z.object({
   setting: z.string().max(500).optional(),
   /** What the user wants to say/do in English (free text input) */
   userIntent: z.string().max(300).optional(),
+  displayMode: z.enum(['hiragana', 'romaji', 'kanji']).optional(),
   history: z
     .array(
       z.object({
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { category, setting, userIntent, history } = parsed.data;
+  const { category, setting, userIntent, displayMode, history } = parsed.data;
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -78,8 +79,13 @@ export async function POST(req: NextRequest) {
     ? `\nUser wants to say: "${userIntent}"\nGive bestPhrase (polite Japanese), romaji, English, brief explanation, and a simpler alternative. Then NPC responds.`
     : '\nSTART: NPC initiates (greet/ask).';
 
+  const furiganaRule =
+    displayMode === 'hiragana'
+      ? '\nIMPORTANT: For ALL Japanese text fields (npcJapanese, bestPhrase, alternative), use {kanji|reading} syntax for EVERY kanji to provide furigana. Example: "{助|たす}けて" or "お{会計|かいけい}". Pure hiragana/katakana needs no markup.'
+      : '';
+
   const prompt = `Japanese conversation coach for a zero-Japanese tourist. Scenario: ${categoryDescriptions[category] || category}${setting ? `. Setting: ${setting}` : ''}${historyContext}${userIntentContext}
-Rules: short realistic phrases, desu-masu form, practical cultural tips only, 2-3 suggestedResponses in English, set isEnding:true after 5-6 turns.`;
+Rules: short realistic phrases, desu-masu form, practical cultural tips only, 2-3 suggestedResponses in English, set isEnding:true after 5-6 turns.${furiganaRule}`;
 
   try {
     const response = await fetch(

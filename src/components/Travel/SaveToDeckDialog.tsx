@@ -71,7 +71,7 @@ export function SaveToDeckDialog({
         example_jp: '',
         example_en: '',
         deckId,
-        mainViewMode: 'hiragana' as const,
+        mainViewMode: 'romaji' as const,
         cardType: 'phrase' as const,
       }));
       await dbInsertCards(deckId, cards);

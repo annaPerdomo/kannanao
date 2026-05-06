@@ -10,6 +10,7 @@ const RATE_LIMIT = { windowMs: 60_000, max: 10 };
 
 const ShowCardSchema = z.object({
   message: z.string().min(3).max(300),
+  displayMode: z.enum(['hiragana', 'romaji', 'kanji']).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -28,15 +29,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { message } = parsed.data;
+  const { message, displayMode } = parsed.data;
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
   }
 
+  const furiganaRule =
+    displayMode === 'hiragana'
+      ? '\nIMPORTANT: For the "japanese" field, use {kanji|reading} syntax for EVERY kanji character to provide furigana. Example: "{助|たす}けてください". Pure hiragana/katakana needs no markup.'
+      : '';
+
   const prompt = `Create a bilingual "show card" for a tourist in Japan to display on their phone. Tourist wants to communicate: "${message}"
-Japanese: natural, polite (です/ます), concise. Include romaji, situation note, emoji icon, and category.`;
+Japanese: natural, polite (です/ます), concise. Include romaji, situation note, emoji icon, and category.${furiganaRule}`;
 
   try {
     const response = await fetch(

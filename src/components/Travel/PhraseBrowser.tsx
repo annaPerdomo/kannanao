@@ -6,11 +6,9 @@ import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
 import SchoolIcon from '@mui/icons-material/School';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import {
-  Alert,
   alpha,
   Box,
   Button,
-  Card,
   Chip,
   Container,
   IconButton,
@@ -22,12 +20,13 @@ import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { stripFurigana } from '@/components/FuriganaText';
 import { useSpeech } from '@/hooks/useSpeech';
 import { useSurvivalPhrases } from '@/hooks/useTravel';
 import type { PhraseSituation } from '@/types/travel';
 
-import { Loading } from '../Loading';
 import { SaveToDeckDialog } from './SaveToDeckDialog';
+import { TravelPhrase } from './TravelPhrase';
 
 const SITUATIONS: Array<{ key: PhraseSituation; label: string; icon: string; color: string }> = [
   { key: 'greetings', label: 'Greetings', icon: '👋', color: '#f59e0b' },
@@ -58,14 +57,7 @@ export function PhraseBrowser() {
   const { brand } = theme.palette;
   const router = useRouter();
   const { speak } = useSpeech();
-  const {
-    phrases,
-    loading,
-    error,
-    activeSituation,
-    loadPhrases,
-    reset: resetPhrases,
-  } = useSurvivalPhrases();
+  const { phrases, activeSituation, loadPhrases, reset: resetPhrases } = useSurvivalPhrases();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deckDialogOpen, setDeckDialogOpen] = useState(false);
   const [deckSaved, setDeckSaved] = useState(false);
@@ -73,34 +65,28 @@ export function PhraseBrowser() {
   // Situation selection
   if (!activeSituation) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
+      <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
         <Stack spacing={3}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
               <ArrowBackIcon />
             </IconButton>
-            <Typography
-              variant="h5"
-              sx={{ fontWeight: 700, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
-            >
-              Survival Phrases
-            </Typography>
+            <Box>
+              <Typography
+                variant="h5"
+                sx={{ fontWeight: 800, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
+              >
+                Survival Phrases
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
+                Essential phrases with pronunciation and tips
+              </Typography>
+            </Box>
           </Box>
 
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            AI generates practical phrases you will actually need — with romaji pronunciation,
-            audio, and tips on when to use each one.
-          </Typography>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' },
-              gap: 2,
-            }}
-          >
+          <Stack spacing={1.25}>
             {SITUATIONS.map((s) => (
-              <Card
+              <Box
                 key={s.key}
                 onClick={() => loadPhrases(s.key)}
                 role="button"
@@ -112,27 +98,55 @@ export function PhraseBrowser() {
                   }
                 }}
                 sx={{
-                  p: 2.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  p: 2,
                   cursor: 'pointer',
-                  borderRadius: 3,
-                  textAlign: 'center',
-                  border: `1px solid ${alpha(s.color, 0.2)}`,
-                  background: alpha(s.color, 0.04),
-                  transition: 'all 0.2s',
+                  borderRadius: '16px',
+                  bgcolor: 'background.paper',
+                  border: `1px solid ${alpha(s.color, 0.15)}`,
+                  boxShadow: `0 1px 3px ${alpha(s.color, 0.08)}`,
+                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    transform: 'translateY(-3px)',
+                    transform: 'translateY(-2px)',
                     boxShadow: `0 8px 24px ${alpha(s.color, 0.15)}`,
                     borderColor: alpha(s.color, 0.4),
+                    '& .sit-icon': { transform: 'scale(1.08)' },
                   },
+                  '&:active': { transform: 'translateY(0)' },
                 }}
               >
-                <Typography sx={{ fontSize: '2rem', mb: 1 }}>{s.icon}</Typography>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                <Box
+                  className="sit-icon"
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: alpha(s.color, 0.08),
+                    border: `1px solid ${alpha(s.color, 0.15)}`,
+                    flexShrink: 0,
+                    transition: 'transform 0.25s ease',
+                  }}
+                >
+                  <Typography sx={{ fontSize: '1.4rem', lineHeight: 1 }}>{s.icon}</Typography>
+                </Box>
+                <Typography
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: '0.92rem',
+                    color: 'text.primary',
+                    lineHeight: 1.3,
+                  }}
+                >
                   {s.label}
                 </Typography>
-              </Card>
+              </Box>
             ))}
-          </Box>
+          </Stack>
         </Stack>
       </Container>
     );
@@ -141,62 +155,75 @@ export function PhraseBrowser() {
   const situationInfo = SITUATIONS.find((s) => s.key === activeSituation);
 
   return (
-    <Container maxWidth="sm" sx={{ py: 4 }}>
-      <Stack spacing={3}>
+    <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+      <Stack spacing={2.5}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <IconButton onClick={resetPhrases} aria-label="Back to situations">
             <ArrowBackIcon />
           </IconButton>
-          <Typography sx={{ fontSize: '1.3rem' }}>{situationInfo?.icon}</Typography>
-          <Typography
-            variant="h6"
-            sx={{ fontWeight: 700, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: alpha(situationInfo?.color ?? brand[100], 0.1),
+              border: `1px solid ${alpha(situationInfo?.color ?? brand[200], 0.2)}`,
+            }}
           >
-            {situationInfo?.label} Phrases
+            <Typography sx={{ fontSize: '1.1rem', lineHeight: 1 }}>
+              {situationInfo?.icon}
+            </Typography>
+          </Box>
+          <Typography
+            sx={{
+              fontWeight: 700,
+              fontSize: '1.05rem',
+              fontFamily: (t) => t.fonts.display,
+              color: 'text.primary',
+              flex: 1,
+            }}
+          >
+            {situationInfo?.label}
           </Typography>
-        </Box>
-
-        {/* Save to deck button */}
-        {phrases.length > 0 && !loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            {deckSaved ? (
+          {/* Save to deck button */}
+          {phrases.length > 0 &&
+            (deckSaved ? (
               <Chip
                 icon={<BookmarkAddedIcon sx={{ fontSize: '14px !important' }} />}
-                label="Saved to deck!"
+                label="Saved!"
                 sx={{
                   bgcolor: alpha('#10b981', 0.12),
                   color: '#059669',
                   fontWeight: 600,
-                  fontSize: '0.75rem',
+                  fontSize: '0.72rem',
                 }}
               />
             ) : (
               <Button
-                startIcon={<AddIcon />}
+                startIcon={<AddIcon sx={{ fontSize: 14 }} />}
                 onClick={() => setDeckDialogOpen(true)}
                 size="small"
                 variant="outlined"
-                sx={{ textTransform: 'none', borderRadius: 2, fontSize: '0.75rem' }}
+                sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.72rem' }}
               >
-                Save all to deck ({phrases.length} cards)
+                Save all
               </Button>
-            )}
-          </Box>
-        )}
-
-        {loading && <Loading message="Generating phrases..." />}
-        {error && <Alert severity="error">{error}</Alert>}
+            ))}
+        </Box>
 
         {/* Phrases */}
-        <Stack spacing={2}>
+        <Stack spacing={1.5}>
           {phrases.map((phrase) => {
             const isExpanded = expandedId === phrase.id;
             const diff = DIFFICULTY_LABELS[phrase.difficulty] ?? DIFFICULTY_LABELS[1];
             const form = FORMALITY_LABELS[phrase.formality] ?? FORMALITY_LABELS.polite;
 
             return (
-              <Card
+              <Box
                 key={phrase.id}
                 onClick={() => setExpandedId(isExpanded ? null : phrase.id)}
                 role="button"
@@ -208,136 +235,155 @@ export function PhraseBrowser() {
                   }
                 }}
                 sx={{
-                  borderRadius: 3,
-                  overflow: 'hidden',
+                  p: 2,
+                  borderRadius: '14px',
                   cursor: 'pointer',
-                  border: `1px solid ${alpha(brand[300], 0.3)}`,
+                  bgcolor: 'background.paper',
+                  border: `1px solid ${alpha(brand[300], 0.2)}`,
+                  boxShadow: `0 1px 3px ${alpha(brand[400], 0.06)}`,
                   transition: 'all 0.2s',
                   '&:hover': {
-                    borderColor: alpha(brand[400], 0.5),
+                    borderColor: alpha(brand[400], 0.4),
+                    boxShadow: `0 4px 12px ${alpha(brand[400], 0.1)}`,
                   },
                 }}
               >
-                <Box sx={{ p: 2 }}>
-                  {/* Main content */}
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography
-                        variant="body2"
-                        sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}
-                      >
-                        {phrase.english}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                {/* Main content */}
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5, fontSize: '0.84rem' }}
+                    >
+                      {phrase.english}
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                      <TravelPhrase
+                        japanese={phrase.japanese}
+                        romaji={phrase.romaji}
+                        primarySize="1.05rem"
+                        secondarySize="0.78rem"
+                      />
+                      <Tooltip title="Listen">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            speak(stripFurigana(phrase.japanese));
+                          }}
+                          aria-label="Listen to pronunciation"
+                          sx={{ p: 0.5 }}
+                        >
+                          <VolumeUpIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </Box>
+                  <Stack spacing={0.5} alignItems="flex-end">
+                    <Chip
+                      label={diff.label}
+                      size="small"
+                      sx={{
+                        height: 18,
+                        fontSize: '0.58rem',
+                        fontWeight: 700,
+                        bgcolor: alpha(diff.color, 0.1),
+                        color: diff.color,
+                        '& .MuiChip-label': { px: 0.75 },
+                      }}
+                    />
+                    <Chip
+                      label={`${form.icon} ${form.label}`}
+                      size="small"
+                      sx={{
+                        height: 18,
+                        fontSize: '0.58rem',
+                        fontWeight: 600,
+                        bgcolor: alpha(brand[200], 0.25),
+                        color: 'text.secondary',
+                        '& .MuiChip-label': { px: 0.75 },
+                      }}
+                    />
+                  </Stack>
+                </Box>
+
+                {/* Expanded content */}
+                {isExpanded && (
+                  <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${alpha(brand[200], 0.3)}` }}>
+                    <Stack spacing={1.25}>
+                      <Box>
                         <Typography
+                          variant="caption"
                           sx={{
-                            fontFamily: (t) => t.fonts.jp,
-                            fontSize: '1.15rem',
-                            color: 'text.primary',
+                            fontWeight: 700,
+                            color: brand[600],
+                            letterSpacing: '0.04em',
+                            fontSize: '0.6rem',
                           }}
                         >
-                          {phrase.japanese}
+                          BREAKDOWN
                         </Typography>
-                        <Tooltip title="Listen">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              speak(phrase.japanese);
-                            }}
-                            aria-label="Listen to pronunciation"
-                          >
-                            <VolumeUpIcon sx={{ fontSize: 18 }} />
-                          </IconButton>
-                        </Tooltip>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: 'text.secondary', fontSize: '0.8rem' }}
+                        >
+                          {phrase.breakdown}
+                        </Typography>
                       </Box>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: brand[600], fontStyle: 'italic', mt: 0.25 }}
-                      >
-                        {phrase.romaji}
-                      </Typography>
-                    </Box>
-                    <Stack spacing={0.5} alignItems="flex-end">
-                      <Chip
-                        label={diff.label}
-                        size="small"
-                        sx={{
-                          height: 20,
-                          fontSize: '0.6rem',
-                          fontWeight: 700,
-                          bgcolor: alpha(diff.color, 0.12),
-                          color: diff.color,
-                        }}
-                      />
-                      <Chip
-                        label={`${form.icon} ${form.label}`}
-                        size="small"
-                        sx={{
-                          height: 20,
-                          fontSize: '0.6rem',
-                          fontWeight: 600,
-                          bgcolor: alpha(brand[200], 0.3),
-                          color: 'text.secondary',
-                        }}
-                      />
-                    </Stack>
-                  </Box>
-
-                  {/* Expanded content */}
-                  {isExpanded && (
-                    <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${alpha(brand[200], 0.4)}` }}>
-                      <Stack spacing={1.5}>
-                        <Box>
-                          <Typography
-                            variant="caption"
-                            sx={{ fontWeight: 700, color: brand[600], letterSpacing: '0.05em' }}
-                          >
-                            BREAKDOWN
-                          </Typography>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            {phrase.breakdown}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography
-                            variant="caption"
-                            sx={{ fontWeight: 700, color: brand[600], letterSpacing: '0.05em' }}
-                          >
-                            WHEN TO USE
-                          </Typography>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            {phrase.whenToUse}
-                          </Typography>
-                        </Box>
-                        {phrase.culturalNote && (
-                          <Box
-                            sx={{
-                              p: 1.5,
-                              borderRadius: 2,
-                              background: alpha('#f59e0b', 0.06),
-                              border: `1px solid ${alpha('#f59e0b', 0.15)}`,
-                            }}
-                          >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.25 }}>
-                              <SchoolIcon sx={{ fontSize: 14, color: '#f59e0b' }} />
-                              <Typography
-                                variant="caption"
-                                sx={{ fontWeight: 700, color: '#d97706', letterSpacing: '0.05em' }}
-                              >
-                                CULTURAL NOTE
-                              </Typography>
-                            </Box>
-                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                              {phrase.culturalNote}
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            fontWeight: 700,
+                            color: brand[600],
+                            letterSpacing: '0.04em',
+                            fontSize: '0.6rem',
+                          }}
+                        >
+                          WHEN TO USE
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: 'text.secondary', fontSize: '0.8rem' }}
+                        >
+                          {phrase.whenToUse}
+                        </Typography>
+                      </Box>
+                      {phrase.culturalNote && (
+                        <Box
+                          sx={{
+                            p: 1.5,
+                            borderRadius: '10px',
+                            background: alpha('#f59e0b', 0.04),
+                            border: `1px solid ${alpha('#f59e0b', 0.12)}`,
+                          }}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.25 }}>
+                            <SchoolIcon sx={{ fontSize: 12, color: '#f59e0b' }} />
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                fontWeight: 700,
+                                color: '#d97706',
+                                letterSpacing: '0.04em',
+                                fontSize: '0.6rem',
+                              }}
+                            >
+                              CULTURAL NOTE
                             </Typography>
                           </Box>
-                        )}
-                      </Stack>
-                    </Box>
-                  )}
-                </Box>
-              </Card>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: 'text.secondary', fontSize: '0.8rem' }}
+                          >
+                            {phrase.culturalNote}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Stack>
+                  </Box>
+                )}
+              </Box>
             );
           })}
         </Stack>
