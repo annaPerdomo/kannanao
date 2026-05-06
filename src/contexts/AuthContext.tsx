@@ -9,6 +9,7 @@ import {
   sb,
   updateProfileColorScheme,
   updateProfileShowTodo,
+  updateProfileTravelMainViewMode,
   upsertProfile,
 } from '@/lib/supabase';
 import type { ColorScheme } from '@/theme';
@@ -26,6 +27,7 @@ interface AuthContextValue {
   displayName: string | null;
   colorScheme: ColorScheme | null;
   showTodo: boolean;
+  travelMainViewMode: string | null;
   loading: boolean;
   signInWithUsername: (username: string, password: string) => Promise<{ error: string | null }>;
   signUpWithUsername: (
@@ -37,6 +39,7 @@ interface AuthContextValue {
   updateDisplayName: (name: string) => Promise<{ error: string | null }>;
   updateColorScheme: (scheme: ColorScheme) => Promise<void>;
   updateShowTodo: (show: boolean) => Promise<void>;
+  updateTravelMainViewMode: (mode: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -69,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [colorScheme, setColorScheme] = useState<ColorScheme | null>(null);
   const [showTodo, setShowTodo] = useState(true);
+  const [travelMainViewMode, setTravelMainViewMode] = useState<string | null>(null);
   const [accountType, setAccountType] = useState<AccountType>('organizer');
   const [organizerId, setOrganizerId] = useState<string | null>(null);
   const [groupId, setGroupId] = useState<string | null>(null);
@@ -82,6 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setColorScheme(saved as ColorScheme);
     }
     setShowTodo(profile?.showTodo !== false);
+    setTravelMainViewMode(profile?.travelMainViewMode ?? null);
     setAccountType(profile?.accountType ?? 'organizer');
     setOrganizerId(profile?.organizerId ?? null);
     setGroupId(profile?.groupId ?? null);
@@ -109,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setDisplayName(null);
         setColorScheme(null);
         setShowTodo(true);
+        setTravelMainViewMode(null);
         setAccountType('organizer');
         setOrganizerId(null);
         setGroupId(null);
@@ -161,6 +167,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateTravelMainViewMode = async (mode: string) => {
+    setTravelMainViewMode(mode);
+    const {
+      data: { user },
+    } = await sb.auth.getUser();
+    if (user) {
+      await updateProfileTravelMainViewMode(user.id, mode);
+    }
+  };
+
   const signOut = async () => {
     await sb.auth.signOut();
   };
@@ -178,6 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         displayName,
         colorScheme,
         showTodo,
+        travelMainViewMode,
         loading,
         signInWithUsername,
         signUpWithUsername,
@@ -185,6 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updateDisplayName,
         updateColorScheme,
         updateShowTodo,
+        updateTravelMainViewMode,
       }}
     >
       {children}

@@ -7,5 +7,7 @@ export { PhraseBrowser } from './PhraseBrowser';
 export { SaveToDeckDialog } from './SaveToDeckDialog';
 export { ScenarioPlayer } from './ScenarioPlayer';
 export { ShowCardViewer } from './ShowCardViewer';
+export { TravelDisplayToggle } from './TravelDisplayToggle';
 export { TravelHub } from './TravelHub';
+export { TravelPhrase } from './TravelPhrase';
 export { WhatDidTheySay } from './WhatDidTheySay';

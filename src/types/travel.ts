@@ -1,5 +1,14 @@
 /** Travel Mode — types for complete beginner Japanese travel features */
 
+// ─── Display Mode ────────────────────────────────────────────────
+
+/** Travel display mode reuses MainViewMode from flashcards for a unified UX.
+ *  - 'hiragana': furigana reading guides above kanji + romaji
+ *  - 'romaji': romaji pronunciation highlighted
+ *  - 'kanji': plain Japanese characters
+ */
+export type { MainViewMode as TravelDisplayMode } from '@/types/flashcard';
+
 // ─── Scenario Simulator ───────────────────────────────────────────
 
 export type ScenarioCategory =

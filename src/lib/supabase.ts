@@ -408,10 +408,13 @@ export async function loadProfile(userId: string): Promise<{
   accountType: AccountType;
   organizerId: string | null;
   groupId: string | null;
+  travelMainViewMode: string | null;
 } | null> {
   const { data, error } = await sb
     .from('profiles')
-    .select('username, display_name, color_scheme, show_todo, account_type, organizer_id, group_id')
+    .select(
+      'username, display_name, color_scheme, show_todo, account_type, organizer_id, group_id, travel_main_view_mode',
+    )
     .eq('id', userId)
     .single();
   if (error || !data) return null;
@@ -423,6 +426,7 @@ export async function loadProfile(userId: string): Promise<{
     accountType: (data.account_type as AccountType) ?? 'organizer',
     organizerId: data.organizer_id ?? null,
     groupId: data.group_id ?? null,
+    travelMainViewMode: data.travel_main_view_mode ?? null,
   };
 }
 
@@ -445,6 +449,18 @@ export async function updateProfileShowTodo(userId: string, showTodo: boolean): 
   }
   const { error } = await sb.from('profiles').update({ show_todo: showTodo }).eq('id', userId);
   if (error) console.error('updateProfileShowTodo error', error);
+}
+
+export async function updateProfileTravelMainViewMode(userId: string, mode: string): Promise<void> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    return;
+  }
+  const { error } = await sb
+    .from('profiles')
+    .update({ travel_main_view_mode: mode })
+    .eq('id', userId);
+  if (error) console.error('updateProfileTravelMainViewMode error', error);
 }
 
 // ─── Deck sharing ─────────────────────────────────────────────────────────────
