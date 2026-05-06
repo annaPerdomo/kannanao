@@ -73,47 +73,6 @@ export function HeroSection() {
         }}
       />
 
-      {(
-        [
-          { char: '桜', size: 160, top: '6%', left: '-1%', opacity: 0.065, delay: '0s' },
-          { char: '春', size: 200, top: '48%', right: '-2%', opacity: 0.05, delay: '1.8s' },
-          { char: '花', size: 110, bottom: '10%', left: '9%', opacity: 0.075, delay: '2.5s' },
-          { char: '語', size: 140, top: '18%', left: '52%', opacity: 0.045, delay: '1.0s' },
-        ] as Array<{
-          char: string;
-          size: number;
-          top?: string;
-          bottom?: string;
-          left?: string;
-          right?: string;
-          opacity: number;
-          delay: string;
-        }>
-      ).map(({ char, size, top, bottom, left, right, opacity, delay }) => (
-        <Box
-          key={char}
-          sx={{
-            position: 'absolute',
-            fontFamily: (t) => t.fonts.jp,
-            fontSize: size,
-            color: pink[400],
-            opacity,
-            top,
-            bottom,
-            left,
-            right,
-            pointerEvents: 'none',
-            userSelect: 'none',
-            lineHeight: 1,
-            animation: 'floatKanji 9s ease-in-out infinite',
-            animationDelay: delay,
-            zIndex: 0,
-          }}
-        >
-          {char}
-        </Box>
-      ))}
-
       <Box
         sx={{
           maxWidth: 1220,
@@ -186,9 +145,9 @@ export function HeroSection() {
               mx: { xs: 'auto', lg: 0 },
             }}
           >
-            Kannanao is a beautiful flashcard studio with AI card generation, gamified progress
-            tracking, and multiple practice modes — designed to make studying Japanese{' '}
-            <em>actually</em> enjoyable.
+            AI-powered flashcards, travel phrasebooks, speech practice, gamified XP &amp;
+            achievements, customizable themes, and group study — everything you need to make
+            learning Japanese <em>actually</em> enjoyable.
           </Typography>
 
           <Stack
@@ -273,22 +232,27 @@ export function HeroSection() {
             useFlexGap
             justifyContent={{ xs: 'center', lg: 'flex-start' }}
           >
-            {['🎌 Japanese', '🤖 AI-powered', '🎮 Gamified', '📊 Stats', '📄 PDF Import'].map(
-              (tag) => (
-                <Chip
-                  key={tag}
-                  label={tag}
-                  size="small"
-                  sx={{
-                    bgcolor: alpha(pink[50], 0.95),
-                    color: pink[700],
-                    fontSize: '0.72rem',
-                    border: `1px solid ${alpha(pink[300], 0.55)}`,
-                    borderRadius: 4,
-                  }}
-                />
-              ),
-            )}
+            {[
+              '🎌 Japanese',
+              '🤖 AI-powered',
+              '🎮 Gamified',
+              '✈️ Travel Mode',
+              '👥 Groups',
+              '🎨 Themes',
+            ].map((tag) => (
+              <Chip
+                key={tag}
+                label={tag}
+                size="small"
+                sx={{
+                  bgcolor: alpha(pink[50], 0.95),
+                  color: pink[700],
+                  fontSize: '0.72rem',
+                  border: `1px solid ${alpha(pink[300], 0.55)}`,
+                  borderRadius: 4,
+                }}
+              />
+            ))}
           </Stack>
         </Box>
 
