@@ -22,9 +22,9 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
     <Box
       sx={{
         background: `linear-gradient(135deg, ${brand[50]} 0%, ${accent[50]} 100%)`,
-        borderRadius: '20px',
+        borderRadius: { xs: '16px', sm: '20px' },
         border: `1.5px solid ${alpha(brand[300], 0.35)}`,
-        p: { xs: 2.5, sm: 3.5 },
+        p: { xs: 2, sm: 3.5 },
         mb: 3,
       }}
     >

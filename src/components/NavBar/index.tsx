@@ -1,11 +1,11 @@
 'use client';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import FlightIcon from '@mui/icons-material/Flight';
 import GroupsIcon from '@mui/icons-material/Groups';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import MicIcon from '@mui/icons-material/Mic';
 import StorefrontIcon from '@mui/icons-material/Storefront';
-import StyleIcon from '@mui/icons-material/Style';
 import {
   Alert,
   AppBar,
@@ -186,7 +186,7 @@ export function NavBar() {
               <Button
                 onClick={() => router.push('/travel')}
                 size="small"
-                startIcon={<StyleIcon sx={{ fontSize: '1rem !important' }} />}
+                startIcon={<FlightIcon sx={{ fontSize: '1rem !important' }} />}
                 sx={isTravel ? navBtnWithIconActive : navBtnWithIcon}
               >
                 <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
