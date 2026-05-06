@@ -7,17 +7,17 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { ACHIEVEMENTS as ALL_ACHIEVEMENTS } from '@/hooks/useProgress';
 import { SHOP_ITEMS as ALL_SHOP_ITEMS } from '@/hooks/useShop';
-import { amber, emerald, lavender, ocean, pink, purple, slate, sunset } from '@/theme';
+import { amber, emerald, lavender, ocean, pink, purple, rose, sky, slate, sunset } from '@/theme';
 
 import { Blob } from './Blob';
 import { useInView } from './useInView';
 
-// Dynamic counts from actual data
-const THEME_COUNT = ALL_SHOP_ITEMS.filter((i) => i.category === 'theme').length;
+// Dynamic counts from actual data — exclude comingSoon items
+const THEME_COUNT = ALL_SHOP_ITEMS.filter((i) => i.category === 'theme' && !i.comingSoon).length;
 const BORDER_COUNT = ALL_SHOP_ITEMS.filter((i) => i.category === 'card_border').length;
 const ACHIEVEMENT_COUNT = ALL_ACHIEVEMENTS.length;
 const CATEGORIES = [...new Set(ALL_SHOP_ITEMS.map((i) => i.category))].length;
@@ -35,12 +35,14 @@ const DEMO_ACHIEVEMENTS = [
 const THEME_PREVIEWS = [
   { name: 'Sakura', colors: [pink[300], pink[500], pink[600]] },
   { name: 'Murasaki', colors: [purple[300], purple[500], purple[700]] },
+  { name: 'Yuki', colors: [sky[200], sky[400], purple[400]] },
   { name: 'Ocean', colors: [ocean[300], ocean[500], ocean[700]] },
   { name: 'Forest', colors: [emerald[300], emerald[500], emerald[700]] },
   { name: 'Sunset', colors: [sunset[300], sunset[500], sunset[700]] },
   { name: 'Lavender', colors: [lavender[300], lavender[500], lavender[700]] },
   { name: 'Midnight', colors: [slate[400], slate[600], slate[800]] },
   { name: 'Matcha', colors: [emerald[200], emerald[400], emerald[600]] },
+  { name: 'Rose Gold', colors: [rose[300], rose[400], amber[400]] },
 ];
 
 // Real shop items — one from each category
@@ -53,6 +55,11 @@ const DEMO_SHOP_ITEMS = [
 
 export function GamificationSection() {
   const { ref, inView } = useInView(0.06);
+  // Deterministic alpha values for calendar cells to avoid hydration mismatches
+  const calendarAlphas = useMemo(
+    () => Array.from({ length: 14 }, (_, i) => 0.3 + ((i * 7 + 3) % 10) * 0.04),
+    [],
+  );
   const [xpProgress, setXpProgress] = useState(0);
   const [badgesShown, setBadgesShown] = useState(0);
   const [activeTheme, setActiveTheme] = useState(0);
@@ -85,10 +92,11 @@ export function GamificationSection() {
     }, 2000);
 
     // Celebration burst
+    let burstTimeout: ReturnType<typeof setTimeout>;
     const celebTimer = setInterval(() => {
       if (!cancelled) {
         setCelebrationBurst(true);
-        setTimeout(() => setCelebrationBurst(false), 800);
+        burstTimeout = setTimeout(() => setCelebrationBurst(false), 800);
       }
     }, 5000);
 
@@ -98,6 +106,7 @@ export function GamificationSection() {
       clearInterval(badgeTimer);
       clearInterval(themeTimer);
       clearInterval(celebTimer);
+      clearTimeout(burstTimeout);
     };
   }, [inView]);
 
@@ -328,7 +337,7 @@ export function GamificationSection() {
                     aspectRatio: '1',
                     borderRadius: 1,
                     bgcolor: [0, 1, 2, 3, 5, 6, 7, 8, 9, 11, 12, 13].includes(i)
-                      ? alpha(amber[400], 0.3 + Math.random() * 0.4)
+                      ? alpha(amber[400], calendarAlphas[i])
                       : alpha(amber[100], 0.3),
                     transition: 'all 0.3s ease',
                   }}

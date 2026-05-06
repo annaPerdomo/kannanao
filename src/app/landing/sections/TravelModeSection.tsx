@@ -71,6 +71,13 @@ const TRAVEL_FEATURES = [
     gradient: `linear-gradient(135deg, ${lavender[400]} 0%, ${lavender[700]} 100%)`,
     shadow: lavender[400],
   },
+  {
+    icon: '🃏',
+    title: 'Show Cards',
+    desc: 'Pre-made phrase cards to display',
+    gradient: `linear-gradient(135deg, ${sky[400]} 0%, ${ocean[600]} 100%)`,
+    shadow: sky[400],
+  },
 ];
 
 const DEMO_SCENARIO = [

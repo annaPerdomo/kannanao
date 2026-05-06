@@ -42,7 +42,9 @@ export async function generateMetadata({
   const title = `${deck.emoji ?? '📚'} ${deck.name} — Kannanao`;
   const description =
     deck.description ||
-    `Study ${count ?? 'this'} Japanese flashcard${count !== 1 ? 's' : ''} from the "${deck.name}" deck on Kannanao.`;
+    (count != null
+      ? `Study ${count} Japanese flashcard${count !== 1 ? 's' : ''} from the "${deck.name}" deck on Kannanao.`
+      : `Study Japanese flashcards from the "${deck.name}" deck on Kannanao.`);
 
   return {
     title,
@@ -54,7 +56,7 @@ export async function generateMetadata({
       url: `https://kannanao.com/embed/deck/${id}`,
     },
     twitter: {
-      card: 'summary',
+      card: 'summary_large_image',
       title,
       description,
     },
