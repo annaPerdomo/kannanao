@@ -2,13 +2,13 @@
 import { Box, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 
-import type { JlptLevel } from '@/types/flashcard';
+import type { JlptLevel, MainViewMode } from '@/types/flashcard';
 
 import { JLPT_LEVELS, settingsRowSx, toggleGroupSx } from './constants';
 
 interface CardSettingsPanelProps {
-  mainViewMode: 'hiragana' | 'kanji';
-  onMainViewModeChange: (mode: 'hiragana' | 'kanji') => void;
+  mainViewMode: MainViewMode;
+  onMainViewModeChange: (mode: MainViewMode) => void;
   cardType: 'word' | 'phrase';
   onCardTypeChange: (type: 'word' | 'phrase') => void;
   jlptLevel: JlptLevel | undefined;
@@ -29,11 +29,13 @@ export function CardSettingsPanel({
 }: CardSettingsPanelProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
-  const modeField = mainViewMode === 'hiragana' ? reading : word;
+  const modeField = mainViewMode === 'kanji' ? word : reading;
   const modeHint =
-    mainViewMode === 'hiragana'
-      ? 'The hiragana reading will be the card title'
-      : 'The kanji reading will be the card title';
+    mainViewMode === 'romaji'
+      ? 'Romaji pronunciation will be the card title'
+      : mainViewMode === 'hiragana'
+        ? 'The hiragana reading will be the card title'
+        : 'The kanji reading will be the card title';
 
   const labelSx = {
     fontSize: '0.72rem',
@@ -77,6 +79,9 @@ export function CardSettingsPanel({
             '& .MuiToggleButton-root': { ...tgSx['& .MuiToggleButton-root'], fontSize: '0.9rem' },
           }}
         >
+          <Tooltip title="Display romaji as the primary text" placement="top">
+            <ToggleButton value="romaji">ABC</ToggleButton>
+          </Tooltip>
           <Tooltip title="Display hiragana as the primary text" placement="top">
             <ToggleButton value="hiragana">{reading || 'ひ'}</ToggleButton>
           </Tooltip>

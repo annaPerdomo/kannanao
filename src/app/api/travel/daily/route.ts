@@ -10,6 +10,7 @@ const RATE_LIMIT = { windowMs: 60_000, max: 8 };
 
 const DailySchema = z.object({
   plans: z.string().min(5).max(500),
+  displayMode: z.enum(['hiragana', 'romaji', 'kanji']).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -28,15 +29,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { plans } = parsed.data;
+  const { plans, displayMode } = parsed.data;
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
   }
 
-  const prompt = `Generate 10 Japanese phrases a zero-Japanese tourist will need TODAY based on their plans: "${plans}"
-Rules: practical phrases they'll actually use/hear, include romaji, sort by when they'll need them chronologically, mix of things to SAY and things they'll HEAR. Include a brief "when" note for each.`;
+  const furiganaRule =
+    displayMode === 'hiragana'
+      ? '\nIMPORTANT: For the "japanese" field, use {kanji|reading} syntax for EVERY kanji character to provide furigana. Example: "{助|たす}けてください" or "お{会計|かいけい}お{願|ねが}いします". Pure hiragana/katakana needs no markup.'
+      : '';
+
+  const prompt = `Generate 6 Japanese phrases a zero-Japanese tourist will need TODAY based on their plans: "${plans}"
+Rules: practical phrases they'll actually use/hear, include romaji, sort by when they'll need them chronologically, mix of things to SAY and things they'll HEAR. Include a brief "when" note for each.${furiganaRule}`;
 
   try {
     const response = await fetch(

@@ -1,13 +1,27 @@
 'use client';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
-import { alpha, Box, Card, Container, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import {
+  alpha,
+  Box,
+  Button,
+  Container,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { stripFurigana } from '@/components/FuriganaText';
 import { useSpeech } from '@/hooks/useSpeech';
+
+import { SaveToDeckDialog } from './SaveToDeckDialog';
+import { TravelPhrase } from './TravelPhrase';
 
 // ─── Data ─────────────────────────────────────────────────────────
 
@@ -43,7 +57,7 @@ const LOCATIONS: Location[] = [
       },
       {
         id: 'k2',
-        japanese: 'ポイントカードはお持ちですか？',
+        japanese: 'ポイントカードはお{持|も}ちですか？',
         romaji: 'pointo kaado wa omochi desu ka?',
         english: 'Do you have a point card?',
         context: "They're asking about a loyalty card. You probably don't have one.",
@@ -52,16 +66,16 @@ const LOCATIONS: Location[] = [
       },
       {
         id: 'k3',
-        japanese: '袋いりますか？',
+        japanese: '{袋|ふくろ}いりますか？',
         romaji: 'fukuro irimasu ka?',
         english: 'Do you need a bag?',
         context: "Plastic bags cost ¥3-5. They're asking if you want to buy one.",
-        yourResponse: 'はい、お願いします / いいえ、大丈夫です',
+        yourResponse: 'はい、お{願|ねが}いします / いいえ、{大丈夫|だいじょうぶ}です',
         yourResponseRomaji: 'hai, onegai shimasu (yes please) / iie, daijoubu desu (no thanks)',
       },
       {
         id: 'k4',
-        japanese: '温めますか？',
+        japanese: '{温|あたた}めますか？',
         romaji: 'atatamemasu ka?',
         english: 'Shall I heat it up?',
         context: "Asked when you buy a bento, onigiri, or nikuman. They'll microwave it for you.",
@@ -70,7 +84,7 @@ const LOCATIONS: Location[] = [
       },
       {
         id: 'k5',
-        japanese: 'お箸つけますか？',
+        japanese: 'お{箸|はし}つけますか？',
         romaji: 'ohashi tsukemasu ka?',
         english: 'Do you want chopsticks?',
         context: 'Asked with food purchases. They may also offer a spoon (スプーン).',
@@ -79,7 +93,7 @@ const LOCATIONS: Location[] = [
       },
       {
         id: 'k6',
-        japanese: '〇〇円になります',
+        japanese: '〇〇{円|えん}になります',
         romaji: '... en ni narimasu',
         english: "That'll be __ yen",
         context:
@@ -91,7 +105,7 @@ const LOCATIONS: Location[] = [
         romaji: 'reshiito irimasu ka?',
         english: 'Do you need a receipt?',
         context: 'Some stores ask instead of automatically printing one.',
-        yourResponse: 'いいえ、大丈夫です',
+        yourResponse: 'いいえ、{大丈夫|だいじょうぶ}です',
         yourResponseRomaji: 'iie, daijoubu desu (no thanks)',
       },
     ],
@@ -103,11 +117,11 @@ const LOCATIONS: Location[] = [
     phrases: [
       {
         id: 'r1',
-        japanese: 'いらっしゃいませ！何名様ですか？',
+        japanese: 'いらっしゃいませ！{何名様|なんめいさま}ですか？',
         romaji: 'irasshaimase! nanmei-sama desu ka?',
         english: 'Welcome! How many people?',
         context: 'They need to know your party size for seating.',
-        yourResponse: '一人 / 二人 / 三人',
+        yourResponse: '{一人|ひとり} / {二人|ふたり} / {三人|さんにん}',
         yourResponseRomaji: 'hitori (1) / futari (2) / sannin (3)',
       },
       {
@@ -119,7 +133,7 @@ const LOCATIONS: Location[] = [
       },
       {
         id: 'r3',
-        japanese: 'ご注文はお決まりですか？',
+        japanese: 'ご{注文|ちゅうもん}はお{決|き}まりですか？',
         romaji: 'go-chuumon wa okimari desu ka?',
         english: 'Are you ready to order?',
         context: 'If you need more time, say "mada desu" (not yet).',
@@ -128,16 +142,16 @@ const LOCATIONS: Location[] = [
       },
       {
         id: 'r4',
-        japanese: 'お飲み物はいかがですか？',
+        japanese: 'お{飲|の}み{物|もの}はいかがですか？',
         romaji: 'onomimono wa ikaga desu ka?',
         english: 'Would you like something to drink?',
         context: "They're asking about drinks, usually at the start.",
-        yourResponse: '水をお願いします',
+        yourResponse: '{水|みず}をお{願|ねが}いします',
         yourResponseRomaji: 'mizu wo onegai shimasu (water please)',
       },
       {
         id: 'r5',
-        japanese: '以上でよろしいですか？',
+        japanese: '{以上|いじょう}でよろしいですか？',
         romaji: 'ijou de yoroshii desu ka?',
         english: 'Will that be all?',
         context: 'Confirming your order is complete.',
@@ -146,11 +160,11 @@ const LOCATIONS: Location[] = [
       },
       {
         id: 'r6',
-        japanese: 'お会計は別々ですか？',
+        japanese: 'お{会計|かいけい}は{別々|べつべつ}ですか？',
         romaji: 'okaikei wa betsubetsu desu ka?',
         english: 'Separate checks?',
         context: 'Asking if you want to split the bill.',
-        yourResponse: '一緒で',
+        yourResponse: '{一緒|いっしょ}で',
         yourResponseRomaji: 'issho de (together)',
       },
     ],
@@ -162,28 +176,28 @@ const LOCATIONS: Location[] = [
     phrases: [
       {
         id: 's1',
-        japanese: '次は〇〇、〇〇です',
+        japanese: '{次|つぎ}は〇〇、〇〇です',
         romaji: 'tsugi wa ..., ... desu',
         english: 'Next stop is ___',
         context: 'The announcement before each stop. Listen for your station name.',
       },
       {
         id: 's2',
-        japanese: 'ドアが閉まります。ご注意ください',
+        japanese: 'ドアが{閉|し}まります。ご{注意|ちゅうい}ください',
         romaji: 'doa ga shimarimasu. go-chuui kudasai',
         english: 'The doors are closing. Please be careful.',
         context: "Don't try to rush in after this announcement!",
       },
       {
         id: 's3',
-        japanese: 'この電車は〇〇行きです',
+        japanese: 'この{電車|でんしゃ}は〇〇{行|い}きです',
         romaji: 'kono densha wa ... iki desu',
         english: 'This train is bound for ___',
         context: 'Tells you the final destination. Match it to your route map.',
       },
       {
         id: 's4',
-        japanese: '〇〇線はお乗り換えです',
+        japanese: '〇〇{線|せん}はお{乗|の}り{換|か}えです',
         romaji: '... sen wa onorikae desu',
         english: 'Transfer here for the ___ line',
         context: 'Tells you this is where you switch to another line.',
@@ -204,11 +218,11 @@ const LOCATIONS: Location[] = [
     phrases: [
       {
         id: 'sh1',
-        japanese: '何かお探しですか？',
+        japanese: '{何|なに}かお{探|さが}しですか？',
         romaji: 'nanika osagashi desu ka?',
         english: 'Are you looking for something?',
         context: "Staff asking if you need help. It's OK to say you're just browsing.",
-        yourResponse: '見ているだけです',
+        yourResponse: '{見|み}ているだけです',
         yourResponseRomaji: 'mite iru dake desu (just looking)',
       },
       {
@@ -220,7 +234,7 @@ const LOCATIONS: Location[] = [
       },
       {
         id: 'sh3',
-        japanese: 'お試しになりますか？',
+        japanese: 'お{試|ため}しになりますか？',
         romaji: 'otameshi ni narimasu ka?',
         english: 'Would you like to try it on?',
         context: "They're offering a fitting room.",
@@ -229,14 +243,14 @@ const LOCATIONS: Location[] = [
       },
       {
         id: 'sh4',
-        japanese: '免税できます',
+        japanese: '{免税|めんぜい}できます',
         romaji: 'menzei dekimasu',
         english: 'Tax-free is available',
         context: 'Purchases over ¥5,000 at one store qualify for tax-free (bring passport!).',
       },
       {
         id: 'sh5',
-        japanese: 'お包みしますか？',
+        japanese: 'お{包|つつ}みしますか？',
         romaji: 'otsutsumi shimasu ka?',
         english: 'Shall I gift-wrap it?',
         context: 'Japanese stores offer beautiful free gift wrapping.',
@@ -261,14 +275,14 @@ const LOCATIONS: Location[] = [
       },
       {
         id: 'h2',
-        japanese: 'パスポートを見せてください',
+        japanese: 'パスポートを{見|み}せてください',
         romaji: 'pasupooto wo misete kudasai',
         english: 'Please show your passport',
         context: 'Required for all hotel check-ins in Japan (by law for foreign visitors).',
       },
       {
         id: 'h3',
-        japanese: '朝食は7時からです',
+        japanese: '{朝食|ちょうしょく}は7{時|じ}からです',
         romaji: 'choushoku wa shichi-ji kara desu',
         english: 'Breakfast starts at 7:00',
         context: "Listen for the number + 時 (ji = o'clock).",
@@ -282,7 +296,7 @@ const LOCATIONS: Location[] = [
       },
       {
         id: 'h5',
-        japanese: 'チェックアウトは11時です',
+        japanese: 'チェックアウトは11{時|じ}です',
         romaji: 'chekkuauto wa juuichi-ji desu',
         english: 'Check-out is at 11:00',
         context: 'Standard check-out time. Some hotels allow late check-out for a fee.',
@@ -303,16 +317,16 @@ const LOCATIONS: Location[] = [
       },
       {
         id: 'g2',
-        japanese: '大丈夫ですか？',
+        japanese: '{大丈夫|だいじょうぶ}ですか？',
         romaji: 'daijoubu desu ka?',
         english: 'Are you OK?',
         context: 'Someone checking on you — if you look lost or confused.',
-        yourResponse: '大丈夫です',
+        yourResponse: '{大丈夫|だいじょうぶ}です',
         yourResponseRomaji: "daijoubu desu (I'm fine)",
       },
       {
         id: 'g3',
-        japanese: '写真撮りましょうか？',
+        japanese: '{写真|しゃしん}{撮|と}りましょうか？',
         romaji: 'shashin torimashoo ka?',
         english: 'Shall I take a photo for you?',
         context: 'A kind stranger offering to photograph you. Japanese people are helpful!',
@@ -321,7 +335,7 @@ const LOCATIONS: Location[] = [
       },
       {
         id: 'g4',
-        japanese: '日本語お上手ですね',
+        japanese: '{日本語|にほんご}お{上手|じょうず}ですね',
         romaji: 'nihongo ojouzu desu ne',
         english: 'Your Japanese is good!',
         context:
@@ -331,7 +345,7 @@ const LOCATIONS: Location[] = [
       },
       {
         id: 'g5',
-        japanese: '英語できますか？',
+        japanese: '{英語|えいご}できますか？',
         romaji: 'eigo dekimasu ka?',
         english: 'Can you speak English?',
         context: 'You might hear this from someone trying to help you, or you can ask it yourself.',
@@ -346,40 +360,36 @@ export function WhatDidTheySay() {
   const router = useRouter();
   const { speak } = useSpeech();
   const [activeLocation, setActiveLocation] = useState<string | null>(null);
+  const [deckDialogOpen, setDeckDialogOpen] = useState(false);
+  const [deckSaved, setDeckSaved] = useState(false);
 
   const location = LOCATIONS.find((l) => l.key === activeLocation);
 
   // Location selection
   if (!activeLocation) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
+      <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
         <Stack spacing={3}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
               <ArrowBackIcon />
             </IconButton>
-            <Typography
-              variant="h5"
-              sx={{ fontWeight: 700, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
-            >
-              What Did They Say?
-            </Typography>
+            <Box>
+              <Typography
+                variant="h5"
+                sx={{ fontWeight: 800, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
+              >
+                What Did They Say?
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
+                Recognize common phrases said TO you
+              </Typography>
+            </Box>
           </Box>
 
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Common things Japanese people will say TO you — organized by where you are. Learn to
-            recognize these so you&apos;re not caught off guard.
-          </Typography>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' },
-              gap: 2,
-            }}
-          >
+          <Stack spacing={1.25}>
             {LOCATIONS.map((loc) => (
-              <Card
+              <Box
                 key={loc.key}
                 onClick={() => setActiveLocation(loc.key)}
                 role="button"
@@ -391,29 +401,63 @@ export function WhatDidTheySay() {
                   }
                 }}
                 sx={{
-                  p: 2.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  p: 2,
                   cursor: 'pointer',
-                  borderRadius: 3,
-                  textAlign: 'center',
-                  border: `1px solid ${alpha(brand[300], 0.25)}`,
-                  transition: 'all 0.2s',
+                  borderRadius: '16px',
+                  bgcolor: 'background.paper',
+                  border: `1px solid ${alpha(brand[300], 0.2)}`,
+                  boxShadow: `0 1px 3px ${alpha(brand[400], 0.08)}`,
+                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
                     transform: 'translateY(-2px)',
-                    boxShadow: `0 6px 20px ${alpha(brand[400], 0.12)}`,
-                    borderColor: alpha(brand[400], 0.4),
+                    boxShadow: `0 8px 24px ${alpha(brand[400], 0.15)}`,
+                    borderColor: alpha(brand[400], 0.35),
+                    '& .loc-icon': { transform: 'scale(1.08)' },
                   },
+                  '&:active': { transform: 'translateY(0)' },
                 }}
               >
-                <Typography sx={{ fontSize: '2rem', mb: 0.75 }}>{loc.icon}</Typography>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                  {loc.label}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  {loc.phrases.length} phrases
-                </Typography>
-              </Card>
+                <Box
+                  className="loc-icon"
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: alpha(brand[100], 0.6),
+                    border: `1px solid ${alpha(brand[200], 0.4)}`,
+                    flexShrink: 0,
+                    transition: 'transform 0.25s ease',
+                  }}
+                >
+                  <Typography sx={{ fontSize: '1.4rem', lineHeight: 1 }}>{loc.icon}</Typography>
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: '0.92rem',
+                      color: 'text.primary',
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {loc.label}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'text.secondary', fontSize: '0.78rem', mt: 0.25 }}
+                  >
+                    {loc.phrases.length} phrases
+                  </Typography>
+                </Box>
+              </Box>
             ))}
-          </Box>
+          </Stack>
         </Stack>
       </Container>
     );
@@ -421,114 +465,159 @@ export function WhatDidTheySay() {
 
   // Phrase list for selected location
   return (
-    <Container maxWidth="sm" sx={{ py: 4 }}>
-      <Stack spacing={3}>
+    <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+      <Stack spacing={2.5}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <IconButton onClick={() => setActiveLocation(null)} aria-label="Back to locations">
             <ArrowBackIcon />
           </IconButton>
-          <Typography sx={{ fontSize: '1.3rem' }}>{location?.icon}</Typography>
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: alpha(brand[100], 0.6),
+              border: `1px solid ${alpha(brand[200], 0.4)}`,
+            }}
+          >
+            <Typography sx={{ fontSize: '1.1rem', lineHeight: 1 }}>{location?.icon}</Typography>
+          </Box>
           <Typography
-            variant="h6"
-            sx={{ fontWeight: 700, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
+            sx={{
+              fontWeight: 700,
+              fontSize: '1.05rem',
+              fontFamily: (t) => t.fonts.display,
+              color: 'text.primary',
+              flex: 1,
+            }}
           >
             {location?.label}
           </Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<LibraryAddIcon sx={{ fontSize: 14 }} />}
+            onClick={() => {
+              setDeckSaved(false);
+              setDeckDialogOpen(true);
+            }}
+            disabled={deckSaved}
+            sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.72rem' }}
+          >
+            {deckSaved ? 'Saved!' : `Save all`}
+          </Button>
         </Box>
 
-        <Stack spacing={2}>
+        <Stack spacing={1.5}>
           {location?.phrases.map((phrase) => (
-            <Card
+            <Box
               key={phrase.id}
               sx={{
-                borderRadius: 3,
-                border: `1px solid ${alpha(brand[300], 0.3)}`,
-                overflow: 'hidden',
+                p: 2,
+                borderRadius: '14px',
+                bgcolor: 'background.paper',
+                border: `1px solid ${alpha(brand[300], 0.2)}`,
+                boxShadow: `0 1px 3px ${alpha(brand[400], 0.06)}`,
               }}
             >
-              <Box sx={{ p: 2 }}>
-                {/* What they say */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <Typography
-                    sx={{
-                      fontFamily: (t) => t.fonts.jp,
-                      fontSize: '1.1rem',
-                      fontWeight: 600,
-                      color: 'text.primary',
-                      flex: 1,
-                    }}
-                  >
-                    {phrase.japanese}
-                  </Typography>
-                  <Tooltip title="Listen">
-                    <IconButton
-                      size="small"
-                      onClick={() => speak(phrase.japanese)}
-                      aria-label="Listen"
-                    >
-                      <VolumeUpIcon sx={{ fontSize: 18 }} />
-                    </IconButton>
-                  </Tooltip>
+              {/* What they say */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                <Box sx={{ flex: 1 }}>
+                  <TravelPhrase
+                    japanese={phrase.japanese}
+                    romaji={phrase.romaji}
+                    primarySize="1.05rem"
+                    secondarySize="0.78rem"
+                  />
                 </Box>
-                <Typography
-                  variant="body2"
-                  sx={{ color: brand[600], fontStyle: 'italic', mb: 0.5 }}
-                >
-                  {phrase.romaji}
-                </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary', mb: 1 }}>
-                  {phrase.english}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
-                  {phrase.context}
-                </Typography>
+                <Tooltip title="Listen">
+                  <IconButton
+                    size="small"
+                    onClick={() => speak(stripFurigana(phrase.japanese))}
+                    aria-label="Listen"
+                    sx={{ p: 0.5 }}
+                  >
+                    <VolumeUpIcon sx={{ fontSize: 16 }} />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.85rem', mb: 0.75 }}
+              >
+                {phrase.english}
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: 'text.secondary', fontSize: '0.78rem', mb: 1, lineHeight: 1.5 }}
+              >
+                {phrase.context}
+              </Typography>
 
-                {/* Your response */}
-                {phrase.yourResponse && (
-                  <Box
+              {/* Your response */}
+              {phrase.yourResponse && (
+                <Box
+                  sx={{
+                    p: 1.5,
+                    borderRadius: '10px',
+                    bgcolor: alpha(brand[50], 0.8),
+                    border: `1px solid ${alpha(brand[200], 0.3)}`,
+                  }}
+                >
+                  <Typography
+                    variant="caption"
                     sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      bgcolor: alpha(brand[100], 0.5),
-                      border: `1px solid ${alpha(brand[200], 0.4)}`,
+                      fontWeight: 700,
+                      color: brand[600],
+                      letterSpacing: '0.04em',
+                      fontSize: '0.6rem',
                     }}
                   >
-                    <Typography
-                      variant="caption"
-                      sx={{ fontWeight: 700, color: brand[600], letterSpacing: '0.05em' }}
-                    >
-                      YOUR RESPONSE
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.25 }}>
-                      <Typography
-                        sx={{
-                          fontFamily: (t) => t.fonts.jp,
-                          fontSize: '0.95rem',
-                          color: 'text.primary',
-                        }}
-                      >
-                        {phrase.yourResponse}
-                      </Typography>
-                      <Tooltip title="Listen">
-                        <IconButton
-                          size="small"
-                          onClick={() => speak(phrase.yourResponse!.split(' / ')[0])}
-                          aria-label="Listen to response"
-                        >
-                          <VolumeUpIcon sx={{ fontSize: 14 }} />
-                        </IconButton>
-                      </Tooltip>
+                    YOUR RESPONSE
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
+                    <Box sx={{ flex: 1 }}>
+                      <TravelPhrase
+                        japanese={phrase.yourResponse!}
+                        romaji={phrase.yourResponseRomaji ?? ''}
+                        primarySize="0.92rem"
+                        secondarySize="0.72rem"
+                      />
                     </Box>
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      {phrase.yourResponseRomaji}
-                    </Typography>
+                    <Tooltip title="Listen">
+                      <IconButton
+                        size="small"
+                        onClick={() => speak(stripFurigana(phrase.yourResponse!.split(' / ')[0]))}
+                        aria-label="Listen to response"
+                        sx={{ p: 0.5 }}
+                      >
+                        <VolumeUpIcon sx={{ fontSize: 14 }} />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
-                )}
-              </Box>
-            </Card>
+                </Box>
+              )}
+            </Box>
           ))}
         </Stack>
       </Stack>
+
+      {location && (
+        <SaveToDeckDialog
+          open={deckDialogOpen}
+          onClose={() => setDeckDialogOpen(false)}
+          phrases={location.phrases.map((p) => ({
+            japanese: p.japanese,
+            romaji: p.romaji,
+            english: p.english,
+          }))}
+          onSaved={() => setDeckSaved(true)}
+          defaultDeckName={`${location.icon} ${location.label} Phrases`}
+        />
+      )}
     </Container>
   );
 }

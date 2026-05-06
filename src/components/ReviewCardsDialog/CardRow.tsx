@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useCallback, useRef, useState } from 'react';
+import { toRomaji } from 'wanakana';
 
 import { ConfirmRemoveImageDialog } from '@/components/ConfirmRemoveImageDialog';
 import {
@@ -145,8 +146,20 @@ export function CardRow({
     onUpdate(index, { [key]: e.target.value });
   };
 
-  const titleText = card.mainViewMode === 'kanji' ? card.word : card.reading || card.word;
-  const subtitleText = card.mainViewMode === 'kanji' && card.reading ? card.reading : card.meaning;
+  const titleText =
+    card.mainViewMode === 'kanji'
+      ? card.word
+      : card.mainViewMode === 'romaji'
+        ? card.reading
+          ? toRomaji(card.reading)
+          : card.word
+        : card.reading || card.word;
+  const subtitleText =
+    card.mainViewMode === 'kanji' && card.reading
+      ? card.reading
+      : card.mainViewMode === 'romaji'
+        ? card.word
+        : card.meaning;
 
   const toggleSx = compactToggleSx(theme);
 
@@ -449,6 +462,7 @@ export function CardRow({
                 }}
                 sx={toggleSx}
               >
+                <ToggleButton value="romaji">A</ToggleButton>
                 <ToggleButton value="hiragana">ひ</ToggleButton>
                 <ToggleButton value="kanji">漢</ToggleButton>
               </ToggleButtonGroup>

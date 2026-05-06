@@ -2,9 +2,11 @@
 import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 
+import type { MainViewMode } from '@/types/flashcard';
+
 interface Props {
-  value: 'hiragana' | 'kanji';
-  onChange: (mode: 'hiragana' | 'kanji') => void;
+  value: MainViewMode;
+  onChange: (mode: MainViewMode) => void;
 }
 
 export function MainModeToggle({ value, onChange }: Props) {
@@ -39,6 +41,7 @@ export function MainModeToggle({ value, onChange }: Props) {
           },
         }}
       >
+        <ToggleButton value="romaji">Romaji</ToggleButton>
         <ToggleButton value="hiragana">ひらがな</ToggleButton>
         <ToggleButton value="kanji">漢字</ToggleButton>
       </ToggleButtonGroup>

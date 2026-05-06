@@ -5,6 +5,7 @@ import type { SxProps, Theme } from '@mui/material/styles';
 import { alpha, useTheme } from '@mui/material/styles';
 
 import { WordChipInput } from '@/components/WordChipInput';
+import type { MainViewMode } from '@/types/flashcard';
 
 import { AddCardOptionButtons } from './AddCardOptionButtons';
 
@@ -15,9 +16,9 @@ interface AddCardsSectionProps {
   onInputChange: (input: string) => void;
   disabled?: boolean;
   error?: string | null;
-  mainViewMode: 'hiragana' | 'kanji';
-  onMainViewModeChange: (mode: 'hiragana' | 'kanji') => void;
-  onGenerate?: (words: string[], mainViewMode: 'hiragana' | 'kanji') => Promise<void>;
+  mainViewMode: MainViewMode;
+  onMainViewModeChange: (mode: MainViewMode) => void;
+  onGenerate?: (words: string[], mainViewMode: MainViewMode) => Promise<void>;
   onAddExisting: () => void;
   onImportPdf: () => void;
   containerSx?: SxProps<Theme>;

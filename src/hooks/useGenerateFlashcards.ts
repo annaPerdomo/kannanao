@@ -7,7 +7,7 @@ import {
   generateFlashcards,
   triggerUnsplashDownload,
 } from '@/services/api';
-import type { Flashcard } from '@/types/flashcard';
+import type { Flashcard, MainViewMode } from '@/types/flashcard';
 
 interface UseGenerateResult {
   generating: boolean;
@@ -15,7 +15,7 @@ interface UseGenerateResult {
   generate: (
     words: string[],
     deckId: string,
-    mainViewMode?: 'hiragana' | 'kanji',
+    mainViewMode?: MainViewMode,
   ) => Promise<Omit<Flashcard, 'id' | 'deckId'>[]>;
 }
 
@@ -27,7 +27,7 @@ export function useGenerateFlashcards(): UseGenerateResult {
     async (
       words: string[],
       deckId: string,
-      mainViewMode: 'hiragana' | 'kanji' = 'hiragana',
+      mainViewMode: MainViewMode = 'hiragana',
     ): Promise<Omit<Flashcard, 'id' | 'deckId'>[]> => {
       setGenerating(true);
       setError(null);

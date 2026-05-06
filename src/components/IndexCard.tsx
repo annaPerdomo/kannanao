@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
+import { toRomaji } from 'wanakana';
 
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
@@ -44,8 +45,13 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
   }, [card]);
 
   const isKanji = card.mainViewMode === 'kanji';
-  // Kanji front: show kanji without reading; hiragana front: show the reading
-  const frontMainText = isKanji ? card.word : card.reading || card.word;
+  const isRomaji = card.mainViewMode === 'romaji';
+  // Kanji front: show kanji; hiragana front: show reading; romaji front: romanize reading
+  const frontMainText = isKanji
+    ? card.word
+    : isRomaji && card.reading
+      ? toRomaji(card.reading)
+      : card.reading || card.word;
 
   return (
     <Box
@@ -106,7 +112,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
             ) : (
               <Box />
             )}
-            <SpeakButton text={frontMainText} />
+            <SpeakButton text={card.word} />
           </Box>
 
           {/* Word — large, centered */}
@@ -210,7 +216,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
                   </Typography>
                 </Box>
               )}
-              {card.mainViewMode === 'hiragana' && (
+              {card.mainViewMode !== 'kanji' && (
                 <Box>
                   <Typography
                     sx={{

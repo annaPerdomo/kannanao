@@ -16,6 +16,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { useCallback, useEffect, useState } from 'react';
 
+import { stripFurigana } from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
 import { StyledDialog } from '@/components/StyledDialog';
 import { useAuth } from '@/contexts/AuthContext';
@@ -64,14 +65,14 @@ export function SaveToDeckDialog({
   const insertCards = useCallback(
     async (deckId: string) => {
       const cards = phrases.map((p) => ({
-        word: p.japanese,
+        word: stripFurigana(p.japanese),
         reading: p.romaji,
         meaning: p.english,
         image_query: '',
         example_jp: '',
         example_en: '',
         deckId,
-        mainViewMode: 'hiragana' as const,
+        mainViewMode: 'romaji' as const,
         cardType: 'phrase' as const,
       }));
       await dbInsertCards(deckId, cards);

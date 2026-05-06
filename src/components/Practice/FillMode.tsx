@@ -274,10 +274,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
               }}
             >
               {result ? (
-                <FuriganaText
-                  text={card.example_jp}
-                  showFurigana={card.mainViewMode === 'hiragana'}
-                />
+                <FuriganaText text={card.example_jp} showFurigana={card.mainViewMode !== 'kanji'} />
               ) : (
                 maskWord(stripFurigana(card.example_jp), card.word, card.reading)
               )}

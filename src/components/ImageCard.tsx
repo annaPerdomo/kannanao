@@ -30,19 +30,21 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
   const [editOpen, setEditOpen] = useState(false);
   const [localCard, setLocalCard] = useState<Flashcard>(card);
 
-  const { titleText, subtitleText } = getFlashcardDisplayText(localCard);
+  const { titleText, subtitleText, speakText } = getFlashcardDisplayText(localCard);
   const handleSave = (updated: Flashcard) => {
     setLocalCard(updated);
     onUpdate?.(updated.id, updated);
   };
 
   const isKanji = localCard.mainViewMode === 'kanji';
+  const isRomaji = localCard.mainViewMode === 'romaji';
   const isPhrase = localCard.cardType === 'phrase';
   const typeGradient = isKanji
     ? `linear-gradient(135deg, ${accent[400]} 0%, ${accent[600]} 100%)`
     : `linear-gradient(135deg, ${brand[400]} 0%, ${brand[600]} 100%)`;
   const typeBg = isKanji ? accent[50] : brand[50];
   const typeAccent = isKanji ? accent[500] : brand[500];
+  const modeLabel = isKanji ? '漢字' : isRomaji ? 'ABC' : 'かな';
 
   return (
     <>
@@ -117,7 +119,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                   textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 }}
               >
-                {isKanji ? '漢字' : 'かな'}
+                {modeLabel}
               </Typography>
               <Box sx={{ width: '1px', height: 9, bgcolor: 'rgba(255,255,255,0.35)' }} />
               <Typography
@@ -195,16 +197,19 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                   >
                     {titleText}
                   </Typography>
-                  <SpeakButton text={titleText} iconSize="0.85rem" />
+                  <SpeakButton text={speakText} iconSize="0.85rem" />
                 </Box>
                 {subtitleText && (
                   <Typography
                     sx={{
                       fontSize: '0.65rem',
                       color: '#777',
-                      fontStyle: 'italic',
+                      fontStyle: isRomaji ? 'normal' : 'italic',
                       lineHeight: 1.3,
                       mt: '2px',
+                      fontFamily: isRomaji
+                        ? (t: import('@mui/material/styles').Theme) => t.fonts.jp
+                        : undefined,
                     }}
                   >
                     {subtitleText}
@@ -225,7 +230,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                 borderBottom: `2px solid ${typeAccent}`,
               }}
             >
-              {subtitleText && (
+              {subtitleText && !isRomaji && (
                 <Typography
                   sx={{
                     fontSize: '0.6rem',
@@ -241,8 +246,8 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Typography
                   sx={{
-                    fontFamily: (t) => t.fonts.jp,
-                    fontSize: '1.6rem',
+                    fontFamily: isRomaji ? undefined : (t) => t.fonts.jp,
+                    fontSize: isRomaji ? '1.1rem' : '1.6rem',
                     fontWeight: 900,
                     color: '#111',
                     lineHeight: 1.15,
@@ -251,8 +256,21 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                 >
                   {titleText}
                 </Typography>
-                <SpeakButton text={titleText} iconSize="0.85rem" />
+                <SpeakButton text={speakText} iconSize="0.85rem" />
               </Box>
+              {isRomaji && subtitleText && (
+                <Typography
+                  sx={{
+                    fontSize: '0.8rem',
+                    color: '#666',
+                    fontFamily: (t) => t.fonts.jp,
+                    mt: 0.5,
+                    textAlign: 'center',
+                  }}
+                >
+                  {subtitleText}
+                </Typography>
+              )}
             </Box>
           )}
 
@@ -321,7 +339,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                 >
                   <FuriganaText
                     text={localCard.example_jp}
-                    showFurigana={localCard.mainViewMode === 'hiragana'}
+                    showFurigana={localCard.mainViewMode !== 'kanji'}
                   />
                 </Typography>
                 {localCard.example_en && (

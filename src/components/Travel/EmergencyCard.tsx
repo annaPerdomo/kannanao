@@ -21,6 +21,8 @@ import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+import { TravelPhrase } from './TravelPhrase';
+
 const STORAGE_KEY = 'kannanao-emergency-card';
 
 interface EmergencyInfo {
@@ -383,24 +385,24 @@ export function EmergencyCard() {
           </Typography>
           <Stack spacing={1}>
             {[
-              { jp: '助けてください', romaji: 'tasukete kudasai', en: 'Help me please' },
+              { jp: '{助|たす}けてください', romaji: 'tasukete kudasai', en: 'Help me please' },
               {
-                jp: '救急車を呼んでください',
+                jp: '{救急車|きゅうきゅうしゃ}を{呼|よ}んでください',
                 romaji: 'kyuukyuusha wo yonde kudasai',
                 en: 'Please call an ambulance',
               },
               {
-                jp: '警察を呼んでください',
+                jp: '{警察|けいさつ}を{呼|よ}んでください',
                 romaji: 'keisatsu wo yonde kudasai',
                 en: 'Please call the police',
               },
               {
-                jp: '英語を話せる人はいますか？',
+                jp: '{英語|えいご}を{話|はな}せる{人|ひと}はいますか？',
                 romaji: 'eigo wo hanaseru hito wa imasu ka?',
                 en: 'Is there someone who speaks English?',
               },
               {
-                jp: 'このホテルに連れて行ってください',
+                jp: 'このホテルに{連|つ}れて{行|い}ってください',
                 romaji: 'kono hoteru ni tsurete itte kudasai',
                 en: 'Please take me to this hotel',
               },
@@ -415,19 +417,16 @@ export function EmergencyCard() {
                   border: `1px solid ${alpha(brand[200], 0.3)}`,
                 }}
               >
-                <Typography
-                  sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '0.9rem', color: 'text.primary' }}
-                >
-                  {p.jp}
+                <TravelPhrase
+                  japanese={p.jp}
+                  romaji={p.romaji}
+                  primarySize="0.9rem"
+                  secondarySize="0.72rem"
+                  layout="row"
+                />
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  — {p.en}
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'baseline' }}>
-                  <Typography variant="caption" sx={{ color: brand[600] }}>
-                    {p.romaji}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    — {p.en}
-                  </Typography>
-                </Box>
               </Box>
             ))}
           </Stack>

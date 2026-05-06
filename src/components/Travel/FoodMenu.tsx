@@ -1,13 +1,27 @@
 'use client';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
-import { alpha, Box, Card, Container, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import {
+  alpha,
+  Box,
+  Button,
+  Container,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { stripFurigana } from '@/components/FuriganaText';
 import { useSpeech } from '@/hooks/useSpeech';
+
+import { SaveToDeckDialog } from './SaveToDeckDialog';
+import { TravelPhrase } from './TravelPhrase';
 
 interface FoodItem {
   japanese: string;
@@ -30,43 +44,43 @@ const FOOD_DATA: FoodCategory[] = [
     icon: '🍜',
     items: [
       {
-        japanese: '醤油ラーメン',
+        japanese: '{醤油|しょうゆ}ラーメン',
         romaji: 'shouyu raamen',
         english: 'Soy sauce ramen',
         note: 'Clear brown broth, the classic Tokyo style',
       },
       {
-        japanese: '味噌ラーメン',
+        japanese: '{味噌|みそ}ラーメン',
         romaji: 'miso raamen',
         english: 'Miso ramen',
         note: 'Rich, savory fermented soybean broth. Hokkaido specialty',
       },
       {
-        japanese: '豚骨ラーメン',
+        japanese: '{豚骨|とんこつ}ラーメン',
         romaji: 'tonkotsu raamen',
         english: 'Pork bone ramen',
         note: 'Creamy white broth, Fukuoka/Hakata style',
       },
       {
-        japanese: '塩ラーメン',
+        japanese: '{塩|しお}ラーメン',
         romaji: 'shio raamen',
         english: 'Salt ramen',
         note: 'Light, clear broth. Mildest flavor',
       },
       {
-        japanese: 'つけ麺',
+        japanese: 'つけ{麺|めん}',
         romaji: 'tsukemen',
         english: 'Dipping noodles',
         note: 'Cold noodles you dip into hot broth. Great in summer',
       },
       {
-        japanese: '替え玉',
+        japanese: '{替|か}え{玉|たま}',
         romaji: 'kaedama',
         english: 'Extra noodles',
         note: 'A noodle refill (common at tonkotsu shops). Usually ¥100-200',
       },
       {
-        japanese: '大盛り',
+        japanese: '{大盛|おおも}り',
         romaji: 'oomori',
         english: 'Large serving',
         note: 'More noodles. Say this when ordering for bigger portions',
@@ -100,9 +114,9 @@ const FOOD_DATA: FoodCategory[] = [
         english: 'Sea urchin',
         note: 'Creamy, rich. An acquired taste',
       },
-      { japanese: '鉄火巻', romaji: 'tekkamaki', english: 'Tuna roll' },
+      { japanese: '{鉄火巻|てっかまき}', romaji: 'tekkamaki', english: 'Tuna roll' },
       {
-        japanese: 'かっぱ巻',
+        japanese: 'かっぱ{巻|まき}',
         romaji: 'kappamaki',
         english: 'Cucumber roll',
         note: 'Safe vegetarian option',
@@ -121,19 +135,19 @@ const FOOD_DATA: FoodCategory[] = [
         note: 'Japanese curry — mild, sweet, thick. A comfort food staple',
       },
       {
-        japanese: '牛丼',
+        japanese: '{牛丼|ぎゅうどん}',
         romaji: 'gyuudon',
         english: 'Beef bowl',
         note: 'Sliced beef on rice. Cheap & filling (Yoshinoya, Matsuya)',
       },
       {
-        japanese: 'カツ丼',
+        japanese: 'カツ{丼|どん}',
         romaji: 'katsudon',
         english: 'Pork cutlet on rice',
         note: 'Breaded pork with egg on rice',
       },
       {
-        japanese: '親子丼',
+        japanese: '{親子丼|おやこどん}',
         romaji: 'oyakodon',
         english: 'Chicken & egg on rice',
         note: '"Parent and child" bowl — chicken and egg',
@@ -151,25 +165,25 @@ const FOOD_DATA: FoodCategory[] = [
         note: 'Thin brown noodles. Hot or cold',
       },
       {
-        japanese: '焼肉',
+        japanese: '{焼肉|やきにく}',
         romaji: 'yakiniku',
         english: 'Grilled meat',
         note: 'You grill it yourself at the table',
       },
       {
-        japanese: 'お好み焼き',
+        japanese: 'お{好|この}み{焼|や}き',
         romaji: 'okonomiyaki',
         english: 'Savory pancake',
         note: 'Osaka specialty — cabbage, meat, topped with sauce',
       },
       {
-        japanese: 'たこ焼き',
+        japanese: 'たこ{焼|や}き',
         romaji: 'takoyaki',
         english: 'Octopus balls',
         note: 'Round fried balls with octopus inside. Street food classic',
       },
       {
-        japanese: '天ぷら',
+        japanese: '{天|てん}ぷら',
         romaji: 'tempura',
         english: 'Tempura (battered fried items)',
         note: 'Shrimp, vegetables, or fish in light crispy batter',
@@ -182,13 +196,13 @@ const FOOD_DATA: FoodCategory[] = [
     icon: '🍵',
     items: [
       {
-        japanese: '水',
+        japanese: '{水|みず}',
         romaji: 'mizu',
         english: 'Water',
         note: 'Free at restaurants. Tap water is safe everywhere in Japan',
       },
       {
-        japanese: 'お茶',
+        japanese: 'お{茶|ちゃ}',
         romaji: 'ocha',
         english: 'Green tea',
         note: 'Often free at restaurants. On vending machines too',
@@ -200,7 +214,7 @@ const FOOD_DATA: FoodCategory[] = [
         note: 'Asahi, Kirin, Sapporo, Suntory are the big brands',
       },
       {
-        japanese: '日本酒',
+        japanese: '{日本酒|にほんしゅ}',
         romaji: 'nihonshu',
         english: 'Sake (rice wine)',
         note: 'Can be served hot or cold',
@@ -213,7 +227,7 @@ const FOOD_DATA: FoodCategory[] = [
       },
       { japanese: 'コーラ', romaji: 'koora', english: 'Cola' },
       {
-        japanese: '抹茶ラテ',
+        japanese: '{抹茶|まっちゃ}ラテ',
         romaji: 'matcha rate',
         english: 'Matcha latte',
         note: 'Available at every Starbucks & convenience store',
@@ -232,7 +246,7 @@ const FOOD_DATA: FoodCategory[] = [
         note: 'Triangle-shaped, wrapped in seaweed. ¥100-200. Many flavors',
       },
       {
-        japanese: '弁当',
+        japanese: '{弁当|べんとう}',
         romaji: 'bentou',
         english: 'Lunch box (bento)',
         note: 'Full meal in a box. ¥400-700. Staff will heat it for you',
@@ -244,7 +258,7 @@ const FOOD_DATA: FoodCategory[] = [
         note: 'Japanese sandwiches are soft, crustless, and surprisingly good',
       },
       {
-        japanese: '肉まん',
+        japanese: '{肉|にく}まん',
         romaji: 'nikuman',
         english: 'Steamed meat bun',
         note: 'Near the register in a heated case. Perfect winter snack',
@@ -282,21 +296,21 @@ const FOOD_DATA: FoodCategory[] = [
       },
       { japanese: 'メニュー', romaji: 'menyuu', english: 'Menu' },
       {
-        japanese: 'お会計',
+        japanese: 'お{会計|かいけい}',
         romaji: 'okaikei',
         english: 'The check/bill',
         note: 'Or just make an X with your fingers in the air',
       },
-      { japanese: '持ち帰り', romaji: 'mochikaeri', english: 'To go / takeout' },
+      { japanese: '{持|も}ち{帰|かえ}り', romaji: 'mochikaeri', english: 'To go / takeout' },
       {
-        japanese: '店内',
+        japanese: '{店内|てんない}',
         romaji: 'tennai',
         english: 'Eating here (dine in)',
         note: "At konbini or fast food — they'll ask mochikaeri or tennai",
       },
       { japanese: 'アレルギー', romaji: 'arerugii', english: 'Allergy' },
-      { japanese: '辛い', romaji: 'karai', english: 'Spicy' },
-      { japanese: '甘い', romaji: 'amai', english: 'Sweet' },
+      { japanese: '{辛|から}い', romaji: 'karai', english: 'Spicy' },
+      { japanese: '{甘|あま}い', romaji: 'amai', english: 'Sweet' },
     ],
   },
 ];
@@ -307,39 +321,35 @@ export function FoodMenu() {
   const router = useRouter();
   const { speak } = useSpeech();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [deckDialogOpen, setDeckDialogOpen] = useState(false);
+  const [deckSaved, setDeckSaved] = useState(false);
 
   const category = FOOD_DATA.find((c) => c.key === activeCategory);
 
   if (!activeCategory) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
+      <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
         <Stack spacing={3}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
               <ArrowBackIcon />
             </IconButton>
-            <Typography
-              variant="h5"
-              sx={{ fontWeight: 700, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
-            >
-              Food Menu Cheat Sheet
-            </Typography>
+            <Box>
+              <Typography
+                variant="h5"
+                sx={{ fontWeight: 800, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
+              >
+                Food Menu Cheat Sheet
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
+                Know what you&apos;re ordering
+              </Typography>
+            </Box>
           </Box>
 
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            You&apos;ll eat 3 meals a day for your whole trip. Here&apos;s what&apos;s on the menu —
-            literally.
-          </Typography>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' },
-              gap: 2,
-            }}
-          >
+          <Stack spacing={1.25}>
             {FOOD_DATA.map((cat) => (
-              <Card
+              <Box
                 key={cat.key}
                 onClick={() => setActiveCategory(cat.key)}
                 role="button"
@@ -351,99 +361,180 @@ export function FoodMenu() {
                   }
                 }}
                 sx={{
-                  p: 2.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  p: 2,
                   cursor: 'pointer',
-                  borderRadius: 3,
-                  textAlign: 'center',
-                  border: `1px solid ${alpha(brand[300], 0.25)}`,
-                  transition: 'all 0.2s',
+                  borderRadius: '16px',
+                  bgcolor: 'background.paper',
+                  border: `1px solid ${alpha(brand[300], 0.2)}`,
+                  boxShadow: `0 1px 3px ${alpha(brand[400], 0.08)}`,
+                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
                     transform: 'translateY(-2px)',
-                    boxShadow: `0 6px 20px ${alpha(brand[400], 0.12)}`,
-                    borderColor: alpha(brand[400], 0.4),
+                    boxShadow: `0 8px 24px ${alpha(brand[400], 0.15)}`,
+                    borderColor: alpha(brand[400], 0.35),
+                    '& .food-icon': { transform: 'scale(1.08)' },
                   },
+                  '&:active': { transform: 'translateY(0)' },
                 }}
               >
-                <Typography sx={{ fontSize: '2rem', mb: 0.75 }}>{cat.icon}</Typography>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                  {cat.label}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  {cat.items.length} items
-                </Typography>
-              </Card>
+                <Box
+                  className="food-icon"
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: alpha(brand[100], 0.6),
+                    border: `1px solid ${alpha(brand[200], 0.4)}`,
+                    flexShrink: 0,
+                    transition: 'transform 0.25s ease',
+                  }}
+                >
+                  <Typography sx={{ fontSize: '1.4rem', lineHeight: 1 }}>{cat.icon}</Typography>
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: '0.92rem',
+                      color: 'text.primary',
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {cat.label}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'text.secondary', fontSize: '0.78rem', mt: 0.25 }}
+                  >
+                    {cat.items.length} items
+                  </Typography>
+                </Box>
+              </Box>
             ))}
-          </Box>
+          </Stack>
         </Stack>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="sm" sx={{ py: 4 }}>
-      <Stack spacing={3}>
+    <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+      <Stack spacing={2.5}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <IconButton onClick={() => setActiveCategory(null)} aria-label="Back to categories">
             <ArrowBackIcon />
           </IconButton>
-          <Typography sx={{ fontSize: '1.3rem' }}>{category?.icon}</Typography>
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: alpha(brand[100], 0.6),
+              border: `1px solid ${alpha(brand[200], 0.4)}`,
+            }}
+          >
+            <Typography sx={{ fontSize: '1.1rem', lineHeight: 1 }}>{category?.icon}</Typography>
+          </Box>
           <Typography
-            variant="h6"
-            sx={{ fontWeight: 700, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
+            sx={{
+              fontWeight: 700,
+              fontSize: '1.05rem',
+              fontFamily: (t) => t.fonts.display,
+              color: 'text.primary',
+              flex: 1,
+            }}
           >
             {category?.label}
           </Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<LibraryAddIcon sx={{ fontSize: 14 }} />}
+            onClick={() => {
+              setDeckSaved(false);
+              setDeckDialogOpen(true);
+            }}
+            disabled={deckSaved}
+            sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.72rem' }}
+          >
+            {deckSaved ? 'Saved!' : `Save all`}
+          </Button>
         </Box>
 
-        <Stack spacing={1.5}>
+        <Stack spacing={1}>
           {category?.items.map((item, i) => (
-            <Card
+            <Box
               key={i}
               sx={{
-                p: 2,
-                borderRadius: 2.5,
-                border: `1px solid ${alpha(brand[300], 0.25)}`,
+                p: 1.75,
+                borderRadius: '12px',
+                bgcolor: 'background.paper',
+                border: `1px solid ${alpha(brand[300], 0.15)}`,
+                boxShadow: `0 1px 2px ${alpha(brand[400], 0.05)}`,
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Box sx={{ flex: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
-                    <Typography
-                      sx={{
-                        fontFamily: (t) => t.fonts.jp,
-                        fontSize: '1.05rem',
-                        fontWeight: 500,
-                        color: 'text.primary',
-                      }}
-                    >
-                      {item.japanese}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: brand[600] }}>
-                      {item.romaji}
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                  <TravelPhrase japanese={item.japanese} romaji={item.romaji} layout="row" />
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.84rem' }}
+                  >
                     {item.english}
                   </Typography>
                   {item.note && (
                     <Typography
                       variant="caption"
-                      sx={{ color: 'text.secondary', display: 'block', mt: 0.25 }}
+                      sx={{
+                        color: 'text.secondary',
+                        display: 'block',
+                        mt: 0.25,
+                        fontSize: '0.72rem',
+                        lineHeight: 1.4,
+                      }}
                     >
                       {item.note}
                     </Typography>
                   )}
                 </Box>
                 <Tooltip title="Listen">
-                  <IconButton size="small" onClick={() => speak(item.japanese)} aria-label="Listen">
+                  <IconButton
+                    size="small"
+                    onClick={() => speak(stripFurigana(item.japanese))}
+                    aria-label="Listen"
+                    sx={{ p: 0.5 }}
+                  >
                     <VolumeUpIcon sx={{ fontSize: 16 }} />
                   </IconButton>
                 </Tooltip>
               </Box>
-            </Card>
+            </Box>
           ))}
         </Stack>
       </Stack>
+
+      {category && (
+        <SaveToDeckDialog
+          open={deckDialogOpen}
+          onClose={() => setDeckDialogOpen(false)}
+          phrases={category.items.map((item) => ({
+            japanese: item.japanese,
+            romaji: item.romaji,
+            english: item.english,
+          }))}
+          onSaved={() => setDeckSaved(true)}
+          defaultDeckName={`${category.icon} ${category.label}`}
+        />
+      )}
     </Container>
   );
 }
