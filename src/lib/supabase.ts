@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Deck } from '@/types/deck';
 import type { Flashcard, JlptLevel, MainViewMode } from '@/types/flashcard';
 import type { EntryType, Todo } from '@/types/todo';
+import type { ShowCard, ShowCardCategory } from '@/types/travel';
 
 const SUPABASE_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL';
@@ -761,5 +762,85 @@ export async function dbDeleteTodo(id: string): Promise<void> {
     throw new Error('Supabase not configured');
   }
   const { error } = await sb.from('todos').delete().eq('id', id);
+  if (error) throw error;
+}
+
+// ─── Show Cards ──────────────────────────────────────────────────
+
+interface ShowCardRow {
+  id: string;
+  user_id: string;
+  category: string;
+  english: string;
+  japanese: string;
+  romaji: string;
+  situation: string;
+  icon: string;
+  created_at: string;
+}
+
+function dbShowCardToApp(row: ShowCardRow): ShowCard {
+  return {
+    id: row.id,
+    category: row.category as ShowCardCategory,
+    english: row.english,
+    japanese: row.japanese,
+    romaji: row.romaji,
+    situation: row.situation,
+    icon: row.icon,
+    isCustom: true,
+  };
+}
+
+export async function loadShowCards(): Promise<ShowCard[]> {
+  if (!isConfigured()) return [];
+  const { data, error } = await sb
+    .from('show_cards')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('Error loading show cards', error);
+    return [];
+  }
+  return (data ?? []).map(dbShowCardToApp);
+}
+
+export async function dbSaveShowCard(
+  card: Omit<ShowCard, 'id' | 'isCustom'>,
+  userId: string,
+): Promise<ShowCard> {
+  if (!isConfigured()) throw new Error('Supabase not configured');
+  const { data, error } = await sb
+    .from('show_cards')
+    .insert({
+      user_id: userId,
+      category: card.category,
+      english: card.english,
+      japanese: card.japanese,
+      romaji: card.romaji,
+      situation: card.situation,
+      icon: card.icon,
+    })
+    .select()
+    .single();
+  if (error || !data) throw error ?? new Error('Failed to save show card');
+  return dbShowCardToApp(data);
+}
+
+export async function dbUpdateShowCard(
+  id: string,
+  patch: Partial<
+    Pick<ShowCard, 'english' | 'japanese' | 'romaji' | 'situation' | 'icon' | 'category'>
+  >,
+): Promise<ShowCard> {
+  if (!isConfigured()) throw new Error('Supabase not configured');
+  const { data, error } = await sb.from('show_cards').update(patch).eq('id', id).select().single();
+  if (error || !data) throw error ?? new Error('Failed to update show card');
+  return dbShowCardToApp(data);
+}
+
+export async function dbDeleteShowCard(id: string): Promise<void> {
+  if (!isConfigured()) throw new Error('Supabase not configured');
+  const { error } = await sb.from('show_cards').delete().eq('id', id);
   if (error) throw error;
 }
