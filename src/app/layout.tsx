@@ -9,13 +9,30 @@ import Providers from './providers';
 
 const TITLE = 'Kannanao — AI Japanese Flashcard Studio';
 const DESCRIPTION =
-  'Create Japanese flashcards with AI, practice with Match, Fill-in-the-blank & Recall modes, track XP & streaks, import PDFs, and share decks.';
+  'Create Japanese flashcards with AI, practice with Match, Fill-in-the-blank & Recall modes, explore Travel Mode phrasebooks, study in groups with leaderboards & assignments, earn XP & achievements, customize with 10 themes, import PDFs, and share or embed decks anywhere.';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://kannanao.com'),
   alternates: {
     canonical: '/',
+    languages: {
+      en: 'https://kannanao.com',
+      ja: 'https://kannanao.com',
+      'x-default': 'https://kannanao.com',
+    },
   },
+  keywords: [
+    'Japanese flashcards',
+    'AI flashcard generator',
+    'learn Japanese',
+    'Japanese study app',
+    'travel Japanese',
+    'JLPT study',
+    'kanji flashcards',
+    'hiragana practice',
+    'Japanese phrasebook',
+    'group study Japanese',
+  ],
   title: TITLE,
   description: DESCRIPTION,
   openGraph: {

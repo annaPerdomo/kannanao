@@ -13,7 +13,6 @@ export default function robots(): MetadataRoute.Robots {
         '/embed/',
         '/group/',
         '/join/',
-        '/landing',
         '/ohanashikai',
         '/profile',
         '/settings',
