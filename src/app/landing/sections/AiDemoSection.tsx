@@ -144,6 +144,7 @@ export function AiDemoSection() {
           }}
         >
           <Typography
+            component="h2"
             sx={{
               fontFamily: (t) => t.fonts.display,
               fontSize: { xs: '2.2rem', sm: '3rem', md: '3.8rem' },

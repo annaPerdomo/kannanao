@@ -17,9 +17,9 @@ const FEATURES = [
     desc: 'Type a word — Google Gemini fills readings, meanings, and bilingual example sentences instantly.',
   },
   {
-    emoji: '🖼️',
-    title: 'Beautiful Images',
-    desc: 'Every card gets a stunning Unsplash photo. Visual memory is the fastest memory.',
+    emoji: '✈️',
+    title: 'Travel Mode',
+    desc: 'Nine modules for real-world Japanese — daily phrases, food menus, scenarios, emergency cards, and more.',
   },
   {
     emoji: '🎮',
@@ -27,9 +27,24 @@ const FEATURES = [
     desc: 'Match, Fill-in-the-blank, and Recall. Every session tracks accuracy and awards XP.',
   },
   {
+    emoji: '🎨',
+    title: 'Themes & Shop',
+    desc: '10 color themes, custom card borders, celebration effects, and study buddies — all earnable with XP.',
+  },
+  {
+    emoji: '👥',
+    title: 'Group Study',
+    desc: 'Create a group, invite members via QR code, assign decks, track progress, and send encouragements.',
+  },
+  {
+    emoji: '🎤',
+    title: 'Speech Practice',
+    desc: 'Memorize speeches line-by-line with read-through and recall modes. Perfect for presentations.',
+  },
+  {
     emoji: '🔥',
-    title: 'Streaks & Levels',
-    desc: 'Daily study streaks, XP levels, and achievement badges keep you motivated.',
+    title: 'Streaks & Achievements',
+    desc: 'Daily streaks, 12+ achievement badges, XP levels, and a study calendar to stay motivated.',
   },
   {
     emoji: '📄',
@@ -37,19 +52,24 @@ const FEATURES = [
     desc: 'Upload a textbook or word list PDF — Kannanao extracts and builds flashcards for you.',
   },
   {
+    emoji: '🏆',
+    title: 'Leaderboard',
+    desc: 'Weekly XP rankings across your group. See who studied the most and celebrate together.',
+  },
+  {
+    emoji: '✅',
+    title: 'Habit Tracker',
+    desc: 'Build daily study habits with a built-in todo system. Earn XP for every completed task.',
+  },
+  {
+    emoji: '🖼️',
+    title: 'Beautiful Cards',
+    desc: 'Unsplash photos, custom borders, furigana, and multiple display modes for every card.',
+  },
+  {
     emoji: '🤝',
-    title: 'Share Decks',
-    desc: 'Share any deck with a single link. Embed interactive cards on any website.',
-  },
-  {
-    emoji: '📊',
-    title: 'Detailed Stats',
-    desc: 'Activity calendar, per-session accuracy charts, XP history, and achievement badges.',
-  },
-  {
-    emoji: '🎌',
-    title: 'Furigana Support',
-    desc: 'Full furigana rendering in examples — perfect for learners at every JLPT level.',
+    title: 'Share & Embed',
+    desc: 'Share decks with a link or embed interactive flashcards on any website — no account needed.',
   },
 ];
 
@@ -103,6 +123,7 @@ export function FeaturesSection() {
           }}
         >
           <Typography
+            component="h2"
             sx={{
               fontFamily: (t) => t.fonts.display,
               fontSize: { xs: '2.2rem', sm: '3rem', md: '3.8rem' },
@@ -119,13 +140,13 @@ export function FeaturesSection() {
             sx={{
               fontSize: '1rem',
               color: alpha('#fff', 0.5),
-              maxWidth: 500,
+              maxWidth: 540,
               mx: 'auto',
               lineHeight: 1.7,
             }}
           >
-            From AI card generation to detailed analytics — all the tools to build a consistent
-            Japanese study habit.
+            AI flashcards, travel phrasebooks, group classrooms, speech practice, gamification, and
+            more — a complete Japanese learning studio.
           </Typography>
         </Box>
 

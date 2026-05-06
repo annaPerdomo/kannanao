@@ -14,26 +14,26 @@ const STEPS = [
   {
     n: 1,
     emoji: '✍️',
-    title: 'Create a deck',
-    desc: 'Give your deck a name and description. Organise by topic, JLPT level, or whatever works for you.',
+    title: 'Create your decks',
+    desc: 'Type a word and AI fills readings, meanings, and examples. Or upload a PDF to generate cards in bulk. Unsplash photos and furigana are added automatically.',
   },
   {
     n: 2,
-    emoji: '🤖',
-    title: 'Add cards with AI',
-    desc: 'Type a word or upload a PDF. Gemini AI fills readings, meanings, and example sentences instantly.',
+    emoji: '🎮',
+    title: 'Study your way',
+    desc: 'Flip cards, play Match, Fill-in-the-blank, or Recall. Open Travel Mode for real-world phrases across 9 modules, or practise speeches line-by-line.',
   },
   {
     n: 3,
-    emoji: '🎮',
-    title: 'Study & practise',
-    desc: 'Flip through cards or challenge yourself with Match, Fill, or Recall modes. Earn XP every session.',
+    emoji: '🎨',
+    title: 'Earn & customise',
+    desc: 'Every session earns XP. Level up to unlock colour themes, card borders, celebration effects, and study buddies from the shop.',
   },
   {
     n: 4,
-    emoji: '📈',
-    title: 'Track your growth',
-    desc: 'Watch your streak grow, unlock achievements, and see your accuracy improve over time.',
+    emoji: '👥',
+    title: 'Learn together',
+    desc: 'Create a group, invite members via QR code, assign decks with deadlines, climb the weekly leaderboard, and share or embed decks anywhere.',
   },
 ];
 
@@ -91,6 +91,7 @@ export function HowItWorksSection() {
           }}
         >
           <Typography
+            component="h2"
             sx={{
               fontFamily: (t) => t.fonts.display,
               fontSize: { xs: '2.4rem', sm: '3rem', lg: '3.6rem' },
@@ -106,14 +107,14 @@ export function HowItWorksSection() {
           <Typography
             sx={{ fontSize: '1rem', color: alpha(sky[700], 0.62), lineHeight: 1.8, mb: 4 }}
           >
-            No complicated setup. Create an account, make a deck, and start studying. Progress is
-            saved automatically.
+            No complicated setup. Create an account, build your first deck with AI, and start
+            earning XP in minutes. Everything syncs automatically.
           </Typography>
           <Stack direction="row" spacing={4} flexWrap="wrap" useFlexGap>
             {[
-              ['3', 'practice modes'],
-              ['5', 'JLPT levels'],
-              ['∞', 'vocab words'],
+              ['9', 'travel modules'],
+              ['12+', 'achievements'],
+              ['10', 'themes'],
             ].map(([n, label]) => (
               <Box key={label}>
                 <Typography

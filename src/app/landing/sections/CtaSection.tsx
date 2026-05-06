@@ -104,6 +104,7 @@ export function CtaSection() {
         />
 
         <Typography
+          component="h2"
           sx={{
             fontFamily: (t) => t.fonts.display,
             fontSize: { xs: '2.6rem', sm: '3.4rem', md: '4.2rem' },
