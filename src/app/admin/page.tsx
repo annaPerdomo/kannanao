@@ -60,6 +60,9 @@ interface UserStat {
   todoCompletions: number;
   eventTypeCount: number;
   publicDecks: number;
+  lastLoginAt: string | null;
+  loginCount30d: number;
+  totalLogins: number;
 }
 
 interface WaitlistEntry {
@@ -133,6 +136,21 @@ function formatDate(dateStr: string | null) {
     day: 'numeric',
     year: 'numeric',
   });
+}
+
+function formatRelativeTime(dateStr: string | null) {
+  if (!dateStr) return '—';
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diffMs = now - then;
+  const diffMins = Math.floor(diffMs / 60_000);
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return `${diffDays}d ago`;
+  return formatDate(dateStr);
 }
 
 export default function AdminPage() {
@@ -351,6 +369,10 @@ export default function AdminPage() {
               <TableCell sx={headerCellSx} align="center">
                 Theme
               </TableCell>
+              <TableCell sx={headerCellSx}>Last Login</TableCell>
+              <TableCell sx={headerCellSx} align="center">
+                Logins (30d)
+              </TableCell>
               <TableCell sx={headerCellSx}>Joined</TableCell>
               <TableCell sx={headerCellSx} align="center">
                 Actions
@@ -422,6 +444,28 @@ export default function AdminPage() {
                   ) : (
                     '—'
                   )}
+                </TableCell>
+                <TableCell
+                  sx={{
+                    ...bodyCellSx,
+                    color: u.lastLoginAt
+                      ? (() => {
+                          const days = Math.floor(
+                            (Date.now() - new Date(u.lastLoginAt).getTime()) / 86_400_000,
+                          );
+                          if (days <= 7) return 'success.main';
+                          if (days <= 30) return 'warning.main';
+                          return 'text.secondary';
+                        })()
+                      : 'text.secondary',
+                    fontWeight: u.lastLoginAt ? 600 : 400,
+                  }}
+                  title={u.lastLoginAt ? formatDate(u.lastLoginAt) : undefined}
+                >
+                  {formatRelativeTime(u.lastLoginAt)}
+                </TableCell>
+                <TableCell sx={bodyCellSx} align="center">
+                  {u.loginCount30d > 0 ? u.loginCount30d : '—'}
                 </TableCell>
                 <TableCell sx={bodyCellSx}>{formatDate(u.createdAt)}</TableCell>
                 <TableCell sx={bodyCellSx} align="center">

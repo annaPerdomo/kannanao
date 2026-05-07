@@ -27,6 +27,7 @@ vi.mock('@/lib/supabase', () => ({
   loadProfile: vi.fn().mockResolvedValue(null),
   updateProfileColorScheme: vi.fn().mockResolvedValue(undefined),
   updateProfileShowTodo: vi.fn().mockResolvedValue(undefined),
+  dbRecordLogin: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/lib/admin', () => ({
@@ -101,7 +102,10 @@ describe('AuthContext / AuthProvider', () => {
 
   describe('signInWithUsername', () => {
     it('should call supabase signInWithPassword with email derived from username', async () => {
-      mockSignInWithPassword.mockResolvedValue({ error: null });
+      mockSignInWithPassword.mockResolvedValue({
+        error: null,
+        data: { user: { id: 'u1', email: 'testuser@kannanao.local' } },
+      });
 
       renderWithAuth(<SignInForm />);
 
@@ -126,6 +130,7 @@ describe('AuthContext / AuthProvider', () => {
 
       mockSignInWithPassword.mockResolvedValue({
         error: { message: 'Invalid credentials' },
+        data: { user: null },
       });
 
       const result = await act(async () => hook.signInWithUsername('bad', 'credentials'));
@@ -134,7 +139,10 @@ describe('AuthContext / AuthProvider', () => {
     });
 
     it('should return error: null on successful sign in', async () => {
-      mockSignInWithPassword.mockResolvedValue({ error: null });
+      mockSignInWithPassword.mockResolvedValue({
+        error: null,
+        data: { user: { id: 'u1', email: 'user@kannanao.local' } },
+      });
 
       let capturedHook: ReturnType<typeof useAuth> | null = null;
       function Capture() {

@@ -523,6 +523,14 @@ export async function updateProfileTravelMainViewMode(userId: string, mode: stri
   if (error) console.error('updateProfileTravelMainViewMode error', error);
 }
 
+// ─── Login events ────────────────────────────────────────────────────────────
+
+export async function dbRecordLogin(userId: string): Promise<void> {
+  if (!isConfigured()) return;
+  const { error } = await sb.from('login_events').insert({ user_id: userId });
+  if (error) console.error('dbRecordLogin error', error);
+}
+
 // ─── Deck sharing ─────────────────────────────────────────────────────────────
 
 export async function dbShareDeck(

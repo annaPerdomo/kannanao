@@ -5,6 +5,7 @@ import { createContext, type ReactNode, useContext, useEffect, useState } from '
 import { isAdminUser } from '@/lib/admin';
 import type { AccountType } from '@/lib/supabase';
 import {
+  dbRecordLogin,
   loadProfile,
   sb,
   updateProfileColorScheme,
@@ -125,10 +126,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithUsername = async (username: string, password: string) => {
-    const { error } = await sb.auth.signInWithPassword({
+    const { error, data } = await sb.auth.signInWithPassword({
       email: toEmail(username),
       password,
     });
+    if (!error && data.user) {
+      void dbRecordLogin(data.user.id);
+    }
     return { error: error?.message ?? null };
   };
 

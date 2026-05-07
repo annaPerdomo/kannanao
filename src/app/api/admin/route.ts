@@ -51,6 +51,7 @@ export async function GET(req: Request) {
     embedEventsRes,
     groupsRes,
     studySessionsRes,
+    loginEventsRes,
   ] = await Promise.all([
     client
       .from('profiles')
@@ -80,6 +81,10 @@ export async function GET(req: Request) {
         'user_id, deck_id, practice_mode, cards_studied, cards_correct, xp_earned, duration_secs, started_at',
       )
       .gte('started_at', new Date(Date.now() - 90 * 86_400_000).toISOString()),
+    client
+      .from('login_events')
+      .select('user_id, logged_in_at')
+      .order('logged_in_at', { ascending: false }),
   ]);
 
   const profiles = profilesRes.data ?? [];
@@ -90,6 +95,7 @@ export async function GET(req: Request) {
   const eventTypes = eventTypesRes.data ?? [];
   const embedEvents = embedEventsRes.data ?? [];
   const studySessions = studySessionsRes.data ?? [];
+  const loginEvents = loginEventsRes.data ?? [];
   const groups = (groupsRes.data ?? []).map((g) => ({
     id: g.id,
     organizerId: g.organizer_id,
@@ -292,6 +298,15 @@ export async function GET(req: Request) {
     })
     .sort((a, b) => (b.lastActiveAt ?? '').localeCompare(a.lastActiveAt ?? ''));
 
+  // Pre-group login events by user_id
+  const loginsByUser = new Map<string, typeof loginEvents>();
+  for (const ev of loginEvents) {
+    const arr = loginsByUser.get(ev.user_id);
+    if (arr) arr.push(ev);
+    else loginsByUser.set(ev.user_id, [ev]);
+  }
+  const thirtyDaysAgoLogin = new Date(Date.now() - 30 * 86_400_000).toISOString();
+
   // Build per-user stats
   const userStats = profiles.map((p) => {
     const userDecks = decks.filter((d) => d.user_id === p.id);
@@ -304,6 +319,10 @@ export async function GET(req: Request) {
       const dates = t.completed_dates;
       return sum + (Array.isArray(dates) ? dates.length : 0);
     }, 0);
+
+    const userLogins = loginsByUser.get(p.id) ?? [];
+    const lastLoginAt = userLogins.length > 0 ? userLogins[0].logged_in_at : null;
+    const loginCount30d = userLogins.filter((ev) => ev.logged_in_at >= thirtyDaysAgoLogin).length;
 
     return {
       id: p.id,
@@ -318,6 +337,9 @@ export async function GET(req: Request) {
       todoCompletions: totalCompletions,
       eventTypeCount: userEventTypes.length,
       publicDecks: userDecks.filter((d) => d.is_public).length,
+      lastLoginAt,
+      loginCount30d,
+      totalLogins: userLogins.length,
     };
   });
 

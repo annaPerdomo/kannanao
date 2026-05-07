@@ -18,7 +18,7 @@ import { alpha } from '@mui/material/styles';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
-import { sb } from '@/lib/supabase';
+import { dbRecordLogin, sb } from '@/lib/supabase';
 
 export default function JoinPage() {
   const params = useParams();
@@ -146,10 +146,11 @@ export default function JoinPage() {
 
       // Auto sign-in with the returned session
       if (data.session) {
-        await sb.auth.setSession({
+        const { data: sessionData } = await sb.auth.setSession({
           access_token: data.session.access_token,
           refresh_token: data.session.refresh_token,
         });
+        if (sessionData.user) void dbRecordLogin(sessionData.user.id);
       }
 
       router.push('/');
