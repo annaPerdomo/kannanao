@@ -130,7 +130,12 @@ export async function loadDecks(userId: string): Promise<Deck[]> {
 
   let assignedDecks: typeof deckRows = [];
   if (assignedDeckIds.length > 0) {
-    const { data } = await sb.from('decks').select('*').in('id', assignedDeckIds);
+    const { data } = await sb
+      .from('decks')
+      .select('*')
+      .in('id', assignedDeckIds)
+      .order('position', { ascending: true })
+      .order('created_at', { ascending: true });
     assignedDecks = data ?? [];
   }
 
@@ -174,7 +179,7 @@ export async function dbCreateDeck(name: string, description?: string): Promise<
     .eq('user_id', user.id)
     .order('position', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
   const nextPos = (maxRow?.position ?? -1) + 1;
 
   const { data, error } = await sb
@@ -232,10 +237,11 @@ export async function dbReorderDecks(orderedIds: string[]): Promise<void> {
     showConfigBanner();
     throw new Error('Supabase not configured');
   }
-  const updates = orderedIds.map((id, index) =>
-    sb.from('decks').update({ position: index }).eq('id', id),
+  const results = await Promise.all(
+    orderedIds.map((id, index) => sb.from('decks').update({ position: index }).eq('id', id)),
   );
-  await Promise.all(updates);
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw failed.error;
 }
 
 export async function dbReorderCards(orderedIds: string[]): Promise<void> {
@@ -243,10 +249,11 @@ export async function dbReorderCards(orderedIds: string[]): Promise<void> {
     showConfigBanner();
     throw new Error('Supabase not configured');
   }
-  const updates = orderedIds.map((id, index) =>
-    sb.from('cards').update({ position: index }).eq('id', id),
+  const results = await Promise.all(
+    orderedIds.map((id, index) => sb.from('cards').update({ position: index }).eq('id', id)),
   );
-  await Promise.all(updates);
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw failed.error;
 }
 
 export async function loadCards(deckId: string): Promise<Flashcard[]> {
@@ -286,7 +293,7 @@ export async function dbInsertCards(
     .eq('deck_id', deckId)
     .order('position', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
   const startPos = (maxRow?.position ?? -1) + 1;
 
   const rows = newCards.map((card, i) => ({
@@ -400,7 +407,7 @@ export async function dbCopyCardsIntoDeck(
     .eq('deck_id', targetDeckId)
     .order('position', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
   const startPos = (maxRow?.position ?? -1) + 1;
 
   const rows = cards.map((card, i) => ({
@@ -521,6 +528,14 @@ export async function updateProfileTravelMainViewMode(userId: string, mode: stri
     .update({ travel_main_view_mode: mode })
     .eq('id', userId);
   if (error) console.error('updateProfileTravelMainViewMode error', error);
+}
+
+// ─── Login events ────────────────────────────────────────────────────────────
+
+export async function dbRecordLogin(userId: string): Promise<void> {
+  if (!isConfigured()) return;
+  const { error } = await sb.from('login_events').insert({ user_id: userId });
+  if (error) console.error('dbRecordLogin error', error);
 }
 
 // ─── Deck sharing ─────────────────────────────────────────────────────────────

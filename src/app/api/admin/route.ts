@@ -51,6 +51,7 @@ export async function GET(req: Request) {
     embedEventsRes,
     groupsRes,
     studySessionsRes,
+    loginEventsRes,
   ] = await Promise.all([
     client
       .from('profiles')
@@ -80,6 +81,7 @@ export async function GET(req: Request) {
         'user_id, deck_id, practice_mode, cards_studied, cards_correct, xp_earned, duration_secs, started_at',
       )
       .gte('started_at', new Date(Date.now() - 90 * 86_400_000).toISOString()),
+    client.rpc('login_stats_per_user'),
   ]);
 
   const profiles = profilesRes.data ?? [];
@@ -90,6 +92,7 @@ export async function GET(req: Request) {
   const eventTypes = eventTypesRes.data ?? [];
   const embedEvents = embedEventsRes.data ?? [];
   const studySessions = studySessionsRes.data ?? [];
+  const loginStats = loginEventsRes.data ?? [];
   const groups = (groupsRes.data ?? []).map((g) => ({
     id: g.id,
     organizerId: g.organizer_id,
@@ -292,6 +295,17 @@ export async function GET(req: Request) {
     })
     .sort((a, b) => (b.lastActiveAt ?? '').localeCompare(a.lastActiveAt ?? ''));
 
+  // Login stats lookup (pre-aggregated by DB function)
+  interface LoginStat {
+    user_id: string;
+    last_login_at: string;
+    total_logins: number;
+    logins_30d: number;
+  }
+  const loginStatsByUser = new Map<string, LoginStat>(
+    (loginStats as LoginStat[]).map((s) => [s.user_id, s]),
+  );
+
   // Build per-user stats
   const userStats = profiles.map((p) => {
     const userDecks = decks.filter((d) => d.user_id === p.id);
@@ -304,6 +318,8 @@ export async function GET(req: Request) {
       const dates = t.completed_dates;
       return sum + (Array.isArray(dates) ? dates.length : 0);
     }, 0);
+
+    const userLoginStats = loginStatsByUser.get(p.id);
 
     return {
       id: p.id,
@@ -318,6 +334,9 @@ export async function GET(req: Request) {
       todoCompletions: totalCompletions,
       eventTypeCount: userEventTypes.length,
       publicDecks: userDecks.filter((d) => d.is_public).length,
+      lastLoginAt: userLoginStats?.last_login_at ?? null,
+      loginCount30d: userLoginStats?.logins_30d ?? 0,
+      totalLogins: userLoginStats?.total_logins ?? 0,
     };
   });
 

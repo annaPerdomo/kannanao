@@ -10,6 +10,7 @@ const mockRenameDeck = vi.fn();
 const mockUpdateDeckEmoji = vi.fn();
 const mockPinDeck = vi.fn();
 const mockSetDeckPublic = vi.fn();
+const mockReorderDecks = vi.fn();
 
 vi.mock('@/lib/supabase', () => ({
   isConfigured: vi.fn(() => true),
@@ -21,6 +22,7 @@ vi.mock('@/lib/supabase', () => ({
   dbUpdateDeckEmoji: (...args: unknown[]) => mockUpdateDeckEmoji(...args),
   dbPinDeck: (...args: unknown[]) => mockPinDeck(...args),
   dbSetDeckPublic: (...args: unknown[]) => mockSetDeckPublic(...args),
+  dbReorderDecks: (...args: unknown[]) => mockReorderDecks(...args),
 }));
 
 const mockUser = { id: 'user-1', email: 'test@kannanao.local' };
@@ -322,6 +324,71 @@ describe('useDecks', () => {
       });
 
       expect(mockUpdateDeckEmoji).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('reorderDecks', () => {
+    it('should optimistically update positions and call dbReorderDecks', async () => {
+      const deckA = makeDeck({ id: 'a', name: 'A', position: 0 });
+      const deckB = makeDeck({ id: 'b', name: 'B', position: 1 });
+      const deckC = makeDeck({ id: 'c', name: 'C', position: 2 });
+      mockLoadDecks.mockResolvedValue([deckA, deckB, deckC]);
+      mockReorderDecks.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      // Reorder: swap A and B
+      await act(async () => {
+        await result.current.reorderDecks([deckB, deckA]);
+      });
+
+      expect(mockReorderDecks).toHaveBeenCalledWith(['b', 'a']);
+      // B should now have position 0, A position 1
+      const reordered = result.current.decks;
+      expect(reordered.find((d) => d.id === 'b')?.position).toBe(0);
+      expect(reordered.find((d) => d.id === 'a')?.position).toBe(1);
+      // C should remain untouched
+      expect(reordered.find((d) => d.id === 'c')?.position).toBe(2);
+    });
+
+    it('should preserve relative order of untouched decks', async () => {
+      const deckA = makeDeck({ id: 'a', name: 'A', position: 0, pinned: true });
+      const deckB = makeDeck({ id: 'b', name: 'B', position: 1, pinned: true });
+      const deckC = makeDeck({ id: 'c', name: 'C', position: 2 });
+      const deckD = makeDeck({ id: 'd', name: 'D', position: 3 });
+      mockLoadDecks.mockResolvedValue([deckA, deckB, deckC, deckD]);
+      mockReorderDecks.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      // Only reorder pinned decks (A, B → B, A)
+      await act(async () => {
+        await result.current.reorderDecks([deckB, deckA]);
+      });
+
+      // Overall array order should be preserved: A, B, C, D (same indices)
+      const ids = result.current.decks.map((d) => d.id);
+      expect(ids).toEqual(['a', 'b', 'c', 'd']);
+    });
+
+    it('should roll back state on dbReorderDecks failure', async () => {
+      const deckA = makeDeck({ id: 'a', name: 'A', position: 0 });
+      const deckB = makeDeck({ id: 'b', name: 'B', position: 1 });
+      mockLoadDecks.mockResolvedValue([deckA, deckB]);
+      mockReorderDecks.mockRejectedValue(new Error('DB error'));
+
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.reorderDecks([deckB, deckA]);
+      });
+
+      // Should roll back to original positions
+      expect(result.current.decks[0].position).toBe(0);
+      expect(result.current.decks[1].position).toBe(1);
     });
   });
 

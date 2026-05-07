@@ -8,6 +8,7 @@ const mockInsertCards = vi.fn();
 const mockUpdateCard = vi.fn();
 const mockDeleteCard = vi.fn();
 const mockCopyCards = vi.fn();
+const mockReorderCards = vi.fn();
 
 vi.mock('@/lib/supabase', () => ({
   isConfigured: vi.fn(() => true),
@@ -17,6 +18,7 @@ vi.mock('@/lib/supabase', () => ({
   dbUpdateCard: (...args: unknown[]) => mockUpdateCard(...args),
   dbDeleteCard: (...args: unknown[]) => mockDeleteCard(...args),
   dbCopyCardsIntoDeck: (...args: unknown[]) => mockCopyCards(...args),
+  dbReorderCards: (...args: unknown[]) => mockReorderCards(...args),
 }));
 
 import { useCards } from '@/hooks/useCards';
@@ -232,6 +234,49 @@ describe('useCards', () => {
       });
 
       expect(mockDeleteCard).toHaveBeenCalledWith('c1');
+    });
+  });
+
+  describe('reorderCards', () => {
+    it('should optimistically update positions and call dbReorderCards', async () => {
+      const cardA = makeCard('a', { position: 0 });
+      const cardB = makeCard('b', { position: 1 });
+      mockLoadCards.mockResolvedValue([cardA, cardB]);
+      mockReorderCards.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      // Reorder: swap A and B
+      await act(async () => {
+        await result.current.reorderCards([cardB, cardA]);
+      });
+
+      expect(mockReorderCards).toHaveBeenCalledWith(['b', 'a']);
+      expect(result.current.cards[0].id).toBe('b');
+      expect(result.current.cards[0].position).toBe(0);
+      expect(result.current.cards[1].id).toBe('a');
+      expect(result.current.cards[1].position).toBe(1);
+    });
+
+    it('should roll back state on dbReorderCards failure', async () => {
+      const cardA = makeCard('a', { position: 0 });
+      const cardB = makeCard('b', { position: 1 });
+      mockLoadCards.mockResolvedValue([cardA, cardB]);
+      mockReorderCards.mockRejectedValue(new Error('DB error'));
+
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.reorderCards([cardB, cardA]);
+      });
+
+      // Should roll back to original order
+      expect(result.current.cards[0].id).toBe('a');
+      expect(result.current.cards[0].position).toBe(0);
+      expect(result.current.cards[1].id).toBe('b');
+      expect(result.current.cards[1].position).toBe(1);
     });
   });
 

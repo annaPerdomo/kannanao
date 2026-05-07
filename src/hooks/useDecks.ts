@@ -122,12 +122,9 @@ export function useDecks() {
   const reorderDecks = useCallback(
     async (reordered: Deck[]): Promise<void> => {
       const updated = reordered.map((d, i) => ({ ...d, position: i }));
+      const updatedById = new Map(updated.map((d) => [d.id, d]));
       const prev = decks;
-      setDecks((ds) => {
-        const reorderedIds = new Set(updated.map((d) => d.id));
-        const untouched = ds.filter((d) => !reorderedIds.has(d.id));
-        return [...updated, ...untouched];
-      });
+      setDecks((ds) => ds.map((d) => updatedById.get(d.id) ?? d));
       try {
         await dbReorderDecks(updated.map((d) => d.id));
       } catch {
