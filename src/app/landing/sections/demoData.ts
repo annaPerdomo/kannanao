@@ -14,6 +14,7 @@ export const SAKURA_CARD: FlashcardType = {
   mainViewMode: 'kanji',
   cardType: 'word',
   jlptLevel: 'N5',
+  position: 0,
 };
 
 export const YUME_CARD: FlashcardType = {
@@ -28,6 +29,7 @@ export const YUME_CARD: FlashcardType = {
   mainViewMode: 'kanji',
   cardType: 'word',
   jlptLevel: 'N4',
+  position: 1,
 };
 
 export const DEMO_WORDS = ['cherry blossom', '夢', 'beautiful', '月', 'voyage'];
@@ -55,6 +57,7 @@ export const DEMO_IMAGE_CARDS: FlashcardType[] = [
     mainViewMode: 'kanji',
     cardType: 'word',
     jlptLevel: 'N5',
+    position: 0,
   },
   {
     id: 'img-2',
@@ -70,6 +73,7 @@ export const DEMO_IMAGE_CARDS: FlashcardType[] = [
     mainViewMode: 'kanji',
     cardType: 'word',
     jlptLevel: 'N4',
+    position: 1,
   },
   {
     id: 'img-3',
@@ -85,6 +89,7 @@ export const DEMO_IMAGE_CARDS: FlashcardType[] = [
     mainViewMode: 'kanji',
     cardType: 'word',
     jlptLevel: 'N3',
+    position: 2,
   },
   {
     id: 'img-4',
@@ -100,6 +105,7 @@ export const DEMO_IMAGE_CARDS: FlashcardType[] = [
     mainViewMode: 'kanji',
     cardType: 'word',
     jlptLevel: 'N5',
+    position: 3,
   },
   {
     id: 'img-5',
@@ -115,5 +121,6 @@ export const DEMO_IMAGE_CARDS: FlashcardType[] = [
     mainViewMode: 'kanji',
     cardType: 'word',
     jlptLevel: 'N4',
+    position: 4,
   },
 ];

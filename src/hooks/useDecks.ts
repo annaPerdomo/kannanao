@@ -7,6 +7,7 @@ import {
   dbDeleteDeck,
   dbPinDeck,
   dbRenameDeck,
+  dbReorderDecks,
   dbSetDeckPublic,
   dbUpdateDeckEmoji,
   isConfigured,
@@ -118,6 +119,24 @@ export function useDecks() {
     }
   }, []);
 
+  const reorderDecks = useCallback(
+    async (reordered: Deck[]): Promise<void> => {
+      const updated = reordered.map((d, i) => ({ ...d, position: i }));
+      const prev = decks;
+      setDecks((ds) => {
+        const reorderedIds = new Set(updated.map((d) => d.id));
+        const untouched = ds.filter((d) => !reorderedIds.has(d.id));
+        return [...updated, ...untouched];
+      });
+      try {
+        await dbReorderDecks(updated.map((d) => d.id));
+      } catch {
+        setDecks(prev);
+      }
+    },
+    [decks],
+  );
+
   return {
     decks,
     loading,
@@ -128,5 +147,6 @@ export function useDecks() {
     updateDeckEmoji,
     pinDeck,
     setDeckPublic,
+    reorderDecks,
   };
 }

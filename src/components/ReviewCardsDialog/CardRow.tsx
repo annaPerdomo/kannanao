@@ -38,7 +38,7 @@ import type { Flashcard, JlptLevel } from '@/types/flashcard';
 import { SmallField } from './SmallField';
 import { compactToggleSx } from './styles';
 
-export type PendingCard = Omit<Flashcard, 'id' | 'deckId'> & { image_query: string };
+export type PendingCard = Omit<Flashcard, 'id' | 'deckId' | 'position'> & { image_query: string };
 
 const JLPT_LEVELS: (JlptLevel | 'none')[] = ['N5', 'N4', 'N3', 'N2', 'N1', 'none'];
 

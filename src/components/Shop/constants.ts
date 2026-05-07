@@ -90,4 +90,5 @@ export const SAMPLE_CARD: FlashcardType = {
   mainViewMode: 'kanji',
   cardType: 'word',
   jlptLevel: 'N5',
+  position: 0,
 };

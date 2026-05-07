@@ -16,7 +16,7 @@ interface UseGenerateResult {
     words: string[],
     deckId: string,
     mainViewMode?: MainViewMode,
-  ) => Promise<Omit<Flashcard, 'id' | 'deckId'>[]>;
+  ) => Promise<Omit<Flashcard, 'id' | 'deckId' | 'position'>[]>;
 }
 
 export function useGenerateFlashcards(): UseGenerateResult {
@@ -28,7 +28,7 @@ export function useGenerateFlashcards(): UseGenerateResult {
       words: string[],
       deckId: string,
       mainViewMode: MainViewMode = 'hiragana',
-    ): Promise<Omit<Flashcard, 'id' | 'deckId'>[]> => {
+    ): Promise<Omit<Flashcard, 'id' | 'deckId' | 'position'>[]> => {
       setGenerating(true);
       setError(null);
       try {

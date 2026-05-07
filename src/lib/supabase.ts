@@ -40,6 +40,7 @@ interface SupabaseDeckRow {
   emoji: string | null;
   pinned: boolean | null;
   is_public: boolean | null;
+  position: number;
 }
 
 interface SupabaseCardRow {
@@ -55,6 +56,7 @@ interface SupabaseCardRow {
   main_view_mode: MainViewMode;
   card_type: 'word' | 'phrase' | null;
   jlpt_level: JlptLevel | null;
+  position: number;
 }
 
 function toNumber(value: string | null): number {
@@ -77,6 +79,7 @@ export function dbCardToApp(card: SupabaseCardRow): Flashcard {
     mainViewMode: card.main_view_mode ?? 'hiragana',
     cardType: card.card_type ?? 'word',
     jlptLevel: card.jlpt_level ?? undefined,
+    position: card.position ?? 0,
   };
 }
 
@@ -92,6 +95,7 @@ export function dbDeckToApp(deck: SupabaseDeckRow, cardCount: number, currentUse
     emoji: deck.emoji ?? '',
     pinned: deck.pinned ?? false,
     isPublic: deck.is_public ?? false,
+    position: deck.position ?? 0,
   };
 }
 
@@ -106,6 +110,7 @@ export async function loadDecks(userId: string): Promise<Deck[]> {
     .from('decks')
     .select('*')
     .eq('user_id', userId)
+    .order('position', { ascending: true })
     .order('created_at', { ascending: true });
   if (deckError) {
     console.error('Error loading decks', deckError);
@@ -136,6 +141,7 @@ export async function loadDecks(userId: string): Promise<Deck[]> {
     .from('cards')
     .select('*')
     .in('deck_id', allDeckIds)
+    .order('position', { ascending: true })
     .order('created_at', { ascending: true });
   if (cardError) {
     console.error('Error loading cards', cardError);
@@ -161,9 +167,19 @@ export async function dbCreateDeck(name: string, description?: string): Promise<
   } = await sb.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 
+  // Get the current max position for this user's decks
+  const { data: maxRow } = await sb
+    .from('decks')
+    .select('position')
+    .eq('user_id', user.id)
+    .order('position', { ascending: false })
+    .limit(1)
+    .single();
+  const nextPos = (maxRow?.position ?? -1) + 1;
+
   const { data, error } = await sb
     .from('decks')
-    .insert({ name, description: description ?? null, user_id: user.id })
+    .insert({ name, description: description ?? null, user_id: user.id, position: nextPos })
     .select()
     .single();
 
@@ -211,6 +227,28 @@ export async function dbSetDeckPublic(id: string, isPublic: boolean): Promise<vo
   if (error) throw error;
 }
 
+export async function dbReorderDecks(orderedIds: string[]): Promise<void> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    throw new Error('Supabase not configured');
+  }
+  const updates = orderedIds.map((id, index) =>
+    sb.from('decks').update({ position: index }).eq('id', id),
+  );
+  await Promise.all(updates);
+}
+
+export async function dbReorderCards(orderedIds: string[]): Promise<void> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    throw new Error('Supabase not configured');
+  }
+  const updates = orderedIds.map((id, index) =>
+    sb.from('cards').update({ position: index }).eq('id', id),
+  );
+  await Promise.all(updates);
+}
+
 export async function loadCards(deckId: string): Promise<Flashcard[]> {
   if (!isConfigured()) {
     showConfigBanner();
@@ -221,6 +259,7 @@ export async function loadCards(deckId: string): Promise<Flashcard[]> {
     .from('cards')
     .select('*')
     .eq('deck_id', deckId)
+    .order('position', { ascending: true })
     .order('created_at', { ascending: true });
 
   if (error) {
@@ -233,14 +272,24 @@ export async function loadCards(deckId: string): Promise<Flashcard[]> {
 
 export async function dbInsertCards(
   deckId: string,
-  newCards: Array<Omit<Flashcard, 'id'>>,
+  newCards: Array<Omit<Flashcard, 'id' | 'position'>>,
 ): Promise<Flashcard[]> {
   if (!isConfigured()) {
     showConfigBanner();
     return [];
   }
 
-  const rows = newCards.map((card) => ({
+  // Get the current max position for this deck
+  const { data: maxRow } = await sb
+    .from('cards')
+    .select('position')
+    .eq('deck_id', deckId)
+    .order('position', { ascending: false })
+    .limit(1)
+    .single();
+  const startPos = (maxRow?.position ?? -1) + 1;
+
+  const rows = newCards.map((card, i) => ({
     deck_id: deckId,
     word: card.word,
     reading: card.reading || '',
@@ -252,6 +301,7 @@ export async function dbInsertCards(
     main_view_mode: card.mainViewMode || 'hiragana',
     card_type: card.cardType || 'word',
     jlpt_level: card.jlptLevel ?? null,
+    position: startPos + i,
   }));
 
   const { data, error } = await sb.from('cards').insert(rows).select('*');
@@ -344,7 +394,16 @@ export async function dbCopyCardsIntoDeck(
 
   if (cards.length === 0) return [];
 
-  const rows = cards.map((card) => ({
+  const { data: maxRow } = await sb
+    .from('cards')
+    .select('position')
+    .eq('deck_id', targetDeckId)
+    .order('position', { ascending: false })
+    .limit(1)
+    .single();
+  const startPos = (maxRow?.position ?? -1) + 1;
+
+  const rows = cards.map((card, i) => ({
     deck_id: targetDeckId,
     word: card.word,
     reading: card.reading || '',
@@ -356,6 +415,7 @@ export async function dbCopyCardsIntoDeck(
     main_view_mode: card.mainViewMode ?? 'hiragana',
     card_type: card.cardType ?? 'word',
     jlpt_level: card.jlptLevel ?? null,
+    position: startPos + i,
   }));
 
   const { data, error } = await sb.from('cards').insert(rows).select('*');

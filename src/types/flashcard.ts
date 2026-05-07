@@ -15,6 +15,7 @@ export interface Flashcard {
   mainViewMode: MainViewMode;
   cardType: 'word' | 'phrase';
   jlptLevel?: JlptLevel;
+  position: number;
 }
 
 export interface GeneratePayload {
