@@ -61,6 +61,7 @@ function makeCard(id: string, overrides: Partial<Flashcard> = {}): Flashcard {
     example_en: 'I like cats',
     mainViewMode: 'hiragana',
     cardType: 'word',
+    position: 0,
     ...overrides,
   };
 }

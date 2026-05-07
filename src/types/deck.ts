@@ -9,4 +9,5 @@ export interface Deck {
   emoji: string;
   pinned?: boolean;
   isPublic?: boolean;
+  position: number;
 }

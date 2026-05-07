@@ -19,6 +19,7 @@ function makeDeck(overrides: Partial<Deck> = {}): Deck {
     emoji: '🌸',
     pinned: false,
     isPublic: false,
+    position: 0,
     ...overrides,
   };
 }

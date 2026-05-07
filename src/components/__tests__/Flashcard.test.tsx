@@ -36,6 +36,7 @@ function makeCard(overrides: Partial<FlashcardType> = {}): FlashcardType {
     mainViewMode: 'hiragana',
     cardType: 'word',
     jlptLevel: 'N5',
+    position: 0,
     ...overrides,
   };
 }

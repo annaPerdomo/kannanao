@@ -5,6 +5,7 @@ import {
   dbCopyCardsIntoDeck,
   dbDeleteCard,
   dbInsertCards,
+  dbReorderCards,
   dbUpdateCard,
   isConfigured,
   loadCards,
@@ -35,7 +36,7 @@ export function useCards(deckId: string, onCountChange?: (count: number) => void
   }, [deckId, onCountChange]);
 
   const addCard = useCallback(
-    async (card: Omit<Flashcard, 'id'>): Promise<Flashcard | undefined> => {
+    async (card: Omit<Flashcard, 'id' | 'position'>): Promise<Flashcard | undefined> => {
       if (!isConfigured()) {
         showConfigBanner();
         return undefined;
@@ -56,7 +57,7 @@ export function useCards(deckId: string, onCountChange?: (count: number) => void
   );
 
   const addCards = useCallback(
-    async (incoming: Omit<Flashcard, 'id'>[]): Promise<void> => {
+    async (incoming: Omit<Flashcard, 'id' | 'position'>[]): Promise<void> => {
       if (!isConfigured()) {
         showConfigBanner();
         return;
@@ -122,5 +123,28 @@ export function useCards(deckId: string, onCountChange?: (count: number) => void
     [deckId, onCountChange],
   );
 
-  return { cards, copyExistingCards, addCard, addCards, deleteCard, updateCard, loading };
+  const reorderCards = useCallback(
+    async (reordered: Flashcard[]): Promise<void> => {
+      const updated = reordered.map((c, i) => ({ ...c, position: i }));
+      const prev = cards;
+      setCards(updated);
+      try {
+        await dbReorderCards(updated.map((c) => c.id));
+      } catch {
+        setCards(prev);
+      }
+    },
+    [cards],
+  );
+
+  return {
+    cards,
+    copyExistingCards,
+    addCard,
+    addCards,
+    deleteCard,
+    updateCard,
+    reorderCards,
+    loading,
+  };
 }

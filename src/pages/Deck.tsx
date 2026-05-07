@@ -1,9 +1,21 @@
 'use client';
 
+import type { DragEndEvent } from '@dnd-kit/core';
+import {
+  closestCenter,
+  DndContext,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import { arrayMove, rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CheckIcon from '@mui/icons-material/Check';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
 import { Box, Button, Typography } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { useCallback, useState } from 'react';
 
 import { AddCardsModal } from '@/components/AddCards';
@@ -12,8 +24,10 @@ import { DeckHeader, Label, PracticeHero } from '@/components/Deck';
 import { ImageCard } from '@/components/ImageCard';
 import { Loading } from '@/components/Loading';
 import { PdfImportModal } from '@/components/PdfImportModal';
+import { ReorderBanner } from '@/components/ReorderBanner';
 import { ReviewCardsDialog } from '@/components/ReviewCardsDialog';
 import { ShareEmbedDialog } from '@/components/ShareEmbedDialog';
+import { SortableImageCard } from '@/components/SortableImageCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCards } from '@/hooks/useCards';
 import { useDecks } from '@/hooks/useDecks';
@@ -31,6 +45,8 @@ interface DeckProps {
 }
 
 export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
+  const theme = useTheme();
+  const { accent } = theme.palette;
   const { user, isMemberAccount } = useAuth();
   const {
     decks,
@@ -49,9 +65,10 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pendingMainViewMode, setPendingMainViewMode] = useState<MainViewMode>('hiragana');
   const [reviewCards, setReviewCards] = useState<
-    (Omit<Flashcard, 'id' | 'deckId'> & { image_query: string })[]
+    (Omit<Flashcard, 'id' | 'deckId' | 'position'> & { image_query: string })[]
   >([]);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [reordering, setReordering] = useState(false);
 
   const handleCountChange = useCallback(
     (count: number) => updateDeckCount(deckId, count),
@@ -65,8 +82,27 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     loading: cardsLoading,
     updateCard,
     copyExistingCards,
+    reorderCards,
   } = useCards(deckId, handleCountChange);
   const { generating, error, generate } = useGenerateFlashcards();
+
+  const canReorder = !isMemberAccount && cards.length > 1;
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  );
+
+  const handleCardDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const oldIndex = cards.findIndex((c) => c.id === active.id);
+      const newIndex = cards.findIndex((c) => c.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return;
+      reorderCards(arrayMove(cards, oldIndex, newIndex));
+    },
+    [cards, reorderCards],
+  );
 
   const handleGenerate = async (words: string[], mainViewMode: MainViewMode) => {
     const generated = await generate(words, deckId, mainViewMode);
@@ -117,6 +153,59 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     );
   }
 
+  const cardGrid = (
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: {
+          xs: 'repeat(2, 1fr)',
+          sm: 'repeat(3, 1fr)',
+          md: 'repeat(4, 1fr)',
+          lg: 'repeat(5, 1fr)',
+        },
+        gap: 1.5,
+      }}
+    >
+      {cards.map((card) => (
+        <ImageCard
+          key={card.id}
+          card={card}
+          onDelete={deleteCard}
+          onUpdate={updateCard}
+          readOnly={isMemberAccount}
+        />
+      ))}
+    </Box>
+  );
+
+  const sortableCardGrid = (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleCardDragEnd}>
+      <SortableContext items={cards.map((c) => c.id)} strategy={rectSortingStrategy}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: 'repeat(2, 1fr)',
+              sm: 'repeat(3, 1fr)',
+              md: 'repeat(4, 1fr)',
+              lg: 'repeat(5, 1fr)',
+            },
+            gap: 1.5,
+          }}
+        >
+          {cards.map((card) => (
+            <SortableImageCard
+              key={card.id}
+              card={card}
+              onDelete={deleteCard}
+              onUpdate={updateCard}
+            />
+          ))}
+        </Box>
+      </SortableContext>
+    </DndContext>
+  );
+
   return (
     <Box
       sx={{
@@ -147,31 +236,75 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}
         >
           <Label>Cards in Deck</Label>
-          {!isMemberAccount && (
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={<AddIcon sx={{ fontSize: 15 }} />}
-              onClick={() => setAddCardsOpen(true)}
-              sx={{
-                borderRadius: '9px',
-                px: 2,
-                py: '5px',
-                fontSize: '0.76rem',
-                textTransform: 'none',
-                fontWeight: 700,
-                mb: 1.5,
-              }}
-            >
-              Add Cards
-            </Button>
-          )}
+          <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
+            {canReorder && (
+              <Button
+                variant={reordering ? 'contained' : 'outlined'}
+                size="small"
+                startIcon={
+                  reordering ? (
+                    <CheckIcon sx={{ fontSize: 15 }} />
+                  ) : (
+                    <SwapVertIcon sx={{ fontSize: 15 }} />
+                  )
+                }
+                onClick={() => setReordering((v) => !v)}
+                sx={{
+                  borderRadius: '9px',
+                  px: 2,
+                  py: '5px',
+                  fontSize: '0.76rem',
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  ...(reordering
+                    ? {
+                        background: `linear-gradient(135deg, ${accent[400]}, ${accent[500]})`,
+                        '&:hover': {
+                          background: `linear-gradient(135deg, ${accent[500]}, ${accent[600]})`,
+                        },
+                      }
+                    : {
+                        borderColor: alpha(accent[400], 0.5),
+                        color: accent[600],
+                        '&:hover': {
+                          borderColor: accent[500],
+                          bgcolor: alpha(accent[100], 0.5),
+                        },
+                      }),
+                }}
+              >
+                {reordering ? 'Done' : 'Reorder'}
+              </Button>
+            )}
+            {!isMemberAccount && !reordering && (
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<AddIcon sx={{ fontSize: 15 }} />}
+                onClick={() => setAddCardsOpen(true)}
+                sx={{
+                  borderRadius: '9px',
+                  px: 2,
+                  py: '5px',
+                  fontSize: '0.76rem',
+                  textTransform: 'none',
+                  fontWeight: 700,
+                }}
+              >
+                Add Cards
+              </Button>
+            )}
+          </Box>
         </Box>
+
+        {reordering && (
+          <ReorderBanner label="Drag and drop cards to reorder. Click Done when finished." />
+        )}
 
         {cards.length === 0 ? (
           <Box
             sx={{
-              border: (theme) => `1.5px dashed ${alpha(theme.palette.brand[300], 0.4)}`,
+              border: (t) => `1.5px dashed ${alpha(t.palette.brand[300], 0.4)}`,
               borderRadius: '14px',
               p: 6,
               textAlign: 'center',
@@ -202,29 +335,10 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
               )}
             </Typography>
           </Box>
+        ) : reordering ? (
+          sortableCardGrid
         ) : (
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: 'repeat(2, 1fr)',
-                sm: 'repeat(3, 1fr)',
-                md: 'repeat(4, 1fr)',
-                lg: 'repeat(5, 1fr)',
-              },
-              gap: 1.5,
-            }}
-          >
-            {cards.map((card) => (
-              <ImageCard
-                key={card.id}
-                card={card}
-                onDelete={deleteCard}
-                onUpdate={updateCard}
-                readOnly={isMemberAccount}
-              />
-            ))}
-          </Box>
+          cardGrid
         )}
       </Box>
 

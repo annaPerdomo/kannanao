@@ -67,6 +67,7 @@ function makeCard(id: string, meaning: string): Flashcard {
     mainViewMode: 'hiragana',
     cardType: 'word',
     jlptLevel: 'N5',
+    position: 0,
   };
 }
 
