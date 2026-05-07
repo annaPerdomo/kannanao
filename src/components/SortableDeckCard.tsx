@@ -3,7 +3,6 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import DragIndicatorRoundedIcon from '@mui/icons-material/DragIndicatorRounded';
 import Box from '@mui/material/Box';
-import { alpha, useTheme } from '@mui/material/styles';
 import { memo } from 'react';
 
 import type { Deck } from '@/types/deck';
@@ -23,8 +22,6 @@ export const SortableDeckCard = memo(function SortableDeckCard({
   deck,
   ...props
 }: SortableDeckCardProps) {
-  const theme = useTheme();
-  const { brand } = theme.palette;
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: deck.id,
   });

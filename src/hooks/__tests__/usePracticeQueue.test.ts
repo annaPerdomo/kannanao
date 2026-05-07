@@ -16,6 +16,7 @@ function makeCard(id: string): Flashcard {
     example_en: '',
     mainViewMode: 'hiragana',
     cardType: 'word',
+    position: 0,
   };
 }
 

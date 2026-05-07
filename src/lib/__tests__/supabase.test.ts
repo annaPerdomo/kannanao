@@ -42,6 +42,7 @@ describe('dbCardToApp', () => {
       main_view_mode: 'hiragana' as const,
       card_type: 'word' as const,
       jlpt_level: 'N5' as const,
+      position: 0,
     };
 
     const card = dbCardToApp(row);
@@ -74,6 +75,7 @@ describe('dbCardToApp', () => {
       main_view_mode: 'kanji' as const,
       card_type: null,
       jlpt_level: null,
+      position: 0,
     };
 
     const card = dbCardToApp(row);
@@ -105,6 +107,7 @@ describe('dbCardToApp', () => {
       main_view_mode: 'hiragana' as const,
       card_type: 'word' as const,
       jlpt_level: null,
+      position: 0,
     };
 
     const card = dbCardToApp(row);
@@ -127,6 +130,7 @@ it('should handle phrase card type correctly', () => {
     main_view_mode: 'kanji' as const,
     card_type: 'phrase' as const,
     jlpt_level: 'N5' as const,
+    position: 0,
   };
 
   const card = dbCardToApp(row);
@@ -151,6 +155,7 @@ it('should map all JLPT levels correctly', () => {
       main_view_mode: 'hiragana' as const,
       card_type: 'word' as const,
       jlpt_level: level,
+      position: 0,
     };
     expect(dbCardToApp(row).jlptLevel).toBe(level);
   });
@@ -169,6 +174,7 @@ describe('dbDeckToApp', () => {
       emoji: '🌸',
       pinned: true,
       is_public: false,
+      position: 0,
     };
 
     const deck = dbDeckToApp(row, 12, 'user-1');
@@ -195,6 +201,7 @@ describe('dbDeckToApp', () => {
       emoji: '🎀',
       pinned: null,
       is_public: null,
+      position: 0,
     };
 
     const deck = dbDeckToApp(row, 5, 'user-me');
@@ -211,6 +218,7 @@ describe('dbDeckToApp', () => {
       emoji: null,
       pinned: null,
       is_public: null,
+      position: 0,
     };
 
     const deck = dbDeckToApp(row, 0, 'user-1');
@@ -232,6 +240,7 @@ describe('dbDeckToApp', () => {
       emoji: '✨',
       pinned: false,
       is_public: false,
+      position: 0,
     };
 
     const deck = dbDeckToApp(row, 0, 'user-1');

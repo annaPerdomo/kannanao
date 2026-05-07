@@ -40,6 +40,7 @@ function makeCard(id: string, overrides: Partial<Flashcard> = {}): Flashcard {
     example_en: '',
     mainViewMode: 'hiragana',
     cardType: 'word',
+    position: 0,
     ...overrides,
   };
 }
