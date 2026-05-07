@@ -119,6 +119,48 @@ describe('AuthContext / AuthProvider', () => {
       });
     });
 
+    it('should record a login event on successful sign in', async () => {
+      const { dbRecordLogin } = await import('@/lib/supabase');
+      mockSignInWithPassword.mockResolvedValue({
+        error: null,
+        data: { user: { id: 'u1', email: 'testuser@kannanao.local' } },
+      });
+
+      let capturedHook: ReturnType<typeof useAuth> | null = null;
+      function Capture() {
+        capturedHook = useAuth();
+        return null;
+      }
+      renderWithAuth(<Capture />);
+
+      await act(async () => {
+        await capturedHook?.signInWithUsername('testuser', 'password123');
+      });
+
+      expect(dbRecordLogin).toHaveBeenCalledWith('u1');
+    });
+
+    it('should not record a login event on failed sign in', async () => {
+      const { dbRecordLogin } = await import('@/lib/supabase');
+      mockSignInWithPassword.mockResolvedValue({
+        error: { message: 'Invalid credentials' },
+        data: { user: null },
+      });
+
+      let capturedHook: ReturnType<typeof useAuth> | null = null;
+      function Capture() {
+        capturedHook = useAuth();
+        return null;
+      }
+      renderWithAuth(<Capture />);
+
+      await act(async () => {
+        await capturedHook?.signInWithUsername('bad', 'credentials');
+      });
+
+      expect(dbRecordLogin).not.toHaveBeenCalled();
+    });
+
     it('should return error message on failed sign in', async () => {
       let capturedHook: ReturnType<typeof useAuth> | null = null;
       function Capture() {
