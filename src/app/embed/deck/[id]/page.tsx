@@ -49,6 +49,9 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: {
+      canonical: `/embed/deck/${id}`,
+    },
     openGraph: {
       title,
       description,
