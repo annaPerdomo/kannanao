@@ -52,6 +52,7 @@ export async function GET(req: Request) {
     groupsRes,
     studySessionsRes,
     loginEventsRes,
+    travelEventsRes,
   ] = await Promise.all([
     client
       .from('profiles')
@@ -82,6 +83,10 @@ export async function GET(req: Request) {
       )
       .gte('started_at', new Date(Date.now() - 90 * 86_400_000).toISOString()),
     client.rpc('login_stats_per_user'),
+    client
+      .from('travel_events')
+      .select('user_id, feature, action, metadata, created_at')
+      .order('created_at', { ascending: false }),
   ]);
 
   const profiles = profilesRes.data ?? [];
@@ -93,6 +98,7 @@ export async function GET(req: Request) {
   const embedEvents = embedEventsRes.data ?? [];
   const studySessions = studySessionsRes.data ?? [];
   const loginStats = loginEventsRes.data ?? [];
+  const travelEvents = travelEventsRes.data ?? [];
   const groups = (groupsRes.data ?? []).map((g) => ({
     id: g.id,
     organizerId: g.organizer_id,
@@ -340,6 +346,95 @@ export async function GET(req: Request) {
     };
   });
 
+  // ─── Travel Analytics ─────────────────────────────────────────
+
+  // Total events & unique users
+  const travelUniqueUsers = new Set(travelEvents.map((e) => e.user_id));
+
+  // Events by feature
+  const featureCounts: Record<string, number> = {};
+  for (const ev of travelEvents) {
+    featureCounts[ev.feature] = (featureCounts[ev.feature] || 0) + 1;
+  }
+  const featureBreakdown = Object.entries(featureCounts)
+    .map(([feature, count]) => ({ feature, count }))
+    .sort((a, b) => b.count - a.count);
+
+  // Events over time (last 30 days)
+  const travelByDate: Record<string, number> = {};
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(thirtyDaysAgo);
+    d.setDate(d.getDate() + i + 1);
+    travelByDate[d.toISOString().slice(0, 10)] = 0;
+  }
+  for (const ev of travelEvents) {
+    if (ev.created_at) {
+      const dateKey = ev.created_at.slice(0, 10);
+      if (dateKey in travelByDate) travelByDate[dateKey]++;
+    }
+  }
+  const travelOverTime = Object.entries(travelByDate)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, count]) => ({ date, count }));
+
+  // Per-user travel activity
+  const travelByUser = new Map<
+    string,
+    { total: number; features: Set<string>; lastAt: string | null }
+  >();
+  for (const ev of travelEvents) {
+    const entry = travelByUser.get(ev.user_id);
+    if (entry) {
+      entry.total++;
+      entry.features.add(ev.feature);
+      if (ev.created_at && (!entry.lastAt || ev.created_at > entry.lastAt)) {
+        entry.lastAt = ev.created_at;
+      }
+    } else {
+      travelByUser.set(ev.user_id, {
+        total: 1,
+        features: new Set([ev.feature]),
+        lastAt: ev.created_at,
+      });
+    }
+  }
+  const travelUsers = Array.from(travelByUser.entries())
+    .map(([userId, stats]) => {
+      const profile = profileById[userId];
+      return {
+        userId,
+        username: profile?.username ?? 'Unknown',
+        displayName: profile?.display_name ?? null,
+        totalEvents: stats.total,
+        featuresUsed: stats.features.size,
+        lastActiveAt: stats.lastAt,
+      };
+    })
+    .sort((a, b) => (b.lastActiveAt ?? '').localeCompare(a.lastActiveAt ?? ''));
+
+  // Scenario category breakdown
+  const scenarioCounts: Record<string, number> = {};
+  for (const ev of travelEvents) {
+    if (ev.feature === 'scenario' && ev.action === 'start') {
+      const cat = (ev.metadata as Record<string, unknown>)?.category as string | undefined;
+      if (cat) scenarioCounts[cat] = (scenarioCounts[cat] || 0) + 1;
+    }
+  }
+  const scenarioBreakdown = Object.entries(scenarioCounts)
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const travelAnalytics = {
+    overview: {
+      totalEvents: travelEvents.length,
+      uniqueUsers: travelUniqueUsers.size,
+    },
+    featureBreakdown,
+    eventsOverTime: travelOverTime,
+    users: travelUsers,
+    scenarioBreakdown,
+  };
+
   const overview = {
     totalUsers: profiles.length,
     totalDecks: decks.length,
@@ -355,6 +450,7 @@ export async function GET(req: Request) {
     waitlist,
     embedAnalytics,
     memberActivity,
+    travelAnalytics,
     groups,
   });
 }

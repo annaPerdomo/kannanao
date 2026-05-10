@@ -935,3 +935,29 @@ export async function dbDeleteShowCard(id: string): Promise<void> {
   const { error } = await sb.from('show_cards').delete().eq('id', id);
   if (error) throw error;
 }
+
+// ─── Travel Event Tracking ──────────────────────────────────────
+
+/** Fire-and-forget travel event logging. Never throws. */
+export function logTravelEvent(
+  feature: string,
+  action: string,
+  metadata?: Record<string, unknown>,
+): void {
+  if (!isConfigured()) return;
+  void (async () => {
+    try {
+      const { data: session } = await sb.auth.getSession();
+      const userId = session.session?.user?.id;
+      if (!userId) return;
+      await sb.from('travel_events').insert({
+        user_id: userId,
+        feature,
+        action,
+        metadata: metadata ?? {},
+      });
+    } catch {
+      // Silent — analytics should never break the UX
+    }
+  })();
+}
