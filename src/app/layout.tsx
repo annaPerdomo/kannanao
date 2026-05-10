@@ -42,11 +42,20 @@ export const metadata: Metadata = {
     siteName: 'Kannanao',
     type: 'website',
     locale: 'en_US',
+    images: [
+      {
+        url: 'https://www.kannanao.com/og-image.jpg',
+        width: 1200,
+        height: 630,
+        type: 'image/jpeg',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: TITLE,
     description: DESCRIPTION,
+    images: ['https://www.kannanao.com/og-image.jpg'],
   },
 };
 
