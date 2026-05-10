@@ -1,7 +1,11 @@
 'use client';
 
-import { ShowCardViewer } from '@/components/Travel';
+import { RequireAuth, ShowCardViewer } from '@/components/Travel';
 
 export default function ShowCardsPage() {
-  return <ShowCardViewer />;
+  return (
+    <RequireAuth feature="Point & Communicate">
+      <ShowCardViewer />
+    </RequireAuth>
+  );
 }

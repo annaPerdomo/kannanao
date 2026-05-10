@@ -1,7 +1,11 @@
 'use client';
 
-import { EmergencyCard } from '@/components/Travel';
+import { EmergencyCard, RequireAuth } from '@/components/Travel';
 
 export default function EmergencyPage() {
-  return <EmergencyCard />;
+  return (
+    <RequireAuth feature="Emergency Card">
+      <EmergencyCard />
+    </RequireAuth>
+  );
 }
