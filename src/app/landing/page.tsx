@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 
-import { amber, darkPurple, emerald, ocean, pink, sky } from '@/theme';
+import { amber, darkPurple, emerald, ocean, pink, purple, sky } from '@/theme';
 
 import LandingGlobalStyles from './LandingGlobalStyles';
 import {
@@ -130,7 +130,7 @@ export default function LandingPage() {
       <GamificationSection />
       <SectionDivider fromColor={pink[50]} toColor={ocean[50]} />
       <GroupSection />
-      <SectionDivider fromColor={ocean[50]} toColor={sky[50]} />
+      <SectionDivider fromColor={purple[50]} toColor={sky[50]} />
       <HowItWorksSection />
       <CtaSection />
     </Box>

@@ -76,7 +76,7 @@ export function PracticeSection() {
               lineHeight: 1.05,
             }}
           >
-            Three ways to practise
+            Three ways to practice
           </Typography>
           <Typography
             sx={{

@@ -21,7 +21,7 @@ const STEPS = [
     n: 2,
     emoji: '🎮',
     title: 'Study your way',
-    desc: 'Flip cards, play Match, Fill-in-the-blank, or Recall. Open Travel Mode for real-world phrases across 9 modules, or practise speeches line-by-line.',
+    desc: 'Flip cards, play Match, Fill-in-the-blank, or Recall. Open Travel Mode for real-world phrases across 9 modules, or practice speeches line-by-line.',
   },
   {
     n: 3,
