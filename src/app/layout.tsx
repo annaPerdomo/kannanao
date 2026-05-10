@@ -12,13 +12,13 @@ const DESCRIPTION =
   'Create Japanese flashcards with AI, practice with Match, Fill-in-the-blank & Recall modes, explore Travel Mode phrasebooks, study in groups with leaderboards & assignments, earn XP & achievements, customize with 10 themes, import PDFs, and share or embed decks anywhere.';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://kannanao.com'),
+  metadataBase: new URL('https://www.kannanao.com'),
   alternates: {
     canonical: '/',
     languages: {
-      en: 'https://kannanao.com',
-      ja: 'https://kannanao.com',
-      'x-default': 'https://kannanao.com',
+      en: 'https://www.kannanao.com',
+      ja: 'https://www.kannanao.com',
+      'x-default': 'https://www.kannanao.com',
     },
   },
   keywords: [
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
-    url: 'https://kannanao.com',
+    url: 'https://www.kannanao.com',
     siteName: 'Kannanao',
     type: 'website',
     locale: 'en_US',

@@ -21,6 +21,6 @@ export default function robots(): MetadataRoute.Robots {
         '/travel',
       ],
     },
-    sitemap: 'https://kannanao.com/sitemap.xml',
+    sitemap: 'https://www.kannanao.com/sitemap.xml',
   };
 }
