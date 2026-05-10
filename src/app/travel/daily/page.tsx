@@ -1,7 +1,11 @@
 'use client';
 
-import { DailyPhrasePack } from '@/components/Travel';
+import { DailyPhrasePack, RequireAuth } from '@/components/Travel';
 
 export default function DailyPage() {
-  return <DailyPhrasePack />;
+  return (
+    <RequireAuth feature="Daily Phrase Pack">
+      <DailyPhrasePack />
+    </RequireAuth>
+  );
 }

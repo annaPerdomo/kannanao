@@ -19,9 +19,10 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useSpeech } from '@/hooks/useSpeech';
+import { logTravelEvent } from '@/lib/supabase';
 
 // ─── Katakana Data ────────────────────────────────────────────────
 
@@ -158,6 +159,10 @@ export function KatakanaDecoder() {
   const { speak } = useSpeech();
   const [mode, setMode] = useState<TabMode>('chart');
 
+  useEffect(() => {
+    logTravelEvent('katakana', 'view');
+  }, []);
+
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Stack spacing={3}>
@@ -166,10 +171,7 @@ export function KatakanaDecoder() {
           <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
             <ArrowBackIcon />
           </IconButton>
-          <Typography
-            variant="h5"
-            sx={{ fontWeight: 700, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
-          >
+          <Typography variant="h5" sx={{ color: 'text.primary' }}>
             Katakana Decoder
           </Typography>
         </Box>

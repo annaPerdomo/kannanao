@@ -1,12 +1,14 @@
 'use client';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import {
   alpha,
   Box,
   Button,
+  Chip,
   Container,
   IconButton,
   Stack,
@@ -15,12 +17,13 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { stripFurigana } from '@/components/FuriganaText';
 import { useSpeech } from '@/hooks/useSpeech';
+import { logTravelEvent } from '@/lib/supabase';
 
-import { SaveToDeckDialog } from './SaveToDeckDialog';
+import { AuthGatedSaveDialog } from './AuthGatedSaveDialog';
 import { TravelPhrase } from './TravelPhrase';
 
 interface FoodItem {
@@ -320,221 +323,215 @@ export function FoodMenu() {
   const { brand } = theme.palette;
   const router = useRouter();
   const { speak } = useSpeech();
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [deckDialogOpen, setDeckDialogOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<string | 'all'>('ramen');
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [phrasesToSave, setPhrasesToSave] = useState<
+    Array<{ japanese: string; romaji: string; english: string }>
+  >([]);
   const [deckSaved, setDeckSaved] = useState(false);
 
-  const category = FOOD_DATA.find((c) => c.key === activeCategory);
+  const visibleCategories = useMemo(
+    () => (activeFilter === 'all' ? FOOD_DATA : FOOD_DATA.filter((c) => c.key === activeFilter)),
+    [activeFilter],
+  );
 
-  if (!activeCategory) {
-    return (
-      <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
-        <Stack spacing={3}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
-              <ArrowBackIcon />
-            </IconButton>
-            <Box>
-              <Typography
-                variant="h5"
-                sx={{ fontWeight: 800, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
-              >
-                Food Menu Cheat Sheet
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
-                Know what you&apos;re ordering
-              </Typography>
-            </Box>
-          </Box>
+  const handleFilter = (key: string) => {
+    setActiveFilter(key);
+    setDeckSaved(false);
+    if (key !== 'all') logTravelEvent('food_menu', 'browse', { category: key });
+  };
 
-          <Stack spacing={1.25}>
-            {FOOD_DATA.map((cat) => (
-              <Box
-                key={cat.key}
-                onClick={() => setActiveCategory(cat.key)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setActiveCategory(cat.key);
-                  }
-                }}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  p: 2,
-                  cursor: 'pointer',
-                  borderRadius: '16px',
-                  bgcolor: 'background.paper',
-                  border: `1px solid ${alpha(brand[300], 0.2)}`,
-                  boxShadow: `0 1px 3px ${alpha(brand[400], 0.08)}`,
-                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: `0 8px 24px ${alpha(brand[400], 0.15)}`,
-                    borderColor: alpha(brand[400], 0.35),
-                    '& .food-icon': { transform: 'scale(1.08)' },
-                  },
-                  '&:active': { transform: 'translateY(0)' },
-                }}
-              >
-                <Box
-                  className="food-icon"
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    bgcolor: alpha(brand[100], 0.6),
-                    border: `1px solid ${alpha(brand[200], 0.4)}`,
-                    flexShrink: 0,
-                    transition: 'transform 0.25s ease',
-                  }}
-                >
-                  <Typography sx={{ fontSize: '1.4rem', lineHeight: 1 }}>{cat.icon}</Typography>
-                </Box>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography
-                    sx={{
-                      fontWeight: 700,
-                      fontSize: '0.92rem',
-                      color: 'text.primary',
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    {cat.label}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'text.secondary', fontSize: '0.78rem', mt: 0.25 }}
-                  >
-                    {cat.items.length} items
-                  </Typography>
-                </Box>
-              </Box>
-            ))}
-          </Stack>
-        </Stack>
-      </Container>
-    );
-  }
+  const allVisibleItems = useMemo(
+    () => visibleCategories.flatMap((c) => c.items),
+    [visibleCategories],
+  );
+
+  const activeCategory =
+    activeFilter !== 'all' ? FOOD_DATA.find((c) => c.key === activeFilter) : null;
 
   return (
-    <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
-      <Stack spacing={2.5}>
+    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+      <Stack spacing={3}>
+        {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => setActiveCategory(null)} aria-label="Back to categories">
+          <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
             <ArrowBackIcon />
           </IconButton>
-          <Box
-            sx={{
-              width: 36,
-              height: 36,
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              bgcolor: alpha(brand[100], 0.6),
-              border: `1px solid ${alpha(brand[200], 0.4)}`,
-            }}
-          >
-            <Typography sx={{ fontSize: '1.1rem', lineHeight: 1 }}>{category?.icon}</Typography>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" sx={{ color: 'text.primary' }}>
+              Food Menu Cheat Sheet
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
+              Know what you&apos;re ordering
+            </Typography>
           </Box>
-          <Typography
-            sx={{
-              fontWeight: 700,
-              fontSize: '1.05rem',
-              fontFamily: (t) => t.fonts.display,
-              color: 'text.primary',
-              flex: 1,
-            }}
-          >
-            {category?.label}
-          </Typography>
           <Button
             variant="outlined"
             size="small"
             startIcon={<LibraryAddIcon sx={{ fontSize: 14 }} />}
             onClick={() => {
               setDeckSaved(false);
-              setDeckDialogOpen(true);
+              setPhrasesToSave(
+                allVisibleItems.map((item) => ({
+                  japanese: item.japanese,
+                  romaji: item.romaji,
+                  english: item.english,
+                })),
+              );
+              setSaveDialogOpen(true);
             }}
             disabled={deckSaved}
             sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.72rem' }}
           >
-            {deckSaved ? 'Saved!' : `Save all`}
+            {deckSaved ? 'Saved!' : 'Save all'}
           </Button>
         </Box>
 
-        <Stack spacing={1}>
-          {category?.items.map((item, i) => (
-            <Box
-              key={i}
+        {/* Filter chips */}
+        <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+          <Chip
+            label="All"
+            onClick={() => handleFilter('all')}
+            variant={activeFilter === 'all' ? 'filled' : 'outlined'}
+            sx={{
+              borderRadius: 2,
+              fontWeight: activeFilter === 'all' ? 700 : 500,
+              borderColor: alpha(brand[300], 0.4),
+              ...(activeFilter === 'all' && {
+                bgcolor: alpha(brand[500], 0.12),
+                color: brand[700],
+                borderColor: brand[400],
+              }),
+            }}
+          />
+          {FOOD_DATA.map((cat) => (
+            <Chip
+              key={cat.key}
+              label={`${cat.icon} ${cat.label}`}
+              onClick={() => handleFilter(cat.key)}
+              variant={activeFilter === cat.key ? 'filled' : 'outlined'}
               sx={{
-                p: 1.75,
-                borderRadius: '12px',
-                bgcolor: 'background.paper',
-                border: `1px solid ${alpha(brand[300], 0.15)}`,
-                boxShadow: `0 1px 2px ${alpha(brand[400], 0.05)}`,
+                borderRadius: 2,
+                fontWeight: activeFilter === cat.key ? 700 : 500,
+                borderColor: alpha(brand[300], 0.4),
+                ...(activeFilter === cat.key && {
+                  bgcolor: alpha(brand[500], 0.12),
+                  color: brand[700],
+                  borderColor: brand[400],
+                }),
+              }}
+            />
+          ))}
+        </Box>
+
+        {/* Food items grouped by category */}
+        {visibleCategories.map((cat) => (
+          <Box key={cat.key}>
+            {/* Section header (only when showing all) */}
+            {activeFilter === 'all' && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                <Typography sx={{ fontSize: '1.1rem', lineHeight: 1 }}>{cat.icon}</Typography>
+                <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: 'text.primary' }}>
+                  {cat.label}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  {cat.items.length} items
+                </Typography>
+              </Box>
+            )}
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                gap: 1.5,
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box sx={{ flex: 1 }}>
-                  <TravelPhrase japanese={item.japanese} romaji={item.romaji} layout="row" />
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.84rem' }}
-                  >
-                    {item.english}
-                  </Typography>
-                  {item.note && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'text.secondary',
-                        display: 'block',
-                        mt: 0.25,
-                        fontSize: '0.72rem',
-                        lineHeight: 1.4,
-                      }}
-                    >
-                      {item.note}
-                    </Typography>
-                  )}
+              {cat.items.map((item, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    p: 1.75,
+                    borderRadius: '12px',
+                    bgcolor: 'background.paper',
+                    border: `1px solid ${alpha(brand[300], 0.15)}`,
+                    boxShadow: `0 1px 2px ${alpha(brand[400], 0.05)}`,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ flex: 1 }}>
+                      <TravelPhrase japanese={item.japanese} romaji={item.romaji} layout="row" />
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.84rem' }}
+                      >
+                        {item.english}
+                      </Typography>
+                      {item.note && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: 'text.secondary',
+                            display: 'block',
+                            mt: 0.25,
+                            fontSize: '0.72rem',
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          {item.note}
+                        </Typography>
+                      )}
+                    </Box>
+                    <Stack spacing={0.25}>
+                      <Tooltip title="Listen">
+                        <IconButton
+                          size="small"
+                          onClick={() => speak(stripFurigana(item.japanese))}
+                          aria-label="Listen"
+                          sx={{ p: 0.5 }}
+                        >
+                          <VolumeUpIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Save to deck">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setPhrasesToSave([
+                              {
+                                japanese: item.japanese,
+                                romaji: item.romaji,
+                                english: item.english,
+                              },
+                            ]);
+                            setSaveDialogOpen(true);
+                          }}
+                          aria-label="Save to deck"
+                          sx={{ p: 0.5 }}
+                        >
+                          <BookmarkBorderIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
+                  </Box>
                 </Box>
-                <Tooltip title="Listen">
-                  <IconButton
-                    size="small"
-                    onClick={() => speak(stripFurigana(item.japanese))}
-                    aria-label="Listen"
-                    sx={{ p: 0.5 }}
-                  >
-                    <VolumeUpIcon sx={{ fontSize: 16 }} />
-                  </IconButton>
-                </Tooltip>
-              </Box>
+              ))}
             </Box>
-          ))}
-        </Stack>
+          </Box>
+        ))}
       </Stack>
 
-      {category && (
-        <SaveToDeckDialog
-          open={deckDialogOpen}
-          onClose={() => setDeckDialogOpen(false)}
-          phrases={category.items.map((item) => ({
-            japanese: item.japanese,
-            romaji: item.romaji,
-            english: item.english,
-          }))}
-          onSaved={() => setDeckSaved(true)}
-          defaultDeckName={`${category.icon} ${category.label}`}
-        />
-      )}
+      <AuthGatedSaveDialog
+        open={saveDialogOpen}
+        onClose={() => setSaveDialogOpen(false)}
+        phrases={phrasesToSave}
+        onSaved={() => setDeckSaved(true)}
+        defaultDeckName={
+          activeCategory
+            ? `${activeCategory.icon} ${activeCategory.label}`
+            : '🍱 Japanese Food Vocabulary'
+        }
+      />
     </Container>
   );
 }

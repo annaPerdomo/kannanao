@@ -26,7 +26,7 @@ import { stripFurigana } from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
 import { useTravelDisplay } from '@/contexts/TravelDisplayContext';
 import { useSpeech } from '@/hooks/useSpeech';
-import { sb } from '@/lib/supabase';
+import { logTravelEvent, sb } from '@/lib/supabase';
 
 import { SaveToDeckDialog } from './SaveToDeckDialog';
 import { TravelPhrase } from './TravelPhrase';
@@ -100,6 +100,7 @@ export function DailyPhrasePack() {
       if (!res.ok) throw new Error('Failed to generate phrases');
       const data: DailyResult = await res.json();
       setResult(data);
+      logTravelEvent('daily_phrase', 'generate');
 
       // Cache the result
       try {
@@ -115,7 +116,7 @@ export function DailyPhrasePack() {
   }, [plans, displayMode]);
 
   return (
-    <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
       <Stack spacing={3}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -123,10 +124,7 @@ export function DailyPhrasePack() {
             <ArrowBackIcon />
           </IconButton>
           <Box>
-            <Typography
-              variant="h5"
-              sx={{ fontWeight: 800, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
-            >
+            <Typography variant="h5" sx={{ color: 'text.primary' }}>
               Daily Phrase Pack
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
@@ -232,7 +230,13 @@ export function DailyPhrasePack() {
             )}
 
             {/* Phrase list */}
-            <Stack spacing={1.25}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                gap: 1.5,
+              }}
+            >
               {result.phrases.map((phrase, i) => (
                 <Box
                   key={i}
@@ -305,7 +309,7 @@ export function DailyPhrasePack() {
                   </Box>
                 </Box>
               ))}
-            </Stack>
+            </Box>
 
             {/* Actions */}
             <Stack direction="row" spacing={1.5} justifyContent="center">

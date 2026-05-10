@@ -9,7 +9,7 @@ export function SectionDivider({ fromColor, toColor }: { fromColor: string; toCo
   return (
     <Box
       sx={{
-        height: { xs: 80, md: 120 },
+        height: { xs: 40, md: 56 },
         background: `linear-gradient(180deg, ${fromColor} 0%, ${toColor} 100%)`,
       }}
     />

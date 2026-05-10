@@ -24,6 +24,24 @@ export interface EmbedAnalyticsData {
   decks: EmbedDeckStat[];
 }
 
+export interface TravelAnalyticsData {
+  overview: {
+    totalEvents: number;
+    uniqueUsers: number;
+  };
+  featureBreakdown: { feature: string; count: number }[];
+  eventsOverTime: { date: string; count: number }[];
+  users: {
+    userId: string;
+    username: string;
+    displayName: string | null;
+    totalEvents: number;
+    featuresUsed: number;
+    lastActiveAt: string | null;
+  }[];
+  scenarioBreakdown: { category: string; count: number }[];
+}
+
 export interface MemberActivityEntry {
   userId: string;
   username: string;

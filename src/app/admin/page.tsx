@@ -45,7 +45,8 @@ import { CreateUserDialog } from './CreateUserDialog';
 import { EmbedAnalytics } from './EmbedAnalytics';
 import { ManageAccountDialog } from './ManageAccountDialog';
 import { MemberActivity } from './MemberActivity';
-import type { EmbedAnalyticsData, MemberActivityEntry } from './types';
+import { TravelAnalytics } from './TravelAnalytics';
+import type { EmbedAnalyticsData, MemberActivityEntry, TravelAnalyticsData } from './types';
 
 interface UserStat {
   id: string;
@@ -93,6 +94,7 @@ interface AdminData {
   waitlist: WaitlistEntry[];
   embedAnalytics: EmbedAnalyticsData;
   memberActivity: MemberActivityEntry[];
+  travelAnalytics: TravelAnalyticsData;
   groups: GroupInfo[];
 }
 
@@ -573,6 +575,15 @@ export default function AdminPage() {
       {/* Embed Analytics */}
       <EmbedAnalytics
         data={data.embedAnalytics}
+        tablePaperSx={tablePaperSx}
+        headerCellSx={headerCellSx}
+        bodyCellSx={bodyCellSx}
+      />
+
+      {/* Travel Analytics */}
+      <Divider sx={{ mb: 4, mt: 2 }} />
+      <TravelAnalytics
+        data={data.travelAnalytics}
         tablePaperSx={tablePaperSx}
         headerCellSx={headerCellSx}
         bodyCellSx={bodyCellSx}

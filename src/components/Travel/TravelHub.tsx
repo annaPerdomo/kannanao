@@ -2,6 +2,7 @@
 
 import FlightIcon from '@mui/icons-material/Flight';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PanToolIcon from '@mui/icons-material/PanTool';
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
@@ -12,6 +13,10 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { alpha, Box, Container, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+import { useAuth } from '@/contexts/AuthContext';
+import { logTravelEvent } from '@/lib/supabase';
 
 import { TravelDisplayToggle } from './TravelDisplayToggle';
 
@@ -22,27 +27,43 @@ interface FeatureCardProps {
   gradient: string;
   href: string;
   badge?: string;
+  locked?: boolean;
 }
 
-function FeatureCard({ title, description, icon, gradient, href, badge }: FeatureCardProps) {
+function FeatureCard({
+  title,
+  description,
+  icon,
+  gradient,
+  href,
+  badge,
+  locked,
+}: FeatureCardProps) {
   const router = useRouter();
   const theme = useTheme();
   const { brand } = theme.palette;
 
+  const handleClick = () => {
+    if (!locked) router.push(href);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick();
+    }
+  };
+
   return (
     <Box
-      onClick={() => router.push(href)}
+      onClick={handleClick}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          router.push(href);
-        }
-      }}
+      onKeyDown={handleKeyDown}
+      aria-disabled={locked || undefined}
       sx={{
         position: 'relative',
-        cursor: 'pointer',
+        cursor: locked ? 'default' : 'pointer',
         borderRadius: '16px',
         overflow: 'hidden',
         transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -53,17 +74,20 @@ function FeatureCard({ title, description, icon, gradient, href, badge }: Featur
         alignItems: 'center',
         gap: 2,
         p: 2,
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: `0 8px 24px ${alpha(brand[400], 0.15)}`,
-          borderColor: alpha(brand[400], 0.35),
-          '& .feature-icon': {
-            transform: 'scale(1.08)',
+        ...(locked && { opacity: 0.6 }),
+        ...(!locked && {
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: `0 8px 24px ${alpha(brand[400], 0.15)}`,
+            borderColor: alpha(brand[400], 0.35),
+            '& .feature-icon': {
+              transform: 'scale(1.08)',
+            },
           },
-        },
-        '&:active': {
-          transform: 'translateY(0)',
-        },
+          '&:active': {
+            transform: 'translateY(0)',
+          },
+        }),
       }}
     >
       {/* Icon */}
@@ -76,7 +100,7 @@ function FeatureCard({ title, description, icon, gradient, href, badge }: Featur
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: gradient,
+          background: locked ? `linear-gradient(135deg, ${brand[300]}, ${brand[400]})` : gradient,
           flexShrink: 0,
           transition: 'transform 0.25s ease',
           boxShadow: `0 2px 8px ${alpha(brand[500], 0.2)}`,
@@ -86,7 +110,7 @@ function FeatureCard({ title, description, icon, gradient, href, badge }: Featur
           },
         }}
       >
-        {icon}
+        {locked ? <LockOutlinedIcon /> : icon}
       </Box>
 
       {/* Content */}
@@ -96,7 +120,7 @@ function FeatureCard({ title, description, icon, gradient, href, badge }: Featur
             sx={{
               fontWeight: 700,
               fontSize: '0.92rem',
-              color: 'text.primary',
+              color: locked ? 'text.secondary' : 'text.primary',
               lineHeight: 1.3,
             }}
           >
@@ -111,7 +135,9 @@ function FeatureCard({ title, description, icon, gradient, href, badge }: Featur
                 fontSize: '0.6rem',
                 fontWeight: 700,
                 letterSpacing: '0.04em',
-                background: `linear-gradient(135deg, ${brand[500]}, ${brand[700]})`,
+                background: locked
+                  ? `linear-gradient(135deg, ${brand[300]}, ${brand[400]})`
+                  : `linear-gradient(135deg, ${brand[500]}, ${brand[700]})`,
                 color: '#fff',
                 lineHeight: 1.4,
               }}
@@ -131,6 +157,18 @@ function FeatureCard({ title, description, icon, gradient, href, badge }: Featur
         >
           {description}
         </Typography>
+        {locked && (
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'text.disabled',
+              fontSize: '0.68rem',
+              lineHeight: 1.3,
+            }}
+          >
+            Sign in to unlock
+          </Typography>
+        )}
       </Box>
     </Box>
   );
@@ -139,6 +177,12 @@ function FeatureCard({ title, description, icon, gradient, href, badge }: Featur
 export function TravelHub() {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const { user } = useAuth();
+  const isGuest = !user;
+
+  useEffect(() => {
+    logTravelEvent('hub', 'view');
+  }, []);
 
   const features: FeatureCardProps[] = [
     {
@@ -159,6 +203,7 @@ export function TravelHub() {
       gradient: `linear-gradient(135deg, ${brand[500]}, ${brand[700]})`,
       href: '/travel/daily',
       badge: 'AI',
+      locked: isGuest,
     },
     {
       title: 'Scenario Practice',
@@ -167,6 +212,7 @@ export function TravelHub() {
       gradient: `linear-gradient(135deg, #7c3aed, #5b21b6)`,
       href: '/travel/scenarios',
       badge: 'AI',
+      locked: isGuest,
     },
     {
       title: 'Point & Communicate',
@@ -175,6 +221,7 @@ export function TravelHub() {
       gradient: `linear-gradient(135deg, ${accent[500]}, ${accent[700]})`,
       href: '/travel/show-cards',
       badge: 'AI',
+      locked: isGuest,
     },
     {
       title: '"What Did They Say?"',
@@ -210,6 +257,7 @@ export function TravelHub() {
       icon: <LocalHospitalIcon />,
       gradient: `linear-gradient(135deg, #dc2626, #b91c1c)`,
       href: '/travel/emergency',
+      locked: isGuest,
     },
   ];
 
@@ -236,8 +284,6 @@ export function TravelHub() {
           <Typography
             variant="h5"
             sx={{
-              fontWeight: 800,
-              fontFamily: (t) => t.fonts.display,
               color: 'text.primary',
               mb: 0.5,
             }}

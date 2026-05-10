@@ -1,13 +1,16 @@
 'use client';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import {
   alpha,
   Box,
+  Button,
   Card,
   Chip,
   Container,
@@ -18,11 +21,14 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useSpeech } from '@/hooks/useSpeech';
 import { useCultureCards } from '@/hooks/useTravel';
+import { logTravelEvent } from '@/lib/supabase';
 import type { CultureTopic } from '@/types/travel';
+
+import { AuthGatedSaveDialog } from './AuthGatedSaveDialog';
 
 const TOPICS: Array<{ key: CultureTopic | 'all'; label: string; icon: string }> = [
   { key: 'all', label: 'All', icon: '📚' },
@@ -60,25 +66,48 @@ export function CultureGuide() {
   const router = useRouter();
   const { speak } = useSpeech();
   const { getCards } = useCultureCards();
-  const [activeTopic, setActiveTopic] = useState<CultureTopic | 'all'>('all');
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [activeTopic, setActiveTopic] = useState<CultureTopic | 'all'>('general');
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [phrasesToSave, setPhrasesToSave] = useState<
+    Array<{ japanese: string; romaji: string; english: string }>
+  >([]);
+
+  useEffect(() => {
+    logTravelEvent('culture', 'view');
+  }, []);
 
   const filteredCards = getCards(activeTopic);
 
   return (
-    <Container maxWidth="sm" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
       <Stack spacing={3}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
             <ArrowBackIcon />
           </IconButton>
-          <Typography
-            variant="h5"
-            sx={{ fontWeight: 700, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
-          >
+          <Typography variant="h5" sx={{ color: 'text.primary', flex: 1 }}>
             Culture Guide
           </Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<LibraryAddIcon sx={{ fontSize: 14 }} />}
+            onClick={() => {
+              const allPhrases = filteredCards.flatMap((c) =>
+                c.phrases.map((p) => ({
+                  japanese: p.japanese,
+                  romaji: p.romaji,
+                  english: p.english,
+                })),
+              );
+              setPhrasesToSave(allPhrases);
+              setSaveDialogOpen(true);
+            }}
+            sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.72rem' }}
+          >
+            Save all
+          </Button>
         </Box>
 
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -109,33 +138,23 @@ export function CultureGuide() {
         </Box>
 
         {/* Culture cards */}
-        <Stack spacing={2}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+            gap: 1.5,
+          }}
+        >
           {filteredCards.map((card) => {
-            const isExpanded = expandedId === card.id;
             const importance = IMPORTANCE_CONFIG[card.importance];
 
             return (
               <Card
                 key={card.id}
-                onClick={() => setExpandedId(isExpanded ? null : card.id)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setExpandedId(isExpanded ? null : card.id);
-                  }
-                }}
                 sx={{
                   borderRadius: 3,
                   overflow: 'hidden',
-                  cursor: 'pointer',
                   border: `1px solid ${alpha(brand[300], 0.3)}`,
-                  transition: 'all 0.2s',
-                  '&:hover': {
-                    borderColor: alpha(brand[400], 0.5),
-                    boxShadow: `0 4px 16px ${alpha(brand[400], 0.1)}`,
-                  },
                 }}
               >
                 <Box sx={{ p: 2.5 }}>
@@ -181,98 +200,119 @@ export function CultureGuide() {
                     {card.rule}
                   </Typography>
 
-                  {/* Expanded content */}
-                  {isExpanded && (
-                    <Box sx={{ mt: 2 }}>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: 'text.secondary', mb: 2, lineHeight: 1.7 }}
-                      >
-                        {card.explanation}
-                      </Typography>
+                  {/* Details */}
+                  <Box sx={{ mt: 2 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: 'text.secondary', mb: 2, lineHeight: 1.7 }}
+                    >
+                      {card.explanation}
+                    </Typography>
 
-                      {/* Phrases */}
-                      {card.phrases.length > 0 && (
-                        <Box>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              fontWeight: 700,
-                              color: brand[600],
-                              letterSpacing: '0.05em',
-                              mb: 1,
-                              display: 'block',
-                            }}
-                          >
-                            USEFUL PHRASES
-                          </Typography>
-                          <Stack spacing={0.75}>
-                            {card.phrases.map((p, i) => (
-                              <Box
-                                key={i}
-                                sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 1,
-                                  px: 1.5,
-                                  py: 0.75,
-                                  borderRadius: 2,
-                                  bgcolor: alpha(brand[50], 0.8),
-                                  border: `1px solid ${alpha(brand[200], 0.3)}`,
-                                }}
-                              >
-                                <Box sx={{ flex: 1, minWidth: 0 }}>
-                                  <Box
+                    {/* Phrases */}
+                    {card.phrases.length > 0 && (
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            fontWeight: 700,
+                            color: brand[600],
+                            letterSpacing: '0.05em',
+                            mb: 1,
+                            display: 'block',
+                          }}
+                        >
+                          USEFUL PHRASES
+                        </Typography>
+                        <Stack spacing={0.75}>
+                          {card.phrases.map((p, i) => (
+                            <Box
+                              key={i}
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                                px: 1.5,
+                                py: 0.75,
+                                borderRadius: 2,
+                                bgcolor: alpha(brand[50], 0.8),
+                                border: `1px solid ${alpha(brand[200], 0.3)}`,
+                              }}
+                            >
+                              <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    alignItems: 'baseline',
+                                    gap: 1,
+                                    flexWrap: 'wrap',
+                                  }}
+                                >
+                                  <Typography
                                     sx={{
-                                      display: 'flex',
-                                      alignItems: 'baseline',
-                                      gap: 1,
-                                      flexWrap: 'wrap',
+                                      fontFamily: (t) => t.fonts.jp,
+                                      fontSize: '0.9rem',
+                                      color: 'text.primary',
+                                      fontWeight: 500,
                                     }}
                                   >
-                                    <Typography
-                                      sx={{
-                                        fontFamily: (t) => t.fonts.jp,
-                                        fontSize: '0.9rem',
-                                        color: 'text.primary',
-                                        fontWeight: 500,
-                                      }}
-                                    >
-                                      {p.japanese}
-                                    </Typography>
-                                    <Typography variant="caption" sx={{ color: brand[600] }}>
-                                      {p.romaji}
-                                    </Typography>
-                                  </Box>
-                                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                    {p.english}
+                                    {p.japanese}
+                                  </Typography>
+                                  <Typography variant="caption" sx={{ color: brand[600] }}>
+                                    {p.romaji}
                                   </Typography>
                                 </Box>
-                                <Tooltip title="Listen">
-                                  <IconButton
-                                    size="small"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      speak(p.japanese);
-                                    }}
-                                    aria-label="Listen to phrase"
-                                  >
-                                    <VolumeUpIcon sx={{ fontSize: 16 }} />
-                                  </IconButton>
-                                </Tooltip>
+                                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                  {p.english}
+                                </Typography>
                               </Box>
-                            ))}
-                          </Stack>
-                        </Box>
-                      )}
-                    </Box>
-                  )}
+                              <Tooltip title="Listen">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => speak(p.japanese)}
+                                  aria-label="Listen to phrase"
+                                >
+                                  <VolumeUpIcon sx={{ fontSize: 16 }} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Save to deck">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => {
+                                    setPhrasesToSave([
+                                      {
+                                        japanese: p.japanese,
+                                        romaji: p.romaji,
+                                        english: p.english,
+                                      },
+                                    ]);
+                                    setSaveDialogOpen(true);
+                                  }}
+                                  aria-label="Save to deck"
+                                >
+                                  <BookmarkBorderIcon sx={{ fontSize: 16 }} />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          ))}
+                        </Stack>
+                      </Box>
+                    )}
+                  </Box>
                 </Box>
               </Card>
             );
           })}
-        </Stack>
+        </Box>
       </Stack>
+
+      <AuthGatedSaveDialog
+        open={saveDialogOpen}
+        onClose={() => setSaveDialogOpen(false)}
+        phrases={phrasesToSave}
+        onSaved={() => {}}
+        defaultDeckName="⛩️ Culture Guide Phrases"
+      />
     </Container>
   );
 }

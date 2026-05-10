@@ -26,13 +26,14 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { stripFurigana } from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
 import { useTravelDisplay } from '@/contexts/TravelDisplayContext';
 import { useSpeech } from '@/hooks/useSpeech';
 import { useShowCards } from '@/hooks/useTravel';
+import { logTravelEvent } from '@/lib/supabase';
 import type { ShowCard, ShowCardCategory } from '@/types/travel';
 
 import { SaveToDeckDialog } from './SaveToDeckDialog';
@@ -352,8 +353,13 @@ export function ShowCardViewer() {
 
   const filteredCards = filterByCategory(activeCategory);
 
+  useEffect(() => {
+    logTravelEvent('show_card', 'view');
+  }, []);
+
   const handleGenerate = async () => {
     if (!customInput.trim()) return;
+    logTravelEvent('show_card', 'generate');
     const result = await generateCard(customInput.trim(), displayMode);
     if (result) {
       setCustomInput('');
@@ -365,7 +371,7 @@ export function ShowCardViewer() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
       <Stack spacing={2.5}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -376,8 +382,6 @@ export function ShowCardViewer() {
             <Typography
               variant="h5"
               sx={{
-                fontWeight: 800,
-                fontFamily: (t) => t.fonts.display,
                 color: 'text.primary',
               }}
             >
@@ -473,7 +477,13 @@ export function ShowCardViewer() {
 
         {/* Cards list */}
         {cardsLoading && <Loading message="Loading saved cards..." />}
-        <Stack spacing={2}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+            gap: 2,
+          }}
+        >
           {filteredCards.map((card) => (
             <Box
               key={card.id}
@@ -496,7 +506,7 @@ export function ShowCardViewer() {
               />
             </Box>
           ))}
-        </Stack>
+        </Box>
 
         {filteredCards.length === 0 && (
           <Typography variant="body2" sx={{ textAlign: 'center', color: 'text.secondary', py: 4 }}>

@@ -1,7 +1,11 @@
 'use client';
 
-import { ScenarioPlayer } from '@/components/Travel';
+import { RequireAuth, ScenarioPlayer } from '@/components/Travel';
 
 export default function ScenariosPage() {
-  return <ScenarioPlayer />;
+  return (
+    <RequireAuth feature="Scenario Practice">
+      <ScenarioPlayer />
+    </RequireAuth>
+  );
 }

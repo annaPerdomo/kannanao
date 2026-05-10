@@ -1,91 +1,109 @@
 'use client';
 
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import PanToolIcon from '@mui/icons-material/PanTool';
+import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
+import RestaurantIcon from '@mui/icons-material/Restaurant';
+import TodayIcon from '@mui/icons-material/Today';
+import TranslateIcon from '@mui/icons-material/Translate';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { emerald, lavender, ocean, purple, rose, sky, sunset, teal } from '@/theme';
+import { emerald, lavender, purple, sky, teal } from '@/theme';
 
 import { Blob } from './Blob';
 import { useInView } from './useInView';
 
-// Mirrors the actual TravelHub feature cards with their gradient icon styling
-const TRAVEL_FEATURES = [
+const FREE_MODULES = [
   {
-    icon: '🗣️',
-    title: 'Daily Phrases',
-    desc: 'Common expressions for everyday situations',
-    gradient: `linear-gradient(135deg, ${teal[400]} 0%, ${emerald[600]} 100%)`,
-    shadow: emerald[400],
+    icon: <MenuBookIcon />,
+    title: 'Survival Phrases',
+    desc: '60+ essential phrases by situation — greetings, restaurants, shopping, transport, and emergencies. Each with romaji pronunciation, breakdowns, and cultural tips.',
+    href: '/travel/phrases',
+    gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+    shadow: '#6366f1',
+    sample: '「すみません」 sumimasen',
   },
   {
-    icon: '🎭',
-    title: 'Scenarios',
-    desc: 'Choose-your-own-adventure conversations',
-    gradient: `linear-gradient(135deg, ${purple[400]} 0%, ${purple[700]} 100%)`,
-    shadow: purple[400],
+    icon: <RestaurantIcon />,
+    title: 'Food Menu Cheat Sheet',
+    desc: 'Decode any Japanese menu. Ramen types, sushi, common dishes, drinks, and konbini food — with notes on what each item actually is.',
+    href: '/travel/food',
+    gradient: 'linear-gradient(135deg, #ea580c, #c2410c)',
+    shadow: '#ea580c',
+    sample: '「豚骨ラーメン」 tonkotsu',
   },
   {
-    icon: '🍜',
-    title: 'Food Menu',
-    desc: 'Order at restaurants with confidence',
-    gradient: `linear-gradient(135deg, ${sunset[400]} 0%, ${sunset[600]} 100%)`,
-    shadow: sunset[400],
+    icon: <VolumeUpIcon />,
+    title: '"What Did They Say?"',
+    desc: 'The phrases Japanese people say TO you — at convenience stores, restaurants, train stations, and shops. Know what they mean and how to respond.',
+    href: '/travel/heard',
+    gradient: 'linear-gradient(135deg, #0891b2, #0e7490)',
+    shadow: '#0891b2',
+    sample: '「袋いりますか？」 Need a bag?',
   },
   {
-    icon: '🆘',
-    title: 'Emergency',
-    desc: 'Critical phrases when you need them',
-    gradient: `linear-gradient(135deg, ${rose[400]} 0%, ${rose[600]} 100%)`,
-    shadow: rose[400],
-  },
-  {
-    icon: '👂',
-    title: 'What Did They Say?',
-    desc: 'Practice listening comprehension',
-    gradient: `linear-gradient(135deg, ${ocean[400]} 0%, ${ocean[600]} 100%)`,
-    shadow: ocean[400],
-  },
-  {
-    icon: '🔤',
+    icon: <TranslateIcon />,
     title: 'Katakana Decoder',
-    desc: 'Read katakana loan words',
-    gradient: `linear-gradient(135deg, ${emerald[400]} 0%, ${emerald[700]} 100%)`,
-    shadow: emerald[400],
+    desc: 'Learn the 46 characters used for foreign words on menus and signs. Master katakana and suddenly half of Japan becomes readable.',
+    href: '/travel/katakana',
+    gradient: 'linear-gradient(135deg, #10b981, #059669)',
+    shadow: '#10b981',
+    sample: 'コーヒー = koohii = coffee',
   },
   {
-    icon: '⛩️',
+    icon: (
+      <Typography
+        component="span"
+        sx={{ fontSize: 20, lineHeight: 1, filter: 'brightness(0) invert(1)' }}
+      >
+        ⛩️
+      </Typography>
+    ),
     title: 'Culture Guide',
-    desc: 'Japanese customs and etiquette',
-    gradient: `linear-gradient(135deg, ${rose[500]} 0%, ${rose[700]} 100%)`,
-    shadow: rose[500],
-  },
-  {
-    icon: '🎯',
-    title: 'Point & Communicate',
-    desc: 'Show cards when words fail',
-    gradient: `linear-gradient(135deg, ${lavender[400]} 0%, ${lavender[700]} 100%)`,
-    shadow: lavender[400],
-  },
-  {
-    icon: '🃏',
-    title: 'Show Cards',
-    desc: 'Pre-made phrase cards to display',
-    gradient: `linear-gradient(135deg, ${sky[400]} 0%, ${ocean[600]} 100%)`,
-    shadow: sky[400],
+    desc: "Do's, don'ts, and etiquette for temples, restaurants, trains, and onsen. Each tip includes the useful phrases for that situation.",
+    href: '/travel/culture',
+    gradient: 'linear-gradient(135deg, #dc2626, #991b1b)',
+    shadow: '#dc2626',
+    sample: 'Shoes off before tatami!',
   },
 ];
 
-const DEMO_SCENARIO = [
-  { speaker: 'You', text: 'すみません、メニューをください', en: 'Excuse me, menu please' },
-  { speaker: 'Staff', text: 'はい、どうぞ。お飲み物は？', en: 'Here you go. Drinks?' },
-  { speaker: 'You', text: '水をお願いします', en: 'Water, please' },
-  { speaker: 'Staff', text: 'かしこまりました', en: 'Certainly' },
+const AI_MODULES = [
+  {
+    icon: <TodayIcon />,
+    title: 'Daily Phrase Pack',
+    desc: "Tell the AI your plans for the day and get a personalized set of phrases you'll actually need.",
+    gradient: `linear-gradient(135deg, ${teal[400]}, ${teal[700]})`,
+    shadow: teal[400],
+  },
+  {
+    icon: <RecordVoiceOverIcon />,
+    title: 'Scenario Practice',
+    desc: 'Practice real conversations — ordering food, checking in at hotels, asking for directions. The AI plays the other person.',
+    gradient: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
+    shadow: '#7c3aed',
+  },
+  {
+    icon: <PanToolIcon />,
+    title: 'Point & Communicate',
+    desc: 'Generate show cards for any situation — allergies, directions, special requests. Show your phone when words fail.',
+    gradient: `linear-gradient(135deg, ${lavender[400]}, ${lavender[700]})`,
+    shadow: lavender[400],
+  },
 ];
+
+const DEMO_STEP_COUNT = 5;
 
 export function TravelModeSection() {
   const { ref, inView } = useInView(0.06);
@@ -97,7 +115,7 @@ export function TravelModeSection() {
     let step = 0;
     const timer = setInterval(() => {
       step++;
-      if (step >= DEMO_SCENARIO.length) {
+      if (step >= DEMO_STEP_COUNT) {
         step = 0;
       }
       setScenarioStep(step);
@@ -129,17 +147,18 @@ export function TravelModeSection() {
       <Blob color={sky[300]} size={260} top="40%" left="25%" opacity={0.14} blur={60} />
 
       <Box sx={{ maxWidth: 1220, mx: 'auto', width: '100%', position: 'relative', zIndex: 1 }}>
+        {/* Header */}
         <Box
           sx={{
             textAlign: 'center',
-            mb: { xs: 6, md: 7 },
+            mb: { xs: 5, md: 6 },
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateY(0)' : 'translateY(32px)',
             transition: 'opacity 0.8s ease, transform 0.8s ease',
           }}
         >
           <Chip
-            label="9 MODULES"
+            label="TRAVEL MODE"
             size="small"
             sx={{
               mb: 2,
@@ -173,259 +192,585 @@ export function TravelModeSection() {
               maxWidth: 560,
               mx: 'auto',
               lineHeight: 1.7,
+              mb: 3,
             }}
           >
-            From ordering ramen to navigating emergencies — interactive modules that prepare you for
-            real conversations, not just textbook examples.
+            Zero Japanese required. Free phrasebooks, food guides, and cultural tips to navigate
+            Japan with confidence.
           </Typography>
+          <Box
+            component={Link}
+            href="/travel"
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 1,
+              px: 3.5,
+              py: 1.5,
+              borderRadius: '12px',
+              background: `linear-gradient(135deg, ${emerald[500]} 0%, ${teal[600]} 100%)`,
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              textDecoration: 'none',
+              boxShadow: `0 4px 16px ${alpha(emerald[500], 0.35)}`,
+              transition: 'all 0.25s ease',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: `0 8px 24px ${alpha(emerald[500], 0.4)}`,
+              },
+            }}
+          >
+            Explore free phrasebooks
+            <ArrowForwardIcon sx={{ fontSize: 18 }} />
+          </Box>
         </Box>
 
+        {/* ─── Free Phrasebooks ─────────────────────────── */}
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', lg: 'row' },
-            gap: { xs: 5, lg: 6 },
-            alignItems: 'center',
+            mb: { xs: 6, md: 8 },
+            opacity: inView ? 1 : 0,
+            transform: inView ? 'translateY(0)' : 'translateY(24px)',
+            transition: 'opacity 0.7s ease 0.15s, transform 0.7s ease 0.15s',
           }}
         >
-          {/* Feature Grid — mirrors TravelHub's card layout */}
-          <Box
+          <Typography
             sx={{
-              flex: 1,
-              display: 'grid',
-              gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
-              gap: 1.5,
+              fontSize: '0.7rem',
+              fontWeight: 800,
+              letterSpacing: '0.14em',
+              color: emerald[600],
+              mb: 2.5,
+              textAlign: 'center',
             }}
           >
-            {TRAVEL_FEATURES.map((f, i) => (
+            FREE — NO ACCOUNT NEEDED
+          </Typography>
+
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(6, 1fr)' },
+              gap: 2,
+              '& > *': { gridColumn: { lg: 'span 2' } },
+              '& > :nth-child(4)': { gridColumn: { lg: '2 / span 2' } },
+            }}
+          >
+            {FREE_MODULES.map((f, i) => (
               <Paper
                 key={f.title}
+                component={Link}
+                href={f.href}
                 elevation={0}
                 sx={{
-                  p: 2,
+                  p: 2.5,
                   borderRadius: '16px',
-                  background: alpha(emerald[50], 0.4),
-                  border: `1px solid ${alpha(emerald[300], 0.2)}`,
-                  boxShadow: `0 1px 3px ${alpha(emerald[400], 0.08)}`,
+                  background: alpha('#fff', 0.7),
+                  border: `1px solid ${alpha(emerald[300], 0.25)}`,
+                  boxShadow: `0 1px 4px ${alpha(emerald[400], 0.08)}`,
+                  textDecoration: 'none',
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: 'center',
-                  gap: 1,
+                  gap: 1.5,
                   opacity: inView ? 1 : 0,
-                  transform: inView ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
-                  transition: `opacity 0.5s ease ${0.06 * i}s, transform 0.5s cubic-bezier(0.34,1.56,0.64,1) ${0.06 * i}s`,
+                  transform: inView ? 'translateY(0)' : 'translateY(16px)',
+                  transition: `opacity 0.5s ease ${0.08 * i}s, transform 0.5s ease ${0.08 * i}s, box-shadow 0.25s ease, border-color 0.25s ease`,
                   '&:hover': {
-                    transform: 'translateY(-2px) !important',
-                    boxShadow: `0 8px 24px ${alpha(f.shadow, 0.2)}`,
+                    boxShadow: `0 8px 28px ${alpha(f.shadow, 0.18)}`,
                     borderColor: alpha(f.shadow, 0.4),
-                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important',
-                    '& .travel-icon': {
-                      transform: 'scale(1.08)',
-                    },
+                    '& .module-arrow': { transform: 'translateX(4px)', opacity: 1 },
+                    '& .module-icon': { transform: 'scale(1.06)' },
                   },
                 }}
               >
-                <Box
-                  className="travel-icon"
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: '12px',
-                    background: f.gradient,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.4rem',
-                    boxShadow: `0 4px 12px ${alpha(f.shadow, 0.3)}`,
-                    transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                  }}
-                >
-                  {f.icon}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box
+                    className="module-icon"
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: '11px',
+                      background: f.gradient,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: `0 3px 10px ${alpha(f.shadow, 0.3)}`,
+                      flexShrink: 0,
+                      transition: 'transform 0.25s ease',
+                      '& .MuiSvgIcon-root': { fontSize: 20, color: '#fff' },
+                    }}
+                  >
+                    {f.icon}
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Typography
+                        sx={{
+                          fontSize: '0.9rem',
+                          fontWeight: 700,
+                          color: 'text.primary',
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {f.title}
+                      </Typography>
+                      <ArrowForwardIcon
+                        className="module-arrow"
+                        sx={{
+                          fontSize: 14,
+                          color: f.shadow,
+                          opacity: 0,
+                          transition: 'all 0.25s ease',
+                        }}
+                      />
+                    </Box>
+                    <Typography
+                      sx={{
+                        fontFamily: (t) => t.fonts.jp,
+                        fontSize: '0.68rem',
+                        color: alpha(f.shadow, 0.9),
+                        fontWeight: 500,
+                        mt: 0.25,
+                      }}
+                    >
+                      {f.sample}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Typography
-                  sx={{
-                    fontSize: '0.78rem',
-                    fontWeight: 700,
-                    color: 'text.primary',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  {f.title}
-                </Typography>
-                <Typography
-                  sx={{
-                    fontSize: '0.62rem',
-                    color: 'text.secondary',
-                    lineHeight: 1.4,
-                  }}
-                >
+                <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', lineHeight: 1.55 }}>
                   {f.desc}
                 </Typography>
               </Paper>
             ))}
           </Box>
+        </Box>
 
-          {/* Animated Scenario Preview — like the actual ScenarioPlayer */}
+        {/* ─── AI-Powered Features ──────────────────────── */}
+        <Box
+          sx={{
+            opacity: inView ? 1 : 0,
+            transform: inView ? 'translateY(0)' : 'translateY(24px)',
+            transition: 'opacity 0.7s ease 0.35s, transform 0.7s ease 0.35s',
+          }}
+        >
           <Box
             sx={{
-              flex: '0 0 auto',
-              width: { xs: '100%', lg: 360 },
-              opacity: inView ? 1 : 0,
-              transform: inView ? 'translateX(0)' : 'translateX(36px)',
-              transition: 'opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1,
+              mb: 2.5,
             }}
           >
-            <Paper
-              elevation={0}
+            <AutoAwesomeIcon sx={{ fontSize: 16, color: purple[500] }} />
+            <Typography
               sx={{
-                borderRadius: '16px',
-                overflow: 'hidden',
-                border: `1.5px solid ${alpha(emerald[300], 0.4)}`,
-                boxShadow: `0 20px 60px ${alpha(emerald[400], 0.12)}, 0 4px 16px ${alpha(teal[400], 0.08)}`,
-                background: alpha(emerald[50], 0.3),
+                fontSize: '0.7rem',
+                fontWeight: 800,
+                letterSpacing: '0.14em',
+                color: purple[600],
               }}
             >
-              {/* Header like actual scenario player */}
-              <Box
+              AI-POWERED — ACCOUNT REQUIRED
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', lg: 'row' },
+              gap: { xs: 3, lg: 4 },
+              alignItems: { lg: 'stretch' },
+            }}
+          >
+            {/* AI module cards */}
+            <Stack spacing={2} sx={{ flex: 1 }}>
+              {AI_MODULES.map((f, i) => (
+                <Paper
+                  key={f.title}
+                  elevation={0}
+                  sx={{
+                    p: 2.5,
+                    borderRadius: '16px',
+                    background: alpha('#fff', 0.5),
+                    border: `1px solid ${alpha(purple[200], 0.3)}`,
+                    boxShadow: `0 1px 3px ${alpha(purple[300], 0.06)}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    opacity: inView ? 1 : 0,
+                    transform: inView ? 'translateX(0)' : 'translateX(-16px)',
+                    transition: `opacity 0.5s ease ${0.4 + 0.08 * i}s, transform 0.5s ease ${0.4 + 0.08 * i}s`,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: '11px',
+                      background: f.gradient,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: `0 3px 10px ${alpha(f.shadow, 0.3)}`,
+                      flexShrink: 0,
+                      '& .MuiSvgIcon-root': { fontSize: 20, color: '#fff' },
+                    }}
+                  >
+                    {f.icon}
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      <Typography
+                        sx={{ fontSize: '0.88rem', fontWeight: 700, color: 'text.primary' }}
+                      >
+                        {f.title}
+                      </Typography>
+                      <Chip
+                        label="AI"
+                        size="small"
+                        sx={{
+                          height: 18,
+                          fontSize: '0.55rem',
+                          fontWeight: 800,
+                          background: `linear-gradient(135deg, ${purple[500]}, ${purple[700]})`,
+                          color: '#fff',
+                          letterSpacing: '0.06em',
+                        }}
+                      />
+                    </Box>
+                    <Typography
+                      sx={{
+                        fontSize: '0.76rem',
+                        color: 'text.secondary',
+                        lineHeight: 1.5,
+                        mt: 0.25,
+                      }}
+                    >
+                      {f.desc}
+                    </Typography>
+                  </Box>
+                </Paper>
+              ))}
+            </Stack>
+
+            {/* Animated Scenario Preview — matches real ScenarioPlayer UI */}
+            <Box
+              sx={{
+                flex: '0 0 auto',
+                width: { xs: '100%', lg: 360 },
+                opacity: inView ? 1 : 0,
+                transform: inView ? 'translateX(0)' : 'translateX(36px)',
+                transition: 'opacity 0.8s ease 0.5s, transform 0.8s ease 0.5s',
+              }}
+            >
+              <Paper
+                elevation={0}
                 sx={{
-                  px: 2.5,
-                  py: 1.5,
-                  background: `linear-gradient(135deg, ${emerald[500]} 0%, ${teal[600]} 100%)`,
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  border: `1.5px solid ${alpha(emerald[300], 0.4)}`,
+                  boxShadow: `0 20px 60px ${alpha(emerald[400], 0.12)}, 0 4px 16px ${alpha(teal[400], 0.08)}`,
+                  background: alpha(emerald[50], 0.3),
+                  height: '100%',
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
+                  flexDirection: 'column',
                 }}
               >
-                <Typography sx={{ fontSize: '1rem' }}>🎭</Typography>
-                <Box>
-                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: 'common.white' }}>
-                    At a Restaurant
-                  </Typography>
-                  <Typography
-                    sx={{ fontSize: '0.6rem', color: alpha(sky[50], 0.7), fontWeight: 500 }}
-                  >
-                    Scenario Practice
-                  </Typography>
-                </Box>
-              </Box>
-
-              {/* Conversation bubbles */}
-              <Box sx={{ p: 2.5, minHeight: 320 }}>
-                <Stack spacing={1.5}>
-                  {DEMO_SCENARIO.map((line, i) => {
-                    const isYou = line.speaker === 'You';
-                    const isVisible = i <= scenarioStep;
-                    return (
-                      <Box
-                        key={i}
-                        sx={{
-                          display: 'flex',
-                          flexDirection: isYou ? 'row-reverse' : 'row',
-                          gap: 1,
-                          opacity: isVisible ? 1 : 0.15,
-                          transform: isVisible ? 'translateY(0)' : 'translateY(8px)',
-                          transition: 'all 0.5s cubic-bezier(0.34,1.56,0.64,1)',
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: '50%',
-                            background: isYou
-                              ? `linear-gradient(135deg, ${emerald[400]}, ${teal[500]})`
-                              : `linear-gradient(135deg, ${sky[300]}, ${ocean[400]})`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '0.8rem',
-                            flexShrink: 0,
-                            boxShadow: `0 2px 8px ${alpha(isYou ? emerald[500] : sky[400], 0.3)}`,
-                          }}
-                        >
-                          {isYou ? '🙋' : '👤'}
-                        </Box>
-                        <Box
-                          sx={{
-                            maxWidth: '75%',
-                            p: 1.5,
-                            borderRadius: '14px',
-                            bgcolor: isYou ? alpha(emerald[100], 0.6) : alpha(sky[50], 0.8),
-                            border: `1px solid ${alpha(isYou ? emerald[300] : sky[200], 0.5)}`,
-                            animation:
-                              i === scenarioStep ? 'gentleBounce 2s ease-in-out infinite' : 'none',
-                          }}
-                        >
-                          <Typography
-                            sx={{
-                              fontSize: '0.88rem',
-                              fontWeight: 600,
-                              color: 'text.primary',
-                              fontFamily: (t) => t.fonts.jp,
-                              mb: 0.25,
-                            }}
-                          >
-                            {line.text}
-                          </Typography>
-                          <Typography
-                            sx={{
-                              fontSize: '0.65rem',
-                              color: 'text.secondary',
-                              fontStyle: 'italic',
-                            }}
-                          >
-                            {line.en}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    );
-                  })}
-                </Stack>
-
-                {/* Scenario choices hint */}
+                {/* Header — matches app scenario header */}
                 <Box
                   sx={{
-                    mt: 2.5,
-                    pt: 2,
-                    borderTop: `1px solid ${alpha(emerald[200], 0.4)}`,
+                    px: 2,
+                    py: 1.5,
+                    background: `linear-gradient(135deg, ${emerald[500]} 0%, ${teal[600]} 100%)`,
                     display: 'flex',
+                    alignItems: 'center',
                     gap: 1,
                   }}
                 >
-                  {['Ask for recommendation', 'Order food'].map((choice) => (
+                  <Box
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: '9px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      bgcolor: alpha('#fff', 0.2),
+                    }}
+                  >
+                    <Typography sx={{ fontSize: '1rem', lineHeight: 1 }}>🍜</Typography>
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: 'common.white' }}>
+                      Ordering Ramen
+                    </Typography>
+                    <Typography
+                      sx={{ fontSize: '0.6rem', color: alpha('#fff', 0.7), fontWeight: 500 }}
+                    >
+                      Say what you want in English
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label="DEMO"
+                    size="small"
+                    sx={{
+                      height: 20,
+                      fontSize: '0.5rem',
+                      fontWeight: 800,
+                      bgcolor: alpha('#fff', 0.2),
+                      color: '#fff',
+                      letterSpacing: '0.08em',
+                    }}
+                  />
+                </Box>
+
+                {/* Coaching flow content */}
+                <Box sx={{ p: 2, flex: 1 }}>
+                  <Stack spacing={1.5}>
+                    {/* Context line */}
                     <Box
-                      key={choice}
                       sx={{
-                        flex: 1,
-                        py: 1,
-                        px: 1.5,
-                        borderRadius: '10px',
-                        border: `1.5px solid ${alpha(emerald[300], 0.5)}`,
-                        bgcolor: alpha(emerald[50], 0.5),
                         textAlign: 'center',
-                        cursor: 'default',
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                          bgcolor: alpha(emerald[100], 0.8),
-                          borderColor: emerald[400],
-                        },
+                        opacity: scenarioStep >= 0 ? 1 : 0,
+                        transform: scenarioStep >= 0 ? 'translateY(0)' : 'translateY(6px)',
+                        transition: 'all 0.5s ease',
                       }}
                     >
                       <Typography
                         sx={{
-                          fontSize: '0.68rem',
-                          fontWeight: 700,
-                          color: emerald[700],
+                          fontSize: '0.65rem',
+                          fontStyle: 'italic',
+                          color: alpha(emerald[800], 0.5),
+                          lineHeight: 1.4,
                         }}
                       >
-                        {choice}
+                        A small ramen shop with counter seating. The staff greets you warmly.
                       </Typography>
                     </Box>
-                  ))}
+
+                    {/* NPC speech bubble */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 0.75,
+                        opacity: scenarioStep >= 1 ? 1 : 0.12,
+                        transform: scenarioStep >= 1 ? 'translateY(0)' : 'translateY(8px)',
+                        transition: 'all 0.5s cubic-bezier(0.34,1.56,0.64,1)',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          bgcolor: alpha(emerald[100], 0.8),
+                          border: `1px solid ${alpha(emerald[200], 0.5)}`,
+                          flexShrink: 0,
+                          mt: 0.5,
+                        }}
+                      >
+                        <RecordVoiceOverIcon sx={{ color: emerald[600], fontSize: 12 }} />
+                      </Box>
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: '14px',
+                          borderTopLeftRadius: '4px',
+                          bgcolor: alpha(emerald[50], 0.8),
+                          border: `1px solid ${alpha(emerald[200], 0.4)}`,
+                          flex: 1,
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            fontSize: '0.82rem',
+                            fontWeight: 600,
+                            color: 'text.primary',
+                            fontFamily: (t) => t.fonts.jp,
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          いらっしゃいませ！何名様ですか？
+                        </Typography>
+                        <Typography
+                          sx={{ fontSize: '0.62rem', color: alpha(emerald[700], 0.6), mt: 0.25 }}
+                        >
+                          irasshaimase! nan-mei-sama desu ka?
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.68rem', color: 'text.secondary', mt: 0.25 }}>
+                          Welcome! How many people?
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    {/* Coached phrase card — "SAY THIS" */}
+                    <Box
+                      sx={{
+                        ml: 'auto',
+                        maxWidth: '88%',
+                        opacity: scenarioStep >= 2 ? 1 : 0.12,
+                        transform: scenarioStep >= 2 ? 'translateX(0)' : 'translateX(12px)',
+                        transition: 'all 0.5s cubic-bezier(0.34,1.56,0.64,1)',
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontSize: '0.58rem',
+                          color: alpha(emerald[800], 0.35),
+                          textAlign: 'right',
+                          mb: 0.25,
+                        }}
+                      >
+                        &ldquo;Just me, one person&rdquo;
+                      </Typography>
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: '14px',
+                          borderTopRightRadius: '4px',
+                          background: `linear-gradient(135deg, ${alpha(purple[500], 0.06)}, ${alpha(purple[400], 0.03)})`,
+                          border: `1px solid ${alpha(purple[400], 0.2)}`,
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                          <AutoAwesomeIcon sx={{ color: purple[500], fontSize: 12 }} />
+                          <Typography
+                            sx={{
+                              fontSize: '0.55rem',
+                              fontWeight: 800,
+                              color: purple[600],
+                              letterSpacing: '0.06em',
+                            }}
+                          >
+                            SAY THIS
+                          </Typography>
+                        </Box>
+                        <Typography
+                          sx={{
+                            fontSize: '0.95rem',
+                            fontWeight: 600,
+                            color: 'text.primary',
+                            fontFamily: (t) => t.fonts.jp,
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          一人です
+                        </Typography>
+                        <Typography
+                          sx={{ fontSize: '0.62rem', color: alpha(purple[600], 0.6), mt: 0.25 }}
+                        >
+                          hitori desu
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.68rem', color: 'text.secondary', mt: 0.25 }}>
+                          One person
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    {/* Cultural tip */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 0.75,
+                        px: 1.5,
+                        py: 1,
+                        borderRadius: '8px',
+                        background: alpha('#f59e0b', 0.06),
+                        border: `1px solid ${alpha('#f59e0b', 0.12)}`,
+                        opacity: scenarioStep >= 3 ? 1 : 0,
+                        transform: scenarioStep >= 3 ? 'translateY(0)' : 'translateY(6px)',
+                        transition: 'all 0.5s ease',
+                      }}
+                    >
+                      <LightbulbIcon sx={{ color: '#f59e0b', fontSize: 12, mt: 0.25 }} />
+                      <Typography
+                        sx={{ fontSize: '0.62rem', color: 'text.secondary', lineHeight: 1.45 }}
+                      >
+                        Solo diners are very common — many ramen shops have counter seating just for
+                        you!
+                      </Typography>
+                    </Box>
+                  </Stack>
+
+                  {/* Suggestions + input — always visible */}
+                  <Box
+                    sx={{
+                      mt: 2,
+                      pt: 1.5,
+                      borderTop: `1px solid ${alpha(emerald[200], 0.4)}`,
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: '0.55rem',
+                        color: alpha(emerald[800], 0.35),
+                        mb: 0.5,
+                      }}
+                    >
+                      Suggestions:
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 0.5, mb: 1 }}>
+                      {['Ask for recommendations', 'Order tonkotsu'].map((choice) => (
+                        <Box
+                          key={choice}
+                          sx={{
+                            py: 0.5,
+                            px: 1,
+                            borderRadius: '14px',
+                            border: `1px solid ${alpha(emerald[300], 0.4)}`,
+                            bgcolor: alpha(emerald[50], 0.5),
+                            cursor: 'default',
+                          }}
+                        >
+                          <Typography
+                            sx={{ fontSize: '0.58rem', fontWeight: 600, color: emerald[700] }}
+                          >
+                            {choice}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
+                      <Box
+                        sx={{
+                          flex: 1,
+                          py: 0.75,
+                          px: 1.5,
+                          borderRadius: '16px',
+                          border: `1px solid ${alpha(emerald[300], 0.35)}`,
+                          bgcolor: alpha('#fff', 0.6),
+                        }}
+                      >
+                        <Typography sx={{ fontSize: '0.62rem', color: alpha(emerald[800], 0.3) }}>
+                          What do you want to say?
+                        </Typography>
+                      </Box>
+                      <Box
+                        sx={{
+                          width: 26,
+                          height: 26,
+                          borderRadius: '50%',
+                          bgcolor: emerald[500],
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <ArrowForwardIcon sx={{ color: '#fff', fontSize: 13 }} />
+                      </Box>
+                    </Box>
+                  </Box>
                 </Box>
-              </Box>
-            </Paper>
+              </Paper>
+            </Box>
           </Box>
         </Box>
       </Box>
