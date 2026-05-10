@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 
-const PUBLIC_PREFIXES = ['/login', '/landing', '/embed'];
+const PUBLIC_PREFIXES = ['/login', '/landing', '/embed', '/travel'];
 const PUBLIC_EXACT = ['/'];
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
