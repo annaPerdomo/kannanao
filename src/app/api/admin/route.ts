@@ -86,6 +86,7 @@ export async function GET(req: Request) {
     client
       .from('travel_events')
       .select('user_id, feature, action, metadata, created_at')
+      .gte('created_at', new Date(Date.now() - 90 * 86_400_000).toISOString())
       .order('created_at', { ascending: false }),
   ]);
 

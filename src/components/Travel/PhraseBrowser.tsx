@@ -68,6 +68,7 @@ export function PhraseBrowser() {
 
   const handleFilter = useCallback((key: PhraseSituation | 'all') => {
     setActiveFilter(key);
+    setDeckSaved(false);
     if (key !== 'all') logTravelEvent('phrases', 'browse', { situation: key });
   }, []);
 

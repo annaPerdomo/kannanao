@@ -57,7 +57,7 @@ export function RequireAuth({ children, feature }: RequireAuthProps) {
           <Stack direction="row" spacing={1.5}>
             <Button
               variant="contained"
-              onClick={() => router.push('/')}
+              onClick={() => router.push('/login')}
               sx={{
                 bgcolor: brand[700],
                 color: '#fff',
