@@ -29,6 +29,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useTravelDisplay } from '@/contexts/TravelDisplayContext';
 import { useSpeech } from '@/hooks/useSpeech';
 import { useScenario } from '@/hooks/useTravel';
+import { logTravelEvent } from '@/lib/supabase';
 import type { ScenarioCategory } from '@/types/travel';
 
 import { Loading } from '../Loading';
@@ -125,11 +126,13 @@ export function ScenarioPlayer() {
     setActiveScenario(scenario);
     setDeckSaved(false);
     startScenario(scenario.category, scenario.setting, displayMode);
+    logTravelEvent('scenario', 'start', { category: scenario.category });
   };
 
   const handleSend = useCallback(() => {
     if (!userInput.trim() || !activeScenario || loading) return;
     respond(activeScenario.category, activeScenario.setting, userInput.trim(), displayMode);
+    logTravelEvent('scenario', 'respond', { category: activeScenario.category });
     setUserInput('');
     setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   }, [userInput, activeScenario, loading, respond, displayMode]);
@@ -161,17 +164,14 @@ export function ScenarioPlayer() {
   // Scenario selection screen
   if (!activeScenario) {
     return (
-      <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+      <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
         <Stack spacing={3}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
               <ArrowBackIcon />
             </IconButton>
             <Box>
-              <Typography
-                variant="h5"
-                sx={{ fontWeight: 800, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
-              >
+              <Typography variant="h5" sx={{ color: 'text.primary' }}>
                 Scenario Practice
               </Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
@@ -180,7 +180,13 @@ export function ScenarioPlayer() {
             </Box>
           </Box>
 
-          <Stack spacing={1.25}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+              gap: 1.5,
+            }}
+          >
             {SCENARIOS.map((s) => (
               <Box
                 key={s.category}
@@ -250,7 +256,7 @@ export function ScenarioPlayer() {
                 </Box>
               </Box>
             ))}
-          </Stack>
+          </Box>
         </Stack>
       </Container>
     );
@@ -261,7 +267,7 @@ export function ScenarioPlayer() {
   const isEnded = lastTurn?.isEnding;
 
   return (
-    <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
       <Stack spacing={2.5}>
         {/* Header */}
         <Box
@@ -297,7 +303,6 @@ export function ScenarioPlayer() {
               sx={{
                 fontWeight: 700,
                 fontSize: '1rem',
-                fontFamily: (t) => t.fonts.display,
                 color: 'text.primary',
                 lineHeight: 1.2,
               }}

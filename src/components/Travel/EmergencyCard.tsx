@@ -21,6 +21,8 @@ import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+import { logTravelEvent } from '@/lib/supabase';
+
 import { TravelPhrase } from './TravelPhrase';
 
 const STORAGE_KEY = 'kannanao-emergency-card';
@@ -68,6 +70,7 @@ export function EmergencyCard() {
       }
     }
     setLoaded(true);
+    logTravelEvent('emergency', 'view');
   }, []);
 
   const handleSave = useCallback(() => {
@@ -84,7 +87,7 @@ export function EmergencyCard() {
   if (!loaded) return null;
 
   return (
-    <Container maxWidth="sm" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
       <Stack spacing={3}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -94,8 +97,6 @@ export function EmergencyCard() {
           <Typography
             variant="h5"
             sx={{
-              fontWeight: 700,
-              fontFamily: (t) => t.fonts.display,
               color: 'text.primary',
               flex: 1,
             }}

@@ -1,12 +1,14 @@
 'use client';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import {
   alpha,
   Box,
   Button,
+  Chip,
   Container,
   IconButton,
   Stack,
@@ -15,12 +17,13 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { stripFurigana } from '@/components/FuriganaText';
 import { useSpeech } from '@/hooks/useSpeech';
+import { logTravelEvent } from '@/lib/supabase';
 
-import { SaveToDeckDialog } from './SaveToDeckDialog';
+import { AuthGatedSaveDialog } from './AuthGatedSaveDialog';
 import { TravelPhrase } from './TravelPhrase';
 
 // ─── Data ─────────────────────────────────────────────────────────
@@ -359,265 +362,257 @@ export function WhatDidTheySay() {
   const { brand } = theme.palette;
   const router = useRouter();
   const { speak } = useSpeech();
-  const [activeLocation, setActiveLocation] = useState<string | null>(null);
-  const [deckDialogOpen, setDeckDialogOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<string | 'all'>('konbini');
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [phrasesToSave, setPhrasesToSave] = useState<
+    Array<{ japanese: string; romaji: string; english: string }>
+  >([]);
   const [deckSaved, setDeckSaved] = useState(false);
 
-  const location = LOCATIONS.find((l) => l.key === activeLocation);
+  const visibleLocations = useMemo(
+    () => (activeFilter === 'all' ? LOCATIONS : LOCATIONS.filter((l) => l.key === activeFilter)),
+    [activeFilter],
+  );
 
-  // Location selection
-  if (!activeLocation) {
-    return (
-      <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
-        <Stack spacing={3}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
-              <ArrowBackIcon />
-            </IconButton>
-            <Box>
-              <Typography
-                variant="h5"
-                sx={{ fontWeight: 800, fontFamily: (t) => t.fonts.display, color: 'text.primary' }}
-              >
-                What Did They Say?
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
-                Recognize common phrases said TO you
-              </Typography>
-            </Box>
-          </Box>
+  const handleFilter = (key: string) => {
+    setActiveFilter(key);
+    setDeckSaved(false);
+    if (key !== 'all') logTravelEvent('listening', 'start', { location: key });
+  };
 
-          <Stack spacing={1.25}>
-            {LOCATIONS.map((loc) => (
-              <Box
-                key={loc.key}
-                onClick={() => setActiveLocation(loc.key)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setActiveLocation(loc.key);
-                  }
-                }}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  p: 2,
-                  cursor: 'pointer',
-                  borderRadius: '16px',
-                  bgcolor: 'background.paper',
-                  border: `1px solid ${alpha(brand[300], 0.2)}`,
-                  boxShadow: `0 1px 3px ${alpha(brand[400], 0.08)}`,
-                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: `0 8px 24px ${alpha(brand[400], 0.15)}`,
-                    borderColor: alpha(brand[400], 0.35),
-                    '& .loc-icon': { transform: 'scale(1.08)' },
-                  },
-                  '&:active': { transform: 'translateY(0)' },
-                }}
-              >
-                <Box
-                  className="loc-icon"
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    bgcolor: alpha(brand[100], 0.6),
-                    border: `1px solid ${alpha(brand[200], 0.4)}`,
-                    flexShrink: 0,
-                    transition: 'transform 0.25s ease',
-                  }}
-                >
-                  <Typography sx={{ fontSize: '1.4rem', lineHeight: 1 }}>{loc.icon}</Typography>
-                </Box>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography
-                    sx={{
-                      fontWeight: 700,
-                      fontSize: '0.92rem',
-                      color: 'text.primary',
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    {loc.label}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'text.secondary', fontSize: '0.78rem', mt: 0.25 }}
-                  >
-                    {loc.phrases.length} phrases
-                  </Typography>
-                </Box>
-              </Box>
-            ))}
-          </Stack>
-        </Stack>
-      </Container>
-    );
-  }
+  const allVisiblePhrases = useMemo(
+    () => visibleLocations.flatMap((l) => l.phrases),
+    [visibleLocations],
+  );
 
-  // Phrase list for selected location
+  const activeLocation =
+    activeFilter !== 'all' ? LOCATIONS.find((l) => l.key === activeFilter) : null;
+
   return (
-    <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
-      <Stack spacing={2.5}>
+    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+      <Stack spacing={3}>
+        {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => setActiveLocation(null)} aria-label="Back to locations">
+          <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
             <ArrowBackIcon />
           </IconButton>
-          <Box
-            sx={{
-              width: 36,
-              height: 36,
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              bgcolor: alpha(brand[100], 0.6),
-              border: `1px solid ${alpha(brand[200], 0.4)}`,
-            }}
-          >
-            <Typography sx={{ fontSize: '1.1rem', lineHeight: 1 }}>{location?.icon}</Typography>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" sx={{ color: 'text.primary' }}>
+              What Did They Say?
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
+              Recognize common phrases said TO you
+            </Typography>
           </Box>
-          <Typography
-            sx={{
-              fontWeight: 700,
-              fontSize: '1.05rem',
-              fontFamily: (t) => t.fonts.display,
-              color: 'text.primary',
-              flex: 1,
-            }}
-          >
-            {location?.label}
-          </Typography>
           <Button
             variant="outlined"
             size="small"
             startIcon={<LibraryAddIcon sx={{ fontSize: 14 }} />}
             onClick={() => {
               setDeckSaved(false);
-              setDeckDialogOpen(true);
+              setPhrasesToSave(
+                allVisiblePhrases.map((p) => ({
+                  japanese: p.japanese,
+                  romaji: p.romaji,
+                  english: p.english,
+                })),
+              );
+              setSaveDialogOpen(true);
             }}
             disabled={deckSaved}
             sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.72rem' }}
           >
-            {deckSaved ? 'Saved!' : `Save all`}
+            {deckSaved ? 'Saved!' : 'Save all'}
           </Button>
         </Box>
 
-        <Stack spacing={1.5}>
-          {location?.phrases.map((phrase) => (
-            <Box
-              key={phrase.id}
+        {/* Filter chips */}
+        <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+          <Chip
+            label="All"
+            onClick={() => handleFilter('all')}
+            variant={activeFilter === 'all' ? 'filled' : 'outlined'}
+            sx={{
+              borderRadius: 2,
+              fontWeight: activeFilter === 'all' ? 700 : 500,
+              borderColor: alpha(brand[300], 0.4),
+              ...(activeFilter === 'all' && {
+                bgcolor: alpha(brand[500], 0.12),
+                color: brand[700],
+                borderColor: brand[400],
+              }),
+            }}
+          />
+          {LOCATIONS.map((loc) => (
+            <Chip
+              key={loc.key}
+              label={`${loc.icon} ${loc.label}`}
+              onClick={() => handleFilter(loc.key)}
+              variant={activeFilter === loc.key ? 'filled' : 'outlined'}
               sx={{
-                p: 2,
-                borderRadius: '14px',
-                bgcolor: 'background.paper',
-                border: `1px solid ${alpha(brand[300], 0.2)}`,
-                boxShadow: `0 1px 3px ${alpha(brand[400], 0.06)}`,
+                borderRadius: 2,
+                fontWeight: activeFilter === loc.key ? 700 : 500,
+                borderColor: alpha(brand[300], 0.4),
+                ...(activeFilter === loc.key && {
+                  bgcolor: alpha(brand[500], 0.12),
+                  color: brand[700],
+                  borderColor: brand[400],
+                }),
+              }}
+            />
+          ))}
+        </Box>
+
+        {/* Phrases grouped by location */}
+        {visibleLocations.map((loc) => (
+          <Box key={loc.key}>
+            {/* Section header (only when showing all) */}
+            {activeFilter === 'all' && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                <Typography sx={{ fontSize: '1.1rem', lineHeight: 1 }}>{loc.icon}</Typography>
+                <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: 'text.primary' }}>
+                  {loc.label}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  {loc.phrases.length} phrases
+                </Typography>
+              </Box>
+            )}
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                gap: 1.5,
               }}
             >
-              {/* What they say */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-                <Box sx={{ flex: 1 }}>
-                  <TravelPhrase
-                    japanese={phrase.japanese}
-                    romaji={phrase.romaji}
-                    primarySize="1.05rem"
-                    secondarySize="0.78rem"
-                  />
-                </Box>
-                <Tooltip title="Listen">
-                  <IconButton
-                    size="small"
-                    onClick={() => speak(stripFurigana(phrase.japanese))}
-                    aria-label="Listen"
-                    sx={{ p: 0.5 }}
-                  >
-                    <VolumeUpIcon sx={{ fontSize: 16 }} />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-              <Typography
-                variant="body2"
-                sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.85rem', mb: 0.75 }}
-              >
-                {phrase.english}
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'text.secondary', fontSize: '0.78rem', mb: 1, lineHeight: 1.5 }}
-              >
-                {phrase.context}
-              </Typography>
-
-              {/* Your response */}
-              {phrase.yourResponse && (
+              {loc.phrases.map((phrase) => (
                 <Box
+                  key={phrase.id}
                   sx={{
-                    p: 1.5,
-                    borderRadius: '10px',
-                    bgcolor: alpha(brand[50], 0.8),
-                    border: `1px solid ${alpha(brand[200], 0.3)}`,
+                    p: 2,
+                    borderRadius: '14px',
+                    bgcolor: 'background.paper',
+                    border: `1px solid ${alpha(brand[300], 0.2)}`,
+                    boxShadow: `0 1px 3px ${alpha(brand[400], 0.06)}`,
                   }}
                 >
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontWeight: 700,
-                      color: brand[600],
-                      letterSpacing: '0.04em',
-                      fontSize: '0.6rem',
-                    }}
-                  >
-                    YOUR RESPONSE
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
+                  {/* What they say */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
                     <Box sx={{ flex: 1 }}>
                       <TravelPhrase
-                        japanese={phrase.yourResponse!}
-                        romaji={phrase.yourResponseRomaji ?? ''}
-                        primarySize="0.92rem"
-                        secondarySize="0.72rem"
+                        japanese={phrase.japanese}
+                        romaji={phrase.romaji}
+                        primarySize="1.05rem"
+                        secondarySize="0.78rem"
                       />
                     </Box>
                     <Tooltip title="Listen">
                       <IconButton
                         size="small"
-                        onClick={() => speak(stripFurigana(phrase.yourResponse!.split(' / ')[0]))}
-                        aria-label="Listen to response"
+                        onClick={() => speak(stripFurigana(phrase.japanese))}
+                        aria-label="Listen"
                         sx={{ p: 0.5 }}
                       >
-                        <VolumeUpIcon sx={{ fontSize: 14 }} />
+                        <VolumeUpIcon sx={{ fontSize: 16 }} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Save to deck">
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setPhrasesToSave([
+                            {
+                              japanese: phrase.japanese,
+                              romaji: phrase.romaji,
+                              english: phrase.english,
+                            },
+                          ]);
+                          setSaveDialogOpen(true);
+                        }}
+                        aria-label="Save to deck"
+                        sx={{ p: 0.5 }}
+                      >
+                        <BookmarkBorderIcon sx={{ fontSize: 16 }} />
                       </IconButton>
                     </Tooltip>
                   </Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.85rem', mb: 0.75 }}
+                  >
+                    {phrase.english}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'text.secondary', fontSize: '0.78rem', mb: 1, lineHeight: 1.5 }}
+                  >
+                    {phrase.context}
+                  </Typography>
+
+                  {/* Your response */}
+                  {phrase.yourResponse && (
+                    <Box
+                      sx={{
+                        p: 1.5,
+                        borderRadius: '10px',
+                        bgcolor: alpha(brand[50], 0.8),
+                        border: `1px solid ${alpha(brand[200], 0.3)}`,
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontWeight: 700,
+                          color: brand[600],
+                          letterSpacing: '0.04em',
+                          fontSize: '0.6rem',
+                        }}
+                      >
+                        YOUR RESPONSE
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
+                        <Box sx={{ flex: 1 }}>
+                          <TravelPhrase
+                            japanese={phrase.yourResponse!}
+                            romaji={phrase.yourResponseRomaji ?? ''}
+                            primarySize="0.92rem"
+                            secondarySize="0.72rem"
+                          />
+                        </Box>
+                        <Tooltip title="Listen">
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              speak(stripFurigana(phrase.yourResponse!.split(' / ')[0]))
+                            }
+                            aria-label="Listen to response"
+                            sx={{ p: 0.5 }}
+                          >
+                            <VolumeUpIcon sx={{ fontSize: 14 }} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </Box>
+                  )}
                 </Box>
-              )}
+              ))}
             </Box>
-          ))}
-        </Stack>
+          </Box>
+        ))}
       </Stack>
 
-      {location && (
-        <SaveToDeckDialog
-          open={deckDialogOpen}
-          onClose={() => setDeckDialogOpen(false)}
-          phrases={location.phrases.map((p) => ({
-            japanese: p.japanese,
-            romaji: p.romaji,
-            english: p.english,
-          }))}
-          onSaved={() => setDeckSaved(true)}
-          defaultDeckName={`${location.icon} ${location.label} Phrases`}
-        />
-      )}
+      <AuthGatedSaveDialog
+        open={saveDialogOpen}
+        onClose={() => setSaveDialogOpen(false)}
+        phrases={phrasesToSave}
+        onSaved={() => setDeckSaved(true)}
+        defaultDeckName={
+          activeLocation
+            ? `${activeLocation.icon} ${activeLocation.label} Phrases`
+            : '👂 What Did They Say?'
+        }
+      />
     </Container>
   );
 }
