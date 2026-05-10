@@ -25,7 +25,7 @@ const jsonLd = [
     operatingSystem: 'Web',
     description:
       'AI-powered Japanese flashcard studio with travel phrasebooks, speech practice, group classrooms, gamified XP & achievements, multiple themes, and multiple practice modes.',
-    url: 'https://kannanao.com',
+    url: 'https://www.kannanao.com',
     offers: {
       '@type': 'Offer',
       price: '0',
@@ -49,7 +49,7 @@ const jsonLd = [
     '@type': 'Organization',
     name: 'Variations on a String',
     url: 'https://www.variationsonastring.com',
-    logo: 'https://kannanao.com/icons/icon-512.png',
+    logo: 'https://www.kannanao.com/icons/icon-512.png',
   },
   {
     '@context': 'https://schema.org',

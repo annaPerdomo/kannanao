@@ -56,7 +56,7 @@ export async function generateMetadata({
       title,
       description,
       type: 'website',
-      url: `https://kannanao.com/embed/deck/${id}`,
+      url: `https://www.kannanao.com/embed/deck/${id}`,
     },
     twitter: {
       card: 'summary_large_image',
