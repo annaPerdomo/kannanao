@@ -1,11 +1,13 @@
 'use client';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
 import LinearProgress from '@mui/material/LinearProgress';
+import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
@@ -14,7 +16,12 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { DeckCard } from '@/components/DeckCard';
-import { AssignmentCard, GroupHomeWidget, LeaderboardWidget } from '@/components/Group';
+import {
+  AssignmentCard,
+  GroupHomeWidget,
+  LeaderboardWidget,
+  MessageThread,
+} from '@/components/Group';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { ShareEmbedDialog } from '@/components/ShareEmbedDialog';
@@ -22,6 +29,7 @@ import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
+import { useDirectMessages } from '@/hooks/useDirectMessages';
 import { useGroupMembers } from '@/hooks/useGroup';
 import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
 import { useGroups } from '@/hooks/useGroups';
@@ -169,8 +177,14 @@ function WelcomeBanner({
 
 export default function Home() {
   const { decks, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, loading } = useDecks();
-  const { user, displayName, showTodo, isMemberAccount } = useAuth();
+  const { user, displayName, showTodo, isMemberAccount, organizerId } = useAuth();
   const { progress, spendableXp, addBonusXp } = useProgress();
+  const {
+    messages: dmMessages,
+    unreadCount: dmUnreadCount,
+    sendMessage,
+    markAllAsRead: markAllDmRead,
+  } = useDirectMessages();
   const { ohanashikais } = useOhanashikais();
   const { purchases } = useShop();
   const { assignments } = useAssignments();
@@ -183,6 +197,23 @@ export default function Home() {
   const pendingAssignments = assignments.filter((a) => !a.completed_at);
   const [shareDeckId, setShareDeckId] = useState<string | null>(null);
   const [shareDeckName, setShareDeckName] = useState('');
+  const [homeChatOpen, setHomeChatOpen] = useState(false);
+
+  // Chat partner for member's home widget
+  const homeChatPartner = (() => {
+    if (!isMemberAccount) return null;
+    const fromOrg = dmMessages.find((m) => m.sender_id !== user?.id);
+    const toOrg = dmMessages.find((m) => m.sender_id === user?.id);
+    return {
+      id: organizerId ?? '',
+      name:
+        fromOrg?.sender?.display_name ||
+        fromOrg?.sender?.username ||
+        toOrg?.recipient?.display_name ||
+        toOrg?.recipient?.username ||
+        'Your organizer',
+    };
+  })();
 
   const username = displayName ?? user?.email?.split('@')[0] ?? 'there';
   const isOwner = (deck: { ownerId: string }) => deck.ownerId === user?.id;
@@ -305,6 +336,71 @@ export default function Home() {
                 ))}
               </Stack>
             </Box>
+          )}
+
+          {/* ── Member message widget ── */}
+          {isMemberAccount && homeChatPartner && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}>
+                💬 Messages
+              </Typography>
+              <Paper
+                onClick={() => setHomeChatOpen(true)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') setHomeChatOpen(true);
+                }}
+                elevation={0}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  p: 2.5,
+                  borderRadius: 3,
+                  border: (t) =>
+                    `1.5px solid ${alpha(
+                      t.palette.brand[dmUnreadCount > 0 ? 400 : 300],
+                      dmUnreadCount > 0 ? 0.6 : 0.35,
+                    )}`,
+                  bgcolor: (t) => alpha(t.palette.brand[dmUnreadCount > 0 ? 100 : 50], 0.5),
+                  cursor: 'pointer',
+                  transition: 'all 0.18s ease',
+                  '&:hover': {
+                    bgcolor: (t) => alpha(t.palette.brand[100], 0.8),
+                    borderColor: (t) => alpha(t.palette.brand[400], 0.55),
+                  },
+                }}
+              >
+                <ChatBubbleOutlineIcon
+                  sx={{ fontSize: '1.8rem', color: (t) => t.palette.brand[500] }}
+                />
+                <Box sx={{ flex: 1 }}>
+                  <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.95rem' }}>
+                    {dmUnreadCount > 0
+                      ? `${dmUnreadCount} new message${dmUnreadCount > 1 ? 's' : ''}!`
+                      : 'Send a message'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Tap to chat with {homeChatPartner.name}
+                  </Typography>
+                </Box>
+              </Paper>
+            </Box>
+          )}
+
+          {homeChatPartner && user && (
+            <MessageThread
+              open={homeChatOpen}
+              onClose={() => setHomeChatOpen(false)}
+              messages={dmMessages}
+              onSend={sendMessage}
+              onMarkAllRead={markAllDmRead}
+              recipientId={homeChatPartner.id}
+              recipientName={homeChatPartner.name}
+              currentUserId={user.id}
+              isMember={isMemberAccount}
+            />
           )}
 
           {/* ── Pinned Decks ── */}
