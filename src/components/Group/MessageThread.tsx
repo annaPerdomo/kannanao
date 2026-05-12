@@ -61,6 +61,7 @@ export function MessageThread({
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const sentTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -68,6 +69,9 @@ export function MessageThread({
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [open, messages.length]);
+
+  // Clean up sent timer on unmount
+  useEffect(() => () => clearTimeout(sentTimerRef.current), []);
 
   const handleClose = () => {
     onMarkAllRead();
@@ -82,7 +86,8 @@ export function MessageThread({
       await onSend(recipientId, message);
       setText('');
       setSent(true);
-      setTimeout(() => setSent(false), 2000);
+      clearTimeout(sentTimerRef.current);
+      sentTimerRef.current = setTimeout(() => setSent(false), 2000);
     } catch {
       // error handled by parent
     } finally {
@@ -100,6 +105,7 @@ export function MessageThread({
       title="Messages"
       subtitle={`Chat with ${recipientName}`}
       icon={<ChatBubbleOutlineIcon sx={{ color: brand[600], fontSize: 22 }} />}
+      titleId="message-thread-title"
       maxWidth="xs"
       contentSx={{ p: 0, display: 'flex', flexDirection: 'column' }}
     >
@@ -259,7 +265,9 @@ export function MessageThread({
       </Box>
 
       {sent && (
-        <Typography sx={{ px: 2, pb: 1, fontSize: '0.72rem', color: '#22C55E', fontWeight: 600 }}>
+        <Typography
+          sx={{ px: 2, pb: 1, fontSize: '0.72rem', color: 'success.main', fontWeight: 600 }}
+        >
           Message sent!
         </Typography>
       )}

@@ -36,9 +36,13 @@ export function NotificationPrompt({ open, onClose, onEnable, loading }: Notific
   const { brand } = theme.palette;
 
   const handleEnable = async () => {
-    await onEnable();
-    markPrompted();
-    onClose();
+    try {
+      await onEnable();
+      markPrompted();
+      onClose();
+    } catch {
+      // Keep dialog open so user can retry
+    }
   };
 
   const handleDismiss = () => {
@@ -53,6 +57,7 @@ export function NotificationPrompt({ open, onClose, onEnable, loading }: Notific
       title="Stay in the loop!"
       subtitle="Get notified when you receive a message"
       icon={<NotificationsActiveIcon sx={{ color: brand[600], fontSize: 22 }} />}
+      titleId="notification-prompt-title"
       maxWidth="xs"
       actions={
         <Stack direction="row" gap={1}>

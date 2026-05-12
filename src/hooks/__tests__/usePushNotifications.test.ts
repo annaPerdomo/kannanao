@@ -44,6 +44,8 @@ describe('usePushNotifications', () => {
       data: { session: { access_token: 'tok123' } },
     });
     mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY =
+      'BMzxvStvWYWHYO8PY8BzJfdsJ1f2rZUeVdmHD4owqg8dcTfH2Aik1DYMo_GKY4LTqkLX7xI1QALGfZBcF8Z0oTw';
 
     // Reset global mocks
     Object.defineProperty(globalThis, 'Notification', {
@@ -91,7 +93,7 @@ describe('usePushNotifications', () => {
     expect(Notification.requestPermission).toHaveBeenCalled();
     expect(mockPushManager.subscribe).toHaveBeenCalledWith({
       userVisibleOnly: true,
-      applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+      applicationServerKey: expect.any(Uint8Array),
     });
     expect(result.current.isSubscribed).toBe(true);
 

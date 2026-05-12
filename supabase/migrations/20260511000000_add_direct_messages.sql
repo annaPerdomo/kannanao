@@ -20,11 +20,24 @@ CREATE POLICY "Users can read their own messages"
 
 CREATE POLICY "Users can insert messages they send"
   ON direct_messages FOR INSERT
-  WITH CHECK (auth.uid() = sender_id);
+  WITH CHECK (
+    auth.uid() = sender_id
+    AND (
+      -- Member can only message their organizer
+      EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND account_type = 'member' AND organizer_id = recipient_id)
+      OR
+      -- Organizer can only message their own members
+      EXISTS (SELECT 1 FROM profiles WHERE id = recipient_id AND organizer_id = auth.uid())
+    )
+  );
 
 CREATE POLICY "Recipients can update read_at"
   ON direct_messages FOR UPDATE
   USING (auth.uid() = recipient_id);
+
+-- Restrict UPDATE to read_at column only (defense-in-depth)
+REVOKE UPDATE ON direct_messages FROM authenticated;
+GRANT UPDATE (read_at) ON direct_messages TO authenticated;
 
 -- Push subscriptions: Web Push subscription storage per user/device
 CREATE TABLE push_subscriptions (

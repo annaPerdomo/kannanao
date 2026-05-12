@@ -31,17 +31,17 @@ sw.addEventListener('push', (event) => {
 sw.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  const url = (event.notification.data as { url?: string })?.url ?? '/';
+  const path = (event.notification.data as { url?: string })?.url ?? '/';
+  const absoluteUrl = new URL(path, sw.location.origin).href;
 
   event.waitUntil(
     sw.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-      // Focus an existing window if one is open
       const existing = clients.find((c) => new URL(c.url).origin === sw.location.origin);
       if (existing) {
-        return existing.focus();
+        // Navigate to the notification URL, then focus
+        return existing.navigate(absoluteUrl).then((c) => c?.focus());
       }
-      // Otherwise open a new window
-      return sw.clients.openWindow(url);
+      return sw.clients.openWindow(absoluteUrl);
     }),
   );
 });

@@ -9,11 +9,14 @@ const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 
 let configured = false;
+let disabled = false;
 
 function ensureConfigured() {
   if (configured) return true;
+  if (disabled) return false;
   if (!vapidSubject || !vapidPublicKey || !vapidPrivateKey) {
     logger.info('VAPID keys not configured — push notifications disabled');
+    disabled = true;
     return false;
   }
   webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
@@ -62,7 +65,11 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
       'statusCode' in r.reason &&
       (r.reason as { statusCode: number }).statusCode === 410
     ) {
-      await sb.from('push_subscriptions').delete().eq('endpoint', subs[i].endpoint);
+      await sb
+        .from('push_subscriptions')
+        .delete()
+        .eq('user_id', userId)
+        .eq('endpoint', subs[i].endpoint);
       logger.info('Removed expired push subscription', { endpoint: subs[i].endpoint });
     } else if (r.status === 'rejected') {
       logger.error('Push notification failed', {
