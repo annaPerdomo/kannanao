@@ -19,6 +19,25 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return arr;
 }
 
+/** Wait for the service worker to be ready, registering it if necessary. Times out to avoid hanging forever. */
+async function getServiceWorkerRegistration(
+  timeoutMs = 10_000,
+): Promise<ServiceWorkerRegistration> {
+  // If no controller yet, explicitly register the service worker
+  if (!navigator.serviceWorker.controller) {
+    await navigator.serviceWorker.register('/sw.js');
+  }
+
+  const ready = navigator.serviceWorker.ready;
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(
+      () => reject(new Error('Service worker did not become ready in time. Please try again.')),
+      timeoutMs,
+    ),
+  );
+  return Promise.race([ready, timeout]);
+}
+
 export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -37,11 +56,14 @@ export function usePushNotifications() {
 
     setPermission(Notification.permission);
 
-    navigator.serviceWorker.ready.then((reg) => {
-      reg.pushManager.getSubscription().then((sub) => {
-        setIsSubscribed(!!sub);
+    // Only check existing subscription if a SW is already active
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.pushManager.getSubscription().then((sub) => {
+          setIsSubscribed(!!sub);
+        });
       });
-    });
+    }
   }, []);
 
   const subscribe = useCallback(async () => {
@@ -54,7 +76,7 @@ export function usePushNotifications() {
       const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
       if (!vapidKey) return;
 
-      const reg = await navigator.serviceWorker.ready;
+      const reg = await getServiceWorkerRegistration();
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
