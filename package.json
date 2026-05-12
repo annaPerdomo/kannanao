@@ -46,6 +46,7 @@
     "react-dom": "^19.0.0",
     "uuid": "^11.1.0",
     "wanakana": "^5.3.1",
+    "web-push": "^3.6.7",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -59,6 +60,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/uuid": "^10.0.0",
+    "@types/web-push": "^3.6.4",
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-v8": "^4.1.5",
     "eslint": "^9.0.0",

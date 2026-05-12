@@ -1,0 +1,196 @@
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+// ─── Mocks ───────────────────────────────────────────────────────────────────
+
+const mockGetSession = vi.fn();
+
+vi.mock('@/lib/supabase', () => ({
+  sb: {
+    auth: { getSession: () => mockGetSession() },
+  },
+  isConfigured: vi.fn(() => true),
+}));
+
+const mockUseAuth = vi.fn();
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => mockUseAuth(),
+}));
+
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
+import { useDirectMessages } from '@/hooks/useDirectMessages';
+
+// ─── Fixtures ────────────────────────────────────────────────────────────────
+
+const DM_UNREAD = {
+  id: 'd1',
+  sender_id: 'org1',
+  recipient_id: 'm1',
+  message: 'How was practice?',
+  read_at: null,
+  created_at: '2026-05-11T10:00:00Z',
+  sender: { display_name: 'Parent', username: 'parent' },
+  recipient: { display_name: 'Kid', username: 'kid' },
+};
+
+const DM_READ = {
+  id: 'd2',
+  sender_id: 'm1',
+  recipient_id: 'org1',
+  message: 'I finished studying!',
+  read_at: '2026-05-11T09:30:00Z',
+  created_at: '2026-05-11T09:00:00Z',
+  sender: { display_name: 'Kid', username: 'kid' },
+  recipient: { display_name: 'Parent', username: 'parent' },
+};
+
+// ─── Tests ───────────────────────────────────────────────────────────────────
+
+describe('useDirectMessages', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUseAuth.mockReturnValue({ user: { id: 'm1' } });
+    mockGetSession.mockResolvedValue({
+      data: { session: { access_token: 'tok123' } },
+    });
+  });
+
+  // ── initial load ──────────────────────────────────────────────────────────
+
+  it('loads messages on mount', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [DM_UNREAD, DM_READ],
+    });
+    const { result } = renderHook(() => useDirectMessages());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.messages).toHaveLength(2);
+  });
+
+  it('computes unreadCount only for messages addressed to current user', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [DM_UNREAD, DM_READ],
+    });
+    const { result } = renderHook(() => useDirectMessages());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    // DM_UNREAD has recipient_id='m1' and read_at=null → unread for user m1
+    // DM_READ has recipient_id='org1' → not for user m1
+    expect(result.current.unreadCount).toBe(1);
+  });
+
+  it('sets empty when no user', async () => {
+    mockUseAuth.mockReturnValue({ user: null });
+    const { result } = renderHook(() => useDirectMessages());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.messages).toEqual([]);
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('passes memberId query param when provided', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [],
+    });
+    renderHook(() => useDirectMessages('member-123'));
+    await waitFor(() => expect(mockFetch).toHaveBeenCalled());
+    expect(mockFetch.mock.calls[0][0]).toBe('/api/messages?memberId=member-123');
+  });
+
+  it('handles fetch failure silently', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('network'));
+    const { result } = renderHook(() => useDirectMessages());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.messages).toEqual([]);
+  });
+
+  // ── sendMessage ───────────────────────────────────────────────────────────
+
+  it('sends message via POST and prepends to list', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
+    const { result } = renderHook(() => useDirectMessages());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const newMsg = { id: 'd-new', sender_id: 'm1', recipient_id: 'org1', message: 'Hello!' };
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => newMsg,
+    });
+
+    await act(async () => {
+      await result.current.sendMessage('org1', 'Hello!');
+    });
+
+    const postCall = mockFetch.mock.calls[1];
+    expect(postCall[1].method).toBe('POST');
+    const body = JSON.parse(postCall[1].body);
+    expect(body.recipientId).toBe('org1');
+    expect(body.message).toBe('Hello!');
+    expect(result.current.messages[0].id).toBe('d-new');
+  });
+
+  it('throws when send fails', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
+    const { result } = renderHook(() => useDirectMessages());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: 'Recipient not found.' }),
+    });
+
+    await expect(
+      act(async () => {
+        await result.current.sendMessage('bad', 'msg');
+      }),
+    ).rejects.toThrow('Recipient not found.');
+  });
+
+  // ── markAsRead (optimistic) ───────────────────────────────────────────────
+
+  it('optimistically marks message as read', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [DM_UNREAD],
+    });
+    const { result } = renderHook(() => useDirectMessages());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.unreadCount).toBe(1);
+
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+    await act(async () => {
+      await result.current.markAsRead('d1');
+    });
+
+    expect(result.current.unreadCount).toBe(0);
+    expect(result.current.messages[0].read_at).toBeTruthy();
+
+    const patchCall = mockFetch.mock.calls[1];
+    expect(patchCall[0]).toBe('/api/messages/d1/read');
+    expect(patchCall[1].method).toBe('PATCH');
+  });
+
+  // ── markAllAsRead ─────────────────────────────────────────────────────────
+
+  it('marks all unread messages as read', async () => {
+    const anotherUnread = { ...DM_UNREAD, id: 'd3', message: 'Another one' };
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [DM_UNREAD, anotherUnread],
+    });
+    const { result } = renderHook(() => useDirectMessages());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.unreadCount).toBe(2);
+
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
+
+    await act(async () => {
+      await result.current.markAllAsRead();
+    });
+
+    expect(result.current.unreadCount).toBe(0);
+  });
+});
