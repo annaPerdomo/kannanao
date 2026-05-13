@@ -5,6 +5,7 @@ export interface OrganizerProfile {
   id: string;
   username: string;
   account_type: string;
+  display_name: string | null;
 }
 
 /**
@@ -39,7 +40,7 @@ export async function requireOrganizerAccount(
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, username, account_type')
+    .select('id, username, account_type, display_name')
     .eq('id', user.id)
     .single();
 
