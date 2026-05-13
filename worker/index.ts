@@ -24,6 +24,7 @@ sw.addEventListener('push', (event) => {
       icon: '/icons/icon-192.png',
       badge: '/icons/icon-192.png',
       data: { url: data.url ?? '/' },
+      silent: false,
     }),
   );
 });
