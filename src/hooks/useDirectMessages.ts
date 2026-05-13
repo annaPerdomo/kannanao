@@ -111,11 +111,15 @@ export function useDirectMessages(memberId?: string) {
           const row = payload.new as DirectMessage;
           // When filtering by memberId, only accept messages from that member
           if (memberId && row.sender_id !== memberId) return;
+          // Insert the raw row immediately for responsiveness, then refetch
+          // to get the joined sender/recipient profile data (Bug 2 fix)
           setMessages((prev) => {
             if (prev.some((m) => m.id === row.id)) return prev;
-            playMessageSound();
             return [row, ...prev];
           });
+          playMessageSound();
+          // Refetch to populate sender/recipient profile joins
+          void fetchMessages();
         },
       )
       .on(
@@ -155,7 +159,7 @@ export function useDirectMessages(memberId?: string) {
       void sb.removeChannel(channel);
       channelRef.current = null;
     };
-  }, [user, memberId]);
+  }, [user, memberId, fetchMessages]);
 
   const sendMessage = useCallback(async (recipientId: string, message: string) => {
     const res = await fetch('/api/messages', {
@@ -174,8 +178,13 @@ export function useDirectMessages(memberId?: string) {
 
   const markAsRead = useCallback(
     async (id: string) => {
+      // Only mark messages where the current user is the recipient (Bug 6 fix)
       setMessages((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, read_at: new Date().toISOString() } : m)),
+        prev.map((m) =>
+          m.id === id && m.recipient_id === user?.id
+            ? { ...m, read_at: new Date().toISOString() }
+            : m,
+        ),
       );
       try {
         await fetch(`/api/messages/${id}/read`, {
@@ -186,26 +195,27 @@ export function useDirectMessages(memberId?: string) {
         await fetchMessages();
       }
     },
-    [fetchMessages],
+    [fetchMessages, user?.id],
   );
 
   const markAllAsRead = useCallback(async () => {
-    const unread = messages.filter((m) => !m.read_at && m.recipient_id === user?.id);
+    // Optimistic update — use functional updater to avoid stale closure (Bug 4 fix)
     setMessages((prev) =>
       prev.map((m) =>
         !m.read_at && m.recipient_id === user?.id ? { ...m, read_at: new Date().toISOString() } : m,
       ),
     );
-    const headers = await authHeaders();
-    await Promise.all(
-      unread.map((m) =>
-        fetch(`/api/messages/${m.id}/read`, {
-          method: 'PATCH',
-          headers,
-        }).catch(() => {}),
-      ),
-    );
-  }, [messages, user?.id]);
+    // Single batch API call instead of N individual requests (Bug 1 fix)
+    try {
+      await fetch('/api/messages/read-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+        body: JSON.stringify(memberId ? { senderId: memberId } : {}),
+      });
+    } catch {
+      await fetchMessages();
+    }
+  }, [user?.id, memberId, fetchMessages]);
 
   return {
     messages,
