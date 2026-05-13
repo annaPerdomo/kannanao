@@ -324,7 +324,7 @@ export function ConversationList({
                 </Typography>
                 {p.role === 'organizer' && (
                   <Chip
-                    label="Teacher"
+                    label="Organizer"
                     size="small"
                     sx={{
                       height: 22,
