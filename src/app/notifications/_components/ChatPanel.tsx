@@ -10,6 +10,7 @@ import { groupByDate, QUICK_MESSAGES_MEMBER } from '@/components/Group/MessageTh
 import { MessageBubble } from '@/components/Group/MessageThread/MessageBubble';
 import { Loading } from '@/components/Loading';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
 
 interface ChatPanelProps {
@@ -24,12 +25,15 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
   const { brand, accent } = theme.palette;
   const { user } = useAuth();
   const { messages, sendMessage, markAllAsRead, loading } = useDirectMessages(recipientId);
+  const { refetch: refetchGlobal } = useDirectMessagesCtx();
 
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const initial = recipientName.charAt(0).toUpperCase();
+
+  const hasUnread = messages.some((m) => !m.read_at && m.recipient_id === user?.id);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -40,11 +44,14 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
     }
   }, [messages.length]);
 
-  // Mark messages as read when conversation opens or switches
+  // Mark messages as read when unread messages appear in the open conversation
   useEffect(() => {
-    if (user && messages.length > 0) markAllAsRead();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, recipientId]);
+    if (hasUnread) {
+      void markAllAsRead()
+        .then(() => refetchGlobal())
+        .catch(() => {});
+    }
+  }, [hasUnread, markAllAsRead, refetchGlobal]);
 
   // Reset input when switching conversations
   useEffect(() => {
