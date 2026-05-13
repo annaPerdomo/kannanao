@@ -27,15 +27,17 @@ import { PageHeader } from '@/components/PageHeader';
 import { ShareEmbedDialog } from '@/components/ShareEmbedDialog';
 import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
+import { useProgressCtx } from '@/contexts/ProgressContext';
+import { useShopCtx } from '@/contexts/ShopContext';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
-import { useDirectMessages } from '@/hooks/useDirectMessages';
 import { useGroupMembers } from '@/hooks/useGroup';
 import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
 import { useGroups } from '@/hooks/useGroups';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
-import { useProgress, xpProgressInLevel } from '@/hooks/useProgress';
-import { SHOP_ITEMS, useShop } from '@/hooks/useShop';
+import { xpProgressInLevel } from '@/hooks/useProgress';
+import { SHOP_ITEMS } from '@/hooks/useShop';
 import { LAYOUT } from '@/theme';
 
 function getGreeting(name: string): { text: string; emoji: string } {
@@ -178,15 +180,15 @@ function WelcomeBanner({
 export default function Home() {
   const { decks, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, loading } = useDecks();
   const { user, displayName, showTodo, isMemberAccount, organizerId } = useAuth();
-  const { progress, spendableXp, addBonusXp } = useProgress();
+  const { progress, spendableXp, addBonusXp } = useProgressCtx();
   const {
     messages: dmMessages,
     unreadCount: dmUnreadCount,
     sendMessage,
     markAllAsRead: markAllDmRead,
-  } = useDirectMessages();
+  } = useDirectMessagesCtx();
   const { ohanashikais } = useOhanashikais();
-  const { purchases } = useShop();
+  const { purchases } = useShopCtx();
   const { assignments } = useAssignments();
   const { groups } = useGroups();
   const { members: groupMembers } = useGroupMembers();

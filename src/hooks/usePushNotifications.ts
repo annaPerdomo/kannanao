@@ -72,30 +72,44 @@ export function usePushNotifications() {
   const subscribe = useCallback(async () => {
     setLoading(true);
     try {
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidKey) return;
+
+      // Start fetching auth headers and SW registration in parallel while we wait for permission
+      const headersPromise = authHeaders();
+      const regPromise = getServiceWorkerRegistration();
+
       const perm = await Notification.requestPermission();
       setPermission(perm);
       if (perm !== 'granted') return;
 
-      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-      if (!vapidKey) return;
-
-      const reg = await getServiceWorkerRegistration();
+      const reg = await regPromise;
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
       });
 
+      // Mark as subscribed immediately so the modal can close
+      setIsSubscribed(true);
+
+      // Save to server in the background
       const json = sub.toJSON();
-      const res = await fetch('/api/push/subscribe', {
+      const headers = await headersPromise;
+      fetch('/api/push/subscribe', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+        headers: { 'Content-Type': 'application/json', ...headers },
         body: JSON.stringify({
           endpoint: json.endpoint,
           keys: json.keys,
         }),
-      });
-
-      if (res.ok) setIsSubscribed(true);
+      })
+        .then((res) => {
+          if (!res.ok) setIsSubscribed(false);
+        })
+        .catch(() => {
+          // If server save fails, revert so the user can retry
+          setIsSubscribed(false);
+        });
     } finally {
       setLoading(false);
     }

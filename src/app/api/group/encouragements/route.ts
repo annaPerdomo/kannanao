@@ -1,15 +1,15 @@
-import { createClient } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { sendPushToUser } from '../../_lib/sendPushNotification';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
 
-/** POST — organizer sends an encouragement to a member */
+/** POST — organizer sends an encouragement as a direct message to a member */
 export async function POST(req: NextRequest) {
   const limited = await rateLimit(req, RATE_LIMIT);
   if (limited) return limited;
@@ -22,43 +22,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
   }
 
-  const { memberId, message, emoji, groupId } = body as {
+  const { memberId, message, emoji } = body as {
     memberId: string;
     message: string;
     emoji?: string;
-    groupId?: string;
   };
 
   if (!memberId || !message?.trim()) {
     return NextResponse.json({ error: 'memberId and message are required.' }, { status: 400 });
   }
-  const sb = getServiceSupabase();
 
-  // Resolve group: use provided groupId or fall back to first group
-  let resolvedGroupId = groupId;
-  if (resolvedGroupId) {
-    const { data: group } = await sb
-      .from('groups')
-      .select('id')
-      .eq('id', resolvedGroupId)
-      .eq('organizer_id', orgCheck.id)
-      .single();
-    if (!group) {
-      return NextResponse.json({ error: 'Group not found.' }, { status: 404 });
-    }
-  } else {
-    const { data: firstGroup } = await sb
-      .from('groups')
-      .select('id')
-      .eq('organizer_id', orgCheck.id)
-      .order('created_at', { ascending: true })
-      .limit(1)
-      .single();
-    if (!firstGroup) {
-      return NextResponse.json({ error: 'No groups found.' }, { status: 400 });
-    }
-    resolvedGroupId = firstGroup.id;
-  }
+  const sb = getServiceSupabase();
 
   // Verify member belongs to organizer
   const { data: member } = await sb
@@ -72,14 +46,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Member not found.' }, { status: 404 });
   }
 
+  // Build the message text with emoji prefix
+  const emojiChar = emoji || '⭐';
+  const fullMessage = `${emojiChar} ${message.trim().slice(0, 200)}`;
+
   const { data, error } = await sb
-    .from('encouragements')
+    .from('direct_messages')
     .insert({
-      organizer_id: orgCheck.id,
-      group_id: resolvedGroupId,
-      member_id: memberId,
-      message: message.trim().slice(0, 200),
-      emoji: emoji || '⭐',
+      sender_id: orgCheck.id,
+      recipient_id: memberId,
+      message: fullMessage,
     })
     .select()
     .single();
@@ -92,49 +68,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to send encouragement.' }, { status: 500 });
   }
 
+  // Fire push notification to member (non-blocking)
+  const senderName = orgCheck.display_name || orgCheck.username;
+  sendPushToUser(memberId, {
+    title: `${emojiChar} ${senderName}`,
+    body: message.trim().slice(0, 100),
+    url: '/notifications',
+  }).catch((err) => {
+    logger.error('Encouragement push failed', { error: String(err) });
+  });
+
   return NextResponse.json(data, { status: 201 });
-}
-
-/** GET — member gets their encouragements (unread + recent read) */
-export async function GET(req: NextRequest) {
-  const limited = await rateLimit(req, RATE_LIMIT);
-  if (limited) return limited;
-
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
-  }
-
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-  if (!url || !anonKey) {
-    return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
-  }
-
-  const userClient = createClient(url, anonKey);
-  const {
-    data: { user },
-  } = await userClient.auth.getUser(authHeader.slice(7));
-  if (!user) {
-    return NextResponse.json({ error: 'Invalid token.' }, { status: 401 });
-  }
-
-  const sb = getServiceSupabase();
-
-  const { data, error } = await sb
-    .from('encouragements')
-    .select('*, profiles!encouragements_organizer_id_fkey(display_name, username)')
-    .eq('member_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(20);
-
-  if (error) {
-    logger.error('Failed to fetch encouragements', {
-      route: '/api/group/encouragements',
-      error: error.message,
-    });
-    return NextResponse.json({ error: 'Failed to load encouragements.' }, { status: 500 });
-  }
-
-  return NextResponse.json(data ?? []);
 }

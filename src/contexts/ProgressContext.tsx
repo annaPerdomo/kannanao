@@ -1,0 +1,34 @@
+'use client';
+
+import { createContext, type ReactNode, useContext } from 'react';
+
+import { useProgress } from '@/hooks/useProgress';
+
+type ProgressContextValue = ReturnType<typeof useProgress>;
+
+const noop = () => {};
+const noopAsync = async () => {};
+
+const ProgressCtx = createContext<ProgressContextValue>({
+  progress: null,
+  spendableXp: 0,
+  achievements: [],
+  recentSessions: [],
+  loading: true,
+  newlyUnlocked: [],
+  clearNewlyUnlocked: noop,
+  recordAnswer: noopAsync,
+  endSession: noopAsync,
+  startSession: async () => '',
+  addBonusXp: noopAsync,
+  refetch: noopAsync,
+});
+
+export function ProgressProvider({ children }: { children: ReactNode }) {
+  const value = useProgress();
+  return <ProgressCtx.Provider value={value}>{children}</ProgressCtx.Provider>;
+}
+
+export function useProgressCtx(): ProgressContextValue {
+  return useContext(ProgressCtx);
+}

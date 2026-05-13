@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 
-import { useShop } from '@/hooks/useShop';
+import { useShopCtx } from '@/contexts/ShopContext';
 
 import { HomeBuddy } from './HomeBuddy';
 
@@ -10,7 +10,7 @@ const HIDE_ON_ROUTES = ['/practice/', '/study', '/login', '/landing', '/embed/']
 
 export function GlobalBuddy() {
   const pathname = usePathname();
-  const { equipped, loading } = useShop();
+  const { equipped, loading } = useShopCtx();
   const buddyKey = equipped['study_buddy'];
 
   if (loading || !buddyKey) return null;

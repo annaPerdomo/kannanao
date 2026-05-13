@@ -10,7 +10,7 @@ import { getServiceSupabase } from '../group/_lib/serviceSupabase';
 const RATE_LIMIT_POST = { windowMs: 60_000, max: 20 };
 const RATE_LIMIT_GET = { windowMs: 60_000, max: 30 };
 
-/** POST — send a direct message (member↔organizer) */
+/** POST — send a direct message (member↔organizer or member↔member in same group) */
 export async function POST(req: NextRequest) {
   const limited = await rateLimit(req, RATE_LIMIT_POST);
   if (limited) return limited;
@@ -30,16 +30,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'recipientId and message are required.' }, { status: 400 });
   }
 
+  if (recipientId === sender.id) {
+    return NextResponse.json({ error: 'Cannot send messages to yourself.' }, { status: 400 });
+  }
+
   const sb = getServiceSupabase();
 
   // Validate sender↔recipient relationship
   if (sender.account_type === 'member') {
-    // Members can only message their organizer
-    if (sender.organizer_id !== recipientId) {
+    if (!sender.organizer_id) {
       return NextResponse.json(
-        { error: 'You can only send messages to your organizer.' },
+        { error: 'Member account not linked to an organizer.' },
         { status: 403 },
       );
+    }
+    // Members can message their organizer or other members in the same group
+    if (recipientId !== sender.organizer_id) {
+      const { data: peer } = await sb
+        .from('profiles')
+        .select('id')
+        .eq('id', recipientId)
+        .eq('organizer_id', sender.organizer_id)
+        .single();
+
+      if (!peer) {
+        return NextResponse.json(
+          { error: 'You can only message members in your group.' },
+          { status: 403 },
+        );
+      }
     }
   } else {
     // Organizers can only message their own members
@@ -78,7 +97,7 @@ export async function POST(req: NextRequest) {
   sendPushToUser(recipientId, {
     title: `${senderName}`,
     body: message.trim().slice(0, 100),
-    url: '/',
+    url: '/notifications',
   }).catch((err) => {
     logger.error('Push notification failed', { error: String(err) });
   });
@@ -107,8 +126,8 @@ export async function GET(req: NextRequest) {
     .order('created_at', { ascending: false })
     .limit(50);
 
-  if (memberId && user.account_type !== 'member') {
-    // Organizer filtering by specific member
+  if (memberId) {
+    // Filter to specific conversation partner
     query = query.or(
       `and(sender_id.eq.${user.id},recipient_id.eq.${memberId}),and(sender_id.eq.${memberId},recipient_id.eq.${user.id})`,
     );

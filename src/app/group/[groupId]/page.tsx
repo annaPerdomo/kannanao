@@ -110,12 +110,11 @@ export default function GroupDashboardPage() {
     [commitEdit, cancelEdit],
   );
 
-  // Wrap sendEncouragement to include groupId
   const handleSendEncouragement = useCallback(
     async (memberId: string, message: string, emoji?: string) => {
-      return sendEncouragement(memberId, message, emoji, groupId);
+      return sendEncouragement(memberId, message, emoji);
     },
-    [sendEncouragement, groupId],
+    [sendEncouragement],
   );
 
   // Redirect members away
