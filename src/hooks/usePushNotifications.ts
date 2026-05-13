@@ -19,10 +19,18 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return arr;
 }
 
-/** Wait for the service worker registered by next-pwa to be ready. Times out to avoid hanging forever. */
+/** Get the service worker registration, falling back to getRegistration() if no controller is active yet. */
 async function getServiceWorkerRegistration(
   timeoutMs = 10_000,
 ): Promise<ServiceWorkerRegistration> {
+  // If a controller already exists, .ready resolves immediately
+  if (navigator.serviceWorker.controller) {
+    return navigator.serviceWorker.ready;
+  }
+  // On first visit the SW may be installed but not yet controlling — use getRegistration()
+  const existing = await navigator.serviceWorker.getRegistration();
+  if (existing) return existing;
+  // Last resort: wait for next-pwa to finish registration
   const ready = navigator.serviceWorker.ready;
   const timeout = new Promise<never>((_, reject) =>
     setTimeout(

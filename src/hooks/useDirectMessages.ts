@@ -56,9 +56,9 @@ export function useDirectMessages(memberId?: string) {
   useEffect(() => {
     if (!user || !isConfigured()) return;
 
-    // Build a filter that catches messages sent to OR from this user
+    const channelName = memberId ? `dm:${user.id}:${memberId}` : `dm:${user.id}`;
     const channel = sb
-      .channel(`dm:${user.id}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -69,6 +69,8 @@ export function useDirectMessages(memberId?: string) {
         },
         (payload) => {
           const row = payload.new as DirectMessage;
+          // When filtering by memberId, only accept messages from that member
+          if (memberId && row.sender_id !== memberId) return;
           setMessages((prev) => {
             if (prev.some((m) => m.id === row.id)) return prev;
             return [row, ...prev];
@@ -97,7 +99,7 @@ export function useDirectMessages(memberId?: string) {
       void sb.removeChannel(channel);
       channelRef.current = null;
     };
-  }, [user]);
+  }, [user, memberId]);
 
   const sendMessage = useCallback(async (recipientId: string, message: string) => {
     const res = await fetch('/api/messages', {

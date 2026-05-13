@@ -22,7 +22,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <Box
         component="main"
         id="main-content"
-        sx={{ flex: 1, pb: { xs: `${BOTTOM_NAV_HEIGHT}px`, sm: 0 } }}
+        sx={{
+          flex: 1,
+          pb: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom))`, sm: 0 },
+        }}
       >
         <AuthGuard>{children}</AuthGuard>
       </Box>
