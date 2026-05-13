@@ -5,9 +5,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockGetSession = vi.fn();
 
+const mockChannel = {
+  on: vi.fn().mockReturnThis(),
+  subscribe: vi.fn().mockReturnThis(),
+};
+
 vi.mock('@/lib/supabase', () => ({
   sb: {
     auth: { getSession: () => mockGetSession() },
+    channel: vi.fn(() => mockChannel),
+    removeChannel: vi.fn(),
   },
   isConfigured: vi.fn(() => true),
 }));
