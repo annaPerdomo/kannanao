@@ -59,14 +59,11 @@ export function usePushNotifications() {
 
     setPermission(Notification.permission);
 
-    // Check existing subscription — use getRegistration() as fallback for iOS PWA
-    // where controller may be null on fresh launch from home screen
+    // Check existing subscription via the shared helper (handles iOS PWA where
+    // controller may be null on fresh launch from home screen)
     const checkSubscription = async () => {
       try {
-        const reg = navigator.serviceWorker.controller
-          ? await navigator.serviceWorker.ready
-          : await navigator.serviceWorker.getRegistration();
-        if (!reg) return;
+        const reg = await getServiceWorkerRegistration();
 
         const sub = await reg.pushManager.getSubscription();
         if (sub) {

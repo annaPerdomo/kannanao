@@ -47,7 +47,9 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
   // Mark messages as read when unread messages appear in the open conversation
   useEffect(() => {
     if (hasUnread) {
-      void markAllAsRead().then(() => refetchGlobal());
+      void markAllAsRead()
+        .then(() => refetchGlobal())
+        .catch(() => {});
     }
   }, [hasUnread, markAllAsRead, refetchGlobal]);
 
