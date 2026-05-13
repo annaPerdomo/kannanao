@@ -9,7 +9,7 @@ import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
 
-/** POST — organizer sends an encouragement as direct messages to member(s) */
+/** POST — organizer sends an encouragement as a direct message to a member */
 export async function POST(req: NextRequest) {
   const limited = await rateLimit(req, RATE_LIMIT);
   if (limited) return limited;

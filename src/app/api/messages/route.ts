@@ -30,10 +30,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'recipientId and message are required.' }, { status: 400 });
   }
 
+  if (recipientId === sender.id) {
+    return NextResponse.json({ error: 'Cannot send messages to yourself.' }, { status: 400 });
+  }
+
   const sb = getServiceSupabase();
 
   // Validate sender↔recipient relationship
   if (sender.account_type === 'member') {
+    if (!sender.organizer_id) {
+      return NextResponse.json(
+        { error: 'Member account not linked to an organizer.' },
+        { status: 403 },
+      );
+    }
     // Members can message their organizer or other members in the same group
     if (recipientId !== sender.organizer_id) {
       const { data: peer } = await sb

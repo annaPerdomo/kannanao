@@ -102,10 +102,14 @@ export function usePushNotifications() {
           endpoint: json.endpoint,
           keys: json.keys,
         }),
-      }).catch(() => {
-        // If server save fails, revert so the user can retry
-        setIsSubscribed(false);
-      });
+      })
+        .then((res) => {
+          if (!res.ok) setIsSubscribed(false);
+        })
+        .catch(() => {
+          // If server save fails, revert so the user can retry
+          setIsSubscribed(false);
+        });
     } finally {
       setLoading(false);
     }

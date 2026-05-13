@@ -23,6 +23,10 @@ export async function GET(req: NextRequest) {
   const sb = getServiceSupabase();
   const peers: { id: string; username: string; display_name: string | null; role: string }[] = [];
 
+  if (user.account_type === 'member' && !user.organizer_id) {
+    return NextResponse.json([], { status: 200 });
+  }
+
   if (user.account_type === 'member' && user.organizer_id) {
     // Members see other members in same group + their organizer
     const [membersResult, organizerResult] = await Promise.all([
