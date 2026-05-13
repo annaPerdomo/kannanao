@@ -182,7 +182,7 @@ describe('useDirectMessages', () => {
 
   // ── markAllAsRead ─────────────────────────────────────────────────────────
 
-  it('marks all unread messages as read', async () => {
+  it('marks all unread messages as read via batch endpoint', async () => {
     const anotherUnread = { ...DM_UNREAD, id: 'd3', message: 'Another one' };
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -192,12 +192,17 @@ describe('useDirectMessages', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.unreadCount).toBe(2);
 
-    mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) });
 
     await act(async () => {
       await result.current.markAllAsRead();
     });
 
     expect(result.current.unreadCount).toBe(0);
+
+    // Should use a single batch POST, not individual PATCH calls
+    const batchCall = mockFetch.mock.calls[1];
+    expect(batchCall[0]).toBe('/api/messages/read-all');
+    expect(batchCall[1].method).toBe('POST');
   });
 });

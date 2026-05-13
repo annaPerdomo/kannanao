@@ -75,7 +75,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
       await sendMessage(recipientId, message);
       setText('');
       // Sync sent message to global context so conversation list updates
-      void refetchGlobalRef.current();
+      void refetchGlobalRef.current().catch(() => {});
     } finally {
       setSending(false);
     }

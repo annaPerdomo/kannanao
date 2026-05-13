@@ -66,6 +66,8 @@ export function useDirectMessages(memberId?: string) {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const channelRef = useRef<ReturnType<typeof sb.channel> | null>(null);
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   const unreadCount = messages.filter((m) => !m.read_at && m.recipient_id === user?.id).length;
 
@@ -111,8 +113,8 @@ export function useDirectMessages(memberId?: string) {
           const row = payload.new as DirectMessage;
           // When filtering by memberId, only accept messages from that member
           if (memberId && row.sender_id !== memberId) return;
-          // Insert the raw row immediately for responsiveness, then refetch
-          // to get the joined sender/recipient profile data (Bug 2 fix)
+          // Guard against duplicate INSERT deliveries
+          if (messagesRef.current.some((m) => m.id === row.id)) return;
           setMessages((prev) => {
             if (prev.some((m) => m.id === row.id)) return prev;
             return [row, ...prev];
@@ -178,19 +180,18 @@ export function useDirectMessages(memberId?: string) {
 
   const markAsRead = useCallback(
     async (id: string) => {
-      // Only mark messages where the current user is the recipient (Bug 6 fix)
+      // Skip if this isn't a message addressed to the current user
+      const msg = messagesRef.current.find((m) => m.id === id);
+      if (!msg || msg.recipient_id !== user?.id) return;
       setMessages((prev) =>
-        prev.map((m) =>
-          m.id === id && m.recipient_id === user?.id
-            ? { ...m, read_at: new Date().toISOString() }
-            : m,
-        ),
+        prev.map((m) => (m.id === id ? { ...m, read_at: new Date().toISOString() } : m)),
       );
       try {
-        await fetch(`/api/messages/${id}/read`, {
+        const res = await fetch(`/api/messages/${id}/read`, {
           method: 'PATCH',
           headers: await authHeaders(),
         });
+        if (!res.ok) await fetchMessages();
       } catch {
         await fetchMessages();
       }
@@ -199,19 +200,20 @@ export function useDirectMessages(memberId?: string) {
   );
 
   const markAllAsRead = useCallback(async () => {
-    // Optimistic update — use functional updater to avoid stale closure (Bug 4 fix)
+    // Optimistic update — use functional updater to avoid stale closure
     setMessages((prev) =>
       prev.map((m) =>
         !m.read_at && m.recipient_id === user?.id ? { ...m, read_at: new Date().toISOString() } : m,
       ),
     );
-    // Single batch API call instead of N individual requests (Bug 1 fix)
+    // Single batch API call instead of N individual requests
     try {
-      await fetch('/api/messages/read-all', {
+      const res = await fetch('/api/messages/read-all', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify(memberId ? { senderId: memberId } : {}),
       });
+      if (!res.ok) await fetchMessages();
     } catch {
       await fetchMessages();
     }
