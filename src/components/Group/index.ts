@@ -7,7 +7,6 @@ export { CreateInviteDialog } from './CreateInviteDialog';
 export { EditAssignmentDialog } from './EditAssignmentDialog';
 export { EncouragementEmojiPicker } from './EncouragementEmojiPicker';
 export { EncouragementForm } from './EncouragementForm';
-export { EncouragementInbox } from './EncouragementInbox';
 export { GroupCard } from './GroupCard';
 export { GroupEncouragementForm } from './GroupEncouragementForm';
 export { GroupHomeWidget } from './GroupHomeWidget';

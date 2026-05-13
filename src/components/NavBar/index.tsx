@@ -1,7 +1,6 @@
 'use client';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import FlightIcon from '@mui/icons-material/Flight';
 import GroupsIcon from '@mui/icons-material/Groups';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
@@ -24,17 +23,9 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import {
-  EncouragementInbox,
-  hasBeenPrompted,
-  MessageThread,
-  NotificationPrompt,
-} from '@/components/Group';
 import { useAuth } from '@/contexts/AuthContext';
-import { useDirectMessages } from '@/hooks/useDirectMessages';
-import { useEncouragements } from '@/hooks/useEncouragements';
-import { useProgress } from '@/hooks/useProgress';
-import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
+import { useProgressCtx } from '@/contexts/ProgressContext';
 import { LAYOUT } from '@/theme';
 
 import { EditNameDialog } from './EditNameDialog';
@@ -54,64 +45,13 @@ export function NavBar() {
   const isGroup = pathname?.startsWith('/group') ?? false;
   const isTravel = pathname?.startsWith('/travel') ?? false;
 
-  const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgress();
-  const { user, loading: authLoading, updateDisplayName, isMemberAccount, organizerId } = useAuth();
-  const { encouragements, unreadCount, markAsRead, markAllAsRead } = useEncouragements();
-  const {
-    messages: dmMessages,
-    unreadCount: dmUnreadCount,
-    sendMessage,
-    markAllAsRead: markAllDmRead,
-  } = useDirectMessages();
-  const pushNotifications = usePushNotifications();
+  const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgressCtx();
+  const { user, loading: authLoading, updateDisplayName, isMemberAccount } = useAuth();
+  const { unreadCount: dmUnreadCount } = useDirectMessagesCtx();
 
   const [editOpen, setEditOpen] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [saving, setSaving] = useState(false);
-  const [inboxOpen, setInboxOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [pushPromptOpen, setPushPromptOpen] = useState(false);
-
-  // Determine chat partner for message thread
-  const chatPartner = (() => {
-    if (isMemberAccount) {
-      // Member always chats with their organizer — check both directions for name
-      const fromOrg = dmMessages.find((m) => m.sender_id !== user?.id);
-      const toOrg = dmMessages.find((m) => m.sender_id === user?.id);
-      return {
-        id: organizerId ?? '',
-        name:
-          fromOrg?.sender?.display_name ||
-          fromOrg?.sender?.username ||
-          toOrg?.recipient?.display_name ||
-          toOrg?.recipient?.username ||
-          'Your organizer',
-      };
-    }
-    // Organizer: find the most recent member who messaged them
-    const memberMsg = dmMessages.find((m) => m.sender_id !== user?.id);
-    if (memberMsg) {
-      return {
-        id: memberMsg.sender_id,
-        name: memberMsg.sender?.display_name || memberMsg.sender?.username || 'Member',
-      };
-    }
-    return null;
-  })();
-
-  // Show push notification prompt after first chat open if not yet prompted
-  const handleChatOpen = () => {
-    setChatOpen(true);
-    if (
-      pushNotifications.isSupported &&
-      !pushNotifications.isSubscribed &&
-      pushNotifications.permission === 'default' &&
-      !hasBeenPrompted()
-    ) {
-      // Show prompt after a short delay so the chat opens first
-      setTimeout(() => setPushPromptOpen(true), 1500);
-    }
-  };
 
   useEffect(() => {
     if (newlyUnlocked.length > 0) {
@@ -283,38 +223,20 @@ export function NavBar() {
           {/* User info — right group */}
           {user ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
-              {/* Direct messages — both members and organizers */}
-              {(isMemberAccount || dmUnreadCount > 0 || chatPartner) && (
-                <IconButton
-                  aria-label="Direct messages"
-                  onClick={handleChatOpen}
-                  sx={{ color: brand[500] }}
+              {/* Direct messages — navigate to notifications page */}
+              <IconButton
+                aria-label="Messages"
+                onClick={() => router.push('/notifications')}
+                sx={{ color: brand[500] }}
+              >
+                <Badge
+                  badgeContent={dmUnreadCount}
+                  color="error"
+                  sx={{ '& .MuiBadge-badge': { fontSize: '0.6rem', minWidth: 16, height: 16 } }}
                 >
-                  <Badge
-                    badgeContent={dmUnreadCount}
-                    color="error"
-                    sx={{ '& .MuiBadge-badge': { fontSize: '0.6rem', minWidth: 16, height: 16 } }}
-                  >
-                    <ChatBubbleOutlineIcon sx={{ fontSize: '1.1rem' }} />
-                  </Badge>
-                </IconButton>
-              )}
-              {/* Encouragement inbox — members only */}
-              {isMemberAccount && (
-                <IconButton
-                  aria-label="Encouragement messages"
-                  onClick={() => setInboxOpen(true)}
-                  sx={{ color: brand[500] }}
-                >
-                  <Badge
-                    badgeContent={unreadCount}
-                    color="error"
-                    sx={{ '& .MuiBadge-badge': { fontSize: '0.6rem', minWidth: 16, height: 16 } }}
-                  >
-                    <FavoriteIcon sx={{ fontSize: '1.1rem' }} />
-                  </Badge>
-                </IconButton>
-              )}
+                  <ChatBubbleOutlineIcon sx={{ fontSize: '1.1rem' }} />
+                </Badge>
+              </IconButton>
               <XpDisplay onClick={() => router.push('/shop')} />
 
               {progress && progress.streak_days > 0 && (
@@ -361,37 +283,6 @@ export function NavBar() {
         onNameInputChange={setNameInput}
         onSave={handleSave}
         saving={saving}
-      />
-
-      {isMemberAccount && (
-        <EncouragementInbox
-          open={inboxOpen}
-          onClose={() => setInboxOpen(false)}
-          encouragements={encouragements}
-          onMarkRead={markAsRead}
-          onMarkAllRead={markAllAsRead}
-        />
-      )}
-
-      {chatPartner && user && (
-        <MessageThread
-          open={chatOpen}
-          onClose={() => setChatOpen(false)}
-          messages={dmMessages}
-          onSend={sendMessage}
-          onMarkAllRead={markAllDmRead}
-          recipientId={chatPartner.id}
-          recipientName={chatPartner.name}
-          currentUserId={user.id}
-          isMember={isMemberAccount}
-        />
-      )}
-
-      <NotificationPrompt
-        open={pushPromptOpen}
-        onClose={() => setPushPromptOpen(false)}
-        onEnable={pushNotifications.subscribe}
-        loading={pushNotifications.loading}
       />
 
       {newlyUnlocked.map((ach, i) => (

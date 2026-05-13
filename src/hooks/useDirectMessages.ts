@@ -4,6 +4,46 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { isConfigured, sb } from '@/lib/supabase';
 
+/** Play a sparkly magical chime using Web Audio API */
+function playMessageSound() {
+  try {
+    const ctx = new AudioContext();
+    const now = ctx.currentTime;
+
+    // Sparkle arpeggio: C6 → E6 → G6 → C7 with shimmer overtones
+    const notes = [1047, 1319, 1568, 2093];
+    notes.forEach((freq, i) => {
+      const delay = i * 0.08;
+
+      // Main tone (sine — soft and pure)
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.12, now + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.5);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now + delay);
+      osc.stop(now + delay + 0.5);
+
+      // Shimmer overtone (triangle — adds sparkle)
+      const shimmer = ctx.createOscillator();
+      const shimGain = ctx.createGain();
+      shimmer.type = 'triangle';
+      shimmer.frequency.value = freq * 2;
+      shimGain.gain.setValueAtTime(0.04, now + delay);
+      shimGain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.3);
+      shimmer.connect(shimGain).connect(ctx.destination);
+      shimmer.start(now + delay);
+      shimmer.stop(now + delay + 0.3);
+    });
+
+    setTimeout(() => void ctx.close(), 900);
+  } catch {
+    // AudioContext not available (e.g. SSR, denied autoplay)
+  }
+}
+
 export interface DirectMessage {
   id: string;
   sender_id: string;
@@ -73,6 +113,7 @@ export function useDirectMessages(memberId?: string) {
           if (memberId && row.sender_id !== memberId) return;
           setMessages((prev) => {
             if (prev.some((m) => m.id === row.id)) return prev;
+            playMessageSound();
             return [row, ...prev];
           });
         },
@@ -84,6 +125,21 @@ export function useDirectMessages(memberId?: string) {
           schema: 'public',
           table: 'direct_messages',
           filter: `sender_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const row = payload.new as DirectMessage;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === row.id ? { ...m, read_at: row.read_at } : m)),
+          );
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'direct_messages',
+          filter: `recipient_id=eq.${user.id}`,
         },
         (payload) => {
           const row = payload.new as DirectMessage;

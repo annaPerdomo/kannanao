@@ -1,29 +1,34 @@
 'use client';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import FlightIcon from '@mui/icons-material/Flight';
 import GroupsIcon from '@mui/icons-material/Groups';
 import HomeIcon from '@mui/icons-material/Home';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import MicIcon from '@mui/icons-material/Mic';
 import StorefrontIcon from '@mui/icons-material/Storefront';
-import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
+import { Badge, BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
 
 interface NavItem {
   label: string;
   icon: React.ReactNode;
   path: string;
   organizerOnly?: boolean;
+  memberOnly?: boolean;
   exact?: boolean;
+  hasBadge?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Home', icon: <HomeIcon />, path: '/', exact: true },
   { label: 'Decks', icon: <LibraryBooksIcon />, path: '/decks' },
   { label: 'Groups', icon: <GroupsIcon />, path: '/group', organizerOnly: true },
+  { label: 'Messages', icon: <ChatBubbleOutlineIcon />, path: '/notifications', hasBadge: true },
   { label: 'Speech', icon: <MicIcon />, path: '/ohanashikai' },
   { label: 'Travel', icon: <FlightIcon />, path: '/travel' },
   { label: 'Stats', icon: <BarChartIcon />, path: '/stats' },
@@ -38,10 +43,13 @@ export function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isMemberAccount } = useAuth();
+  const { unreadCount: dmUnreadCount } = useDirectMessagesCtx();
 
   if (!user) return null;
 
-  const items = NAV_ITEMS.filter((item) => !item.organizerOnly || !isMemberAccount);
+  const items = NAV_ITEMS.filter(
+    (item) => (!item.organizerOnly || !isMemberAccount) && (!item.memberOnly || isMemberAccount),
+  );
   const currentIndex = items.findIndex((item) =>
     item.exact ? pathname === item.path : pathname?.startsWith(item.path),
   );
@@ -91,7 +99,23 @@ export function BottomNav() {
         }}
       >
         {items.map((item) => (
-          <BottomNavigationAction key={item.path} label={item.label} icon={item.icon} />
+          <BottomNavigationAction
+            key={item.path}
+            label={item.label}
+            icon={
+              item.hasBadge ? (
+                <Badge
+                  badgeContent={dmUnreadCount}
+                  color="error"
+                  sx={{ '& .MuiBadge-badge': { fontSize: '0.55rem', minWidth: 14, height: 14 } }}
+                >
+                  {item.icon}
+                </Badge>
+              ) : (
+                item.icon
+              )
+            }
+          />
         ))}
       </BottomNavigation>
     </Paper>
