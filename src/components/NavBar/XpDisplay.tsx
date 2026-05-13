@@ -3,13 +3,13 @@ import { Box, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useEffect, useRef, useState } from 'react';
 
+import { useProgressCtx } from '@/contexts/ProgressContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
-import { useProgress } from '@/hooks/useProgress';
 
 const BURST_EMOJIS = ['✨', '⭐', '🌟', '💫', '🎉'];
 
 export function XpDisplay({ onClick }: { onClick: () => void }) {
-  const { spendableXp, loading } = useProgress();
+  const { spendableXp, loading } = useProgressCtx();
   const { pendingXp } = useXpAnimation();
 
   const [xpBounce, setXpBounce] = useState(false);

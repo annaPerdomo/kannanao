@@ -2,6 +2,8 @@
 import Box from '@mui/material/Box';
 import { usePathname } from 'next/navigation';
 
+import { DirectMessagesProvider } from '@/contexts/DirectMessagesContext';
+import { ProgressProvider } from '@/contexts/ProgressContext';
 import { XpAnimationProvider } from '@/contexts/XpAnimationContext';
 
 import { AuthGuard } from './AuthGuard';
@@ -13,25 +15,33 @@ import { BOTTOM_NAV_HEIGHT, BottomNav } from './NavBar/BottomNav';
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isEmbed = pathname?.startsWith('/embed/');
+  const isFullHeight = pathname?.startsWith('/notifications');
 
   if (isEmbed) return <>{children}</>;
 
   return (
     <XpAnimationProvider>
-      <NavBar />
-      <Box
-        component="main"
-        id="main-content"
-        sx={{
-          flex: 1,
-          pb: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom))`, sm: 0 },
-        }}
-      >
-        <AuthGuard>{children}</AuthGuard>
-      </Box>
-      <Footer />
-      <BottomNav />
-      <GlobalBuddy />
+      <ProgressProvider>
+        <DirectMessagesProvider>
+          <NavBar />
+          <Box
+            component="main"
+            id="main-content"
+            sx={{
+              flex: 1,
+              pb: isFullHeight
+                ? 0
+                : { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom))`, sm: 0 },
+              ...(isFullHeight && { overflow: 'hidden' }),
+            }}
+          >
+            <AuthGuard>{children}</AuthGuard>
+          </Box>
+          {!isFullHeight && <Footer />}
+          <BottomNav />
+          <GlobalBuddy />
+        </DirectMessagesProvider>
+      </ProgressProvider>
     </XpAnimationProvider>
   );
 }
