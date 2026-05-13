@@ -59,14 +59,48 @@ export function usePushNotifications() {
 
     setPermission(Notification.permission);
 
-    // Only check existing subscription if a SW is already active
-    if (navigator.serviceWorker.controller) {
-      navigator.serviceWorker.ready.then((reg) => {
-        reg.pushManager.getSubscription().then((sub) => {
-          setIsSubscribed(!!sub);
-        });
-      });
-    }
+    // Check existing subscription — use getRegistration() as fallback for iOS PWA
+    // where controller may be null on fresh launch from home screen
+    const checkSubscription = async () => {
+      try {
+        const reg = navigator.serviceWorker.controller
+          ? await navigator.serviceWorker.ready
+          : await navigator.serviceWorker.getRegistration();
+        if (!reg) return;
+
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          setIsSubscribed(true);
+          return;
+        }
+
+        // Permission granted but subscription lost (iOS drops subscriptions when PWA is killed).
+        // Auto-resubscribe so push keeps working across app launches.
+        if (Notification.permission === 'granted') {
+          const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+          if (!vapidKey) return;
+
+          const newSub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
+          });
+
+          const json = newSub.toJSON();
+          const headers = await authHeaders();
+          const res = await fetch('/api/push/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...headers },
+            body: JSON.stringify({ endpoint: json.endpoint, keys: json.keys }),
+          });
+
+          setIsSubscribed(res.ok);
+        }
+      } catch {
+        // Silently fail — user can manually subscribe via the prompt
+      }
+    };
+
+    void checkSubscription();
   }, []);
 
   const subscribe = useCallback(async () => {
