@@ -8,6 +8,7 @@ import { AuthGuard } from './AuthGuard';
 import { Footer } from './Footer';
 import { GlobalBuddy } from './GlobalBuddy';
 import { NavBar } from './NavBar';
+import { BOTTOM_NAV_HEIGHT, BottomNav } from './NavBar/BottomNav';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -18,10 +19,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <XpAnimationProvider>
       <NavBar />
-      <Box component="main" id="main-content" sx={{ flex: 1 }}>
+      <Box
+        component="main"
+        id="main-content"
+        sx={{
+          flex: 1,
+          pb: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom))`, sm: 0 },
+        }}
+      >
         <AuthGuard>{children}</AuthGuard>
       </Box>
       <Footer />
+      <BottomNav />
       <GlobalBuddy />
     </XpAnimationProvider>
   );

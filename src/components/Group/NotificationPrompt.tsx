@@ -59,6 +59,7 @@ export function NotificationPrompt({ open, onClose, onEnable, loading }: Notific
       icon={<NotificationsActiveIcon sx={{ color: brand[600], fontSize: 22 }} />}
       titleId="notification-prompt-title"
       maxWidth="xs"
+      paperSx={{ maxWidth: 360 }}
       actions={
         <Stack direction="row" gap={1}>
           <Button onClick={handleDismiss} disabled={loading}>

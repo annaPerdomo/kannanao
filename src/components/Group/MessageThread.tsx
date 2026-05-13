@@ -1,5 +1,7 @@
 'use client';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import DoneIcon from '@mui/icons-material/Done';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
 import SendIcon from '@mui/icons-material/Send';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -157,16 +159,31 @@ export function MessageThread({
                   >
                     {m.message}
                   </Typography>
-                  <Typography
+                  <Box
                     sx={{
-                      fontSize: '0.6rem',
-                      color: 'text.secondary',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: isMine ? 'flex-end' : 'flex-start',
+                      gap: 0.3,
                       mt: 0.3,
-                      textAlign: isMine ? 'right' : 'left',
                     }}
                   >
-                    {timeAgo(m.created_at)}
-                  </Typography>
+                    <Typography
+                      component="span"
+                      sx={{ fontSize: '0.6rem', color: 'text.secondary' }}
+                    >
+                      {timeAgo(m.created_at)}
+                    </Typography>
+                    {isMine &&
+                      (m.read_at ? (
+                        <DoneAllIcon sx={{ fontSize: 12, color: accent[400] }} aria-label="Read" />
+                      ) : (
+                        <DoneIcon
+                          sx={{ fontSize: 12, color: 'text.secondary' }}
+                          aria-label="Sent"
+                        />
+                      ))}
+                  </Box>
                 </Box>
               </Box>
             );

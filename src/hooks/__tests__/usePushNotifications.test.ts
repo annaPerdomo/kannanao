@@ -56,6 +56,8 @@ describe('usePushNotifications', () => {
     Object.defineProperty(navigator, 'serviceWorker', {
       value: {
         ready: Promise.resolve(mockServiceWorkerRegistration),
+        controller: {},
+        register: vi.fn().mockResolvedValue(mockServiceWorkerRegistration),
       },
       writable: true,
       configurable: true,
