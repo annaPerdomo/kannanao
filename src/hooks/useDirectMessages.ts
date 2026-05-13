@@ -66,6 +66,8 @@ export function useDirectMessages(memberId?: string) {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const channelRef = useRef<ReturnType<typeof sb.channel> | null>(null);
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   const unreadCount = messages.filter((m) => !m.read_at && m.recipient_id === user?.id).length;
 
@@ -111,11 +113,15 @@ export function useDirectMessages(memberId?: string) {
           const row = payload.new as DirectMessage;
           // When filtering by memberId, only accept messages from that member
           if (memberId && row.sender_id !== memberId) return;
+          // Guard against duplicate INSERT deliveries
+          if (messagesRef.current.some((m) => m.id === row.id)) return;
           setMessages((prev) => {
             if (prev.some((m) => m.id === row.id)) return prev;
-            playMessageSound();
             return [row, ...prev];
           });
+          playMessageSound();
+          // Refetch to populate sender/recipient profile joins
+          void fetchMessages();
         },
       )
       .on(
@@ -155,7 +161,7 @@ export function useDirectMessages(memberId?: string) {
       void sb.removeChannel(channel);
       channelRef.current = null;
     };
-  }, [user, memberId]);
+  }, [user, memberId, fetchMessages]);
 
   const sendMessage = useCallback(async (recipientId: string, message: string) => {
     const res = await fetch('/api/messages', {
@@ -174,38 +180,44 @@ export function useDirectMessages(memberId?: string) {
 
   const markAsRead = useCallback(
     async (id: string) => {
+      // Skip if this isn't a message addressed to the current user
+      const msg = messagesRef.current.find((m) => m.id === id);
+      if (!msg || msg.recipient_id !== user?.id) return;
       setMessages((prev) =>
         prev.map((m) => (m.id === id ? { ...m, read_at: new Date().toISOString() } : m)),
       );
       try {
-        await fetch(`/api/messages/${id}/read`, {
+        const res = await fetch(`/api/messages/${id}/read`, {
           method: 'PATCH',
           headers: await authHeaders(),
         });
+        if (!res.ok) await fetchMessages();
       } catch {
         await fetchMessages();
       }
     },
-    [fetchMessages],
+    [fetchMessages, user?.id],
   );
 
   const markAllAsRead = useCallback(async () => {
-    const unread = messages.filter((m) => !m.read_at && m.recipient_id === user?.id);
+    // Optimistic update — use functional updater to avoid stale closure
     setMessages((prev) =>
       prev.map((m) =>
         !m.read_at && m.recipient_id === user?.id ? { ...m, read_at: new Date().toISOString() } : m,
       ),
     );
-    const headers = await authHeaders();
-    await Promise.all(
-      unread.map((m) =>
-        fetch(`/api/messages/${m.id}/read`, {
-          method: 'PATCH',
-          headers,
-        }).catch(() => {}),
-      ),
-    );
-  }, [messages, user?.id]);
+    // Single batch API call instead of N individual requests
+    try {
+      const res = await fetch('/api/messages/read-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+        body: JSON.stringify(memberId ? { senderId: memberId } : {}),
+      });
+      if (!res.ok) await fetchMessages();
+    } catch {
+      await fetchMessages();
+    }
+  }, [user?.id, memberId, fetchMessages]);
 
   return {
     messages,

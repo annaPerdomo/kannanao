@@ -4,7 +4,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SendIcon from '@mui/icons-material/Send';
 import { Avatar, Box, Button, Chip, IconButton, TextField, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { groupByDate, QUICK_MESSAGES_MEMBER } from '@/components/Group/MessageThread/constants';
 import { MessageBubble } from '@/components/Group/MessageThread/MessageBubble';
@@ -35,6 +35,17 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
 
   const hasUnread = messages.some((m) => !m.read_at && m.recipient_id === user?.id);
 
+  // Stable ref for markAllAsRead to avoid effect re-runs (Bug 5 fix)
+  const markAllRef = useRef(markAllAsRead);
+  markAllRef.current = markAllAsRead;
+  const refetchGlobalRef = useRef(refetchGlobal);
+  refetchGlobalRef.current = refetchGlobal;
+
+  const markAndSync = useCallback(async () => {
+    await markAllRef.current();
+    await refetchGlobalRef.current();
+  }, []);
+
   // Scroll to bottom when messages change
   useEffect(() => {
     if (scrollRef.current) {
@@ -47,11 +58,9 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
   // Mark messages as read when unread messages appear in the open conversation
   useEffect(() => {
     if (hasUnread) {
-      void markAllAsRead()
-        .then(() => refetchGlobal())
-        .catch(() => {});
+      void markAndSync().catch(() => {});
     }
-  }, [hasUnread, markAllAsRead, refetchGlobal]);
+  }, [hasUnread, markAndSync]);
 
   // Reset input when switching conversations
   useEffect(() => {
@@ -65,6 +74,8 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
     try {
       await sendMessage(recipientId, message);
       setText('');
+      // Sync sent message to global context so conversation list updates
+      void refetchGlobalRef.current().catch(() => {});
     } finally {
       setSending(false);
     }
