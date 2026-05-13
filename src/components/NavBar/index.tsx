@@ -200,7 +200,7 @@ export function NavBar() {
           {user && (
             <Box
               sx={{
-                display: 'flex',
+                display: { xs: 'none', sm: 'flex' },
                 alignItems: 'center',
                 gap: 0.5,
                 mx: 'auto',
@@ -276,8 +276,9 @@ export function NavBar() {
             </Box>
           )}
 
-          {/* Spacer when nav links are hidden (unauthenticated) */}
+          {/* Spacer when nav links are hidden (unauthenticated or mobile) */}
           {!user && <Box sx={{ flex: 1 }} />}
+          {user && <Box sx={{ display: { xs: 'flex', sm: 'none' }, flex: 1 }} />}
 
           {/* User info — right group */}
           {user ? (
