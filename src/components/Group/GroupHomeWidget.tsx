@@ -9,6 +9,7 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
 import type { GroupMember } from '@/hooks/useGroup';
@@ -20,13 +21,22 @@ interface GroupHomeWidgetProps {
   groupEmoji?: string;
 }
 
-function statusColor(lastActive: string | null): string {
-  if (!lastActive) return '#9CA3AF';
+function statusColor(lastActive: string | null, brand: Record<number, string>): string {
+  if (!lastActive) return brand[300];
   const diff = Date.now() - new Date(lastActive).getTime();
   const days = diff / (24 * 60 * 60 * 1000);
   if (days < 1) return '#22C55E';
   if (days < 3) return '#EAB308';
-  return '#9CA3AF';
+  return brand[300];
+}
+
+function statusTooltip(lastActive: string | null): string {
+  if (!lastActive) return 'Never active';
+  const diff = Date.now() - new Date(lastActive).getTime();
+  const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+  if (days < 1) return 'Active today';
+  if (days === 1) return 'Active yesterday';
+  return `Active ${days} days ago`;
 }
 
 export function GroupHomeWidget({
@@ -101,23 +111,31 @@ export function GroupHomeWidget({
         </Stack>
       </Stack>
 
-      {/* Member avatars row */}
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.5 }}>
+      {/* Member list */}
+      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.5, flexWrap: 'wrap' }}>
+        <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: brand[600] }}>
+          Members:
+        </Typography>
         {members.slice(0, 5).map((m) => (
-          <Stack key={m.id} direction="row" alignItems="center" spacing={0.5}>
-            <Box
-              sx={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                bgcolor: statusColor(m.lastActive),
-                flexShrink: 0,
-              }}
-            />
-            <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: 'text.primary' }} noWrap>
-              {m.displayName || m.username}
-            </Typography>
-          </Stack>
+          <Tooltip key={m.id} title={statusTooltip(m.lastActive)} arrow>
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  bgcolor: statusColor(m.lastActive, brand),
+                  flexShrink: 0,
+                }}
+              />
+              <Typography
+                sx={{ fontSize: '0.72rem', fontWeight: 600, color: 'text.primary' }}
+                noWrap
+              >
+                {m.displayName || m.username}
+              </Typography>
+            </Stack>
+          </Tooltip>
         ))}
         {members.length > 5 && (
           <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
