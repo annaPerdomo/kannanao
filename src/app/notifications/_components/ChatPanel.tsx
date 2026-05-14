@@ -1,6 +1,8 @@
 'use client';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CloseIcon from '@mui/icons-material/Close';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import SendIcon from '@mui/icons-material/Send';
 import { Avatar, Box, Button, Chip, IconButton, TextField, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -8,10 +10,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { groupByDate, QUICK_MESSAGES_MEMBER } from '@/components/Group/MessageThread/constants';
 import { MessageBubble } from '@/components/Group/MessageThread/MessageBubble';
+import { TypingBubble } from '@/components/Group/MessageThread/TypingBubble';
 import { Loading } from '@/components/Loading';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
+import { useTick } from '@/hooks/useTick';
+import { useTypingIndicator } from '@/hooks/useTypingIndicator';
+import { sb } from '@/lib/supabase';
 
 interface ChatPanelProps {
   recipientId: string;
@@ -27,9 +33,14 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
   const { messages, sendMessage, markAllAsRead, loading } = useDirectMessages(recipientId);
   const { refetch: refetchGlobal } = useDirectMessagesCtx();
 
+  const tick = useTick();
+  const { isRecipientTyping, sendTyping } = useTypingIndicator(recipientId);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const initial = recipientName.charAt(0).toUpperCase();
 
@@ -62,18 +73,54 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
     }
   }, [hasUnread, markAndSync]);
 
+  const clearImage = useCallback(() => {
+    setImagePreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setImageFile(null);
+  }, []);
+
   // Reset input when switching conversations
   useEffect(() => {
     setText('');
-  }, [recipientId]);
+    clearImage();
+  }, [recipientId, clearImage]);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    e.target.value = '';
+  };
 
   const handleSend = async (msg?: string) => {
     const message = msg ?? text.trim();
-    if (!message || sending) return;
+    if ((!message && !imageFile) || sending) return;
     setSending(true);
     try {
-      await sendMessage(recipientId, message);
+      let imageUrl: string | undefined;
+      if (imageFile) {
+        const buf = await imageFile.arrayBuffer();
+        const base64 = btoa(new Uint8Array(buf).reduce((s, b) => s + String.fromCharCode(b), ''));
+        const { data: sess } = await sb.auth.getSession();
+        const token = sess.session?.access_token;
+        const res = await fetch('/api/messages/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ base64, mimeType: imageFile.type }),
+        });
+        if (!res.ok) throw new Error('Image upload failed');
+        const { url } = await res.json();
+        imageUrl = url;
+      }
+      await sendMessage(recipientId, message, imageUrl);
       setText('');
+      clearImage();
       // Sync sent message to global context so conversation list updates
       void refetchGlobalRef.current().catch(() => {});
     } finally {
@@ -193,11 +240,13 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
                   isMine={m.sender_id === user?.id}
                   initial={m.sender_id === user?.id ? 'Me' : initial}
                   index={i}
+                  tick={tick}
                 />
               ))}
             </Box>
           ))
         )}
+        {isRecipientTyping && <TypingBubble initial={initial} />}
       </Box>
 
       {/* Quick replies (members) */}
@@ -226,6 +275,59 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
         </Box>
       )}
 
+      {/* Image preview */}
+      {imagePreview && (
+        <Box sx={{ px: 2, pt: 1, display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+          <Box
+            sx={{
+              position: 'relative',
+              width: 64,
+              height: 64,
+              borderRadius: 2,
+              overflow: 'hidden',
+              border: `1.5px solid ${alpha(brand[300], 0.5)}`,
+              flexShrink: 0,
+            }}
+          >
+            <Box
+              component="img"
+              src={imagePreview}
+              alt="Selected"
+              sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+            <IconButton
+              size="small"
+              onClick={clearImage}
+              aria-label="Remove image"
+              sx={{
+                position: 'absolute',
+                top: 2,
+                right: 2,
+                width: 18,
+                height: 18,
+                bgcolor: alpha('#000', 0.5),
+                color: '#fff',
+                '&:hover': { bgcolor: alpha('#000', 0.7) },
+              }}
+            >
+              <CloseIcon sx={{ fontSize: 12 }} />
+            </IconButton>
+          </Box>
+          <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+            {imageFile?.name}
+          </Typography>
+        </Box>
+      )}
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={handleImageSelect}
+        style={{ display: 'none' }}
+      />
+
       {/* Input bar */}
       <Box
         sx={{
@@ -235,16 +337,32 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
           display: 'flex',
           alignItems: 'center',
           gap: 1,
-          borderTop: `1px solid ${alpha(brand[200], 0.3)}`,
+          borderTop: imagePreview ? 'none' : `1px solid ${alpha(brand[200], 0.3)}`,
           flexShrink: 0,
         }}
       >
+        <IconButton
+          onClick={() => fileInputRef.current?.click()}
+          disabled={sending}
+          aria-label="Attach photo"
+          size="small"
+          sx={{
+            color: brand[500],
+            flexShrink: 0,
+            '&:hover': { color: brand[700], bgcolor: alpha(brand[100], 0.5) },
+          }}
+        >
+          <PhotoCameraIcon sx={{ fontSize: isMemberAccount ? 24 : 20 }} />
+        </IconButton>
         <TextField
           size="small"
           fullWidth
           placeholder="Type a message..."
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+            if (e.target.value.trim()) sendTyping();
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -263,7 +381,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
         <Button
           variant="contained"
           onClick={() => void handleSend()}
-          disabled={sending || !text.trim()}
+          disabled={sending || (!text.trim() && !imageFile)}
           aria-label="Send message"
           sx={{
             minWidth: 0,

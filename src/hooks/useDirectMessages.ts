@@ -48,7 +48,8 @@ export interface DirectMessage {
   id: string;
   sender_id: string;
   recipient_id: string;
-  message: string;
+  message: string | null;
+  image_url?: string | null;
   read_at: string | null;
   created_at: string;
   sender?: { display_name: string | null; username: string } | null;
@@ -163,20 +164,23 @@ export function useDirectMessages(memberId?: string) {
     };
   }, [user, memberId, fetchMessages]);
 
-  const sendMessage = useCallback(async (recipientId: string, message: string) => {
-    const res = await fetch('/api/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-      body: JSON.stringify({ recipientId, message }),
-    });
-    if (!res.ok) {
-      const json = await res.json().catch(() => null);
-      throw new Error(json?.error ?? 'Failed to send message');
-    }
-    const newMsg = await res.json();
-    setMessages((prev) => [newMsg, ...prev]);
-    return newMsg;
-  }, []);
+  const sendMessage = useCallback(
+    async (recipientId: string, message: string, imageUrl?: string) => {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+        body: JSON.stringify({ recipientId, message: message || undefined, imageUrl }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => null);
+        throw new Error(json?.error ?? 'Failed to send message');
+      }
+      const newMsg = await res.json();
+      setMessages((prev) => [newMsg, ...prev]);
+      return newMsg;
+    },
+    [],
+  );
 
   const markAsRead = useCallback(
     async (id: string) => {

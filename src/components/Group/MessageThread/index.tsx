@@ -1,9 +1,12 @@
 'use client';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import CloseIcon from '@mui/icons-material/Close';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import SendIcon from '@mui/icons-material/Send';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
 import { alpha, useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -11,9 +14,13 @@ import { useEffect, useRef, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
 import type { DirectMessage } from '@/hooks/useDirectMessages';
+import { useTick } from '@/hooks/useTick';
+import { useTypingIndicator } from '@/hooks/useTypingIndicator';
+import { sb } from '@/lib/supabase';
 
 import { groupByDate, QUICK_MESSAGES_MEMBER } from './constants';
 import { MessageBubble } from './MessageBubble';
+import { TypingBubble } from './TypingBubble';
 import { TypingDots } from './TypingDots';
 
 /* ── Sparkle decorations ─────────────────────────────────────────────────── */
@@ -77,7 +84,7 @@ interface MessageThreadProps {
   open: boolean;
   onClose: () => void;
   messages: DirectMessage[];
-  onSend: (recipientId: string, message: string) => Promise<unknown>;
+  onSend: (recipientId: string, message: string, imageUrl?: string) => Promise<unknown>;
   onMarkAllRead: () => void;
   recipientId: string;
   recipientName: string;
@@ -98,12 +105,17 @@ export function MessageThread({
 }: MessageThreadProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const tick = useTick();
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { isRecipientTyping, sendTyping } = useTypingIndicator(recipientId);
   const recipientInitial = recipientName.charAt(0).toUpperCase();
 
   // Scroll to bottom when dialog opens or messages change
@@ -131,13 +143,48 @@ export function MessageThread({
     onClose();
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const url = URL.createObjectURL(file);
+    setImagePreview(url);
+    // Reset input so selecting the same file again triggers onChange
+    e.target.value = '';
+  };
+
+  const clearImage = () => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
   const handleSend = async (msg?: string) => {
     const message = msg ?? text.trim();
-    if (!message || sending) return;
+    if ((!message && !imageFile) || sending) return;
     setSending(true);
     try {
-      await onSend(recipientId, message);
+      let imageUrl: string | undefined;
+      if (imageFile) {
+        const buf = await imageFile.arrayBuffer();
+        const base64 = btoa(new Uint8Array(buf).reduce((s, b) => s + String.fromCharCode(b), ''));
+        const { data: sess } = await sb.auth.getSession();
+        const token = sess.session?.access_token;
+        const res = await fetch('/api/messages/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ base64, mimeType: imageFile.type }),
+        });
+        if (!res.ok) throw new Error('Image upload failed');
+        const { url } = await res.json();
+        imageUrl = url;
+      }
+      await onSend(recipientId, message, imageUrl);
       setText('');
+      clearImage();
       setSent(true);
       clearTimeout(sentTimerRef.current);
       sentTimerRef.current = setTimeout(() => setSent(false), 2000);
@@ -235,11 +282,13 @@ export function MessageThread({
                     isMine={m.sender_id === currentUserId}
                     initial={m.sender_id === currentUserId ? '!' : recipientInitial}
                     index={i}
+                    tick={tick}
                   />
                 ))}
               </Box>
             ))
           )}
+          {isRecipientTyping && <TypingBubble initial={recipientInitial} />}
         </Box>
       </Box>
 
@@ -282,6 +331,59 @@ export function MessageThread({
         </Box>
       )}
 
+      {/* Image preview */}
+      {imagePreview && (
+        <Box sx={{ px: 2, pt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box
+            sx={{
+              position: 'relative',
+              width: 64,
+              height: 64,
+              borderRadius: 2,
+              overflow: 'hidden',
+              border: `1.5px solid ${alpha(brand[300], 0.5)}`,
+              flexShrink: 0,
+            }}
+          >
+            <Box
+              component="img"
+              src={imagePreview}
+              alt="Selected"
+              sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+            <IconButton
+              size="small"
+              onClick={clearImage}
+              aria-label="Remove image"
+              sx={{
+                position: 'absolute',
+                top: 2,
+                right: 2,
+                width: 18,
+                height: 18,
+                bgcolor: alpha('#000', 0.5),
+                color: '#fff',
+                '&:hover': { bgcolor: alpha('#000', 0.7) },
+              }}
+            >
+              <CloseIcon sx={{ fontSize: 12 }} />
+            </IconButton>
+          </Box>
+          <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+            {imageFile?.name}
+          </Typography>
+        </Box>
+      )}
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={handleImageSelect}
+        style={{ display: 'none' }}
+      />
+
       {/* Input area */}
       <Box
         sx={{
@@ -291,15 +393,31 @@ export function MessageThread({
           display: 'flex',
           alignItems: 'center',
           gap: 1,
-          borderTop: `1px solid ${alpha(brand[200], 0.3)}`,
+          borderTop: imagePreview ? 'none' : `1px solid ${alpha(brand[200], 0.3)}`,
         }}
       >
+        <IconButton
+          onClick={() => fileInputRef.current?.click()}
+          disabled={sending}
+          aria-label="Attach photo"
+          size="small"
+          sx={{
+            color: brand[500],
+            flexShrink: 0,
+            '&:hover': { color: brand[700], bgcolor: alpha(brand[100], 0.5) },
+          }}
+        >
+          <PhotoCameraIcon sx={{ fontSize: isMember ? 24 : 20 }} />
+        </IconButton>
         <TextField
           size="small"
           fullWidth
           placeholder="Type a message..."
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+            if (e.target.value.trim()) sendTyping();
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -318,7 +436,7 @@ export function MessageThread({
         <Button
           variant="contained"
           onClick={() => void handleSend()}
-          disabled={sending || !text.trim()}
+          disabled={sending || (!text.trim() && !imageFile)}
           aria-label="Send message"
           sx={{
             minWidth: 0,

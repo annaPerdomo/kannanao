@@ -14,9 +14,17 @@ interface MessageBubbleProps {
   isMine: boolean;
   initial: string;
   index: number;
+  /** Changed periodically by useTick to force timestamp refresh */
+  tick?: number;
 }
 
-export function MessageBubble({ message, isMine, initial, index }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  isMine,
+  initial,
+  index,
+  tick: _tick,
+}: MessageBubbleProps) {
   const { palette } = useTheme();
   const { brand } = palette;
 
@@ -59,16 +67,49 @@ export function MessageBubble({ message, isMine, initial, index }: MessageBubble
       <Box
         sx={{
           maxWidth: '75%',
-          px: 1.5,
-          py: 1,
+          px: message.image_url ? 0.5 : 1.5,
+          py: message.image_url ? 0.5 : 1,
           borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
           bgcolor: isMine ? alpha(brand[400], 0.2) : alpha(brand[100], 0.5),
           border: `1px solid ${isMine ? alpha(brand[400], 0.3) : alpha(brand[200], 0.4)}`,
+          overflow: 'hidden',
         }}
       >
-        <Typography sx={{ fontSize: '0.88rem', color: 'text.primary', wordBreak: 'break-word' }}>
-          {message.message}
-        </Typography>
+        {message.image_url && (
+          <Box
+            component="a"
+            href={message.image_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ display: 'block', lineHeight: 0 }}
+          >
+            <Box
+              component="img"
+              src={message.image_url}
+              alt="Shared photo"
+              sx={{
+                maxWidth: '100%',
+                maxHeight: 220,
+                borderRadius: message.message ? '12px 12px 4px 4px' : '12px',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          </Box>
+        )}
+        {message.message && (
+          <Typography
+            sx={{
+              fontSize: '0.88rem',
+              color: 'text.primary',
+              wordBreak: 'break-word',
+              px: message.image_url ? 1 : 0,
+              pt: message.image_url ? 0.5 : 0,
+            }}
+          >
+            {message.message}
+          </Typography>
+        )}
         <Box
           sx={{
             display: 'flex',
@@ -76,6 +117,8 @@ export function MessageBubble({ message, isMine, initial, index }: MessageBubble
             justifyContent: isMine ? 'flex-end' : 'flex-start',
             gap: 0.3,
             mt: 0.3,
+            px: message.image_url ? 1 : 0,
+            pb: message.image_url ? 0.3 : 0,
           }}
         >
           <Typography component="span" sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>

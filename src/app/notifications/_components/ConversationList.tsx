@@ -246,7 +246,7 @@ export function ConversationList({
                       }}
                     >
                       {c.lastMessage.sender_id === userId ? 'You: ' : ''}
-                      {c.lastMessage.message}
+                      {c.lastMessage.message || (c.lastMessage.image_url ? '📷 Photo' : '')}
                     </Typography>
                   </Box>
                   {c.unreadCount > 0 && (
