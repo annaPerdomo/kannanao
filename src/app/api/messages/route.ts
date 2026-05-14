@@ -24,10 +24,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
   }
 
-  const { recipientId, message } = body as { recipientId: string; message: string };
+  const { recipientId, message, imageUrl } = body as {
+    recipientId: string;
+    message: string;
+    imageUrl?: string;
+  };
 
-  if (!recipientId || !message?.trim()) {
-    return NextResponse.json({ error: 'recipientId and message are required.' }, { status: 400 });
+  if (!recipientId || (!message?.trim() && !imageUrl)) {
+    return NextResponse.json(
+      { error: 'recipientId and at least one of message or imageUrl are required.' },
+      { status: 400 },
+    );
   }
 
   if (recipientId === sender.id) {
@@ -74,15 +81,14 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const { data, error } = await sb
-    .from('direct_messages')
-    .insert({
-      sender_id: sender.id,
-      recipient_id: recipientId,
-      message: message.trim().slice(0, 500),
-    })
-    .select()
-    .single();
+  const insertRow: Record<string, unknown> = {
+    sender_id: sender.id,
+    recipient_id: recipientId,
+  };
+  if (message?.trim()) insertRow.message = message.trim().slice(0, 500);
+  if (imageUrl) insertRow.image_url = imageUrl;
+
+  const { data, error } = await sb.from('direct_messages').insert(insertRow).select().single();
 
   if (error) {
     logger.error('Failed to send message', {
@@ -94,9 +100,10 @@ export async function POST(req: NextRequest) {
 
   // Fire push notification (non-blocking)
   const senderName = sender.display_name || sender.username;
+  const pushBody = message?.trim() ? message.trim().slice(0, 100) : '📷 Photo';
   sendPushToUser(recipientId, {
     title: `${senderName}`,
-    body: message.trim().slice(0, 100),
+    body: pushBody,
     url: '/notifications',
   }).catch((err) => {
     logger.error('Push notification failed', { error: String(err) });
