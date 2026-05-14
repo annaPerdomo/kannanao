@@ -167,7 +167,7 @@ export function MessageThread({
       let imageUrl: string | undefined;
       if (imageFile) {
         const buf = await imageFile.arrayBuffer();
-        const base64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+        const base64 = btoa(new Uint8Array(buf).reduce((s, b) => s + String.fromCharCode(b), ''));
         const { data: sess } = await sb.auth.getSession();
         const token = sess.session?.access_token;
         const res = await fetch('/api/messages/upload', {

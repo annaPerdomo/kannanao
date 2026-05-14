@@ -37,6 +37,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Validate imageUrl points to our Supabase Storage bucket
+  if (imageUrl) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
+    const allowedPrefix = `${supabaseUrl}/storage/v1/object/public/card-images/chat/`;
+    if (!imageUrl.startsWith(allowedPrefix)) {
+      return NextResponse.json(
+        { error: 'imageUrl must be a valid uploaded chat image.' },
+        { status: 400 },
+      );
+    }
+  }
+
   if (recipientId === sender.id) {
     return NextResponse.json({ error: 'Cannot send messages to yourself.' }, { status: 400 });
   }
