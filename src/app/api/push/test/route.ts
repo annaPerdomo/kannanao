@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
+
 import { rateLimit } from '../../_lib/rateLimit';
 import {
   type AuthenticatedUser,
@@ -18,11 +20,15 @@ export async function POST(req: NextRequest) {
   if (authCheck instanceof NextResponse) return authCheck;
   const user = authCheck as AuthenticatedUser;
 
-  await sendPushToUser(user.id, {
-    title: 'Test notification',
-    body: 'Push notifications are working!',
-    url: '/notifications',
-  });
-
-  return NextResponse.json({ success: true });
+  try {
+    await sendPushToUser(user.id, {
+      title: 'Test notification',
+      body: 'Push notifications are working!',
+      url: '/notifications',
+    });
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    logger.error('Failed to send test push notification', { userId: user.id, error: err });
+    return NextResponse.json({ error: 'Failed to send notification' }, { status: 500 });
+  }
 }

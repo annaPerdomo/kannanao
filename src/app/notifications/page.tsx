@@ -34,7 +34,11 @@ export default function NotificationsPage() {
   const [selected, setSelected] = useState<SelectedConversation | null>(null);
   const [pushPromptDismissed, setPushPromptDismissed] = useState(() => {
     if (typeof window === 'undefined') return true;
-    return localStorage.getItem(PUSH_DISMISSED_KEY) === 'true';
+    try {
+      return localStorage.getItem(PUSH_DISMISSED_KEY) === 'true';
+    } catch {
+      return false;
+    }
   });
 
   const dismissPrompt = useCallback(() => {
@@ -52,10 +56,15 @@ export default function NotificationsPage() {
     return null;
   }
 
-  // Only prompt when the browser hasn't been asked yet (permission === 'default').
-  // If permission is already 'granted', auto-resubscribe in the hook handles it silently.
+  // Prompt when browser hasn't been asked yet (permission === 'default'),
+  // OR when permission was granted but the subscription is missing (e.g. iOS dropped it,
+  // server save failed, user cleared site data). This ensures users can recover.
   const showPushPrompt =
-    push.isSupported && !push.initializing && push.permission === 'default' && !pushPromptDismissed;
+    push.isSupported &&
+    !push.initializing &&
+    push.permission !== 'denied' &&
+    (!push.isSubscribed || push.permission === 'default') &&
+    !pushPromptDismissed;
 
   return (
     <>
