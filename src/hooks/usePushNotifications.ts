@@ -27,9 +27,10 @@ async function getServiceWorkerRegistration(
   if (navigator.serviceWorker.controller) {
     return navigator.serviceWorker.ready;
   }
-  // On first visit the SW may be installed but not yet controlling — use getRegistration()
+  // On first visit the SW may be installed but not yet controlling — use getRegistration(),
+  // but only if it has an active worker (pushManager.subscribe requires an active SW).
   const existing = await navigator.serviceWorker.getRegistration();
-  if (existing) return existing;
+  if (existing?.active) return existing;
   // Last resort: wait for next-pwa to finish registration
   const ready = navigator.serviceWorker.ready;
   const timeout = new Promise<never>((_, reject) =>
@@ -46,6 +47,7 @@ export function usePushNotifications() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
     const supported =
@@ -55,7 +57,10 @@ export function usePushNotifications() {
       'Notification' in window;
 
     setIsSupported(supported);
-    if (!supported) return;
+    if (!supported) {
+      setInitializing(false);
+      return;
+    }
 
     setPermission(Notification.permission);
 
@@ -94,6 +99,8 @@ export function usePushNotifications() {
         }
       } catch {
         // Silently fail — user can manually subscribe via the prompt
+      } finally {
+        setInitializing(false);
       }
     };
 
@@ -166,5 +173,5 @@ export function usePushNotifications() {
     }
   }, []);
 
-  return { permission, isSubscribed, isSupported, loading, subscribe, unsubscribe };
+  return { permission, isSubscribed, isSupported, loading, initializing, subscribe, unsubscribe };
 }
