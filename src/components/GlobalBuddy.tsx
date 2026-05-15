@@ -6,7 +6,7 @@ import { useShopCtx } from '@/contexts/ShopContext';
 
 import { HomeBuddy } from './HomeBuddy';
 
-const HIDE_ON_ROUTES = ['/practice/', '/study', '/login', '/landing', '/embed/'];
+const HIDE_ON_ROUTES = ['/practice/', '/study', '/login', '/landing', '/embed/', '/notifications'];
 
 export function GlobalBuddy() {
   const pathname = usePathname();

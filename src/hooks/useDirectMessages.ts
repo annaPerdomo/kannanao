@@ -4,6 +4,23 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { isConfigured, sb } from '@/lib/supabase';
 
+/** Show a browser notification when the tab is hidden (user is on another tab). */
+function showTabNotification(msg: DirectMessage) {
+  if (typeof document === 'undefined' || !document.hidden) return;
+  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+  const name = msg.sender?.display_name ?? msg.sender?.username ?? 'Someone';
+  const body = msg.message ?? (msg.image_url ? '📷 Sent a photo' : 'New message');
+  const n = new Notification(name, {
+    body,
+    icon: '/icons/icon-192.png',
+    tag: `dm-${msg.id}`,
+  });
+  n.onclick = () => {
+    window.focus();
+    n.close();
+  };
+}
+
 /** Play a sparkly magical chime using Web Audio API */
 function playMessageSound() {
   try {
@@ -121,6 +138,7 @@ export function useDirectMessages(memberId?: string) {
             return [row, ...prev];
           });
           playMessageSound();
+          showTabNotification(row);
           // Refetch to populate sender/recipient profile joins
           void fetchMessages();
         },

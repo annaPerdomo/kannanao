@@ -19,6 +19,8 @@ import { useTick } from '@/hooks/useTick';
 import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 import { sb } from '@/lib/supabase';
 
+import { SendingIndicator, sendPulse } from './SendingIndicator';
+
 interface ChatPanelProps {
   recipientId: string;
   recipientName: string;
@@ -187,6 +189,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
         ref={scrollRef}
         sx={{
           flex: 1,
+          minHeight: 0,
           overflowY: 'auto',
           px: 2,
           py: 2,
@@ -328,16 +331,25 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
         style={{ display: 'none' }}
       />
 
+      {/* Sending indicator */}
+      {sending && (
+        <SendingIndicator
+          brandColor={brand[400]}
+          accentColor={accent[300]}
+          brandTextColor={brand[500]}
+        />
+      )}
+
       {/* Input bar */}
       <Box
         sx={{
           px: 2,
-          pb: 2,
+          pb: { xs: 2.5, sm: 2 },
           pt: 1,
           display: 'flex',
           alignItems: 'center',
           gap: 1,
-          borderTop: imagePreview ? 'none' : `1px solid ${alpha(brand[200], 0.3)}`,
+          borderTop: imagePreview || sending ? 'none' : `1px solid ${alpha(brand[200], 0.3)}`,
           flexShrink: 0,
         }}
       >
@@ -393,6 +405,13 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
             background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
             transition: 'transform 0.15s ease',
             '&:hover:not(:disabled)': { transform: 'scale(1.1)' },
+            ...(sending && {
+              animation: `${sendPulse} 1s ease-in-out infinite`,
+              '&.Mui-disabled': {
+                background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
+                color: '#fff',
+              },
+            }),
           }}
         >
           <SendIcon sx={{ fontSize: 18 }} />

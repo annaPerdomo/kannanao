@@ -4,7 +4,7 @@ import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
@@ -15,6 +15,8 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 import { ChatPanel } from './_components/ChatPanel';
 import { ConversationList } from './_components/ConversationList';
+
+const PUSH_DISMISSED_KEY = 'kannanao:push-prompt-dismissed';
 
 interface SelectedConversation {
   id: string;
@@ -30,7 +32,23 @@ export default function NotificationsPage() {
   const push = usePushNotifications();
 
   const [selected, setSelected] = useState<SelectedConversation | null>(null);
-  const [pushPromptDismissed, setPushPromptDismissed] = useState(false);
+  const [pushPromptDismissed, setPushPromptDismissed] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      return localStorage.getItem(PUSH_DISMISSED_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const dismissPrompt = useCallback(() => {
+    setPushPromptDismissed(true);
+    try {
+      localStorage.setItem(PUSH_DISMISSED_KEY, 'true');
+    } catch {
+      // localStorage unavailable (e.g. private browsing quota)
+    }
+  }, []);
 
   if (authLoading || dmLoading) return <Loading />;
   if (!user) {
@@ -38,8 +56,15 @@ export default function NotificationsPage() {
     return null;
   }
 
+  // Prompt when browser hasn't been asked yet (permission === 'default'),
+  // OR when permission was granted but the subscription is missing (e.g. iOS dropped it,
+  // server save failed, user cleared site data). This ensures users can recover.
   const showPushPrompt =
-    push.isSupported && !push.isSubscribed && push.permission !== 'denied' && !pushPromptDismissed;
+    push.isSupported &&
+    !push.initializing &&
+    push.permission !== 'denied' &&
+    (!push.isSubscribed || push.permission === 'default') &&
+    !pushPromptDismissed;
 
   return (
     <>
@@ -116,7 +141,7 @@ export default function NotificationsPage() {
       {/* Push notification prompt — appears every visit until enabled or dismissed */}
       <StyledDialog
         open={showPushPrompt}
-        onClose={() => setPushPromptDismissed(true)}
+        onClose={dismissPrompt}
         title="Stay in the loop!"
         subtitle="Get notified when you receive new messages"
         icon={<NotificationsActiveIcon sx={{ color: brand[600], fontSize: 22 }} />}
@@ -124,7 +149,7 @@ export default function NotificationsPage() {
         actions={
           <Stack direction="row" spacing={1.5} sx={{ width: '100%' }}>
             <Button
-              onClick={() => setPushPromptDismissed(true)}
+              onClick={dismissPrompt}
               sx={{
                 flex: 1,
                 textTransform: 'none',
@@ -142,7 +167,7 @@ export default function NotificationsPage() {
                 } catch {
                   // Subscription may fail (SW not ready, etc.) — still dismiss
                 }
-                setPushPromptDismissed(true);
+                dismissPrompt();
               }}
               disabled={push.loading}
               sx={{
