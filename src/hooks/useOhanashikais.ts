@@ -10,6 +10,7 @@ import {
   dbDeleteOhanashikaiLine,
   dbImportOhanashikaiLines,
   dbPinOhanashikai,
+  dbReorderOhanashikaiLines,
   dbUpdateOhanashikaiLine,
   dbUpdateOhanashikaiTitle,
   loadOhanashikaiLines,
@@ -122,5 +123,21 @@ export function useOhanashikaiLines(ohanashikaiId: string) {
     [ohanashikaiId, lines.length],
   );
 
-  return { lines, loading, addLine, updateLine, deleteLine, importLines };
+  const reorderLines = useCallback(
+    async (reordered: OhanashikaiLine[]) => {
+      const prev = lines;
+      const updated = reordered.map((l, i) => ({ ...l, orderIndex: i }));
+      setLines(updated);
+      try {
+        await dbReorderOhanashikaiLines(
+          updated.map((l) => ({ id: l.id, orderIndex: l.orderIndex })),
+        );
+      } catch {
+        setLines(prev);
+      }
+    },
+    [lines],
+  );
+
+  return { lines, loading, addLine, updateLine, deleteLine, importLines, reorderLines };
 }

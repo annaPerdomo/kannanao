@@ -26,6 +26,7 @@ interface SpeechLineRowProps {
   onCommitEdit: () => void;
   onCancelEdit: () => void;
   onDelete: (id: string) => void;
+  dragHandle?: React.ReactNode;
 }
 
 export function SpeechLineRow({
@@ -40,6 +41,7 @@ export function SpeechLineRow({
   onCommitEdit,
   onCancelEdit,
   onDelete,
+  dragHandle,
 }: SpeechLineRowProps) {
   const isEditing = editingId === lineId;
 
@@ -56,6 +58,7 @@ export function SpeechLineRow({
         boxShadow: `0 1px 6px ${alpha(brandPalette[200], 0.1)}`,
       }}
     >
+      {dragHandle}
       <Box
         sx={{
           minWidth: 28,

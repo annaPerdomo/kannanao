@@ -1,5 +1,15 @@
 'use client';
 
+import type { DragEndEvent } from '@dnd-kit/core';
+import {
+  closestCenter,
+  DndContext,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import AddIcon from '@mui/icons-material/Add';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import CheckIcon from '@mui/icons-material/Check';
@@ -25,7 +35,11 @@ import { useCallback, useRef, useState } from 'react';
 import { Label } from '@/components/Deck';
 import { stripFurigana } from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
-import { BulkImportArea, SpeechLineRow, SpeechPracticeTiles } from '@/components/OhanashikaiDetail';
+import {
+  BulkImportArea,
+  SortableSpeechLineRow,
+  SpeechPracticeTiles,
+} from '@/components/OhanashikaiDetail';
 import { PageHeader } from '@/components/PageHeader';
 import { useOhanashikaiLines, useOhanashikais } from '@/hooks/useOhanashikais';
 import { useSpeech } from '@/hooks/useSpeech';
@@ -48,9 +62,26 @@ export default function OhanashikaiDetail({
   const { brand } = theme.palette;
 
   const { ohanashikais, renameOhanashikai } = useOhanashikais();
-  const { lines, loading, addLine, updateLine, deleteLine, importLines } =
+  const { lines, loading, addLine, updateLine, deleteLine, importLines, reorderLines } =
     useOhanashikaiLines(ohanashikaiId);
   const { speakAll, stop, speaking } = useSpeech();
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const oldIndex = lines.findIndex((l) => l.id === active.id);
+      const newIndex = lines.findIndex((l) => l.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return;
+      void reorderLines(arrayMove(lines, oldIndex, newIndex));
+    },
+    [lines, reorderLines],
+  );
   const item = ohanashikais.find((o) => o.id === ohanashikaiId);
 
   const [newLineText, setNewLineText] = useState('');
@@ -342,24 +373,35 @@ export default function OhanashikaiDetail({
                 <Loading message="Adding furigana to all lines…" />
               </Box>
             )}
-            <Stack spacing={1}>
-              {lines.map((line, i) => (
-                <SpeechLineRow
-                  key={line.id}
-                  lineId={line.id}
-                  text={line.text}
-                  index={i}
-                  editingId={editingId}
-                  editVal={editVal}
-                  brandPalette={brand}
-                  onStartEdit={startEdit}
-                  onEditValChange={setEditVal}
-                  onCommitEdit={commitEdit}
-                  onCancelEdit={() => setEditingId(null)}
-                  onDelete={deleteLine}
-                />
-              ))}
-            </Stack>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={lines.map((l) => l.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <Stack spacing={1}>
+                  {lines.map((line, i) => (
+                    <SortableSpeechLineRow
+                      key={line.id}
+                      lineId={line.id}
+                      text={line.text}
+                      index={i}
+                      editingId={editingId}
+                      editVal={editVal}
+                      brandPalette={brand}
+                      onStartEdit={startEdit}
+                      onEditValChange={setEditVal}
+                      onCommitEdit={commitEdit}
+                      onCancelEdit={() => setEditingId(null)}
+                      onDelete={deleteLine}
+                    />
+                  ))}
+                </Stack>
+              </SortableContext>
+            </DndContext>
           </Box>
         )}
 
