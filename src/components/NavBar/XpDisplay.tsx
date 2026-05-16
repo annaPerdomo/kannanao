@@ -17,6 +17,7 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
   const [showRing, setShowRing] = useState(false);
   const animatingRef = useRef(false);
   const animationIdRef = useRef(0);
+  const rafIdRef = useRef(0);
   const spendableXpRef = useRef(spendableXp);
   // Track events by key instead of array length so that removed (expired)
   // events don't cause new events to be missed or old ones to be replayed.
@@ -62,14 +63,14 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
         const eased = 1 - Math.pow(1 - t, 3);
         if (t < 1) {
           setDisplayXp(Math.round(startXp + (targetXp - startXp) * eased));
-          requestAnimationFrame(tick);
+          rafIdRef.current = requestAnimationFrame(tick);
         } else {
           animatingRef.current = false;
           // Snap to the true value to correct any drift from double-counting
           setDisplayXp(spendableXpRef.current);
         }
       };
-      requestAnimationFrame(tick);
+      rafIdRef.current = requestAnimationFrame(tick);
 
       return startXp;
     });
@@ -77,6 +78,7 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
     const bounceTimer = setTimeout(() => setXpBounce(false), 1000);
     const ringTimer = setTimeout(() => setShowRing(false), 600);
     return () => {
+      cancelAnimationFrame(rafIdRef.current);
       clearTimeout(bounceTimer);
       clearTimeout(ringTimer);
     };
