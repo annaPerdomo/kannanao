@@ -13,11 +13,24 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
   const { pendingXp } = useXpAnimation();
 
   const [xpBounce, setXpBounce] = useState(false);
-  const [displayXp, setDisplayXp] = useState(0);
+  const [displayXp, setDisplayXp] = useState<number | null>(null);
   const [showRing, setShowRing] = useState(false);
   const animatingRef = useRef(false);
-  const seenEventsRef = useRef(0);
+  const animationIdRef = useRef(0);
+  const rafIdRef = useRef(0);
+  const spendableXpRef = useRef(spendableXp);
+  // Track events by key instead of array length so that removed (expired)
+  // events don't cause new events to be missed or old ones to be replayed.
+  const lastSeenKeyRef = useRef(
+    pendingXp.length > 0 ? Math.max(...pendingXp.map((e) => e.key)) : 0,
+  );
 
+  // Keep ref in sync so the animation end-frame can read the latest value
+  useEffect(() => {
+    spendableXpRef.current = spendableXp;
+  }, [spendableXp]);
+
+  // Ground-truth sync: snap displayXp to spendableXp when no animation is running
   useEffect(() => {
     if (!animatingRef.current) {
       setDisplayXp(spendableXp);
@@ -25,14 +38,15 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
   }, [spendableXp]);
 
   useEffect(() => {
-    if (pendingXp.length <= seenEventsRef.current) return;
-    const newEvents = pendingXp.slice(seenEventsRef.current);
-    seenEventsRef.current = pendingXp.length;
+    const newEvents = pendingXp.filter((e) => e.key > lastSeenKeyRef.current);
+    if (newEvents.length === 0) return;
+    lastSeenKeyRef.current = Math.max(...newEvents.map((e) => e.key));
 
     const totalGain = newEvents.reduce((sum, e) => sum + e.amount, 0);
+    const currentAnimId = ++animationIdRef.current;
 
     setDisplayXp((prev) => {
-      const startXp = prev;
+      const startXp = prev ?? spendableXpRef.current;
       const targetXp = startXp + totalGain;
 
       setXpBounce(true);
@@ -43,17 +57,20 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
       const startTime = Date.now();
 
       const tick = () => {
+        if (animationIdRef.current !== currentAnimId) return;
         const elapsed = Date.now() - startTime;
         const t = Math.min(elapsed / duration, 1);
         const eased = 1 - Math.pow(1 - t, 3);
-        setDisplayXp(Math.round(startXp + (targetXp - startXp) * eased));
         if (t < 1) {
-          requestAnimationFrame(tick);
+          setDisplayXp(Math.round(startXp + (targetXp - startXp) * eased));
+          rafIdRef.current = requestAnimationFrame(tick);
         } else {
           animatingRef.current = false;
+          // Snap to the true value to correct any drift from double-counting
+          setDisplayXp(spendableXpRef.current);
         }
       };
-      requestAnimationFrame(tick);
+      rafIdRef.current = requestAnimationFrame(tick);
 
       return startXp;
     });
@@ -61,12 +78,17 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
     const bounceTimer = setTimeout(() => setXpBounce(false), 1000);
     const ringTimer = setTimeout(() => setShowRing(false), 600);
     return () => {
+      cancelAnimationFrame(rafIdRef.current);
       clearTimeout(bounceTimer);
       clearTimeout(ringTimer);
     };
   }, [pendingXp]);
 
   if (loading) return null;
+
+  // Use spendableXp as fallback before the first sync effect runs,
+  // preventing a flash of "0 XP" on initial load
+  const shownXp = displayXp ?? spendableXp;
 
   return (
     <Box
@@ -141,7 +163,7 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
           fontWeight: 700,
         }}
       >
-        {displayXp.toLocaleString()} XP
+        {shownXp.toLocaleString()} XP
       </Typography>
 
       {/* Floating XP pills — fly downward so they aren't clipped by navbar top */}

@@ -216,6 +216,24 @@ export async function dbDeleteOhanashikaiLine(id: string): Promise<void> {
   if (error) throw error;
 }
 
+/** Bulk-update order_index for a set of lines (used after drag-and-drop reorder) */
+export async function dbReorderOhanashikaiLines(
+  lineOrders: { id: string; orderIndex: number }[],
+): Promise<void> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    return;
+  }
+  // Supabase doesn't support bulk-update by PK in one call, so fire them in parallel.
+  const results = await Promise.all(
+    lineOrders.map(({ id, orderIndex }) =>
+      sb.from('ohanashikai_lines').update({ order_index: orderIndex }).eq('id', id),
+    ),
+  );
+  const firstError = results.find((r) => r.error);
+  if (firstError?.error) throw firstError.error;
+}
+
 /** Bulk-insert multiple lines starting at startOrderIndex */
 export async function dbImportOhanashikaiLines(
   ohanashikaiId: string,
