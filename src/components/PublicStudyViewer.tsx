@@ -196,7 +196,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
   const sessionIdRef = useRef<string>(
     typeof crypto !== 'undefined' ? crypto.randomUUID() : Math.random().toString(36).slice(2),
   );
-  const sessionStartRef = useRef<number>(Date.now());
+  const activeTimeRef = useRef({ elapsed: 0, lastVisible: Date.now() });
   const viewFiredRef = useRef(false);
 
   const trackEvent = useCallback(
@@ -285,28 +285,44 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
   useEffect(() => {
     if (!loading && cards.length > 0 && !viewFiredRef.current) {
       viewFiredRef.current = true;
-      sessionStartRef.current = Date.now();
+      activeTimeRef.current = { elapsed: 0, lastVisible: Date.now() };
       trackEvent('view');
     }
   }, [loading, cards.length, trackEvent]);
 
-  // Fire "session_end" with elapsed duration on unmount or page close.
-  // React cleanup alone is unreliable in iframes — the browser often kills the
-  // process before React unmounts. A pagehide listener with sendBeacon covers
-  // tab close, navigation away, and mobile app-switch.
+  // Track active (visible) time only — pauses when tab is hidden so stale tabs
+  // don't inflate duration.
   const sessionEndFiredRef = useRef(false);
 
+  const getActiveSeconds = useCallback(() => {
+    const at = activeTimeRef.current;
+    const pending = document.hidden ? 0 : Date.now() - at.lastVisible;
+    return Math.round((at.elapsed + pending) / 1000);
+  }, []);
+
   useEffect(() => {
+    const onVisibilityChange = () => {
+      const at = activeTimeRef.current;
+      if (document.hidden) {
+        // Tab became hidden — bank the elapsed time
+        at.elapsed += Date.now() - at.lastVisible;
+      } else {
+        // Tab became visible — start a new active span
+        at.lastVisible = Date.now();
+      }
+    };
+
     const fireSessionEnd = () => {
       if (sessionEndFiredRef.current || !viewFiredRef.current) return;
       sessionEndFiredRef.current = true;
-      const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
-      trackEvent('session_end', { durationSeconds });
+      trackEvent('session_end', { durationSeconds: getActiveSeconds() });
     };
 
+    document.addEventListener('visibilitychange', onVisibilityChange);
     window.addEventListener('pagehide', fireSessionEnd);
 
     return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       window.removeEventListener('pagehide', fireSessionEnd);
       fireSessionEnd();
     };

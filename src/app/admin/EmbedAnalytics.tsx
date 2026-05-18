@@ -65,6 +65,11 @@ function StatCard({ icon, label, value }: StatCardProps) {
 
 function formatDuration(seconds: number | null) {
   if (seconds == null) return '—';
+  if (seconds >= 3600) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return m > 0 ? `${h}h ${m}m` : `${h}h`;
+  }
   if (seconds >= 60) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
   return `${seconds}s`;
 }

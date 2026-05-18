@@ -157,7 +157,11 @@ export async function GET(req: Request) {
     stat.uniqueSessions.add(ev.session_id);
     if (ev.event_type === 'deck_complete') stat.completedSessions.add(ev.session_id);
     if (ev.event_type === 'session_end' && ev.duration_seconds != null) {
-      stat.durations.push(ev.duration_seconds);
+      // Legacy events tracked wall-clock time, so stale tabs produced huge values.
+      // Client now tracks only active (visible) time, but old data may still be bad.
+      if (ev.duration_seconds <= 3600) {
+        stat.durations.push(ev.duration_seconds);
+      }
     }
     if (ev.event_type === 'card_flip' && ev.card_index != null) {
       const prev = stat.sessionMaxCard.get(ev.session_id) ?? -1;

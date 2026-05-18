@@ -265,7 +265,7 @@ export default function AdminPage() {
   if (!data) return null;
 
   const tablePaperSx = {
-    borderRadius: 4,
+    borderRadius: 2.5,
     border: `1px solid ${alpha(brand[200], 0.4)}`,
     bgcolor: surfaces.glass,
     overflow: 'hidden',
