@@ -93,8 +93,7 @@ export function useDirectMessages(memberId?: string) {
   const fetchMessages = useCallback(async () => {
     if (!user) {
       setMessages([]);
-      // Don't set loading=false here — auth may still be loading.
-      // loading will be set to false after the first real fetch completes.
+      setLoading(false);
       return;
     }
     try {

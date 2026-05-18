@@ -51,11 +51,12 @@ export default function NotificationsLayout({ children }: { children: React.Reac
     }
   }, []);
 
-  if (authLoading || dmLoading) return <Loading />;
+  if (authLoading) return <Loading />;
   if (!user) {
     router.push('/login');
     return null;
   }
+  if (dmLoading) return <Loading />;
 
   const showPushPrompt =
     push.isSupported &&

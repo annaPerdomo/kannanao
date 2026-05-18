@@ -88,11 +88,10 @@ describe('useDirectMessages', () => {
     expect(result.current.unreadCount).toBe(1);
   });
 
-  it('sets empty when no user and keeps loading true', async () => {
+  it('sets loading false and empty messages when no user', async () => {
     mockUseAuth.mockReturnValue({ user: null });
     const { result } = renderHook(() => useDirectMessages());
-    // loading stays true when there's no user (page redirects to login)
-    expect(result.current.loading).toBe(true);
+    await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.messages).toEqual([]);
     expect(mockFetch).not.toHaveBeenCalled();
   });
