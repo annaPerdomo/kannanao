@@ -16,11 +16,11 @@ import { useEffect, useState } from 'react';
 
 import { ImageCard } from '@/components/ImageCard';
 import { Loading } from '@/components/Loading';
+import { useInView } from '@/hooks/useInView';
 import { createAppTheme, pink, purple, sky } from '@/theme';
 
 import { Blob } from './Blob';
 import { DEMO_IMAGE_CARDS, DEMO_REVIEW_CARDS, DEMO_WORDS } from './demoData';
-import { useInView } from './useInView';
 
 const sakuraTheme = createAppTheme('sakura');
 
