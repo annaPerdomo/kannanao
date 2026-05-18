@@ -99,15 +99,15 @@ export function ConversationList({ messages, userId, selectedId }: ConversationL
     : conversations;
 
   const navigateTo = useCallback(
-    (id: string, name: string) => {
-      router.push(`/notifications/${id}?name=${encodeURIComponent(name)}`);
+    (id: string) => {
+      router.push(`/notifications/${id}`);
     },
     [router],
   );
 
   const startNewConversation = (peer: Peer) => {
     setNewMsgOpen(false);
-    navigateTo(peer.id, peer.display_name || peer.username);
+    navigateTo(peer.id);
   };
 
   return (
@@ -188,12 +188,11 @@ export function ConversationList({ messages, userId, selectedId }: ConversationL
             filtered.map((c) => (
               <Paper
                 key={c.recipientId}
-                onClick={() => navigateTo(c.recipientId, c.recipientName)}
+                onClick={() => navigateTo(c.recipientId)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ')
-                    navigateTo(c.recipientId, c.recipientName);
+                  if (e.key === 'Enter' || e.key === ' ') navigateTo(c.recipientId);
                 }}
                 sx={{
                   p: 1.5,
