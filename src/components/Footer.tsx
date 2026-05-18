@@ -6,6 +6,7 @@ import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { usePathname, useRouter } from 'next/navigation';
 
+import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
 import { LAYOUT } from '@/theme';
 
 export function Footer() {
@@ -26,6 +27,7 @@ export function Footer() {
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         py: 2.5,
+        pb: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom) + 12px)`, sm: 2.5 },
         px: LAYOUT.pagePx,
       }}
     >
