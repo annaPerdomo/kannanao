@@ -10,7 +10,7 @@ export function middleware(request: NextRequest) {
   if (host === 'kannanao.com' && process.env.NODE_ENV === 'production') {
     const url = request.nextUrl.clone();
     url.host = 'www.kannanao.com';
-    return NextResponse.redirect(url, 301);
+    return NextResponse.redirect(url, 308);
   }
 
   return NextResponse.next();
@@ -24,6 +24,6 @@ export const config = {
      * - _next/image (image optimization)
      * - favicon.ico, icons, manifest, etc.
      */
-    '/((?!_next/static|_next/image|favicon\\.ico|icons/|manifest\\.json|sw\\.js|workbox-).*)',
+    '/((?!_next/static|_next/image|favicon\\.ico|icons/|manifest\\.json|sw\\.js|workbox-|api/).*)',
   ],
 };
