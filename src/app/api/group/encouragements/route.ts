@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
   sendPushToUser(memberId, {
     title: `${emojiChar} ${senderName}`,
     body: message.trim().slice(0, 100),
-    url: '/notifications',
+    url: `/notifications/${orgCheck.id}?name=${encodeURIComponent(senderName)}`,
   }).catch((err) => {
     logger.error('Encouragement push failed', { error: String(err) });
   });

@@ -6,6 +6,7 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import SendIcon from '@mui/icons-material/Send';
 import { Avatar, Box, Button, Chip, IconButton, TextField, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { groupByDate, QUICK_MESSAGES_MEMBER } from '@/components/Group/MessageThread/constants';
@@ -25,14 +26,15 @@ interface ChatPanelProps {
   recipientId: string;
   recipientName: string;
   isMemberAccount: boolean;
-  onBack: () => void;
 }
 
-export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack }: ChatPanelProps) {
+export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatPanelProps) {
+  const router = useRouter();
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const { user } = useAuth();
-  const { messages, sendMessage, markAllAsRead, loading } = useDirectMessages(recipientId);
+  const { messages, sendMessage, markAllAsRead, toggleReaction, loading } =
+    useDirectMessages(recipientId);
   const { refetch: refetchGlobal } = useDirectMessagesCtx();
 
   const tick = useTick();
@@ -42,6 +44,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const initial = recipientName.charAt(0).toUpperCase();
@@ -59,14 +62,16 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
     await refetchGlobalRef.current();
   }, []);
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom when a new message arrives (track latest message ID)
+  const latestMsgId = messages[0]?.id;
   useEffect(() => {
-    if (scrollRef.current) {
-      requestAnimationFrame(() => {
-        if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-      });
-    }
-  }, [messages.length]);
+    if (!latestMsgId) return;
+    // setTimeout ensures React has committed the new DOM node before scrolling
+    const timer = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [latestMsgId]);
 
   // Mark messages as read when unread messages appear in the open conversation
   useEffect(() => {
@@ -151,7 +156,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
         }}
       >
         <IconButton
-          onClick={onBack}
+          onClick={() => router.push('/notifications')}
           size="small"
           aria-label="Back to conversations"
           sx={{
@@ -244,179 +249,204 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount, onBack 
                   initial={m.sender_id === user?.id ? 'Me' : initial}
                   index={i}
                   tick={tick}
+                  userId={user?.id}
+                  onReact={toggleReaction}
                 />
               ))}
             </Box>
           ))
         )}
         {isRecipientTyping && <TypingBubble initial={initial} />}
+        <div ref={messagesEndRef} />
       </Box>
 
-      {/* Quick replies (members) */}
-      {isMemberAccount && (
-        <Box sx={{ px: 2, pb: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5, flexShrink: 0 }}>
-          {QUICK_MESSAGES_MEMBER.map(({ emoji, text: qm }) => (
-            <Chip
-              key={qm}
-              label={`${emoji} ${qm}`}
-              size="small"
-              variant="outlined"
-              onClick={() => void handleSend(qm)}
-              disabled={sending}
-              sx={{
-                borderRadius: '14px',
-                fontWeight: 600,
-                fontSize: '0.72rem',
-                height: 32,
-                borderColor: alpha(brand[300], 0.5),
-                color: brand[700],
-                bgcolor: alpha(brand[50], 0.5),
-                '&:hover': { bgcolor: brand[100] },
-              }}
-            />
-          ))}
-        </Box>
-      )}
-
-      {/* Image preview */}
-      {imagePreview && (
-        <Box sx={{ px: 2, pt: 1, display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-          <Box
-            sx={{
-              position: 'relative',
-              width: 64,
-              height: 64,
-              borderRadius: 2,
-              overflow: 'hidden',
-              border: `1.5px solid ${alpha(brand[300], 0.5)}`,
-              flexShrink: 0,
-            }}
-          >
-            <Box
-              component="img"
-              src={imagePreview}
-              alt="Selected"
-              sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-            <IconButton
-              size="small"
-              onClick={clearImage}
-              aria-label="Remove image"
-              sx={{
-                position: 'absolute',
-                top: 2,
-                right: 2,
-                width: 18,
-                height: 18,
-                bgcolor: alpha('#000', 0.5),
-                color: '#fff',
-                '&:hover': { bgcolor: alpha('#000', 0.7) },
-              }}
-            >
-              <CloseIcon sx={{ fontSize: 12 }} />
-            </IconButton>
-          </Box>
-          <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
-            {imageFile?.name}
-          </Typography>
-        </Box>
-      )}
-
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        onChange={handleImageSelect}
-        style={{ display: 'none' }}
-      />
-
-      {/* Sending indicator */}
-      {sending && (
-        <SendingIndicator
-          brandColor={brand[400]}
-          accentColor={accent[300]}
-          brandTextColor={brand[500]}
-        />
-      )}
-
-      {/* Input bar */}
+      {/* Footer area — quick replies, image preview, input bar */}
       <Box
         sx={{
-          px: 2,
-          pb: { xs: 2.5, sm: 2 },
-          pt: 1,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          borderTop: imagePreview || sending ? 'none' : `1px solid ${alpha(brand[200], 0.3)}`,
           flexShrink: 0,
+          bgcolor: alpha(brand[50], 0.6),
+          borderTop: `1px solid ${alpha(brand[200], 0.4)}`,
+          backdropFilter: 'blur(8px)',
         }}
       >
-        <IconButton
-          onClick={() => fileInputRef.current?.click()}
-          disabled={sending}
-          aria-label="Attach photo"
-          size="small"
-          sx={{
-            color: brand[500],
-            flexShrink: 0,
-            '&:hover': { color: brand[700], bgcolor: alpha(brand[100], 0.5) },
-          }}
-        >
-          <PhotoCameraIcon sx={{ fontSize: isMemberAccount ? 24 : 20 }} />
-        </IconButton>
-        <TextField
-          size="small"
-          fullWidth
-          placeholder="Type a message..."
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            if (e.target.value.trim()) sendTyping();
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              void handleSend();
-            }
-          }}
-          disabled={sending}
-          slotProps={{ htmlInput: { maxLength: 500 } }}
-          sx={{
-            '& .MuiInputBase-root': {
-              fontSize: isMemberAccount ? '1rem' : '0.88rem',
-              minHeight: isMemberAccount ? 48 : 42,
-            },
-          }}
+        {/* Quick replies (members) */}
+        {isMemberAccount && (
+          <Box
+            sx={{
+              px: 2,
+              pt: 1,
+              pb: 0.5,
+              display: 'flex',
+              gap: 0.5,
+              overflowX: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none',
+              '&::-webkit-scrollbar': { display: 'none' },
+            }}
+          >
+            {QUICK_MESSAGES_MEMBER.map(({ emoji, text: qm }) => (
+              <Chip
+                key={qm}
+                label={`${emoji} ${qm}`}
+                size="small"
+                variant="outlined"
+                onClick={() => void handleSend(qm)}
+                disabled={sending}
+                sx={{
+                  borderRadius: '14px',
+                  fontWeight: 600,
+                  fontSize: '0.72rem',
+                  height: 32,
+                  flexShrink: 0,
+                  borderColor: alpha(brand[300], 0.5),
+                  color: brand[700],
+                  bgcolor: alpha(brand[50], 0.5),
+                  '&:hover': { bgcolor: brand[100] },
+                }}
+              />
+            ))}
+          </Box>
+        )}
+
+        {/* Image preview */}
+        {imagePreview && (
+          <Box sx={{ px: 2, pt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box
+              sx={{
+                position: 'relative',
+                width: 64,
+                height: 64,
+                borderRadius: 2,
+                overflow: 'hidden',
+                border: `1.5px solid ${alpha(brand[300], 0.5)}`,
+                flexShrink: 0,
+              }}
+            >
+              <Box
+                component="img"
+                src={imagePreview}
+                alt="Selected"
+                sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              <IconButton
+                size="small"
+                onClick={clearImage}
+                aria-label="Remove image"
+                sx={{
+                  position: 'absolute',
+                  top: 2,
+                  right: 2,
+                  width: 18,
+                  height: 18,
+                  bgcolor: alpha('#000', 0.5),
+                  color: '#fff',
+                  '&:hover': { bgcolor: alpha('#000', 0.7) },
+                }}
+              >
+                <CloseIcon sx={{ fontSize: 12 }} />
+              </IconButton>
+            </Box>
+            <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+              {imageFile?.name}
+            </Typography>
+          </Box>
+        )}
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={handleImageSelect}
+          style={{ display: 'none' }}
         />
-        <Button
-          variant="contained"
-          onClick={() => void handleSend()}
-          disabled={sending || (!text.trim() && !imageFile)}
-          aria-label="Send message"
+
+        {/* Sending indicator */}
+        {sending && (
+          <SendingIndicator
+            brandColor={brand[400]}
+            accentColor={accent[300]}
+            brandTextColor={brand[500]}
+          />
+        )}
+
+        {/* Input bar */}
+        <Box
           sx={{
-            minWidth: 0,
-            width: isMemberAccount ? 48 : 42,
-            height: isMemberAccount ? 48 : 42,
-            borderRadius: '50%',
-            p: 0,
-            flexShrink: 0,
-            background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
-            transition: 'transform 0.15s ease',
-            '&:hover:not(:disabled)': { transform: 'scale(1.1)' },
-            ...(sending && {
-              animation: `${sendPulse} 1s ease-in-out infinite`,
-              '&.Mui-disabled': {
-                background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
-                color: '#fff',
-              },
-            }),
+            px: 2,
+            pb: { xs: 1.5, sm: 1.5 },
+            pt: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
           }}
         >
-          <SendIcon sx={{ fontSize: 18 }} />
-        </Button>
+          <IconButton
+            onClick={() => fileInputRef.current?.click()}
+            disabled={sending}
+            aria-label="Attach photo"
+            size="small"
+            sx={{
+              color: brand[500],
+              flexShrink: 0,
+              '&:hover': { color: brand[700], bgcolor: alpha(brand[100], 0.5) },
+            }}
+          >
+            <PhotoCameraIcon sx={{ fontSize: isMemberAccount ? 24 : 20 }} />
+          </IconButton>
+          <TextField
+            size="small"
+            fullWidth
+            placeholder="Type a message..."
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              if (e.target.value.trim()) sendTyping();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                void handleSend();
+              }
+            }}
+            disabled={sending}
+            slotProps={{ htmlInput: { maxLength: 500 } }}
+            sx={{
+              '& .MuiInputBase-root': {
+                fontSize: '1rem',
+                minHeight: isMemberAccount ? 48 : 42,
+              },
+            }}
+          />
+          <Button
+            variant="contained"
+            onClick={() => void handleSend()}
+            disabled={sending || (!text.trim() && !imageFile)}
+            aria-label="Send message"
+            sx={{
+              minWidth: 0,
+              width: isMemberAccount ? 48 : 42,
+              height: isMemberAccount ? 48 : 42,
+              borderRadius: '50%',
+              p: 0,
+              flexShrink: 0,
+              background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
+              transition: 'transform 0.15s ease',
+              '&:hover:not(:disabled)': { transform: 'scale(1.1)' },
+              ...(sending && {
+                animation: `${sendPulse} 1s ease-in-out infinite`,
+                '&.Mui-disabled': {
+                  background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
+                  color: '#fff',
+                },
+              }),
+            }}
+          >
+            <SendIcon sx={{ fontSize: 18 }} />
+          </Button>
+        </Box>
       </Box>
+      {/* end footer */}
     </>
   );
 }

@@ -2,6 +2,7 @@
 
 import AddIcon from '@mui/icons-material/Add';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import ForumRoundedIcon from '@mui/icons-material/ForumRounded';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Avatar,
@@ -15,6 +16,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
 import { timeAgo } from '@/components/Group/MessageThread/constants';
@@ -62,15 +64,10 @@ interface ConversationListProps {
   messages: DirectMessage[];
   userId: string;
   selectedId?: string;
-  onSelect: (id: string, name: string) => void;
 }
 
-export function ConversationList({
-  messages,
-  userId,
-  selectedId,
-  onSelect,
-}: ConversationListProps) {
+export function ConversationList({ messages, userId, selectedId }: ConversationListProps) {
+  const router = useRouter();
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
@@ -101,18 +98,28 @@ export function ConversationList({
     ? conversations.filter((c) => c.recipientName.toLowerCase().includes(search.toLowerCase()))
     : conversations;
 
+  const navigateTo = useCallback(
+    (id: string, name: string) => {
+      router.push(`/notifications/${id}?name=${encodeURIComponent(name)}`);
+    },
+    [router],
+  );
+
   const startNewConversation = (peer: Peer) => {
     setNewMsgOpen(false);
-    onSelect(peer.id, peer.display_name || peer.username);
+    navigateTo(peer.id, peer.display_name || peer.username);
   };
 
   return (
     <>
       {/* Header area */}
       <Box sx={{ px: 2, pt: 2, pb: 1, flexShrink: 0 }}>
-        <Typography sx={{ fontWeight: 800, fontSize: '1.2rem', color: brand[700], mb: 1.5 }}>
-          💬 Messages
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+          <ForumRoundedIcon sx={{ fontSize: 22, color: brand[500] }} />
+          <Typography sx={{ fontWeight: 800, fontSize: '1.2rem', color: brand[700] }}>
+            Messages
+          </Typography>
+        </Box>
 
         {/* Search */}
         <TextField
@@ -169,7 +176,7 @@ export function ConversationList({
         <Stack spacing={1}>
           {filtered.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography sx={{ fontSize: '2rem', mb: 0.5 }}>💬</Typography>
+              <ChatBubbleOutlineIcon sx={{ fontSize: '2rem', color: brand[300], mb: 0.5 }} />
               <Typography sx={{ fontWeight: 700, color: brand[600], fontSize: '0.85rem' }}>
                 {search ? 'No matches' : 'No messages yet'}
               </Typography>
@@ -181,11 +188,12 @@ export function ConversationList({
             filtered.map((c) => (
               <Paper
                 key={c.recipientId}
-                onClick={() => onSelect(c.recipientId, c.recipientName)}
+                onClick={() => navigateTo(c.recipientId, c.recipientName)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') onSelect(c.recipientId, c.recipientName);
+                  if (e.key === 'Enter' || e.key === ' ')
+                    navigateTo(c.recipientId, c.recipientName);
                 }}
                 sx={{
                   p: 1.5,
