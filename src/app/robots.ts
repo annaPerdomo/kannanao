@@ -18,7 +18,6 @@ export default function robots(): MetadataRoute.Robots {
         '/shop',
         '/stats',
         '/study',
-        '/travel',
       ],
     },
     sitemap: 'https://www.kannanao.com/sitemap.xml',
