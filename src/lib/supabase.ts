@@ -454,6 +454,16 @@ export async function dbRenameDeck(id: string, name: string, description?: strin
 
 // ─── Auth / profiles ─────────────────────────────────────────────────────────
 
+export async function fetchDisplayName(userId: string): Promise<string | null> {
+  if (!isConfigured()) return null;
+  const { data } = await sb
+    .from('profiles')
+    .select('display_name, username')
+    .eq('id', userId)
+    .single();
+  return data?.display_name || data?.username || null;
+}
+
 export async function upsertProfile(
   userId: string,
   username: string,

@@ -88,7 +88,7 @@ describe('useDirectMessages', () => {
     expect(result.current.unreadCount).toBe(1);
   });
 
-  it('sets empty when no user', async () => {
+  it('sets loading false and empty messages when no user', async () => {
     mockUseAuth.mockReturnValue({ user: null });
     const { result } = renderHook(() => useDirectMessages());
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -204,5 +204,81 @@ describe('useDirectMessages', () => {
     const batchCall = mockFetch.mock.calls[1];
     expect(batchCall[0]).toBe('/api/messages/read-all');
     expect(batchCall[1].method).toBe('POST');
+  });
+
+  // ── toggleReaction ──────────────────────────────────────────────────────
+
+  it('optimistically adds a reaction and calls the API', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [{ ...DM_UNREAD, reactions: {} }],
+    });
+    const { result } = renderHook(() => useDirectMessages());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ reactions: { '❤️': ['m1'] } }),
+    });
+
+    await act(async () => {
+      await result.current.toggleReaction('d1', '❤️');
+    });
+
+    // Optimistic: reaction added immediately
+    const msg = result.current.messages.find((m) => m.id === 'd1');
+    expect(msg?.reactions?.['❤️']).toContain('m1');
+
+    // API called
+    const reactCall = mockFetch.mock.calls[1];
+    expect(reactCall[0]).toBe('/api/messages/d1/react');
+    expect(reactCall[1].method).toBe('POST');
+    expect(JSON.parse(reactCall[1].body).emoji).toBe('❤️');
+  });
+
+  it('optimistically removes a reaction when toggled off', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [{ ...DM_UNREAD, reactions: { '😂': ['m1'] } }],
+    });
+    const { result } = renderHook(() => useDirectMessages());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ reactions: {} }),
+    });
+
+    await act(async () => {
+      await result.current.toggleReaction('d1', '😂');
+    });
+
+    const msg = result.current.messages.find((m) => m.id === 'd1');
+    // Emoji key should be removed when user list empties
+    expect(msg?.reactions?.['😂']).toBeUndefined();
+  });
+
+  it('refetches messages when reaction API fails', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [{ ...DM_UNREAD, reactions: {} }],
+    });
+    const { result } = renderHook(() => useDirectMessages());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    // Reaction API fails
+    mockFetch.mockResolvedValueOnce({ ok: false, json: async () => ({}) });
+    // Refetch returns original data
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [{ ...DM_UNREAD, reactions: {} }],
+    });
+
+    await act(async () => {
+      await result.current.toggleReaction('d1', '❤️');
+    });
+
+    // Should have refetched after failure (3 total calls: initial + react + refetch)
+    expect(mockFetch).toHaveBeenCalledTimes(3);
   });
 });

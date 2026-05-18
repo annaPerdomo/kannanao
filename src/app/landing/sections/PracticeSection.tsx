@@ -5,10 +5,10 @@ import Paper from '@mui/material/Paper';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
+import { useInView } from '@/hooks/useInView';
 import { emerald, pink, purple } from '@/theme';
 
 import { Blob } from './Blob';
-import { useInView } from './useInView';
 
 const MODES = [
   {

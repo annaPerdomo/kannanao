@@ -9,12 +9,12 @@ import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useEffect, useMemo, useState } from 'react';
 
+import { useInView } from '@/hooks/useInView';
 import { ACHIEVEMENTS as ALL_ACHIEVEMENTS } from '@/hooks/useProgress';
 import { SHOP_ITEMS as ALL_SHOP_ITEMS } from '@/hooks/useShop';
 import { amber, emerald, lavender, ocean, pink, purple, rose, sky, slate, sunset } from '@/theme';
 
 import { Blob } from './Blob';
-import { useInView } from './useInView';
 
 // Dynamic counts from actual data — exclude comingSoon items
 const THEME_COUNT = ALL_SHOP_ITEMS.filter((i) => i.category === 'theme' && !i.comingSoon).length;

@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
   sendPushToUser(recipientId, {
     title: `${senderName}`,
     body: pushBody,
-    url: '/notifications',
+    url: `/notifications/${sender.id}`,
   }).catch((err) => {
     logger.error('Push notification failed', { error: String(err) });
   });

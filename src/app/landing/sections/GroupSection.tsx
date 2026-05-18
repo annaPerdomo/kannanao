@@ -10,11 +10,11 @@ import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 
 import { PublicFlashcard } from '@/components/PublicFlashcard';
+import { useInView } from '@/hooks/useInView';
 import { createAppTheme, emerald, macChrome, ocean, pink, purple, sky } from '@/theme';
 
 import { Blob } from './Blob';
 import { YUME_CARD } from './demoData';
-import { useInView } from './useInView';
 
 const murasakiTheme = createAppTheme('murasaki');
 

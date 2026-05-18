@@ -67,6 +67,7 @@ export interface DirectMessage {
   recipient_id: string;
   message: string | null;
   image_url?: string | null;
+  reactions?: Record<string, string[]> | null;
   read_at: string | null;
   created_at: string;
   sender?: { display_name: string | null; username: string } | null;
@@ -154,7 +155,9 @@ export function useDirectMessages(memberId?: string) {
         (payload) => {
           const row = payload.new as DirectMessage;
           setMessages((prev) =>
-            prev.map((m) => (m.id === row.id ? { ...m, read_at: row.read_at } : m)),
+            prev.map((m) =>
+              m.id === row.id ? { ...m, read_at: row.read_at, reactions: row.reactions } : m,
+            ),
           );
         },
       )
@@ -169,7 +172,9 @@ export function useDirectMessages(memberId?: string) {
         (payload) => {
           const row = payload.new as DirectMessage;
           setMessages((prev) =>
-            prev.map((m) => (m.id === row.id ? { ...m, read_at: row.read_at } : m)),
+            prev.map((m) =>
+              m.id === row.id ? { ...m, read_at: row.read_at, reactions: row.reactions } : m,
+            ),
           );
         },
       )
@@ -241,6 +246,39 @@ export function useDirectMessages(memberId?: string) {
     }
   }, [user?.id, memberId, fetchMessages]);
 
+  const toggleReaction = useCallback(
+    async (messageId: string, emoji: string) => {
+      if (!user) return;
+      // Optimistic update
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id !== messageId) return m;
+          const reactions = { ...(m.reactions || {}) };
+          const users = reactions[emoji] || [];
+          if (users.includes(user.id)) {
+            const remaining = users.filter((uid) => uid !== user.id);
+            if (remaining.length === 0) delete reactions[emoji];
+            else reactions[emoji] = remaining;
+          } else {
+            reactions[emoji] = [...users, user.id];
+          }
+          return { ...m, reactions };
+        }),
+      );
+      try {
+        const res = await fetch(`/api/messages/${messageId}/react`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+          body: JSON.stringify({ emoji }),
+        });
+        if (!res.ok) await fetchMessages();
+      } catch {
+        await fetchMessages();
+      }
+    },
+    [user, fetchMessages],
+  );
+
   return {
     messages,
     unreadCount,
@@ -248,6 +286,7 @@ export function useDirectMessages(memberId?: string) {
     sendMessage,
     markAsRead,
     markAllAsRead,
+    toggleReaction,
     refetch: fetchMessages,
   };
 }

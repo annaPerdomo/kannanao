@@ -11,12 +11,12 @@ import { useRouter } from 'next/navigation';
 
 import { Flashcard } from '@/components/Flashcard';
 import { useAuth } from '@/contexts/AuthContext';
+import { useInView } from '@/hooks/useInView';
 import { amber, createAppTheme, pink, purple, sky } from '@/theme';
 
 import { Blob } from './Blob';
 import { SAKURA_CARD } from './demoData';
 import { SakuraFallEffect } from './SakuraFallEffect';
-import { useInView } from './useInView';
 
 const sakuraTheme = createAppTheme('sakura');
 

@@ -5,10 +5,10 @@ import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
+import { useInView } from '@/hooks/useInView';
 import { purple, sky } from '@/theme';
 
 import { Blob } from './Blob';
-import { useInView } from './useInView';
 
 const STEPS = [
   {

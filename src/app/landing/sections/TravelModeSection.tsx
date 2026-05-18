@@ -19,10 +19,10 @@ import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+import { useInView } from '@/hooks/useInView';
 import { emerald, lavender, purple, sky, teal } from '@/theme';
 
 import { Blob } from './Blob';
-import { useInView } from './useInView';
 
 const FREE_MODULES = [
   {

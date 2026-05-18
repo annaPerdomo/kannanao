@@ -5,6 +5,7 @@ import { alpha, keyframes, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
 import { BUDDY_CONFIG, BUDDY_HOME_PHRASES } from '@/hooks/useShop';
 
 const idleFloat = keyframes`
@@ -120,7 +121,10 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
 
   const positionStyle = pos
     ? { left: pos.x, top: pos.y, bottom: 'auto', right: 'auto' }
-    : { bottom: { xs: 16, sm: 28 }, right: { xs: 12, sm: 24 } };
+    : {
+        bottom: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom) + 8px)`, sm: 28 },
+        right: { xs: 12, sm: 24 },
+      };
 
   return (
     <Box

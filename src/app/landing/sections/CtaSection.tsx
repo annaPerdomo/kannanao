@@ -11,10 +11,10 @@ import { useRouter } from 'next/navigation';
 
 import WaitlistForm from '@/components/WaitlistForm';
 import { useAuth } from '@/contexts/AuthContext';
+import { useInView } from '@/hooks/useInView';
 import { darkPurple, pink, purple, sky } from '@/theme';
 
 import { Blob } from './Blob';
-import { useInView } from './useInView';
 
 export function CtaSection() {
   const router = useRouter();
