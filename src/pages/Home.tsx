@@ -720,9 +720,7 @@ export default function Home() {
 
   if (loading) {
     return (
-      <Box
-        sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: { xs: 0.5, sm: 1, lg: 1 }, py: 6 }}
-      >
+      <Box sx={{ maxWidth: 1600, mx: 'auto', px: { xs: 0.5, sm: 1, lg: 1 }, py: 6 }}>
         <Loading message="Loading your decks…" />
       </Box>
     );
@@ -731,7 +729,7 @@ export default function Home() {
   return (
     <Box
       sx={{
-        maxWidth: LAYOUT.contentMaxWidth,
+        maxWidth: 1600,
         mx: 'auto',
         px: { xs: 0.5, sm: 1, lg: 1 },
         py: { xs: 3, sm: 5 },
@@ -781,7 +779,7 @@ export default function Home() {
           },
         }}
       />
-      <Stack direction="row" justifyContent="flex-end" sx={{ pt: 0, pb: 3 }}>
+      <Stack direction="row" justifyContent="flex-end" sx={{ pt: 0, pb: 2 }}>
         <Button
           size="small"
           variant={editMode ? 'contained' : 'text'}
@@ -792,6 +790,7 @@ export default function Home() {
             fontWeight: 700,
             textTransform: 'none',
             borderRadius: 2,
+            pt: 1,
             ...(editMode
               ? {
                   bgcolor: (t) => t.palette.brand[600],
@@ -816,7 +815,7 @@ export default function Home() {
         }}
       >
         {isMobile ? (
-          <Stack spacing={2}>
+          <Stack spacing={3}>
             {sectionOrder.map((key) => (
               <DashboardSection
                 key={key}
@@ -838,7 +837,7 @@ export default function Home() {
             gridConfig={{
               cols: 12,
               rowHeight: 30,
-              margin: [12, 16] as const,
+              margin: [35, 16] as const,
               containerPadding: [0, 0] as const,
             }}
             dragConfig={{
