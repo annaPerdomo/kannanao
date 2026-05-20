@@ -1,4 +1,5 @@
 'use client';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import CheckIcon from '@mui/icons-material/Check';
@@ -23,6 +24,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import type { Layout as RGLLayout } from 'react-grid-layout';
 import { GridLayout } from 'react-grid-layout';
 
+import { CustomizeHomeDialog } from '@/components/CustomizeHomeDialog';
 import { DeckCard } from '@/components/DeckCard';
 import {
   AssignmentCard,
@@ -216,7 +218,6 @@ function DashboardSection({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
         ...(editMode && {
           borderRadius: 1,
           border: (t: { palette: { brand: Record<number, string> } }) =>
@@ -282,7 +283,33 @@ function DashboardSection({
           )}
         </Stack>
       )}
-      <Box sx={{ flex: 1, overflow: 'auto', pointerEvents: editMode ? 'none' : 'auto' }}>
+      <Box
+        sx={{
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          pt: 2,
+          pb: 2,
+          px: 0.5,
+          mx: -0.5,
+          pointerEvents: editMode ? 'none' : 'auto',
+          // Themed scrollbar
+          scrollbarWidth: 'thin',
+          scrollbarColor: (t) => `${alpha(t.palette.brand[300], 0.5)} transparent`,
+          '&::-webkit-scrollbar': { width: 6 },
+          '&::-webkit-scrollbar-track': {
+            bgcolor: 'transparent',
+            borderRadius: 3,
+          },
+          '&::-webkit-scrollbar-thumb': {
+            bgcolor: (t) => alpha(t.palette.brand[300], 0.45),
+            borderRadius: 3,
+            '&:hover': {
+              bgcolor: (t) => alpha(t.palette.brand[400], 0.7),
+            },
+          },
+        }}
+      >
         {children}
       </Box>
     </Box>
@@ -290,9 +317,18 @@ function DashboardSection({
 }
 
 export default function Home() {
-  const { decks, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, loading } = useDecks();
-  const { user, displayName, homeSections, updateHomeSections, isMemberAccount, organizerId } =
-    useAuth();
+  const {
+    user,
+    displayName,
+    homeSections,
+    updateHomeSections,
+    isMemberAccount,
+    organizerId,
+    groupShowLeaderboard,
+  } = useAuth();
+  const { decks, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, loading } = useDecks(
+    homeSections.decks,
+  );
   const { progress, spendableXp, addBonusXp } = useProgressCtx();
   const {
     messages: dmMessages,
@@ -300,12 +336,12 @@ export default function Home() {
     sendMessage,
     markAllAsRead: markAllDmRead,
   } = useDirectMessagesCtx();
-  const { ohanashikais } = useOhanashikais();
+  const { ohanashikais } = useOhanashikais(homeSections.speeches);
   const { purchases } = useShopCtx();
-  const { assignments } = useAssignments();
-  const { groups } = useGroups();
-  const { members: groupMembers } = useGroupMembers();
-  const { leaderboard } = useGroupLeaderboard();
+  const { assignments } = useAssignments(undefined, homeSections.assignments);
+  const { groups } = useGroups(homeSections.groups);
+  const { members: groupMembers } = useGroupMembers(undefined, homeSections.groups);
+  const { leaderboard } = useGroupLeaderboard(undefined, homeSections.leaderboard);
   const router = useRouter();
   const ownedItemKeys = purchases.map((p) => p.item_key);
 
@@ -314,6 +350,7 @@ export default function Home() {
   const [shareDeckName, setShareDeckName] = useState('');
   const [homeChatOpen, setHomeChatOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [customizeOpen, setCustomizeOpen] = useState(false);
 
   // Chat partner for member's home widget
   const homeChatPartner = (() => {
@@ -339,10 +376,13 @@ export default function Home() {
 
   // ── Section order + drag ──
   const sectionOrder = useMemo(
-    () => resolveSectionOrder(homeSections, isMemberAccount),
-    [homeSections, isMemberAccount],
+    () => resolveSectionOrder(homeSections, isMemberAccount, groupShowLeaderboard),
+    [homeSections, isMemberAccount, groupShowLeaderboard],
   );
-  const roleKeys = useMemo(() => getSectionsForRole(isMemberAccount), [isMemberAccount]);
+  const roleKeys = useMemo(
+    () => getSectionsForRole(isMemberAccount, groupShowLeaderboard),
+    [isMemberAccount, groupShowLeaderboard],
+  );
   const hiddenKeys = useMemo(
     () => [...roleKeys].filter((k) => !homeSections[k]),
     [roleKeys, homeSections],
@@ -721,7 +761,7 @@ export default function Home() {
   if (loading) {
     return (
       <Box sx={{ maxWidth: 1600, mx: 'auto', px: { xs: 0.5, sm: 1, lg: 1 }, py: 6 }}>
-        <Loading message="Loading your decks…" />
+        <Loading message="Loading your dashboard…" />
       </Box>
     );
   }
@@ -779,7 +819,30 @@ export default function Home() {
           },
         }}
       />
-      <Stack direction="row" justifyContent="flex-end" sx={{ pt: 0, pb: 2 }}>
+      <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ pt: 0, pb: 2 }}>
+        {editMode && (
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<AddCircleOutlineIcon />}
+            onClick={() => setCustomizeOpen(true)}
+            sx={{
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              textTransform: 'none',
+              borderRadius: 2,
+              pt: 1,
+              borderColor: (t) => alpha(t.palette.brand[400], 0.5),
+              color: (t) => t.palette.brand[600],
+              '&:hover': {
+                bgcolor: (t) => alpha(t.palette.brand[100], 0.5),
+                borderColor: (t) => t.palette.brand[500],
+              },
+            }}
+          >
+            Add section
+          </Button>
+        )}
         <Button
           size="small"
           variant={editMode ? 'contained' : 'text'}
@@ -956,6 +1019,8 @@ export default function Home() {
           if (shareDeckId) setDeckPublic(shareDeckId, val);
         }}
       />
+
+      <CustomizeHomeDialog open={customizeOpen} onClose={() => setCustomizeOpen(false)} />
     </Box>
   );
 }

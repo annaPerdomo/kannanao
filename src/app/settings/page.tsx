@@ -1,7 +1,6 @@
 'use client';
 
 import BadgeIcon from '@mui/icons-material/Badge';
-import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 import EditIcon from '@mui/icons-material/Edit';
 import KeyIcon from '@mui/icons-material/Key';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
@@ -20,7 +19,6 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { CustomizeHomeDialog } from '@/components/CustomizeHomeDialog';
 import { CreateInviteDialog, InviteList, InviteQRCode } from '@/components/Group';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
@@ -99,7 +97,6 @@ export default function SettingsPage() {
   const [createInviteOpen, setCreateInviteOpen] = useState(false);
   const [qrInvite, setQrInvite] = useState<InviteCode | null>(null);
 
-  const [customizeHomeOpen, setCustomizeHomeOpen] = useState(false);
   const [snack, setSnack] = useState<{ msg: string; severity: 'success' | 'error' } | null>(null);
 
   const saveBtnSx = {
@@ -338,29 +335,6 @@ export default function SettingsPage() {
           )}
         </Section>
 
-        <Divider />
-
-        {/* Customize Home Screen */}
-        <Section
-          icon={<DashboardCustomizeIcon />}
-          title="Customize Home Screen"
-          description="Choose which sections appear on your dashboard."
-        >
-          <Button
-            size="small"
-            variant="outlined"
-            onClick={() => setCustomizeHomeOpen(true)}
-            sx={{
-              borderRadius: 6,
-              textTransform: 'none',
-              borderColor: alpha(brand[400], 0.5),
-              color: brand[700],
-            }}
-          >
-            Customize sections
-          </Button>
-        </Section>
-
         {!isMemberAccount && (
           <>
             <Divider />
@@ -484,8 +458,6 @@ export default function SettingsPage() {
           organizerName={displayName ?? currentUsername}
         />
       )}
-
-      <CustomizeHomeDialog open={customizeHomeOpen} onClose={() => setCustomizeHomeOpen(false)} />
 
       <Snackbar
         open={Boolean(snack)}
