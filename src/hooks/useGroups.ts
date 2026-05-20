@@ -21,14 +21,14 @@ async function authHeaders(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export function useGroups() {
+export function useGroups(enabled = true) {
   const [groups, setGroups] = useState<Group[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
   const { user, isMemberAccount } = useAuth();
 
   const fetchGroups = useCallback(async () => {
-    if (!user || isMemberAccount) {
+    if (!enabled || !user || isMemberAccount) {
       setGroups([]);
       setLoading(false);
       return;
@@ -45,7 +45,7 @@ export function useGroups() {
     } finally {
       setLoading(false);
     }
-  }, [user, isMemberAccount]);
+  }, [user, isMemberAccount, enabled]);
 
   useEffect(() => {
     void fetchGroups();

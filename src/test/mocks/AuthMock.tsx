@@ -10,6 +10,7 @@ export interface MockAuthValue {
   displayName: string | null;
   colorScheme: ColorScheme | null;
   showTodo: boolean;
+  groupShowLeaderboard: boolean;
   loading: boolean;
   signInWithUsername: (username: string, password: string) => Promise<{ error: string | null }>;
   signUpWithUsername: (
@@ -32,6 +33,7 @@ export const AuthContext = createContext<MockAuthValue>({
   displayName: null,
   colorScheme: null,
   showTodo: true,
+  groupShowLeaderboard: true,
   loading: false,
   signInWithUsername: async () => ({ error: null }),
   signUpWithUsername: async () => ({ error: null }),
