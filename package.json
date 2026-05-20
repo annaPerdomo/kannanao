@@ -44,6 +44,7 @@
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-grid-layout": "^2.2.3",
     "uuid": "^11.1.0",
     "wanakana": "^5.3.1",
     "web-push": "^3.6.7",

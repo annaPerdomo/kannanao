@@ -9,11 +9,14 @@ import {
   loadProfile,
   sb,
   updateProfileColorScheme,
+  updateProfileHomeSections,
   updateProfileShowTodo,
   updateProfileTravelMainViewMode,
   upsertProfile,
 } from '@/lib/supabase';
 import type { ColorScheme } from '@/theme';
+import type { HomeSections } from '@/types/homeSections';
+import { DEFAULT_HOME_SECTIONS, resolveHomeSections } from '@/types/homeSections';
 
 const FAKE_DOMAIN = 'kannanao.local';
 
@@ -28,6 +31,7 @@ interface AuthContextValue {
   displayName: string | null;
   colorScheme: ColorScheme | null;
   showTodo: boolean;
+  homeSections: HomeSections;
   travelMainViewMode: string | null;
   loading: boolean;
   signInWithUsername: (username: string, password: string) => Promise<{ error: string | null }>;
@@ -40,6 +44,7 @@ interface AuthContextValue {
   updateDisplayName: (name: string) => Promise<{ error: string | null }>;
   updateColorScheme: (scheme: ColorScheme) => Promise<void>;
   updateShowTodo: (show: boolean) => Promise<void>;
+  updateHomeSections: (sections: HomeSections) => Promise<void>;
   updateTravelMainViewMode: (mode: string) => Promise<void>;
 }
 
@@ -73,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [colorScheme, setColorScheme] = useState<ColorScheme | null>(null);
   const [showTodo, setShowTodo] = useState(true);
+  const [homeSections, setHomeSections] = useState<HomeSections>(DEFAULT_HOME_SECTIONS);
   const [travelMainViewMode, setTravelMainViewMode] = useState<string | null>(null);
   const [accountType, setAccountType] = useState<AccountType>('organizer');
   const [organizerId, setOrganizerId] = useState<string | null>(null);
@@ -86,7 +92,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (saved && VALID_SCHEMES.includes(saved as ColorScheme)) {
       setColorScheme(saved as ColorScheme);
     }
-    setShowTodo(profile?.showTodo !== false);
+    const resolved = resolveHomeSections(profile?.homeSections, profile?.showTodo);
+    setShowTodo(resolved.todo);
+    setHomeSections(resolved);
     setTravelMainViewMode(profile?.travelMainViewMode ?? null);
     setAccountType(profile?.accountType ?? 'organizer');
     setOrganizerId(profile?.organizerId ?? null);
@@ -115,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setDisplayName(null);
         setColorScheme(null);
         setShowTodo(true);
+        setHomeSections(DEFAULT_HOME_SECTIONS);
         setTravelMainViewMode(null);
         setAccountType('organizer');
         setOrganizerId(null);
@@ -163,11 +172,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateShowTodo = async (show: boolean) => {
     setShowTodo(show);
+    setHomeSections((prev) => ({ ...prev, todo: show }));
     const {
       data: { user },
     } = await sb.auth.getUser();
     if (user) {
       await updateProfileShowTodo(user.id, show);
+    }
+  };
+
+  const updateHomeSectionsHandler = async (sections: HomeSections) => {
+    setHomeSections(sections);
+    setShowTodo(sections.todo);
+    const {
+      data: { user },
+    } = await sb.auth.getUser();
+    if (user) {
+      await updateProfileHomeSections(user.id, sections);
     }
   };
 
@@ -198,6 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         displayName,
         colorScheme,
         showTodo,
+        homeSections,
         travelMainViewMode,
         loading,
         signInWithUsername,
@@ -206,6 +228,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updateDisplayName,
         updateColorScheme,
         updateShowTodo,
+        updateHomeSections: updateHomeSectionsHandler,
         updateTravelMainViewMode,
       }}
     >

@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 
 import type { Deck } from '@/types/deck';
 import type { Flashcard, JlptLevel, MainViewMode } from '@/types/flashcard';
+import type { HomeSections } from '@/types/homeSections';
 import type { EntryType, Todo } from '@/types/todo';
 import type { ShowCard, ShowCardCategory } from '@/types/travel';
 
@@ -482,6 +483,7 @@ export async function loadProfile(userId: string): Promise<{
   displayName: string | null;
   colorScheme: string | null;
   showTodo: boolean;
+  homeSections: Partial<HomeSections> | null;
   accountType: AccountType;
   organizerId: string | null;
   groupId: string | null;
@@ -490,7 +492,7 @@ export async function loadProfile(userId: string): Promise<{
   const { data, error } = await sb
     .from('profiles')
     .select(
-      'username, display_name, color_scheme, show_todo, account_type, organizer_id, group_id, travel_main_view_mode',
+      'username, display_name, color_scheme, show_todo, home_sections, account_type, organizer_id, group_id, travel_main_view_mode',
     )
     .eq('id', userId)
     .single();
@@ -500,6 +502,7 @@ export async function loadProfile(userId: string): Promise<{
     displayName: data.display_name ?? null,
     colorScheme: data.color_scheme ?? null,
     showTodo: data.show_todo !== false,
+    homeSections: (data.home_sections as Partial<HomeSections>) ?? null,
     accountType: (data.account_type as AccountType) ?? 'organizer',
     organizerId: data.organizer_id ?? null,
     groupId: data.group_id ?? null,
@@ -526,6 +529,21 @@ export async function updateProfileShowTodo(userId: string, showTodo: boolean): 
   }
   const { error } = await sb.from('profiles').update({ show_todo: showTodo }).eq('id', userId);
   if (error) console.error('updateProfileShowTodo error', error);
+}
+
+export async function updateProfileHomeSections(
+  userId: string,
+  sections: HomeSections,
+): Promise<void> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    return;
+  }
+  const { error } = await sb
+    .from('profiles')
+    .update({ home_sections: sections, show_todo: sections.todo })
+    .eq('id', userId);
+  if (error) console.error('updateProfileHomeSections error', error);
 }
 
 export async function updateProfileTravelMainViewMode(userId: string, mode: string): Promise<void> {
