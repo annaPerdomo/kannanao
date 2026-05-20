@@ -487,16 +487,19 @@ export async function loadProfile(userId: string): Promise<{
   accountType: AccountType;
   organizerId: string | null;
   groupId: string | null;
+  groupShowLeaderboard: boolean;
   travelMainViewMode: string | null;
 } | null> {
   const { data, error } = await sb
     .from('profiles')
     .select(
-      'username, display_name, color_scheme, show_todo, home_sections, account_type, organizer_id, group_id, travel_main_view_mode',
+      'username, display_name, color_scheme, show_todo, home_sections, account_type, organizer_id, group_id, travel_main_view_mode, groups:group_id (show_leaderboard)',
     )
     .eq('id', userId)
     .single();
   if (error || !data) return null;
+  // groups join returns an object (single FK) or null; Supabase types infer array
+  const groupRow = data.groups as unknown as { show_leaderboard: boolean } | null;
   return {
     username: data.username,
     displayName: data.display_name ?? null,
@@ -506,6 +509,7 @@ export async function loadProfile(userId: string): Promise<{
     accountType: (data.account_type as AccountType) ?? 'organizer',
     organizerId: data.organizer_id ?? null,
     groupId: data.group_id ?? null,
+    groupShowLeaderboard: groupRow?.show_leaderboard ?? true,
     travelMainViewMode: data.travel_main_view_mode ?? null,
   };
 }

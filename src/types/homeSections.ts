@@ -54,10 +54,13 @@ export const SECTION_META: Record<SectionKey, SectionMeta> = {
   speeches: { label: 'Speech Practice', emoji: '✨' },
 };
 
-export function getSectionsForRole(isMember: boolean): Set<SectionKey> {
+export function getSectionsForRole(
+  isMember: boolean,
+  groupShowLeaderboard = true,
+): Set<SectionKey> {
   const keys = new Set<SectionKey>(['todo', 'decks', 'speeches']);
   if (isMember) {
-    keys.add('leaderboard');
+    if (groupShowLeaderboard) keys.add('leaderboard');
     keys.add('assignments');
     keys.add('messages');
   } else {
@@ -73,8 +76,12 @@ export function getDefaultSectionOrder(isMember: boolean): SectionKey[] {
 }
 
 /** Resolve visible section order from saved preferences */
-export function resolveSectionOrder(sections: HomeSections, isMember: boolean): SectionKey[] {
-  const validKeys = getSectionsForRole(isMember);
+export function resolveSectionOrder(
+  sections: HomeSections,
+  isMember: boolean,
+  groupShowLeaderboard = true,
+): SectionKey[] {
+  const validKeys = getSectionsForRole(isMember, groupShowLeaderboard);
   const saved = sections.sectionOrder;
   const defaults = getDefaultSectionOrder(isMember);
 

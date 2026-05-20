@@ -18,10 +18,10 @@ interface CustomizeHomeDialogProps {
 }
 
 export function CustomizeHomeDialog({ open, onClose }: CustomizeHomeDialogProps) {
-  const { homeSections, updateHomeSections, isMemberAccount } = useAuth();
+  const { homeSections, updateHomeSections, isMemberAccount, groupShowLeaderboard } = useAuth();
   const theme = useTheme();
   const { brand } = theme.palette;
-  const roleKeys = getSectionsForRole(isMemberAccount);
+  const roleKeys = getSectionsForRole(isMemberAccount, groupShowLeaderboard);
   const sections = ALL_SECTION_KEYS.filter((k) => roleKeys.has(k));
 
   const handleToggle = (key: SectionKey) => {
