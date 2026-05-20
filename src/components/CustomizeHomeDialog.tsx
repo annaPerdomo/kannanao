@@ -70,6 +70,7 @@ export function CustomizeHomeDialog({ open, onClose }: CustomizeHomeDialogProps)
                     checked={enabled}
                     onChange={() => handleToggle(key)}
                     size="small"
+                    inputProps={{ 'aria-label': `Toggle ${meta.label}` }}
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': { color: brand[600] },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {

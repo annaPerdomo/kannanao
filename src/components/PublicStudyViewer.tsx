@@ -296,7 +296,8 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
 
   const getActiveSeconds = useCallback(() => {
     const at = activeTimeRef.current;
-    const pending = document.hidden ? 0 : Date.now() - at.lastVisible;
+    const pending =
+      typeof document !== 'undefined' && !document.hidden ? Date.now() - at.lastVisible : 0;
     return Math.round((at.elapsed + pending) / 1000);
   }, []);
 

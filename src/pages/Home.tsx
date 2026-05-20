@@ -820,7 +820,7 @@ export default function Home() {
               <DashboardSection
                 key={key}
                 id={key}
-                editMode={false}
+                editMode={editMode}
                 onToggle={() => handleToggleSection(key)}
                 title={sectionTitle(key)}
                 titleAction={sectionTitleAction(key)}
