@@ -1,5 +1,7 @@
 'use client';
 
+import 'react-grid-layout/css/styles.css';
+
 import type { AppProps } from 'next/app';
 
 import Providers from '@/app/providers';

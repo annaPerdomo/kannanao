@@ -1,19 +1,27 @@
 'use client';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import CheckIcon from '@mui/icons-material/Check';
+import DragIndicatorRoundedIcon from '@mui/icons-material/DragIndicatorRounded';
 import StorefrontIcon from '@mui/icons-material/Storefront';
+import TuneIcon from '@mui/icons-material/Tune';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
+import GlobalStyles from '@mui/material/GlobalStyles';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import { useTheme } from '@mui/material/styles';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import type { Layout as RGLLayout } from 'react-grid-layout';
+import { GridLayout } from 'react-grid-layout';
 
 import { DeckCard } from '@/components/DeckCard';
 import {
@@ -39,6 +47,13 @@ import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { xpProgressInLevel } from '@/hooks/useProgress';
 import { SHOP_ITEMS } from '@/hooks/useShop';
 import { LAYOUT } from '@/theme';
+import type { SectionKey } from '@/types/homeSections';
+import {
+  getSectionsForRole,
+  resolveGridLayout,
+  resolveSectionOrder,
+  SECTION_META,
+} from '@/types/homeSections';
 
 function getGreeting(name: string): { text: string; emoji: string } {
   const h = new Date().getHours();
@@ -81,6 +96,7 @@ function WelcomeBanner({
       emoji={emoji}
       title={text}
       gradientTitle
+      mb={1.5}
       endContent={
         <Box
           role="button"
@@ -177,9 +193,106 @@ function WelcomeBanner({
   );
 }
 
+function DashboardSection({
+  id,
+  editMode,
+  onToggle,
+  title,
+  titleAction,
+  children,
+}: {
+  id: string;
+  editMode: boolean;
+  onToggle: () => void;
+  title?: React.ReactNode;
+  titleAction?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  const meta = SECTION_META[id as SectionKey];
+
+  return (
+    <Box
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        ...(editMode && {
+          borderRadius: 1,
+          border: (t: { palette: { brand: Record<number, string> } }) =>
+            `2px solid ${alpha(t.palette.brand[400], 0.5)}`,
+          bgcolor: (t: { palette: { brand: Record<number, string> } }) =>
+            alpha(t.palette.brand[100], 0.45),
+          p: 1,
+        }),
+      }}
+    >
+      {(editMode || title) && (
+        <Stack
+          className={editMode ? 'rgl-drag-handle' : undefined}
+          direction="row"
+          alignItems="center"
+          sx={{
+            flexShrink: 0,
+            mb: 1,
+            ...(editMode && {
+              cursor: 'grab',
+              '&:active': { cursor: 'grabbing' },
+            }),
+          }}
+        >
+          {editMode && (
+            <DragIndicatorRoundedIcon
+              sx={{
+                fontSize: '1.1rem',
+                color: (t) => t.palette.brand[600],
+                mr: 0.5,
+                flexShrink: 0,
+              }}
+            />
+          )}
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            {title ?? (
+              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800 }} noWrap>
+                {meta.emoji} {meta.label}
+              </Typography>
+            )}
+          </Box>
+          {editMode ? (
+            <IconButton
+              className="rgl-no-drag"
+              aria-label={`Hide ${meta.label}`}
+              onClick={onToggle}
+              size="small"
+              sx={{
+                p: 0.5,
+                ml: 0.5,
+                flexShrink: 0,
+                color: (t) => t.palette.brand[600],
+                '&:hover': {
+                  color: (t) => t.palette.brand[700],
+                  bgcolor: (t) => alpha(t.palette.brand[300], 0.2),
+                },
+              }}
+            >
+              <VisibilityOffIcon sx={{ fontSize: '0.9rem' }} />
+            </IconButton>
+          ) : (
+            titleAction
+          )}
+        </Stack>
+      )}
+      <Box sx={{ flex: 1, overflow: 'auto', pointerEvents: editMode ? 'none' : 'auto' }}>
+        {children}
+      </Box>
+    </Box>
+  );
+}
+
 export default function Home() {
   const { decks, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, loading } = useDecks();
-  const { user, displayName, showTodo, isMemberAccount, organizerId } = useAuth();
+  const { user, displayName, homeSections, updateHomeSections, isMemberAccount, organizerId } =
+    useAuth();
   const { progress, spendableXp, addBonusXp } = useProgressCtx();
   const {
     messages: dmMessages,
@@ -200,6 +313,7 @@ export default function Home() {
   const [shareDeckId, setShareDeckId] = useState<string | null>(null);
   const [shareDeckName, setShareDeckName] = useState('');
   const [homeChatOpen, setHomeChatOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   // Chat partner for member's home widget
   const homeChatPartner = (() => {
@@ -223,111 +337,162 @@ export default function Home() {
   const pinnedDecks = decks.filter((d) => d.pinned);
   const pinnedSpeeches = ohanashikais.filter((o) => o.pinned);
 
-  if (loading) {
+  // ── Section order + drag ──
+  const sectionOrder = useMemo(
+    () => resolveSectionOrder(homeSections, isMemberAccount),
+    [homeSections, isMemberAccount],
+  );
+  const roleKeys = useMemo(() => getSectionsForRole(isMemberAccount), [isMemberAccount]);
+  const hiddenKeys = useMemo(
+    () => [...roleKeys].filter((k) => !homeSections[k]),
+    [roleKeys, homeSections],
+  );
+
+  // ── Grid layout (drag + resize) ──
+  const isMobile = useMediaQuery('(max-width:899px)', { noSsr: true });
+  const [gridWidth, setGridWidth] = useState(900);
+  const roRef = useRef<ResizeObserver | null>(null);
+  const gridRef = useCallback((node: HTMLDivElement | null) => {
+    if (roRef.current) {
+      roRef.current.disconnect();
+      roRef.current = null;
+    }
+    if (!node) return;
+    const w = node.clientWidth;
+    if (w > 0) setGridWidth(w);
+    roRef.current = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const cw = entry.contentRect.width;
+        if (cw > 0) setGridWidth(cw);
+      }
+    });
+    roRef.current.observe(node);
+  }, []);
+
+  const gridLayout = useMemo(() => {
+    const full = resolveGridLayout(homeSections, isMemberAccount);
+    const visible = new Set(sectionOrder);
+    return full
+      .filter((item) => visible.has(item.i as SectionKey))
+      .map((item) => ({ ...item, minW: 3, minH: 3 }));
+  }, [homeSections, isMemberAccount, sectionOrder]);
+
+  const handleLayoutSave = useCallback(
+    (layout: RGLLayout) => {
+      const updatedItems = layout.map((l) => ({
+        i: l.i,
+        x: l.x,
+        y: l.y,
+        w: l.w,
+        h: l.h,
+      }));
+      // Preserve layout items for hidden sections
+      const visibleIds = new Set(layout.map((l) => l.i));
+      const hiddenItems = (homeSections.gridLayout ?? []).filter((item) => !visibleIds.has(item.i));
+      void updateHomeSections({
+        ...homeSections,
+        gridLayout: [...updatedItems, ...hiddenItems],
+      });
+    },
+    [homeSections, updateHomeSections],
+  );
+
+  const handleResetLayout = useCallback(() => {
+    void updateHomeSections({
+      ...homeSections,
+      gridLayout: undefined,
+      sectionOrder: undefined,
+      sectionWidths: undefined,
+    });
+  }, [homeSections, updateHomeSections]);
+
+  const handleToggleSection = useCallback(
+    (key: SectionKey) => {
+      void updateHomeSections({ ...homeSections, [key]: !homeSections[key] });
+    },
+    [homeSections, updateHomeSections],
+  );
+
+  const sectionTitle = (key: SectionKey): React.ReactNode | undefined => {
+    // TodoList renders its own header internally
+    if (key === 'todo') return undefined;
+    const meta = SECTION_META[key];
     return (
-      <Box
-        sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: { xs: 1.5, sm: 2, lg: 3 }, py: 6 }}
-      >
-        <Loading message="Loading your decks…" />
-      </Box>
+      <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800 }} noWrap>
+        {meta.emoji} {meta.label}
+      </Typography>
     );
-  }
+  };
 
-  return (
-    <Box
-      sx={{
-        maxWidth: LAYOUT.contentMaxWidth,
-        mx: 'auto',
-        px: { xs: 1.5, sm: 2, lg: 3 },
-        py: { xs: 3, sm: 5 },
-      }}
-    >
-      {/* Welcome banner — constrained to match other page headers */}
-      {progress && (
-        <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
-          <WelcomeBanner
-            username={username}
-            level={progress.level}
-            streak={progress.streak_days}
-            totalXp={progress.total_xp}
-            spendableXp={spendableXp}
-            ownedItemKeys={ownedItemKeys}
-            onShopClick={() => router.push('/shop')}
-          />
-        </Box>
-      )}
-
-      {/* ── Main content: two-column on md+, stacked on mobile ── */}
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        spacing={{ xs: 3, md: 4 }}
-        alignItems="flex-start"
+  const sectionTitleAction = (key: SectionKey): React.ReactNode | undefined => {
+    const navMap: Partial<Record<SectionKey, { label: string; href: string }>> = {
+      groups: { label: 'All groups', href: '/group' },
+      decks: { label: 'All decks', href: '/decks' },
+      speeches: { label: 'All speeches', href: '/ohanashikai' },
+    };
+    const nav = navMap[key];
+    if (!nav) return undefined;
+    return (
+      <Button
+        size="small"
+        variant="text"
+        onClick={() => router.push(nav.href)}
+        sx={{ fontSize: '0.75rem', color: 'text.secondary', flexShrink: 0, whiteSpace: 'nowrap' }}
       >
-        {/* Left column — To-Do List */}
-        {showTodo && (
-          <Box sx={{ width: { xs: '100%', md: '50%', lg: '45%' }, flexShrink: 0 }}>
-            <TodoList onXpEarned={addBonusXp} />
-          </Box>
-        )}
+        {nav.label} →
+      </Button>
+    );
+  };
 
-        {/* Right column — Groups/Assignments + Pinned Decks & Speeches */}
-        <Box
-          sx={{
-            width: { xs: '100%', md: showTodo ? '50%' : '100%', lg: showTodo ? '55%' : '100%' },
-            minWidth: 0,
-          }}
-        >
-          {/* ── Organizer pinned groups ── */}
-          {!isMemberAccount && groups.length > 0 && (
-            <Box sx={{ mb: 3 }}>
-              <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.5}>
-                <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800 }}>
-                  👥 My Groups
-                </Typography>
-                <Button
-                  size="small"
-                  variant="text"
-                  onClick={() => router.push('/group')}
-                  sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
-                >
-                  All groups →
-                </Button>
-              </Stack>
+  /** Returns section content — visibility/role filtering is handled by the grid layout */
+  const renderSectionContent = (key: SectionKey): React.ReactNode => {
+    switch (key) {
+      case 'todo':
+        return <TodoList onXpEarned={addBonusXp} />;
+
+      case 'groups':
+        return (
+          <>
+            {groups.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                Create a group to get started
+              </Typography>
+            ) : (
               <Stack spacing={1.5}>
                 {(groups.filter((g) => g.pinned).length > 0
                   ? groups.filter((g) => g.pinned)
                   : groups.slice(0, 1)
-                ).map((group) => {
-                  const members = groupMembers.filter(() => true); // All members shown for now
-                  return (
-                    <GroupHomeWidget
-                      key={group.id}
-                      members={members}
-                      groupName={group.name}
-                      groupEmoji={group.emoji ?? undefined}
-                      onViewDashboard={() => router.push(`/group/${group.id}`)}
-                    />
-                  );
-                })}
+                ).map((group) => (
+                  <GroupHomeWidget
+                    key={group.id}
+                    members={groupMembers.filter(() => true)}
+                    groupName={group.name}
+                    groupEmoji={group.emoji ?? undefined}
+                    onViewDashboard={() => router.push(`/group/${group.id}`)}
+                  />
+                ))}
               </Stack>
-            </Box>
-          )}
+            )}
+          </>
+        );
 
-          {/* ── Member widgets: leaderboard, assignments ── */}
-          {isMemberAccount && leaderboard.length > 1 && (
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}>
-                🏆 Weekly Leaderboard
-              </Typography>
+      case 'leaderboard':
+        return (
+          <>
+            {leaderboard.length > 1 ? (
               <LeaderboardWidget entries={leaderboard} compact />
-            </Box>
-          )}
-
-          {isMemberAccount && pendingAssignments.length > 0 && (
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}>
-                📋 Assignments
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                Check back when more people join!
               </Typography>
+            )}
+          </>
+        );
+
+      case 'assignments':
+        return (
+          <>
+            {pendingAssignments.length > 0 ? (
               <Stack spacing={1}>
                 {pendingAssignments.map((a) => (
                   <AssignmentCard
@@ -337,15 +502,18 @@ export default function Home() {
                   />
                 ))}
               </Stack>
-            </Box>
-          )}
-
-          {/* ── Member message widget ── */}
-          {isMemberAccount && homeChatPartner && (
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800, mb: 1 }}>
-                💬 Messages
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                All caught up!
               </Typography>
+            )}
+          </>
+        );
+
+      case 'messages':
+        return (
+          <>
+            {homeChatPartner ? (
               <Paper
                 onClick={() => setHomeChatOpen(true)}
                 role="button"
@@ -361,10 +529,7 @@ export default function Home() {
                   p: 2.5,
                   borderRadius: 3,
                   border: (t) =>
-                    `1.5px solid ${alpha(
-                      t.palette.brand[dmUnreadCount > 0 ? 400 : 300],
-                      dmUnreadCount > 0 ? 0.6 : 0.35,
-                    )}`,
+                    `1.5px solid ${alpha(t.palette.brand[dmUnreadCount > 0 ? 400 : 300], dmUnreadCount > 0 ? 0.6 : 0.35)}`,
                   bgcolor: (t) => alpha(t.palette.brand[dmUnreadCount > 0 ? 100 : 50], 0.5),
                   cursor: 'pointer',
                   transition: 'all 0.18s ease',
@@ -388,39 +553,17 @@ export default function Home() {
                   </Typography>
                 </Box>
               </Paper>
-            </Box>
-          )}
-
-          {homeChatPartner && user && (
-            <MessageThread
-              open={homeChatOpen}
-              onClose={() => setHomeChatOpen(false)}
-              messages={dmMessages}
-              onSend={sendMessage}
-              onMarkAllRead={markAllDmRead}
-              recipientId={homeChatPartner.id}
-              recipientName={homeChatPartner.name}
-              currentUserId={user.id}
-              isMember={isMemberAccount}
-            />
-          )}
-
-          {/* ── Pinned Decks ── */}
-          <Box sx={{ mb: 3 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.5}>
-              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800 }}>
-                📚 Decks
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No messages yet
               </Typography>
-              <Button
-                size="small"
-                variant="text"
-                onClick={() => router.push('/decks')}
-                sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
-              >
-                All decks →
-              </Button>
-            </Stack>
+            )}
+          </>
+        );
 
+      case 'decks':
+        return (
+          <>
             {pinnedDecks.length === 0 ? (
               <Box
                 onClick={() => router.push('/decks')}
@@ -479,24 +622,12 @@ export default function Home() {
                 })}
               </Grid>
             )}
-          </Box>
+          </>
+        );
 
-          {/* ── Pinned Speeches ── */}
-          <Box>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.5}>
-              <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800 }}>
-                ✨ Speech Practice
-              </Typography>
-              <Button
-                size="small"
-                variant="text"
-                onClick={() => router.push('/ohanashikai')}
-                sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
-              >
-                All speeches →
-              </Button>
-            </Stack>
-
+      case 'speeches':
+        return (
+          <>
             {pinnedSpeeches.length === 0 ? (
               <Box
                 sx={{
@@ -534,7 +665,6 @@ export default function Home() {
               <Stack spacing={1}>
                 {pinnedSpeeches.map((item, i) => {
                   const cardEmojis = ['🌸', '✨', '🌟', '💫', '🎀'];
-                  const emoji = cardEmojis[i % cardEmojis.length];
                   return (
                     <Box
                       key={item.id}
@@ -556,7 +686,9 @@ export default function Home() {
                         },
                       }}
                     >
-                      <Typography sx={{ fontSize: '1.2rem', flexShrink: 0 }}>{emoji}</Typography>
+                      <Typography sx={{ fontSize: '1.2rem', flexShrink: 0 }}>
+                        {cardEmojis[i % cardEmojis.length]}
+                      </Typography>
                       <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                         <Typography
                           variant="body2"
@@ -578,9 +710,242 @@ export default function Home() {
                 })}
               </Stack>
             )}
-          </Box>
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box
+        sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: { xs: 0.5, sm: 1, lg: 1 }, py: 6 }}
+      >
+        <Loading message="Loading your decks…" />
+      </Box>
+    );
+  }
+
+  return (
+    <Box
+      sx={{
+        maxWidth: LAYOUT.contentMaxWidth,
+        mx: 'auto',
+        px: { xs: 0.5, sm: 1, lg: 1 },
+        py: { xs: 3, sm: 5 },
+      }}
+    >
+      {/* Welcome banner */}
+      {progress && (
+        <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
+          <WelcomeBanner
+            username={username}
+            level={progress.level}
+            streak={progress.streak_days}
+            totalXp={progress.total_xp}
+            spendableXp={spendableXp}
+            ownedItemKeys={ownedItemKeys}
+            onShopClick={() => router.push('/shop')}
+          />
         </Box>
+      )}
+
+      {/* ── Dashboard grid ── */}
+      <GlobalStyles
+        styles={{
+          // Ensure grid container is the positioning context for items
+          '.react-grid-layout': {
+            position: 'relative !important',
+          },
+          '.rgl-edit-mode .react-grid-item > .react-resizable-handle': {
+            display: 'block !important',
+            opacity: '1 !important',
+            width: '24px !important',
+            height: '24px !important',
+          },
+          '.rgl-edit-mode .react-grid-item > .react-resizable-handle::after': {
+            content: '""',
+            position: 'absolute',
+            right: 3,
+            bottom: 3,
+            width: '10px !important',
+            height: '10px !important',
+            borderRight: '3px solid var(--rgl-handle-color) !important',
+            borderBottom: '3px solid var(--rgl-handle-color) !important',
+          },
+          '.rgl-edit-mode .react-grid-item.react-grid-placeholder': {
+            background: 'var(--rgl-placeholder-bg) !important',
+            borderRadius: '12px !important',
+          },
+        }}
+      />
+      <Stack direction="row" justifyContent="flex-end" sx={{ pt: 0, pb: 3 }}>
+        <Button
+          size="small"
+          variant={editMode ? 'contained' : 'text'}
+          startIcon={editMode ? <CheckIcon /> : <TuneIcon />}
+          onClick={() => setEditMode((v) => !v)}
+          sx={{
+            fontSize: '0.8rem',
+            fontWeight: 700,
+            textTransform: 'none',
+            borderRadius: 2,
+            ...(editMode
+              ? {
+                  bgcolor: (t) => t.palette.brand[600],
+                  color: '#fff',
+                  '&:hover': { bgcolor: (t) => t.palette.brand[700] },
+                }
+              : {
+                  color: (t) => t.palette.brand[600],
+                  '&:hover': { bgcolor: (t) => alpha(t.palette.brand[100], 0.5) },
+                }),
+          }}
+        >
+          {editMode ? 'Done' : 'Edit layout'}
+        </Button>
       </Stack>
+      <Box
+        ref={gridRef}
+        className={editMode ? 'rgl-edit-mode' : undefined}
+        sx={{
+          '--rgl-handle-color': (t) => t.palette.brand[400],
+          '--rgl-placeholder-bg': (t) => alpha(t.palette.brand[300], 0.3),
+        }}
+      >
+        {isMobile ? (
+          <Stack spacing={2}>
+            {sectionOrder.map((key) => (
+              <DashboardSection
+                key={key}
+                id={key}
+                editMode={false}
+                onToggle={() => handleToggleSection(key)}
+                title={sectionTitle(key)}
+                titleAction={sectionTitleAction(key)}
+              >
+                {renderSectionContent(key)}
+              </DashboardSection>
+            ))}
+          </Stack>
+        ) : (
+          <GridLayout
+            width={gridWidth}
+            layout={gridLayout}
+            style={{ position: 'relative' }}
+            gridConfig={{
+              cols: 12,
+              rowHeight: 30,
+              margin: [12, 16] as const,
+              containerPadding: [0, 0] as const,
+            }}
+            dragConfig={{
+              enabled: editMode,
+              handle: '.rgl-drag-handle',
+              cancel: '.rgl-no-drag',
+            }}
+            resizeConfig={{
+              enabled: editMode,
+              handles: ['se'] as const,
+              handleComponent: (_axis, ref) => (
+                <span
+                  ref={ref as React.Ref<HTMLSpanElement>}
+                  className="react-resizable-handle react-resizable-handle-se"
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    width: 24,
+                    height: 24,
+                    cursor: 'se-resize',
+                    display: editMode ? 'block' : 'none',
+                    opacity: 1,
+                  }}
+                />
+              ),
+            }}
+            onDragStop={(layout: RGLLayout) => handleLayoutSave(layout)}
+            onResizeStop={(layout: RGLLayout) => handleLayoutSave(layout)}
+          >
+            {sectionOrder.map((key) => (
+              <div key={key}>
+                <DashboardSection
+                  id={key}
+                  editMode={editMode}
+                  onToggle={() => handleToggleSection(key)}
+                  title={sectionTitle(key)}
+                  titleAction={sectionTitleAction(key)}
+                >
+                  {renderSectionContent(key)}
+                </DashboardSection>
+              </div>
+            ))}
+          </GridLayout>
+        )}
+      </Box>
+
+      {/* Hidden sections chips (edit mode only) */}
+      {editMode && hiddenKeys.length > 0 && (
+        <Box
+          sx={{
+            mt: 2,
+            p: 2,
+            borderRadius: 2,
+            bgcolor: (t) => alpha(t.palette.brand[50], 0.5),
+            border: (t) => `1px dashed ${alpha(t.palette.brand[300], 0.3)}`,
+          }}
+        >
+          <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: 'text.secondary' }}>
+            Hidden sections
+          </Typography>
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+            {hiddenKeys.map((k) => (
+              <Chip
+                key={k}
+                label={`${SECTION_META[k].emoji} ${SECTION_META[k].label}`}
+                onClick={() => handleToggleSection(k)}
+                size="small"
+                sx={{
+                  fontWeight: 600,
+                  bgcolor: (t) => alpha(t.palette.brand[100], 0.5),
+                  border: (t) => `1px dashed ${alpha(t.palette.brand[300], 0.4)}`,
+                  '&:hover': {
+                    bgcolor: (t) => alpha(t.palette.brand[200], 0.5),
+                  },
+                }}
+              />
+            ))}
+          </Stack>
+        </Box>
+      )}
+
+      {editMode && (
+        <Box sx={{ mt: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <Button
+            size="small"
+            onClick={handleResetLayout}
+            sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
+          >
+            Reset layout
+          </Button>
+        </Box>
+      )}
+
+      {homeSections.messages && homeChatPartner && user && (
+        <MessageThread
+          open={homeChatOpen}
+          onClose={() => setHomeChatOpen(false)}
+          messages={dmMessages}
+          onSend={sendMessage}
+          onMarkAllRead={markAllDmRead}
+          recipientId={homeChatPartner.id}
+          recipientName={homeChatPartner.name}
+          currentUserId={user.id}
+          isMember={isMemberAccount}
+        />
+      )}
 
       <ShareEmbedDialog
         open={shareDeckId !== null}

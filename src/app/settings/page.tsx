@@ -1,7 +1,7 @@
 'use client';
 
 import BadgeIcon from '@mui/icons-material/Badge';
-import ChecklistIcon from '@mui/icons-material/Checklist';
+import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 import EditIcon from '@mui/icons-material/Edit';
 import KeyIcon from '@mui/icons-material/Key';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
@@ -10,11 +10,9 @@ import {
   Box,
   Button,
   Divider,
-  FormControlLabel,
   Paper,
   Snackbar,
   Stack,
-  Switch,
   TextField,
   Typography,
 } from '@mui/material';
@@ -22,6 +20,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { CustomizeHomeDialog } from '@/components/CustomizeHomeDialog';
 import { CreateInviteDialog, InviteList, InviteQRCode } from '@/components/Group';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
@@ -73,17 +72,8 @@ function Section({ icon, title, description, children }: SectionProps) {
 export default function SettingsPage() {
   const theme = useTheme();
   const { brand } = theme.palette;
-  const {
-    user,
-    loading,
-    displayName,
-    updateDisplayName,
-    session,
-    signOut,
-    showTodo,
-    updateShowTodo,
-    isMemberAccount,
-  } = useAuth();
+  const { user, loading, displayName, updateDisplayName, session, signOut, isMemberAccount } =
+    useAuth();
   const router = useRouter();
   const { invites, createInvite, revokeInvite } = useInvites();
 
@@ -109,6 +99,7 @@ export default function SettingsPage() {
   const [createInviteOpen, setCreateInviteOpen] = useState(false);
   const [qrInvite, setQrInvite] = useState<InviteCode | null>(null);
 
+  const [customizeHomeOpen, setCustomizeHomeOpen] = useState(false);
   const [snack, setSnack] = useState<{ msg: string; severity: 'success' | 'error' } | null>(null);
 
   const saveBtnSx = {
@@ -349,29 +340,25 @@ export default function SettingsPage() {
 
         <Divider />
 
-        {/* To-Do List */}
+        {/* Customize Home Screen */}
         <Section
-          icon={<ChecklistIcon />}
-          title="To-Do List"
-          description="Show or hide the to-do list on your home page."
+          icon={<DashboardCustomizeIcon />}
+          title="Customize Home Screen"
+          description="Choose which sections appear on your dashboard."
         >
-          <FormControlLabel
-            control={
-              <Switch
-                checked={showTodo}
-                onChange={(e) => void updateShowTodo(e.target.checked)}
-                sx={{
-                  '& .MuiSwitch-switchBase.Mui-checked': { color: brand[600] },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: brand[400] },
-                }}
-              />
-            }
-            label={
-              <Typography sx={{ fontSize: '0.85rem', color: 'text.primary' }}>
-                {showTodo ? 'Shown on home page' : 'Hidden from home page'}
-              </Typography>
-            }
-          />
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => setCustomizeHomeOpen(true)}
+            sx={{
+              borderRadius: 6,
+              textTransform: 'none',
+              borderColor: alpha(brand[400], 0.5),
+              color: brand[700],
+            }}
+          >
+            Customize sections
+          </Button>
         </Section>
 
         {!isMemberAccount && (
@@ -497,6 +484,8 @@ export default function SettingsPage() {
           organizerName={displayName ?? currentUsername}
         />
       )}
+
+      <CustomizeHomeDialog open={customizeHomeOpen} onClose={() => setCustomizeHomeOpen(false)} />
 
       <Snackbar
         open={Boolean(snack)}
