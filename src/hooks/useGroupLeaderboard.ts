@@ -20,13 +20,13 @@ async function authHeaders(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export function useGroupLeaderboard(groupId?: string | null) {
+export function useGroupLeaderboard(groupId?: string | null, enabled = true) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!user) {
+    if (!enabled || !user) {
       setLeaderboard([]);
       setLoading(false);
       return;
@@ -50,7 +50,7 @@ export function useGroupLeaderboard(groupId?: string | null) {
     return () => {
       cancelled = true;
     };
-  }, [user, groupId]);
+  }, [user, groupId, enabled]);
 
   return { leaderboard, loading };
 }

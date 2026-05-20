@@ -20,13 +20,14 @@ import type { Ohanashikai, OhanashikaiLine } from '@/types/ohanashikai';
 
 // ─── useOhanashikais ──────────────────────────────────────────────────────────
 
-export function useOhanashikais() {
+export function useOhanashikais(enabled = true) {
   const { user } = useAuth();
   const [ohanashikais, setOhanashikais] = useState<Ohanashikai[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
 
   const fetchAll = useCallback(async () => {
-    if (!user) {
+    if (!enabled || !user) {
+      setOhanashikais([]);
       setLoading(false);
       return;
     }
@@ -34,7 +35,7 @@ export function useOhanashikais() {
     const data = await loadOhanashikais(user.id);
     setOhanashikais(data);
     setLoading(false);
-  }, [user]);
+  }, [user, enabled]);
 
   useEffect(() => {
     fetchAll();

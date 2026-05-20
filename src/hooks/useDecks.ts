@@ -16,13 +16,13 @@ import {
 } from '@/lib/supabase';
 import type { Deck } from '@/types/deck';
 
-export function useDecks() {
+export function useDecks(enabled = true) {
   const [decks, setDecks] = useState<Deck[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!user) {
+    if (!enabled || !user) {
       setDecks([]);
       setLoading(false);
       return;
@@ -42,7 +42,7 @@ export function useDecks() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, enabled]);
 
   const createDeck = useCallback(async (name: string, description?: string): Promise<Deck> => {
     if (!isConfigured()) {

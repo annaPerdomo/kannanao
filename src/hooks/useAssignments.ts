@@ -24,14 +24,14 @@ async function authHeaders(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export function useAssignments(groupId?: string | null) {
+export function useAssignments(groupId?: string | null, enabled = true) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
   const fetchAssignments = useCallback(async () => {
-    if (!user) {
+    if (!enabled || !user) {
       setAssignments([]);
       setLoading(false);
       return;
@@ -49,7 +49,7 @@ export function useAssignments(groupId?: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [user, groupId]);
+  }, [user, groupId, enabled]);
 
   useEffect(() => {
     void fetchAssignments();
