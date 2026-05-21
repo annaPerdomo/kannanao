@@ -53,6 +53,7 @@ export async function GET(req: Request) {
     studySessionsRes,
     loginEventsRes,
     travelEventsRes,
+    practiceSentencesRes,
   ] = await Promise.all([
     client
       .from('profiles')
@@ -88,6 +89,9 @@ export async function GET(req: Request) {
       .select('user_id, feature, action, metadata, created_at')
       .gte('created_at', new Date(Date.now() - 90 * 86_400_000).toISOString())
       .order('created_at', { ascending: false }),
+    client
+      .from('deck_practice_sentences')
+      .select('deck_id, sentence_type, meaning_peek_count, created_at'),
   ]);
 
   const profiles = profilesRes.data ?? [];
@@ -100,6 +104,7 @@ export async function GET(req: Request) {
   const studySessions = studySessionsRes.data ?? [];
   const loginStats = loginEventsRes.data ?? [];
   const travelEvents = travelEventsRes.data ?? [];
+  const practiceSentences = practiceSentencesRes.data ?? [];
   const groups = (groupsRes.data ?? []).map((g) => ({
     id: g.id,
     organizerId: g.organizer_id,
@@ -440,6 +445,68 @@ export async function GET(req: Request) {
     scenarioBreakdown,
   };
 
+  // ─── Kotoba Bubble Analytics ─────────────────────────────────
+  const kbDeckIds = new Set(practiceSentences.map((s) => s.deck_id));
+  const kbSentencesByDeck: Record<
+    string,
+    { total: number; questions: number; responses: number; statements: number }
+  > = {};
+  for (const s of practiceSentences) {
+    if (!kbSentencesByDeck[s.deck_id]) {
+      kbSentencesByDeck[s.deck_id] = { total: 0, questions: 0, responses: 0, statements: 0 };
+    }
+    kbSentencesByDeck[s.deck_id].total++;
+    if (s.sentence_type === 'question') kbSentencesByDeck[s.deck_id].questions++;
+    else if (s.sentence_type === 'response') kbSentencesByDeck[s.deck_id].responses++;
+    else kbSentencesByDeck[s.deck_id].statements++;
+  }
+
+  // Kotoba Bubble study sessions (from existing study_sessions data)
+  const kbSessions = studySessions.filter((s) => s.practice_mode === 'kotoba-bubble');
+  const kbSessionsByUser = new Map<string, typeof kbSessions>();
+  for (const s of kbSessions) {
+    const arr = kbSessionsByUser.get(s.user_id);
+    if (arr) arr.push(s);
+    else kbSessionsByUser.set(s.user_id, [s]);
+  }
+
+  const kotobaBubbleAnalytics = {
+    overview: {
+      totalDecksWithContent: kbDeckIds.size,
+      totalSentences: practiceSentences.length,
+      totalSessions: kbSessions.length,
+      totalXpEarned: kbSessions.reduce((sum, s) => sum + (s.xp_earned || 0), 0),
+      totalMeaningPeeks: practiceSentences.reduce((sum, s) => sum + (s.meaning_peek_count || 0), 0),
+    },
+    decks: Object.entries(kbSentencesByDeck).map(([deckId, stats]) => {
+      const deck = decks.find((d) => d.id === deckId);
+      const owner = deck ? profileById[deck.user_id] : undefined;
+      return {
+        deckId,
+        deckName: deck?.name ?? 'Unknown',
+        deckOwner: owner?.display_name ?? owner?.username ?? 'Unknown',
+        ...stats,
+      };
+    }),
+    users: Array.from(kbSessionsByUser.entries())
+      .map(([userId, sessions]) => {
+        const profile = profileById[userId];
+        const totalCorrect = sessions.reduce((sum, s) => sum + (s.cards_correct || 0), 0);
+        const totalStudied = sessions.reduce((sum, s) => sum + (s.cards_studied || 0), 0);
+        return {
+          userId,
+          username: profile?.username ?? 'Unknown',
+          displayName: profile?.display_name ?? null,
+          totalSessions: sessions.length,
+          totalCorrect,
+          totalStudied,
+          accuracy: totalStudied > 0 ? Math.round((totalCorrect / totalStudied) * 100) : null,
+          totalXp: sessions.reduce((sum, s) => sum + (s.xp_earned || 0), 0),
+        };
+      })
+      .sort((a, b) => b.totalSessions - a.totalSessions),
+  };
+
   const overview = {
     totalUsers: profiles.length,
     totalDecks: decks.length,
@@ -456,6 +523,7 @@ export async function GET(req: Request) {
     embedAnalytics,
     memberActivity,
     travelAnalytics,
+    kotobaBubbleAnalytics,
     groups,
   });
 }

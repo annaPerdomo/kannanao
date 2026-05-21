@@ -42,6 +42,35 @@ export interface TravelAnalyticsData {
   scenarioBreakdown: { category: string; count: number }[];
 }
 
+export interface KotobaBubbleAnalyticsData {
+  overview: {
+    totalDecksWithContent: number;
+    totalSentences: number;
+    totalSessions: number;
+    totalXpEarned: number;
+    totalMeaningPeeks: number;
+  };
+  decks: {
+    deckId: string;
+    deckName: string;
+    deckOwner: string;
+    total: number;
+    questions: number;
+    responses: number;
+    statements: number;
+  }[];
+  users: {
+    userId: string;
+    username: string;
+    displayName: string | null;
+    totalSessions: number;
+    totalCorrect: number;
+    totalStudied: number;
+    accuracy: number | null;
+    totalXp: number;
+  }[];
+}
+
 export interface MemberActivityEntry {
   userId: string;
   username: string;

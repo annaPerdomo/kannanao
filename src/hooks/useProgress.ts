@@ -21,7 +21,14 @@ export interface UserProgress {
   total_sessions: number;
 }
 
-export type SessionMode = 'study' | 'match' | 'fill' | 'recall' | 'speech_read' | 'speech_recall';
+export type SessionMode =
+  | 'study'
+  | 'match'
+  | 'fill'
+  | 'recall'
+  | 'speech_read'
+  | 'speech_recall'
+  | 'kotoba-bubble';
 
 export interface StudySession {
   id: string;

@@ -1,6 +1,6 @@
 export type Screen = 'home' | 'deck' | 'study' | 'practice';
 
-export type PracticeMode = 'match' | 'fill' | 'recall';
+export type PracticeMode = 'match' | 'fill' | 'recall' | 'kotoba-bubble';
 
 export interface AppState {
   screen: Screen;

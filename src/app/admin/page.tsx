@@ -43,10 +43,16 @@ import { LAYOUT } from '@/theme';
 
 import { CreateUserDialog } from './CreateUserDialog';
 import { EmbedAnalytics } from './EmbedAnalytics';
+import { KotobaBubbleAnalytics } from './KotobaBubbleAnalytics';
 import { ManageAccountDialog } from './ManageAccountDialog';
 import { MemberActivity } from './MemberActivity';
 import { TravelAnalytics } from './TravelAnalytics';
-import type { EmbedAnalyticsData, MemberActivityEntry, TravelAnalyticsData } from './types';
+import type {
+  EmbedAnalyticsData,
+  KotobaBubbleAnalyticsData,
+  MemberActivityEntry,
+  TravelAnalyticsData,
+} from './types';
 
 interface UserStat {
   id: string;
@@ -95,6 +101,7 @@ interface AdminData {
   embedAnalytics: EmbedAnalyticsData;
   memberActivity: MemberActivityEntry[];
   travelAnalytics: TravelAnalyticsData;
+  kotobaBubbleAnalytics: KotobaBubbleAnalyticsData;
   groups: GroupInfo[];
 }
 
@@ -584,6 +591,15 @@ export default function AdminPage() {
       <Divider sx={{ mb: 4, mt: 2 }} />
       <TravelAnalytics
         data={data.travelAnalytics}
+        tablePaperSx={tablePaperSx}
+        headerCellSx={headerCellSx}
+        bodyCellSx={bodyCellSx}
+      />
+
+      {/* Kotoba Bubble */}
+      <Divider sx={{ mb: 4, mt: 2 }} />
+      <KotobaBubbleAnalytics
+        data={data.kotobaBubbleAnalytics}
         tablePaperSx={tablePaperSx}
         headerCellSx={headerCellSx}
         bodyCellSx={bodyCellSx}

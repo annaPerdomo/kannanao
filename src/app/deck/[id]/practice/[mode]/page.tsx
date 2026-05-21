@@ -5,7 +5,7 @@ import { use } from 'react';
 import Practice from '@/pages/Practice';
 import type { PracticeMode } from '@/types/app';
 
-const VALID_MODES: PracticeMode[] = ['match', 'fill', 'recall'];
+const VALID_MODES: PracticeMode[] = ['match', 'fill', 'recall', 'kotoba-bubble'];
 
 export default function PracticePage({
   params,
