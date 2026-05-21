@@ -72,12 +72,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
           compact
           mb={3}
         />
-        <KotobaBubbleSetup
-          deckId={deckId}
-          totalCards={cards.length}
-          onSelect={setBatchSize}
-          onBack={onBack}
-        />
+        <KotobaBubbleSetup deckId={deckId} totalCards={cards.length} onSelect={setBatchSize} />
       </Box>
     );
   }
@@ -94,12 +89,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
           compact
           mb={3}
         />
-        <BatchPicker
-          totalCards={cards.length}
-          mode={mode}
-          onSelect={setBatchSize}
-          onBack={onBack}
-        />
+        <BatchPicker totalCards={cards.length} mode={mode} onSelect={setBatchSize} />
       </Box>
     );
   }

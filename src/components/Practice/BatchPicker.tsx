@@ -1,15 +1,25 @@
 'use client';
-import StyleIcon from '@mui/icons-material/Style';
 import { Box, Button, Chip, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import type { ReactNode } from 'react';
 
 import type { PracticeMode } from '@/types/app';
+
+const MODE_EMOJI: Record<PracticeMode, string> = {
+  match: '🎯',
+  fill: '✏️',
+  recall: '🌟',
+  'kotoba-bubble': '🫧',
+};
 
 interface BatchPickerProps {
   totalCards: number;
   mode: PracticeMode;
   onSelect: (batchSize: number) => void;
-  onBack: () => void;
+  /** Override the default icon above the heading */
+  icon?: ReactNode;
+  /** Extra content rendered below the batch options (e.g. organizer controls) */
+  footer?: ReactNode;
 }
 
 interface BatchOption {
@@ -36,33 +46,38 @@ function getOptions(totalCards: number, mode: PracticeMode): BatchOption[] {
   return options;
 }
 
-export function BatchPicker({ totalCards, mode, onSelect, onBack }: BatchPickerProps) {
+export function BatchPicker({ totalCards, mode, onSelect, icon, footer }: BatchPickerProps) {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
 
   const options = getOptions(totalCards, mode);
 
+  const defaultIcon = (
+    <Typography
+      sx={{
+        fontSize: '3rem',
+        lineHeight: 1,
+        mb: 2,
+        display: 'inline-block',
+        animation: 'popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        '@keyframes popIn': {
+          from: { transform: 'scale(0)', opacity: 0 },
+          to: { transform: 'scale(1)', opacity: 1 },
+        },
+      }}
+    >
+      {MODE_EMOJI[mode]}
+    </Typography>
+  );
+
   return (
     <Box sx={{ textAlign: 'center', py: 4 }}>
-      <Box
-        sx={{
-          fontSize: 48,
-          lineHeight: 1,
-          mb: 2,
-          animation: 'popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
-          '@keyframes popIn': {
-            from: { transform: 'scale(0)', opacity: 0 },
-            to: { transform: 'scale(1)', opacity: 1 },
-          },
-        }}
-      >
-        <StyleIcon sx={{ fontSize: 48, color: 'primary.main' }} />
-      </Box>
+      {icon ?? defaultIcon}
 
-      <Typography variant="h5" sx={{ mb: 0.5, fontWeight: 700 }}>
+      <Typography variant="h5" sx={{ mb: 0.5, fontWeight: 700, color: 'text.primary' }}>
         How many cards?
       </Typography>
-      <Typography color="text.secondary" sx={{ mb: 3 }}>
+      <Typography sx={{ mb: 3, color: 'text.secondary' }}>
         This deck has {totalCards} cards. Pick a batch size to practice.
       </Typography>
 
@@ -84,6 +99,7 @@ export function BatchPicker({ totalCards, mode, onSelect, onBack }: BatchPickerP
                 ? {}
                 : {
                     borderColor: alpha(brand[300], 0.4),
+                    color: 'text.primary',
                     bgcolor: surfaces.input,
                     '&:hover': {
                       borderColor: brand[500],
@@ -93,32 +109,46 @@ export function BatchPicker({ totalCards, mode, onSelect, onBack }: BatchPickerP
             }}
           >
             <span>{opt.label}</span>
-            <Chip
-              label={opt.desc}
-              size="small"
-              variant="outlined"
-              sx={{
-                pointerEvents: 'none',
-                borderColor: opt.recommended ? 'rgba(255,255,255,0.5)' : alpha(brand[300], 0.3),
-                color: opt.recommended ? 'inherit' : 'text.secondary',
-                fontSize: '0.75rem',
-              }}
-            />
+            {opt.recommended ? (
+              <Typography
+                component="span"
+                sx={{
+                  px: 1,
+                  py: 0.25,
+                  borderRadius: 2,
+                  border: '1px solid rgba(255,255,255,0.5)',
+                  color: '#fff',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                }}
+              >
+                {opt.desc}
+              </Typography>
+            ) : (
+              <Chip
+                label={opt.desc}
+                size="small"
+                variant="outlined"
+                sx={{
+                  pointerEvents: 'none',
+                  borderColor: alpha(brand[300], 0.3),
+                  color: 'text.secondary',
+                  fontSize: '0.75rem',
+                }}
+              />
+            )}
           </Button>
         ))}
       </Stack>
 
+      {footer}
+
       <Typography
         variant="caption"
-        color="text.disabled"
-        sx={{ display: 'block', mt: 2.5, maxWidth: 300, mx: 'auto' }}
+        sx={{ display: 'block', mt: 2.5, maxWidth: 300, mx: 'auto', color: 'text.secondary' }}
       >
         Wrong answers come back for review so you master every card
       </Typography>
-
-      <Button onClick={onBack} sx={{ mt: 2 }} color="inherit" size="small">
-        Back
-      </Button>
     </Box>
   );
 }

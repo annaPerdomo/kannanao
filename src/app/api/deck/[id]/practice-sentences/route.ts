@@ -116,21 +116,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const sentenceCount = Math.min(Math.max(cards.length * 2, 8), 20);
 
-  const prompt = `You are a Japanese language teacher creating practice material for an 8-year-old child.
+  const prompt = `You are a Japanese language teacher creating practice material for beginning Japanese learners (roughly JLPT N5 level).
 
 Given these vocabulary words from a study deck:
 ${wordListText}
 
-Generate exactly ${sentenceCount} Japanese sentences grouped into natural mini-conversations (2-3 sentences each). These will be used in a game where the child picks the correct particle (は, が, を, に, で, へ, と, も, の, か) to complete the sentence.
+Generate exactly ${sentenceCount} Japanese sentences grouped into natural mini-conversations (2-3 sentences each). These will be used in a game where the learner picks the correct particle (は, が, を, に, で, へ, と, も, の, か) to complete the sentence.
 
 CRITICAL — VOCABULARY CONSTRAINT:
 Every sentence MUST contain at least one word from the deck list above, used VERBATIM (the exact Japanese word or its reading). Do NOT substitute with synonyms, related words, or specific examples. For instance, if the deck has "のみもの" (drink), you must use "のみもの" in the sentence — do NOT replace it with "ジュース", "おちゃ", or any other specific drink. The whole point is for the student to practice with the exact words they are studying. If you cannot naturally fit a deck word into a sentence, skip that sentence and make one that does use a deck word.
 
 IMPORTANT RULES:
 1. Every sentence must use at least one vocabulary word from the deck list EXACTLY as written
-2. Mix questions and responses — kids learn better from dialogue! Example conversation:
+2. Mix questions and responses — learners absorb grammar better through dialogue. Example conversation:
    - Q: "What does Sakura like?" → A: "Sakura likes cats."
-3. Keep grammar simple — appropriate for a young learner
+3. Keep grammar simple and natural — suitable for a beginning learner (short sentences, common structures, plain or polite form consistently within a conversation)
 4. Each sentence must have ONE clearly identifiable target particle to test
 5. Wrap every kanji or kanji compound with furigana using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです
 6. Pure hiragana/katakana words need no wrapping
