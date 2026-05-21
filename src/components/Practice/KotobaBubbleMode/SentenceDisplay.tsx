@@ -28,7 +28,7 @@ function splitAnnotatedAt(
   let plainPos = 0;
   let prevEnd = 0;
   let annotStart = -1;
-  let match;
+  let match: RegExpExecArray | null;
 
   while ((match = regex.exec(annotated)) !== null) {
     const gapLen = match.index - prevEnd;
@@ -59,7 +59,7 @@ function plainToAnnotatedPos(annotated: string, targetPlainPos: number): number 
   const regex = /\{([^|{}]+)\|[^|{}]+\}/g;
   let plainPos = 0;
   let prevEnd = 0;
-  let match;
+  let match: RegExpExecArray | null;
 
   while ((match = regex.exec(annotated)) !== null) {
     const gapLen = match.index - prevEnd;

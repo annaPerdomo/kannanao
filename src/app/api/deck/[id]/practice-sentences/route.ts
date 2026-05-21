@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 import type { DbPracticeSentence } from '@/types/practiceSentence';
 
 import { rateLimit } from '../../../_lib/rateLimit';
+import { requireAuthenticatedUser } from '../../../_lib/requireAuthenticatedUser';
 import { requireOrganizerAccount } from '../../../_lib/requireOrganizerAccount';
 import { getServiceSupabase } from '../../../group/_lib/serviceSupabase';
 
@@ -25,12 +26,10 @@ interface GeminiSentence {
  * GET — fetch existing practice sentences for a deck (any authenticated user).
  */
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id: deckId } = await params;
+  const authCheck = await requireAuthenticatedUser(req);
+  if (authCheck instanceof NextResponse) return authCheck;
 
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
-  }
+  const { id: deckId } = await params;
 
   const sb = getServiceSupabase();
   const { data, error } = await sb
@@ -279,10 +278,10 @@ Output a JSON array of objects with these exact fields:
  * - { updates: [...], deletes: [...] } → batch edit/delete sentences (organizer only)
  */
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
-  }
+  const authCheck = await requireAuthenticatedUser(req);
+  if (authCheck instanceof NextResponse) return authCheck;
+
+  const { id: deckId } = await params;
 
   let body: {
     sentenceId?: string;
@@ -299,14 +298,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   // ── Batch edit/delete (organizer only) ──
   if (body.updates || body.deletes) {
-    const orgCheck = await requireOrganizerAccount(req);
-    if (orgCheck instanceof NextResponse) return orgCheck;
+    if (authCheck.account_type === 'member') {
+      return NextResponse.json(
+        { error: 'This feature is not available for member accounts.' },
+        { status: 403 },
+      );
+    }
 
     if (body.deletes && body.deletes.length > 0) {
       const { error: delErr } = await sb
         .from('deck_practice_sentences')
         .delete()
-        .in('id', body.deletes);
+        .in('id', body.deletes)
+        .eq('deck_id', deckId);
 
       if (delErr) {
         logger.error('Failed to delete sentences', { error: delErr.message });
@@ -320,13 +324,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         if (u.sentence_jp !== undefined) fields.sentence_jp = u.sentence_jp;
         if (u.sentence_en !== undefined) fields.sentence_en = u.sentence_en;
         if (Object.keys(fields).length > 0) {
-          await sb.from('deck_practice_sentences').update(fields).eq('id', u.id);
+          await sb
+            .from('deck_practice_sentences')
+            .update(fields)
+            .eq('id', u.id)
+            .eq('deck_id', deckId);
         }
       }
     }
 
     // Return updated list
-    const { id: deckId } = await params;
     const { data } = await sb
       .from('deck_practice_sentences')
       .select('*')
@@ -342,21 +349,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'sentenceId is required.' }, { status: 400 });
   }
 
-  const { error } = await sb.rpc('increment_meaning_peek', { row_id: body.sentenceId });
+  const { error } = await sb.rpc('increment_meaning_peek', {
+    row_id: body.sentenceId,
+    p_deck_id: deckId,
+  });
 
   if (error) {
-    const { data: row } = await sb
-      .from('deck_practice_sentences')
-      .select('meaning_peek_count')
-      .eq('id', body.sentenceId)
-      .single();
-
-    if (row) {
-      await sb
-        .from('deck_practice_sentences')
-        .update({ meaning_peek_count: (row.meaning_peek_count ?? 0) + 1 })
-        .eq('id', body.sentenceId);
-    }
+    logger.error('Failed to increment peek count', {
+      route: 'PATCH /api/deck/[id]/practice-sentences',
+      sentenceId: body.sentenceId,
+      error: error.message,
+    });
+    return NextResponse.json({ error: 'Failed to update peek count.' }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });

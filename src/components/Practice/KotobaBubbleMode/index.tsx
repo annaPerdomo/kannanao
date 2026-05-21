@@ -99,17 +99,32 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
   const { startSession, recordAnswer, endSession } = useProgress();
   const { triggerXpEarned } = useXpAnimation();
   const sessionIdRef = useRef<string>('');
+  const sessionEndedRef = useRef(false);
   const startTimeRef = useRef(Date.now());
 
   // Start session when game begins
   useEffect(() => {
     if (gameSentences.length >= MIN_SENTENCES) {
+      sessionEndedRef.current = false;
       startSession(deckId, 'kotoba-bubble').then((id) => {
         sessionIdRef.current = id;
         startTimeRef.current = Date.now();
       });
     }
   }, [deckId, startSession, gameSentences.length]);
+
+  // End session on unmount if still active
+  useEffect(() => {
+    return () => {
+      if (sessionIdRef.current && !sessionEndedRef.current) {
+        endSession(sessionIdRef.current, {
+          cardsStudied: 0,
+          cardsCorrect: 0,
+          durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+        });
+      }
+    };
+  }, [endSession]);
 
   // Build options when sentence changes
   const currentSentence = gameSentences[index];
@@ -123,7 +138,8 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
 
   const finishGame = useCallback(
     async (completed: boolean) => {
-      if (sessionIdRef.current) {
+      if (sessionIdRef.current && !sessionEndedRef.current) {
+        sessionEndedRef.current = true;
         await endSession(sessionIdRef.current, {
           cardsStudied: Math.min(index + 1, gameSentences.length),
           cardsCorrect: totalCorrect,
@@ -192,7 +208,16 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
     }
   }, [isCorrect, handleNext]);
 
-  const handleRestart = useCallback(() => {
+  const handleRestart = useCallback(async () => {
+    // End previous session if still active (defensive)
+    if (sessionIdRef.current && !sessionEndedRef.current) {
+      sessionEndedRef.current = true;
+      await endSession(sessionIdRef.current, {
+        cardsStudied: 0,
+        cardsCorrect: 0,
+        durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+      });
+    }
     setIndex(0);
     setLives(MAX_LIVES);
     setScore(0);
@@ -203,11 +228,27 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
     setIsCorrect(null);
     setGameOver(false);
     setGameComplete(false);
+    sessionEndedRef.current = false;
     startSession(deckId, 'kotoba-bubble').then((id) => {
       sessionIdRef.current = id;
       startTimeRef.current = Date.now();
     });
-  }, [deckId, startSession]);
+  }, [deckId, startSession, endSession]);
+
+  // Trigger perfect bonus XP animation once when game completes perfectly
+  const perfectBonusTriggeredRef = useRef(false);
+  useEffect(() => {
+    if (gameComplete && !perfectBonusTriggeredRef.current) {
+      const pct = totalCorrect / gameSentences.length;
+      if (pct === 1) {
+        triggerXpEarned(XP_PERFECT_BONUS);
+      }
+      perfectBonusTriggeredRef.current = true;
+    }
+    if (!gameComplete) {
+      perfectBonusTriggeredRef.current = false;
+    }
+  }, [gameComplete, totalCorrect, gameSentences.length, triggerXpEarned]);
 
   // ── Loading / generation states ────────────────────────────────────────────
   if (loading) {
@@ -321,7 +362,6 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
   if (gameComplete) {
     const pct = totalCorrect / gameSentences.length;
     const isPerfect = pct === 1;
-    if (isPerfect) triggerXpEarned(XP_PERFECT_BONUS);
 
     return (
       <CelebrationScreen

@@ -17,10 +17,13 @@ create table deck_practice_sentences (
 
 create index idx_practice_sentences_deck on deck_practice_sentences(deck_id);
 
--- RLS: any authenticated user can read sentences for decks they have access to
+-- RLS: authenticated users can read practice sentences.
+-- Access control (deck ownership / group membership) is enforced at the API layer
+-- via requireAuthenticatedUser / requireOrganizerAccount, not at the RLS level,
+-- consistent with how the cards table is secured in this app.
 alter table deck_practice_sentences enable row level security;
 
-create policy "Anyone can read practice sentences"
+create policy "Authenticated can read practice sentences"
   on deck_practice_sentences for select
   to authenticated
   using (true);
