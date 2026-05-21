@@ -32,7 +32,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' },
+          gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(5, 1fr)' },
           gap: { xs: 1.5, sm: 2 },
         }}
       >

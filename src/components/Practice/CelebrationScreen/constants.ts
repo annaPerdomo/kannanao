@@ -1,4 +1,11 @@
-export type PracticeMode = 'match' | 'fill' | 'recall' | 'study' | 'speech_read' | 'speech_recall';
+export type PracticeMode =
+  | 'match'
+  | 'fill'
+  | 'recall'
+  | 'study'
+  | 'speech_read'
+  | 'speech_recall'
+  | 'kotoba-bubble';
 export type CelebTheme =
   | 'confetti'
   | 'fireworks'
@@ -86,6 +93,7 @@ export const MODE_EMOJIS: Record<PracticeMode, string[]> = {
   study: ['📚', '🌸', '✨', '💫', '🦋', '⭐'],
   speech_read: ['🎤', '🌸', '✨', '📖', '🌟', '🎀'],
   speech_recall: ['🎤', '🌟', '💪', '⭐', '🎯', '✨'],
+  'kotoba-bubble': ['🫧', '✨', '🌟', '💬', '🎯', '⭐'],
 };
 
 export const THEME_CONFIGS: Record<CelebTheme, ThemeConfig> = {

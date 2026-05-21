@@ -7,6 +7,7 @@ export const MODE_LABELS: Record<SessionMode, string> = {
   recall: 'Recall',
   speech_read: 'Read-Through',
   speech_recall: 'Line Recall',
+  'kotoba-bubble': 'Kotoba Bubble',
 };
 
 export const MODE_COLORS: Record<SessionMode, string> = {
@@ -16,6 +17,7 @@ export const MODE_COLORS: Record<SessionMode, string> = {
   recall: '#3B82F6',
   speech_read: '#EC4899',
   speech_recall: '#8B5CF6',
+  'kotoba-bubble': '#06B6D4',
 };
 
 export function modeLabel(mode: SessionMode | null | undefined): string {

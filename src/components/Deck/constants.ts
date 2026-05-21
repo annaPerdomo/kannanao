@@ -47,4 +47,15 @@ export const PRACTICE_CONFIG: PracticeTileConfig[] = [
     border: 'rgba(251,191,36,0.7)',
     shadowColor: 'rgba(180,83,9,0.22)',
   },
+  {
+    mode: 'kotoba-bubble',
+    label: 'Kotoba Bubble',
+    description: 'Pop the right word bubble',
+    emoji: '🫧',
+    watermark: '文',
+    color: '#0891B2',
+    bg: 'linear-gradient(135deg, #ECFEFF 0%, #E0F2FE 100%)',
+    border: 'rgba(6,182,212,0.5)',
+    shadowColor: 'rgba(8,145,178,0.22)',
+  },
 ];

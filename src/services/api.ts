@@ -1,5 +1,6 @@
 import { sb } from '@/lib/supabase';
 import type { GeneratedCard, GeneratePayload } from '@/types/flashcard';
+import type { DbPracticeSentence } from '@/types/practiceSentence';
 
 const BASE = '/api';
 
@@ -116,4 +117,68 @@ export async function triggerUnsplashDownload(downloadLocation: string): Promise
     headers: { 'Content-Type': 'application/json', ...headers },
     body: JSON.stringify({ downloadLocation }),
   }).catch(() => {});
+}
+
+/* ── Kotoba Bubble practice sentences ──────────────────────────── */
+
+export async function fetchPracticeSentences(deckId: string): Promise<DbPracticeSentence[]> {
+  const res = await fetch(`${BASE}/deck/${deckId}/practice-sentences`, {
+    headers: await authHeaders(),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to load practice sentences');
+  }
+  const data = await res.json();
+  return data.sentences as DbPracticeSentence[];
+}
+
+export async function generatePracticeSentences(deckId: string): Promise<DbPracticeSentence[]> {
+  const res = await fetch(`${BASE}/deck/${deckId}/practice-sentences`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to generate practice sentences');
+  }
+  const data = await res.json();
+  return data.sentences as DbPracticeSentence[];
+}
+
+export async function updatePracticeSentences(
+  deckId: string,
+  updates: { id: string; sentence_jp?: string; sentence_en?: string }[],
+  deletes: string[],
+): Promise<DbPracticeSentence[]> {
+  const res = await fetch(`${BASE}/deck/${deckId}/practice-sentences`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify({ updates, deletes }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to update sentences');
+  }
+  const data = await res.json();
+  return data.sentences as DbPracticeSentence[];
+}
+
+export async function recordMeaningPeek(deckId: string, sentenceId: string): Promise<void> {
+  await fetch(`${BASE}/deck/${deckId}/practice-sentences`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify({ sentenceId }),
+  }).catch(() => {});
+}
+
+export async function deletePracticeSentences(deckId: string): Promise<void> {
+  const res = await fetch(`${BASE}/deck/${deckId}/practice-sentences`, {
+    method: 'DELETE',
+    headers: await authHeaders(),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to delete practice sentences');
+  }
 }

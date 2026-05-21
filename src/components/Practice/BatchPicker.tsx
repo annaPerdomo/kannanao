@@ -21,7 +21,8 @@ interface BatchOption {
 
 function getOptions(totalCards: number, mode: PracticeMode): BatchOption[] {
   // Match mode caps at 10 (20 tiles on screen gets crowded)
-  const maxBatch = mode === 'match' ? 10 : 20;
+  // Kotoba Bubble caps at 15 (sentence-based, not card-based)
+  const maxBatch = mode === 'match' ? 10 : mode === 'kotoba-bubble' ? 15 : 20;
   const options: BatchOption[] = [];
 
   if (totalCards > 5) options.push({ size: 5, label: '5 cards', desc: 'Quick review' });
