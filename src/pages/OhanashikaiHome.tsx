@@ -2,6 +2,7 @@
 
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import MicIcon from '@mui/icons-material/Mic';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import Box from '@mui/material/Box';
@@ -64,7 +65,7 @@ export default function OhanashikaiHome() {
       sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 5 } }}
     >
       <PageHeader
-        emoji="🎤"
+        icon={<MicIcon />}
         title="お話し会"
         subtitle="Speech Practice"
         description="Add your speeches, then practice until you know every line by heart! ✨"

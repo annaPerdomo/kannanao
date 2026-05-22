@@ -4,6 +4,7 @@ import BadgeIcon from '@mui/icons-material/Badge';
 import EditIcon from '@mui/icons-material/Edit';
 import KeyIcon from '@mui/icons-material/Key';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
+import SettingsIcon from '@mui/icons-material/Settings';
 import {
   Alert,
   Box,
@@ -210,7 +211,7 @@ export default function SettingsPage() {
       }}
     >
       <PageHeader
-        emoji="⚙️"
+        icon={<SettingsIcon />}
         title="Account Settings"
         subtitle="Manage your profile and credentials"
         mb={0}

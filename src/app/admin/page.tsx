@@ -3,6 +3,7 @@
 import AddIcon from '@mui/icons-material/Add';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import BadgeIcon from '@mui/icons-material/Badge';
+import BuildIcon from '@mui/icons-material/Build';
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import EditIcon from '@mui/icons-material/Edit';
 import KeyIcon from '@mui/icons-material/Key';
@@ -305,7 +306,7 @@ export default function AdminPage() {
       }}
     >
       <PageHeader
-        emoji="🔧"
+        icon={<BuildIcon />}
         title="Admin Dashboard"
         subtitle="Manage users, analytics, and waitlist"
         mb={0}

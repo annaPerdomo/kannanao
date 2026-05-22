@@ -12,6 +12,7 @@ import {
 import { arrayMove, rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
+import CollectionsIcon from '@mui/icons-material/Collections';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -157,7 +158,7 @@ export default function Decks() {
     >
       <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
         <PageHeader
-          emoji="📚"
+          icon={<CollectionsIcon />}
           title="Your Decks"
           subtitle="Pin decks to see them on your home page. ✨"
           onBack={() => router.push('/')}

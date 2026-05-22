@@ -2,6 +2,7 @@
 
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import BorderStyleIcon from '@mui/icons-material/BorderStyle';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import CelebrationIcon from '@mui/icons-material/Celebration';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
 import PetsIcon from '@mui/icons-material/Pets';
@@ -205,7 +206,7 @@ export default function Shop() {
       >
         <Sparkles color={brand[300]} count={10} />
         <PageHeader
-          emoji="🎁"
+          icon={<CardGiftcardIcon />}
           title="Shop"
           subtitle="Earn XP by studying and unlock treasures!"
           mb={0}
