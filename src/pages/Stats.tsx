@@ -3,6 +3,7 @@
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import InsightsIcon from '@mui/icons-material/Insights';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import SchoolIcon from '@mui/icons-material/School';
 import { Box, Chip, Paper, Skeleton, Typography } from '@mui/material';
@@ -43,7 +44,7 @@ export default function Stats() {
       }}
     >
       <PageHeader
-        emoji="🌸"
+        icon={<InsightsIcon />}
         title="My Progress"
         subtitle="Keep studying every day to build your streak!"
         mb={3}

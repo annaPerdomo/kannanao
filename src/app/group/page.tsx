@@ -1,5 +1,6 @@
 'use client';
 import AddIcon from '@mui/icons-material/Add';
+import Diversity3Icon from '@mui/icons-material/Diversity3';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -59,7 +60,7 @@ export default function GroupListPage() {
     >
       <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
         <PageHeader
-          emoji="👥"
+          icon={<Diversity3Icon />}
           title="Groups"
           subtitle={`${groups.length} group${groups.length !== 1 ? 's' : ''}`}
           onBack={() => router.push('/')}

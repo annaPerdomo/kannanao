@@ -4,9 +4,12 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import CheckIcon from '@mui/icons-material/Check';
 import DragIndicatorRoundedIcon from '@mui/icons-material/DragIndicatorRounded';
+import FilterVintageIcon from '@mui/icons-material/FilterVintage';
+import NightsStayIcon from '@mui/icons-material/NightsStay';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import TuneIcon from '@mui/icons-material/Tune';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -57,17 +60,16 @@ import {
   SECTION_META,
 } from '@/types/homeSections';
 
-function getGreeting(name: string): { text: string; emoji: string } {
+function getGreeting(name: string): { text: string; icon: React.ReactNode } {
   const h = new Date().getHours();
-  if (h < 12) return { text: `Good morning, ${name}!`, emoji: '🌸' };
-  if (h < 17) return { text: `Hey there, ${name}!`, emoji: '☀️' };
-  return { text: `Good evening, ${name}!`, emoji: '🌙' };
+  if (h < 12) return { text: `Good morning, ${name}!`, icon: <FilterVintageIcon /> };
+  if (h < 17) return { text: `Hey there, ${name}!`, icon: <WbSunnyIcon /> };
+  return { text: `Good evening, ${name}!`, icon: <NightsStayIcon /> };
 }
 
 function WelcomeBanner({
   username,
   level,
-  streak,
   totalXp,
   spendableXp,
   ownedItemKeys,
@@ -75,13 +77,12 @@ function WelcomeBanner({
 }: {
   username: string;
   level: number;
-  streak: number;
   totalXp: number;
   spendableXp: number;
   ownedItemKeys: string[];
   onShopClick: () => void;
 }) {
-  const { text, emoji } = getGreeting(username);
+  const { text, icon } = getGreeting(username);
   const { current, needed } = xpProgressInLevel(totalXp);
   const pct = Math.round((current / needed) * 100);
   const theme = useTheme();
@@ -95,7 +96,7 @@ function WelcomeBanner({
 
   return (
     <PageHeader
-      emoji={emoji}
+      icon={icon}
       title={text}
       gradientTitle
       mb={1.5}
@@ -166,32 +167,7 @@ function WelcomeBanner({
           </Box>
         </Box>
       }
-    >
-      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-        <Chip
-          label={`✨ Level ${level}`}
-          size="small"
-          sx={{
-            fontWeight: 800,
-            bgcolor: alpha(brand[100], 0.9),
-            color: brand[700],
-            border: `1.5px solid ${alpha(brand[400], 0.4)}`,
-          }}
-        />
-        {streak > 0 && (
-          <Chip
-            label={`🔥 ${streak} day streak`}
-            size="small"
-            sx={{
-              fontWeight: 800,
-              bgcolor: 'rgba(251,191,36,0.15)',
-              color: '#B45309',
-              border: '1.5px solid rgba(251,191,36,0.35)',
-            }}
-          />
-        )}
-      </Stack>
-    </PageHeader>
+    ></PageHeader>
   );
 }
 
@@ -781,7 +757,6 @@ export default function Home() {
           <WelcomeBanner
             username={username}
             level={progress.level}
-            streak={progress.streak_days}
             totalXp={progress.total_xp}
             spendableXp={spendableXp}
             ownedItemKeys={ownedItemKeys}

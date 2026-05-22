@@ -11,7 +11,8 @@ import Typography from '@mui/material/Typography';
 
 interface PageHeaderProps {
   title: React.ReactNode;
-  emoji?: string;
+  /** Leading icon — pass an MUI icon element (e.g. <CardGiftcardIcon />) */
+  icon?: React.ReactNode;
   subtitle?: string;
   description?: string;
   onBack?: () => void;
@@ -31,7 +32,7 @@ interface PageHeaderProps {
 
 export function PageHeader({
   title,
-  emoji,
+  icon,
   subtitle,
   description,
   onBack,
@@ -47,69 +48,14 @@ export function PageHeader({
   const { brand, accent } = theme.palette;
 
   return (
-    <Box
-      sx={{
-        position: 'relative',
-        borderRadius: { xs: '20px', sm: '36px' },
-        mb,
-        p: compact ? { xs: 2, sm: 2.5 } : { xs: 3, sm: 3.5 },
-        background: `linear-gradient(135deg, ${brand[200]} 0%, ${accent[100]} 45%, ${brand[100]} 100%)`,
-        border: `2px solid ${alpha(brand[300], 0.45)}`,
-        boxShadow: `0 6px 24px ${alpha(brand[300], 0.22)}`,
-      }}
-    >
-      {/* Decorative blobs — clipped to border radius */}
-      <Box
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          overflow: 'hidden',
-          borderRadius: 'inherit',
-          pointerEvents: 'none',
-        }}
-      >
-        <Box
-          sx={{
-            position: 'absolute',
-            top: -40,
-            right: -40,
-            width: 160,
-            height: 160,
-            borderRadius: '50%',
-            background: `radial-gradient(circle, ${alpha(brand[300], 0.35)} 0%, transparent 70%)`,
-          }}
-        />
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: -25,
-            left: '35%',
-            width: 110,
-            height: 110,
-            borderRadius: '50%',
-            background: `radial-gradient(circle, ${alpha(accent[300], 0.3)} 0%, transparent 70%)`,
-          }}
-        />
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '10%',
-            left: -20,
-            width: 80,
-            height: 80,
-            borderRadius: '50%',
-            background: `radial-gradient(circle, ${alpha(accent[200], 0.25)} 0%, transparent 70%)`,
-          }}
-        />
-      </Box>
-
+    <Box sx={{ mb }}>
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         alignItems={{ sm: 'center' }}
         justifyContent="space-between"
         spacing={2}
       >
-        <Box sx={{ position: 'relative', zIndex: 1, minWidth: 0 }}>
+        <Box sx={{ minWidth: 0 }}>
           <Stack
             direction="row"
             alignItems="flex-start"
@@ -121,29 +67,36 @@ export function PageHeader({
                 onClick={onBack}
                 size="small"
                 sx={{
-                  border: `1.5px solid ${alpha(brand[400], 0.5)}`,
+                  border: `1.5px solid ${alpha(brand[300], 0.45)}`,
                   borderRadius: '9px',
                   width: 32,
                   height: 32,
                   flexShrink: 0,
-                  color: brand[700],
-                  bgcolor: alpha('#FFFFFF', 0.5),
-                  '&:hover': { bgcolor: alpha('#FFFFFF', 0.8), borderColor: brand[500] },
+                  color: brand[600],
+                  bgcolor: alpha(brand[50], 0.6),
+                  '&:hover': { bgcolor: alpha(brand[100], 0.8), borderColor: brand[400] },
                 }}
               >
                 <ArrowBackIcon sx={{ fontSize: 15 }} />
               </IconButton>
             )}
-            {emoji && (
-              <Typography
+            {icon && (
+              <Box
                 sx={{
-                  fontSize: compact ? { xs: '1.4rem', sm: '1.6rem' } : { xs: '1.6rem', sm: '2rem' },
                   flexShrink: 0,
-                  mt: '2px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: brand[500],
+                  '& .MuiSvgIcon-root': {
+                    fontSize: compact
+                      ? { xs: '1.6rem', sm: '1.8rem' }
+                      : { xs: '2rem', sm: '2.4rem' },
+                  },
                 }}
               >
-                {emoji}
-              </Typography>
+                {icon}
+              </Box>
             )}
             <Box sx={{ minWidth: 0 }}>
               <Typography
@@ -164,7 +117,7 @@ export function PageHeader({
                 {title}
               </Typography>
               {subtitle && (
-                <Typography variant="body2" sx={{ color: brand[600], mt: 0.25, ml: '3px' }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25, ml: '3px' }}>
                   {subtitle}
                 </Typography>
               )}
@@ -175,8 +128,8 @@ export function PageHeader({
                 size="small"
                 sx={{
                   borderRadius: '8px',
-                  bgcolor: alpha(brand[100], 0.9),
-                  border: `1.5px solid ${alpha(brand[400], 0.4)}`,
+                  bgcolor: alpha(brand[100], 0.7),
+                  border: `1.5px solid ${alpha(brand[300], 0.35)}`,
                   color: brand[700],
                   fontWeight: 800,
                   fontSize: '0.7rem',
@@ -193,10 +146,17 @@ export function PageHeader({
           {children}
         </Box>
 
-        {(action || endContent) && (
-          <Box sx={{ flexShrink: 0, position: 'relative', zIndex: 1 }}>{endContent ?? action}</Box>
-        )}
+        {(action || endContent) && <Box sx={{ flexShrink: 0 }}>{endContent ?? action}</Box>}
       </Stack>
+
+      {/* Whisper accent line */}
+      <Box
+        sx={{
+          height: '1.5px',
+          mt: '22px',
+          background: `linear-gradient(90deg, transparent 0%, ${brand[400]} 10%, ${accent[400]} 90%, transparent 100%)`,
+        }}
+      />
     </Box>
   );
 }
