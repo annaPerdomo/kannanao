@@ -64,6 +64,7 @@ export function PageHeader({
           >
             {onBack && (
               <IconButton
+                aria-label="Back"
                 onClick={onBack}
                 size="small"
                 sx={{
@@ -149,14 +150,16 @@ export function PageHeader({
         {(action || endContent) && <Box sx={{ flexShrink: 0 }}>{endContent ?? action}</Box>}
       </Stack>
 
-      {/* Whisper accent line */}
-      <Box
-        sx={{
-          height: '1.5px',
-          mt: '22px',
-          background: `linear-gradient(90deg, transparent 0%, ${brand[400]} 10%, ${accent[400]} 90%, transparent 100%)`,
-        }}
-      />
+      {/* Whisper accent line — hidden in compact mode */}
+      {!compact && (
+        <Box
+          sx={{
+            height: '1.5px',
+            mt: '22px',
+            background: `linear-gradient(90deg, transparent 0%, ${brand[400]} 10%, ${accent[400]} 90%, transparent 100%)`,
+          }}
+        />
+      )}
     </Box>
   );
 }
