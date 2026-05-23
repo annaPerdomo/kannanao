@@ -95,7 +95,7 @@ export function DeckHeader({
 
   if (editing) {
     return (
-      <PageHeader onBack={onBack} title="" compact mb={3}>
+      <PageHeader onBack={onBack} title="" mb={3}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 0.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <TextField
@@ -258,7 +258,6 @@ export function DeckHeader({
             </Box>
           </Box>
         }
-        compact
         mb={3}
         action={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
