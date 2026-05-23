@@ -7,7 +7,7 @@ export const MODE_LABELS: Record<SessionMode, string> = {
   recall: 'Recall',
   speech_read: 'Read-Through',
   speech_recall: 'Line Recall',
-  'kotoba-bubble': 'Kotoba Bubble',
+  'kotoba-bubble': 'Sentence Builder',
 };
 
 export const MODE_COLORS: Record<SessionMode, string> = {

@@ -49,8 +49,8 @@ export const PRACTICE_CONFIG: PracticeTileConfig[] = [
   },
   {
     mode: 'kotoba-bubble',
-    label: 'Kotoba Bubble',
-    description: 'Pop the right word bubble',
+    label: 'Sentence Builder',
+    description: 'Pick the right particle to complete each sentence',
     emoji: '🫧',
     watermark: '文',
     color: '#0891B2',

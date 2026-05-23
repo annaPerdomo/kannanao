@@ -24,7 +24,7 @@ const LABELS: Record<PracticeMode, string> = {
   match: 'Match JP ↔ EN',
   fill: 'Fill in the Blank',
   recall: 'Guess It!',
-  'kotoba-bubble': 'Kotoba Bubble',
+  'kotoba-bubble': 'Sentence Builder',
 };
 
 /** Show the batch picker when the deck exceeds this many cards. */
@@ -45,13 +45,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   if (cards.length < 2) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
-        <PageHeader
-          title={LABELS[mode]}
-          onBack={onBack}
-          badge={`${cards.length} cards`}
-          compact
-          mb={3}
-        />
+        <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} mb={3} />
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography color="text.secondary">
             Not enough cards to practice. Add more cards to this deck.
@@ -65,13 +59,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   if (mode === 'kotoba-bubble' && batchSize === null) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
-        <PageHeader
-          title={LABELS[mode]}
-          onBack={onBack}
-          badge={`${cards.length} cards`}
-          compact
-          mb={3}
-        />
+        <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} mb={3} />
         <KotobaBubbleSetup deckId={deckId} totalCards={cards.length} onSelect={setBatchSize} />
       </Box>
     );
@@ -82,13 +70,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   if (needsPicker && batchSize === null) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
-        <PageHeader
-          title={LABELS[mode]}
-          onBack={onBack}
-          badge={`${cards.length} cards`}
-          compact
-          mb={3}
-        />
+        <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} mb={3} />
         <BatchPicker totalCards={cards.length} mode={mode} onSelect={setBatchSize} />
       </Box>
     );
@@ -98,13 +80,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
 
   return (
     <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
-      <PageHeader
-        title={LABELS[mode]}
-        onBack={onBack}
-        badge={`${cards.length} cards`}
-        compact
-        mb={3}
-      />
+      <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} mb={3} />
 
       {mode === 'match' && (
         <MatchMode cards={cards} deckId={deckId} batchSize={effectiveBatchSize} onExit={onBack} />

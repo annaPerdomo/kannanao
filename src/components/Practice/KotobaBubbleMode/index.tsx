@@ -1,8 +1,17 @@
 'use client';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { Alert, Box, Button, LinearProgress, Paper, Stack, Typography } from '@mui/material';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import {
+  Alert,
+  Box,
+  Button,
+  Divider,
+  LinearProgress,
+  Paper,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -19,14 +28,7 @@ import type { PracticeSentence } from '@/types/practiceSentence';
 import { CelebrationScreen } from '../CelebrationScreen';
 import { XpEarnedPop } from '../XpEarnedPop';
 import { BubbleButton } from './BubbleButton';
-import {
-  MAX_LIVES,
-  MIN_SENTENCES,
-  PARTICLE_HINTS,
-  XP_CORRECT,
-  XP_PERFECT_BONUS,
-  XP_WRONG,
-} from './constants';
+import { MIN_SENTENCES, PARTICLE_HINTS, XP_CORRECT, XP_PERFECT_BONUS, XP_WRONG } from './constants';
 import { SentenceDisplay } from './SentenceDisplay';
 
 interface KotobaBubbleModeProps {
@@ -81,19 +83,19 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
 
   // Game state
   const [index, setIndex] = useState(0);
-  const [lives, setLives] = useState(MAX_LIVES);
-  const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
   const [totalCorrect, setTotalCorrect] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [options, setOptions] = useState<string[]>([]);
-  const [gameOver, setGameOver] = useState(false);
   const [gameComplete, setGameComplete] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
   const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(
     null,
   );
+  // Track per-sentence results for the summary screen
+  const [results, setResults] = useState<{ sentence: PracticeSentence; correct: boolean }[]>([]);
 
   // Session tracking
   const { startSession, recordAnswer, endSession } = useProgress();
@@ -136,24 +138,17 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
     }
   }, [currentSentence]);
 
-  const finishGame = useCallback(
-    async (completed: boolean) => {
-      if (sessionIdRef.current && !sessionEndedRef.current) {
-        sessionEndedRef.current = true;
-        await endSession(sessionIdRef.current, {
-          cardsStudied: Math.min(index + 1, gameSentences.length),
-          cardsCorrect: totalCorrect,
-          durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
-        });
-      }
-      if (completed) {
-        setGameComplete(true);
-      } else {
-        setGameOver(true);
-      }
-    },
-    [index, gameSentences.length, totalCorrect, endSession],
-  );
+  const finishGame = useCallback(async () => {
+    if (sessionIdRef.current && !sessionEndedRef.current) {
+      sessionEndedRef.current = true;
+      await endSession(sessionIdRef.current, {
+        cardsStudied: gameSentences.length,
+        cardsCorrect: totalCorrect,
+        durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+      });
+    }
+    setGameComplete(true);
+  }, [gameSentences.length, totalCorrect, endSession]);
 
   const handleSelect = useCallback(
     async (particle: string) => {
@@ -169,7 +164,6 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
       triggerXpEarned(xpAmount);
 
       if (correct) {
-        setScore((s) => s + 1);
         setTotalCorrect((c) => c + 1);
         setStreak((s) => {
           const next = s + 1;
@@ -178,8 +172,9 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
         });
       } else {
         setStreak(0);
-        setLives((l) => l - 1);
       }
+
+      setResults((prev) => [...prev, { sentence: currentSentence, correct }]);
 
       if (sessionIdRef.current) {
         await recordAnswer(sessionIdRef.current, correct);
@@ -189,51 +184,38 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
   );
 
   const handleNext = useCallback(() => {
-    if (lives <= 0) {
-      finishGame(false);
-      return;
-    }
     if (index + 1 >= gameSentences.length) {
-      finishGame(true);
+      finishGame();
       return;
     }
     setIndex((i) => i + 1);
-  }, [lives, index, gameSentences.length, finishGame]);
-
-  // Auto-advance after correct answer
-  useEffect(() => {
-    if (isCorrect === true) {
-      const t = setTimeout(handleNext, 1500);
-      return () => clearTimeout(t);
-    }
-  }, [isCorrect, handleNext]);
+  }, [index, gameSentences.length, finishGame]);
 
   const handleRestart = useCallback(async () => {
     // End previous session if still active (defensive)
     if (sessionIdRef.current && !sessionEndedRef.current) {
       sessionEndedRef.current = true;
       await endSession(sessionIdRef.current, {
-        cardsStudied: 0,
-        cardsCorrect: 0,
+        cardsStudied: results.length,
+        cardsCorrect: totalCorrect,
         durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
       });
     }
     setIndex(0);
-    setLives(MAX_LIVES);
-    setScore(0);
     setStreak(0);
     setBestStreak(0);
     setTotalCorrect(0);
     setSelected(null);
     setIsCorrect(null);
-    setGameOver(false);
     setGameComplete(false);
+    setShowSummary(false);
+    setResults([]);
     sessionEndedRef.current = false;
     startSession(deckId, 'kotoba-bubble').then((id) => {
       sessionIdRef.current = id;
       startTimeRef.current = Date.now();
     });
-  }, [deckId, startSession, endSession]);
+  }, [deckId, results.length, totalCorrect, startSession, endSession]);
 
   // Trigger perfect bonus XP animation once when game completes perfectly
   const perfectBonusTriggeredRef = useRef(false);
@@ -252,7 +234,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
 
   // ── Loading / generation states ────────────────────────────────────────────
   if (loading) {
-    return <Loading message="Loading Kotoba Bubble..." />;
+    return <Loading message="Loading Sentence Builder..." />;
   }
 
   if (error && !hasContent) {
@@ -277,7 +259,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
       <Box sx={{ textAlign: 'center', py: 6 }}>
         <Typography sx={{ fontSize: '3rem', mb: 2 }}>🫧</Typography>
         <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>
-          Kotoba Bubble
+          Sentence Builder
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 360, mx: 'auto' }}>
           {isMemberAccount
@@ -322,55 +304,117 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
     );
   }
 
-  // ── Game over (lost all lives) ─────────────────────────────────────────────
-  if (gameOver) {
+  // ── Celebration screen (shop-purchased celebration) ─────────────────────────
+  if (gameComplete && !showSummary) {
+    const pct = gameSentences.length > 0 ? totalCorrect / gameSentences.length : 0;
     return (
-      <Box sx={{ textAlign: 'center', py: 6 }}>
-        <Typography sx={{ fontSize: '3rem', mb: 1 }}>💔</Typography>
-        <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>
-          Game Over!
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 0.5 }}>
-          You got {score} out of {gameSentences.length} correct
-        </Typography>
-        {bestStreak >= 2 && (
-          <Typography color="text.secondary" sx={{ fontSize: '0.9rem', mb: 3 }}>
-            Best streak: {bestStreak} in a row!
+      <CelebrationScreen
+        heading={pct === 1 ? 'Perfect!' : pct >= 0.7 ? 'Great job!' : 'Nice effort!'}
+        subheading={`${totalCorrect} / ${gameSentences.length} correct`}
+        extra={bestStreak >= 3 ? `Best streak: ${bestStreak} in a row!` : undefined}
+        mode="kotoba-bubble"
+        onExit={() => setShowSummary(true)}
+      />
+    );
+  }
+
+  // ── Session summary — review sentences ────────────────────────────────────
+  if (gameComplete && showSummary) {
+    return (
+      <Box sx={{ py: 2 }}>
+        {/* Score header */}
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>
+            Sentence Review
           </Typography>
-        )}
+          <Typography color="text.secondary">
+            {totalCorrect} / {gameSentences.length} correct
+            {bestStreak >= 3 ? ` · Best streak: ${bestStreak}` : ''}
+          </Typography>
+        </Box>
+
+        {/* Sentence review list */}
+        <Stack spacing={1.5} sx={{ mb: 3 }}>
+          {results.map((r, i) => {
+            const plain = stripFurigana(r.sentence.sentenceJp);
+            return (
+              <Paper
+                key={r.sentence.id + i}
+                elevation={0}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 1.5,
+                  p: 2,
+                  borderRadius: 3,
+                  border: `1px solid ${alpha(r.correct ? brand[200] : '#EF4444', 0.4)}`,
+                  bgcolor: alpha(r.correct ? brand[50] : '#EF4444', 0.04),
+                }}
+              >
+                {r.correct ? (
+                  <CheckCircleOutlineIcon
+                    sx={{ color: brand[500], fontSize: 22, mt: 0.3, flexShrink: 0 }}
+                  />
+                ) : (
+                  <HighlightOffIcon
+                    sx={{ color: '#EF4444', fontSize: 22, mt: 0.3, flexShrink: 0 }}
+                  />
+                )}
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography
+                    sx={{
+                      fontSize: '0.95rem',
+                      fontWeight: 600,
+                      color: 'text.primary',
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {plain}
+                  </Typography>
+                  <Typography
+                    sx={{ fontSize: '0.85rem', color: 'text.secondary', lineHeight: 1.4 }}
+                  >
+                    {r.sentence.sentenceEn}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: '0.8rem',
+                      mt: 0.5,
+                      color: r.correct ? brand[500] : '#EF4444',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Particle: {r.sentence.targetParticle}
+                    {!r.correct &&
+                      PARTICLE_HINTS[r.sentence.targetParticle] &&
+                      ` — ${PARTICLE_HINTS[r.sentence.targetParticle]}`}
+                  </Typography>
+                </Box>
+                <SpeakButton text={plain} iconSize="1.1rem" />
+              </Paper>
+            );
+          })}
+        </Stack>
+
+        <Divider sx={{ mb: 2.5 }} />
+
         <Stack direction="row" spacing={2} justifyContent="center">
           <Button
             variant="contained"
             onClick={handleRestart}
-            sx={{ borderRadius: 3, textTransform: 'none' }}
+            sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700 }}
           >
-            Try Again
+            Practice Again
           </Button>
           <Button
             variant="outlined"
             onClick={onExit}
             sx={{ borderRadius: 3, textTransform: 'none' }}
           >
-            Exit
+            Back to Deck
           </Button>
         </Stack>
       </Box>
-    );
-  }
-
-  // ── Game complete (celebration) ────────────────────────────────────────────
-  if (gameComplete) {
-    const pct = totalCorrect / gameSentences.length;
-    const isPerfect = pct === 1;
-
-    return (
-      <CelebrationScreen
-        heading={isPerfect ? 'Perfect!' : pct >= 0.7 ? 'Great job!' : 'Keep going!'}
-        subheading={`${totalCorrect} / ${gameSentences.length} correct`}
-        extra={bestStreak >= 3 ? `Best streak: ${bestStreak} in a row!` : undefined}
-        mode="kotoba-bubble"
-        onExit={onExit}
-      />
     );
   }
 
@@ -398,39 +442,29 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
         key={xpPop?.key}
       />
 
-      {/* Header: lives + progress + score */}
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
-        <Stack direction="row" spacing={0.3}>
-          {Array.from({ length: MAX_LIVES }, (_, i) =>
-            i < lives ? (
-              <FavoriteIcon key={i} sx={{ fontSize: 24, color: '#EF4444' }} />
-            ) : (
-              <FavoriteBorderIcon key={i} sx={{ fontSize: 24, color: 'text.disabled' }} />
-            ),
-          )}
-        </Stack>
-        <Stack direction="row" spacing={1.5} alignItems="center">
-          {streak >= 2 && (
-            <Typography
-              sx={{
-                fontSize: '0.9rem',
-                fontWeight: 800,
-                color: accent[500],
-              }}
-            >
-              {streak}x streak
-            </Typography>
-          )}
+      {/* Header: progress + streak */}
+      <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ mb: 1.5 }}>
+        {streak >= 2 && (
           <Typography
             sx={{
-              fontSize: '0.95rem',
-              fontWeight: 700,
-              color: 'text.secondary',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              color: accent[500],
+              mr: 1.5,
             }}
           >
-            {index + 1} / {gameSentences.length}
+            {streak}x streak
           </Typography>
-        </Stack>
+        )}
+        <Typography
+          sx={{
+            fontSize: '0.95rem',
+            fontWeight: 700,
+            color: 'text.secondary',
+          }}
+        >
+          {index + 1} / {gameSentences.length}
+        </Typography>
       </Stack>
 
       <LinearProgress
@@ -568,8 +602,8 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
         })}
       </Stack>
 
-      {/* Next button on wrong answer (correct auto-advances) */}
-      {isCorrect === false && (
+      {/* Next button after answering */}
+      {isCorrect !== null && (
         <Box sx={{ textAlign: 'center', mb: 2 }}>
           <Button
             variant="contained"
@@ -583,7 +617,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
               fontSize: '1rem',
             }}
           >
-            {lives <= 0 ? 'See Results' : 'Next'}
+            Next
           </Button>
         </Box>
       )}

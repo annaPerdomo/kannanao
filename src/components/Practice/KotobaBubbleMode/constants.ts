@@ -1,6 +1,3 @@
-/** Max lives the player starts with */
-export const MAX_LIVES = 3;
-
 /** XP awarded for a correct answer */
 export const XP_CORRECT = 40;
 
