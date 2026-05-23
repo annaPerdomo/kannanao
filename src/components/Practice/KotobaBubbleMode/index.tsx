@@ -196,8 +196,8 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
     if (sessionIdRef.current && !sessionEndedRef.current) {
       sessionEndedRef.current = true;
       await endSession(sessionIdRef.current, {
-        cardsStudied: 0,
-        cardsCorrect: 0,
+        cardsStudied: results.length,
+        cardsCorrect: totalCorrect,
         durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
       });
     }
@@ -215,7 +215,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
       sessionIdRef.current = id;
       startTimeRef.current = Date.now();
     });
-  }, [deckId, startSession, endSession]);
+  }, [deckId, results.length, totalCorrect, startSession, endSession]);
 
   // Trigger perfect bonus XP animation once when game completes perfectly
   const perfectBonusTriggeredRef = useRef(false);
