@@ -51,7 +51,7 @@ export function KotobaBubbleSetup({ deckId, totalCards, onSelect }: KotobaBubble
 
   // Loading state
   if (loading) {
-    return <Loading message="Loading Kotoba Bubble..." />;
+    return <Loading message="Loading Sentence Builder..." />;
   }
 
   if (generating) {
@@ -64,7 +64,7 @@ export function KotobaBubbleSetup({ deckId, totalCards, onSelect }: KotobaBubble
       <Box sx={{ textAlign: 'center', py: 4 }}>
         <Typography sx={{ fontSize: '3rem', mb: 2 }}>🫧</Typography>
         <Typography variant="h5" sx={{ mb: 0.5, fontWeight: 700, color: 'text.primary' }}>
-          Kotoba Bubble
+          Sentence Builder
         </Typography>
         <Typography sx={{ mb: 3, color: 'text.secondary', maxWidth: 360, mx: 'auto' }}>
           {isMemberAccount

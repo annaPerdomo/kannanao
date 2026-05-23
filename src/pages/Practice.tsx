@@ -24,7 +24,7 @@ const LABELS: Record<PracticeMode, string> = {
   match: 'Match JP ↔ EN',
   fill: 'Fill in the Blank',
   recall: 'Guess It!',
-  'kotoba-bubble': 'Kotoba Bubble',
+  'kotoba-bubble': 'Sentence Builder',
 };
 
 /** Show the batch picker when the deck exceeds this many cards. */

@@ -46,7 +46,7 @@ export function KotobaBubbleAnalytics({
             color: brand[700],
           }}
         >
-          Kotoba Bubble
+          Sentence Builder
         </Typography>
       </Stack>
 
@@ -210,7 +210,7 @@ export function KotobaBubbleAnalytics({
 
       {data.decks.length === 0 && data.users.length === 0 && (
         <Typography sx={{ color: 'text.secondary', fontSize: '0.85rem', mb: 4 }}>
-          No Kotoba Bubble activity yet.
+          No Sentence Builder activity yet.
         </Typography>
       )}
     </>
