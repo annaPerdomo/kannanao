@@ -9,9 +9,9 @@ import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
 import { memo, useState } from 'react';
 
+import EmojiPicker, { type EmojiClickData, Theme } from '@/components/LazyEmojiPicker';
 import type { Todo } from '@/types/todo';
 
 import { isCompletedOnDate, todayISO, XP_PER_TODO } from './helpers';

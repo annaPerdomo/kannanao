@@ -16,9 +16,9 @@ import { alpha, useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
 import { useCallback, useMemo, useState } from 'react';
 
+import EmojiPicker, { type EmojiClickData, Theme } from '@/components/LazyEmojiPicker';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { EntryType } from '@/types/todo';
 
