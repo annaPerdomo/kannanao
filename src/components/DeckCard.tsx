@@ -5,9 +5,9 @@ import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import { Box, IconButton, Popover, Tooltip, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
-import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
 import { useCallback, useState } from 'react';
 
+import EmojiPicker, { type EmojiClickData, Theme } from '@/components/LazyEmojiPicker';
 import { useCardBorder } from '@/contexts/CardBorderContext';
 import type { Deck } from '@/types/deck';
 

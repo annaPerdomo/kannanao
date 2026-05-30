@@ -3,7 +3,8 @@
 import Box from '@mui/material/Box';
 import Popover from '@mui/material/Popover';
 import { alpha, useTheme } from '@mui/material/styles';
-import EmojiPicker, { type EmojiClickData, Theme } from 'emoji-picker-react';
+
+import EmojiPicker, { type EmojiClickData, Theme } from '@/components/LazyEmojiPicker';
 
 interface EmojiPickerPopoverProps {
   anchorEl: HTMLElement | null;

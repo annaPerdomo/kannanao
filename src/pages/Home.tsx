@@ -22,22 +22,16 @@ import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { Layout as RGLLayout } from 'react-grid-layout';
 import { GridLayout } from 'react-grid-layout';
 
-import { CustomizeHomeDialog } from '@/components/CustomizeHomeDialog';
 import { DeckCard } from '@/components/DeckCard';
-import {
-  AssignmentCard,
-  GroupHomeWidget,
-  LeaderboardWidget,
-  MessageThread,
-} from '@/components/Group';
+import { AssignmentCard, GroupHomeWidget, LeaderboardWidget } from '@/components/Group';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
-import { ShareEmbedDialog } from '@/components/ShareEmbedDialog';
 import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
@@ -60,6 +54,22 @@ import {
   SECTION_META,
 } from '@/types/homeSections';
 
+// These are rendered conditionally (modals / member-only chat) and aren't part
+// of the dashboard's first paint, so load them on demand to keep them out of
+// the initial bundle.
+const CustomizeHomeDialog = dynamic(
+  () => import('@/components/CustomizeHomeDialog').then((m) => m.CustomizeHomeDialog),
+  { ssr: false },
+);
+const ShareEmbedDialog = dynamic(
+  () => import('@/components/ShareEmbedDialog').then((m) => m.ShareEmbedDialog),
+  { ssr: false },
+);
+const MessageThread = dynamic(
+  () => import('@/components/Group/MessageThread').then((m) => m.MessageThread),
+  { ssr: false },
+);
+
 function getGreeting(name: string): { text: string; icon: React.ReactNode } {
   const h = new Date().getHours();
   if (h < 12) return { text: `Good morning, ${name}!`, icon: <FilterVintageIcon /> };
@@ -74,6 +84,7 @@ function WelcomeBanner({
   spendableXp,
   ownedItemKeys,
   onShopClick,
+  xpReady,
 }: {
   username: string;
   level: number;
@@ -81,6 +92,7 @@ function WelcomeBanner({
   spendableXp: number;
   ownedItemKeys: string[];
   onShopClick: () => void;
+  xpReady: boolean;
 }) {
   const { text, icon } = getGreeting(username);
   const { current, needed } = xpProgressInLevel(totalXp);
@@ -101,71 +113,75 @@ function WelcomeBanner({
       gradientTitle
       mb={1.5}
       endContent={
-        <Box
-          role="button"
-          onClick={onShopClick}
-          sx={{
-            minWidth: { sm: 220 },
-            width: { xs: '100%', sm: 260 },
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            '& *': { pointerEvents: 'none' },
-            '&:hover': { opacity: 0.85 },
-            '@keyframes shimmer': {
-              '0%': { backgroundPosition: '-200% 0' },
-              '100%': { backgroundPosition: '200% 0' },
-            },
-          }}
-        >
-          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: brand[700] }}>
-              XP Progress
-            </Typography>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: brand[600] }}>
-              {current} / {needed}
-            </Typography>
-          </Stack>
-          <LinearProgress
-            variant="determinate"
-            value={pct}
+        // Only render the XP widget once progress has loaded — otherwise it
+        // would flash a placeholder 0 and then jump to the real number.
+        !xpReady ? undefined : (
+          <Box
+            role="button"
+            onClick={onShopClick}
             sx={{
-              height: 12,
-              borderRadius: 6,
-              bgcolor: alpha(brand[200], 0.5),
-              '& .MuiLinearProgress-bar': {
-                borderRadius: 6,
-                background: `linear-gradient(90deg, ${brand[400]}, ${accent[400]}, ${brand[300]}, ${accent[400]}, ${brand[400]})`,
-                backgroundSize: '200% 100%',
-                animation: 'shimmer 3s ease-in-out infinite',
-                transition: 'width 0.6s ease',
+              minWidth: { sm: 220 },
+              width: { xs: '100%', sm: 260 },
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              '& *': { pointerEvents: 'none' },
+              '&:hover': { opacity: 0.85 },
+              '@keyframes shimmer': {
+                '0%': { backgroundPosition: '-200% 0' },
+                '100%': { backgroundPosition: '200% 0' },
               },
             }}
-          />
-          <Typography
-            variant="caption"
-            sx={{ color: brand[600], fontWeight: 600, mt: 0.5, display: 'block' }}
           >
-            {needed - current} XP to level {level + 1} 🚀
-          </Typography>
-
-          <Box sx={{ mt: 1, pt: 1, borderTop: `1px solid ${alpha(brand[300], 0.25)}` }}>
-            <Stack direction="row" alignItems="center" spacing={0.5} mb={nextItem ? 0.5 : 0}>
-              <AutoAwesomeIcon sx={{ fontSize: '0.85rem', color: accent[500] }} />
-              <Typography variant="caption" sx={{ fontWeight: 800, color: accent[600] }}>
-                {spendableXp.toLocaleString()} XP to spend
+            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: brand[700] }}>
+                XP Progress
               </Typography>
-              <StorefrontIcon sx={{ fontSize: '0.85rem', color: brand[500], ml: 'auto' }} />
+              <Typography variant="caption" sx={{ fontWeight: 700, color: brand[600] }}>
+                {current} / {needed}
+              </Typography>
             </Stack>
-            {nextItem && xpNeeded > 0 && (
-              <Typography
-                variant="caption"
-                sx={{ color: brand[500], fontWeight: 600, fontSize: '0.7rem', display: 'block' }}
-              >
-                {nextItem.emoji} {nextItem.name} — {xpNeeded.toLocaleString()} more XP!
-              </Typography>
-            )}
+            <LinearProgress
+              variant="determinate"
+              value={pct}
+              sx={{
+                height: 12,
+                borderRadius: 6,
+                bgcolor: alpha(brand[200], 0.5),
+                '& .MuiLinearProgress-bar': {
+                  borderRadius: 6,
+                  background: `linear-gradient(90deg, ${brand[400]}, ${accent[400]}, ${brand[300]}, ${accent[400]}, ${brand[400]})`,
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 3s ease-in-out infinite',
+                  transition: 'width 0.6s ease',
+                },
+              }}
+            />
+            <Typography
+              variant="caption"
+              sx={{ color: brand[600], fontWeight: 600, mt: 0.5, display: 'block' }}
+            >
+              {needed - current} XP to level {level + 1} 🚀
+            </Typography>
+
+            <Box sx={{ mt: 1, pt: 1, borderTop: `1px solid ${alpha(brand[300], 0.25)}` }}>
+              <Stack direction="row" alignItems="center" spacing={0.5} mb={nextItem ? 0.5 : 0}>
+                <AutoAwesomeIcon sx={{ fontSize: '0.85rem', color: accent[500] }} />
+                <Typography variant="caption" sx={{ fontWeight: 800, color: accent[600] }}>
+                  {spendableXp.toLocaleString()} XP to spend
+                </Typography>
+                <StorefrontIcon sx={{ fontSize: '0.85rem', color: brand[500], ml: 'auto' }} />
+              </Stack>
+              {nextItem && xpNeeded > 0 && (
+                <Typography
+                  variant="caption"
+                  sx={{ color: brand[500], fontWeight: 600, fontSize: '0.7rem', display: 'block' }}
+                >
+                  {nextItem.emoji} {nextItem.name} — {xpNeeded.toLocaleString()} more XP!
+                </Typography>
+              )}
+            </Box>
           </Box>
-        </Box>
+        )
       }
     ></PageHeader>
   );
@@ -751,19 +767,19 @@ export default function Home() {
         py: { xs: 3, sm: 5 },
       }}
     >
-      {/* Welcome banner */}
-      {progress && (
-        <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
-          <WelcomeBanner
-            username={username}
-            level={progress.level}
-            totalXp={progress.total_xp}
-            spendableXp={spendableXp}
-            ownedItemKeys={ownedItemKeys}
-            onShopClick={() => router.push('/shop')}
-          />
-        </Box>
-      )}
+      {/* Welcome banner — always shown so the greeting/header is present even
+          before (or if) XP progress finishes loading. Falls back to zeroed XP. */}
+      <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
+        <WelcomeBanner
+          username={username}
+          level={progress?.level ?? 0}
+          totalXp={progress?.total_xp ?? 0}
+          spendableXp={spendableXp}
+          ownedItemKeys={ownedItemKeys}
+          onShopClick={() => router.push('/shop')}
+          xpReady={progress != null}
+        />
+      </Box>
 
       {/* ── Dashboard grid ── */}
       <GlobalStyles

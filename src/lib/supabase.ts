@@ -106,23 +106,24 @@ export async function loadDecks(userId: string): Promise<Deck[]> {
     return [];
   }
 
-  // Fetch user's own decks
-  const { data: deckRows, error: deckError } = await sb
-    .from('decks')
-    .select('*')
-    .eq('user_id', userId)
-    .order('position', { ascending: true })
-    .order('created_at', { ascending: true });
+  // Fetch user's own decks and any assignments in parallel — they're independent.
+  const [ownResult, assignedResult] = await Promise.all([
+    sb
+      .from('decks')
+      .select('*')
+      .eq('user_id', userId)
+      .order('position', { ascending: true })
+      .order('created_at', { ascending: true }),
+    // Decks assigned to this user (member viewing organizer's decks)
+    sb.from('assignments').select('deck_id').eq('member_id', userId),
+  ]);
+
+  const { data: deckRows, error: deckError } = ownResult;
+  const { data: assignedRows } = assignedResult;
   if (deckError) {
     console.error('Error loading decks', deckError);
     return [];
   }
-
-  // Fetch decks assigned to this user (member viewing organizer's decks)
-  const { data: assignedRows } = await sb
-    .from('assignments')
-    .select('deck_id')
-    .eq('member_id', userId);
 
   const ownDeckIds = new Set((deckRows ?? []).map((d) => d.id));
   const assignedDeckIds = (assignedRows ?? [])
@@ -143,23 +144,29 @@ export async function loadDecks(userId: string): Promise<Deck[]> {
   const allDecks = [...(deckRows ?? []), ...assignedDecks];
   const allDeckIds = allDecks.map((d) => d.id);
 
-  const { data: cardRows, error: cardError } = await sb
-    .from('cards')
-    .select('*')
-    .in('deck_id', allDeckIds)
-    .order('position', { ascending: true })
-    .order('created_at', { ascending: true });
-  if (cardError) {
-    console.error('Error loading cards', cardError);
-    return [];
+  // Only the deck_id is needed to count cards per deck — fetching full card rows
+  // here transfers every card's word/reading/meaning/image_url for the whole
+  // library just to compute counts. Select the minimal column instead.
+  let cards: Array<{ deck_id: string | number }> = [];
+  if (allDeckIds.length > 0) {
+    const { data: cardRows, error: cardError } = await sb
+      .from('cards')
+      .select('deck_id')
+      .in('deck_id', allDeckIds);
+    if (cardError) {
+      console.error('Error loading cards', cardError);
+      return [];
+    }
+    cards = cardRows ?? [];
   }
 
-  const cards = cardRows ?? [];
+  const countByDeck = new Map<string, number>();
+  for (const card of cards) {
+    const key = String(card.deck_id);
+    countByDeck.set(key, (countByDeck.get(key) ?? 0) + 1);
+  }
 
-  return allDecks.map((deck) => {
-    const deckCards = cards.filter((card) => String(card.deck_id) === deck.id);
-    return dbDeckToApp(deck, deckCards.length, userId);
-  });
+  return allDecks.map((deck) => dbDeckToApp(deck, countByDeck.get(deck.id) ?? 0, userId));
 }
 
 export async function dbCreateDeck(name: string, description?: string): Promise<Deck> {

@@ -7,6 +7,49 @@ import { SkipToContent } from '@/components/SkipToContent';
 
 import Providers from './providers';
 
+// All 20 Google Font families used across the 10 color themes. Browsers only
+// download the font files actually rendered by the active theme, so the single
+// stylesheet request is the only shared cost — and it's loaded non-blocking.
+const FONTS_HREF = [
+  'https://fonts.googleapis.com/css2?',
+  // Sakura / Sunset / Yuki·Forest·Midnight cute
+  'family=Nunito:wght@400;500;600;700;800',
+  'family=DM+Serif+Display:ital@0;1',
+  'family=Fredoka:wght@400;500;600;700',
+  // Shared JP fonts
+  'family=Noto+Serif+JP:wght@300;400;600',
+  'family=Noto+Sans+JP:wght@300;400;500;700',
+  // Shared mono fonts
+  'family=DM+Mono:wght@400;500',
+  'family=Space+Mono:wght@400;700',
+  'family=JetBrains+Mono:wght@400;500;700',
+  // Murasaki / Rose Gold body
+  'family=Raleway:wght@400;500;600;700',
+  // Murasaki / Forest display
+  'family=Playfair+Display:wght@400;700',
+  // Yuki / Midnight display
+  'family=Space+Grotesk:wght@400;500;600;700',
+  // Yuki body
+  'family=Inter:wght@400;500;600;700',
+  // Ocean body
+  'family=Outfit:wght@400;500;600;700',
+  // Ocean display / Midnight body
+  'family=Sora:wght@400;500;600;700',
+  // Forest body
+  'family=Lora:wght@400;500;600;700',
+  // Sunset display
+  'family=Abril+Fatface',
+  // Lavender display / Rose Gold display
+  'family=Cormorant+Garamond:wght@400;600;700',
+  // Lavender body / Murasaki·Matcha·Rose Gold cute
+  'family=Quicksand:wght@400;500;600;700',
+  // Matcha body + JP
+  'family=Zen+Maru+Gothic:wght@400;500;700',
+  // Matcha display
+  'family=Shippori+Mincho:wght@400;600',
+  'display=swap',
+].join('&');
+
 const TITLE = 'Kannanao — AI Japanese Flashcard Studio';
 const DESCRIPTION =
   'Create Japanese flashcards with AI, practice with Match, Fill-in-the-blank & Recall modes, explore Travel Mode phrasebooks, study in groups with leaderboards & assignments, earn XP & achievements, customize with 10 themes, import PDFs, and share or embed decks anywhere.';
@@ -65,49 +108,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Per-theme Google Fonts — 20 families covering all 10 color themes */}
-        <link
-          href={[
-            'https://fonts.googleapis.com/css2?',
-            // Sakura / Sunset / Yuki·Forest·Midnight cute
-            'family=Nunito:wght@400;500;600;700;800',
-            'family=DM+Serif+Display:ital@0;1',
-            'family=Fredoka:wght@400;500;600;700',
-            // Shared JP fonts
-            'family=Noto+Serif+JP:wght@300;400;600',
-            'family=Noto+Sans+JP:wght@300;400;500;700',
-            // Shared mono fonts
-            'family=DM+Mono:wght@400;500',
-            'family=Space+Mono:wght@400;700',
-            'family=JetBrains+Mono:wght@400;500;700',
-            // Murasaki / Rose Gold body
-            'family=Raleway:wght@400;500;600;700',
-            // Murasaki / Forest display
-            'family=Playfair+Display:wght@400;700',
-            // Yuki / Midnight display
-            'family=Space+Grotesk:wght@400;500;600;700',
-            // Yuki body
-            'family=Inter:wght@400;500;600;700',
-            // Ocean body
-            'family=Outfit:wght@400;500;600;700',
-            // Ocean display / Midnight body
-            'family=Sora:wght@400;500;600;700',
-            // Forest body
-            'family=Lora:wght@400;500;600;700',
-            // Sunset display
-            'family=Abril+Fatface',
-            // Lavender display / Rose Gold display
-            'family=Cormorant+Garamond:wght@400;600;700',
-            // Lavender body / Murasaki·Matcha·Rose Gold cute
-            'family=Quicksand:wght@400;500;600;700',
-            // Matcha body + JP
-            'family=Zen+Maru+Gothic:wght@400;500;700',
-            // Matcha display
-            'family=Shippori+Mincho:wght@400;600',
-            'display=swap',
-          ].join('&')}
-          rel="stylesheet"
+        {/*
+          Per-theme Google Fonts — 20 families covering all 10 color themes.
+          Loaded asynchronously (preload + media-swap) so this third-party
+          stylesheet never blocks first paint. `display=swap` (in FONTS_HREF)
+          keeps text visible in a fallback font until the web fonts arrive. The
+          inline script promotes the sheet to `media="all"` once it loads;
+          <noscript> covers the no-JS case.
+        */}
+        <link rel="preload" as="style" href={FONTS_HREF} />
+        <link id="gfonts" rel="stylesheet" href={FONTS_HREF} media="print" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){var l=document.getElementById('gfonts');if(!l)return;var go=function(){l.media='all'};if(l.sheet){go()}else{l.addEventListener('load',go)}})();",
+          }}
         />
+        <noscript>
+          <link rel="stylesheet" href={FONTS_HREF} />
+        </noscript>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link
