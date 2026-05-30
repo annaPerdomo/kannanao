@@ -118,7 +118,15 @@ function WelcomeBanner({
         !xpReady ? undefined : (
           <Box
             role="button"
+            tabIndex={0}
+            aria-label="Open shop"
             onClick={onShopClick}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onShopClick();
+              }
+            }}
             sx={{
               minWidth: { sm: 220 },
               width: { xs: '100%', sm: 260 },
@@ -986,9 +994,13 @@ export default function Home() {
         </Box>
       )}
 
-      {homeSections.messages && homeChatPartner && user && (
+      {/* These dialogs are dynamically imported. next/dynamic only starts
+          fetching a chunk once its component actually renders, so gate each on
+          its own open state — otherwise the chunk would load during the initial
+          home render even while the dialog is closed. */}
+      {homeSections.messages && homeChatPartner && user && homeChatOpen && (
         <MessageThread
-          open={homeChatOpen}
+          open
           onClose={() => setHomeChatOpen(false)}
           messages={dmMessages}
           onSend={sendMessage}
@@ -1000,18 +1012,20 @@ export default function Home() {
         />
       )}
 
-      <ShareEmbedDialog
-        open={shareDeckId !== null}
-        onClose={() => setShareDeckId(null)}
-        deckId={shareDeckId ?? ''}
-        deckName={shareDeckName}
-        isPublic={decks.find((d) => d.id === shareDeckId)?.isPublic ?? false}
-        onPublicChange={(val) => {
-          if (shareDeckId) setDeckPublic(shareDeckId, val);
-        }}
-      />
+      {shareDeckId !== null && (
+        <ShareEmbedDialog
+          open
+          onClose={() => setShareDeckId(null)}
+          deckId={shareDeckId}
+          deckName={shareDeckName}
+          isPublic={decks.find((d) => d.id === shareDeckId)?.isPublic ?? false}
+          onPublicChange={(val) => {
+            if (shareDeckId) setDeckPublic(shareDeckId, val);
+          }}
+        />
+      )}
 
-      <CustomizeHomeDialog open={customizeOpen} onClose={() => setCustomizeOpen(false)} />
+      {customizeOpen && <CustomizeHomeDialog open onClose={() => setCustomizeOpen(false)} />}
     </Box>
   );
 }
