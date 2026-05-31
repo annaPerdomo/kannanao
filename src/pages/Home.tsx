@@ -24,7 +24,7 @@ import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Layout as RGLLayout } from 'react-grid-layout';
 import { GridLayout } from 'react-grid-layout';
 
@@ -69,6 +69,21 @@ const MessageThread = dynamic(
   () => import('@/components/Group/MessageThread').then((m) => m.MessageThread),
   { ssr: false },
 );
+
+/**
+ * Latches to `true` the first time `open` becomes true and stays true.
+ * Lets us defer a dynamically-imported dialog's chunk until its first open
+ * (the component isn't rendered — and therefore not fetched — until then),
+ * while keeping it mounted afterwards so MUI exit transitions and internal
+ * dialog state are preserved on subsequent closes.
+ */
+function useHasOpened(open: boolean): boolean {
+  const [opened, setOpened] = useState(open);
+  useEffect(() => {
+    if (open) setOpened(true);
+  }, [open]);
+  return opened;
+}
 
 function getGreeting(name: string): { text: string; icon: React.ReactNode } {
   const h = new Date().getHours();
@@ -351,6 +366,12 @@ export default function Home() {
   const [homeChatOpen, setHomeChatOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [customizeOpen, setCustomizeOpen] = useState(false);
+
+  // Defer each dynamically-imported dialog's chunk until its first open, then
+  // keep it mounted so close transitions and internal state survive.
+  const chatEverOpened = useHasOpened(homeChatOpen);
+  const shareEverOpened = useHasOpened(shareDeckId !== null);
+  const customizeEverOpened = useHasOpened(customizeOpen);
 
   // Chat partner for member's home widget
   const homeChatPartner = (() => {
@@ -994,13 +1015,14 @@ export default function Home() {
         </Box>
       )}
 
-      {/* These dialogs are dynamically imported. next/dynamic only starts
-          fetching a chunk once its component actually renders, so gate each on
-          its own open state — otherwise the chunk would load during the initial
-          home render even while the dialog is closed. */}
-      {homeSections.messages && homeChatPartner && user && homeChatOpen && (
+      {/* These dialogs are dynamically imported. next/dynamic only fetches a
+          chunk once its component renders, so we mount each lazily on its first
+          open (via useHasOpened) to keep the chunk out of the initial home
+          render, then keep it mounted and drive visibility through `open` so MUI
+          exit transitions and internal dialog state are preserved on close. */}
+      {homeSections.messages && homeChatPartner && user && chatEverOpened && (
         <MessageThread
-          open
+          open={homeChatOpen}
           onClose={() => setHomeChatOpen(false)}
           messages={dmMessages}
           onSend={sendMessage}
@@ -1012,11 +1034,11 @@ export default function Home() {
         />
       )}
 
-      {shareDeckId !== null && (
+      {shareEverOpened && (
         <ShareEmbedDialog
-          open
+          open={shareDeckId !== null}
           onClose={() => setShareDeckId(null)}
-          deckId={shareDeckId}
+          deckId={shareDeckId ?? ''}
           deckName={shareDeckName}
           isPublic={decks.find((d) => d.id === shareDeckId)?.isPublic ?? false}
           onPublicChange={(val) => {
@@ -1025,7 +1047,9 @@ export default function Home() {
         />
       )}
 
-      {customizeOpen && <CustomizeHomeDialog open onClose={() => setCustomizeOpen(false)} />}
+      {customizeEverOpened && (
+        <CustomizeHomeDialog open={customizeOpen} onClose={() => setCustomizeOpen(false)} />
+      )}
     </Box>
   );
 }
