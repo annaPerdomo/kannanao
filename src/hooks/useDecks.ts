@@ -16,9 +16,11 @@ import {
 } from '@/lib/supabase';
 import type { Deck } from '@/types/deck';
 
-export function useDecks(enabled = true) {
-  const [decks, setDecks] = useState<Deck[]>([]);
-  const [loading, setLoading] = useState(enabled);
+export function useDecks(enabled = true, initialDecks?: Deck[]) {
+  const [decks, setDecks] = useState<Deck[]>(initialDecks ?? []);
+  // When the server already provided decks, start resolved (no loading flash);
+  // we still refresh in the background below to pick up any changes.
+  const [loading, setLoading] = useState(enabled && !initialDecks);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -28,7 +30,8 @@ export function useDecks(enabled = true) {
       return;
     }
     let cancelled = false;
-    setLoading(true);
+    // Only show a loading state when we don't already have seeded decks.
+    if (!initialDecks) setLoading(true);
 
     const fetchDecks = async () => {
       const loaded = await loadDecks(user.id);
@@ -42,6 +45,8 @@ export function useDecks(enabled = true) {
     return () => {
       cancelled = true;
     };
+    // initialDecks intentionally excluded — it only seeds the first render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, enabled]);
 
   const createDeck = useCallback(async (name: string, description?: string): Promise<Deck> => {

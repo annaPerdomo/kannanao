@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import { useAuth } from '@/contexts/AuthContext';
 import { cardXp } from '@/lib/flashcardUtils';
 import { sb } from '@/lib/supabase'; // adjust to your Supabase client path
 import type { JlptLevel } from '@/types/flashcard';
@@ -313,16 +314,17 @@ function toLocalDateString(date: Date): string {
 
 export function useProgress() {
   const supabase = sb;
+  const { user } = useAuth();
   const [progress, setProgress] = useState<UserProgress | null>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [recentSessions, setRecentSessions] = useState<StudySession[]>([]);
   const [loading, setLoading] = useState(true);
   const [newlyUnlocked, setNewlyUnlocked] = useState<AchievementDef[]>([]);
 
+  // Use the already-resolved user from AuthContext rather than auth.getUser(),
+  // which adds an extra auth-server round-trip on the home critical path before
+  // any progress data can load. RLS still scopes these reads server-side.
   const fetchAll = useCallback(async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
     if (!user) {
       setLoading(false);
       return;
@@ -376,7 +378,7 @@ export function useProgress() {
     if (ach) setAchievements(ach);
     if (sess) setRecentSessions(sess);
     setLoading(false);
-  }, [supabase]);
+  }, [supabase, user]);
 
   useEffect(() => {
     fetchAll();

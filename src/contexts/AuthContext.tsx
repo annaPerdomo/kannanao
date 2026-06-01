@@ -3,6 +3,7 @@ import type { Session, User } from '@supabase/supabase-js';
 import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 
 import { isAdminUser } from '@/lib/admin';
+import type { InitialAuth } from '@/lib/dbMappers';
 import type { AccountType } from '@/lib/supabase';
 import {
   dbRecordLogin,
@@ -74,18 +75,51 @@ const VALID_SCHEMES: ColorScheme[] = [
   'rosegold',
 ];
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [displayName, setDisplayName] = useState<string | null>(null);
-  const [colorScheme, setColorScheme] = useState<ColorScheme | null>(null);
-  const [showTodo, setShowTodo] = useState(true);
-  const [homeSections, setHomeSections] = useState<HomeSections>(DEFAULT_HOME_SECTIONS);
-  const [travelMainViewMode, setTravelMainViewMode] = useState<string | null>(null);
-  const [accountType, setAccountType] = useState<AccountType>('organizer');
-  const [organizerId, setOrganizerId] = useState<string | null>(null);
-  const [groupId, setGroupId] = useState<string | null>(null);
-  const [groupShowLeaderboard, setGroupShowLeaderboard] = useState(true);
-  const [loading, setLoading] = useState(true);
+export function AuthProvider({
+  children,
+  initialAuth,
+}: {
+  children: ReactNode;
+  /**
+   * Server-resolved auth state. When provided (even with a null session), the
+   * provider treats auth as already resolved — `loading` starts false and the
+   * session/profile are seeded — so authenticated pages render in the initial
+   * HTML instead of flashing a loading spinner. Undefined = resolve on client.
+   */
+  initialAuth?: InitialAuth;
+}) {
+  const seeded = initialAuth !== undefined;
+  const initialProfile = initialAuth?.profile ?? null;
+  const seededScheme =
+    initialProfile?.colorScheme && VALID_SCHEMES.includes(initialProfile.colorScheme as ColorScheme)
+      ? (initialProfile.colorScheme as ColorScheme)
+      : null;
+  const seededSections = resolveHomeSections(
+    initialProfile?.homeSections,
+    initialProfile?.showTodo,
+  );
+
+  const [session, setSession] = useState<Session | null>(initialAuth?.session ?? null);
+  const [displayName, setDisplayName] = useState<string | null>(
+    initialProfile?.displayName ?? null,
+  );
+  const [colorScheme, setColorScheme] = useState<ColorScheme | null>(seededScheme);
+  const [showTodo, setShowTodo] = useState(seededSections.todo);
+  const [homeSections, setHomeSections] = useState<HomeSections>(seededSections);
+  const [travelMainViewMode, setTravelMainViewMode] = useState<string | null>(
+    initialProfile?.travelMainViewMode ?? null,
+  );
+  const [accountType, setAccountType] = useState<AccountType>(
+    initialProfile?.accountType ?? 'organizer',
+  );
+  const [organizerId, setOrganizerId] = useState<string | null>(
+    initialProfile?.organizerId ?? null,
+  );
+  const [groupId, setGroupId] = useState<string | null>(initialProfile?.groupId ?? null);
+  const [groupShowLeaderboard, setGroupShowLeaderboard] = useState(
+    initialProfile?.groupShowLeaderboard ?? true,
+  );
+  const [loading, setLoading] = useState(!seeded);
 
   async function fetchProfile(userId: string) {
     const profile = await loadProfile(userId);
@@ -105,13 +139,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    sb.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      if (data.session?.user) {
-        void fetchProfile(data.session.user.id);
-      }
-      setLoading(false);
-    });
+    // When the server already resolved auth, skip the client getSession round —
+    // the seeded session/profile are authoritative for first paint. onAuthStateChange
+    // (below) still reconciles live changes (token refresh, sign-in/out).
+    if (!seeded) {
+      sb.auth.getSession().then(({ data }) => {
+        setSession(data.session);
+        if (data.session?.user) {
+          void fetchProfile(data.session.user.id);
+        }
+        setLoading(false);
+      });
+    }
 
     const {
       data: { subscription },
@@ -136,6 +175,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
+    // Runs once on mount. `seeded` is fixed for the component's lifetime (it's
+    // derived from the server-provided initialAuth prop), so it's safe to omit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const signInWithUsername = async (username: string, password: string) => {

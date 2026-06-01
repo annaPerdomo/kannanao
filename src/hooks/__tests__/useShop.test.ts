@@ -51,7 +51,7 @@ describe('useShop', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
-    mockUseAuth.mockReturnValue({ isAdmin: false });
+    mockUseAuth.mockReturnValue({ isAdmin: false, user: { id: 'u1' } });
     mockRpc.mockResolvedValue({ data: null, error: null });
     setTable('user_purchases', []);
     setTable('user_equipped', []);
@@ -194,10 +194,9 @@ describe('useShop', () => {
     });
 
     it('should return "Not authenticated" when user is null during purchase', async () => {
-      // First call (mount) succeeds, second (purchase getUser) returns null
-      mockGetUser
-        .mockResolvedValueOnce({ data: { user: { id: 'u1' } } }) // fetchShopData on mount
-        .mockResolvedValueOnce({ data: { user: null } }); // purchaseItem getUser
+      // Mount fetch uses the AuthContext user; only purchaseItem still calls
+      // getUser — return null for it so the auth guard trips.
+      mockGetUser.mockResolvedValueOnce({ data: { user: null } }); // purchaseItem getUser
 
       const { result } = renderHook(() => useShop());
       await waitFor(() => expect(result.current.loading).toBe(false));
@@ -317,9 +316,8 @@ describe('useShop', () => {
     });
 
     it('should return "Not authenticated" when user is null during unequip', async () => {
-      mockGetUser
-        .mockResolvedValueOnce({ data: { user: { id: 'u1' } } }) // mount
-        .mockResolvedValueOnce({ data: { user: null } }); // unequip
+      // Mount fetch uses the AuthContext user; only unequip still calls getUser.
+      mockGetUser.mockResolvedValueOnce({ data: { user: null } }); // unequip
 
       const { result } = renderHook(() => useShop());
       await waitFor(() => expect(result.current.loading).toBe(false));

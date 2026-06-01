@@ -46,6 +46,7 @@ import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { xpProgressInLevel } from '@/hooks/useProgress';
 import { SHOP_ITEMS } from '@/hooks/useShop';
 import { LAYOUT } from '@/theme';
+import type { Deck } from '@/types/deck';
 import type { SectionKey } from '@/types/homeSections';
 import {
   getSectionsForRole,
@@ -331,7 +332,7 @@ function DashboardSection({
   );
 }
 
-export default function Home() {
+export default function Home({ initialDecks }: { initialDecks?: Deck[] }) {
   const {
     user,
     displayName,
@@ -343,6 +344,7 @@ export default function Home() {
   } = useAuth();
   const { decks, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, loading } = useDecks(
     homeSections.decks,
+    initialDecks,
   );
   const { progress, spendableXp, addBonusXp } = useProgressCtx();
   const {

@@ -639,17 +639,17 @@ const FREE_ITEM_KEYS = SHOP_ITEMS.filter((i) => i.price === 0 && !i.comingSoon).
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
 export function useShop() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const supabase = sb;
   const [purchases, setPurchases] = useState<UserPurchase[]>([]);
   const [equipped, setEquipped] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Use the already-resolved user from AuthContext rather than auth.getUser(),
+  // which makes an extra auth-server round-trip on the home critical path. RLS
+  // still scopes these reads server-side.
   const fetchShopData = useCallback(async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
     if (!user) {
       setLoading(false);
       return;
@@ -669,7 +669,7 @@ export function useShop() {
       setEquipped(map);
     }
     setLoading(false);
-  }, [supabase]);
+  }, [supabase, user]);
 
   useEffect(() => {
     fetchShopData();
