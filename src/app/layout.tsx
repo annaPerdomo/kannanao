@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { AppBackground } from '@/components/AppBackground';
 import { AppShell } from '@/components/AppShell';
 import { SkipToContent } from '@/components/SkipToContent';
+import { getInitialAuth } from '@/lib/serverData';
 
 import Providers from './providers';
 
@@ -102,7 +103,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Resolve auth on the server so AuthContext is seeded and authenticated pages
+  // render without a client-side auth/loading round-trip.
+  const initialAuth = await getInitialAuth();
+
   return (
     <html lang="en">
       <head>
@@ -147,7 +152,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <SkipToContent />
         <AppRouterCacheProvider>
-          <Providers>
+          <Providers initialAuth={initialAuth}>
             <AppBackground>
               <AppShell>{children}</AppShell>
             </AppBackground>

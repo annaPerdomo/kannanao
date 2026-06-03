@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
-// Mock the Supabase client before importing the module under test
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: vi.fn(() => ({
+// Mock the Supabase client before importing the module under test.
+// lib/supabase.ts now builds its client with @supabase/ssr's createBrowserClient.
+vi.mock('@supabase/ssr', () => ({
+  createBrowserClient: vi.fn(() => ({
     auth: {
       getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
       onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),

@@ -1,12 +1,25 @@
 'use client';
 
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
+import {
+  type AccountType,
+  dbCardToApp,
+  dbDeckToApp,
+  type SupabaseCardRow,
+  toNumber,
+  type UserProfile,
+} from '@/lib/dbMappers';
 import type { Deck } from '@/types/deck';
-import type { Flashcard, JlptLevel, MainViewMode } from '@/types/flashcard';
+import type { Flashcard } from '@/types/flashcard';
 import type { HomeSections } from '@/types/homeSections';
 import type { EntryType, Todo } from '@/types/todo';
 import type { ShowCard, ShowCardCategory } from '@/types/travel';
+
+// Re-export the shared mappers/types so existing `@/lib/supabase` imports keep
+// working unchanged.
+export { dbCardToApp, dbDeckToApp };
+export type { AccountType };
 
 const SUPABASE_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL';
@@ -30,75 +43,11 @@ export function showConfigBanner(): void {
   );
 }
 
-export const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-interface SupabaseDeckRow {
-  id: string;
-  name: string;
-  description: string | null;
-  created_at: string | null;
-  user_id: string;
-  emoji: string | null;
-  pinned: boolean | null;
-  is_public: boolean | null;
-  position: number;
-}
-
-interface SupabaseCardRow {
-  id: string | number;
-  deck_id: string | number;
-  word: string;
-  reading: string | null;
-  meaning: string | null;
-  image_url: string | null;
-  image_query: string | null;
-  example_jp: string | null;
-  example_en: string | null;
-  main_view_mode: MainViewMode;
-  card_type: 'word' | 'phrase' | null;
-  jlpt_level: JlptLevel | null;
-  position: number;
-}
-
-function toNumber(value: string | null): number {
-  if (!value) return Date.now();
-  const parsed = Date.parse(value);
-  return Number.isNaN(parsed) ? Date.now() : parsed;
-}
-
-export function dbCardToApp(card: SupabaseCardRow): Flashcard {
-  return {
-    id: String(card.id),
-    deckId: String(card.deck_id),
-    word: card.word,
-    reading: card.reading ?? '',
-    meaning: card.meaning ?? '',
-    image_query: card.image_query ?? '',
-    example_jp: card.example_jp ?? '',
-    example_en: card.example_en ?? '',
-    imageUrl: card.image_url ?? undefined,
-    mainViewMode: card.main_view_mode ?? 'hiragana',
-    cardType: card.card_type ?? 'word',
-    jlptLevel: card.jlpt_level ?? undefined,
-    position: card.position ?? 0,
-  };
-}
-
-export function dbDeckToApp(deck: SupabaseDeckRow, cardCount: number, currentUserId: string): Deck {
-  return {
-    id: deck.id,
-    name: deck.name,
-    description: deck.description ?? '',
-    createdAt: toNumber(deck.created_at),
-    cardCount,
-    ownerId: deck.user_id,
-    isShared: deck.user_id !== currentUserId,
-    emoji: deck.emoji ?? '',
-    pinned: deck.pinned ?? false,
-    isPublic: deck.is_public ?? false,
-    position: deck.position ?? 0,
-  };
-}
+// Browser client — persists the auth session in cookies (not localStorage) so
+// the Next.js server can read it and render authenticated pages. The API
+// surface is identical to the previous createClient(), so all sb.from()/sb.auth
+// usage across the app is unchanged.
+export const sb = createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export async function loadDecks(userId: string): Promise<Deck[]> {
   if (!isConfigured()) {
@@ -483,20 +432,7 @@ export async function upsertProfile(
   if (error) console.error('upsertProfile error', error);
 }
 
-export type AccountType = 'organizer' | 'member';
-
-export async function loadProfile(userId: string): Promise<{
-  username: string;
-  displayName: string | null;
-  colorScheme: string | null;
-  showTodo: boolean;
-  homeSections: Partial<HomeSections> | null;
-  accountType: AccountType;
-  organizerId: string | null;
-  groupId: string | null;
-  groupShowLeaderboard: boolean;
-  travelMainViewMode: string | null;
-} | null> {
+export async function loadProfile(userId: string): Promise<UserProfile | null> {
   const { data, error } = await sb
     .from('profiles')
     .select(

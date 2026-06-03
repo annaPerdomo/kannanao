@@ -6,12 +6,19 @@ import { DeckDialogProvider } from '@/contexts/DeckDialogContext';
 import { ShopProvider } from '@/contexts/ShopContext';
 import { AppThemeProvider } from '@/contexts/ThemeContext';
 import { useStaleTabReload } from '@/hooks/useStaleTabReload';
+import type { InitialAuth } from '@/lib/dbMappers';
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({
+  children,
+  initialAuth,
+}: {
+  children: React.ReactNode;
+  initialAuth?: InitialAuth;
+}) {
   useStaleTabReload();
 
   return (
-    <AuthProvider>
+    <AuthProvider initialAuth={initialAuth}>
       <AppThemeProvider>
         <ErrorBoundary>
           <ShopProvider>

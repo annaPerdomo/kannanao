@@ -27,8 +27,10 @@ function makeChain(table: string) {
 
 const mockFrom = vi.fn((table: string) => makeChain(table));
 
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: vi.fn(() => ({
+// lib/supabase.ts builds its client with @supabase/ssr's createBrowserClient
+// (cookie-based session) — mock that factory here.
+vi.mock('@supabase/ssr', () => ({
+  createBrowserClient: vi.fn(() => ({
     auth: {
       getUser: (...args: unknown[]) => mockGetUser(...args),
       getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
