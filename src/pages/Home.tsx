@@ -348,6 +348,7 @@ export default function Home() {
   const {
     messages: dmMessages,
     unreadCount: dmUnreadCount,
+    ensureLoaded: ensureMessagesLoaded,
     sendMessage,
     markAllAsRead: markAllDmRead,
   } = useDirectMessagesCtx();
@@ -372,6 +373,12 @@ export default function Home() {
   const chatEverOpened = useHasOpened(homeChatOpen);
   const shareEverOpened = useHasOpened(shareDeckId !== null);
   const customizeEverOpened = useHasOpened(customizeOpen);
+
+  // The global messages provider only tracks the unread count; load the full
+  // thread the first time the home chat is opened so MessageThread has history.
+  useEffect(() => {
+    if (homeChatOpen) void ensureMessagesLoaded();
+  }, [homeChatOpen, ensureMessagesLoaded]);
 
   // Chat partner for member's home widget
   const homeChatPartner = (() => {

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 
 const mockGetSession = vi.fn();
+const mockUnreadCount = vi.fn(() => 0);
 
 const mockChannel = {
   on: vi.fn().mockReturnThis(),
@@ -15,6 +16,12 @@ vi.mock('@/lib/supabase', () => ({
     auth: { getSession: () => mockGetSession() },
     channel: vi.fn(() => mockChannel),
     removeChannel: vi.fn(),
+    // Used by the cheap count-only unread query (refreshUnreadCount).
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      is: vi.fn(() => Promise.resolve({ count: mockUnreadCount(), error: null })),
+    })),
   },
   isConfigured: vi.fn(() => true),
 }));
@@ -66,23 +73,38 @@ describe('useDirectMessages', () => {
 
   // ── initial load ──────────────────────────────────────────────────────────
 
-  it('loads messages on mount', async () => {
+  it('does not fetch the full list on mount — only the unread count', async () => {
+    mockUnreadCount.mockReturnValue(3);
+    const { result } = renderHook(() => useDirectMessages());
+    // Unread count comes from the cheap count-only query, not /api/messages.
+    await waitFor(() => expect(result.current.unreadCount).toBe(3));
+    expect(mockFetch).not.toHaveBeenCalled();
+    expect(result.current.messages).toEqual([]);
+  });
+
+  it('loads the full list via ensureLoaded', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => [DM_UNREAD, DM_READ],
     });
     const { result } = renderHook(() => useDirectMessages());
     await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => {
+      await result.current.ensureLoaded();
+    });
+    expect(mockFetch).toHaveBeenCalledWith('/api/messages', expect.anything());
     expect(result.current.messages).toHaveLength(2);
   });
 
-  it('computes unreadCount only for messages addressed to current user', async () => {
+  it('computes unreadCount only for messages addressed to current user once loaded', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => [DM_UNREAD, DM_READ],
     });
     const { result } = renderHook(() => useDirectMessages());
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => {
+      await result.current.ensureLoaded();
+    });
     // DM_UNREAD has recipient_id='m1' and read_at=null → unread for user m1
     // DM_READ has recipient_id='org1' → not for user m1
     expect(result.current.unreadCount).toBe(1);
@@ -96,7 +118,7 @@ describe('useDirectMessages', () => {
     expect(mockFetch).not.toHaveBeenCalled();
   });
 
-  it('passes memberId query param when provided', async () => {
+  it('passes memberId query param when provided (fetches the thread on mount)', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => [],
@@ -109,7 +131,9 @@ describe('useDirectMessages', () => {
   it('handles fetch failure silently', async () => {
     mockFetch.mockRejectedValueOnce(new Error('network'));
     const { result } = renderHook(() => useDirectMessages());
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => {
+      await result.current.ensureLoaded();
+    });
     expect(result.current.messages).toEqual([]);
   });
 
@@ -118,7 +142,9 @@ describe('useDirectMessages', () => {
   it('sends message via POST and prepends to list', async () => {
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
     const { result } = renderHook(() => useDirectMessages());
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => {
+      await result.current.ensureLoaded();
+    });
 
     const newMsg = { id: 'd-new', sender_id: 'm1', recipient_id: 'org1', message: 'Hello!' };
     mockFetch.mockResolvedValueOnce({
@@ -141,7 +167,9 @@ describe('useDirectMessages', () => {
   it('throws when send fails', async () => {
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
     const { result } = renderHook(() => useDirectMessages());
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => {
+      await result.current.ensureLoaded();
+    });
 
     mockFetch.mockResolvedValueOnce({
       ok: false,
@@ -163,7 +191,9 @@ describe('useDirectMessages', () => {
       json: async () => [DM_UNREAD],
     });
     const { result } = renderHook(() => useDirectMessages());
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => {
+      await result.current.ensureLoaded();
+    });
     expect(result.current.unreadCount).toBe(1);
 
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
@@ -189,7 +219,9 @@ describe('useDirectMessages', () => {
       json: async () => [DM_UNREAD, anotherUnread],
     });
     const { result } = renderHook(() => useDirectMessages());
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => {
+      await result.current.ensureLoaded();
+    });
     expect(result.current.unreadCount).toBe(2);
 
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) });
@@ -214,7 +246,9 @@ describe('useDirectMessages', () => {
       json: async () => [{ ...DM_UNREAD, reactions: {} }],
     });
     const { result } = renderHook(() => useDirectMessages());
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => {
+      await result.current.ensureLoaded();
+    });
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -242,7 +276,9 @@ describe('useDirectMessages', () => {
       json: async () => [{ ...DM_UNREAD, reactions: { '😂': ['m1'] } }],
     });
     const { result } = renderHook(() => useDirectMessages());
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => {
+      await result.current.ensureLoaded();
+    });
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -264,7 +300,9 @@ describe('useDirectMessages', () => {
       json: async () => [{ ...DM_UNREAD, reactions: {} }],
     });
     const { result } = renderHook(() => useDirectMessages());
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => {
+      await result.current.ensureLoaded();
+    });
 
     // Reaction API fails
     mockFetch.mockResolvedValueOnce({ ok: false, json: async () => ({}) });

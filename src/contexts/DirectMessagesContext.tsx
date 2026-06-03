@@ -12,6 +12,7 @@ const DirectMessagesCtx = createContext<DirectMessagesContextValue>({
   messages: [],
   unreadCount: 0,
   loading: true,
+  ensureLoaded: noopAsync,
   sendMessage: noopAsync as DirectMessagesContextValue['sendMessage'],
   markAsRead: noopAsync,
   markAllAsRead: noopAsync,
