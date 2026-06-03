@@ -1,15 +1,14 @@
 import LandingPage from '@/app/landing/page';
-import { getHomeDecks } from '@/lib/serverData';
 
 import HomeWrapper from './_components/HomeWrapper';
 
-// Server Component. For signed-out visitors it renders the LandingPage HTML
-// (good for crawlers); for signed-in users it server-fetches their decks and
-// hands them to the dashboard so it paints immediately without a client fetch.
-export default async function Page() {
-  const initialDecks = await getHomeDecks();
+// Server Component. Auth is resolved+seeded in the root layout, so for signed-in
+// users HomeWrapper renders the dashboard shell immediately (no spinner); the
+// dashboard's data loads progressively on the client so navigation stays snappy.
+// Signed-out visitors get the server-rendered LandingPage (good for crawlers).
+export default function Page() {
   return (
-    <HomeWrapper initialDecks={initialDecks}>
+    <HomeWrapper>
       <LandingPage />
     </HomeWrapper>
   );

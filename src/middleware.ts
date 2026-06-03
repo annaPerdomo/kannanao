@@ -18,8 +18,13 @@ export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   // Keep the Supabase auth session fresh and synced to cookies so Server
-  // Components can read an up-to-date session. Skipped when env isn't set.
-  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+  // Components can read an up-to-date session. Only signed-in requests do any
+  // work, and we only pay the auth-server round-trip (getUser, which refreshes)
+  // when the access token is actually near expiry — otherwise we skip it, since
+  // the browser client auto-refreshes too. This avoids an auth round-trip on
+  // every navigation.
+  const hasAuthCookie = request.cookies.getAll().some((c) => c.name.includes('-auth-token'));
+  if (SUPABASE_URL && SUPABASE_ANON_KEY && hasAuthCookie) {
     const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       cookies: {
         getAll() {
@@ -35,9 +40,16 @@ export async function middleware(request: NextRequest) {
       },
     });
 
-    // Touching the user triggers a token refresh when needed; refreshed tokens
-    // are written back onto `response` via setAll above.
-    await supabase.auth.getUser();
+    // getSession() reads cookies locally (no network). Only refresh via getUser()
+    // when the token is missing or within 5 minutes of expiring.
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const expiresAtMs = (session?.expires_at ?? 0) * 1000;
+    const needsRefresh = !session || expiresAtMs - Date.now() < 5 * 60 * 1000;
+    if (needsRefresh) {
+      await supabase.auth.getUser();
+    }
   }
 
   return response;

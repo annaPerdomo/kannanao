@@ -18,6 +18,7 @@ import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
+import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
@@ -30,7 +31,6 @@ import { GridLayout } from 'react-grid-layout';
 
 import { DeckCard } from '@/components/DeckCard';
 import { AssignmentCard, GroupHomeWidget, LeaderboardWidget } from '@/components/Group';
-import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
@@ -46,7 +46,6 @@ import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { xpProgressInLevel } from '@/hooks/useProgress';
 import { SHOP_ITEMS } from '@/hooks/useShop';
 import { LAYOUT } from '@/theme';
-import type { Deck } from '@/types/deck';
 import type { SectionKey } from '@/types/homeSections';
 import {
   getSectionsForRole,
@@ -332,7 +331,7 @@ function DashboardSection({
   );
 }
 
-export default function Home({ initialDecks }: { initialDecks?: Deck[] }) {
+export default function Home() {
   const {
     user,
     displayName,
@@ -344,7 +343,6 @@ export default function Home({ initialDecks }: { initialDecks?: Deck[] }) {
   } = useAuth();
   const { decks, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, loading } = useDecks(
     homeSections.decks,
-    initialDecks,
   );
   const { progress, spendableXp, addBonusXp } = useProgressCtx();
   const {
@@ -627,7 +625,19 @@ export default function Home({ initialDecks }: { initialDecks?: Deck[] }) {
       case 'decks':
         return (
           <>
-            {pinnedDecks.length === 0 ? (
+            {loading && decks.length === 0 ? (
+              <Grid container spacing={1.5}>
+                {[0, 1, 2].map((i) => (
+                  <Grid size={{ xs: 6, sm: 4 }} key={i}>
+                    <Skeleton
+                      variant="rounded"
+                      height={150}
+                      sx={{ borderRadius: 3, bgcolor: (t) => alpha(t.palette.brand[100], 0.6) }}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+            ) : pinnedDecks.length === 0 ? (
               <Box
                 onClick={() => router.push('/decks')}
                 sx={{
@@ -781,13 +791,9 @@ export default function Home({ initialDecks }: { initialDecks?: Deck[] }) {
     }
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ maxWidth: 1600, mx: 'auto', px: { xs: 0.5, sm: 1, lg: 1 }, py: 6 }}>
-        <Loading message="Loading your dashboard…" />
-      </Box>
-    );
-  }
+  // No full-page loading gate — the shell (header + section layout) renders
+  // immediately and each section fills in as its data arrives. The decks
+  // section shows a skeleton while its data loads (see renderSectionContent).
 
   return (
     <Box
