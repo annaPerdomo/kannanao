@@ -105,11 +105,14 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
       setUnreadCountState(0);
       return;
     }
-    const { count } = await sb
+    const { count, error } = await sb
       .from('direct_messages')
       .select('id', { count: 'exact', head: true })
       .eq('recipient_id', user.id)
       .is('read_at', null);
+    // On error `count` comes back null — leave the previous badge intact rather
+    // than incorrectly clearing the unread indicator to 0.
+    if (error) return;
     setUnreadCountState(count ?? 0);
   }, [user]);
 
@@ -140,6 +143,10 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
   }, [fetchMessages]);
 
   useEffect(() => {
+    // The identity (user/memberId) changed, so any previously-loaded full list
+    // is stale. Reset `loaded` so the unread badge uses the count-only query
+    // again and ensureLoaded() will refetch on demand (e.g. after re-login).
+    setLoaded(false);
     if (!user) {
       setMessages([]);
       setUnreadCountState(0);
