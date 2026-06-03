@@ -5,14 +5,20 @@ import { cache } from 'react';
 import type { Achievement, StudySession, UserProgress } from '@/hooks/useProgress';
 import {
   dbDeckToApp,
+  dbEventTypeToApp,
+  dbTodoToApp,
+  type HomeData,
   type InitialAuth,
   type InitialProgress,
   type InitialShop,
+  rowToOhanashikai,
   type UserProfile,
 } from '@/lib/dbMappers';
 import { getServerSupabase } from '@/lib/supabaseServer';
 import type { Deck } from '@/types/deck';
+import type { Ohanashikai } from '@/types/ohanashikai';
 import type { UserPurchase } from '@/types/shop';
+import type { EntryType, Todo } from '@/types/todo';
 
 type ServerClient = Awaited<ReturnType<typeof getServerSupabase>>;
 
@@ -22,11 +28,6 @@ export interface InitialAppData {
   progress: InitialProgress | null;
   shop: InitialShop | null;
   unreadCount: number;
-}
-
-/** Home dashboard data fetched per-request for the home page. */
-export interface HomeData {
-  decks: Deck[] | null;
 }
 
 /**
@@ -200,8 +201,63 @@ export async function getInitialAppData(): Promise<InitialAppData> {
 }
 
 /** Server-fetches the home dashboard's decks (shares the cached per-request user). */
+/** Server-side mirror of loadOhanashikais (see lib/ohanashikai.ts). */
+async function loadOhanashikaisServer(
+  supabase: ServerClient,
+  userId: string,
+): Promise<Ohanashikai[]> {
+  const { data: rows, error } = await supabase
+    .from('ohanashikais')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true });
+  if (error || !rows || rows.length === 0) return [];
+
+  const ids = rows.map((r) => r.id);
+  const { data: lineCounts } = await supabase
+    .from('ohanashikai_lines')
+    .select('ohanashikai_id')
+    .in('ohanashikai_id', ids);
+
+  const countMap: Record<string, number> = {};
+  (lineCounts ?? []).forEach((l: { ohanashikai_id: string }) => {
+    countMap[l.ohanashikai_id] = (countMap[l.ohanashikai_id] ?? 0) + 1;
+  });
+  return rows.map((row) => rowToOhanashikai(row, countMap[row.id] ?? 0));
+}
+
+/** Server-side mirror of loadTodos (see supabase.ts). */
+async function loadTodosServer(supabase: ServerClient, userId: string): Promise<Todo[]> {
+  const { data, error } = await supabase
+    .from('todos')
+    .select('*')
+    .eq('user_id', userId)
+    .order('sort_order', { ascending: true, nullsFirst: false })
+    .order('created_at', { ascending: true });
+  if (error) return [];
+  return (data ?? []).map(dbTodoToApp);
+}
+
+/** Server-side mirror of loadEventTypes (see supabase.ts). */
+async function loadEventTypesServer(supabase: ServerClient, userId: string): Promise<EntryType[]> {
+  const { data, error } = await supabase
+    .from('event_types')
+    .select('*')
+    .eq('user_id', userId)
+    .order('name', { ascending: true });
+  if (error) return [];
+  return (data ?? []).map(dbEventTypeToApp);
+}
+
 export async function getHomeData(): Promise<HomeData> {
   const { supabase, user } = await getRequestAuth();
-  if (!user) return { decks: null };
-  return { decks: await loadDecksServer(supabase, user.id) };
+  if (!user) return { decks: null, ohanashikais: null, todos: null, eventTypes: null };
+
+  const [decks, ohanashikais, todos, eventTypes] = await Promise.all([
+    loadDecksServer(supabase, user.id),
+    loadOhanashikaisServer(supabase, user.id),
+    loadTodosServer(supabase, user.id),
+    loadEventTypesServer(supabase, user.id),
+  ]);
+  return { decks, ohanashikais, todos, eventTypes };
 }

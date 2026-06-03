@@ -1,18 +1,10 @@
 'use client';
 
+import { type OhanashikaiRow, rowToOhanashikai } from '@/lib/dbMappers';
 import { isConfigured, sb, showConfigBanner } from '@/lib/supabase';
 import type { Ohanashikai, OhanashikaiLine } from '@/types/ohanashikai';
 
 // ─── Row types ────────────────────────────────────────────────────────────────
-
-interface OhanashikaiRow {
-  id: string;
-  user_id: string;
-  title: string;
-  description: string | null;
-  created_at: string | null;
-  pinned: boolean | null;
-}
 
 interface OhanashikaiLineRow {
   id: string;
@@ -20,24 +12,6 @@ interface OhanashikaiLineRow {
   text: string;
   order_index: number;
   created_at: string | null;
-}
-
-function toMs(value: string | null): number {
-  if (!value) return Date.now();
-  const parsed = Date.parse(value);
-  return Number.isNaN(parsed) ? Date.now() : parsed;
-}
-
-function rowToOhanashikai(row: OhanashikaiRow, lineCount: number): Ohanashikai {
-  return {
-    id: row.id,
-    userId: row.user_id,
-    title: row.title,
-    description: row.description ?? undefined,
-    lineCount,
-    createdAt: toMs(row.created_at),
-    pinned: row.pinned ?? false,
-  };
 }
 
 function rowToLine(row: OhanashikaiLineRow): OhanashikaiLine {

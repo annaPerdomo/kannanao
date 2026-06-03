@@ -42,8 +42,8 @@ import { useGroups } from '@/hooks/useGroups';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { xpProgressInLevel } from '@/hooks/useProgress';
 import { SHOP_ITEMS } from '@/hooks/useShop';
+import type { HomeData } from '@/lib/dbMappers';
 import { LAYOUT } from '@/theme';
-import type { Deck } from '@/types/deck';
 import type { SectionKey } from '@/types/homeSections';
 import {
   getSectionsForRole,
@@ -325,7 +325,7 @@ function DashboardSection({
   );
 }
 
-export default function Home({ initialDecks }: { initialDecks?: Deck[] }) {
+export default function Home({ initialData }: { initialData?: HomeData }) {
   const {
     user,
     displayName,
@@ -336,10 +336,13 @@ export default function Home({ initialDecks }: { initialDecks?: Deck[] }) {
   } = useAuth();
   const { decks, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, loading } = useDecks(
     homeSections.decks,
-    initialDecks,
+    initialData?.decks ?? undefined,
   );
   const { progress, spendableXp, addBonusXp } = useProgressCtx();
-  const { ohanashikais } = useOhanashikais(homeSections.speeches);
+  const { ohanashikais } = useOhanashikais(
+    homeSections.speeches,
+    initialData?.ohanashikais ?? undefined,
+  );
   const { purchases } = useShopCtx();
   const { assignments } = useAssignments(undefined, homeSections.assignments);
   const { groups } = useGroups(homeSections.groups);
@@ -479,7 +482,13 @@ export default function Home({ initialDecks }: { initialDecks?: Deck[] }) {
   const renderSectionContent = (key: SectionKey): React.ReactNode => {
     switch (key) {
       case 'todo':
-        return <TodoList onXpEarned={addBonusXp} />;
+        return (
+          <TodoList
+            onXpEarned={addBonusXp}
+            initialTodos={initialData?.todos ?? undefined}
+            initialEntryTypes={initialData?.eventTypes ?? undefined}
+          />
+        );
 
       case 'groups':
         return (

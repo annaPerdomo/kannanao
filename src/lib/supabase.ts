@@ -6,8 +6,9 @@ import {
   type AccountType,
   dbCardToApp,
   dbDeckToApp,
+  dbEventTypeToApp,
+  dbTodoToApp,
   type SupabaseCardRow,
-  toNumber,
   type UserProfile,
 } from '@/lib/dbMappers';
 import type { Deck } from '@/types/deck';
@@ -626,51 +627,6 @@ function pickEmojiForText(text: string): string {
     if (keywords.some((kw) => lower.includes(kw))) return emoji;
   }
   return FALLBACK_EMOJIS[Math.floor(Math.random() * FALLBACK_EMOJIS.length)];
-}
-
-interface SupabaseTodoRow {
-  id: string;
-  user_id: string;
-  text: string;
-  completed: boolean;
-  emoji: string;
-  created_at: string | null;
-  frequency_days: number[] | null;
-  completed_dates: string[] | null;
-  sort_order: number | null;
-  repeat_until_done: boolean | null;
-}
-
-interface SupabaseEventTypeRow {
-  id: string;
-  user_id: string;
-  name: string;
-  emoji: string;
-  color: string;
-}
-
-function dbEventTypeToApp(row: SupabaseEventTypeRow): EntryType {
-  return {
-    id: row.id,
-    name: row.name,
-    emoji: row.emoji,
-    color: row.color,
-  };
-}
-
-function dbTodoToApp(row: SupabaseTodoRow): Todo {
-  return {
-    id: row.id,
-    userId: row.user_id,
-    text: row.text,
-    completed: row.completed,
-    emoji: row.emoji,
-    createdAt: toNumber(row.created_at),
-    frequencyDays: row.frequency_days ?? [],
-    completedDates: row.completed_dates ?? [],
-    sortOrder: row.sort_order ?? 0,
-    repeatUntilDone: row.repeat_until_done ?? false,
-  };
 }
 
 export async function loadEventTypes(userId: string): Promise<EntryType[]> {

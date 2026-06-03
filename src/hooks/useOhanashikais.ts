@@ -20,10 +20,10 @@ import type { Ohanashikai, OhanashikaiLine } from '@/types/ohanashikai';
 
 // ─── useOhanashikais ──────────────────────────────────────────────────────────
 
-export function useOhanashikais(enabled = true) {
+export function useOhanashikais(enabled = true, initialOhanashikais?: Ohanashikai[]) {
   const { user } = useAuth();
-  const [ohanashikais, setOhanashikais] = useState<Ohanashikai[]>([]);
-  const [loading, setLoading] = useState(enabled);
+  const [ohanashikais, setOhanashikais] = useState<Ohanashikai[]>(initialOhanashikais ?? []);
+  const [loading, setLoading] = useState(enabled && !initialOhanashikais);
 
   const fetchAll = useCallback(async () => {
     if (!enabled || !user) {
@@ -38,8 +38,10 @@ export function useOhanashikais(enabled = true) {
   }, [user, enabled]);
 
   useEffect(() => {
+    // Server already seeded this page load — skip the client fetch.
+    if (initialOhanashikais) return;
     fetchAll();
-  }, [fetchAll]);
+  }, [fetchAll, initialOhanashikais]);
 
   const createOhanashikai = useCallback(async (title: string, description?: string) => {
     const item = await dbCreateOhanashikai(title, description);

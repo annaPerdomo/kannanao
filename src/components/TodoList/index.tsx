@@ -37,9 +37,12 @@ export { XP_PER_TODO };
 
 interface TodoListProps {
   onXpEarned?: (xp: number) => void;
+  /** Server-seeded data so the widget renders without client fetches. */
+  initialTodos?: Todo[];
+  initialEntryTypes?: EntryType[];
 }
 
-export function TodoList({ onXpEarned }: TodoListProps) {
+export function TodoList({ onXpEarned, initialTodos, initialEntryTypes }: TodoListProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
@@ -54,7 +57,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
     deleteTodo,
     reorderTodos,
     clearError,
-  } = useTodos();
+  } = useTodos(initialTodos);
 
   const [view, setView] = useState<'week' | 'month'>('week');
   const [weekOffset, setWeekOffset] = useState(0);
@@ -71,7 +74,7 @@ export function TodoList({ onXpEarned }: TodoListProps) {
     addEntryType,
     updateEntryType,
     deleteEntryType,
-  } = useEventTypes();
+  } = useEventTypes(initialEntryTypes);
   const allEntryTypes: EntryType[] = [...DEFAULT_ENTRY_TYPES, ...persistedEntryTypes];
   const [celebration, setCelebration] = useState('');
   const prevCompleted = useRef(0);

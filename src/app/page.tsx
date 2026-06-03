@@ -8,9 +8,9 @@ import HomeWrapper from './_components/HomeWrapper';
 // pooled, same-region) so the client makes no Supabase requests for them.
 // Signed-out visitors get the server-rendered LandingPage (good for crawlers).
 export default async function Page() {
-  const { decks } = await getHomeData();
+  const homeData = await getHomeData();
   return (
-    <HomeWrapper initialDecks={decks}>
+    <HomeWrapper initialData={homeData}>
       <LandingPage />
     </HomeWrapper>
   );
