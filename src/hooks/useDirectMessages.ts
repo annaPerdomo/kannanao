@@ -80,9 +80,9 @@ async function authHeaders(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export function useDirectMessages(memberId?: string) {
+export function useDirectMessages(memberId?: string, initialUnreadCount?: number) {
   const [messages, setMessages] = useState<DirectMessage[]>([]);
-  const [unreadCountState, setUnreadCountState] = useState(0);
+  const [unreadCountState, setUnreadCountState] = useState(initialUnreadCount ?? 0);
   const [loading, setLoading] = useState(true);
   const [loaded, setLoaded] = useState(false);
   const { user } = useAuth();
@@ -152,9 +152,10 @@ export function useDirectMessages(memberId?: string) {
       void fetchMessages();
     } else {
       setLoading(false);
-      void refreshUnreadCount();
+      // Skip the count query when the server already seeded the unread count.
+      if (initialUnreadCount === undefined) void refreshUnreadCount();
     }
-  }, [user, memberId, fetchMessages, refreshUnreadCount]);
+  }, [user, memberId, fetchMessages, refreshUnreadCount, initialUnreadCount]);
 
   // Supabase Realtime: subscribe to new messages and read receipt updates
   useEffect(() => {

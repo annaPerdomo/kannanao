@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { DirectMessagesProvider } from '@/contexts/DirectMessagesContext';
 import { ProgressProvider } from '@/contexts/ProgressContext';
 import { XpAnimationProvider } from '@/contexts/XpAnimationContext';
+import type { InitialProgress } from '@/lib/dbMappers';
 
 import { AuthGuard } from './AuthGuard';
 import { Footer } from './Footer';
@@ -12,7 +13,15 @@ import { GlobalBuddy } from './GlobalBuddy';
 import { NavBar } from './NavBar';
 import { BOTTOM_NAV_HEIGHT, BottomNav } from './NavBar/BottomNav';
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  initialProgress,
+  initialUnreadCount,
+}: {
+  children: React.ReactNode;
+  initialProgress?: InitialProgress | null;
+  initialUnreadCount?: number;
+}) {
   const pathname = usePathname();
   const isEmbed = pathname?.startsWith('/embed/');
   const isFullHeight = pathname?.startsWith('/notifications');
@@ -21,8 +30,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <XpAnimationProvider>
-      <ProgressProvider>
-        <DirectMessagesProvider>
+      <ProgressProvider initialProgress={initialProgress}>
+        <DirectMessagesProvider initialUnreadCount={initialUnreadCount}>
           <NavBar />
           <Box
             component="main"

@@ -1,14 +1,16 @@
 import LandingPage from '@/app/landing/page';
+import { getHomeData } from '@/lib/serverData';
 
 import HomeWrapper from './_components/HomeWrapper';
 
-// Server Component. Auth is resolved+seeded in the root layout, so for signed-in
-// users HomeWrapper renders the dashboard shell immediately (no spinner); the
-// dashboard's data loads progressively on the client so navigation stays snappy.
+// Server Component. Auth + global data are seeded in the root layout; here we
+// additionally fetch the home dashboard's decks on the server (in parallel,
+// pooled, same-region) so the client makes no Supabase requests for them.
 // Signed-out visitors get the server-rendered LandingPage (good for crawlers).
-export default function Page() {
+export default async function Page() {
+  const { decks } = await getHomeData();
   return (
-    <HomeWrapper>
+    <HomeWrapper initialDecks={decks}>
       <LandingPage />
     </HomeWrapper>
   );

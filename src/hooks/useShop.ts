@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
+import type { InitialShop } from '@/lib/dbMappers';
 import { sb } from '@/lib/supabase';
 import type {
   BuddyConfig,
@@ -638,12 +639,13 @@ const FREE_ITEM_KEYS = SHOP_ITEMS.filter((i) => i.price === 0 && !i.comingSoon).
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
-export function useShop() {
+export function useShop(initialShop?: InitialShop | null) {
   const { isAdmin, user } = useAuth();
   const supabase = sb;
-  const [purchases, setPurchases] = useState<UserPurchase[]>([]);
-  const [equipped, setEquipped] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
+  const [purchases, setPurchases] = useState<UserPurchase[]>(initialShop?.purchases ?? []);
+  const [equipped, setEquipped] = useState<Record<string, string>>(initialShop?.equipped ?? {});
+  // When the server already seeded the shop data, start resolved.
+  const [loading, setLoading] = useState(!initialShop);
   const [error, setError] = useState<string | null>(null);
 
   // Use the already-resolved user from AuthContext rather than auth.getUser(),
@@ -672,8 +674,10 @@ export function useShop() {
   }, [supabase, user]);
 
   useEffect(() => {
+    // Skip the client fetch when the server already seeded the shop data.
+    if (initialShop) return;
     fetchShopData();
-  }, [fetchShopData]);
+  }, [fetchShopData, initialShop]);
 
   /** Check if a user owns a given item (purchased or free) */
   const ownsItem = useCallback(

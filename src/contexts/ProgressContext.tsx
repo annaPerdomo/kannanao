@@ -3,6 +3,7 @@
 import { createContext, type ReactNode, useContext } from 'react';
 
 import { useProgress } from '@/hooks/useProgress';
+import type { InitialProgress } from '@/lib/dbMappers';
 
 type ProgressContextValue = ReturnType<typeof useProgress>;
 
@@ -24,8 +25,14 @@ const ProgressCtx = createContext<ProgressContextValue>({
   refetch: noopAsync,
 });
 
-export function ProgressProvider({ children }: { children: ReactNode }) {
-  const value = useProgress();
+export function ProgressProvider({
+  children,
+  initialProgress,
+}: {
+  children: ReactNode;
+  initialProgress?: InitialProgress | null;
+}) {
+  const value = useProgress(initialProgress);
   return <ProgressCtx.Provider value={value}>{children}</ProgressCtx.Provider>;
 }
 

@@ -5,9 +5,11 @@
 
 import type { Session } from '@supabase/supabase-js';
 
+import type { Achievement, StudySession, UserProgress } from '@/hooks/useProgress';
 import type { Deck } from '@/types/deck';
 import type { Flashcard, JlptLevel, MainViewMode } from '@/types/flashcard';
 import type { HomeSections } from '@/types/homeSections';
+import type { UserPurchase } from '@/types/shop';
 
 export type AccountType = 'organizer' | 'member';
 
@@ -15,6 +17,19 @@ export type AccountType = 'organizer' | 'member';
 export interface InitialAuth {
   session: Session | null;
   profile: UserProfile | null;
+}
+
+/** Server-resolved progress used to seed ProgressContext. */
+export interface InitialProgress {
+  progress: UserProgress | null;
+  achievements: Achievement[];
+  recentSessions: StudySession[];
+}
+
+/** Server-resolved shop state used to seed ShopContext. */
+export interface InitialShop {
+  purchases: UserPurchase[];
+  equipped: Record<string, string>;
 }
 
 export interface SupabaseDeckRow {

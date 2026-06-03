@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { AppBackground } from '@/components/AppBackground';
 import { AppShell } from '@/components/AppShell';
 import { SkipToContent } from '@/components/SkipToContent';
-import { getInitialAuth } from '@/lib/serverData';
+import { getInitialAppData } from '@/lib/serverData';
 
 import Providers from './providers';
 
@@ -104,9 +104,10 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // Resolve auth on the server so AuthContext is seeded and authenticated pages
-  // render without a client-side auth/loading round-trip.
-  const initialAuth = await getInitialAuth();
+  // Resolve auth + the app-wide provider data (progress, shop, unread count) on
+  // the server. Seeding these means authenticated pages render without a client
+  // auth/loading round-trip, and the nav's data loads with no client requests.
+  const appData = await getInitialAppData();
 
   return (
     <html lang="en">
@@ -152,9 +153,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <SkipToContent />
         <AppRouterCacheProvider>
-          <Providers initialAuth={initialAuth}>
+          <Providers initialAuth={appData.auth} initialShop={appData.shop}>
             <AppBackground>
-              <AppShell>{children}</AppShell>
+              <AppShell initialProgress={appData.progress} initialUnreadCount={appData.unreadCount}>
+                {children}
+              </AppShell>
             </AppBackground>
           </Providers>
         </AppRouterCacheProvider>

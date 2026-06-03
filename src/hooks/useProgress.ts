@@ -312,13 +312,25 @@ function toLocalDateString(date: Date): string {
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
-export function useProgress() {
+export function useProgress(
+  initialProgress?: {
+    progress: UserProgress | null;
+    achievements: Achievement[];
+    recentSessions: StudySession[];
+  } | null,
+) {
   const supabase = sb;
   const { user } = useAuth();
-  const [progress, setProgress] = useState<UserProgress | null>(null);
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [recentSessions, setRecentSessions] = useState<StudySession[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState<UserProgress | null>(initialProgress?.progress ?? null);
+  const [achievements, setAchievements] = useState<Achievement[]>(
+    initialProgress?.achievements ?? [],
+  );
+  const [recentSessions, setRecentSessions] = useState<StudySession[]>(
+    initialProgress?.recentSessions ?? [],
+  );
+  // Seeded with a real progress row → start resolved. Otherwise fetch (which
+  // also creates the row for brand-new users).
+  const [loading, setLoading] = useState(!initialProgress?.progress);
   const [newlyUnlocked, setNewlyUnlocked] = useState<AchievementDef[]>([]);
 
   // Use the already-resolved user from AuthContext rather than auth.getUser(),
@@ -381,8 +393,26 @@ export function useProgress() {
   }, [supabase, user]);
 
   useEffect(() => {
+    // When the server seeded a progress row, skip the network fetch — but still
+    // reconcile a broken streak using the user's LOCAL timezone (the server,
+    // which runs in UTC, can't compute "today"/"yesterday" for the user).
+    const seeded = initialProgress?.progress;
+    if (seeded) {
+      const todayLocal = toLocalDateString(new Date());
+      const yesterdayLocal = toLocalDateString(new Date(Date.now() - 86400000));
+      if (
+        seeded.last_study_date &&
+        seeded.last_study_date !== todayLocal &&
+        seeded.last_study_date !== yesterdayLocal &&
+        seeded.streak_days > 0
+      ) {
+        setProgress({ ...seeded, streak_days: 0 });
+        void supabase.from('user_progress').update({ streak_days: 0 }).eq('id', seeded.id);
+      }
+      return;
+    }
     fetchAll();
-  }, [fetchAll]);
+  }, [fetchAll, initialProgress, supabase]);
 
   /**
    * Call this after each quiz answer.
