@@ -1,11 +1,4 @@
-export type SectionKey =
-  | 'todo'
-  | 'groups'
-  | 'leaderboard'
-  | 'assignments'
-  | 'messages'
-  | 'decks'
-  | 'speeches';
+export type SectionKey = 'todo' | 'groups' | 'leaderboard' | 'assignments' | 'decks' | 'speeches';
 
 export interface GridLayoutItem {
   i: string; // SectionKey
@@ -20,7 +13,6 @@ export interface HomeSections {
   groups: boolean;
   leaderboard: boolean;
   assignments: boolean;
-  messages: boolean;
   decks: boolean;
   speeches: boolean;
   gridLayout?: GridLayoutItem[];
@@ -34,7 +26,6 @@ export const ALL_SECTION_KEYS: SectionKey[] = [
   'groups',
   'leaderboard',
   'assignments',
-  'messages',
   'decks',
   'speeches',
 ];
@@ -49,7 +40,6 @@ export const SECTION_META: Record<SectionKey, SectionMeta> = {
   groups: { label: 'My Groups', emoji: '👥' },
   leaderboard: { label: 'Leaderboard', emoji: '🏆' },
   assignments: { label: 'Assignments', emoji: '📋' },
-  messages: { label: 'Messages', emoji: '💬' },
   decks: { label: 'Decks', emoji: '📚' },
   speeches: { label: 'Speech Practice', emoji: '✨' },
 };
@@ -62,7 +52,6 @@ export function getSectionsForRole(
   if (isMember) {
     if (groupShowLeaderboard) keys.add('leaderboard');
     keys.add('assignments');
-    keys.add('messages');
   } else {
     keys.add('groups');
   }
@@ -71,7 +60,7 @@ export function getSectionsForRole(
 
 /** Default section display order */
 export function getDefaultSectionOrder(isMember: boolean): SectionKey[] {
-  if (isMember) return ['todo', 'leaderboard', 'assignments', 'messages', 'decks', 'speeches'];
+  if (isMember) return ['todo', 'leaderboard', 'assignments', 'decks', 'speeches'];
   return ['todo', 'groups', 'decks', 'speeches'];
 }
 
@@ -103,8 +92,7 @@ export function getDefaultGridLayout(isMember: boolean): GridLayoutItem[] {
       { i: 'todo', x: 0, y: 0, w: 6, h: 18 },
       { i: 'leaderboard', x: 6, y: 0, w: 6, h: 7 },
       { i: 'assignments', x: 6, y: 7, w: 6, h: 5 },
-      { i: 'messages', x: 6, y: 12, w: 6, h: 4 },
-      { i: 'decks', x: 6, y: 16, w: 6, h: 10 },
+      { i: 'decks', x: 6, y: 12, w: 6, h: 10 },
       { i: 'speeches', x: 0, y: 18, w: 6, h: 6 },
     ];
   }
@@ -121,7 +109,6 @@ export const DEFAULT_HOME_SECTIONS: HomeSections = {
   groups: true,
   leaderboard: true,
   assignments: true,
-  messages: true,
   decks: true,
   speeches: true,
 };

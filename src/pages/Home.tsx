@@ -1,7 +1,6 @@
 'use client';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import CheckIcon from '@mui/icons-material/Check';
 import DragIndicatorRoundedIcon from '@mui/icons-material/DragIndicatorRounded';
 import FilterVintageIcon from '@mui/icons-material/FilterVintage';
@@ -17,7 +16,6 @@ import GlobalStyles from '@mui/material/GlobalStyles';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
-import Paper from '@mui/material/Paper';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -34,7 +32,6 @@ import { AssignmentCard, GroupHomeWidget, LeaderboardWidget } from '@/components
 import { PageHeader } from '@/components/PageHeader';
 import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
-import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
 import { useProgressCtx } from '@/contexts/ProgressContext';
 import { useShopCtx } from '@/contexts/ShopContext';
 import { useAssignments } from '@/hooks/useAssignments';
@@ -46,6 +43,7 @@ import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { xpProgressInLevel } from '@/hooks/useProgress';
 import { SHOP_ITEMS } from '@/hooks/useShop';
 import { LAYOUT } from '@/theme';
+import type { Deck } from '@/types/deck';
 import type { SectionKey } from '@/types/homeSections';
 import {
   getSectionsForRole,
@@ -63,10 +61,6 @@ const CustomizeHomeDialog = dynamic(
 );
 const ShareEmbedDialog = dynamic(
   () => import('@/components/ShareEmbedDialog').then((m) => m.ShareEmbedDialog),
-  { ssr: false },
-);
-const MessageThread = dynamic(
-  () => import('@/components/Group/MessageThread').then((m) => m.MessageThread),
   { ssr: false },
 );
 
@@ -331,27 +325,20 @@ function DashboardSection({
   );
 }
 
-export default function Home() {
+export default function Home({ initialDecks }: { initialDecks?: Deck[] }) {
   const {
     user,
     displayName,
     homeSections,
     updateHomeSections,
     isMemberAccount,
-    organizerId,
     groupShowLeaderboard,
   } = useAuth();
   const { decks, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, loading } = useDecks(
     homeSections.decks,
+    initialDecks,
   );
   const { progress, spendableXp, addBonusXp } = useProgressCtx();
-  const {
-    messages: dmMessages,
-    unreadCount: dmUnreadCount,
-    ensureLoaded: ensureMessagesLoaded,
-    sendMessage,
-    markAllAsRead: markAllDmRead,
-  } = useDirectMessagesCtx();
   const { ohanashikais } = useOhanashikais(homeSections.speeches);
   const { purchases } = useShopCtx();
   const { assignments } = useAssignments(undefined, homeSections.assignments);
@@ -364,37 +351,13 @@ export default function Home() {
   const pendingAssignments = assignments.filter((a) => !a.completed_at);
   const [shareDeckId, setShareDeckId] = useState<string | null>(null);
   const [shareDeckName, setShareDeckName] = useState('');
-  const [homeChatOpen, setHomeChatOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [customizeOpen, setCustomizeOpen] = useState(false);
 
   // Defer each dynamically-imported dialog's chunk until its first open, then
   // keep it mounted so close transitions and internal state survive.
-  const chatEverOpened = useHasOpened(homeChatOpen);
   const shareEverOpened = useHasOpened(shareDeckId !== null);
   const customizeEverOpened = useHasOpened(customizeOpen);
-
-  // The global messages provider only tracks the unread count; load the full
-  // thread the first time the home chat is opened so MessageThread has history.
-  useEffect(() => {
-    if (homeChatOpen) void ensureMessagesLoaded();
-  }, [homeChatOpen, ensureMessagesLoaded]);
-
-  // Chat partner for member's home widget
-  const homeChatPartner = (() => {
-    if (!isMemberAccount) return null;
-    const fromOrg = dmMessages.find((m) => m.sender_id !== user?.id);
-    const toOrg = dmMessages.find((m) => m.sender_id === user?.id);
-    return {
-      id: organizerId ?? '',
-      name:
-        fromOrg?.sender?.display_name ||
-        fromOrg?.sender?.username ||
-        toOrg?.recipient?.display_name ||
-        toOrg?.recipient?.username ||
-        'Your organizer',
-    };
-  })();
 
   const username = displayName ?? user?.email?.split('@')[0] ?? 'there';
   const isOwner = (deck: { ownerId: string }) => deck.ownerId === user?.id;
@@ -573,57 +536,6 @@ export default function Home() {
             ) : (
               <Typography variant="body2" color="text.secondary">
                 All caught up!
-              </Typography>
-            )}
-          </>
-        );
-
-      case 'messages':
-        return (
-          <>
-            {homeChatPartner ? (
-              <Paper
-                onClick={() => setHomeChatOpen(true)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') setHomeChatOpen(true);
-                }}
-                elevation={0}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  p: 2.5,
-                  borderRadius: 3,
-                  border: (t) =>
-                    `1.5px solid ${alpha(t.palette.brand[dmUnreadCount > 0 ? 400 : 300], dmUnreadCount > 0 ? 0.6 : 0.35)}`,
-                  bgcolor: (t) => alpha(t.palette.brand[dmUnreadCount > 0 ? 100 : 50], 0.5),
-                  cursor: 'pointer',
-                  transition: 'all 0.18s ease',
-                  '&:hover': {
-                    bgcolor: (t) => alpha(t.palette.brand[100], 0.8),
-                    borderColor: (t) => alpha(t.palette.brand[400], 0.55),
-                  },
-                }}
-              >
-                <ChatBubbleOutlineIcon
-                  sx={{ fontSize: '1.8rem', color: (t) => t.palette.brand[500] }}
-                />
-                <Box sx={{ flex: 1 }}>
-                  <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.95rem' }}>
-                    {dmUnreadCount > 0
-                      ? `${dmUnreadCount} new message${dmUnreadCount > 1 ? 's' : ''}!`
-                      : 'Send a message'}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Tap to chat with {homeChatPartner.name}
-                  </Typography>
-                </Box>
-              </Paper>
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                No messages yet
               </Typography>
             )}
           </>
@@ -1035,20 +947,6 @@ export default function Home() {
           open (via useHasOpened) to keep the chunk out of the initial home
           render, then keep it mounted and drive visibility through `open` so MUI
           exit transitions and internal dialog state are preserved on close. */}
-      {homeSections.messages && homeChatPartner && user && chatEverOpened && (
-        <MessageThread
-          open={homeChatOpen}
-          onClose={() => setHomeChatOpen(false)}
-          messages={dmMessages}
-          onSend={sendMessage}
-          onMarkAllRead={markAllDmRead}
-          recipientId={homeChatPartner.id}
-          recipientName={homeChatPartner.name}
-          currentUserId={user.id}
-          isMember={isMemberAccount}
-        />
-      )}
-
       {shareEverOpened && (
         <ShareEmbedDialog
           open={shareDeckId !== null}
