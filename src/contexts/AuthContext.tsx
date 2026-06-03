@@ -155,7 +155,11 @@ export function AuthProvider({
     const {
       data: { subscription },
     } = sb.auth.onAuthStateChange((event, session) => {
-      setSession(session);
+      // Keep the same session object identity when the access token hasn't
+      // changed (e.g. the INITIAL_SESSION echo of the server-seeded session, or
+      // a refresh that returns the same token). Otherwise every data hook that
+      // depends on `user` would refire and refetch needlessly.
+      setSession((prev) => (prev?.access_token === session?.access_token ? prev : session));
       if (event === 'SIGNED_IN' && session?.user) {
         const username = session.user.email?.split('@')[0] ?? '';
         void upsertProfile(session.user.id, username);
