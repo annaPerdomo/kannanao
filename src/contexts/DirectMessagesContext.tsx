@@ -12,6 +12,7 @@ const DirectMessagesCtx = createContext<DirectMessagesContextValue>({
   messages: [],
   unreadCount: 0,
   loading: true,
+  ensureLoaded: noopAsync,
   sendMessage: noopAsync as DirectMessagesContextValue['sendMessage'],
   markAsRead: noopAsync,
   markAllAsRead: noopAsync,
@@ -19,8 +20,14 @@ const DirectMessagesCtx = createContext<DirectMessagesContextValue>({
   refetch: noopAsync,
 });
 
-export function DirectMessagesProvider({ children }: { children: ReactNode }) {
-  const value = useDirectMessages();
+export function DirectMessagesProvider({
+  children,
+  initialUnreadCount,
+}: {
+  children: ReactNode;
+  initialUnreadCount?: number;
+}) {
+  const value = useDirectMessages(undefined, initialUnreadCount);
   return <DirectMessagesCtx.Provider value={value}>{children}</DirectMessagesCtx.Provider>;
 }
 

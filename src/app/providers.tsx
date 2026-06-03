@@ -6,14 +6,16 @@ import { DeckDialogProvider } from '@/contexts/DeckDialogContext';
 import { ShopProvider } from '@/contexts/ShopContext';
 import { AppThemeProvider } from '@/contexts/ThemeContext';
 import { useStaleTabReload } from '@/hooks/useStaleTabReload';
-import type { InitialAuth } from '@/lib/dbMappers';
+import type { InitialAuth, InitialShop } from '@/lib/dbMappers';
 
 export default function Providers({
   children,
   initialAuth,
+  initialShop,
 }: {
   children: React.ReactNode;
   initialAuth?: InitialAuth;
+  initialShop?: InitialShop | null;
 }) {
   useStaleTabReload();
 
@@ -21,7 +23,7 @@ export default function Providers({
     <AuthProvider initialAuth={initialAuth}>
       <AppThemeProvider>
         <ErrorBoundary>
-          <ShopProvider>
+          <ShopProvider initialShop={initialShop}>
             <CardBorderProvider>
               <DeckDialogProvider>{children}</DeckDialogProvider>
             </CardBorderProvider>

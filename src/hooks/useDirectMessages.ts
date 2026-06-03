@@ -80,15 +80,41 @@ async function authHeaders(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export function useDirectMessages(memberId?: string) {
+export function useDirectMessages(memberId?: string, initialUnreadCount?: number) {
   const [messages, setMessages] = useState<DirectMessage[]>([]);
+  const [unreadCountState, setUnreadCountState] = useState(initialUnreadCount ?? 0);
   const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState(false);
   const { user } = useAuth();
   const channelRef = useRef<ReturnType<typeof sb.channel> | null>(null);
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
+  const loadedRef = useRef(loaded);
+  loadedRef.current = loaded;
 
-  const unreadCount = messages.filter((m) => !m.read_at && m.recipient_id === user?.id).length;
+  // Once the full list is loaded, derive the count from it so optimistic
+  // read/markAll updates reflect instantly. Until then (the common case — every
+  // page mounts the global provider just for the nav badge) use the cheap
+  // count-only query so we never pull the full message list to count unread.
+  const unreadCount = loaded
+    ? messages.filter((m) => !m.read_at && m.recipient_id === user?.id).length
+    : unreadCountState;
+
+  const refreshUnreadCount = useCallback(async () => {
+    if (!user) {
+      setUnreadCountState(0);
+      return;
+    }
+    const { count, error } = await sb
+      .from('direct_messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('recipient_id', user.id)
+      .is('read_at', null);
+    // On error `count` comes back null — leave the previous badge intact rather
+    // than incorrectly clearing the unread indicator to 0.
+    if (error) return;
+    setUnreadCountState(count ?? 0);
+  }, [user]);
 
   const fetchMessages = useCallback(async () => {
     if (!user) {
@@ -102,6 +128,7 @@ export function useDirectMessages(memberId?: string) {
       if (!res.ok) throw new Error();
       const data = await res.json();
       setMessages(data);
+      setLoaded(true);
     } catch {
       // silently fail
     } finally {
@@ -109,9 +136,33 @@ export function useDirectMessages(memberId?: string) {
     }
   }, [user, memberId]);
 
-  useEffect(() => {
-    void fetchMessages();
+  /** Loads the full message list on demand (notifications page / opening a chat). */
+  const ensureLoaded = useCallback(async () => {
+    if (loadedRef.current) return;
+    await fetchMessages();
   }, [fetchMessages]);
+
+  useEffect(() => {
+    // The identity (user/memberId) changed, so any previously-loaded full list
+    // is stale. Reset `loaded` so the unread badge uses the count-only query
+    // again and ensureLoaded() will refetch on demand (e.g. after re-login).
+    setLoaded(false);
+    if (!user) {
+      setMessages([]);
+      setUnreadCountState(0);
+      setLoading(false);
+      return;
+    }
+    // A specific conversation (memberId) loads its full thread up front. The
+    // global provider only needs the unread count — the full list loads lazily.
+    if (memberId) {
+      void fetchMessages();
+    } else {
+      setLoading(false);
+      // Skip the count query when the server already seeded the unread count.
+      if (initialUnreadCount === undefined) void refreshUnreadCount();
+    }
+  }, [user, memberId, fetchMessages, refreshUnreadCount, initialUnreadCount]);
 
   // Supabase Realtime: subscribe to new messages and read receipt updates
   useEffect(() => {
@@ -132,16 +183,21 @@ export function useDirectMessages(memberId?: string) {
           const row = payload.new as DirectMessage;
           // When filtering by memberId, only accept messages from that member
           if (memberId && row.sender_id !== memberId) return;
-          // Guard against duplicate INSERT deliveries
-          if (messagesRef.current.some((m) => m.id === row.id)) return;
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === row.id)) return prev;
-            return [row, ...prev];
-          });
+          if (loadedRef.current) {
+            // Guard against duplicate INSERT deliveries
+            if (messagesRef.current.some((m) => m.id === row.id)) return;
+            setMessages((prev) => {
+              if (prev.some((m) => m.id === row.id)) return prev;
+              return [row, ...prev];
+            });
+            // Refetch to populate sender/recipient profile joins
+            void fetchMessages();
+          } else {
+            // Full list isn't loaded — just keep the unread badge accurate.
+            void refreshUnreadCount();
+          }
           playMessageSound();
           showTabNotification(row);
-          // Refetch to populate sender/recipient profile joins
-          void fetchMessages();
         },
       )
       .on(
@@ -171,11 +227,16 @@ export function useDirectMessages(memberId?: string) {
         },
         (payload) => {
           const row = payload.new as DirectMessage;
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === row.id ? { ...m, read_at: row.read_at, reactions: row.reactions } : m,
-            ),
-          );
+          if (loadedRef.current) {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === row.id ? { ...m, read_at: row.read_at, reactions: row.reactions } : m,
+              ),
+            );
+          } else {
+            // A message to me changed (e.g. marked read) — refresh the badge.
+            void refreshUnreadCount();
+          }
         },
       )
       .subscribe();
@@ -185,7 +246,7 @@ export function useDirectMessages(memberId?: string) {
       void sb.removeChannel(channel);
       channelRef.current = null;
     };
-  }, [user, memberId, fetchMessages]);
+  }, [user, memberId, fetchMessages, refreshUnreadCount]);
 
   const sendMessage = useCallback(
     async (recipientId: string, message: string, imageUrl?: string) => {
@@ -283,6 +344,7 @@ export function useDirectMessages(memberId?: string) {
     messages,
     unreadCount,
     loading,
+    ensureLoaded,
     sendMessage,
     markAsRead,
     markAllAsRead,

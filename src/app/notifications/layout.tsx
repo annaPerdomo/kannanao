@@ -4,7 +4,7 @@ import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { usePathname, useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
@@ -23,8 +23,21 @@ export default function NotificationsLayout({ children }: { children: React.Reac
   const router = useRouter();
   const pathname = usePathname();
   const { user, loading: authLoading } = useAuth();
-  const { messages, loading: dmLoading } = useDirectMessagesCtx();
+  const { messages, ensureLoaded } = useDirectMessagesCtx();
   const push = usePushNotifications();
+
+  // The global messages provider only keeps an unread count by default; the
+  // conversation list needs the full message history, so load it here.
+  const [dmLoading, setDmLoading] = useState(true);
+  useEffect(() => {
+    let active = true;
+    void ensureLoaded().finally(() => {
+      if (active) setDmLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [ensureLoaded]);
 
   // A conversation is selected when the URL has a userId segment
   const hasSelection =

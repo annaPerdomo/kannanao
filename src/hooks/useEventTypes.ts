@@ -9,13 +9,15 @@ import {
 } from '@/lib/supabase';
 import type { EntryType } from '@/types/todo';
 
-export function useEventTypes() {
+export function useEventTypes(initialEntryTypes?: EntryType[]) {
   const { user } = useAuth();
-  const [entryTypes, setEntryTypes] = useState<EntryType[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [entryTypes, setEntryTypes] = useState<EntryType[]>(initialEntryTypes ?? []);
+  const [loading, setLoading] = useState(!initialEntryTypes);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Server already seeded this page load — skip the client fetch.
+    if (initialEntryTypes) return;
     if (!user) {
       setEntryTypes([]);
       setLoading(false);
@@ -27,7 +29,7 @@ export function useEventTypes() {
       .then((types) => setEntryTypes(types))
       .catch(() => setError('Could not load event types'))
       .finally(() => setLoading(false));
-  }, [user]);
+  }, [user, initialEntryTypes]);
 
   const addEntryType = useCallback(
     async (name: string, emoji: string, color: string) => {

@@ -16,12 +16,14 @@ import {
 } from '@/lib/supabase';
 import type { Deck } from '@/types/deck';
 
-export function useDecks(enabled = true) {
-  const [decks, setDecks] = useState<Deck[]>([]);
-  const [loading, setLoading] = useState(enabled);
+export function useDecks(enabled = true, initialDecks?: Deck[]) {
+  const [decks, setDecks] = useState<Deck[]>(initialDecks ?? []);
+  const [loading, setLoading] = useState(enabled && !initialDecks);
   const { user } = useAuth();
 
   useEffect(() => {
+    // Server already seeded the decks for this page load — no client fetch.
+    if (initialDecks) return;
     if (!enabled || !user) {
       setDecks([]);
       setLoading(false);
@@ -42,7 +44,7 @@ export function useDecks(enabled = true) {
     return () => {
       cancelled = true;
     };
-  }, [user, enabled]);
+  }, [user, enabled, initialDecks]);
 
   const createDeck = useCallback(async (name: string, description?: string): Promise<Deck> => {
     if (!isConfigured()) {

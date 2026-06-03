@@ -5,13 +5,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { dbCreateTodo, dbDeleteTodo, dbUpdateTodo, loadTodos } from '@/lib/supabase';
 import type { Todo } from '@/types/todo';
 
-export function useTodos() {
+export function useTodos(initialTodos?: Todo[]) {
   const { user } = useAuth();
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [todos, setTodos] = useState<Todo[]>(initialTodos ?? []);
+  const [loading, setLoading] = useState(!initialTodos);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Server already seeded this page load — skip the client fetch.
+    if (initialTodos) return;
     if (!user) {
       setTodos([]);
       setLoading(false);
@@ -22,7 +24,7 @@ export function useTodos() {
       .then(setTodos)
       .catch(() => setError('Could not load your to-do list'))
       .finally(() => setLoading(false));
-  }, [user]);
+  }, [user, initialTodos]);
 
   const addTodo = useCallback(
     async (

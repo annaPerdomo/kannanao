@@ -3,6 +3,7 @@
 import { createContext, type ReactNode, useContext } from 'react';
 
 import { useShop } from '@/hooks/useShop';
+import type { InitialShop } from '@/lib/dbMappers';
 
 type ShopContextValue = ReturnType<typeof useShop>;
 
@@ -20,8 +21,14 @@ const ShopCtx = createContext<ShopContextValue>({
   refetch: async () => {},
 });
 
-export function ShopProvider({ children }: { children: ReactNode }) {
-  const value = useShop();
+export function ShopProvider({
+  children,
+  initialShop,
+}: {
+  children: ReactNode;
+  initialShop?: InitialShop | null;
+}) {
+  const value = useShop(initialShop);
   return <ShopCtx.Provider value={value}>{children}</ShopCtx.Provider>;
 }
 

@@ -5,9 +5,13 @@
 
 import type { Session } from '@supabase/supabase-js';
 
+import type { Achievement, StudySession, UserProgress } from '@/hooks/useProgress';
 import type { Deck } from '@/types/deck';
 import type { Flashcard, JlptLevel, MainViewMode } from '@/types/flashcard';
 import type { HomeSections } from '@/types/homeSections';
+import type { Ohanashikai } from '@/types/ohanashikai';
+import type { UserPurchase } from '@/types/shop';
+import type { EntryType, Todo } from '@/types/todo';
 
 export type AccountType = 'organizer' | 'member';
 
@@ -15,6 +19,27 @@ export type AccountType = 'organizer' | 'member';
 export interface InitialAuth {
   session: Session | null;
   profile: UserProfile | null;
+}
+
+/** Server-resolved progress used to seed ProgressContext. */
+export interface InitialProgress {
+  progress: UserProgress | null;
+  achievements: Achievement[];
+  recentSessions: StudySession[];
+}
+
+/** Server-resolved shop state used to seed ShopContext. */
+export interface InitialShop {
+  purchases: UserPurchase[];
+  equipped: Record<string, string>;
+}
+
+/** Server-resolved home dashboard data, seeded into the home page's hooks. */
+export interface HomeData {
+  decks: Deck[] | null;
+  ohanashikais: Ohanashikai[] | null;
+  todos: Todo[] | null;
+  eventTypes: EntryType[] | null;
 }
 
 export interface SupabaseDeckRow {
@@ -96,5 +121,71 @@ export function dbCardToApp(card: SupabaseCardRow): Flashcard {
     cardType: card.card_type ?? 'word',
     jlptLevel: card.jlpt_level ?? undefined,
     position: card.position ?? 0,
+  };
+}
+
+export interface SupabaseTodoRow {
+  id: string;
+  user_id: string;
+  text: string;
+  completed: boolean;
+  emoji: string;
+  created_at: string | null;
+  frequency_days: number[] | null;
+  completed_dates: string[] | null;
+  sort_order: number | null;
+  repeat_until_done: boolean | null;
+}
+
+export function dbTodoToApp(row: SupabaseTodoRow): Todo {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    text: row.text,
+    completed: row.completed,
+    emoji: row.emoji,
+    createdAt: toNumber(row.created_at),
+    frequencyDays: row.frequency_days ?? [],
+    completedDates: row.completed_dates ?? [],
+    sortOrder: row.sort_order ?? 0,
+    repeatUntilDone: row.repeat_until_done ?? false,
+  };
+}
+
+export interface SupabaseEventTypeRow {
+  id: string;
+  user_id: string;
+  name: string;
+  emoji: string;
+  color: string;
+}
+
+export function dbEventTypeToApp(row: SupabaseEventTypeRow): EntryType {
+  return {
+    id: row.id,
+    name: row.name,
+    emoji: row.emoji,
+    color: row.color,
+  };
+}
+
+export interface OhanashikaiRow {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  created_at: string | null;
+  pinned: boolean | null;
+}
+
+export function rowToOhanashikai(row: OhanashikaiRow, lineCount: number): Ohanashikai {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    title: row.title,
+    description: row.description ?? undefined,
+    lineCount,
+    createdAt: toNumber(row.created_at),
+    pinned: row.pinned ?? false,
   };
 }
