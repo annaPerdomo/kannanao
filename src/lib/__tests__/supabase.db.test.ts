@@ -83,6 +83,7 @@ function makeDeckRow(overrides: Record<string, unknown> = {}) {
     emoji: '🌸',
     pinned: false,
     is_public: false,
+    card_count: 0,
     ...overrides,
   };
 }
@@ -135,9 +136,8 @@ describe('loadDecks', () => {
     expect(decks).toEqual([]);
   });
 
-  it('should return mapped decks with correct cardCount', async () => {
-    setTable('decks', [makeDeckRow()]);
-    setTable('cards', [makeCardRow(), makeCardRow({ id: 'card-2' })]);
+  it('should map cardCount from the denormalized card_count column', async () => {
+    setTable('decks', [makeDeckRow({ card_count: 2 })]);
 
     const decks = await loadDecks('u1');
     expect(decks).toHaveLength(1);
@@ -148,7 +148,6 @@ describe('loadDecks', () => {
 
   it('should set isShared=true for decks owned by a different user', async () => {
     setTable('decks', [makeDeckRow({ user_id: 'u2' })]);
-    setTable('cards', []);
 
     const decks = await loadDecks('u1');
     expect(decks[0].isShared).toBe(true);
@@ -162,20 +161,10 @@ describe('loadDecks', () => {
     expect(decks).toEqual([]);
   });
 
-  it('should return empty array when cards query errors', async () => {
-    setTable('decks', [makeDeckRow()]);
-    setTable('cards', null, { message: 'cards fetch error' });
-
-    const decks = await loadDecks('u1');
-    expect(decks).toEqual([]);
-  });
-
-  it('should count only cards belonging to each deck', async () => {
-    setTable('decks', [makeDeckRow({ id: 'deck-a' }), makeDeckRow({ id: 'deck-b' })]);
-    setTable('cards', [
-      makeCardRow({ id: 'c1', deck_id: 'deck-a' }),
-      makeCardRow({ id: 'c2', deck_id: 'deck-a' }),
-      makeCardRow({ id: 'c3', deck_id: 'deck-b' }),
+  it('should read each deck card_count independently', async () => {
+    setTable('decks', [
+      makeDeckRow({ id: 'deck-a', card_count: 2 }),
+      makeDeckRow({ id: 'deck-b', card_count: 1 }),
     ]);
 
     const decks = await loadDecks('u1');

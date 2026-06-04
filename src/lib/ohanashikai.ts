@@ -45,18 +45,9 @@ export async function loadOhanashikais(userId: string): Promise<Ohanashikai[]> {
   const items = rows ?? [];
   if (items.length === 0) return [];
 
-  const ids = items.map((r: OhanashikaiRow) => r.id);
-  const { data: lineCounts } = await sb
-    .from('ohanashikai_lines')
-    .select('ohanashikai_id')
-    .in('ohanashikai_id', ids);
-
-  const countMap: Record<string, number> = {};
-  (lineCounts ?? []).forEach((l: { ohanashikai_id: string }) => {
-    countMap[l.ohanashikai_id] = (countMap[l.ohanashikai_id] ?? 0) + 1;
-  });
-
-  return items.map((row: OhanashikaiRow) => rowToOhanashikai(row, countMap[row.id] ?? 0));
+  // Line counts come from the trigger-maintained `line_count` column — no second
+  // query to fetch (and count) line rows.
+  return items.map((row: OhanashikaiRow) => rowToOhanashikai(row, row.line_count ?? 0));
 }
 
 export async function dbCreateOhanashikai(

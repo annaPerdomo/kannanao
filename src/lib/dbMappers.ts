@@ -58,6 +58,8 @@ export interface SupabaseDeckRow {
   pinned: boolean | null;
   is_public: boolean | null;
   position: number;
+  /** Denormalized, trigger-maintained count of cards in this deck. */
+  card_count: number | null;
 }
 
 export interface SupabaseCardRow {
@@ -182,6 +184,8 @@ export interface OhanashikaiRow {
   description: string | null;
   created_at: string | null;
   pinned: boolean | null;
+  /** Denormalized, trigger-maintained count of lines in this speech. */
+  line_count: number | null;
 }
 
 export function rowToOhanashikai(row: OhanashikaiRow, lineCount: number): Ohanashikai {

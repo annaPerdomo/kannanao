@@ -176,6 +176,7 @@ describe('dbDeckToApp', () => {
       pinned: true,
       is_public: false,
       position: 0,
+      card_count: 12,
     };
 
     const deck = dbDeckToApp(row, 12, 'user-1');

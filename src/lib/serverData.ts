@@ -123,25 +123,9 @@ async function loadDecksServer(
   }
 
   const allPinned = [...ownPinned, ...assignedPinned];
-  const allDeckIds = allPinned.map((d) => d.id);
-
-  // Card counts are now scoped to the handful of pinned decks, not every deck.
-  let cards: Array<{ deck_id: string | number }> = [];
-  if (allDeckIds.length > 0) {
-    const { data: cardRows, error } = await supabase
-      .from('cards')
-      .select('deck_id')
-      .in('deck_id', allDeckIds);
-    if (error) return { decks: [], totalCount: 0 };
-    cards = cardRows ?? [];
-  }
-
-  const countByDeck = new Map<string, number>();
-  for (const card of cards) {
-    const key = String(card.deck_id);
-    countByDeck.set(key, (countByDeck.get(key) ?? 0) + 1);
-  }
-  const decks = allPinned.map((deck) => dbDeckToApp(deck, countByDeck.get(deck.id) ?? 0, userId));
+  // Card counts come from the trigger-maintained `card_count` column, so there's
+  // no second query to fetch (and count) card rows.
+  const decks = allPinned.map((deck) => dbDeckToApp(deck, deck.card_count ?? 0, userId));
   const totalCount = (ownCountResult.count ?? 0) + assignedDeckIds.length;
   return { decks, totalCount };
 }
@@ -194,21 +178,9 @@ async function loadOhanashikaisServer(
   if (pinnedResult.error) return { items: [], totalCount: 0 };
   const rows = pinnedResult.data ?? [];
 
-  let lineCounts: Array<{ ohanashikai_id: string }> = [];
-  if (rows.length > 0) {
-    const ids = rows.map((r) => r.id);
-    const { data } = await supabase
-      .from('ohanashikai_lines')
-      .select('ohanashikai_id')
-      .in('ohanashikai_id', ids);
-    lineCounts = data ?? [];
-  }
-
-  const countMap: Record<string, number> = {};
-  lineCounts.forEach((l) => {
-    countMap[l.ohanashikai_id] = (countMap[l.ohanashikai_id] ?? 0) + 1;
-  });
-  const items = rows.map((row) => rowToOhanashikai(row, countMap[row.id] ?? 0));
+  // Line counts come from the trigger-maintained `line_count` column — no second
+  // query to fetch (and count) line rows.
+  const items = rows.map((row) => rowToOhanashikai(row, row.line_count ?? 0));
   return { items, totalCount: countResult.count ?? 0 };
 }
 

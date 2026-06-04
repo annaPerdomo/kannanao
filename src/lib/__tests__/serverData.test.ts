@@ -15,10 +15,8 @@ interface Fixtures {
   ownDeckCount: number;
   assignments: { deck_id: string }[];
   assignedPinnedDecks: unknown[];
-  cards: { deck_id: string }[];
   pinnedSpeeches: unknown[];
   speechCount: number;
-  lines: { ohanashikai_id: string }[];
 }
 
 let fx: Fixtures;
@@ -35,12 +33,8 @@ function resolveFor(b: { table: string; head: boolean; hasInId: boolean }): {
       return b.hasInId ? ok(fx.assignedPinnedDecks) : ok(fx.ownPinnedDecks);
     case 'assignments':
       return ok(fx.assignments);
-    case 'cards':
-      return ok(fx.cards);
     case 'ohanashikais':
       return b.head ? ok(null, fx.speechCount) : ok(fx.pinnedSpeeches);
-    case 'ohanashikai_lines':
-      return ok(fx.lines);
     default:
       return ok([]);
   }
@@ -78,7 +72,7 @@ vi.mock('@/lib/supabaseServer', () => ({
 
 import { getHomeData } from '@/lib/serverData';
 
-const deckRow = (id: string, pinned: boolean) => ({
+const deckRow = (id: string, pinned: boolean, cardCount = 0) => ({
   id,
   name: `Deck ${id}`,
   description: null,
@@ -88,29 +82,29 @@ const deckRow = (id: string, pinned: boolean) => ({
   pinned,
   is_public: false,
   position: 0,
+  card_count: cardCount,
 });
 
-const speechRow = (id: string) => ({
+const speechRow = (id: string, lineCount = 0) => ({
   id,
   user_id: 'u1',
   title: `Speech ${id}`,
   description: null,
   created_at: '2026-01-01T00:00:00Z',
   pinned: true,
+  line_count: lineCount,
 });
 
 beforeEach(() => {
   vi.clearAllMocks();
   mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
   fx = {
-    ownPinnedDecks: [deckRow('d1', true)],
+    ownPinnedDecks: [deckRow('d1', true, 3)],
     ownDeckCount: 5,
     assignments: [],
     assignedPinnedDecks: [],
-    cards: [{ deck_id: 'd1' }, { deck_id: 'd1' }, { deck_id: 'd1' }],
-    pinnedSpeeches: [speechRow('o1')],
+    pinnedSpeeches: [speechRow('o1', 2)],
     speechCount: 3,
-    lines: [{ ohanashikai_id: 'o1' }, { ohanashikai_id: 'o1' }],
   };
 });
 
