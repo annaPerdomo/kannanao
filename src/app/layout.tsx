@@ -1,11 +1,13 @@
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 
 import { AppBackground } from '@/components/AppBackground';
 import { AppShell } from '@/components/AppShell';
 import { SkipToContent } from '@/components/SkipToContent';
 import { getInitialAppData } from '@/lib/serverData';
 
+import AppBootSkeleton from './_components/AppBootSkeleton';
 import Providers from './providers';
 
 // All 20 Google Font families used across the 10 color themes. Browsers only
@@ -103,13 +105,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // Block only on the shell-critical data (auth + unread badge count) so the
-  // nav and page shell paint as fast as possible. XP progress and shop data are
-  // not seeded here — their providers load them client-side with loading states,
-  // keeping the heavy per-user queries off the first-paint critical path.
+// The data-dependent provider tree. It awaits the shell-critical data (auth +
+// unread badge count), but because it's rendered inside a <Suspense> boundary in
+// RootLayout, that await streams instead of blocking the whole document — the
+// HTML shell + boot skeleton flush immediately and this swaps in when ready.
+async function AppRoot({ children }: { children: React.ReactNode }) {
   const appData = await getInitialAppData();
+  return (
+    <Providers initialAuth={appData.auth}>
+      <AppBackground>
+        <AppShell initialUnreadCount={appData.unreadCount}>{children}</AppShell>
+      </AppBackground>
+    </Providers>
+  );
+}
 
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // RootLayout itself is synchronous and does NOT await any data, so Next.js can
+  // flush <html>/<head>/<body> + the boot skeleton to the browser instantly.
+  // The auth/provider fetch happens in <AppRoot> inside the Suspense boundary
+  // below, so it streams in rather than gating first paint.
   return (
     <html lang="en">
       <head>
@@ -154,11 +169,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <SkipToContent />
         <AppRouterCacheProvider>
-          <Providers initialAuth={appData.auth}>
-            <AppBackground>
-              <AppShell initialUnreadCount={appData.unreadCount}>{children}</AppShell>
-            </AppBackground>
-          </Providers>
+          <Suspense fallback={<AppBootSkeleton />}>
+            <AppRoot>{children}</AppRoot>
+          </Suspense>
         </AppRouterCacheProvider>
       </body>
     </html>

@@ -60,9 +60,9 @@ function makeChain(table: string) {
   return chain;
 }
 
-const mockGetUser = vi.fn();
+const mockGetSession = vi.fn();
 const fakeClient = {
-  auth: { getUser: (...a: unknown[]) => mockGetUser(...a) },
+  auth: { getSession: (...a: unknown[]) => mockGetSession(...a) },
   from: (table: string) => makeChain(table),
 };
 
@@ -97,7 +97,7 @@ const speechRow = (id: string, lineCount = 0) => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+  mockGetSession.mockResolvedValue({ data: { session: { user: { id: 'u1' } } } });
   fx = {
     ownPinnedDecks: [deckRow('d1', true, 3)],
     ownDeckCount: 5,
@@ -110,7 +110,7 @@ beforeEach(() => {
 
 describe('getHomeData', () => {
   it('returns null payloads and zero counts for a signed-out request', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: null } });
+    mockGetSession.mockResolvedValue({ data: { session: null } });
     const data = await getHomeData();
     expect(data).toEqual({
       decks: null,

@@ -31,16 +31,22 @@ export interface InitialAppData {
 }
 
 /**
- * Resolves the cookie-bound client + authenticated user once per request,
- * wrapped in React's `cache()` so repeated calls within a request share a
- * single client + getUser() round-trip.
+ * Resolves the cookie-bound client + current session once per request, wrapped
+ * in React's `cache()` so repeated calls within a request share one resolution.
+ *
+ * Uses `getSession()` (decodes the session from the request cookie locally) over
+ * `getUser()` (a round-trip to the auth server) to keep a network hop off the
+ * first-paint critical path. The middleware keeps the cookie's token fresh, and
+ * every query seeded from this is RLS-protected at Postgres — the JWT signature
+ * is verified there — so a tampered cookie simply yields no rows rather than
+ * leaking data. This mirrors the client `useProgress` pattern.
  */
 const getRequestAuth = cache(async () => {
   const supabase = await getServerSupabase();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return { supabase, user };
+    data: { session },
+  } = await supabase.auth.getSession();
+  return { supabase, session, user: session?.user ?? null };
 });
 
 /** Server-side mirror of loadProfile (see supabase.ts) using a cookie-bound client. */
@@ -139,18 +145,17 @@ async function loadDecksServer(
  * client AuthContext.
  */
 export async function getInitialAppData(): Promise<InitialAppData> {
-  const { supabase, user } = await getRequestAuth();
+  const { supabase, session, user } = await getRequestAuth();
   if (!user) {
     return { auth: { session: null, profile: null }, unreadCount: 0 };
   }
 
-  const [{ data: sessionData }, profile, unreadCount] = await Promise.all([
-    supabase.auth.getSession(),
+  const [profile, unreadCount] = await Promise.all([
     loadProfileServer(supabase, user.id),
     loadUnreadCountServer(supabase, user.id),
   ]);
 
-  return { auth: { session: sessionData.session, profile }, unreadCount };
+  return { auth: { session, profile }, unreadCount };
 }
 
 /** Server-fetches the home dashboard's decks (shares the cached per-request user). */
