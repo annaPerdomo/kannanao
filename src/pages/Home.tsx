@@ -367,6 +367,11 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
 
   const pinnedDecks = decks.filter((d) => d.pinned);
   const pinnedSpeeches = ohanashikais.filter((o) => o.pinned);
+  // `decks`/`ohanashikais` are seeded pinned-only by the server, so the loaded
+  // list can't tell "no decks yet" from "decks exist but none pinned". The
+  // server sends total counts for that; fall back to list length when absent.
+  const totalDeckCount = initialData?.totalDeckCount ?? decks.length;
+  const totalSpeechCount = initialData?.totalOhanashikaiCount ?? ohanashikais.length;
 
   // ── Section order + drag ──
   const sectionOrder = useMemo(
@@ -587,10 +592,10 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                 <Typography sx={{ fontSize: '1.8rem', flexShrink: 0 }}>📌</Typography>
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                    {decks.length === 0 ? 'Create your first deck!' : 'Pin a deck to see it here'}
+                    {totalDeckCount === 0 ? 'Create your first deck!' : 'Pin a deck to see it here'}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {decks.length === 0
+                    {totalDeckCount === 0
                       ? 'Head to Decks to start building flashcards ✨'
                       : 'Tap the pin icon on any deck ✨'}
                   </Typography>
@@ -651,12 +656,12 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                 <Typography sx={{ fontSize: '1.8rem', flexShrink: 0 }}>🌸</Typography>
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                    {ohanashikais.length === 0
+                    {totalSpeechCount === 0
                       ? 'Practice your お話し会 speech!'
                       : 'Pin a speech to see it here'}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {ohanashikais.length === 0
+                    {totalSpeechCount === 0
                       ? 'Add your lines and start memorizing ✨'
                       : 'Tap the pin icon on any speech ✨'}
                   </Typography>

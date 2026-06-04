@@ -124,47 +124,58 @@ async function loadUnreadCountServer(supabase: ServerClient, userId: string): Pr
   return count ?? 0;
 }
 
-/** Server-side mirror of loadDecks (see supabase.ts), count-only card query. */
-async function loadDecksServer(supabase: ServerClient, userId: string): Promise<Deck[]> {
-  const [ownResult, assignedResult] = await Promise.all([
+/**
+ * The home dashboard only renders *pinned* decks, so fetch just those (own +
+ * pinned assigned) instead of every deck and every card row. A cheap head count
+ * gives the total so the UI can still tell "no decks yet" from "none pinned".
+ */
+async function loadDecksServer(
+  supabase: ServerClient,
+  userId: string,
+): Promise<{ decks: Deck[]; totalCount: number }> {
+  const [ownResult, ownCountResult, assignedResult] = await Promise.all([
     supabase
       .from('decks')
       .select('*')
       .eq('user_id', userId)
+      .eq('pinned', true)
       .order('position', { ascending: true })
       .order('created_at', { ascending: true }),
+    supabase.from('decks').select('id', { count: 'exact', head: true }).eq('user_id', userId),
     supabase.from('assignments').select('deck_id').eq('member_id', userId),
   ]);
-  const deckRows = ownResult.data;
-  if (ownResult.error) return [];
-  const assignedRows = assignedResult.data;
+  if (ownResult.error) return { decks: [], totalCount: 0 };
 
-  const ownDeckIds = new Set((deckRows ?? []).map((d) => d.id));
-  const assignedDeckIds = (assignedRows ?? [])
-    .map((a) => a.deck_id as string)
-    .filter((id) => !ownDeckIds.has(id));
+  const ownPinned = ownResult.data ?? [];
+  const ownPinnedIds = new Set(ownPinned.map((d) => d.id));
+  const assignedDeckIds = [
+    ...new Set((assignedResult.data ?? []).map((a) => a.deck_id as string)),
+  ].filter((id) => !ownPinnedIds.has(id));
 
-  let assignedDecks: NonNullable<typeof deckRows> = [];
+  // Only assigned decks that are *also* pinned show on the dashboard.
+  let assignedPinned: typeof ownPinned = [];
   if (assignedDeckIds.length > 0) {
     const { data } = await supabase
       .from('decks')
       .select('*')
       .in('id', assignedDeckIds)
+      .eq('pinned', true)
       .order('position', { ascending: true })
       .order('created_at', { ascending: true });
-    assignedDecks = data ?? [];
+    assignedPinned = data ?? [];
   }
 
-  const allDecks = [...(deckRows ?? []), ...assignedDecks];
-  const allDeckIds = allDecks.map((d) => d.id);
+  const allPinned = [...ownPinned, ...assignedPinned];
+  const allDeckIds = allPinned.map((d) => d.id);
 
+  // Card counts are now scoped to the handful of pinned decks, not every deck.
   let cards: Array<{ deck_id: string | number }> = [];
   if (allDeckIds.length > 0) {
     const { data: cardRows, error } = await supabase
       .from('cards')
       .select('deck_id')
       .in('deck_id', allDeckIds);
-    if (error) return [];
+    if (error) return { decks: [], totalCount: 0 };
     cards = cardRows ?? [];
   }
 
@@ -173,7 +184,9 @@ async function loadDecksServer(supabase: ServerClient, userId: string): Promise<
     const key = String(card.deck_id);
     countByDeck.set(key, (countByDeck.get(key) ?? 0) + 1);
   }
-  return allDecks.map((deck) => dbDeckToApp(deck, countByDeck.get(deck.id) ?? 0, userId));
+  const decks = allPinned.map((deck) => dbDeckToApp(deck, countByDeck.get(deck.id) ?? 0, userId));
+  const totalCount = (ownCountResult.count ?? 0) + assignedDeckIds.length;
+  return { decks, totalCount };
 }
 
 /**
@@ -201,29 +214,46 @@ export async function getInitialAppData(): Promise<InitialAppData> {
 }
 
 /** Server-fetches the home dashboard's decks (shares the cached per-request user). */
-/** Server-side mirror of loadOhanashikais (see lib/ohanashikai.ts). */
+/**
+ * Like loadDecksServer: the dashboard only renders *pinned* speeches, so fetch
+ * just those (+ their line counts) plus a cheap total head count for empty-state
+ * copy, instead of every speech and every line row.
+ */
 async function loadOhanashikaisServer(
   supabase: ServerClient,
   userId: string,
-): Promise<Ohanashikai[]> {
-  const { data: rows, error } = await supabase
-    .from('ohanashikais')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: true });
-  if (error || !rows || rows.length === 0) return [];
+): Promise<{ items: Ohanashikai[]; totalCount: number }> {
+  const [pinnedResult, countResult] = await Promise.all([
+    supabase
+      .from('ohanashikais')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('pinned', true)
+      .order('created_at', { ascending: true }),
+    supabase
+      .from('ohanashikais')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId),
+  ]);
+  if (pinnedResult.error) return { items: [], totalCount: 0 };
+  const rows = pinnedResult.data ?? [];
 
-  const ids = rows.map((r) => r.id);
-  const { data: lineCounts } = await supabase
-    .from('ohanashikai_lines')
-    .select('ohanashikai_id')
-    .in('ohanashikai_id', ids);
+  let lineCounts: Array<{ ohanashikai_id: string }> = [];
+  if (rows.length > 0) {
+    const ids = rows.map((r) => r.id);
+    const { data } = await supabase
+      .from('ohanashikai_lines')
+      .select('ohanashikai_id')
+      .in('ohanashikai_id', ids);
+    lineCounts = data ?? [];
+  }
 
   const countMap: Record<string, number> = {};
-  (lineCounts ?? []).forEach((l: { ohanashikai_id: string }) => {
+  lineCounts.forEach((l) => {
     countMap[l.ohanashikai_id] = (countMap[l.ohanashikai_id] ?? 0) + 1;
   });
-  return rows.map((row) => rowToOhanashikai(row, countMap[row.id] ?? 0));
+  const items = rows.map((row) => rowToOhanashikai(row, countMap[row.id] ?? 0));
+  return { items, totalCount: countResult.count ?? 0 };
 }
 
 /** Server-side mirror of loadTodos (see supabase.ts). */
@@ -251,13 +281,28 @@ async function loadEventTypesServer(supabase: ServerClient, userId: string): Pro
 
 export async function getHomeData(): Promise<HomeData> {
   const { supabase, user } = await getRequestAuth();
-  if (!user) return { decks: null, ohanashikais: null, todos: null, eventTypes: null };
+  if (!user)
+    return {
+      decks: null,
+      ohanashikais: null,
+      todos: null,
+      eventTypes: null,
+      totalDeckCount: 0,
+      totalOhanashikaiCount: 0,
+    };
 
-  const [decks, ohanashikais, todos, eventTypes] = await Promise.all([
+  const [decksResult, ohanashikaisResult, todos, eventTypes] = await Promise.all([
     loadDecksServer(supabase, user.id),
     loadOhanashikaisServer(supabase, user.id),
     loadTodosServer(supabase, user.id),
     loadEventTypesServer(supabase, user.id),
   ]);
-  return { decks, ohanashikais, todos, eventTypes };
+  return {
+    decks: decksResult.decks,
+    ohanashikais: ohanashikaisResult.items,
+    todos,
+    eventTypes,
+    totalDeckCount: decksResult.totalCount,
+    totalOhanashikaiCount: ohanashikaisResult.totalCount,
+  };
 }

@@ -36,10 +36,16 @@ export interface InitialShop {
 
 /** Server-resolved home dashboard data, seeded into the home page's hooks. */
 export interface HomeData {
+  /** Only *pinned* decks — that's all the dashboard renders. */
   decks: Deck[] | null;
+  /** Only *pinned* speeches — that's all the dashboard renders. */
   ohanashikais: Ohanashikai[] | null;
   todos: Todo[] | null;
   eventTypes: EntryType[] | null;
+  /** Total decks the user has (pinned + unpinned) — drives empty-state copy. */
+  totalDeckCount: number;
+  /** Total speeches the user has — drives empty-state copy. */
+  totalOhanashikaiCount: number;
 }
 
 export interface SupabaseDeckRow {
