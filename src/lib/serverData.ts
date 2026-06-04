@@ -2,31 +2,31 @@ import 'server-only';
 
 import { cache } from 'react';
 
-import type { Achievement, StudySession, UserProgress } from '@/hooks/useProgress';
 import {
   dbDeckToApp,
   dbEventTypeToApp,
   dbTodoToApp,
   type HomeData,
   type InitialAuth,
-  type InitialProgress,
-  type InitialShop,
   rowToOhanashikai,
   type UserProfile,
 } from '@/lib/dbMappers';
 import { getServerSupabase } from '@/lib/supabaseServer';
 import type { Deck } from '@/types/deck';
 import type { Ohanashikai } from '@/types/ohanashikai';
-import type { UserPurchase } from '@/types/shop';
 import type { EntryType, Todo } from '@/types/todo';
 
 type ServerClient = Awaited<ReturnType<typeof getServerSupabase>>;
 
-/** Everything the root layout seeds into the app-wide providers. */
+/**
+ * The minimal, shell-critical data the root layout blocks on: auth (session +
+ * profile, needed for the correct theme and to render authed content in the
+ * initial HTML) plus the cheap unread-message head count for the nav badge.
+ * Heavier per-user data (XP progress, shop) is intentionally NOT here — it loads
+ * client-side via its hooks' loading states so the shell can paint immediately.
+ */
 export interface InitialAppData {
   auth: InitialAuth;
-  progress: InitialProgress | null;
-  shop: InitialShop | null;
   unreadCount: number;
 }
 
@@ -69,49 +69,6 @@ async function loadProfileServer(
     groupShowLeaderboard: groupRow?.show_leaderboard ?? true,
     travelMainViewMode: data.travel_main_view_mode ?? null,
   };
-}
-
-/** Server-side mirror of useProgress's fetchAll (the 3 progress queries). */
-async function loadProgressServer(
-  supabase: ServerClient,
-  userId: string,
-): Promise<InitialProgress | null> {
-  const [{ data: prog }, { data: ach }, { data: sess }] = await Promise.all([
-    supabase.from('user_progress').select('*').eq('user_id', userId).maybeSingle(),
-    supabase
-      .from('user_achievements')
-      .select('*')
-      .eq('user_id', userId)
-      .order('unlocked_at', { ascending: false }),
-    supabase
-      .from('study_sessions')
-      .select('*')
-      .eq('user_id', userId)
-      .gte('started_at', new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString())
-      .order('started_at', { ascending: false })
-      .limit(200),
-  ]);
-  // A brand-new user has no progress row yet — return null so the client runs
-  // its create-on-first-load path instead of being seeded with nothing.
-  if (!prog) return null;
-  return {
-    progress: prog as UserProgress,
-    achievements: (ach ?? []) as Achievement[],
-    recentSessions: (sess ?? []) as StudySession[],
-  };
-}
-
-/** Server-side mirror of useShop's fetchShopData (purchases + equipped map). */
-async function loadShopServer(supabase: ServerClient, userId: string): Promise<InitialShop> {
-  const [{ data: purchaseRows }, { data: equippedRows }] = await Promise.all([
-    supabase.from('user_purchases').select('*').eq('user_id', userId),
-    supabase.from('user_equipped').select('*').eq('user_id', userId),
-  ]);
-  const equipped: Record<string, string> = {};
-  (equippedRows ?? []).forEach((row: { slot: string; item_key: string }) => {
-    equipped[row.slot] = row.item_key;
-  });
-  return { purchases: (purchaseRows ?? []) as UserPurchase[], equipped };
 }
 
 /** Cheap unread-message count for the nav badge. */
@@ -190,27 +147,26 @@ async function loadDecksServer(
 }
 
 /**
- * Resolves auth + the app-wide provider data (progress, shop, unread count) on
- * the server so the root layout can seed every page's global providers. This
- * replaces ~6 client requests per page load with one parallel server batch, and
- * lets authenticated content render in the initial HTML. `getUser()` is the
- * authoritative check; the session object is only used to seed the client.
+ * Resolves the shell-critical data the root layout blocks on: auth (session +
+ * profile) and the unread-message badge count. This is deliberately small so the
+ * app shell can paint as fast as possible; heavier per-user data (XP progress,
+ * shop purchases) loads client-side via its hooks instead of gating first paint.
+ * `getUser()` is the authoritative check; the session is only used to seed the
+ * client AuthContext.
  */
 export async function getInitialAppData(): Promise<InitialAppData> {
   const { supabase, user } = await getRequestAuth();
   if (!user) {
-    return { auth: { session: null, profile: null }, progress: null, shop: null, unreadCount: 0 };
+    return { auth: { session: null, profile: null }, unreadCount: 0 };
   }
 
-  const [{ data: sessionData }, profile, progress, shop, unreadCount] = await Promise.all([
+  const [{ data: sessionData }, profile, unreadCount] = await Promise.all([
     supabase.auth.getSession(),
     loadProfileServer(supabase, user.id),
-    loadProgressServer(supabase, user.id),
-    loadShopServer(supabase, user.id),
     loadUnreadCountServer(supabase, user.id),
   ]);
 
-  return { auth: { session: sessionData.session, profile }, progress, shop, unreadCount };
+  return { auth: { session: sessionData.session, profile }, unreadCount };
 }
 
 /** Server-fetches the home dashboard's decks (shares the cached per-request user). */

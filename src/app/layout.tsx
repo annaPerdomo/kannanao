@@ -104,9 +104,10 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // Resolve auth + the app-wide provider data (progress, shop, unread count) on
-  // the server. Seeding these means authenticated pages render without a client
-  // auth/loading round-trip, and the nav's data loads with no client requests.
+  // Block only on the shell-critical data (auth + unread badge count) so the
+  // nav and page shell paint as fast as possible. XP progress and shop data are
+  // not seeded here — their providers load them client-side with loading states,
+  // keeping the heavy per-user queries off the first-paint critical path.
   const appData = await getInitialAppData();
 
   return (
@@ -153,11 +154,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <SkipToContent />
         <AppRouterCacheProvider>
-          <Providers initialAuth={appData.auth} initialShop={appData.shop}>
+          <Providers initialAuth={appData.auth}>
             <AppBackground>
-              <AppShell initialProgress={appData.progress} initialUnreadCount={appData.unreadCount}>
-                {children}
-              </AppShell>
+              <AppShell initialUnreadCount={appData.unreadCount}>{children}</AppShell>
             </AppBackground>
           </Providers>
         </AppRouterCacheProvider>
