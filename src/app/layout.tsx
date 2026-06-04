@@ -1,4 +1,5 @@
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
+import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 
 import { AppBackground } from '@/components/AppBackground';
@@ -161,6 +162,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </AppBackground>
           </Providers>
         </AppRouterCacheProvider>
+        <Analytics />
       </body>
     </html>
   );
