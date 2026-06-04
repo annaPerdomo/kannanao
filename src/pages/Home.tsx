@@ -325,6 +325,26 @@ function DashboardSection({
   );
 }
 
+/** Placeholder for the dashboard grid shown until it's mounted + measured. */
+function DashboardGridSkeleton() {
+  return (
+    <Grid container spacing={2}>
+      {[0, 1, 2, 3].map((i) => (
+        <Grid size={{ xs: 12, md: 6 }} key={i}>
+          <Stack spacing={1.5}>
+            <Skeleton variant="text" width={150} height={30} />
+            <Skeleton
+              variant="rounded"
+              height={180}
+              sx={{ borderRadius: 3, bgcolor: (t) => alpha(t.palette.brand[100], 0.5) }}
+            />
+          </Stack>
+        </Grid>
+      ))}
+    </Grid>
+  );
+}
+
 export default function Home({ initialData }: { initialData?: HomeData }) {
   const {
     user,
@@ -390,6 +410,15 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
   // ── Grid layout (drag + resize) ──
   const isMobile = useMediaQuery('(max-width:899px)', { noSsr: true });
   const [gridWidth, setGridWidth] = useState(900);
+  // The grid's width is measured and the mobile/desktop breakpoint is resolved
+  // on the client, so the very first paint can briefly show a mis-sized layout.
+  // Gate the real grid behind a mount flag and show a skeleton until then — by
+  // the time this flips true the ResizeObserver has measured the container, so
+  // the grid renders at the correct width with no flash.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const roRef = useRef<ResizeObserver | null>(null);
   const gridRef = useCallback((node: HTMLDivElement | null) => {
     if (roRef.current) {
@@ -838,7 +867,9 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
           '--rgl-placeholder-bg': (t) => alpha(t.palette.brand[300], 0.3),
         }}
       >
-        {isMobile ? (
+        {!mounted ? (
+          <DashboardGridSkeleton />
+        ) : isMobile ? (
           <Stack spacing={3}>
             {sectionOrder.map((key) => (
               <DashboardSection
