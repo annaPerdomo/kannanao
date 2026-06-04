@@ -1,10 +1,39 @@
 'use client';
 import CssBaseline from '@mui/material/CssBaseline';
+import GlobalStyles from '@mui/material/GlobalStyles';
 import { ThemeProvider } from '@mui/material/styles';
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { flushSync } from 'react-dom';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { type ColorScheme, createAppTheme } from '@/theme';
+
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (callback: () => void) => unknown;
+};
+
+// View-transition reveal for theme changes: the new theme wipes in as a circle
+// growing from the top-right (near the avatar/theme switcher) while the old one
+// holds underneath. See `applyScheme` for the reduced-motion / unsupported-browser
+// fallback to an instant swap.
+const themeTransitionStyles = {
+  '::view-transition-old(root)': { animation: 'none' },
+  '::view-transition-new(root)': {
+    animation: 'kannanao-theme-roll-in 620ms cubic-bezier(0.4, 0, 0.2, 1)',
+  },
+  '@keyframes kannanao-theme-roll-in': {
+    from: { clipPath: 'circle(0% at 92% 6%)' },
+    to: { clipPath: 'circle(140% at 92% 6%)' },
+  },
+} as const;
 
 export type { ColorScheme };
 
@@ -47,25 +76,54 @@ const ThemeCtx = createContext<ThemeContextValue>({
 
 export function AppThemeProvider({ children }: { children: ReactNode }) {
   const { colorScheme: savedScheme, updateColorScheme, user, loading: authLoading } = useAuth();
+  // Always start from the default so first paint is instant; the user's real
+  // scheme then *rolls in* with an animation once it's resolved (see below).
   const [scheme, setSchemeState] = useState<ColorScheme>('sakura');
+  const rolledInRef = useRef(false);
 
-  // 1. Hydrate from localStorage immediately (fastest, shown before auth completes)
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY) as ColorScheme | null;
-    if (saved && VALID_SCHEMES.includes(saved)) setSchemeState(saved);
-  }, []);
+  // Applies a scheme change, wrapped in a View Transition for the animated reveal
+  // when supported and motion is allowed; otherwise swaps instantly.
+  function applyScheme(next: ColorScheme) {
+    const doc = typeof document !== 'undefined' ? (document as ViewTransitionDocument) : null;
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!doc?.startViewTransition || prefersReducedMotion) {
+      setSchemeState(next);
+      return;
+    }
+    doc.startViewTransition(() => flushSync(() => setSchemeState(next)));
+  }
 
-  // 2. Once auth loads, switch to the user's saved scheme (wins over localStorage)
+  // Resolve the user's real scheme (authoritative profile value, falling back to
+  // the localStorage cache) and roll it in once auth is ready. The first time it
+  // differs from the default it animates; later external changes swap instantly.
   useEffect(() => {
-    if (!authLoading && savedScheme && VALID_SCHEMES.includes(savedScheme)) {
-      setSchemeState(savedScheme);
+    if (authLoading) return;
+    const stored = localStorage.getItem(STORAGE_KEY) as ColorScheme | null;
+    const target =
+      savedScheme && VALID_SCHEMES.includes(savedScheme)
+        ? savedScheme
+        : stored && VALID_SCHEMES.includes(stored)
+          ? stored
+          : 'sakura';
+    if (savedScheme && VALID_SCHEMES.includes(savedScheme)) {
       localStorage.setItem(STORAGE_KEY, savedScheme);
     }
+    if (!rolledInRef.current) {
+      rolledInRef.current = true;
+      if (target !== 'sakura') {
+        applyScheme(target);
+        return;
+      }
+    }
+    setSchemeState(target);
   }, [authLoading, savedScheme]);
 
   function setScheme(s: ColorScheme) {
-    setSchemeState(s);
     localStorage.setItem(STORAGE_KEY, s);
+    applyScheme(s);
     if (user) {
       void updateColorScheme(s);
     }
@@ -77,6 +135,7 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
     <ThemeCtx.Provider value={{ scheme, setScheme }}>
       <ThemeProvider theme={muiTheme}>
         <CssBaseline />
+        <GlobalStyles styles={themeTransitionStyles} />
         {children}
       </ThemeProvider>
     </ThemeCtx.Provider>
