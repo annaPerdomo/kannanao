@@ -1,6 +1,24 @@
-# Kannanao
+<div align="center">
 
-AI-powered Japanese flashcard studio with spaced practice modes, gamification, and speech memorization. Built for a real user base of Japanese language learners.
+# 🌸 Kannanao
+
+### AI-powered Japanese flashcard studio
+
+Spaced practice, gamification, speech memorization, and group study — everything you need to make learning Japanese _actually_ enjoyable. Built for and used by a real base of language learners.
+
+[![Live Demo](https://img.shields.io/badge/Live_Demo-kannanao.com-EC4899?style=for-the-badge&logo=vercel&logoColor=white)](https://kannanao.com)
+
+![Next.js](https://img.shields.io/badge/Next.js_15-000000?style=flat&logo=nextdotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
+![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat&logo=supabase&logoColor=white)
+![Gemini](https://img.shields.io/badge/Google_Gemini-8E75B2?style=flat&logo=googlegemini&logoColor=white)
+![MUI](https://img.shields.io/badge/MUI_7-007FFF?style=flat&logo=mui&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)
+
+<img src="docs/screenshot.png" alt="Kannanao — Learn Japanese, one card at a time" width="100%" />
+
+</div>
 
 ## What it does
 
