@@ -92,31 +92,10 @@ export async function loadDecks(userId: string): Promise<Deck[]> {
   }
 
   const allDecks = [...(deckRows ?? []), ...assignedDecks];
-  const allDeckIds = allDecks.map((d) => d.id);
 
-  // Only the deck_id is needed to count cards per deck — fetching full card rows
-  // here transfers every card's word/reading/meaning/image_url for the whole
-  // library just to compute counts. Select the minimal column instead.
-  let cards: Array<{ deck_id: string | number }> = [];
-  if (allDeckIds.length > 0) {
-    const { data: cardRows, error: cardError } = await sb
-      .from('cards')
-      .select('deck_id')
-      .in('deck_id', allDeckIds);
-    if (cardError) {
-      console.error('Error loading cards', cardError);
-      return [];
-    }
-    cards = cardRows ?? [];
-  }
-
-  const countByDeck = new Map<string, number>();
-  for (const card of cards) {
-    const key = String(card.deck_id);
-    countByDeck.set(key, (countByDeck.get(key) ?? 0) + 1);
-  }
-
-  return allDecks.map((deck) => dbDeckToApp(deck, countByDeck.get(deck.id) ?? 0, userId));
+  // Card counts come from the trigger-maintained `card_count` column — no need to
+  // fetch card rows for the whole library just to compute counts.
+  return allDecks.map((deck) => dbDeckToApp(deck, deck.card_count ?? 0, userId));
 }
 
 export async function dbCreateDeck(name: string, description?: string): Promise<Deck> {

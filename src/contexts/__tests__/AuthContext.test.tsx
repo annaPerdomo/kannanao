@@ -350,6 +350,9 @@ describe('AuthContext / AuthProvider', () => {
       mockGetSession.mockResolvedValue({
         data: { session: { user: { id: 'u1', email: 'test@kannanao.local' } } },
       });
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'u1', email: 'test@kannanao.local' } },
+      });
 
       function NameDisplay() {
         const { displayName, loading } = useAuth();
@@ -382,6 +385,9 @@ describe('AuthContext / AuthProvider', () => {
       mockGetSession.mockResolvedValue({
         data: { session: { user: { id: 'u1', email: 'test@kannanao.local' } } },
       });
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'u1', email: 'test@kannanao.local' } },
+      });
 
       function SchemeDisplay() {
         const { colorScheme, loading } = useAuth();
@@ -406,6 +412,9 @@ describe('AuthContext / AuthProvider', () => {
 
       mockGetSession.mockResolvedValue({
         data: { session: { user: { id: 'u1', email: 'test@kannanao.local' } } },
+      });
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'u1', email: 'test@kannanao.local' } },
       });
 
       function SchemeDisplay() {

@@ -176,6 +176,7 @@ describe('dbDeckToApp', () => {
       pinned: true,
       is_public: false,
       position: 0,
+      card_count: 12,
     };
 
     const deck = dbDeckToApp(row, 12, 'user-1');
@@ -203,6 +204,7 @@ describe('dbDeckToApp', () => {
       pinned: null,
       is_public: null,
       position: 0,
+      card_count: 5,
     };
 
     const deck = dbDeckToApp(row, 5, 'user-me');
@@ -220,6 +222,7 @@ describe('dbDeckToApp', () => {
       pinned: null,
       is_public: null,
       position: 0,
+      card_count: 0,
     };
 
     const deck = dbDeckToApp(row, 0, 'user-1');
@@ -242,6 +245,7 @@ describe('dbDeckToApp', () => {
       pinned: false,
       is_public: false,
       position: 0,
+      card_count: 0,
     };
 
     const deck = dbDeckToApp(row, 0, 'user-1');

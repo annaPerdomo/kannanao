@@ -143,10 +143,15 @@ export function AuthProvider({
     // the seeded session/profile are authoritative for first paint. onAuthStateChange
     // (below) still reconciles live changes (token refresh, sign-in/out).
     if (!seeded) {
-      sb.auth.getSession().then(({ data }) => {
+      sb.auth.getSession().then(async ({ data }) => {
         setSession(data.session);
-        if (data.session?.user) {
-          void fetchProfile(data.session.user.id);
+        // Authenticate the user against the Auth server (getUser) instead of
+        // trusting the user object embedded in the locally-stored session.
+        if (data.session) {
+          const {
+            data: { user },
+          } = await sb.auth.getUser();
+          if (user) void fetchProfile(user.id);
         }
         setLoading(false);
       });

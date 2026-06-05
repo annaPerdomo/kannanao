@@ -317,9 +317,12 @@ export function useShowCards() {
         /* full */
       }
 
-      // Save to DB
-      const { data: session } = await sb.auth.getSession();
-      const userId = session.session?.user?.id;
+      // Save to DB. Authenticate the user via getUser() (verified against the
+      // Auth server) rather than trusting the user object from getSession().
+      const {
+        data: { user },
+      } = await sb.auth.getUser();
+      const userId = user?.id;
       if (userId) {
         const saved = await dbSaveShowCard(data, userId);
         setCards((prev) => [saved, ...prev]);

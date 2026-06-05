@@ -325,6 +325,26 @@ function DashboardSection({
   );
 }
 
+/** Placeholder for the dashboard grid shown until it's mounted + measured. */
+function DashboardGridSkeleton() {
+  return (
+    <Grid container spacing={2}>
+      {[0, 1, 2, 3].map((i) => (
+        <Grid size={{ xs: 12, md: 6 }} key={i}>
+          <Stack spacing={1.5}>
+            <Skeleton variant="text" width={150} height={30} />
+            <Skeleton
+              variant="rounded"
+              height={180}
+              sx={{ borderRadius: 3, bgcolor: (t) => alpha(t.palette.brand[100], 0.5) }}
+            />
+          </Stack>
+        </Grid>
+      ))}
+    </Grid>
+  );
+}
+
 export default function Home({ initialData }: { initialData?: HomeData }) {
   const {
     user,
@@ -367,6 +387,11 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
 
   const pinnedDecks = decks.filter((d) => d.pinned);
   const pinnedSpeeches = ohanashikais.filter((o) => o.pinned);
+  // `decks`/`ohanashikais` are seeded pinned-only by the server, so the loaded
+  // list can't tell "no decks yet" from "decks exist but none pinned". The
+  // server sends total counts for that; fall back to list length when absent.
+  const totalDeckCount = initialData?.totalDeckCount ?? decks.length;
+  const totalSpeechCount = initialData?.totalOhanashikaiCount ?? ohanashikais.length;
 
   // ── Section order + drag ──
   const sectionOrder = useMemo(
@@ -385,6 +410,15 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
   // ── Grid layout (drag + resize) ──
   const isMobile = useMediaQuery('(max-width:899px)', { noSsr: true });
   const [gridWidth, setGridWidth] = useState(900);
+  // The grid's width is measured and the mobile/desktop breakpoint is resolved
+  // on the client, so the very first paint can briefly show a mis-sized layout.
+  // Gate the real grid behind a mount flag and show a skeleton until then — by
+  // the time this flips true the ResizeObserver has measured the container, so
+  // the grid renders at the correct width with no flash.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const roRef = useRef<ResizeObserver | null>(null);
   const gridRef = useCallback((node: HTMLDivElement | null) => {
     if (roRef.current) {
@@ -587,10 +621,10 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                 <Typography sx={{ fontSize: '1.8rem', flexShrink: 0 }}>📌</Typography>
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                    {decks.length === 0 ? 'Create your first deck!' : 'Pin a deck to see it here'}
+                    {totalDeckCount === 0 ? 'Create your first deck!' : 'Pin a deck to see it here'}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {decks.length === 0
+                    {totalDeckCount === 0
                       ? 'Head to Decks to start building flashcards ✨'
                       : 'Tap the pin icon on any deck ✨'}
                   </Typography>
@@ -651,12 +685,12 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                 <Typography sx={{ fontSize: '1.8rem', flexShrink: 0 }}>🌸</Typography>
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                    {ohanashikais.length === 0
+                    {totalSpeechCount === 0
                       ? 'Practice your お話し会 speech!'
                       : 'Pin a speech to see it here'}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {ohanashikais.length === 0
+                    {totalSpeechCount === 0
                       ? 'Add your lines and start memorizing ✨'
                       : 'Tap the pin icon on any speech ✨'}
                   </Typography>
@@ -833,7 +867,9 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
           '--rgl-placeholder-bg': (t) => alpha(t.palette.brand[300], 0.3),
         }}
       >
-        {isMobile ? (
+        {!mounted ? (
+          <DashboardGridSkeleton />
+        ) : isMobile ? (
           <Stack spacing={3}>
             {sectionOrder.map((key) => (
               <DashboardSection

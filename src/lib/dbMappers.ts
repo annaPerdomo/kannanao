@@ -36,10 +36,16 @@ export interface InitialShop {
 
 /** Server-resolved home dashboard data, seeded into the home page's hooks. */
 export interface HomeData {
+  /** Only *pinned* decks — that's all the dashboard renders. */
   decks: Deck[] | null;
+  /** Only *pinned* speeches — that's all the dashboard renders. */
   ohanashikais: Ohanashikai[] | null;
   todos: Todo[] | null;
   eventTypes: EntryType[] | null;
+  /** Total decks the user has (pinned + unpinned) — drives empty-state copy. */
+  totalDeckCount: number;
+  /** Total speeches the user has — drives empty-state copy. */
+  totalOhanashikaiCount: number;
 }
 
 export interface SupabaseDeckRow {
@@ -52,6 +58,8 @@ export interface SupabaseDeckRow {
   pinned: boolean | null;
   is_public: boolean | null;
   position: number;
+  /** Denormalized, trigger-maintained count of cards in this deck. */
+  card_count: number | null;
 }
 
 export interface SupabaseCardRow {
@@ -176,6 +184,8 @@ export interface OhanashikaiRow {
   description: string | null;
   created_at: string | null;
   pinned: boolean | null;
+  /** Denormalized, trigger-maintained count of lines in this speech. */
+  line_count: number | null;
 }
 
 export function rowToOhanashikai(row: OhanashikaiRow, lineCount: number): Ohanashikai {
