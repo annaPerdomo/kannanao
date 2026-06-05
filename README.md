@@ -29,16 +29,16 @@ Spaced practice, gamification, speech memorization, and group study — everythi
 
 ## ✨ What it does
 
-|  | Feature | Details |
-|--|---------|---------|
-| 🤖 | **AI card generation** | Paste words in any language or upload a PDF; Gemini returns readings, meanings, example sentences with furigana, and image suggestions |
-| 🎴 | **Four practice modes** | Flashcard study, Match (timed pairing), Fill-in-the-blank (typing), and Recall (multiple choice) |
-| 🗣️ | **Speech memorization** | _Ohanashikai_ — upload scripts line-by-line, then practice with read-through and line-recall modes |
-| 🏆 | **Gamification** | XP, levels, streaks, achievements, and a cosmetic shop (card borders, study buddies, themes) |
-| 🔗 | **Deck sharing** | Share decks with other users or embed them publicly via iframe |
-| 👥 | **Group management** | Organizer/member accounts, QR-code invites, dashboards, assignments, encouragements, weekly leaderboard, and activity feed |
-| ✅ | **To-do tracker** | Recurring task system with calendar view, integrated into the home page |
-| 🎨 | **10 color themes** | Each with its own font pairing and design tokens |
+|     | Feature                 | Details                                                                                                                                |
+| --- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 🤖  | **AI card generation**  | Paste words in any language or upload a PDF; Gemini returns readings, meanings, example sentences with furigana, and image suggestions |
+| 🎴  | **Four practice modes** | Flashcard study, Match (timed pairing), Fill-in-the-blank (typing), and Recall (multiple choice)                                       |
+| 🗣️  | **Speech memorization** | _Ohanashikai_ — upload scripts line-by-line, then practice with read-through and line-recall modes                                     |
+| 🏆  | **Gamification**        | XP, levels, streaks, achievements, and a cosmetic shop (card borders, study buddies, themes)                                           |
+| 🔗  | **Deck sharing**        | Share decks with other users or embed them publicly via iframe                                                                         |
+| 👥  | **Group management**    | Organizer/member accounts, QR-code invites, dashboards, assignments, encouragements, weekly leaderboard, and activity feed             |
+| ✅  | **To-do tracker**       | Recurring task system with calendar view, integrated into the home page                                                                |
+| 🎨  | **10 color themes**     | Each with its own font pairing and design tokens                                                                                       |
 
 ## 🏗️ System architecture
 
