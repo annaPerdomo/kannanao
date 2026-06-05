@@ -13,7 +13,7 @@ vi.mock('server-only', () => ({}));
 interface Fixtures {
   ownPinnedDecks: unknown[];
   ownDeckCount: number;
-  assignments: { deck_id: string }[];
+  assignments: { deck_id: string; decks?: { user_id: string } | null }[];
   assignedPinnedDecks: unknown[];
   pinnedSpeeches: unknown[];
   speechCount: number;
@@ -131,11 +131,14 @@ describe('getHomeData', () => {
   });
 
   it('counts assigned-but-not-owned decks toward the total', async () => {
-    fx.assignments = [{ deck_id: 'shared1' }, { deck_id: 'd1' }]; // d1 is already owned-pinned
+    fx.assignments = [
+      { deck_id: 'shared1', decks: { user_id: 'org1' } }, // organizer-owned
+      { deck_id: 'd1', decks: { user_id: 'u1' } }, // already owned by the member
+    ];
     fx.assignedPinnedDecks = [deckRow('shared1', true)];
     const data = await getHomeData();
     expect(data.decks?.map((d) => d.id).sort()).toEqual(['d1', 'shared1']);
-    expect(data.totalDeckCount).toBe(6); // 5 own + 1 shared (d1 deduped out)
+    expect(data.totalDeckCount).toBe(6); // 5 own + 1 shared (d1 deduped out by ownership)
   });
 
   it('returns only pinned speeches with line counts plus the total speech count', async () => {

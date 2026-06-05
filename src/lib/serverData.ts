@@ -105,15 +105,23 @@ async function loadDecksServer(
       .order('position', { ascending: true })
       .order('created_at', { ascending: true }),
     supabase.from('decks').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-    supabase.from('assignments').select('deck_id').eq('member_id', userId),
+    supabase.from('assignments').select('deck_id, decks(user_id)').eq('member_id', userId),
   ]);
   if (ownResult.error) return { decks: [], totalCount: 0 };
 
   const ownPinned = ownResult.data ?? [];
-  const ownPinnedIds = new Set(ownPinned.map((d) => d.id));
+  // De-dupe assigned decks against *all* owned decks (not just pinned ones): the
+  // assignments API doesn't validate deck ownership, so an organizer could assign
+  // a member a deck they already own. Counting it under both `ownCount` and the
+  // assigned list would double it in `totalCount`. Filtering by the joined deck
+  // owner drops those rows entirely.
   const assignedDeckIds = [
-    ...new Set((assignedResult.data ?? []).map((a) => a.deck_id as string)),
-  ].filter((id) => !ownPinnedIds.has(id));
+    ...new Set(
+      (assignedResult.data ?? [])
+        .filter((a) => (a.decks as unknown as { user_id: string } | null)?.user_id !== userId)
+        .map((a) => a.deck_id as string),
+    ),
+  ];
 
   // Only assigned decks that are *also* pinned show on the dashboard.
   let assignedPinned: typeof ownPinned = [];
@@ -141,8 +149,8 @@ async function loadDecksServer(
  * profile) and the unread-message badge count. This is deliberately small so the
  * app shell can paint as fast as possible; heavier per-user data (XP progress,
  * shop purchases) loads client-side via its hooks instead of gating first paint.
- * `getUser()` is the authoritative check; the session is only used to seed the
- * client AuthContext.
+ * Auth comes from the cookie-bound session (see `getRequestAuth` for why
+ * `getSession()` rather than `getUser()`); every downstream query is RLS-gated.
  */
 export async function getInitialAppData(): Promise<InitialAppData> {
   const { supabase, session, user } = await getRequestAuth();
