@@ -1,6 +1,6 @@
 {
-  "name": "語学 — Japanese Flashcards",
-  "short_name": "語学",
+  "name": "Kannanao — Japanese Flashcards",
+  "short_name": "Kannanao",
   "description": "AI-powered Japanese flashcard studio",
   "start_url": "/",
   "display": "standalone",

@@ -152,6 +152,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </noscript>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        {/*
+          The UI is English (lang="en") but pages are full of Japanese vocabulary,
+          so Chrome on Android repeatedly offers to "translate this page" — an
+          annoying, persistent prompt for a bilingual study app. This opts the
+          page out of automatic translation offers.
+        */}
+        <meta name="google" content="notranslate" />
         <link
           rel="icon"
           href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>"
@@ -162,7 +169,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* iOS home screen */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="語学" />
+        <meta name="apple-mobile-web-app-title" content="Kannanao" />
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png" />
         <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167.png" />
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png" />
