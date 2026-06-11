@@ -1,4 +1,4 @@
-import withPWA from '@ducanh2912/next-pwa';
+import withPWA, { runtimeCaching as defaultCache } from '@ducanh2912/next-pwa';
 import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 
@@ -75,14 +75,30 @@ const nextConfig: NextConfig = {
   },
 };
 
+// Serve Next.js JS chunks with StaleWhileRevalidate instead of the package
+// default of CacheFirst. CacheFirst can strand a device after a deploy: the
+// cached HTML shell references new content-hashed chunk filenames, but the old
+// cache keeps serving stale chunks (or has none for the new hashes), so React
+// never boots and the page renders blank (only the CSS background animates).
+// StaleWhileRevalidate still serves the cache for speed but always refetches in
+// the background, so the next load heals automatically.
+const runtimeCaching = defaultCache.map((entry) =>
+  entry.options?.cacheName === 'next-static-js-assets'
+    ? { ...entry, handler: 'StaleWhileRevalidate' as const }
+    : entry,
+);
+
 const pwaConfig = withPWA({
   dest: 'public',
   cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
+  // Disabled: aggressive nav caching widens the window where a stale shell is
+  // paired with mismatched chunks after a deploy (the blank-screen failure).
+  aggressiveFrontEndNavCaching: false,
   reloadOnOnline: false,
   disable: process.env.NODE_ENV === 'development',
   workboxOptions: {
     disableDevLogs: true,
+    runtimeCaching,
   },
 })(nextConfig);
 
