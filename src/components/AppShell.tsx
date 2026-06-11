@@ -12,6 +12,7 @@ import { Footer } from './Footer';
 import { GlobalBuddy } from './GlobalBuddy';
 import { NavBar } from './NavBar';
 import { BOTTOM_NAV_HEIGHT, BottomNav } from './NavBar/BottomNav';
+import { PushAutoResubscribe } from './PushAutoResubscribe';
 
 export function AppShell({
   children,
@@ -49,6 +50,7 @@ export function AppShell({
           {!isFullHeight && <Footer />}
           <BottomNav />
           <GlobalBuddy />
+          <PushAutoResubscribe />
         </DirectMessagesProvider>
       </ProgressProvider>
     </XpAnimationProvider>

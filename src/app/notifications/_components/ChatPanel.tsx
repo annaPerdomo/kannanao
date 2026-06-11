@@ -7,7 +7,7 @@ import SendIcon from '@mui/icons-material/Send';
 import { Avatar, Box, Button, Chip, IconButton, TextField, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { groupByDate, QUICK_MESSAGES_MEMBER } from '@/components/Group/MessageThread/constants';
 import { MessageBubble } from '@/components/Group/MessageThread/MessageBubble';
@@ -44,8 +44,11 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Whether the view should stay glued to the newest message. True until the
+  // user deliberately scrolls up; restored when they scroll back down or send.
+  const pinnedRef = useRef(true);
 
   const initial = recipientName.charAt(0).toUpperCase();
 
@@ -62,16 +65,45 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
     await refetchGlobalRef.current();
   }, []);
 
-  // Scroll to bottom when a new message arrives (track latest message ID)
+  const scrollToBottom = useCallback(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    pinnedRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  }, []);
+
+  // Jump to the newest message when the thread loads or a new message arrives,
+  // unless the user has scrolled up to read history.
   const latestMsgId = messages[0]?.id;
+  useLayoutEffect(() => {
+    if (loading || !latestMsgId) return;
+    if (pinnedRef.current) scrollToBottom();
+  }, [loading, latestMsgId, scrollToBottom]);
+
+  // Stay pinned while content shifts after the initial scroll: images loading
+  // in, the typing indicator appearing, or the on-screen keyboard resizing the
+  // viewport would otherwise leave the view stranded above the newest message.
   useEffect(() => {
-    if (!latestMsgId) return;
-    // setTimeout ensures React has committed the new DOM node before scrolling
-    const timer = setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [latestMsgId]);
+    if (loading) return;
+    const scrollEl = scrollRef.current;
+    const contentEl = contentRef.current;
+    if (!scrollEl || !contentEl || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => {
+      if (pinnedRef.current) scrollToBottom();
+    });
+    ro.observe(scrollEl);
+    ro.observe(contentEl);
+    return () => ro.disconnect();
+  }, [loading, scrollToBottom]);
+
+  // Re-pin when switching conversations
+  useEffect(() => {
+    pinnedRef.current = true;
+  }, [recipientId]);
 
   // Mark messages as read when unread messages appear in the open conversation
   useEffect(() => {
@@ -128,6 +160,9 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
       await sendMessage(recipientId, message, imageUrl);
       setText('');
       clearImage();
+      // Sending always returns the view to the newest message
+      pinnedRef.current = true;
+      scrollToBottom();
       // Sync sent message to global context so conversation list updates
       void refetchGlobalRef.current().catch(() => {});
     } finally {
@@ -192,72 +227,79 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
       {/* Messages area */}
       <Box
         ref={scrollRef}
+        onScroll={handleScroll}
         sx={{
           flex: 1,
           minHeight: 0,
           overflowY: 'auto',
           px: 2,
           py: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1,
         }}
       >
-        {sorted.length === 0 ? (
-          <Box
-            sx={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              textAlign: 'center',
-              py: 6,
-            }}
-          >
-            <Typography sx={{ fontSize: '3rem', mb: 1 }}>💌</Typography>
-            <Typography sx={{ fontWeight: 700, color: brand[600], fontSize: '1rem', mb: 0.5 }}>
-              No messages yet!
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
-              Say hi to {recipientName} to start chatting
-            </Typography>
-          </Box>
-        ) : (
-          groups.map((group) => (
-            <Box key={group.label} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 0.5 }}>
-                <Typography
-                  sx={{
-                    fontSize: '0.7rem',
-                    fontWeight: 600,
-                    color: brand[600],
-                    bgcolor: alpha(brand[100], 0.7),
-                    px: 1.5,
-                    py: 0.3,
-                    borderRadius: 3,
-                  }}
-                >
-                  {group.label}
-                </Typography>
-              </Box>
-              {group.msgs.map((m, i) => (
-                <MessageBubble
-                  key={m.id}
-                  message={m}
-                  isMine={m.sender_id === user?.id}
-                  initial={m.sender_id === user?.id ? 'Me' : initial}
-                  index={i}
-                  tick={tick}
-                  userId={user?.id}
-                  onReact={toggleReaction}
-                />
-              ))}
+        <Box
+          ref={contentRef}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+            minHeight: '100%',
+          }}
+        >
+          {sorted.length === 0 ? (
+            <Box
+              sx={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                textAlign: 'center',
+                py: 6,
+              }}
+            >
+              <Typography sx={{ fontSize: '3rem', mb: 1 }}>💌</Typography>
+              <Typography sx={{ fontWeight: 700, color: brand[600], fontSize: '1rem', mb: 0.5 }}>
+                No messages yet!
+              </Typography>
+              <Typography sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
+                Say hi to {recipientName} to start chatting
+              </Typography>
             </Box>
-          ))
-        )}
-        {isRecipientTyping && <TypingBubble initial={initial} />}
-        <div ref={messagesEndRef} />
+          ) : (
+            groups.map((group) => (
+              <Box key={group.label} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 0.5 }}>
+                  <Typography
+                    sx={{
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      color: brand[600],
+                      bgcolor: alpha(brand[100], 0.7),
+                      px: 1.5,
+                      py: 0.3,
+                      borderRadius: 3,
+                    }}
+                  >
+                    {group.label}
+                  </Typography>
+                </Box>
+                {group.msgs.map((m, i) => (
+                  <MessageBubble
+                    key={m.id}
+                    message={m}
+                    isMine={m.sender_id === user?.id}
+                    initial={m.sender_id === user?.id ? 'Me' : initial}
+                    index={i}
+                    tick={tick}
+                    userId={user?.id}
+                    onReact={toggleReaction}
+                  />
+                ))}
+              </Box>
+            ))
+          )}
+          {isRecipientTyping && <TypingBubble initial={initial} />}
+        </Box>
       </Box>
 
       {/* Footer area — quick replies, image preview, input bar */}

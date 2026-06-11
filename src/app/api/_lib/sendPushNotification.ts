@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 import { getServiceSupabase } from '../group/_lib/serviceSupabase';
 
 const vapidSubject = process.env.VAPID_SUBJECT;
-const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || process.env.VAPID_PUBLIC_KEY;
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 
 let configured = false;

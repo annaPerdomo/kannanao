@@ -16,5 +16,4 @@ export { InviteQRCode } from './InviteQRCode';
 export { LeaderboardWidget } from './LeaderboardWidget';
 export { MemberCard } from './MemberCard';
 export { MemberDetail } from './MemberDetail';
-export { MessageThread } from './MessageThread';
-export { hasBeenPrompted, markPrompted, NotificationPrompt } from './NotificationPrompt';
+export { MessageBubble, TypingBubble } from './MessageThread';
