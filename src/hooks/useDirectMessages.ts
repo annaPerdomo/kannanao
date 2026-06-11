@@ -10,15 +10,29 @@ function showTabNotification(msg: DirectMessage) {
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
   const name = msg.sender?.display_name ?? msg.sender?.username ?? 'Someone';
   const body = msg.message ?? (msg.image_url ? '📷 Sent a photo' : 'New message');
-  const n = new Notification(name, {
+  const options: NotificationOptions = {
     body,
     icon: '/icons/icon-192.png',
     tag: `dm-${msg.id}`,
-  });
-  n.onclick = () => {
-    window.focus();
-    n.close();
+    data: { url: `/notifications/${msg.sender_id}` },
   };
+  // Prefer the service worker — iOS has no Notification constructor (it
+  // throws), and the SW path reuses the same notificationclick handler as push.
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready
+      .then((reg) => reg.showNotification(name, options))
+      .catch(() => {});
+    return;
+  }
+  try {
+    const n = new Notification(name, options);
+    n.onclick = () => {
+      window.focus();
+      n.close();
+    };
+  } catch {
+    // Notification constructor unsupported
+  }
 }
 
 /** Play a sparkly magical chime using Web Audio API */

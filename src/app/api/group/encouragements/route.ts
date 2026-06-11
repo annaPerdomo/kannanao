@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { after, type NextRequest, NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 
@@ -68,15 +68,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to send encouragement.' }, { status: 500 });
   }
 
-  // Fire push notification to member (non-blocking)
+  // Fire push notification after the response — after() keeps the serverless
+  // function alive until the push completes (a floating promise gets frozen).
   const senderName = orgCheck.display_name || orgCheck.username;
-  sendPushToUser(memberId, {
-    title: `${emojiChar} ${senderName}`,
-    body: message.trim().slice(0, 100),
-    url: `/notifications/${orgCheck.id}`,
-  }).catch((err) => {
-    logger.error('Encouragement push failed', { error: String(err) });
-  });
+  after(
+    sendPushToUser(memberId, {
+      title: `${emojiChar} ${senderName}`,
+      body: message.trim().slice(0, 100),
+      url: `/notifications/${orgCheck.id}`,
+    }).catch((err) => {
+      logger.error('Encouragement push failed', { error: String(err) });
+    }),
+  );
 
   return NextResponse.json(data, { status: 201 });
 }

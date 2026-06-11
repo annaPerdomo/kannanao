@@ -111,7 +111,9 @@ export function usePushNotifications() {
     setLoading(true);
     try {
       const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-      if (!vapidKey) return;
+      if (!vapidKey) {
+        throw new Error('Push is not configured (missing VAPID public key).');
+      }
 
       // Start fetching auth headers and SW registration in parallel while we wait for permission
       const headersPromise = authHeaders();

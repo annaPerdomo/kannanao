@@ -36,13 +36,21 @@ sw.addEventListener('notificationclick', (event) => {
   const absoluteUrl = new URL(path, sw.location.origin).href;
 
   event.waitUntil(
-    sw.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+    (async () => {
+      const clients = await sw.clients.matchAll({ type: 'window', includeUncontrolled: true });
       const existing = clients.find((c) => new URL(c.url).origin === sw.location.origin);
       if (existing) {
-        // Navigate to the notification URL, then focus
-        return existing.navigate(absoluteUrl).then((c) => c?.focus());
+        // Focus first — iOS can reject navigate() on uncontrolled clients, in
+        // which case the focused app at least comes to the foreground.
+        try {
+          await existing.focus();
+          const navigated = await existing.navigate(absoluteUrl);
+          if (navigated) return;
+        } catch {
+          // fall through to openWindow
+        }
       }
-      return sw.clients.openWindow(absoluteUrl);
-    }),
+      await sw.clients.openWindow(absoluteUrl);
+    })(),
   );
 });

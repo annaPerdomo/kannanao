@@ -105,6 +105,20 @@ describe('usePushNotifications', () => {
     expect(postCall[1].method).toBe('POST');
   });
 
+  it('subscribe() throws when VAPID public key is missing', async () => {
+    delete process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+
+    const { result } = renderHook(() => usePushNotifications());
+    await waitFor(() => expect(result.current.isSupported).toBe(true));
+
+    await expect(
+      act(async () => {
+        await result.current.subscribe();
+      }),
+    ).rejects.toThrow(/VAPID/);
+    expect(mockPushManager.subscribe).not.toHaveBeenCalled();
+  });
+
   it('does not subscribe when permission denied', async () => {
     (Notification.requestPermission as ReturnType<typeof vi.fn>).mockResolvedValue('denied');
 

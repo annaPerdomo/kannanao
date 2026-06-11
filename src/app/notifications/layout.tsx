@@ -15,7 +15,8 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 import { ConversationList } from './_components/ConversationList';
 
-const PUSH_DISMISSED_KEY = 'kannanao:push-prompt-dismissed';
+// v2: re-prompt users who dismissed while push was broken (VAPID key mismatch)
+const PUSH_DISMISSED_KEY = 'kannanao:push-prompt-dismissed-v2';
 
 export default function NotificationsLayout({ children }: { children: React.ReactNode }) {
   const theme = useTheme();

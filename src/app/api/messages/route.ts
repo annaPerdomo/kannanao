@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { after, type NextRequest, NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 
@@ -110,16 +110,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to send message.' }, { status: 500 });
   }
 
-  // Fire push notification (non-blocking)
+  // Fire push notification after the response is sent. after() keeps the
+  // serverless function alive until the push completes — a bare floating
+  // promise gets frozen with the lambda and often never delivers.
   const senderName = sender.display_name || sender.username;
   const pushBody = message?.trim() ? message.trim().slice(0, 100) : '📷 Photo';
-  sendPushToUser(recipientId, {
-    title: `${senderName}`,
-    body: pushBody,
-    url: `/notifications/${sender.id}`,
-  }).catch((err) => {
-    logger.error('Push notification failed', { error: String(err) });
-  });
+  after(
+    sendPushToUser(recipientId, {
+      title: `${senderName}`,
+      body: pushBody,
+      url: `/notifications/${sender.id}`,
+    }).catch((err) => {
+      logger.error('Push notification failed', { error: String(err) });
+    }),
+  );
 
   return NextResponse.json(data, { status: 201 });
 }

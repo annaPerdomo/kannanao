@@ -72,6 +72,10 @@ const nextConfig: NextConfig = {
     SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    // The env files define VAPID_PUBLIC_KEY (no NEXT_PUBLIC_ prefix), but the
+    // browser needs it inlined at build time to call pushManager.subscribe().
+    NEXT_PUBLIC_VAPID_PUBLIC_KEY:
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? process.env.VAPID_PUBLIC_KEY,
   },
 };
 
