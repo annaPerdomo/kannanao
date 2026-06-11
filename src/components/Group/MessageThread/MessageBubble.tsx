@@ -77,7 +77,7 @@ export function MessageBubble({
         </Avatar>
       )}
 
-      <Box sx={{ maxWidth: '75%', position: 'relative', mb: hasReactions ? 2 : 0 }}>
+      <Box sx={{ maxWidth: '75%', position: 'relative' }}>
         {/* Bubble */}
         <Box
           sx={{
@@ -115,7 +115,8 @@ export function MessageBubble({
           {message.message && (
             <Typography
               sx={{
-                fontSize: '0.88rem',
+                // Matches the input box font size so messages don't shrink on send
+                fontSize: '1rem',
                 color: 'text.primary',
                 wordBreak: 'break-word',
                 px: message.image_url ? 1 : 0,
@@ -173,17 +174,15 @@ export function MessageBubble({
           )}
         </Box>
 
-        {/* Reactions — pinned to bottom-right corner of bubble */}
+        {/* Reactions — in normal flow under the bubble, aligned to its side */}
         {hasReactions && (
           <Box
             sx={{
-              position: 'absolute',
-              bottom: -14,
-              right: isMine ? 'auto' : 4,
-              left: isMine ? 4 : 'auto',
               display: 'flex',
+              justifyContent: isMine ? 'flex-end' : 'flex-start',
               gap: 0.4,
-              zIndex: 1,
+              mt: 0.25,
+              px: 0.5,
             }}
           >
             {reactionEntries.map(([emoji, users]) => {
