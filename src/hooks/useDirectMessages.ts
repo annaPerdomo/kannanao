@@ -94,17 +94,33 @@ async function authHeaders(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+/** Page size the API returns — a full page means older history may exist. */
+const PAGE_SIZE = 50;
+
+/** Merge a fresh page over the existing list: fresh rows win per id, everything
+ * else (e.g. older pages loaded via loadOlder) is kept, sorted newest-first. */
+function mergeMessages(fresh: DirectMessage[], prev: DirectMessage[]): DirectMessage[] {
+  const freshIds = new Set(fresh.map((m) => m.id));
+  const merged = [...fresh, ...prev.filter((m) => !freshIds.has(m.id))];
+  return merged.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+}
+
 export function useDirectMessages(memberId?: string, initialUnreadCount?: number) {
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [unreadCountState, setUnreadCountState] = useState(initialUnreadCount ?? 0);
   const [loading, setLoading] = useState(true);
   const [loaded, setLoaded] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const { user } = useAuth();
   const channelRef = useRef<ReturnType<typeof sb.channel> | null>(null);
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
   const loadedRef = useRef(loaded);
   loadedRef.current = loaded;
+  const hasMoreRef = useRef(hasMore);
+  hasMoreRef.current = hasMore;
+  const loadingOlderRef = useRef(false);
 
   // Once the full list is loaded, derive the count from it so optimistic
   // read/markAll updates reflect instantly. Until then (the common case — every
@@ -140,8 +156,14 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
       const url = memberId ? `/api/messages?memberId=${memberId}` : '/api/messages';
       const res = await fetch(url, { headers: await authHeaders() });
       if (!res.ok) throw new Error();
-      const data = await res.json();
-      setMessages(data);
+      const data: DirectMessage[] = await res.json();
+      // Merge rather than replace so pages loaded via loadOlder survive the
+      // refetches triggered by realtime events and error rollbacks.
+      setMessages((prev) => mergeMessages(data, prev));
+      // Only the first load decides whether older history exists — refetches
+      // of the newest page would wrongly resurrect hasMore after the user
+      // already scrolled to the very beginning.
+      if (memberId && !loadedRef.current) setHasMore(data.length >= PAGE_SIZE);
       setLoaded(true);
     } catch {
       // silently fail
@@ -156,13 +178,48 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
     await fetchMessages();
   }, [fetchMessages]);
 
+  /** Loads the next page of older messages (infinite scroll back through
+   * history). Returns the number of messages actually appended. */
+  const loadOlder = useCallback(async (): Promise<number> => {
+    if (!user || !memberId || loadingOlderRef.current || !hasMoreRef.current) return 0;
+    const oldest = messagesRef.current[messagesRef.current.length - 1];
+    if (!oldest) return 0;
+    loadingOlderRef.current = true;
+    setLoadingOlder(true);
+    try {
+      const url = `/api/messages?memberId=${memberId}&before=${encodeURIComponent(oldest.created_at)}`;
+      const res = await fetch(url, { headers: await authHeaders() });
+      if (!res.ok) throw new Error();
+      const page: DirectMessage[] = await res.json();
+      setHasMore(page.length >= PAGE_SIZE);
+      const known = new Set(messagesRef.current.map((m) => m.id));
+      const fresh = page.filter((m) => !known.has(m.id));
+      if (fresh.length) {
+        setMessages((prev) => {
+          const ids = new Set(prev.map((m) => m.id));
+          return [...prev, ...fresh.filter((m) => !ids.has(m.id))];
+        });
+      }
+      return fresh.length;
+    } catch {
+      // Keep hasMore so the user can retry by scrolling again
+      return 0;
+    } finally {
+      loadingOlderRef.current = false;
+      setLoadingOlder(false);
+    }
+  }, [user, memberId]);
+
   useEffect(() => {
     // The identity (user/memberId) changed, so any previously-loaded full list
     // is stale. Reset `loaded` so the unread badge uses the count-only query
     // again and ensureLoaded() will refetch on demand (e.g. after re-login).
+    // Clear the list too — merging the new conversation's fetch into the old
+    // one's messages would mix threads.
     setLoaded(false);
+    setMessages([]);
+    setHasMore(false);
     if (!user) {
-      setMessages([]);
       setUnreadCountState(0);
       setLoading(false);
       return;
@@ -170,6 +227,7 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
     // A specific conversation (memberId) loads its full thread up front. The
     // global provider only needs the unread count — the full list loads lazily.
     if (memberId) {
+      setLoading(true);
       void fetchMessages();
     } else {
       setLoading(false);
@@ -358,6 +416,9 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
     messages,
     unreadCount,
     loading,
+    hasMore,
+    loadingOlder,
+    loadOlder,
     ensureLoaded,
     sendMessage,
     markAsRead,

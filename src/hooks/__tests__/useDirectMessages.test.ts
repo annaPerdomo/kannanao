@@ -137,6 +137,79 @@ describe('useDirectMessages', () => {
     expect(result.current.messages).toEqual([]);
   });
 
+  // ── loadOlder (endless scroll-back) ───────────────────────────────────────
+
+  const fullPage = Array.from({ length: 50 }, (_, i) => ({
+    ...DM_READ,
+    id: `m${i}`,
+    created_at: new Date(Date.UTC(2026, 4, 11, 10, 0, 59 - i)).toISOString(),
+  }));
+
+  it('loads older messages via loadOlder with a before cursor and dedupes', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => fullPage });
+    const { result } = renderHook(() => useDirectMessages('org1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    // A full page means older history may exist
+    expect(result.current.hasMore).toBe(true);
+
+    // Older page: one duplicate of the current oldest + one genuinely new row
+    const olderPage = [
+      fullPage[49],
+      { ...DM_READ, id: 'old1', created_at: '2026-05-11T08:00:00Z' },
+    ];
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => olderPage });
+
+    let added = 0;
+    await act(async () => {
+      added = await result.current.loadOlder();
+    });
+
+    const url = mockFetch.mock.calls[1][0] as string;
+    expect(url).toContain('memberId=org1');
+    expect(url).toContain(`before=${encodeURIComponent(fullPage[49].created_at)}`);
+    expect(added).toBe(1);
+    expect(result.current.messages).toHaveLength(51);
+    expect(result.current.messages[50].id).toBe('old1');
+    // Short page → reached the beginning of history
+    expect(result.current.hasMore).toBe(false);
+  });
+
+  it('does not fetch older pages when the first page was short', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [DM_UNREAD, DM_READ] });
+    const { result } = renderHook(() => useDirectMessages('org1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.hasMore).toBe(false);
+
+    let added = -1;
+    await act(async () => {
+      added = await result.current.loadOlder();
+    });
+    expect(added).toBe(0);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps older pages when the newest page is refetched', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => fullPage });
+    const { result } = renderHook(() => useDirectMessages('org1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const olderPage = [{ ...DM_READ, id: 'old1', created_at: '2026-05-11T08:00:00Z' }];
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => olderPage });
+    await act(async () => {
+      await result.current.loadOlder();
+    });
+    expect(result.current.messages).toHaveLength(51);
+
+    // A realtime-triggered refetch returns only the newest page — the older
+    // history loaded via loadOlder must survive the merge.
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => fullPage });
+    await act(async () => {
+      await result.current.refetch();
+    });
+    expect(result.current.messages).toHaveLength(51);
+    expect(result.current.messages[50].id).toBe('old1');
+  });
+
   // ── sendMessage ───────────────────────────────────────────────────────────
 
   it('sends message via POST and prepends to list', async () => {

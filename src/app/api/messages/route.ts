@@ -142,6 +142,11 @@ export async function GET(req: NextRequest) {
   const sb = getServiceSupabase();
   const { searchParams } = new URL(req.url);
   const memberId = searchParams.get('memberId');
+  const before = searchParams.get('before');
+
+  if (before && Number.isNaN(Date.parse(before))) {
+    return NextResponse.json({ error: 'before must be a valid timestamp.' }, { status: 400 });
+  }
 
   let query = sb
     .from('direct_messages')
@@ -150,6 +155,9 @@ export async function GET(req: NextRequest) {
     )
     .order('created_at', { ascending: false })
     .limit(50);
+
+  // Cursor for paging back through history: only messages older than `before`
+  if (before) query = query.lt('created_at', before);
 
   if (memberId) {
     // Filter to specific conversation partner
