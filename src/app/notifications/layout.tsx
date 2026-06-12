@@ -104,10 +104,19 @@ export default function NotificationsLayout({ children }: { children: React.Reac
   // the worker can take a minute on a first visit, and the enable UI showing
   // up that late reads as "notifications don't exist". Permission state and
   // the cached subscribed flag are known instantly.
-  const showPushPrompt = push.isSupported && push.permission === 'default' && !pushPromptDismissed;
+  // iOS in a browser tab can never receive push — Apple only delivers it to
+  // installed Home Screen web apps. Device Settings can't fix this state, so
+  // instead of the enable prompt/banner (a dead end here), show guidance to
+  // open or install the Home Screen app. Shown regardless of isSupported:
+  // Safari tabs may not expose the push APIs at all.
+  const showInstallBanner = push.isIOSBrowser;
+
+  const showPushPrompt =
+    push.isSupported && !push.isIOSBrowser && push.permission === 'default' && !pushPromptDismissed;
 
   const showPushBanner =
     push.isSupported &&
+    !push.isIOSBrowser &&
     (!push.isSubscribed || pushJustEnabled) &&
     // While the first-time dialog is available, don't double up with the banner
     (push.permission !== 'default' || pushPromptDismissed);
@@ -139,6 +148,16 @@ export default function NotificationsLayout({ children }: { children: React.Reac
             zIndex: 1,
           }}
         >
+          {showInstallBanner && (
+            <Box sx={{ px: 2, pt: 1.5 }}>
+              <Alert severity="info" sx={{ borderRadius: 2.5, fontSize: '0.8rem' }}>
+                Message notifications only work in the Kannanao app, not in the browser. Open{' '}
+                <strong>Kannanao from your Home Screen icon</strong> — or to add it, tap
+                Safari&apos;s <strong>Share</strong> button and choose{' '}
+                <strong>&ldquo;Add to Home Screen&rdquo;</strong>.
+              </Alert>
+            </Box>
+          )}
           {showPushBanner && (
             <Box sx={{ px: 2, pt: 1.5 }}>
               {pushJustEnabled && push.isSubscribed ? (

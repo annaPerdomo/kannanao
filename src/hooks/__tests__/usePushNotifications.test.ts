@@ -35,6 +35,21 @@ const mockServiceWorkerRegistration = {
 
 import { __resetPushSyncForTests, usePushNotifications } from '@/hooks/usePushNotifications';
 
+function setNavigatorUA(ua: string, maxTouchPoints: number) {
+  Object.defineProperty(navigator, 'userAgent', { value: ua, writable: true, configurable: true });
+  Object.defineProperty(navigator, 'maxTouchPoints', {
+    value: maxTouchPoints,
+    writable: true,
+    configurable: true,
+  });
+}
+
+const IPHONE_UA =
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1';
+// iPadOS 13+ reports a desktop Safari UA; only touch support reveals the iPad
+const IPAD_DESKTOP_UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15';
+
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('usePushNotifications', () => {
@@ -71,6 +86,13 @@ describe('usePushNotifications', () => {
     });
     Object.defineProperty(window, 'PushManager', {
       value: class {},
+      writable: true,
+      configurable: true,
+    });
+    // Default to a non-Apple, non-touch environment; iOS tests override
+    setNavigatorUA('Mozilla/5.0 (X11; Linux x86_64) jsdom', 0);
+    Object.defineProperty(window, 'matchMedia', {
+      value: undefined,
       writable: true,
       configurable: true,
     });
@@ -236,6 +258,39 @@ describe('usePushNotifications', () => {
     expect(result.current.permission).toBe('denied');
     expect(result.current.isSubscribed).toBe(false);
     expect(mockPushManager.subscribe).not.toHaveBeenCalled();
+  });
+
+  // ── isIOSBrowser (install guidance for Safari tabs on iPhone/iPad) ────────
+
+  it('flags an iPhone Safari tab as iOS browser', async () => {
+    setNavigatorUA(IPHONE_UA, 5);
+    const { result } = renderHook(() => usePushNotifications());
+    await waitFor(() => expect(result.current.isIOSBrowser).toBe(true));
+  });
+
+  it('flags an iPad Safari tab (desktop-class UA) as iOS browser', async () => {
+    setNavigatorUA(IPAD_DESKTOP_UA, 5);
+    const { result } = renderHook(() => usePushNotifications());
+    await waitFor(() => expect(result.current.isIOSBrowser).toBe(true));
+  });
+
+  it('does not flag the installed Home Screen app (standalone display mode)', async () => {
+    setNavigatorUA(IPAD_DESKTOP_UA, 5);
+    Object.defineProperty(window, 'matchMedia', {
+      value: vi.fn((query: string) => ({ matches: query === '(display-mode: standalone)' })),
+      writable: true,
+      configurable: true,
+    });
+    const { result } = renderHook(() => usePushNotifications());
+    await waitFor(() => expect(result.current.initializing).toBe(false));
+    expect(result.current.isIOSBrowser).toBe(false);
+  });
+
+  it('does not flag a real Mac (no touch points)', async () => {
+    setNavigatorUA(IPAD_DESKTOP_UA, 0);
+    const { result } = renderHook(() => usePushNotifications());
+    await waitFor(() => expect(result.current.initializing).toBe(false));
+    expect(result.current.isIOSBrowser).toBe(false);
   });
 
   it('unsubscribe() removes subscription', async () => {
