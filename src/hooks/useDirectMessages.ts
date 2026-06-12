@@ -219,6 +219,8 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
     setLoaded(false);
     setMessages([]);
     setHasMore(false);
+    setLoadingOlder(false);
+    loadingOlderRef.current = false;
     if (!user) {
       setUnreadCountState(0);
       setLoading(false);
