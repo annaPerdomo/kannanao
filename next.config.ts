@@ -37,6 +37,13 @@ const nextConfig: NextConfig = {
         headers: [{ key: 'X-Frame-Options', value: 'SAMEORIGIN' }],
       },
       {
+        // Never serve a stale service worker: right after a deploy, a CDN-cached
+        // sw.js precaches the previous build's hashed chunks, which 404 and
+        // abort the service worker install.
+        source: '/sw.js',
+        headers: [{ key: 'Cache-Control', value: 'no-store, max-age=0' }],
+      },
+      {
         // Allow /embed/* routes to be framed inside Canvas and other LMS platforms
         source: '/embed/:path*',
         headers: [
@@ -103,6 +110,17 @@ const pwaConfig = withPWA({
   workboxOptions: {
     disableDevLogs: true,
     runtimeCaching,
+    // Replaces next-pwa's default excludes, so the first three entries
+    // re-state them (fonts, sourcemaps, manifest*.js).
+    exclude: [
+      /\/_next\/static\/.*(?<!\.p)\.woff2/,
+      /\.map$/,
+      /^manifest.*\.js$/,
+      // Next 15.2+ emits this build asset but never serves it — the 404
+      // during precache aborts the entire service worker install, which
+      // breaks offline caching and push notifications for every device.
+      /dynamic-css-manifest\.json$/,
+    ],
   },
 })(nextConfig);
 
