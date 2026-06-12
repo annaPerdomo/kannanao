@@ -11,6 +11,7 @@ import {
   Chip,
   InputAdornment,
   Paper,
+  Skeleton,
   Stack,
   TextField,
   Typography,
@@ -64,9 +65,15 @@ interface ConversationListProps {
   messages: DirectMessage[];
   userId: string;
   selectedId?: string;
+  loading?: boolean;
 }
 
-export function ConversationList({ messages, userId, selectedId }: ConversationListProps) {
+export function ConversationList({
+  messages,
+  userId,
+  selectedId,
+  loading = false,
+}: ConversationListProps) {
   const router = useRouter();
   const theme = useTheme();
   const { brand, accent } = theme.palette;
@@ -174,7 +181,29 @@ export function ConversationList({ messages, userId, selectedId }: ConversationL
       {/* Scrollable conversation list */}
       <Box sx={{ flex: 1, overflowY: 'auto', px: 2, pb: 2 }}>
         <Stack spacing={1}>
-          {filtered.length === 0 ? (
+          {loading && messages.length === 0 ? (
+            // Skeleton rows sized like real conversation cards so the list
+            // doesn't shift when data arrives
+            Array.from({ length: 4 }, (_, i) => (
+              <Paper
+                key={i}
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2.5,
+                  border: `1.5px solid ${alpha(brand[300], 0.25)}`,
+                  bgcolor: alpha(brand[50], 0.2),
+                }}
+              >
+                <Stack direction="row" alignItems="center" spacing={1.5}>
+                  <Skeleton variant="circular" width={38} height={38} />
+                  <Box sx={{ flex: 1 }}>
+                    <Skeleton variant="text" width="50%" sx={{ fontSize: '0.85rem' }} />
+                    <Skeleton variant="text" width="75%" sx={{ fontSize: '0.75rem' }} />
+                  </Box>
+                </Stack>
+              </Paper>
+            ))
+          ) : filtered.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <ChatBubbleOutlineIcon sx={{ fontSize: '2rem', color: brand[300], mb: 0.5 }} />
               <Typography sx={{ fontWeight: 700, color: brand[600], fontSize: '0.85rem' }}>

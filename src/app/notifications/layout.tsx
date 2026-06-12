@@ -96,7 +96,6 @@ export default function NotificationsLayout({ children }: { children: React.Reac
     router.push('/login');
     return null;
   }
-  if (dmLoading) return <Loading />;
 
   // The dialog only handles first-time permission; everything after that
   // (failed save, dropped subscription, dismissed dialog) goes through the
@@ -179,7 +178,12 @@ export default function NotificationsLayout({ children }: { children: React.Reac
               )}
             </Box>
           )}
-          <ConversationList messages={messages} userId={user.id} selectedId={selectedId} />
+          <ConversationList
+            messages={messages}
+            userId={user.id}
+            selectedId={selectedId}
+            loading={dmLoading}
+          />
         </Box>
 
         {/* Right panel — chat or empty state */}

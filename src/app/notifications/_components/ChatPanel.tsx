@@ -4,15 +4,23 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import SendIcon from '@mui/icons-material/Send';
-import { Avatar, Box, Button, Chip, IconButton, TextField, Typography } from '@mui/material';
+import {
+  Avatar,
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  Skeleton,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { groupByDate, QUICK_MESSAGES_MEMBER } from '@/components/Group/MessageThread/constants';
+import { groupByDate } from '@/components/Group/MessageThread/constants';
 import { MessageBubble } from '@/components/Group/MessageThread/MessageBubble';
 import { TypingBubble } from '@/components/Group/MessageThread/TypingBubble';
-import { Loading } from '@/components/Loading';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
@@ -33,9 +41,31 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const { user } = useAuth();
-  const { messages, sendMessage, markAllAsRead, toggleReaction, loading } =
-    useDirectMessages(recipientId);
-  const { refetch: refetchGlobal } = useDirectMessagesCtx();
+  const {
+    messages,
+    sendMessage,
+    markAllAsRead,
+    toggleReaction,
+    loading,
+    hasMore,
+    loadingOlder,
+    loadOlder,
+  } = useDirectMessages(recipientId);
+  const { messages: globalMessages, refetch: refetchGlobal } = useDirectMessagesCtx();
+
+  // While this thread loads, show whatever the global provider already has for
+  // this conversation — switching chats from the list paints instantly instead
+  // of waiting a network round trip.
+  const seededMessages = useMemo(
+    () =>
+      loading
+        ? globalMessages.filter(
+            (m) => m.sender_id === recipientId || m.recipient_id === recipientId,
+          )
+        : null,
+    [loading, globalMessages, recipientId],
+  );
+  const displayMessages = loading && seededMessages?.length ? seededMessages : messages;
 
   const tick = useTick();
   const { isRecipientTyping, sendTyping } = useTypingIndicator(recipientId);
@@ -75,19 +105,42 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
     if (el) el.scrollTop = el.scrollHeight;
   }, []);
 
+  // Restores the viewport after older messages are prepended: position is
+  // captured before the fetch and re-applied against the new scrollHeight.
+  const pendingPrependRef = useRef<{ height: number; top: number } | null>(null);
+
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
     pinnedRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-  }, []);
+    // Near the top — pull the next page of history (endless scroll-back)
+    if (el.scrollTop < 80 && hasMore && !loadingOlder && !loading && !pendingPrependRef.current) {
+      pendingPrependRef.current = { height: el.scrollHeight, top: el.scrollTop };
+      void loadOlder().then((added) => {
+        // Nothing rendered means no restore effect will consume the marker
+        if (!added) pendingPrependRef.current = null;
+      });
+    }
+  }, [hasMore, loadingOlder, loading, loadOlder]);
 
   // Jump to the newest message when the thread loads or a new message arrives,
   // unless the user has scrolled up to read history.
-  const latestMsgId = messages[0]?.id;
+  const latestMsgId = displayMessages[0]?.id;
+  const oldestMsgId = displayMessages[displayMessages.length - 1]?.id;
   useLayoutEffect(() => {
-    if (loading || !latestMsgId) return;
+    if (!latestMsgId) return;
     if (pinnedRef.current) scrollToBottom();
-  }, [loading, latestMsgId, scrollToBottom]);
+  }, [latestMsgId, scrollToBottom]);
+
+  // After a page of history renders, put the viewport back where it was so
+  // the prepended messages don't yank the visible thread downward.
+  useLayoutEffect(() => {
+    const pending = pendingPrependRef.current;
+    const el = scrollRef.current;
+    if (!pending || !el) return;
+    pendingPrependRef.current = null;
+    el.scrollTop = pending.top + (el.scrollHeight - pending.height);
+  }, [oldestMsgId]);
 
   // Stay pinned while content shifts after the initial scroll (the on-screen
   // keyboard resizing the viewport, the typing indicator appearing) — but
@@ -110,6 +163,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
   useEffect(() => {
     pinnedRef.current = true;
     openedAtRef.current = Date.now();
+    pendingPrependRef.current = null;
   }, [recipientId]);
 
   // Mark messages as read when unread messages appear in the open conversation
@@ -141,8 +195,8 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
     e.target.value = '';
   };
 
-  const handleSend = async (msg?: string) => {
-    const message = msg ?? text.trim();
+  const handleSend = async () => {
+    const message = text.trim();
     if ((!message && !imageFile) || sending) return;
     setSending(true);
     try {
@@ -177,9 +231,11 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
     }
   };
 
-  if (loading) return <Loading />;
-
-  const sorted = [...messages].reverse();
+  // The chrome (header, input bar) always renders immediately — only the
+  // message area waits for data. Swapping a full-screen spinner for the whole
+  // panel was a large layout shift on every open.
+  const showSkeleton = loading && displayMessages.length === 0;
+  const sorted = [...displayMessages].reverse();
   const groups = groupByDate(sorted);
 
   return (
@@ -264,7 +320,42 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
             minHeight: '100%',
           }}
         >
-          {sorted.length === 0 ? (
+          {loadingOlder && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+              <CircularProgress size={20} sx={{ color: brand[400] }} />
+            </Box>
+          )}
+          {showSkeleton ? (
+            <Box
+              sx={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end',
+                gap: 1.5,
+              }}
+            >
+              {[
+                { w: '55%', h: 44, mine: false },
+                { w: '40%', h: 36, mine: true },
+                { w: '60%', h: 64, mine: false },
+                { w: '45%', h: 36, mine: true },
+                { w: '50%', h: 44, mine: false },
+              ].map((s, i) => (
+                <Skeleton
+                  key={i}
+                  variant="rounded"
+                  width={s.w}
+                  height={s.h}
+                  sx={{
+                    alignSelf: s.mine ? 'flex-end' : 'flex-start',
+                    borderRadius: 4,
+                    bgcolor: alpha(brand[200], 0.35),
+                  }}
+                />
+              ))}
+            </Box>
+          ) : sorted.length === 0 ? (
             <Box
               sx={{
                 flex: 1,
@@ -331,45 +422,6 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
           backdropFilter: 'blur(8px)',
         }}
       >
-        {/* Quick replies (members) */}
-        {isMemberAccount && (
-          <Box
-            sx={{
-              px: 2,
-              pt: 1,
-              pb: 0.5,
-              display: 'flex',
-              gap: 0.5,
-              overflowX: 'auto',
-              WebkitOverflowScrolling: 'touch',
-              scrollbarWidth: 'none',
-              '&::-webkit-scrollbar': { display: 'none' },
-            }}
-          >
-            {QUICK_MESSAGES_MEMBER.map(({ emoji, text: qm }) => (
-              <Chip
-                key={qm}
-                label={`${emoji} ${qm}`}
-                size="small"
-                variant="outlined"
-                onClick={() => void handleSend(qm)}
-                disabled={sending}
-                sx={{
-                  borderRadius: '14px',
-                  fontWeight: 600,
-                  fontSize: '0.72rem',
-                  height: 32,
-                  flexShrink: 0,
-                  borderColor: alpha(brand[300], 0.5),
-                  color: brand[700],
-                  bgcolor: alpha(brand[50], 0.5),
-                  '&:hover': { bgcolor: brand[100] },
-                }}
-              />
-            ))}
-          </Box>
-        )}
-
         {/* Image preview */}
         {imagePreview && (
           <Box sx={{ px: 2, pt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
