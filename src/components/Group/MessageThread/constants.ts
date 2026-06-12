@@ -1,13 +1,5 @@
 import type { DirectMessage } from '@/hooks/useDirectMessages';
 
-export const QUICK_MESSAGES_MEMBER = [
-  { emoji: '🎉', text: 'I finished studying!' },
-  { emoji: '📚', text: 'Can I have a new deck?' },
-  { emoji: '☀️', text: 'Good morning!' },
-  { emoji: '🆘', text: 'I need help!' },
-  { emoji: '💕', text: 'Thank you!' },
-];
-
 /** Return a human-friendly date label for grouping */
 export function dateLabel(dateStr: string): string {
   const date = new Date(dateStr);
