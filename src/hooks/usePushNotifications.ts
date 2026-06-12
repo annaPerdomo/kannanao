@@ -33,31 +33,29 @@ async function getServiceWorkerRegistration(
   if (existing?.active) return existing;
   // No usable registration. iOS home-screen web apps sometimes launch without
   // next-pwa's auto-registration ever running, and waiting on .ready alone
-  // hangs forever in that state — so register the worker ourselves.
-  let registerError: unknown = null;
+  // hangs forever in that state — so register the worker ourselves. A throw
+  // here is deterministic (redirected /sw.js, MIME mismatch) — fail fast
+  // instead of burning the full timeout.
   if (!existing) {
-    try {
-      const reg = await navigator.serviceWorker.register('/sw.js');
-      if (reg.active) return reg;
-    } catch (err) {
-      registerError = err;
-    }
+    const reg = await navigator.serviceWorker.register('/sw.js').catch((err: unknown) => {
+      throw new Error(
+        `Service worker registration failed on ${window.location.host}: ${String(err)}`,
+      );
+    });
+    if (reg.active) return reg;
   }
-  // Wait for the registered worker to activate. The error carries the running
-  // host and the registration failure (if any) — e.g. a PWA installed from the
-  // apex domain gets a redirected /sw.js, which browsers reject outright.
+  // Wait for the registered worker to activate
   const ready = navigator.serviceWorker.ready;
   const timeout = new Promise<never>((_, reject) =>
-    setTimeout(() => {
-      const detail = registerError
-        ? ` Registration failed: ${String(registerError)}.`
-        : ' Registration never completed.';
-      reject(
-        new Error(
-          `Service worker not ready on ${window.location.host}.${detail} Please try again.`,
+    setTimeout(
+      () =>
+        reject(
+          new Error(
+            `Service worker not ready on ${window.location.host}. Registration never completed. Please try again.`,
+          ),
         ),
-      );
-    }, timeoutMs),
+      timeoutMs,
+    ),
   );
   return Promise.race([ready, timeout]);
 }
@@ -65,6 +63,8 @@ async function getServiceWorkerRegistration(
 /** Save a subscription to the server. Returns true when the server accepted it. */
 async function saveSubscription(sub: PushSubscription): Promise<boolean> {
   const json = sub.toJSON();
+  // The server requires both encryption keys — don't POST a payload it will 400
+  if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) return false;
   const headers = await authHeaders();
   const res = await fetch('/api/push/subscribe', {
     method: 'POST',
@@ -74,16 +74,54 @@ async function saveSubscription(sub: PushSubscription): Promise<boolean> {
   return res.ok;
 }
 
-// Sync the browser subscription to the server at most once per page load —
-// the hook mounts in several places and the route is rate limited.
-let syncedThisLoad = false;
+// Result of this page load's server sync (null = not attempted yet). The hook
+// mounts in several places and the route is rate limited, so the sync runs
+// once and later mounts reuse the outcome — including failures, so a failed
+// save doesn't masquerade as subscribed.
+let syncResultThisLoad: boolean | null = null;
+
+/** Test-only: clears module-level sync state that would leak between tests. */
+export function __resetPushSyncForTests(): void {
+  syncResultThisLoad = null;
+}
+
+// Last verified subscription state. Lets the UI decide instantly whether to
+// show the enable prompt — checking the real state needs an active service
+// worker, which can take a minute to install on a device's first visit.
+const SUBSCRIBED_CACHE_KEY = 'kannanao:push-subscribed';
+
+function readCachedSubscribed(): boolean {
+  if (typeof window === 'undefined' || typeof Notification === 'undefined') return false;
+  try {
+    // Only trust the cache while permission is still granted
+    return (
+      localStorage.getItem(SUBSCRIBED_CACHE_KEY) === '1' && Notification.permission === 'granted'
+    );
+  } catch {
+    return false;
+  }
+}
+
+function cacheSubscribed(value: boolean): void {
+  try {
+    if (value) localStorage.setItem(SUBSCRIBED_CACHE_KEY, '1');
+    else localStorage.removeItem(SUBSCRIBED_CACHE_KEY);
+  } catch {
+    // localStorage unavailable
+  }
+}
 
 export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubscribed, setIsSubscribedState] = useState(readCachedSubscribed);
   const [isSupported, setIsSupported] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
+
+  const setIsSubscribed = useCallback((value: boolean) => {
+    setIsSubscribedState(value);
+    cacheSubscribed(value);
+  }, []);
 
   useEffect(() => {
     const supported =
@@ -111,12 +149,10 @@ export function usePushNotifications() {
           // Don't trust that the server still has this subscription — the
           // browser keeps it even when the original save failed or the row
           // was lost. Re-upsert it (idempotent) so the server can push again.
-          if (syncedThisLoad) {
-            setIsSubscribed(true);
-            return;
+          if (syncResultThisLoad === null) {
+            syncResultThisLoad = await saveSubscription(sub);
           }
-          syncedThisLoad = true;
-          setIsSubscribed(await saveSubscription(sub));
+          setIsSubscribed(syncResultThisLoad);
           return;
         }
 
@@ -131,8 +167,8 @@ export function usePushNotifications() {
             applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
           });
 
-          syncedThisLoad = true;
-          setIsSubscribed(await saveSubscription(newSub));
+          syncResultThisLoad = await saveSubscription(newSub);
+          setIsSubscribed(syncResultThisLoad);
         }
       } catch {
         // Silently fail — user can manually subscribe via the prompt
@@ -142,7 +178,7 @@ export function usePushNotifications() {
     };
 
     void checkSubscription();
-  }, []);
+  }, [setIsSubscribed]);
 
   const subscribe = useCallback(async () => {
     setLoading(true);
@@ -152,8 +188,7 @@ export function usePushNotifications() {
         throw new Error('Push is not configured (missing VAPID public key).');
       }
 
-      // Start fetching auth headers and SW registration in parallel while we wait for permission
-      const headersPromise = authHeaders();
+      // Start the SW registration in parallel while we wait for permission
       const regPromise = getServiceWorkerRegistration();
 
       const perm = await Notification.requestPermission();
@@ -166,31 +201,19 @@ export function usePushNotifications() {
         applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
       });
 
-      // Mark as subscribed immediately so the modal can close
-      setIsSubscribed(true);
-
-      // Save to server in the background
-      const json = sub.toJSON();
-      const headers = await headersPromise;
-      fetch('/api/push/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...headers },
-        body: JSON.stringify({
-          endpoint: json.endpoint,
-          keys: json.keys,
-        }),
-      })
-        .then((res) => {
-          if (!res.ok) setIsSubscribed(false);
-        })
-        .catch(() => {
-          // If server save fails, revert so the user can retry
-          setIsSubscribed(false);
-        });
+      // Save to the server before reporting success — a failed save means
+      // pushes can't be delivered, and callers surface thrown errors to the
+      // user, whereas a background failure would be silent.
+      const saved = await saveSubscription(sub);
+      syncResultThisLoad = saved;
+      setIsSubscribed(saved);
+      if (!saved) {
+        throw new Error('Could not save the subscription to the server. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setIsSubscribed]);
 
   const unsubscribe = useCallback(async () => {
     setLoading(true);
@@ -210,7 +233,7 @@ export function usePushNotifications() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setIsSubscribed]);
 
   return { permission, isSubscribed, isSupported, loading, initializing, subscribe, unsubscribe };
 }

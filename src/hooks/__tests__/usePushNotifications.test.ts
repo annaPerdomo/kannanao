@@ -33,17 +33,24 @@ const mockServiceWorkerRegistration = {
   pushManager: mockPushManager,
 };
 
-import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { __resetPushSyncForTests, usePushNotifications } from '@/hooks/usePushNotifications';
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('usePushNotifications', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+    __resetPushSyncForTests();
     mockGetSession.mockResolvedValue({
       data: { session: { access_token: 'tok123' } },
     });
     mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
+    // Re-pin default implementations (clearAllMocks clears calls, not impls
+    // set inside individual tests)
+    mockPushManager.getSubscription.mockResolvedValue(null);
+    mockPushManager.subscribe.mockResolvedValue(mockSubscription);
+    mockSubscription.unsubscribe.mockResolvedValue(true);
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY =
       'BMzxvStvWYWHYO8PY8BzJfdsJ1f2rZUeVdmHD4owqg8dcTfH2Aik1DYMo_GKY4LTqkLX7xI1QALGfZBcF8Z0oTw';
 
@@ -105,6 +112,103 @@ describe('usePushNotifications', () => {
     expect(postCall[1].method).toBe('POST');
   });
 
+  it('re-syncs an existing browser subscription to the server on mount', async () => {
+    Object.defineProperty(globalThis, 'Notification', {
+      value: { permission: 'granted', requestPermission: vi.fn() },
+      writable: true,
+      configurable: true,
+    });
+    mockPushManager.getSubscription.mockResolvedValue(mockSubscription);
+
+    const { result } = renderHook(() => usePushNotifications());
+    await waitFor(() => expect(result.current.isSubscribed).toBe(true));
+
+    const postCall = mockFetch.mock.calls.find((c) => c[0] === '/api/push/subscribe');
+    expect(postCall).toBeDefined();
+    expect(JSON.parse(postCall![1].body).endpoint).toBe(mockSubscription.endpoint);
+  });
+
+  it('stays unsubscribed when the mount sync fails, so the prompt can reappear', async () => {
+    Object.defineProperty(globalThis, 'Notification', {
+      value: { permission: 'granted', requestPermission: vi.fn() },
+      writable: true,
+      configurable: true,
+    });
+    mockPushManager.getSubscription.mockResolvedValue(mockSubscription);
+    mockFetch.mockResolvedValue({ ok: false, json: async () => ({}) });
+
+    const { result } = renderHook(() => usePushNotifications());
+    await waitFor(() => expect(result.current.initializing).toBe(false));
+    expect(result.current.isSubscribed).toBe(false);
+    expect(localStorage.getItem('kannanao:push-subscribed')).toBeNull();
+  });
+
+  it('registers the service worker itself when none exists', async () => {
+    const register = vi.fn().mockResolvedValue({
+      active: {},
+      pushManager: mockPushManager,
+    });
+    Object.defineProperty(navigator, 'serviceWorker', {
+      value: {
+        controller: null,
+        getRegistration: vi.fn().mockResolvedValue(undefined),
+        register,
+        ready: new Promise(() => {}),
+      },
+      writable: true,
+      configurable: true,
+    });
+
+    const { result } = renderHook(() => usePushNotifications());
+    await waitFor(() => expect(result.current.initializing).toBe(false));
+    expect(register).toHaveBeenCalledWith('/sw.js');
+  });
+
+  it('subscribe() fails fast when service worker registration is rejected', async () => {
+    (Notification.requestPermission as ReturnType<typeof vi.fn>).mockResolvedValue('granted');
+    Object.defineProperty(navigator, 'serviceWorker', {
+      value: {
+        controller: null,
+        getRegistration: vi.fn().mockResolvedValue(undefined),
+        register: vi.fn().mockRejectedValue(new TypeError('Script redirect not allowed')),
+        ready: new Promise(() => {}),
+      },
+      writable: true,
+      configurable: true,
+    });
+
+    const { result } = renderHook(() => usePushNotifications());
+    await waitFor(() => expect(result.current.isSupported).toBe(true));
+
+    await expect(
+      act(async () => {
+        await result.current.subscribe();
+      }),
+    ).rejects.toThrow(/registration failed/i);
+  });
+
+  it('starts subscribed from cache when permission is granted', async () => {
+    localStorage.setItem('kannanao:push-subscribed', '1');
+    Object.defineProperty(globalThis, 'Notification', {
+      value: { permission: 'granted', requestPermission: vi.fn() },
+      writable: true,
+      configurable: true,
+    });
+
+    const { result } = renderHook(() => usePushNotifications());
+    // Known instantly, before any service worker check resolves
+    expect(result.current.isSubscribed).toBe(true);
+    await waitFor(() => expect(result.current.initializing).toBe(false));
+  });
+
+  it('ignores the subscribed cache when permission is not granted', async () => {
+    localStorage.setItem('kannanao:push-subscribed', '1');
+
+    const { result } = renderHook(() => usePushNotifications());
+    expect(result.current.isSubscribed).toBe(false);
+    await waitFor(() => expect(result.current.initializing).toBe(false));
+  });
+
   it('subscribe() throws when VAPID public key is missing', async () => {
     delete process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
@@ -147,11 +251,11 @@ describe('usePushNotifications', () => {
     expect(mockSubscription.unsubscribe).toHaveBeenCalled();
     expect(result.current.isSubscribed).toBe(false);
 
-    // Verify it posted to the server
-    const postCall = mockFetch.mock.calls[0];
-    expect(postCall[0]).toBe('/api/push/unsubscribe');
-    expect(postCall[1].method).toBe('POST');
-    const body = JSON.parse(postCall[1].body);
+    // Verify it posted to the server (the mount-time sync POSTs first)
+    const postCall = mockFetch.mock.calls.find((c) => c[0] === '/api/push/unsubscribe');
+    expect(postCall).toBeDefined();
+    expect(postCall![1].method).toBe('POST');
+    const body = JSON.parse(postCall![1].body);
     expect(body.endpoint).toBe('https://push.example.com/sub1');
   });
 });
