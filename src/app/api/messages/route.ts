@@ -114,10 +114,10 @@ export async function POST(req: NextRequest) {
   // serverless function alive until the push completes — a bare floating
   // promise gets frozen with the lambda and often never delivers.
   const senderName = sender.display_name || sender.username;
-  const pushBody = message?.trim() ? message.trim().slice(0, 100) : '📷 Photo';
+  const pushBody = message?.trim() ? message.trim().slice(0, 100) : '📷 Sent you a photo';
   after(
     sendPushToUser(recipientId, {
-      title: `${senderName}`,
+      title: `💌 ${senderName} has sent you a message!`,
       body: pushBody,
       url: `/notifications/${sender.id}`,
     }).catch((err) => {
