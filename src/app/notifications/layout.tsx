@@ -1,7 +1,7 @@
 'use client';
 
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -65,6 +65,25 @@ export default function NotificationsLayout({ children }: { children: React.Reac
     }
   }, []);
 
+  // Banner fallback: unlike the one-time dialog, this stays available whenever
+  // notifications aren't actually working, and it surfaces the real error —
+  // iOS rejects silent re-subscribes, so a visible tap target is the only
+  // reliable way back in once the dialog has been dismissed.
+  const [pushError, setPushError] = useState<string | null>(null);
+  const [pushJustEnabled, setPushJustEnabled] = useState(false);
+  const { subscribe: pushSubscribe } = push;
+
+  const handleEnablePush = useCallback(async () => {
+    setPushError(null);
+    try {
+      await pushSubscribe();
+      setPushJustEnabled(true);
+    } catch (err) {
+      const e = err as Error;
+      setPushError(`${e?.name ?? 'Error'}: ${e?.message ?? String(err)}`);
+    }
+  }, [pushSubscribe]);
+
   if (authLoading) return <Loading />;
   if (!user) {
     router.push('/login');
@@ -72,12 +91,18 @@ export default function NotificationsLayout({ children }: { children: React.Reac
   }
   if (dmLoading) return <Loading />;
 
+  // The dialog only handles first-time permission; everything after that
+  // (failed save, dropped subscription, dismissed dialog) goes through the
+  // persistent banner below, which ignores the dismissed flag.
   const showPushPrompt =
+    push.isSupported && !push.initializing && push.permission === 'default' && !pushPromptDismissed;
+
+  const showPushBanner =
     push.isSupported &&
     !push.initializing &&
-    push.permission !== 'denied' &&
-    (!push.isSubscribed || push.permission === 'default') &&
-    !pushPromptDismissed;
+    (!push.isSubscribed || pushJustEnabled) &&
+    // While the first-time dialog is available, don't double up with the banner
+    (push.permission !== 'default' || pushPromptDismissed);
 
   return (
     <>
@@ -106,6 +131,45 @@ export default function NotificationsLayout({ children }: { children: React.Reac
             zIndex: 1,
           }}
         >
+          {showPushBanner && (
+            <Box sx={{ px: 2, pt: 1.5 }}>
+              {pushJustEnabled && push.isSubscribed ? (
+                <Alert severity="success" sx={{ borderRadius: 2.5, fontSize: '0.8rem' }}>
+                  Notifications are on! 🎉
+                </Alert>
+              ) : push.permission === 'denied' ? (
+                <Alert severity="warning" sx={{ borderRadius: 2.5, fontSize: '0.8rem' }}>
+                  Notifications are blocked for Kannanao — turn them on in your device Settings,
+                  then come back here.
+                </Alert>
+              ) : (
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<NotificationsActiveIcon />}
+                  onClick={() => void handleEnablePush()}
+                  disabled={push.loading}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    borderRadius: 2.5,
+                    color: brand[700],
+                    borderColor: alpha(brand[400], 0.5),
+                    bgcolor: alpha(brand[50], 0.6),
+                    '&:hover': { bgcolor: alpha(brand[100], 0.6) },
+                  }}
+                >
+                  {push.loading ? 'Turning on…' : 'Turn on notifications'}
+                </Button>
+              )}
+              {pushError && (
+                <Alert severity="error" sx={{ mt: 1, borderRadius: 2.5, fontSize: '0.75rem' }}>
+                  {pushError}
+                </Alert>
+              )}
+            </Box>
+          )}
           <ConversationList messages={messages} userId={user.id} selectedId={selectedId} />
         </Box>
 
