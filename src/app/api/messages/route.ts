@@ -114,13 +114,13 @@ export async function POST(req: NextRequest) {
   // serverless function alive until the push completes — a bare floating
   // promise gets frozen with the lambda and often never delivers.
   const senderName = sender.display_name || sender.username;
-  const pushBody = message?.trim() ? message.trim().slice(0, 100) : '📷 Sent you a photo';
+  const text = message?.trim();
   after(
     sendPushToUser(recipientId, {
       // Keep the title short — iOS truncates around 30 characters and
       // already appends "from Kannanao" with the app icon
-      title: `${senderName} sent you a message! 🌸`,
-      body: pushBody,
+      title: `${senderName} sent you a ${text ? 'message' : 'photo'}! 🌸`,
+      body: text ? text.slice(0, 100) : '📷',
       url: `/notifications/${sender.id}`,
     }).catch((err) => {
       logger.error('Push notification failed', { error: String(err) });

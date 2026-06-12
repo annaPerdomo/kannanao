@@ -53,7 +53,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
   const touchingRef = useRef(false);
   // Messages that existed when the thread was opened render without the
   // slide-in animation; only genuinely new arrivals animate.
-  const openedAtRef = useRef<number>(Number.MAX_SAFE_INTEGER);
+  const openedAtRef = useRef<number>(Date.now());
 
   const initial = recipientName.charAt(0).toUpperCase();
 
@@ -105,19 +105,12 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
     return () => ro.disconnect();
   }, [loading, scrollToBottom]);
 
-  // Re-pin when switching conversations
+  // Re-pin and re-stamp the open time when switching conversations — anything
+  // created before this moment is history and renders without animation.
   useEffect(() => {
     pinnedRef.current = true;
-    openedAtRef.current = Number.MAX_SAFE_INTEGER;
+    openedAtRef.current = Date.now();
   }, [recipientId]);
-
-  // Stamp the moment history finished loading: everything already present
-  // renders static; only messages newer than this animate in.
-  useEffect(() => {
-    if (!loading && openedAtRef.current === Number.MAX_SAFE_INTEGER) {
-      openedAtRef.current = Date.now();
-    }
-  }, [loading]);
 
   // Mark messages as read when unread messages appear in the open conversation
   useEffect(() => {
@@ -246,6 +239,9 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
           touchingRef.current = true;
         }}
         onTouchEnd={() => {
+          touchingRef.current = false;
+        }}
+        onTouchCancel={() => {
           touchingRef.current = false;
         }}
         sx={{

@@ -84,6 +84,13 @@ export default function NotificationsLayout({ children }: { children: React.Reac
     }
   }, [pushSubscribe]);
 
+  // Let the success confirmation dismiss itself instead of pinning the banner forever
+  useEffect(() => {
+    if (!pushJustEnabled) return;
+    const timer = setTimeout(() => setPushJustEnabled(false), 5000);
+    return () => clearTimeout(timer);
+  }, [pushJustEnabled]);
+
   if (authLoading) return <Loading />;
   if (!user) {
     router.push('/login');

@@ -52,9 +52,11 @@ export function MessageBubble({
         alignItems: 'flex-end',
         gap: 0.75,
         ...(animate && {
-          animation: 'msgIn 0.3s ease-out both',
+          // Direction-specific keyframe names: a shared name would be
+          // overwritten by whichever bubble variant renders last
+          animation: `${isMine ? 'msgInRight' : 'msgInLeft'} 0.3s ease-out both`,
           animationDelay: `${Math.min(index * 0.04, 0.4)}s`,
-          '@keyframes msgIn': {
+          [`@keyframes ${isMine ? 'msgInRight' : 'msgInLeft'}`]: {
             from: {
               opacity: 0,
               transform: `translateX(${isMine ? '12px' : '-12px'}) scale(0.97)`,
@@ -109,6 +111,8 @@ export function MessageBubble({
                 component="img"
                 src={message.image_url}
                 alt="Shared photo"
+                loading="lazy"
+                decoding="async"
                 sx={{
                   width: 240,
                   maxWidth: '100%',
