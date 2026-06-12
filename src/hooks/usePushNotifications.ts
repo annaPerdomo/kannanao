@@ -31,7 +31,18 @@ async function getServiceWorkerRegistration(
   // but only if it has an active worker (pushManager.subscribe requires an active SW).
   const existing = await navigator.serviceWorker.getRegistration();
   if (existing?.active) return existing;
-  // Last resort: wait for next-pwa to finish registration
+  // No usable registration. iOS home-screen web apps sometimes launch without
+  // next-pwa's auto-registration ever running, and waiting on .ready alone
+  // hangs forever in that state — so register the worker ourselves.
+  if (!existing) {
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      if (reg.active) return reg;
+    } catch {
+      // fall through to the .ready wait below
+    }
+  }
+  // Wait for the registered worker to activate
   const ready = navigator.serviceWorker.ready;
   const timeout = new Promise<never>((_, reject) =>
     setTimeout(
