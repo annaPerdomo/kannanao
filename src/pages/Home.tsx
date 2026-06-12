@@ -3,12 +3,12 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckIcon from '@mui/icons-material/Check';
 import DragIndicatorRoundedIcon from '@mui/icons-material/DragIndicatorRounded';
-import FilterVintageIcon from '@mui/icons-material/FilterVintage';
 import NightsStayIcon from '@mui/icons-material/NightsStay';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import TuneIcon from '@mui/icons-material/Tune';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
+import WbTwilightIcon from '@mui/icons-material/WbTwilight';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -81,7 +81,7 @@ function useHasOpened(open: boolean): boolean {
 
 function getGreeting(name: string): { text: string; icon: React.ReactNode } {
   const h = new Date().getHours();
-  if (h < 12) return { text: `Good morning, ${name}!`, icon: <FilterVintageIcon /> };
+  if (h < 12) return { text: `Good morning, ${name}!`, icon: <WbTwilightIcon /> };
   if (h < 17) return { text: `Hey there, ${name}!`, icon: <WbSunnyIcon /> };
   return { text: `Good evening, ${name}!`, icon: <NightsStayIcon /> };
 }
@@ -762,7 +762,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
       sx={{
         maxWidth: 1600,
         mx: 'auto',
-        px: { xs: 0.5, sm: 1, lg: 1 },
+        px: { xs: 2, sm: 2, lg: 1 },
         py: { xs: 3, sm: 5 },
       }}
     >

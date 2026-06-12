@@ -1,8 +1,10 @@
 'use client';
 
 import Box from '@mui/material/Box';
+import Drawer from '@mui/material/Drawer';
 import Popover from '@mui/material/Popover';
 import { alpha, useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 import EmojiPicker, { type EmojiClickData, Theme } from '@/components/LazyEmojiPicker';
 
@@ -19,7 +21,86 @@ export function EmojiPickerPopover({
   onSelect,
   onRemove,
 }: EmojiPickerPopoverProps) {
-  const { brand, accent } = useTheme().palette;
+  const theme = useTheme();
+  const { brand, accent } = theme.palette;
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const pickerStyles = {
+    '--epr-bg-color': brand[50],
+    '--epr-category-label-bg-color': brand[100],
+    '--epr-hover-bg-color': alpha(brand[300], 0.25),
+    '--epr-focus-bg-color': alpha(brand[300], 0.35),
+    '--epr-highlight-color': brand[400],
+    '--epr-search-border-color': alpha(brand[400], 0.4),
+    '--epr-header-overlay-color': brand[50],
+    '--epr-category-icon-active-color': accent[500],
+    '--epr-search-input-bg-color': '#fff',
+  };
+
+  const removeButton = onRemove && (
+    <Box
+      sx={{
+        px: 1.5,
+        py: 1,
+        borderTop: `1px solid ${alpha(brand[300], 0.25)}`,
+        display: 'flex',
+        justifyContent: 'center',
+      }}
+    >
+      <Box
+        component="button"
+        onClick={() => {
+          onRemove();
+          onClose();
+        }}
+        sx={{
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          color: brand[500],
+          background: 'none',
+          border: `1.5px solid ${alpha(brand[400], 0.35)}`,
+          borderRadius: 2,
+          px: 2,
+          py: 0.5,
+          cursor: 'pointer',
+          transition: 'all 0.12s ease',
+          '&:hover': { bgcolor: alpha(brand[100], 0.6), borderColor: brand[400] },
+        }}
+      >
+        Remove emoji
+      </Box>
+    </Box>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer
+        anchor="bottom"
+        open={Boolean(anchorEl)}
+        onClose={onClose}
+        PaperProps={{
+          sx: {
+            borderRadius: '16px 16px 0 0',
+            overflow: 'hidden',
+          },
+        }}
+      >
+        <Box sx={{ ...pickerStyles, '--epr-emoji-size': '22px' }}>
+          <EmojiPicker
+            theme={Theme.LIGHT}
+            onEmojiClick={(data: EmojiClickData) => {
+              onSelect(data.emoji);
+              onClose();
+            }}
+            lazyLoadEmojis
+            width="100%"
+            height={340}
+          />
+        </Box>
+        {removeButton}
+      </Drawer>
+    );
+  }
 
   return (
     <Popover
@@ -31,15 +112,7 @@ export function EmojiPickerPopover({
     >
       <Box
         sx={{
-          '--epr-bg-color': brand[50],
-          '--epr-category-label-bg-color': brand[100],
-          '--epr-hover-bg-color': alpha(brand[300], 0.25),
-          '--epr-focus-bg-color': alpha(brand[300], 0.35),
-          '--epr-highlight-color': brand[400],
-          '--epr-search-border-color': alpha(brand[400], 0.4),
-          '--epr-header-overlay-color': brand[50],
-          '--epr-category-icon-active-color': accent[500],
-          '--epr-search-input-bg-color': '#fff',
+          ...pickerStyles,
           '--epr-emoji-size': '24px',
           borderRadius: 3,
           overflow: 'hidden',
@@ -54,40 +127,7 @@ export function EmojiPickerPopover({
           lazyLoadEmojis
         />
       </Box>
-      {onRemove && (
-        <Box
-          sx={{
-            px: 1.5,
-            py: 1,
-            borderTop: `1px solid ${alpha(brand[300], 0.25)}`,
-            display: 'flex',
-            justifyContent: 'center',
-          }}
-        >
-          <Box
-            component="button"
-            onClick={() => {
-              onRemove();
-              onClose();
-            }}
-            sx={{
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              color: brand[500],
-              background: 'none',
-              border: `1.5px solid ${alpha(brand[400], 0.35)}`,
-              borderRadius: 2,
-              px: 2,
-              py: 0.5,
-              cursor: 'pointer',
-              transition: 'all 0.12s ease',
-              '&:hover': { bgcolor: alpha(brand[100], 0.6), borderColor: brand[400] },
-            }}
-          >
-            Remove emoji
-          </Box>
-        </Box>
-      )}
+      {removeButton}
     </Popover>
   );
 }
