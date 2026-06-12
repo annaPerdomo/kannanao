@@ -98,7 +98,7 @@ function detectIOSBrowser(): boolean {
     /iPad|iPhone|iPod/.test(ua) || (ua.includes('Macintosh') && navigator.maxTouchPoints > 1);
   if (!isAppleTouchDevice) return false;
   const standalone =
-    window.matchMedia?.('(display-mode: standalone)').matches ||
+    window.matchMedia?.('(display-mode: standalone)')?.matches ||
     (navigator as { standalone?: boolean }).standalone === true;
   return !standalone;
 }
