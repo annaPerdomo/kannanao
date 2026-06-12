@@ -21,7 +21,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 
 /** Get the service worker registration, falling back to getRegistration() if no controller is active yet. */
 async function getServiceWorkerRegistration(
-  timeoutMs = 10_000,
+  timeoutMs = 30_000,
 ): Promise<ServiceWorkerRegistration> {
   // If a controller already exists, .ready resolves immediately
   if (navigator.serviceWorker.controller) {
@@ -34,21 +34,30 @@ async function getServiceWorkerRegistration(
   // No usable registration. iOS home-screen web apps sometimes launch without
   // next-pwa's auto-registration ever running, and waiting on .ready alone
   // hangs forever in that state — so register the worker ourselves.
+  let registerError: unknown = null;
   if (!existing) {
     try {
       const reg = await navigator.serviceWorker.register('/sw.js');
       if (reg.active) return reg;
-    } catch {
-      // fall through to the .ready wait below
+    } catch (err) {
+      registerError = err;
     }
   }
-  // Wait for the registered worker to activate
+  // Wait for the registered worker to activate. The error carries the running
+  // host and the registration failure (if any) — e.g. a PWA installed from the
+  // apex domain gets a redirected /sw.js, which browsers reject outright.
   const ready = navigator.serviceWorker.ready;
   const timeout = new Promise<never>((_, reject) =>
-    setTimeout(
-      () => reject(new Error('Service worker did not become ready in time. Please try again.')),
-      timeoutMs,
-    ),
+    setTimeout(() => {
+      const detail = registerError
+        ? ` Registration failed: ${String(registerError)}.`
+        : ' Registration never completed.';
+      reject(
+        new Error(
+          `Service worker not ready on ${window.location.host}.${detail} Please try again.`,
+        ),
+      );
+    }, timeoutMs),
   );
   return Promise.race([ready, timeout]);
 }
