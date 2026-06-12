@@ -42,6 +42,22 @@ async function getServiceWorkerRegistration(
   return Promise.race([ready, timeout]);
 }
 
+/** Save a subscription to the server. Returns true when the server accepted it. */
+async function saveSubscription(sub: PushSubscription): Promise<boolean> {
+  const json = sub.toJSON();
+  const headers = await authHeaders();
+  const res = await fetch('/api/push/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...headers },
+    body: JSON.stringify({ endpoint: json.endpoint, keys: json.keys }),
+  });
+  return res.ok;
+}
+
+// Sync the browser subscription to the server at most once per page load —
+// the hook mounts in several places and the route is rate limited.
+let syncedThisLoad = false;
+
 export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -72,7 +88,15 @@ export function usePushNotifications() {
 
         const sub = await reg.pushManager.getSubscription();
         if (sub) {
-          setIsSubscribed(true);
+          // Don't trust that the server still has this subscription — the
+          // browser keeps it even when the original save failed or the row
+          // was lost. Re-upsert it (idempotent) so the server can push again.
+          if (syncedThisLoad) {
+            setIsSubscribed(true);
+            return;
+          }
+          syncedThisLoad = true;
+          setIsSubscribed(await saveSubscription(sub));
           return;
         }
 
@@ -87,15 +111,8 @@ export function usePushNotifications() {
             applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
           });
 
-          const json = newSub.toJSON();
-          const headers = await authHeaders();
-          const res = await fetch('/api/push/subscribe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...headers },
-            body: JSON.stringify({ endpoint: json.endpoint, keys: json.keys }),
-          });
-
-          setIsSubscribed(res.ok);
+          syncedThisLoad = true;
+          setIsSubscribed(await saveSubscription(newSub));
         }
       } catch {
         // Silently fail — user can manually subscribe via the prompt
