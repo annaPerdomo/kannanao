@@ -94,12 +94,14 @@ export default function NotificationsLayout({ children }: { children: React.Reac
   // The dialog only handles first-time permission; everything after that
   // (failed save, dropped subscription, dismissed dialog) goes through the
   // persistent banner below, which ignores the dismissed flag.
-  const showPushPrompt =
-    push.isSupported && !push.initializing && push.permission === 'default' && !pushPromptDismissed;
+  // Neither waits for the service worker check (`initializing`) — installing
+  // the worker can take a minute on a first visit, and the enable UI showing
+  // up that late reads as "notifications don't exist". Permission state and
+  // the cached subscribed flag are known instantly.
+  const showPushPrompt = push.isSupported && push.permission === 'default' && !pushPromptDismissed;
 
   const showPushBanner =
     push.isSupported &&
-    !push.initializing &&
     (!push.isSubscribed || pushJustEnabled) &&
     // While the first-time dialog is available, don't double up with the banner
     (push.permission !== 'default' || pushPromptDismissed);

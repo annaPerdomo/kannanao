@@ -40,6 +40,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 describe('usePushNotifications', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
     mockGetSession.mockResolvedValue({
       data: { session: { access_token: 'tok123' } },
     });
@@ -103,6 +104,28 @@ describe('usePushNotifications', () => {
     const postCall = mockFetch.mock.calls[0];
     expect(postCall[0]).toBe('/api/push/subscribe');
     expect(postCall[1].method).toBe('POST');
+  });
+
+  it('starts subscribed from cache when permission is granted', async () => {
+    localStorage.setItem('kannanao:push-subscribed', '1');
+    Object.defineProperty(globalThis, 'Notification', {
+      value: { permission: 'granted', requestPermission: vi.fn() },
+      writable: true,
+      configurable: true,
+    });
+
+    const { result } = renderHook(() => usePushNotifications());
+    // Known instantly, before any service worker check resolves
+    expect(result.current.isSubscribed).toBe(true);
+    await waitFor(() => expect(result.current.initializing).toBe(false));
+  });
+
+  it('ignores the subscribed cache when permission is not granted', async () => {
+    localStorage.setItem('kannanao:push-subscribed', '1');
+
+    const { result } = renderHook(() => usePushNotifications());
+    expect(result.current.isSubscribed).toBe(false);
+    await waitFor(() => expect(result.current.initializing).toBe(false));
   });
 
   it('subscribe() throws when VAPID public key is missing', async () => {

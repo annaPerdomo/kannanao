@@ -78,12 +78,43 @@ async function saveSubscription(sub: PushSubscription): Promise<boolean> {
 // the hook mounts in several places and the route is rate limited.
 let syncedThisLoad = false;
 
+// Last verified subscription state. Lets the UI decide instantly whether to
+// show the enable prompt — checking the real state needs an active service
+// worker, which can take a minute to install on a device's first visit.
+const SUBSCRIBED_CACHE_KEY = 'kannanao:push-subscribed';
+
+function readCachedSubscribed(): boolean {
+  if (typeof window === 'undefined' || typeof Notification === 'undefined') return false;
+  try {
+    // Only trust the cache while permission is still granted
+    return (
+      localStorage.getItem(SUBSCRIBED_CACHE_KEY) === '1' && Notification.permission === 'granted'
+    );
+  } catch {
+    return false;
+  }
+}
+
+function cacheSubscribed(value: boolean): void {
+  try {
+    if (value) localStorage.setItem(SUBSCRIBED_CACHE_KEY, '1');
+    else localStorage.removeItem(SUBSCRIBED_CACHE_KEY);
+  } catch {
+    // localStorage unavailable
+  }
+}
+
 export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubscribed, setIsSubscribedState] = useState(readCachedSubscribed);
   const [isSupported, setIsSupported] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
+
+  const setIsSubscribed = useCallback((value: boolean) => {
+    setIsSubscribedState(value);
+    cacheSubscribed(value);
+  }, []);
 
   useEffect(() => {
     const supported =
@@ -142,7 +173,7 @@ export function usePushNotifications() {
     };
 
     void checkSubscription();
-  }, []);
+  }, [setIsSubscribed]);
 
   const subscribe = useCallback(async () => {
     setLoading(true);
@@ -190,7 +221,7 @@ export function usePushNotifications() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setIsSubscribed]);
 
   const unsubscribe = useCallback(async () => {
     setLoading(true);
@@ -210,7 +241,7 @@ export function usePushNotifications() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setIsSubscribed]);
 
   return { permission, isSubscribed, isSupported, loading, initializing, subscribe, unsubscribe };
 }

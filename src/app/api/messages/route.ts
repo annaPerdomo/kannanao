@@ -117,7 +117,9 @@ export async function POST(req: NextRequest) {
   const pushBody = message?.trim() ? message.trim().slice(0, 100) : '📷 Sent you a photo';
   after(
     sendPushToUser(recipientId, {
-      title: `💌 ${senderName} has sent you a message!`,
+      // Keep the title short — iOS truncates around 30 characters and
+      // already appends "from Kannanao" with the app icon
+      title: `${senderName} sent you a message! 🌸`,
       body: pushBody,
       url: `/notifications/${sender.id}`,
     }).catch((err) => {
