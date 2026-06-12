@@ -49,6 +49,11 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
   // Whether the view should stay glued to the newest message. True until the
   // user deliberately scrolls up; restored when they scroll back down or send.
   const pinnedRef = useRef(true);
+  // Finger on the list — never programmatically move the scroll mid-gesture
+  const touchingRef = useRef(false);
+  // Messages that existed when the thread was opened render without the
+  // slide-in animation; only genuinely new arrivals animate.
+  const openedAtRef = useRef<number>(Number.MAX_SAFE_INTEGER);
 
   const initial = recipientName.charAt(0).toUpperCase();
 
@@ -84,16 +89,16 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
     if (pinnedRef.current) scrollToBottom();
   }, [loading, latestMsgId, scrollToBottom]);
 
-  // Stay pinned while content shifts after the initial scroll: images loading
-  // in, the typing indicator appearing, or the on-screen keyboard resizing the
-  // viewport would otherwise leave the view stranded above the newest message.
+  // Stay pinned while content shifts after the initial scroll (the on-screen
+  // keyboard resizing the viewport, the typing indicator appearing) — but
+  // never while the user's finger is on the list.
   useEffect(() => {
     if (loading) return;
     const scrollEl = scrollRef.current;
     const contentEl = contentRef.current;
     if (!scrollEl || !contentEl || typeof ResizeObserver === 'undefined') return;
     const ro = new ResizeObserver(() => {
-      if (pinnedRef.current) scrollToBottom();
+      if (pinnedRef.current && !touchingRef.current) scrollToBottom();
     });
     ro.observe(scrollEl);
     ro.observe(contentEl);
@@ -103,7 +108,16 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
   // Re-pin when switching conversations
   useEffect(() => {
     pinnedRef.current = true;
+    openedAtRef.current = Number.MAX_SAFE_INTEGER;
   }, [recipientId]);
+
+  // Stamp the moment history finished loading: everything already present
+  // renders static; only messages newer than this animate in.
+  useEffect(() => {
+    if (!loading && openedAtRef.current === Number.MAX_SAFE_INTEGER) {
+      openedAtRef.current = Date.now();
+    }
+  }, [loading]);
 
   // Mark messages as read when unread messages appear in the open conversation
   useEffect(() => {
@@ -228,12 +242,21 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
       <Box
         ref={scrollRef}
         onScroll={handleScroll}
+        onTouchStart={() => {
+          touchingRef.current = true;
+        }}
+        onTouchEnd={() => {
+          touchingRef.current = false;
+        }}
         sx={{
           flex: 1,
           minHeight: 0,
           overflowY: 'auto',
           px: 2,
           py: 2,
+          // Manual pinning owns the scroll position — don't let the browser's
+          // scroll anchoring fight it when content changes
+          overflowAnchor: 'none',
         }}
       >
         <Box
@@ -293,6 +316,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
                     tick={tick}
                     userId={user?.id}
                     onReact={toggleReaction}
+                    animate={new Date(m.created_at).getTime() > openedAtRef.current}
                   />
                 ))}
               </Box>
@@ -454,8 +478,12 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
             disabled={sending}
             slotProps={{ htmlInput: { maxLength: 500 } }}
             sx={{
+              // Identical to the message-bubble text (the theme defaults
+              // TextField input to 0.9rem / weight 600, which reads bigger)
               '& .MuiInputBase-root': {
                 fontSize: '1rem',
+                fontWeight: 500,
+                lineHeight: 1.45,
                 minHeight: isMemberAccount ? 48 : 42,
               },
             }}

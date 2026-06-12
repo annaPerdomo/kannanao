@@ -22,6 +22,8 @@ interface MessageBubbleProps {
   tick?: number;
   userId?: string;
   onReact?: (messageId: string, emoji: string) => void;
+  /** Play the slide-in animation. Off for history so opening a thread doesn't flutter. */
+  animate?: boolean;
 }
 
 export function MessageBubble({
@@ -32,6 +34,7 @@ export function MessageBubble({
   tick: _tick,
   userId,
   onReact,
+  animate = true,
 }: MessageBubbleProps) {
   const { palette } = useTheme();
   const { brand } = palette;
@@ -48,15 +51,17 @@ export function MessageBubble({
         justifyContent: isMine ? 'flex-end' : 'flex-start',
         alignItems: 'flex-end',
         gap: 0.75,
-        animation: 'msgIn 0.3s ease-out both',
-        animationDelay: `${Math.min(index * 0.04, 0.4)}s`,
-        '@keyframes msgIn': {
-          from: {
-            opacity: 0,
-            transform: `translateX(${isMine ? '12px' : '-12px'}) scale(0.97)`,
+        ...(animate && {
+          animation: 'msgIn 0.3s ease-out both',
+          animationDelay: `${Math.min(index * 0.04, 0.4)}s`,
+          '@keyframes msgIn': {
+            from: {
+              opacity: 0,
+              transform: `translateX(${isMine ? '12px' : '-12px'}) scale(0.97)`,
+            },
+            to: { opacity: 1, transform: 'translateX(0) scale(1)' },
           },
-          to: { opacity: 1, transform: 'translateX(0) scale(1)' },
-        },
+        }),
       }}
     >
       {/* Avatar on left for received messages */}
@@ -98,16 +103,20 @@ export function MessageBubble({
               rel="noopener noreferrer"
               sx={{ display: 'block', lineHeight: 0 }}
             >
+              {/* Fixed frame: reserving the space up front keeps the thread
+                  from shifting (and breaking scroll position) as photos load */}
               <Box
                 component="img"
                 src={message.image_url}
                 alt="Shared photo"
                 sx={{
+                  width: 240,
                   maxWidth: '100%',
-                  maxHeight: 220,
+                  height: 200,
                   borderRadius: message.message ? '12px 12px 4px 4px' : '12px',
                   objectFit: 'cover',
                   display: 'block',
+                  bgcolor: alpha(brand[100], 0.4),
                 }}
               />
             </Box>
@@ -115,8 +124,11 @@ export function MessageBubble({
           {message.message && (
             <Typography
               sx={{
-                // Matches the input box font size so messages don't shrink on send
+                // Must visually match the input box text exactly (size AND
+                // weight — the theme bolds TextField input to 600 by default)
                 fontSize: '1rem',
+                fontWeight: 500,
+                lineHeight: 1.45,
                 color: 'text.primary',
                 wordBreak: 'break-word',
                 px: message.image_url ? 1 : 0,
