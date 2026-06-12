@@ -85,6 +85,24 @@ export function __resetPushSyncForTests(): void {
   syncResultThisLoad = null;
 }
 
+/** iOS/iPadOS running in a browser tab rather than the installed Home Screen
+ * app. Apple only delivers web push to home-screen web apps, so this state is
+ * unfixable from device Settings — the user has to open (or install) the app.
+ * The UI shows install guidance here instead of a dead-end enable button. */
+function detectIOSBrowser(): boolean {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent;
+  // iPadOS 13+ masquerades as desktop Safari ("Macintosh") — touch support
+  // is what distinguishes an iPad from an actual Mac
+  const isAppleTouchDevice =
+    /iPad|iPhone|iPod/.test(ua) || (ua.includes('Macintosh') && navigator.maxTouchPoints > 1);
+  if (!isAppleTouchDevice) return false;
+  const standalone =
+    window.matchMedia?.('(display-mode: standalone)').matches ||
+    (navigator as { standalone?: boolean }).standalone === true;
+  return !standalone;
+}
+
 // Last verified subscription state. Lets the UI decide instantly whether to
 // show the enable prompt — checking the real state needs an active service
 // worker, which can take a minute to install on a device's first visit.
@@ -115,6 +133,7 @@ export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSubscribed, setIsSubscribedState] = useState(readCachedSubscribed);
   const [isSupported, setIsSupported] = useState(false);
+  const [isIOSBrowser, setIsIOSBrowser] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
 
@@ -131,6 +150,8 @@ export function usePushNotifications() {
       'Notification' in window;
 
     setIsSupported(supported);
+    // Detected in an effect (not render) so server and client HTML agree
+    setIsIOSBrowser(detectIOSBrowser());
     if (!supported) {
       setInitializing(false);
       return;
@@ -235,5 +256,14 @@ export function usePushNotifications() {
     }
   }, [setIsSubscribed]);
 
-  return { permission, isSubscribed, isSupported, loading, initializing, subscribe, unsubscribe };
+  return {
+    permission,
+    isSubscribed,
+    isSupported,
+    isIOSBrowser,
+    loading,
+    initializing,
+    subscribe,
+    unsubscribe,
+  };
 }
