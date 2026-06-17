@@ -1,6 +1,14 @@
 'use client';
 import type { Session, User } from '@supabase/supabase-js';
-import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 import { isAdminUser } from '@/lib/admin';
 import type { InitialAuth } from '@/lib/dbMappers';
@@ -189,7 +197,7 @@ export function AuthProvider({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const signInWithUsername = async (username: string, password: string) => {
+  const signInWithUsername = useCallback(async (username: string, password: string) => {
     const { error, data } = await sb.auth.signInWithPassword({
       email: toEmail(username),
       password,
@@ -198,13 +206,16 @@ export function AuthProvider({
       void dbRecordLogin(data.user.id);
     }
     return { error: error?.message ?? null };
-  };
+  }, []);
 
-  const signUpWithUsername = async (_username: string, _password: string, _name?: string) => {
-    return { error: 'Sign-ups are currently closed. Join the waitlist at the landing page.' };
-  };
+  const signUpWithUsername = useCallback(
+    async (_username: string, _password: string, _name?: string) => {
+      return { error: 'Sign-ups are currently closed. Join the waitlist at the landing page.' };
+    },
+    [],
+  );
 
-  const updateDisplayName = async (name: string) => {
+  const updateDisplayName = useCallback(async (name: string) => {
     const {
       data: { user },
     } = await sb.auth.getUser();
@@ -213,9 +224,9 @@ export function AuthProvider({
     await upsertProfile(user.id, username, name.trim());
     setDisplayName(name.trim());
     return { error: null };
-  };
+  }, []);
 
-  const updateColorScheme = async (scheme: ColorScheme) => {
+  const updateColorScheme = useCallback(async (scheme: ColorScheme) => {
     setColorScheme(scheme);
     const {
       data: { user },
@@ -223,9 +234,9 @@ export function AuthProvider({
     if (user) {
       await updateProfileColorScheme(user.id, scheme);
     }
-  };
+  }, []);
 
-  const updateShowTodo = async (show: boolean) => {
+  const updateShowTodo = useCallback(async (show: boolean) => {
     setShowTodo(show);
     setHomeSections((prev) => ({ ...prev, todo: show }));
     const {
@@ -234,9 +245,9 @@ export function AuthProvider({
     if (user) {
       await updateProfileShowTodo(user.id, show);
     }
-  };
+  }, []);
 
-  const updateHomeSectionsHandler = async (sections: HomeSections) => {
+  const updateHomeSectionsHandler = useCallback(async (sections: HomeSections) => {
     setHomeSections(sections);
     setShowTodo(sections.todo);
     const {
@@ -245,9 +256,9 @@ export function AuthProvider({
     if (user) {
       await updateProfileHomeSections(user.id, sections);
     }
-  };
+  }, []);
 
-  const updateTravelMainViewMode = async (mode: string) => {
+  const updateTravelMainViewMode = useCallback(async (mode: string) => {
     setTravelMainViewMode(mode);
     const {
       data: { user },
@@ -255,40 +266,59 @@ export function AuthProvider({
     if (user) {
       await updateProfileTravelMainViewMode(user.id, mode);
     }
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await sb.auth.signOut();
-  };
+  }, []);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        session,
-        user: session?.user ?? null,
-        isAdmin: isAdminUser(session?.user?.email ?? undefined),
-        accountType,
-        isMemberAccount: accountType === 'member',
-        organizerId,
-        groupId,
-        groupShowLeaderboard,
-        displayName,
-        colorScheme,
-        showTodo,
-        homeSections,
-        travelMainViewMode,
-        loading,
-        signInWithUsername,
-        signUpWithUsername,
-        signOut,
-        updateDisplayName,
-        updateColorScheme,
-        updateShowTodo,
-        updateHomeSections: updateHomeSectionsHandler,
-        updateTravelMainViewMode,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      session,
+      user: session?.user ?? null,
+      isAdmin: isAdminUser(session?.user?.email ?? undefined),
+      accountType,
+      isMemberAccount: accountType === 'member',
+      organizerId,
+      groupId,
+      groupShowLeaderboard,
+      displayName,
+      colorScheme,
+      showTodo,
+      homeSections,
+      travelMainViewMode,
+      loading,
+      signInWithUsername,
+      signUpWithUsername,
+      signOut,
+      updateDisplayName,
+      updateColorScheme,
+      updateShowTodo,
+      updateHomeSections: updateHomeSectionsHandler,
+      updateTravelMainViewMode,
+    }),
+    [
+      session,
+      accountType,
+      organizerId,
+      groupId,
+      groupShowLeaderboard,
+      displayName,
+      colorScheme,
+      showTodo,
+      homeSections,
+      travelMainViewMode,
+      loading,
+      signInWithUsername,
+      signUpWithUsername,
+      signOut,
+      updateDisplayName,
+      updateColorScheme,
+      updateShowTodo,
+      updateHomeSectionsHandler,
+      updateTravelMainViewMode,
+    ],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
