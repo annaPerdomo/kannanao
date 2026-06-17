@@ -34,7 +34,7 @@ vi.mock('@/contexts/AuthContext', () => ({
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-import { useDirectMessages } from '@/hooks/useDirectMessages';
+import { type DirectMessage, enrichFromThread, useDirectMessages } from '@/hooks/useDirectMessages';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -391,5 +391,50 @@ describe('useDirectMessages', () => {
 
     // Should have refetched after failure (3 total calls: initial + react + refetch)
     expect(mockFetch).toHaveBeenCalledTimes(3);
+  });
+});
+
+// ─── enrichFromThread ──────────────────────────────────────────────────────────
+// Reconstructs a realtime row's profile joins from the loaded thread so the hook
+// can skip a full conversation refetch on every incoming message.
+
+describe('enrichFromThread', () => {
+  const thread: DirectMessage[] = [
+    DM_UNREAD as DirectMessage, // org1 -> m1, has both profiles
+    DM_READ as DirectMessage, // m1 -> org1
+  ];
+
+  const incoming: DirectMessage = {
+    id: 'd99',
+    sender_id: 'org1',
+    recipient_id: 'm1',
+    message: 'New message',
+    read_at: null,
+    created_at: '2026-05-12T10:00:00Z',
+    // No sender/recipient joins — exactly what a realtime payload looks like.
+  };
+
+  it('reconstructs sender and recipient from cached messages', () => {
+    const enriched = enrichFromThread(incoming, thread);
+    expect(enriched).not.toBeNull();
+    expect(enriched?.sender).toEqual({ display_name: 'Parent', username: 'parent' });
+    expect(enriched?.recipient).toEqual({ display_name: 'Kid', username: 'kid' });
+    // Original message content is preserved.
+    expect(enriched?.message).toBe('New message');
+  });
+
+  it('returns null when a profile is not yet known (first message from a peer)', () => {
+    const fromStranger: DirectMessage = { ...incoming, sender_id: 'stranger' };
+    expect(enrichFromThread(fromStranger, thread)).toBeNull();
+  });
+
+  it('keeps joins already present on the row', () => {
+    const preJoined: DirectMessage = {
+      ...incoming,
+      sender: { display_name: 'X', username: 'x' },
+      recipient: { display_name: 'Y', username: 'y' },
+    };
+    const enriched = enrichFromThread(preJoined, []);
+    expect(enriched?.sender).toEqual({ display_name: 'X', username: 'x' });
   });
 });

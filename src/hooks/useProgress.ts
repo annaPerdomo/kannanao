@@ -439,26 +439,28 @@ export function useProgress(
       }
       const newLongest = Math.max(progress.longest_streak, newStreak);
 
-      // Persist progress
-      await supabase
-        .from('user_progress')
-        .update({
-          total_xp: newXp,
-          level: newLevel,
-          streak_days: newStreak,
-          longest_streak: newLongest,
-          last_study_date: today,
-          total_cards_studied: newStudied,
-          total_correct: newCorrect,
-        })
-        .eq('id', progress.id);
-
-      // Persist session card count
-      await supabase.rpc('increment_session_cards', {
-        p_session_id: sessionId,
-        p_correct: correct,
-        p_xp: xpGain,
-      });
+      // Persist the progress update and the session card-count increment in
+      // parallel — they touch different rows and don't depend on each other, so
+      // there's no reason to pay two sequential round-trips on every answer.
+      await Promise.all([
+        supabase
+          .from('user_progress')
+          .update({
+            total_xp: newXp,
+            level: newLevel,
+            streak_days: newStreak,
+            longest_streak: newLongest,
+            last_study_date: today,
+            total_cards_studied: newStudied,
+            total_correct: newCorrect,
+          })
+          .eq('id', progress.id),
+        supabase.rpc('increment_session_cards', {
+          p_session_id: sessionId,
+          p_correct: correct,
+          p_xp: xpGain,
+        }),
+      ]);
 
       // Check achievements
       const unlocked = achievements.map((a) => a.achievement_key);

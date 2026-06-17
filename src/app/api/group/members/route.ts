@@ -45,30 +45,19 @@ export async function GET(req: NextRequest) {
 
   const memberIds = members.map((m) => m.id);
 
-  // Fetch progress for all members
+  // Fetch progress for all members. `last_study_date` (maintained on every
+  // answer) gives each member's last-active day directly — far cheaper than
+  // pulling their entire study_sessions history just to find the latest one.
+  // The members UI only buckets activity by day (today / <3d / inactive), so
+  // day granularity is sufficient.
   const { data: progressRows } = await sb
     .from('user_progress')
     .select(
-      'user_id, total_xp, level, streak_days, total_cards_studied, total_correct, total_sessions',
+      'user_id, total_xp, level, streak_days, total_cards_studied, total_correct, total_sessions, last_study_date',
     )
     .in('user_id', memberIds);
 
-  // Fetch last session per member
-  const { data: recentSessions } = await sb
-    .from('study_sessions')
-    .select('user_id, started_at')
-    .in('user_id', memberIds)
-    .order('started_at', { ascending: false });
-
   const progressMap = new Map((progressRows ?? []).map((p) => [p.user_id, p]));
-
-  // Get most recent session per member
-  const lastActiveMap = new Map<string, string>();
-  for (const s of recentSessions ?? []) {
-    if (!lastActiveMap.has(s.user_id)) {
-      lastActiveMap.set(s.user_id, s.started_at);
-    }
-  }
 
   const result = members.map((m) => {
     const prog = progressMap.get(m.id);
@@ -83,7 +72,7 @@ export async function GET(req: NextRequest) {
       totalCardsStudied: prog?.total_cards_studied ?? 0,
       totalCorrect: prog?.total_correct ?? 0,
       totalSessions: prog?.total_sessions ?? 0,
-      lastActive: lastActiveMap.get(m.id) ?? null,
+      lastActive: prog?.last_study_date ?? null,
     };
   });
 
