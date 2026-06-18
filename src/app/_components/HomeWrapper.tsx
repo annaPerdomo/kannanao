@@ -1,12 +1,17 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { Suspense, use } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import type { HomeData } from '@/lib/dbMappers';
-import Home from '@/pages/Home';
 
 import HomeSkeleton from './HomeSkeleton';
+
+// Code-split the dashboard (pulls in react-grid-layout) into its own chunk so
+// anonymous visitors — who only ever see the landing page below — never download
+// it. It's only referenced inside ResolvedHome, which renders for signed-in users.
+const Home = dynamic(() => import('@/pages/Home'), { loading: () => <HomeSkeleton /> });
 
 // Renders the dashboard when the user is authenticated, otherwise the landing
 // page (passed as children so it's always server-rendered for SEO). The home

@@ -1,8 +1,18 @@
 import withPWA, { runtimeCaching as defaultCache } from '@ducanh2912/next-pwa';
+import bundleAnalyzer from '@next/bundle-analyzer';
 import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 
+// Gated behind ANALYZE=true so it's a no-op for normal builds.
+// Run `pnpm bundle:analyze` to open the treemap report.
+const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === 'true' });
+
 const nextConfig: NextConfig = {
+  experimental: {
+    // Tree-shake barrel imports (`import { Box, Button } from '@mui/material'`)
+    // down to the modules actually used, trimming shared First Load JS.
+    optimizePackageImports: ['@mui/material', '@mui/icons-material', '@mui/x-date-pickers'],
+  },
   async redirects() {
     return [
       {
@@ -124,8 +134,10 @@ const pwaConfig = withPWA({
   },
 })(nextConfig);
 
-export default withSentryConfig(pwaConfig, {
-  // Source map uploads require SENTRY_AUTH_TOKEN + org/project — skipped here
-  silent: true,
-  telemetry: false,
-});
+export default withBundleAnalyzer(
+  withSentryConfig(pwaConfig, {
+    // Source map uploads require SENTRY_AUTH_TOKEN + org/project — skipped here
+    silent: true,
+    telemetry: false,
+  }),
+);

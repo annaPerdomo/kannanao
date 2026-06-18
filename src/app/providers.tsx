@@ -1,5 +1,6 @@
 'use client';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ThemeFonts } from '@/components/ThemeFonts';
 import { UpdatePrompt } from '@/components/UpdatePrompt';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { CardBorderProvider } from '@/contexts/CardBorderContext';
@@ -23,6 +24,7 @@ export default function Providers({
   return (
     <AuthProvider initialAuth={initialAuth}>
       <AppThemeProvider>
+        <ThemeFonts />
         <UpdatePrompt />
         <ErrorBoundary>
           <ShopProvider initialShop={initialShop}>

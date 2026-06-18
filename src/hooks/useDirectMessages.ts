@@ -88,6 +88,29 @@ export interface DirectMessage {
   recipient?: { display_name: string | null; username: string } | null;
 }
 
+type Profile = NonNullable<DirectMessage['sender']>;
+
+// Find a person's profile among already-loaded messages: it appears as `sender`
+// on messages they sent and as `recipient` on messages sent to them.
+function profileFor(userId: string, known: DirectMessage[]): Profile | null {
+  for (const m of known) {
+    if (m.sender_id === userId && m.sender) return m.sender;
+    if (m.recipient_id === userId && m.recipient) return m.recipient;
+  }
+  return null;
+}
+
+// Reconstruct a realtime row's sender/recipient profile joins from messages
+// already in the thread, so we don't have to refetch the conversation just to
+// resolve display names. Returns null if either profile is unknown (e.g. the
+// first message from a new peer), signalling the caller to fall back to a fetch.
+export function enrichFromThread(row: DirectMessage, known: DirectMessage[]): DirectMessage | null {
+  const sender = row.sender ?? profileFor(row.sender_id, known);
+  const recipient = row.recipient ?? profileFor(row.recipient_id, known);
+  if (!sender || !recipient) return null;
+  return { ...row, sender, recipient };
+}
+
 async function authHeaders(): Promise<Record<string, string>> {
   const { data } = await sb.auth.getSession();
   const token = data.session?.access_token;
@@ -260,12 +283,20 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
           if (loadedRef.current) {
             // Guard against duplicate INSERT deliveries
             if (messagesRef.current.some((m) => m.id === row.id)) return;
-            setMessages((prev) => {
-              if (prev.some((m) => m.id === row.id)) return prev;
-              return [row, ...prev];
-            });
-            // Refetch to populate sender/recipient profile joins
-            void fetchMessages();
+            // The realtime payload is the raw row without the sender/recipient
+            // profile joins. In a loaded thread we've already seen both people,
+            // so reconstruct the joins from cached messages instead of paying a
+            // full conversation refetch on every incoming message. Only the very
+            // first message from a brand-new peer falls back to a refetch.
+            const enriched = enrichFromThread(row, messagesRef.current);
+            if (!enriched) {
+              setMessages((prev) => (prev.some((m) => m.id === row.id) ? prev : [row, ...prev]));
+              void fetchMessages();
+            } else {
+              setMessages((prev) =>
+                prev.some((m) => m.id === row.id) ? prev : [enriched, ...prev],
+              );
+            }
           } else {
             // Full list isn't loaded — just keep the unread badge accurate.
             void refreshUnreadCount();
