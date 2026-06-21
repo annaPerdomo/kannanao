@@ -45,5 +45,17 @@ export async function GET(
     return NextResponse.json({ error: "Failed to load cards" }, { status: 500 });
   }
 
-  return NextResponse.json({ deck, cards: cards ?? [] });
+  // Public, read-only deck content changes rarely. Cache it at Vercel's edge so
+  // repeated embed/share views are served from the CDN instead of re-invoking
+  // this Function (and re-querying Supabase) on every load. stale-while-revalidate
+  // keeps responses instant while a fresh copy is fetched in the background, so an
+  // organizer's edits surface within ~an hour rather than in real time.
+  return NextResponse.json(
+    { deck, cards: cards ?? [] },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    },
+  );
 }
