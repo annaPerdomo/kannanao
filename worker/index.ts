@@ -19,13 +19,28 @@ sw.addEventListener('push', (event) => {
   }
 
   event.waitUntil(
-    sw.registration.showNotification(data.title, {
-      body: data.body,
-      icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
-      data: { url: data.url ?? '/' },
-      silent: false,
-    }),
+    (async () => {
+      // Don't interrupt someone who's already in the app. A visible same-origin
+      // window means the user is actively using the site/PWA, and the in-app
+      // realtime handler already surfaces the message (chime + unread badge), so
+      // an OS notification would be redundant. Only alert when no window is
+      // visible — the app is backgrounded or closed. (Browsers only let us skip
+      // showNotification when a client is visible, so this stays within the
+      // userVisibleOnly contract.)
+      const clients = await sw.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const appIsVisible = clients.some(
+        (c) => c.visibilityState === 'visible' && new URL(c.url).origin === sw.location.origin,
+      );
+      if (appIsVisible) return;
+
+      await sw.registration.showNotification(data.title, {
+        body: data.body,
+        icon: '/icons/icon-192.png',
+        badge: '/icons/icon-192.png',
+        data: { url: data.url ?? '/' },
+        silent: false,
+      });
+    })(),
   );
 });
 
