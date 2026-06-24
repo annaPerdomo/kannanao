@@ -22,9 +22,10 @@ vi.mock('web-push', () => ({
 
 // Service supabase: push_subscriptions returns the device rows; direct_messages
 // returns the unread count used for the app-icon badge.
-const { fromMock, setSubs, setUnread } = vi.hoisted(() => {
+const { fromMock, setSubs, setUnread, setUnreadError } = vi.hoisted(() => {
   let subs: unknown[] = [];
   let unread = 0;
+  let unreadError: unknown = null;
   const pushChain = {
     select: vi.fn(() => pushChain),
     eq: vi.fn(() => Promise.resolve({ data: subs })),
@@ -33,7 +34,7 @@ const { fromMock, setSubs, setUnread } = vi.hoisted(() => {
   const dmChain = {
     select: vi.fn(() => dmChain),
     eq: vi.fn(() => dmChain),
-    is: vi.fn(() => Promise.resolve({ count: unread })),
+    is: vi.fn(() => Promise.resolve({ count: unreadError ? null : unread, error: unreadError })),
   };
   const fromMock = vi.fn((table: string) => (table === 'push_subscriptions' ? pushChain : dmChain));
   return {
@@ -43,6 +44,9 @@ const { fromMock, setSubs, setUnread } = vi.hoisted(() => {
     },
     setUnread: (n: number) => {
       unread = n;
+    },
+    setUnreadError: (e: unknown) => {
+      unreadError = e;
     },
   };
 });
@@ -58,6 +62,7 @@ describe('sendPushToUser', () => {
     vi.clearAllMocks();
     setSubs([{ endpoint: 'https://push/1', p256dh: 'k', auth: 'a' }]);
     setUnread(0);
+    setUnreadError(null);
     sendNotificationMock.mockResolvedValue({});
   });
 
@@ -83,6 +88,18 @@ describe('sendPushToUser', () => {
 
     const payload = JSON.parse(sendNotificationMock.mock.calls[0][1] as string);
     expect(payload.badgeCount).toBe(0);
+  });
+
+  it('omits badgeCount when the unread-count query errors', async () => {
+    // A transient count error must not send badgeCount: 0, which would wrongly
+    // clear the app badge. Omitting it leaves the existing badge untouched.
+    setUnreadError({ message: 'db down' });
+
+    await sendPushToUser('user-1', { title: 'Hi', body: 'there' });
+
+    expect(sendNotificationMock).toHaveBeenCalledTimes(1);
+    const payload = JSON.parse(sendNotificationMock.mock.calls[0][1] as string);
+    expect('badgeCount' in payload).toBe(false);
   });
 
   it('does not query or send when the user has no subscriptions', async () => {

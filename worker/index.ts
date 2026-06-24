@@ -55,7 +55,12 @@ sw.addEventListener('push', (event) => {
       // visible — the app is backgrounded or closed. (Browsers only let us skip
       // showNotification when a client is visible, so this stays within the
       // userVisibleOnly contract.)
-      const clients = await sw.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      // matchAll widens to Client[] when `type` isn't a literal, which drops
+      // WindowClient-only fields like visibilityState — assert the window type.
+      const clients = (await sw.clients.matchAll({
+        type: 'window',
+        includeUncontrolled: true,
+      })) as readonly WindowClient[];
       const appIsVisible = clients.some(
         (c) => c.visibilityState === 'visible' && new URL(c.url).origin === sw.location.origin,
       );

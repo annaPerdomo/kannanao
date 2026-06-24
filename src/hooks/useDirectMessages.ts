@@ -132,12 +132,14 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
   useEffect(() => {
     if (memberId) return;
     if (typeof navigator === 'undefined' || !('setAppBadge' in navigator)) return;
+    // setAppBadge/clearAppBadge ship together (same spec), but guard each anyway
+    // so a partial implementation can't throw.
     const nav = navigator as Navigator & {
-      setAppBadge: (count?: number) => Promise<void>;
-      clearAppBadge: () => Promise<void>;
+      setAppBadge?: (count?: number) => Promise<void>;
+      clearAppBadge?: () => Promise<void>;
     };
-    if (unreadCount > 0) nav.setAppBadge(unreadCount).catch(() => {});
-    else nav.clearAppBadge().catch(() => {});
+    if (unreadCount > 0) nav.setAppBadge?.(unreadCount).catch(() => {});
+    else nav.clearAppBadge?.().catch(() => {});
   }, [memberId, unreadCount]);
 
   const refreshUnreadCount = useCallback(async () => {
