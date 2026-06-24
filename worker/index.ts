@@ -4,9 +4,33 @@ interface PushPayload {
   title: string;
   body: string;
   url?: string;
+  /** Total unread count for the recipient — used to set the app-icon badge. */
+  badgeCount?: number;
 }
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
+
+// The Badging API lives on navigator in both window and worker scopes, but the
+// TS worker lib doesn't declare it. Narrow to the methods we use.
+type BadgeNavigator = {
+  setAppBadge?: (count?: number) => Promise<void>;
+  clearAppBadge?: () => Promise<void>;
+};
+
+/** Mirror the server's unread count onto the app icon. This is the only way an
+ * iOS home-screen web app updates its badge (Android badges from the
+ * notification automatically), and the push handler is the only code that runs
+ * when the app is closed — so the badge must be set here, not just in the page. */
+async function syncAppBadge(count: number | undefined): Promise<void> {
+  if (typeof count !== 'number') return;
+  const nav = sw.navigator as unknown as BadgeNavigator;
+  try {
+    if (count > 0) await nav.setAppBadge?.(count);
+    else await nav.clearAppBadge?.();
+  } catch {
+    // Badging unsupported (older iOS / not installed) or denied — ignore.
+  }
+}
 
 sw.addEventListener('push', (event) => {
   if (!event.data) return;
@@ -20,6 +44,10 @@ sw.addEventListener('push', (event) => {
 
   event.waitUntil(
     (async () => {
+      // Always sync the badge from the server's count, even if we suppress the
+      // notification below — the icon should reflect unread state regardless.
+      await syncAppBadge(data.badgeCount);
+
       // Don't interrupt someone who's already in the app. A visible same-origin
       // window means the user is actively using the site/PWA, and the in-app
       // realtime handler already surfaces the message (chime + unread badge), so

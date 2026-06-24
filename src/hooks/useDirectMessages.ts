@@ -122,6 +122,24 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
     ? messages.filter((m) => !m.read_at && m.recipient_id === user?.id).length
     : unreadCountState;
 
+  // Mirror the unread count onto the installed-app icon badge. iOS home-screen
+  // web apps need this explicit Badging API call (Android badges from
+  // notifications automatically); the service worker keeps it in sync while the
+  // app is closed, and this effect handles the app-open case — including
+  // clearing it the moment messages are read. Only the global provider (no
+  // memberId) owns the badge: a per-conversation instance only knows its own
+  // thread's unread count, not the user's total.
+  useEffect(() => {
+    if (memberId) return;
+    if (typeof navigator === 'undefined' || !('setAppBadge' in navigator)) return;
+    const nav = navigator as Navigator & {
+      setAppBadge: (count?: number) => Promise<void>;
+      clearAppBadge: () => Promise<void>;
+    };
+    if (unreadCount > 0) nav.setAppBadge(unreadCount).catch(() => {});
+    else nav.clearAppBadge().catch(() => {});
+  }, [memberId, unreadCount]);
+
   const refreshUnreadCount = useCallback(async () => {
     if (!user) {
       setUnreadCountState(0);
