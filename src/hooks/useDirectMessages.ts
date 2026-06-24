@@ -4,37 +4,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { isConfigured, sb } from '@/lib/supabase';
 
-/** Show a browser notification when the tab is hidden (user is on another tab). */
-function showTabNotification(msg: DirectMessage) {
-  if (typeof document === 'undefined' || !document.hidden) return;
-  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-  const name = msg.sender?.display_name ?? msg.sender?.username ?? 'Someone';
-  const body = msg.message ?? (msg.image_url ? '📷 Sent a photo' : 'New message');
-  const options: NotificationOptions = {
-    body,
-    icon: '/icons/icon-192.png',
-    tag: `dm-${msg.id}`,
-    data: { url: `/notifications/${msg.sender_id}` },
-  };
-  // Prefer the service worker — iOS has no Notification constructor (it
-  // throws), and the SW path reuses the same notificationclick handler as push.
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready
-      .then((reg) => reg.showNotification(name, options))
-      .catch(() => {});
-    return;
-  }
-  try {
-    const n = new Notification(name, options);
-    n.onclick = () => {
-      window.focus();
-      n.close();
-    };
-  } catch {
-    // Notification constructor unsupported
-  }
-}
-
 /** Play a sparkly magical chime using Web Audio API */
 function playMessageSound() {
   try {
@@ -152,6 +121,26 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
   const unreadCount = loaded
     ? messages.filter((m) => !m.read_at && m.recipient_id === user?.id).length
     : unreadCountState;
+
+  // Mirror the unread count onto the installed-app icon badge. iOS home-screen
+  // web apps need this explicit Badging API call (Android badges from
+  // notifications automatically); the service worker keeps it in sync while the
+  // app is closed, and this effect handles the app-open case — including
+  // clearing it the moment messages are read. Only the global provider (no
+  // memberId) owns the badge: a per-conversation instance only knows its own
+  // thread's unread count, not the user's total.
+  useEffect(() => {
+    if (memberId) return;
+    if (typeof navigator === 'undefined' || !('setAppBadge' in navigator)) return;
+    // setAppBadge/clearAppBadge ship together (same spec), but guard each anyway
+    // so a partial implementation can't throw.
+    const nav = navigator as Navigator & {
+      setAppBadge?: (count?: number) => Promise<void>;
+      clearAppBadge?: () => Promise<void>;
+    };
+    if (unreadCount > 0) nav.setAppBadge?.(unreadCount).catch(() => {});
+    else nav.clearAppBadge?.().catch(() => {});
+  }, [memberId, unreadCount]);
 
   const refreshUnreadCount = useCallback(async () => {
     if (!user) {
@@ -301,8 +290,13 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
             // Full list isn't loaded — just keep the unread badge accurate.
             void refreshUnreadCount();
           }
-          playMessageSound();
-          showTabNotification(row);
+          // Chime only while the app is in the foreground. When the tab is
+          // hidden or the app is closed, the server push notification alerts the
+          // user instead — the service worker shows that push exactly when no
+          // window is visible, so the user never gets both a chime and a push.
+          if (typeof document !== 'undefined' && !document.hidden) {
+            playMessageSound();
+          }
         },
       )
       .on(

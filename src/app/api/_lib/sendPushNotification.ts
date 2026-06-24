@@ -46,11 +46,27 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
 
   if (!subs?.length) return;
 
+  // Carry the recipient's total unread count so the service worker can set the
+  // app-icon badge. iOS home-screen web apps only badge from the push payload
+  // this way; Android badges from the notification itself. The triggering
+  // message is already inserted by the time this runs, so it's counted.
+  const { count, error: countError } = await sb
+    .from('direct_messages')
+    .select('id', { count: 'exact', head: true })
+    .eq('recipient_id', userId)
+    .is('read_at', null);
+
+  // On a count error `count` is null — omit badgeCount entirely rather than
+  // sending 0, which would wrongly clear the badge. The service worker leaves
+  // the existing badge untouched when badgeCount is absent.
+  const badgeCount = countError ? undefined : (count ?? 0);
+  const body = JSON.stringify({ ...payload, badgeCount });
+
   const results = await Promise.allSettled(
     subs.map((sub) =>
       webpush.sendNotification(
         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-        JSON.stringify(payload),
+        body,
       ),
     ),
   );

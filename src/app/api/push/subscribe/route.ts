@@ -38,6 +38,30 @@ export async function POST(req: NextRequest) {
   }
 
   const sb = getServiceSupabase();
+
+  // A push endpoint identifies one physical device, but a device is often
+  // shared within a group (e.g. a parent organizer and a child member on the
+  // same iPad). Whoever signs in last owns the device's notifications — so
+  // release any other user's claim on this endpoint before recording ours.
+  // Without this, a stale row leaves the previous user subscribed on this
+  // device, and a message the current user *sends* still pushes to that other
+  // account here — the sender gets a notification for their own message.
+  const { error: claimError } = await sb
+    .from('push_subscriptions')
+    .delete()
+    .eq('endpoint', endpoint)
+    .neq('user_id', user.id);
+  if (claimError) {
+    // Non-fatal: still record this user's subscription below. The stale row
+    // means the other account keeps getting this device's pushes until they
+    // next open the app and re-subscribe, but that's better than dropping the
+    // current user's subscription entirely.
+    logger.error('Failed to release push endpoint from other users', {
+      route: '/api/push/subscribe',
+      error: claimError.message,
+    });
+  }
+
   const { error } = await sb.from('push_subscriptions').upsert(
     {
       user_id: user.id,
