@@ -62,7 +62,12 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization)
      * - favicon.ico, icons, manifest, etc.
+     * - embed/* — public, anonymous iframe surface (LMS/Canvas). It carries no
+     *   auth cookie to refresh, and skipping the www-redirect here avoids
+     *   redirecting inside third-party iframes (canonicalization is handled by
+     *   the page's own canonical meta).
+     * - robots.txt / sitemap.xml — static metadata files crawlers fetch often.
      */
-    '/((?!_next/static|_next/image|favicon\\.ico|icons/|manifest\\.json|sw\\.js|workbox-|api/).*)',
+    '/((?!_next/static|_next/image|favicon\\.ico|icons/|manifest\\.json|sw\\.js|workbox-|api/|embed/|robots\\.txt|sitemap\\.xml).*)',
   ],
 };

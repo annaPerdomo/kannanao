@@ -35,6 +35,11 @@ export function EmojiPickerPopover({
     '--epr-header-overlay-color': brand[50],
     '--epr-category-icon-active-color': accent[500],
     '--epr-search-input-bg-color': '#fff',
+    // The library leaves the search input at the UA default (~13px). On iOS
+    // Safari, focusing any input under 16px auto-zooms the whole viewport,
+    // which blows the picker up and forces a pinch to zoom back out. Pin the
+    // input to 16px to suppress that focus zoom (the 40px input fits it fine).
+    '& input': { fontSize: '16px' },
   };
 
   const removeButton = onRemove && (
