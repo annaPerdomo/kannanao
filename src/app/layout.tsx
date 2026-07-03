@@ -2,15 +2,8 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
 
-import { AppBackground } from '@/components/AppBackground';
-import { AppShell } from '@/components/AppShell';
 import { SkipToContent } from '@/components/SkipToContent';
-import { getInitialAppData } from '@/lib/serverData';
-
-import AppBootSkeleton from './_components/AppBootSkeleton';
-import Providers from './providers';
 
 const TITLE = 'Kannanao — AI Japanese Flashcard Studio';
 const DESCRIPTION =
@@ -64,26 +57,11 @@ export const metadata: Metadata = {
   },
 };
 
-// The data-dependent provider tree. It awaits the shell-critical data (auth +
-// unread badge count), but because it's rendered inside a <Suspense> boundary in
-// RootLayout, that await streams instead of blocking the whole document — the
-// HTML shell + boot skeleton flush immediately and this swaps in when ready.
-async function AppRoot({ children }: { children: React.ReactNode }) {
-  const appData = await getInitialAppData();
-  return (
-    <Providers initialAuth={appData.auth}>
-      <AppBackground>
-        <AppShell initialUnreadCount={appData.unreadCount}>{children}</AppShell>
-      </AppBackground>
-    </Providers>
-  );
-}
-
+// The root layout is a pure, data-free shell so routes that never read cookies
+// (the marketing landing page) can be statically prerendered and served from
+// the CDN. Everything auth-dependent lives in the (app) route group's layout,
+// which is what opts those routes into per-request rendering.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  // RootLayout itself is synchronous and does NOT await any data, so Next.js can
-  // flush <html>/<head>/<body> + the boot skeleton to the browser instantly.
-  // The auth/provider fetch happens in <AppRoot> inside the Suspense boundary
-  // below, so it streams in rather than gating first paint.
   return (
     <html lang="en">
       <head>
@@ -121,11 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <SkipToContent />
-        <AppRouterCacheProvider>
-          <Suspense fallback={<AppBootSkeleton />}>
-            <AppRoot>{children}</AppRoot>
-          </Suspense>
-        </AppRouterCacheProvider>
+        <AppRouterCacheProvider>{children}</AppRouterCacheProvider>
         <Analytics />
         <SpeedInsights />
       </body>
