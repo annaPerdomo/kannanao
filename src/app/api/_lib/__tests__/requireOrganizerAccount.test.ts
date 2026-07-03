@@ -19,6 +19,7 @@ vi.mock('@supabase/supabase-js', () => ({
   }),
 }));
 
+import { _resetAuthCache } from '../authCache';
 import { requireOrganizerAccount } from '../requireOrganizerAccount';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -34,6 +35,7 @@ function makeRequest(token?: string): NextRequest {
 describe('requireOrganizerAccount', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    _resetAuthCache();
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
   });

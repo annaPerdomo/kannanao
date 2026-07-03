@@ -85,6 +85,41 @@ export function __resetPushSyncForTests(): void {
   syncResultThisLoad = null;
 }
 
+// The healing re-upsert (see checkSubscription) exists to recover from a lost
+// server row, which is rare — re-POSTing on every single page load costs a
+// function invocation per visit for nothing. Remember the last *successful*
+// sync per endpoint and skip the upsert for a day. Failures are never
+// stamped, so a failed save retries on the next load as before.
+const SYNC_STAMP_KEY = 'kannanao:push-synced';
+const SYNC_STAMP_TTL_MS = 24 * 60 * 60 * 1000;
+
+function recentlySynced(endpoint: string): boolean {
+  try {
+    const raw = localStorage.getItem(SYNC_STAMP_KEY);
+    if (!raw) return false;
+    const stamp = JSON.parse(raw) as { endpoint?: string; at?: number };
+    return stamp.endpoint === endpoint && Date.now() - (stamp.at ?? 0) < SYNC_STAMP_TTL_MS;
+  } catch {
+    return false;
+  }
+}
+
+function stampSynced(endpoint: string): void {
+  try {
+    localStorage.setItem(SYNC_STAMP_KEY, JSON.stringify({ endpoint, at: Date.now() }));
+  } catch {
+    // localStorage unavailable
+  }
+}
+
+function clearSyncStamp(): void {
+  try {
+    localStorage.removeItem(SYNC_STAMP_KEY);
+  } catch {
+    // localStorage unavailable
+  }
+}
+
 /** iOS/iPadOS running in a browser tab rather than the installed Home Screen
  * app. Apple only delivers web push to home-screen web apps, so this state is
  * unfixable from device Settings — the user has to open (or install) the app.
@@ -169,9 +204,15 @@ export function usePushNotifications() {
         if (sub) {
           // Don't trust that the server still has this subscription — the
           // browser keeps it even when the original save failed or the row
-          // was lost. Re-upsert it (idempotent) so the server can push again.
+          // was lost. Re-upsert it (idempotent) so the server can push again,
+          // but at most once a day per endpoint (see recentlySynced).
+          if (recentlySynced(sub.endpoint)) {
+            setIsSubscribed(true);
+            return;
+          }
           if (syncResultThisLoad === null) {
             syncResultThisLoad = await saveSubscription(sub);
+            if (syncResultThisLoad) stampSynced(sub.endpoint);
           }
           setIsSubscribed(syncResultThisLoad);
           return;
@@ -189,6 +230,7 @@ export function usePushNotifications() {
           });
 
           syncResultThisLoad = await saveSubscription(newSub);
+          if (syncResultThisLoad) stampSynced(newSub.endpoint);
           setIsSubscribed(syncResultThisLoad);
         }
       } catch {
@@ -227,6 +269,7 @@ export function usePushNotifications() {
       // user, whereas a background failure would be silent.
       const saved = await saveSubscription(sub);
       syncResultThisLoad = saved;
+      if (saved) stampSynced(sub.endpoint);
       setIsSubscribed(saved);
       if (!saved) {
         throw new Error('Could not save the subscription to the server. Please try again.');
@@ -244,6 +287,7 @@ export function usePushNotifications() {
       if (sub) {
         const endpoint = sub.endpoint;
         await sub.unsubscribe();
+        clearSyncStamp();
         const res = await fetch('/api/push/unsubscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },

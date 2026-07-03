@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { fetchJsonCached, peekApiCache } from '@/lib/apiCache';
 import { sb } from '@/lib/supabase';
 
 export interface LeaderboardEntry {
@@ -21,8 +22,11 @@ async function authHeaders(): Promise<Record<string, string>> {
 }
 
 export function useGroupLeaderboard(groupId?: string | null, enabled = true) {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [loading, setLoading] = useState(enabled);
+  const url = groupId ? `/api/group/leaderboard?groupId=${groupId}` : '/api/group/leaderboard';
+  // Seed from the cache so returning to a page paints instantly; the effect
+  // below still revalidates stale data in the background.
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(() => peekApiCache(url) ?? []);
+  const [loading, setLoading] = useState(enabled && peekApiCache(url) === undefined);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -32,14 +36,12 @@ export function useGroupLeaderboard(groupId?: string | null, enabled = true) {
       return;
     }
     let cancelled = false;
+    const cached = peekApiCache<LeaderboardEntry[]>(url);
+    if (cached) setLeaderboard(cached);
+    setLoading(cached === undefined);
     (async () => {
       try {
-        const url = groupId
-          ? `/api/group/leaderboard?groupId=${groupId}`
-          : '/api/group/leaderboard';
-        const res = await fetch(url, { headers: await authHeaders() });
-        if (!res.ok) throw new Error();
-        const data = await res.json();
+        const data = await fetchJsonCached<LeaderboardEntry[]>(url, authHeaders);
         if (!cancelled) setLeaderboard(data);
       } catch {
         // silently fail
@@ -50,7 +52,7 @@ export function useGroupLeaderboard(groupId?: string | null, enabled = true) {
     return () => {
       cancelled = true;
     };
-  }, [user, groupId, enabled]);
+  }, [user, url, enabled]);
 
   return { leaderboard, loading };
 }

@@ -53,3 +53,6 @@ public/worker-*.js.map
 
 # Local-only performance benchmark scaffolding (not part of the repo)
 benchmarks/
+
+# promotional materials
+promo/

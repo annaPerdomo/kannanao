@@ -21,6 +21,9 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
+import { _resetApiCache } from '@/lib/apiCache';
+
+beforeEach(() => _resetApiCache());
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 

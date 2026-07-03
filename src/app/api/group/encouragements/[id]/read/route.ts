@@ -1,8 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 
+import { getUserFromToken } from '../../../../_lib/authCache';
 import { rateLimit } from '../../../../_lib/rateLimit';
 import { getServiceSupabase } from '../../../_lib/serviceSupabase';
 
@@ -24,10 +24,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
   }
 
-  const userClient = createClient(url, anonKey);
-  const {
-    data: { user },
-  } = await userClient.auth.getUser(authHeader.slice(7));
+  const user = await getUserFromToken(authHeader.slice(7));
   if (!user) {
     return NextResponse.json({ error: 'Invalid token.' }, { status: 401 });
   }

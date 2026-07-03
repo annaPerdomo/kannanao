@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { fetchJsonCached, invalidateApiCache, peekApiCache } from '@/lib/apiCache';
 import { sb } from '@/lib/supabase';
 
 export interface Assignment {
@@ -24,36 +25,52 @@ async function authHeaders(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+const ASSIGNMENTS_URL = '/api/group/assignments';
+
 export function useAssignments(groupId?: string | null, enabled = true) {
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [loading, setLoading] = useState(enabled);
+  const url = groupId ? `${ASSIGNMENTS_URL}?groupId=${groupId}` : ASSIGNMENTS_URL;
+  // Seed from the cache so returning to a page paints instantly; the effect
+  // below still revalidates stale data in the background.
+  const [assignments, setAssignments] = useState<Assignment[]>(() => peekApiCache(url) ?? []);
+  const [loading, setLoading] = useState(enabled && peekApiCache(url) === undefined);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  const fetchAssignments = useCallback(async () => {
-    if (!enabled || !user) {
-      setAssignments([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const url = groupId ? `/api/group/assignments?groupId=${groupId}` : '/api/group/assignments';
-      const res = await fetch(url, { headers: await authHeaders() });
-      if (!res.ok) throw new Error('Failed to load assignments');
-      const data = await res.json();
-      setAssignments(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load assignments');
-    } finally {
-      setLoading(false);
-    }
-  }, [user, groupId, enabled]);
+  const load = useCallback(
+    async (freshMs?: number) => {
+      if (!enabled || !user) {
+        setAssignments([]);
+        setLoading(false);
+        return;
+      }
+      const cached = peekApiCache<Assignment[]>(url);
+      if (cached) setAssignments(cached);
+      setLoading(!cached);
+      setError(null);
+      try {
+        const data = await fetchJsonCached<Assignment[]>(
+          url,
+          authHeaders,
+          freshMs === undefined ? {} : { freshMs },
+        );
+        setAssignments(data);
+      } catch {
+        setError('Failed to load assignments');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [user, url, enabled],
+  );
 
   useEffect(() => {
-    void fetchAssignments();
-  }, [fetchAssignments]);
+    void load();
+  }, [load]);
+
+  const fetchAssignments = useCallback(() => {
+    invalidateApiCache(ASSIGNMENTS_URL);
+    return load(0);
+  }, [load]);
 
   const createAssignment = useCallback(
     async (opts: {
@@ -107,6 +124,7 @@ export function useAssignments(groupId?: string | null, enabled = true) {
   const deleteAssignment = useCallback(
     async (id: string) => {
       const prev = assignments;
+      invalidateApiCache(ASSIGNMENTS_URL);
       setAssignments((a) => a.filter((item) => item.id !== id));
       try {
         const res = await fetch(`/api/group/assignments/${id}`, {

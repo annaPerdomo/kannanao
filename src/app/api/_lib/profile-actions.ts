@@ -1,6 +1,8 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
+import { getUserFromToken } from './authCache';
+
 export const FAKE_DOMAIN = 'kannanao.local';
 
 async function createGroupForOrganizer(
@@ -44,12 +46,9 @@ export async function authenticateUser(req: Request): Promise<AuthSuccess | Auth
   }
 
   const token = authHeader.slice(7);
-  const {
-    data: { user },
-    error: authError,
-  } = await createClient(url, anonKey).auth.getUser(token);
+  const user = await getUserFromToken(token);
 
-  if (authError || !user) {
+  if (!user) {
     return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) };
   }
 

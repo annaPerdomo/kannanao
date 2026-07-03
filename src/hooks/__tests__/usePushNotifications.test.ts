@@ -111,6 +111,28 @@ describe('usePushNotifications', () => {
     await waitFor(() => expect(result.current.isSubscribed).toBe(true));
   });
 
+  it('skips the mount re-upsert when the endpoint was synced within 24h', async () => {
+    localStorage.setItem(
+      'kannanao:push-synced',
+      JSON.stringify({ endpoint: mockSubscription.endpoint, at: Date.now() }),
+    );
+    mockPushManager.getSubscription.mockResolvedValueOnce(mockSubscription);
+    const { result } = renderHook(() => usePushNotifications());
+    await waitFor(() => expect(result.current.isSubscribed).toBe(true));
+    expect(mockFetch.mock.calls.find((c) => c[0] === '/api/push/subscribe')).toBeUndefined();
+  });
+
+  it('still re-upserts when the sync stamp is stale or for another endpoint', async () => {
+    localStorage.setItem(
+      'kannanao:push-synced',
+      JSON.stringify({ endpoint: 'https://push.example.com/other', at: Date.now() }),
+    );
+    mockPushManager.getSubscription.mockResolvedValueOnce(mockSubscription);
+    const { result } = renderHook(() => usePushNotifications());
+    await waitFor(() => expect(result.current.isSubscribed).toBe(true));
+    expect(mockFetch.mock.calls.find((c) => c[0] === '/api/push/subscribe')).toBeTruthy();
+  });
+
   it('subscribe() requests permission and registers', async () => {
     (Notification.requestPermission as ReturnType<typeof vi.fn>).mockResolvedValue('granted');
 

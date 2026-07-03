@@ -1,8 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 
+import { getUserFromToken } from '../../../_lib/authCache';
 import { rateLimit } from '../../../_lib/rateLimit';
 import { getServiceSupabase } from '../../_lib/serviceSupabase';
 
@@ -29,13 +29,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
   }
 
-  const supabase = createClient(url, anonKey);
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser(authHeader.slice(7));
+  const user = await getUserFromToken(authHeader.slice(7));
 
-  if (authError || !user) {
+  if (!user) {
     return NextResponse.json({ error: 'Invalid or expired token.' }, { status: 401 });
   }
 

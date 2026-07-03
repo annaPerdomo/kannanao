@@ -1,7 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { isAdminEmail } from '@/lib/admin';
+
+import { _resetAuthCache, getUserFromToken } from './authCache';
 
 interface RateLimitEntry {
   count: number;
@@ -47,13 +48,9 @@ async function isAdminRequest(req: NextRequest): Promise<boolean> {
   const authHeader = req.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) return false;
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-  if (!url || !anonKey) return false;
-
   try {
-    const { data } = await createClient(url, anonKey).auth.getUser(authHeader.slice(7));
-    return isAdminEmail(data.user?.email ?? undefined);
+    const user = await getUserFromToken(authHeader.slice(7));
+    return isAdminEmail(user?.email ?? undefined);
   } catch {
     return false;
   }
@@ -68,8 +65,6 @@ export async function rateLimit(
   req: NextRequest,
   { windowMs, max }: RateLimitConfig,
 ): Promise<NextResponse | null> {
-  if (await isAdminRequest(req)) return null;
-
   const now = Date.now();
   cleanup(now);
 
@@ -88,6 +83,12 @@ export async function rateLimit(
     return null;
   }
 
+  // Over the limit. Only now is the admin bypass worth checking — doing it up
+  // front would cost an auth-server round-trip on every allowed request, which
+  // dominated this function's latency for the 99.9% of calls that never hit
+  // the limit.
+  if (await isAdminRequest(req)) return null;
+
   // Rate limit exceeded
   const retryAfterMs = windowMs - (now - entry.windowStart);
   const retryAfterSecs = Math.ceil(retryAfterMs / 1000);
@@ -105,4 +106,5 @@ export async function rateLimit(
 export function _resetStore() {
   store.clear();
   lastCleanup = Date.now();
+  _resetAuthCache();
 }
