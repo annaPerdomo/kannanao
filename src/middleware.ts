@@ -15,6 +15,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
 
+  const hasAuthCookie = request.cookies.getAll().some((c) => c.name.includes('-auth-token'));
+
+  // Anonymous visitors to `/` get the statically prerendered landing page
+  // (served from the CDN, no function invocation) instead of the dynamically
+  // rendered dashboard route. The URL bar still shows `/`.
+  if (request.nextUrl.pathname === '/' && !hasAuthCookie) {
+    return NextResponse.rewrite(new URL('/landing', request.url));
+  }
+
   let response = NextResponse.next({ request });
 
   // Keep the Supabase auth session fresh and synced to cookies so Server
@@ -23,7 +32,6 @@ export async function middleware(request: NextRequest) {
   // when the access token is actually near expiry — otherwise we skip it, since
   // the browser client auto-refreshes too. This avoids an auth round-trip on
   // every navigation.
-  const hasAuthCookie = request.cookies.getAll().some((c) => c.name.includes('-auth-token'));
   if (SUPABASE_URL && SUPABASE_ANON_KEY && hasAuthCookie) {
     const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       cookies: {
