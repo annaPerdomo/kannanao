@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { fetchJsonCached, invalidateApiCache, peekApiCache } from '@/lib/apiCache';
 
 export interface InviteCode {
   id: string;
@@ -21,10 +22,15 @@ export interface CreateInviteParams {
   expiresIn: '24h' | '7d' | '30d' | 'never';
 }
 
+const INVITES_URL = '/api/group/invite';
+
 export function useInvites(groupId?: string | null) {
   const { session } = useAuth();
-  const [invites, setInvites] = useState<InviteCode[]>([]);
-  const [loading, setLoading] = useState(true);
+  const url = groupId ? `${INVITES_URL}?groupId=${groupId}` : INVITES_URL;
+  // Seed from the cache so returning to a page paints instantly; the effect
+  // below still revalidates stale data in the background.
+  const [invites, setInvites] = useState<InviteCode[]>(() => peekApiCache(url) ?? []);
+  const [loading, setLoading] = useState(() => peekApiCache(url) === undefined);
   const [error, setError] = useState<string | null>(null);
 
   const headers = useCallback(() => {
@@ -33,25 +39,36 @@ export function useInvites(groupId?: string | null) {
     return h;
   }, [session?.access_token]);
 
-  const fetchInvites = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const url = groupId ? `/api/group/invite?groupId=${groupId}` : '/api/group/invite';
-      const res = await fetch(url, { headers: headers() });
-      if (!res.ok) throw new Error('Failed to load invites');
-      const data = await res.json();
-      setInvites(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load invites');
-    } finally {
-      setLoading(false);
-    }
-  }, [headers, groupId]);
+  const load = useCallback(
+    async (freshMs?: number) => {
+      const cached = peekApiCache<InviteCode[]>(url);
+      if (cached) setInvites(cached);
+      setLoading(!cached);
+      setError(null);
+      try {
+        const data = await fetchJsonCached<InviteCode[]>(
+          url,
+          headers,
+          freshMs === undefined ? {} : { freshMs },
+        );
+        setInvites(data);
+      } catch {
+        setError('Failed to load invites');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [headers, url],
+  );
 
   useEffect(() => {
-    if (session?.access_token) void fetchInvites();
-  }, [session?.access_token, fetchInvites]);
+    if (session?.access_token) void load();
+  }, [session?.access_token, load]);
+
+  const fetchInvites = useCallback(() => {
+    invalidateApiCache(INVITES_URL);
+    return load(0);
+  }, [load]);
 
   const createInvite = useCallback(
     async (params: CreateInviteParams): Promise<InviteCode> => {
@@ -65,6 +82,7 @@ export function useInvites(groupId?: string | null) {
         throw new Error(data.error ?? 'Failed to create invite');
       }
       const invite: InviteCode = await res.json();
+      invalidateApiCache(INVITES_URL);
       setInvites((prev) => [invite, ...prev]);
       return invite;
     },
@@ -73,6 +91,7 @@ export function useInvites(groupId?: string | null) {
 
   const revokeInvite = useCallback(
     async (id: string) => {
+      invalidateApiCache(INVITES_URL);
       setInvites((prev) => prev.filter((i) => i.id !== id));
       try {
         const res = await fetch(`/api/group/invite/${id}`, {

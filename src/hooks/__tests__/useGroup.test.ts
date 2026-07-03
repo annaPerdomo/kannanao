@@ -21,6 +21,9 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 import { useGroupFeed, useGroupMembers, useMemberDetail } from '@/hooks/useGroup';
+import { _resetApiCache } from '@/lib/apiCache';
+
+beforeEach(() => _resetApiCache());
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 

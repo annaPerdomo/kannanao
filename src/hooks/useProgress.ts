@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { invalidateApiCache } from '@/lib/apiCache';
 import { cardXp } from '@/lib/flashcardUtils';
 import { sb } from '@/lib/supabase'; // adjust to your Supabase client path
 import type { JlptLevel } from '@/types/flashcard';
@@ -602,7 +603,11 @@ export function useProgress(
                 Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify({ deckId: session.deck_id }),
-            }).catch(() => {});
+            })
+              // The assignment list is cached client-side; drop it so the
+              // dashboard reflects the auto-completed assignment right away.
+              .then(() => invalidateApiCache('/api/group/assignments'))
+              .catch(() => {});
           }
         }
       } catch {

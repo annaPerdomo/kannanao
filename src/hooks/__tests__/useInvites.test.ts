@@ -12,6 +12,9 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 import { useInvites } from '@/hooks/useInvites';
+import { _resetApiCache } from '@/lib/apiCache';
+
+beforeEach(() => _resetApiCache());
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
