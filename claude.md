@@ -24,6 +24,12 @@ Next.js 15 app with React 19, MUI 7, Supabase, TypeScript.
 - `app/` — Next.js App Router pages and API routes
 - `pages/` — legacy page components (do not add new files here)
 
+**Route groups & static rendering**: the root layout (`app/layout.tsx`) is a pure, data-free shell. All authed/app routes live in `app/(app)/` whose layout reads cookies (via `getInitialAppData()`) and is therefore dynamically rendered per request. `app/landing/` lives OUTSIDE that group so it is statically prerendered and served from the CDN; the middleware rewrites anonymous `/` traffic to it. **Never read cookies/headers in the root layout or under `app/landing/`** — it would silently turn the landing (and everything else) back into per-request SSR. New pages go in `app/(app)/`.
+
+**Server-side auth caching**: API routes verify Bearer tokens through `app/api/_lib/authCache.ts` (60s in-memory cache for `getUser` + the requester's own profile). Use `getUserFromToken`/`getProfileForUser` (or the `require*` helpers that wrap them) instead of calling `supabase.auth.getUser()` directly in routes.
+
+**Client-side API caching**: hooks that GET our API routes go through `src/lib/apiCache.ts` (`fetchJsonCached` + `peekApiCache`, 30s fresh window, stale-while-revalidate). Mutations must call `invalidateApiCache(prefix)` so the next read refetches.
+
 ## File Size & Structure
 
 - **Max ~300 lines per component file.** If a component grows past this, extract it into a folder.
