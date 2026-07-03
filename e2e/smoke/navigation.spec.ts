@@ -4,7 +4,8 @@ test.describe('Navigation smoke tests', () => {
   test('home page loads without server error', async ({ page }) => {
     const response = await page.goto('/');
     expect(response?.status()).toBeLessThan(500);
-    await expect(page.getByText(/Kannanao/i)).toBeVisible({ timeout: 10000 });
+    // .first(): the brand appears several times on the landing page
+    await expect(page.getByText(/Kannanao/i).first()).toBeVisible({ timeout: 10000 });
   });
 
   test('login page is reachable', async ({ page }) => {

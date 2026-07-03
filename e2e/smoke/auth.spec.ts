@@ -50,6 +50,8 @@ test.describe('Auth smoke tests', () => {
 
   test('should show the Kannanao branding on the login page', async ({ page }) => {
     await page.goto('/login');
-    await expect(page.getByText(/Kannanao/i)).toBeVisible({ timeout: 10000 });
+    // The heading role pins this to the login card's title; the brand also
+    // appears in the nav, which would trip strict mode with a bare getByText.
+    await expect(page.getByRole('heading', { name: /Kannanao/i })).toBeVisible({ timeout: 10000 });
   });
 });

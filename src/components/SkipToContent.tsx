@@ -8,6 +8,7 @@ export function SkipToContent() {
     <Box
       component="a"
       href="#main-content"
+      className="skip-to-content"
       sx={{
         ...visuallyHidden,
         '&:focus': {
