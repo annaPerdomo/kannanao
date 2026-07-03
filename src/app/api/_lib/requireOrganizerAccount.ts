@@ -1,5 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
+
+import { getProfileForUser, getUserFromToken } from './authCache';
 
 export interface OrganizerProfile {
   id: string;
@@ -11,6 +12,7 @@ export interface OrganizerProfile {
 /**
  * Extracts the Bearer token, looks up the user's profile, and returns 403
  * if the account is a member. Returns the profile on success.
+ * Verification is served from the short-lived authCache when warm.
  */
 export async function requireOrganizerAccount(
   req: NextRequest,
@@ -26,25 +28,16 @@ export async function requireOrganizerAccount(
     return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
   }
 
-  const supabase = createClient(url, anonKey, {
-    global: { headers: { Authorization: authHeader } },
-  });
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser(authHeader.slice(7));
+  const token = authHeader.slice(7);
+  const user = await getUserFromToken(token);
 
-  if (authError || !user) {
+  if (!user) {
     return NextResponse.json({ error: 'Invalid or expired token.' }, { status: 401 });
   }
 
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('id, username, account_type, display_name')
-    .eq('id', user.id)
-    .single();
+  const profile = await getProfileForUser(user.id, token);
 
-  if (profileError || !profile) {
+  if (!profile) {
     return NextResponse.json({ error: 'Profile not found.' }, { status: 401 });
   }
 

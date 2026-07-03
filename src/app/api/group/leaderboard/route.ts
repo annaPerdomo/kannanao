@@ -1,8 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 
+import { getProfileForUser, getUserFromToken } from '../../_lib/authCache';
 import { rateLimit } from '../../_lib/rateLimit';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 
@@ -28,24 +28,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
   }
 
-  const userClient = createClient(url, anonKey);
-  const {
-    data: { user },
-    error: authErr,
-  } = await userClient.auth.getUser(authHeader.slice(7));
+  const token = authHeader.slice(7);
+  const user = await getUserFromToken(token);
 
-  if (authErr || !user) {
+  if (!user) {
     return NextResponse.json({ error: 'Invalid or expired token.' }, { status: 401 });
   }
 
   const sb = getServiceSupabase();
 
-  // Get the user's profile to determine group membership
-  const { data: profile } = await sb
-    .from('profiles')
-    .select('id, account_type, organizer_id, group_id, display_name')
-    .eq('id', user.id)
-    .single();
+  // Get the user's profile to determine group membership (cached per user)
+  const profile = await getProfileForUser(user.id, token);
 
   if (!profile) {
     return NextResponse.json({ error: 'Profile not found.' }, { status: 404 });

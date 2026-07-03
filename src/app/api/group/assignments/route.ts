@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 
+import { getProfileForUser, getUserFromToken } from '../../_lib/authCache';
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
@@ -118,29 +119,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
   }
 
-  const { createClient } = await import('@supabase/supabase-js');
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
   if (!url || !anonKey) {
     return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
   }
 
-  const userClient = createClient(url, anonKey);
-  const {
-    data: { user },
-  } = await userClient.auth.getUser(authHeader.slice(7));
+  const token = authHeader.slice(7);
+  const user = await getUserFromToken(token);
   if (!user) {
     return NextResponse.json({ error: 'Invalid token.' }, { status: 401 });
   }
 
   const sb = getServiceSupabase();
 
-  // Check account type
-  const { data: profile } = await sb
-    .from('profiles')
-    .select('account_type')
-    .eq('id', user.id)
-    .single();
+  // Check account type (cached per user)
+  const profile = await getProfileForUser(user.id, token);
 
   // Optional group filter
   const groupId = req.nextUrl.searchParams.get('groupId');
