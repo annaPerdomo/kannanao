@@ -15,7 +15,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
 
-  const hasAuthCookie = request.cookies.getAll().some((c) => c.name.includes('-auth-token'));
+  // Supabase SSR stores the session in cookies named `sb-<project-ref>-auth-token`
+  // (optionally chunked with a `.0`/`.1` suffix). Match that specific shape so
+  // an unrelated cookie can't accidentally suppress the anonymous landing rewrite.
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some((c) => /^sb-.*-auth-token(\.\d+)?$/.test(c.name));
 
   // Anonymous visitors to `/` get the statically prerendered landing page
   // (served from the CDN, no function invocation) instead of the dynamically

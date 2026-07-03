@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import { createClient, type User } from '@supabase/supabase-js';
 
 /**
@@ -25,6 +27,15 @@ interface Entry<T> {
 
 const userByToken = new Map<string, Entry<User>>();
 const userInFlight = new Map<string, Promise<User | null>>();
+
+/**
+ * Never use a raw access token as a map key — that retains live secrets in
+ * process memory. Key the cache by a SHA-256 digest instead; it's a stable,
+ * non-reversible fingerprint of the token.
+ */
+function tokenKey(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
 
 export interface CachedProfile {
   id: string;
@@ -56,17 +67,26 @@ function getFresh<T>(map: Map<string, Entry<T>>, key: string): T | null {
 }
 
 function setEntry<T>(map: Map<string, Entry<T>>, key: string, value: T): void {
-  // Blunt but sufficient bound for a single-instance cache: drop everything
-  // rather than tracking LRU order for a map that should stay tiny.
-  if (map.size >= MAX_ENTRIES) map.clear();
+  // Bound the cache without a stampede: Map preserves insertion order, so the
+  // first keys are the oldest. Evict a small batch of them rather than clearing
+  // everything, which would force every live session to re-verify at once.
+  if (map.size >= MAX_ENTRIES) {
+    const evict = Math.ceil(MAX_ENTRIES * 0.1);
+    let removed = 0;
+    for (const oldestKey of map.keys()) {
+      map.delete(oldestKey);
+      if (++removed >= evict) break;
+    }
+  }
   map.set(key, { value, expiresAt: Date.now() + TTL_MS });
 }
 
 /** Verify a Supabase access token, deduplicating concurrent and repeat checks. */
 export async function getUserFromToken(token: string): Promise<User | null> {
-  const cached = getFresh(userByToken, token);
+  const key = tokenKey(token);
+  const cached = getFresh(userByToken, key);
   if (cached) return cached;
-  const pending = userInFlight.get(token);
+  const pending = userInFlight.get(key);
   if (pending) return pending;
 
   const config = supabaseConfig();
@@ -76,15 +96,15 @@ export async function getUserFromToken(token: string): Promise<User | null> {
     try {
       const { data, error } = await createClient(config.url, config.anonKey).auth.getUser(token);
       if (error || !data.user) return null;
-      setEntry(userByToken, token, data.user);
+      setEntry(userByToken, key, data.user);
       return data.user;
     } catch {
       return null;
     } finally {
-      userInFlight.delete(token);
+      userInFlight.delete(key);
     }
   })();
-  userInFlight.set(token, promise);
+  userInFlight.set(key, promise);
   return promise;
 }
 
