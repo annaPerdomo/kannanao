@@ -5,6 +5,7 @@ import FlightIcon from '@mui/icons-material/Flight';
 import GroupsIcon from '@mui/icons-material/Groups';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import MicIcon from '@mui/icons-material/Mic';
+import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import {
   Alert,
@@ -44,6 +45,7 @@ export function NavBar() {
   const isDecks = pathname?.startsWith('/decks') ?? false;
   const isGroup = pathname?.startsWith('/group') ?? false;
   const isTravel = pathname?.startsWith('/travel') ?? false;
+  const isGames = pathname?.startsWith('/games') ?? false;
 
   const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgressCtx();
   const { user, loading: authLoading, updateDisplayName, isMemberAccount } = useAuth();
@@ -169,6 +171,17 @@ export function NavBar() {
                   </Box>
                 </Button>
               )}
+
+              <Button
+                onClick={() => router.push('/games')}
+                size="small"
+                startIcon={<SportsEsportsIcon sx={{ fontSize: '1rem !important' }} />}
+                sx={isGames ? navBtnWithIconActive : navBtnWithIcon}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Games
+                </Box>
+              </Button>
 
               <Button
                 onClick={() => router.push('/ohanashikai')}

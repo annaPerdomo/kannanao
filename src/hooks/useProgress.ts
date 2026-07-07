@@ -31,7 +31,11 @@ export type SessionMode =
   | 'recall'
   | 'speech_read'
   | 'speech_recall'
-  | 'kotoba-bubble';
+  | 'kotoba-bubble'
+  | 'kana-build'
+  | 'particle-quiz'
+  | 'question-quiz'
+  | 'word-match';
 
 export interface StudySession {
   id: string;
