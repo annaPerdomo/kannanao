@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌸 Kannanao
+# Kannanao
 
 ### AI-powered Japanese flashcard studio
 
