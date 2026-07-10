@@ -57,16 +57,24 @@ export default function Study({ deckId, onBack }: StudyProps) {
 
   // ── Session tracking ──────────────────────────────────────────────────────
   const { startSession, recordAnswer, endSession } = useProgress();
-  const sessionIdRef = useRef<string>('');
+  // State (not a ref) so the first-card effect below re-runs once the session
+  // row exists — with a ref, cards loading before startSession resolved meant
+  // the first card was silently never recorded.
+  const [sessionId, setSessionId] = useState('');
   const startTimeRef = useRef<number>(Date.now());
   const seenRef = useRef<Set<number>>(new Set());
   const endedRef = useRef(false);
 
   useEffect(() => {
+    let cancelled = false;
     startSession(deckId, 'study').then((id) => {
-      sessionIdRef.current = id;
+      if (cancelled) return;
+      setSessionId(id);
       startTimeRef.current = Date.now();
     });
+    return () => {
+      cancelled = true;
+    };
   }, [deckId, startSession]);
 
   const showXpPop = useCallback(
@@ -78,25 +86,25 @@ export default function Study({ deckId, onBack }: StudyProps) {
     [triggerXpEarned],
   );
 
-  // Mark the first card as seen on mount (once cards load)
+  // Mark the first card as seen once both the cards and the session are ready
   useEffect(() => {
-    if (cards.length > 0 && sessionIdRef.current && !seenRef.current.has(0)) {
+    if (cards.length > 0 && sessionId && !seenRef.current.has(0)) {
       seenRef.current.add(0);
-      void recordAnswer(sessionIdRef.current, true, cards[0].jlptLevel);
+      void recordAnswer(sessionId, true, cards[0].jlptLevel);
       showXpPop(XP_PER_CORRECT);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cards.length]);
+  }, [cards.length, sessionId]);
 
   const finishSession = useCallback(async () => {
-    if (endedRef.current || !sessionIdRef.current) return;
+    if (endedRef.current || !sessionId) return;
     endedRef.current = true;
-    await endSession(sessionIdRef.current, {
+    await endSession(sessionId, {
       cardsStudied: seenRef.current.size,
       cardsCorrect: seenRef.current.size,
       durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
     });
-  }, [endSession]);
+  }, [endSession, sessionId]);
 
   const handleBack = useCallback(async () => {
     await finishSession();
@@ -123,14 +131,14 @@ export default function Study({ deckId, onBack }: StudyProps) {
         setNavigating(false);
 
         // Record this card as studied (once per unique index)
-        if (sessionIdRef.current && !seenRef.current.has(nextIndex)) {
+        if (sessionId && !seenRef.current.has(nextIndex)) {
           seenRef.current.add(nextIndex);
-          void recordAnswer(sessionIdRef.current, true, cards[nextIndex].jlptLevel);
+          void recordAnswer(sessionId, true, cards[nextIndex].jlptLevel);
           showXpPop(XP_PER_CORRECT);
         }
       }, SLIDE_DURATION_MS);
     },
-    [navigating, index, cards, recordAnswer, showXpPop],
+    [navigating, index, cards, recordAnswer, showXpPop, sessionId],
   );
 
   if (cardsLoading || decksLoading) {

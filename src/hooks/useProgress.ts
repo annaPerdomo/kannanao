@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { invalidateApiCache } from '@/lib/apiCache';
@@ -334,6 +334,18 @@ export function useProgress(
   const [loading, setLoading] = useState(!initialProgress?.progress);
   const [newlyUnlocked, setNewlyUnlocked] = useState<AchievementDef[]>([]);
 
+  // Latest progress, readable synchronously. Action callbacks read from this
+  // ref instead of the `progress` state so that (a) their identities stay
+  // stable — `startSession` in a mount effect must not refire and create a
+  // duplicate session row every time an answer updates progress — and (b) two
+  // rapid answers accumulate instead of both computing from the same stale
+  // snapshot and losing XP/card counts.
+  const progressRef = useRef<UserProgress | null>(initialProgress?.progress ?? null);
+  const applyProgress = useCallback((p: UserProgress | null) => {
+    progressRef.current = p;
+    setProgress(p);
+  }, []);
+
   // Use the already-resolved user from AuthContext rather than auth.getUser(),
   // which adds an extra auth-server round-trip on the home critical path before
   // any progress data can load. RLS still scopes these reads server-side.
@@ -366,7 +378,7 @@ export function useProgress(
         .insert({ user_id: user.id })
         .select('*')
         .single();
-      if (newProg) setProgress(newProg);
+      if (newProg) applyProgress(newProg);
     } else {
       // Detect a broken streak on load — if last_study_date is neither today nor
       // yesterday (local time), the streak should already be 0 in the display.
@@ -381,17 +393,17 @@ export function useProgress(
         prog.streak_days > 0
       ) {
         const reset = { ...prog, streak_days: 0 };
-        setProgress(reset);
+        applyProgress(reset);
         await supabase.from('user_progress').update({ streak_days: 0 }).eq('id', prog.id);
       } else {
-        setProgress(prog);
+        applyProgress(prog);
       }
     }
 
     if (ach) setAchievements(ach);
     if (sess) setRecentSessions(sess);
     setLoading(false);
-  }, [supabase, user]);
+  }, [supabase, user, applyProgress]);
 
   useEffect(() => {
     // When the server seeded a progress row, skip the network fetch — but still
@@ -407,13 +419,13 @@ export function useProgress(
         seeded.last_study_date !== yesterdayLocal &&
         seeded.streak_days > 0
       ) {
-        setProgress({ ...seeded, streak_days: 0 });
+        applyProgress({ ...seeded, streak_days: 0 });
         void supabase.from('user_progress').update({ streak_days: 0 }).eq('id', seeded.id);
       }
       return;
     }
     fetchAll();
-  }, [fetchAll, initialProgress, supabase]);
+  }, [fetchAll, initialProgress, supabase, applyProgress]);
 
   /**
    * Call this after each quiz answer.
@@ -421,24 +433,38 @@ export function useProgress(
    */
   const recordAnswer = useCallback(
     async (sessionId: string, correct: boolean, jlptLevel?: JlptLevel) => {
-      if (!progress) return;
+      const base = progressRef.current;
+      if (!base) return;
 
       const xpGain = correct ? cardXp(jlptLevel) : XP_PER_WRONG;
-      const newXp = progress.total_xp + xpGain;
+      const newXp = base.total_xp + xpGain;
       const newLevel = levelFromXp(newXp);
-      const newStudied = progress.total_cards_studied + 1;
-      const newCorrect = progress.total_correct + (correct ? 1 : 0);
+      const newStudied = base.total_cards_studied + 1;
+      const newCorrect = base.total_correct + (correct ? 1 : 0);
 
       // Streak logic — use local dates so midnight rolls over at the user's clock
       const today = toLocalDateString(new Date());
-      const lastDate = progress.last_study_date;
+      const lastDate = base.last_study_date;
       const yesterday = toLocalDateString(new Date(Date.now() - 86400000));
 
-      let newStreak = progress.streak_days;
+      let newStreak = base.streak_days;
       if (lastDate !== today) {
-        newStreak = lastDate === yesterday ? progress.streak_days + 1 : 1;
+        newStreak = lastDate === yesterday ? base.streak_days + 1 : 1;
       }
-      const newLongest = Math.max(progress.longest_streak, newStreak);
+      const newLongest = Math.max(base.longest_streak, newStreak);
+
+      // Apply locally BEFORE the network round-trip so the next rapid answer
+      // builds on this one instead of a stale snapshot.
+      applyProgress({
+        ...base,
+        total_xp: newXp,
+        level: newLevel,
+        streak_days: newStreak,
+        longest_streak: newLongest,
+        last_study_date: today,
+        total_cards_studied: newStudied,
+        total_correct: newCorrect,
+      });
 
       // Persist the progress update and the session card-count increment in
       // parallel — they touch different rows and don't depend on each other, so
@@ -455,7 +481,7 @@ export function useProgress(
             total_cards_studied: newStudied,
             total_correct: newCorrect,
           })
-          .eq('id', progress.id),
+          .eq('id', base.id),
         supabase.rpc('increment_session_cards', {
           p_session_id: sessionId,
           p_correct: correct,
@@ -500,7 +526,7 @@ export function useProgress(
       if (newXp >= 50000 && !unlocked.includes('xp_50000')) toUnlock.push('xp_50000');
 
       // Session milestones
-      const sessionCount = progress.total_sessions;
+      const sessionCount = base.total_sessions;
       if (sessionCount >= 10 && !unlocked.includes('sessions_10')) toUnlock.push('sessions_10');
       if (sessionCount >= 50 && !unlocked.includes('sessions_50')) toUnlock.push('sessions_50');
       if (sessionCount >= 100 && !unlocked.includes('sessions_100')) toUnlock.push('sessions_100');
@@ -519,24 +545,8 @@ export function useProgress(
         const newDefs = ACHIEVEMENTS.filter((a) => toUnlock.includes(a.key));
         setNewlyUnlocked(newDefs);
       }
-
-      // Optimistic local update
-      setProgress((p) =>
-        p
-          ? {
-              ...p,
-              total_xp: newXp,
-              level: newLevel,
-              streak_days: newStreak,
-              longest_streak: newLongest,
-              last_study_date: today,
-              total_cards_studied: newStudied,
-              total_correct: newCorrect,
-            }
-          : p,
-      );
     },
-    [progress, achievements, supabase],
+    [achievements, supabase, applyProgress],
   );
 
   /**
@@ -569,12 +579,17 @@ export function useProgress(
             onConflict: 'user_id,achievement_key',
           });
 
-        // XP bonus
-        if (progress) {
+        // XP bonus — recompute the level too, so the bonus can't leave the
+        // stored level inconsistent with total_xp.
+        const base = progressRef.current;
+        if (base) {
+          const newXp = base.total_xp + XP_PERFECT_BONUS;
+          const newLevel = levelFromXp(newXp);
+          applyProgress({ ...base, total_xp: newXp, level: newLevel });
           await supabase
             .from('user_progress')
-            .update({ total_xp: progress.total_xp + XP_PERFECT_BONUS })
-            .eq('id', progress.id);
+            .update({ total_xp: newXp, level: newLevel })
+            .eq('id', base.id);
         }
 
         setNewlyUnlocked((prev) => {
@@ -614,10 +629,15 @@ export function useProgress(
         // Non-critical — don't block the session end flow
       }
     },
-    [achievements, progress, supabase, fetchAll],
+    [achievements, supabase, fetchAll, applyProgress],
   );
 
-  /** Call at the beginning of a study session to create a session row */
+  /**
+   * Call at the beginning of a study session to create a session row.
+   * Reads progress via ref so its identity is stable — consumers call this
+   * from a mount effect, and an unstable identity would re-run that effect on
+   * every answer, inserting a duplicate session row each time.
+   */
   const startSession = useCallback(
     async (deckId: string | null, mode?: SessionMode): Promise<string> => {
       const {
@@ -629,15 +649,18 @@ export function useProgress(
         .select('id')
         .single();
 
-      if (progress) {
+      const base = progressRef.current;
+      if (base) {
+        const next = { ...base, total_sessions: base.total_sessions + 1 };
+        applyProgress(next);
         await supabase
           .from('user_progress')
-          .update({ total_sessions: progress.total_sessions + 1 })
-          .eq('id', progress.id);
+          .update({ total_sessions: next.total_sessions })
+          .eq('id', base.id);
       }
       return data?.id ?? '';
     },
-    [supabase, progress],
+    [supabase, applyProgress],
   );
 
   const clearNewlyUnlocked = useCallback(() => setNewlyUnlocked([]), []);
@@ -645,16 +668,17 @@ export function useProgress(
   /** Award a flat XP bonus (e.g. for completing a to-do item). */
   const addBonusXp = useCallback(
     async (amount: number) => {
-      if (!progress) return;
-      const newXp = progress.total_xp + amount;
+      const base = progressRef.current;
+      if (!base) return;
+      const newXp = base.total_xp + amount;
       const newLevel = levelFromXp(newXp);
+      applyProgress({ ...base, total_xp: newXp, level: newLevel });
       await supabase
         .from('user_progress')
         .update({ total_xp: newXp, level: newLevel })
-        .eq('id', progress.id);
-      setProgress((p) => (p ? { ...p, total_xp: newXp, level: newLevel } : p));
+        .eq('id', base.id);
     },
-    [progress, supabase],
+    [supabase, applyProgress],
   );
 
   const spendableXp = progress ? progress.total_xp - (progress.total_xp_spent ?? 0) : 0;

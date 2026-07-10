@@ -17,7 +17,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const access = await requireGroupAccess(req, id);
   if (access instanceof NextResponse) return access;
 
-  const body = await req.json();
+  const body = await req.json().catch(() => null);
+  if (!body || typeof body !== 'object') {
+    return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
+  }
   const updates: Record<string, unknown> = {};
 
   if (typeof body.name === 'string') {
