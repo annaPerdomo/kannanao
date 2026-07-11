@@ -13,7 +13,7 @@ const root = join(__dirname, '..');
 const svgPath = join(root, 'public', 'icons', 'icon-base.svg');
 const svgBuffer = readFileSync(svgPath);
 
-const sizes = [152, 167, 180, 192, 512];
+const sizes = [16, 32, 152, 167, 180, 192, 512];
 
 for (const size of sizes) {
   const outPath = join(root, 'public', 'icons', `icon-${size}.png`);
