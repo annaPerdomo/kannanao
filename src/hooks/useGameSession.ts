@@ -9,8 +9,9 @@ import type { JlptLevel } from '@/types/flashcard';
 
 /**
  * Session + XP wiring shared by the review games. Starts a deckless
- * study session on mount, exposes `answer(correct)` to record each answer
- * (with the XP pop animation), and `finish()` / `quit()` to close the session.
+ * study session on mount, exposes `answer(correct, jlpt?, cardId?)` to record
+ * each answer (with the XP pop animation) — and, when a cardId is passed, to
+ * advance that card's SRS schedule — plus `finish()` / `quit()` to close it.
  */
 export function useGameSession(mode: SessionMode) {
   const { startSession, recordAnswer, endSession } = useProgress();
@@ -34,12 +35,14 @@ export function useGameSession(mode: SessionMode) {
   }, [mode, startSession]);
 
   const answer = useCallback(
-    async (correct: boolean, jlptLevel?: JlptLevel) => {
+    async (correct: boolean, jlptLevel?: JlptLevel, cardId?: string) => {
       answeredRef.current += 1;
       if (correct) correctRef.current += 1;
       triggerXpEarned(correct ? cardXp(jlptLevel) : XP_PER_WRONG);
       if (sessionIdRef.current) {
-        await recordAnswer(sessionIdRef.current, correct, jlptLevel);
+        // Passing cardId advances that card's review schedule (card-based games
+        // only). Grammar games call answer() without it — nothing to schedule.
+        await recordAnswer(sessionIdRef.current, correct, jlptLevel, cardId);
       }
     },
     [recordAnswer, triggerXpEarned],

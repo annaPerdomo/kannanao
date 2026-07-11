@@ -53,7 +53,7 @@ export function QuestionQuest() {
         heading="Question Quest complete!"
         subheading={`${correctRef.current} / ${items.length} answered correctly`}
         mode="question-quiz"
-        onExit={() => router.push('/games')}
+        onExit={() => router.push('/review')}
       />
     );
   }
@@ -62,11 +62,12 @@ export function QuestionQuest() {
     <GameShell
       title="Question Quest"
       emoji="❓"
+      howTo="Read the question, then tap the answer that fits it best."
       current={index}
       total={items.length}
       onQuit={async () => {
         await finish();
-        router.push('/games');
+        router.push('/review');
       }}
     >
       {/* Question */}

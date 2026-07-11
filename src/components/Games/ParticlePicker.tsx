@@ -80,7 +80,7 @@ export function ParticlePicker() {
         heading="Particle Pro!"
         subheading={`${correctRef.current} / ${totalBlanks} particles right on the first try`}
         mode="particle-quiz"
-        onExit={() => router.push('/games')}
+        onExit={() => router.push('/review')}
       />
     );
   }
@@ -91,11 +91,12 @@ export function ParticlePicker() {
     <GameShell
       title="Particle Picker"
       emoji="🎏"
+      howTo="Tap the little word (は・が・を…) that fills each blank."
       current={index}
       total={sentences.length}
       onQuit={async () => {
         await finish();
-        router.push('/games');
+        router.push('/review');
       }}
     >
       <Box sx={{ textAlign: 'center', mb: 3 }}>

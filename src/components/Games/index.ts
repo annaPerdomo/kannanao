@@ -1,6 +1,6 @@
 export * from './data';
 export { GameShell } from './GameShell';
-export { GamesHub } from './GamesHub';
+export { GameTiles } from './GameTiles';
 export * from './gameWords';
 export { KanaBuilder } from './KanaBuilder';
 export { ParticlePicker } from './ParticlePicker';

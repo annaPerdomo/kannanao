@@ -9,8 +9,8 @@ import { useMemo, useRef, useState } from 'react';
 import { Loading } from '@/components/Loading';
 import { CelebrationScreen } from '@/components/Practice/CelebrationScreen';
 import { SpeakButton } from '@/components/SpeakButton';
-import { useAllCards } from '@/hooks/useAllCards';
 import { useGameSession } from '@/hooks/useGameSession';
+import { useReviewCards } from '@/hooks/useReviewCards';
 import { buildKanaTiles } from '@/lib/reviewGames';
 
 import { GameShell } from './GameShell';
@@ -65,7 +65,9 @@ function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void })
       if (!submittedRef.current) {
         submittedRef.current = true;
         if (isCorrect) correctCountRef.current += 1;
-        void answer(isCorrect, word.jlpt);
+        // Grade the card once, on the first full submission (existing rule),
+        // passing cardId so this word's SRS schedule advances.
+        void answer(isCorrect, word.jlpt, word.cardId);
       }
       if (isCorrect) {
         setCorrectFlash(true);
@@ -117,6 +119,7 @@ function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void })
     <GameShell
       title="Kana Builder"
       emoji="🧩"
+      howTo="Tap the kana tiles in the right order to spell the word."
       current={index}
       total={words.length}
       onQuit={async () => {
@@ -245,9 +248,12 @@ function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void })
 
 export function KanaBuilder() {
   const router = useRouter();
-  const { cards, loading, error } = useAllCards();
-  // Pick the session's words once per load — a fresh random mix each visit
-  const words = useMemo(() => (loading ? [] : pickKanaWords(cards)), [cards, loading]);
+  const { dueCards, allCards, loading, error } = useReviewCards();
+  // Pick the session's words once per load — due cards first, topped up at random.
+  const words = useMemo(
+    () => (loading ? [] : pickKanaWords(dueCards, allCards)),
+    [dueCards, allCards, loading],
+  );
 
   if (loading) return <Loading />;
   if (error) {
@@ -257,5 +263,5 @@ export function KanaBuilder() {
       </Alert>
     );
   }
-  return <KanaBoard words={words} onExit={() => router.push('/games')} />;
+  return <KanaBoard words={words} onExit={() => router.push('/review')} />;
 }

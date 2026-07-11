@@ -9,8 +9,8 @@ import { useMemo, useRef, useState } from 'react';
 import { Loading } from '@/components/Loading';
 import { CelebrationScreen } from '@/components/Practice/CelebrationScreen';
 import { SpeakButton } from '@/components/SpeakButton';
-import { useAllCards } from '@/hooks/useAllCards';
 import { useGameSession } from '@/hooks/useGameSession';
+import { useReviewCards } from '@/hooks/useReviewCards';
 import { chunkRounds, shuffle } from '@/lib/reviewGames';
 
 import { GameShell } from './GameShell';
@@ -72,7 +72,12 @@ function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void 
     answeredRef.current += 1;
     if (selected.jp === tile.jp && selected.side !== tile.side) {
       correctRef.current += 1;
-      void answer(true, byJp.get(tile.jp)?.jlpt);
+      // The pair IS one card (shown as two tiles) — grade it once here, on the
+      // resolving match, passing cardId so it advances the SRS. A wrong attempt
+      // below pairs two different cards, so it can't be blamed on one card: it
+      // earns XP but writes no card_progress.
+      const word = byJp.get(tile.jp);
+      void answer(true, word?.jlpt, word?.cardId);
       const next = new Set([...matched, tile.jp]);
       setMatched(next);
       setSelected(null);
@@ -113,6 +118,7 @@ function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void 
     <GameShell
       title="Word Match"
       emoji="🍉"
+      howTo="Tap a Japanese word, then the picture that means the same thing."
       current={roundIdx}
       total={rounds.length}
       onQuit={async () => {
@@ -193,9 +199,12 @@ function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void 
 
 export function WordMatch() {
   const router = useRouter();
-  const { cards, loading, error } = useAllCards();
-  // Pick the session's words once per load — a fresh random mix each visit
-  const words = useMemo(() => (loading ? [] : pickMatchWords(cards)), [cards, loading]);
+  const { dueCards, allCards, loading, error } = useReviewCards();
+  // Pick the session's words once per load — due cards first, topped up at random.
+  const words = useMemo(
+    () => (loading ? [] : pickMatchWords(dueCards, allCards)),
+    [dueCards, allCards, loading],
+  );
 
   if (loading) return <Loading />;
   if (error) {
@@ -205,5 +214,5 @@ export function WordMatch() {
       </Alert>
     );
   }
-  return <MatchBoard words={words} onExit={() => router.push('/games')} />;
+  return <MatchBoard words={words} onExit={() => router.push('/review')} />;
 }

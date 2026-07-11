@@ -1,6 +1,11 @@
 /**
  * Pure mapping from the user's flashcards to review-game items, with the
  * starter sets from `data.ts` as fallback for accounts with no cards yet.
+ *
+ * Selection is due-first: cards the SRS says are due today lead every session
+ * (so "played a game" advances the same schedule as "did my review"), then the
+ * rest of the user's vocabulary tops the session up. Everything here is
+ * side-effect-free so it can be unit tested without mocks.
  */
 import { getFlashcardDisplayText } from '@/lib/flashcardUtils';
 import { hiraganaToKatakana, isPureKana, shuffle } from '@/lib/reviewGames';
@@ -18,6 +23,8 @@ export interface MatchWord {
   emoji?: string;
   speak: string;
   jlpt?: JlptLevel;
+  /** Source card id — omitted for starter-set fallback words (no SRS write). */
+  cardId?: string;
 }
 
 export interface KanaWord {
@@ -29,41 +36,78 @@ export interface KanaWord {
   emoji?: string;
   speak: string;
   jlpt?: JlptLevel;
+  /** Source card id — omitted for starter-set fallback words (no SRS write). */
+  cardId?: string;
 }
 
 /**
- * Word Match items from the user's cards (deduped by display text), or the
- * starter vocabulary when there are no usable cards. Returns a fresh random
- * sample per call.
+ * Order the user's cards for a game session: every due card first (in the
+ * soonest-first order `getDueCards` returned them), then a random top-up from
+ * the rest of their collection, excluding ids already taken. Only the top-up
+ * is shuffled, so due cards always lead the session and get practiced first.
  */
-export function pickMatchWords(cards: Flashcard[], max = MATCH_SESSION_WORDS): MatchWord[] {
+export function orderDueFirst(dueCards: Flashcard[], allCards: Flashcard[]): Flashcard[] {
+  const seen = new Set<string>();
+  const ordered: Flashcard[] = [];
+  for (const card of dueCards) {
+    if (seen.has(card.id)) continue;
+    seen.add(card.id);
+    ordered.push(card);
+  }
+  const topUp = shuffle(allCards.filter((card) => !seen.has(card.id)));
+  return [...ordered, ...topUp];
+}
+
+/**
+ * Word Match items, due-first from the user's cards (deduped by display text),
+ * or the starter vocabulary when there are no usable cards yet. Due cards keep
+ * their leading position; the cap trims the random top-up, never the due cards.
+ */
+export function pickMatchWords(
+  dueCards: Flashcard[],
+  allCards: Flashcard[],
+  max = MATCH_SESSION_WORDS,
+): MatchWord[] {
   const seen = new Set<string>();
   const fromCards: MatchWord[] = [];
-  for (const card of cards) {
+  for (const card of orderDueFirst(dueCards, allCards)) {
+    if (fromCards.length >= max) break;
     const { titleText, speakText } = getFlashcardDisplayText(card);
     const jp = titleText?.trim();
     const meaning = card.meaning?.trim();
     if (!jp || !meaning || seen.has(jp)) continue;
     seen.add(jp);
-    fromCards.push({ jp, english: meaning, speak: speakText, jlpt: card.jlptLevel });
+    fromCards.push({
+      jp,
+      english: meaning,
+      speak: speakText,
+      jlpt: card.jlptLevel,
+      cardId: card.id,
+    });
   }
 
-  const pool: MatchWord[] =
-    fromCards.length >= 2
-      ? fromCards
-      : VOCAB_WORDS.map((w) => ({ jp: w.jp, english: w.english, emoji: w.emoji, speak: w.jp }));
+  if (fromCards.length >= 2) return fromCards;
 
-  return shuffle(pool).slice(0, max);
+  // Brand-new account with no usable cards — starter vocabulary. No cardId, so
+  // free play never tries to schedule a card that doesn't exist.
+  return shuffle(
+    VOCAB_WORDS.map((w) => ({ jp: w.jp, english: w.english, emoji: w.emoji, speak: w.jp })),
+  ).slice(0, max);
 }
 
 /**
- * Kana Builder items: cards whose reading (or word) is pure kana and short
- * enough to build from tiles. Falls back to the katakana starter set.
+ * Kana Builder items, due-first: cards whose reading (or word) is pure kana and
+ * short enough to build from tiles. Falls back to the katakana starter set.
  */
-export function pickKanaWords(cards: Flashcard[], max = KANA_SESSION_WORDS): KanaWord[] {
+export function pickKanaWords(
+  dueCards: Flashcard[],
+  allCards: Flashcard[],
+  max = KANA_SESSION_WORDS,
+): KanaWord[] {
   const seen = new Set<string>();
   const fromCards: KanaWord[] = [];
-  for (const card of cards) {
+  for (const card of orderDueFirst(dueCards, allCards)) {
+    if (fromCards.length >= max) break;
     const reading = card.reading?.trim();
     const word = card.word?.trim();
     const target =
@@ -77,19 +121,19 @@ export function pickKanaWords(cards: Flashcard[], max = KANA_SESSION_WORDS): Kan
       hint: word && word !== target ? word : undefined,
       speak: word || target,
       jlpt: card.jlptLevel,
+      cardId: card.id,
     });
   }
 
-  const pool: KanaWord[] =
-    fromCards.length > 0
-      ? fromCards
-      : KATAKANA_WORDS.map((w) => ({
-          target: hiraganaToKatakana(w.hiragana),
-          english: w.english,
-          hint: w.hiragana,
-          emoji: w.emoji,
-          speak: w.hiragana,
-        }));
+  if (fromCards.length > 0) return fromCards;
 
-  return shuffle(pool).slice(0, max);
+  return shuffle(
+    KATAKANA_WORDS.map((w) => ({
+      target: hiraganaToKatakana(w.hiragana),
+      english: w.english,
+      hint: w.hiragana,
+      emoji: w.emoji,
+      speak: w.hiragana,
+    })),
+  ).slice(0, max);
 }

@@ -1,5 +1,5 @@
 /**
- * Pure logic helpers for the review games (/games).
+ * Pure logic helpers for the review games (under /review).
  * Game vocabulary comes from the user's decks (with starter sets in
  * `src/components/Games/data.ts` as fallback); everything here is
  * side-effect-free so it can be unit tested without mocks.

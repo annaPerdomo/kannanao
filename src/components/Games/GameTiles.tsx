@@ -1,6 +1,6 @@
 'use client';
 
-import { alpha, Box, Container, Stack, Typography } from '@mui/material';
+import { alpha, Box, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 
@@ -25,6 +25,7 @@ function GameCard({ title, jpTitle, description, emoji, gradient, href }: GameCa
       onClick={handleClick}
       role="button"
       tabIndex={0}
+      aria-label={`${title} — ${description}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -100,77 +101,48 @@ const GAMES: GameCardProps[] = [
   {
     title: 'Word Match',
     jpTitle: 'ことばマッチ',
-    description: 'Match words from all your decks to their meanings — 6 pairs a round.',
+    description: 'Match your words to their pictures — 6 pairs a round.',
     emoji: '🍉',
     gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
-    href: '/games/match',
+    href: '/review/match',
   },
   {
     title: 'Kana Builder',
     jpTitle: 'かなビルダー',
-    description: 'Spell words you’ve studied from kana tiles — recall, not recognition.',
+    description: 'Spell words you’ve studied from kana tiles.',
     emoji: '🧩',
     gradient: 'linear-gradient(135deg, #f97316, #ea580c)',
-    href: '/games/kana',
+    href: '/review/kana',
   },
   {
     title: 'Question Quest',
     jpTitle: 'しつもんクエスト',
-    description: 'なんさい? なにいろ? だれ? — pick the answer that fits each question.',
+    description: 'なんさい? なにいろ? だれ? — pick the answer that fits.',
     emoji: '❓',
     gradient: 'linear-gradient(135deg, #14b8a6, #0d9488)',
-    href: '/games/questions',
+    href: '/review/questions',
   },
   {
     title: 'Particle Picker',
     jpTitle: 'じょしピッカー',
-    description: 'Fill in は・が・を・に・の and friends to complete each sentence.',
+    description: 'Fill in は・が・を・に・の to finish each sentence.',
     emoji: '🎏',
     gradient: 'linear-gradient(135deg, #84cc16, #65a30d)',
-    href: '/games/particles',
+    href: '/review/particles',
   },
 ];
 
-export function GamesHub() {
-  const theme = useTheme();
-  const { brand } = theme.palette;
-
+/**
+ * The four review-game tiles, shown under the due-cards hero on /review. Each
+ * pulls words from every deck you've studied — due cards first — so a quick
+ * game keeps your whole vocabulary fresh. Every answer earns XP.
+ */
+export function GameTiles() {
   return (
-    <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
-      <Stack spacing={3}>
-        <Box sx={{ textAlign: 'center', mb: 1 }}>
-          <Box
-            aria-hidden
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 56,
-              height: 56,
-              borderRadius: '16px',
-              background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-              mb: 2,
-              boxShadow: `0 4px 16px ${alpha(brand[500], 0.3)}`,
-              fontSize: 28,
-            }}
-          >
-            🎮
-          </Box>
-          <Typography variant="h5" sx={{ color: 'text.primary', mb: 0.5 }}>
-            Practice Games
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 360, mx: 'auto' }}>
-            ふくしゅうしよう！ — quick games that mix words from every deck you’ve studied, so
-            nothing gets forgotten. Every answer earns XP!
-          </Typography>
-        </Box>
-
-        <Stack spacing={1.5}>
-          {GAMES.map((game) => (
-            <GameCard key={game.href} {...game} />
-          ))}
-        </Stack>
-      </Stack>
-    </Container>
+    <Stack spacing={1.5}>
+      {GAMES.map((game) => (
+        <GameCard key={game.href} {...game} />
+      ))}
+    </Stack>
   );
 }

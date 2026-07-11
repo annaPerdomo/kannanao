@@ -5,7 +5,6 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import HomeIcon from '@mui/icons-material/Home';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import MicIcon from '@mui/icons-material/Mic';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -26,7 +25,6 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Home', icon: <HomeIcon />, path: '/', exact: true },
   { label: 'Decks', icon: <LibraryBooksIcon />, path: '/decks' },
   { label: 'Groups', icon: <GroupsIcon />, path: '/group', organizerOnly: true },
-  { label: 'Games', icon: <SportsEsportsIcon />, path: '/games' },
   { label: 'Speech', icon: <MicIcon />, path: '/ohanashikai' },
   { label: 'Travel', icon: <FlightIcon />, path: '/travel' },
   { label: 'Stats', icon: <BarChartIcon />, path: '/stats' },
