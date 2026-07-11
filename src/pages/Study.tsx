@@ -366,7 +366,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
                 component="span"
                 sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.15rem', fontWeight: 700 }}
               >
-                まだ 🌱
+                まだ
               </Box>
               <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
                 Still learning
@@ -409,7 +409,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
                   '& rt': { fontSize: '0.6em', opacity: 0.9, fontWeight: 600 },
                 }}
               >
-                <FuriganaText text="{知|し}ってた！" showFurigana /> ⭐
+                <FuriganaText text="{知|し}ってた！" showFurigana />
               </Box>
               <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
                 Got it
