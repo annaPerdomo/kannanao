@@ -45,9 +45,6 @@ const SPARKLE_ITEMS = [
 export default function Study({ deckId, onBack }: StudyProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
-  // Legible label color on the "Got it" gradient across every theme (some brand
-  // scales are light, some dark) — let MUI pick black/white for AA contrast.
-  const gotItText = theme.palette.getContrastText(brand[500]);
   const { cards, loading: cardsLoading } = useCards(deckId);
   const { decks, loading: decksLoading } = useDecks();
   const { equipped } = useShop();
@@ -331,27 +328,14 @@ export default function Study({ deckId, onBack }: StudyProps) {
             mt: 3,
           }}
         >
+          {/* Theme's stock outlined/contained variants — their colors are the
+              app-wide, contrast-tuned pairings for every palette. Don't override
+              colors here: the contained variant's gradient is a background-IMAGE,
+              so an sx bgcolor silently loses to it and breaks contrast. */}
           <Button
-            variant="contained"
+            variant="outlined"
             onClick={() => handleGrade(false)}
-            sx={{
-              flex: 1,
-              maxWidth: 200,
-              py: 1.25,
-              borderRadius: 3,
-              textTransform: 'none',
-              // Soft tint of the theme's own brand — calm, not alarming, and
-              // legible in every palette because the label is text.primary.
-              bgcolor: alpha(brand[100], 0.7),
-              color: 'text.primary',
-              border: `1.5px solid ${alpha(brand[300], 0.55)}`,
-              boxShadow: 'none',
-              '&:hover': {
-                bgcolor: alpha(brand[200], 0.8),
-                borderColor: brand[400],
-                boxShadow: 'none',
-              },
-            }}
+            sx={{ flex: 1, maxWidth: 200, py: 1.25, borderRadius: 3 }}
           >
             <Box
               sx={{
@@ -376,20 +360,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
           <Button
             variant="contained"
             onClick={() => handleGrade(true)}
-            sx={{
-              flex: 1,
-              maxWidth: 200,
-              py: 1.25,
-              borderRadius: 3,
-              textTransform: 'none',
-              background: `linear-gradient(135deg, ${brand[400]} 0%, ${accent[400]} 100%)`,
-              color: gotItText,
-              boxShadow: 'none',
-              '&:hover': {
-                boxShadow: `0 6px 18px ${alpha(accent[300], 0.5)}`,
-                filter: 'brightness(1.04)',
-              },
-            }}
+            sx={{ flex: 1, maxWidth: 200, py: 1.25, borderRadius: 3 }}
           >
             <Box
               sx={{
