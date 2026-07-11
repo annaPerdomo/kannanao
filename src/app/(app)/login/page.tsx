@@ -16,14 +16,12 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import WaitlistForm from '@/components/WaitlistForm';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
-  const router = useRouter();
   const { signInWithUsername } = useAuth();
 
   const [showWaitlist, setShowWaitlist] = useState(false);
@@ -39,9 +37,17 @@ export default function LoginPage() {
     setBusy(true);
     setError(null);
     const result = await signInWithUsername(username, password);
-    setBusy(false);
-    if (result.error) setError(result.error);
-    else router.push('/');
+    if (result.error) {
+      setError(result.error);
+      setBusy(false);
+      return;
+    }
+    // Full document navigation (not router.push) so the request hits the
+    // middleware, which sees the fresh auth cookie and serves the dynamic
+    // dashboard instead of the Router-Cache-stale static landing page.
+    // Keep `busy` true through the redirect so the button stays disabled
+    // while the page unloads.
+    window.location.assign('/');
   };
 
   return (
