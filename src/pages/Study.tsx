@@ -328,15 +328,15 @@ export default function Study({ deckId, onBack }: StudyProps) {
             mt: 3,
           }}
         >
-          {/* Theme's stock outlined variant for the calm secondary action; the
-              primary keeps the contained variant's white label but swaps its
+          {/* Both use the contained variant's white label. "Still learning"
+              keeps the stock brand 600→700 background; "Got it" swaps its
               background for the app's signature brand→accent sweep (see the
               card banners), at the darker 600/700 stops so white stays AA in
               every palette. NOTE: the variant background is a background-IMAGE —
               replace it with `background`, never `bgcolor` (which silently
               paints underneath it). */}
           <Button
-            variant="outlined"
+            variant="contained"
             onClick={() => handleGrade(false)}
             sx={{ flex: 1, maxWidth: 200, py: 1.25, borderRadius: 3 }}
           >
