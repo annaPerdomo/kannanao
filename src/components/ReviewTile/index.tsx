@@ -7,10 +7,10 @@ import { useRouter } from 'next/navigation';
 import { useDueCount } from '@/hooks/useDueCount';
 
 /**
- * The single home-screen entry point to Smart Review. When cards are due it's a
+ * The single home-screen entry point to Review. When cards are due it's a
  * bright, inviting "N due today" call to action; when nothing is due it stays as
- * a calm "all caught up" state that still leads to /review (which shows the
- * friendly all-done screen). No SRS jargon ever surfaces — just "Review".
+ * a calm "all caught up" state. Either way it leads to /review — the practice
+ * hub (due-cards hero + games). No SRS jargon ever surfaces — just "Review".
  */
 export function ReviewTile() {
   const router = useRouter();

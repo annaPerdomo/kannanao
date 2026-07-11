@@ -1,106 +1,110 @@
 'use client';
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 
-import FlipStudy from '@/components/FlipStudy';
-import { useAuth } from '@/contexts/AuthContext';
-import { getDueCards } from '@/lib/supabase';
+import { GameTiles } from '@/components/Games';
+import { Loading } from '@/components/Loading';
+import { useDueCount } from '@/hooks/useDueCount';
 import { LAYOUT } from '@/theme';
-import type { Flashcard } from '@/types/flashcard';
 
-/** Shown when nothing is due — calm, encouraging, points back to practice. */
-function AllDone({ onBrowse, onHome }: { onBrowse: () => void; onHome: () => void }) {
+/** Bright call-to-action when cards are waiting: count + one big start button. */
+function DueHero({ count, onStart }: { count: number; onStart: () => void }) {
+  return (
+    <Box
+      sx={{
+        borderRadius: 4,
+        px: { xs: 3, sm: 4 },
+        py: { xs: 3.5, sm: 4 },
+        textAlign: 'center',
+        color: '#fff',
+        background: (t) =>
+          `linear-gradient(135deg, ${t.palette.brand[500]} 0%, ${t.palette.accent[500]} 100%)`,
+        boxShadow: (t) => `0 8px 26px ${alpha(t.palette.brand[400], 0.35)}`,
+      }}
+    >
+      <Typography sx={{ fontSize: '3rem', lineHeight: 1, mb: 1 }}>🎯</Typography>
+      <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>
+        {count} card{count === 1 ? '' : 's'} due today
+      </Typography>
+      <Typography sx={{ color: alpha('#fff', 0.92), mb: 3 }}>
+        A few minutes keeps your words fresh.
+      </Typography>
+      <Button
+        variant="contained"
+        onClick={onStart}
+        sx={{
+          borderRadius: 999,
+          px: 4,
+          py: 1.25,
+          fontWeight: 800,
+          fontSize: '1rem',
+          color: (t) => t.palette.brand[700],
+          bgcolor: '#fff',
+          '&:hover': { bgcolor: alpha('#fff', 0.9) },
+        }}
+      >
+        Start today’s practice
+      </Button>
+    </Box>
+  );
+}
+
+/** Calm state when nothing is due — never a dead end; games are right below. */
+function CaughtUpHero() {
+  return (
+    <Box
+      sx={{
+        borderRadius: 4,
+        px: { xs: 3, sm: 4 },
+        py: { xs: 3.5, sm: 4 },
+        textAlign: 'center',
+        border: (t) => `1.5px solid ${alpha(t.palette.brand[300], 0.4)}`,
+        bgcolor: (t) => alpha(t.palette.brand[50], 0.7),
+      }}
+    >
+      <Typography sx={{ fontSize: '3rem', lineHeight: 1, mb: 1 }}>🌿</Typography>
+      <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', mb: 0.5 }}>
+        All caught up!
+      </Typography>
+      <Typography sx={{ color: 'text.secondary' }}>
+        Nothing due right now — pick a game below to stay sharp.
+      </Typography>
+    </Box>
+  );
+}
+
+/**
+ * Review — the single cross-deck practice home. Reads top-to-bottom as: what's
+ * due today → one big start button (the flip-review flow at /review/today) →
+ * fun games that practice the same due cards first. The home ReviewTile links
+ * here; no SRS jargon ever surfaces.
+ */
+export default function ReviewHubPage() {
+  const router = useRouter();
+  const { dueCount, loading } = useDueCount();
+
   return (
     <Box
       sx={{
         maxWidth: LAYOUT.narrowMaxWidth,
         mx: 'auto',
         px: LAYOUT.pagePx,
-        py: 8,
-        textAlign: 'center',
+        py: { xs: 3, sm: 5 },
       }}
     >
-      <Typography sx={{ fontSize: '3.5rem', mb: 1 }}>🎉</Typography>
-      <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>
-        All done for today!
+      {loading ? (
+        <Loading />
+      ) : dueCount > 0 ? (
+        <DueHero count={dueCount} onStart={() => router.push('/review/today')} />
+      ) : (
+        <CaughtUpHero />
+      )}
+
+      <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', mt: 5, mb: 2 }}>
+        Fun ways to practice
       </Typography>
-      <Typography color="text.secondary" sx={{ mb: 4 }}>
-        You&apos;ve reviewed everything that came due. Play a practice mode to keep the streak going
-        ✨
-      </Typography>
-      <Stack direction="row" spacing={2} justifyContent="center">
-        <Button
-          variant="contained"
-          onClick={onBrowse}
-          sx={{
-            borderRadius: 3,
-            px: 3,
-            background: (t) =>
-              `linear-gradient(135deg, ${t.palette.brand[600]} 0%, ${t.palette.accent[600]} 100%)`,
-            '&:hover': {
-              background: (t) =>
-                `linear-gradient(135deg, ${t.palette.brand[700]} 0%, ${t.palette.accent[700]} 100%)`,
-            },
-          }}
-        >
-          Browse decks
-        </Button>
-        <Button
-          variant="outlined"
-          onClick={onHome}
-          sx={{
-            borderRadius: 3,
-            px: 3,
-            borderColor: (t) => alpha(t.palette.brand[400], 0.5),
-            color: (t) => t.palette.brand[600],
-          }}
-        >
-          Back home
-        </Button>
-      </Stack>
+      <GameTiles />
     </Box>
-  );
-}
-
-/**
- * Smart Review: pulls the cards due right now across ALL the student's decks
- * and runs them through the shared flip-with-self-grading flow. Only cards
- * graded at least once ever become due (see getDueCards), so this never floods
- * on day one. Grading here records answers exactly like deck study, advancing
- * each card's schedule via the SRS scheduler.
- */
-export default function ReviewPage() {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [cards, setCards] = useState<Flashcard[] | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    void getDueCards(user.id).then((due) => {
-      if (!cancelled) setCards(due);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
-
-  return (
-    <FlipStudy
-      cards={cards ?? []}
-      loading={cards === null}
-      loadingMessage="Finding your reviews…"
-      title="Smart Review"
-      badge={cards && cards.length > 0 ? `${cards.length} to review` : undefined}
-      sessionMode="review"
-      sessionDeckId={null}
-      onBack={() => router.push('/')}
-      completionSubheading="You reviewed everything that was due!"
-      emptyState={
-        <AllDone onBrowse={() => router.push('/decks')} onHome={() => router.push('/')} />
-      }
-    />
   );
 }

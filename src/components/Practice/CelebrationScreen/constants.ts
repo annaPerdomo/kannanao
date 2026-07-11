@@ -5,7 +5,11 @@ export type PracticeMode =
   | 'study'
   | 'speech_read'
   | 'speech_recall'
-  | 'kotoba-bubble';
+  | 'kotoba-bubble'
+  | 'kana-build'
+  | 'particle-quiz'
+  | 'question-quiz'
+  | 'word-match';
 export type CelebTheme =
   | 'confetti'
   | 'fireworks'
@@ -150,6 +154,10 @@ export const MODE_EMOJIS: Record<PracticeMode, string[]> = {
   speech_read: ['🎤', '🌸', '✨', '📖', '🌟', '🎀'],
   speech_recall: ['🎤', '🌟', '💪', '⭐', '🎯', '✨'],
   'kotoba-bubble': ['🫧', '✨', '🌟', '💬', '🎯', '⭐'],
+  'kana-build': ['🧩', '✨', '🌟', '🔤', '🎯', '⭐'],
+  'particle-quiz': ['🎏', '✨', '🌟', '📝', '🎯', '⭐'],
+  'question-quiz': ['❓', '✨', '🌟', '💡', '🎯', '⭐'],
+  'word-match': ['🍉', '✨', '🌟', '🔗', '🎯', '⭐'],
 };
 
 export const THEME_CONFIGS: Record<CelebTheme, ThemeConfig> = {

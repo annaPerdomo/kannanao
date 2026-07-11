@@ -9,6 +9,10 @@ export const MODE_LABELS: Record<SessionMode, string> = {
   speech_read: 'Read-Through',
   speech_recall: 'Line Recall',
   'kotoba-bubble': 'Sentence Builder',
+  'kana-build': 'Kana Builder',
+  'particle-quiz': 'Particle Picker',
+  'question-quiz': 'Question Quest',
+  'word-match': 'Word Match',
 };
 
 export const MODE_COLORS: Record<SessionMode, string> = {
@@ -20,6 +24,10 @@ export const MODE_COLORS: Record<SessionMode, string> = {
   speech_read: '#EC4899',
   speech_recall: '#8B5CF6',
   'kotoba-bubble': '#06B6D4',
+  'kana-build': '#F97316',
+  'particle-quiz': '#84CC16',
+  'question-quiz': '#14B8A6',
+  'word-match': '#EAB308',
 };
 
 export function modeLabel(mode: SessionMode | null | undefined): string {
