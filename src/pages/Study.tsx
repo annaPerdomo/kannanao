@@ -106,8 +106,8 @@ export default function Study({ deckId, onBack }: StudyProps) {
     });
   }, [endSession, sessionId]);
 
-  const handleBack = useCallback(async () => {
-    await finishSession();
+  const handleBack = useCallback(() => {
+    finishSession().catch(() => {});
     onBack();
   }, [finishSession, onBack]);
   // ─────────────────────────────────────────────────────────────────────────
