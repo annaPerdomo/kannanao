@@ -6,6 +6,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Flashcard } from '@/components/Flashcard';
+import FuriganaText from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
@@ -44,6 +45,9 @@ const SPARKLE_ITEMS = [
 export default function Study({ deckId, onBack }: StudyProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  // Legible label color on the "Got it" gradient across every theme (some brand
+  // scales are light, some dark) — let MUI pick black/white for AA contrast.
+  const gotItText = theme.palette.getContrastText(brand[500]);
   const { cards, loading: cardsLoading } = useCards(deckId);
   const { decks, loading: decksLoading } = useDecks();
   const { equipped } = useShop();
@@ -333,20 +337,41 @@ export default function Study({ deckId, onBack }: StudyProps) {
             sx={{
               flex: 1,
               maxWidth: 200,
-              py: 1.5,
+              py: 1.25,
               borderRadius: 3,
-              fontSize: '1.05rem',
-              fontWeight: 700,
               textTransform: 'none',
-              bgcolor: brand[100],
+              // Soft tint of the theme's own brand — calm, not alarming, and
+              // legible in every palette because the label is text.primary.
+              bgcolor: alpha(brand[100], 0.7),
               color: 'text.primary',
+              border: `1.5px solid ${alpha(brand[300], 0.55)}`,
               boxShadow: 'none',
-              '&:hover': { bgcolor: brand[200], boxShadow: 'none' },
+              '&:hover': {
+                bgcolor: alpha(brand[200], 0.8),
+                borderColor: brand[400],
+                boxShadow: 'none',
+              },
             }}
           >
-            まだ 🌱
-            <br />
-            Still learning
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 0.25,
+                lineHeight: 1.2,
+              }}
+            >
+              <Box
+                component="span"
+                sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.15rem', fontWeight: 700 }}
+              >
+                まだ 🌱
+              </Box>
+              <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
+                Still learning
+              </Box>
+            </Box>
           </Button>
           <Button
             variant="contained"
@@ -354,20 +379,42 @@ export default function Study({ deckId, onBack }: StudyProps) {
             sx={{
               flex: 1,
               maxWidth: 200,
-              py: 1.5,
+              py: 1.25,
               borderRadius: 3,
-              fontSize: '1.05rem',
-              fontWeight: 700,
               textTransform: 'none',
               background: `linear-gradient(135deg, ${brand[400]} 0%, ${accent[400]} 100%)`,
-              color: 'white',
+              color: gotItText,
               boxShadow: 'none',
-              '&:hover': { boxShadow: `0 6px 18px ${alpha(accent[300], 0.5)}` },
+              '&:hover': {
+                boxShadow: `0 6px 18px ${alpha(accent[300], 0.5)}`,
+                filter: 'brightness(1.04)',
+              },
             }}
           >
-            知ってた! ⭐
-            <br />
-            Got it
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 0.25,
+                lineHeight: 1.2,
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  fontFamily: (t) => t.fonts.jp,
+                  fontSize: '1.15rem',
+                  fontWeight: 700,
+                  '& rt': { fontSize: '0.6em', opacity: 0.9, fontWeight: 600 },
+                }}
+              >
+                <FuriganaText text="{知|し}ってた！" showFurigana /> ⭐
+              </Box>
+              <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
+                Got it
+              </Box>
+            </Box>
           </Button>
         </Box>
       )}
