@@ -1,8 +1,10 @@
 'use client';
 import { Box, Button, Typography } from '@mui/material';
-import { useMemo } from 'react';
+import { alpha } from '@mui/material/styles';
+import { useMemo, useState } from 'react';
 
 import FuriganaText from '@/components/FuriganaText';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { CELEBRATION_THEMES, useShop } from '@/hooks/useShop';
 
 import {
@@ -33,6 +35,16 @@ export {
   PRAISE_PERFECT,
 } from './constants';
 
+/** Optional daily-chest reward shown on the celebration screen. */
+export interface CelebrationChest {
+  /** Golden for a perfect clear, wooden otherwise. */
+  variant: 'gold' | 'wood';
+  /** XP the chest holds (shown after it opens). */
+  xp: number;
+  /** Called once when the student taps to open — parent awards + persists. */
+  onOpen: () => void;
+}
+
 export interface CelebrationScreenProps {
   /** Main phrase. May contain `{kanji|reading}` furigana markup — rendered with
    *  ruby readings so learners of any level can read it. */
@@ -42,6 +54,10 @@ export interface CelebrationScreenProps {
   subheading: string;
   extra?: string;
   mode: PracticeMode;
+  /** When set, a tappable daily chest appears above the exit button. */
+  chest?: CelebrationChest;
+  /** Exit button label (defaults to "Back to Deck"). */
+  exitLabel?: string;
   onExit: () => void;
 }
 
@@ -82,12 +98,94 @@ export function CelebParticleStage({ itemKey }: { itemKey: string }) {
   return <RenderParticles theme={particleType} celebData={celebData} mode="recall" />;
 }
 
+/**
+ * The daily chest on the celebration screen. Closed until tapped; opening awards
+ * the XP (via the parent's onOpen) and reveals the reward. Golden for a perfect
+ * clear. The shimmy/burst is skipped when the user prefers reduced motion.
+ */
+function ChestReward({ chest, textColor }: { chest: CelebrationChest; textColor: string }) {
+  const [opened, setOpened] = useState(false);
+  const reducedMotion = useReducedMotion();
+  const gold = chest.variant === 'gold';
+  const glow = gold ? '#F5C518' : '#C08A4A';
+
+  const open = () => {
+    if (opened) return;
+    setOpened(true);
+    chest.onOpen();
+  };
+
+  return (
+    <Box sx={{ mt: 2.5, animation: 'fadeUp 0.5s 0.66s ease both' }}>
+      <Box
+        role="button"
+        tabIndex={opened ? -1 : 0}
+        aria-label={opened ? `Chest opened — ${chest.xp} XP` : 'Open your daily chest'}
+        onClick={open}
+        onKeyDown={(e) => {
+          if (!opened && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            open();
+          }
+        }}
+        sx={{
+          display: 'inline-flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 0.5,
+          cursor: opened ? 'default' : 'pointer',
+          userSelect: 'none',
+        }}
+      >
+        <Box
+          sx={{
+            fontSize: '3.4rem',
+            lineHeight: 1,
+            filter: `drop-shadow(0 4px 14px ${alpha(glow, 0.6)})`,
+            transition: 'transform 0.2s',
+            ...(reducedMotion
+              ? {}
+              : opened
+                ? {
+                    animation: 'chestBurst 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                    '@keyframes chestBurst': {
+                      '0%': { transform: 'scale(0.6) rotate(-8deg)' },
+                      '60%': { transform: 'scale(1.25) rotate(6deg)' },
+                      '100%': { transform: 'scale(1) rotate(0deg)' },
+                    },
+                  }
+                : {
+                    animation: 'chestWiggle 1.4s ease-in-out infinite',
+                    '@keyframes chestWiggle': {
+                      '0%, 100%': { transform: 'rotate(-4deg)' },
+                      '50%': { transform: 'rotate(4deg)' },
+                    },
+                  }),
+          }}
+          aria-hidden
+        >
+          {opened ? '🎉' : gold ? '🧰' : '🎁'}
+        </Box>
+        <Typography sx={{ fontWeight: 800, fontSize: '0.95rem', color: textColor }}>
+          {opened
+            ? `+${chest.xp} XP!`
+            : gold
+              ? 'Golden chest — tap to open!'
+              : 'Daily chest — tap to open!'}
+        </Typography>
+      </Box>
+    </Box>
+  );
+}
+
 export function CelebrationScreen({
   heading,
   headingEn,
   subheading,
   extra,
   mode,
+  chest,
+  exitLabel = 'Back to Deck',
   onExit,
 }: CelebrationScreenProps) {
   const { equipped } = useShop();
@@ -239,6 +337,8 @@ export function CelebrationScreen({
           ))}
         </Box>
 
+        {chest && <ChestReward chest={chest} textColor={cfg.textColor} />}
+
         <Box sx={{ mt: 3, animation: 'fadeUp 0.5s 0.72s ease both' }}>
           <Button
             onClick={onExit}
@@ -261,7 +361,7 @@ export function CelebrationScreen({
               transition: 'transform 0.15s, filter 0.15s, box-shadow 0.15s',
             }}
           >
-            Back to Deck
+            {exitLabel}
           </Button>
         </Box>
       </Box>

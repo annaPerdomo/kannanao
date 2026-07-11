@@ -89,6 +89,7 @@ function seededProgress(): UserProgress {
     total_cards_studied: 5,
     total_correct: 5,
     total_sessions: 1,
+    last_chest_date: null,
   };
 }
 
@@ -153,6 +154,22 @@ describe('useProgress session tracking', () => {
     });
 
     expect(upsertCardProgressMock).not.toHaveBeenCalled();
+  });
+
+  it('openDailyChest awards the flat chest XP and stamps today locally', async () => {
+    const { result } = renderProgress();
+
+    let ok = false;
+    await act(async () => {
+      ok = await result.current.openDailyChest();
+    });
+
+    expect(ok).toBe(true);
+    expect(result.current.progress?.total_xp).toBe(200); // 100 seeded + 100 chest
+    expect(result.current.progress?.last_chest_date).toBe(localToday());
+    const write = updates.filter((u) => u.table === 'user_progress').at(-1);
+    expect(write?.payload.last_chest_date).toBe(localToday());
+    expect(write?.payload.total_xp).toBe(200);
   });
 
   it('increments total_sessions from the latest progress in startSession', async () => {

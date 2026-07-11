@@ -3,6 +3,8 @@
 import { alpha, Box, Button, Chip, Container, LinearProgress, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
+import { ComboChip } from '@/components/ComboChip';
+
 interface GameShellProps {
   title: string;
   emoji: string;
@@ -11,6 +13,8 @@ interface GameShellProps {
   /** 0-based index of the current item */
   current: number;
   total: number;
+  /** Current combo run length (from useGameSession) — chip shows from 2+. */
+  comboCount?: number;
   onQuit: () => void;
   children: React.ReactNode;
 }
@@ -22,6 +26,7 @@ export function GameShell({
   howTo,
   current,
   total,
+  comboCount = 0,
   onQuit,
   children,
 }: GameShellProps) {
@@ -39,7 +44,10 @@ export function GameShell({
           </Box>
           {title}
         </Typography>
-        <Chip label={`${Math.min(current + 1, total)} / ${total}`} />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ComboChip count={comboCount} />
+          <Chip label={`${Math.min(current + 1, total)} / ${total}`} />
+        </Box>
       </Box>
 
       {/* Plain-words how-to so the first screen is self-explanatory to a kid. */}

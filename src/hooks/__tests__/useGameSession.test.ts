@@ -16,6 +16,7 @@ const mockRecordAnswer = vi.fn(
   async (_sessionId: string, _correct: boolean, _jlpt?: string, _cardId?: string) => {},
 );
 const mockEndSession = vi.fn(async (_id: string, _summary: SessionSummary) => {});
+const mockAddBonusXp = vi.fn(async (_amount: number) => {});
 const mockTriggerXpEarned = vi.fn((_amount: number) => {});
 
 vi.mock('@/hooks/useProgress', () => ({
@@ -23,6 +24,7 @@ vi.mock('@/hooks/useProgress', () => ({
     startSession: mockStartSession,
     recordAnswer: mockRecordAnswer,
     endSession: mockEndSession,
+    addBonusXp: mockAddBonusXp,
   }),
   XP_PER_WRONG: 2,
 }));
@@ -86,5 +88,33 @@ describe('useGameSession', () => {
     expect(id).toBe('sess-1');
     expect(summary.cardsStudied).toBe(2);
     expect(summary.cardsCorrect).toBe(1);
+  });
+
+  it('carries the combo: exposes the run count and awards the flat bonus', async () => {
+    const { result } = renderHook(() => useGameSession('word-match'));
+    await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      await result.current.answer(true, undefined, 'c1');
+      await result.current.answer(true, undefined, 'c2');
+      await result.current.answer(true, undefined, 'c3'); // 3-in-a-row → +5
+    });
+
+    expect(result.current.comboCount).toBe(3);
+    expect(mockAddBonusXp).toHaveBeenCalledWith(5);
+  });
+
+  it('resets the combo on a wrong answer', async () => {
+    const { result } = renderHook(() => useGameSession('word-match'));
+    await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      await result.current.answer(true, undefined, 'c1');
+      await result.current.answer(true, undefined, 'c2');
+      await result.current.answer(false, undefined, 'c3');
+    });
+
+    expect(result.current.comboCount).toBe(0);
+    expect(mockAddBonusXp).not.toHaveBeenCalled();
   });
 });

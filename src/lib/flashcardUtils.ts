@@ -21,6 +21,22 @@ export function cardXp(jlptLevel?: JlptLevel | null): number {
 }
 
 /**
+ * Multiple-choice options for a card: its meaning plus up to three distractor
+ * meanings drawn at random from the rest of the pool, all shuffled. Shared by
+ * the Guess-It practice mode and the review Boss Round so the distractor logic
+ * lives in one place.
+ */
+export function buildMeaningChoices(correct: Flashcard, pool: Flashcard[]): string[] {
+  const others = pool.filter((c) => c.id !== correct.id);
+  const count = Math.min(3, others.length);
+  const distractors = [...others]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, count)
+    .map((c) => c.meaning);
+  return [...distractors, correct.meaning].sort(() => Math.random() - 0.5);
+}
+
+/**
  * Shrinks a title's font size as its character count grows, so long words
  * stay on one line inside the card's fixed width instead of wrapping.
  */

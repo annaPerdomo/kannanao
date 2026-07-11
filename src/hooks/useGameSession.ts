@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import { useCombo } from '@/hooks/useCombo';
 import { type SessionMode, useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import { cardXp } from '@/lib/flashcardUtils';
 import type { JlptLevel } from '@/types/flashcard';
@@ -12,10 +13,15 @@ import type { JlptLevel } from '@/types/flashcard';
  * study session on mount, exposes `answer(correct, jlpt?, cardId?)` to record
  * each answer (with the XP pop animation) — and, when a cardId is passed, to
  * advance that card's SRS schedule — plus `finish()` / `quit()` to close it.
+ *
+ * Also carries the combo meter so all four review games get the combo chip and
+ * its flat bonuses for free. `combo` shares this hook's `useProgress` instance
+ * (via `addBonusXp`), so its bonus writes accumulate with the per-answer writes.
  */
 export function useGameSession(mode: SessionMode) {
-  const { startSession, recordAnswer, endSession } = useProgress();
+  const { startSession, recordAnswer, endSession, addBonusXp } = useProgress();
   const { triggerXpEarned } = useXpAnimation();
+  const combo = useCombo(addBonusXp);
 
   const sessionIdRef = useRef<string>('');
   const startTimeRef = useRef<number>(Date.now());
@@ -44,8 +50,11 @@ export function useGameSession(mode: SessionMode) {
         // only). Grammar games call answer() without it — nothing to schedule.
         await recordAnswer(sessionIdRef.current, correct, jlptLevel, cardId);
       }
+      // Advance the combo AFTER the answer is recorded so its bonus write lands
+      // on the updated progress snapshot.
+      combo.onAnswer(correct);
     },
-    [recordAnswer, triggerXpEarned],
+    [recordAnswer, triggerXpEarned, combo],
   );
 
   const finish = useCallback(async () => {
@@ -59,5 +68,5 @@ export function useGameSession(mode: SessionMode) {
     });
   }, [endSession]);
 
-  return { answer, finish };
+  return { answer, finish, comboCount: combo.count };
 }

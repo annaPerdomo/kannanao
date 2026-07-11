@@ -24,7 +24,7 @@ interface Tile {
 function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void }) {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
-  const { answer, finish } = useGameSession('kana-build');
+  const { answer, finish, comboCount } = useGameSession('kana-build');
 
   const [index, setIndex] = useState(0);
   const [done, setDone] = useState(false);
@@ -122,6 +122,7 @@ function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void })
       howTo="Tap the kana tiles in the right order to spell the word."
       current={index}
       total={words.length}
+      comboCount={comboCount}
       onQuit={async () => {
         await finish();
         onExit();

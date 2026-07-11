@@ -23,12 +23,12 @@ function DueHero({ count, onStart }: { count: number; onStart: () => void }) {
         boxShadow: (t) => `0 8px 26px ${alpha(t.palette.brand[400], 0.35)}`,
       }}
     >
-      <Typography sx={{ fontSize: '3rem', lineHeight: 1, mb: 1 }}>🎯</Typography>
+      <Typography sx={{ fontSize: '3rem', lineHeight: 1, mb: 1 }}>⚔️</Typography>
       <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>
-        {count} card{count === 1 ? '' : 's'} due today
+        {count} word{count === 1 ? '' : 's'} are waiting
       </Typography>
       <Typography sx={{ color: alpha('#fff', 0.92), mb: 3 }}>
-        A few minutes keeps your words fresh.
+        A few minutes keeps your words fresh — clear them for a chest 🎁
       </Typography>
       <Button
         variant="contained"

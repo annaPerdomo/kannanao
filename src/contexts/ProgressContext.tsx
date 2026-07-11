@@ -22,6 +22,7 @@ const ProgressCtx = createContext<ProgressContextValue>({
   endSession: noopAsync,
   startSession: async () => '',
   addBonusXp: noopAsync,
+  openDailyChest: async () => false,
   refetch: noopAsync,
 });
 

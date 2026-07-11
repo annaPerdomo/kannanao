@@ -4,7 +4,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import { Alert, alpha, Box, Grid, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { CelebrationScreen } from '@/components/Practice/CelebrationScreen';
@@ -12,6 +12,7 @@ import { SpeakButton } from '@/components/SpeakButton';
 import { useGameSession } from '@/hooks/useGameSession';
 import { useReviewCards } from '@/hooks/useReviewCards';
 import { chunkRounds, shuffle } from '@/lib/reviewGames';
+import type { JlptLevel } from '@/types/flashcard';
 
 import { GameShell } from './GameShell';
 import { type MatchWord, pickMatchWords } from './gameWords';
@@ -26,14 +27,28 @@ interface Tile {
   speak?: string;
 }
 
-function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void }) {
+/** How a resolved (correct) or attempted (wrong) pair is reported upward. */
+export type MatchGradeFn = (correct: boolean, word: MatchWord | undefined) => void;
+
+interface MatchGridProps {
+  words: MatchWord[];
+  comboCount: number;
+  onGrade: MatchGradeFn;
+  onComplete: (stats: { correct: number; total: number }) => void;
+  onQuit: () => void | Promise<void>;
+}
+
+/**
+ * The tile-matching board itself — no session ownership. Both the standalone
+ * game and the embedded quest node render this; they differ only in how they
+ * grade answers and what happens on completion.
+ */
+function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit }: MatchGridProps) {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
-  const { answer, finish } = useGameSession('word-match');
 
   const rounds = useMemo(() => chunkRounds(words, PAIRS_PER_ROUND), [words]);
   const [roundIdx, setRoundIdx] = useState(0);
-  const [done, setDone] = useState(false);
   const [matched, setMatched] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<Tile | null>(null);
   const [wrongId, setWrongId] = useState<string | null>(null);
@@ -72,12 +87,8 @@ function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void 
     answeredRef.current += 1;
     if (selected.jp === tile.jp && selected.side !== tile.side) {
       correctRef.current += 1;
-      // The pair IS one card (shown as two tiles) — grade it once here, on the
-      // resolving match, passing cardId so it advances the SRS. A wrong attempt
-      // below pairs two different cards, so it can't be blamed on one card: it
-      // earns XP but writes no card_progress.
-      const word = byJp.get(tile.jp);
-      void answer(true, word?.jlpt, word?.cardId);
+      // The pair IS one card — grade it once, correct, so it advances the SRS.
+      onGrade(true, byJp.get(tile.jp));
       const next = new Set([...matched, tile.jp]);
       setMatched(next);
       setSelected(null);
@@ -85,15 +96,16 @@ function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void 
         setTimeout(() => {
           setMatched(new Set());
           if (roundIdx + 1 >= rounds.length) {
-            setDone(true);
-            finish();
+            onComplete({ correct: correctRef.current, total: answeredRef.current });
           } else {
             setRoundIdx(roundIdx + 1);
           }
         }, 800);
       }
     } else {
-      void answer(false, byJp.get(tile.jp)?.jlpt);
+      // A wrong attempt pairs two different cards, so it earns XP but no
+      // card_progress (no single card to blame).
+      onGrade(false, byJp.get(tile.jp));
       setWrongId(tile.id);
       setTimeout(() => {
         setWrongId(null);
@@ -102,18 +114,6 @@ function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void 
     }
   };
 
-  if (done) {
-    return (
-      <CelebrationScreen
-        heading="All matched!"
-        subheading={`${words.length} words · ${rounds.length} rounds`}
-        extra={`${correctRef.current} matches · ${answeredRef.current - correctRef.current} misses`}
-        mode="word-match"
-        onExit={onExit}
-      />
-    );
-  }
-
   return (
     <GameShell
       title="Word Match"
@@ -121,10 +121,8 @@ function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void 
       howTo="Tap a Japanese word, then the picture that means the same thing."
       current={roundIdx}
       total={rounds.length}
-      onQuit={async () => {
-        await finish();
-        onExit();
-      }}
+      comboCount={comboCount}
+      onQuit={onQuit}
     >
       <Grid container spacing={1.5}>
         {tiles.map((tile) => {
@@ -197,6 +195,55 @@ function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void 
   );
 }
 
+/** Standalone Word Match board — owns its own deckless session. */
+function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void }) {
+  const { answer, finish, comboCount } = useGameSession('word-match');
+  const [done, setDone] = useState(false);
+  const statsRef = useRef({ correct: 0, total: 0 });
+
+  const handleGrade = useCallback<MatchGradeFn>(
+    (correct, word) => {
+      void answer(correct, word?.jlpt, correct ? word?.cardId : undefined);
+    },
+    [answer],
+  );
+
+  const handleComplete = useCallback(
+    (stats: { correct: number; total: number }) => {
+      statsRef.current = stats;
+      setDone(true);
+      void finish();
+    },
+    [finish],
+  );
+
+  if (done) {
+    const { correct, total } = statsRef.current;
+    return (
+      <CelebrationScreen
+        heading="All matched!"
+        subheading={`${words.length} words`}
+        extra={`${correct} matches · ${total - correct} misses`}
+        mode="word-match"
+        onExit={onExit}
+      />
+    );
+  }
+
+  return (
+    <MatchGrid
+      words={words}
+      comboCount={comboCount}
+      onGrade={handleGrade}
+      onComplete={handleComplete}
+      onQuit={async () => {
+        await finish();
+        onExit();
+      }}
+    />
+  );
+}
+
 export function WordMatch() {
   const router = useRouter();
   const { dueCards, allCards, loading, error } = useReviewCards();
@@ -215,4 +262,49 @@ export function WordMatch() {
     );
   }
   return <MatchBoard words={words} onExit={() => router.push('/review')} />;
+}
+
+interface WordMatchEmbeddedProps {
+  /** The quest's Word Match cards (the last 6 due cards). */
+  words: MatchWord[];
+  comboCount: number;
+  /** Grade one resolved/attempted pair into the quest's shared session. */
+  onPairResolved: (
+    correct: boolean,
+    cardId: string | undefined,
+    jlpt: JlptLevel | undefined,
+  ) => void;
+  onComplete: () => void;
+  onQuit: () => void;
+}
+
+/**
+ * Word Match embedded in the review quest: no session of its own — it grades
+ * through the quest's shared 'review' session via `onPairResolved`, and hands
+ * back with `onComplete` when every pair is matched (no celebration; the quest
+ * runs one at the very end).
+ */
+export function WordMatchEmbedded({
+  words,
+  comboCount,
+  onPairResolved,
+  onComplete,
+  onQuit,
+}: WordMatchEmbeddedProps) {
+  const handleGrade = useCallback<MatchGradeFn>(
+    (correct, word) => {
+      onPairResolved(correct, correct ? word?.cardId : undefined, word?.jlpt);
+    },
+    [onPairResolved],
+  );
+
+  return (
+    <MatchGrid
+      words={words}
+      comboCount={comboCount}
+      onGrade={handleGrade}
+      onComplete={() => onComplete()}
+      onQuit={onQuit}
+    />
+  );
 }

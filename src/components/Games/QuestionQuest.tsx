@@ -17,7 +17,7 @@ export function QuestionQuest() {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
   const router = useRouter();
-  const { answer, finish } = useGameSession('question-quiz');
+  const { answer, finish, comboCount } = useGameSession('question-quiz');
 
   const items = useMemo(() => shuffle(QA_ITEMS), []);
   const [index, setIndex] = useState(0);
@@ -65,6 +65,7 @@ export function QuestionQuest() {
       howTo="Read the question, then tap the answer that fits it best."
       current={index}
       total={items.length}
+      comboCount={comboCount}
       onQuit={async () => {
         await finish();
         router.push('/review');
