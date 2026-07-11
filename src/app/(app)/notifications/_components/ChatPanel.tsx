@@ -5,6 +5,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import SendIcon from '@mui/icons-material/Send';
 import {
+  Alert,
   Avatar,
   Box,
   Button,
@@ -51,7 +52,18 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
     loadingOlder,
     loadOlder,
   } = useDirectMessages(recipientId);
-  const { messages: globalMessages, refetch: refetchGlobal } = useDirectMessagesCtx();
+  const {
+    messages: globalMessages,
+    refetch: refetchGlobal,
+    setActiveConversation,
+  } = useDirectMessagesCtx();
+
+  // Tell the global provider which chat is on screen so incoming messages from
+  // this person don't bump the nav badge / app icon badge while being read.
+  useEffect(() => {
+    setActiveConversation(recipientId);
+    return () => setActiveConversation(null);
+  }, [recipientId, setActiveConversation]);
 
   // While this thread loads, show whatever the global provider already has for
   // this conversation — switching chats from the list paints instantly instead
@@ -71,6 +83,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
   const { isRecipientTyping, sendTyping } = useTypingIndicator(recipientId);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -184,6 +197,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
   // Reset input when switching conversations
   useEffect(() => {
     setText('');
+    setSendError(null);
     clearImage();
   }, [recipientId, clearImage]);
 
@@ -199,6 +213,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
     const message = text.trim();
     if ((!message && !imageFile) || sending) return;
     setSending(true);
+    setSendError(null);
     try {
       let imageUrl: string | undefined;
       if (imageFile) {
@@ -226,6 +241,9 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
       scrollToBottom();
       // Sync sent message to global context so conversation list updates
       void refetchGlobalRef.current().catch(() => {});
+    } catch (err) {
+      // Keep the draft text/image so the user can retry
+      setSendError(err instanceof Error ? err.message : 'Failed to send message');
     } finally {
       setSending(false);
     }
@@ -474,6 +492,19 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
           onChange={handleImageSelect}
           style={{ display: 'none' }}
         />
+
+        {/* Send failure — keep the draft and let the user retry */}
+        {sendError && (
+          <Box sx={{ px: 2, pt: 1 }}>
+            <Alert
+              severity="error"
+              onClose={() => setSendError(null)}
+              sx={{ borderRadius: 2.5, fontSize: '0.8rem', py: 0.25 }}
+            >
+              {sendError}
+            </Alert>
+          </Box>
+        )}
 
         {/* Sending indicator */}
         {sending && (

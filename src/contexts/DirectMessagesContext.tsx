@@ -21,6 +21,7 @@ const DirectMessagesCtx = createContext<DirectMessagesContextValue>({
   markAllAsRead: noopAsync,
   toggleReaction: noopAsync,
   refetch: noopAsync,
+  setActiveConversation: () => {},
 });
 
 export function DirectMessagesProvider({
