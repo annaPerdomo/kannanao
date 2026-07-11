@@ -16,6 +16,31 @@ export type CelebTheme =
   | 'bunnies'
   | 'sparkle';
 
+/**
+ * Celebration praise phrases. The Japanese is the star of the screen; the
+ * reading (furigana, in `{kanji|reading}` markup) and English gloss make it
+ * legible to every level — an N5 beginner and a college student see the same
+ * screen and both understand it. Mirrors how <Loading /> pairs each kanji with
+ * its reading.
+ */
+export interface Praise {
+  /** Japanese phrase in `{kanji|reading}` furigana markup (kana needs none). */
+  jp: string;
+  /** English translation shown beneath the Japanese. */
+  en: string;
+}
+
+export const PRAISE_PERFECT: Praise = { jp: '{完璧|かんぺき}！', en: 'Perfect!' };
+export const PRAISE_GREAT: Praise = { jp: '{上手|じょうず}！', en: 'Great job!' };
+export const PRAISE_GOOD: Praise = { jp: 'その{調子|ちょうし}！', en: 'Keep going!' };
+
+/** Pick a praise phrase for a 0–1 score. */
+export function pickPraise(pct: number): Praise {
+  if (pct >= 1) return PRAISE_PERFECT;
+  if (pct >= 0.7) return PRAISE_GREAT;
+  return PRAISE_GOOD;
+}
+
 export interface ThemeConfig {
   bg: string;
   emoji: string;

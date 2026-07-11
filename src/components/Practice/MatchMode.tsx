@@ -15,7 +15,7 @@ import { useShop } from '@/hooks/useShop';
 import { cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
-import { CelebrationScreen } from './CelebrationScreen';
+import { CelebrationScreen, pickPraise } from './CelebrationScreen';
 import { RoundTransition } from './RoundTransition';
 
 interface MatchModeProps {
@@ -205,7 +205,8 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
     const batchLabel = queue.totalBatches > 1 ? `${queue.totalBatches} rounds` : '1 round';
     return (
       <CelebrationScreen
-        heading="All matched!"
+        heading={pickPraise(1).jp}
+        headingEn="All matched!"
         subheading={`${queue.totalCards} pairs · ${batchLabel}`}
         extra={`⏱ ${formatTime(totalTime)} · ${speedLabel(totalTime, queue.totalCards)}`}
         mode="match"

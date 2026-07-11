@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Flashcard } from '@/components/Flashcard';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
-import { CelebrationScreen } from '@/components/Practice/CelebrationScreen';
+import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
 import { XpEarnedPop } from '@/components/Practice/XpEarnedPop';
 import { StudyBuddy } from '@/components/StudyBuddy';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
@@ -419,14 +419,20 @@ export default function Study({ deckId, onBack }: StudyProps) {
         </Box>
       )}
 
-      {showCelebration && (
-        <CelebrationScreen
-          heading="すごい！"
-          subheading={`You studied all ${cards.length} cards!`}
-          mode="study"
-          onExit={handleBack}
-        />
-      )}
+      {showCelebration &&
+        (() => {
+          const graded = gradedRef.current.size;
+          const praise = pickPraise(graded > 0 ? correctRef.current / graded : 1);
+          return (
+            <CelebrationScreen
+              heading={praise.jp}
+              headingEn={praise.en}
+              subheading={`You studied all ${cards.length} cards!`}
+              mode="study"
+              onExit={handleBack}
+            />
+          );
+        })()}
 
       {equippedBuddy && <StudyBuddy buddyKey={equippedBuddy} reaction="idle" />}
     </Box>

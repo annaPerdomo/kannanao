@@ -25,7 +25,7 @@ import { useProgress } from '@/hooks/useProgress';
 import type { Flashcard } from '@/types/flashcard';
 import type { PracticeSentence } from '@/types/practiceSentence';
 
-import { CelebrationScreen } from '../CelebrationScreen';
+import { CelebrationScreen, pickPraise } from '../CelebrationScreen';
 import { XpEarnedPop } from '../XpEarnedPop';
 import { BubbleButton } from './BubbleButton';
 import { MIN_SENTENCES, PARTICLE_HINTS, XP_CORRECT, XP_PERFECT_BONUS, XP_WRONG } from './constants';
@@ -308,9 +308,11 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
   // ── Celebration screen (shop-purchased celebration) ─────────────────────────
   if (gameComplete && !showSummary) {
     const pct = gameSentences.length > 0 ? totalCorrect / gameSentences.length : 0;
+    const praise = pickPraise(pct);
     return (
       <CelebrationScreen
-        heading={pct === 1 ? 'Perfect!' : pct >= 0.7 ? 'Great job!' : 'Nice effort!'}
+        heading={praise.jp}
+        headingEn={praise.en}
         subheading={`${totalCorrect} / ${gameSentences.length} correct`}
         extra={bestStreak >= 3 ? `Best streak: ${bestStreak} in a row!` : undefined}
         mode="kotoba-bubble"

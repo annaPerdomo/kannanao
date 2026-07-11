@@ -17,7 +17,7 @@ import { useShop } from '@/hooks/useShop';
 import { cardXp } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
-import { CelebrationScreen } from './CelebrationScreen';
+import { CelebrationScreen, pickPraise } from './CelebrationScreen';
 import { RoundTransition } from './RoundTransition';
 import { XpEarnedPop } from './XpEarnedPop';
 
@@ -173,10 +173,11 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
   // ── Completion screen ──────────────────────────────────────────────────────
   if (queue.phase === 'allDone') {
     const pct = queue.totalCards > 0 ? queue.firstAttemptCorrect / queue.totalCards : 0;
-    const heading = pct === 1 ? 'Perfect!' : pct >= 0.7 ? 'Great job!' : 'Keep going!';
+    const praise = pickPraise(pct);
     return (
       <CelebrationScreen
-        heading={heading}
+        heading={praise.jp}
+        headingEn={praise.en}
         subheading={`${queue.firstAttemptCorrect} / ${queue.totalCards} correct`}
         extra={bestStreak >= 3 ? `🔥 Best streak: ${bestStreak} in a row!` : undefined}
         mode="fill"

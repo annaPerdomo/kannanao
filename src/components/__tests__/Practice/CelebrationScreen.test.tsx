@@ -23,9 +23,25 @@ vi.mock('@/hooks/useShop', () => ({
   CARD_BORDER_STYLES: {},
 }));
 
-import { CelebrationScreen } from '@/components/Practice/CelebrationScreen';
+import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
+
+describe('pickPraise', () => {
+  it('returns the perfect phrase for a full score', () => {
+    expect(pickPraise(1)).toEqual({ jp: '{完璧|かんぺき}！', en: 'Perfect!' });
+  });
+
+  it('returns the great phrase for 70%+', () => {
+    expect(pickPraise(0.7).en).toBe('Great job!');
+    expect(pickPraise(0.85).en).toBe('Great job!');
+  });
+
+  it('returns the encouraging phrase below 70%', () => {
+    expect(pickPraise(0.5).en).toBe('Keep going!');
+    expect(pickPraise(0).en).toBe('Keep going!');
+  });
+});
 
 describe('CelebrationScreen', () => {
   beforeEach(() => {
@@ -144,6 +160,24 @@ describe('CelebrationScreen', () => {
     // The ⭐ and ✨ stars are rendered as decoration
     const body = document.body.textContent ?? '';
     expect(body.includes('⭐') || body.includes('✨')).toBe(true);
+  });
+
+  it('renders a Japanese heading with its furigana reading and English gloss', () => {
+    renderWithProviders(
+      <CelebrationScreen
+        heading="{完璧|かんぺき}！"
+        headingEn="Perfect!"
+        subheading="5 / 5 correct"
+        mode="recall"
+        onExit={vi.fn()}
+      />,
+    );
+    const body = document.body.textContent ?? '';
+    // Kanji, its ruby reading, and the English translation all appear so every
+    // level can read it.
+    expect(body).toContain('完璧');
+    expect(body).toContain('かんぺき');
+    expect(screen.getByText('Perfect!')).toBeInTheDocument();
   });
 
   it('should not throw with an equipped celebration item', () => {
