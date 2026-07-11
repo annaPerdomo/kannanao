@@ -8,7 +8,7 @@ import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { useCardBorder } from '@/contexts/CardBorderContext';
-import { cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
+import { cardXp, getFlashcardDisplayText, titleFontSize } from '@/lib/flashcardUtils';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
 
 interface FlashcardProps {
@@ -22,12 +22,12 @@ interface FlashcardProps {
 
 export function Flashcard({
   card,
-  width: widthProp = '100%',
-  height: heightProp = 420,
+  width: widthProp,
+  height: heightProp,
   onFlipChange,
 }: FlashcardProps) {
-  const width = card.imageUrl ? widthProp : 420;
-  const height = card.imageUrl ? heightProp : 280;
+  const width = widthProp ?? (card.imageUrl ? '100%' : 420);
+  const height = heightProp ?? (card.imageUrl ? 420 : 280);
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const { borderStyle: equippedBorder } = useCardBorder();
@@ -258,7 +258,7 @@ export function Flashcard({
                       <Typography
                         sx={{
                           fontFamily: (t) => t.fonts.jp,
-                          fontSize: '2.2rem',
+                          fontSize: titleFontSize(titleText, 2.2, 1.1),
                           fontWeight: 700,
                           color: '#111',
                           lineHeight: 1.05,
@@ -323,7 +323,7 @@ export function Flashcard({
                       <Typography
                         sx={{
                           fontFamily: (t) => t.fonts.jp,
-                          fontSize: '3rem',
+                          fontSize: titleFontSize(titleText, 3, 1.3),
                           fontWeight: 700,
                           color: '#111',
                           lineHeight: 1.1,
@@ -466,7 +466,10 @@ export function Flashcard({
                     <Typography
                       sx={{
                         fontFamily: (t) => t.fonts.jp,
-                        fontSize: { xs: '1.8rem', sm: '2.1rem' },
+                        fontSize: {
+                          xs: titleFontSize(card.word, 1.8, 0.95),
+                          sm: titleFontSize(card.word, 2.1, 1.1),
+                        },
                         fontWeight: 700,
                         color: '#111',
                         lineHeight: 1.2,

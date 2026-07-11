@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
+import { cardXp, getFlashcardDisplayText, titleFontSize } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -92,5 +92,26 @@ describe('getFlashcardDisplayText', () => {
     const card = makeCard({ mainViewMode: 'hiragana', word: 'hello', reading: '   ' });
     const { titleText } = getFlashcardDisplayText(card);
     expect(titleText).toBe('hello');
+  });
+});
+
+// ─── titleFontSize ─────────────────────────────────────────────────────────────
+
+describe('titleFontSize', () => {
+  it('should use the base size for short words', () => {
+    expect(titleFontSize('ねこ', 3, 1.3)).toBe('3rem');
+  });
+
+  it('should shrink for medium-length words', () => {
+    expect(titleFontSize('がんばって', 3, 1.3)).toBe('2.4rem');
+  });
+
+  it('should shrink further for long words', () => {
+    expect(titleFontSize('にゅうきょしゃ', 3, 1.3)).toBe('1.95rem');
+  });
+
+  it('should never go below the minimum size', () => {
+    expect(titleFontSize('a'.repeat(30), 3, 1.3)).toBe('1.65rem');
+    expect(titleFontSize('a'.repeat(30), 3, 2)).toBe('2rem');
   });
 });
