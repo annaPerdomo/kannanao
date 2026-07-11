@@ -42,11 +42,8 @@ export default function LoginPage() {
       setBusy(false);
       return;
     }
-    // Full document navigation (not router.push) so the request hits the
-    // middleware, which sees the fresh auth cookie and serves the dynamic
-    // dashboard instead of the Router-Cache-stale static landing page.
-    // Keep `busy` true through the redirect so the button stays disabled
-    // while the page unloads.
+    // Full-document navigation forces middleware re-evaluation instead of
+    // replaying the Router-Cache stale landing.
     window.location.assign('/');
   };
 

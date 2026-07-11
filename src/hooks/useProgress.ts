@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { invalidateApiCache } from '@/lib/apiCache';
 import { cardXp } from '@/lib/flashcardUtils';
-import { sb } from '@/lib/supabase'; // adjust to your Supabase client path
+import { sb } from '@/lib/supabase';
 import type { JlptLevel } from '@/types/flashcard';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -371,7 +371,6 @@ export function useProgress(
         .limit(200),
     ]);
 
-    // Create initial progress row for new users
     if (!prog) {
       const { data: newProg } = await supabase
         .from('user_progress')
@@ -489,11 +488,9 @@ export function useProgress(
         }),
       ]);
 
-      // Check achievements
       const unlocked = achievements.map((a) => a.achievement_key);
       const toUnlock: string[] = [];
 
-      // Card milestones
       if (newStudied >= 1 && !unlocked.includes('first_card')) toUnlock.push('first_card');
       if (newStudied >= 10 && !unlocked.includes('cards_10')) toUnlock.push('cards_10');
       if (newStudied >= 50 && !unlocked.includes('cards_50')) toUnlock.push('cards_50');
@@ -503,7 +500,6 @@ export function useProgress(
       if (newStudied >= 1000 && !unlocked.includes('cards_1000')) toUnlock.push('cards_1000');
       if (newStudied >= 2500 && !unlocked.includes('cards_2500')) toUnlock.push('cards_2500');
 
-      // Streak milestones
       if (newStreak >= 3 && !unlocked.includes('streak_3')) toUnlock.push('streak_3');
       if (newStreak >= 7 && !unlocked.includes('streak_7')) toUnlock.push('streak_7');
       if (newStreak >= 14 && !unlocked.includes('streak_14')) toUnlock.push('streak_14');
@@ -511,7 +507,6 @@ export function useProgress(
       if (newStreak >= 60 && !unlocked.includes('streak_60')) toUnlock.push('streak_60');
       if (newStreak >= 100 && !unlocked.includes('streak_100')) toUnlock.push('streak_100');
 
-      // Level milestones
       if (newLevel >= 5 && !unlocked.includes('level_5')) toUnlock.push('level_5');
       if (newLevel >= 10 && !unlocked.includes('level_10')) toUnlock.push('level_10');
       if (newLevel >= 15 && !unlocked.includes('level_15')) toUnlock.push('level_15');
@@ -519,13 +514,11 @@ export function useProgress(
       if (newLevel >= 30 && !unlocked.includes('level_30')) toUnlock.push('level_30');
       if (newLevel >= 50 && !unlocked.includes('level_50')) toUnlock.push('level_50');
 
-      // XP milestones
       if (newXp >= 1000 && !unlocked.includes('xp_1000')) toUnlock.push('xp_1000');
       if (newXp >= 5000 && !unlocked.includes('xp_5000')) toUnlock.push('xp_5000');
       if (newXp >= 10000 && !unlocked.includes('xp_10000')) toUnlock.push('xp_10000');
       if (newXp >= 50000 && !unlocked.includes('xp_50000')) toUnlock.push('xp_50000');
 
-      // Session milestones
       const sessionCount = base.total_sessions;
       if (sessionCount >= 10 && !unlocked.includes('sessions_10')) toUnlock.push('sessions_10');
       if (sessionCount >= 50 && !unlocked.includes('sessions_50')) toUnlock.push('sessions_50');
@@ -564,7 +557,6 @@ export function useProgress(
         .update({ ended_at: new Date().toISOString(), duration_secs: durationSecs })
         .eq('id', sessionId);
 
-      // Perfect session achievement
       if (
         cardsStudied >= 5 &&
         cardsCorrect === cardsStudied &&

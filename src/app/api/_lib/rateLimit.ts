@@ -91,7 +91,6 @@ export async function rateLimit(
   // the limit.
   if (await isAdminRequest(req)) return null;
 
-  // Rate limit exceeded
   const retryAfterMs = windowMs - (now - entry.windowStart);
   const retryAfterSecs = Math.ceil(retryAfterMs / 1000);
 
