@@ -20,6 +20,20 @@ export function cardXp(jlptLevel?: JlptLevel | null): number {
   }
 }
 
+/**
+ * Shrinks a title's font size as its character count grows, so long words
+ * stay on one line inside the card's fixed width instead of wrapping.
+ */
+export function titleFontSize(text: string, baseRem: number, minRem: number): string {
+  const len = text.length;
+  let scale = 1;
+  if (len > 8) scale = 0.55;
+  else if (len > 6) scale = 0.65;
+  else if (len > 4) scale = 0.8;
+  const size = Math.round(Math.max(minRem, baseRem * scale) * 100) / 100;
+  return `${size}rem`;
+}
+
 export interface FlashcardDisplayText {
   titleText: string;
   subtitleText?: string;

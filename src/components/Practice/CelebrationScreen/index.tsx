@@ -2,6 +2,7 @@
 import { Box, Button, Typography } from '@mui/material';
 import { useMemo } from 'react';
 
+import FuriganaText from '@/components/FuriganaText';
 import { CELEBRATION_THEMES, useShop } from '@/hooks/useShop';
 
 import {
@@ -22,11 +23,22 @@ import {
   StarParticles,
 } from './Particles';
 
-export type { PracticeMode } from './constants';
-export { CELEB_PARTICLE_BG, CELEBRATION_KEY_TO_THEME } from './constants';
+export type { PracticeMode, Praise } from './constants';
+export {
+  CELEB_PARTICLE_BG,
+  CELEBRATION_KEY_TO_THEME,
+  pickPraise,
+  PRAISE_GOOD,
+  PRAISE_GREAT,
+  PRAISE_PERFECT,
+} from './constants';
 
 export interface CelebrationScreenProps {
+  /** Main phrase. May contain `{kanji|reading}` furigana markup — rendered with
+   *  ruby readings so learners of any level can read it. */
   heading: string;
+  /** Optional English translation of `heading`, shown just beneath it. */
+  headingEn?: string;
   subheading: string;
   extra?: string;
   mode: PracticeMode;
@@ -72,6 +84,7 @@ export function CelebParticleStage({ itemKey }: { itemKey: string }) {
 
 export function CelebrationScreen({
   heading,
+  headingEn,
   subheading,
   extra,
   mode,
@@ -147,22 +160,40 @@ export function CelebrationScreen({
         </Box>
 
         <Typography
+          component="div"
           sx={{
-            fontSize: { xs: '1.7rem', sm: '2.1rem' },
+            fontFamily: (t) => t.fonts.jp,
+            fontSize: { xs: '1.9rem', sm: '2.3rem' },
             fontWeight: 900,
             color: cfg.textColor,
             textShadow: '0 2px 14px rgba(0,0,0,0.3)',
-            lineHeight: 1.2,
-            mb: 0.75,
+            lineHeight: 1.25,
+            mb: headingEn ? 0.25 : 0.75,
             animation: 'fadeUp 0.5s 0.38s ease both',
+            '& rt': { fontWeight: 700, opacity: 0.85 },
             '@keyframes fadeUp': {
               from: { transform: 'translateY(14px)', opacity: 0 },
               to: { transform: 'translateY(0)', opacity: 1 },
             },
           }}
         >
-          {heading}
+          <FuriganaText text={heading} showFurigana />
         </Typography>
+
+        {headingEn && (
+          <Typography
+            sx={{
+              fontSize: '1.05rem',
+              fontWeight: 700,
+              color: cfg.textColor,
+              opacity: 0.9,
+              mb: 0.6,
+              animation: 'fadeUp 0.5s 0.46s ease both',
+            }}
+          >
+            {headingEn}
+          </Typography>
+        )}
 
         <Typography
           sx={{

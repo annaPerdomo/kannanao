@@ -82,10 +82,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           page out of automatic translation offers.
         */}
         <meta name="google" content="notranslate" />
-        <link
-          rel="icon"
-          href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>"
-        />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16.png" />
         {/* PWA manifest */}
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#EC4899" />

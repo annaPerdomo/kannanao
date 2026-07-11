@@ -16,6 +16,62 @@ export type CelebTheme =
   | 'bunnies'
   | 'sparkle';
 
+/**
+ * Celebration praise phrases. The Japanese is the star of the screen; the
+ * reading (furigana, in `{kanji|reading}` markup) and English gloss make it
+ * legible to every level — an N5 beginner and a college student see the same
+ * screen and both understand it. Mirrors how <Loading /> pairs each kanji with
+ * its reading.
+ */
+export interface Praise {
+  /** Japanese phrase in `{kanji|reading}` furigana markup (kana needs none). */
+  jp: string;
+  /** English translation shown beneath the Japanese. */
+  en: string;
+}
+
+/** 100% — over-the-top delight. */
+export const PRAISE_PERFECT: Praise[] = [
+  { jp: '{完璧|かんぺき}！', en: 'Perfect!' },
+  { jp: 'すごい！', en: 'Amazing!' },
+  { jp: '{大正解|だいせいかい}！', en: 'All correct!' },
+  { jp: '{天才|てんさい}！', en: 'Genius!' },
+];
+
+/** 70–99% — solid, encouraging. */
+export const PRAISE_GREAT: Praise[] = [
+  { jp: '{上手|じょうず}！', en: 'Great job!' },
+  { jp: 'いいね！', en: 'Nice!' },
+  { jp: 'よくできました！', en: 'Well done!' },
+  { jp: 'その{意気|いき}！', en: "That's the spirit!" },
+];
+
+/** Below 70% — keep them going, never scolding. */
+export const PRAISE_GOOD: Praise[] = [
+  { jp: 'その{調子|ちょうし}！', en: 'Keep going!' },
+  { jp: '{頑張|がんば}って！', en: 'Keep it up!' },
+  { jp: 'もう{少|すこ}し！', en: 'Almost there!' },
+  { jp: 'ドンマイ！', en: 'No worries!' },
+];
+
+function praiseTier(pct: number): Praise[] {
+  if (pct >= 1) return PRAISE_PERFECT;
+  if (pct >= 0.7) return PRAISE_GREAT;
+  return PRAISE_GOOD;
+}
+
+/**
+ * Pick a praise phrase for a 0–1 score. Each tier rotates through several
+ * phrases for variety. Pass `seed` (e.g. a value memoized once per celebration)
+ * for a stable-but-varied choice; omit it for a random pick.
+ */
+export function pickPraise(pct: number, seed?: number): Praise {
+  const tier = praiseTier(pct);
+  const index =
+    seed === undefined ? Math.floor(Math.random() * tier.length) : Math.abs(seed) % tier.length;
+  return tier[index];
+}
+
 export interface ThemeConfig {
   bg: string;
   emoji: string;

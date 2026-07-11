@@ -15,7 +15,7 @@ import { useShop } from '@/hooks/useShop';
 import { cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
-import { CelebrationScreen } from './CelebrationScreen';
+import { CelebrationScreen, pickPraise } from './CelebrationScreen';
 import { RoundTransition } from './RoundTransition';
 
 interface MatchModeProps {
@@ -72,6 +72,8 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
   const [buddyReaction, setBuddyReaction] = useState<BuddyReaction>('idle');
 
   const { startSession, recordAnswer, endSession } = useProgress();
+  // Stable per-session pick so the completion phrase doesn't flicker on re-render.
+  const praiseSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
   const { triggerXpEarned } = useXpAnimation();
   const sessionIdRef = useRef<string>('');
   const startTimeRef = useRef<number>(Date.now());
@@ -161,7 +163,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
       triggerXpEarned(xpAmount);
 
       if (sessionIdRef.current) {
-        await recordAnswer(sessionIdRef.current, true, matchedCard?.jlptLevel);
+        await recordAnswer(sessionIdRef.current, true, matchedCard?.jlptLevel, matchedCard?.id);
       }
     } else {
       // Wrong match — mark both cards as struggled
@@ -175,7 +177,12 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
 
       if (sessionIdRef.current) {
         const attemptedCard = queue.currentCards.find((c) => c.id === tile.cardId);
-        await recordAnswer(sessionIdRef.current, false, attemptedCard?.jlptLevel);
+        await recordAnswer(
+          sessionIdRef.current,
+          false,
+          attemptedCard?.jlptLevel,
+          attemptedCard?.id,
+        );
       }
       setTimeout(() => {
         setWrong(null);
@@ -200,7 +207,8 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
     const batchLabel = queue.totalBatches > 1 ? `${queue.totalBatches} rounds` : '1 round';
     return (
       <CelebrationScreen
-        heading="All matched!"
+        heading={pickPraise(1, praiseSeed).jp}
+        headingEn="All matched!"
         subheading={`${queue.totalCards} pairs · ${batchLabel}`}
         extra={`⏱ ${formatTime(totalTime)} · ${speedLabel(totalTime, queue.totalCards)}`}
         mode="match"

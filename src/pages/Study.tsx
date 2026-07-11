@@ -3,19 +3,21 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Box, Button, Chip, IconButton, LinearProgress, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Flashcard } from '@/components/Flashcard';
+import FuriganaText from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
-import { CelebrationScreen } from '@/components/Practice/CelebrationScreen';
+import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
 import { XpEarnedPop } from '@/components/Practice/XpEarnedPop';
 import { StudyBuddy } from '@/components/StudyBuddy';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { useCards } from '@/hooks/useCards';
 import { useDecks } from '@/hooks/useDecks';
-import { useProgress, XP_PER_CORRECT } from '@/hooks/useProgress';
+import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import { useShop } from '@/hooks/useShop';
+import { cardXp } from '@/lib/flashcardUtils';
 import { LAYOUT } from '@/theme';
 
 interface StudyProps {
@@ -53,16 +55,24 @@ export default function Study({ deckId, onBack }: StudyProps) {
   // 1 = navigating forward (new card enters from right), -1 = backward (from left)
   const [navDir, setNavDir] = useState<1 | -1>(1);
   const [showCelebration, setShowCelebration] = useState(false);
-  const [xpPop, setXpPop] = useState<{ amount: number; key: number } | null>(null);
+  const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(
+    null,
+  );
+  // True once the current card has been flipped to its answer — gates the
+  // self-grading buttons so they only appear after the student has seen it.
+  const [flipped, setFlipped] = useState(false);
 
   // ── Session tracking ──────────────────────────────────────────────────────
   const { startSession, recordAnswer, endSession } = useProgress();
-  // State (not a ref) so the first-card effect below re-runs once the session
-  // row exists — with a ref, cards loading before startSession resolved meant
-  // the first card was silently never recorded.
+  // Stable per-session pick so the completion phrase doesn't flicker on re-render.
+  const praiseSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
   const [sessionId, setSessionId] = useState('');
   const startTimeRef = useRef<number>(Date.now());
-  const seenRef = useRef<Set<number>>(new Set());
+  // Indices the student has graded (each counts once); its size is cards studied.
+  const gradedRef = useRef<Set<number>>(new Set());
+  // How many of those graded cards were marked "got it" — for the perfect-session
+  // achievement, which now reflects real self-grading rather than auto-correct.
+  const correctRef = useRef(0);
   const endedRef = useRef(false);
 
   useEffect(() => {
@@ -78,36 +88,26 @@ export default function Study({ deckId, onBack }: StudyProps) {
   }, [deckId, startSession]);
 
   const showXpPop = useCallback(
-    (amount: number) => {
-      setXpPop({ amount, key: Date.now() });
+    (amount: number, correct: boolean) => {
+      setXpPop({ amount, correct, key: Date.now() });
       triggerXpEarned(amount);
       setTimeout(() => setXpPop(null), 1300);
     },
     [triggerXpEarned],
   );
 
-  // Mark the first card as seen once both the cards and the session are ready
-  useEffect(() => {
-    if (cards.length > 0 && sessionId && !seenRef.current.has(0)) {
-      seenRef.current.add(0);
-      void recordAnswer(sessionId, true, cards[0].jlptLevel);
-      showXpPop(XP_PER_CORRECT);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cards.length, sessionId]);
-
   const finishSession = useCallback(async () => {
     if (endedRef.current || !sessionId) return;
     endedRef.current = true;
     await endSession(sessionId, {
-      cardsStudied: seenRef.current.size,
-      cardsCorrect: seenRef.current.size,
+      cardsStudied: gradedRef.current.size,
+      cardsCorrect: correctRef.current,
       durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
     });
   }, [endSession, sessionId]);
 
-  const handleBack = useCallback(async () => {
-    await finishSession();
+  const handleBack = useCallback(() => {
+    finishSession().catch(() => {});
     onBack();
   }, [finishSession, onBack]);
   // ─────────────────────────────────────────────────────────────────────────
@@ -117,7 +117,8 @@ export default function Study({ deckId, onBack }: StudyProps) {
   const deckName = deck ? deck.name : 'Deck';
 
   // Slide the current card out, then swap content and slide the new card in.
-  // `navigating` blocks further clicks mid-transition.
+  // `navigating` blocks further clicks mid-transition. Browsing alone no longer
+  // records anything — only self-grading (handleGrade) writes progress.
   const navigate = useCallback(
     (direction: 1 | -1) => {
       if (navigating) return;
@@ -129,16 +130,31 @@ export default function Study({ deckId, onBack }: StudyProps) {
       setTimeout(() => {
         setIndex(nextIndex);
         setNavigating(false);
-
-        // Record this card as studied (once per unique index)
-        if (sessionId && !seenRef.current.has(nextIndex)) {
-          seenRef.current.add(nextIndex);
-          void recordAnswer(sessionId, true, cards[nextIndex].jlptLevel);
-          showXpPop(XP_PER_CORRECT);
-        }
       }, SLIDE_DURATION_MS);
     },
-    [navigating, index, cards, recordAnswer, showXpPop, sessionId],
+    [navigating, index, cards.length],
+  );
+
+  // Self-grade the current card, then move on. Records the answer into per-card
+  // progress once per card; grading the last card ends the session.
+  const handleGrade = useCallback(
+    (correct: boolean) => {
+      if (navigating || !sessionId || !card) return;
+
+      if (!gradedRef.current.has(index)) {
+        gradedRef.current.add(index);
+        if (correct) correctRef.current += 1;
+        void recordAnswer(sessionId, correct, card.jlptLevel, card.id);
+        showXpPop(correct ? cardXp(card.jlptLevel) : XP_PER_WRONG, correct);
+      }
+
+      if (index < cards.length - 1) {
+        navigate(1);
+      } else {
+        setShowCelebration(true);
+      }
+    },
+    [navigating, sessionId, card, index, cards.length, recordAnswer, showXpPop, navigate],
   );
 
   if (cardsLoading || decksLoading) {
@@ -273,9 +289,13 @@ export default function Study({ deckId, onBack }: StudyProps) {
                 }),
           }}
         >
-          {card && <Flashcard card={card} width={CARD_W} height={CARD_H} />}
+          {card && (
+            <Flashcard card={card} width={CARD_W} height={CARD_H} onFlipChange={setFlipped} />
+          )}
 
-          {xpPop && <XpEarnedPop amount={xpPop.amount} correct show key={xpPop.key} />}
+          {xpPop && (
+            <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show key={xpPop.key} />
+          )}
 
           {/* Sparkle burst — float up from bottom of card on each new card */}
           {!navigating &&
@@ -297,7 +317,92 @@ export default function Study({ deckId, onBack }: StudyProps) {
         </Box>
       </Box>
 
-      {/* Navigation */}
+      {/* Self-grading — two big friendly buttons, shown once the card is flipped
+          to its answer. Tapping either records the card and moves on. */}
+      {flipped && !navigating && (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 2,
+            mt: 3,
+          }}
+        >
+          {/* Both use the contained variant's white label. "Still learning"
+              keeps the stock brand 600→700 background; "Got it" swaps its
+              background for the app's signature brand→accent sweep (see the
+              card banners), at the darker 600/700 stops so white stays AA in
+              every palette. NOTE: the variant background is a background-IMAGE —
+              replace it with `background`, never `bgcolor` (which silently
+              paints underneath it). */}
+          <Button
+            variant="contained"
+            onClick={() => handleGrade(false)}
+            sx={{ flex: 1, maxWidth: 200, py: 1.25, borderRadius: 3 }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 0.25,
+                lineHeight: 1.2,
+              }}
+            >
+              <Box
+                component="span"
+                sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.15rem', fontWeight: 700 }}
+              >
+                まだ
+              </Box>
+              <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
+                Still learning
+              </Box>
+            </Box>
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => handleGrade(true)}
+            sx={{
+              flex: 1,
+              maxWidth: 200,
+              py: 1.25,
+              borderRadius: 3,
+              background: `linear-gradient(135deg, ${brand[600]} 0%, ${accent[600]} 100%)`,
+              '&:hover': {
+                background: `linear-gradient(135deg, ${brand[700]} 0%, ${accent[700]} 100%)`,
+              },
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 0.25,
+                lineHeight: 1.2,
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  fontFamily: (t) => t.fonts.jp,
+                  fontSize: '1.15rem',
+                  fontWeight: 700,
+                  '& rt': { fontSize: '0.6em', opacity: 0.9, fontWeight: 600 },
+                }}
+              >
+                <FuriganaText text="{知|し}ってた！" showFurigana />
+              </Box>
+              <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
+                Got it
+              </Box>
+            </Box>
+          </Button>
+        </Box>
+      )}
+
+      {/* Navigation — browse between cards without grading */}
       <Box
         sx={{
           display: 'flex',
@@ -310,6 +415,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
         <IconButton
           onClick={() => navigate(-1)}
           disabled={index === 0 || navigating}
+          aria-label="Previous card"
           sx={{
             border: `1px solid ${alpha(brand[300], 0.45)}`,
             bgcolor: brand[50],
@@ -320,12 +426,13 @@ export default function Study({ deckId, onBack }: StudyProps) {
         </IconButton>
 
         <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: '0.08em' }}>
-          TAP CARD TO FLIP
+          {flipped ? 'HOW DID YOU DO?' : 'TAP CARD TO FLIP'}
         </Typography>
 
         <IconButton
           onClick={() => navigate(1)}
           disabled={index === cards.length - 1 || navigating}
+          aria-label="Next card"
           sx={{
             border: `1px solid ${alpha(brand[300], 0.45)}`,
             bgcolor: brand[50],
@@ -344,14 +451,20 @@ export default function Study({ deckId, onBack }: StudyProps) {
         </Box>
       )}
 
-      {showCelebration && (
-        <CelebrationScreen
-          heading="すごい！"
-          subheading={`You studied all ${cards.length} cards!`}
-          mode="study"
-          onExit={handleBack}
-        />
-      )}
+      {showCelebration &&
+        (() => {
+          const graded = gradedRef.current.size;
+          const praise = pickPraise(graded > 0 ? correctRef.current / graded : 1, praiseSeed);
+          return (
+            <CelebrationScreen
+              heading={praise.jp}
+              headingEn={praise.en}
+              subheading={`You studied all ${cards.length} cards!`}
+              mode="study"
+              onExit={handleBack}
+            />
+          );
+        })()}
 
       {equippedBuddy && <StudyBuddy buddyKey={equippedBuddy} reaction="idle" />}
     </Box>

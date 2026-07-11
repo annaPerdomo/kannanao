@@ -4,7 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Chip, LinearProgress, Stack, TextField, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
@@ -17,7 +17,7 @@ import { useShop } from '@/hooks/useShop';
 import { cardXp } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
-import { CelebrationScreen } from './CelebrationScreen';
+import { CelebrationScreen, pickPraise } from './CelebrationScreen';
 import { RoundTransition } from './RoundTransition';
 import { XpEarnedPop } from './XpEarnedPop';
 
@@ -57,6 +57,8 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
   const [buddyReaction, setBuddyReaction] = useState<BuddyReaction>('idle');
 
   const { startSession, recordAnswer, endSession } = useProgress();
+  // Stable per-session pick so the completion phrase doesn't flicker on re-render.
+  const praiseSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
   const { triggerXpEarned } = useXpAnimation();
   const sessionIdRef = useRef<string>('');
   const startTimeRef = useRef<number>(Date.now());
@@ -127,7 +129,8 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
     } else {
       setStreak(0);
     }
-    if (sessionIdRef.current) await recordAnswer(sessionIdRef.current, correct, card.jlptLevel);
+    if (sessionIdRef.current)
+      await recordAnswer(sessionIdRef.current, correct, card.jlptLevel, card.id);
   };
 
   const handleExit = async () => {
@@ -172,10 +175,11 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
   // ── Completion screen ──────────────────────────────────────────────────────
   if (queue.phase === 'allDone') {
     const pct = queue.totalCards > 0 ? queue.firstAttemptCorrect / queue.totalCards : 0;
-    const heading = pct === 1 ? 'Perfect!' : pct >= 0.7 ? 'Great job!' : 'Keep going!';
+    const praise = pickPraise(pct, praiseSeed);
     return (
       <CelebrationScreen
-        heading={heading}
+        heading={praise.jp}
+        headingEn={praise.en}
         subheading={`${queue.firstAttemptCorrect} / ${queue.totalCards} correct`}
         extra={bestStreak >= 3 ? `🔥 Best streak: ${bestStreak} in a row!` : undefined}
         mode="fill"

@@ -212,7 +212,12 @@ describe('RecallMode', () => {
       if (meaningEl) {
         fireEvent.click(meaningEl);
         await waitFor(() => {
-          expect(mockRecordAnswer).toHaveBeenCalledWith('session-1', true, currentCard.jlptLevel);
+          expect(mockRecordAnswer).toHaveBeenCalledWith(
+            'session-1',
+            true,
+            currentCard.jlptLevel,
+            currentCard.id,
+          );
         });
       }
     });

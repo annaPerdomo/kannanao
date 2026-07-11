@@ -183,7 +183,7 @@ describe('MatchMode', () => {
     fireEvent.click(screen.getByText('cat'));
 
     await waitFor(() => {
-      expect(mockRecordAnswer).toHaveBeenCalledWith('session-1', true, undefined);
+      expect(mockRecordAnswer).toHaveBeenCalledWith('session-1', true, undefined, 'c1');
     });
   });
 

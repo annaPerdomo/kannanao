@@ -846,6 +846,69 @@ export async function dbDeleteShowCard(id: string): Promise<void> {
   if (error) throw error;
 }
 
+// ─── Per-card progress ──────────────────────────────────────────
+
+export interface CardProgress {
+  cardId: string;
+  correctCount: number;
+  wrongCount: number;
+  lastReviewedAt: string | null;
+  nextReviewAt: string;
+  intervalDays: number;
+  ease: number;
+}
+
+interface CardProgressRow {
+  card_id: string;
+  correct_count: number;
+  wrong_count: number;
+  last_reviewed_at: string | null;
+  next_review_at: string;
+  interval_days: number;
+  ease: number;
+}
+
+function dbCardProgressToApp(row: CardProgressRow): CardProgress {
+  return {
+    cardId: row.card_id,
+    correctCount: row.correct_count,
+    wrongCount: row.wrong_count,
+    lastReviewedAt: row.last_reviewed_at,
+    nextReviewAt: row.next_review_at,
+    intervalDays: row.interval_days,
+    ease: row.ease,
+  };
+}
+
+/**
+ * Record one graded answer against a card. Increments the matching counter and
+ * stamps last_reviewed_at atomically via the `increment_card_progress` DB
+ * function (client → Supabase direct, no Vercel function cost). Never throws —
+ * a failed progress write must not break the study flow.
+ */
+export async function upsertCardProgress(cardId: string, correct: boolean): Promise<void> {
+  if (!isConfigured()) return;
+  const { error } = await sb.rpc('increment_card_progress', {
+    p_card_id: cardId,
+    p_correct: correct,
+  });
+  if (error) console.error('upsertCardProgress error', error);
+}
+
+/** Load every per-card progress row for a user (RLS scopes this to `userId`). */
+export async function getCardProgressForUser(userId: string): Promise<CardProgress[]> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    return [];
+  }
+  const { data, error } = await sb.from('card_progress').select('*').eq('user_id', userId);
+  if (error) {
+    console.error('Error loading card progress', error);
+    return [];
+  }
+  return (data ?? []).map(dbCardProgressToApp);
+}
+
 // ─── Travel Event Tracking ──────────────────────────────────────
 
 /** Fire-and-forget travel event logging. Never throws. */
