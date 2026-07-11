@@ -624,12 +624,7 @@ export function useProgress(
     [achievements, supabase, fetchAll, applyProgress],
   );
 
-  /**
-   * Call at the beginning of a study session to create a session row.
-   * Reads progress via ref so its identity is stable — consumers call this
-   * from a mount effect, and an unstable identity would re-run that effect on
-   * every answer, inserting a duplicate session row each time.
-   */
+  /** Call at the beginning of a study session to create a session row. */
   const startSession = useCallback(
     async (deckId: string | null, mode?: SessionMode): Promise<string> => {
       const {

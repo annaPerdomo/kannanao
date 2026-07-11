@@ -83,7 +83,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Best-effort: release the claimed slot if account creation fails below.
   const releaseClaim = async () => {
     await sb
       .from('invite_codes')
@@ -161,7 +160,6 @@ export async function POST(req: NextRequest) {
   const anonUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
   if (!anonUrl || !anonKey) {
-    // Account was created successfully — user can sign in manually
     return NextResponse.json({ success: true, session: null }, { status: 201 });
   }
   const authClient = createClient(anonUrl, anonKey, {
