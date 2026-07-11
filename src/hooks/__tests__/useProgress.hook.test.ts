@@ -12,8 +12,9 @@ import { useProgress, type UserProgress } from '../useProgress';
 // 2. Rapid consecutive `recordAnswer` calls both computing from the same stale
 //    progress snapshot, losing XP and card counts.
 
-const { updates, sbMock } = vi.hoisted(() => {
+const { updates, sbMock, upsertCardProgressMock } = vi.hoisted(() => {
   const updates: Array<{ table: string; payload: Record<string, unknown> }> = [];
+  const upsertCardProgressMock = vi.fn(async () => undefined);
 
   function chain(result: unknown) {
     const c: Record<string, unknown> = {};
@@ -56,10 +57,14 @@ const { updates, sbMock } = vi.hoisted(() => {
     }),
   };
 
-  return { updates, sbMock };
+  return { updates, sbMock, upsertCardProgressMock };
 });
 
-vi.mock('@/lib/supabase', () => ({ sb: sbMock, isConfigured: vi.fn(() => true) }));
+vi.mock('@/lib/supabase', () => ({
+  sb: sbMock,
+  isConfigured: vi.fn(() => true),
+  upsertCardProgress: upsertCardProgressMock,
+}));
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 vi.mock('@/lib/apiCache', () => ({ invalidateApiCache: vi.fn() }));
 
@@ -96,6 +101,7 @@ function renderProgress() {
 describe('useProgress session tracking', () => {
   beforeEach(() => {
     updates.length = 0;
+    upsertCardProgressMock.mockClear();
   });
 
   it('keeps startSession identity stable across recorded answers', async () => {
@@ -127,6 +133,26 @@ describe('useProgress session tracking', () => {
     const progressWrites = updates.filter((u) => u.table === 'user_progress');
     expect(progressWrites.at(-1)?.payload.total_xp).toBe(100 + 2 * xp);
     expect(progressWrites.at(-1)?.payload.total_cards_studied).toBe(7);
+  });
+
+  it('records per-card progress when a cardId is passed', async () => {
+    const { result } = renderProgress();
+
+    await act(async () => {
+      await result.current.recordAnswer('s1', false, 'N5', 'card-42');
+    });
+
+    expect(upsertCardProgressMock).toHaveBeenCalledWith('card-42', false);
+  });
+
+  it('skips per-card progress for sentence-based answers (no cardId)', async () => {
+    const { result } = renderProgress();
+
+    await act(async () => {
+      await result.current.recordAnswer('s1', true);
+    });
+
+    expect(upsertCardProgressMock).not.toHaveBeenCalled();
   });
 
   it('increments total_sessions from the latest progress in startSession', async () => {

@@ -177,6 +177,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
       setResults((prev) => [...prev, { sentence: currentSentence, correct }]);
 
       if (sessionIdRef.current) {
+        // Sentence-based mode — no single card to attribute, so no cardId.
         await recordAnswer(sessionIdRef.current, correct);
       }
     },

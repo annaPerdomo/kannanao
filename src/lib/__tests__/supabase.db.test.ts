@@ -26,6 +26,7 @@ function makeChain(table: string) {
 }
 
 const mockFrom = vi.fn((table: string) => makeChain(table));
+const mockRpc = vi.fn().mockResolvedValue({ data: null, error: null });
 
 // lib/supabase.ts builds its client with @supabase/ssr's createBrowserClient
 // (cookie-based session) — mock that factory here.
@@ -37,7 +38,7 @@ vi.mock('@supabase/ssr', () => ({
       onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
     },
     from: (table: string) => mockFrom(table),
-    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+    rpc: (...args: unknown[]) => mockRpc(...args),
   })),
 }));
 
@@ -59,6 +60,7 @@ import {
   dbUpdateDeckEmoji,
   dbUpdateEventType,
   dbUpdateTodo,
+  getCardProgressForUser,
   loadAllCards,
   loadCards,
   loadDecks,
@@ -67,6 +69,7 @@ import {
   loadTodos,
   updateProfileColorScheme,
   updateProfileShowTodo,
+  upsertCardProgress,
   upsertProfile,
 } from '@/lib/supabase';
 import type { Flashcard } from '@/types/flashcard';
@@ -823,5 +826,80 @@ describe('dbDeleteEventType', () => {
   it('should throw when delete errors', async () => {
     setTable('event_types', null, new Error('Delete error'));
     await expect(dbDeleteEventType('et-1')).rejects.toThrow('Delete error');
+  });
+});
+
+// ─── upsertCardProgress ───────────────────────────────────────────────────────
+
+describe('upsertCardProgress', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockRpc.mockResolvedValue({ data: null, error: null });
+  });
+
+  it('should call the increment_card_progress RPC with the card id and result', async () => {
+    await upsertCardProgress('card-1', true);
+    expect(mockRpc).toHaveBeenCalledWith('increment_card_progress', {
+      p_card_id: 'card-1',
+      p_correct: true,
+    });
+  });
+
+  it('should pass through a wrong answer', async () => {
+    await upsertCardProgress('card-1', false);
+    expect(mockRpc).toHaveBeenCalledWith('increment_card_progress', {
+      p_card_id: 'card-1',
+      p_correct: false,
+    });
+  });
+
+  it('should not throw when the RPC errors (just logs)', async () => {
+    mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'boom' } });
+    await expect(upsertCardProgress('card-1', true)).resolves.toBeUndefined();
+  });
+});
+
+// ─── getCardProgressForUser ───────────────────────────────────────────────────
+
+describe('getCardProgressForUser', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return empty array when there is no progress', async () => {
+    setTable('card_progress', []);
+    const rows = await getCardProgressForUser('u1');
+    expect(rows).toEqual([]);
+  });
+
+  it('should map rows to the app shape', async () => {
+    setTable('card_progress', [
+      {
+        card_id: 'card-1',
+        correct_count: 3,
+        wrong_count: 1,
+        last_reviewed_at: '2026-07-10T00:00:00Z',
+        next_review_at: '2026-07-11T00:00:00Z',
+        interval_days: 1.5,
+        ease: 2.6,
+      },
+    ]);
+    const rows = await getCardProgressForUser('u1');
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toEqual({
+      cardId: 'card-1',
+      correctCount: 3,
+      wrongCount: 1,
+      lastReviewedAt: '2026-07-10T00:00:00Z',
+      nextReviewAt: '2026-07-11T00:00:00Z',
+      intervalDays: 1.5,
+      ease: 2.6,
+    });
+  });
+
+  it('should return empty array when the query errors', async () => {
+    setTable('card_progress', null, { message: 'DB error' });
+    const rows = await getCardProgressForUser('u1');
+    expect(rows).toEqual([]);
   });
 });

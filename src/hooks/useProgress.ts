@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { invalidateApiCache } from '@/lib/apiCache';
 import { cardXp } from '@/lib/flashcardUtils';
-import { sb } from '@/lib/supabase';
+import { sb, upsertCardProgress } from '@/lib/supabase';
 import type { JlptLevel } from '@/types/flashcard';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -428,10 +428,13 @@ export function useProgress(
 
   /**
    * Call this after each quiz answer.
-   * Pass the active session ID (from startSession) and whether the answer was correct.
+   * Pass the active session ID (from startSession) and whether the answer was
+   * correct. When `cardId` is provided (flip + card-based practice modes), the
+   * answer is also recorded into per-card progress. Sentence/line-based modes
+   * (kotoba-bubble, speech) omit it.
    */
   const recordAnswer = useCallback(
-    async (sessionId: string, correct: boolean, jlptLevel?: JlptLevel) => {
+    async (sessionId: string, correct: boolean, jlptLevel?: JlptLevel, cardId?: string) => {
       const base = progressRef.current;
       if (!base) return;
 
@@ -465,10 +468,11 @@ export function useProgress(
         total_correct: newCorrect,
       });
 
-      // Persist the progress update and the session card-count increment in
-      // parallel — they touch different rows and don't depend on each other, so
-      // there's no reason to pay two sequential round-trips on every answer.
-      await Promise.all([
+      // Persist the progress update, the session card-count increment, and (when
+      // this answer is tied to a card) the per-card progress upsert in parallel —
+      // they touch different rows and don't depend on each other, so there's no
+      // reason to pay sequential round-trips on every answer.
+      const writes: PromiseLike<unknown>[] = [
         supabase
           .from('user_progress')
           .update({
@@ -486,7 +490,9 @@ export function useProgress(
           p_correct: correct,
           p_xp: xpGain,
         }),
-      ]);
+      ];
+      if (cardId) writes.push(upsertCardProgress(cardId, correct));
+      await Promise.all(writes);
 
       const unlocked = achievements.map((a) => a.achievement_key);
       const toUnlock: string[] = [];

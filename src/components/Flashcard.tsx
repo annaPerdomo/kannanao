@@ -15,12 +15,16 @@ interface FlashcardProps {
   card: FlashcardType;
   width?: number | string;
   height?: number | string;
+  /** Notified whenever the flip state changes (and on card reset). Used by flip
+   *  mode to reveal its self-grading buttons only after the answer is shown. */
+  onFlipChange?: (flipped: boolean) => void;
 }
 
 export function Flashcard({
   card,
   width: widthProp = '100%',
   height: heightProp = 420,
+  onFlipChange,
 }: FlashcardProps) {
   const width = card.imageUrl ? widthProp : 420;
   const height = card.imageUrl ? heightProp : 280;
@@ -39,6 +43,9 @@ export function Flashcard({
     setFlipped(false);
     setImgLoaded(false);
   }, [card]);
+  useEffect(() => {
+    onFlipChange?.(flipped);
+  }, [flipped, onFlipChange]);
   useEffect(() => {
     const img = imgRef.current;
     if (img && img.complete && img.naturalWidth > 0) setImgLoaded(true);

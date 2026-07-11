@@ -127,7 +127,8 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
     } else {
       setStreak(0);
     }
-    if (sessionIdRef.current) await recordAnswer(sessionIdRef.current, correct, card.jlptLevel);
+    if (sessionIdRef.current)
+      await recordAnswer(sessionIdRef.current, correct, card.jlptLevel, card.id);
   };
 
   const handleExit = async () => {

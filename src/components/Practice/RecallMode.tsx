@@ -138,7 +138,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
         setStreak(0);
       }
       if (sessionIdRef.current) {
-        await recordAnswer(sessionIdRef.current, correct, card.jlptLevel);
+        await recordAnswer(sessionIdRef.current, correct, card.jlptLevel, card.id);
       }
     },
     [selected, card, recordAnswer, queue, triggerXpEarned],

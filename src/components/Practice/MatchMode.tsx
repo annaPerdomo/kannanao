@@ -161,7 +161,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
       triggerXpEarned(xpAmount);
 
       if (sessionIdRef.current) {
-        await recordAnswer(sessionIdRef.current, true, matchedCard?.jlptLevel);
+        await recordAnswer(sessionIdRef.current, true, matchedCard?.jlptLevel, matchedCard?.id);
       }
     } else {
       // Wrong match — mark both cards as struggled
@@ -175,7 +175,12 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
 
       if (sessionIdRef.current) {
         const attemptedCard = queue.currentCards.find((c) => c.id === tile.cardId);
-        await recordAnswer(sessionIdRef.current, false, attemptedCard?.jlptLevel);
+        await recordAnswer(
+          sessionIdRef.current,
+          false,
+          attemptedCard?.jlptLevel,
+          attemptedCard?.id,
+        );
       }
       setTimeout(() => {
         setWrong(null);
