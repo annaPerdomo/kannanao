@@ -72,6 +72,8 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
   const [buddyReaction, setBuddyReaction] = useState<BuddyReaction>('idle');
 
   const { startSession, recordAnswer, endSession } = useProgress();
+  // Stable per-session pick so the completion phrase doesn't flicker on re-render.
+  const praiseSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
   const { triggerXpEarned } = useXpAnimation();
   const sessionIdRef = useRef<string>('');
   const startTimeRef = useRef<number>(Date.now());
@@ -205,7 +207,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
     const batchLabel = queue.totalBatches > 1 ? `${queue.totalBatches} rounds` : '1 round';
     return (
       <CelebrationScreen
-        heading={pickPraise(1).jp}
+        heading={pickPraise(1, praiseSeed).jp}
         headingEn="All matched!"
         subheading={`${queue.totalCards} pairs · ${batchLabel}`}
         extra={`⏱ ${formatTime(totalTime)} · ${speedLabel(totalTime, queue.totalCards)}`}

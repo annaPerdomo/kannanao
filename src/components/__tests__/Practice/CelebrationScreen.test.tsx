@@ -23,23 +23,39 @@ vi.mock('@/hooks/useShop', () => ({
   CARD_BORDER_STYLES: {},
 }));
 
-import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
+import {
+  CelebrationScreen,
+  pickPraise,
+  PRAISE_GOOD,
+  PRAISE_GREAT,
+  PRAISE_PERFECT,
+} from '@/components/Practice/CelebrationScreen';
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('pickPraise', () => {
-  it('returns the perfect phrase for a full score', () => {
-    expect(pickPraise(1)).toEqual({ jp: '{完璧|かんぺき}！', en: 'Perfect!' });
+  it('draws a perfect-tier phrase for a full score', () => {
+    expect(PRAISE_PERFECT).toContainEqual(pickPraise(1, 0));
+    expect(pickPraise(1, 0)).toEqual(PRAISE_PERFECT[0]);
   });
 
-  it('returns the great phrase for 70%+', () => {
-    expect(pickPraise(0.7).en).toBe('Great job!');
-    expect(pickPraise(0.85).en).toBe('Great job!');
+  it('draws a great-tier phrase for 70%+', () => {
+    expect(PRAISE_GREAT).toContainEqual(pickPraise(0.7, 3));
+    expect(PRAISE_GREAT).toContainEqual(pickPraise(0.85, 1));
   });
 
-  it('returns the encouraging phrase below 70%', () => {
-    expect(pickPraise(0.5).en).toBe('Keep going!');
-    expect(pickPraise(0).en).toBe('Keep going!');
+  it('draws an encouraging phrase below 70%', () => {
+    expect(PRAISE_GOOD).toContainEqual(pickPraise(0.5, 2));
+    expect(PRAISE_GOOD).toContainEqual(pickPraise(0, 0));
+  });
+
+  it('rotates through the tier as the seed changes', () => {
+    const picks = PRAISE_PERFECT.map((_, i) => pickPraise(1, i));
+    expect(picks).toEqual(PRAISE_PERFECT);
+  });
+
+  it('is stable for a given seed (no flicker across re-renders)', () => {
+    expect(pickPraise(1, 7)).toEqual(pickPraise(1, 7));
   });
 });
 

@@ -99,6 +99,8 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
 
   // Session tracking
   const { startSession, recordAnswer, endSession } = useProgress();
+  // Stable per-session pick so the completion phrase doesn't flicker on re-render.
+  const praiseSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
   const { triggerXpEarned } = useXpAnimation();
   const sessionIdRef = useRef<string>('');
   const sessionEndedRef = useRef(false);
@@ -308,7 +310,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
   // ── Celebration screen (shop-purchased celebration) ─────────────────────────
   if (gameComplete && !showSummary) {
     const pct = gameSentences.length > 0 ? totalCorrect / gameSentences.length : 0;
-    const praise = pickPraise(pct);
+    const praise = pickPraise(pct, praiseSeed);
     return (
       <CelebrationScreen
         heading={praise.jp}

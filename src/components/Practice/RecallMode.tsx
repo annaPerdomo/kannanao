@@ -4,7 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Chip, Grid, LinearProgress, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
@@ -61,6 +61,8 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
   const [buddyReaction, setBuddyReaction] = useState<BuddyReaction>('idle');
 
   const { startSession, recordAnswer, endSession } = useProgress();
+  // Stable per-session pick so the completion phrase doesn't flicker on re-render.
+  const praiseSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
   const { triggerXpEarned } = useXpAnimation();
   const sessionIdRef = useRef<string>('');
   const startTimeRef = useRef<number>(Date.now());
@@ -186,7 +188,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
   // ── Completion screen ──────────────────────────────────────────────────────
   if (queue.phase === 'allDone') {
     const pct = queue.totalCards > 0 ? queue.firstAttemptCorrect / queue.totalCards : 0;
-    const praise = pickPraise(pct);
+    const praise = pickPraise(pct, praiseSeed);
     return (
       <CelebrationScreen
         heading={praise.jp}

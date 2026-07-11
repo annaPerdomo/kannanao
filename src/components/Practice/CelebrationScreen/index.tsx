@@ -24,7 +24,14 @@ import {
 } from './Particles';
 
 export type { PracticeMode, Praise } from './constants';
-export { CELEB_PARTICLE_BG, CELEBRATION_KEY_TO_THEME, pickPraise } from './constants';
+export {
+  CELEB_PARTICLE_BG,
+  CELEBRATION_KEY_TO_THEME,
+  pickPraise,
+  PRAISE_GOOD,
+  PRAISE_GREAT,
+  PRAISE_PERFECT,
+} from './constants';
 
 export interface CelebrationScreenProps {
   /** Main phrase. May contain `{kanji|reading}` furigana markup — rendered with

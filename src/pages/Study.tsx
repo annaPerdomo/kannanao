@@ -3,7 +3,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Box, Button, Chip, IconButton, LinearProgress, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Flashcard } from '@/components/Flashcard';
 import { Loading } from '@/components/Loading';
@@ -63,6 +63,8 @@ export default function Study({ deckId, onBack }: StudyProps) {
 
   // ── Session tracking ──────────────────────────────────────────────────────
   const { startSession, recordAnswer, endSession } = useProgress();
+  // Stable per-session pick so the completion phrase doesn't flicker on re-render.
+  const praiseSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
   const [sessionId, setSessionId] = useState('');
   const startTimeRef = useRef<number>(Date.now());
   // Indices the student has graded (each counts once); its size is cards studied.
@@ -422,7 +424,7 @@ export default function Study({ deckId, onBack }: StudyProps) {
       {showCelebration &&
         (() => {
           const graded = gradedRef.current.size;
-          const praise = pickPraise(graded > 0 ? correctRef.current / graded : 1);
+          const praise = pickPraise(graded > 0 ? correctRef.current / graded : 1, praiseSeed);
           return (
             <CelebrationScreen
               heading={praise.jp}
