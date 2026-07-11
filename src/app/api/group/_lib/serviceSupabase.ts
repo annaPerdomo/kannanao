@@ -16,6 +16,11 @@ export function getServiceSupabase(): SupabaseClient {
     throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set');
   }
 
-  client = createClient(url, serviceKey);
+  // Never let this shared singleton hold an auth session: if any code signed
+  // in on it, later queries would carry that user's JWT instead of the
+  // service key and silently become RLS-scoped.
+  client = createClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
   return client;
 }

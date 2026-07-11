@@ -7,6 +7,7 @@ import { _resetAuthCache, getUserFromToken } from './authCache';
 interface RateLimitEntry {
   count: number;
   windowStart: number;
+  windowMs: number;
 }
 
 interface RateLimitConfig {
@@ -24,8 +25,9 @@ function cleanup(now: number) {
   if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
   lastCleanup = now;
   for (const [key, entry] of store) {
-    if (now - entry.windowStart > entry.count * 60_000) {
-      // Entry is stale — older than any reasonable window
+    // An entry whose window has fully elapsed can never block a request again
+    // (the next hit starts a new window), so it's safe to drop.
+    if (now - entry.windowStart > entry.windowMs) {
       store.delete(key);
     }
   }
@@ -74,7 +76,7 @@ export async function rateLimit(
 
   if (!entry || now - entry.windowStart >= windowMs) {
     // New window
-    store.set(key, { count: 1, windowStart: now });
+    store.set(key, { count: 1, windowStart: now, windowMs });
     return null;
   }
 
@@ -89,7 +91,6 @@ export async function rateLimit(
   // the limit.
   if (await isAdminRequest(req)) return null;
 
-  // Rate limit exceeded
   const retryAfterMs = windowMs - (now - entry.windowStart);
   const retryAfterSecs = Math.ceil(retryAfterMs / 1000);
 

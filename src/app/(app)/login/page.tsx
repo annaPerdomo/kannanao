@@ -16,14 +16,12 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import WaitlistForm from '@/components/WaitlistForm';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
-  const router = useRouter();
   const { signInWithUsername } = useAuth();
 
   const [showWaitlist, setShowWaitlist] = useState(false);
@@ -39,9 +37,14 @@ export default function LoginPage() {
     setBusy(true);
     setError(null);
     const result = await signInWithUsername(username, password);
-    setBusy(false);
-    if (result.error) setError(result.error);
-    else router.push('/');
+    if (result.error) {
+      setError(result.error);
+      setBusy(false);
+      return;
+    }
+    // Full-document navigation forces middleware re-evaluation instead of
+    // replaying the Router-Cache stale landing.
+    window.location.assign('/');
   };
 
   return (

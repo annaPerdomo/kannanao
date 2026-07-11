@@ -18,7 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params;
   const body = await req.json().catch(() => null);
-  if (!body) {
+  if (!body || typeof body !== 'object') {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
   }
 
@@ -36,11 +36,29 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Assignment not found.' }, { status: 404 });
   }
 
+  // Coerce non-string values to null instead of calling .trim() on them —
+  // a numeric/object payload must not be able to 500 the route.
   const updates: Record<string, unknown> = {};
-  if ('title' in body) updates.title = body.title?.trim().slice(0, 200) || null;
-  if ('note' in body) updates.note = body.note?.trim().slice(0, 500) || null;
-  if ('dueDate' in body) updates.due_date = body.dueDate || null;
-  if ('completedAt' in body) updates.completed_at = body.completedAt;
+  if ('title' in body) {
+    updates.title = typeof body.title === 'string' ? body.title.trim().slice(0, 200) || null : null;
+  }
+  if ('note' in body) {
+    updates.note = typeof body.note === 'string' ? body.note.trim().slice(0, 500) || null : null;
+  }
+  if ('dueDate' in body) {
+    const v = body.dueDate;
+    if (v !== null && v !== undefined && (typeof v !== 'string' || Number.isNaN(Date.parse(v)))) {
+      return NextResponse.json({ error: 'Invalid dueDate.' }, { status: 400 });
+    }
+    updates.due_date = v || null;
+  }
+  if ('completedAt' in body) {
+    const v = body.completedAt;
+    if (v !== null && (typeof v !== 'string' || Number.isNaN(Date.parse(v)))) {
+      return NextResponse.json({ error: 'Invalid completedAt.' }, { status: 400 });
+    }
+    updates.completed_at = v;
+  }
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: 'Nothing to update.' }, { status: 400 });

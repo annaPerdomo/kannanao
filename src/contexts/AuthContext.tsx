@@ -11,6 +11,7 @@ import {
 } from 'react';
 
 import { isAdminUser } from '@/lib/admin';
+import { invalidateApiCache } from '@/lib/apiCache';
 import type { InitialAuth } from '@/lib/dbMappers';
 import type { AccountType } from '@/lib/supabase';
 import {
@@ -173,6 +174,12 @@ export function AuthProvider({
       // a refresh that returns the same token). Otherwise every data hook that
       // depends on `user` would refire and refetch needlessly.
       setSession((prev) => (prev?.access_token === session?.access_token ? prev : session));
+      // The client API cache is keyed by URL only, so entries from one account
+      // would be served to the next account signing in on the same page load.
+      // Drop everything on any account transition.
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        invalidateApiCache('/');
+      }
       if (event === 'SIGNED_IN' && session?.user) {
         const username = session.user.email?.split('@')[0] ?? '';
         void upsertProfile(session.user.id, username);

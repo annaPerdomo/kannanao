@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 
 import { amber, darkPurple, emerald, ocean, pink, purple, sky } from '@/theme';
 
+import LandingAuthGuard from './LandingAuthGuard';
 import LandingGlobalStyles from './LandingGlobalStyles';
 import {
   AiDemoSection,
@@ -118,6 +119,7 @@ export default function LandingPage() {
         />
       ))}
       <LandingGlobalStyles />
+      <LandingAuthGuard />
       <HeroSection />
       <FeaturesSection />
       <SectionDivider fromColor={darkPurple.deepest} toColor={pink[50]} />
