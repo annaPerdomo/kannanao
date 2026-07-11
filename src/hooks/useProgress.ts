@@ -25,6 +25,7 @@ export interface UserProgress {
 
 export type SessionMode =
   | 'study'
+  | 'review'
   | 'match'
   | 'fill'
   | 'recall'

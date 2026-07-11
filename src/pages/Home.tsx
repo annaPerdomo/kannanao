@@ -30,6 +30,7 @@ import { GridLayout } from 'react-grid-layout';
 import { DeckCard } from '@/components/DeckCard';
 import { AssignmentCard, GroupHomeWidget, LeaderboardWidget } from '@/components/Group';
 import { PageHeader } from '@/components/PageHeader';
+import { ReviewTile } from '@/components/ReviewTile';
 import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProgressCtx } from '@/contexts/ProgressContext';
@@ -778,6 +779,10 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
           onShopClick={() => router.push('/shop')}
           xpReady={progress != null}
         />
+        {/* The single home entry point to Smart Review — cross-deck due cards. */}
+        <Box sx={{ mt: 1.5, mb: 1 }}>
+          <ReviewTile />
+        </Box>
       </Box>
 
       {/* ── Dashboard grid ── */}

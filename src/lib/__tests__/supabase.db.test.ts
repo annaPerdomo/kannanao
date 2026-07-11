@@ -4,19 +4,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockGetUser = vi.fn();
 
-const tableData: Record<string, { data: unknown; error: unknown }> = {};
+const tableData: Record<string, { data: unknown; error: unknown; count?: number }> = {};
 
-function setTable(table: string, data: unknown, error: unknown = null) {
-  tableData[table] = { data, error };
+function setTable(table: string, data: unknown, error: unknown = null, count?: number) {
+  tableData[table] = { data, error, count };
 }
 
 function makeChain(table: string) {
   const result = () => tableData[table] ?? { data: null, error: null };
   const asPromise = () => Promise.resolve(result());
   const chain: Record<string, unknown> = {};
-  ['select', 'insert', 'update', 'delete', 'eq', 'order', 'in', 'upsert', 'limit'].forEach((m) => {
-    chain[m] = vi.fn(() => chain);
-  });
+  ['select', 'insert', 'update', 'delete', 'eq', 'lte', 'order', 'in', 'upsert', 'limit'].forEach(
+    (m) => {
+      chain[m] = vi.fn(() => chain);
+    },
+  );
   chain.single = vi.fn(() => asPromise());
   chain.maybeSingle = vi.fn(() => asPromise());
   // Make the chain itself thenable so `await chain` works
@@ -61,6 +63,8 @@ import {
   dbUpdateEventType,
   dbUpdateTodo,
   getCardProgressForUser,
+  getDueCards,
+  getDueCount,
   loadAllCards,
   loadCards,
   loadDecks,
@@ -901,5 +905,59 @@ describe('getCardProgressForUser', () => {
     setTable('card_progress', null, { message: 'DB error' });
     const rows = await getCardProgressForUser('u1');
     expect(rows).toEqual([]);
+  });
+});
+
+// ─── getDueCards ──────────────────────────────────────────────────────────────
+
+describe('getDueCards', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should map the joined card rows to app cards', async () => {
+    setTable('card_progress', [{ cards: makeCardRow() }, { cards: makeCardRow({ id: 'card-2' }) }]);
+    const cards = await getDueCards('u1');
+    expect(cards).toHaveLength(2);
+    expect(cards[0].word).toBe('猫');
+    expect(cards[0].meaning).toBe('cat');
+  });
+
+  it('should drop rows whose joined card is null', async () => {
+    setTable('card_progress', [{ cards: makeCardRow() }, { cards: null }]);
+    const cards = await getDueCards('u1');
+    expect(cards).toHaveLength(1);
+  });
+
+  it('should return empty array when the query errors', async () => {
+    setTable('card_progress', null, { message: 'DB error' });
+    const cards = await getDueCards('u1');
+    expect(cards).toEqual([]);
+  });
+});
+
+// ─── getDueCount ──────────────────────────────────────────────────────────────
+
+describe('getDueCount', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return the exact head count', async () => {
+    setTable('card_progress', null, null, 7);
+    const count = await getDueCount('u1');
+    expect(count).toBe(7);
+  });
+
+  it('should return 0 when the count is missing', async () => {
+    setTable('card_progress', null, null);
+    const count = await getDueCount('u1');
+    expect(count).toBe(0);
+  });
+
+  it('should return 0 when the query errors', async () => {
+    setTable('card_progress', null, { message: 'DB error' }, 5);
+    const count = await getDueCount('u1');
+    expect(count).toBe(0);
   });
 });

@@ -909,6 +909,49 @@ export async function getCardProgressForUser(userId: string): Promise<CardProgre
   return (data ?? []).map(dbCardProgressToApp);
 }
 
+/**
+ * Cross-deck due cards for Smart Review: cards whose scheduled review time has
+ * arrived, ordered soonest-first, capped. Joins card_progress → cards, so cards
+ * the student has NEVER graded (no progress row) are excluded by construction —
+ * reviews never flood day one. RLS scopes progress rows to the user.
+ */
+export async function getDueCards(userId: string, limit = 20): Promise<Flashcard[]> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    return [];
+  }
+  const { data, error } = await sb
+    .from('card_progress')
+    .select('cards(*)')
+    .eq('user_id', userId)
+    .lte('next_review_at', new Date().toISOString())
+    .order('next_review_at', { ascending: true })
+    .limit(limit);
+  if (error) {
+    console.error('Error loading due cards', error);
+    return [];
+  }
+  return (data ?? [])
+    .map((row) => (row as unknown as { cards: SupabaseCardRow | null }).cards)
+    .filter((c): c is SupabaseCardRow => c != null)
+    .map(dbCardToApp);
+}
+
+/** How many cards are due for review right now (for the home "N due" tile). */
+export async function getDueCount(userId: string): Promise<number> {
+  if (!isConfigured()) return 0;
+  const { count, error } = await sb
+    .from('card_progress')
+    .select('card_id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .lte('next_review_at', new Date().toISOString());
+  if (error) {
+    console.error('Error loading due count', error);
+    return 0;
+  }
+  return count ?? 0;
+}
+
 // ─── Travel Event Tracking ──────────────────────────────────────
 
 /** Fire-and-forget travel event logging. Never throws. */

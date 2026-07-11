@@ -2,6 +2,7 @@ import type { SessionMode } from '@/hooks/useProgress';
 
 export const MODE_LABELS: Record<SessionMode, string> = {
   study: 'Study',
+  review: 'Review',
   match: 'Match',
   fill: 'Fill',
   recall: 'Recall',
@@ -12,6 +13,7 @@ export const MODE_LABELS: Record<SessionMode, string> = {
 
 export const MODE_COLORS: Record<SessionMode, string> = {
   study: '#6366F1',
+  review: '#F472B6',
   match: '#10B981',
   fill: '#F59E0B',
   recall: '#3B82F6',
