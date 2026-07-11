@@ -19,23 +19,33 @@ export default function ConversationPage() {
 
   // Resolve recipient name from messages context
   const recipientName = useMemo(() => {
+    // Skip rows without profile joins (e.g. optimistic sends) instead of
+    // giving up on the first match — a later row usually has the name.
     for (const m of messages) {
-      if (m.sender_id === recipientId) {
-        return m.sender?.display_name || m.sender?.username || null;
+      if (m.sender_id === recipientId && m.sender) {
+        return m.sender.display_name || m.sender.username;
       }
-      if (m.recipient_id === recipientId) {
-        return m.recipient?.display_name || m.recipient?.username || null;
+      if (m.recipient_id === recipientId && m.recipient) {
+        return m.recipient.display_name || m.recipient.username;
       }
     }
     return null;
   }, [messages, recipientId]);
 
-  // Fetch from DB if not available in messages context
+  // Fetch from DB if not available in messages context. Reset first so a name
+  // fetched for a previous conversation never shows on this one, and ignore a
+  // slow response that lands after another switch.
   useEffect(() => {
-    if (!recipientName && !fetchedName) {
-      fetchDisplayName(recipientId).then(setFetchedName);
-    }
-  }, [recipientId, recipientName, fetchedName]);
+    setFetchedName(null);
+    if (recipientName) return;
+    let active = true;
+    void fetchDisplayName(recipientId).then((name) => {
+      if (active) setFetchedName(name);
+    });
+    return () => {
+      active = false;
+    };
+  }, [recipientId, recipientName]);
 
   const displayName = recipientName || fetchedName || 'Chat';
 

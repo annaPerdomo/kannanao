@@ -100,7 +100,15 @@ export async function POST(req: NextRequest) {
   if (message?.trim()) insertRow.message = message.trim().slice(0, 500);
   if (imageUrl) insertRow.image_url = imageUrl;
 
-  const { data, error } = await sb.from('direct_messages').insert(insertRow).select().single();
+  // Return the row with the same profile joins as GET so client caches that
+  // prepend it can resolve display names without a refetch.
+  const { data, error } = await sb
+    .from('direct_messages')
+    .insert(insertRow)
+    .select(
+      '*, sender:profiles!direct_messages_sender_id_fkey(display_name, username), recipient:profiles!direct_messages_recipient_id_fkey(display_name, username)',
+    )
+    .single();
 
   if (error) {
     logger.error('Failed to send message', {

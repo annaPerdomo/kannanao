@@ -110,6 +110,44 @@ describe('useDirectMessages', () => {
     expect(result.current.unreadCount).toBe(1);
   });
 
+  // ── active conversation (realtime INSERT) ─────────────────────────────────
+
+  function getInsertHandler(): (payload: { new: DirectMessage }) => void {
+    const call = mockChannel.on.mock.calls.find(
+      ([event, cfg]) => event === 'postgres_changes' && cfg.event === 'INSERT',
+    );
+    expect(call).toBeDefined();
+    return call![2];
+  }
+
+  it('does not count a realtime message as unread when its chat is on screen', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [DM_READ] });
+    const { result } = renderHook(() => useDirectMessages());
+    await act(async () => {
+      await result.current.ensureLoaded();
+    });
+    act(() => {
+      result.current.setActiveConversation('org1');
+      getInsertHandler()({ new: { ...DM_UNREAD, id: 'live1' } });
+    });
+    // The message lands in the list already marked read — badge stays at 0
+    expect(result.current.messages.find((m) => m.id === 'live1')?.read_at).toBeTruthy();
+    expect(result.current.unreadCount).toBe(0);
+  });
+
+  it('counts a realtime message as unread when a different chat is on screen', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [DM_READ] });
+    const { result } = renderHook(() => useDirectMessages());
+    await act(async () => {
+      await result.current.ensureLoaded();
+    });
+    act(() => {
+      result.current.setActiveConversation('someone-else');
+      getInsertHandler()({ new: { ...DM_UNREAD, id: 'live2' } });
+    });
+    expect(result.current.unreadCount).toBe(1);
+  });
+
   it('sets loading false and empty messages when no user', async () => {
     mockUseAuth.mockReturnValue({ user: null });
     const { result } = renderHook(() => useDirectMessages());

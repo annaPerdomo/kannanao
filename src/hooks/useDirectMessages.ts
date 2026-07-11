@@ -106,6 +106,13 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
   const [loadingOlder, setLoadingOlder] = useState(false);
   const { user } = useAuth();
   const channelRef = useRef<ReturnType<typeof sb.channel> | null>(null);
+  // The peer whose chat is currently on screen (set by ChatPanel on the global
+  // provider). Messages arriving from that peer while the tab is visible are
+  // being read right now — they must never bump the nav/app badge.
+  const activeConversationRef = useRef<string | null>(null);
+  const setActiveConversation = useCallback((peerId: string | null) => {
+    activeConversationRef.current = peerId;
+  }, []);
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
   const loadedRef = useRef(loaded);
@@ -113,6 +120,10 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
   const hasMoreRef = useRef(hasMore);
   hasMoreRef.current = hasMore;
   const loadingOlderRef = useRef(false);
+  // The server-rendered unread count is only valid for the session it was
+  // rendered for — consume it once so a later user change refetches the count
+  // instead of showing the previous user's (or a stale) badge.
+  const seededCountRef = useRef(initialUnreadCount !== undefined);
 
   // Once the full list is loaded, derive the count from it so optimistic
   // read/markAll updates reflect instantly. Until then (the common case — every
@@ -245,10 +256,12 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
       void fetchMessages();
     } else {
       setLoading(false);
-      // Skip the count query when the server already seeded the unread count.
-      if (initialUnreadCount === undefined) void refreshUnreadCount();
+      // Skip the count query the first time when the server already seeded the
+      // unread count; any later identity change needs a fresh count.
+      if (!seededCountRef.current) void refreshUnreadCount();
+      seededCountRef.current = false;
     }
-  }, [user, memberId, fetchMessages, refreshUnreadCount, initialUnreadCount]);
+  }, [user, memberId, fetchMessages, refreshUnreadCount]);
 
   // Supabase Realtime: subscribe to new messages and read receipt updates
   useEffect(() => {
@@ -266,9 +279,20 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
           filter: `recipient_id=eq.${user.id}`,
         },
         (payload) => {
-          const row = payload.new as DirectMessage;
+          let row = payload.new as DirectMessage;
           // When filtering by memberId, only accept messages from that member
           if (memberId && row.sender_id !== memberId) return;
+          // If the user is looking at this sender's chat right now, the message
+          // is read the moment it lands — mark it optimistically so the badge
+          // never flashes up for the conversation that's on screen. ChatPanel
+          // persists the read server-side via /api/messages/read-all.
+          const viewingThisChat =
+            activeConversationRef.current === row.sender_id &&
+            typeof document !== 'undefined' &&
+            !document.hidden;
+          if (viewingThisChat && !row.read_at) {
+            row = { ...row, read_at: new Date().toISOString() };
+          }
           if (loadedRef.current) {
             // Guard against duplicate INSERT deliveries
             if (messagesRef.current.some((m) => m.id === row.id)) return;
@@ -286,15 +310,20 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
                 prev.some((m) => m.id === row.id) ? prev : [enriched, ...prev],
               );
             }
-          } else {
+          } else if (!viewingThisChat) {
             // Full list isn't loaded — just keep the unread badge accurate.
+            // (Skipped for the on-screen chat: counting it server-side before
+            // read-all lands would bump the badge for a message being read.)
             void refreshUnreadCount();
           }
           // Chime only while the app is in the foreground. When the tab is
           // hidden or the app is closed, the server push notification alerts the
           // user instead — the service worker shows that push exactly when no
           // window is visible, so the user never gets both a chime and a push.
-          if (typeof document !== 'undefined' && !document.hidden) {
+          // Only the global provider chimes: a per-conversation hook instance
+          // subscribes to the same INSERT, and both playing meant every message
+          // in an open chat chimed twice.
+          if (!memberId && typeof document !== 'undefined' && !document.hidden) {
             playMessageSound();
           }
         },
@@ -452,5 +481,6 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
     markAllAsRead,
     toggleReaction,
     refetch: fetchMessages,
+    setActiveConversation,
   };
 }
