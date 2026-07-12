@@ -88,7 +88,7 @@ export function ReviewTile() {
           }}
         >
           {due
-            ? `${dueCount} card${dueCount === 1 ? '' : 's'} due today`
+            ? `${dueCount} word${dueCount === 1 ? '' : 's'} waiting ⚔️`
             : 'All caught up — nothing due'}
         </Typography>
       </Box>

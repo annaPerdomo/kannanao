@@ -14,7 +14,7 @@ import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import { useShop } from '@/hooks/useShop';
-import { cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
+import { buildMeaningChoices, cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
 import { CelebrationScreen, pickPraise } from './CelebrationScreen';
@@ -26,16 +26,6 @@ interface RecallModeProps {
   deckId: string;
   batchSize: number;
   onExit: () => void;
-}
-
-function buildChoices(correct: Flashcard, allCards: Flashcard[]): string[] {
-  const others = allCards.filter((c) => c.id !== correct.id);
-  const count = Math.min(3, others.length);
-  const distractors = [...others]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, count)
-    .map((c) => c.meaning);
-  return [...distractors, correct.meaning].sort(() => Math.random() - 0.5);
 }
 
 const CHOICE_LABELS = ['A', 'B', 'C', 'D'];
@@ -89,7 +79,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
 
   // Rebuild choices whenever the card changes
   useEffect(() => {
-    if (card) setChoices(buildChoices(card, cards));
+    if (card) setChoices(buildMeaningChoices(card, cards));
   }, [index, cards, queue.roundKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // When all cards in the round are answered, tell the queue

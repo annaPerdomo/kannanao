@@ -15,11 +15,13 @@ import {
 import { alpha, useTheme } from '@mui/material/styles';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { ComboChip } from '@/components/ComboChip';
 import { stripFurigana } from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import { useCombo } from '@/hooks/useCombo';
 import { usePracticeSentences } from '@/hooks/usePracticeSentences';
 import { useProgress } from '@/hooks/useProgress';
 import type { Flashcard } from '@/types/flashcard';
@@ -83,7 +85,6 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
 
   // Game state
   const [index, setIndex] = useState(0);
-  const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
   const [totalCorrect, setTotalCorrect] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -97,8 +98,10 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
   // Track per-sentence results for the summary screen
   const [results, setResults] = useState<{ sentence: PracticeSentence; correct: boolean }[]>([]);
 
-  // Session tracking
-  const { startSession, recordAnswer, endSession } = useProgress();
+  // Session tracking. The combo meter replaces the old local streak counter —
+  // one shared mechanic (chip + flat bonuses) across review and every game.
+  const { startSession, recordAnswer, endSession, addBonusXp } = useProgress();
+  const combo = useCombo(addBonusXp);
   // Stable per-session pick so the completion phrase doesn't flicker on re-render.
   const praiseSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
   const { triggerXpEarned } = useXpAnimation();
@@ -167,13 +170,6 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
 
       if (correct) {
         setTotalCorrect((c) => c + 1);
-        setStreak((s) => {
-          const next = s + 1;
-          setBestStreak((b) => Math.max(b, next));
-          return next;
-        });
-      } else {
-        setStreak(0);
       }
 
       setResults((prev) => [...prev, { sentence: currentSentence, correct }]);
@@ -182,8 +178,12 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
         // Sentence-based mode — no single card to attribute, so no cardId.
         await recordAnswer(sessionIdRef.current, correct);
       }
+      // Advance the combo after the answer is recorded; track the best run for
+      // the celebration screen.
+      const res = combo.onAnswer(correct);
+      setBestStreak((b) => Math.max(b, res.count));
     },
-    [selected, currentSentence, recordAnswer, triggerXpEarned],
+    [selected, currentSentence, recordAnswer, triggerXpEarned, combo],
   );
 
   const handleNext = useCallback(() => {
@@ -205,7 +205,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
       });
     }
     setIndex(0);
-    setStreak(0);
+    combo.reset();
     setBestStreak(0);
     setTotalCorrect(0);
     setSelected(null);
@@ -218,7 +218,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
       sessionIdRef.current = id;
       startTimeRef.current = Date.now();
     });
-  }, [deckId, results.length, totalCorrect, startSession, endSession]);
+  }, [deckId, results.length, totalCorrect, startSession, endSession, combo]);
 
   // Trigger perfect bonus XP animation once when game completes perfectly
   const perfectBonusTriggeredRef = useRef(false);
@@ -447,20 +447,9 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
         key={xpPop?.key}
       />
 
-      {/* Header: progress + streak */}
-      <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ mb: 1.5 }}>
-        {streak >= 2 && (
-          <Typography
-            sx={{
-              fontSize: '0.9rem',
-              fontWeight: 800,
-              color: accent[500],
-              mr: 1.5,
-            }}
-          >
-            {streak}x streak
-          </Typography>
-        )}
+      {/* Header: progress + combo */}
+      <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ mb: 1.5, gap: 1 }}>
+        <ComboChip count={combo.count} />
         <Typography
           sx={{
             fontSize: '0.95rem',

@@ -1,0 +1,252 @@
+'use client';
+
+import { Box } from '@mui/material';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import FlipStudy, { type FlipStudyController } from '@/components/FlipStudy';
+import { cardsToMatchWords, WordMatchEmbedded } from '@/components/Games';
+import { Loading } from '@/components/Loading';
+import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
+import { useAuth } from '@/contexts/AuthContext';
+import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import { useCombo } from '@/hooks/useCombo';
+import { useProgress } from '@/hooks/useProgress';
+import { XP_PER_WRONG } from '@/hooks/useProgress';
+import { CHEST_XP, chestVariant, isChestEligible, localDateString } from '@/lib/chest';
+import { cardXp } from '@/lib/flashcardUtils';
+import { planQuest } from '@/lib/quest';
+import { getDueCount } from '@/lib/supabase';
+import { LAYOUT } from '@/theme';
+import type { Flashcard } from '@/types/flashcard';
+
+import { BossRound } from './BossRound';
+import { QuestInterstitial } from './QuestInterstitial';
+import { QuestMap } from './QuestMap';
+import type { QuestGrade } from './types';
+
+export interface ReviewQuestProps {
+  /** Due cards for today, soonest-first (already fetched by the page). */
+  cards: Flashcard[];
+  onExit: () => void;
+}
+
+/**
+ * Today's review as a short quest. The controller owns the ONE 'review' session
+ * that every node grades into (so a quest run is a single study_sessions row),
+ * plus the shared combo. Nodes run in sequence — Warm-up (flip) → optional Word
+ * Match → optional Boss Round — and the perfect bonus + daily chest are checked
+ * once, at the end.
+ */
+export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
+  const { user } = useAuth();
+  const { startSession, recordAnswer, endSession, addBonusXp, openDailyChest, progress } =
+    useProgress();
+  const { triggerXpEarned } = useXpAnimation();
+  const combo = useCombo(addBonusXp);
+
+  const plan = useMemo(() => planQuest(cards), [cards]);
+  const matchWords = useMemo(() => cardsToMatchWords(plan.match), [plan.match]);
+
+  const sessionIdRef = useRef('');
+  const startTimeRef = useRef(0);
+  const answeredRef = useRef(0);
+  const correctRef = useRef(0);
+  const endedRef = useRef(false);
+  // Snapshot last_chest_date every render so finishQuest reads the pre-open value
+  // without a stale closure.
+  const lastChestDateRef = useRef<string | null>(null);
+  lastChestDateRef.current = progress?.last_chest_date ?? null;
+
+  const [ready, setReady] = useState(false);
+  const [nodeIdx, setNodeIdx] = useState(0);
+  const [showBossIntro, setShowBossIntro] = useState(false);
+  const [done, setDone] = useState(false);
+  const [chestEligible, setChestEligible] = useState(false);
+  const [perfect, setPerfect] = useState(false);
+
+  // Open the one review session on mount. startSession is identity-stable, so
+  // this fires exactly once even as progress updates.
+  useEffect(() => {
+    if (cards.length === 0) return;
+    let cancelled = false;
+    startSession(null, 'review').then((id) => {
+      if (cancelled) return;
+      sessionIdRef.current = id;
+      startTimeRef.current = Date.now();
+      setReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [cards.length, startSession]);
+
+  const finishQuest = useCallback(async () => {
+    if (endedRef.current) return;
+    endedRef.current = true;
+    const studied = answeredRef.current;
+    const correct = correctRef.current;
+    if (sessionIdRef.current) {
+      await endSession(sessionIdRef.current, {
+        cardsStudied: studied,
+        cardsCorrect: correct,
+        durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+      });
+    }
+    setPerfect(studied >= 5 && correct === studied);
+
+    // Daily chest: only when clearing the due queue actually emptied it. Guard
+    // the network read so a failure quietly skips the chest, never errors the
+    // celebration.
+    try {
+      const dueCount = user ? await getDueCount(user.id) : 1;
+      setChestEligible(
+        isChestEligible({
+          lastChestDate: lastChestDateRef.current,
+          today: localDateString(new Date()),
+          dueCount,
+          fromReview: true,
+        }),
+      );
+    } catch {
+      setChestEligible(false);
+    }
+
+    setDone(true);
+  }, [endSession, user]);
+
+  // The single grading primitive every node calls.
+  const grade = useCallback<QuestGrade>(
+    (correct, jlpt, cardId) => {
+      answeredRef.current += 1;
+      if (correct) correctRef.current += 1;
+      triggerXpEarned(correct ? cardXp(jlpt) : XP_PER_WRONG);
+      if (sessionIdRef.current) void recordAnswer(sessionIdRef.current, correct, jlpt, cardId);
+      // Combo steps AFTER the answer is recorded so its bonus builds on the
+      // updated progress snapshot.
+      return combo.onAnswer(correct);
+    },
+    [triggerXpEarned, recordAnswer, combo],
+  );
+
+  const advanceNode = useCallback(() => {
+    const next = nodeIdx + 1;
+    if (next >= plan.nodes.length) {
+      void finishQuest();
+      return;
+    }
+    if (plan.nodes[next].type === 'boss') setShowBossIntro(true);
+    setNodeIdx(next);
+  }, [nodeIdx, plan.nodes, finishQuest]);
+
+  const awardBossBonus = useCallback(
+    (amount: number) => {
+      if (amount <= 0) return;
+      void addBonusXp(amount);
+      triggerXpEarned(amount);
+    },
+    [addBonusXp, triggerXpEarned],
+  );
+
+  const flipController = useMemo<FlipStudyController>(
+    () => ({
+      onGrade: (card, correct) => grade(correct, card.jlptLevel, card.id),
+      onComplete: advanceNode,
+      comboCount: combo.count,
+    }),
+    [grade, advanceNode, combo.count],
+  );
+
+  if (cards.length === 0) return null;
+  if (!ready) {
+    return (
+      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
+        <Loading message="Setting up today's quest…" />
+      </Box>
+    );
+  }
+
+  // ── Completion ──────────────────────────────────────────────────────────────
+  if (done) {
+    const pct = answeredRef.current > 0 ? correctRef.current / answeredRef.current : 1;
+    const praise = pickPraise(pct, 0);
+    return (
+      <CelebrationScreen
+        heading={praise.jp}
+        headingEn={praise.en}
+        subheading="You cleared today's review!"
+        mode="study"
+        exitLabel="Back to Review"
+        chest={
+          chestEligible
+            ? {
+                variant: chestVariant(perfect),
+                xp: CHEST_XP,
+                onOpen: () => {
+                  triggerXpEarned(CHEST_XP);
+                  void openDailyChest();
+                },
+              }
+            : undefined
+        }
+        onExit={onExit}
+      />
+    );
+  }
+
+  const chestAvailable = lastChestDateRef.current !== localDateString(new Date());
+  const node = plan.nodes[nodeIdx];
+
+  // ── Boss intro interstitial ────────────────────────────────────────────────
+  if (showBossIntro && node?.type === 'boss') {
+    return (
+      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+        <QuestInterstitial
+          emoji="⚔️"
+          title="Boss Round"
+          subtitle="Your last 3 words — pick the meaning. Worth double!"
+          dark
+          onContinue={() => setShowBossIntro(false)}
+        />
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, pt: 3 }}>
+      <QuestMap nodes={plan.nodes} currentIndex={nodeIdx} chestAvailable={chestAvailable} />
+
+      {node?.type === 'warmup' && (
+        <FlipStudy
+          cards={plan.warmup}
+          title="Today's Practice"
+          badge={`${plan.warmup.length} card${plan.warmup.length === 1 ? '' : 's'}`}
+          sessionMode="review"
+          sessionDeckId={null}
+          onBack={onExit}
+          controller={flipController}
+        />
+      )}
+
+      {node?.type === 'match' && (
+        <WordMatchEmbedded
+          words={matchWords}
+          comboCount={combo.count}
+          onPairResolved={(correct, cardId, jlpt) => grade(correct, jlpt, cardId)}
+          onComplete={advanceNode}
+          onQuit={onExit}
+        />
+      )}
+
+      {node?.type === 'boss' && (
+        <BossRound
+          cards={plan.boss}
+          pool={cards}
+          comboCount={combo.count}
+          grade={grade}
+          onBossBonus={awardBossBonus}
+          onComplete={advanceNode}
+        />
+      )}
+    </Box>
+  );
+}

@@ -4,7 +4,8 @@ import { alpha } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import FlipStudy from '@/components/FlipStudy';
+import { Loading } from '@/components/Loading';
+import { ReviewQuest } from '@/components/ReviewQuest';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDueCards } from '@/lib/supabase';
 import { LAYOUT } from '@/theme';
@@ -64,12 +65,11 @@ function AllDone({ onGames, onHome }: { onGames: () => void; onHome: () => void 
 }
 
 /**
- * Today's practice (the flip-with-self-grading flow): pulls the cards due right
- * now across ALL the student's decks and runs them through the shared FlipStudy
- * component. Only cards graded at least once ever become due (see getDueCards),
- * so this never floods on day one. Grading here advances each card's schedule
- * via the SRS scheduler — exactly like the card-based games. Reached from the
- * /review hub's "Start today's practice" button.
+ * Today's practice, presented as a short quest. Pulls the cards due right now
+ * across ALL the student's decks and hands them to <ReviewQuest>, which sizes
+ * the node path (Warm-up → Word Match → Boss Round), runs it inside one review
+ * session, and ends with the perfect bonus + daily chest. Only cards graded at
+ * least once ever become due (see getDueCards), so this never floods day one.
  */
 export default function ReviewTodayPage() {
   const router = useRouter();
@@ -87,20 +87,17 @@ export default function ReviewTodayPage() {
     };
   }, [user]);
 
-  return (
-    <FlipStudy
-      cards={cards ?? []}
-      loading={cards === null}
-      loadingMessage="Finding your reviews…"
-      title="Today's Practice"
-      badge={cards && cards.length > 0 ? `${cards.length} to review` : undefined}
-      sessionMode="review"
-      sessionDeckId={null}
-      onBack={() => router.push('/review')}
-      completionSubheading="You reviewed everything that was due!"
-      emptyState={
-        <AllDone onGames={() => router.push('/review')} onHome={() => router.push('/')} />
-      }
-    />
-  );
+  if (cards === null) {
+    return (
+      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
+        <Loading message="Finding your reviews…" />
+      </Box>
+    );
+  }
+
+  if (cards.length === 0) {
+    return <AllDone onGames={() => router.push('/review')} onHome={() => router.push('/')} />;
+  }
+
+  return <ReviewQuest cards={cards} onExit={() => router.push('/review')} />;
 }

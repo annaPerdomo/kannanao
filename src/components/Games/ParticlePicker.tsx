@@ -16,7 +16,7 @@ export function ParticlePicker() {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
   const router = useRouter();
-  const { answer, finish } = useGameSession('particle-quiz');
+  const { answer, finish, comboCount } = useGameSession('particle-quiz');
 
   const sentences = useMemo(() => shuffle(PARTICLE_SENTENCES), []);
   const [index, setIndex] = useState(0);
@@ -94,6 +94,7 @@ export function ParticlePicker() {
       howTo="Tap the little word (は・が・を…) that fills each blank."
       current={index}
       total={sentences.length}
+      comboCount={comboCount}
       onQuit={async () => {
         await finish();
         router.push('/review');

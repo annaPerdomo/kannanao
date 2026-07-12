@@ -196,6 +196,46 @@ describe('CelebrationScreen', () => {
     expect(screen.getByText('Perfect!')).toBeInTheDocument();
   });
 
+  it('uses a custom exit label when given', () => {
+    renderWithProviders(
+      <CelebrationScreen
+        heading="Done!"
+        subheading="cleared"
+        mode="study"
+        exitLabel="Back to Review"
+        onExit={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('Back to Review')).toBeInTheDocument();
+  });
+
+  it('shows the daily chest and awards it once on tap', () => {
+    const onOpen = vi.fn();
+    renderWithProviders(
+      <CelebrationScreen
+        heading="Done!"
+        subheading="cleared"
+        mode="study"
+        chest={{ variant: 'gold', xp: 100, onOpen }}
+        onExit={vi.fn()}
+      />,
+    );
+    const chest = screen.getByRole('button', { name: /open your daily chest/i });
+    fireEvent.click(chest);
+    expect(onOpen).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('+100 XP!')).toBeInTheDocument();
+    // Tapping the opened chest again does nothing.
+    fireEvent.click(screen.getByRole('button', { name: /chest opened/i }));
+    expect(onOpen).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders no chest when none is provided', () => {
+    renderWithProviders(
+      <CelebrationScreen heading="Done!" subheading="cleared" mode="study" onExit={vi.fn()} />,
+    );
+    expect(screen.queryByRole('button', { name: /daily chest/i })).not.toBeInTheDocument();
+  });
+
   it('should not throw with an equipped celebration item', () => {
     // Override useShop to return an equipped celebration
     vi.doMock('@/hooks/useShop', () => ({

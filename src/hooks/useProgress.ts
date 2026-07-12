@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { invalidateApiCache } from '@/lib/apiCache';
+import { CHEST_XP } from '@/lib/chest';
 import { cardXp } from '@/lib/flashcardUtils';
 import { sb, upsertCardProgress } from '@/lib/supabase';
 import type { JlptLevel } from '@/types/flashcard';
@@ -21,6 +22,8 @@ export interface UserProgress {
   total_cards_studied: number;
   total_correct: number;
   total_sessions: number;
+  /** Local YYYY-MM-DD of the last daily-chest open, or null. */
+  last_chest_date: string | null;
 }
 
 export type SessionMode =
@@ -679,6 +682,31 @@ export function useProgress(
     [supabase, applyProgress],
   );
 
+  /**
+   * Open the daily chest: award the flat chest XP and stamp today's local date
+   * so it can't be opened again today. Written optimistically with rollback on
+   * failure, matching the other progress writes. Returns false if it couldn't
+   * (no progress row) so the caller can avoid showing a phantom reward.
+   */
+  const openDailyChest = useCallback(async (): Promise<boolean> => {
+    const base = progressRef.current;
+    if (!base) return false;
+    const today = toLocalDateString(new Date());
+    const newXp = base.total_xp + CHEST_XP;
+    const newLevel = levelFromXp(newXp);
+    const optimistic = { ...base, total_xp: newXp, level: newLevel, last_chest_date: today };
+    applyProgress(optimistic);
+    const { error } = await supabase
+      .from('user_progress')
+      .update({ total_xp: newXp, level: newLevel, last_chest_date: today })
+      .eq('id', base.id);
+    if (error) {
+      applyProgress(base); // roll back — the chest stays available to retry
+      return false;
+    }
+    return true;
+  }, [supabase, applyProgress]);
+
   const spendableXp = progress ? progress.total_xp - (progress.total_xp_spent ?? 0) : 0;
 
   return {
@@ -693,6 +721,7 @@ export function useProgress(
     endSession,
     startSession,
     addBonusXp,
+    openDailyChest,
     refetch: fetchAll,
   };
 }

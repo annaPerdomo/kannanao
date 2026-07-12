@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Flashcard } from '@/types/flashcard';
 
 import { KATAKANA_WORDS, VOCAB_WORDS } from '../data';
-import { orderDueFirst, pickKanaWords, pickMatchWords } from '../gameWords';
+import { cardsToMatchWords, orderDueFirst, pickKanaWords, pickMatchWords } from '../gameWords';
 
 function card(overrides: Partial<Flashcard>): Flashcard {
   return {
@@ -21,6 +21,28 @@ function card(overrides: Partial<Flashcard>): Flashcard {
     ...overrides,
   };
 }
+
+describe('cardsToMatchWords', () => {
+  it('keeps card order and carries the cardId for the SRS write', () => {
+    const a = card({ id: 'a', word: 'いぬ', reading: 'いぬ', meaning: 'dog', jlptLevel: 'N5' });
+    const b = card({ id: 'b', word: 'ねこ', reading: 'ねこ', meaning: 'cat' });
+    const words = cardsToMatchWords([a, b]);
+    expect(words.map((w) => w.cardId)).toEqual(['a', 'b']);
+    expect(words[0]).toMatchObject({ english: 'dog', jlpt: 'N5' });
+  });
+
+  it('drops cards missing a display word or meaning, and dedupes by display text', () => {
+    const good = card({ id: 'a', word: 'いぬ', reading: 'いぬ', meaning: 'dog' });
+    const noMeaning = card({ id: 'b', word: 'ねこ', reading: 'ねこ', meaning: '' });
+    const dup = card({ id: 'c', word: 'いぬ', reading: 'いぬ', meaning: 'doggo' });
+    const words = cardsToMatchWords([good, noMeaning, dup]);
+    expect(words.map((w) => w.cardId)).toEqual(['a']);
+  });
+
+  it('is empty for no cards', () => {
+    expect(cardsToMatchWords([])).toEqual([]);
+  });
+});
 
 describe('orderDueFirst', () => {
   it('leads with due cards (in order) then tops up from the rest', () => {

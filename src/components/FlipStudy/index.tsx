@@ -5,19 +5,37 @@ import { Box, Button, Chip, IconButton, LinearProgress, Typography } from '@mui/
 import { alpha, useTheme } from '@mui/material/styles';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { ComboChip } from '@/components/ComboChip';
 import { Flashcard } from '@/components/Flashcard';
 import FuriganaText from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
 import { XpEarnedPop } from '@/components/Practice/XpEarnedPop';
-import { StudyBuddy } from '@/components/StudyBuddy';
+import { type BuddyReaction, StudyBuddy } from '@/components/StudyBuddy';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import { useCombo } from '@/hooks/useCombo';
 import { type SessionMode, useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import { useShop } from '@/hooks/useShop';
+import type { ComboStepResult } from '@/lib/combo';
 import { cardXp } from '@/lib/flashcardUtils';
 import { LAYOUT } from '@/theme';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
+
+/**
+ * When a parent (the review quest) owns the session, it passes a controller so
+ * FlipStudy grades INTO that one session instead of starting its own. In that
+ * mode it starts/ends no `study_sessions` row and shows no celebration/chest —
+ * it just runs the flip cards and calls `onComplete` when the last is graded.
+ */
+export interface FlipStudyController {
+  /** Records the graded card (SRS + XP + combo) and returns the combo result. */
+  onGrade: (card: FlashcardType, correct: boolean) => ComboStepResult;
+  /** All cards graded — advance to the next quest node. */
+  onComplete: () => void;
+  /** Live combo count from the quest, for the chip. */
+  comboCount: number;
+}
 
 export interface FlipStudyProps {
   /** The ordered cards to study — a single deck (Study) or cross-deck due cards (Review). */
@@ -38,6 +56,8 @@ export interface FlipStudyProps {
   emptyState?: React.ReactNode;
   /** Celebration subheading; defaults to "You studied all N cards!". */
   completionSubheading?: string;
+  /** Present when embedded in the review quest (parent owns the session). */
+  controller?: FlipStudyController;
 }
 
 // Exit animation duration — card slides out before the next one slides in.
@@ -74,12 +94,14 @@ export default function FlipStudy({
   loadingMessage = 'Loading…',
   emptyState,
   completionSubheading,
+  controller,
 }: FlipStudyProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const { equipped } = useShop();
   const { triggerXpEarned } = useXpAnimation();
   const equippedBuddy = equipped['study_buddy'];
+  const embedded = !!controller;
   const [index, setIndex] = useState(0);
   const [navigating, setNavigating] = useState(false);
   // 1 = navigating forward (new card enters from right), -1 = backward (from left)
@@ -88,12 +110,18 @@ export default function FlipStudy({
   const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(
     null,
   );
+  // Buddy cheers when a combo threshold lands; idle otherwise.
+  const [buddyReaction, setBuddyReaction] = useState<BuddyReaction>('idle');
   // True once the current card has been flipped to its answer — gates the
   // self-grading buttons so they only appear after the student has seen it.
   const [flipped, setFlipped] = useState(false);
 
   // ── Session tracking ──────────────────────────────────────────────────────
-  const { startSession, recordAnswer, endSession } = useProgress();
+  // Standalone flip (deck Study) owns its own session + combo. When embedded in
+  // the quest, the controller owns both and these go unused.
+  const { startSession, recordAnswer, endSession, addBonusXp } = useProgress();
+  const standaloneCombo = useCombo(addBonusXp);
+  const comboCount = controller ? controller.comboCount : standaloneCombo.count;
   // Stable per-session pick so the completion phrase doesn't flicker on re-render.
   const praiseSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
   const [sessionId, setSessionId] = useState('');
@@ -109,7 +137,8 @@ export default function FlipStudy({
   // the session must wait until there's something to review).
   const hasCards = cards.length > 0;
   useEffect(() => {
-    if (loading || !hasCards) return;
+    // Embedded runs inside the quest's session — never open a second one.
+    if (loading || !hasCards || embedded) return;
     let cancelled = false;
     startSession(sessionDeckId, sessionMode).then((id) => {
       if (cancelled) return;
@@ -119,26 +148,24 @@ export default function FlipStudy({
     return () => {
       cancelled = true;
     };
-  }, [loading, hasCards, sessionDeckId, sessionMode, startSession]);
+  }, [loading, hasCards, sessionDeckId, sessionMode, startSession, embedded]);
 
-  const showXpPop = useCallback(
-    (amount: number, correct: boolean) => {
-      setXpPop({ amount, correct, key: Date.now() });
-      triggerXpEarned(amount);
-      setTimeout(() => setXpPop(null), 1300);
-    },
-    [triggerXpEarned],
-  );
+  // The card-local "+N XP" burst. Standalone also fires the nav-bar count-up;
+  // when embedded, the controller fires it (once) so it isn't doubled.
+  const flashXpPop = useCallback((amount: number, correct: boolean) => {
+    setXpPop({ amount, correct, key: Date.now() });
+    setTimeout(() => setXpPop(null), 1300);
+  }, []);
 
   const finishSession = useCallback(async () => {
-    if (endedRef.current || !sessionId) return;
+    if (embedded || endedRef.current || !sessionId) return;
     endedRef.current = true;
     await endSession(sessionId, {
       cardsStudied: gradedRef.current.size,
       cardsCorrect: correctRef.current,
       durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
     });
-  }, [endSession, sessionId]);
+  }, [embedded, endSession, sessionId]);
 
   const handleBack = useCallback(() => {
     finishSession().catch(() => {});
@@ -171,22 +198,48 @@ export default function FlipStudy({
   // progress once per card; grading the last card ends the session.
   const handleGrade = useCallback(
     (correct: boolean) => {
-      if (navigating || !sessionId || !card) return;
+      // Standalone needs a session row; embedded grades through the controller.
+      if (navigating || !card || (!embedded && !sessionId)) return;
 
       if (!gradedRef.current.has(index)) {
         gradedRef.current.add(index);
         if (correct) correctRef.current += 1;
-        void recordAnswer(sessionId, correct, card.jlptLevel, card.id);
-        showXpPop(correct ? cardXp(card.jlptLevel) : XP_PER_WRONG, correct);
+        const amount = correct ? cardXp(card.jlptLevel) : XP_PER_WRONG;
+        flashXpPop(amount, correct);
+
+        let combo: ComboStepResult;
+        if (controller) {
+          combo = controller.onGrade(card, correct);
+        } else {
+          triggerXpEarned(amount);
+          void recordAnswer(sessionId, correct, card.jlptLevel, card.id);
+          combo = standaloneCombo.onAnswer(correct);
+        }
+        if (combo.bonusAwarded > 0) setBuddyReaction('correct');
       }
 
       if (index < cards.length - 1) {
         navigate(1);
+      } else if (controller) {
+        controller.onComplete();
       } else {
         setShowCelebration(true);
       }
     },
-    [navigating, sessionId, card, index, cards.length, recordAnswer, showXpPop, navigate],
+    [
+      navigating,
+      embedded,
+      sessionId,
+      card,
+      index,
+      cards.length,
+      controller,
+      recordAnswer,
+      triggerXpEarned,
+      standaloneCombo,
+      flashXpPop,
+      navigate,
+    ],
   );
 
   if (loading) {
@@ -255,6 +308,7 @@ export default function FlipStudy({
             },
           }}
         />
+        <ComboChip count={comboCount} />
         <Chip
           label={`${index + 1} / ${cards.length}`}
           size="small"
@@ -476,7 +530,7 @@ export default function FlipStudy({
         </IconButton>
       </Box>
 
-      {index === cards.length - 1 && (
+      {index === cards.length - 1 && !embedded && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
           <Button variant="outlined" onClick={() => setShowCelebration(true)}>
             Finish Session ✨
@@ -484,7 +538,16 @@ export default function FlipStudy({
         </Box>
       )}
 
-      {showCelebration &&
+      {index === cards.length - 1 && embedded && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+          <Button variant="outlined" onClick={() => controller?.onComplete()}>
+            Next round →
+          </Button>
+        </Box>
+      )}
+
+      {!embedded &&
+        showCelebration &&
         (() => {
           const graded = gradedRef.current.size;
           const praise = pickPraise(graded > 0 ? correctRef.current / graded : 1, praiseSeed);
@@ -499,7 +562,7 @@ export default function FlipStudy({
           );
         })()}
 
-      {equippedBuddy && <StudyBuddy buddyKey={equippedBuddy} reaction="idle" />}
+      {equippedBuddy && <StudyBuddy buddyKey={equippedBuddy} reaction={buddyReaction} />}
     </Box>
   );
 }

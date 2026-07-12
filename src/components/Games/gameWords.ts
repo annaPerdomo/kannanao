@@ -96,6 +96,25 @@ export function pickMatchWords(
 }
 
 /**
+ * Convert an exact set of cards into Word Match items, preserving order and
+ * deduping by display text. Used by the review quest, which supplies the precise
+ * due cards for its Word Match node (no top-up, no starter-set fallback).
+ */
+export function cardsToMatchWords(cards: Flashcard[]): MatchWord[] {
+  const seen = new Set<string>();
+  const out: MatchWord[] = [];
+  for (const card of cards) {
+    const { titleText, speakText } = getFlashcardDisplayText(card);
+    const jp = titleText?.trim();
+    const meaning = card.meaning?.trim();
+    if (!jp || !meaning || seen.has(jp)) continue;
+    seen.add(jp);
+    out.push({ jp, english: meaning, speak: speakText, jlpt: card.jlptLevel, cardId: card.id });
+  }
+  return out;
+}
+
+/**
  * Kana Builder items, due-first: cards whose reading (or word) is pure kana and
  * short enough to build from tiles. Falls back to the katakana starter set.
  */
