@@ -35,6 +35,7 @@ import {
   InviteQRCode,
   LeaderboardWidget,
   MemberCard,
+  QuizScoresPanel,
   ReteachPanel,
 } from '@/components/Group';
 import { Loading } from '@/components/Loading';
@@ -500,6 +501,11 @@ export default function GroupDashboardPage() {
           onDelete={deleteAssignment}
         />
       </Box>
+
+      {/* Quiz scores — graded checkpoints per member, with CSV export */}
+      {members.length > 0 && (
+        <QuizScoresPanel decks={decks.filter((d) => !d.isShared)} groupId={groupId} />
+      )}
 
       {/* What to reteach — class-level tricky words */}
       {members.length > 0 && <ReteachPanel decks={decks.filter((d) => !d.isShared)} />}

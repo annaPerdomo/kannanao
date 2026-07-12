@@ -32,6 +32,7 @@ export type SessionMode =
   | 'match'
   | 'fill'
   | 'recall'
+  | 'quiz'
   | 'speech_read'
   | 'speech_recall'
   | 'kotoba-bubble'
