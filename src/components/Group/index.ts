@@ -17,3 +17,4 @@ export { LeaderboardWidget } from './LeaderboardWidget';
 export { MemberCard } from './MemberCard';
 export { MemberDetail } from './MemberDetail';
 export { MessageBubble, TypingBubble } from './MessageThread';
+export { ReteachPanel } from './ReteachPanel';

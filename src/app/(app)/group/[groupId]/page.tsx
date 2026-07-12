@@ -35,6 +35,7 @@ import {
   InviteQRCode,
   LeaderboardWidget,
   MemberCard,
+  ReteachPanel,
 } from '@/components/Group';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
@@ -499,6 +500,9 @@ export default function GroupDashboardPage() {
           onDelete={deleteAssignment}
         />
       </Box>
+
+      {/* What to reteach — class-level tricky words */}
+      {members.length > 0 && <ReteachPanel decks={decks.filter((d) => !d.isShared)} />}
 
       {/* Activity Feed */}
       <Box sx={{ mt: 4 }}>
