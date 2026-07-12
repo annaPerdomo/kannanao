@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { isGoalMode } from '@/lib/assignmentMastery';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../../_lib/rateLimit';
@@ -51,6 +52,26 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Invalid dueDate.' }, { status: 400 });
     }
     updates.due_date = v || null;
+  }
+  if ('requiredAccuracy' in body) {
+    const v = body.requiredAccuracy;
+    if (v !== null && (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > 100)) {
+      return NextResponse.json(
+        { error: 'requiredAccuracy must be an integer between 0 and 100.' },
+        { status: 400 },
+      );
+    }
+    updates.required_accuracy = v;
+  }
+  if ('requiredMode' in body) {
+    const v = body.requiredMode;
+    if (v !== null && !isGoalMode(v)) {
+      return NextResponse.json(
+        { error: 'requiredMode is not a valid goal mode.' },
+        { status: 400 },
+      );
+    }
+    updates.required_mode = v;
   }
   if ('completedAt' in body) {
     const v = body.completedAt;

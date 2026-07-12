@@ -8,6 +8,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
 import type { MemberDetail } from '@/hooks/useGroup';
+import { goalLabel } from '@/lib/assignmentMastery';
 
 import { formatDate } from './helpers';
 
@@ -101,6 +102,10 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
         const isCompleted = !!a.completedAt;
         const isOverdue =
           !isCompleted && !!a.dueDate && a.dueDate < new Date().toISOString().slice(0, 10);
+        const goal = goalLabel({
+          required_accuracy: a.requiredAccuracy,
+          required_mode: a.requiredMode,
+        });
         return (
           <Paper
             key={a.id}
@@ -122,28 +127,43 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
               ),
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-              {isCompleted ? (
-                <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main', flexShrink: 0 }} />
-              ) : isOverdue ? (
-                <WarningAmberIcon sx={{ fontSize: 16, color: 'error.main', flexShrink: 0 }} />
-              ) : (
-                <AssignmentIcon sx={{ fontSize: 16, color: brand[400], flexShrink: 0 }} />
+            <Box sx={{ minWidth: 0 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                {isCompleted ? (
+                  <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main', flexShrink: 0 }} />
+                ) : isOverdue ? (
+                  <WarningAmberIcon sx={{ fontSize: 16, color: 'error.main', flexShrink: 0 }} />
+                ) : (
+                  <AssignmentIcon sx={{ fontSize: 16, color: brand[400], flexShrink: 0 }} />
+                )}
+                <Typography sx={{ fontSize: '0.75rem', flexShrink: 0 }}>
+                  {a.deckEmoji || '📚'}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: isCompleted ? 'text.secondary' : brand[800],
+                    textDecoration: isCompleted ? 'line-through' : 'none',
+                  }}
+                  noWrap
+                >
+                  {a.title || a.deckName}
+                </Typography>
+              </Box>
+              {goal && (
+                <Typography
+                  sx={{ fontSize: '0.65rem', fontWeight: 600, color: 'text.primary', mt: 0.25 }}
+                  noWrap
+                >
+                  🎯 Goal: {goal}
+                  {a.progressAccuracy != null
+                    ? isCompleted
+                      ? ` — reached ${a.progressAccuracy}%`
+                      : ` — Best so far: ${a.progressAccuracy}%`
+                    : ''}
+                </Typography>
               )}
-              <Typography sx={{ fontSize: '0.75rem', flexShrink: 0 }}>
-                {a.deckEmoji || '📚'}
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  color: isCompleted ? 'text.secondary' : brand[800],
-                  textDecoration: isCompleted ? 'line-through' : 'none',
-                }}
-                noWrap
-              >
-                {a.title || a.deckName}
-              </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
               {a.dueDate && (

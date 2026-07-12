@@ -623,7 +623,9 @@ export function useProgress(
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
               },
-              body: JSON.stringify({ deckId: session.deck_id }),
+              // sessionId lets the server evaluate mastery goals (mode +
+              // accuracy) against this session's stats.
+              body: JSON.stringify({ deckId: session.deck_id, sessionId }),
             })
               // The assignment list is cached client-side; drop it so the
               // dashboard reflects the auto-completed assignment right away.

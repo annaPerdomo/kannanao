@@ -1,5 +1,6 @@
 export { ActivityFeed } from './ActivityFeed';
 export { AssignmentCard } from './AssignmentCard';
+export { AssignmentGoalPicker } from './AssignmentGoalPicker';
 export { AssignmentsList } from './AssignmentsList';
 export { CreateAssignmentDialog } from './CreateAssignmentDialog';
 export { CreateGroupDialog } from './CreateGroupDialog';

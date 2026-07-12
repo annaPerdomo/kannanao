@@ -136,6 +136,43 @@ describe('useAssignments', () => {
     expect(body.deckId).toBe('d1');
   });
 
+  it('passes mastery goal fields through to the POST body', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
+    const { result } = renderHook(() => useAssignments());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ id: 'a-new' }) });
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
+
+    await act(async () => {
+      await result.current.createAssignment({
+        memberIds: ['m1'],
+        deckId: 'd1',
+        requiredAccuracy: 80,
+        requiredMode: 'match',
+      });
+    });
+
+    const body = JSON.parse(mockFetch.mock.calls[1][1].body);
+    expect(body.requiredAccuracy).toBe(80);
+    expect(body.requiredMode).toBe('match');
+  });
+
+  it('optimistically updates goal fields via updateAssignment', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [ASSIGNMENT_1] });
+    const { result } = renderHook(() => useAssignments());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+    await act(async () => {
+      await result.current.updateAssignment('a1', { requiredAccuracy: 90, requiredMode: null });
+    });
+
+    expect(result.current.assignments[0].required_accuracy).toBe(90);
+    expect(result.current.assignments[0].required_mode).toBeNull();
+  });
+
   it('throws when create fails', async () => {
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
     const { result } = renderHook(() => useAssignments());
