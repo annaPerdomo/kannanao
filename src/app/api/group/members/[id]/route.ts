@@ -32,43 +32,60 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   // Fetch all data in parallel
-  const [progressRes, sessionsRes, achievementsRes, deckSharesRes, assignmentsRes, allSessionsRes] =
-    await Promise.all([
-      sb
-        .from('user_progress')
-        .select('total_xp, level, streak_days, total_cards_studied, total_correct, total_sessions')
-        .eq('user_id', memberId)
-        .maybeSingle(),
-      sb
-        .from('study_sessions')
-        .select(
-          'id, deck_id, practice_mode, cards_studied, cards_correct, xp_earned, duration_secs, started_at, ended_at',
-        )
-        .eq('user_id', memberId)
-        .order('started_at', { ascending: false })
-        .limit(20),
-      sb
-        .from('user_achievements')
-        .select('achievement_key, unlocked_at')
-        .eq('user_id', memberId)
-        .order('unlocked_at', { ascending: false }),
-      sb
-        .from('deck_shares')
-        .select('deck_id, decks(id, name, emoji)')
-        .eq('shared_with', memberId)
-        .eq('owner_id', orgCheck.id),
-      sb
-        .from('assignments')
-        .select('id, deck_id, title, note, due_date, completed_at, created_at, decks(name, emoji)')
-        .eq('member_id', memberId)
-        .eq('organizer_id', orgCheck.id)
-        .order('created_at', { ascending: false }),
-      // Lightweight query for per-mode aggregation across ALL sessions
-      sb
-        .from('study_sessions')
-        .select('deck_id, practice_mode, cards_studied, cards_correct, xp_earned, duration_secs')
-        .eq('user_id', memberId),
-    ]);
+  const [
+    progressRes,
+    sessionsRes,
+    achievementsRes,
+    deckSharesRes,
+    assignmentsRes,
+    allSessionsRes,
+    weakWordsRes,
+  ] = await Promise.all([
+    sb
+      .from('user_progress')
+      .select('total_xp, level, streak_days, total_cards_studied, total_correct, total_sessions')
+      .eq('user_id', memberId)
+      .maybeSingle(),
+    sb
+      .from('study_sessions')
+      .select(
+        'id, deck_id, practice_mode, cards_studied, cards_correct, xp_earned, duration_secs, started_at, ended_at',
+      )
+      .eq('user_id', memberId)
+      .order('started_at', { ascending: false })
+      .limit(20),
+    sb
+      .from('user_achievements')
+      .select('achievement_key, unlocked_at')
+      .eq('user_id', memberId)
+      .order('unlocked_at', { ascending: false }),
+    sb
+      .from('deck_shares')
+      .select('deck_id, decks(id, name, emoji)')
+      .eq('shared_with', memberId)
+      .eq('owner_id', orgCheck.id),
+    sb
+      .from('assignments')
+      .select('id, deck_id, title, note, due_date, completed_at, created_at, decks(name, emoji)')
+      .eq('member_id', memberId)
+      .eq('organizer_id', orgCheck.id)
+      .order('created_at', { ascending: false }),
+    // Lightweight query for per-mode aggregation across ALL sessions
+    sb
+      .from('study_sessions')
+      .select('deck_id, practice_mode, cards_studied, cards_correct, xp_earned, duration_secs')
+      .eq('user_id', memberId),
+    // Weak words: cards this member has gotten wrong at least once, joined to
+    // the card + deck so the teacher sees the actual word, not an id. Ranking
+    // by wrong-rate happens in JS below (bounded to one member's rows).
+    sb
+      .from('card_progress')
+      .select(
+        'card_id, correct_count, wrong_count, last_reviewed_at, cards!inner(word, reading, meaning, decks(name))',
+      )
+      .eq('user_id', memberId)
+      .gt('wrong_count', 0),
+  ]);
 
   if (progressRes.error) {
     logger.error('Failed to fetch member progress', {
@@ -264,6 +281,39 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }),
   };
 
+  // Weak words — rank by wrong-rate, then raw wrong count, cap at 20. A card
+  // missed 3/4 times ranks above one missed 5/50 even though the latter has
+  // more total misses, so the teacher sees genuinely tricky words first.
+  type WeakRow = {
+    card_id: string;
+    correct_count: number;
+    wrong_count: number;
+    last_reviewed_at: string | null;
+    cards: {
+      word: string;
+      reading: string | null;
+      meaning: string | null;
+      decks: { name: string } | null;
+    } | null;
+  };
+  const weakWords = ((weakWordsRes.data ?? []) as unknown as WeakRow[])
+    .map((row) => {
+      const total = row.correct_count + row.wrong_count;
+      return {
+        cardId: row.card_id,
+        word: row.cards?.word ?? '',
+        reading: row.cards?.reading ?? null,
+        meaning: row.cards?.meaning ?? null,
+        deckName: row.cards?.decks?.name ?? 'Unknown',
+        correctCount: row.correct_count,
+        wrongCount: row.wrong_count,
+        wrongRate: total > 0 ? row.wrong_count / total : 0,
+        lastReviewedAt: row.last_reviewed_at,
+      };
+    })
+    .sort((a, b) => b.wrongRate - a.wrongRate || b.wrongCount - a.wrongCount)
+    .slice(0, 20);
+
   const prog = progressRes.data;
 
   return NextResponse.json({
@@ -299,5 +349,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     speechProgress,
     practiceModeStats,
     assignments,
+    weakWords,
   });
 }

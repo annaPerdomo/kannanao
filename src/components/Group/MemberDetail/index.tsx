@@ -23,6 +23,7 @@ import { AssignmentsSection } from './AssignmentsSection';
 import { formatDate } from './helpers';
 import { PracticeModeBreakdown } from './PracticeModeBreakdown';
 import { RecentSessionsSection } from './RecentSessionsSection';
+import { TrickyWords } from './TrickyWords';
 
 interface MemberDetailProps {
   detail: MemberDetailData;
@@ -38,8 +39,16 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
   if (loading) return <Loading message="Loading member details..." />;
   if (!detail) return null;
 
-  const { member, progress, sessions, achievements, deckProgress, practiceModeStats, assignments } =
-    detail;
+  const {
+    member,
+    progress,
+    sessions,
+    achievements,
+    deckProgress,
+    practiceModeStats,
+    assignments,
+    weakWords,
+  } = detail;
   const { current, needed } = xpProgressInLevel(progress.totalXp);
   const pct = Math.round((current / needed) * 100);
   const accuracy =
@@ -130,6 +139,9 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
 
       {/* Practice Mode Breakdown */}
       <PracticeModeBreakdown stats={practiceModeStats} />
+
+      {/* Tricky words — the member's most-missed cards */}
+      <TrickyWords weakWords={weakWords ?? []} />
 
       {/* Deck Progress */}
       {deckProgress.length > 0 && (

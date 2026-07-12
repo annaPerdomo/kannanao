@@ -95,6 +95,17 @@ export interface MemberDetail {
       createdAt: string;
     }[];
   };
+  weakWords: {
+    cardId: string;
+    word: string;
+    reading: string | null;
+    meaning: string | null;
+    deckName: string;
+    correctCount: number;
+    wrongCount: number;
+    wrongRate: number;
+    lastReviewedAt: string | null;
+  }[];
 }
 
 export interface FeedItem {
