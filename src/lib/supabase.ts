@@ -416,7 +416,7 @@ export async function loadProfile(userId: string): Promise<UserProfile | null> {
   const { data, error } = await sb
     .from('profiles')
     .select(
-      'username, display_name, color_scheme, show_todo, home_sections, account_type, organizer_id, group_id, travel_main_view_mode, groups:group_id (show_leaderboard)',
+      'username, display_name, color_scheme, show_todo, home_sections, review_reminders, account_type, organizer_id, group_id, travel_main_view_mode, groups:group_id (show_leaderboard)',
     )
     .eq('id', userId)
     .single();
@@ -429,6 +429,7 @@ export async function loadProfile(userId: string): Promise<UserProfile | null> {
     colorScheme: data.color_scheme ?? null,
     showTodo: data.show_todo !== false,
     homeSections: (data.home_sections as Partial<HomeSections>) ?? null,
+    reviewReminders: data.review_reminders !== false,
     accountType: (data.account_type as AccountType) ?? 'organizer',
     organizerId: data.organizer_id ?? null,
     groupId: data.group_id ?? null,
@@ -456,6 +457,29 @@ export async function updateProfileShowTodo(userId: string, showTodo: boolean): 
   }
   const { error } = await sb.from('profiles').update({ show_todo: showTodo }).eq('id', userId);
   if (error) console.error('updateProfileShowTodo error', error);
+}
+
+/**
+ * Unlike its siblings above, this reports failure to the caller: the settings
+ * switch is optimistic, so it has to know when to roll back and say so.
+ */
+export async function updateProfileReviewReminders(
+  userId: string,
+  reviewReminders: boolean,
+): Promise<{ error: string | null }> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    return { error: 'Not connected to the database.' };
+  }
+  const { error } = await sb
+    .from('profiles')
+    .update({ review_reminders: reviewReminders })
+    .eq('id', userId);
+  if (error) {
+    console.error('updateProfileReviewReminders error', error);
+    return { error: error.message };
+  }
+  return { error: null };
 }
 
 export async function updateProfileHomeSections(

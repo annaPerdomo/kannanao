@@ -85,6 +85,8 @@ export interface UserProfile {
   colorScheme: string | null;
   showTodo: boolean;
   homeSections: Partial<HomeSections> | null;
+  /** profiles.review_reminders — the daily review-due push nudge. */
+  reviewReminders: boolean;
   accountType: AccountType;
   organizerId: string | null;
   groupId: string | null;

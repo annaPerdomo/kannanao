@@ -3,6 +3,7 @@
 import BadgeIcon from '@mui/icons-material/Badge';
 import EditIcon from '@mui/icons-material/Edit';
 import KeyIcon from '@mui/icons-material/Key';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import SettingsIcon from '@mui/icons-material/Settings';
 import {
@@ -10,9 +11,11 @@ import {
   Box,
   Button,
   Divider,
+  FormControlLabel,
   Paper,
   Snackbar,
   Stack,
+  Switch,
   TextField,
   Typography,
 } from '@mui/material';
@@ -71,8 +74,17 @@ function Section({ icon, title, description, children }: SectionProps) {
 export default function SettingsPage() {
   const theme = useTheme();
   const { brand } = theme.palette;
-  const { user, loading, displayName, updateDisplayName, session, signOut, isMemberAccount } =
-    useAuth();
+  const {
+    user,
+    loading,
+    displayName,
+    updateDisplayName,
+    session,
+    signOut,
+    isMemberAccount,
+    reviewReminders,
+    updateReviewReminders,
+  } = useAuth();
   const router = useRouter();
   const { invites, createInvite, revokeInvite } = useInvites();
 
@@ -93,6 +105,9 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
+
+  // Daily review reminder
+  const [reminderSaving, setReminderSaving] = useState(false);
 
   // Invite dialogs
   const [createInviteOpen, setCreateInviteOpen] = useState(false);
@@ -165,6 +180,20 @@ export default function SettingsPage() {
       setSnack({ msg: 'Network error.', severity: 'error' });
       setUsernameSaving(false);
     }
+  };
+
+  const handleToggleReminders = async (enabled: boolean) => {
+    setReminderSaving(true);
+    const { error } = await updateReviewReminders(enabled);
+    setReminderSaving(false);
+    setSnack(
+      error
+        ? { msg: 'Could not save that. Please try again.', severity: 'error' }
+        : {
+            msg: enabled ? 'Daily reminder is on!' : 'Daily reminder is off.',
+            severity: 'success',
+          },
+    );
   };
 
   const handleSavePassword = async () => {
@@ -334,6 +363,28 @@ export default function SettingsPage() {
               </Stack>
             </Stack>
           )}
+        </Section>
+
+        <Divider />
+
+        {/* Daily review reminder */}
+        <Section
+          icon={<NotificationsActiveIcon />}
+          title="Reminders"
+          description="Get one friendly nudge a day when you have words waiting to review. Only if notifications are turned on for your device."
+        >
+          <FormControlLabel
+            control={
+              <Switch
+                checked={reviewReminders}
+                onChange={(e) => void handleToggleReminders(e.target.checked)}
+                disabled={reminderSaving}
+                inputProps={{ 'aria-label': 'Daily review reminder' }}
+              />
+            }
+            label="Daily review reminder"
+            sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.9rem', color: 'text.primary' } }}
+          />
         </Section>
 
         {!isMemberAccount && (
