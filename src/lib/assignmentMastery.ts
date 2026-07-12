@@ -19,6 +19,7 @@ export const GOAL_MODES = [
   'fill',
   'recall',
   'kotoba-bubble',
+  'quiz',
 ] as const satisfies readonly SessionMode[];
 
 export type GoalMode = (typeof GOAL_MODES)[number];
@@ -30,6 +31,7 @@ export const GOAL_MODE_LABELS: Record<GoalMode, string> = {
   fill: 'Fill',
   recall: 'Recall',
   'kotoba-bubble': 'Sentence Builder',
+  quiz: 'Quiz',
 };
 
 export function isGoalMode(value: unknown): value is GoalMode {

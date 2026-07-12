@@ -58,4 +58,15 @@ export const PRACTICE_CONFIG: PracticeTileConfig[] = [
     border: 'rgba(6,182,212,0.5)',
     shadowColor: 'rgba(8,145,178,0.22)',
   },
+  {
+    mode: 'quiz',
+    label: 'Quiz',
+    description: 'Show what you know — one try each',
+    emoji: '📝',
+    watermark: '試',
+    color: '#DB2777',
+    bg: 'linear-gradient(135deg, #FDF2F8 0%, #FCE7F3 100%)',
+    border: 'rgba(244,114,182,0.6)',
+    shadowColor: 'rgba(219,39,119,0.22)',
+  },
 ];

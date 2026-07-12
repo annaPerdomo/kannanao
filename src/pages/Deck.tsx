@@ -20,7 +20,7 @@ import { useCallback, useState } from 'react';
 
 import { AddCardsModal } from '@/components/AddCards';
 import { AddExistingCardsDialog } from '@/components/AddExistingCardsDialog';
-import { DeckHeader, Label, PracticeHero } from '@/components/Deck';
+import { BestQuizLine, DeckHeader, Label, PracticeHero } from '@/components/Deck';
 import { ImageCard } from '@/components/ImageCard';
 import { Loading } from '@/components/Loading';
 import { PdfImportModal } from '@/components/PdfImportModal';
@@ -228,6 +228,8 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         />
 
         <PracticeHero cardCount={cards.length} onStudy={onStudy} onPractice={onPractice} />
+
+        {cards.length > 0 && <BestQuizLine deckId={deckId} />}
       </Box>
 
       {/* ── CARDS ── */}

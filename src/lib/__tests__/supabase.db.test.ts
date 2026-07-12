@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ─── Mock setup ───────────────────────────────────────────────────────────────
 
 const mockGetUser = vi.fn();
+const mockGetSession = vi.fn().mockResolvedValue({ data: { session: null } });
 
 const tableData: Record<string, { data: unknown; error: unknown; count?: number }> = {};
 
@@ -36,7 +37,7 @@ vi.mock('@supabase/ssr', () => ({
   createBrowserClient: vi.fn(() => ({
     auth: {
       getUser: (...args: unknown[]) => mockGetUser(...args),
-      getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
+      getSession: (...args: unknown[]) => mockGetSession(...args),
       onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
     },
     from: (table: string) => mockFrom(table),
@@ -62,9 +63,11 @@ import {
   dbUpdateDeckEmoji,
   dbUpdateEventType,
   dbUpdateTodo,
+  getBestQuizForDeck,
   getCardProgressForUser,
   getDueCards,
   getDueCount,
+  insertQuizResult,
   loadAllCards,
   loadCards,
   loadDecks,
@@ -959,5 +962,65 @@ describe('getDueCount', () => {
     setTable('card_progress', null, { message: 'DB error' }, 5);
     const count = await getDueCount('u1');
     expect(count).toBe(0);
+  });
+});
+
+describe('insertQuizResult', () => {
+  beforeEach(() => {
+    for (const k of Object.keys(tableData)) delete tableData[k];
+    mockGetSession.mockResolvedValue({ data: { session: { user: { id: 'u1' } } } });
+  });
+
+  it('inserts a row scoped to the current user and returns true', async () => {
+    setTable('quiz_results', null, null);
+    const ok = await insertQuizResult({
+      deckId: 'deck-1',
+      score: 8,
+      total: 10,
+      accuracy: 80,
+      sessionId: 'sess-1',
+    });
+    expect(ok).toBe(true);
+  });
+
+  it('returns false when there is no logged-in session', async () => {
+    mockGetSession.mockResolvedValue({ data: { session: null } });
+    const ok = await insertQuizResult({ deckId: 'deck-1', score: 8, total: 10, accuracy: 80 });
+    expect(ok).toBe(false);
+  });
+
+  it('returns false when the insert errors', async () => {
+    setTable('quiz_results', null, { message: 'DB error' });
+    const ok = await insertQuizResult({ deckId: 'deck-1', score: 8, total: 10, accuracy: 80 });
+    expect(ok).toBe(false);
+  });
+});
+
+describe('getBestQuizForDeck', () => {
+  beforeEach(() => {
+    for (const k of Object.keys(tableData)) delete tableData[k];
+  });
+
+  it('maps the best row into a QuizScore', async () => {
+    setTable('quiz_results', {
+      score: 9,
+      total: 10,
+      accuracy: 90,
+      taken_at: '2026-07-12T10:00:00Z',
+    });
+    const best = await getBestQuizForDeck('deck-1');
+    expect(best).toEqual({ score: 9, total: 10, accuracy: 90, takenAt: '2026-07-12T10:00:00Z' });
+  });
+
+  it('returns null when the student has no attempts', async () => {
+    setTable('quiz_results', null, null);
+    const best = await getBestQuizForDeck('deck-1');
+    expect(best).toBeNull();
+  });
+
+  it('returns null when the query errors', async () => {
+    setTable('quiz_results', null, { message: 'DB error' });
+    const best = await getBestQuizForDeck('deck-1');
+    expect(best).toBeNull();
   });
 });

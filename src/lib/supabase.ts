@@ -952,6 +952,70 @@ export async function getDueCount(userId: string): Promise<number> {
   return count ?? 0;
 }
 
+// ─── Quiz Results ───────────────────────────────────────────────
+
+/** A student's best or latest graded quiz attempt for a deck. */
+export interface QuizScore {
+  score: number;
+  total: number;
+  accuracy: number;
+  takenAt: string;
+}
+
+/**
+ * Write one graded quiz attempt. `user_id` is set from the session so the RLS
+ * insert policy (auth.uid() = user_id) passes. Returns false when it couldn't
+ * persist so the caller can avoid claiming a saved score.
+ */
+export async function insertQuizResult(args: {
+  deckId: string;
+  score: number;
+  total: number;
+  accuracy: number;
+  sessionId?: string | null;
+}): Promise<boolean> {
+  if (!isConfigured()) return false;
+  const { data: session } = await sb.auth.getSession();
+  const userId = session.session?.user?.id;
+  if (!userId) return false;
+  const { error } = await sb.from('quiz_results').insert({
+    user_id: userId,
+    deck_id: args.deckId,
+    score: args.score,
+    total: args.total,
+    accuracy: args.accuracy,
+    session_id: args.sessionId ?? null,
+  });
+  if (error) {
+    console.error('insertQuizResult error', error);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * The student's best quiz attempt for a deck (highest accuracy, then highest
+ * score), or null if they haven't taken it. Drives the one-line "Best: 9/10"
+ * on the deck page. RLS scopes rows to the current user.
+ */
+export async function getBestQuizForDeck(deckId: string): Promise<QuizScore | null> {
+  if (!isConfigured()) return null;
+  const { data, error } = await sb
+    .from('quiz_results')
+    .select('score, total, accuracy, taken_at')
+    .eq('deck_id', deckId)
+    .order('accuracy', { ascending: false })
+    .order('score', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) {
+    console.error('getBestQuizForDeck error', error);
+    return null;
+  }
+  if (!data) return null;
+  return { score: data.score, total: data.total, accuracy: data.accuracy, takenAt: data.taken_at };
+}
+
 // ─── Travel Event Tracking ──────────────────────────────────────
 
 /** Fire-and-forget travel event logging. Never throws. */

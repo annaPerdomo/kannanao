@@ -9,6 +9,7 @@ import { FillMode } from '@/components/Practice/FillMode';
 import { KotobaBubbleMode } from '@/components/Practice/KotobaBubbleMode';
 import { KotobaBubbleSetup } from '@/components/Practice/KotobaBubbleMode/KotobaBubbleSetup';
 import { MatchMode } from '@/components/Practice/MatchMode';
+import { QuizMode } from '@/components/Practice/QuizMode';
 import { RecallMode } from '@/components/Practice/RecallMode';
 import { useCards } from '@/hooks/useCards';
 import { LAYOUT } from '@/theme';
@@ -25,6 +26,7 @@ const LABELS: Record<PracticeMode, string> = {
   fill: 'Fill in the Blank',
   recall: 'Guess It!',
   'kotoba-bubble': 'Sentence Builder',
+  quiz: 'Quiz',
 };
 
 /** Show the batch picker when the deck exceeds this many cards. */
@@ -51,6 +53,16 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
             Not enough cards to practice. Add more cards to this deck.
           </Typography>
         </Box>
+      </Box>
+    );
+  }
+
+  // Quiz asks a fixed set of up to 10 questions and caps itself — no batch picker.
+  if (mode === 'quiz') {
+    return (
+      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+        <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} mb={3} />
+        <QuizMode cards={cards} deckId={deckId} onExit={onBack} />
       </Box>
     );
   }
