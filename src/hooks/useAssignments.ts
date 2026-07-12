@@ -15,6 +15,12 @@ export interface Assignment {
   due_date: string | null;
   completed_at: string | null;
   created_at: string;
+  /** Mastery goal: minimum session accuracy (0-100), or null for none. */
+  required_accuracy: number | null;
+  /** Mastery goal: required practice mode, or null for any. */
+  required_mode: string | null;
+  /** Best qualifying-session accuracy so far (student feedback). */
+  progress_accuracy: number | null;
   decks?: { id: string; name: string; emoji: string | null } | null;
   profiles?: { display_name: string | null; username: string } | null;
 }
@@ -79,6 +85,8 @@ export function useAssignments(groupId?: string | null, enabled = true) {
       title?: string;
       note?: string;
       dueDate?: string;
+      requiredAccuracy?: number;
+      requiredMode?: string;
     }) => {
       const res = await fetch('/api/group/assignments', {
         method: 'POST',
@@ -98,13 +106,25 @@ export function useAssignments(groupId?: string | null, enabled = true) {
   );
 
   const updateAssignment = useCallback(
-    async (id: string, updates: { title?: string; note?: string; dueDate?: string | null }) => {
+    async (
+      id: string,
+      updates: {
+        title?: string;
+        note?: string;
+        dueDate?: string | null;
+        requiredAccuracy?: number | null;
+        requiredMode?: string | null;
+      },
+    ) => {
       const prev = assignments;
       // Map API keys to DB column names for optimistic update
       const mapped: Partial<Assignment> = {};
       if ('title' in updates) mapped.title = updates.title ?? null;
       if ('note' in updates) mapped.note = updates.note ?? null;
       if ('dueDate' in updates) mapped.due_date = updates.dueDate ?? null;
+      if ('requiredAccuracy' in updates)
+        mapped.required_accuracy = updates.requiredAccuracy ?? null;
+      if ('requiredMode' in updates) mapped.required_mode = updates.requiredMode ?? null;
       setAssignments((a) => a.map((item) => (item.id === id ? { ...item, ...mapped } : item)));
       try {
         const res = await fetch(`/api/group/assignments/${id}`, {

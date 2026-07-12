@@ -93,6 +93,9 @@ export interface MemberDetail {
       dueDate: string | null;
       completedAt: string | null;
       createdAt: string;
+      requiredAccuracy: number | null;
+      requiredMode: string | null;
+      progressAccuracy: number | null;
     }[];
   };
   weakWords: {

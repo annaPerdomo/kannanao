@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { isGoalMode } from '@/lib/assignmentMastery';
 import { logger } from '@/lib/logger';
 
 import { getProfileForUser, getUserFromToken } from '../../_lib/authCache';
@@ -22,20 +23,40 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
   }
 
-  const { memberIds, deckId, title, note, dueDate, groupId } = body as {
-    memberIds: string[];
-    deckId: string;
-    title?: string;
-    note?: string;
-    dueDate?: string;
-    groupId?: string;
-  };
+  const { memberIds, deckId, title, note, dueDate, groupId, requiredAccuracy, requiredMode } =
+    body as {
+      memberIds: string[];
+      deckId: string;
+      title?: string;
+      note?: string;
+      dueDate?: string;
+      groupId?: string;
+      requiredAccuracy?: number | null;
+      requiredMode?: string | null;
+    };
 
   if (!Array.isArray(memberIds) || memberIds.length === 0 || !deckId) {
     return NextResponse.json(
       { error: 'memberIds (array) and deckId are required.' },
       { status: 400 },
     );
+  }
+
+  // Optional mastery goal
+  if (
+    requiredAccuracy != null &&
+    (typeof requiredAccuracy !== 'number' ||
+      !Number.isInteger(requiredAccuracy) ||
+      requiredAccuracy < 0 ||
+      requiredAccuracy > 100)
+  ) {
+    return NextResponse.json(
+      { error: 'requiredAccuracy must be an integer between 0 and 100.' },
+      { status: 400 },
+    );
+  }
+  if (requiredMode != null && !isGoalMode(requiredMode)) {
+    return NextResponse.json({ error: 'requiredMode is not a valid goal mode.' }, { status: 400 });
   }
   const sb = getServiceSupabase();
 
@@ -86,6 +107,8 @@ export async function POST(req: NextRequest) {
       title: title?.trim().slice(0, 200) || null,
       note: note?.trim().slice(0, 500) || null,
       due_date: dueDate || null,
+      required_accuracy: requiredAccuracy ?? null,
+      required_mode: requiredMode ?? null,
     }));
 
   if (rows.length === 0) {

@@ -66,7 +66,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       .eq('owner_id', orgCheck.id),
     sb
       .from('assignments')
-      .select('id, deck_id, title, note, due_date, completed_at, created_at, decks(name, emoji)')
+      .select(
+        'id, deck_id, title, note, due_date, completed_at, created_at, required_accuracy, required_mode, progress_accuracy, decks(name, emoji)',
+      )
       .eq('member_id', memberId)
       .eq('organizer_id', orgCheck.id)
       .order('created_at', { ascending: false }),
@@ -277,6 +279,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         dueDate: a.due_date,
         completedAt: a.completed_at,
         createdAt: a.created_at,
+        requiredAccuracy: a.required_accuracy,
+        requiredMode: a.required_mode,
+        progressAccuracy: a.progress_accuracy,
       };
     }),
   };

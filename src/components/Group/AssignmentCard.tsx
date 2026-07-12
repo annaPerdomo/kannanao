@@ -8,6 +8,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
 import type { Assignment } from '@/hooks/useAssignments';
+import { goalLabel } from '@/lib/assignmentMastery';
 
 function dueDateColor(dueDate: string | null): 'green' | 'orange' | 'red' | null {
   if (!dueDate) return null;
@@ -45,6 +46,7 @@ export function AssignmentCard({ assignment, onStudy }: AssignmentCardProps) {
   const isCompleted = !!assignment.completed_at;
   const deck = assignment.decks;
   const urgency = dueDateColor(assignment.due_date);
+  const goal = goalLabel(assignment);
 
   return (
     <Paper
@@ -81,6 +83,17 @@ export function AssignmentCard({ assignment, onStudy }: AssignmentCardProps) {
         {assignment.note && (
           <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', mt: 0.2 }} noWrap>
             {assignment.note}
+          </Typography>
+        )}
+        {goal && (
+          <Typography
+            sx={{ fontSize: '0.7rem', fontWeight: 600, color: 'text.primary', mt: 0.2 }}
+            noWrap
+          >
+            🎯 Goal: {goal}
+            {!isCompleted && assignment.progress_accuracy != null
+              ? ` — Best so far: ${assignment.progress_accuracy}%`
+              : ''}
           </Typography>
         )}
         {urgency && !isCompleted && (

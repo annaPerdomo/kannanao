@@ -13,6 +13,9 @@ import { useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
 import type { GroupMember } from '@/hooks/useGroup';
+import type { GoalMode } from '@/lib/assignmentMastery';
+
+import { AssignmentGoalPicker } from './AssignmentGoalPicker';
 
 interface Deck {
   id: string;
@@ -33,6 +36,8 @@ interface CreateAssignmentDialogProps {
     title?: string;
     note?: string;
     dueDate?: string;
+    requiredAccuracy?: number;
+    requiredMode?: string;
   }) => Promise<void>;
 }
 
@@ -53,6 +58,8 @@ export function CreateAssignmentDialog({
   const [selectedDeck, setSelectedDeck] = useState<string>('');
   const [note, setNote] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [goalAccuracy, setGoalAccuracy] = useState<number | null>(null);
+  const [goalMode, setGoalMode] = useState<GoalMode | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,12 +82,16 @@ export function CreateAssignmentDialog({
         deckId: selectedDeck,
         note: note.trim() || undefined,
         dueDate: dueDate || undefined,
+        requiredAccuracy: goalAccuracy ?? undefined,
+        requiredMode: goalMode ?? undefined,
       });
       // Reset and close
       setSelectedMembers(new Set(preSelectedMembers ?? []));
       setSelectedDeck('');
       setNote('');
       setDueDate('');
+      setGoalAccuracy(null);
+      setGoalMode(null);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create assignment');
@@ -230,6 +241,14 @@ export function CreateAssignmentDialog({
               '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: brand[500] },
             },
           }}
+        />
+
+        {/* Optional mastery goal — collapsed by default */}
+        <AssignmentGoalPicker
+          accuracy={goalAccuracy}
+          mode={goalMode}
+          onAccuracyChange={setGoalAccuracy}
+          onModeChange={setGoalMode}
         />
       </Box>
     </StyledDialog>

@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 
 import type { Assignment } from '@/hooks/useAssignments';
+import { goalLabel } from '@/lib/assignmentMastery';
 
 import { EditAssignmentDialog } from './EditAssignmentDialog';
 
@@ -144,6 +145,7 @@ function AssignmentRow({
   const deck = assignment.decks;
   const member = assignment.profiles;
   const urgency = !isCompleted ? dueDateColor(assignment.due_date) : null;
+  const goal = goalLabel(assignment);
 
   return (
     <Paper
@@ -233,6 +235,19 @@ function AssignmentRow({
             noWrap
           >
             &ldquo;{assignment.note}&rdquo;
+          </Typography>
+        )}
+        {goal && (
+          <Typography
+            sx={{ fontSize: '0.65rem', fontWeight: 600, color: 'text.primary', mt: 0.25 }}
+            noWrap
+          >
+            🎯 Goal: {goal}
+            {assignment.progress_accuracy != null
+              ? isCompleted
+                ? ` — reached ${assignment.progress_accuracy}%`
+                : ` — Best so far: ${assignment.progress_accuracy}%`
+              : ''}
           </Typography>
         )}
       </Box>
