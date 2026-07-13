@@ -2,10 +2,16 @@ import withPWA, { runtimeCaching as defaultCache } from '@ducanh2912/next-pwa';
 import bundleAnalyzer from '@next/bundle-analyzer';
 import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
 
 // Gated behind ANALYZE=true so it's a no-op for normal builds.
 // Run `pnpm bundle:analyze` to open the treemap report.
 const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === 'true' });
+
+// Points next-intl at the per-request config (locale + messages). It only wires
+// the module up — it adds no middleware and no [locale] URL segment, so routes
+// that never touch a next-intl server API (the landing page) stay static.
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -132,7 +138,7 @@ const pwaConfig = withPWA({
       /dynamic-css-manifest\.json$/,
     ],
   },
-})(nextConfig);
+})(withNextIntl(nextConfig));
 
 export default withBundleAnalyzer(
   withSentryConfig(pwaConfig, {
