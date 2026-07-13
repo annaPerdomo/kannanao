@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Voice names to try in order of preference.
 // Chrome ships "Google 日本語" — a cloud-backed neural voice that's free and natural.
@@ -45,6 +45,54 @@ function getBestJapaneseVoice(): SpeechSynthesisVoice | null {
   }
 
   return jp[0];
+}
+
+export type VoiceStatus = 'checking' | 'ready' | 'unavailable';
+
+/** Give the browser this long to populate its voice list before giving up. */
+const VOICE_WAIT_MS = 3000;
+
+/**
+ * iOS/iPadOS ignores speechSynthesis.speak() unless the call originates from a
+ * user gesture, so listening practice cannot auto-play the first question there.
+ * iPadOS reports a desktop UA string, hence the touch check.
+ */
+export function speechNeedsGesture(): boolean {
+  if (typeof navigator === 'undefined' || typeof document === 'undefined') return false;
+  const ua = navigator.userAgent;
+  return /iPad|iPhone|iPod/.test(ua) || (ua.includes('Macintosh') && 'ontouchend' in document);
+}
+
+/**
+ * Whether this device can actually speak Japanese, for modes that are useless
+ * without it (Listen). Voices load asynchronously, so this starts as 'checking'.
+ */
+export function useJapaneseVoice(): VoiceStatus {
+  const [status, setStatus] = useState<VoiceStatus>('checking');
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      setStatus('unavailable');
+      return;
+    }
+    let cancelled = false;
+    const settle = () => {
+      if (!cancelled) setStatus(getBestJapaneseVoice() ? 'ready' : 'unavailable');
+    };
+    // Browsers with no voices at all never fire 'voiceschanged', so cap the wait
+    // rather than leaving the mode stuck on its loading screen forever.
+    const timer = setTimeout(settle, VOICE_WAIT_MS);
+    waitForVoices().then(() => {
+      clearTimeout(timer);
+      settle();
+    });
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, []);
+
+  return status;
 }
 
 export function useSpeech() {

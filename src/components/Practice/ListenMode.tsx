@@ -1,18 +1,19 @@
 'use client';
-import { Box, Button, Chip, LinearProgress, Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { alpha } from '@mui/material/styles';
+import HeadphonesIcon from '@mui/icons-material/Headphones';
+import ReplayIcon from '@mui/icons-material/Replay';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import { Box, Button, Chip, IconButton, LinearProgress, Typography } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
-import { SpeakButton } from '@/components/SpeakButton';
+import { Loading } from '@/components/Loading';
 import { type BuddyReaction, StudyBuddy } from '@/components/StudyBuddy';
-import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import { useShop } from '@/hooks/useShop';
-import { buildMeaningChoices, cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
+import { speechNeedsGesture, useJapaneseVoice, useSpeech } from '@/hooks/useSpeech';
+import { buildMeaningChoices, cardXp } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
 import { CelebrationScreen, pickPraise } from './CelebrationScreen';
@@ -20,17 +21,19 @@ import { ChoiceGrid } from './ChoiceGrid';
 import { RoundTransition } from './RoundTransition';
 import { XpEarnedPop } from './XpEarnedPop';
 
-interface RecallModeProps {
+interface ListenModeProps {
   cards: Flashcard[];
   deckId: string;
   batchSize: number;
   onExit: () => void;
 }
 
-export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps) {
+export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps) {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
 
+  const voiceStatus = useJapaneseVoice();
+  const { speak, speaking } = useSpeech();
   const queue = usePracticeQueue(cards, batchSize);
 
   const [index, setIndex] = useState(0);
@@ -42,13 +45,15 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
   const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(
     null,
   );
+  // iOS only speaks from inside a user gesture, so the first question there waits
+  // for a tap on the play button; every question after it auto-plays.
+  const [unlocked, setUnlocked] = useState(() => !speechNeedsGesture());
 
   const { equipped } = useShop();
   const equippedBuddy = equipped['study_buddy'];
   const [buddyReaction, setBuddyReaction] = useState<BuddyReaction>('idle');
 
   const { startSession, recordAnswer, endSession } = useProgress();
-  // Stable per-session pick so the completion phrase doesn't flicker on re-render.
   const praiseSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
   const { triggerXpEarned } = useXpAnimation();
   const sessionIdRef = useRef<string>('');
@@ -56,30 +61,53 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
   const correctCountRef = useRef(0);
   const totalAnsweredRef = useRef(0);
 
+  const card = queue.currentCards[index];
+  const roundDone = index >= queue.currentCards.length;
+
+  // Only open a session once we know the device can actually speak Japanese —
+  // an unusable mode shouldn't leave an empty session in the student's history.
   useEffect(() => {
-    startSession(deckId, 'recall').then((id) => {
+    if (voiceStatus !== 'ready') return;
+    startSession(deckId, 'listen').then((id) => {
       sessionIdRef.current = id;
       startTimeRef.current = Date.now();
     });
-  }, [deckId, startSession]);
+  }, [deckId, startSession, voiceStatus]);
 
-  // Reset per-round state when a new round starts
+  // Card the audio has already been played for, so the auto-play effect doesn't
+  // repeat a word the learner just triggered by hand.
+  const playedForRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (queue.roundKey === 0) return;
     setIndex(0);
     setSelected(null);
     setRoundScore(0);
+    playedForRef.current = null;
   }, [queue.roundKey]);
 
-  const card = queue.currentCards[index];
-  const roundDone = index >= queue.currentCards.length;
-
-  // Rebuild choices whenever the card changes
   useEffect(() => {
     if (card) setChoices(buildMeaningChoices(card, cards));
   }, [index, cards, queue.roundKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // When all cards in the round are answered, tell the queue
+  // Speaking straight from the click handler keeps the call inside the user
+  // gesture, which is what iOS requires.
+  const play = useCallback(() => {
+    if (!card) return;
+    playedForRef.current = card.id;
+    setUnlocked(true);
+    speak(card.word);
+  }, [card, speak]);
+
+  // Auto-play each new question once speech is unlocked
+  useEffect(() => {
+    if (!card || voiceStatus !== 'ready' || !unlocked) return;
+    if (playedForRef.current === card.id) return;
+    playedForRef.current = card.id;
+    speak(card.word);
+    // Replays go through play(); this only fires when the question changes.
+  }, [card?.id, queue.roundKey, voiceStatus, unlocked]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (roundDone && queue.phase === 'playing') {
       queue.finishRound();
@@ -92,10 +120,10 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
     setSelected(null);
   }, []);
 
-  // Auto-advance 1.2 s after a correct pick
+  // Auto-advance shortly after a correct pick, leaving time to read the reveal
   useEffect(() => {
     if (selected && card && selected === card.meaning) {
-      const t = setTimeout(next, 1200);
+      const t = setTimeout(next, 1800);
       return () => clearTimeout(t);
     }
   }, [selected, card, next]);
@@ -119,9 +147,9 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
         setRoundScore((s) => s + 1);
         correctCountRef.current += 1;
         setStreak((s) => {
-          const next = s + 1;
-          setBestStreak((b) => Math.max(b, next));
-          return next;
+          const nextStreak = s + 1;
+          setBestStreak((b) => Math.max(b, nextStreak));
+          return nextStreak;
         });
       } else {
         setStreak(0);
@@ -144,7 +172,6 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
     onExit();
   };
 
-  // End session when practice is fully complete
   useEffect(() => {
     if (queue.phase === 'allDone' && sessionIdRef.current) {
       endSession(sessionIdRef.current, {
@@ -155,6 +182,31 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queue.phase]);
+
+  // ── No Japanese voice on this device ───────────────────────────────────────
+  if (voiceStatus === 'checking') {
+    return <Loading message="Warming up the voice…" />;
+  }
+
+  if (voiceStatus === 'unavailable') {
+    return (
+      <Box sx={{ textAlign: 'center', py: 6 }}>
+        <Typography sx={{ fontSize: '3rem', mb: 1 }} aria-hidden>
+          🔇
+        </Typography>
+        <Typography variant="h6" sx={{ mb: 1 }}>
+          This device can&apos;t speak Japanese yet
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 420, mx: 'auto' }}>
+          Listen needs a Japanese voice. Try Chrome or Safari, or add a Japanese voice in your
+          device&apos;s speech settings — then come back. Everything else still works!
+        </Typography>
+        <Button variant="contained" size="large" onClick={onExit}>
+          Pick another game
+        </Button>
+      </Box>
+    );
+  }
 
   // ── Round transition screen ────────────────────────────────────────────────
   if (queue.phase === 'roundEnd') {
@@ -182,25 +234,24 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
         headingEn={praise.en}
         subheading={`${queue.firstAttemptCorrect} / ${queue.totalCards} correct`}
         extra={bestStreak >= 3 ? `🔥 Best streak: ${bestStreak} in a row!` : undefined}
-        mode="recall"
+        mode="listen"
         onExit={onExit}
       />
     );
   }
 
-  // ── Quiz card ──────────────────────────────────────────────────────────────
+  // ── Listening question ─────────────────────────────────────────────────────
   if (!card) return null;
-  const display = getFlashcardDisplayText(card);
   const answeredCorrectly = selected === card.meaning;
   const answeredWrong = !!selected && !answeredCorrectly;
 
   return (
     <Box sx={{ position: 'relative' }}>
       {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
-      {/* Header */}
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant="h5">Guess It!</Typography>
+          <Typography variant="h5">Listen</Typography>
           {queue.isRetryRound && (
             <Chip label="Review" size="small" color="warning" variant="outlined" />
           )}
@@ -232,10 +283,9 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
         }}
       />
 
-      {/* Word card */}
+      {/* Sound card — the Japanese stays hidden until the question is answered */}
       <Box
         sx={{
-          position: 'relative',
           border: '2px solid',
           borderColor: selected
             ? answeredCorrectly
@@ -243,80 +293,81 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
               : 'error.main'
             : alpha(brand[300], 0.45),
           borderRadius: 3,
-          overflow: 'hidden',
+          p: 3,
           mb: 3,
+          textAlign: 'center',
+          bgcolor: surfaces.input,
           boxShadow: `0 8px 24px ${alpha(brand[300], 0.12)}`,
           transition: 'border-color 0.25s',
         }}
       >
-        {card.imageUrl && (
-          <Box sx={{ position: 'relative' }}>
-            <Box
-              component="img"
-              src={card.imageUrl}
-              alt={card.word}
-              sx={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }}
-            />
-            <UnsplashAttribution url={card.imageUrl} />
-          </Box>
-        )}
-        <Box sx={{ p: 3, textAlign: 'center', bgcolor: surfaces.input }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+        <IconButton
+          onClick={play}
+          aria-label={selected ? 'Play the word again' : 'Play the word'}
+          sx={{
+            width: 104,
+            height: 104,
+            mb: 1.5,
+            color: 'primary.contrastText',
+            background: `linear-gradient(135deg, ${brand[400]}, ${brand[600]})`,
+            boxShadow: `0 10px 26px ${alpha(brand[500], 0.35)}`,
+            '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${brand[700]})` },
+            ...(speaking && { animation: 'listenPulse 1s ease-in-out infinite' }),
+            '@keyframes listenPulse': {
+              '0%, 100%': { transform: 'scale(1)' },
+              '50%': { transform: 'scale(1.06)' },
+            },
+          }}
+        >
+          {speaking ? (
+            <VolumeUpIcon sx={{ fontSize: '3rem' }} />
+          ) : (
+            <HeadphonesIcon sx={{ fontSize: '3rem' }} />
+          )}
+        </IconButton>
+
+        {selected ? (
+          <Box>
             <Typography
               sx={{
                 fontFamily: (t) => t.fonts.jp,
                 fontSize: '2.2rem',
                 fontWeight: 700,
                 color: 'text.primary',
-                mb: 0.5,
               }}
             >
-              {display.titleText}
+              {card.word}
             </Typography>
-            <SpeakButton text={card.word} iconSize="1.4rem" sx={{ mb: 0.5 }} />
+            {card.reading && (
+              <Typography variant="body1" color="text.secondary">
+                {card.reading}
+              </Typography>
+            )}
+            <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
+              {card.meaning}
+            </Typography>
           </Box>
-          {display.subtitleText && (
-            <Typography variant="body1" color="text.secondary">
-              {display.subtitleText}
-            </Typography>
-          )}
-          {!card.imageUrl && card.example_jp && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 0.5,
-                mt: 1,
-              }}
-            >
-              <FuriganaText
-                text={card.example_jp}
-                showFurigana
-                sx={{
-                  color: 'text.secondary',
-                  fontFamily: (t) => t.fonts.jp,
-                  fontSize: '0.9rem',
-                }}
-              />
-              <SpeakButton text={stripFurigana(card.example_jp)} iconSize="1.1rem" />
-            </Box>
-          )}
-          {card.imageUrl && card.example_jp && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 0.5 }}>
-              <SpeakButton text={stripFurigana(card.example_jp)} iconSize="1.1rem" />
-            </Box>
-          )}
+        ) : (
           <Typography
             variant="caption"
-            sx={{ color: 'text.secondary', letterSpacing: '0.12em', display: 'block', mt: 1.5 }}
+            sx={{ color: 'text.secondary', letterSpacing: '0.12em', display: 'block' }}
           >
-            WHAT DOES THIS MEAN?
+            {unlocked ? 'WHAT DID YOU HEAR?' : 'TAP TO HEAR THE WORD'}
           </Typography>
+        )}
+
+        <Box sx={{ mt: 1 }}>
+          <Button
+            size="small"
+            startIcon={<ReplayIcon />}
+            onClick={play}
+            sx={{ color: 'text.secondary' }}
+          >
+            Play again
+          </Button>
         </Box>
       </Box>
 
-      {/* Answer choices */}
       <ChoiceGrid
         choices={choices}
         correct={card.meaning}
@@ -324,7 +375,6 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
         onSelect={handleSelect}
       />
 
-      {/* On wrong: manual next; on correct: auto-advance hint */}
       {answeredWrong && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
           <Button variant="contained" onClick={next} size="large">

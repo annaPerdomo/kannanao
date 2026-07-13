@@ -8,6 +8,7 @@ import { BatchPicker } from '@/components/Practice/BatchPicker';
 import { FillMode } from '@/components/Practice/FillMode';
 import { KotobaBubbleMode } from '@/components/Practice/KotobaBubbleMode';
 import { KotobaBubbleSetup } from '@/components/Practice/KotobaBubbleMode/KotobaBubbleSetup';
+import { ListenMode } from '@/components/Practice/ListenMode';
 import { MatchMode } from '@/components/Practice/MatchMode';
 import { QuizMode } from '@/components/Practice/QuizMode';
 import { RecallMode } from '@/components/Practice/RecallMode';
@@ -27,6 +28,7 @@ const LABELS: Record<PracticeMode, string> = {
   recall: 'Guess It!',
   'kotoba-bubble': 'Sentence Builder',
   quiz: 'Quiz',
+  listen: 'Listen',
 };
 
 /** Show the batch picker when the deck exceeds this many cards. */
@@ -102,6 +104,9 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
       )}
       {mode === 'recall' && (
         <RecallMode cards={cards} deckId={deckId} batchSize={effectiveBatchSize} onExit={onBack} />
+      )}
+      {mode === 'listen' && (
+        <ListenMode cards={cards} deckId={deckId} batchSize={effectiveBatchSize} onExit={onBack} />
       )}
       {mode === 'kotoba-bubble' && (
         <KotobaBubbleMode

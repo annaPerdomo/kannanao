@@ -33,6 +33,7 @@ export type SessionMode =
   | 'fill'
   | 'recall'
   | 'quiz'
+  | 'listen'
   | 'speech_read'
   | 'speech_recall'
   | 'kotoba-bubble'
