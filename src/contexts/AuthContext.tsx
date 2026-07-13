@@ -20,6 +20,7 @@ import {
   sb,
   updateProfileColorScheme,
   updateProfileHomeSections,
+  updateProfileReviewReminders,
   updateProfileShowTodo,
   updateProfileTravelMainViewMode,
   upsertProfile,
@@ -43,6 +44,7 @@ interface AuthContextValue {
   colorScheme: ColorScheme | null;
   showTodo: boolean;
   homeSections: HomeSections;
+  reviewReminders: boolean;
   travelMainViewMode: string | null;
   loading: boolean;
   signInWithUsername: (username: string, password: string) => Promise<{ error: string | null }>;
@@ -55,6 +57,7 @@ interface AuthContextValue {
   updateDisplayName: (name: string) => Promise<{ error: string | null }>;
   updateColorScheme: (scheme: ColorScheme) => Promise<void>;
   updateShowTodo: (show: boolean) => Promise<void>;
+  updateReviewReminders: (enabled: boolean) => Promise<{ error: string | null }>;
   updateHomeSections: (sections: HomeSections) => Promise<void>;
   updateTravelMainViewMode: (mode: string) => Promise<void>;
 }
@@ -115,6 +118,7 @@ export function AuthProvider({
   const [colorScheme, setColorScheme] = useState<ColorScheme | null>(seededScheme);
   const [showTodo, setShowTodo] = useState(seededSections.todo);
   const [homeSections, setHomeSections] = useState<HomeSections>(seededSections);
+  const [reviewReminders, setReviewReminders] = useState(initialProfile?.reviewReminders !== false);
   const [travelMainViewMode, setTravelMainViewMode] = useState<string | null>(
     initialProfile?.travelMainViewMode ?? null,
   );
@@ -140,6 +144,7 @@ export function AuthProvider({
     const resolved = resolveHomeSections(profile?.homeSections, profile?.showTodo);
     setShowTodo(resolved.todo);
     setHomeSections(resolved);
+    setReviewReminders(profile?.reviewReminders !== false);
     setTravelMainViewMode(profile?.travelMainViewMode ?? null);
     setAccountType(profile?.accountType ?? 'organizer');
     setOrganizerId(profile?.organizerId ?? null);
@@ -254,6 +259,22 @@ export function AuthProvider({
     }
   }, []);
 
+  // Optimistic, and it rolls back: the switch flips instantly, but if the write
+  // fails the UI must not keep claiming a setting the database never took.
+  const updateReviewReminders = useCallback(async (enabled: boolean) => {
+    setReviewReminders(enabled);
+    const {
+      data: { user },
+    } = await sb.auth.getUser();
+    if (!user) {
+      setReviewReminders(!enabled);
+      return { error: 'You are signed out.' };
+    }
+    const { error } = await updateProfileReviewReminders(user.id, enabled);
+    if (error) setReviewReminders(!enabled);
+    return { error };
+  }, []);
+
   const updateHomeSectionsHandler = useCallback(async (sections: HomeSections) => {
     setHomeSections(sections);
     setShowTodo(sections.todo);
@@ -293,6 +314,7 @@ export function AuthProvider({
       colorScheme,
       showTodo,
       homeSections,
+      reviewReminders,
       travelMainViewMode,
       loading,
       signInWithUsername,
@@ -301,6 +323,7 @@ export function AuthProvider({
       updateDisplayName,
       updateColorScheme,
       updateShowTodo,
+      updateReviewReminders,
       updateHomeSections: updateHomeSectionsHandler,
       updateTravelMainViewMode,
     }),
@@ -314,6 +337,7 @@ export function AuthProvider({
       colorScheme,
       showTodo,
       homeSections,
+      reviewReminders,
       travelMainViewMode,
       loading,
       signInWithUsername,
@@ -322,6 +346,7 @@ export function AuthProvider({
       updateDisplayName,
       updateColorScheme,
       updateShowTodo,
+      updateReviewReminders,
       updateHomeSectionsHandler,
       updateTravelMainViewMode,
     ],
