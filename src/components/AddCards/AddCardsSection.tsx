@@ -3,6 +3,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { Alert, Box, Button, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 import { WordChipInput } from '@/components/WordChipInput';
 import type { MainViewMode } from '@/types/flashcard';
@@ -40,12 +41,15 @@ export function AddCardsSection({
   onAddExisting,
   onImportPdf,
   containerSx,
-  title = 'Generate with AI',
+  title,
   titleColor,
-  generateButtonLabel = 'Generate Cards',
+  generateButtonLabel,
 }: AddCardsSectionProps) {
+  const t = useTranslations('Deck.addCardsSection');
   const { palette } = useTheme();
   const { brand, accent } = palette;
+  const resolvedTitle = title ?? t('generateWithAi');
+  const resolvedGenerateButtonLabel = generateButtonLabel ?? t('generateCards');
   const resolvedTitleColor = titleColor ?? brand[500];
   const canGenerate = words.length > 0 || input.trim().length > 0;
 
@@ -93,7 +97,7 @@ export function AddCardsSection({
             flexShrink: 0,
           }}
         >
-          Main display mode:
+          {t('mainDisplayMode')}
         </Typography>
         <ToggleButtonGroup
           value={mainViewMode}
@@ -106,10 +110,10 @@ export function AddCardsSection({
           sx={{ ml: 'auto' }}
         >
           <ToggleButton value="hiragana" sx={toggleBtnSx}>
-            ひ Hiragana
+            {t('hiragana')}
           </ToggleButton>
           <ToggleButton value="kanji" sx={toggleBtnSx}>
-            漢 Kanji
+            {t('kanji')}
           </ToggleButton>
         </ToggleButtonGroup>
       </Box>
@@ -128,7 +132,7 @@ export function AddCardsSection({
             gap: 0.5,
           }}
         >
-          {title}
+          {resolvedTitle}
         </Typography>
 
         <WordChipInput
@@ -174,7 +178,7 @@ export function AddCardsSection({
               },
             }}
           >
-            {generateButtonLabel}
+            {resolvedGenerateButtonLabel}
           </Button>
         ) : null}
 
@@ -188,7 +192,7 @@ export function AddCardsSection({
               fontWeight: 600,
             }}
           >
-            {words.length} word{words.length > 1 ? 's' : ''} queued
+            {t('wordsQueued', { count: words.length })}
           </Typography>
         )}
       </Box>

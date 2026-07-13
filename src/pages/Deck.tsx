@@ -16,6 +16,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import { Box, Button, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import { AddCardsModal } from '@/components/AddCards';
@@ -45,6 +46,8 @@ interface DeckProps {
 }
 
 export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps) {
+  const t = useTranslations('Deck.deckPage');
+  const tCommon = useTranslations('Common');
   const theme = useTheme();
   const { accent } = theme.palette;
   const { user, isMemberAccount } = useAuth();
@@ -135,7 +138,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
       <Box
         sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: { xs: 1.5, sm: 2, lg: 3 }, py: 4 }}
       >
-        <Loading message="Loading cards…" />
+        <Loading message={t('loadingCards')} />
       </Box>
     );
   }
@@ -144,10 +147,10 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     return (
       <Box sx={{ p: 4 }}>
         <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
-          Back
+          {tCommon('back')}
         </Button>
         <Typography color="error" sx={{ mt: 2 }}>
-          Deck not found.
+          {t('deckNotFound')}
         </Typography>
       </Box>
     );
@@ -237,7 +240,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         <Box
           sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}
         >
-          <Label>Cards in Deck</Label>
+          <Label>{t('cardsInDeckLabel')}</Label>
           <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
             {canReorder && (
               <Button
@@ -275,7 +278,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
                       }),
                 }}
               >
-                {reordering ? 'Done' : 'Reorder'}
+                {reordering ? tCommon('done') : t('reorderButton')}
               </Button>
             )}
             {!isMemberAccount && !reordering && (
@@ -293,15 +296,13 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
                   fontWeight: 700,
                 }}
               >
-                Add Cards
+                {t('addCardsButton')}
               </Button>
             )}
           </Box>
         </Box>
 
-        {reordering && (
-          <ReorderBanner label="Drag and drop cards to reorder. Click Done when finished." />
-        )}
+        {reordering && <ReorderBanner label={t('reorderBannerLabel')} />}
 
         {cards.length === 0 ? (
           <Box
@@ -314,27 +315,25 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
             }}
           >
             <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
-              {isMemberAccount ? (
-                'No cards yet — your organizer will add them soon!'
-              ) : (
-                <>
-                  No cards yet —{' '}
-                  <Box
-                    component="span"
-                    onClick={() => setAddCardsOpen(true)}
-                    sx={{
-                      color: 'primary.main',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                      textUnderlineOffset: 2,
-                    }}
-                  >
-                    add some
-                  </Box>{' '}
-                  to get started.
-                </>
-              )}
+              {isMemberAccount
+                ? t('noCardsMemberMessage')
+                : t.rich('noCardsOwnerMessage', {
+                    link: (chunks) => (
+                      <Box
+                        component="span"
+                        onClick={() => setAddCardsOpen(true)}
+                        sx={{
+                          color: 'primary.main',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          textUnderlineOffset: 2,
+                        }}
+                      >
+                        {chunks}
+                      </Box>
+                    ),
+                  })}
             </Typography>
           </Box>
         ) : reordering ? (

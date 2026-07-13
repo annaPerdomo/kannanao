@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { AddCardsSection } from '@/components/AddCards';
@@ -27,6 +28,8 @@ import { dbCopyCardsIntoDeck, dbInsertCards } from '@/lib/supabase';
 import type { Flashcard, GeneratedCard, MainViewMode } from '@/types/flashcard';
 
 export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const t = useTranslations('Deck.createDeckDialog');
+  const tCommon = useTranslations('Common');
   const { palette } = useTheme();
   const { brand, surfaces } = palette;
 
@@ -148,8 +151,8 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
       <StyledDialog
         open={open}
         onClose={busy ? () => {} : onClose}
-        title="New Deck"
-        subtitle="Give your deck a name to get started"
+        title={t('title')}
+        subtitle={t('subtitle')}
         closeDisabled={busy}
         actions={
           <>
@@ -158,7 +161,7 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
               disabled={busy}
               sx={{ color: 'text.secondary', textTransform: 'none' }}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
               onClick={handleCreate}
@@ -181,17 +184,17 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
                 '&:disabled': { bgcolor: alpha(brand[700], 0.2), color: alpha('#fff', 0.5) },
               }}
             >
-              {creating ? 'Creating…' : 'Create'}
+              {creating ? t('creating') : t('create')}
             </Button>
           </>
         }
       >
         {generating ? (
-          <Loading message="Generating cards…" />
+          <Loading message={t('generating')} />
         ) : (
           <>
             <TextField
-              label="Deck Name"
+              label={t('deckNameLabel')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => {
@@ -203,7 +206,7 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
               sx={{ mb: 2 }}
             />
             <TextField
-              label="Description (optional)"
+              label={t('descriptionLabel')}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               fullWidth
@@ -246,10 +249,10 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
                     lineHeight: 1.2,
                   }}
                 >
-                  Pin to home
+                  {t('pinToHome')}
                 </Typography>
                 <Typography sx={{ fontSize: '0.68rem', color: 'text.secondary' }}>
-                  Show this deck on your home page
+                  {t('pinToHomeHelper')}
                 </Typography>
               </Box>
               <FormControlLabel
@@ -286,7 +289,7 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
                   color: alpha(brand[700], 0.7),
                 }}
               >
-                add cards (optional)
+                {t('addCardsOptional')}
               </Typography>
               <Box sx={{ flexGrow: 1, height: '1px', bgcolor: alpha(brand[300], 0.3) }} />
             </Box>

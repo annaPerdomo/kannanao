@@ -13,7 +13,7 @@ describe('listen mode registration', () => {
     const tile = PRACTICE_CONFIG.find((t) => t.mode === 'listen');
     expect(tile).toBeDefined();
     expect(tile?.emoji).toBe('🎧');
-    expect(tile?.label).toBe('Listen');
+    expect(tile?.labelKey).toBe('listen.label');
   });
 
   it('should have a stats label and colour', () => {

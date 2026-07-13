@@ -2,6 +2,7 @@
 import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 import type { PracticeMode } from '@/types/app';
 
@@ -15,6 +16,8 @@ interface PracticeHeroProps {
 }
 
 export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroProps) {
+  const t = useTranslations('Deck.practiceHero');
+  const tModes = useTranslations('Deck.practiceModes');
   const { brand, accent } = useTheme().palette;
   const practiceDisabled = cardCount < 2;
 
@@ -24,7 +27,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
         mb: 3,
       }}
     >
-      <Label>Let&apos;s practice!</Label>
+      <Label>{t('letsPractice')}</Label>
       <Box
         sx={{
           display: 'grid',
@@ -47,7 +50,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
                 }
               : undefined
           }
-          aria-label={cardCount > 0 ? 'Start flashcard study' : undefined}
+          aria-label={cardCount > 0 ? t('startFlashcardStudyAria') : undefined}
           sx={{
             cursor: cardCount > 0 ? 'pointer' : 'default',
             position: 'relative',
@@ -102,7 +105,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
                 textShadow: '0 1px 4px rgba(0,0,0,0.15)',
               }}
             >
-              Flashcards
+              {t('flashcardsTitle')}
             </Typography>
             <Typography
               sx={{
@@ -111,7 +114,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
                 mt: 0.4,
               }}
             >
-              Flip & learn every card
+              {t('flashcardsDescription')}
             </Typography>
           </Box>
 
@@ -144,7 +147,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
                   lineHeight: 1,
                 }}
               >
-                Let&apos;s go →
+                {t('letsGo')}
               </Typography>
             </Box>
           </Box>
@@ -152,101 +155,119 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
 
         {/* Practice mode tiles */}
         {PRACTICE_CONFIG.map(
-          ({ mode, label, description, emoji, watermark, color, bg, border, shadowColor }) => (
-            <Box
-              key={mode}
-              role={!practiceDisabled ? 'button' : undefined}
-              tabIndex={!practiceDisabled ? 0 : undefined}
-              onClick={!practiceDisabled ? () => onPractice(mode) : undefined}
-              onKeyDown={
-                !practiceDisabled
-                  ? (e: React.KeyboardEvent) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        onPractice(mode);
+          ({
+            mode,
+            labelKey,
+            descriptionKey,
+            emoji,
+            watermark,
+            color,
+            bg,
+            border,
+            shadowColor,
+          }) => {
+            const label = tModes(labelKey);
+            const description = tModes(descriptionKey);
+            return (
+              <Box
+                key={mode}
+                role={!practiceDisabled ? 'button' : undefined}
+                tabIndex={!practiceDisabled ? 0 : undefined}
+                onClick={!practiceDisabled ? () => onPractice(mode) : undefined}
+                onKeyDown={
+                  !practiceDisabled
+                    ? (e: React.KeyboardEvent) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onPractice(mode);
+                        }
                       }
-                    }
-                  : undefined
-              }
-              aria-label={!practiceDisabled ? `Start ${label} practice` : `${label} (locked)`}
-              sx={{
-                cursor: practiceDisabled ? 'default' : 'pointer',
-                position: 'relative',
-                overflow: 'hidden',
-                borderRadius: '18px',
-                p: { xs: '20px 18px', sm: '24px 22px' },
-                minHeight: 160,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                background: bg,
-                border: '1.5px solid',
-                borderColor: border,
-                opacity: practiceDisabled ? 0.45 : 1,
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                ...(!practiceDisabled && {
-                  '&:hover': {
-                    transform: 'translateY(-5px) scale(1.02)',
-                    boxShadow: `0 12px 32px ${shadowColor}`,
-                  },
-                }),
-              }}
-            >
-              <Typography
-                aria-hidden
+                    : undefined
+                }
+                aria-label={
+                  !practiceDisabled ? t('startPracticeAria', { label }) : t('lockedAria', { label })
+                }
                 sx={{
-                  position: 'absolute',
-                  bottom: -16,
-                  right: 6,
-                  fontSize: '5.5rem',
-                  lineHeight: 1,
-                  color,
-                  opacity: 0.08,
-                  fontFamily: (t) => t.fonts.jp,
-                  fontWeight: 900,
-                  userSelect: 'none',
+                  cursor: practiceDisabled ? 'default' : 'pointer',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  borderRadius: '18px',
+                  p: { xs: '20px 18px', sm: '24px 22px' },
+                  minHeight: 160,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  background: bg,
+                  border: '1.5px solid',
+                  borderColor: border,
+                  opacity: practiceDisabled ? 0.45 : 1,
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                  ...(!practiceDisabled && {
+                    '&:hover': {
+                      transform: 'translateY(-5px) scale(1.02)',
+                      boxShadow: `0 12px 32px ${shadowColor}`,
+                    },
+                  }),
                 }}
               >
-                {watermark}
-              </Typography>
-
-              <Box>
-                <Typography sx={{ fontSize: '1.85rem', lineHeight: 1, mb: 1 }}>{emoji}</Typography>
                 <Typography
+                  aria-hidden
                   sx={{
-                    fontWeight: 900,
-                    fontSize: { xs: '0.92rem', sm: '0.98rem' },
+                    position: 'absolute',
+                    bottom: -16,
+                    right: 6,
+                    fontSize: '5.5rem',
+                    lineHeight: 1,
                     color,
-                    lineHeight: 1.2,
+                    opacity: 0.08,
+                    fontFamily: (t) => t.fonts.jp,
+                    fontWeight: 900,
+                    userSelect: 'none',
                   }}
                 >
-                  {label}
+                  {watermark}
                 </Typography>
+
+                <Box>
+                  <Typography sx={{ fontSize: '1.85rem', lineHeight: 1, mb: 1 }}>
+                    {emoji}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontWeight: 900,
+                      fontSize: { xs: '0.92rem', sm: '0.98rem' },
+                      color,
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {label}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: '0.7rem',
+                      color: `${color}BB`,
+                      mt: 0.4,
+                    }}
+                  >
+                    {description}
+                  </Typography>
+                </Box>
+
                 <Typography
                   sx={{
                     fontSize: '0.7rem',
-                    color: `${color}BB`,
-                    mt: 0.4,
+                    fontWeight: 800,
+                    color: practiceDisabled ? 'text.disabled' : color,
+                    letterSpacing: '0.04em',
+                    opacity: practiceDisabled ? 0.5 : 0.8,
+                    alignSelf: 'flex-end',
                   }}
                 >
-                  {description}
+                  {practiceDisabled ? t('locked') : t('play')}
                 </Typography>
               </Box>
-
-              <Typography
-                sx={{
-                  fontSize: '0.7rem',
-                  fontWeight: 800,
-                  color: practiceDisabled ? 'text.disabled' : color,
-                  letterSpacing: '0.04em',
-                  opacity: practiceDisabled ? 0.5 : 0.8,
-                  alignSelf: 'flex-end',
-                }}
-              >
-                {practiceDisabled ? 'Locked 🔒' : 'Play →'}
-              </Typography>
-            </Box>
-          ),
+            );
+          },
         )}
       </Box>
       {practiceDisabled && cardCount > 0 && (
@@ -258,7 +279,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
             textAlign: 'center',
           }}
         >
-          Add at least 2 cards to unlock practice modes.
+          {t('unlockHint')}
         </Typography>
       )}
     </Box>

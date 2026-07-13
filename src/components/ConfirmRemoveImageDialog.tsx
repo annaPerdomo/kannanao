@@ -2,6 +2,7 @@
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { Button, CircularProgress, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 import { StyledDialog } from '@/components/StyledDialog';
 
@@ -18,6 +19,8 @@ export function ConfirmRemoveImageDialog({
   onConfirm,
   deleting,
 }: ConfirmRemoveImageDialogProps) {
+  const t = useTranslations('Deck.confirmRemoveImageDialog');
+  const tCommon = useTranslations('Common');
   const { palette } = useTheme();
   const { brand } = palette;
 
@@ -25,8 +28,8 @@ export function ConfirmRemoveImageDialog({
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Remove Image"
-      subtitle="This action cannot be undone"
+      title={t('title')}
+      subtitle={t('subtitle')}
       maxWidth="xs"
       closeDisabled={deleting}
       actions={
@@ -42,7 +45,7 @@ export function ConfirmRemoveImageDialog({
               fontSize: '0.8rem',
             }}
           >
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             variant="contained"
@@ -65,13 +68,13 @@ export function ConfirmRemoveImageDialog({
               '&:hover': { bgcolor: '#DC2626' },
             }}
           >
-            {deleting ? 'Removing...' : 'Remove Forever'}
+            {deleting ? t('removing') : t('removeForever')}
           </Button>
         </>
       }
     >
       <Typography sx={{ fontSize: '0.85rem', color: alpha(brand[700], 0.8), lineHeight: 1.6 }}>
-        This will permanently delete the image from storage. You won&apos;t be able to recover it.
+        {t('body')}
       </Typography>
     </StyledDialog>
   );

@@ -20,6 +20,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
 import { toRomaji } from 'wanakana';
 
@@ -61,6 +62,7 @@ export function CardRow({
   onUpdate,
   onDelete,
 }: CardRowProps) {
+  const t = useTranslations('Deck.reviewCardsDialog.cardRow');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const [refreshingImage, setRefreshingImage] = useState(false);
@@ -208,7 +210,9 @@ export function CardRow({
               sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
-            <Typography sx={{ fontSize: '0.7rem', color: alpha(brand[700], 0.6) }}>—</Typography>
+            <Typography sx={{ fontSize: '0.7rem', color: alpha(brand[700], 0.6) }}>
+              {t('noImagePlaceholder')}
+            </Typography>
           )}
         </Box>
 
@@ -233,7 +237,7 @@ export function CardRow({
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, ml: -0.5 }}>
-          <Tooltip title="Remove card">
+          <Tooltip title={t('removeCardTooltip')}>
             <IconButton
               size="small"
               onClick={(e) => {
@@ -327,14 +331,14 @@ export function CardRow({
                   color: brand[500],
                 }}
               >
-                Image Search
+                {t('imageSearchLabel')}
               </Typography>
               <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
                 <TextField
                   size="small"
                   value={imageQuery}
                   onChange={(e) => setImageQuery(e.target.value)}
-                  placeholder="Search term…"
+                  placeholder={t('searchTermPlaceholder')}
                   sx={{
                     flexGrow: 1,
                     '& .MuiOutlinedInput-root': {
@@ -353,7 +357,7 @@ export function CardRow({
                     }
                   }}
                 />
-                <Tooltip title="Fetch from Unsplash">
+                <Tooltip title={t('fetchFromUnsplashTooltip')}>
                   <IconButton
                     size="small"
                     onClick={handleRefreshImage}
@@ -374,7 +378,7 @@ export function CardRow({
                     )}
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="Upload image">
+                <Tooltip title={t('uploadImageTooltip')}>
                   <IconButton
                     size="small"
                     onClick={() => fileInputRef.current?.click()}
@@ -407,7 +411,7 @@ export function CardRow({
                   }}
                 />
                 {card.imageUrl && (
-                  <Tooltip title="Remove image">
+                  <Tooltip title={t('removeImageTooltip')}>
                     <IconButton
                       size="small"
                       onClick={handleRemoveClick}
@@ -451,7 +455,7 @@ export function CardRow({
                   whiteSpace: 'nowrap',
                 }}
               >
-                Display:
+                {t('displayLabel')}
               </Typography>
               <ToggleButtonGroup
                 value={card.mainViewMode}
@@ -462,9 +466,9 @@ export function CardRow({
                 }}
                 sx={toggleSx}
               >
-                <ToggleButton value="romaji">A</ToggleButton>
-                <ToggleButton value="hiragana">ひ</ToggleButton>
-                <ToggleButton value="kanji">漢</ToggleButton>
+                <ToggleButton value="romaji">{t('romajiOption')}</ToggleButton>
+                <ToggleButton value="hiragana">{t('hiraganaFallback')}</ToggleButton>
+                <ToggleButton value="kanji">{t('kanjiFallback')}</ToggleButton>
               </ToggleButtonGroup>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -476,7 +480,7 @@ export function CardRow({
                   whiteSpace: 'nowrap',
                 }}
               >
-                Type:
+                {t('typeLabel')}
               </Typography>
               <ToggleButtonGroup
                 value={card.cardType ?? 'word'}
@@ -487,8 +491,8 @@ export function CardRow({
                 }}
                 sx={toggleSx}
               >
-                <ToggleButton value="word">Word</ToggleButton>
-                <ToggleButton value="phrase">Phrase</ToggleButton>
+                <ToggleButton value="word">{t('wordOption')}</ToggleButton>
+                <ToggleButton value="phrase">{t('phraseOption')}</ToggleButton>
               </ToggleButtonGroup>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -500,7 +504,7 @@ export function CardRow({
                   whiteSpace: 'nowrap',
                 }}
               >
-                JLPT:
+                {t('jlptLabel')}
               </Typography>
               <ToggleButtonGroup
                 value={card.jlptLevel ?? 'none'}
@@ -513,7 +517,7 @@ export function CardRow({
               >
                 {JLPT_LEVELS.map((lvl) => (
                   <ToggleButton key={lvl} value={lvl}>
-                    {lvl === 'none' ? '—' : lvl}
+                    {lvl === 'none' ? t('noneOption') : lvl}
                   </ToggleButton>
                 ))}
               </ToggleButtonGroup>
@@ -522,14 +526,22 @@ export function CardRow({
 
           {/* Editable fields */}
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
-            <SmallField label="Word (漢字)" value={card.word} onChange={handleField('word')} />
             <SmallField
-              label="Reading (ひらがな)"
+              label={t('wordFieldLabel')}
+              value={card.word}
+              onChange={handleField('word')}
+            />
+            <SmallField
+              label={t('readingFieldLabel')}
               value={card.reading}
               onChange={handleField('reading')}
             />
           </Box>
-          <SmallField label="Meaning" value={card.meaning} onChange={handleField('meaning')} />
+          <SmallField
+            label={t('meaningFieldLabel')}
+            value={card.meaning}
+            onChange={handleField('meaning')}
+          />
 
           <Box sx={{ mt: 0.5 }}>
             <Typography
@@ -541,28 +553,31 @@ export function CardRow({
                 lineHeight: 1.4,
               }}
             >
-              💡 Use{' '}
-              <Box
-                component="code"
-                sx={{
-                  bgcolor: alpha(accent[500], 0.08),
-                  px: 0.4,
-                  borderRadius: '3px',
-                  fontSize: '0.58rem',
-                }}
-              >
-                {'{漢字|かんじ}'}
-              </Box>{' '}
-              to show readings above kanji on the card
+              {t.rich('furiganaHint', {
+                example: t('furiganaHintExample'),
+                code: (chunks) => (
+                  <Box
+                    component="code"
+                    sx={{
+                      bgcolor: alpha(accent[500], 0.08),
+                      px: 0.4,
+                      borderRadius: '3px',
+                      fontSize: '0.58rem',
+                    }}
+                  >
+                    {chunks}
+                  </Box>
+                ),
+              })}
             </Typography>
             <SmallField
-              label="Example (JP)"
+              label={t('exampleJpFieldLabel')}
               value={card.example_jp}
               onChange={handleField('example_jp')}
               multiline
               endAdornment={
                 exampleJpEdited ? (
-                  <Tooltip title="Auto-add furigana markup with AI">
+                  <Tooltip title={t('autoAddFuriganaTooltip')}>
                     <IconButton
                       size="small"
                       onClick={handleAutoFurigana}
@@ -582,7 +597,7 @@ export function CardRow({
           </Box>
 
           <SmallField
-            label="Example (EN)"
+            label={t('exampleEnFieldLabel')}
             value={card.example_en}
             onChange={handleField('example_en')}
             multiline

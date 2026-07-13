@@ -1,6 +1,7 @@
 'use client';
 import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 import type { MainViewMode } from '@/types/flashcard';
 
@@ -10,13 +11,14 @@ interface Props {
 }
 
 export function MainModeToggle({ value, onChange }: Props) {
+  const t = useTranslations('Study.mainViewModeToggle');
   const { palette } = useTheme();
   const { brand, accent } = palette;
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
       <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
-        Test with:
+        {t('testWith')}
       </Typography>
       <ToggleButtonGroup
         value={value}
@@ -41,9 +43,9 @@ export function MainModeToggle({ value, onChange }: Props) {
           },
         }}
       >
-        <ToggleButton value="romaji">Romaji</ToggleButton>
-        <ToggleButton value="hiragana">ひらがな</ToggleButton>
-        <ToggleButton value="kanji">漢字</ToggleButton>
+        <ToggleButton value="romaji">{t('romaji')}</ToggleButton>
+        <ToggleButton value="hiragana">{t('hiragana')}</ToggleButton>
+        <ToggleButton value="kanji">{t('kanji')}</ToggleButton>
       </ToggleButtonGroup>
     </Box>
   );

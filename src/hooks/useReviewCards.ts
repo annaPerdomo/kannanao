@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +20,7 @@ export function useReviewCards(): {
   loading: boolean;
   error: string | null;
 } {
+  const t = useTranslations('Study.useReviewCards');
   const { user } = useAuth();
   const [dueCards, setDueCards] = useState<Flashcard[]>([]);
   const [allCards, setAllCards] = useState<Flashcard[]>([]);
@@ -40,7 +42,7 @@ export function useReviewCards(): {
         setAllCards(all);
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load cards');
+        if (!cancelled) setError(e instanceof Error ? e.message : t('failedToLoadCards'));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -48,7 +50,7 @@ export function useReviewCards(): {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, t]);
 
   return { dueCards, allCards, loading, error };
 }

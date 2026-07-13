@@ -10,5 +10,393 @@
     "loading": "Loading…",
     "retry": "Retry",
     "somethingWentWrong": "Something went wrong"
+  },
+  "Deck": {
+    "addCardsModal": {
+      "title": "✨ Add Cards",
+      "subtitle": "Generate, copy, or import new flashcards",
+      "generating": "Generating cards…"
+    },
+    "addCardsSection": {
+      "mainDisplayMode": "Main display mode:",
+      "hiragana": "ひ Hiragana",
+      "kanji": "漢 Kanji",
+      "generateWithAi": "Generate with AI",
+      "generateCards": "Generate Cards",
+      "wordsQueued": "{count, plural, one {# word queued} other {# words queued}}"
+    },
+    "addExistingCardsDialog": {
+      "title": "Add Existing Cards",
+      "subtitle": "Pick cards from your other decks — they'll be copied here",
+      "searchPlaceholder": "Search word, reading, meaning…",
+      "copying": "Copying…",
+      "copyButton": "{count, plural, one {Copy # card} other {Copy # cards}}",
+      "deselectAll": "Deselect all",
+      "selectAll": "Select all",
+      "selectedCount": "{count} selected",
+      "cardCount": "{count, plural, one {# card} other {# cards}}",
+      "emptyNoCards": "No cards in other decks yet",
+      "emptyNoMatch": "No cards match your search"
+    },
+    "confirmRemoveImageDialog": {
+      "title": "Remove Image",
+      "subtitle": "This action cannot be undone",
+      "removeForever": "Remove Forever",
+      "removing": "Removing...",
+      "body": "This will permanently delete the image from storage. You won't be able to recover it."
+    },
+    "createDeckDialog": {
+      "title": "New Deck",
+      "subtitle": "Give your deck a name to get started",
+      "creating": "Creating…",
+      "create": "Create",
+      "generating": "Generating cards…",
+      "deckNameLabel": "Deck Name",
+      "descriptionLabel": "Description (optional)",
+      "pinToHome": "Pin to home",
+      "pinToHomeHelper": "Show this deck on your home page",
+      "addCardsOptional": "add cards (optional)"
+    },
+    "deckHeader": {
+      "saveTooltip": "Save (Enter)",
+      "cancelTooltip": "Cancel (Esc)",
+      "deckNamePlaceholder": "Deck name",
+      "descriptionPlaceholder": "Description (optional)",
+      "cardCount": "{count, plural, one {# card} other {# cards}}",
+      "changeEmojiTooltip": "Change emoji",
+      "addEmojiTooltip": "Add emoji",
+      "changeDeckEmojiAria": "Change deck emoji",
+      "addDeckEmojiAria": "Add deck emoji",
+      "renameDeckTooltip": "Rename deck",
+      "renameDeckAria": "Rename deck",
+      "shared": "Shared",
+      "share": "Share",
+      "unpinFromHome": "Unpin from home",
+      "pinToHome": "Pin to home"
+    },
+    "practiceHero": {
+      "letsPractice": "Let's practice!",
+      "startFlashcardStudyAria": "Start flashcard study",
+      "flashcardsTitle": "Flashcards",
+      "flashcardsDescription": "Flip & learn every card",
+      "letsGo": "Let's go →",
+      "startPracticeAria": "Start {label} practice",
+      "lockedAria": "{label} (locked)",
+      "locked": "Locked 🔒",
+      "play": "Play →",
+      "unlockHint": "Add at least 2 cards to unlock practice modes."
+    },
+    "practiceModes": {
+      "match": {
+        "label": "Match",
+        "description": "Pair Japanese to English"
+      },
+      "fill": {
+        "label": "Fill in Blank",
+        "description": "Complete the sentence"
+      },
+      "recall": {
+        "label": "Guess It!",
+        "description": "Pick the right meaning"
+      },
+      "kotobaBubble": {
+        "label": "Sentence Builder",
+        "description": "Pick the right particle to complete each sentence"
+      },
+      "listen": {
+        "label": "Listen",
+        "description": "Hear the word, pick what it means"
+      },
+      "quiz": {
+        "label": "Quiz",
+        "description": "Show what you know — one try each"
+      }
+    },
+    "deckCard": {
+      "cardDeck": "Card Deck",
+      "xp": "XP",
+      "starCards": "★ Cards",
+      "cardsCount": "{count, plural, one {# card} other {# cards}}",
+      "changeEmojiTooltip": "Change emoji",
+      "addEmojiTooltip": "Add emoji",
+      "changeDeckEmojiAria": "Change deck emoji",
+      "addDeckEmojiAria": "Add deck emoji",
+      "removeEmoji": "Remove emoji",
+      "unpinFromHome": "Unpin from home",
+      "pinToHome": "Pin to home",
+      "shared": "Shared",
+      "shareDeck": "Share deck",
+      "deleteDeck": "Delete deck",
+      "openDeckAria": "Open deck: {name}"
+    },
+    "editCardDialog": {
+      "title": "Edit Card",
+      "saving": "Saving…",
+      "saveChanges": "Save Changes",
+      "settingsPanel": {
+        "modeHintRomaji": "Romaji pronunciation will be the card title",
+        "modeHintHiragana": "The hiragana reading will be the card title",
+        "modeHintKanji": "The kanji reading will be the card title",
+        "mainViewModeLabel": "Main View Mode",
+        "romajiTooltip": "Display romaji as the primary text",
+        "hiraganaTooltip": "Display hiragana as the primary text",
+        "kanjiTooltip": "Display kanji as the primary text",
+        "romajiOption": "ABC",
+        "hiraganaFallback": "ひ",
+        "kanjiFallback": "漢",
+        "cardTypeLabel": "Card Type",
+        "cardTypePhraseDesc": "Multi-word expression or sentence",
+        "cardTypeWordDesc": "Single vocabulary word",
+        "wordTypeOption": "単語",
+        "phraseTypeOption": "フレーズ",
+        "jlptLevelLabel": "JLPT Level",
+        "jlptTagged": "Tagged as {level}",
+        "jlptNoLevel": "No level assigned"
+      },
+      "imageSection": {
+        "cardImageLabel": "Card Image",
+        "altCardImagePreview": "Card image preview",
+        "removeImageTooltip": "Remove image",
+        "membersManagedMessage": "Images are managed by your organizer.",
+        "imageSearchQueryLabel": "Image Search Query",
+        "imageSearchPlaceholder": "Phrase that describes this definition",
+        "noImageFoundError": "No image found for that query. Try a different search term.",
+        "fetchImageError": "Failed to fetch image. Please try again.",
+        "uploadImageError": "Failed to upload image. Please try again.",
+        "deleteImageError": "Failed to delete image.",
+        "regenerateTooltip": "Regenerate from Unsplash",
+        "searchTooltip": "Search Unsplash",
+        "searching": "Searching...",
+        "regen": "Regen",
+        "fetch": "Fetch",
+        "uploadOwnImageTooltip": "Upload your own image",
+        "uploading": "Uploading...",
+        "upload": "Upload"
+      },
+      "fields": {
+        "word": {
+          "label": "日本語 (Japanese Word)",
+          "placeholder": "e.g. 猫",
+          "helperText": "The Japanese word or phrase (kanji)"
+        },
+        "reading": {
+          "label": "Reading (Furigana)",
+          "placeholder": "e.g. ねこ",
+          "helperText": "Hiragana/katakana reading"
+        },
+        "meaning": {
+          "label": "Meaning (English)",
+          "placeholder": "e.g. cat",
+          "helperText": "English translation"
+        },
+        "exampleJp": {
+          "label": "Example Sentence (JP)",
+          "placeholder": "e.g. 猫が好きです。",
+          "helperText": "Japanese example sentence"
+        },
+        "exampleEn": {
+          "label": "Example Sentence (EN)",
+          "placeholder": "e.g. I like cats.",
+          "helperText": "English translation of example"
+        }
+      }
+    },
+    "imageCard": {
+      "modeKanji": "漢字",
+      "modeRomaji": "ABC",
+      "modeHiragana": "かな",
+      "phraseTypeLabel": "フレーズ",
+      "wordTypeLabel": "単語",
+      "xp": "XP",
+      "meaningLabel": "★ Meaning",
+      "sampleSentenceLabel": "* SAMPLE SENTENCE",
+      "jlptLabel": "JLPT {level}",
+      "editCardTooltip": "Edit card",
+      "deleteCardTooltip": "Delete card"
+    },
+    "generateForm": {
+      "wordPlaceholder": "Type a word or phrase…",
+      "generating": "Generating…",
+      "generateCards": "Generate Cards",
+      "itemsQueued": "{count, plural, one {# item queued} other {# items queued}}"
+    },
+    "pdfImportModal": {
+      "title": "📄 Import from PDF",
+      "subtitle": "Extract vocabulary from a document",
+      "extractCards": "Extract cards",
+      "reExtract": "Re-extract",
+      "addCardsToDeck": "{count, plural, one {Add # card to deck} other {Add # cards to deck}}",
+      "extracting": "Extracting cards…",
+      "pleaseUploadPdf": "Please upload a PDF file.",
+      "fileSizeError": "File must be under 20 MB.",
+      "readFailedError": "Read failed",
+      "extractionFailedFallback": "Extraction failed",
+      "extractFailedGeneric": "Failed to extract cards. Please check the PDF and try again.",
+      "dropPdfHere": "Drop a PDF here",
+      "orClickToBrowse": "or click to browse · PDF only · max 20 MB",
+      "clickToReplace": "{size} KB · Click to replace",
+      "fieldsExtracted": "Fields extracted",
+      "extractedFields": [
+        "word",
+        "reading",
+        "meaning",
+        "example sentence in Japanese",
+        "example sentence in English",
+        "JLPT level"
+      ],
+      "cardsExtractedCount": "{count, plural, one {# card extracted} other {# cards extracted}}",
+      "moreCards": "{count, plural, one {+# more card} other {+# more cards}}"
+    },
+    "reorderBanner": {
+      "defaultLabel": "Drag and drop to reorder. Click Done when finished."
+    },
+    "reviewCardsDialog": {
+      "cardRow": {
+        "removeCardTooltip": "Remove card",
+        "imageSearchLabel": "Image Search",
+        "searchTermPlaceholder": "Search term…",
+        "fetchFromUnsplashTooltip": "Fetch from Unsplash",
+        "uploadImageTooltip": "Upload image",
+        "removeImageTooltip": "Remove image",
+        "displayLabel": "Display:",
+        "romajiOption": "A",
+        "hiraganaFallback": "ひ",
+        "kanjiFallback": "漢",
+        "typeLabel": "Type:",
+        "wordOption": "Word",
+        "phraseOption": "Phrase",
+        "jlptLabel": "JLPT:",
+        "noneOption": "—",
+        "noImagePlaceholder": "—",
+        "autoAddFuriganaTooltip": "Auto-add furigana markup with AI",
+        "wordFieldLabel": "Word (漢字)",
+        "readingFieldLabel": "Reading (ひらがな)",
+        "meaningFieldLabel": "Meaning",
+        "furiganaHint": "💡 Use <code>{example}</code> to show readings above kanji on the card",
+        "furiganaHintExample": "{漢字|かんじ}",
+        "exampleJpFieldLabel": "Example (JP)",
+        "exampleEnFieldLabel": "Example (EN)"
+      }
+    },
+    "shareDeckDialog": {
+      "title": "Share Deck",
+      "usernamePlaceholder": "Username",
+      "shareButton": "Share",
+      "sharedWithLabel": "Shared with",
+      "notSharedYet": "Not shared with anyone yet",
+      "removeShareAria": "Remove share"
+    },
+    "shareEmbedDialog": {
+      "title": "Embed Deck",
+      "publicEmbedding": "Public embedding",
+      "publicHintOn": "Anyone with the link can view this deck",
+      "publicHintOff": "Enable to allow this deck to be embedded",
+      "canvasEmbedCode": "Canvas embed code",
+      "copied": "Copied!",
+      "copyToClipboard": "Copy to clipboard",
+      "howToAddToCanvas": "How to add to Canvas:",
+      "canvasSteps": [
+        "Open your Canvas page in the Rich Content Editor",
+        "Click Insert → \"Embed\" or switch to the HTML editor (</>)",
+        "Paste the embed code above",
+        "Save — students can flip cards without logging in"
+      ],
+      "previewEmbed": "Preview embed"
+    },
+    "wordChipInput": {
+      "placeholder": "Type words or phrases, press Enter…"
+    },
+    "useDecks": {
+      "notConfiguredError": "Supabase is not configured"
+    },
+    "deckPage": {
+      "loadingCards": "Loading cards…",
+      "deckNotFound": "Deck not found.",
+      "cardsInDeckLabel": "Cards in Deck",
+      "reorderButton": "Reorder",
+      "addCardsButton": "Add Cards",
+      "reorderBannerLabel": "Drag and drop cards to reorder. Click Done when finished.",
+      "noCardsMemberMessage": "No cards yet — your organizer will add them soon!",
+      "noCardsOwnerMessage": "No cards yet — <link>add some</link> to get started."
+    },
+    "decksPage": {
+      "loadingDecks": "Loading your decks…",
+      "title": "Your Decks",
+      "subtitle": "Pin decks to see them on your home page. ✨",
+      "reorderButton": "Reorder",
+      "newDeckButton": "New Deck",
+      "reorderBannerLabel": "Drag and drop decks to reorder. Click Done when finished.",
+      "noDecksSharedYet": "No decks shared yet!",
+      "noDecksYet": "No decks yet!",
+      "memberEmptyHint": "Your organizer will share decks with you soon — check back later!",
+      "ownerEmptyHint": "Create your first deck to start building flashcards",
+      "createDeckButton": "Create Deck",
+      "pinnedToHome": "📌 Pinned to Home",
+      "allDecks": "All Decks"
+    },
+    "useGenerateFlashcards": {
+      "generationFailed": "Generation failed"
+    }
+  },
+  "Study": {
+    "flashcard": {
+      "modeKanji": "漢字",
+      "modeRomaji": "ABC",
+      "modeHiragana": "かな",
+      "xp": "XP",
+      "tapToFlip": "✦ tap to flip ✦",
+      "answer": "Answer",
+      "kanjiLabel": "★ Kanji",
+      "meaningLabel": "★ Meaning",
+      "exampleLabel": "★ Example",
+      "tapToFlipBack": "tap to flip back",
+      "jlptLabel": "JLPT {level}"
+    },
+    "flipStudy": {
+      "emptyMessage": "Nothing to study here yet.",
+      "cardsBadge": "{count, plural, one {# card} other {# cards}}",
+      "progressLabel": "{current} / {total}",
+      "stillLearningJp": "まだ",
+      "stillLearning": "Still learning",
+      "gotItJp": "{知|し}ってた！",
+      "gotIt": "Got it",
+      "previousCardAria": "Previous card",
+      "nextCardAria": "Next card",
+      "howDidYouDo": "HOW DID YOU DO?",
+      "tapCardToFlip": "TAP CARD TO FLIP",
+      "finishSession": "Finish Session ✨",
+      "nextRound": "Next round →",
+      "completionSubheading": "{count, plural, one {You studied all # card!} other {You studied all # cards!}}"
+    },
+    "mainViewModeToggle": {
+      "testWith": "Test with:",
+      "romaji": "Romaji",
+      "hiragana": "ひらがな",
+      "kanji": "漢字"
+    },
+    "publicViewer": {
+      "loadingCards": "Loading cards…",
+      "notAvailableForEmbed": "This deck is not available for embedding.",
+      "noCardsYet": "No cards in this deck yet.",
+      "failedToLoadDeck": "Failed to load deck",
+      "celebrationHeading": "すごい！",
+      "reviewedAllCards": "{count, plural, one {You reviewed all <b>{count}</b> card!} other {You reviewed all <b>{count}</b> cards!}}",
+      "tapToReviewAgain": "TAP TO REVIEW AGAIN",
+      "plainThemeOption": "◻ Plain",
+      "tapCardToFlip": "TAP CARD TO FLIP",
+      "clickCardToFlip": "CLICK CARD TO FLIP",
+      "poweredBy": "Powered by",
+      "brandName": "Kannanao",
+      "madeBy": "Made by Variations on a String"
+    },
+    "useReviewCards": {
+      "failedToLoadCards": "Failed to load cards"
+    },
+    "study": {
+      "defaultDeckName": "Deck",
+      "cardsBadge": "{count, plural, one {# card} other {# cards}}",
+      "loadingDecks": "Loading your decks…",
+      "completionSubheading": "{count, plural, one {You studied all # card!} other {You studied all # cards!}}"
+    }
   }
 }

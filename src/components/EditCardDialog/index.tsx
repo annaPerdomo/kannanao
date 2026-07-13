@@ -3,6 +3,7 @@
 import SaveIcon from '@mui/icons-material/Save';
 import { Box, Button, CircularProgress, Divider, TextField } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
@@ -24,6 +25,9 @@ interface EditCardDialogProps {
 }
 
 export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogProps) {
+  const t = useTranslations('Deck.editCardDialog');
+  const tFields = useTranslations('Deck.editCardDialog.fields');
+  const tCommon = useTranslations('Common');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const sharedTextFieldSx = sharedTextFieldSxFn(theme);
@@ -80,7 +84,7 @@ export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogPr
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Edit Card"
+      title={t('title')}
       subtitle={card?.word ? `${card.word}${card.reading ? ` · ${card.reading}` : ''}` : undefined}
       maxWidth="sm"
       actions={
@@ -96,7 +100,7 @@ export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogPr
               fontSize: '0.8rem',
             }}
           >
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             variant="contained"
@@ -119,7 +123,7 @@ export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogPr
               '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
             }}
           >
-            {saving ? 'Saving…' : 'Save Changes'}
+            {saving ? t('saving') : t('saveChanges')}
           </Button>
         </>
       }
@@ -136,16 +140,16 @@ export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogPr
           reading={fields.reading}
         />
 
-        {FIELD_CONFIG.map(({ key, label, placeholder, multiline, rows, helperText }) => (
+        {FIELD_CONFIG.map(({ key, labelKey, placeholderKey, multiline, rows, helperTextKey }) => (
           <TextField
             key={key}
-            label={label}
+            label={tFields(labelKey)}
             value={fields[key] ?? ''}
             onChange={handleFieldChange(key)}
-            placeholder={placeholder}
+            placeholder={tFields(placeholderKey)}
             multiline={multiline}
             rows={rows}
-            helperText={helperText}
+            helperText={helperTextKey ? tFields(helperTextKey) : undefined}
             fullWidth
             size="small"
             sx={{

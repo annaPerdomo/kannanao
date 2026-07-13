@@ -3,14 +3,14 @@ import SwapVertIcon from '@mui/icons-material/SwapVert';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 interface ReorderBannerProps {
   label?: string;
 }
 
-export function ReorderBanner({
-  label = 'Drag and drop to reorder. Click Done when finished.',
-}: ReorderBannerProps) {
+export function ReorderBanner({ label }: ReorderBannerProps) {
+  const t = useTranslations('Deck.reorderBanner');
   const theme = useTheme();
   const { accent } = theme.palette;
 
@@ -30,7 +30,7 @@ export function ReorderBanner({
     >
       <SwapVertIcon sx={{ fontSize: '1rem', color: accent[500] }} />
       <Typography sx={{ fontSize: '0.8rem', color: accent[700], fontWeight: 600 }}>
-        {label}
+        {label ?? t('defaultLabel')}
       </Typography>
     </Box>
   );

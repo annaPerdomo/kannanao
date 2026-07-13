@@ -21,6 +21,7 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import { CreateDeckDialog } from '@/components/CreateDeckDialog';
@@ -35,6 +36,8 @@ import { useDecks } from '@/hooks/useDecks';
 import { LAYOUT } from '@/theme';
 
 export default function Decks() {
+  const t = useTranslations('Deck.decksPage');
+  const tCommon = useTranslations('Common');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const router = useRouter();
@@ -85,7 +88,7 @@ export default function Decks() {
   if (loading) {
     return (
       <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
-        <Loading message="Loading your decks…" />
+        <Loading message={t('loadingDecks')} />
       </Box>
     );
   }
@@ -159,8 +162,8 @@ export default function Decks() {
       <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
         <PageHeader
           icon={<CollectionsIcon />}
-          title="Your Decks"
-          subtitle="Pin decks to see them on your home page. ✨"
+          title={t('title')}
+          subtitle={t('subtitle')}
           onBack={() => router.push('/')}
           action={
             !isMemberAccount ? (
@@ -194,7 +197,7 @@ export default function Decks() {
                           }),
                     }}
                   >
-                    {reordering ? 'Done' : 'Reorder'}
+                    {reordering ? tCommon('done') : t('reorderButton')}
                   </Button>
                 )}
                 {!reordering && (
@@ -214,7 +217,7 @@ export default function Decks() {
                       },
                     }}
                   >
-                    New Deck
+                    {t('newDeckButton')}
                   </Button>
                 )}
               </Box>
@@ -223,9 +226,7 @@ export default function Decks() {
         />
       </Box>
 
-      {reordering && (
-        <ReorderBanner label="Drag and drop decks to reorder. Click Done when finished." />
-      )}
+      {reordering && <ReorderBanner label={t('reorderBannerLabel')} />}
 
       {decks.length === 0 ? (
         <Box
@@ -239,16 +240,14 @@ export default function Decks() {
         >
           <Typography sx={{ fontSize: '3.5rem', mb: 2 }}>📭</Typography>
           <Typography variant="h6" sx={{ color: brand[700], fontWeight: 700, mb: 1 }}>
-            {isMemberAccount ? 'No decks shared yet!' : 'No decks yet!'}
+            {isMemberAccount ? t('noDecksSharedYet') : t('noDecksYet')}
           </Typography>
           <Typography color="text.secondary" sx={{ mb: 3, fontSize: '0.875rem' }}>
-            {isMemberAccount
-              ? 'Your organizer will share decks with you soon — check back later!'
-              : 'Create your first deck to start building flashcards'}
+            {isMemberAccount ? t('memberEmptyHint') : t('ownerEmptyHint')}
           </Typography>
           {!isMemberAccount && (
             <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}>
-              Create Deck
+              {t('createDeckButton')}
             </Button>
           )}
         </Box>
@@ -268,7 +267,7 @@ export default function Decks() {
                   letterSpacing: '0.06em',
                 }}
               >
-                📌 Pinned to Home
+                {t('pinnedToHome')}
               </Typography>
               {reordering
                 ? renderSortableGrid(pinnedDecks, handlePinnedDragEnd)
@@ -291,7 +290,7 @@ export default function Decks() {
                     letterSpacing: '0.06em',
                   }}
                 >
-                  All Decks
+                  {t('allDecks')}
                 </Typography>
               )}
               {reordering

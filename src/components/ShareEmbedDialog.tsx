@@ -14,6 +14,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
@@ -36,6 +37,8 @@ export function ShareEmbedDialog({
   isPublic,
   onPublicChange,
 }: ShareEmbedDialogProps) {
+  const t = useTranslations('Deck.shareEmbedDialog');
+  const tCommon = useTranslations('Common');
   const { palette } = useTheme();
   const { brand } = palette;
 
@@ -71,7 +74,7 @@ export function ShareEmbedDialog({
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Embed Deck"
+      title={t('title')}
       subtitle={deckName}
       icon={<CodeIcon sx={{ color: brand[600], fontSize: 20 }} />}
       maxWidth="sm"
@@ -80,7 +83,7 @@ export function ShareEmbedDialog({
           onClick={onClose}
           sx={{ color: 'text.secondary', textTransform: 'none', fontWeight: 700 }}
         >
-          Done
+          {tCommon('done')}
         </Button>
       }
     >
@@ -100,12 +103,10 @@ export function ShareEmbedDialog({
       >
         <Box>
           <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: 'text.primary' }}>
-            Public embedding
+            {t('publicEmbedding')}
           </Typography>
           <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.25 }}>
-            {isPublic
-              ? 'Anyone with the link can view this deck'
-              : 'Enable to allow this deck to be embedded'}
+            {isPublic ? t('publicHintOn') : t('publicHintOff')}
           </Typography>
         </Box>
         <FormControlLabel
@@ -140,7 +141,7 @@ export function ShareEmbedDialog({
               mb: 1,
             }}
           >
-            Canvas embed code
+            {t('canvasEmbedCode')}
           </Typography>
           <Box
             sx={{
@@ -165,7 +166,7 @@ export function ShareEmbedDialog({
             >
               {iframeCode}
             </Typography>
-            <Tooltip title={copied ? 'Copied!' : 'Copy to clipboard'}>
+            <Tooltip title={copied ? t('copied') : t('copyToClipboard')}>
               <IconButton
                 size="small"
                 onClick={handleCopy}
@@ -200,14 +201,9 @@ export function ShareEmbedDialog({
             }}
           >
             <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: brand[700], mb: 0.75 }}>
-              How to add to Canvas:
+              {t('howToAddToCanvas')}
             </Typography>
-            {[
-              'Open your Canvas page in the Rich Content Editor',
-              'Click Insert → "Embed" or switch to the HTML editor (</>)',
-              'Paste the embed code above',
-              'Save — students can flip cards without logging in',
-            ].map((step, i) => (
+            {(t.raw('canvasSteps') as string[]).map((step, i) => (
               <Box key={i} sx={{ display: 'flex', gap: 1, mb: 0.5 }}>
                 <Typography
                   sx={{
@@ -242,7 +238,7 @@ export function ShareEmbedDialog({
                 '&:hover': { bgcolor: alpha(brand[100], 0.6) },
               }}
             >
-              Preview embed
+              {t('previewEmbed')}
             </Button>
           </Box>
         </>

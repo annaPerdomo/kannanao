@@ -2,6 +2,7 @@
 import { Box, Skeleton, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
@@ -26,6 +27,7 @@ export function Flashcard({
   height: heightProp,
   onFlipChange,
 }: FlashcardProps) {
+  const t = useTranslations('Study.flashcard');
   const width = widthProp ?? (card.imageUrl ? '100%' : 420);
   const height = heightProp ?? (card.imageUrl ? 420 : 280);
   const theme = useTheme();
@@ -169,13 +171,13 @@ export function Flashcard({
                     textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                   }}
                 >
-                  {isKanji ? '漢字' : isRomaji ? 'ABC' : 'かな'}
+                  {isKanji ? t('modeKanji') : isRomaji ? t('modeRomaji') : t('modeHiragana')}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
                   <Typography
                     sx={{ fontSize: '0.55rem', fontWeight: 700, color: 'rgba(255,255,255,0.82)' }}
                   >
-                    XP
+                    {t('xp')}
                   </Typography>
                   <Typography
                     sx={{
@@ -288,7 +290,7 @@ export function Flashcard({
                         textTransform: 'uppercase',
                       }}
                     >
-                      ✦ tap to flip ✦
+                      {t('tapToFlip')}
                     </Typography>
                   </Box>
                 </>
@@ -353,7 +355,7 @@ export function Flashcard({
                         textTransform: 'uppercase',
                       }}
                     >
-                      ✦ tap to flip ✦
+                      {t('tapToFlip')}
                     </Typography>
                   </Box>
                 </>
@@ -379,7 +381,7 @@ export function Flashcard({
                       letterSpacing: '0.06em',
                     }}
                   >
-                    JLPT {card.jlptLevel}
+                    {t('jlptLabel', { level: card.jlptLevel })}
                   </Typography>
                 )}
                 <Typography
@@ -417,7 +419,7 @@ export function Flashcard({
                     textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                   }}
                 >
-                  Answer
+                  {t('answer')}
                 </Typography>
               </Box>
 
@@ -461,7 +463,7 @@ export function Flashcard({
                         textTransform: 'uppercase',
                       }}
                     >
-                      ★ Kanji
+                      {t('kanjiLabel')}
                     </Typography>
                     <Typography
                       sx={{
@@ -492,7 +494,7 @@ export function Flashcard({
                       textTransform: 'uppercase',
                     }}
                   >
-                    ★ Meaning
+                    {t('meaningLabel')}
                   </Typography>
                   <Typography
                     sx={{
@@ -525,7 +527,7 @@ export function Flashcard({
                         textTransform: 'uppercase',
                       }}
                     >
-                      ★ Example
+                      {t('exampleLabel')}
                     </Typography>
                     <SpeakButton text={stripFurigana(card.example_jp)} iconSize="0.85rem" />
                   </Box>
@@ -578,7 +580,7 @@ export function Flashcard({
                       letterSpacing: '0.06em',
                     }}
                   >
-                    JLPT {card.jlptLevel}
+                    {t('jlptLabel', { level: card.jlptLevel })}
                   </Typography>
                 )}
                 <Typography
@@ -588,7 +590,7 @@ export function Flashcard({
                     fontFamily: (t) => t.fonts.mono,
                   }}
                 >
-                  tap to flip back
+                  {t('tapToFlipBack')}
                 </Typography>
               </Box>
             </Box>
