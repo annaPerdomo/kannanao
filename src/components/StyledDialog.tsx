@@ -6,6 +6,7 @@ import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import { alpha, type SxProps, type Theme, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { type ReactNode } from 'react';
 
 interface StyledDialogProps {
@@ -40,6 +41,7 @@ export function StyledDialog({
   contentSx,
   titleId: titleIdProp,
 }: StyledDialogProps) {
+  const t = useTranslations('Common');
   const { palette } = useTheme();
   const { brand, accent } = palette;
   const titleId = titleIdProp ?? 'styled-dialog-title';
@@ -79,7 +81,7 @@ export function StyledDialog({
           size="small"
           onClick={onClose}
           disabled={closeDisabled}
-          aria-label="Close"
+          aria-label={t('close')}
           sx={{
             position: 'absolute',
             top: 14,

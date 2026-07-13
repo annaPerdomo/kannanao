@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 
+import type * as NextIntl from 'next-intl';
 import { vi } from 'vitest';
 
 // ─── Supabase env vars (must come before any module that calls createClient) ──
@@ -20,6 +21,39 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
   usePathname: () => '/',
 }));
+
+// ─── next-intl shim ──────────────────────────────────────────────────────────
+// Existing tests render components in isolation and assert on English copy, with
+// no <NextIntlClientProvider> in the tree. Rather than wrap every test, back the
+// hooks with next-intl's own non-React translator over the REAL src/messages/en.json
+// — so ICU syntax, rich text and missing-key errors behave exactly as in the app,
+// but no provider is needed. Tests that specifically exercise Japanese copy should
+// render a real provider (which this passthrough deliberately does not fight).
+vi.mock('next-intl', async () => {
+  const actual = await vi.importActual<typeof NextIntl>('next-intl');
+  const { default: messages } = await import('@/messages/en.json');
+  const locale = 'en';
+
+  // Memoize per namespace: useTranslations must return a stable `t` across
+  // renders, or components that put it in a hook dep array would loop forever.
+  const translators = new Map<string, unknown>();
+  const formatter = actual.createFormatter({ locale });
+
+  return {
+    ...actual,
+    useLocale: () => locale,
+    useMessages: () => messages,
+    useTranslations: (namespace?: string) => {
+      const key = namespace ?? '';
+      if (!translators.has(key)) {
+        translators.set(key, actual.createTranslator({ locale, messages, namespace } as never));
+      }
+      return translators.get(key);
+    },
+    useFormatter: () => formatter,
+    NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => children,
+  };
+});
 
 // ─── next/image mock ─────────────────────────────────────────────────────────
 vi.mock('next/image', () => ({
