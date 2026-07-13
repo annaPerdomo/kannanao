@@ -13,6 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 
 import { ConfirmRemoveImageDialog } from '@/components/ConfirmRemoveImageDialog';
@@ -44,6 +45,7 @@ export function ImageSection({
   onImageChange,
   onQueryChange,
 }: ImageSectionProps) {
+  const t = useTranslations('Deck.editCardDialog.imageSection');
   const theme = useTheme();
   const { brand } = theme.palette;
   const { isMemberAccount } = useAuth();
@@ -71,12 +73,10 @@ export function ImageSection({
         setPreviewUrl(encodedUrl);
         onImageChange(encodedUrl);
       } else {
-        setImageError('No image found for that query. Try a different search term.');
+        setImageError(t('noImageFoundError'));
       }
     } catch (err) {
-      setImageError(
-        err instanceof Error ? err.message : 'Failed to fetch image. Please try again.',
-      );
+      setImageError(err instanceof Error ? err.message : t('fetchImageError'));
     } finally {
       setSavingImage(false);
     }
@@ -90,9 +90,7 @@ export function ImageSection({
       setPreviewUrl(url);
       onImageChange(url);
     } catch (err) {
-      setImageError(
-        err instanceof Error ? err.message : 'Failed to upload image. Please try again.',
-      );
+      setImageError(err instanceof Error ? err.message : t('uploadImageError'));
     } finally {
       setUploading(false);
     }
@@ -119,7 +117,7 @@ export function ImageSection({
       setImageError('');
       setConfirmOpen(false);
     } catch (err) {
-      setImageError(err instanceof Error ? err.message : 'Failed to delete image.');
+      setImageError(err instanceof Error ? err.message : t('deleteImageError'));
       setConfirmOpen(false);
     } finally {
       setDeleting(false);
@@ -155,7 +153,7 @@ export function ImageSection({
           mb: 1.25,
         }}
       >
-        Card Image
+        {t('cardImageLabel')}
       </Typography>
 
       {previewUrl && (
@@ -173,11 +171,11 @@ export function ImageSection({
           <Box
             component="img"
             src={previewUrl}
-            alt="Card image preview"
+            alt={t('altCardImagePreview')}
             sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
           <UnsplashAttribution url={previewUrl} />
-          <Tooltip title="Remove image">
+          <Tooltip title={t('removeImageTooltip')}>
             <IconButton
               size="small"
               onClick={handleRemoveClick}
@@ -203,20 +201,20 @@ export function ImageSection({
           <Typography
             sx={{ fontSize: '0.75rem', color: alpha(brand[700], 0.6), fontStyle: 'italic' }}
           >
-            Images are managed by your organizer.
+            {t('membersManagedMessage')}
           </Typography>
         )
       ) : (
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
           <TextField
-            label="Image Search Query"
+            label={t('imageSearchQueryLabel')}
             value={imageQuery}
             onChange={(e) => {
               setImageQuery(e.target.value);
               setImageError('');
               onQueryChange?.(e.target.value);
             }}
-            placeholder="Phrase that describes this definition"
+            placeholder={t('imageSearchPlaceholder')}
             size="small"
             fullWidth
             slotProps={{ inputLabel: { shrink: true } }}
@@ -237,7 +235,7 @@ export function ImageSection({
             }}
           />
           <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-            <Tooltip title={previewUrl ? 'Regenerate from Unsplash' : 'Search Unsplash'}>
+            <Tooltip title={previewUrl ? t('regenerateTooltip') : t('searchTooltip')}>
               <span>
                 <Button
                   variant="outlined"
@@ -254,11 +252,11 @@ export function ImageSection({
                   }
                   sx={btnSx}
                 >
-                  {savingImage ? 'Searching...' : previewUrl ? 'Regen' : 'Fetch'}
+                  {savingImage ? t('searching') : previewUrl ? t('regen') : t('fetch')}
                 </Button>
               </span>
             </Tooltip>
-            <Tooltip title="Upload your own image">
+            <Tooltip title={t('uploadOwnImageTooltip')}>
               <span>
                 <Button
                   variant="outlined"
@@ -273,7 +271,7 @@ export function ImageSection({
                   }
                   sx={btnSx}
                 >
-                  {uploading ? 'Uploading...' : 'Upload'}
+                  {uploading ? t('uploading') : t('upload')}
                 </Button>
               </span>
             </Tooltip>

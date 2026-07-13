@@ -2,21 +2,13 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { Alert, Box, Button, Divider, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { StyledDialog } from '@/components/StyledDialog';
 import { sb } from '@/lib/supabase';
 import type { GeneratedCard } from '@/types/flashcard';
-
-const EXTRACTED_FIELDS = [
-  'word',
-  'reading',
-  'meaning',
-  'example sentence in Japanese',
-  'example sentence in English',
-  'JLPT level',
-];
 
 interface PdfImportModalProps {
   open: boolean;
@@ -25,6 +17,8 @@ interface PdfImportModalProps {
 }
 
 export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProps) {
+  const t = useTranslations('Deck.pdfImportModal');
+  const EXTRACTED_FIELDS = t.raw('extractedFields') as string[];
   const { palette } = useTheme();
   const { brand, accent } = palette;
 
@@ -37,11 +31,11 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
 
   const handleFile = (f: File) => {
     if (f.type !== 'application/pdf') {
-      setError('Please upload a PDF file.');
+      setError(t('pleaseUploadPdf'));
       return;
     }
     if (f.size > 20 * 1024 * 1024) {
-      setError('File must be under 20 MB.');
+      setError(t('fileSizeError'));
       return;
     }
     setFile(f);
@@ -60,7 +54,7 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
     new Promise((res, rej) => {
       const r = new FileReader();
       r.onload = () => res((r.result as string).split(',')[1]);
-      r.onerror = () => rej(new Error('Read failed'));
+      r.onerror = () => rej(new Error(t('readFailedError')));
       r.readAsDataURL(f);
     });
 
@@ -82,14 +76,10 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
         body: JSON.stringify({ pdfBase64 }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? 'Extraction failed');
+      if (!response.ok) throw new Error(data.error ?? t('extractionFailedFallback'));
       setExtracted(data as GeneratedCard[]);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Failed to extract cards. Please check the PDF and try again.',
-      );
+      setError(err instanceof Error ? err.message : t('extractFailedGeneric'));
     } finally {
       setExtracting(false);
     }
@@ -113,8 +103,8 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
     <StyledDialog
       open={open}
       onClose={handleClose}
-      title="📄 Import from PDF"
-      subtitle="Extract vocabulary from a document"
+      title={t('title')}
+      subtitle={t('subtitle')}
       maxWidth="sm"
       closeDisabled={extracting}
       actions={
@@ -133,7 +123,7 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
               '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
             }}
           >
-            Extract cards
+            {t('extractCards')}
           </Button>
         ) : (
           <>
@@ -142,7 +132,7 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
               onClick={() => setExtracted(null)}
               sx={{ textTransform: 'none', fontSize: '0.74rem' }}
             >
-              Re-extract
+              {t('reExtract')}
             </Button>
             <Button
               variant="contained"
@@ -157,14 +147,14 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
                 '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
               }}
             >
-              Add {extracted.length} cards to deck
+              {t('addCardsToDeck', { count: extracted.length })}
             </Button>
           </>
         )
       }
     >
       {extracting ? (
-        <Loading message="Extracting cards…" />
+        <Loading message={t('extracting')} />
       ) : (
         <>
           {/* Drop zone */}
@@ -207,17 +197,17 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
                   {file.name}
                 </Typography>
                 <Typography fontSize="0.71rem" color="text.secondary">
-                  {(file.size / 1024).toFixed(0)} KB · Click to replace
+                  {t('clickToReplace', { size: (file.size / 1024).toFixed(0) })}
                 </Typography>
               </>
             ) : (
               <>
                 <UploadFileIcon sx={{ color: alpha(brand[500], 0.5), fontSize: 28, mb: 0.75 }} />
                 <Typography fontSize="0.78rem" fontWeight={700}>
-                  Drop a PDF here
+                  {t('dropPdfHere')}
                 </Typography>
                 <Typography fontSize="0.71rem" color="text.secondary">
-                  or click to browse · PDF only · max 20 MB
+                  {t('orClickToBrowse')}
                 </Typography>
               </>
             )}
@@ -226,7 +216,7 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
           {/* Extracting fields preview */}
           <Box sx={{ mb: 1.5 }}>
             <Typography fontSize="0.68rem" color="text.disabled" sx={{ mb: 0.75 }}>
-              Fields extracted
+              {t('fieldsExtracted')}
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
               {EXTRACTED_FIELDS.map((f) => (
@@ -263,7 +253,7 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
                 color="text.secondary"
                 sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1 }}
               >
-                {extracted.length} cards extracted
+                {t('cardsExtractedCount', { count: extracted.length })}
               </Typography>
               <Box
                 sx={{
@@ -301,7 +291,7 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
                 ))}
                 {extracted.length > 20 && (
                   <Typography fontSize="0.7rem" color="text.secondary" textAlign="center">
-                    +{extracted.length - 20} more cards
+                    {t('moreCards', { count: extracted.length - 20 })}
                   </Typography>
                 )}
               </Box>

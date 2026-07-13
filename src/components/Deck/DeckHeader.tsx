@@ -16,6 +16,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
 
 import { EmojiPickerPopover } from '@/components/EmojiPickerPopover';
@@ -43,6 +44,8 @@ export function DeckHeader({
   onEmojiChange,
   readOnly,
 }: DeckHeaderProps) {
+  const t = useTranslations('Deck.deckHeader');
+  const tCommon = useTranslations('Common');
   const { brand } = useTheme().palette;
 
   const [editing, setEditing] = useState(false);
@@ -106,7 +109,7 @@ export function DeckHeader({
               size="small"
               autoComplete="off"
               disabled={renaming}
-              placeholder="Deck name"
+              placeholder={t('deckNamePlaceholder')}
               sx={{
                 flexGrow: 1,
                 '& .MuiOutlinedInput-root': {
@@ -125,10 +128,10 @@ export function DeckHeader({
               <CircularProgress size={18} sx={{ color: 'primary.main', flexShrink: 0 }} />
             ) : (
               <>
-                <Tooltip title="Save (Enter)">
+                <Tooltip title={t('saveTooltip')}>
                   <IconButton
                     size="small"
-                    aria-label="Save"
+                    aria-label={tCommon('save')}
                     onClick={commitEdit}
                     sx={{
                       width: 30,
@@ -143,10 +146,10 @@ export function DeckHeader({
                     <CheckIcon sx={{ fontSize: 15 }} />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="Cancel (Esc)">
+                <Tooltip title={t('cancelTooltip')}>
                   <IconButton
                     size="small"
-                    aria-label="Cancel"
+                    aria-label={tCommon('cancel')}
                     onClick={cancelEdit}
                     sx={{
                       width: 30,
@@ -171,7 +174,7 @@ export function DeckHeader({
             size="small"
             autoComplete="off"
             disabled={renaming}
-            placeholder="Description (optional)"
+            placeholder={t('descriptionPlaceholder')}
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: '9px',
@@ -189,7 +192,7 @@ export function DeckHeader({
     );
   }
 
-  const cardLabel = `${cardCount} card${cardCount !== 1 ? 's' : ''}`;
+  const cardLabel = t('cardCount', { count: cardCount });
 
   return (
     <>
@@ -208,9 +211,9 @@ export function DeckHeader({
                 {deck.emoji || ''}
               </Box>
             ) : (
-              <Tooltip title={deck.emoji ? 'Change emoji' : 'Add emoji'}>
+              <Tooltip title={deck.emoji ? t('changeEmojiTooltip') : t('addEmojiTooltip')}>
                 <ButtonBase
-                  aria-label={deck.emoji ? 'Change deck emoji' : 'Add deck emoji'}
+                  aria-label={deck.emoji ? t('changeDeckEmojiAria') : t('addDeckEmojiAria')}
                   onClick={(e) => setEmojiAnchor(e.currentTarget)}
                   sx={{
                     fontSize: { xs: '1.5rem', sm: '1.75rem' },
@@ -233,10 +236,10 @@ export function DeckHeader({
                   {deck.name}
                 </Typography>
                 {!readOnly && (
-                  <Tooltip title="Rename deck">
+                  <Tooltip title={t('renameDeckTooltip')}>
                     <IconButton
                       size="small"
-                      aria-label="Rename deck"
+                      aria-label={t('renameDeckAria')}
                       onClick={startEdit}
                       sx={{
                         width: 26,
@@ -291,13 +294,13 @@ export function DeckHeader({
                   }),
                 }}
               >
-                {deck.isPublic ? 'Shared' : 'Share'}
+                {deck.isPublic ? t('shared') : t('share')}
               </Button>
             )}
-            <Tooltip title={deck.pinned ? 'Unpin from home' : 'Pin to home'}>
+            <Tooltip title={deck.pinned ? t('unpinFromHome') : t('pinToHome')}>
               <IconButton
                 size="small"
-                aria-label={deck.pinned ? 'Unpin from home' : 'Pin to home'}
+                aria-label={deck.pinned ? t('unpinFromHome') : t('pinToHome')}
                 onClick={() => onPin(deck.id, !deck.pinned)}
                 sx={{
                   width: 30,

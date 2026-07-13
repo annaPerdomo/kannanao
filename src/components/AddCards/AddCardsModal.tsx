@@ -1,6 +1,7 @@
 'use client';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -28,6 +29,7 @@ export function AddCardsModal({
   onAddExisting,
   onImportPdf,
 }: AddCardsModalProps) {
+  const t = useTranslations('Deck.addCardsModal');
   const { palette } = useTheme();
   const { brand } = palette;
   const [input, setInput] = useState('');
@@ -43,8 +45,8 @@ export function AddCardsModal({
     <StyledDialog
       open={open}
       onClose={handleClose}
-      title="✨ Add Cards"
-      subtitle="Generate, copy, or import new flashcards"
+      title={t('title')}
+      subtitle={t('subtitle')}
       closeDisabled={generating}
     >
       <Box sx={{ position: 'relative' }}>
@@ -61,7 +63,7 @@ export function AddCardsModal({
               borderRadius: '0 0 20px 20px',
             }}
           >
-            <Loading message="Generating cards…" />
+            <Loading message={t('generating')} />
           </Box>
         )}
         <AddCardsSection

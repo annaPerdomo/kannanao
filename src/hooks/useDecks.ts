@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +18,7 @@ import {
 import type { Deck } from '@/types/deck';
 
 export function useDecks(enabled = true, initialDecks?: Deck[]) {
+  const t = useTranslations('Deck.useDecks');
   const [decks, setDecks] = useState<Deck[]>(initialDecks ?? []);
   const [loading, setLoading] = useState(enabled && !initialDecks);
   const { user } = useAuth();
@@ -46,26 +48,32 @@ export function useDecks(enabled = true, initialDecks?: Deck[]) {
     };
   }, [user, enabled, initialDecks]);
 
-  const createDeck = useCallback(async (name: string, description?: string): Promise<Deck> => {
-    if (!isConfigured()) {
-      showConfigBanner();
-      throw new Error('Supabase is not configured');
-    }
+  const createDeck = useCallback(
+    async (name: string, description?: string): Promise<Deck> => {
+      if (!isConfigured()) {
+        showConfigBanner();
+        throw new Error(t('notConfiguredError'));
+      }
 
-    const deck = await dbCreateDeck(name, description);
-    setDecks((prev) => [...prev, deck]);
-    return deck;
-  }, []);
+      const deck = await dbCreateDeck(name, description);
+      setDecks((prev) => [...prev, deck]);
+      return deck;
+    },
+    [t],
+  );
 
-  const deleteDeck = useCallback(async (id: string): Promise<void> => {
-    if (!isConfigured()) {
-      showConfigBanner();
-      throw new Error('Supabase is not configured');
-    }
+  const deleteDeck = useCallback(
+    async (id: string): Promise<void> => {
+      if (!isConfigured()) {
+        showConfigBanner();
+        throw new Error(t('notConfiguredError'));
+      }
 
-    await dbDeleteDeck(id);
-    setDecks((prev) => prev.filter((d) => d.id !== id));
-  }, []);
+      await dbDeleteDeck(id);
+      setDecks((prev) => prev.filter((d) => d.id !== id));
+    },
+    [t],
+  );
 
   const updateDeckCount = useCallback((deckId: string, count: number): void => {
     setDecks((prev) => prev.map((d) => (d.id === deckId ? { ...d, cardCount: count } : d)));
@@ -75,7 +83,7 @@ export function useDecks(enabled = true, initialDecks?: Deck[]) {
     async (id: string, name: string, description?: string): Promise<void> => {
       if (!isConfigured()) {
         showConfigBanner();
-        throw new Error('Supabase is not configured');
+        throw new Error(t('notConfiguredError'));
       }
 
       await dbRenameDeck(id, name, description);
@@ -86,7 +94,7 @@ export function useDecks(enabled = true, initialDecks?: Deck[]) {
         ),
       );
     },
-    [],
+    [t],
   );
 
   const updateDeckEmoji = useCallback(

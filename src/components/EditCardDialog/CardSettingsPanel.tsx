@@ -1,6 +1,7 @@
 'use client';
 import { Box, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 import type { JlptLevel, MainViewMode } from '@/types/flashcard';
 
@@ -27,15 +28,16 @@ export function CardSettingsPanel({
   word,
   reading,
 }: CardSettingsPanelProps) {
+  const t = useTranslations('Deck.editCardDialog.settingsPanel');
   const theme = useTheme();
   const { brand } = theme.palette;
   const modeField = mainViewMode === 'kanji' ? word : reading;
   const modeHint =
     mainViewMode === 'romaji'
-      ? 'Romaji pronunciation will be the card title'
+      ? t('modeHintRomaji')
       : mainViewMode === 'hiragana'
-        ? 'The hiragana reading will be the card title'
-        : 'The kanji reading will be the card title';
+        ? t('modeHintHiragana')
+        : t('modeHintKanji');
 
   const labelSx = {
     fontSize: '0.72rem',
@@ -57,7 +59,7 @@ export function CardSettingsPanel({
       {/* View Mode */}
       <Box sx={rowSx}>
         <Box>
-          <Typography sx={labelSx}>Main View Mode</Typography>
+          <Typography sx={labelSx}>{t('mainViewModeLabel')}</Typography>
           <Typography sx={{ ...descSx, transition: 'opacity 0.15s ease' }}>
             {modeHint}
             {modeField ? (
@@ -79,14 +81,14 @@ export function CardSettingsPanel({
             '& .MuiToggleButton-root': { ...tgSx['& .MuiToggleButton-root'], fontSize: '0.9rem' },
           }}
         >
-          <Tooltip title="Display romaji as the primary text" placement="top">
-            <ToggleButton value="romaji">ABC</ToggleButton>
+          <Tooltip title={t('romajiTooltip')} placement="top">
+            <ToggleButton value="romaji">{t('romajiOption')}</ToggleButton>
           </Tooltip>
-          <Tooltip title="Display hiragana as the primary text" placement="top">
-            <ToggleButton value="hiragana">{reading || 'ひ'}</ToggleButton>
+          <Tooltip title={t('hiraganaTooltip')} placement="top">
+            <ToggleButton value="hiragana">{reading || t('hiraganaFallback')}</ToggleButton>
           </Tooltip>
-          <Tooltip title="Display kanji as the primary text" placement="top">
-            <ToggleButton value="kanji">{word || '漢'}</ToggleButton>
+          <Tooltip title={t('kanjiTooltip')} placement="top">
+            <ToggleButton value="kanji">{word || t('kanjiFallback')}</ToggleButton>
           </Tooltip>
         </ToggleButtonGroup>
       </Box>
@@ -94,9 +96,9 @@ export function CardSettingsPanel({
       {/* Card Type */}
       <Box sx={rowSx}>
         <Box>
-          <Typography sx={labelSx}>Card Type</Typography>
+          <Typography sx={labelSx}>{t('cardTypeLabel')}</Typography>
           <Typography sx={descSx}>
-            {cardType === 'phrase' ? 'Multi-word expression or sentence' : 'Single vocabulary word'}
+            {cardType === 'phrase' ? t('cardTypePhraseDesc') : t('cardTypeWordDesc')}
           </Typography>
         </Box>
         <ToggleButtonGroup
@@ -108,17 +110,17 @@ export function CardSettingsPanel({
           }}
           sx={tgSx}
         >
-          <ToggleButton value="word">単語</ToggleButton>
-          <ToggleButton value="phrase">フレーズ</ToggleButton>
+          <ToggleButton value="word">{t('wordTypeOption')}</ToggleButton>
+          <ToggleButton value="phrase">{t('phraseTypeOption')}</ToggleButton>
         </ToggleButtonGroup>
       </Box>
 
       {/* JLPT Level */}
       <Box sx={rowSx}>
         <Box>
-          <Typography sx={labelSx}>JLPT Level</Typography>
+          <Typography sx={labelSx}>{t('jlptLevelLabel')}</Typography>
           <Typography sx={descSx}>
-            {jlptLevel ? `Tagged as ${jlptLevel}` : 'No level assigned'}
+            {jlptLevel ? t('jlptTagged', { level: jlptLevel }) : t('jlptNoLevel')}
           </Typography>
         </Box>
         <ToggleButtonGroup

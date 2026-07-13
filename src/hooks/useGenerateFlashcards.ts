@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import {
@@ -20,6 +21,7 @@ interface UseGenerateResult {
 }
 
 export function useGenerateFlashcards(): UseGenerateResult {
+  const t = useTranslations('Deck.useGenerateFlashcards');
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,14 +54,14 @@ export function useGenerateFlashcards(): UseGenerateResult {
 
         return withImages;
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Generation failed';
+        const msg = err instanceof Error ? err.message : t('generationFailed');
         setError(msg);
         throw err;
       } finally {
         setGenerating(false);
       }
     },
-    [],
+    [t],
   );
 
   return { generating, error, generate };

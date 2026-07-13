@@ -5,6 +5,7 @@ import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import { Box, IconButton, Popover, Tooltip, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import EmojiPicker, { type EmojiClickData, Theme } from '@/components/LazyEmojiPicker';
@@ -30,6 +31,7 @@ export function DeckCard({
   onEmojiChange,
   isOwner = true,
 }: DeckCardProps) {
+  const t = useTranslations('Deck.deckCard');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const { borderStyle: equippedBorder } = useCardBorder();
@@ -158,7 +160,7 @@ export function DeckCard({
           tabIndex={0}
           onClick={() => onOpen(deck.id)}
           onKeyDown={handleKeyDown}
-          aria-label={`Open deck: ${deck.name}`}
+          aria-label={t('openDeckAria', { name: deck.name })}
           sx={{
             bgcolor: brand[50],
             borderRadius: '10px',
@@ -189,7 +191,7 @@ export function DeckCard({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
               }}
             >
-              Card Deck
+              {t('cardDeck')}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
               <Typography
@@ -200,7 +202,7 @@ export function DeckCard({
                   lineHeight: 1,
                 }}
               >
-                XP
+                {t('xp')}
               </Typography>
               <Typography
                 sx={{
@@ -282,7 +284,7 @@ export function DeckCard({
                   fontFamily: (t) => t.fonts.mono,
                 }}
               >
-                ★ Cards
+                {t('starCards')}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography
@@ -293,7 +295,7 @@ export function DeckCard({
                     lineHeight: 1.3,
                   }}
                 >
-                  {deck.cardCount} cards
+                  {t('cardsCount', { count: deck.cardCount })}
                 </Typography>
               </Box>
             </Box>
@@ -314,10 +316,10 @@ export function DeckCard({
             <Box sx={{ display: 'flex', gap: 0.25 }} onClick={(e) => e.stopPropagation()}>
               {onEmojiChange && (
                 <>
-                  <Tooltip title={deck.emoji ? 'Change emoji' : 'Add emoji'}>
+                  <Tooltip title={deck.emoji ? t('changeEmojiTooltip') : t('addEmojiTooltip')}>
                     <IconButton
                       size="small"
-                      aria-label={deck.emoji ? 'Change deck emoji' : 'Add deck emoji'}
+                      aria-label={deck.emoji ? t('changeDeckEmojiAria') : t('addDeckEmojiAria')}
                       onClick={(e) => {
                         e.stopPropagation();
                         setEmojiAnchor(e.currentTarget);
@@ -407,7 +409,7 @@ export function DeckCard({
                             },
                           }}
                         >
-                          Remove emoji
+                          {t('removeEmoji')}
                         </Box>
                       </Box>
                     )}
@@ -415,10 +417,10 @@ export function DeckCard({
                 </>
               )}
               {onPin && (
-                <Tooltip title={deck.pinned ? 'Unpin from home' : 'Pin to home'}>
+                <Tooltip title={deck.pinned ? t('unpinFromHome') : t('pinToHome')}>
                   <IconButton
                     size="small"
-                    aria-label={deck.pinned ? 'Unpin from home' : 'Pin to home'}
+                    aria-label={deck.pinned ? t('unpinFromHome') : t('pinToHome')}
                     onClick={(e) => {
                       e.stopPropagation();
                       onPin(deck.id, !deck.pinned);
@@ -446,10 +448,10 @@ export function DeckCard({
                 </Tooltip>
               )}
               {isOwner && onShare && (
-                <Tooltip title={deck.isPublic ? 'Shared' : 'Share deck'}>
+                <Tooltip title={deck.isPublic ? t('shared') : t('shareDeck')}>
                   <IconButton
                     size="small"
-                    aria-label={deck.isPublic ? 'Shared' : 'Share deck'}
+                    aria-label={deck.isPublic ? t('shared') : t('shareDeck')}
                     onClick={(e) => {
                       e.stopPropagation();
                       onShare(deck.id);
@@ -498,10 +500,10 @@ export function DeckCard({
                 </Tooltip>
               )}
               {isOwner && (
-                <Tooltip title="Delete deck">
+                <Tooltip title={t('deleteDeck')}>
                   <IconButton
                     size="small"
-                    aria-label="Delete deck"
+                    aria-label={t('deleteDeck')}
                     onClick={(e) => {
                       e.stopPropagation();
                       onDelete(deck.id);

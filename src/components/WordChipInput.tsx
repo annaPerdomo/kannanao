@@ -2,6 +2,7 @@
 import { Box, Chip, TextField } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { type KeyboardEvent } from 'react';
 
 interface WordChipInputProps {
@@ -21,6 +22,7 @@ export function WordChipInput({
   disabled = false,
   inputId = 'word-chip-input',
 }: WordChipInputProps) {
+  const t = useTranslations('Deck.wordChipInput');
   const theme = useTheme();
   const { brand } = theme.palette;
 
@@ -82,7 +84,7 @@ export function WordChipInput({
         value={input}
         onChange={(e) => !disabled && onInputChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={words.length === 0 ? 'Type words or phrases, press Enter…' : ''}
+        placeholder={words.length === 0 ? t('placeholder') : ''}
         variant="standard"
         size="small"
         disabled={disabled}

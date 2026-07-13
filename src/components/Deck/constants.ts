@@ -2,8 +2,8 @@ import type { PracticeMode } from '@/types/app';
 
 export interface PracticeTileConfig {
   mode: PracticeMode;
-  label: string;
-  description: string;
+  labelKey: string;
+  descriptionKey: string;
   emoji: string;
   watermark: string;
   color: string;
@@ -13,11 +13,12 @@ export interface PracticeTileConfig {
 }
 
 // Practice mode tiles use intentional semantic colors (purple, cyan, amber) for visual distinction
+// labelKey/descriptionKey are looked up in the Deck.practiceModes translation namespace.
 export const PRACTICE_CONFIG: PracticeTileConfig[] = [
   {
     mode: 'match',
-    label: 'Match',
-    description: 'Pair Japanese to English',
+    labelKey: 'match.label',
+    descriptionKey: 'match.description',
     emoji: '🎯',
     watermark: '合',
     color: '#6D28D9',
@@ -27,8 +28,8 @@ export const PRACTICE_CONFIG: PracticeTileConfig[] = [
   },
   {
     mode: 'fill',
-    label: 'Fill in Blank',
-    description: 'Complete the sentence',
+    labelKey: 'fill.label',
+    descriptionKey: 'fill.description',
     emoji: '✏️',
     watermark: '書',
     color: '#0E7490',
@@ -38,8 +39,8 @@ export const PRACTICE_CONFIG: PracticeTileConfig[] = [
   },
   {
     mode: 'recall',
-    label: 'Guess It!',
-    description: 'Pick the right meaning',
+    labelKey: 'recall.label',
+    descriptionKey: 'recall.description',
     emoji: '🌟',
     watermark: '思',
     color: '#B45309',
@@ -49,8 +50,8 @@ export const PRACTICE_CONFIG: PracticeTileConfig[] = [
   },
   {
     mode: 'kotoba-bubble',
-    label: 'Sentence Builder',
-    description: 'Pick the right particle to complete each sentence',
+    labelKey: 'kotobaBubble.label',
+    descriptionKey: 'kotobaBubble.description',
     emoji: '🫧',
     watermark: '文',
     color: '#0891B2',
@@ -60,8 +61,8 @@ export const PRACTICE_CONFIG: PracticeTileConfig[] = [
   },
   {
     mode: 'listen',
-    label: 'Listen',
-    description: 'Hear the word, pick what it means',
+    labelKey: 'listen.label',
+    descriptionKey: 'listen.description',
     emoji: '🎧',
     watermark: '聞',
     color: '#4338CA',
@@ -71,8 +72,8 @@ export const PRACTICE_CONFIG: PracticeTileConfig[] = [
   },
   {
     mode: 'quiz',
-    label: 'Quiz',
-    description: 'Show what you know — one try each',
+    labelKey: 'quiz.label',
+    descriptionKey: 'quiz.description',
     emoji: '📝',
     watermark: '試',
     color: '#DB2777',

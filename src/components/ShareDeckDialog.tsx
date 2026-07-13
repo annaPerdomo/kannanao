@@ -12,6 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
@@ -26,6 +27,8 @@ interface Props {
 }
 
 export function ShareDeckDialog({ open, onClose, deckId, deckName }: Props) {
+  const t = useTranslations('Deck.shareDeckDialog');
+  const tCommon = useTranslations('Common');
   const { palette } = useTheme();
   const { accent } = palette;
 
@@ -71,7 +74,7 @@ export function ShareDeckDialog({ open, onClose, deckId, deckName }: Props) {
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Share Deck"
+      title={t('title')}
       subtitle={deckName}
       icon={<IosShareIcon sx={{ color: accent[600], fontSize: 20 }} />}
       actions={
@@ -79,13 +82,13 @@ export function ShareDeckDialog({ open, onClose, deckId, deckName }: Props) {
           onClick={onClose}
           sx={{ color: 'text.secondary', textTransform: 'none', fontWeight: 700 }}
         >
-          Done
+          {tCommon('done')}
         </Button>
       }
     >
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
         <TextField
-          placeholder="Username"
+          placeholder={t('usernamePlaceholder')}
           value={username}
           onChange={(e) => {
             setUsername(e.target.value);
@@ -120,7 +123,7 @@ export function ShareDeckDialog({ open, onClose, deckId, deckName }: Props) {
             )
           }
         >
-          Share
+          {t('shareButton')}
         </Button>
       </Box>
 
@@ -133,7 +136,7 @@ export function ShareDeckDialog({ open, onClose, deckId, deckName }: Props) {
       <Divider sx={{ my: 2 }} />
 
       <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>
-        Shared with
+        {t('sharedWithLabel')}
       </Typography>
 
       {loading ? (
@@ -146,7 +149,7 @@ export function ShareDeckDialog({ open, onClose, deckId, deckName }: Props) {
           color="text.secondary"
           sx={{ textAlign: 'center', py: 2, fontSize: '0.82rem' }}
         >
-          Not shared with anyone yet
+          {t('notSharedYet')}
         </Typography>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
@@ -176,7 +179,7 @@ export function ShareDeckDialog({ open, onClose, deckId, deckName }: Props) {
               <IconButton
                 size="small"
                 onClick={() => handleRemove(share.id)}
-                aria-label="Remove share"
+                aria-label={t('removeShareAria')}
                 sx={{
                   color: alpha('#dc2626', 0.5),
                   '&:hover': { color: '#dc2626', bgcolor: 'rgba(220,38,38,0.08)' },

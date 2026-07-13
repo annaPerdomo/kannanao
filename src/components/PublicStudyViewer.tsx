@@ -7,6 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 import { alpha, createTheme, ThemeProvider } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { IndexCard } from '@/components/IndexCard';
@@ -84,6 +85,7 @@ const SPARKLE_ITEMS = [
 ];
 
 function CelebrationOverlay({ cardCount, onReset }: { cardCount: number; onReset: () => void }) {
+  const t = useTranslations('Study.publicViewer');
   useEffect(() => {
     const t = setTimeout(onReset, 3600);
     return () => clearTimeout(t);
@@ -160,10 +162,10 @@ function CelebrationOverlay({ cardCount, onReset }: { cardCount: number; onReset
         }}
       >
         <Typography sx={{ mt: 1.5, fontSize: '1.7rem', fontWeight: 900, color: '#fff' }}>
-          すごい！
+          {t('celebrationHeading')}
         </Typography>
         <Typography sx={{ mt: 0.5, fontSize: '0.95rem', color: 'rgba(255,255,255,0.88)' }}>
-          You reviewed all <b>{cardCount}</b> cards!
+          {t.rich('reviewedAllCards', { count: cardCount, b: (chunks) => <b>{chunks}</b> })}
         </Typography>
         <Typography
           sx={{
@@ -171,10 +173,10 @@ function CelebrationOverlay({ cardCount, onReset }: { cardCount: number; onReset
             fontSize: '0.68rem',
             color: 'rgba(255,255,255,0.45)',
             letterSpacing: '0.1em',
-            fontFamily: (t) => t.fonts.mono,
+            fontFamily: (theme) => theme.fonts.mono,
           }}
         >
-          TAP TO REVIEW AGAIN
+          {t('tapToReviewAgain')}
         </Typography>
       </Box>
     </Box>
@@ -182,6 +184,7 @@ function CelebrationOverlay({ cardCount, onReset }: { cardCount: number; onReset
 }
 
 export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
+  const t = useTranslations('Study.publicViewer');
   const [cards, setCards] = useState<FlashcardType[]>([]);
   const [deckName, setDeckName] = useState('Flashcards');
   const [deckEmoji, setDeckEmoji] = useState('📘');
@@ -277,9 +280,9 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
         setDeckEmoji(data.deck.emoji ?? '📘');
         setCards(data.cards.map(dbCardToApp));
       })
-      .catch(() => setError('Failed to load deck'))
+      .catch(() => setError(t('failedToLoadDeck')))
       .finally(() => setLoading(false));
-  }, [deckId]);
+  }, [deckId, t]);
 
   // Fire "view" once when the deck finishes loading successfully
   useEffect(() => {
@@ -376,7 +379,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
   if (loading)
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
-        <Loading message="Loading cards…" />
+        <Loading message={t('loadingCards')} />
       </Box>
     );
 
@@ -392,7 +395,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
         }}
       >
         <Typography color="text.secondary" sx={{ fontSize: '0.9rem' }}>
-          This deck is not available for embedding.
+          {t('notAvailableForEmbed')}
         </Typography>
       </Box>
     );
@@ -409,7 +412,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
         }}
       >
         <Typography color="text.secondary" sx={{ fontSize: '0.9rem' }}>
-          No cards in this deck yet.
+          {t('noCardsYet')}
         </Typography>
       </Box>
     );
@@ -511,7 +514,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
                 gap: '3px',
               })}
             >
-              ◻ Plain
+              {t('plainThemeOption')}
             </Box>
           </Box>
         </Box>
@@ -655,7 +658,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
               <ArrowBackIcon fontSize="small" />
             </IconButton>
             <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: '0.08em' }}>
-              {cardTheme !== 'plain' ? 'TAP CARD TO FLIP' : 'CLICK CARD TO FLIP'}
+              {cardTheme !== 'plain' ? t('tapCardToFlip') : t('clickCardToFlip')}
             </Typography>
             <IconButton
               onClick={() => (index === cards.length - 1 ? triggerCelebration() : navigate(1))}
@@ -689,11 +692,11 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
               sx={{
                 fontSize: '0.6rem',
                 color: 'text.disabled',
-                fontFamily: (t) => t.fonts.mono,
+                fontFamily: (theme) => theme.fonts.mono,
                 letterSpacing: '0.06em',
               }}
             >
-              Powered by
+              {t('poweredBy')}
             </Typography>
             <Typography
               component="a"
@@ -703,14 +706,14 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
               sx={{
                 fontSize: '0.6rem',
                 color: 'primary.main',
-                fontFamily: (t) => t.fonts.mono,
+                fontFamily: (theme) => theme.fonts.mono,
                 letterSpacing: '0.06em',
                 textDecoration: 'none',
                 fontWeight: 700,
                 '&:hover': { textDecoration: 'underline' },
               }}
             >
-              Kannanao
+              {t('brandName')}
             </Typography>
           </Box>
           <Typography
@@ -721,13 +724,13 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
             sx={{
               fontSize: '0.62rem',
               color: 'text.disabled',
-              fontFamily: (t) => t.fonts.mono,
+              fontFamily: (theme) => theme.fonts.mono,
               letterSpacing: '0.06em',
               textDecoration: 'none',
               '&:hover': { color: 'text.secondary', textDecoration: 'underline' },
             }}
           >
-            Made by Variations on a String
+            {t('madeBy')}
           </Typography>
         </Box>
 

@@ -11,45 +11,45 @@ export const JLPT_LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
 export const FIELD_CONFIG: {
   key: keyof EditableFields;
-  label: string;
-  placeholder: string;
+  labelKey: string;
+  placeholderKey: string;
   multiline?: boolean;
   rows?: number;
-  helperText?: string;
+  helperTextKey?: string;
 }[] = [
   {
     key: 'word',
-    label: '日本語 (Japanese Word)',
-    placeholder: 'e.g. 猫',
-    helperText: 'The Japanese word or phrase (kanji)',
+    labelKey: 'word.label',
+    placeholderKey: 'word.placeholder',
+    helperTextKey: 'word.helperText',
   },
   {
     key: 'reading',
-    label: 'Reading (Furigana)',
-    placeholder: 'e.g. ねこ',
-    helperText: 'Hiragana/katakana reading',
+    labelKey: 'reading.label',
+    placeholderKey: 'reading.placeholder',
+    helperTextKey: 'reading.helperText',
   },
   {
     key: 'meaning',
-    label: 'Meaning (English)',
-    placeholder: 'e.g. cat',
-    helperText: 'English translation',
+    labelKey: 'meaning.label',
+    placeholderKey: 'meaning.placeholder',
+    helperTextKey: 'meaning.helperText',
   },
   {
     key: 'example_jp',
-    label: 'Example Sentence (JP)',
-    placeholder: 'e.g. 猫が好きです。',
+    labelKey: 'exampleJp.label',
+    placeholderKey: 'exampleJp.placeholder',
     multiline: true,
     rows: 2,
-    helperText: 'Japanese example sentence',
+    helperTextKey: 'exampleJp.helperText',
   },
   {
     key: 'example_en',
-    label: 'Example Sentence (EN)',
-    placeholder: 'e.g. I like cats.',
+    labelKey: 'exampleEn.label',
+    placeholderKey: 'exampleEn.placeholder',
     multiline: true,
     rows: 2,
-    helperText: 'English translation of example',
+    helperTextKey: 'exampleEn.helperText',
   },
 ];
 

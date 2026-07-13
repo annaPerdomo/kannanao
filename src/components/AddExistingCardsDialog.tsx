@@ -13,6 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
@@ -65,6 +66,8 @@ function CardThumbnail({ card }: { card: Flashcard }) {
 }
 
 export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, onConfirm }: Props) {
+  const t = useTranslations('Deck.addExistingCardsDialog');
+  const tCommon = useTranslations('Common');
   const { palette } = useTheme();
   const { brand } = palette;
 
@@ -127,15 +130,15 @@ export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, on
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Add Existing Cards"
-      subtitle="Pick cards from your other decks — they'll be copied here"
+      title={t('title')}
+      subtitle={t('subtitle')}
       icon={<LibraryAddIcon sx={{ color: brand[700], fontSize: 22 }} />}
       maxWidth="sm"
       paperSx={{ maxHeight: '80vh' }}
       actions={
         <>
           <Button onClick={onClose} sx={{ color: 'text.secondary', textTransform: 'none' }}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             onClick={handleConfirm}
@@ -152,15 +155,13 @@ export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, on
             }}
           >
             {saving ? <CircularProgress size={16} sx={{ color: brand[50], mr: 1 }} /> : null}
-            {saving
-              ? 'Copying…'
-              : `Copy ${selected.size > 0 ? selected.size : ''} card${selected.size !== 1 ? 's' : ''}`}
+            {saving ? t('copying') : t('copyButton', { count: selected.size })}
           </Button>
         </>
       }
     >
       <TextField
-        placeholder="Search word, reading, meaning…"
+        placeholder={t('searchPlaceholder')}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         fullWidth
@@ -183,8 +184,8 @@ export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, on
         >
           <Typography variant="caption" color="text.secondary">
             {selected.size > 0
-              ? `${selected.size} selected`
-              : `${filtered.length} card${filtered.length !== 1 ? 's' : ''}`}
+              ? t('selectedCount', { count: selected.size })
+              : t('cardCount', { count: filtered.length })}
           </Typography>
           <Button
             size="small"
@@ -197,7 +198,7 @@ export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, on
               minWidth: 0,
             }}
           >
-            {allFilteredSelected ? 'Deselect all' : 'Select all'}
+            {allFilteredSelected ? t('deselectAll') : t('selectAll')}
           </Button>
         </Box>
       )}
@@ -210,7 +211,7 @@ export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, on
         </Box>
       ) : filtered.length === 0 ? (
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-          {allCards.length === 0 ? 'No cards in other decks yet' : 'No cards match your search'}
+          {allCards.length === 0 ? t('emptyNoCards') : t('emptyNoMatch')}
         </Typography>
       ) : (
         <Box

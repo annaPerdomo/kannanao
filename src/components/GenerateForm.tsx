@@ -3,6 +3,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { Alert, Box, Button, Chip, CircularProgress, TextField, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { type KeyboardEvent, useState } from 'react';
 
 interface GenerateFormProps {
@@ -12,6 +13,7 @@ interface GenerateFormProps {
 }
 
 export function GenerateForm({ onGenerate, generating, error }: GenerateFormProps) {
+  const t = useTranslations('Deck.generateForm');
   const theme = useTheme();
   const { brand } = theme.palette;
 
@@ -73,7 +75,7 @@ export function GenerateForm({ onGenerate, generating, error }: GenerateFormProp
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={words.length === 0 ? 'Type a word or phrase…' : ''}
+          placeholder={words.length === 0 ? t('wordPlaceholder') : ''}
           variant="standard"
           size="small"
           sx={{
@@ -112,14 +114,14 @@ export function GenerateForm({ onGenerate, generating, error }: GenerateFormProp
         }
         sx={{ borderRadius: '9px', py: '8px' }}
       >
-        {generating ? 'Generating…' : 'Generate Cards'}
+        {generating ? t('generating') : t('generateCards')}
       </Button>
 
       {words.length > 0 && (
         <Typography
           sx={{ mt: 1, textAlign: 'center', fontSize: '0.67rem', color: 'text.secondary' }}
         >
-          {words.length} item{words.length > 1 ? 's' : ''} queued
+          {t('itemsQueued', { count: words.length })}
         </Typography>
       )}
     </Box>

@@ -3,6 +3,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Box, Button, Chip, IconButton, LinearProgress, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ComboChip } from '@/components/ComboChip';
@@ -91,11 +92,13 @@ export default function FlipStudy({
   sessionDeckId,
   onBack,
   loading = false,
-  loadingMessage = 'Loading…',
+  loadingMessage,
   emptyState,
   completionSubheading,
   controller,
 }: FlipStudyProps) {
+  const t = useTranslations('Study.flipStudy');
+  const tCommon = useTranslations('Common');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const { equipped } = useShop();
@@ -245,7 +248,7 @@ export default function FlipStudy({
   if (loading) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
-        <Loading message={loadingMessage} />
+        <Loading message={loadingMessage ?? tCommon('loading')} />
       </Box>
     );
   }
@@ -263,10 +266,10 @@ export default function FlipStudy({
         }}
       >
         <Button startIcon={<ArrowBackIcon />} onClick={handleBack}>
-          Back
+          {tCommon('back')}
         </Button>
         <Typography color="text.secondary" sx={{ mt: 3 }}>
-          Nothing to study here yet.
+          {t('emptyMessage')}
         </Typography>
       </Box>
     );
@@ -287,7 +290,7 @@ export default function FlipStudy({
       <PageHeader
         title={title}
         onBack={handleBack}
-        badge={badge ?? `${cards.length} cards`}
+        badge={badge ?? t('cardsBadge', { count: cards.length })}
         compact
         mb={3}
       />
@@ -310,7 +313,7 @@ export default function FlipStudy({
         />
         <ComboChip count={comboCount} />
         <Chip
-          label={`${index + 1} / ${cards.length}`}
+          label={t('progressLabel', { current: index + 1, total: cards.length })}
           size="small"
           sx={{
             bgcolor: alpha(brand[300], 0.18),
@@ -438,12 +441,12 @@ export default function FlipStudy({
             >
               <Box
                 component="span"
-                sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.15rem', fontWeight: 700 }}
+                sx={{ fontFamily: (theme) => theme.fonts.jp, fontSize: '1.15rem', fontWeight: 700 }}
               >
-                まだ
+                {t('stillLearningJp')}
               </Box>
               <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
-                Still learning
+                {t('stillLearning')}
               </Box>
             </Box>
           </Button>
@@ -473,16 +476,16 @@ export default function FlipStudy({
               <Box
                 component="span"
                 sx={{
-                  fontFamily: (t) => t.fonts.jp,
+                  fontFamily: (theme) => theme.fonts.jp,
                   fontSize: '1.15rem',
                   fontWeight: 700,
                   '& rt': { fontSize: '0.6em', opacity: 0.9, fontWeight: 600 },
                 }}
               >
-                <FuriganaText text="{知|し}ってた！" showFurigana />
+                <FuriganaText text={t('gotItJp')} showFurigana />
               </Box>
               <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
-                Got it
+                {t('gotIt')}
               </Box>
             </Box>
           </Button>
@@ -502,7 +505,7 @@ export default function FlipStudy({
         <IconButton
           onClick={() => navigate(-1)}
           disabled={index === 0 || navigating}
-          aria-label="Previous card"
+          aria-label={t('previousCardAria')}
           sx={{
             border: `1px solid ${alpha(brand[300], 0.45)}`,
             bgcolor: brand[50],
@@ -513,13 +516,13 @@ export default function FlipStudy({
         </IconButton>
 
         <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: '0.08em' }}>
-          {flipped ? 'HOW DID YOU DO?' : 'TAP CARD TO FLIP'}
+          {flipped ? t('howDidYouDo') : t('tapCardToFlip')}
         </Typography>
 
         <IconButton
           onClick={() => navigate(1)}
           disabled={index === cards.length - 1 || navigating}
-          aria-label="Next card"
+          aria-label={t('nextCardAria')}
           sx={{
             border: `1px solid ${alpha(brand[300], 0.45)}`,
             bgcolor: brand[50],
@@ -533,7 +536,7 @@ export default function FlipStudy({
       {index === cards.length - 1 && !embedded && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
           <Button variant="outlined" onClick={() => setShowCelebration(true)}>
-            Finish Session ✨
+            {t('finishSession')}
           </Button>
         </Box>
       )}
@@ -541,7 +544,7 @@ export default function FlipStudy({
       {index === cards.length - 1 && embedded && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
           <Button variant="outlined" onClick={() => controller?.onComplete()}>
-            Next round →
+            {t('nextRound')}
           </Button>
         </Box>
       )}
@@ -555,7 +558,9 @@ export default function FlipStudy({
             <CelebrationScreen
               heading={praise.jp}
               headingEn={praise.en}
-              subheading={completionSubheading ?? `You studied all ${cards.length} cards!`}
+              subheading={
+                completionSubheading ?? t('completionSubheading', { count: cards.length })
+              }
               mode="study"
               onExit={handleBack}
             />

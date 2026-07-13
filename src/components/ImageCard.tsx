@@ -4,6 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { EditCardDialog } from '@/components/EditCardDialog';
@@ -22,6 +23,7 @@ interface ImageCardProps {
 }
 
 export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps) {
+  const t = useTranslations('Deck.imageCard');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const { borderStyle: equippedBorder } = useCardBorder();
@@ -44,7 +46,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
     : `linear-gradient(135deg, ${brand[400]} 0%, ${brand[600]} 100%)`;
   const typeBg = isKanji ? accent[50] : brand[50];
   const typeAccent = isKanji ? accent[500] : brand[500];
-  const modeLabel = isKanji ? '漢字' : isRomaji ? 'ABC' : 'かな';
+  const modeLabel = isKanji ? t('modeKanji') : isRomaji ? t('modeRomaji') : t('modeHiragana');
 
   return (
     <>
@@ -132,7 +134,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                   textShadow: '0 1px 3px rgba(0,0,0,0.2)',
                 }}
               >
-                {isPhrase ? 'フレーズ' : '単語'}
+                {isPhrase ? t('phraseTypeLabel') : t('wordTypeLabel')}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
@@ -144,7 +146,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                   lineHeight: 1,
                 }}
               >
-                XP
+                {t('xp')}
               </Typography>
               <Typography
                 sx={{
@@ -296,7 +298,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                   fontFamily: (t) => t.fonts.mono,
                 }}
               >
-                ★ Meaning
+                {t('meaningLabel')}
               </Typography>
               <Typography
                 sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#1A1A1A', lineHeight: 1.3 }}
@@ -329,7 +331,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                       fontFamily: (t) => t.fonts.mono,
                     }}
                   >
-                    * SAMPLE SENTENCE
+                    {t('sampleSentenceLabel')}
                   </Typography>
                   <SpeakButton text={stripFurigana(localCard.example_jp)} iconSize="0.75rem" />
                 </Box>
@@ -380,7 +382,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                   letterSpacing: '0.06em',
                 }}
               >
-                JLPT {localCard.jlptLevel}
+                {t('jlptLabel', { level: localCard.jlptLevel })}
               </Typography>
             )}
             <Typography
@@ -411,10 +413,10 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
               zIndex: 10,
             }}
           >
-            <Tooltip title="Edit card">
+            <Tooltip title={t('editCardTooltip')}>
               <IconButton
                 size="small"
-                aria-label="Edit card"
+                aria-label={t('editCardTooltip')}
                 onClick={() => setEditOpen(true)}
                 sx={{
                   width: 26,
@@ -429,10 +431,10 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                 <EditIcon sx={{ fontSize: 13 }} />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Delete card">
+            <Tooltip title={t('deleteCardTooltip')}>
               <IconButton
                 size="small"
-                aria-label="Delete card"
+                aria-label={t('deleteCardTooltip')}
                 onClick={() => onDelete(localCard.id)}
                 sx={{
                   width: 26,
