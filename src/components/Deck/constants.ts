@@ -59,6 +59,17 @@ export const PRACTICE_CONFIG: PracticeTileConfig[] = [
     shadowColor: 'rgba(8,145,178,0.22)',
   },
   {
+    mode: 'listen',
+    label: 'Listen',
+    description: 'Hear the word, pick what it means',
+    emoji: '🎧',
+    watermark: '聞',
+    color: '#4338CA',
+    bg: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)',
+    border: 'rgba(129,140,248,0.6)',
+    shadowColor: 'rgba(67,56,202,0.22)',
+  },
+  {
     mode: 'quiz',
     label: 'Quiz',
     description: 'Show what you know — one try each',

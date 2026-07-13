@@ -11,6 +11,7 @@ const MODE_EMOJI: Record<PracticeMode, string> = {
   recall: '🌟',
   'kotoba-bubble': '🫧',
   quiz: '📝',
+  listen: '🎧',
 };
 
 interface BatchPickerProps {
