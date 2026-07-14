@@ -4,6 +4,7 @@ import DoneAllIcon from '@mui/icons-material/DoneAll';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
@@ -11,7 +12,7 @@ import { useState } from 'react';
 import { EmojiPickerPopover } from '@/components/EmojiPickerPopover';
 import type { DirectMessage } from '@/hooks/useDirectMessages';
 
-import { timeAgo } from './constants';
+import { splitLinks, timeAgo } from './constants';
 
 interface MessageBubbleProps {
   message: DirectMessage;
@@ -154,11 +155,25 @@ export function MessageBubble({
                 lineHeight: 1.45,
                 color: 'text.primary',
                 wordBreak: 'break-word',
-                px: message.image_url ? 1 : 0,
-                pt: message.image_url ? 0.5 : 0,
+                px: message.image_url || message.video_url ? 1 : 0,
+                pt: message.image_url || message.video_url ? 0.5 : 0,
               }}
             >
-              {message.message}
+              {splitLinks(message.message).map((seg, i) =>
+                seg.isLink ? (
+                  <Link
+                    key={i}
+                    href={seg.text}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{ color: isMine ? brand[800] : brand[700], fontWeight: 700 }}
+                  >
+                    {seg.text}
+                  </Link>
+                ) : (
+                  <span key={i}>{seg.text}</span>
+                ),
+              )}
             </Typography>
           )}
           <Box
