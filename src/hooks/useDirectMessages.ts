@@ -50,6 +50,7 @@ export interface DirectMessage {
   recipient_id: string;
   message: string | null;
   image_url?: string | null;
+  video_url?: string | null;
   reactions?: Record<string, string[]> | null;
   read_at: string | null;
   created_at: string;
@@ -377,11 +378,11 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
   }, [user, memberId, fetchMessages, refreshUnreadCount]);
 
   const sendMessage = useCallback(
-    async (recipientId: string, message: string, imageUrl?: string) => {
+    async (recipientId: string, message: string, imageUrl?: string, videoUrl?: string) => {
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-        body: JSON.stringify({ recipientId, message: message || undefined, imageUrl }),
+        body: JSON.stringify({ recipientId, message: message || undefined, imageUrl, videoUrl }),
       });
       if (!res.ok) {
         const json = await res.json().catch(() => null);

@@ -275,6 +275,31 @@ describe('useDirectMessages', () => {
     expect(result.current.messages[0].id).toBe('d-new');
   });
 
+  it('forwards videoUrl in the POST body', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
+    const { result } = renderHook(() => useDirectMessages());
+    await act(async () => {
+      await result.current.ensureLoaded();
+    });
+
+    const newMsg = {
+      id: 'd-new-2',
+      sender_id: 'm1',
+      recipient_id: 'org1',
+      video_url: 'https://x/a.mp4',
+    };
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => newMsg });
+
+    await act(async () => {
+      await result.current.sendMessage('org1', '', undefined, 'https://x/a.mp4');
+    });
+
+    const postCall = mockFetch.mock.calls[1];
+    const body = JSON.parse(postCall[1].body);
+    expect(body.videoUrl).toBe('https://x/a.mp4');
+    expect(result.current.messages[0].id).toBe('d-new-2');
+  });
+
   it('throws when send fails', async () => {
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
     const { result } = renderHook(() => useDirectMessages());

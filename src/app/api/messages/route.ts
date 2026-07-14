@@ -1,5 +1,6 @@
 import { after, type NextRequest, NextResponse } from 'next/server';
 
+import { MAX_CHAT_VIDEO_SIZE } from '@/lib/chatMedia';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../_lib/rateLimit';
@@ -24,26 +25,39 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
   }
 
-  const { recipientId, message, imageUrl } = body as {
+  const { recipientId, message, imageUrl, videoUrl } = body as {
     recipientId: string;
     message: string;
     imageUrl?: string;
+    videoUrl?: string;
   };
 
-  if (!recipientId || (!message?.trim() && !imageUrl)) {
+  if (!recipientId || (!message?.trim() && !imageUrl && !videoUrl)) {
     return NextResponse.json(
-      { error: 'recipientId and at least one of message or imageUrl are required.' },
+      { error: 'recipientId and at least one of message, imageUrl, or videoUrl are required.' },
       { status: 400 },
     );
   }
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
+
   // Validate imageUrl points to our Supabase Storage bucket
   if (imageUrl) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
     const allowedPrefix = `${supabaseUrl}/storage/v1/object/public/card-images/chat/`;
     if (!imageUrl.startsWith(allowedPrefix)) {
       return NextResponse.json(
         { error: 'imageUrl must be a valid uploaded chat image.' },
+        { status: 400 },
+      );
+    }
+  }
+
+  // Validate videoUrl points to our Supabase Storage bucket
+  const videoBucketPrefix = `${supabaseUrl}/storage/v1/object/public/card-images/`;
+  if (videoUrl) {
+    if (!videoUrl.startsWith(`${videoBucketPrefix}chat-video/`)) {
+      return NextResponse.json(
+        { error: 'videoUrl must be a valid uploaded chat video.' },
         { status: 400 },
       );
     }
@@ -54,6 +68,24 @@ export async function POST(req: NextRequest) {
   }
 
   const sb = getServiceSupabase();
+
+  // The client checks file size before uploading, but that's only a UX nicety
+  // — a client that skips it (or a stale build) can still push bytes straight
+  // to Storage via the signed URL. Re-check the real, storage-reported size
+  // here (not `Content-Length` off the CDN, which isn't guaranteed present)
+  // before the message is allowed to reference it, so an oversized upload is
+  // rejected with a clear reason instead of silently succeeding.
+  if (videoUrl) {
+    const objectPath = videoUrl.slice(videoBucketPrefix.length); // e.g. "chat-video/uuid.mp4"
+    const dir = objectPath.slice(0, objectPath.lastIndexOf('/'));
+    const filename = objectPath.slice(objectPath.lastIndexOf('/') + 1);
+    const { data: listing } = await sb.storage.from('card-images').list(dir, { search: filename });
+    const size = listing?.find((f) => f.name === filename)?.metadata?.size;
+    if (!size || size > MAX_CHAT_VIDEO_SIZE) {
+      await sb.storage.from('card-images').remove([objectPath]);
+      return NextResponse.json({ error: 'Video must be under 20 MB.' }, { status: 400 });
+    }
+  }
 
   // Validate sender↔recipient relationship
   if (sender.account_type === 'member') {
@@ -99,6 +131,7 @@ export async function POST(req: NextRequest) {
   };
   if (message?.trim()) insertRow.message = message.trim().slice(0, 500);
   if (imageUrl) insertRow.image_url = imageUrl;
+  if (videoUrl) insertRow.video_url = videoUrl;
 
   // Return the row with the same profile joins as GET so client caches that
   // prepend it can resolve display names without a refetch.
@@ -123,12 +156,13 @@ export async function POST(req: NextRequest) {
   // promise gets frozen with the lambda and often never delivers.
   const senderName = sender.display_name || sender.username;
   const text = message?.trim();
+  const mediaKind = videoUrl ? 'video' : imageUrl ? 'photo' : null;
   after(
     sendPushToUser(recipientId, {
       // Keep the title short — iOS truncates around 30 characters and
       // already appends "from Kannanao" with the app icon
-      title: `${senderName} sent you a ${text ? 'message' : 'photo'}! 🌸`,
-      body: text ? text.slice(0, 100) : '📷',
+      title: `${senderName} sent you a ${text ? 'message' : (mediaKind ?? 'message')}! 🌸`,
+      body: text ? text.slice(0, 100) : videoUrl ? '🎥' : '📷',
       url: `/notifications/${sender.id}`,
     }).catch((err) => {
       logger.error('Push notification failed', { error: String(err) });

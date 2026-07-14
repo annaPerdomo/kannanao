@@ -88,8 +88,8 @@ export function MessageBubble({
         {/* Bubble */}
         <Box
           sx={{
-            px: message.image_url ? 0.5 : 1.5,
-            py: message.image_url ? 0.5 : 1,
+            px: message.image_url || message.video_url ? 0.5 : 1.5,
+            py: message.image_url || message.video_url ? 0.5 : 1,
             borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
             bgcolor: isMine ? alpha(brand[400], 0.2) : alpha(brand[100], 0.5),
             border: `1px solid ${isMine ? alpha(brand[400], 0.3) : alpha(brand[200], 0.4)}`,
@@ -125,6 +125,25 @@ export function MessageBubble({
               />
             </Box>
           )}
+          {message.video_url && (
+            // Fixed frame: reserving the space up front keeps the thread from
+            // shifting (and breaking scroll position) as the video loads.
+            <Box
+              component="video"
+              src={message.video_url}
+              controls
+              preload="metadata"
+              sx={{
+                width: 240,
+                maxWidth: '100%',
+                height: 200,
+                borderRadius: message.message ? '12px 12px 4px 4px' : '12px',
+                objectFit: 'contain',
+                display: 'block',
+                bgcolor: '#000',
+              }}
+            />
+          )}
           {message.message && (
             <Typography
               sx={{
@@ -149,8 +168,8 @@ export function MessageBubble({
               justifyContent: isMine ? 'flex-end' : 'flex-start',
               gap: 0.3,
               mt: 0.3,
-              px: message.image_url ? 1 : 0,
-              pb: message.image_url ? 0.3 : 0,
+              px: message.image_url || message.video_url ? 1 : 0,
+              pb: message.image_url || message.video_url ? 0.3 : 0,
             }}
           >
             <Typography component="span" sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>
