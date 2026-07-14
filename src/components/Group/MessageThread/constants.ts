@@ -25,6 +25,40 @@ export function timeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
+export interface TextSegment {
+  text: string;
+  isLink: boolean;
+}
+
+const URL_REGEX = /https?:\/\/[^\s<>"']+/gi;
+// Trailing punctuation a sentence tends to end with isn't part of the URL
+// itself (e.g. "check this out: https://x.com/foo." shouldn't link the period).
+const TRAILING_PUNCTUATION = /[.,!?;:)\]}'"]+$/;
+
+/** Split message text into plain-text and link segments so URLs can render
+ * as clickable anchors while the rest stays plain text. Only http(s) links
+ * are recognized — never `javascript:` or other schemes. */
+export function splitLinks(text: string): TextSegment[] {
+  const segments: TextSegment[] = [];
+  let lastIndex = 0;
+  for (const match of text.matchAll(URL_REGEX)) {
+    const start = match.index ?? 0;
+    let url = match[0];
+    let end = start + url.length;
+    const trailing = url.match(TRAILING_PUNCTUATION);
+    if (trailing) {
+      url = url.slice(0, -trailing[0].length);
+      end -= trailing[0].length;
+    }
+    if (!url) continue;
+    if (start > lastIndex) segments.push({ text: text.slice(lastIndex, start), isLink: false });
+    segments.push({ text: url, isLink: true });
+    lastIndex = end;
+  }
+  if (lastIndex < text.length) segments.push({ text: text.slice(lastIndex), isLink: false });
+  return segments;
+}
+
 /** Group sorted (oldest-first) messages by date label */
 export function groupByDate(messages: DirectMessage[]): { label: string; msgs: DirectMessage[] }[] {
   const groups: { label: string; msgs: DirectMessage[] }[] = [];

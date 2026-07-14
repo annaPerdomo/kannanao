@@ -27,6 +27,7 @@ import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
 import { useTick } from '@/hooks/useTick';
 import { useTypingIndicator } from '@/hooks/useTypingIndicator';
+import { MAX_CHAT_VIDEO_SIZE } from '@/lib/chatMedia';
 import { sb } from '@/lib/supabase';
 
 import { SendingIndicator, sendPulse } from './SendingIndicator';
@@ -84,8 +85,9 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
+  const attachmentKind = attachmentFile?.type.startsWith('video/') ? 'video' : 'image';
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -186,38 +188,63 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
     }
   }, [hasUnread, markAndSync]);
 
-  const clearImage = useCallback(() => {
-    setImagePreview((prev) => {
+  const clearAttachment = useCallback(() => {
+    setAttachmentPreview((prev) => {
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
-    setImageFile(null);
+    setAttachmentFile(null);
   }, []);
 
   // Reset input when switching conversations
   useEffect(() => {
     setText('');
     setSendError(null);
-    clearImage();
-  }, [recipientId, clearImage]);
+    clearAttachment();
+  }, [recipientId, clearAttachment]);
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAttachmentSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
     e.target.value = '';
+    if (!file) return;
+    if (file.type.startsWith('video/') && file.size > MAX_CHAT_VIDEO_SIZE) {
+      setSendError('Video must be under 20 MB');
+      return;
+    }
+    setAttachmentFile(file);
+    setAttachmentPreview(URL.createObjectURL(file));
   };
 
   const handleSend = async () => {
     const message = text.trim();
-    if ((!message && !imageFile) || sending) return;
+    if ((!message && !attachmentFile) || sending) return;
     setSending(true);
     setSendError(null);
     try {
       let imageUrl: string | undefined;
-      if (imageFile) {
-        const buf = await imageFile.arrayBuffer();
+      let videoUrl: string | undefined;
+      if (attachmentFile?.type.startsWith('video/')) {
+        const { data: sess } = await sb.auth.getSession();
+        const token = sess.session?.access_token;
+        const initRes = await fetch('/api/messages/upload-video', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ mimeType: attachmentFile.type }),
+        });
+        if (!initRes.ok) throw new Error('Video upload failed');
+        const { path, token: uploadToken, publicUrl } = await initRes.json();
+        const { error: uploadError } = await sb.storage
+          .from('card-images')
+          .uploadToSignedUrl(path, uploadToken, attachmentFile, {
+            contentType: attachmentFile.type,
+          });
+        if (uploadError) throw new Error('Video upload failed');
+        videoUrl = publicUrl;
+      } else if (attachmentFile) {
+        const buf = await attachmentFile.arrayBuffer();
         const base64 = btoa(new Uint8Array(buf).reduce((s, b) => s + String.fromCharCode(b), ''));
         const { data: sess } = await sb.auth.getSession();
         const token = sess.session?.access_token;
@@ -227,22 +254,22 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ base64, mimeType: imageFile.type }),
+          body: JSON.stringify({ base64, mimeType: attachmentFile.type }),
         });
         if (!res.ok) throw new Error('Image upload failed');
         const { url } = await res.json();
         imageUrl = url;
       }
-      await sendMessage(recipientId, message, imageUrl);
+      await sendMessage(recipientId, message, imageUrl, videoUrl);
       setText('');
-      clearImage();
+      clearAttachment();
       // Sending always returns the view to the newest message
       pinnedRef.current = true;
       scrollToBottom();
       // Sync sent message to global context so conversation list updates
       void refetchGlobalRef.current().catch(() => {});
     } catch (err) {
-      // Keep the draft text/image so the user can retry
+      // Keep the draft text/attachment so the user can retry
       setSendError(err instanceof Error ? err.message : 'Failed to send message');
     } finally {
       setSending(false);
@@ -440,8 +467,8 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
           backdropFilter: 'blur(8px)',
         }}
       >
-        {/* Image preview */}
-        {imagePreview && (
+        {/* Attachment preview */}
+        {attachmentPreview && (
           <Box sx={{ px: 2, pt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box
               sx={{
@@ -454,16 +481,27 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
                 flexShrink: 0,
               }}
             >
-              <Box
-                component="img"
-                src={imagePreview}
-                alt="Selected"
-                sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
+              {attachmentKind === 'video' ? (
+                <Box
+                  component="video"
+                  src={attachmentPreview}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <Box
+                  component="img"
+                  src={attachmentPreview}
+                  alt="Selected"
+                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              )}
               <IconButton
                 size="small"
-                onClick={clearImage}
-                aria-label="Remove image"
+                onClick={clearAttachment}
+                aria-label="Remove attachment"
                 sx={{
                   position: 'absolute',
                   top: 2,
@@ -479,7 +517,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
               </IconButton>
             </Box>
             <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
-              {imageFile?.name}
+              {attachmentFile?.name}
             </Typography>
           </Box>
         )}
@@ -488,8 +526,8 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={handleImageSelect}
+          accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
+          onChange={handleAttachmentSelect}
           style={{ display: 'none' }}
         />
 
@@ -529,7 +567,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
           <IconButton
             onClick={() => fileInputRef.current?.click()}
             disabled={sending}
-            aria-label="Attach photo"
+            aria-label="Attach photo or video"
             size="small"
             sx={{
               color: brand[500],
@@ -570,7 +608,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
           <Button
             variant="contained"
             onClick={() => void handleSend()}
-            disabled={sending || (!text.trim() && !imageFile)}
+            disabled={sending || (!text.trim() && !attachmentFile)}
             aria-label="Send message"
             sx={{
               minWidth: 0,
