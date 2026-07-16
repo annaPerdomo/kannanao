@@ -30,6 +30,7 @@ import { alpha } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
 
 import { Label } from '@/components/Deck';
@@ -58,6 +59,8 @@ export default function OhanashikaiDetail({
   onBack,
   onPractice,
 }: OhanashikaiDetailProps) {
+  const t = useTranslations('Ohanashikai.detail');
+  const tc = useTranslations('Common');
   const theme = useTheme();
   const { brand } = theme.palette;
 
@@ -131,9 +134,7 @@ export default function OhanashikaiDetail({
       const formatted = await formatFurigana(lines.map((l) => l.text));
       await Promise.all(lines.map((line, i) => updateLine(line.id, formatted[i])));
     } catch (err) {
-      setAutoFormatAllError(
-        err instanceof Error ? err.message : 'Something went wrong. Please try again.',
-      );
+      setAutoFormatAllError(err instanceof Error ? err.message : t('genericError'));
     } finally {
       setAutoFormattingAll(false);
     }
@@ -164,7 +165,7 @@ export default function OhanashikaiDetail({
   if (loading) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
-        <Loading message="Loading speech…" />
+        <Loading message={t('loadingSpeech')} />
       </Box>
     );
   }
@@ -197,7 +198,7 @@ export default function OhanashikaiDetail({
                 },
               }}
             />
-            <Tooltip title="Save">
+            <Tooltip title={tc('save')}>
               <IconButton
                 size="small"
                 onClick={commitRename}
@@ -214,7 +215,7 @@ export default function OhanashikaiDetail({
                 <CheckIcon sx={{ fontSize: 15 }} />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Cancel">
+            <Tooltip title={tc('cancel')}>
               <IconButton
                 size="small"
                 onClick={() => setRenamingTitle(false)}
@@ -238,9 +239,9 @@ export default function OhanashikaiDetail({
           title={
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
               <Typography variant="h5" sx={{ color: brand[800], lineHeight: 1.1, fontWeight: 800 }}>
-                {item?.title ?? 'Speech'}
+                {item?.title ?? t('speechFallbackTitle')}
               </Typography>
-              <Tooltip title="Rename">
+              <Tooltip title={t('rename')}>
                 <IconButton
                   size="small"
                   onClick={startRename}
@@ -258,7 +259,7 @@ export default function OhanashikaiDetail({
             </Box>
           }
           subtitle={item?.description ?? undefined}
-          badge={`${lines.length} line${lines.length !== 1 ? 's' : ''}`}
+          badge={t('lineCount', { count: lines.length })}
           compact
           mb={3}
         />
@@ -271,11 +272,11 @@ export default function OhanashikaiDetail({
         <Box
           sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}
         >
-          <Label>Speech Lines</Label>
+          <Label>{t('speechLines')}</Label>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
             {lines.length > 0 && !bulkMode && (
               <>
-                <Tooltip title={speaking ? 'Stop' : 'Listen to full speech'}>
+                <Tooltip title={speaking ? t('stop') : t('listenToFullSpeech')}>
                   <Button
                     variant="outlined"
                     size="small"
@@ -297,10 +298,10 @@ export default function OhanashikaiDetail({
                       fontWeight: 700,
                     }}
                   >
-                    {speaking ? 'Stop' : 'Listen'}
+                    {speaking ? t('stop') : t('listen')}
                   </Button>
                 </Tooltip>
-                <Tooltip title="Auto-add kanji + furigana to all saved lines">
+                <Tooltip title={t('autoAddFuriganaHint')}>
                   <Button
                     variant="outlined"
                     size="small"
@@ -321,7 +322,7 @@ export default function OhanashikaiDetail({
                       fontWeight: 700,
                     }}
                   >
-                    {autoFormattingAll ? 'Formatting…' : 'Auto Furigana All'}
+                    {autoFormattingAll ? t('formatting') : t('autoFuriganaAll')}
                   </Button>
                 </Tooltip>
               </>
@@ -339,7 +340,7 @@ export default function OhanashikaiDetail({
               onClick={() => setBulkMode((v) => !v)}
               sx={{ borderRadius: '9px', px: 1.5, py: '4px', fontSize: '0.72rem', fontWeight: 700 }}
             >
-              {bulkMode ? 'Line by Line' : 'Import Lines'}
+              {bulkMode ? t('lineByLine') : t('importLines')}
             </Button>
           </Stack>
         </Box>
@@ -350,7 +351,7 @@ export default function OhanashikaiDetail({
             onClose={() => setAutoFormatAllError(null)}
             sx={{ mb: 1.5, borderRadius: 2, fontSize: '0.75rem' }}
           >
-            Auto Furigana failed: {autoFormatAllError}
+            {t('autoFuriganaFailed', { error: autoFormatAllError })}
           </Alert>
         )}
 
@@ -370,7 +371,7 @@ export default function OhanashikaiDetail({
                   justifyContent: 'center',
                 }}
               >
-                <Loading message="Adding furigana to all lines…" />
+                <Loading message={t('addingFuriganaToAll')} />
               </Box>
             )}
             <DndContext
@@ -426,26 +427,40 @@ export default function OhanashikaiDetail({
               }}
             >
               <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: brand[700], mb: 0.5 }}>
-                How to add furigana
+                {t('howToTitle')}
               </Typography>
               <Typography sx={{ fontSize: '0.7rem', color: brand[600], lineHeight: 1.6 }}>
-                <strong>Auto:</strong> Type plain Japanese, add the line, then use{' '}
-                <em>Auto Furigana All</em> ✨ above to format everything at once.
+                {t.rich('autoHint', {
+                  strong: (chunks) => <strong>{chunks}</strong>,
+                  em: (chunks) => <em>{chunks}</em>,
+                })}
               </Typography>
               <Typography sx={{ fontSize: '0.7rem', color: brand[600], lineHeight: 1.6, mt: 0.25 }}>
-                <strong>Manual:</strong> Use{' '}
-                <code
-                  style={{ background: alpha(brand[200], 0.5), padding: '0 3px', borderRadius: 3 }}
-                >
-                  {'{kanji|reading}'}
-                </code>{' '}
-                format, e.g.{' '}
-                <code
-                  style={{ background: alpha(brand[200], 0.5), padding: '0 3px', borderRadius: 3 }}
-                >
-                  {'{私|わたし}'}
-                </code>
-                . Plain hiragana works too!
+                {t.rich('manualHint', {
+                  strong: (chunks) => <strong>{chunks}</strong>,
+                  kanjiReadingCode: () => (
+                    <code
+                      style={{
+                        background: alpha(brand[200], 0.5),
+                        padding: '0 3px',
+                        borderRadius: 3,
+                      }}
+                    >
+                      {'{kanji|reading}'}
+                    </code>
+                  ),
+                  exampleCode: () => (
+                    <code
+                      style={{
+                        background: alpha(brand[200], 0.5),
+                        padding: '0 3px',
+                        borderRadius: 3,
+                      }}
+                    >
+                      {'{私|わたし}'}
+                    </code>
+                  ),
+                })}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1.5 }}>
@@ -457,7 +472,7 @@ export default function OhanashikaiDetail({
                   if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing)
                     void handleAddLine();
                 }}
-                placeholder="Type a new line and press Enter…"
+                placeholder={t('newLinePlaceholder')}
                 size="small"
                 fullWidth
                 multiline
@@ -484,7 +499,7 @@ export default function OhanashikaiDetail({
                 disabled={adding || !newLineText.trim()}
                 sx={{ flexShrink: 0, borderRadius: '10px', px: 2 }}
               >
-                Add
+                {t('add')}
               </Button>
             </Box>
           </Box>

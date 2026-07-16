@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useSpeech } from '@/hooks/useSpeech';
@@ -153,6 +154,7 @@ const LOAN_WORDS: LoanWord[] = [
 type TabMode = 'chart' | 'quiz' | 'decode';
 
 export function KatakanaDecoder() {
+  const t = useTranslations('Travel.katakana');
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
@@ -168,37 +170,30 @@ export function KatakanaDecoder() {
       <Stack spacing={3}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
+          <IconButton onClick={() => router.push('/travel')} aria-label={t('backAriaLabel')}>
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h5" sx={{ color: 'text.primary' }}>
-            Katakana Decoder
+            {t('title')}
           </Typography>
         </Box>
 
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Katakana is used for foreign/borrowed words in Japanese. Many are just English pronounced
-          with Japanese sounds. Learn these and you can &ldquo;read&rdquo; hundreds of signs!
+          {t('intro')}
         </Typography>
 
         {/* Mode tabs */}
         <Box sx={{ display: 'flex', gap: 1 }}>
-          {(
-            [
-              { key: 'chart', label: 'Chart' },
-              { key: 'quiz', label: 'Flash Quiz' },
-              { key: 'decode', label: 'Decode Words' },
-            ] as const
-          ).map((tab) => (
+          {(['chart', 'quiz', 'decode'] as const).map((tab) => (
             <Chip
-              key={tab.key}
-              label={tab.label}
-              onClick={() => setMode(tab.key)}
-              variant={mode === tab.key ? 'filled' : 'outlined'}
+              key={tab}
+              label={t(`tabs.${tab}`)}
+              onClick={() => setMode(tab)}
+              variant={mode === tab ? 'filled' : 'outlined'}
               sx={{
                 borderRadius: 2,
-                fontWeight: mode === tab.key ? 700 : 500,
-                ...(mode === tab.key && {
+                fontWeight: mode === tab ? 700 : 500,
+                ...(mode === tab && {
                   bgcolor: alpha(brand[500], 0.12),
                   color: brand[700],
                   borderColor: brand[400],
@@ -219,6 +214,7 @@ export function KatakanaDecoder() {
 // ─── Chart View ───────────────────────────────────────────────────
 
 function ChartView({ speak }: { speak: (text: string) => void }) {
+  const t = useTranslations('Travel.katakana');
   const theme = useTheme();
   const { brand } = theme.palette;
 
@@ -231,19 +227,7 @@ function ChartView({ speak }: { speak: (text: string) => void }) {
     return grouped;
   }, []);
 
-  const rowLabels: Record<string, string> = {
-    vowels: 'Vowels',
-    k: 'K',
-    s: 'S',
-    t: 'T',
-    n: 'N',
-    h: 'H',
-    m: 'M',
-    y: 'Y',
-    r: 'R',
-    w: 'W',
-    nn: 'N',
-  };
+  const rowLabels = t.raw('rowLabels') as Record<string, string>;
 
   return (
     <Stack spacing={2}>
@@ -319,8 +303,7 @@ function ChartView({ speak }: { speak: (text: string) => void }) {
         }}
       >
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Tap any character to hear its sound. Long vowels are written with ー (e.g. コーヒー =
-          ko-o-hi-i = coffee).
+          {t('tapToHear')}
         </Typography>
       </Box>
     </Stack>
@@ -330,6 +313,7 @@ function ChartView({ speak }: { speak: (text: string) => void }) {
 // ─── Quiz View ────────────────────────────────────────────────────
 
 function QuizView({ speak }: { speak: (text: string) => void }) {
+  const t = useTranslations('Travel.katakana');
   const theme = useTheme();
   const { brand } = theme.palette;
   const [current, setCurrent] = useState(() => randomChar());
@@ -391,7 +375,7 @@ function QuizView({ speak }: { speak: (text: string) => void }) {
       </Card>
 
       <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-        Tap the character to hear it. Type the romaji below.
+        {t('quizInstructions')}
       </Typography>
 
       {/* Answer input */}
@@ -400,7 +384,7 @@ function QuizView({ speak }: { speak: (text: string) => void }) {
           <TextField
             fullWidth
             size="small"
-            placeholder="Type romaji..."
+            placeholder={t('romajiPlaceholder')}
             value={userAnswer}
             onChange={(e) => setUserAnswer(e.target.value)}
             onKeyDown={(e) => {
@@ -415,7 +399,7 @@ function QuizView({ speak }: { speak: (text: string) => void }) {
             disabled={!userAnswer.trim()}
             sx={{ borderRadius: 2, textTransform: 'none', minWidth: 60 }}
           >
-            Go
+            {t('go')}
           </Button>
         </Box>
       ) : (
@@ -427,7 +411,7 @@ function QuizView({ speak }: { speak: (text: string) => void }) {
               <CloseIcon sx={{ color: '#ef4444' }} />
             )}
             <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'text.primary' }}>
-              {result === 'correct' ? 'Correct!' : `It's "${current.romaji}"`}
+              {result === 'correct' ? t('correct') : t('incorrect', { romaji: current.romaji })}
             </Typography>
           </Box>
           <Button
@@ -435,7 +419,7 @@ function QuizView({ speak }: { speak: (text: string) => void }) {
             variant="outlined"
             sx={{ textTransform: 'none', borderRadius: 2 }}
           >
-            Next
+            {t('next')}
           </Button>
         </Stack>
       )}
@@ -446,19 +430,13 @@ function QuizView({ speak }: { speak: (text: string) => void }) {
 // ─── Decode View ──────────────────────────────────────────────────
 
 function DecodeView({ speak }: { speak: (text: string) => void }) {
+  const t = useTranslations('Travel.katakana');
   const theme = useTheme();
   const { brand } = theme.palette;
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
   const [activeCategory, setActiveCategory] = useState<string>('all');
 
-  const categories = [
-    { key: 'all', label: 'All' },
-    { key: 'food', label: 'Food & Drink' },
-    { key: 'places', label: 'Places' },
-    { key: 'transport', label: 'Transport' },
-    { key: 'things', label: 'Things' },
-    { key: 'signs', label: 'Signs' },
-  ];
+  const categories = ['all', 'food', 'places', 'transport', 'things', 'signs'];
 
   const filtered =
     activeCategory === 'all' ? LOAN_WORDS : LOAN_WORDS.filter((w) => w.category === activeCategory);
@@ -466,24 +444,23 @@ function DecodeView({ speak }: { speak: (text: string) => void }) {
   return (
     <Stack spacing={2}>
       <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-        These are English words written in katakana. Try to sound them out before revealing the
-        answer!
+        {t('decodeIntro')}
       </Typography>
 
       {/* Category filter */}
       <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
         {categories.map((cat) => (
           <Chip
-            key={cat.key}
-            label={cat.label}
+            key={cat}
+            label={t(`decodeCategories.${cat}`)}
             size="small"
-            onClick={() => setActiveCategory(cat.key)}
-            variant={activeCategory === cat.key ? 'filled' : 'outlined'}
+            onClick={() => setActiveCategory(cat)}
+            variant={activeCategory === cat ? 'filled' : 'outlined'}
             sx={{
               borderRadius: 2,
               fontSize: '0.75rem',
-              fontWeight: activeCategory === cat.key ? 700 : 500,
-              ...(activeCategory === cat.key && {
+              fontWeight: activeCategory === cat ? 700 : 500,
+              ...(activeCategory === cat && {
                 bgcolor: alpha(brand[500], 0.12),
                 color: brand[700],
               }),
@@ -531,14 +508,14 @@ function DecodeView({ speak }: { speak: (text: string) => void }) {
                 >
                   {word.katakana}
                 </Typography>
-                <Tooltip title="Listen">
+                <Tooltip title={t('listen')}>
                   <IconButton
                     size="small"
                     onClick={(e) => {
                       e.stopPropagation();
                       speak(word.katakana);
                     }}
-                    aria-label="Listen"
+                    aria-label={t('listen')}
                   >
                     <VolumeUpIcon sx={{ fontSize: 16 }} />
                   </IconButton>
@@ -558,7 +535,7 @@ function DecodeView({ speak }: { speak: (text: string) => void }) {
                   variant="caption"
                   sx={{ color: 'text.secondary', mt: 0.5, display: 'block' }}
                 >
-                  Tap to reveal
+                  {t('tapToReveal')}
                 </Typography>
               )}
             </Card>

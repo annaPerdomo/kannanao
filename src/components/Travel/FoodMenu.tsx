@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { stripFurigana } from '@/components/FuriganaText';
@@ -35,7 +36,6 @@ interface FoodItem {
 
 interface FoodCategory {
   key: string;
-  label: string;
   icon: string;
   items: FoodItem[];
 }
@@ -43,7 +43,6 @@ interface FoodCategory {
 const FOOD_DATA: FoodCategory[] = [
   {
     key: 'ramen',
-    label: 'Ramen Types',
     icon: '🍜',
     items: [
       {
@@ -92,7 +91,6 @@ const FOOD_DATA: FoodCategory[] = [
   },
   {
     key: 'sushi',
-    label: 'Sushi & Fish',
     icon: '🍣',
     items: [
       { japanese: 'まぐろ', romaji: 'maguro', english: 'Tuna' },
@@ -128,7 +126,6 @@ const FOOD_DATA: FoodCategory[] = [
   },
   {
     key: 'common',
-    label: 'Common Dishes',
     icon: '🍱',
     items: [
       {
@@ -195,7 +192,6 @@ const FOOD_DATA: FoodCategory[] = [
   },
   {
     key: 'drinks',
-    label: 'Drinks',
     icon: '🍵',
     items: [
       {
@@ -239,7 +235,6 @@ const FOOD_DATA: FoodCategory[] = [
   },
   {
     key: 'konbini',
-    label: 'Konbini Food',
     icon: '🏪',
     items: [
       {
@@ -282,7 +277,6 @@ const FOOD_DATA: FoodCategory[] = [
   },
   {
     key: 'ordering',
-    label: 'Ordering Words',
     icon: '📝',
     items: [
       {
@@ -319,6 +313,7 @@ const FOOD_DATA: FoodCategory[] = [
 ];
 
 export function FoodMenu() {
+  const t = useTranslations('Travel.foodMenu');
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
@@ -354,15 +349,15 @@ export function FoodMenu() {
       <Stack spacing={3}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
+          <IconButton onClick={() => router.push('/travel')} aria-label={t('backAriaLabel')}>
             <ArrowBackIcon />
           </IconButton>
           <Box sx={{ flex: 1 }}>
             <Typography variant="h5" sx={{ color: 'text.primary' }}>
-              Food Menu Cheat Sheet
+              {t('title')}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
-              Know what you&apos;re ordering
+              {t('subtitle')}
             </Typography>
           </Box>
           <Button
@@ -383,14 +378,14 @@ export function FoodMenu() {
             disabled={deckSaved}
             sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.72rem' }}
           >
-            {deckSaved ? 'Saved!' : 'Save all'}
+            {deckSaved ? t('saved') : t('saveAll')}
           </Button>
         </Box>
 
         {/* Filter chips */}
         <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
           <Chip
-            label="All"
+            label={t('allFilter')}
             onClick={() => handleFilter('all')}
             variant={activeFilter === 'all' ? 'filled' : 'outlined'}
             sx={{
@@ -407,7 +402,7 @@ export function FoodMenu() {
           {FOOD_DATA.map((cat) => (
             <Chip
               key={cat.key}
-              label={`${cat.icon} ${cat.label}`}
+              label={`${cat.icon} ${t(`categories.${cat.key}`)}`}
               onClick={() => handleFilter(cat.key)}
               variant={activeFilter === cat.key ? 'filled' : 'outlined'}
               sx={{
@@ -432,10 +427,10 @@ export function FoodMenu() {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                 <Typography sx={{ fontSize: '1.1rem', lineHeight: 1 }}>{cat.icon}</Typography>
                 <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: 'text.primary' }}>
-                  {cat.label}
+                  {t(`categories.${cat.key}`)}
                 </Typography>
                 <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  {cat.items.length} items
+                  {t('itemsCount', { count: cat.items.length })}
                 </Typography>
               </Box>
             )}
@@ -483,17 +478,17 @@ export function FoodMenu() {
                       )}
                     </Box>
                     <Stack spacing={0.25}>
-                      <Tooltip title="Listen">
+                      <Tooltip title={t('listen')}>
                         <IconButton
                           size="small"
                           onClick={() => speak(stripFurigana(item.japanese))}
-                          aria-label="Listen"
+                          aria-label={t('listen')}
                           sx={{ p: 0.5 }}
                         >
                           <VolumeUpIcon sx={{ fontSize: 16 }} />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Save to deck">
+                      <Tooltip title={t('saveToDeck')}>
                         <IconButton
                           size="small"
                           onClick={() => {
@@ -506,7 +501,7 @@ export function FoodMenu() {
                             ]);
                             setSaveDialogOpen(true);
                           }}
-                          aria-label="Save to deck"
+                          aria-label={t('saveToDeck')}
                           sx={{ p: 0.5 }}
                         >
                           <BookmarkBorderIcon sx={{ fontSize: 16 }} />
@@ -528,8 +523,8 @@ export function FoodMenu() {
         onSaved={() => setDeckSaved(true)}
         defaultDeckName={
           activeCategory
-            ? `${activeCategory.icon} ${activeCategory.label}`
-            : '🍱 Japanese Food Vocabulary'
+            ? `${activeCategory.icon} ${t(`categories.${activeCategory.key}`)}`
+            : `🍱 ${t('defaultDeckName')}`
         }
       />
     </Container>

@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import { stripFurigana } from '@/components/FuriganaText';
@@ -44,20 +45,15 @@ interface DailyResult {
   dayTip: string;
 }
 
-const EXAMPLE_PLANS = [
-  'Taking the train to Shibuya, shopping, then ramen for lunch',
-  'Visiting Fushimi Inari shrine, then exploring Nishiki Market',
-  'Checking out of hotel, taking shinkansen to Osaka, checking into new hotel',
-  'Going to TeamLab, then Odaiba for dinner at a sushi restaurant',
-  'Spending the day in Akihabara, visiting arcades, getting a coffee',
-];
-
 export function DailyPhrasePack() {
+  const t = useTranslations('Travel.dailyPack');
+  const tc = useTranslations('Common');
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
   const { speak } = useSpeech();
   const { mode: displayMode } = useTravelDisplay();
+  const examplePlans = t.raw('examplePlans') as string[];
 
   const [plans, setPlans] = useState('');
   const [result, setResult] = useState<DailyResult | null>(null);
@@ -97,7 +93,7 @@ export function DailyPhrasePack() {
         },
         body: JSON.stringify({ plans: plans.trim(), displayMode }),
       });
-      if (!res.ok) throw new Error('Failed to generate phrases');
+      if (!res.ok) throw new Error(t('generateFailed'));
       const data: DailyResult = await res.json();
       setResult(data);
       logTravelEvent('daily_phrase', 'generate');
@@ -109,26 +105,26 @@ export function DailyPhrasePack() {
         /* full */
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : tc('somethingWentWrong'));
     } finally {
       setLoading(false);
     }
-  }, [plans, displayMode]);
+  }, [plans, displayMode, t, tc]);
 
   return (
     <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
       <Stack spacing={3}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
+          <IconButton onClick={() => router.push('/travel')} aria-label={t('backToHub')}>
             <ArrowBackIcon />
           </IconButton>
           <Box>
             <Typography variant="h5" sx={{ color: 'text.primary' }}>
-              Daily Phrase Pack
+              {t('title')}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
-              Phrases tailored to your plans today
+              {t('subtitle')}
             </Typography>
           </Box>
         </Box>
@@ -148,7 +144,7 @@ export function DailyPhrasePack() {
               <TextField
                 multiline
                 rows={3}
-                placeholder="e.g. Taking the train to Asakusa, visiting Senso-ji temple, then finding a good ramen shop for lunch..."
+                placeholder={t('planPlaceholder')}
                 value={plans}
                 onChange={(e) => setPlans(e.target.value)}
                 fullWidth
@@ -160,10 +156,10 @@ export function DailyPhrasePack() {
                   variant="caption"
                   sx={{ color: 'text.disabled', mb: 0.75, display: 'block', fontSize: '0.68rem' }}
                 >
-                  Or try an example:
+                  {t('tryExample')}
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-                  {EXAMPLE_PLANS.map((example, i) => (
+                  {examplePlans.map((example, i) => (
                     <Chip
                       key={i}
                       label={example.length > 40 ? example.slice(0, 40) + '...' : example}
@@ -192,7 +188,7 @@ export function DailyPhrasePack() {
                 startIcon={<AutoAwesomeIcon />}
                 sx={{ textTransform: 'none', borderRadius: '20px', alignSelf: 'flex-start' }}
               >
-                Generate my phrases
+                {t('generateButton')}
               </Button>
 
               {error && (
@@ -205,7 +201,7 @@ export function DailyPhrasePack() {
         )}
 
         {/* Loading */}
-        {loading && <Loading message="Generating your phrases..." />}
+        {loading && <Loading message={t('generatingMessage')} />}
 
         {/* Results */}
         {result && (
@@ -271,7 +267,7 @@ export function DailyPhrasePack() {
                             letterSpacing: '0.04em',
                           }}
                         >
-                          {phrase.type === 'say' ? 'You say' : "You'll hear"}
+                          {phrase.type === 'say' ? t('youSay') : t('youllHear')}
                         </Typography>
                         <Typography
                           variant="caption"
@@ -296,11 +292,11 @@ export function DailyPhrasePack() {
                       </Typography>
                     </Box>
 
-                    <Tooltip title="Listen">
+                    <Tooltip title={t('listen')}>
                       <IconButton
                         size="small"
                         onClick={() => speak(stripFurigana(phrase.japanese))}
-                        aria-label="Listen"
+                        aria-label={t('listen')}
                         sx={{ p: 0.5 }}
                       >
                         <VolumeUpIcon sx={{ fontSize: 16 }} />
@@ -323,7 +319,7 @@ export function DailyPhrasePack() {
                 }}
                 sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.8rem' }}
               >
-                New day
+                {t('newDay')}
               </Button>
               <Button
                 variant="contained"
@@ -333,7 +329,7 @@ export function DailyPhrasePack() {
                 startIcon={<LibraryAddIcon sx={{ fontSize: 14 }} />}
                 sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.8rem' }}
               >
-                {saved ? 'Saved!' : 'Save to deck'}
+                {saved ? t('saved') : t('saveToDeck')}
               </Button>
             </Stack>
           </>
@@ -350,7 +346,7 @@ export function DailyPhrasePack() {
             english: p.english,
           }))}
           onSaved={() => setSaved(true)}
-          defaultDeckName="Today's Phrases"
+          defaultDeckName={t('todaysPhrasesDeckName')}
         />
       )}
     </Container>

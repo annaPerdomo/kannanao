@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
 import { stripFurigana } from '@/components/FuriganaText';
@@ -30,31 +31,37 @@ import { SURVIVAL_PHRASES } from '../../hooks/survivalPhrasesData';
 import { AuthGatedSaveDialog } from './AuthGatedSaveDialog';
 import { TravelPhrase } from './TravelPhrase';
 
-const SITUATIONS: Array<{ key: PhraseSituation; label: string; icon: string; color: string }> = [
-  { key: 'greetings', label: 'Greetings', icon: '👋', color: '#f59e0b' },
-  { key: 'restaurant', label: 'Restaurant', icon: '🍜', color: '#ef4444' },
-  { key: 'shopping', label: 'Shopping', icon: '🛍️', color: '#8b5cf6' },
-  { key: 'transport', label: 'Transport', icon: '🚃', color: '#3b82f6' },
-  { key: 'hotel', label: 'Hotel', icon: '🏨', color: '#6366f1' },
-  { key: 'directions', label: 'Directions', icon: '🗺️', color: '#10b981' },
-  { key: 'polite', label: 'Polite Extras', icon: '🎌', color: '#ec4899' },
-  { key: 'numbers', label: 'Numbers', icon: '🔢', color: '#f97316' },
-  { key: 'emergency', label: 'Emergency', icon: '🆘', color: '#dc2626' },
+const SITUATIONS: Array<{
+  key: PhraseSituation;
+  labelKey: string;
+  icon: string;
+  color: string;
+}> = [
+  { key: 'greetings', labelKey: 'situations.greetings', icon: '👋', color: '#f59e0b' },
+  { key: 'restaurant', labelKey: 'situations.restaurant', icon: '🍜', color: '#ef4444' },
+  { key: 'shopping', labelKey: 'situations.shopping', icon: '🛍️', color: '#8b5cf6' },
+  { key: 'transport', labelKey: 'situations.transport', icon: '🚃', color: '#3b82f6' },
+  { key: 'hotel', labelKey: 'situations.hotel', icon: '🏨', color: '#6366f1' },
+  { key: 'directions', labelKey: 'situations.directions', icon: '🗺️', color: '#10b981' },
+  { key: 'polite', labelKey: 'situations.polite', icon: '🎌', color: '#ec4899' },
+  { key: 'numbers', labelKey: 'situations.numbers', icon: '🔢', color: '#f97316' },
+  { key: 'emergency', labelKey: 'situations.emergency', icon: '🆘', color: '#dc2626' },
 ];
 
-const DIFFICULTY_LABELS: Record<number, { label: string; color: string }> = {
-  1: { label: 'Easy', color: '#10b981' },
-  2: { label: 'Medium', color: '#f59e0b' },
-  3: { label: 'Longer', color: '#8b5cf6' },
+const DIFFICULTY_LABELS: Record<number, { labelKey: string; color: string }> = {
+  1: { labelKey: 'difficulty.easy', color: '#10b981' },
+  2: { labelKey: 'difficulty.medium', color: '#f59e0b' },
+  3: { labelKey: 'difficulty.longer', color: '#8b5cf6' },
 };
 
-const FORMALITY_LABELS: Record<string, { label: string; icon: string }> = {
-  casual: { label: 'Casual', icon: '😊' },
-  polite: { label: 'Polite', icon: '🙇' },
-  very_polite: { label: 'Very polite', icon: '🎩' },
+const FORMALITY_LABELS: Record<string, { labelKey: string; icon: string }> = {
+  casual: { labelKey: 'formality.casual', icon: '😊' },
+  polite: { labelKey: 'formality.polite', icon: '🙇' },
+  very_polite: { labelKey: 'formality.veryPolite', icon: '🎩' },
 };
 
 export function PhraseBrowser() {
+  const t = useTranslations('Travel.phrases');
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
@@ -93,22 +100,22 @@ export function PhraseBrowser() {
       <Stack spacing={3}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
+          <IconButton onClick={() => router.push('/travel')} aria-label={t('backToHub')}>
             <ArrowBackIcon />
           </IconButton>
           <Box sx={{ flex: 1 }}>
             <Typography variant="h5" sx={{ color: 'text.primary' }}>
-              Survival Phrases
+              {t('title')}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
-              Essential phrases with pronunciation and tips
+              {t('subtitle')}
             </Typography>
           </Box>
           {filteredPhrases.length > 0 &&
             (deckSaved ? (
               <Chip
                 icon={<BookmarkAddedIcon sx={{ fontSize: '14px !important' }} />}
-                label="Saved!"
+                label={t('saved')}
                 sx={{
                   bgcolor: alpha('#10b981', 0.12),
                   color: '#059669',
@@ -134,7 +141,7 @@ export function PhraseBrowser() {
                 variant="outlined"
                 sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.72rem' }}
               >
-                Save all
+                {t('saveAll')}
               </Button>
             ))}
         </Box>
@@ -142,7 +149,7 @@ export function PhraseBrowser() {
         {/* Filter chips */}
         <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
           <Chip
-            label="All"
+            label={t('all')}
             onClick={() => handleFilter('all')}
             variant={activeFilter === 'all' ? 'filled' : 'outlined'}
             sx={{
@@ -159,7 +166,7 @@ export function PhraseBrowser() {
           {SITUATIONS.map((s) => (
             <Chip
               key={s.key}
-              label={`${s.icon} ${s.label}`}
+              label={`${s.icon} ${t(s.labelKey)}`}
               onClick={() => handleFilter(s.key)}
               variant={activeFilter === s.key ? 'filled' : 'outlined'}
               sx={{
@@ -194,10 +201,10 @@ export function PhraseBrowser() {
                       color: 'text.primary',
                     }}
                   >
-                    {situation.label}
+                    {t(situation.labelKey)}
                   </Typography>
                   <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    {phrasesInSituation.length} phrases
+                    {t('phraseCount', { count: phrasesInSituation.length })}
                   </Typography>
                 </Box>
               )}
@@ -252,17 +259,17 @@ export function PhraseBrowser() {
                               primarySize="1.05rem"
                               secondarySize="0.78rem"
                             />
-                            <Tooltip title="Listen">
+                            <Tooltip title={t('listen')}>
                               <IconButton
                                 size="small"
                                 onClick={() => speak(stripFurigana(phrase.japanese))}
-                                aria-label="Listen to pronunciation"
+                                aria-label={t('listenAria')}
                                 sx={{ p: 0.5 }}
                               >
                                 <VolumeUpIcon sx={{ fontSize: 16 }} />
                               </IconButton>
                             </Tooltip>
-                            <Tooltip title="Save to deck">
+                            <Tooltip title={t('saveToDeck')}>
                               <IconButton
                                 size="small"
                                 onClick={() => {
@@ -275,7 +282,7 @@ export function PhraseBrowser() {
                                   ]);
                                   setSaveDialogOpen(true);
                                 }}
-                                aria-label="Save phrase to deck"
+                                aria-label={t('savePhraseAria')}
                                 sx={{ p: 0.5 }}
                               >
                                 <BookmarkBorderIcon sx={{ fontSize: 16 }} />
@@ -285,7 +292,7 @@ export function PhraseBrowser() {
                         </Box>
                         <Stack spacing={0.5} alignItems="flex-end">
                           <Chip
-                            label={diff.label}
+                            label={t(diff.labelKey)}
                             size="small"
                             sx={{
                               height: 18,
@@ -297,7 +304,7 @@ export function PhraseBrowser() {
                             }}
                           />
                           <Chip
-                            label={`${form.icon} ${form.label}`}
+                            label={`${form.icon} ${t(form.labelKey)}`}
                             size="small"
                             sx={{
                               height: 18,
@@ -326,7 +333,7 @@ export function PhraseBrowser() {
                                 fontSize: '0.6rem',
                               }}
                             >
-                              BREAKDOWN
+                              {t('breakdown')}
                             </Typography>
                             <Typography
                               variant="body2"
@@ -345,7 +352,7 @@ export function PhraseBrowser() {
                                 fontSize: '0.6rem',
                               }}
                             >
-                              WHEN TO USE
+                              {t('whenToUse')}
                             </Typography>
                             <Typography
                               variant="body2"
@@ -376,7 +383,7 @@ export function PhraseBrowser() {
                                     fontSize: '0.6rem',
                                   }}
                                 >
-                                  CULTURAL NOTE
+                                  {t('culturalNote')}
                                 </Typography>
                               </Box>
                               <Typography
@@ -405,8 +412,8 @@ export function PhraseBrowser() {
         onSaved={() => setDeckSaved(true)}
         defaultDeckName={
           activeSituationInfo
-            ? `${activeSituationInfo.icon} Travel: ${activeSituationInfo.label}`
-            : '🗾 Travel: All Survival Phrases'
+            ? `${activeSituationInfo.icon} ${t('deckName', { label: t(activeSituationInfo.labelKey) })}`
+            : `🗾 ${t('deckNameAll')}`
         }
       />
     </Container>

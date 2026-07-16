@@ -16,6 +16,7 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -25,6 +26,8 @@ import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { LAYOUT } from '@/theme';
 
 export default function OhanashikaiHome() {
+  const t = useTranslations('Ohanashikai.home');
+  const tc = useTranslations('Common');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const router = useRouter();
@@ -55,7 +58,7 @@ export default function OhanashikaiHome() {
   if (loading) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
-        <Loading message="Loading your speeches…" />
+        <Loading message={t('loadingSpeeches')} />
       </Box>
     );
   }
@@ -67,8 +70,8 @@ export default function OhanashikaiHome() {
       <PageHeader
         icon={<MicIcon />}
         title="お話し会"
-        subtitle="Speech Practice"
-        description="Add your speeches, then practice until you know every line by heart! ✨"
+        subtitle={t('subtitle')}
+        description={t('description')}
         onBack={() => router.push('/')}
         action={
           <Button
@@ -87,7 +90,7 @@ export default function OhanashikaiHome() {
               },
             }}
           >
-            New Speech
+            {t('newSpeech')}
           </Button>
         }
       />
@@ -105,13 +108,13 @@ export default function OhanashikaiHome() {
         >
           <Typography sx={{ fontSize: '3.5rem', mb: 2 }}>📝</Typography>
           <Typography variant="h6" sx={{ color: brand[700], fontWeight: 700, mb: 1 }}>
-            No speeches yet!
+            {t('emptyTitle')}
           </Typography>
           <Typography color="text.secondary" sx={{ mb: 3, fontSize: '0.875rem' }}>
-            Create your first speech to start practicing
+            {t('emptyDescription')}
           </Typography>
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}>
-            Create Speech
+            {t('createSpeech')}
           </Button>
         </Box>
       ) : (
@@ -178,7 +181,7 @@ export default function OhanashikaiHome() {
                     </Typography>
                   )}
                   <Chip
-                    label={`${item.lineCount} line${item.lineCount !== 1 ? 's' : ''}`}
+                    label={t('lineCount', { count: item.lineCount })}
                     size="small"
                     sx={{ mt: 0.5, height: 20, fontSize: '0.68rem', fontWeight: 700 }}
                   />
@@ -191,7 +194,7 @@ export default function OhanashikaiHome() {
                   flexShrink={0}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Tooltip title={item.pinned ? 'Unpin from home' : 'Pin to home'}>
+                  <Tooltip title={item.pinned ? t('unpinFromHome') : t('pinToHome')}>
                     <IconButton
                       size="small"
                       onClick={() => pinOhanashikai(item.id, !item.pinned)}
@@ -207,7 +210,7 @@ export default function OhanashikaiHome() {
                       )}
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Delete">
+                  <Tooltip title={tc('delete')}>
                     <IconButton
                       size="small"
                       onClick={() => deleteOhanashikai(item.id)}
@@ -227,8 +230,8 @@ export default function OhanashikaiHome() {
       <StyledDialog
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        title="🎤 New Speech"
-        subtitle="Give your speech a name to get started"
+        title={t('newSpeechDialogTitle')}
+        subtitle={t('newSpeechDialogSubtitle')}
         closeDisabled={creating}
         actions={
           <Stack direction="row" spacing={1}>
@@ -236,7 +239,7 @@ export default function OhanashikaiHome() {
               onClick={() => setCreateOpen(false)}
               sx={{ color: 'text.secondary', textTransform: 'none' }}
             >
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button
               variant="contained"
@@ -252,7 +255,7 @@ export default function OhanashikaiHome() {
                 '&:disabled': { bgcolor: alpha(brand[700], 0.2), color: alpha('#fff', 0.5) },
               }}
             >
-              {creating ? 'Creating…' : 'Create ✨'}
+              {creating ? t('creating') : t('createButton')}
             </Button>
           </Stack>
         }
@@ -262,8 +265,8 @@ export default function OhanashikaiHome() {
             autoFocus
             fullWidth
             size="small"
-            label="Speech title"
-            placeholder="e.g. Spring Ohanashikai 2026"
+            label={t('speechTitleLabel')}
+            placeholder={t('speechTitlePlaceholder')}
             value={titleVal}
             onChange={(e) => setTitleVal(e.target.value)}
             onKeyDown={(e) => {
@@ -273,8 +276,8 @@ export default function OhanashikaiHome() {
           <TextField
             fullWidth
             size="small"
-            label="Description (optional)"
-            placeholder="e.g. School speech festival"
+            label={t('descriptionLabel')}
+            placeholder={t('descriptionPlaceholder')}
             value={descVal}
             onChange={(e) => setDescVal(e.target.value)}
           />

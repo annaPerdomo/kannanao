@@ -10,6 +10,7 @@ import { alpha } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
@@ -43,6 +44,7 @@ export function SpeechLineRow({
   onDelete,
   dragHandle,
 }: SpeechLineRowProps) {
+  const t = useTranslations('Ohanashikai.detail');
   const isEditing = editingId === lineId;
 
   return (
@@ -113,7 +115,7 @@ export function SpeechLineRow({
       <Stack direction="row" spacing={0.25} flexShrink={0}>
         {isEditing ? (
           <>
-            <Tooltip title="Save (Enter)">
+            <Tooltip title={t('saveEnter')}>
               <IconButton
                 size="small"
                 onClick={onCommitEdit}
@@ -129,7 +131,7 @@ export function SpeechLineRow({
                 <CheckIcon sx={{ fontSize: 13 }} />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Cancel (Esc)">
+            <Tooltip title={t('cancelEsc')}>
               <IconButton
                 size="small"
                 onClick={onCancelEdit}
@@ -147,7 +149,7 @@ export function SpeechLineRow({
           </>
         ) : (
           <>
-            <Tooltip title="Listen">
+            <Tooltip title={t('listen')}>
               <span>
                 <SpeakButton
                   text={stripFurigana(text)}
@@ -156,7 +158,7 @@ export function SpeechLineRow({
                 />
               </span>
             </Tooltip>
-            <Tooltip title="Edit line">
+            <Tooltip title={t('editLine')}>
               <IconButton
                 size="small"
                 onClick={() => onStartEdit(lineId, text)}
@@ -171,7 +173,7 @@ export function SpeechLineRow({
                 <EditIcon sx={{ fontSize: 13 }} />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Delete line">
+            <Tooltip title={t('deleteLine')}>
               <IconButton
                 size="small"
                 onClick={() => onDelete(lineId)}

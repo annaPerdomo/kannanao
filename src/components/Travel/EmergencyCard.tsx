@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { logTravelEvent } from '@/lib/supabase';
@@ -52,6 +53,8 @@ const DEFAULT_INFO: EmergencyInfo = {
 };
 
 export function EmergencyCard() {
+  const t = useTranslations('Travel.emergency');
+  const tc = useTranslations('Common');
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
@@ -91,7 +94,7 @@ export function EmergencyCard() {
       <Stack spacing={3}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
+          <IconButton onClick={() => router.push('/travel')} aria-label={t('backToHub')}>
             <ArrowBackIcon />
           </IconButton>
           <Typography
@@ -101,7 +104,7 @@ export function EmergencyCard() {
               flex: 1,
             }}
           >
-            My Emergency Card
+            {t('title')}
           </Typography>
           <Button
             startIcon={editing ? <SaveIcon /> : <EditIcon />}
@@ -110,13 +113,12 @@ export function EmergencyCard() {
             size="small"
             sx={{ textTransform: 'none', borderRadius: 2 }}
           >
-            {editing ? 'Save' : 'Edit'}
+            {editing ? tc('save') : tc('edit')}
           </Button>
         </Box>
 
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Fill this in before your trip. Pull it up instantly when you need it — show to taxi
-          drivers, hotel staff, or in emergencies.
+          {t('intro')}
         </Typography>
 
         {/* Emergency Numbers — always visible */}
@@ -131,13 +133,13 @@ export function EmergencyCard() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
               <PhoneIcon sx={{ color: '#dc2626', fontSize: 20 }} />
               <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                Japan Emergency Numbers
+                {t('emergencyNumbersTitle')}
               </Typography>
             </Box>
             <Stack spacing={1}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                  Police
+                  {t('police')}
                 </Typography>
                 <Typography
                   variant="h6"
@@ -150,7 +152,7 @@ export function EmergencyCard() {
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                  Ambulance & Fire
+                  {t('ambulanceFire')}
                 </Typography>
                 <Typography
                   variant="h6"
@@ -163,7 +165,7 @@ export function EmergencyCard() {
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                  Japan Helpline (English 24/7)
+                  {t('helpline')}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -189,20 +191,20 @@ export function EmergencyCard() {
           {/* Hotel info */}
           <Box sx={{ p: 2.5 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: brand[600], mb: 1.5 }}>
-              MY HOTEL
+              {t('myHotel')}
             </Typography>
             {editing ? (
               <Stack spacing={1.5}>
                 <TextField
                   size="small"
-                  label="Hotel name"
+                  label={t('hotelName')}
                   value={info.hotelName}
                   onChange={(e) => updateField('hotelName', e.target.value)}
                   fullWidth
                 />
                 <TextField
                   size="small"
-                  label="Address (in Japanese if possible — paste from booking)"
+                  label={t('hotelAddressLabel')}
                   value={info.hotelAddress}
                   onChange={(e) => updateField('hotelAddress', e.target.value)}
                   fullWidth
@@ -211,7 +213,7 @@ export function EmergencyCard() {
                 />
                 <TextField
                   size="small"
-                  label="Hotel phone"
+                  label={t('hotelPhone')}
                   value={info.hotelPhone}
                   onChange={(e) => updateField('hotelPhone', e.target.value)}
                   fullWidth
@@ -220,7 +222,7 @@ export function EmergencyCard() {
             ) : (
               <Stack spacing={0.5}>
                 <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                  {info.hotelName || '(not set)'}
+                  {info.hotelName || t('notSet')}
                 </Typography>
                 {info.hotelAddress && (
                   <Typography
@@ -253,56 +255,56 @@ export function EmergencyCard() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
               <LocalHospitalIcon sx={{ color: '#dc2626', fontSize: 18 }} />
               <Typography variant="subtitle2" sx={{ fontWeight: 700, color: brand[600] }}>
-                MEDICAL INFO
+                {t('medicalInfo')}
               </Typography>
             </Box>
             {editing ? (
               <Stack spacing={1.5}>
                 <TextField
                   size="small"
-                  label="Medical conditions"
+                  label={t('medicalConditions')}
                   value={info.medicalConditions}
                   onChange={(e) => updateField('medicalConditions', e.target.value)}
                   fullWidth
-                  placeholder="e.g. Asthma, Diabetes"
+                  placeholder={t('medicalConditionsPlaceholder')}
                 />
                 <TextField
                   size="small"
-                  label="Allergies"
+                  label={t('allergies')}
                   value={info.allergies}
                   onChange={(e) => updateField('allergies', e.target.value)}
                   fullWidth
-                  placeholder="e.g. Peanuts, Shellfish, Penicillin"
+                  placeholder={t('allergiesPlaceholder')}
                 />
                 <TextField
                   size="small"
-                  label="Blood type"
+                  label={t('bloodType')}
                   value={info.bloodType}
                   onChange={(e) => updateField('bloodType', e.target.value)}
                   fullWidth
-                  placeholder="e.g. O+"
+                  placeholder={t('bloodTypePlaceholder')}
                 />
               </Stack>
             ) : (
               <Stack spacing={0.5}>
                 {info.medicalConditions && (
                   <Typography variant="body2" sx={{ color: 'text.primary' }}>
-                    <strong>Conditions:</strong> {info.medicalConditions}
+                    <strong>{t('conditionsLabel')}</strong> {info.medicalConditions}
                   </Typography>
                 )}
                 {info.allergies && (
                   <Typography variant="body2" sx={{ color: 'text.primary' }}>
-                    <strong>Allergies:</strong> {info.allergies}
+                    <strong>{t('allergiesLabel')}</strong> {info.allergies}
                   </Typography>
                 )}
                 {info.bloodType && (
                   <Typography variant="body2" sx={{ color: 'text.primary' }}>
-                    <strong>Blood type:</strong> {info.bloodType}
+                    <strong>{t('bloodTypeLabel')}</strong> {info.bloodType}
                   </Typography>
                 )}
                 {!info.medicalConditions && !info.allergies && !info.bloodType && (
                   <Typography variant="body2" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
-                    (not set)
+                    {t('notSet')}
                   </Typography>
                 )}
               </Stack>
@@ -314,57 +316,57 @@ export function EmergencyCard() {
           {/* Emergency contact & embassy */}
           <Box sx={{ p: 2.5 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: brand[600], mb: 1.5 }}>
-              CONTACTS
+              {t('contacts')}
             </Typography>
             {editing ? (
               <Stack spacing={1.5}>
                 <TextField
                   size="small"
-                  label="Emergency contact (name + phone)"
+                  label={t('emergencyContactLabel')}
                   value={info.emergencyContact}
                   onChange={(e) => updateField('emergencyContact', e.target.value)}
                   fullWidth
-                  placeholder="e.g. Mom: +1-555-123-4567"
+                  placeholder={t('emergencyContactPlaceholder')}
                 />
                 <TextField
                   size="small"
-                  label="Embassy/Consulate info"
+                  label={t('embassyInfoLabel')}
                   value={info.embassyInfo}
                   onChange={(e) => updateField('embassyInfo', e.target.value)}
                   fullWidth
-                  placeholder="e.g. US Embassy Tokyo: 03-3224-5000"
+                  placeholder={t('embassyInfoPlaceholder')}
                 />
                 <TextField
                   size="small"
-                  label="Other notes"
+                  label={t('otherNotes')}
                   value={info.notes}
                   onChange={(e) => updateField('notes', e.target.value)}
                   fullWidth
                   multiline
                   rows={2}
-                  placeholder="e.g. Travel insurance policy #, medications"
+                  placeholder={t('otherNotesPlaceholder')}
                 />
               </Stack>
             ) : (
               <Stack spacing={0.5}>
                 {info.emergencyContact && (
                   <Typography variant="body2" sx={{ color: 'text.primary' }}>
-                    <strong>Contact:</strong> {info.emergencyContact}
+                    <strong>{t('contactLabel')}</strong> {info.emergencyContact}
                   </Typography>
                 )}
                 {info.embassyInfo && (
                   <Typography variant="body2" sx={{ color: 'text.primary' }}>
-                    <strong>Embassy:</strong> {info.embassyInfo}
+                    <strong>{t('embassyLabel')}</strong> {info.embassyInfo}
                   </Typography>
                 )}
                 {info.notes && (
                   <Typography variant="body2" sx={{ color: 'text.primary' }}>
-                    <strong>Notes:</strong> {info.notes}
+                    <strong>{t('notesLabel')}</strong> {info.notes}
                   </Typography>
                 )}
                 {!info.emergencyContact && !info.embassyInfo && !info.notes && (
                   <Typography variant="body2" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
-                    (not set)
+                    {t('notSet')}
                   </Typography>
                 )}
               </Stack>
@@ -382,7 +384,7 @@ export function EmergencyCard() {
           }}
         >
           <Typography variant="subtitle2" sx={{ fontWeight: 700, color: brand[600], mb: 1 }}>
-            EMERGENCY PHRASES
+            {t('emergencyPhrasesTitle')}
           </Typography>
           <Stack spacing={1}>
             {[
@@ -441,7 +443,7 @@ export function EmergencyCard() {
               startIcon={<EditIcon />}
               sx={{ textTransform: 'none', borderRadius: 2 }}
             >
-              Fill in my info
+              {t('fillInInfo')}
             </Button>
           </Box>
         )}

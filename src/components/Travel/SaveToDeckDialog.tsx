@@ -14,6 +14,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { stripFurigana } from '@/components/FuriganaText';
@@ -36,23 +37,26 @@ export function SaveToDeckDialog({
   onClose,
   phrases,
   onSaved,
-  defaultDeckName = 'Travel Phrases',
+  defaultDeckName,
 }: SaveToDeckDialogProps) {
+  const t = useTranslations('Travel.saveToDeck');
+  const tc = useTranslations('Common');
   const theme = useTheme();
   const { brand } = theme.palette;
   const { user } = useAuth();
+  const resolvedDefaultDeckName = defaultDeckName ?? t('defaultDeckName');
 
   const [mode, setMode] = useState<'choose' | 'new'>('choose');
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loadingDecks, setLoadingDecks] = useState(false);
-  const [newName, setNewName] = useState(defaultDeckName);
+  const [newName, setNewName] = useState(resolvedDefaultDeckName);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open || !user) return;
     setMode('choose');
-    setNewName(defaultDeckName);
+    setNewName(resolvedDefaultDeckName);
     setError(null);
     setSaving(false);
     setLoadingDecks(true);
@@ -60,7 +64,7 @@ export function SaveToDeckDialog({
       setDecks(loaded);
       setLoadingDecks(false);
     });
-  }, [open, user, defaultDeckName]);
+  }, [open, user, resolvedDefaultDeckName]);
 
   const insertCards = useCallback(
     async (deckId: string) => {
@@ -89,12 +93,12 @@ export function SaveToDeckDialog({
         onSaved();
         onClose();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to save');
+        setError(err instanceof Error ? err.message : t('failedToSave'));
       } finally {
         setSaving(false);
       }
     },
-    [insertCards, onSaved, onClose],
+    [insertCards, onSaved, onClose, t],
   );
 
   const handleCreateNew = useCallback(async () => {
@@ -102,22 +106,22 @@ export function SaveToDeckDialog({
     setSaving(true);
     setError(null);
     try {
-      const deck = await dbCreateDeck(newName.trim(), 'Created from Travel Mode');
+      const deck = await dbCreateDeck(newName.trim(), t('createdFromTravelMode'));
       await insertCards(deck.id);
       onSaved();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create deck');
+      setError(err instanceof Error ? err.message : t('failedToCreateDeck'));
     } finally {
       setSaving(false);
     }
-  }, [newName, insertCards, onSaved, onClose]);
+  }, [newName, insertCards, onSaved, onClose, t]);
 
   const actions =
     mode === 'new' ? (
       <Stack direction="row" spacing={1}>
         <Button onClick={() => setMode('choose')} sx={{ textTransform: 'none' }}>
-          Back
+          {tc('back')}
         </Button>
         <Button
           onClick={handleCreateNew}
@@ -125,7 +129,7 @@ export function SaveToDeckDialog({
           disabled={!newName.trim() || saving}
           sx={{ textTransform: 'none', borderRadius: 2 }}
         >
-          {saving ? 'Saving...' : 'Create & Save'}
+          {saving ? t('saving') : t('createAndSave')}
         </Button>
       </Stack>
     ) : undefined;
@@ -134,8 +138,8 @@ export function SaveToDeckDialog({
     <StyledDialog
       open={open}
       onClose={onClose}
-      title={`Save ${phrases.length} phrase${phrases.length !== 1 ? 's' : ''}`}
-      subtitle="Add to an existing deck or create a new one"
+      title={t('title', { count: phrases.length })}
+      subtitle={t('subtitle')}
       icon={<LibraryAddIcon sx={{ fontSize: 22, color: brand[600] }} />}
       actions={actions}
       titleId="save-to-deck-title"
@@ -161,18 +165,18 @@ export function SaveToDeckDialog({
               py: 1.25,
             }}
           >
-            Create new deck
+            {t('createNewDeck')}
           </Button>
 
           {loadingDecks ? (
-            <Loading message="Loading decks..." />
+            <Loading message={t('loadingDecks')} />
           ) : decks.length > 0 ? (
             <Box>
               <Typography
                 variant="caption"
                 sx={{ color: 'text.secondary', mb: 0.5, display: 'block' }}
               >
-                Or add to an existing deck:
+                {t('orAddToExisting')}
               </Typography>
               <List
                 dense
@@ -192,7 +196,7 @@ export function SaveToDeckDialog({
                   >
                     <ListItemText
                       primary={`${deck.emoji || '📚'} ${deck.name}`}
-                      secondary={`${deck.cardCount} cards`}
+                      secondary={t('cardsCount', { count: deck.cardCount })}
                       primaryTypographyProps={{ fontWeight: 600, fontSize: '0.85rem' }}
                       secondaryTypographyProps={{ fontSize: '0.7rem' }}
                     />
@@ -202,7 +206,7 @@ export function SaveToDeckDialog({
             </Box>
           ) : (
             <Typography variant="body2" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
-              No existing decks. Create a new one above.
+              {t('noExistingDecks')}
             </Typography>
           )}
         </Stack>
@@ -211,7 +215,7 @@ export function SaveToDeckDialog({
       {mode === 'new' && (
         <Stack spacing={2}>
           <TextField
-            label="Deck name"
+            label={t('deckNameLabel')}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             fullWidth

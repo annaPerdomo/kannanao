@@ -4,6 +4,7 @@ import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
 import LoginIcon from '@mui/icons-material/Login';
 import { Button, Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { StyledDialog } from '@/components/StyledDialog';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +20,7 @@ interface AuthGatedSaveDialogProps {
 }
 
 export function AuthGatedSaveDialog(props: AuthGatedSaveDialogProps) {
+  const t = useTranslations('Travel.authGatedSave');
   const { user } = useAuth();
   const router = useRouter();
 
@@ -27,14 +29,14 @@ export function AuthGatedSaveDialog(props: AuthGatedSaveDialogProps) {
       <StyledDialog
         open={props.open}
         onClose={props.onClose}
-        title="Sign in to save phrases"
-        subtitle="Save phrases to your personal study deck"
+        title={t('title')}
+        subtitle={t('subtitle')}
         icon={<BookmarkAddIcon sx={{ fontSize: 22, color: 'text.primary' }} />}
         titleId="auth-gated-save-title"
         actions={
           <Stack direction="row" spacing={1}>
             <Button onClick={props.onClose} sx={{ textTransform: 'none' }}>
-              Maybe later
+              {t('maybeLater')}
             </Button>
             <Button
               variant="contained"
@@ -45,13 +47,13 @@ export function AuthGatedSaveDialog(props: AuthGatedSaveDialogProps) {
               }}
               sx={{ textTransform: 'none', borderRadius: 2 }}
             >
-              Sign in
+              {t('signIn')}
             </Button>
           </Stack>
         }
       >
         <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-          Sign in to save travel phrases into flashcard decks you can study and practice anytime.
+          {t('body')}
         </Typography>
       </StyledDialog>
     );
