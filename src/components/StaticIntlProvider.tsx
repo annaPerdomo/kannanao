@@ -1,9 +1,10 @@
 'use client';
 import { NextIntlClientProvider } from 'next-intl';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 
-import { DEFAULT_LOCALE, DEFAULT_TIME_ZONE } from '@/i18n/config';
-import enMessages from '@/messages/en.json';
+import { DEFAULT_TIME_ZONE, type Locale } from '@/i18n/config';
+
+type Messages = ComponentProps<typeof NextIntlClientProvider>['messages'];
 
 /**
  * An intl provider for routes that must stay statically prerendered.
@@ -15,17 +16,27 @@ import enMessages from '@/messages/en.json';
  * silently turns the route dynamic. Crossing a client boundary first resolves
  * the plain react-client provider instead, which touches no server APIs.
  *
- * Locale is hardcoded English: these routes render before we know who the user
- * is. The cookie-driven locale lives in the (app) route group, which is already
- * per-request. Keep it that way — see CLAUDE.md's route-groups section.
+ * Locale and messages are props rather than imports for two reasons. A
+ * 'use client' module that imports en.json ships every namespace in the route's
+ * JS bundle, so a Server Component caller that hands over only the namespaces
+ * its tree renders keeps the rest out of the browser entirely. And the locale
+ * has to be the caller's decision: /landing and /landing/ja are two static
+ * builds of the same tree, each pinned to its own locale at build time. Neither
+ * may derive it from the cookie — the cookie-driven locale lives in the (app)
+ * route group, which is already per-request. Keep it that way; see CLAUDE.md's
+ * route-groups section.
  */
-export function StaticIntlProvider({ children }: { children: ReactNode }) {
+export function StaticIntlProvider({
+  locale,
+  messages,
+  children,
+}: {
+  locale: Locale;
+  messages: Messages;
+  children: ReactNode;
+}) {
   return (
-    <NextIntlClientProvider
-      locale={DEFAULT_LOCALE}
-      messages={enMessages}
-      timeZone={DEFAULT_TIME_ZONE}
-    >
+    <NextIntlClientProvider locale={locale} messages={messages} timeZone={DEFAULT_TIME_ZONE}>
       {children}
     </NextIntlClientProvider>
   );

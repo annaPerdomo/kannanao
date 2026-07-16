@@ -15,7 +15,11 @@ export const metadata: Metadata = {
     canonical: '/',
     languages: {
       en: 'https://www.kannanao.com',
-      ja: 'https://www.kannanao.com',
+      // The Japanese landing is its own URL: `/` is language-picked per visitor
+      // by the middleware, which is exactly what hreflang must not point at.
+      // x-default stays on the root — it is where an unmatched visitor should
+      // land, and the pick sends them somewhere sensible from there.
+      ja: 'https://www.kannanao.com/landing/ja',
       'x-default': 'https://www.kannanao.com',
     },
   },

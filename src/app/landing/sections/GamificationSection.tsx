@@ -7,6 +7,7 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useInView } from '@/hooks/useInView';
@@ -23,37 +24,38 @@ const ACHIEVEMENT_COUNT = ALL_ACHIEVEMENTS.length;
 const CATEGORIES = [...new Set(ALL_SHOP_ITEMS.map((i) => i.category))].length;
 
 const DEMO_ACHIEVEMENTS = [
-  { icon: '🌱', title: 'First Steps', desc: 'Study your first card', unlocked: true },
-  { icon: '🔥', title: 'On Fire', desc: '7-day streak', unlocked: true },
-  { icon: '🎯', title: 'Sharpshooter', desc: '95% accuracy', unlocked: true },
-  { icon: '💯', title: 'Century', desc: '100 cards studied', unlocked: true },
-  { icon: '⚡', title: 'Speed Demon', desc: 'Fast match mode', unlocked: false },
-  { icon: '🏔️', title: 'Summit', desc: 'Reach level 10', unlocked: false },
+  { key: 'firstSteps', icon: '🌱', unlocked: true },
+  { key: 'onFire', icon: '🔥', unlocked: true },
+  { key: 'sharpshooter', icon: '🎯', unlocked: true },
+  { key: 'century', icon: '💯', unlocked: true },
+  { key: 'speedDemon', icon: '⚡', unlocked: false },
+  { key: 'summit', icon: '🏔️', unlocked: false },
 ];
 
 // Mirrors the actual theme system — 10 named themes
 const THEME_PREVIEWS = [
-  { name: 'Sakura', colors: [pink[300], pink[500], pink[600]] },
-  { name: 'Murasaki', colors: [purple[300], purple[500], purple[700]] },
-  { name: 'Yuki', colors: [sky[200], sky[400], purple[400]] },
-  { name: 'Ocean', colors: [ocean[300], ocean[500], ocean[700]] },
-  { name: 'Forest', colors: [emerald[300], emerald[500], emerald[700]] },
-  { name: 'Sunset', colors: [sunset[300], sunset[500], sunset[700]] },
-  { name: 'Lavender', colors: [lavender[300], lavender[500], lavender[700]] },
-  { name: 'Midnight', colors: [slate[400], slate[600], slate[800]] },
-  { name: 'Matcha', colors: [emerald[200], emerald[400], emerald[600]] },
-  { name: 'Rose Gold', colors: [rose[300], rose[400], amber[400]] },
+  { key: 'sakura', colors: [pink[300], pink[500], pink[600]] },
+  { key: 'murasaki', colors: [purple[300], purple[500], purple[700]] },
+  { key: 'yuki', colors: [sky[200], sky[400], purple[400]] },
+  { key: 'ocean', colors: [ocean[300], ocean[500], ocean[700]] },
+  { key: 'forest', colors: [emerald[300], emerald[500], emerald[700]] },
+  { key: 'sunset', colors: [sunset[300], sunset[500], sunset[700]] },
+  { key: 'lavender', colors: [lavender[300], lavender[500], lavender[700]] },
+  { key: 'midnight', colors: [slate[400], slate[600], slate[800]] },
+  { key: 'matcha', colors: [emerald[200], emerald[400], emerald[600]] },
+  { key: 'roseGold', colors: [rose[300], rose[400], amber[400]] },
 ];
 
 // Real shop items — one from each category
 const DEMO_SHOP_ITEMS = [
-  { icon: '🌅', name: 'Sunset Orange', price: 2500, type: 'Themes' },
-  { icon: '🌸', name: 'Cherry Blossom', price: 1500, type: 'Card Borders' },
-  { icon: '⭐', name: 'Star Shower', price: 5000, type: 'Celebrations' },
-  { icon: '🦊', name: 'Fox Buddy', price: 65000, type: 'Study Buddies' },
+  { key: 'sunsetOrange', icon: '🌅', price: 2500 },
+  { key: 'cherryBlossom', icon: '🌸', price: 1500 },
+  { key: 'starShower', icon: '⭐', price: 5000 },
+  { key: 'foxBuddy', icon: '🦊', price: 65000 },
 ];
 
 export function GamificationSection() {
+  const t = useTranslations('Landing.gamification');
   const { ref, inView } = useInView(0.06);
   // Deterministic alpha values for calendar cells to avoid hydration mismatches
   const calendarAlphas = useMemo(
@@ -173,9 +175,7 @@ export function GamificationSection() {
               lineHeight: 1.05,
             }}
           >
-            Every session earns XP.
-            <br />
-            Every level unlocks more.
+            {t.rich('heading', { br: () => <br /> })}
           </Typography>
           <Typography
             sx={{
@@ -186,8 +186,7 @@ export function GamificationSection() {
               lineHeight: 1.7,
             }}
           >
-            Study earns XP. XP unlocks themes, card borders, celebration effects, and study buddies.
-            Achievements mark your milestones. It&apos;s learning that feels like a game.
+            {t('subheading')}
           </Typography>
         </Box>
 
@@ -249,12 +248,12 @@ export function GamificationSection() {
                     textTransform: 'uppercase',
                   }}
                 >
-                  Level 7
+                  {t('levelBadge')}
                 </Typography>
                 <Typography
                   sx={{ fontSize: '1.3rem', fontWeight: 900, color: amber[800], lineHeight: 1.2 }}
                 >
-                  2,450 XP
+                  {t('xpTotal')}
                 </Typography>
               </Box>
             </Box>
@@ -263,7 +262,7 @@ export function GamificationSection() {
             <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
                 <Typography sx={{ fontSize: '0.68rem', color: 'text.secondary' }}>
-                  Progress to Level 8
+                  {t('progressToNextLevel')}
                 </Typography>
                 <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: amber[600] }}>
                   {xpProgress}%
@@ -288,12 +287,12 @@ export function GamificationSection() {
             {/* Stat cards row — mirrors actual StatCard */}
             <Stack direction="row" spacing={1.5}>
               {[
-                { icon: '🔥', label: 'Streak', value: '12', sub: 'days' },
-                { icon: '🎯', label: 'Accuracy', value: '94%', sub: 'avg' },
-                { icon: '📚', label: 'Cards', value: '342', sub: 'studied' },
+                { icon: '🔥', key: 'streak', value: '12' },
+                { icon: '🎯', key: 'accuracy', value: '94%' },
+                { icon: '📚', key: 'cards', value: '342' },
               ].map((stat) => (
                 <Paper
-                  key={stat.label}
+                  key={stat.key}
                   elevation={0}
                   sx={{
                     flex: 1,
@@ -316,7 +315,7 @@ export function GamificationSection() {
                     {stat.value}
                   </Typography>
                   <Typography sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
-                    {stat.sub}
+                    {t(`stats.${stat.key}`)}
                   </Typography>
                 </Paper>
               ))}
@@ -359,10 +358,10 @@ export function GamificationSection() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
               <Typography sx={{ fontSize: '1rem' }}>🏅</Typography>
               <Typography sx={{ fontSize: '0.85rem', fontWeight: 800, color: purple[700] }}>
-                Achievements
+                {t('achievementsHeading')}
               </Typography>
               <Chip
-                label="4/12"
+                label={t('achievementCount')}
                 size="small"
                 sx={{
                   ml: 'auto',
@@ -377,7 +376,7 @@ export function GamificationSection() {
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.25 }}>
               {DEMO_ACHIEVEMENTS.map((a, i) => (
                 <Box
-                  key={a.title}
+                  key={a.key}
                   sx={{
                     textAlign: 'center',
                     p: 1.25,
@@ -408,7 +407,7 @@ export function GamificationSection() {
                       lineHeight: 1.2,
                     }}
                   >
-                    {a.title}
+                    {t(`achievements.${a.key}.name`)}
                   </Typography>
                 </Box>
               ))}
@@ -428,7 +427,7 @@ export function GamificationSection() {
             }}
           >
             <Typography sx={{ fontSize: '0.85rem', fontWeight: 800, color: pink[700], mb: 2 }}>
-              🎨 Customize Everything
+              {t('customizeHeading')}
             </Typography>
 
             {/* Theme swatches — like actual theme selector */}
@@ -436,22 +435,24 @@ export function GamificationSection() {
               <Typography
                 sx={{ fontSize: '0.62rem', color: 'text.secondary', mb: 1, fontWeight: 600 }}
               >
-                10 COLOR THEMES
+                {t('colorThemesLabel')}
               </Typography>
               <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
-                {THEME_PREVIEWS.map((t, i) => (
+                {THEME_PREVIEWS.map((theme, i) => (
                   <Box
-                    key={t.name}
+                    key={theme.key}
                     sx={{
                       width: 28,
                       height: 28,
                       borderRadius: '8px',
-                      background: `linear-gradient(135deg, ${t.colors[0]} 0%, ${t.colors[2]} 100%)`,
+                      background: `linear-gradient(135deg, ${theme.colors[0]} 0%, ${theme.colors[2]} 100%)`,
                       border:
-                        i === activeTheme ? `2.5px solid ${t.colors[1]}` : `2px solid transparent`,
+                        i === activeTheme
+                          ? `2.5px solid ${theme.colors[1]}`
+                          : `2px solid transparent`,
                       boxShadow:
                         i === activeTheme
-                          ? `0 0 0 2px ${alpha(t.colors[1], 0.3)}, 0 4px 12px ${alpha(t.colors[1], 0.35)}`
+                          ? `0 0 0 2px ${alpha(theme.colors[1], 0.3)}, 0 4px 12px ${alpha(theme.colors[1], 0.35)}`
                           : 'none',
                       transform: i === activeTheme ? 'scale(1.2)' : 'scale(1)',
                       transition: 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)',
@@ -462,7 +463,7 @@ export function GamificationSection() {
               <Typography
                 sx={{ fontSize: '0.6rem', color: 'text.secondary', mt: 0.75, fontStyle: 'italic' }}
               >
-                {THEME_PREVIEWS[activeTheme].name}
+                {t(`themes.${THEME_PREVIEWS[activeTheme].key}.name`)}
               </Typography>
             </Box>
 
@@ -470,7 +471,7 @@ export function GamificationSection() {
             <Stack spacing={0.75} sx={{ flex: 1 }}>
               {DEMO_SHOP_ITEMS.map((item) => (
                 <Box
-                  key={item.name}
+                  key={item.key}
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
@@ -507,10 +508,10 @@ export function GamificationSection() {
                       noWrap
                       sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'text.primary' }}
                     >
-                      {item.name}
+                      {t(`shopItems.${item.key}.name`)}
                     </Typography>
                     <Typography sx={{ fontSize: '0.58rem', color: 'text.secondary' }}>
-                      {item.type}
+                      {t(`shopItems.${item.key}.type`)}
                     </Typography>
                   </Box>
                   <Chip
@@ -545,12 +546,12 @@ export function GamificationSection() {
           }}
         >
           {[
-            { n: String(THEME_COUNT), label: 'color themes' },
-            { n: String(BORDER_COUNT), label: 'card borders' },
-            { n: String(ACHIEVEMENT_COUNT), label: 'achievements' },
-            { n: String(CATEGORIES), label: 'shop categories' },
+            { n: String(THEME_COUNT), key: 'colorThemes' },
+            { n: String(BORDER_COUNT), key: 'cardBorders' },
+            { n: String(ACHIEVEMENT_COUNT), key: 'achievements' },
+            { n: String(CATEGORIES), key: 'shopCategories' },
           ].map((s) => (
-            <Box key={s.label} sx={{ textAlign: 'center', px: 3 }}>
+            <Box key={s.key} sx={{ textAlign: 'center', px: 3 }}>
               <Typography
                 sx={{
                   fontFamily: (t) => t.fonts.cute,
@@ -569,7 +570,7 @@ export function GamificationSection() {
                   textTransform: 'uppercase',
                 }}
               >
-                {s.label}
+                {t(`counters.${s.key}`)}
               </Typography>
             </Box>
           ))}

@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import { useInView } from '@/hooks/useInView';
 import { emerald, pink, purple } from '@/theme';
@@ -12,25 +13,22 @@ import { Blob } from './Blob';
 
 const MODES = [
   {
+    key: 'match',
     emoji: '🔗',
-    title: 'Match',
-    desc: 'Race the clock matching Japanese words to their meanings. Great for rapid-fire vocabulary drilling.',
     color: emerald[500],
     bg: alpha(emerald[100], 0.55),
     border: alpha(emerald[300], 0.55),
   },
   {
+    key: 'fillInTheBlank',
     emoji: '✏️',
-    title: 'Fill in the blank',
-    desc: 'Read a sentence and type the missing word. Builds reading comprehension alongside vocabulary.',
     color: purple[600],
     bg: alpha(purple[100], 0.6),
     border: alpha(purple[300], 0.55),
   },
   {
+    key: 'recall',
     emoji: '🧠',
-    title: 'Recall',
-    desc: 'See the meaning, type the Japanese. The hardest mode — and the best for long-term retention.',
     color: pink[600],
     bg: alpha(pink[100], 0.6),
     border: alpha(pink[300], 0.55),
@@ -38,6 +36,7 @@ const MODES = [
 ];
 
 export function PracticeSection() {
+  const t = useTranslations('Landing.practice');
   const { ref, inView } = useInView(0.1);
 
   return (
@@ -76,7 +75,7 @@ export function PracticeSection() {
               lineHeight: 1.05,
             }}
           >
-            Three ways to practice
+            {t('heading')}
           </Typography>
           <Typography
             sx={{
@@ -87,8 +86,7 @@ export function PracticeSection() {
               lineHeight: 1.7,
             }}
           >
-            Switch between modes to keep sessions fresh and challenging. Each one earns XP toward
-            your next level.
+            {t('subheading')}
           </Typography>
         </Box>
 
@@ -101,7 +99,7 @@ export function PracticeSection() {
         >
           {MODES.map((m, i) => (
             <Paper
-              key={m.title}
+              key={m.key}
               elevation={0}
               sx={{
                 p: 3.5,
@@ -125,10 +123,10 @@ export function PracticeSection() {
               <Typography
                 sx={{ fontFamily: (t) => t.fonts.display, fontSize: '1.3rem', color: m.color }}
               >
-                {m.title}
+                {t(`modes.${m.key}.name`)}
               </Typography>
               <Typography sx={{ fontSize: '0.87rem', color: 'text.secondary', lineHeight: 1.72 }}>
-                {m.desc}
+                {t(`modes.${m.key}.desc`)}
               </Typography>
             </Paper>
           ))}

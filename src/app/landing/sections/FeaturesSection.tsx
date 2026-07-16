@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import { useInView } from '@/hooks/useInView';
 import { darkPurple, pink, purple, sky } from '@/theme';
@@ -11,69 +12,22 @@ import { darkPurple, pink, purple, sky } from '@/theme';
 import { Blob } from './Blob';
 
 const FEATURES = [
-  {
-    emoji: '🤖',
-    title: 'AI Card Generation',
-    desc: 'Type a word — Google Gemini fills readings, meanings, and bilingual example sentences instantly.',
-  },
-  {
-    emoji: '✈️',
-    title: 'Travel Mode',
-    desc: 'Nine modules for real-world Japanese — daily phrases, food menus, scenarios, emergency cards, and more.',
-  },
-  {
-    emoji: '🎮',
-    title: 'Three Practice Modes',
-    desc: 'Match, Fill-in-the-blank, and Recall. Every session tracks accuracy and awards XP.',
-  },
-  {
-    emoji: '🎨',
-    title: 'Themes & Shop',
-    desc: '10 color themes, custom card borders, celebration effects, and study buddies — all earnable with XP.',
-  },
-  {
-    emoji: '👥',
-    title: 'Group Study',
-    desc: 'Create a group, invite members via QR code, assign decks, track progress, and send encouragements.',
-  },
-  {
-    emoji: '🎤',
-    title: 'Speech Practice',
-    desc: 'Memorize speeches line-by-line with read-through and recall modes. Perfect for presentations.',
-  },
-  {
-    emoji: '🔥',
-    title: 'Streaks & Achievements',
-    desc: 'Daily streaks, 12+ achievement badges, XP levels, and a study calendar to stay motivated.',
-  },
-  {
-    emoji: '📄',
-    title: 'PDF Import',
-    desc: 'Upload a textbook or word list PDF — Kannanao extracts and builds flashcards for you.',
-  },
-  {
-    emoji: '🏆',
-    title: 'Leaderboard',
-    desc: 'Weekly XP rankings across your group. See who studied the most and celebrate together.',
-  },
-  {
-    emoji: '✅',
-    title: 'Habit Tracker',
-    desc: 'Build daily study habits with a built-in todo system. Earn XP for every completed task.',
-  },
-  {
-    emoji: '🖼️',
-    title: 'Beautiful Cards',
-    desc: 'Unsplash photos, custom borders, furigana, and multiple display modes for every card.',
-  },
-  {
-    emoji: '🤝',
-    title: 'Share & Embed',
-    desc: 'Share decks with a link or embed interactive flashcards on any website — no account needed.',
-  },
+  { key: 'aiCardGeneration', emoji: '🤖' },
+  { key: 'travelMode', emoji: '✈️' },
+  { key: 'threePracticeModes', emoji: '🎮' },
+  { key: 'themesAndShop', emoji: '🎨' },
+  { key: 'groupStudy', emoji: '👥' },
+  { key: 'speechPractice', emoji: '🎤' },
+  { key: 'streaksAndAchievements', emoji: '🔥' },
+  { key: 'pdfImport', emoji: '📄' },
+  { key: 'leaderboard', emoji: '🏆' },
+  { key: 'habitTracker', emoji: '✅' },
+  { key: 'beautifulCards', emoji: '🖼️' },
+  { key: 'shareAndEmbed', emoji: '🤝' },
 ];
 
 export function FeaturesSection() {
+  const t = useTranslations('Landing.features');
   const { ref, inView } = useInView(0.08);
 
   return (
@@ -132,9 +86,7 @@ export function FeaturesSection() {
               lineHeight: 1.05,
             }}
           >
-            Everything you need
-            <br />
-            to study smarter
+            {t.rich('heading', { br: () => <br /> })}
           </Typography>
           <Typography
             sx={{
@@ -145,8 +97,7 @@ export function FeaturesSection() {
               lineHeight: 1.7,
             }}
           >
-            AI flashcards, travel phrasebooks, group classrooms, speech practice, gamification, and
-            more — a complete Japanese learning studio.
+            {t('subheading')}
           </Typography>
         </Box>
 
@@ -159,7 +110,7 @@ export function FeaturesSection() {
         >
           {FEATURES.map((f, i) => (
             <Paper
-              key={f.title}
+              key={f.key}
               elevation={0}
               sx={{
                 p: 3,
@@ -191,12 +142,12 @@ export function FeaturesSection() {
                   lineHeight: 1.2,
                 }}
               >
-                {f.title}
+                {t(`items.${f.key}.title`)}
               </Typography>
               <Typography
                 sx={{ fontSize: '0.82rem', color: alpha('#fff', 0.48), lineHeight: 1.65 }}
               >
-                {f.desc}
+                {t(`items.${f.key}.desc`)}
               </Typography>
             </Paper>
           ))}

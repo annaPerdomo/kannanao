@@ -2386,5 +2386,425 @@
         ]
       }
     }
+  },
+  "Landing": {
+    "seo": {
+      "appDescription": "AI-powered Japanese flashcard studio with travel phrasebooks, speech practice, group classrooms, gamified XP & achievements, multiple themes, and multiple practice modes.",
+      "featureList": [
+        "AI flashcard generation with Google Gemini",
+        "Travel Mode with 9 phrasebook modules",
+        "Match, Fill-in-the-blank, and Recall practice modes",
+        "Speech memorization practice",
+        "Group classrooms with assignments and leaderboards",
+        "XP system with achievements and daily streaks",
+        "10 customizable color themes",
+        "PDF vocabulary import",
+        "Deck sharing and embeddable widgets"
+      ],
+      "faq": [
+        {
+          "question": "What is Kannanao?",
+          "answer": "Kannanao is a free, AI-powered Japanese flashcard studio. It uses Google Gemini to generate readings, meanings, and bilingual example sentences for any word you type. It also includes Travel Mode phrasebooks, group study classrooms, gamified XP, and 10 customizable themes."
+        },
+        {
+          "question": "How does AI flashcard generation work?",
+          "answer": "Type any word in English or Japanese and Kannanao uses Google Gemini AI to generate the hiragana reading, kanji, meaning, and bilingual example sentences. You can also upload a PDF to extract vocabulary and generate cards in bulk."
+        },
+        {
+          "question": "What is Travel Mode?",
+          "answer": "Travel Mode is a built-in pocket phrasebook with 9 interactive modules: Daily Phrases, Scenarios, Food Menu, Emergency, Listening Practice, Katakana Decoder, Culture Guide, Point & Communicate, and Show Cards. Each module prepares you for real conversations in Japan."
+        },
+        {
+          "question": "Can I study with friends or in a class?",
+          "answer": "Yes! Kannanao supports group study. Organizers can create a group, invite members via QR code, assign decks with deadlines, view a weekly XP leaderboard, and send encouragement messages. You can also share any deck with a link or embed flashcards on a website."
+        },
+        {
+          "question": "What practice modes are available?",
+          "answer": "Kannanao offers three practice modes: Match (race the clock pairing words to meanings), Fill-in-the-blank (type the missing word in a sentence), and Recall (see the meaning, type the Japanese). Every session earns XP toward your next level."
+        },
+        {
+          "question": "Is Kannanao free?",
+          "answer": "Kannanao is currently free and in closed beta. You can join the waitlist on the homepage to be notified when new spots open up."
+        }
+      ]
+    },
+    "languageToggle": {
+      "ariaLabel": "Language",
+      "en": "English",
+      "ja": "Japanese"
+    },
+    "hero": {
+      "waitlistBadge": "✨ Closed beta — join the waitlist",
+      "headline": "Learn Japanese,<br></br>one card<br></br>at a time.",
+      "subtitle": "AI-powered flashcards, travel phrasebooks, speech practice, gamified XP & achievements, customizable themes, and group study — everything you need to make learning Japanese <em>actually</em> enjoyable.",
+      "dashboardButton": "Go to dashboard 🌸",
+      "waitlistButton": "Join the waitlist 🌸",
+      "signInButton": "Sign in",
+      "tags": {
+        "japanese": "🎌 Japanese",
+        "aiPowered": "🤖 AI-powered",
+        "gamified": "🎮 Gamified",
+        "travelMode": "✈️ Travel Mode",
+        "groups": "👥 Groups",
+        "themes": "🎨 Themes"
+      },
+      "scroll": "scroll"
+    },
+    "features": {
+      "heading": "Everything you need<br></br>to study smarter",
+      "subheading": "AI flashcards, travel phrasebooks, group classrooms, speech practice, gamification, and more — a complete Japanese learning studio.",
+      "items": {
+        "aiCardGeneration": {
+          "title": "AI Card Generation",
+          "desc": "Type a word — Google Gemini fills readings, meanings, and bilingual example sentences instantly."
+        },
+        "travelMode": {
+          "title": "Travel Mode",
+          "desc": "Nine modules for real-world Japanese — daily phrases, food menus, scenarios, emergency cards, and more."
+        },
+        "threePracticeModes": {
+          "title": "Three Practice Modes",
+          "desc": "Match, Fill-in-the-blank, and Recall. Every session tracks accuracy and awards XP."
+        },
+        "themesAndShop": {
+          "title": "Themes & Shop",
+          "desc": "10 color themes, custom card borders, celebration effects, and study buddies — all earnable with XP."
+        },
+        "groupStudy": {
+          "title": "Group Study",
+          "desc": "Create a group, invite members via QR code, assign decks, track progress, and send encouragements."
+        },
+        "speechPractice": {
+          "title": "Speech Practice",
+          "desc": "Memorize speeches line-by-line with read-through and recall modes. Perfect for presentations."
+        },
+        "streaksAndAchievements": {
+          "title": "Streaks & Achievements",
+          "desc": "Daily streaks, 12+ achievement badges, XP levels, and a study calendar to stay motivated."
+        },
+        "pdfImport": {
+          "title": "PDF Import",
+          "desc": "Upload a textbook or word list PDF — Kannanao extracts and builds flashcards for you."
+        },
+        "leaderboard": {
+          "title": "Leaderboard",
+          "desc": "Weekly XP rankings across your group. See who studied the most and celebrate together."
+        },
+        "habitTracker": {
+          "title": "Habit Tracker",
+          "desc": "Build daily study habits with a built-in todo system. Earn XP for every completed task."
+        },
+        "beautifulCards": {
+          "title": "Beautiful Cards",
+          "desc": "Unsplash photos, custom borders, furigana, and multiple display modes for every card."
+        },
+        "shareAndEmbed": {
+          "title": "Share & Embed",
+          "desc": "Share decks with a link or embed interactive flashcards on any website — no account needed."
+        }
+      }
+    },
+    "aiDemo": {
+      "heading": "Generate a full deck<br></br>in minutes",
+      "subheading": "Type a few words or drop any PDF — Gemini AI generates readings, meanings, and bilingual example sentences for every card instantly.",
+      "steps": {
+        "generateCards": "Generate cards",
+        "reviewAndEdit": "Review & edit"
+      },
+      "addCardsPanelTitle": "✨ Add Cards",
+      "mainDisplayModeLabel": "Main display mode:",
+      "viewModes": {
+        "hiragana": "ひ Hiragana",
+        "kanji": "漢 Kanji"
+      },
+      "generateWithAiLabel": "Generate with AI",
+      "generatingCardsMessage": "Generating cards…",
+      "typeWordsPlaceholder": "Type words in any language…",
+      "generateButton": "Generate Cards",
+      "cardsGeneratedButton": "{count, plural, one {✓ # card generated!} other {✓ # cards generated!}}",
+      "orDivider": "or",
+      "addOptions": {
+        "addExisting": {
+          "title": "Add Existing Cards",
+          "desc": "Copy from your other decks"
+        },
+        "importPdf": {
+          "title": "Import from PDF",
+          "desc": "Extract vocabulary from a document"
+        }
+      },
+      "reviewCardsPanelTitle": "📋 Review Cards",
+      "reviewCardsStatus": "{count, plural, one {# card generated — edit before adding} other {# cards generated — edit before adding}}",
+      "reviewCardsWaiting": "Waiting for generation…",
+      "setViewModeLabel": "Set main view mode for all cards:",
+      "cancelButton": "Cancel",
+      "addCardsToDeckButton": "{count, plural, one {✓ Add # Card to Deck} other {✓ Add # Cards to Deck}}",
+      "studyYourDeckLabel": "Study your deck"
+    },
+    "travelMode": {
+      "badge": "TRAVEL MODE",
+      "heading": "Your pocket phrasebook<br></br>for Japan",
+      "subheading": "Zero Japanese required. Free phrasebooks, food guides, and cultural tips to navigate Japan with confidence.",
+      "exploreCta": "Explore free phrasebooks",
+      "freeSectionLabel": "FREE — NO ACCOUNT NEEDED",
+      "freeModules": {
+        "survivalPhrases": {
+          "title": "Survival Phrases",
+          "desc": "60+ essential phrases by situation — greetings, restaurants, shopping, transport, and emergencies. Each with romaji pronunciation, breakdowns, and cultural tips."
+        },
+        "foodMenu": {
+          "title": "Food Menu Cheat Sheet",
+          "desc": "Decode any Japanese menu. Ramen types, sushi, common dishes, drinks, and konbini food — with notes on what each item actually is."
+        },
+        "whatDidTheySay": {
+          "title": "\"What Did They Say?\"",
+          "desc": "The phrases Japanese people say TO you — at convenience stores, restaurants, train stations, and shops. Know what they mean and how to respond."
+        },
+        "katakanaDecoder": {
+          "title": "Katakana Decoder",
+          "desc": "Learn the 46 characters used for foreign words on menus and signs. Master katakana and suddenly half of Japan becomes readable."
+        },
+        "cultureGuide": {
+          "title": "Culture Guide",
+          "desc": "Do's, don'ts, and etiquette for temples, restaurants, trains, and onsen. Each tip includes the useful phrases for that situation."
+        }
+      },
+      "aiSectionLabel": "AI-POWERED — ACCOUNT REQUIRED",
+      "aiChipLabel": "AI",
+      "aiModules": {
+        "dailyPhrasePack": {
+          "title": "Daily Phrase Pack",
+          "desc": "Tell the AI your plans for the day and get a personalized set of phrases you'll actually need."
+        },
+        "scenarioPractice": {
+          "title": "Scenario Practice",
+          "desc": "Practice real conversations — ordering food, checking in at hotels, asking for directions. The AI plays the other person."
+        },
+        "pointCommunicate": {
+          "title": "Point & Communicate",
+          "desc": "Generate show cards for any situation — allergies, directions, special requests. Show your phone when words fail."
+        }
+      },
+      "demo": {
+        "scenarioTitle": "Ordering Ramen",
+        "scenarioSubtitle": "Say what you want in English",
+        "demoChip": "DEMO",
+        "contextLine": "A small ramen shop with counter seating. The staff greets you warmly.",
+        "sayThis": "SAY THIS",
+        "culturalTip": "Solo diners are very common — many ramen shops have counter seating just for you!",
+        "suggestionsLabel": "Suggestions:",
+        "suggestions": ["Ask for recommendations", "Order tonkotsu"],
+        "inputPlaceholder": "What do you want to say?"
+      }
+    },
+    "practice": {
+      "heading": "Three ways to practice",
+      "subheading": "Switch between modes to keep sessions fresh and challenging. Each one earns XP toward your next level.",
+      "modes": {
+        "match": {
+          "name": "Match",
+          "desc": "Race the clock matching Japanese words to their meanings. Great for rapid-fire vocabulary drilling."
+        },
+        "fillInTheBlank": {
+          "name": "Fill in the blank",
+          "desc": "Read a sentence and type the missing word. Builds reading comprehension alongside vocabulary."
+        },
+        "recall": {
+          "name": "Recall",
+          "desc": "See the meaning, type the Japanese. The hardest mode — and the best for long-term retention."
+        }
+      }
+    },
+    "gamification": {
+      "heading": "Every session earns XP.<br></br>Every level unlocks more.",
+      "subheading": "Study earns XP. XP unlocks themes, card borders, celebration effects, and study buddies. Achievements mark your milestones. It's learning that feels like a game.",
+      "levelBadge": "Level 7",
+      "xpTotal": "2,450 XP",
+      "progressToNextLevel": "Progress to Level 8",
+      "stats": {
+        "streak": "days",
+        "accuracy": "avg",
+        "cards": "studied"
+      },
+      "achievementsHeading": "Achievements",
+      "achievementCount": "4/12",
+      "achievements": {
+        "firstSteps": {
+          "name": "First Steps"
+        },
+        "onFire": {
+          "name": "On Fire"
+        },
+        "sharpshooter": {
+          "name": "Sharpshooter"
+        },
+        "century": {
+          "name": "Century"
+        },
+        "speedDemon": {
+          "name": "Speed Demon"
+        },
+        "summit": {
+          "name": "Summit"
+        }
+      },
+      "customizeHeading": "🎨 Customize Everything",
+      "colorThemesLabel": "10 COLOR THEMES",
+      "themes": {
+        "sakura": {
+          "name": "Sakura"
+        },
+        "murasaki": {
+          "name": "Murasaki"
+        },
+        "yuki": {
+          "name": "Yuki"
+        },
+        "ocean": {
+          "name": "Ocean"
+        },
+        "forest": {
+          "name": "Forest"
+        },
+        "sunset": {
+          "name": "Sunset"
+        },
+        "lavender": {
+          "name": "Lavender"
+        },
+        "midnight": {
+          "name": "Midnight"
+        },
+        "matcha": {
+          "name": "Matcha"
+        },
+        "roseGold": {
+          "name": "Rose Gold"
+        }
+      },
+      "shopItems": {
+        "sunsetOrange": {
+          "name": "Sunset Orange",
+          "type": "Themes"
+        },
+        "cherryBlossom": {
+          "name": "Cherry Blossom",
+          "type": "Card Borders"
+        },
+        "starShower": {
+          "name": "Star Shower",
+          "type": "Celebrations"
+        },
+        "foxBuddy": {
+          "name": "Fox Buddy",
+          "type": "Study Buddies"
+        }
+      },
+      "counters": {
+        "colorThemes": "color themes",
+        "cardBorders": "card borders",
+        "achievements": "achievements",
+        "shopCategories": "shop categories"
+      }
+    },
+    "group": {
+      "badge": "SHARE & COLLABORATE",
+      "heading": "Better together",
+      "subheading": "Share decks with a link, embed cards on any website, or create a full classroom with assignments, leaderboards, and encouragements.",
+      "poweredBy": "Powered by Kannanao",
+      "shareHeading": "Share & embed your decks",
+      "shareBody": "Share any deck with a single link — friends and classmates can study instantly with no account required. Or embed an interactive flashcard widget directly on your blog, Notion page, or website.",
+      "shareTags": {
+        "oneClickSharing": "🔗 One-click sharing",
+        "embeddableWidget": "🌐 Embeddable widget",
+        "noAccountNeeded": "🔒 No account needed"
+      },
+      "classroomHeading": "Or build a full classroom",
+      "classroomSubheading": "Invite members with a QR code, assign decks, track progress, and send encouragements.",
+      "leaderboard": {
+        "title": "Weekly Leaderboard",
+        "levelStreak": "Lv.{level} · 🔥 {streak}d",
+        "cards": "{count, plural, one {# card} other {# cards}}"
+      },
+      "assignments": {
+        "title": "Assignments",
+        "dueLabel": "Due: {due}",
+        "items": {
+          "jlptN5Verbs": {
+            "deck": "JLPT N5 Verbs",
+            "due": "Tomorrow"
+          },
+          "dailyGreetings": {
+            "deck": "Daily Greetings",
+            "due": "Friday"
+          },
+          "foodAndDrinks": {
+            "deck": "Food & Drinks",
+            "due": "Next week"
+          }
+        }
+      },
+      "encouragements": {
+        "title": "Encouragements",
+        "qrTitle": "Invite with QR",
+        "qrSubtitle": "Members scan to join instantly",
+        "items": {
+          "greatStreak": {
+            "from": "Sensei",
+            "message": "Great streak! Keep going! 💪",
+            "time": "2h ago"
+          },
+          "masteredVerbs": {
+            "from": "Sensei",
+            "message": "You mastered all N5 verbs!",
+            "time": "1d ago"
+          }
+        }
+      },
+      "pills": {
+        "oneClickSharing": "🔗 One-click sharing",
+        "organizerMemberRoles": "👥 Organizer & member roles",
+        "assignDecksWithDeadlines": "📋 Assign decks with deadlines",
+        "weeklyXpLeaderboard": "🏆 Weekly XP leaderboard",
+        "sendEncouragements": "💌 Send encouragements",
+        "qrCodeInvites": "📱 QR code invites"
+      }
+    },
+    "howItWorks": {
+      "heading": "Up and running<br></br>in minutes",
+      "subheading": "No complicated setup. Create an account, build your first deck with AI, and start earning XP in minutes. Everything syncs automatically.",
+      "stats": {
+        "travelModules": "travel modules",
+        "achievements": "achievements",
+        "themes": "themes"
+      },
+      "steps": {
+        "createYourDecks": {
+          "title": "Create your decks",
+          "desc": "Type a word and AI fills readings, meanings, and examples. Or upload a PDF to generate cards in bulk. Unsplash photos and furigana are added automatically."
+        },
+        "studyYourWay": {
+          "title": "Study your way",
+          "desc": "Flip cards, play Match, Fill-in-the-blank, or Recall. Open Travel Mode for real-world phrases across 9 modules, or practice speeches line-by-line."
+        },
+        "earnAndCustomise": {
+          "title": "Earn & customise",
+          "desc": "Every session earns XP. Level up to unlock colour themes, card borders, celebration effects, and study buddies from the shop."
+        },
+        "learnTogether": {
+          "title": "Learn together",
+          "desc": "Create a group, invite members via QR code, assign decks with deadlines, climb the weekly leaderboard, and share or embed decks anywhere."
+        }
+      }
+    },
+    "cta": {
+      "betaChipLabel": "Closed beta — spots opening soon",
+      "headline": "Ready to level up your<br></br>Japanese skills?",
+      "subtitle": "Kannanao is currently in closed beta. Drop your email and we'll notify you the moment new spots open up.",
+      "dashboardButton": "Go to dashboard 🌸",
+      "brandName": "🌸 Kannanao",
+      "tagline": "AI-powered Japanese flashcard studio",
+      "madeBy": "Made with 💕 by <link>Variations on a String</link>"
+    }
   }
 }
