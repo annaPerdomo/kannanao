@@ -9,7 +9,8 @@
     "back": "Back",
     "loading": "Loading…",
     "retry": "Retry",
-    "somethingWentWrong": "Something went wrong"
+    "somethingWentWrong": "Something went wrong",
+    "readAloud": "Read aloud"
   },
   "Deck": {
     "addCardsModal": {
@@ -1065,6 +1066,226 @@
     },
     "useItemAnalysis": {
       "failedToLoad": "Failed to load analysis"
+    }
+  },
+  "Nav": {
+    "brandName": "🌸 Kannanao",
+    "mainNavigationAriaLabel": "Main navigation",
+    "messagesAriaLabel": "Messages",
+    "achievementUnlocked": "Achievement unlocked:",
+    "items": {
+      "home": "Home",
+      "decks": "Decks",
+      "groups": "Groups",
+      "speech": "Speech",
+      "travel": "Travel",
+      "stats": "Stats",
+      "shop": "Shop"
+    },
+    "userMenu": {
+      "signIn": "Sign In",
+      "admin": "Admin",
+      "account": "Account",
+      "signOut": "Sign out",
+      "theme": "Theme"
+    },
+    "editNameDialog": {
+      "title": "Edit your name",
+      "fieldLabel": "Display name",
+      "saving": "Saving…"
+    }
+  },
+  "Home": {
+    "greeting": {
+      "morning": "Good morning, {name}!",
+      "afternoon": "Hey there, {name}!",
+      "evening": "Good evening, {name}!"
+    },
+    "welcomeBanner": {
+      "openShopAriaLabel": "Open shop",
+      "xpProgressLabel": "XP Progress",
+      "xpToLevel": "{xp} XP to level {level} 🚀",
+      "xpToSpend": "{xp} XP to spend",
+      "moreXp": "{xp} more XP!"
+    },
+    "dashboardSection": {
+      "hideAriaLabel": "Hide {label}"
+    },
+    "editModeControls": {
+      "addSection": "Add section",
+      "editLayout": "Edit layout"
+    },
+    "hiddenSections": {
+      "heading": "Hidden sections",
+      "resetLayout": "Reset layout"
+    },
+    "sectionNav": {
+      "allGroups": "All groups",
+      "allDecks": "All decks",
+      "allSpeeches": "All speeches"
+    },
+    "groupsSection": {
+      "emptyCreate": "Create a group to get started"
+    },
+    "leaderboardSection": {
+      "emptyCheckBack": "Check back when more people join!"
+    },
+    "assignmentsSection": {
+      "emptyAllCaughtUp": "All caught up!"
+    },
+    "decksSection": {
+      "emptyCreateFirstTitle": "Create your first deck!",
+      "emptyPinTitle": "Pin a deck to see it here",
+      "emptyCreateFirstSub": "Head to Decks to start building flashcards ✨",
+      "emptyPinSub": "Tap the pin icon on any deck ✨"
+    },
+    "speechesSection": {
+      "emptyCreateFirstTitle": "Practice your お話し会 speech!",
+      "emptyPinTitle": "Pin a speech to see it here",
+      "emptyCreateFirstSub": "Add your lines and start memorizing ✨",
+      "emptyPinSub": "Tap the pin icon on any speech ✨",
+      "lineCount": "{count, plural, one {# line} other {# lines}}"
+    },
+    "customizeDialog": {
+      "title": "Customize Home",
+      "subtitle": "Toggle sections on or off",
+      "toggleAriaLabel": "Toggle {label}"
+    },
+    "buddy": {
+      "defaultPhrase": "Let's study!"
+    }
+  },
+  "Auth": {
+    "login": {
+      "brandName": "🌸 Kannanao",
+      "betaBadge": "Beta · Sign-ups paused",
+      "waitlistIntro": "Sign-ups are currently closed while we're in beta. Leave your email and we'll let you know when we open up!",
+      "backToSignIn": "Already have an account? Sign in",
+      "usernameLabel": "Username",
+      "passwordLabel": "Password",
+      "submit": "Sign In",
+      "joinWaitlist": "Don't have an account? Join the waitlist"
+    },
+    "context": {
+      "signupsClosedError": "Sign-ups are currently closed. Join the waitlist at the landing page.",
+      "notAuthenticatedError": "Not authenticated",
+      "signedOutError": "You are signed out."
+    },
+    "waitlistForm": {
+      "heading": "Join the waitlist",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "nameLabel": "Name (optional)",
+      "namePlaceholder": "Your name",
+      "messageLabel": "What do you want to use Kannanao for? (optional)",
+      "messagePlaceholder": "I'm studying for JLPT N3…",
+      "submitButton": "Notify me when spots open 🌸",
+      "genericError": "Something went wrong.",
+      "networkError": "Network error. Please try again."
+    }
+  },
+  "Settings": {
+    "pageHeader": {
+      "title": "Account Settings",
+      "subtitle": "Manage your profile and credentials"
+    },
+    "currentLabel": "Current:",
+    "noneFallback": "none",
+    "saving": "Saving…",
+    "networkError": "Network error.",
+    "displayName": {
+      "title": "Display Name",
+      "description": "The name shown throughout the app. Leave blank to use your username.",
+      "changeButton": "Change display name",
+      "fieldLabel": "New display name",
+      "fieldHelper": "The name shown in the app (max 100 characters)",
+      "updatedSuccess": "Display name updated!"
+    },
+    "username": {
+      "title": "Username",
+      "description": "Your login username. Changing it will sign you out.",
+      "changeButton": "Change username",
+      "fieldLabel": "New username",
+      "fieldHelper": "Letters, numbers, _ or - (2–30 chars). You will be signed out after saving.",
+      "updatedSuccess": "Username updated! Signing you out…"
+    },
+    "reminders": {
+      "title": "Reminders",
+      "description": "Get one friendly nudge a day when you have words waiting to review. Only if notifications are turned on for your device.",
+      "ariaLabel": "Daily review reminder",
+      "saveError": "Could not save that. Please try again.",
+      "onSuccess": "Daily reminder is on!",
+      "offSuccess": "Daily reminder is off."
+    },
+    "inviteMembers": {
+      "title": "Invite Members",
+      "description": "Create invite links to onboard members to your study group via QR code.",
+      "createButton": "Create Invite Link"
+    },
+    "password": {
+      "title": "Password",
+      "description": "Update your login password. Minimum 6 characters.",
+      "changeButton": "Change password",
+      "newFieldLabel": "New password",
+      "newFieldHelper": "Minimum 6 characters",
+      "confirmFieldLabel": "Confirm new password",
+      "updatedSuccess": "Password updated!",
+      "mismatchError": "Passwords do not match."
+    }
+  },
+  "Messages": {
+    "chatPanel": {
+      "backAriaLabel": "Back to conversations",
+      "videoTooLarge": "Video must be under 20 MB",
+      "videoUploadFailed": "Video upload failed",
+      "imageUploadFailed": "Image upload failed",
+      "sendFailedFallback": "Failed to send message",
+      "selectedImageAlt": "Selected",
+      "removeAttachmentAriaLabel": "Remove attachment",
+      "emptyTitle": "No messages yet!",
+      "emptySubtitle": "Say hi to {name} to start chatting",
+      "attachAriaLabel": "Attach photo or video",
+      "inputPlaceholder": "Type a message...",
+      "sendAriaLabel": "Send message"
+    },
+    "conversationList": {
+      "heading": "Messages",
+      "searchPlaceholder": "Search chats...",
+      "newMessageButton": "New message",
+      "noMatches": "No matches",
+      "noMessagesYet": "No messages yet",
+      "tryDifferentSearch": "Try a different search",
+      "tapNewMessage": "Tap \"New message\" to start chatting!",
+      "youPrefix": "You: ",
+      "photoFallback": "📷 Photo",
+      "newMessageDialogTitle": "New message",
+      "newMessageDialogSubtitle": "Choose someone to chat with",
+      "organizerChip": "Organizer",
+      "memberFallback": "Member"
+    },
+    "notificationsLayout": {
+      "installBanner": "Message notifications only work in the Kannanao app, not in the browser. Open <bold>Kannanao from your Home Screen icon</bold> — or to add it, tap Safari's <bold>Share</bold> button and choose <bold>“Add to Home Screen”</bold>.",
+      "notificationsOnSuccess": "Notifications are on! 🎉",
+      "notificationsBlockedWarning": "Notifications are blocked for Kannanao — turn them on in your device Settings, then come back here.",
+      "turningOn": "Turning on…",
+      "turnOnNotifications": "Turn on notifications",
+      "genericErrorName": "Error",
+      "promptTitle": "Stay in the loop!",
+      "promptSubtitle": "Get notified when you receive new messages",
+      "notNow": "Not now",
+      "enabling": "Enabling...",
+      "enable": "Enable",
+      "promptBody": "Turn on notifications so you never miss a message from your group."
+    },
+    "emptyConversation": {
+      "title": "Select a conversation",
+      "subtitle": "Choose a chat from the left to start messaging"
+    },
+    "pushNotifications": {
+      "notConfigured": "Push is not configured (missing VAPID public key).",
+      "registrationFailed": "Service worker registration failed on {host}: {error}",
+      "notReady": "Service worker not ready on {host}. Registration never completed. Please try again.",
+      "saveFailed": "Could not save the subscription to the server. Please try again."
     }
   }
 }

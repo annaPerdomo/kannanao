@@ -3,6 +3,7 @@
 import Box from '@mui/material/Box';
 import { alpha, keyframes, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
@@ -52,11 +53,15 @@ interface HomeBuddyProps {
 }
 
 export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
+  const t = useTranslations('Home.buddy');
   const theme = useTheme();
   const { brand } = theme.palette;
   const config = BUDDY_CONFIG[buddyKey];
   const accent = BUDDY_ACCENTS[buddyKey] ?? brand[300];
-  const phrases = useMemo(() => BUDDY_HOME_PHRASES[buddyKey] ?? ["Let's study!"], [buddyKey]);
+  const phrases = useMemo(
+    () => BUDDY_HOME_PHRASES[buddyKey] ?? [t('defaultPhrase')],
+    [buddyKey, t],
+  );
 
   const [bubbleText, setBubbleText] = useState('');
   const [showBubble, setShowBubble] = useState(true);

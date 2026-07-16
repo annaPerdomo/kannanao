@@ -23,6 +23,7 @@ import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Layout as RGLLayout } from 'react-grid-layout';
 import { GridLayout } from 'react-grid-layout';
@@ -80,11 +81,14 @@ function useHasOpened(open: boolean): boolean {
   return opened;
 }
 
-function getGreeting(name: string): { text: string; icon: React.ReactNode } {
+function getGreeting(
+  name: string,
+  t: (key: string, values?: Record<string, string>) => string,
+): { text: string; icon: React.ReactNode } {
   const h = new Date().getHours();
-  if (h < 12) return { text: `Good morning, ${name}!`, icon: <WbTwilightIcon /> };
-  if (h < 17) return { text: `Hey there, ${name}!`, icon: <WbSunnyIcon /> };
-  return { text: `Good evening, ${name}!`, icon: <NightsStayIcon /> };
+  if (h < 12) return { text: t('morning', { name }), icon: <WbTwilightIcon /> };
+  if (h < 17) return { text: t('afternoon', { name }), icon: <WbSunnyIcon /> };
+  return { text: t('evening', { name }), icon: <NightsStayIcon /> };
 }
 
 function WelcomeBanner({
@@ -104,7 +108,9 @@ function WelcomeBanner({
   onShopClick: () => void;
   xpReady: boolean;
 }) {
-  const { text, icon } = getGreeting(username);
+  const t = useTranslations('Home.welcomeBanner');
+  const tGreeting = useTranslations('Home.greeting');
+  const { text, icon } = getGreeting(username, tGreeting);
   const { current, needed } = xpProgressInLevel(totalXp);
   const pct = Math.round((current / needed) * 100);
   const theme = useTheme();
@@ -129,7 +135,7 @@ function WelcomeBanner({
           <Box
             role="button"
             tabIndex={0}
-            aria-label="Open shop"
+            aria-label={t('openShopAriaLabel')}
             onClick={onShopClick}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -152,7 +158,7 @@ function WelcomeBanner({
           >
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
               <Typography variant="caption" sx={{ fontWeight: 700, color: brand[700] }}>
-                XP Progress
+                {t('xpProgressLabel')}
               </Typography>
               <Typography variant="caption" sx={{ fontWeight: 700, color: brand[600] }}>
                 {current} / {needed}
@@ -178,14 +184,14 @@ function WelcomeBanner({
               variant="caption"
               sx={{ color: brand[600], fontWeight: 600, mt: 0.5, display: 'block' }}
             >
-              {needed - current} XP to level {level + 1} 🚀
+              {t('xpToLevel', { xp: needed - current, level: level + 1 })}
             </Typography>
 
             <Box sx={{ mt: 1, pt: 1, borderTop: `1px solid ${alpha(brand[300], 0.25)}` }}>
               <Stack direction="row" alignItems="center" spacing={0.5} mb={nextItem ? 0.5 : 0}>
                 <AutoAwesomeIcon sx={{ fontSize: '0.85rem', color: accent[500] }} />
                 <Typography variant="caption" sx={{ fontWeight: 800, color: accent[600] }}>
-                  {spendableXp.toLocaleString()} XP to spend
+                  {t('xpToSpend', { xp: spendableXp.toLocaleString() })}
                 </Typography>
                 <StorefrontIcon sx={{ fontSize: '0.85rem', color: brand[500], ml: 'auto' }} />
               </Stack>
@@ -194,7 +200,8 @@ function WelcomeBanner({
                   variant="caption"
                   sx={{ color: brand[500], fontWeight: 600, fontSize: '0.7rem', display: 'block' }}
                 >
-                  {nextItem.emoji} {nextItem.name} — {xpNeeded.toLocaleString()} more XP!
+                  {nextItem.emoji} {nextItem.name} —{' '}
+                  {t('moreXp', { xp: xpNeeded.toLocaleString() })}
                 </Typography>
               )}
             </Box>
@@ -220,6 +227,7 @@ function DashboardSection({
   titleAction?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const t = useTranslations('Home.dashboardSection');
   const meta = SECTION_META[id as SectionKey];
 
   return (
@@ -272,7 +280,7 @@ function DashboardSection({
           {editMode ? (
             <IconButton
               className="rgl-no-drag"
-              aria-label={`Hide ${meta.label}`}
+              aria-label={t('hideAriaLabel', { label: meta.label })}
               onClick={onToggle}
               size="small"
               sx={{
@@ -347,6 +355,8 @@ function DashboardGridSkeleton() {
 }
 
 export default function Home({ initialData }: { initialData?: HomeData }) {
+  const t = useTranslations('Home');
+  const tCommon = useTranslations('Common');
   const {
     user,
     displayName,
@@ -495,9 +505,9 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
 
   const sectionTitleAction = (key: SectionKey): React.ReactNode | undefined => {
     const navMap: Partial<Record<SectionKey, { label: string; href: string }>> = {
-      groups: { label: 'All groups', href: '/group' },
-      decks: { label: 'All decks', href: '/decks' },
-      speeches: { label: 'All speeches', href: '/ohanashikai' },
+      groups: { label: t('sectionNav.allGroups'), href: '/group' },
+      decks: { label: t('sectionNav.allDecks'), href: '/decks' },
+      speeches: { label: t('sectionNav.allSpeeches'), href: '/ohanashikai' },
     };
     const nav = navMap[key];
     if (!nav) return undefined;
@@ -530,7 +540,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
           <>
             {groups.length === 0 ? (
               <Typography variant="body2" color="text.secondary">
-                Create a group to get started
+                {t('groupsSection.emptyCreate')}
               </Typography>
             ) : (
               <Stack spacing={1.5}>
@@ -558,7 +568,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
               <LeaderboardWidget entries={leaderboard} compact />
             ) : (
               <Typography variant="body2" color="text.secondary">
-                Check back when more people join!
+                {t('leaderboardSection.emptyCheckBack')}
               </Typography>
             )}
           </>
@@ -579,7 +589,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
               </Stack>
             ) : (
               <Typography variant="body2" color="text.secondary">
-                All caught up!
+                {t('assignmentsSection.emptyAllCaughtUp')}
               </Typography>
             )}
           </>
@@ -622,12 +632,14 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                 <Typography sx={{ fontSize: '1.8rem', flexShrink: 0 }}>📌</Typography>
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                    {totalDeckCount === 0 ? 'Create your first deck!' : 'Pin a deck to see it here'}
+                    {totalDeckCount === 0
+                      ? t('decksSection.emptyCreateFirstTitle')
+                      : t('decksSection.emptyPinTitle')}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {totalDeckCount === 0
-                      ? 'Head to Decks to start building flashcards ✨'
-                      : 'Tap the pin icon on any deck ✨'}
+                      ? t('decksSection.emptyCreateFirstSub')
+                      : t('decksSection.emptyPinSub')}
                   </Typography>
                 </Box>
               </Box>
@@ -687,13 +699,13 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
                     {totalSpeechCount === 0
-                      ? 'Practice your お話し会 speech!'
-                      : 'Pin a speech to see it here'}
+                      ? t('speechesSection.emptyCreateFirstTitle')
+                      : t('speechesSection.emptyPinTitle')}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {totalSpeechCount === 0
-                      ? 'Add your lines and start memorizing ✨'
-                      : 'Tap the pin icon on any speech ✨'}
+                      ? t('speechesSection.emptyCreateFirstSub')
+                      : t('speechesSection.emptyPinSub')}
                   </Typography>
                 </Box>
               </Box>
@@ -738,7 +750,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                           color="text.secondary"
                           sx={{ fontSize: '0.65rem' }}
                         >
-                          {item.lineCount} line{item.lineCount !== 1 ? 's' : ''}
+                          {t('speechesSection.lineCount', { count: item.lineCount })}
                         </Typography>
                       </Box>
                     </Box>
@@ -835,7 +847,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
               },
             }}
           >
-            Add section
+            {t('editModeControls.addSection')}
           </Button>
         )}
         <Button
@@ -861,7 +873,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                 }),
           }}
         >
-          {editMode ? 'Done' : 'Edit layout'}
+          {editMode ? tCommon('done') : t('editModeControls.editLayout')}
         </Button>
       </Stack>
       <Box
@@ -957,7 +969,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
           }}
         >
           <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: 'text.secondary' }}>
-            Hidden sections
+            {t('hiddenSections.heading')}
           </Typography>
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
             {hiddenKeys.map((k) => (
@@ -987,7 +999,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
             onClick={handleResetLayout}
             sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
           >
-            Reset layout
+            {t('hiddenSections.resetLayout')}
           </Button>
         </Box>
       )}

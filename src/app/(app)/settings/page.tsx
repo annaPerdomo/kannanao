@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { CreateInviteDialog, InviteList, InviteQRCode } from '@/components/Group';
@@ -72,6 +73,8 @@ function Section({ icon, title, description, children }: SectionProps) {
 }
 
 export default function SettingsPage() {
+  const t = useTranslations('Settings');
+  const tCommon = useTranslations('Common');
   const theme = useTheme();
   const { brand } = theme.palette;
   const {
@@ -151,12 +154,12 @@ export default function SettingsPage() {
         setSnack({ msg: json.error, severity: 'error' });
       } else {
         await updateDisplayName(newDisplayName);
-        setSnack({ msg: 'Display name updated!', severity: 'success' });
+        setSnack({ msg: t('displayName.updatedSuccess'), severity: 'success' });
         setDisplayNameOpen(false);
         setNewDisplayName('');
       }
     } catch {
-      setSnack({ msg: 'Network error.', severity: 'error' });
+      setSnack({ msg: t('networkError'), severity: 'error' });
     } finally {
       setDisplayNameSaving(false);
     }
@@ -170,14 +173,14 @@ export default function SettingsPage() {
         setSnack({ msg: json.error, severity: 'error' });
         setUsernameSaving(false);
       } else {
-        setSnack({ msg: 'Username updated! Signing you out…', severity: 'success' });
+        setSnack({ msg: t('username.updatedSuccess'), severity: 'success' });
         setTimeout(async () => {
           await signOut();
           router.push('/login');
         }, 1500);
       }
     } catch {
-      setSnack({ msg: 'Network error.', severity: 'error' });
+      setSnack({ msg: t('networkError'), severity: 'error' });
       setUsernameSaving(false);
     }
   };
@@ -188,9 +191,9 @@ export default function SettingsPage() {
     setReminderSaving(false);
     setSnack(
       error
-        ? { msg: 'Could not save that. Please try again.', severity: 'error' }
+        ? { msg: t('reminders.saveError'), severity: 'error' }
         : {
-            msg: enabled ? 'Daily reminder is on!' : 'Daily reminder is off.',
+            msg: enabled ? t('reminders.onSuccess') : t('reminders.offSuccess'),
             severity: 'success',
           },
     );
@@ -198,7 +201,7 @@ export default function SettingsPage() {
 
   const handleSavePassword = async () => {
     if (newPassword !== confirmPassword) {
-      setSnack({ msg: 'Passwords do not match.', severity: 'error' });
+      setSnack({ msg: t('password.mismatchError'), severity: 'error' });
       return;
     }
     setPasswordSaving(true);
@@ -207,13 +210,13 @@ export default function SettingsPage() {
       if (json.error) {
         setSnack({ msg: json.error, severity: 'error' });
       } else {
-        setSnack({ msg: 'Password updated!', severity: 'success' });
+        setSnack({ msg: t('password.updatedSuccess'), severity: 'success' });
         setPasswordOpen(false);
         setNewPassword('');
         setConfirmPassword('');
       }
     } catch {
-      setSnack({ msg: 'Network error.', severity: 'error' });
+      setSnack({ msg: t('networkError'), severity: 'error' });
     } finally {
       setPasswordSaving(false);
     }
@@ -241,8 +244,8 @@ export default function SettingsPage() {
     >
       <PageHeader
         icon={<SettingsIcon />}
-        title="Account Settings"
-        subtitle="Manage your profile and credentials"
+        title={t('pageHeader.title')}
+        subtitle={t('pageHeader.subtitle')}
         mb={0}
       />
 
@@ -250,11 +253,11 @@ export default function SettingsPage() {
         {/* Display Name */}
         <Section
           icon={<BadgeIcon />}
-          title="Display Name"
-          description="The name shown throughout the app. Leave blank to use your username."
+          title={t('displayName.title')}
+          description={t('displayName.description')}
         >
           <Typography sx={{ fontSize: '0.85rem', color: 'text.primary', mb: 1.5 }}>
-            Current: <strong>{displayName ?? <em>none</em>}</strong>
+            {t('currentLabel')} <strong>{displayName ?? <em>{t('noneFallback')}</em>}</strong>
           </Typography>
           {!displayNameOpen ? (
             <Button
@@ -271,7 +274,7 @@ export default function SettingsPage() {
                 color: brand[700],
               }}
             >
-              Change display name
+              {t('displayName.changeButton')}
             </Button>
           ) : (
             <Stack gap={1.5}>
@@ -279,18 +282,18 @@ export default function SettingsPage() {
                 autoFocus
                 fullWidth
                 size="small"
-                label="New display name"
+                label={t('displayName.fieldLabel')}
                 value={newDisplayName}
                 onChange={(e) => setNewDisplayName(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') void handleSaveDisplayName();
                 }}
-                helperText="The name shown in the app (max 100 characters)"
+                helperText={t('displayName.fieldHelper')}
                 sx={fieldSx}
               />
               <Stack direction="row" gap={1}>
                 <Button onClick={() => setDisplayNameOpen(false)} sx={cancelBtnSx}>
-                  Cancel
+                  {tCommon('cancel')}
                 </Button>
                 <Button
                   onClick={handleSaveDisplayName}
@@ -298,7 +301,7 @@ export default function SettingsPage() {
                   variant="contained"
                   sx={saveBtnSx}
                 >
-                  {displayNameSaving ? 'Saving…' : 'Save'}
+                  {displayNameSaving ? t('saving') : tCommon('save')}
                 </Button>
               </Stack>
             </Stack>
@@ -310,11 +313,11 @@ export default function SettingsPage() {
         {/* Username */}
         <Section
           icon={<EditIcon />}
-          title="Username"
-          description="Your login username. Changing it will sign you out."
+          title={t('username.title')}
+          description={t('username.description')}
         >
           <Typography sx={{ fontSize: '0.85rem', color: 'text.primary', mb: 1.5 }}>
-            Current: <strong>@{currentUsername}</strong>
+            {t('currentLabel')} <strong>@{currentUsername}</strong>
           </Typography>
           {!usernameOpen ? (
             <Button
@@ -331,7 +334,7 @@ export default function SettingsPage() {
                 color: brand[700],
               }}
             >
-              Change username
+              {t('username.changeButton')}
             </Button>
           ) : (
             <Stack gap={1.5}>
@@ -339,18 +342,18 @@ export default function SettingsPage() {
                 autoFocus
                 fullWidth
                 size="small"
-                label="New username"
+                label={t('username.fieldLabel')}
                 value={newUsername}
                 onChange={(e) => setNewUsername(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') void handleSaveUsername();
                 }}
-                helperText="Letters, numbers, _ or - (2–30 chars). You will be signed out after saving."
+                helperText={t('username.fieldHelper')}
                 sx={fieldSx}
               />
               <Stack direction="row" gap={1}>
                 <Button onClick={() => setUsernameOpen(false)} sx={cancelBtnSx}>
-                  Cancel
+                  {tCommon('cancel')}
                 </Button>
                 <Button
                   onClick={handleSaveUsername}
@@ -358,7 +361,7 @@ export default function SettingsPage() {
                   variant="contained"
                   sx={saveBtnSx}
                 >
-                  {usernameSaving ? 'Saving…' : 'Save'}
+                  {usernameSaving ? t('saving') : tCommon('save')}
                 </Button>
               </Stack>
             </Stack>
@@ -370,8 +373,8 @@ export default function SettingsPage() {
         {/* Daily review reminder */}
         <Section
           icon={<NotificationsActiveIcon />}
-          title="Reminders"
-          description="Get one friendly nudge a day when you have words waiting to review. Only if notifications are turned on for your device."
+          title={t('reminders.title')}
+          description={t('reminders.description')}
         >
           <FormControlLabel
             control={
@@ -379,10 +382,10 @@ export default function SettingsPage() {
                 checked={reviewReminders}
                 onChange={(e) => void handleToggleReminders(e.target.checked)}
                 disabled={reminderSaving}
-                inputProps={{ 'aria-label': 'Daily review reminder' }}
+                inputProps={{ 'aria-label': t('reminders.ariaLabel') }}
               />
             }
-            label="Daily review reminder"
+            label={t('reminders.ariaLabel')}
             sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.9rem', color: 'text.primary' } }}
           />
         </Section>
@@ -394,8 +397,8 @@ export default function SettingsPage() {
             {/* Invite Members */}
             <Section
               icon={<QrCode2Icon />}
-              title="Invite Members"
-              description="Create invite links to onboard members to your study group via QR code."
+              title={t('inviteMembers.title')}
+              description={t('inviteMembers.description')}
             >
               <Stack gap={2}>
                 <Button
@@ -410,7 +413,7 @@ export default function SettingsPage() {
                     alignSelf: 'flex-start',
                   }}
                 >
-                  Create Invite Link
+                  {t('inviteMembers.createButton')}
                 </Button>
                 <InviteList
                   invites={invites}
@@ -427,8 +430,8 @@ export default function SettingsPage() {
         {/* Password */}
         <Section
           icon={<KeyIcon />}
-          title="Password"
-          description="Update your login password. Minimum 6 characters."
+          title={t('password.title')}
+          description={t('password.description')}
         >
           {!passwordOpen ? (
             <Button
@@ -446,7 +449,7 @@ export default function SettingsPage() {
                 color: brand[700],
               }}
             >
-              Change password
+              {t('password.changeButton')}
             </Button>
           ) : (
             <Stack gap={1.5}>
@@ -455,17 +458,17 @@ export default function SettingsPage() {
                 fullWidth
                 size="small"
                 type="password"
-                label="New password"
+                label={t('password.newFieldLabel')}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                helperText="Minimum 6 characters"
+                helperText={t('password.newFieldHelper')}
                 sx={fieldSx}
               />
               <TextField
                 fullWidth
                 size="small"
                 type="password"
-                label="Confirm new password"
+                label={t('password.confirmFieldLabel')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 onKeyDown={(e) => {
@@ -475,7 +478,7 @@ export default function SettingsPage() {
               />
               <Stack direction="row" gap={1}>
                 <Button onClick={() => setPasswordOpen(false)} sx={cancelBtnSx}>
-                  Cancel
+                  {tCommon('cancel')}
                 </Button>
                 <Button
                   onClick={handleSavePassword}
@@ -483,7 +486,7 @@ export default function SettingsPage() {
                   variant="contained"
                   sx={saveBtnSx}
                 >
-                  {passwordSaving ? 'Saving…' : 'Save'}
+                  {passwordSaving ? t('saving') : tCommon('save')}
                 </Button>
               </Stack>
             </Stack>

@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -99,6 +100,7 @@ function mergeMessages(fresh: DirectMessage[], prev: DirectMessage[]): DirectMes
 }
 
 export function useDirectMessages(memberId?: string, initialUnreadCount?: number) {
+  const t = useTranslations('Messages.chatPanel');
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [unreadCountState, setUnreadCountState] = useState(initialUnreadCount ?? 0);
   const [loading, setLoading] = useState(true);
@@ -386,13 +388,13 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
       });
       if (!res.ok) {
         const json = await res.json().catch(() => null);
-        throw new Error(json?.error ?? 'Failed to send message');
+        throw new Error(json?.error ?? t('sendFailedFallback'));
       }
       const newMsg = await res.json();
       setMessages((prev) => [newMsg, ...prev]);
       return newMsg;
     },
-    [],
+    [t],
   );
 
   const markAsRead = useCallback(

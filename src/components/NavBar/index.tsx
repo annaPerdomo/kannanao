@@ -21,6 +21,7 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,6 +34,8 @@ import { UserMenu } from './UserMenu';
 import { XpDisplay } from './XpDisplay';
 
 export function NavBar() {
+  const t = useTranslations('Nav');
+  const tItems = useTranslations('Nav.items');
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
 
@@ -132,7 +135,7 @@ export function NavBar() {
                 whiteSpace: 'nowrap',
               }}
             >
-              🌸 Kannanao
+              {t('brandName')}
             </Typography>
           </Link>
 
@@ -153,7 +156,7 @@ export function NavBar() {
                 sx={isDecks ? navBtnWithIconActive : navBtnWithIcon}
               >
                 <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  Decks
+                  {tItems('decks')}
                 </Box>
               </Button>
 
@@ -165,7 +168,7 @@ export function NavBar() {
                   sx={isGroup ? navBtnWithIconActive : navBtnWithIcon}
                 >
                   <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                    Groups
+                    {tItems('groups')}
                   </Box>
                 </Button>
               )}
@@ -177,7 +180,7 @@ export function NavBar() {
                 sx={isOhanashikai ? navBtnWithIconActive : navBtnWithIcon}
               >
                 <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  Speech
+                  {tItems('speech')}
                 </Box>
               </Button>
 
@@ -188,7 +191,7 @@ export function NavBar() {
                 sx={isTravel ? navBtnWithIconActive : navBtnWithIcon}
               >
                 <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  Travel
+                  {tItems('travel')}
                 </Box>
               </Button>
 
@@ -199,7 +202,7 @@ export function NavBar() {
                 sx={isStats ? navBtnWithIconActive : navBtnWithIcon}
               >
                 <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  Stats
+                  {tItems('stats')}
                 </Box>
               </Button>
 
@@ -210,7 +213,7 @@ export function NavBar() {
                 sx={isShop ? navBtnWithIconActive : navBtnWithIcon}
               >
                 <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  Shop
+                  {tItems('shop')}
                 </Box>
               </Button>
             </Box>
@@ -225,7 +228,7 @@ export function NavBar() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
               {/* Direct messages — navigate to notifications page */}
               <IconButton
-                aria-label="Messages"
+                aria-label={t('messagesAriaLabel')}
                 onClick={() => router.push('/notifications')}
                 sx={{ color: brand[500] }}
               >
@@ -306,7 +309,7 @@ export function NavBar() {
               py: 1,
             }}
           >
-            {ach.emoji} Achievement unlocked: <strong>{ach.label}</strong>
+            {ach.emoji} {t('achievementUnlocked')} <strong>{ach.label}</strong>
           </Alert>
         </Snackbar>
       ))}

@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { timeAgo } from '@/components/Group/MessageThread/constants';
@@ -34,13 +35,17 @@ interface Conversation {
   unreadCount: number;
 }
 
-function getConversations(messages: DirectMessage[], userId: string): Conversation[] {
+function getConversations(
+  messages: DirectMessage[],
+  userId: string,
+  memberFallback: string,
+): Conversation[] {
   const map = new Map<string, { msgs: DirectMessage[]; name: string }>();
   for (const m of messages) {
     const isFromMe = m.sender_id === userId;
     const otherId = isFromMe ? m.recipient_id : m.sender_id;
     const other = isFromMe ? m.recipient : m.sender;
-    const name = other?.display_name || other?.username || 'Member';
+    const name = other?.display_name || other?.username || memberFallback;
     if (!map.has(otherId)) map.set(otherId, { msgs: [], name });
     map.get(otherId)!.msgs.push(m);
   }
@@ -74,6 +79,7 @@ export function ConversationList({
   selectedId,
   loading = false,
 }: ConversationListProps) {
+  const t = useTranslations('Messages.conversationList');
   const router = useRouter();
   const theme = useTheme();
   const { brand, accent } = theme.palette;
@@ -100,7 +106,7 @@ export function ConversationList({
     void fetchPeers();
   }, [fetchPeers]);
 
-  const conversations = getConversations(messages, userId);
+  const conversations = getConversations(messages, userId, t('memberFallback'));
   const filtered = search.trim()
     ? conversations.filter((c) => c.recipientName.toLowerCase().includes(search.toLowerCase()))
     : conversations;
@@ -124,7 +130,7 @@ export function ConversationList({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
           <ForumRoundedIcon sx={{ fontSize: 22, color: brand[500] }} />
           <Typography sx={{ fontWeight: 800, fontSize: '1.2rem', color: brand[700] }}>
-            Messages
+            {t('heading')}
           </Typography>
         </Box>
 
@@ -132,7 +138,7 @@ export function ConversationList({
         <TextField
           size="small"
           fullWidth
-          placeholder="Search chats..."
+          placeholder={t('searchPlaceholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           slotProps={{
@@ -173,7 +179,7 @@ export function ConversationList({
               '&:hover': { bgcolor: alpha(brand[100], 0.5) },
             }}
           >
-            New message
+            {t('newMessageButton')}
           </Button>
         )}
       </Box>
@@ -207,10 +213,10 @@ export function ConversationList({
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <ChatBubbleOutlineIcon sx={{ fontSize: '2rem', color: brand[300], mb: 0.5 }} />
               <Typography sx={{ fontWeight: 700, color: brand[600], fontSize: '0.85rem' }}>
-                {search ? 'No matches' : 'No messages yet'}
+                {search ? t('noMatches') : t('noMessagesYet')}
               </Typography>
               <Typography sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
-                {search ? 'Try a different search' : 'Tap "New message" to start chatting!'}
+                {search ? t('tryDifferentSearch') : t('tapNewMessage')}
               </Typography>
             </Box>
           ) : (
@@ -281,8 +287,8 @@ export function ConversationList({
                         fontWeight: c.unreadCount > 0 ? 600 : 400,
                       }}
                     >
-                      {c.lastMessage.sender_id === userId ? 'You: ' : ''}
-                      {c.lastMessage.message || (c.lastMessage.image_url ? '📷 Photo' : '')}
+                      {c.lastMessage.sender_id === userId ? t('youPrefix') : ''}
+                      {c.lastMessage.message || (c.lastMessage.image_url ? t('photoFallback') : '')}
                     </Typography>
                   </Box>
                   {c.unreadCount > 0 && (
@@ -315,8 +321,8 @@ export function ConversationList({
       <StyledDialog
         open={newMsgOpen}
         onClose={() => setNewMsgOpen(false)}
-        title="New message"
-        subtitle="Choose someone to chat with"
+        title={t('newMessageDialogTitle')}
+        subtitle={t('newMessageDialogSubtitle')}
         icon={<ChatBubbleOutlineIcon sx={{ color: brand[600], fontSize: 22 }} />}
         maxWidth="xs"
       >
@@ -360,7 +366,7 @@ export function ConversationList({
                 </Typography>
                 {p.role === 'organizer' && (
                   <Chip
-                    label="Organizer"
+                    label={t('organizerChip')}
                     size="small"
                     sx={{
                       height: 22,

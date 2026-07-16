@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { sb } from '@/lib/supabase';
@@ -19,8 +20,12 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return arr;
 }
 
+/** Translator subset accepted by helpers that run outside a component/hook. */
+type PushT = (key: string, values?: Record<string, string>) => string;
+
 /** Get the service worker registration, falling back to getRegistration() if no controller is active yet. */
 async function getServiceWorkerRegistration(
+  t: PushT,
   timeoutMs = 30_000,
 ): Promise<ServiceWorkerRegistration> {
   // If a controller already exists, .ready resolves immediately
@@ -38,24 +43,14 @@ async function getServiceWorkerRegistration(
   // instead of burning the full timeout.
   if (!existing) {
     const reg = await navigator.serviceWorker.register('/sw.js').catch((err: unknown) => {
-      throw new Error(
-        `Service worker registration failed on ${window.location.host}: ${String(err)}`,
-      );
+      throw new Error(t('registrationFailed', { host: window.location.host, error: String(err) }));
     });
     if (reg.active) return reg;
   }
   // Wait for the registered worker to activate
   const ready = navigator.serviceWorker.ready;
   const timeout = new Promise<never>((_, reject) =>
-    setTimeout(
-      () =>
-        reject(
-          new Error(
-            `Service worker not ready on ${window.location.host}. Registration never completed. Please try again.`,
-          ),
-        ),
-      timeoutMs,
-    ),
+    setTimeout(() => reject(new Error(t('notReady', { host: window.location.host }))), timeoutMs),
   );
   return Promise.race([ready, timeout]);
 }
@@ -165,6 +160,7 @@ function cacheSubscribed(value: boolean): void {
 }
 
 export function usePushNotifications() {
+  const t = useTranslations('Messages.pushNotifications');
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSubscribed, setIsSubscribedState] = useState(readCachedSubscribed);
   const [isSupported, setIsSupported] = useState(false);
@@ -198,7 +194,7 @@ export function usePushNotifications() {
     // controller may be null on fresh launch from home screen)
     const checkSubscription = async () => {
       try {
-        const reg = await getServiceWorkerRegistration();
+        const reg = await getServiceWorkerRegistration(t);
 
         const sub = await reg.pushManager.getSubscription();
         if (sub) {
@@ -248,11 +244,11 @@ export function usePushNotifications() {
     try {
       const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
       if (!vapidKey) {
-        throw new Error('Push is not configured (missing VAPID public key).');
+        throw new Error(t('notConfigured'));
       }
 
       // Start the SW registration in parallel while we wait for permission
-      const regPromise = getServiceWorkerRegistration();
+      const regPromise = getServiceWorkerRegistration(t);
 
       const perm = await Notification.requestPermission();
       setPermission(perm);
@@ -272,12 +268,12 @@ export function usePushNotifications() {
       if (saved) stampSynced(sub.endpoint);
       setIsSubscribed(saved);
       if (!saved) {
-        throw new Error('Could not save the subscription to the server. Please try again.');
+        throw new Error(t('saveFailed'));
       }
     } finally {
       setLoading(false);
     }
-  }, [setIsSubscribed]);
+  }, [setIsSubscribed, t]);
 
   const unsubscribe = useCallback(async () => {
     setLoading(true);

@@ -2,8 +2,10 @@
 
 import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 export default function NotificationsPage() {
+  const t = useTranslations('Messages.emptyConversation');
   const theme = useTheme();
   const { brand } = theme.palette;
 
@@ -19,10 +21,8 @@ export default function NotificationsPage() {
       }}
     >
       <Typography sx={{ fontSize: '3rem' }}>💬</Typography>
-      <Typography sx={{ fontWeight: 700, color: brand[600] }}>Select a conversation</Typography>
-      <Typography sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
-        Choose a chat from the left to start messaging
-      </Typography>
+      <Typography sx={{ fontWeight: 700, color: brand[600] }}>{t('title')}</Typography>
+      <Typography sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>{t('subtitle')}</Typography>
     </Box>
   );
 }
