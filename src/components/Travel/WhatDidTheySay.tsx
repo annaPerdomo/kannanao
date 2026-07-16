@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { stripFurigana } from '@/components/FuriganaText';
@@ -40,7 +41,6 @@ interface HeardPhrase {
 
 interface Location {
   key: string;
-  label: string;
   icon: string;
   phrases: HeardPhrase[];
 }
@@ -48,7 +48,6 @@ interface Location {
 const LOCATIONS: Location[] = [
   {
     key: 'konbini',
-    label: 'Convenience Store',
     icon: '🏪',
     phrases: [
       {
@@ -115,7 +114,6 @@ const LOCATIONS: Location[] = [
   },
   {
     key: 'restaurant',
-    label: 'Restaurant',
     icon: '🍜',
     phrases: [
       {
@@ -174,7 +172,6 @@ const LOCATIONS: Location[] = [
   },
   {
     key: 'station',
-    label: 'Train Station',
     icon: '🚃',
     phrases: [
       {
@@ -216,7 +213,6 @@ const LOCATIONS: Location[] = [
   },
   {
     key: 'shop',
-    label: 'Shops & Stores',
     icon: '🛍️',
     phrases: [
       {
@@ -264,7 +260,6 @@ const LOCATIONS: Location[] = [
   },
   {
     key: 'hotel',
-    label: 'Hotel',
     icon: '🏨',
     phrases: [
       {
@@ -308,7 +303,6 @@ const LOCATIONS: Location[] = [
   },
   {
     key: 'general',
-    label: 'Everywhere',
     icon: '🇯🇵',
     phrases: [
       {
@@ -358,6 +352,7 @@ const LOCATIONS: Location[] = [
 ];
 
 export function WhatDidTheySay() {
+  const t = useTranslations('Travel.whatDidTheySay');
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
@@ -393,15 +388,15 @@ export function WhatDidTheySay() {
       <Stack spacing={3}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
+          <IconButton onClick={() => router.push('/travel')} aria-label={t('backToHub')}>
             <ArrowBackIcon />
           </IconButton>
           <Box sx={{ flex: 1 }}>
             <Typography variant="h5" sx={{ color: 'text.primary' }}>
-              What Did They Say?
+              {t('heading')}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
-              Recognize common phrases said TO you
+              {t('subheading')}
             </Typography>
           </Box>
           <Button
@@ -422,14 +417,14 @@ export function WhatDidTheySay() {
             disabled={deckSaved}
             sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.72rem' }}
           >
-            {deckSaved ? 'Saved!' : 'Save all'}
+            {deckSaved ? t('saved') : t('saveAll')}
           </Button>
         </Box>
 
         {/* Filter chips */}
         <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
           <Chip
-            label="All"
+            label={t('all')}
             onClick={() => handleFilter('all')}
             variant={activeFilter === 'all' ? 'filled' : 'outlined'}
             sx={{
@@ -446,7 +441,7 @@ export function WhatDidTheySay() {
           {LOCATIONS.map((loc) => (
             <Chip
               key={loc.key}
-              label={`${loc.icon} ${loc.label}`}
+              label={`${loc.icon} ${t(`locations.${loc.key}.label`)}`}
               onClick={() => handleFilter(loc.key)}
               variant={activeFilter === loc.key ? 'filled' : 'outlined'}
               sx={{
@@ -471,10 +466,10 @@ export function WhatDidTheySay() {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                 <Typography sx={{ fontSize: '1.1rem', lineHeight: 1 }}>{loc.icon}</Typography>
                 <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: 'text.primary' }}>
-                  {loc.label}
+                  {t(`locations.${loc.key}.label`)}
                 </Typography>
                 <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  {loc.phrases.length} phrases
+                  {t('phraseCount', { count: loc.phrases.length })}
                 </Typography>
               </Box>
             )}
@@ -507,17 +502,17 @@ export function WhatDidTheySay() {
                         secondarySize="0.78rem"
                       />
                     </Box>
-                    <Tooltip title="Listen">
+                    <Tooltip title={t('listen')}>
                       <IconButton
                         size="small"
                         onClick={() => speak(stripFurigana(phrase.japanese))}
-                        aria-label="Listen"
+                        aria-label={t('listen')}
                         sx={{ p: 0.5 }}
                       >
                         <VolumeUpIcon sx={{ fontSize: 16 }} />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Save to deck">
+                    <Tooltip title={t('saveToDeck')}>
                       <IconButton
                         size="small"
                         onClick={() => {
@@ -530,7 +525,7 @@ export function WhatDidTheySay() {
                           ]);
                           setSaveDialogOpen(true);
                         }}
-                        aria-label="Save to deck"
+                        aria-label={t('saveToDeck')}
                         sx={{ p: 0.5 }}
                       >
                         <BookmarkBorderIcon sx={{ fontSize: 16 }} />
@@ -569,7 +564,7 @@ export function WhatDidTheySay() {
                           fontSize: '0.6rem',
                         }}
                       >
-                        YOUR RESPONSE
+                        {t('yourResponse')}
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
                         <Box sx={{ flex: 1 }}>
@@ -580,13 +575,13 @@ export function WhatDidTheySay() {
                             secondarySize="0.72rem"
                           />
                         </Box>
-                        <Tooltip title="Listen">
+                        <Tooltip title={t('listen')}>
                           <IconButton
                             size="small"
                             onClick={() =>
                               speak(stripFurigana(phrase.yourResponse!.split(' / ')[0]))
                             }
-                            aria-label="Listen to response"
+                            aria-label={t('listenToResponse')}
                             sx={{ p: 0.5 }}
                           >
                             <VolumeUpIcon sx={{ fontSize: 14 }} />
@@ -609,8 +604,8 @@ export function WhatDidTheySay() {
         onSaved={() => setDeckSaved(true)}
         defaultDeckName={
           activeLocation
-            ? `${activeLocation.icon} ${activeLocation.label} Phrases`
-            : '👂 What Did They Say?'
+            ? `${activeLocation.icon} ${t(`locations.${activeLocation.key}.label`)} ${t('deckNameSuffix')}`
+            : `👂 ${t('heading')}`
         }
       />
     </Container>

@@ -12,6 +12,7 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
@@ -47,6 +48,7 @@ export function LineRecallMode({
   ohanashikaiId: _ohanashikaiId,
   onExit,
 }: LineRecallModeProps) {
+  const t = useTranslations('Ohanashikai.lineRecall');
   const theme = useTheme();
   const { brand, accent, surfaces } = theme.palette;
 
@@ -134,14 +136,14 @@ export function LineRecallMode({
       <Box sx={{ textAlign: 'center', py: 6 }}>
         <Typography sx={{ fontSize: '4rem', mb: 2 }}>{star}</Typography>
         <Typography variant="h4" sx={{ fontWeight: 800, mb: 1, color: brand[700] }}>
-          {pct === 100 ? '完璧！Perfect!' : 'よくがんばりました！'}
+          {pct === 100 ? t('perfectScore') : t('greatEffort')}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 1 }}>
-          {score} / {pool.length} lines correct
+          {t('linesCorrect', { score, total: pool.length })}
         </Typography>
         {pct === 100 && (
           <Typography variant="caption" sx={{ display: 'block', color: brand[500], mb: 1 }}>
-            You remembered every single line! 🎊
+            {t('perfectMessage')}
           </Typography>
         )}
         <Stack direction="row" spacing={2} justifyContent="center" mt={4}>
@@ -153,10 +155,10 @@ export function LineRecallMode({
               correctCountRef.current = 0;
             }}
           >
-            Try Again
+            {t('tryAgain')}
           </Button>
           <Button variant="contained" onClick={onExit}>
-            Back to Speech
+            {t('backToSpeech')}
           </Button>
         </Stack>
       </Box>
@@ -170,7 +172,7 @@ export function LineRecallMode({
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 800, color: brand[700] }}>
-          🎯 Line Recall
+          {t('title')}
         </Typography>
         <Chip
           label={`${score} ⭐ · ${index + 1}/${pool.length}`}
@@ -230,7 +232,7 @@ export function LineRecallMode({
             fontWeight: 800,
           }}
         >
-          🎯 WHAT IS LINE {current.orderIndex + 1}?
+          {t('whatIsLine', { number: current.orderIndex + 1 })}
         </Typography>
 
         <Stack direction="row" alignItems="center" spacing={1.5} mb={2}>
@@ -248,7 +250,7 @@ export function LineRecallMode({
             </Typography>
           </Box>
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            ← hint
+            {t('hintArrow')}
           </Typography>
         </Stack>
 
@@ -265,7 +267,7 @@ export function LineRecallMode({
           >
             <Stack direction="row" alignItems="center" justifyContent="space-between" mb={0.5}>
               <Typography variant="caption" sx={{ color: accent[600], fontWeight: 800 }}>
-                The answer:
+                {t('theAnswer')}
               </Typography>
               <SpeakButton
                 text={stripFurigana(current.text)}
@@ -311,7 +313,7 @@ export function LineRecallMode({
               color={result === 'correct' ? 'success.main' : 'error.main'}
               sx={{ fontWeight: 700 }}
             >
-              {result === 'correct' ? 'Perfect! +10 XP ✨' : 'Not quite… but keep going! +2 XP'}
+              {result === 'correct' ? t('correctResult') : t('wrongResult')}
             </Typography>
           </Box>
         )}
@@ -325,8 +327,8 @@ export function LineRecallMode({
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !result && !revealed) void check();
           }}
-          label="Type the full line from memory…"
-          placeholder="Type here…"
+          label={t('inputLabel')}
+          placeholder={t('inputPlaceholder')}
           disabled={!!result || revealed}
           fullWidth
           multiline
@@ -343,7 +345,7 @@ export function LineRecallMode({
                 disabled={!input.trim()}
                 sx={{ flexShrink: 0 }}
               >
-                Check ✓
+                {t('check')}
               </Button>
               <Button
                 variant="outlined"
@@ -352,13 +354,13 @@ export function LineRecallMode({
                 color="inherit"
                 sx={{ opacity: 0.7, flexShrink: 0 }}
               >
-                Show Answer
+                {t('showAnswer')}
               </Button>
             </>
           )}
           {(result || revealed) && (
             <Button variant="outlined" onClick={next} sx={{ flexShrink: 0 }}>
-              Next →
+              {t('next')}
             </Button>
           )}
         </Stack>
@@ -371,7 +373,7 @@ export function LineRecallMode({
           onClick={handleExit}
           sx={{ opacity: 0.45, fontSize: '0.75rem' }}
         >
-          Quit &amp; Save Progress
+          {t('quitAndSave')}
         </Button>
       </Box>
     </Box>

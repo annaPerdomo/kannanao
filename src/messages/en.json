@@ -1287,5 +1287,534 @@
       "notReady": "Service worker not ready on {host}. Registration never completed. Please try again.",
       "saveFailed": "Could not save the subscription to the server. Please try again."
     }
+  },
+  "Travel": {
+    "hub": {
+      "title": "Travel Mode",
+      "subtitle": "Zero Japanese required. Everything you need to navigate Japan with confidence.",
+      "signInToUnlock": "Sign in to unlock",
+      "aiBadge": "AI",
+      "features": {
+        "culture": {
+          "title": "Culture Guide",
+          "description": "Etiquette essentials, do's & don'ts, and tips for a smoother trip."
+        },
+        "dailyPhrase": {
+          "title": "Daily Phrase Pack",
+          "description": "Tell me your plans and get the exact phrases you'll need today."
+        },
+        "scenarios": {
+          "title": "Scenario Practice",
+          "description": "Practice real conversations — type in English, learn the Japanese."
+        },
+        "pointCommunicate": {
+          "title": "Point & Communicate",
+          "description": "Cards to show when you can't speak — allergies, directions, requests."
+        },
+        "heard": {
+          "title": "\"What Did They Say?\"",
+          "description": "Phrases Japanese people say TO you — at stores, restaurants, stations."
+        },
+        "food": {
+          "title": "Food Menu Cheat Sheet",
+          "description": "Know what you're ordering — ramen, sushi, drinks, and konbini food."
+        },
+        "katakana": {
+          "title": "Katakana Decoder",
+          "description": "Learn the 46 characters used for foreign words on menus and signs."
+        },
+        "phrases": {
+          "title": "Survival Phrases",
+          "description": "Essential phrases by situation — with romaji pronunciation and tips."
+        },
+        "emergency": {
+          "title": "Emergency Card",
+          "description": "Hotel address, medical info, and emergency numbers — ready to show."
+        }
+      }
+    },
+    "displayToggle": {
+      "label": "Show Japanese as:",
+      "options": {
+        "romaji": {
+          "label": "Romaji",
+          "tooltip": "Romaji pronunciation highlighted"
+        },
+        "hiragana": {
+          "label": "ひらがな",
+          "tooltip": "Reading guides above kanji + romaji below"
+        },
+        "kanji": {
+          "label": "漢字",
+          "tooltip": "Japanese characters only, romaji below"
+        }
+      }
+    },
+    "requireAuth": {
+      "checkingAccount": "Checking account...",
+      "signInToAccess": "Sign in to access {feature}",
+      "accountRequired": "This feature requires an account. Sign in or create one to get started.",
+      "signIn": "Sign in",
+      "backToTravel": "Back to Travel"
+    },
+    "authGatedSave": {
+      "title": "Sign in to save phrases",
+      "subtitle": "Save phrases to your personal study deck",
+      "maybeLater": "Maybe later",
+      "signIn": "Sign in",
+      "body": "Sign in to save travel phrases into flashcard decks you can study and practice anytime."
+    },
+    "saveToDeck": {
+      "title": "{count, plural, one {Save # phrase} other {Save # phrases}}",
+      "subtitle": "Add to an existing deck or create a new one",
+      "defaultDeckName": "Travel Phrases",
+      "createNewDeck": "Create new deck",
+      "loadingDecks": "Loading decks...",
+      "orAddToExisting": "Or add to an existing deck:",
+      "cardsCount": "{count, plural, one {# card} other {# cards}}",
+      "noExistingDecks": "No existing decks. Create a new one above.",
+      "deckNameLabel": "Deck name",
+      "saving": "Saving...",
+      "createAndSave": "Create & Save",
+      "failedToSave": "Failed to save",
+      "failedToCreateDeck": "Failed to create deck",
+      "createdFromTravelMode": "Created from Travel Mode"
+    },
+    "phrases": {
+      "backToHub": "Back to travel hub",
+      "title": "Survival Phrases",
+      "subtitle": "Essential phrases with pronunciation and tips",
+      "saved": "Saved!",
+      "saveAll": "Save all",
+      "all": "All",
+      "situations": {
+        "greetings": "Greetings",
+        "restaurant": "Restaurant",
+        "shopping": "Shopping",
+        "transport": "Transport",
+        "hotel": "Hotel",
+        "directions": "Directions",
+        "polite": "Polite Extras",
+        "numbers": "Numbers",
+        "emergency": "Emergency"
+      },
+      "difficulty": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "longer": "Longer"
+      },
+      "formality": {
+        "casual": "Casual",
+        "polite": "Polite",
+        "veryPolite": "Very polite"
+      },
+      "phraseCount": "{count, plural, one {# phrase} other {# phrases}}",
+      "listen": "Listen",
+      "listenAria": "Listen to pronunciation",
+      "saveToDeck": "Save to deck",
+      "savePhraseAria": "Save phrase to deck",
+      "breakdown": "BREAKDOWN",
+      "whenToUse": "WHEN TO USE",
+      "culturalNote": "CULTURAL NOTE",
+      "deckName": "Travel: {label}",
+      "deckNameAll": "Travel: All Survival Phrases"
+    },
+    "dailyPack": {
+      "backToHub": "Back to travel hub",
+      "title": "Daily Phrase Pack",
+      "subtitle": "Phrases tailored to your plans today",
+      "planPlaceholder": "e.g. Taking the train to Asakusa, visiting Senso-ji temple, then finding a good ramen shop for lunch...",
+      "tryExample": "Or try an example:",
+      "examplePlans": [
+        "Taking the train to Shibuya, shopping, then ramen for lunch",
+        "Visiting Fushimi Inari shrine, then exploring Nishiki Market",
+        "Checking out of hotel, taking shinkansen to Osaka, checking into new hotel",
+        "Going to TeamLab, then Odaiba for dinner at a sushi restaurant",
+        "Spending the day in Akihabara, visiting arcades, getting a coffee"
+      ],
+      "generateButton": "Generate my phrases",
+      "generatingMessage": "Generating your phrases...",
+      "generateFailed": "Failed to generate phrases",
+      "youSay": "You say",
+      "youllHear": "You'll hear",
+      "listen": "Listen",
+      "newDay": "New day",
+      "saved": "Saved!",
+      "saveToDeck": "Save to deck",
+      "todaysPhrasesDeckName": "Today's Phrases"
+    },
+    "emergency": {
+      "backToHub": "Back to travel hub",
+      "title": "My Emergency Card",
+      "intro": "Fill this in before your trip. Pull it up instantly when you need it — show to taxi drivers, hotel staff, or in emergencies.",
+      "emergencyNumbersTitle": "Japan Emergency Numbers",
+      "police": "Police",
+      "ambulanceFire": "Ambulance & Fire",
+      "helpline": "Japan Helpline (English 24/7)",
+      "myHotel": "MY HOTEL",
+      "hotelName": "Hotel name",
+      "hotelAddressLabel": "Address (in Japanese if possible — paste from booking)",
+      "hotelPhone": "Hotel phone",
+      "notSet": "(not set)",
+      "medicalInfo": "MEDICAL INFO",
+      "medicalConditions": "Medical conditions",
+      "medicalConditionsPlaceholder": "e.g. Asthma, Diabetes",
+      "allergies": "Allergies",
+      "allergiesPlaceholder": "e.g. Peanuts, Shellfish, Penicillin",
+      "bloodType": "Blood type",
+      "bloodTypePlaceholder": "e.g. O+",
+      "conditionsLabel": "Conditions:",
+      "allergiesLabel": "Allergies:",
+      "bloodTypeLabel": "Blood type:",
+      "contacts": "CONTACTS",
+      "emergencyContactLabel": "Emergency contact (name + phone)",
+      "emergencyContactPlaceholder": "e.g. Mom: +1-555-123-4567",
+      "embassyInfoLabel": "Embassy/Consulate info",
+      "embassyInfoPlaceholder": "e.g. US Embassy Tokyo: 03-3224-5000",
+      "otherNotes": "Other notes",
+      "otherNotesPlaceholder": "e.g. Travel insurance policy #, medications",
+      "contactLabel": "Contact:",
+      "embassyLabel": "Embassy:",
+      "notesLabel": "Notes:",
+      "emergencyPhrasesTitle": "EMERGENCY PHRASES",
+      "fillInInfo": "Fill in my info"
+    },
+    "showCards": {
+      "backToHub": "Back to travel hub",
+      "title": "Point & Communicate",
+      "subtitle": "Show these cards when you can't speak",
+      "create": "Create",
+      "englishLabel": "English",
+      "japaneseLabel": "Japanese",
+      "romajiLabel": "Romaji",
+      "whenToShowLabel": "When to show",
+      "aiChipLabel": "AI",
+      "editCard": "Edit card",
+      "editCustomCardAria": "Edit custom card",
+      "deleteCard": "Delete card",
+      "deleteCustomCardAria": "Delete custom card",
+      "listen": "Listen",
+      "listenAria": "Listen to pronunciation",
+      "copied": "Copied!",
+      "copyJapaneseText": "Copy Japanese text",
+      "copyJapaneseTextAria": "Copy Japanese text",
+      "createWithAiTitle": "Create with AI",
+      "createWithAiDescription": "Type what you want to communicate in English, and AI will create the perfect card.",
+      "createPlaceholder": "e.g. \"I am gluten free\" or \"Where is the bathroom?\"",
+      "creatingEllipsis": "Creating...",
+      "generateCardButton": "Generate Card",
+      "creatingCardMessage": "Creating your card...",
+      "cardCreatedSuccess": "Card created! Find it at the top.",
+      "categories": {
+        "all": "All",
+        "allergies": "Allergies",
+        "directions": "Directions",
+        "help": "Help",
+        "medical": "Medical",
+        "communication": "Communication",
+        "preferences": "Preferences",
+        "custom": "Custom"
+      },
+      "loadingSavedCards": "Loading saved cards...",
+      "emptyState": "No cards in this category yet. Create one with AI!",
+      "savedToDeck": "Saved to deck!",
+      "saveCardsToDeck": "{count, plural, one {Save # card to deck} other {Save # cards to deck}}",
+      "deckName": "Point & Communicate Cards"
+    },
+    "foodMenu": {
+      "backAriaLabel": "Back to travel hub",
+      "title": "Food Menu Cheat Sheet",
+      "subtitle": "Know what you're ordering",
+      "saved": "Saved!",
+      "saveAll": "Save all",
+      "allFilter": "All",
+      "categories": {
+        "ramen": "Ramen Types",
+        "sushi": "Sushi & Fish",
+        "common": "Common Dishes",
+        "drinks": "Drinks",
+        "konbini": "Konbini Food",
+        "ordering": "Ordering Words"
+      },
+      "itemsCount": "{count} items",
+      "listen": "Listen",
+      "saveToDeck": "Save to deck",
+      "defaultDeckName": "Japanese Food Vocabulary"
+    },
+    "katakana": {
+      "backAriaLabel": "Back to travel hub",
+      "title": "Katakana Decoder",
+      "intro": "Katakana is used for foreign/borrowed words in Japanese. Many are just English pronounced with Japanese sounds. Learn these and you can “read” hundreds of signs!",
+      "tabs": {
+        "chart": "Chart",
+        "quiz": "Flash Quiz",
+        "decode": "Decode Words"
+      },
+      "rowLabels": {
+        "vowels": "Vowels",
+        "k": "K",
+        "s": "S",
+        "t": "T",
+        "n": "N",
+        "h": "H",
+        "m": "M",
+        "y": "Y",
+        "r": "R",
+        "w": "W",
+        "nn": "N"
+      },
+      "tapToHear": "Tap any character to hear its sound. Long vowels are written with ー (e.g. コーヒー = ko-o-hi-i = coffee).",
+      "quizInstructions": "Tap the character to hear it. Type the romaji below.",
+      "romajiPlaceholder": "Type romaji...",
+      "go": "Go",
+      "correct": "Correct!",
+      "incorrect": "It's \"{romaji}\"",
+      "next": "Next",
+      "decodeIntro": "These are English words written in katakana. Try to sound them out before revealing the answer!",
+      "decodeCategories": {
+        "all": "All",
+        "food": "Food & Drink",
+        "places": "Places",
+        "transport": "Transport",
+        "things": "Things",
+        "signs": "Signs"
+      },
+      "listen": "Listen",
+      "tapToReveal": "Tap to reveal"
+    },
+    "culture": {
+      "backAriaLabel": "Back to travel hub",
+      "title": "Culture Guide",
+      "saveAll": "Save all",
+      "intro": "Essential etiquette and cultural tips for navigating Japan. Each card includes useful phrases for that situation.",
+      "topics": {
+        "all": "All",
+        "general": "General",
+        "restaurants": "Food",
+        "trains": "Trains",
+        "shopping": "Shopping",
+        "onsen": "Onsen",
+        "shrines": "Shrines",
+        "taboos": "Taboos",
+        "gestures": "Gestures"
+      },
+      "importance": {
+        "essential": "Must know",
+        "recommended": "Good to know",
+        "nice_to_know": "Interesting"
+      },
+      "usefulPhrases": "USEFUL PHRASES",
+      "listen": "Listen",
+      "listenToPhrase": "Listen to phrase",
+      "saveToDeck": "Save to deck",
+      "defaultDeckName": "Culture Guide Phrases"
+    },
+    "scenario": {
+      "backToHub": "Back to travel hub",
+      "heading": "Scenario Practice",
+      "subheading": "Type in English, learn the Japanese",
+      "categories": {
+        "restaurant": {
+          "title": "Ordering Ramen",
+          "description": "You walk into a bustling ramen shop. Time to order!"
+        },
+        "convenienceStore": {
+          "title": "Konbini Run",
+          "description": "Quick stop at the convenience store for snacks and essentials."
+        },
+        "train": {
+          "title": "Train Navigation",
+          "description": "Figure out which train to take and where to transfer."
+        },
+        "hotel": {
+          "title": "Hotel Check-in",
+          "description": "Arrive at your hotel and check in to your room."
+        },
+        "shopping": {
+          "title": "Souvenir Shopping",
+          "description": "Find the perfect souvenirs and navigate a Japanese store."
+        },
+        "taxi": {
+          "title": "Taxi Ride",
+          "description": "Hail a taxi and communicate your destination."
+        },
+        "emergency": {
+          "title": "Getting Help",
+          "description": "You need assistance — practice asking for help."
+        },
+        "greeting": {
+          "title": "Meeting Someone",
+          "description": "Practice casual social greetings and introductions."
+        }
+      },
+      "backToScenarios": "Back to scenarios",
+      "sayInEnglish": "Say what you want in English",
+      "listen": "Listen",
+      "listenToPronunciation": "Listen to pronunciation",
+      "saveToDeck": "Save to deck",
+      "saved": "Saved",
+      "saveNpcPhrase": "Save NPC phrase",
+      "sayThis": "SAY THIS",
+      "listenToPhrase": "Listen to phrase",
+      "savePhrase": "Save phrase",
+      "simplerAlternative": "SIMPLER ALTERNATIVE",
+      "listenToAlternative": "Listen to alternative",
+      "saveAlternative": "Save alternative",
+      "settingScene": "Setting the scene...",
+      "thinking": "Thinking...",
+      "suggestions": "Suggestions:",
+      "inputPlaceholder": "What do you want to say?",
+      "send": "Send",
+      "conversationComplete": "Conversation complete!",
+      "endingWithSaves": "You saved {count} {count, plural, one {phrase} other {phrases}}. Save them to a deck to practice later!",
+      "endingNoSaves": "Try another scenario or save some phrases next time!",
+      "replay": "Replay",
+      "saveToDeckCount": "Save to Deck ({count})",
+      "savedChip": "Saved!",
+      "savePhrasesToDeck": "Save {count} {count, plural, one {phrase} other {phrases}} to deck",
+      "deckName": "Travel: {title}",
+      "scenarioFallback": "Scenario"
+    },
+    "whatDidTheySay": {
+      "backToHub": "Back to travel hub",
+      "heading": "What Did They Say?",
+      "subheading": "Recognize common phrases said TO you",
+      "saveAll": "Save all",
+      "saved": "Saved!",
+      "all": "All",
+      "locations": {
+        "konbini": {
+          "label": "Convenience Store"
+        },
+        "restaurant": {
+          "label": "Restaurant"
+        },
+        "station": {
+          "label": "Train Station"
+        },
+        "shop": {
+          "label": "Shops & Stores"
+        },
+        "hotel": {
+          "label": "Hotel"
+        },
+        "general": {
+          "label": "Everywhere"
+        }
+      },
+      "phraseCount": "{count, plural, one {# phrase} other {# phrases}}",
+      "listen": "Listen",
+      "saveToDeck": "Save to deck",
+      "yourResponse": "YOUR RESPONSE",
+      "listenToResponse": "Listen to response",
+      "deckNameSuffix": "Phrases"
+    },
+    "errors": {
+      "failedStartScenario": "Failed to start scenario",
+      "failedContinueScenario": "Failed to continue scenario",
+      "failedGenerateCard": "Failed to generate card"
+    }
+  },
+  "Ohanashikai": {
+    "home": {
+      "loadingSpeeches": "Loading your speeches…",
+      "subtitle": "Speech Practice",
+      "description": "Add your speeches, then practice until you know every line by heart! ✨",
+      "newSpeech": "New Speech",
+      "emptyTitle": "No speeches yet!",
+      "emptyDescription": "Create your first speech to start practicing",
+      "createSpeech": "Create Speech",
+      "lineCount": "{count, plural, one {# line} other {# lines}}",
+      "unpinFromHome": "Unpin from home",
+      "pinToHome": "Pin to home",
+      "newSpeechDialogTitle": "🎤 New Speech",
+      "newSpeechDialogSubtitle": "Give your speech a name to get started",
+      "creating": "Creating…",
+      "createButton": "Create ✨",
+      "speechTitleLabel": "Speech title",
+      "speechTitlePlaceholder": "e.g. Spring Ohanashikai 2026",
+      "descriptionLabel": "Description (optional)",
+      "descriptionPlaceholder": "e.g. School speech festival"
+    },
+    "detail": {
+      "genericError": "Something went wrong. Please try again.",
+      "loadingSpeech": "Loading speech…",
+      "speechFallbackTitle": "Speech",
+      "rename": "Rename",
+      "lineCount": "{count, plural, one {# line} other {# lines}}",
+      "speechLines": "Speech Lines",
+      "stop": "Stop",
+      "listenToFullSpeech": "Listen to full speech",
+      "listen": "Listen",
+      "autoAddFuriganaHint": "Auto-add kanji + furigana to all saved lines",
+      "formatting": "Formatting…",
+      "autoFuriganaAll": "Auto Furigana All",
+      "lineByLine": "Line by Line",
+      "importLines": "Import Lines",
+      "autoFuriganaFailed": "Auto Furigana failed: {error}",
+      "addingFuriganaToAll": "Adding furigana to all lines…",
+      "howToTitle": "How to add furigana",
+      "autoHint": "<strong>Auto:</strong> Type plain Japanese, add the line, then use <em>Auto Furigana All</em> ✨ above to format everything at once.",
+      "manualHint": "<strong>Manual:</strong> Use <kanjiReadingCode></kanjiReadingCode> format, e.g. <exampleCode></exampleCode>. Plain hiragana works too!",
+      "newLinePlaceholder": "Type a new line and press Enter…",
+      "add": "Add",
+      "saveEnter": "Save (Enter)",
+      "cancelEsc": "Cancel (Esc)",
+      "editLine": "Edit line",
+      "deleteLine": "Delete line"
+    },
+    "bulkImport": {
+      "genericError": "Something went wrong. Please try again.",
+      "howToTitle": "How to add furigana",
+      "option1": "<strong>Option 1 — Auto:</strong> Paste plain Japanese, then hit <em>Auto Furigana</em> ✨ and it'll add kanji + readings for you.",
+      "option2": "<strong>Option 2 — Manual:</strong> Use <kanjiReadingCode></kanjiReadingCode> format, e.g. <exampleCode></exampleCode>. Plain hiragana lines work too!",
+      "addingFurigana": "Adding furigana…",
+      "pastePlaceholder": "Line 1 of your speech\nLine 2 of your speech\n…",
+      "autoFuriganaFailed": "Auto Furigana failed: {error}",
+      "linesDetected": "{count} lines detected",
+      "autoFurigana": "Auto Furigana",
+      "addLines": "Add Lines",
+      "importing": "Importing…"
+    },
+    "practiceTiles": {
+      "letsPractice": "Let's practice!",
+      "readthrough": {
+        "label": "Read Through",
+        "description": "Read every line in order"
+      },
+      "linerecall": {
+        "label": "Line Recall",
+        "description": "Type each line from memory"
+      },
+      "start": "Start →",
+      "locked": "Add lines first 🔒",
+      "unlockHint": "Add at least 1 line to unlock practice modes."
+    },
+    "practice": {
+      "loadingSession": "Loading practice session…",
+      "readThroughTitle": "📖 Read Through",
+      "lineRecallTitle": "🎯 Line Recall",
+      "noLinesYet": "No lines yet! Add some lines to your speech first."
+    },
+    "lineRecall": {
+      "perfectScore": "完璧！Perfect!",
+      "greatEffort": "よくがんばりました！",
+      "linesCorrect": "{score} / {total} lines correct",
+      "perfectMessage": "You remembered every single line! 🎊",
+      "tryAgain": "Try Again",
+      "backToSpeech": "Back to Speech",
+      "title": "🎯 Line Recall",
+      "whatIsLine": "🎯 WHAT IS LINE {number}?",
+      "hintArrow": "← hint",
+      "theAnswer": "The answer:",
+      "correctResult": "Perfect! +10 XP ✨",
+      "wrongResult": "Not quite… but keep going! +2 XP",
+      "inputLabel": "Type the full line from memory…",
+      "inputPlaceholder": "Type here…",
+      "check": "Check ✓",
+      "showAnswer": "Show Answer",
+      "next": "Next →",
+      "quitAndSave": "Quit & Save Progress"
+    }
   }
 }

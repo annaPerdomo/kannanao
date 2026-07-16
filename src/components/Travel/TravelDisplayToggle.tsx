@@ -2,25 +2,31 @@
 
 import { Box, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 import { useTravelDisplay } from '@/contexts/TravelDisplayContext';
 import type { TravelDisplayMode } from '@/types/travel';
 
-const OPTIONS: Array<{ value: TravelDisplayMode; label: string; tooltip: string }> = [
-  { value: 'romaji', label: 'Romaji', tooltip: 'Romaji pronunciation highlighted' },
-  { value: 'hiragana', label: 'ひらがな', tooltip: 'Reading guides above kanji + romaji below' },
-  { value: 'kanji', label: '漢字', tooltip: 'Japanese characters only, romaji below' },
-];
-
 interface TravelDisplayToggleProps {
-  /** Optional label — defaults to "Show Japanese as:" */
+  /** Optional label — defaults to the translated "Show Japanese as:" */
   label?: string;
 }
 
-export function TravelDisplayToggle({ label = 'Show Japanese as:' }: TravelDisplayToggleProps) {
+export function TravelDisplayToggle({ label }: TravelDisplayToggleProps) {
+  const t = useTranslations('Travel.displayToggle');
   const { palette } = useTheme();
   const { brand, accent } = palette;
   const { mode, setMode } = useTravelDisplay();
+
+  const OPTIONS: Array<{ value: TravelDisplayMode; label: string; tooltip: string }> = [
+    { value: 'romaji', label: t('options.romaji.label'), tooltip: t('options.romaji.tooltip') },
+    {
+      value: 'hiragana',
+      label: t('options.hiragana.label'),
+      tooltip: t('options.hiragana.tooltip'),
+    },
+    { value: 'kanji', label: t('options.kanji.label'), tooltip: t('options.kanji.tooltip') },
+  ];
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
@@ -29,7 +35,7 @@ export function TravelDisplayToggle({ label = 'Show Japanese as:' }: TravelDispl
         color="text.secondary"
         sx={{ fontWeight: 600, fontSize: '0.78rem' }}
       >
-        {label}
+        {label ?? t('label')}
       </Typography>
       <ToggleButtonGroup
         value={mode}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import {
@@ -80,6 +81,7 @@ interface HistoryEntry {
 }
 
 export function useScenario() {
+  const t = useTranslations('Travel.errors');
   const [turns, setTurns] = useState<ConversationTurn[]>([]);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -146,12 +148,12 @@ export function useScenario() {
           /* full */
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to start scenario');
+        setError(err instanceof Error ? err.message : t('failedStartScenario'));
       } finally {
         setLoading(false);
       }
     },
-    [],
+    [t],
   );
 
   const respond = useCallback(
@@ -226,12 +228,12 @@ export function useScenario() {
           },
         ]);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to continue scenario');
+        setError(err instanceof Error ? err.message : t('failedContinueScenario'));
       } finally {
         setLoading(false);
       }
     },
-    [turns, history],
+    [turns, history, t],
   );
 
   const savePhrase = useCallback(
@@ -257,6 +259,7 @@ export function useScenario() {
 // ─── Show Cards Hook ──────────────────────────────────────────────
 
 export function useShowCards() {
+  const t = useTranslations('Travel.errors');
   const [cards, setCards] = useState<ShowCard[]>(DEFAULT_SHOW_CARDS);
   const [generating, setGenerating] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -282,64 +285,67 @@ export function useShowCards() {
     };
   }, []);
 
-  const generateCard = useCallback(async (message: string, displayMode?: TravelDisplayMode) => {
-    const cacheKey = `travel:showcard:${displayMode ?? ''}:${message.trim().toLowerCase()}`;
+  const generateCard = useCallback(
+    async (message: string, displayMode?: TravelDisplayMode) => {
+      const cacheKey = `travel:showcard:${displayMode ?? ''}:${message.trim().toLowerCase()}`;
 
-    // Check sessionStorage cache to avoid duplicate API calls
-    try {
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        const data = JSON.parse(cached);
-        // Return cached card without re-inserting into DB (already saved on first generate)
+      // Check sessionStorage cache to avoid duplicate API calls
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const data = JSON.parse(cached);
+          // Return cached card without re-inserting into DB (already saved on first generate)
+          const newCard: ShowCard = { id: `custom-${Date.now()}`, ...data, isCustom: true };
+          setCards((prev) => [newCard, ...prev]);
+          return newCard;
+        }
+      } catch {
+        /* sessionStorage unavailable */
+      }
+
+      setGenerating(true);
+      setError(null);
+      try {
+        const res = await fetch(`${BASE}/show-card`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+          body: JSON.stringify({ message, displayMode }),
+        });
+        if (!res.ok) throw new Error('Failed to generate show card');
+        const data = await res.json();
+
+        // Cache to avoid duplicate API calls
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify(data));
+        } catch {
+          /* full */
+        }
+
+        // Save to DB. Authenticate the user via getUser() (verified against the
+        // Auth server) rather than trusting the user object from getSession().
+        const {
+          data: { user },
+        } = await sb.auth.getUser();
+        const userId = user?.id;
+        if (userId) {
+          const saved = await dbSaveShowCard(data, userId);
+          setCards((prev) => [saved, ...prev]);
+          return saved;
+        }
+
+        // Fallback if no auth (shouldn't happen, but be safe)
         const newCard: ShowCard = { id: `custom-${Date.now()}`, ...data, isCustom: true };
         setCards((prev) => [newCard, ...prev]);
         return newCard;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : t('failedGenerateCard'));
+        return null;
+      } finally {
+        setGenerating(false);
       }
-    } catch {
-      /* sessionStorage unavailable */
-    }
-
-    setGenerating(true);
-    setError(null);
-    try {
-      const res = await fetch(`${BASE}/show-card`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-        body: JSON.stringify({ message, displayMode }),
-      });
-      if (!res.ok) throw new Error('Failed to generate show card');
-      const data = await res.json();
-
-      // Cache to avoid duplicate API calls
-      try {
-        sessionStorage.setItem(cacheKey, JSON.stringify(data));
-      } catch {
-        /* full */
-      }
-
-      // Save to DB. Authenticate the user via getUser() (verified against the
-      // Auth server) rather than trusting the user object from getSession().
-      const {
-        data: { user },
-      } = await sb.auth.getUser();
-      const userId = user?.id;
-      if (userId) {
-        const saved = await dbSaveShowCard(data, userId);
-        setCards((prev) => [saved, ...prev]);
-        return saved;
-      }
-
-      // Fallback if no auth (shouldn't happen, but be safe)
-      const newCard: ShowCard = { id: `custom-${Date.now()}`, ...data, isCustom: true };
-      setCards((prev) => [newCard, ...prev]);
-      return newCard;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate card');
-      return null;
-    } finally {
-      setGenerating(false);
-    }
-  }, []);
+    },
+    [t],
+  );
 
   const updateCard = useCallback(
     async (

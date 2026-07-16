@@ -24,6 +24,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
 
 import { useTravelDisplay } from '@/contexts/TravelDisplayContext';
@@ -38,74 +39,66 @@ import { TravelPhrase } from './TravelPhrase';
 
 interface ScenarioConfig {
   category: ScenarioCategory;
-  title: string;
+  labelKey: string;
   icon: string;
-  description: string;
   setting: string;
 }
 
 const SCENARIOS: ScenarioConfig[] = [
   {
     category: 'restaurant',
-    title: 'Ordering Ramen',
+    labelKey: 'restaurant',
     icon: '🍜',
-    description: 'You walk into a bustling ramen shop. Time to order!',
     setting: 'A small ramen shop with counter seating and a ticket vending machine by the door.',
   },
   {
     category: 'convenience_store',
-    title: 'Konbini Run',
+    labelKey: 'convenienceStore',
     icon: '🏪',
-    description: 'Quick stop at the convenience store for snacks and essentials.',
     setting: 'A brightly-lit 7-Eleven in Tokyo. The cashier greets you as you approach.',
   },
   {
     category: 'train',
-    title: 'Train Navigation',
+    labelKey: 'train',
     icon: '🚃',
-    description: 'Figure out which train to take and where to transfer.',
     setting:
       'Shinjuku Station — one of the busiest stations in the world. You need to find the right platform.',
   },
   {
     category: 'hotel',
-    title: 'Hotel Check-in',
+    labelKey: 'hotel',
     icon: '🏨',
-    description: 'Arrive at your hotel and check in to your room.',
     setting: 'The lobby of a mid-range business hotel. A polite receptionist awaits.',
   },
   {
     category: 'shopping',
-    title: 'Souvenir Shopping',
+    labelKey: 'shopping',
     icon: '🛍️',
-    description: 'Find the perfect souvenirs and navigate a Japanese store.',
     setting: 'A souvenir shop in Asakusa near Senso-ji temple. Lots of colorful goods displayed.',
   },
   {
     category: 'taxi',
-    title: 'Taxi Ride',
+    labelKey: 'taxi',
     icon: '🚕',
-    description: 'Hail a taxi and communicate your destination.',
     setting: 'Evening in Shibuya. You wave down a taxi — the door opens automatically!',
   },
   {
     category: 'emergency',
-    title: 'Getting Help',
+    labelKey: 'emergency',
     icon: '🆘',
-    description: 'You need assistance — practice asking for help.',
     setting:
       "You realize you're lost in an unfamiliar neighborhood. A koban (police box) is nearby.",
   },
   {
     category: 'greeting',
-    title: 'Meeting Someone',
+    labelKey: 'greeting',
     icon: '🤝',
-    description: 'Practice casual social greetings and introductions.',
     setting: 'A friend of a friend invited you to a small gathering. Time for introductions.',
   },
 ];
 
 export function ScenarioPlayer() {
+  const t = useTranslations('Travel.scenario');
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
@@ -167,15 +160,15 @@ export function ScenarioPlayer() {
       <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
         <Stack spacing={3}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
+            <IconButton onClick={() => router.push('/travel')} aria-label={t('backToHub')}>
               <ArrowBackIcon />
             </IconButton>
             <Box>
               <Typography variant="h5" sx={{ color: 'text.primary' }}>
-                Scenario Practice
+                {t('heading')}
               </Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
-                Type in English, learn the Japanese
+                {t('subheading')}
               </Typography>
             </Box>
           </Box>
@@ -245,13 +238,13 @@ export function ScenarioPlayer() {
                       lineHeight: 1.3,
                     }}
                   >
-                    {s.title}
+                    {t(`categories.${s.labelKey}.title`)}
                   </Typography>
                   <Typography
                     variant="body2"
                     sx={{ color: 'text.secondary', lineHeight: 1.4, fontSize: '0.78rem', mt: 0.25 }}
                   >
-                    {s.description}
+                    {t(`categories.${s.labelKey}.description`)}
                   </Typography>
                 </Box>
               </Box>
@@ -279,7 +272,7 @@ export function ScenarioPlayer() {
             borderBottom: `1px solid ${alpha(brand[200], 0.4)}`,
           }}
         >
-          <IconButton onClick={handleBack} aria-label="Back to scenarios">
+          <IconButton onClick={handleBack} aria-label={t('backToScenarios')}>
             <ArrowBackIcon />
           </IconButton>
           <Box
@@ -307,10 +300,10 @@ export function ScenarioPlayer() {
                 lineHeight: 1.2,
               }}
             >
-              {activeScenario.title}
+              {t(`categories.${activeScenario.labelKey}.title`)}
             </Typography>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              Say what you want in English
+              {t('sayInEnglish')}
             </Typography>
           </Box>
           {savedPhrases.length > 0 && (
@@ -397,17 +390,17 @@ export function ScenarioPlayer() {
                         secondarySize="0.8rem"
                       />
                     </Box>
-                    <Tooltip title="Listen">
+                    <Tooltip title={t('listen')}>
                       <IconButton
                         size="small"
                         onClick={() => speak(turn.npcJapanese)}
-                        aria-label="Listen to pronunciation"
+                        aria-label={t('listenToPronunciation')}
                         sx={{ p: 0.5 }}
                       >
                         <VolumeUpIcon sx={{ fontSize: 16 }} />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title={isSaved(turn.npcJapanese) ? 'Saved' : 'Save to deck'}>
+                    <Tooltip title={isSaved(turn.npcJapanese) ? t('saved') : t('saveToDeck')}>
                       <IconButton
                         size="small"
                         onClick={() =>
@@ -417,7 +410,7 @@ export function ScenarioPlayer() {
                             english: turn.npcEnglish,
                           })
                         }
-                        aria-label="Save NPC phrase"
+                        aria-label={t('saveNpcPhrase')}
                         sx={{
                           p: 0.5,
                           color: isSaved(turn.npcJapanese) ? brand[600] : alpha(brand[400], 0.6),
@@ -479,7 +472,7 @@ export function ScenarioPlayer() {
                         fontSize: '0.65rem',
                       }}
                     >
-                      SAY THIS
+                      {t('sayThis')}
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
@@ -491,17 +484,17 @@ export function ScenarioPlayer() {
                         secondarySize="0.8rem"
                       />
                     </Box>
-                    <Tooltip title="Listen">
+                    <Tooltip title={t('listen')}>
                       <IconButton
                         size="small"
                         onClick={() => speak(turn.userJapanese!)}
-                        aria-label="Listen to phrase"
+                        aria-label={t('listenToPhrase')}
                         sx={{ p: 0.5 }}
                       >
                         <VolumeUpIcon sx={{ fontSize: 16 }} />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title={isSaved(turn.userJapanese!) ? 'Saved' : 'Save to deck'}>
+                    <Tooltip title={isSaved(turn.userJapanese!) ? t('saved') : t('saveToDeck')}>
                       <IconButton
                         size="small"
                         onClick={() =>
@@ -511,7 +504,7 @@ export function ScenarioPlayer() {
                             english: turn.userEnglish ?? turn.userIntent!,
                           })
                         }
-                        aria-label="Save phrase"
+                        aria-label={t('savePhrase')}
                         sx={{
                           p: 0.5,
                           color: isSaved(turn.userJapanese!) ? brand[600] : alpha(brand[400], 0.6),
@@ -569,7 +562,7 @@ export function ScenarioPlayer() {
                               letterSpacing: '0.04em',
                             }}
                           >
-                            SIMPLER ALTERNATIVE
+                            {t('simplerAlternative')}
                           </Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
                             <Box sx={{ flex: 1 }}>
@@ -580,17 +573,19 @@ export function ScenarioPlayer() {
                                 secondarySize="0.72rem"
                               />
                             </Box>
-                            <Tooltip title="Listen">
+                            <Tooltip title={t('listen')}>
                               <IconButton
                                 size="small"
                                 onClick={() => speak(turn.alternative!)}
-                                aria-label="Listen to alternative"
+                                aria-label={t('listenToAlternative')}
                                 sx={{ p: 0.5 }}
                               >
                                 <VolumeUpIcon sx={{ fontSize: 14 }} />
                               </IconButton>
                             </Tooltip>
-                            <Tooltip title={isSaved(turn.alternative!) ? 'Saved' : 'Save to deck'}>
+                            <Tooltip
+                              title={isSaved(turn.alternative!) ? t('saved') : t('saveToDeck')}
+                            >
                               <IconButton
                                 size="small"
                                 onClick={() =>
@@ -600,7 +595,7 @@ export function ScenarioPlayer() {
                                     english: turn.alternativeExplanation ?? turn.userIntent!,
                                   })
                                 }
-                                aria-label="Save alternative"
+                                aria-label={t('saveAlternative')}
                                 sx={{
                                   p: 0.5,
                                   color: isSaved(turn.alternative!)
@@ -661,8 +656,8 @@ export function ScenarioPlayer() {
         ))}
 
         {/* Loading */}
-        {loading && turns.length === 0 && <Loading message="Setting the scene..." />}
-        {loading && turns.length > 0 && <Loading message="Thinking..." />}
+        {loading && turns.length === 0 && <Loading message={t('settingScene')} />}
+        {loading && turns.length > 0 && <Loading message={t('thinking')} />}
 
         {/* User input area */}
         {!isEnded && turns.length > 0 && !loading && (
@@ -679,7 +674,7 @@ export function ScenarioPlayer() {
                   variant="caption"
                   sx={{ color: 'text.disabled', mb: 0.75, display: 'block', fontSize: '0.68rem' }}
                 >
-                  Suggestions:
+                  {t('suggestions')}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
                   {lastTurn.suggestedResponses.map((suggestion, i) => (
@@ -712,7 +707,7 @@ export function ScenarioPlayer() {
               <TextField
                 fullWidth
                 size="small"
-                placeholder="What do you want to say?"
+                placeholder={t('inputPlaceholder')}
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -732,7 +727,7 @@ export function ScenarioPlayer() {
               <IconButton
                 onClick={handleSend}
                 disabled={!userInput.trim() || loading}
-                aria-label="Send"
+                aria-label={t('send')}
                 sx={{
                   bgcolor: brand[500],
                   color: '#fff',
@@ -764,15 +759,15 @@ export function ScenarioPlayer() {
             <Typography
               sx={{ fontWeight: 700, fontSize: '0.95rem', color: 'text.primary', mb: 0.75 }}
             >
-              Conversation complete!
+              {t('conversationComplete')}
             </Typography>
             <Typography
               variant="body2"
               sx={{ color: 'text.secondary', mb: 2, fontSize: '0.82rem' }}
             >
               {savedPhrases.length > 0
-                ? `You saved ${savedPhrases.length} phrase${savedPhrases.length > 1 ? 's' : ''}. Save them to a deck to practice later!`
-                : 'Try another scenario or save some phrases next time!'}
+                ? t('endingWithSaves', { count: savedPhrases.length })
+                : t('endingNoSaves')}
             </Typography>
             <Stack direction="row" spacing={1.5} justifyContent="center" flexWrap="wrap">
               <Button
@@ -782,7 +777,7 @@ export function ScenarioPlayer() {
                 size="small"
                 sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.8rem' }}
               >
-                Replay
+                {t('replay')}
               </Button>
               {savedPhrases.length > 0 && !deckSaved && (
                 <Button
@@ -792,13 +787,13 @@ export function ScenarioPlayer() {
                   size="small"
                   sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.8rem' }}
                 >
-                  Save to Deck ({savedPhrases.length})
+                  {t('saveToDeckCount', { count: savedPhrases.length })}
                 </Button>
               )}
               {deckSaved && (
                 <Chip
                   icon={<LibraryAddCheckIcon sx={{ fontSize: '14px !important' }} />}
-                  label="Saved!"
+                  label={t('savedChip')}
                   sx={{
                     bgcolor: alpha('#10b981', 0.12),
                     color: '#059669',
@@ -820,7 +815,7 @@ export function ScenarioPlayer() {
               variant="outlined"
               sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.75rem' }}
             >
-              Save {savedPhrases.length} phrase{savedPhrases.length > 1 ? 's' : ''} to deck
+              {t('savePhrasesToDeck', { count: savedPhrases.length })}
             </Button>
           </Box>
         )}
@@ -833,7 +828,11 @@ export function ScenarioPlayer() {
         onClose={() => setDeckDialogOpen(false)}
         phrases={pendingSavePhrases}
         onSaved={() => setDeckSaved(true)}
-        defaultDeckName={`${activeScenario?.icon ?? '🗾'} Travel: ${activeScenario?.title ?? 'Scenario'}`}
+        defaultDeckName={`${activeScenario?.icon ?? '🗾'} ${t('deckName', {
+          title: activeScenario
+            ? t(`categories.${activeScenario.labelKey}.title`)
+            : t('scenarioFallback'),
+        })}`}
       />
     </Container>
   );

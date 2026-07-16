@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useSpeech } from '@/hooks/useSpeech';
@@ -30,37 +31,35 @@ import type { CultureTopic } from '@/types/travel';
 
 import { AuthGatedSaveDialog } from './AuthGatedSaveDialog';
 
-const TOPICS: Array<{ key: CultureTopic | 'all'; label: string; icon: string }> = [
-  { key: 'all', label: 'All', icon: '📚' },
-  { key: 'general', label: 'General', icon: '🇯🇵' },
-  { key: 'restaurants', label: 'Food', icon: '🍱' },
-  { key: 'trains', label: 'Trains', icon: '🚃' },
-  { key: 'shopping', label: 'Shopping', icon: '🛍️' },
-  { key: 'onsen', label: 'Onsen', icon: '♨️' },
-  { key: 'shrines', label: 'Shrines', icon: '⛩️' },
-  { key: 'taboos', label: 'Taboos', icon: '🚫' },
-  { key: 'gestures', label: 'Gestures', icon: '🤲' },
+const TOPICS: Array<{ key: CultureTopic | 'all'; icon: string }> = [
+  { key: 'all', icon: '📚' },
+  { key: 'general', icon: '🇯🇵' },
+  { key: 'restaurants', icon: '🍱' },
+  { key: 'trains', icon: '🚃' },
+  { key: 'shopping', icon: '🛍️' },
+  { key: 'onsen', icon: '♨️' },
+  { key: 'shrines', icon: '⛩️' },
+  { key: 'taboos', icon: '🚫' },
+  { key: 'gestures', icon: '🤲' },
 ];
 
 const IMPORTANCE_CONFIG = {
   essential: {
-    label: 'Must know',
     color: '#ef4444',
     icon: <PriorityHighIcon sx={{ fontSize: 14 }} />,
   },
   recommended: {
-    label: 'Good to know',
     color: '#f59e0b',
     icon: <InfoOutlinedIcon sx={{ fontSize: 14 }} />,
   },
   nice_to_know: {
-    label: 'Interesting',
     color: '#6366f1',
     icon: <ErrorOutlineIcon sx={{ fontSize: 14 }} />,
   },
 };
 
 export function CultureGuide() {
+  const t = useTranslations('Travel.culture');
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
@@ -83,11 +82,11 @@ export function CultureGuide() {
       <Stack spacing={3}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
+          <IconButton onClick={() => router.push('/travel')} aria-label={t('backAriaLabel')}>
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h5" sx={{ color: 'text.primary', flex: 1 }}>
-            Culture Guide
+            {t('title')}
           </Typography>
           <Button
             variant="outlined"
@@ -106,13 +105,12 @@ export function CultureGuide() {
             }}
             sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.72rem' }}
           >
-            Save all
+            {t('saveAll')}
           </Button>
         </Box>
 
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Essential etiquette and cultural tips for navigating Japan. Each card includes useful
-          phrases for that situation.
+          {t('intro')}
         </Typography>
 
         {/* Topic filter */}
@@ -120,7 +118,7 @@ export function CultureGuide() {
           {TOPICS.map((topic) => (
             <Chip
               key={topic.key}
-              label={`${topic.icon} ${topic.label}`}
+              label={`${topic.icon} ${t(`topics.${topic.key}`)}`}
               onClick={() => setActiveTopic(topic.key)}
               variant={activeTopic === topic.key ? 'filled' : 'outlined'}
               sx={{
@@ -171,7 +169,7 @@ export function CultureGuide() {
                     </Box>
                     <Chip
                       icon={importance.icon}
-                      label={importance.label}
+                      label={t(`importance.${card.importance}`)}
                       size="small"
                       sx={{
                         height: 22,
@@ -222,7 +220,7 @@ export function CultureGuide() {
                             display: 'block',
                           }}
                         >
-                          USEFUL PHRASES
+                          {t('usefulPhrases')}
                         </Typography>
                         <Stack spacing={0.75}>
                           {card.phrases.map((p, i) => (
@@ -266,16 +264,16 @@ export function CultureGuide() {
                                   {p.english}
                                 </Typography>
                               </Box>
-                              <Tooltip title="Listen">
+                              <Tooltip title={t('listen')}>
                                 <IconButton
                                   size="small"
                                   onClick={() => speak(p.japanese)}
-                                  aria-label="Listen to phrase"
+                                  aria-label={t('listenToPhrase')}
                                 >
                                   <VolumeUpIcon sx={{ fontSize: 16 }} />
                                 </IconButton>
                               </Tooltip>
-                              <Tooltip title="Save to deck">
+                              <Tooltip title={t('saveToDeck')}>
                                 <IconButton
                                   size="small"
                                   onClick={() => {
@@ -288,7 +286,7 @@ export function CultureGuide() {
                                     ]);
                                     setSaveDialogOpen(true);
                                   }}
-                                  aria-label="Save to deck"
+                                  aria-label={t('saveToDeck')}
                                 >
                                   <BookmarkBorderIcon sx={{ fontSize: 16 }} />
                                 </IconButton>
@@ -311,7 +309,7 @@ export function CultureGuide() {
         onClose={() => setSaveDialogOpen(false)}
         phrases={phrasesToSave}
         onSaved={() => {}}
-        defaultDeckName="⛩️ Culture Guide Phrases"
+        defaultDeckName={`⛩️ ${t('defaultDeckName')}`}
       />
     </Container>
   );

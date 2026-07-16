@@ -4,6 +4,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { alpha, Box, Button, Container, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -15,6 +16,7 @@ interface RequireAuthProps {
 }
 
 export function RequireAuth({ children, feature }: RequireAuthProps) {
+  const t = useTranslations('Travel.requireAuth');
   const { user, loading } = useAuth();
   const router = useRouter();
   const theme = useTheme();
@@ -23,7 +25,7 @@ export function RequireAuth({ children, feature }: RequireAuthProps) {
   if (loading) {
     return (
       <Container maxWidth="sm" sx={{ py: 8 }}>
-        <Loading message="Checking account..." />
+        <Loading message={t('checkingAccount')} />
       </Container>
     );
   }
@@ -48,10 +50,10 @@ export function RequireAuth({ children, feature }: RequireAuthProps) {
           </Box>
           <Box>
             <Typography variant="h6" sx={{ color: 'text.primary', mb: 0.5 }}>
-              Sign in to access {feature}
+              {t('signInToAccess', { feature })}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 320, mx: 'auto' }}>
-              This feature requires an account. Sign in or create one to get started.
+              {t('accountRequired')}
             </Typography>
           </Box>
           <Stack direction="row" spacing={1.5}>
@@ -67,7 +69,7 @@ export function RequireAuth({ children, feature }: RequireAuthProps) {
                 '&:hover': { bgcolor: brand[800] },
               }}
             >
-              Sign in
+              {t('signIn')}
             </Button>
             <Button
               variant="outlined"
@@ -79,7 +81,7 @@ export function RequireAuth({ children, feature }: RequireAuthProps) {
                 color: brand[700],
               }}
             >
-              Back to Travel
+              {t('backToTravel')}
             </Button>
           </Stack>
         </Stack>

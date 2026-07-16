@@ -1,6 +1,7 @@
 'use client';
 import { Box, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 import { Label } from '@/components/Deck';
 import type { OhanashikaiPracticeMode } from '@/types/ohanashikai';
@@ -13,6 +14,7 @@ interface SpeechPracticeTilesProps {
 }
 
 export function SpeechPracticeTiles({ canPractice, onPractice }: SpeechPracticeTilesProps) {
+  const t = useTranslations('Ohanashikai.practiceTiles');
   const { brand, accent } = useTheme().palette;
 
   const tileThemes = [
@@ -40,7 +42,7 @@ export function SpeechPracticeTiles({ canPractice, onPractice }: SpeechPracticeT
         mb: 3,
       }}
     >
-      <Label>Let&apos;s practice!</Label>
+      <Label>{t('letsPractice')}</Label>
       <Box
         sx={{
           display: 'grid',
@@ -48,8 +50,10 @@ export function SpeechPracticeTiles({ canPractice, onPractice }: SpeechPracticeT
           gap: { xs: 1.5, sm: 2 },
         }}
       >
-        {PRACTICE_CONFIG.map(({ mode, label, description, emoji, watermark }, i) => {
+        {PRACTICE_CONFIG.map(({ mode, labelKey, descriptionKey, emoji, watermark }, i) => {
           const { color, bg, border, shadowColor } = tileThemes[i % tileThemes.length];
+          const label = t(labelKey);
+          const description = t(descriptionKey);
           return (
             <Box
               key={mode}
@@ -120,7 +124,7 @@ export function SpeechPracticeTiles({ canPractice, onPractice }: SpeechPracticeT
                   alignSelf: 'flex-end',
                 }}
               >
-                {canPractice ? 'Start →' : 'Add lines first 🔒'}
+                {canPractice ? t('start') : t('locked')}
               </Typography>
             </Box>
           );
@@ -130,7 +134,7 @@ export function SpeechPracticeTiles({ canPractice, onPractice }: SpeechPracticeT
         <Typography
           sx={{ fontSize: '0.7rem', color: 'text.secondary', mt: 1.5, textAlign: 'center' }}
         >
-          Add at least 1 line to unlock practice modes.
+          {t('unlockHint')}
         </Typography>
       )}
     </Box>

@@ -18,11 +18,14 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     globals: true,
-    exclude: ['node_modules', '.next', 'e2e'],
+    // Globs, not bare names: 'node_modules' only ever matched a path literally
+    // named that, and setting `exclude` at all replaces Vitest's defaults — so
+    // nested copies (agent worktrees under .claude/) got crawled as real suites.
+    exclude: ['**/node_modules/**', '**/.next/**', '**/e2e/**', '**/.claude/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
-      exclude: ['node_modules', '.next', 'e2e', 'src/test'],
+      exclude: ['**/node_modules/**', '**/.next/**', '**/e2e/**', '**/.claude/**', 'src/test/**'],
       thresholds: {
         statements: 70,
         branches: 60,

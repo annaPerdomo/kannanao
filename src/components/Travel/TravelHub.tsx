@@ -13,6 +13,7 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { alpha, Box, Container, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,6 +40,7 @@ function FeatureCard({
   badge,
   locked,
 }: FeatureCardProps) {
+  const t = useTranslations('Travel.hub');
   const router = useRouter();
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -166,7 +168,7 @@ function FeatureCard({
               lineHeight: 1.3,
             }}
           >
-            Sign in to unlock
+            {t('signInToUnlock')}
           </Typography>
         )}
       </Box>
@@ -175,6 +177,7 @@ function FeatureCard({
 }
 
 export function TravelHub() {
+  const t = useTranslations('Travel.hub');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const { user } = useAuth();
@@ -184,10 +187,12 @@ export function TravelHub() {
     logTravelEvent('hub', 'view');
   }, []);
 
+  const aiBadge = t('aiBadge');
+
   const features: FeatureCardProps[] = [
     {
-      title: 'Culture Guide',
-      description: "Etiquette essentials, do's & don'ts, and tips for a smoother trip.",
+      title: t('features.culture.title'),
+      description: t('features.culture.description'),
       icon: (
         <Typography sx={{ fontSize: 20, lineHeight: 1, filter: 'brightness(0) invert(1)' }}>
           ⛩️
@@ -197,63 +202,63 @@ export function TravelHub() {
       href: '/travel/culture',
     },
     {
-      title: 'Daily Phrase Pack',
-      description: "Tell me your plans and get the exact phrases you'll need today.",
+      title: t('features.dailyPhrase.title'),
+      description: t('features.dailyPhrase.description'),
       icon: <TodayIcon />,
       gradient: `linear-gradient(135deg, ${brand[500]}, ${brand[700]})`,
       href: '/travel/daily',
-      badge: 'AI',
+      badge: aiBadge,
       locked: isGuest,
     },
     {
-      title: 'Scenario Practice',
-      description: 'Practice real conversations — type in English, learn the Japanese.',
+      title: t('features.scenarios.title'),
+      description: t('features.scenarios.description'),
       icon: <RecordVoiceOverIcon />,
       gradient: `linear-gradient(135deg, #7c3aed, #5b21b6)`,
       href: '/travel/scenarios',
-      badge: 'AI',
+      badge: aiBadge,
       locked: isGuest,
     },
     {
-      title: 'Point & Communicate',
-      description: "Cards to show when you can't speak — allergies, directions, requests.",
+      title: t('features.pointCommunicate.title'),
+      description: t('features.pointCommunicate.description'),
       icon: <PanToolIcon />,
       gradient: `linear-gradient(135deg, ${accent[500]}, ${accent[700]})`,
       href: '/travel/show-cards',
-      badge: 'AI',
+      badge: aiBadge,
       locked: isGuest,
     },
     {
-      title: '"What Did They Say?"',
-      description: 'Phrases Japanese people say TO you — at stores, restaurants, stations.',
+      title: t('features.heard.title'),
+      description: t('features.heard.description'),
       icon: <VolumeUpIcon />,
       gradient: `linear-gradient(135deg, #0891b2, #0e7490)`,
       href: '/travel/heard',
     },
     {
-      title: 'Food Menu Cheat Sheet',
-      description: "Know what you're ordering — ramen, sushi, drinks, and konbini food.",
+      title: t('features.food.title'),
+      description: t('features.food.description'),
       icon: <RestaurantIcon />,
       gradient: `linear-gradient(135deg, #ea580c, #c2410c)`,
       href: '/travel/food',
     },
     {
-      title: 'Katakana Decoder',
-      description: 'Learn the 46 characters used for foreign words on menus and signs.',
+      title: t('features.katakana.title'),
+      description: t('features.katakana.description'),
       icon: <TranslateIcon />,
       gradient: `linear-gradient(135deg, #10b981, #059669)`,
       href: '/travel/katakana',
     },
     {
-      title: 'Survival Phrases',
-      description: 'Essential phrases by situation — with romaji pronunciation and tips.',
+      title: t('features.phrases.title'),
+      description: t('features.phrases.description'),
       icon: <MenuBookIcon />,
       gradient: `linear-gradient(135deg, #6366f1, #4f46e5)`,
       href: '/travel/phrases',
     },
     {
-      title: 'Emergency Card',
-      description: 'Hotel address, medical info, and emergency numbers — ready to show.',
+      title: t('features.emergency.title'),
+      description: t('features.emergency.description'),
       icon: <LocalHospitalIcon />,
       gradient: `linear-gradient(135deg, #dc2626, #b91c1c)`,
       href: '/travel/emergency',
@@ -288,10 +293,10 @@ export function TravelHub() {
               mb: 0.5,
             }}
           >
-            Travel Mode
+            {t('title')}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 360, mx: 'auto' }}>
-            Zero Japanese required. Everything you need to navigate Japan with confidence.
+            {t('subtitle')}
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1.5 }}>
             <TravelDisplayToggle />

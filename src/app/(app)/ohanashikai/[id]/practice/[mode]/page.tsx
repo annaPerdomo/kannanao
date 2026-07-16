@@ -5,6 +5,7 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { use } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -16,16 +17,12 @@ import type { OhanashikaiPracticeMode } from '@/types/ohanashikai';
 
 const VALID_MODES: OhanashikaiPracticeMode[] = ['readthrough', 'linerecall'];
 
-const MODE_LABELS: Record<OhanashikaiPracticeMode, string> = {
-  readthrough: '📖 Read Through',
-  linerecall: '🎯 Line Recall',
-};
-
 export default function OhanashikaiPracticePage({
   params,
 }: {
   params: Promise<{ id: string; mode: string }>;
 }) {
+  const t = useTranslations('Ohanashikai.practice');
   const { id, mode } = use(params);
   const router = useRouter();
   const theme = useTheme();
@@ -47,7 +44,7 @@ export default function OhanashikaiPracticePage({
   if (loading) {
     return (
       <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
-        <Loading message="Loading practice session…" />
+        <Loading message={t('loadingSession')} />
       </Box>
     );
   }
@@ -55,7 +52,7 @@ export default function OhanashikaiPracticePage({
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
       <PageHeader
-        title={MODE_LABELS[practiceMode]}
+        title={practiceMode === 'readthrough' ? t('readThroughTitle') : t('lineRecallTitle')}
         onBack={() => router.push(backUrl)}
         badge={item?.title ?? ''}
         compact
@@ -73,9 +70,7 @@ export default function OhanashikaiPracticePage({
           }}
         >
           <Typography sx={{ fontSize: '2.5rem', mb: 2 }}>📝</Typography>
-          <Typography color="text.secondary">
-            No lines yet! Add some lines to your speech first.
-          </Typography>
+          <Typography color="text.secondary">{t('noLinesYet')}</Typography>
         </Box>
       ) : (
         <>

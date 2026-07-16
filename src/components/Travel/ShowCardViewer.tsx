@@ -26,6 +26,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { stripFurigana } from '@/components/FuriganaText';
@@ -38,15 +39,15 @@ import type { ShowCard, ShowCardCategory } from '@/types/travel';
 
 import { SaveToDeckDialog } from './SaveToDeckDialog';
 
-const CATEGORIES: Array<{ key: ShowCardCategory | 'all'; label: string; icon: string }> = [
-  { key: 'all', label: 'All', icon: '📋' },
-  { key: 'allergies', label: 'Allergies', icon: '⚠️' },
-  { key: 'directions', label: 'Directions', icon: '🗺️' },
-  { key: 'help', label: 'Help', icon: '🙏' },
-  { key: 'medical', label: 'Medical', icon: '🏥' },
-  { key: 'communication', label: 'Communication', icon: '💬' },
-  { key: 'preferences', label: 'Preferences', icon: '👍' },
-  { key: 'custom', label: 'Custom', icon: '✨' },
+const CATEGORIES: Array<{ key: ShowCardCategory | 'all'; labelKey: string; icon: string }> = [
+  { key: 'all', labelKey: 'categories.all', icon: '📋' },
+  { key: 'allergies', labelKey: 'categories.allergies', icon: '⚠️' },
+  { key: 'directions', labelKey: 'categories.directions', icon: '🗺️' },
+  { key: 'help', labelKey: 'categories.help', icon: '🙏' },
+  { key: 'medical', labelKey: 'categories.medical', icon: '🏥' },
+  { key: 'communication', labelKey: 'categories.communication', icon: '💬' },
+  { key: 'preferences', labelKey: 'categories.preferences', icon: '👍' },
+  { key: 'custom', labelKey: 'categories.custom', icon: '✨' },
 ];
 
 interface ShowCardDisplayProps {
@@ -59,6 +60,8 @@ interface ShowCardDisplayProps {
 }
 
 function ShowCardDisplay({ card, expanded, onDelete, onEdit }: ShowCardDisplayProps) {
+  const t = useTranslations('Travel.showCards');
+  const tc = useTranslations('Common');
   const theme = useTheme();
   const { brand } = theme.palette;
   const { speak } = useSpeech();
@@ -126,7 +129,7 @@ function ShowCardDisplay({ card, expanded, onDelete, onEdit }: ShowCardDisplayPr
           <TextField
             fullWidth
             size="small"
-            label="English"
+            label={t('englishLabel')}
             value={draft.english}
             onChange={(e) => setDraft((d) => ({ ...d, english: e.target.value }))}
             onClick={(e) => e.stopPropagation()}
@@ -136,7 +139,7 @@ function ShowCardDisplay({ card, expanded, onDelete, onEdit }: ShowCardDisplayPr
           <TextField
             fullWidth
             size="small"
-            label="Japanese"
+            label={t('japaneseLabel')}
             value={draft.japanese}
             onChange={(e) => setDraft((d) => ({ ...d, japanese: e.target.value }))}
             onClick={(e) => e.stopPropagation()}
@@ -144,7 +147,7 @@ function ShowCardDisplay({ card, expanded, onDelete, onEdit }: ShowCardDisplayPr
           <TextField
             fullWidth
             size="small"
-            label="Romaji"
+            label={t('romajiLabel')}
             value={draft.romaji}
             onChange={(e) => setDraft((d) => ({ ...d, romaji: e.target.value }))}
             onClick={(e) => e.stopPropagation()}
@@ -152,7 +155,7 @@ function ShowCardDisplay({ card, expanded, onDelete, onEdit }: ShowCardDisplayPr
           <TextField
             fullWidth
             size="small"
-            label="When to show"
+            label={t('whenToShowLabel')}
             value={draft.situation}
             onChange={(e) => setDraft((d) => ({ ...d, situation: e.target.value }))}
             onClick={(e) => e.stopPropagation()}
@@ -164,7 +167,7 @@ function ShowCardDisplay({ card, expanded, onDelete, onEdit }: ShowCardDisplayPr
               onClick={cancelEditing}
               sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.78rem' }}
             >
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button
               size="small"
@@ -174,7 +177,7 @@ function ShowCardDisplay({ card, expanded, onDelete, onEdit }: ShowCardDisplayPr
               disabled={!draft.english.trim() || !draft.japanese.trim()}
               sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.78rem' }}
             >
-              Save
+              {tc('save')}
             </Button>
           </Stack>
         </Stack>
@@ -212,7 +215,7 @@ function ShowCardDisplay({ card, expanded, onDelete, onEdit }: ShowCardDisplayPr
         {card.isCustom && (
           <>
             <Chip
-              label="AI"
+              label={t('aiChipLabel')}
               size="small"
               sx={{
                 height: 20,
@@ -223,11 +226,11 @@ function ShowCardDisplay({ card, expanded, onDelete, onEdit }: ShowCardDisplayPr
               }}
             />
             {onEdit && (
-              <Tooltip title="Edit card">
+              <Tooltip title={t('editCard')}>
                 <IconButton
                   size="small"
                   onClick={startEditing}
-                  aria-label="Edit custom card"
+                  aria-label={t('editCustomCardAria')}
                   sx={{ p: 0.5 }}
                 >
                   <EditIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
@@ -235,14 +238,14 @@ function ShowCardDisplay({ card, expanded, onDelete, onEdit }: ShowCardDisplayPr
               </Tooltip>
             )}
             {onDelete && (
-              <Tooltip title="Delete card">
+              <Tooltip title={t('deleteCard')}>
                 <IconButton
                   size="small"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete();
                   }}
-                  aria-label="Delete custom card"
+                  aria-label={t('deleteCustomCardAria')}
                   sx={{ p: 0.5 }}
                 >
                   <DeleteOutlineIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
@@ -285,26 +288,26 @@ function ShowCardDisplay({ card, expanded, onDelete, onEdit }: ShowCardDisplayPr
           >
             {card.romaji}
           </Typography>
-          <Tooltip title="Listen">
+          <Tooltip title={t('listen')}>
             <IconButton
               size="small"
               onClick={(e) => {
                 e.stopPropagation();
                 speak(stripFurigana(card.japanese));
               }}
-              aria-label="Listen to pronunciation"
+              aria-label={t('listenAria')}
             >
               <VolumeUpIcon sx={{ fontSize: 16 }} />
             </IconButton>
           </Tooltip>
-          <Tooltip title={copied ? 'Copied!' : 'Copy Japanese text'}>
+          <Tooltip title={copied ? t('copied') : t('copyJapaneseText')}>
             <IconButton
               size="small"
               onClick={(e) => {
                 e.stopPropagation();
                 handleCopy();
               }}
-              aria-label="Copy Japanese text"
+              aria-label={t('copyJapaneseTextAria')}
             >
               <ContentCopyIcon sx={{ fontSize: 14, color: copied ? '#10b981' : undefined }} />
             </IconButton>
@@ -330,6 +333,8 @@ function ShowCardDisplay({ card, expanded, onDelete, onEdit }: ShowCardDisplayPr
 }
 
 export function ShowCardViewer() {
+  const t = useTranslations('Travel.showCards');
+  const tc = useTranslations('Common');
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
@@ -375,7 +380,7 @@ export function ShowCardViewer() {
       <Stack spacing={2.5}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label="Back to travel hub">
+          <IconButton onClick={() => router.push('/travel')} aria-label={t('backToHub')}>
             <ArrowBackIcon />
           </IconButton>
           <Box sx={{ flex: 1 }}>
@@ -385,13 +390,13 @@ export function ShowCardViewer() {
                 color: 'text.primary',
               }}
             >
-              Point & Communicate
+              {t('title')}
             </Typography>
             <Typography
               variant="body2"
               sx={{ color: 'text.secondary', mt: 0.25, fontSize: '0.78rem' }}
             >
-              Show these cards when you can&apos;t speak
+              {t('subtitle')}
             </Typography>
           </Box>
           <Button
@@ -401,7 +406,7 @@ export function ShowCardViewer() {
             size="small"
             sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.8rem' }}
           >
-            {showCreate ? 'Cancel' : 'Create'}
+            {showCreate ? tc('cancel') : t('create')}
           </Button>
         </Box>
 
@@ -418,17 +423,17 @@ export function ShowCardViewer() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
               <AutoAwesomeIcon sx={{ color: brand[600], fontSize: 20 }} />
               <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                Create with AI
+                {t('createWithAiTitle')}
               </Typography>
             </Box>
             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>
-              Type what you want to communicate in English, and AI will create the perfect card.
+              {t('createWithAiDescription')}
             </Typography>
             <Stack spacing={1.5}>
               <TextField
                 fullWidth
                 size="small"
-                placeholder='e.g. "I am gluten free" or "Where is the bathroom?"'
+                placeholder={t('createPlaceholder')}
                 value={customInput}
                 onChange={(e) => setCustomInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -443,22 +448,22 @@ export function ShowCardViewer() {
                 startIcon={<AutoAwesomeIcon />}
                 sx={{ textTransform: 'none', borderRadius: 2 }}
               >
-                {generating ? 'Creating...' : 'Generate Card'}
+                {generating ? t('creatingEllipsis') : t('generateCardButton')}
               </Button>
             </Stack>
           </Card>
         )}
 
-        {generating && <Loading message="Creating your card..." />}
+        {generating && <Loading message={t('creatingCardMessage')} />}
         {error && <Alert severity="error">{error}</Alert>}
-        {genSuccess && <Alert severity="success">Card created! Find it at the top.</Alert>}
+        {genSuccess && <Alert severity="success">{t('cardCreatedSuccess')}</Alert>}
 
         {/* Category filter */}
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           {CATEGORIES.map((cat) => (
             <Chip
               key={cat.key}
-              label={`${cat.icon} ${cat.label}`}
+              label={`${cat.icon} ${t(cat.labelKey)}`}
               onClick={() => setActiveCategory(cat.key)}
               variant={activeCategory === cat.key ? 'filled' : 'outlined'}
               sx={{
@@ -476,7 +481,7 @@ export function ShowCardViewer() {
         </Box>
 
         {/* Cards list */}
-        {cardsLoading && <Loading message="Loading saved cards..." />}
+        {cardsLoading && <Loading message={t('loadingSavedCards')} />}
         <Box
           sx={{
             display: 'grid',
@@ -510,7 +515,7 @@ export function ShowCardViewer() {
 
         {filteredCards.length === 0 && (
           <Typography variant="body2" sx={{ textAlign: 'center', color: 'text.secondary', py: 4 }}>
-            No cards in this category yet. Create one with AI!
+            {t('emptyState')}
           </Typography>
         )}
 
@@ -527,7 +532,7 @@ export function ShowCardViewer() {
               disabled={deckSaved}
               sx={{ textTransform: 'none', borderRadius: 2, fontSize: '0.8rem' }}
             >
-              {deckSaved ? 'Saved to deck!' : `Save ${filteredCards.length} cards to deck`}
+              {deckSaved ? t('savedToDeck') : t('saveCardsToDeck', { count: filteredCards.length })}
             </Button>
           </Box>
         )}
@@ -542,7 +547,7 @@ export function ShowCardViewer() {
           english: c.english,
         }))}
         onSaved={() => setDeckSaved(true)}
-        defaultDeckName="Point & Communicate Cards"
+        defaultDeckName={t('deckName')}
       />
     </Container>
   );
