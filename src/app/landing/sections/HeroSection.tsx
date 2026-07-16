@@ -8,6 +8,7 @@ import Stack from '@mui/material/Stack';
 import { alpha, ThemeProvider } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { Flashcard } from '@/components/Flashcard';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,10 +21,13 @@ import { SakuraFallEffect } from './SakuraFallEffect';
 
 const sakuraTheme = createAppTheme('sakura');
 
+const TAG_KEYS = ['japanese', 'aiPowered', 'gamified', 'travelMode', 'groups', 'themes'] as const;
+
 export function HeroSection() {
   const router = useRouter();
   const { session } = useAuth();
   const { ref, inView } = useInView(0.05);
+  const t = useTranslations('Landing.hero');
 
   return (
     <Box
@@ -102,7 +106,7 @@ export function HeroSection() {
                 sx={{ fontSize: '0.85rem !important', color: `${amber[700]} !important` }}
               />
             }
-            label="✨ Closed beta — join the waitlist"
+            label={t('waitlistBadge')}
             size="small"
             sx={{
               mb: 3,
@@ -128,11 +132,7 @@ export function HeroSection() {
               backgroundClip: 'text',
             }}
           >
-            Learn Japanese,
-            <br />
-            one card
-            <br />
-            at a time.
+            {t.rich('headline', { br: () => <br /> })}
           </Typography>
 
           <Typography
@@ -145,9 +145,7 @@ export function HeroSection() {
               mx: { xs: 'auto', lg: 0 },
             }}
           >
-            AI-powered flashcards, travel phrasebooks, speech practice, gamified XP &amp;
-            achievements, customizable themes, and group study — everything you need to make
-            learning Japanese <em>actually</em> enjoyable.
+            {t.rich('subtitle', { em: (chunks) => <em>{chunks}</em> })}
           </Typography>
 
           <Stack
@@ -176,7 +174,7 @@ export function HeroSection() {
                   },
                 }}
               >
-                Go to dashboard 🌸
+                {t('dashboardButton')}
               </Button>
             ) : (
               <>
@@ -201,7 +199,7 @@ export function HeroSection() {
                     },
                   }}
                 >
-                  Join the waitlist 🌸
+                  {t('waitlistButton')}
                 </Button>
                 <Button
                   variant="outlined"
@@ -219,7 +217,7 @@ export function HeroSection() {
                     '&:hover': { borderColor: pink[500], bgcolor: alpha(pink[100], 0.6) },
                   }}
                 >
-                  Sign in
+                  {t('signInButton')}
                 </Button>
               </>
             )}
@@ -232,17 +230,10 @@ export function HeroSection() {
             useFlexGap
             justifyContent={{ xs: 'center', lg: 'flex-start' }}
           >
-            {[
-              '🎌 Japanese',
-              '🤖 AI-powered',
-              '🎮 Gamified',
-              '✈️ Travel Mode',
-              '👥 Groups',
-              '🎨 Themes',
-            ].map((tag) => (
+            {TAG_KEYS.map((key) => (
               <Chip
-                key={tag}
-                label={tag}
+                key={key}
+                label={t(`tags.${key}`)}
                 size="small"
                 sx={{
                   bgcolor: alpha(pink[50], 0.95),
@@ -307,7 +298,7 @@ export function HeroSection() {
             textTransform: 'uppercase',
           }}
         >
-          scroll
+          {t('scroll')}
         </Typography>
         <Box
           sx={{

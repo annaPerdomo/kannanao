@@ -1,4 +1,7 @@
+import { getLocale } from 'next-intl/server';
+
 import LandingPage from '@/app/landing/LandingContent';
+import { resolveLocale } from '@/i18n/config';
 import { getHomeData } from '@/lib/serverData';
 
 import HomeWrapper from './_components/HomeWrapper';
@@ -13,11 +16,17 @@ import HomeWrapper from './_components/HomeWrapper';
 // anonymous `/` traffic to the static /landing page); the LandingPage fallback
 // covers the stale-cookie edge case where a request slips through without a
 // live session.
-export default function Page() {
+export default async function Page() {
+  // Kicked off before the await on purpose — see above.
   const homeDataPromise = getHomeData();
+  // getLocale() reads the locale cookie, which is safe here and nowhere else in
+  // this tree: the (app) layout already renders this route per request. The
+  // /landing twins share LandingPage but pass a build-time constant instead,
+  // because that same cookie read would cost them their static prerender.
+  const locale = resolveLocale(await getLocale());
   return (
     <HomeWrapper homeDataPromise={homeDataPromise}>
-      <LandingPage />
+      <LandingPage locale={locale} />
     </HomeWrapper>
   );
 }

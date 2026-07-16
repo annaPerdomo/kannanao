@@ -12,6 +12,7 @@ import { alpha, ThemeProvider } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { ImageCard } from '@/components/ImageCard';
@@ -27,6 +28,7 @@ const sakuraTheme = createAppTheme('sakura');
 type DemoPhase = 'input' | 'generating' | 'reviewing' | 'cards';
 
 export function AiDemoSection() {
+  const t = useTranslations('Landing.aiDemo');
   const { ref, inView } = useInView(0.06);
   const [chipsShown, setChipsShown] = useState(0);
   const [wordsState, setWordsState] = useState<'idle' | 'generating' | 'done'>('idle');
@@ -153,9 +155,7 @@ export function AiDemoSection() {
               lineHeight: 1.05,
             }}
           >
-            Generate a full deck
-            <br />
-            in minutes
+            {t.rich('heading', { br: () => <br /> })}
           </Typography>
           <Typography
             sx={{
@@ -166,8 +166,7 @@ export function AiDemoSection() {
               lineHeight: 1.7,
             }}
           >
-            Type a few words or drop any PDF — Gemini AI generates readings, meanings, and bilingual
-            example sentences for every card instantly.
+            {t('subheading')}
           </Typography>
         </Box>
 
@@ -183,9 +182,14 @@ export function AiDemoSection() {
           }}
         >
           {[
-            { n: 1, label: 'Generate cards', flex: '0 0 auto', width: { xs: '100%', lg: '46%' } },
-            { n: 2, label: 'Review & edit', flex: 1, width: undefined },
-          ].map(({ n, label, flex, width }) => (
+            {
+              n: 1,
+              key: 'generateCards' as const,
+              flex: '0 0 auto',
+              width: { xs: '100%', lg: '46%' },
+            },
+            { n: 2, key: 'reviewAndEdit' as const, flex: 1, width: undefined },
+          ].map(({ n, key, flex, width }) => (
             <Box key={n} sx={{ flex, width, display: 'flex', alignItems: 'center', gap: 1 }}>
               <Box
                 sx={{
@@ -215,7 +219,7 @@ export function AiDemoSection() {
                   textTransform: 'uppercase',
                 }}
               >
-                {label}
+                {t(`steps.${key}`)}
               </Typography>
             </Box>
           ))}
@@ -258,7 +262,7 @@ export function AiDemoSection() {
                 }}
               >
                 <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: '#fff' }}>
-                  ✨ Add Cards
+                  {t('addCardsPanelTitle')}
                 </Typography>
                 <Stack direction="row" spacing={0.75}>
                   {[0, 1, 2].map((i) => (
@@ -287,15 +291,12 @@ export function AiDemoSection() {
                       flexShrink: 0,
                     }}
                   >
-                    Main display mode:
+                    {t('mainDisplayModeLabel')}
                   </Typography>
                   <Box sx={{ display: 'flex', ml: 'auto' }}>
-                    {[
-                      ['ひ Hiragana', false],
-                      ['漢 Kanji', false],
-                    ].map(([lbl]) => (
+                    {(['hiragana', 'kanji'] as const).map((modeKey) => (
                       <Box
-                        key={String(lbl)}
+                        key={modeKey}
                         sx={{
                           px: 1.5,
                           py: 0.4,
@@ -308,7 +309,7 @@ export function AiDemoSection() {
                           '&:last-of-type': { borderRadius: '0 4px 4px 0' },
                         }}
                       >
-                        {lbl}
+                        {t(`viewModes.${modeKey}`)}
                       </Box>
                     ))}
                   </Box>
@@ -334,12 +335,12 @@ export function AiDemoSection() {
                       mb: 1.25,
                     }}
                   >
-                    Generate with AI
+                    {t('generateWithAiLabel')}
                   </Typography>
 
                   {wordsState === 'generating' && (
                     <Box sx={{ display: 'flex', justifyContent: 'center', mx: -2, mb: -2 }}>
-                      <Loading message="Generating cards…" />
+                      <Loading message={t('generatingCardsMessage')} />
                     </Box>
                   )}
 
@@ -388,7 +389,7 @@ export function AiDemoSection() {
                               <Typography
                                 sx={{ fontSize: '0.78rem', color: 'text.secondary', opacity: 0.55 }}
                               >
-                                Type words in any language…
+                                {t('typeWordsPlaceholder')}
                               </Typography>
                             )}
                             <Box
@@ -432,8 +433,8 @@ export function AiDemoSection() {
                         }}
                       >
                         {wordsState === 'done'
-                          ? `✓ ${DEMO_WORDS.length} cards generated!`
-                          : 'Generate Cards'}
+                          ? t('cardsGeneratedButton', { count: DEMO_WORDS.length })
+                          : t('generateButton')}
                       </Button>
                     </>
                   )}
@@ -452,25 +453,17 @@ export function AiDemoSection() {
                           color: 'rgba(194,112,154,0.6)',
                         }}
                       >
-                        or
+                        {t('orDivider')}
                       </Typography>
                       <Box sx={{ flexGrow: 1, height: '1px', bgcolor: 'rgba(249,168,212,0.3)' }} />
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                       {[
-                        {
-                          icon: '📚',
-                          title: 'Add Existing Cards',
-                          desc: 'Copy from your other decks',
-                        },
-                        {
-                          icon: '📄',
-                          title: 'Import from PDF',
-                          desc: 'Extract vocabulary from a document',
-                        },
+                        { key: 'addExisting' as const, icon: '📚' },
+                        { key: 'importPdf' as const, icon: '📄' },
                       ].map((btn) => (
                         <Box
-                          key={btn.title}
+                          key={btn.key}
                           sx={{
                             display: 'flex',
                             alignItems: 'center',
@@ -487,8 +480,8 @@ export function AiDemoSection() {
                               width: 36,
                               height: 36,
                               borderRadius: '10px',
-                              bgcolor: btn.title.includes('PDF') ? '#F3E8FF' : '#FCE7F3',
-                              border: `1px solid ${btn.title.includes('PDF') ? 'rgba(196,181,253,0.45)' : 'rgba(244,114,182,0.3)'}`,
+                              bgcolor: btn.key === 'importPdf' ? '#F3E8FF' : '#FCE7F3',
+                              border: `1px solid ${btn.key === 'importPdf' ? 'rgba(196,181,253,0.45)' : 'rgba(244,114,182,0.3)'}`,
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -507,7 +500,7 @@ export function AiDemoSection() {
                                 lineHeight: 1.2,
                               }}
                             >
-                              {btn.title}
+                              {t(`addOptions.${btn.key}.title`)}
                             </Typography>
                             <Typography
                               sx={{
@@ -517,7 +510,7 @@ export function AiDemoSection() {
                                 mt: 0.2,
                               }}
                             >
-                              {btn.desc}
+                              {t(`addOptions.${btn.key}.desc`)}
                             </Typography>
                           </Box>
                           <Typography sx={{ fontSize: '0.75rem', color: 'rgba(194,112,154,0.5)' }}>
@@ -573,12 +566,12 @@ export function AiDemoSection() {
                         mb: 0.4,
                       }}
                     >
-                      📋 Review Cards
+                      {t('reviewCardsPanelTitle')}
                     </Typography>
                     <Typography sx={{ fontSize: '0.7rem', color: '#C2709A', fontWeight: 600 }}>
                       {showReview
-                        ? `${DEMO_WORDS.length} cards generated — edit before adding`
-                        : 'Waiting for generation…'}
+                        ? t('reviewCardsStatus', { count: DEMO_WORDS.length })
+                        : t('reviewCardsWaiting')}
                     </Typography>
                   </Box>
                   <Box
@@ -620,7 +613,7 @@ export function AiDemoSection() {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Set main view mode for all cards:
+                    {t('setViewModeLabel')}
                   </Typography>
                   <ToggleButtonGroup
                     value="hiragana"
@@ -645,8 +638,8 @@ export function AiDemoSection() {
                       },
                     }}
                   >
-                    <ToggleButton value="hiragana">ひ Hiragana</ToggleButton>
-                    <ToggleButton value="kanji">漢 Kanji</ToggleButton>
+                    <ToggleButton value="hiragana">{t('viewModes.hiragana')}</ToggleButton>
+                    <ToggleButton value="kanji">{t('viewModes.kanji')}</ToggleButton>
                   </ToggleButtonGroup>
                 </Box>
               </Box>
@@ -845,7 +838,7 @@ export function AiDemoSection() {
                     fontWeight: 700,
                   }}
                 >
-                  Cancel
+                  {t('cancelButton')}
                 </Box>
                 <Box
                   sx={{
@@ -862,7 +855,7 @@ export function AiDemoSection() {
                     transition: 'all 0.5s ease',
                   }}
                 >
-                  ✓ Add {DEMO_WORDS.length} Cards to Deck
+                  {t('addCardsToDeckButton', { count: DEMO_WORDS.length })}
                 </Box>
               </Box>
             </Paper>
@@ -908,7 +901,7 @@ export function AiDemoSection() {
                   whiteSpace: 'nowrap',
                 }}
               >
-                Study your deck
+                {t('studyYourDeckLabel')}
               </Typography>
             </Box>
             <Box sx={{ flex: 1, height: 1, bgcolor: alpha(pink[300], 0.3) }} />

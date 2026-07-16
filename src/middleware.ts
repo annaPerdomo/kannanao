@@ -1,9 +1,43 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { type Locale, LOCALE_COOKIE, LOCALES } from '@/i18n/config';
+
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
 const SUPABASE_ANON_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
+
+const EN_LANDING = '/landing';
+const JA_LANDING = '/landing/ja';
+
+/**
+ * Which landing an anonymous `/` visitor gets: cookie, then Accept-Language,
+ * then English.
+ *
+ * The cookie comes first because it is the only signal the visitor chose on
+ * purpose — the landing's language toggle writes it. A Japanese browser whose
+ * owner clicked EN must keep getting English, which is why an explicit pick is
+ * not merely a tiebreak against the header.
+ *
+ * VARY: this decision now depends on the NEXT_LOCALE cookie and the
+ * Accept-Language header, so the response to `/` is no longer a pure function
+ * of its URL. It stays correct because middleware runs per request and only the
+ * rewrite TARGET is cached — /landing and /landing/ja are separate static
+ * entries under their own paths. Nothing may start caching the `/` response
+ * itself without keying on both of those inputs.
+ */
+function pickLandingPath(request: NextRequest): string {
+  const cookie = request.cookies.get(LOCALE_COOKIE)?.value;
+  if (cookie && LOCALES.includes(cookie as Locale)) {
+    return cookie === 'ja' ? JA_LANDING : EN_LANDING;
+  }
+
+  // First language wins, per the header's own preference order. We deliberately
+  // don't parse q-values: browsers already send the list in descending order,
+  // and the two-language pick doesn't earn a full negotiator.
+  const preferred = request.headers.get('accept-language')?.split(',')[0]?.trim().toLowerCase();
+  return preferred?.startsWith('ja') ? JA_LANDING : EN_LANDING;
+}
 
 export async function middleware(request: NextRequest) {
   // Redirect non-www to www to prevent duplicate content issues
@@ -22,11 +56,17 @@ export async function middleware(request: NextRequest) {
     .getAll()
     .some((c) => /^sb-.*-auth-token(\.\d+)?$/.test(c.name));
 
-  // Anonymous visitors to `/` get the statically prerendered landing page
-  // (served from the CDN, no function invocation) instead of the dynamically
-  // rendered dashboard route. The URL bar still shows `/`.
+  // Anonymous visitors to `/` get the statically prerendered landing page in
+  // their language (served from the CDN, no function invocation) instead of the
+  // dynamically rendered dashboard route. The URL bar still shows `/`.
+  //
+  // Only `/` is picked for. /landing/ja stays directly reachable and always
+  // serves Japanese — hreflang points at it and the toggle links to it, and a
+  // URL that quietly served a different language than the one it names would
+  // break both. /landing has no such guarantee to keep: next.config.ts 308s it
+  // back to `/`, so it is reachable only through this rewrite.
   if (request.nextUrl.pathname === '/' && !hasAuthCookie) {
-    return NextResponse.rewrite(new URL('/landing', request.url));
+    return NextResponse.rewrite(new URL(pickLandingPath(request), request.url));
   }
 
   let response = NextResponse.next({ request });
