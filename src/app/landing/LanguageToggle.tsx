@@ -5,7 +5,8 @@ import { alpha } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 
 import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
-import { type Locale, LOCALE_COOKIE } from '@/i18n/config';
+import type { Locale } from '@/i18n/config';
+import { writeLocaleCookie } from '@/i18n/localeCookie';
 
 // Each language is written in its own language — a visitor who can't read the
 // current page still has to recognize their way out of it. That makes these
@@ -21,8 +22,6 @@ const OPTIONS: { locale: Locale; href: string; label: string }[] = [
   { locale: 'en', href: '/', label: 'EN' },
   { locale: 'ja', href: '/landing/ja', label: '日本語' },
 ];
-
-const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
 /**
  * The landing's EN | 日本語 pair.
@@ -46,10 +45,6 @@ const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
  */
 export function LanguageToggle({ current }: { current: Locale }) {
   const t = useTranslations('Landing.languageToggle');
-
-  const remember = (locale: Locale) => {
-    document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${ONE_YEAR_SECONDS}; samesite=lax`;
-  };
 
   return (
     <Box
@@ -85,7 +80,7 @@ export function LanguageToggle({ current }: { current: Locale }) {
             hrefLang={option.locale}
             aria-label={t(option.locale)}
             aria-current={isCurrent ? 'page' : undefined}
-            onClick={() => remember(option.locale)}
+            onClick={() => writeLocaleCookie(option.locale)}
             sx={(theme) => ({
               px: 1.25,
               py: 0.5,

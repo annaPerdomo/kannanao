@@ -6,6 +6,7 @@
 import type { Session } from '@supabase/supabase-js';
 
 import type { Achievement, StudySession, UserProgress } from '@/hooks/useProgress';
+import type { Locale } from '@/i18n/config';
 import type { Deck } from '@/types/deck';
 import type { Flashcard, JlptLevel, MainViewMode } from '@/types/flashcard';
 import type { HomeSections } from '@/types/homeSections';
@@ -87,6 +88,13 @@ export interface UserProfile {
   homeSections: Partial<HomeSections> | null;
   /** profiles.review_reminders — the daily review-due push nudge. */
   reviewReminders: boolean;
+  /**
+   * profiles.locale — the account's explicit UI language, or null for "follow
+   * the device". Null is not English: it means the user has never chosen, so the
+   * NEXT_LOCALE cookie (landing toggle / Accept-Language) still wins. Only a
+   * non-null value out-ranks the cookie, and only at sign-in.
+   */
+  locale: Locale | null;
   accountType: AccountType;
   organizerId: string | null;
   groupId: string | null;

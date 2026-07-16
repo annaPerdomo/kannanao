@@ -2,6 +2,7 @@ import 'server-only';
 
 import { cache } from 'react';
 
+import { parseLocale } from '@/i18n/config';
 import {
   dbDeckToApp,
   dbEventTypeToApp,
@@ -57,7 +58,7 @@ async function loadProfileServer(
   const { data, error } = await supabase
     .from('profiles')
     .select(
-      'username, display_name, color_scheme, show_todo, home_sections, review_reminders, account_type, organizer_id, group_id, travel_main_view_mode, groups:group_id (show_leaderboard)',
+      'username, display_name, color_scheme, show_todo, home_sections, review_reminders, account_type, organizer_id, group_id, travel_main_view_mode, locale, groups:group_id (show_leaderboard)',
     )
     .eq('id', userId)
     .single();
@@ -75,6 +76,7 @@ async function loadProfileServer(
     groupId: data.group_id ?? null,
     groupShowLeaderboard: groupRow?.show_leaderboard ?? true,
     travelMainViewMode: data.travel_main_view_mode ?? null,
+    locale: parseLocale(data.locale),
   };
 }
 

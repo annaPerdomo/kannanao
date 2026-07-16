@@ -72,7 +72,7 @@ const messages = landingMessagesFor(LOCALE);
 export default function LandingJaRoute() {
   return (
     <StaticIntlProvider locale={LOCALE} messages={messages}>
-      <Providers initialAuth={{ session: null, profile: null }}>
+      <Providers initialAuth={{ session: null, profile: null }} locale={LOCALE}>
         <AppBackground lang={LOCALE}>
           <AppShell initialUnreadCount={0}>
             <LandingContent locale={LOCALE} />

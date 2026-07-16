@@ -10,9 +10,21 @@ export type Locale = (typeof LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = 'en';
 
+/**
+ * A locale we ship, or null when the value is absent or unrecognized.
+ *
+ * The null is the point, and it's why this isn't just resolveLocale: for the
+ * cookie and for profiles.locale, "never chose" and "chose English" are
+ * different states with different precedence. Collapsing them to 'en' would make
+ * an empty profile column out-rank a Japanese device.
+ */
+export function parseLocale(value?: string | null): Locale | null {
+  return LOCALES.includes(value as Locale) ? (value as Locale) : null;
+}
+
 /** Anything that isn't a locale we ship falls back to English. */
 export function resolveLocale(value?: string | null): Locale {
-  return LOCALES.includes(value as Locale) ? (value as Locale) : DEFAULT_LOCALE;
+  return parseLocale(value) ?? DEFAULT_LOCALE;
 }
 
 /**
