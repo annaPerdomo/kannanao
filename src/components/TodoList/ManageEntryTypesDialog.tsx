@@ -16,13 +16,14 @@ import { alpha, useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
 import EmojiPicker, { type EmojiClickData, Theme } from '@/components/LazyEmojiPicker';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { EntryType } from '@/types/todo';
 
-import { DEFAULT_ENTRY_TYPES } from './helpers';
+import { DEFAULT_ENTRY_TYPES, getEntryTypeName } from './helpers';
 
 interface ManageEntryTypesDialogProps {
   open: boolean;
@@ -85,6 +86,9 @@ export function ManageEntryTypesDialog({
 }: ManageEntryTypesDialogProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const t = useTranslations('Todo.manageEntryTypesDialog');
+  const tCommon = useTranslations('Common');
+  const tEntryTypeNames = useTranslations('Todo.defaultEntryTypeNames');
 
   const TYPE_COLORS = useMemo(
     () => [
@@ -155,11 +159,11 @@ export function ManageEntryTypesDialog({
       setAddSuccess(true);
       setTimeout(() => setAddSuccess(false), 2000);
     } catch {
-      setAddError("Oops! Couldn't add that. Try again?");
+      setAddError(t('errorAdd'));
     } finally {
       setAdding(false);
     }
-  }, [newTypeName, newTypeEmoji, onAddEntryType, TYPE_COLORS]);
+  }, [newTypeName, newTypeEmoji, onAddEntryType, TYPE_COLORS, t]);
 
   const startEdit = useCallback((type: EntryType) => {
     setEditingId(type.id);
@@ -184,11 +188,11 @@ export function ManageEntryTypesDialog({
       await onUpdateEntryType(editingId, name, editEmoji || '🎉');
       setEditingId(null);
     } catch {
-      setEditError("Oops! Couldn't save. Try again?");
+      setEditError(t('errorSave'));
     } finally {
       setSaving(false);
     }
-  }, [editingId, editName, editEmoji, onUpdateEntryType]);
+  }, [editingId, editName, editEmoji, onUpdateEntryType, t]);
 
   const handleDelete = useCallback(
     async (id: string) => {
@@ -197,12 +201,12 @@ export function ManageEntryTypesDialog({
       try {
         await onDeleteEntryType(id);
       } catch {
-        setDeleteError("Oops! Couldn't delete. Try again?");
+        setDeleteError(t('errorDelete'));
       } finally {
         setDeleting(null);
       }
     },
-    [onDeleteEntryType],
+    [onDeleteEntryType, t],
   );
 
   const inputSx = {
@@ -217,7 +221,7 @@ export function ManageEntryTypesDialog({
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="My Event Labels"
+      title={t('title')}
       actions={
         <Button
           onClick={onClose}
@@ -232,7 +236,7 @@ export function ManageEntryTypesDialog({
             '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
           }}
         >
-          Done
+          {tCommon('done')}
         </Button>
       }
     >
@@ -248,13 +252,13 @@ export function ManageEntryTypesDialog({
               letterSpacing: 0.5,
             }}
           >
-            Built-in labels
+            {t('builtInLabels')}
           </Typography>
           <Stack direction="row" flexWrap="wrap" gap={0.5}>
             {DEFAULT_ENTRY_TYPES.map((type) => (
               <Chip
                 key={type.id}
-                label={`${type.emoji} ${type.name}`}
+                label={`${type.emoji} ${getEntryTypeName(type, tEntryTypeNames)}`}
                 size="small"
                 sx={{
                   background: alpha(type.color, 0.12),
@@ -281,7 +285,7 @@ export function ManageEntryTypesDialog({
               letterSpacing: 0.5,
             }}
           >
-            My labels
+            {t('myLabels')}
           </Typography>
           {deleteError && (
             <Alert
@@ -303,7 +307,7 @@ export function ManageEntryTypesDialog({
           )}
           {customTypes.length === 0 ? (
             <Typography sx={{ fontSize: '0.78rem', color: 'text.disabled', fontStyle: 'italic' }}>
-              No custom labels yet — make one below!
+              {t('noCustomLabels')}
             </Typography>
           ) : (
             <Stack spacing={0.75}>
@@ -323,7 +327,7 @@ export function ManageEntryTypesDialog({
                     {isEditing ? (
                       <Stack spacing={1.25}>
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <Tooltip title="Pick emoji">
+                          <Tooltip title={t('pickEmoji')}>
                             <span>
                               <EmojiButton
                                 emoji={editEmoji || '🎉'}
@@ -332,7 +336,7 @@ export function ManageEntryTypesDialog({
                             </span>
                           </Tooltip>
                           <TextField
-                            label="Name"
+                            label={t('nameLabel')}
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
                             onKeyDown={(e) => {
@@ -375,7 +379,7 @@ export function ManageEntryTypesDialog({
                               textTransform: 'none',
                             }}
                           >
-                            Cancel
+                            {tCommon('cancel')}
                           </Button>
                           <Button
                             size="small"
@@ -404,7 +408,7 @@ export function ManageEntryTypesDialog({
                               },
                             }}
                           >
-                            Save
+                            {tCommon('save')}
                           </Button>
                         </Stack>
                       </Stack>
@@ -436,7 +440,7 @@ export function ManageEntryTypesDialog({
                         >
                           {type.name}
                         </Typography>
-                        <Tooltip title="Edit">
+                        <Tooltip title={tCommon('edit')}>
                           <IconButton
                             size="small"
                             onClick={() => startEdit(type)}
@@ -449,7 +453,7 @@ export function ManageEntryTypesDialog({
                             <EditRoundedIcon sx={{ fontSize: '0.95rem' }} />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Delete">
+                        <Tooltip title={tCommon('delete')}>
                           <IconButton
                             size="small"
                             onClick={() => void handleDelete(type.id)}
@@ -489,7 +493,7 @@ export function ManageEntryTypesDialog({
               letterSpacing: 0.5,
             }}
           >
-            Make a new label
+            {t('makeNewLabel')}
           </Typography>
           {addError && (
             <Alert
@@ -502,11 +506,11 @@ export function ManageEntryTypesDialog({
           )}
           {addSuccess && (
             <Alert severity="success" sx={{ mb: 0.75, borderRadius: 2, fontSize: '0.78rem' }}>
-              Label added! ✨
+              {t('labelAdded')}
             </Alert>
           )}
           <Stack direction="row" spacing={1} alignItems="center">
-            <Tooltip title="Pick emoji">
+            <Tooltip title={t('pickEmoji')}>
               <span>
                 <EmojiButton
                   emoji={newTypeEmoji || '🎉'}
@@ -515,7 +519,7 @@ export function ManageEntryTypesDialog({
               </span>
             </Tooltip>
             <TextField
-              label="Label name"
+              label={t('labelNameLabel')}
               value={newTypeName}
               onChange={(e) => setNewTypeName(e.target.value)}
               onKeyDown={(e) => {
@@ -542,7 +546,7 @@ export function ManageEntryTypesDialog({
                 '&:disabled': { background: alpha(brand[200], 0.3), color: alpha(brand[400], 0.4) },
               }}
             >
-              {adding ? <CircularProgress size={14} sx={{ color: '#fff' }} /> : 'Add'}
+              {adding ? <CircularProgress size={14} sx={{ color: '#fff' }} /> : t('addButton')}
             </Button>
           </Stack>
           <Popover

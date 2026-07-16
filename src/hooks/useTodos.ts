@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,6 +8,7 @@ import type { Todo } from '@/types/todo';
 
 export function useTodos(initialTodos?: Todo[]) {
   const { user } = useAuth();
+  const t = useTranslations('Todo.useTodos');
   const [todos, setTodos] = useState<Todo[]>(initialTodos ?? []);
   const [loading, setLoading] = useState(!initialTodos);
   const [error, setError] = useState<string | null>(null);
@@ -22,9 +24,9 @@ export function useTodos(initialTodos?: Todo[]) {
     setLoading(true);
     loadTodos(user.id)
       .then(setTodos)
-      .catch(() => setError('Could not load your to-do list'))
+      .catch(() => setError(t('loadError')))
       .finally(() => setLoading(false));
-  }, [user, initialTodos]);
+  }, [user, initialTodos, t]);
 
   const addTodo = useCallback(
     async (
@@ -47,10 +49,10 @@ export function useTodos(initialTodos?: Todo[]) {
         );
         setTodos((prev) => [...prev, todo]);
       } catch {
-        setError('Could not add item — please try again');
+        setError(t('addError'));
       }
     },
-    [todos],
+    [todos, t],
   );
 
   // Returns true if the task was just marked as completed (for XP award)
@@ -70,11 +72,11 @@ export function useTodos(initialTodos?: Todo[]) {
         await dbUpdateTodo(id, { completedDates: newCompletedDates, completed: nowCompleted });
       } catch {
         setTodos((prev) => prev.map((t) => (t.id === id ? todo : t)));
-        setError('Could not update item — please try again');
+        setError(t('toggleError'));
       }
       return !wasCompleted;
     },
-    [todos],
+    [todos, t],
   );
 
   const editTodo = useCallback(
@@ -88,10 +90,10 @@ export function useTodos(initialTodos?: Todo[]) {
         await dbUpdateTodo(id, { text: trimmed });
       } catch {
         setTodos((prev) => prev.map((t) => (t.id === id ? prev_todo : t)));
-        setError('Could not save changes — please try again');
+        setError(t('saveChangesError'));
       }
     },
-    [todos],
+    [todos, t],
   );
 
   const editEmoji = useCallback(
@@ -103,10 +105,10 @@ export function useTodos(initialTodos?: Todo[]) {
         await dbUpdateTodo(id, { emoji });
       } catch {
         setTodos((prev) => prev.map((t) => (t.id === id ? prev_todo : t)));
-        setError('Could not save emoji — please try again');
+        setError(t('emojiError'));
       }
     },
-    [todos],
+    [todos, t],
   );
 
   const editTodoAdvanced = useCallback(
@@ -147,10 +149,10 @@ export function useTodos(initialTodos?: Todo[]) {
         await dbUpdateTodo(id, dbPatch);
       } catch {
         setTodos((prev) => prev.map((t) => (t.id === id ? prev_todo : t)));
-        setError('Could not save changes — please try again');
+        setError(t('saveChangesError'));
       }
     },
-    [todos],
+    [todos, t],
   );
 
   const deleteTodo = useCallback(
@@ -161,10 +163,10 @@ export function useTodos(initialTodos?: Todo[]) {
         await dbDeleteTodo(id);
       } catch {
         setTodos(snapshot);
-        setError('Could not delete item — please try again');
+        setError(t('deleteError'));
       }
     },
-    [todos],
+    [todos, t],
   );
 
   // Reorder a subset of todos (e.g. todos visible on a given day) and persist.
@@ -201,10 +203,10 @@ export function useTodos(initialTodos?: Todo[]) {
         await Promise.all(changed.map((t) => dbUpdateTodo(t.id, { sortOrder: t.sortOrder })));
       } catch {
         setTodos(snapshot);
-        setError('Could not save order — please try again');
+        setError(t('reorderError'));
       }
     },
-    [todos],
+    [todos, t],
   );
 
   const clearError = useCallback(() => setError(null), []);

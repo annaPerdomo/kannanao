@@ -10,6 +10,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { alpha, useTheme } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { Flashcard } from '@/components/Flashcard';
@@ -30,6 +31,8 @@ export function BorderPreviewModal({
   borderKey: string;
   borderName: string;
 }) {
+  const t = useTranslations('Shop.borderPreviewModal');
+  const tCommon = useTranslations('Common');
   const theme = useTheme();
   const { brand } = theme.palette;
   const [cardView, setCardView] = useState<'collection' | 'study'>('study');
@@ -62,7 +65,7 @@ export function BorderPreviewModal({
     >
       <DialogTitle
         sx={{
-          fontFamily: (t) => t.fonts.cute,
+          fontFamily: (muiTheme) => muiTheme.fonts.cute,
           color: brand[700],
           textAlign: 'center',
           pb: 0.5,
@@ -74,7 +77,7 @@ export function BorderPreviewModal({
         }}
       >
         <VisibilityIcon sx={{ fontSize: '1.1rem', color: brand[400] }} />
-        Preview: {borderName}
+        {t('previewTitle', { name: borderName })}
       </DialogTitle>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', pb: 1.5 }}>
@@ -87,7 +90,7 @@ export function BorderPreviewModal({
           size="small"
           sx={{
             '& .MuiToggleButton-root': {
-              fontFamily: (t) => t.fonts.cute,
+              fontFamily: (muiTheme) => muiTheme.fonts.cute,
               fontSize: '0.75rem',
               px: 2,
               py: 0.4,
@@ -103,8 +106,8 @@ export function BorderPreviewModal({
             },
           }}
         >
-          <ToggleButton value="study">Study Card</ToggleButton>
-          <ToggleButton value="collection">Collection Card</ToggleButton>
+          <ToggleButton value="study">{t('studyCard')}</ToggleButton>
+          <ToggleButton value="collection">{t('collectionCard')}</ToggleButton>
         </ToggleButtonGroup>
       </Box>
 
@@ -128,9 +131,9 @@ export function BorderPreviewModal({
         <Button
           onClick={onClose}
           variant="outlined"
-          sx={{ borderRadius: 2, px: 4, fontFamily: (t) => t.fonts.cute }}
+          sx={{ borderRadius: 2, px: 4, fontFamily: (muiTheme) => muiTheme.fonts.cute }}
         >
-          Close
+          {tCommon('close')}
         </Button>
       </DialogActions>
     </Dialog>

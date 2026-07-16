@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useLocale } from 'next-intl';
 
 import type { CalendarEntry, Todo } from '@/types/todo';
 
@@ -43,6 +44,7 @@ export function WeekStrip({
 }: WeekStripProps) {
   const theme = useTheme();
   const { brand, rainbow } = theme.palette;
+  const locale = useLocale();
   const todayStr = todayISO();
 
   const TAB_COLORS = [
@@ -175,7 +177,7 @@ export function WeekStrip({
             fontSize: '0.72rem',
           }}
         >
-          {formatWeekRange(weekDates)}
+          {formatWeekRange(weekDates, locale)}
         </Typography>
         <IconButton
           size="small"

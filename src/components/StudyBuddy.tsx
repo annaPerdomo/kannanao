@@ -72,6 +72,10 @@ function pickRandom(items: string | string[]): string {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+function isNonEmptyStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.length > 0 && value.every((v) => typeof v === 'string');
+}
+
 export type BuddyReaction = 'correct' | 'wrong' | 'idle';
 
 interface StudyBuddyProps {
@@ -81,6 +85,7 @@ interface StudyBuddyProps {
 
 export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
   const t = useTranslations('Practice.studyBuddy');
+  const tBuddies = useTranslations('Shop.buddies');
   const theme = useTheme();
   const { brand } = theme.palette;
   const tapPhrases = t.raw('tapPhrases') as string[];
@@ -150,7 +155,19 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
 
   useEffect(() => {
     if (!config) return;
-    setBubbleText(pickRandom(config.reactions[reaction]));
+
+    // Prefer the translated reaction lines; fall back to the English config
+    // if the buddyKey has no matching Shop.buddies entry (missing key, or a
+    // buddy added before its translations landed) so the buddy never crashes.
+    let lines: string | string[] = config.reactions[reaction];
+    try {
+      const raw = tBuddies.raw(`${buddyKey}.${reaction}`);
+      if (isNonEmptyStringArray(raw)) lines = raw;
+    } catch {
+      // missing translation key — keep the English fallback above
+    }
+
+    setBubbleText(pickRandom(lines));
     setShowBubble(true);
     setSparkles(reaction === 'correct');
 
@@ -162,7 +179,7 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
         clearTimeout(s);
       };
     }
-  }, [reaction, config]);
+  }, [reaction, config, buddyKey, tBuddies]);
 
   if (!config) return null;
 

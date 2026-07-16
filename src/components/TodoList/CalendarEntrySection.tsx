@@ -11,13 +11,14 @@ import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import type { CalendarEntry, EntryType } from '@/types/todo';
 
 import { AddEntryDialog } from './AddEntryDialog';
 import { EditEntryDialog } from './EditEntryDialog';
-import { getEntryType, isEntryOnDate, MONTH_NAMES } from './helpers';
+import { getEntryType, getMonthName, isEntryOnDate } from './helpers';
 
 interface CalendarEntrySectionProps {
   entries: CalendarEntry[];
@@ -44,6 +45,9 @@ export function CalendarEntrySection({
 }: CalendarEntrySectionProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const t = useTranslations('Todo.calendarEntrySection');
+  const tCommon = useTranslations('Common');
+  const locale = useLocale();
 
   const entriesForDay = entries.filter((e) => isEntryOnDate(e, selectedDate));
 
@@ -88,7 +92,7 @@ export function CalendarEntrySection({
               letterSpacing: 0.5,
             }}
           >
-            🎊 Special Days
+            {t('specialDays')}
           </Typography>
         </Stack>
         <Button
@@ -113,7 +117,7 @@ export function CalendarEntrySection({
             transition: 'all 0.18s ease',
           }}
         >
-          Add
+          {t('add')}
         </Button>
       </Stack>
 
@@ -146,7 +150,7 @@ export function CalendarEntrySection({
             }}
           >
             <AddRoundedIcon sx={{ fontSize: '0.9rem' }} />
-            Nothing here — tap to add! ✨
+            {t('emptyPrompt')}
           </Box>
         ) : (
           <Stack spacing={0.5}>
@@ -185,13 +189,14 @@ export function CalendarEntrySection({
                         {hasRange &&
                           (() => {
                             const [, m, d] = entry.endDateISO.split('-');
-                            return `until ${MONTH_NAMES[parseInt(m) - 1]} ${parseInt(d)}`;
+                            const monthName = getMonthName(parseInt(m) - 1, locale, 'short');
+                            return t('untilDate', { date: `${monthName} ${parseInt(d)}` });
                           })()}
-                        {hasRepeat && ` 🔁 every week`}
+                        {hasRepeat && ` ${t('weeklyRepeat')}`}
                       </Typography>
                     )}
                   </Box>
-                  <Tooltip title="Edit">
+                  <Tooltip title={tCommon('edit')}>
                     <IconButton
                       className="entry-edit-btn"
                       size="small"
@@ -226,7 +231,7 @@ export function CalendarEntrySection({
                 alignSelf: 'flex-start',
               }}
             >
-              + Add another
+              {t('addAnother')}
             </Button>
           </Stack>
         )}

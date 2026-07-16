@@ -12,6 +12,7 @@ import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import type { ShopItem } from '@/types/shop';
 
@@ -39,8 +40,12 @@ export function ShopItemCard({
   onPreview: () => void;
   mini?: boolean;
 }) {
+  const t = useTranslations('Shop.itemCard');
+  const tItems = useTranslations('Shop.items');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const itemName = tItems(`${item.key}.name`);
+  const itemDescription = tItems(`${item.key}.description`);
   const canAfford = spendableXp >= item.price;
   const isTheme = item.category === 'theme';
   const isCelebration = item.category === 'celebration';
@@ -85,13 +90,13 @@ export function ShopItemCard({
               lineHeight: 1.2,
             }}
           >
-            {item.name}
+            {itemName}
           </Typography>
           <Typography sx={{ fontSize: '0.65rem', color: 'text.disabled', lineHeight: 1.3 }}>
-            {item.description}
+            {itemDescription}
           </Typography>
           <Chip
-            label="Coming Soon"
+            label={t('comingSoon')}
             size="small"
             sx={{
               mt: 0.5,
@@ -211,7 +216,7 @@ export function ShopItemCard({
           >
             <LockIcon sx={{ fontSize: '0.65rem', color: '#fff' }} />
             <Typography sx={{ fontSize: '0.55rem', color: '#fff', fontWeight: 700 }}>
-              Need {(item.price - spendableXp).toLocaleString()} more
+              {t('needMoreXp', { amount: (item.price - spendableXp).toLocaleString() })}
             </Typography>
           </Box>
         )}
@@ -236,7 +241,7 @@ export function ShopItemCard({
             <VisibilityIcon sx={{ fontSize: '0.6rem' }} />
           </Box>
         ) : (
-          <Tooltip title="Preview" arrow>
+          <Tooltip title={t('preview')} arrow>
             <IconButton
               size="small"
               onClick={(e) => {
@@ -283,7 +288,7 @@ export function ShopItemCard({
             lineHeight: 1.2,
           }}
         >
-          {item.name}
+          {itemName}
         </Typography>
         {!mini && (
           <Typography
@@ -297,7 +302,7 @@ export function ShopItemCard({
               overflow: 'hidden',
             }}
           >
-            {item.description}
+            {itemDescription}
           </Typography>
         )}
 
@@ -334,7 +339,7 @@ export function ShopItemCard({
             )}
             {item.price === 0 && !owned && (
               <Chip
-                label="FREE"
+                label={t('free')}
                 size="small"
                 sx={{
                   bgcolor: alpha('#34D399', 0.15),
@@ -349,7 +354,7 @@ export function ShopItemCard({
             )}
             {owned && !isEquipped && item.price > 0 && (
               <Chip
-                label="Owned"
+                label={t('owned')}
                 size="small"
                 sx={{
                   bgcolor: alpha(brand[300], 0.18),
@@ -366,7 +371,7 @@ export function ShopItemCard({
           {isEquipped ? (
             <Chip
               icon={<AutoAwesomeIcon sx={{ fontSize: '0.7rem !important' }} />}
-              label="Active"
+              label={t('active')}
               size="small"
               sx={{
                 bgcolor: alpha(brand[400], 0.18),
@@ -390,10 +395,10 @@ export function ShopItemCard({
                 minWidth: 0,
               }}
             >
-              Equip
+              {t('equip')}
             </Button>
           ) : (
-            <Tooltip title={canAfford ? '' : 'Keep studying to earn more XP!'} arrow>
+            <Tooltip title={canAfford ? '' : t('keepStudyingTooltip')} arrow>
               <span>
                 <Button
                   onClick={onBuy}
@@ -417,7 +422,7 @@ export function ShopItemCard({
                       : undefined,
                   }}
                 >
-                  Buy
+                  {t('buy')}
                 </Button>
               </span>
             </Tooltip>

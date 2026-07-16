@@ -8,6 +8,7 @@ import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import SchoolIcon from '@mui/icons-material/School';
 import { Box, Chip, Paper, Skeleton, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 import { PageHeader } from '@/components/PageHeader';
 import { AchievementBadge } from '@/components/Stats/AchievementBadge';
@@ -20,6 +21,7 @@ import { ACHIEVEMENTS, useProgress } from '@/hooks/useProgress';
 import { LAYOUT } from '@/theme';
 
 export default function Stats() {
+  const t = useTranslations('Stats');
   const theme = useTheme();
   const { brand } = theme.palette;
   const { progress, spendableXp, achievements, recentSessions, loading } = useProgress();
@@ -45,8 +47,8 @@ export default function Stats() {
     >
       <PageHeader
         icon={<InsightsIcon />}
-        title="My Progress"
-        subtitle="Keep studying every day to build your streak!"
+        title={t('pageHeader.title')}
+        subtitle={t('pageHeader.subtitle')}
         mb={3}
       />
 
@@ -70,29 +72,32 @@ export default function Stats() {
           <>
             <StatCard
               icon={<LocalFireDepartmentIcon sx={{ fontSize: '1.1rem' }} />}
-              label="Day Streak"
+              label={t('statCards.dayStreak')}
               value={progress.streak_days}
-              sub={`Best: ${progress.longest_streak} days`}
+              sub={t('statCards.dayStreakSub', { days: progress.longest_streak })}
               accent="#EF4444"
             />
             <StatCard
               icon={<SchoolIcon sx={{ fontSize: '1.1rem' }} />}
-              label="Cards Studied"
+              label={t('statCards.cardsStudied')}
               value={progress.total_cards_studied.toLocaleString()}
-              sub={`${progress.total_sessions} sessions`}
+              sub={t('statCards.cardsStudiedSub', { count: progress.total_sessions })}
             />
             <StatCard
               icon={<EmojiEventsIcon sx={{ fontSize: '1.1rem' }} />}
-              label="Accuracy"
+              label={t('statCards.accuracy')}
               value={`${accuracy}%`}
-              sub={`${progress.total_correct} correct`}
+              sub={t('statCards.accuracySub', { count: progress.total_correct })}
               accent="#F59E0B"
             />
             <StatCard
               icon={<AutoAwesomeIcon sx={{ fontSize: '1.1rem' }} />}
-              label="Total XP"
+              label={t('statCards.totalXp')}
               value={progress.total_xp.toLocaleString()}
-              sub={`${spendableXp.toLocaleString()} spendable · Level ${progress.level}`}
+              sub={t('statCards.totalXpSub', {
+                spendable: spendableXp.toLocaleString(),
+                level: progress.level,
+              })}
             />
           </>
         ) : null}
@@ -117,7 +122,7 @@ export default function Stats() {
               color: brand[700],
             }}
           >
-            Achievements
+            {t('achievements.heading')}
           </Typography>
           <Chip
             label={`${unlockedKeys.size} / ${ACHIEVEMENTS.length}`}
@@ -172,7 +177,7 @@ export default function Stats() {
               color: brand[700],
             }}
           >
-            Recent Sessions
+            {t('recentSessions.heading')}
           </Typography>
         </Box>
 
@@ -182,7 +187,7 @@ export default function Stats() {
           <Typography
             sx={{ fontSize: '0.88rem', color: 'text.secondary', py: 2, textAlign: 'center' }}
           >
-            No sessions yet — start studying to see your history! 🌸
+            {t('recentSessions.empty')}
           </Typography>
         ) : (
           recentSessions
@@ -223,7 +228,7 @@ export default function Stats() {
               color: brand[700],
             }}
           >
-            Study Activity
+            {t('studyActivity.heading')}
           </Typography>
         </Box>
 

@@ -2,8 +2,10 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useLocale, useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 
-import { DAY_INDEX_TO_JS, DAY_LABELS } from './helpers';
+import { DAY_INDEX_TO_JS, getWeekdayNames } from './helpers';
 
 interface FrequencyPickerProps {
   value: number[];
@@ -22,14 +24,18 @@ export function FrequencyPicker({
 }: FrequencyPickerProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const t = useTranslations('Todo.frequencyPicker');
+  const locale = useLocale();
+
+  const dayLabels = useMemo(() => getWeekdayNames(locale), [locale]);
 
   const presets = [
     ...(showRepeatUntilDone
-      ? [{ label: 'Until done', isUntilDone: true, days: [] as number[] }]
+      ? [{ label: t('untilDone'), isUntilDone: true, days: [] as number[] }]
       : []),
-    { label: 'Every day', isUntilDone: false, days: [0, 1, 2, 3, 4, 5, 6] },
-    { label: 'Weekdays', isUntilDone: false, days: [1, 2, 3, 4, 5] },
-    { label: 'Weekends', isUntilDone: false, days: [0, 6] },
+    { label: t('everyDay'), isUntilDone: false, days: [0, 1, 2, 3, 4, 5, 6] },
+    { label: t('weekdays'), isUntilDone: false, days: [1, 2, 3, 4, 5] },
+    { label: t('weekends'), isUntilDone: false, days: [0, 6] },
   ];
 
   function toggleDay(jsDay: number) {
@@ -89,7 +95,7 @@ export function FrequencyPicker({
       {/* Individual day buttons — hidden when "Until done" is active */}
       {!repeatUntilDone && (
         <Stack direction="row" spacing={0.4} alignItems="center" flexWrap="wrap" useFlexGap>
-          {DAY_LABELS.map((label, i) => {
+          {dayLabels.map((label, i) => {
             const jsDay = DAY_INDEX_TO_JS[i];
             const active = value.includes(jsDay);
             return (

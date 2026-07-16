@@ -11,13 +11,14 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { type Dayjs } from 'dayjs';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
 import type { CalendarEntry, EntryType } from '@/types/todo';
 
 import { FrequencyPicker } from './FrequencyPicker';
-import { getEntryType, toISODate } from './helpers';
+import { getEntryType, getEntryTypeName, toISODate } from './helpers';
 
 interface EditEntryDialogProps {
   open: boolean;
@@ -38,6 +39,9 @@ export function EditEntryDialog({
 }: EditEntryDialogProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const t = useTranslations('Todo.editEntryDialog');
+  const tCommon = useTranslations('Common');
+  const tEntryTypeNames = useTranslations('Todo.defaultEntryTypeNames');
 
   const [title, setTitle] = useState('');
   const [typeId, setTypeId] = useState('');
@@ -83,11 +87,11 @@ export function EditEntryDialog({
       });
       onClose();
     } catch {
-      setError("Oops! Couldn't save. Please try again.");
+      setError(t('errorSave'));
     } finally {
       setSaving(false);
     }
-  }, [entry, title, typeId, startDate, endDate, frequencyDays, allEntryTypes, onSave, onClose]);
+  }, [entry, title, typeId, startDate, endDate, frequencyDays, allEntryTypes, onSave, onClose, t]);
 
   const handleDelete = useCallback(() => {
     if (!entry) return;
@@ -153,7 +157,7 @@ export function EditEntryDialog({
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Edit Special Day"
+      title={t('title')}
       actionsJustify="space-between"
       actions={
         <>
@@ -166,7 +170,7 @@ export function EditEntryDialog({
               fontSize: '0.875rem',
             }}
           >
-            Delete
+            {tCommon('delete')}
           </Button>
           <Stack direction="row" spacing={1}>
             <Button
@@ -178,7 +182,7 @@ export function EditEntryDialog({
                 fontSize: '0.875rem',
               }}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
               onClick={handleSave}
@@ -197,7 +201,7 @@ export function EditEntryDialog({
                 '&:disabled': { background: alpha(brand[200], 0.3), color: alpha('#000', 0.3) },
               }}
             >
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? t('saving') : tCommon('save')}
             </Button>
           </Stack>
         </>
@@ -215,7 +219,7 @@ export function EditEntryDialog({
         )}
 
         <TextField
-          label="What is it?"
+          label={t('whatIsIt')}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={(e) => {
@@ -248,7 +252,7 @@ export function EditEntryDialog({
               letterSpacing: 0.5,
             }}
           >
-            Kind
+            {t('kind')}
           </Typography>
           <Stack direction="row" flexWrap="wrap" gap={0.6}>
             {allEntryTypes.map((type) => {
@@ -282,7 +286,7 @@ export function EditEntryDialog({
                       color: selected ? type.color : 'text.secondary',
                     }}
                   >
-                    {type.name}
+                    {getEntryTypeName(type, tEntryTypeNames)}
                   </Typography>
                 </Box>
               );
@@ -291,7 +295,7 @@ export function EditEntryDialog({
         </Box>
 
         <DatePicker
-          label="When? 📅"
+          label={t('when')}
           value={startDate}
           onChange={(val) => {
             setStartDate(val);
@@ -328,12 +332,12 @@ export function EditEntryDialog({
             ) : (
               <ExpandMoreRoundedIcon sx={{ fontSize: '1rem' }} />
             )}
-            {showMore ? 'Show less' : 'Lasts more than one day? Or repeat?'}
+            {showMore ? t('showLess') : t('lastsMoreThanOneDay')}
           </Box>
           <Collapse in={showMore}>
             <Stack spacing={1.75} mt={1.5}>
               <DatePicker
-                label="Last day 📅"
+                label={t('lastDay')}
                 value={endDate}
                 onChange={(val) => setEndDate(val)}
                 minDate={startDate ?? undefined}

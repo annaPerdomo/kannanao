@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +12,7 @@ import type { EntryType } from '@/types/todo';
 
 export function useEventTypes(initialEntryTypes?: EntryType[]) {
   const { user } = useAuth();
+  const t = useTranslations('Todo.useEventTypes');
   const [entryTypes, setEntryTypes] = useState<EntryType[]>(initialEntryTypes ?? []);
   const [loading, setLoading] = useState(!initialEntryTypes);
   const [error, setError] = useState<string | null>(null);
@@ -27,9 +29,9 @@ export function useEventTypes(initialEntryTypes?: EntryType[]) {
     setLoading(true);
     loadEventTypes(user.id)
       .then((types) => setEntryTypes(types))
-      .catch(() => setError('Could not load event types'))
+      .catch(() => setError(t('loadError')))
       .finally(() => setLoading(false));
-  }, [user, initialEntryTypes]);
+  }, [user, initialEntryTypes, t]);
 
   const addEntryType = useCallback(
     async (name: string, emoji: string, color: string) => {
@@ -49,15 +51,18 @@ export function useEventTypes(initialEntryTypes?: EntryType[]) {
     return updated;
   }, []);
 
-  const deleteEntryType = useCallback(async (id: string) => {
-    setError(null);
-    try {
-      await dbDeleteEventType(id);
-      setEntryTypes((prev) => prev.filter((type) => type.id !== id));
-    } catch {
-      setError('Could not delete event type');
-    }
-  }, []);
+  const deleteEntryType = useCallback(
+    async (id: string) => {
+      setError(null);
+      try {
+        await dbDeleteEventType(id);
+        setEntryTypes((prev) => prev.filter((type) => type.id !== id));
+      } catch {
+        setError(t('deleteError'));
+      }
+    },
+    [t],
+  );
 
   const clearError = useCallback(() => setError(null), []);
 

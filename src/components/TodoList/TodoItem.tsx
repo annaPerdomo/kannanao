@@ -9,38 +9,34 @@ import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useLocale, useTranslations } from 'next-intl';
 import { memo, useState } from 'react';
 
 import EmojiPicker, { type EmojiClickData, Theme } from '@/components/LazyEmojiPicker';
 import type { Todo } from '@/types/todo';
 
-import { isCompletedOnDate, todayISO, XP_PER_TODO } from './helpers';
+import { getWeekdayNames, isCompletedOnDate, todayISO, XP_PER_TODO } from './helpers';
 import { XpPop } from './XpPop';
 
-const JS_DAY_LABEL: Record<number, string> = {
-  0: 'Su',
-  1: 'Mo',
-  2: 'Tu',
-  3: 'We',
-  4: 'Th',
-  5: 'Fr',
-  6: 'Sa',
-};
 const MON_TO_SUN_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
-function getFrequencyLabel(todo: Todo): string | null {
-  if (todo.repeatUntilDone) return '↻ Daily until done';
+function getFrequencyLabel(
+  todo: Todo,
+  t: (key: string) => string,
+  weekdayByJsDay: string[],
+): string | null {
+  if (todo.repeatUntilDone) return t('freqDailyUntilDone');
   if (todo.frequencyDays.length === 0) return null;
-  if (todo.frequencyDays.length === 7) return '↻ Every day';
+  if (todo.frequencyDays.length === 7) return t('freqEveryDay');
   if (
     todo.frequencyDays.length === 5 &&
     [1, 2, 3, 4, 5].every((d) => todo.frequencyDays.includes(d))
   )
-    return '↻ Weekdays';
+    return t('freqWeekdays');
   if (todo.frequencyDays.length === 2 && [0, 6].every((d) => todo.frequencyDays.includes(d)))
-    return '↻ Weekends';
+    return t('freqWeekends');
   const ordered = MON_TO_SUN_ORDER.filter((d) => todo.frequencyDays.includes(d));
-  return '↻ ' + ordered.map((d) => JS_DAY_LABEL[d]).join(' · ');
+  return '↻ ' + ordered.map((d) => weekdayByJsDay[d]).join(' · ');
 }
 
 interface TodoItemProps {
@@ -66,12 +62,16 @@ export const TodoItem = memo(function TodoItem({
 }: TodoItemProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const t = useTranslations('Todo.todoItem');
+  const tCommon = useTranslations('Common');
+  const locale = useLocale();
 
   const [showXp, setShowXp] = useState(false);
   const [emojiAnchor, setEmojiAnchor] = useState<HTMLElement | null>(null);
 
   const completed = isCompletedOnDate(todo, viewDateISO);
-  const frequencyLabel = getFrequencyLabel(todo);
+  const weekdayByJsDay = getWeekdayNames(locale, [0, 1, 2, 3, 4, 5, 6]);
+  const frequencyLabel = getFrequencyLabel(todo, t, weekdayByJsDay);
 
   const handleToggle = async () => {
     const justCompleted = await onToggle(todo.id, viewDateISO);
@@ -117,7 +117,7 @@ export const TodoItem = memo(function TodoItem({
       {dragHandle}
 
       {/* Emoji button */}
-      <Tooltip title="Change picture">
+      <Tooltip title={t('changePicture')}>
         <Box
           component="button"
           onClick={(e) => setEmojiAnchor(e.currentTarget)}
@@ -221,12 +221,12 @@ export const TodoItem = memo(function TodoItem({
         spacing={0}
         sx={{ flexShrink: 0, opacity: 0.3, transition: 'opacity 0.2s' }}
       >
-        <Tooltip title="Edit">
+        <Tooltip title={tCommon('edit')}>
           <IconButton size="small" onClick={() => onAdvancedEdit(todo)} sx={{ color: brand[500] }}>
             <EditRoundedIcon sx={{ fontSize: '0.95rem' }} />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Remove">
+        <Tooltip title={tCommon('delete')}>
           <IconButton size="small" onClick={() => onDelete(todo.id)} sx={{ color: 'error.main' }}>
             <DeleteRoundedIcon sx={{ fontSize: '0.95rem' }} />
           </IconButton>

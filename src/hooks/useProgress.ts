@@ -314,7 +314,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /** achievement key (snake_case) → i18n slug (camelCase), e.g. first_card → firstCard */
-function achievementSlug(key: string): string {
+export function achievementSlug(key: string): string {
   return key.replace(/_([a-z0-9])/g, (_, c: string) => c.toUpperCase());
 }
 

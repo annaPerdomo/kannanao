@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
-import { BUDDY_CONFIG, BUDDY_HOME_PHRASES } from '@/hooks/useShop';
+import { BUDDY_CONFIG } from '@/hooks/useShop';
 
 const idleFloat = keyframes`
   0%, 100% { transform: translateY(0) rotate(-2deg); }
@@ -48,20 +48,30 @@ const BUDDY_ACCENTS: Record<string, string> = {
   buddy_fox: '#FCD34D',
 };
 
+function isNonEmptyStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.length > 0 && value.every((v) => typeof v === 'string');
+}
+
 interface HomeBuddyProps {
   buddyKey: string;
 }
 
 export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const t = useTranslations('Home.buddy');
+  const tBuddies = useTranslations('Shop.buddies');
   const theme = useTheme();
   const { brand } = theme.palette;
   const config = BUDDY_CONFIG[buddyKey];
   const accent = BUDDY_ACCENTS[buddyKey] ?? brand[300];
-  const phrases = useMemo(
-    () => BUDDY_HOME_PHRASES[buddyKey] ?? [t('defaultPhrase')],
-    [buddyKey, t],
-  );
+  const phrases = useMemo(() => {
+    try {
+      const raw = tBuddies.raw(`${buddyKey}.homePhrases`);
+      if (isNonEmptyStringArray(raw)) return raw;
+    } catch {
+      // missing translation key for this buddyKey — fall back below
+    }
+    return [t('defaultPhrase')];
+  }, [buddyKey, t, tBuddies]);
 
   const [bubbleText, setBubbleText] = useState('');
   const [showBubble, setShowBubble] = useState(true);
