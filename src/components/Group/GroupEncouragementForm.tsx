@@ -7,10 +7,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { alpha, useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { EncouragementEmojiPicker } from './EncouragementEmojiPicker';
-const QUICK_MESSAGES = ['Great job!', 'Keep going!', "I'm proud of you!", 'Amazing progress!'];
 
 interface GroupEncouragementFormProps {
   members: { id: string; username: string }[];
@@ -20,6 +20,13 @@ interface GroupEncouragementFormProps {
 export function GroupEncouragementForm({ members, onSend }: GroupEncouragementFormProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const t = useTranslations('Group.groupEncouragementForm');
+  const QUICK_MESSAGES = [
+    t('quickGreatJob'),
+    t('quickKeepGoing'),
+    t('quickProudOfYou'),
+    t('quickAmazingProgress'),
+  ];
   const [message, setMessage] = useState('');
   const [emoji, setEmoji] = useState('⭐');
   const [sending, setSending] = useState(false);
@@ -37,7 +44,7 @@ export function GroupEncouragementForm({ members, onSend }: GroupEncouragementFo
       setSent(true);
       setTimeout(() => setSent(false), 3000);
     } catch {
-      setError('Failed to send to some members. Please try again.');
+      setError(t('failedToSendToSome'));
     } finally {
       setSending(false);
     }
@@ -64,19 +71,17 @@ export function GroupEncouragementForm({ members, onSend }: GroupEncouragementFo
           mb: 0.5,
         }}
       >
-        Send Encouragement to Entire Group
+        {t('sendToGroupTitle')}
       </Typography>
       <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary', mb: 1.5 }}>
-        {members.length === 1
-          ? 'Your message will be sent to your member'
-          : `Your message will be sent to all ${members.length} members`}
+        {t('sendToMembersDescription', { count: members.length })}
       </Typography>
 
       {/* Emoji picker */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
         <EncouragementEmojiPicker value={emoji} onChange={setEmoji} />
         <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
-          Tap to change emoji
+          {t('tapToChangeEmoji')}
         </Typography>
       </Box>
 
@@ -111,7 +116,7 @@ export function GroupEncouragementForm({ members, onSend }: GroupEncouragementFo
         <TextField
           size="small"
           fullWidth
-          placeholder="Write a custom message..."
+          placeholder={t('writeCustomMessage')}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => {
@@ -122,7 +127,7 @@ export function GroupEncouragementForm({ members, onSend }: GroupEncouragementFo
         />
         <Button
           variant="contained"
-          aria-label="Send encouragement"
+          aria-label={t('sendEncouragementAriaLabel')}
           onClick={() => void handleSend()}
           disabled={sending || !message.trim()}
           sx={{
@@ -142,7 +147,7 @@ export function GroupEncouragementForm({ members, onSend }: GroupEncouragementFo
 
       {sent && (
         <Alert severity="success" sx={{ mt: 1.5, py: 0, fontSize: '0.75rem' }}>
-          {emoji} Encouragement sent to all members!
+          {emoji} {t('sentToAllMembers')}
         </Alert>
       )}
       {error && (

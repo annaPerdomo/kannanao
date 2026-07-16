@@ -2,19 +2,21 @@
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useLocale, useTranslations } from 'next-intl';
 
 import type { FeedItem } from '@/hooks/useGroup';
 
-function timeAgo(dateStr: string): string {
+/** Short relative time ("5m ago", "yesterday") using the viewer's locale. */
+function timeAgo(dateStr: string, locale: string, justNowLabel: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return justNowLabel;
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'short' });
+  if (mins < 60) return rtf.format(-mins, 'minute');
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return rtf.format(-hours, 'hour');
   const days = Math.floor(hours / 24);
-  if (days === 1) return 'Yesterday';
-  return `${days}d ago`;
+  return rtf.format(-days, 'day');
 }
 
 interface ActivityFeedProps {
@@ -22,13 +24,15 @@ interface ActivityFeedProps {
 }
 
 export function ActivityFeed({ items }: ActivityFeedProps) {
+  const t = useTranslations('Group.activityFeed');
+  const locale = useLocale();
   const theme = useTheme();
   const { brand } = theme.palette;
 
   if (items.length === 0) {
     return (
       <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', fontStyle: 'italic' }}>
-        No recent activity yet.
+        {t('noActivity')}
       </Typography>
     );
   }
@@ -70,7 +74,7 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
               whiteSpace: 'nowrap',
             }}
           >
-            {timeAgo(item.timestamp)}
+            {timeAgo(item.timestamp, locale, t('justNow'))}
           </Typography>
         </Box>
       ))}

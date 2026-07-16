@@ -7,12 +7,13 @@ import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { EmojiPickerPopover } from '@/components/EmojiPickerPopover';
 import type { DirectMessage } from '@/hooks/useDirectMessages';
 
-import { splitLinks, timeAgo } from './constants';
+import { splitLinks, timeAgoInfo } from './constants';
 
 interface MessageBubbleProps {
   message: DirectMessage;
@@ -39,11 +40,29 @@ export function MessageBubble({
 }: MessageBubbleProps) {
   const { palette } = useTheme();
   const { brand } = palette;
+  const t = useTranslations('Group.messageBubble');
+  const tThread = useTranslations('Group.messageThread');
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const reactions = message.reactions || {};
   const reactionEntries = Object.entries(reactions).filter(([, users]) => users.length > 0);
   const hasReactions = reactionEntries.length > 0;
+
+  const renderTimeAgo = (dateStr: string) => {
+    const info = timeAgoInfo(dateStr);
+    switch (info.unit) {
+      case 'justNow':
+        return tThread('justNow');
+      case 'minutes':
+        return tThread('minutesAgo', { minutes: info.value });
+      case 'hours':
+        return tThread('hoursAgo', { hours: info.value });
+      case 'yesterday':
+        return tThread('yesterday');
+      case 'days':
+        return tThread('daysAgo', { days: info.value });
+    }
+  };
 
   return (
     <Box
@@ -111,7 +130,7 @@ export function MessageBubble({
               <Box
                 component="img"
                 src={message.image_url}
-                alt="Shared photo"
+                alt={t('sharedPhotoAlt')}
                 loading="lazy"
                 decoding="async"
                 sx={{
@@ -188,13 +207,19 @@ export function MessageBubble({
             }}
           >
             <Typography component="span" sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>
-              {timeAgo(message.created_at)}
+              {renderTimeAgo(message.created_at)}
             </Typography>
             {isMine &&
               (message.read_at ? (
-                <DoneAllIcon sx={{ fontSize: 14, color: brand[600] }} aria-label="Read" />
+                <DoneAllIcon
+                  sx={{ fontSize: 14, color: brand[600] }}
+                  aria-label={t('readAriaLabel')}
+                />
               ) : (
-                <DoneIcon sx={{ fontSize: 14, color: 'text.disabled' }} aria-label="Sent" />
+                <DoneIcon
+                  sx={{ fontSize: 14, color: 'text.disabled' }}
+                  aria-label={t('sentAriaLabel')}
+                />
               ))}
           </Box>
 
@@ -203,7 +228,7 @@ export function MessageBubble({
             <IconButton
               className="react-btn"
               size="small"
-              aria-label="Add reaction"
+              aria-label={t('addReactionAriaLabel')}
               onClick={(e) => setAnchorEl(e.currentTarget)}
               sx={{
                 position: 'absolute',
@@ -302,7 +327,7 @@ export function MessageBubble({
             flexShrink: 0,
           }}
         >
-          Me
+          {t('meLabel')}
         </Avatar>
       )}
 

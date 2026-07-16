@@ -8,6 +8,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import { modeColor, modeLabel } from '@/components/Stats/constants';
 import type { MemberDetail } from '@/hooks/useGroup';
@@ -21,10 +22,18 @@ interface PracticeModeBreakdownProps {
   stats: PracticeModeStat[];
 }
 
-function ModeCard({ s, maxSessions }: { s: PracticeModeStat; maxSessions: number }) {
+function ModeCard({
+  s,
+  maxSessions,
+  t,
+}: {
+  s: PracticeModeStat;
+  maxSessions: number;
+  t: ReturnType<typeof useTranslations>;
+}) {
   const color = modeColor(s.mode as SessionMode);
   const isSpeech = s.source === 'speech';
-  const unitLabel = isSpeech ? 'lines' : 'cards';
+  const unitLabel = isSpeech ? t('linesUnit') : t('cardsUnit');
 
   return (
     <Paper
@@ -62,7 +71,7 @@ function ModeCard({ s, maxSessions }: { s: PracticeModeStat; maxSessions: number
           </Typography>
         </Box>
         <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color }}>
-          {s.sessions} sessions
+          {t('sessionsCount', { count: s.sessions })}
         </Typography>
       </Box>
 
@@ -98,17 +107,23 @@ function ModeCard({ s, maxSessions }: { s: PracticeModeStat; maxSessions: number
           <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: 'text.primary' }}>
             {s.accuracy}%
           </Typography>
-          <Typography sx={{ fontSize: '0.62rem', color: 'text.secondary' }}>accuracy</Typography>
+          <Typography sx={{ fontSize: '0.62rem', color: 'text.secondary' }}>
+            {t('accuracyLabel')}
+          </Typography>
         </Box>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color }}>{s.xpEarned}</Typography>
-          <Typography sx={{ fontSize: '0.62rem', color: 'text.secondary' }}>XP</Typography>
+          <Typography sx={{ fontSize: '0.62rem', color: 'text.secondary' }}>
+            {t('xpLabel')}
+          </Typography>
         </Box>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: 'text.primary' }}>
             {formatDuration(s.totalDurationSecs)}
           </Typography>
-          <Typography sx={{ fontSize: '0.62rem', color: 'text.secondary' }}>time</Typography>
+          <Typography sx={{ fontSize: '0.62rem', color: 'text.secondary' }}>
+            {t('timeLabel')}
+          </Typography>
         </Box>
       </Box>
     </Paper>
@@ -116,12 +131,13 @@ function ModeCard({ s, maxSessions }: { s: PracticeModeStat; maxSessions: number
 }
 
 const SOURCE_CONFIG = {
-  deck: { label: 'Deck Practice', icon: <MenuBookIcon sx={{ fontSize: 14 }} /> },
-  speech: { label: 'Speech Practice', icon: <RecordVoiceOverIcon sx={{ fontSize: 14 }} /> },
+  deck: { labelKey: 'deckPractice', icon: <MenuBookIcon sx={{ fontSize: 14 }} /> },
+  speech: { labelKey: 'speechPractice', icon: <RecordVoiceOverIcon sx={{ fontSize: 14 }} /> },
 } as const;
 
 export function PracticeModeBreakdown({ stats }: PracticeModeBreakdownProps) {
   const { brand } = useTheme().palette;
+  const t = useTranslations('Group.practiceBreakdown');
 
   if (stats.length === 0) return null;
 
@@ -145,7 +161,7 @@ export function PracticeModeBreakdown({ stats }: PracticeModeBreakdownProps) {
           mb: 1.5,
         }}
       >
-        Practice Mode Breakdown
+        {t('heading')}
       </Typography>
 
       {groups.map((group) => {
@@ -156,7 +172,7 @@ export function PracticeModeBreakdown({ stats }: PracticeModeBreakdownProps) {
             {groups.length > 1 && (
               <Chip
                 icon={cfg.icon}
-                label={cfg.label}
+                label={t(cfg.labelKey)}
                 size="small"
                 sx={{
                   mb: 1.25,
@@ -173,7 +189,7 @@ export function PracticeModeBreakdown({ stats }: PracticeModeBreakdownProps) {
             <Grid container spacing={1.5}>
               {group.items.map((s) => (
                 <Grid size={{ xs: 12, sm: 6 }} key={`${s.source}:${s.mode}`}>
-                  <ModeCard s={s} maxSessions={maxSessions} />
+                  <ModeCard s={s} maxSessions={maxSessions} t={t} />
                 </Grid>
               ))}
             </Grid>

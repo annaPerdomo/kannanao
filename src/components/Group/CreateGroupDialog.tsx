@@ -3,6 +3,7 @@
 import GroupsIcon from '@mui/icons-material/Groups';
 import { Button, Stack, TextField, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
@@ -18,6 +19,8 @@ interface CreateGroupDialogProps {
 export function CreateGroupDialog({ open, onClose, onCreate }: CreateGroupDialogProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+  const t = useTranslations('Group.createGroup');
+  const tc = useTranslations('Common');
 
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState('');
@@ -33,7 +36,7 @@ export function CreateGroupDialog({ open, onClose, onCreate }: CreateGroupDialog
       setEmoji('');
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create group');
+      setError(err instanceof Error ? err.message : t('createFailed'));
     } finally {
       setSaving(false);
     }
@@ -43,8 +46,8 @@ export function CreateGroupDialog({ open, onClose, onCreate }: CreateGroupDialog
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Create Group"
-      subtitle="Organize your members into groups"
+      title={t('title')}
+      subtitle={t('subtitle')}
       icon={<GroupsIcon sx={{ color: brand[600], fontSize: 22 }} />}
       closeDisabled={saving}
       actions={
@@ -54,7 +57,7 @@ export function CreateGroupDialog({ open, onClose, onCreate }: CreateGroupDialog
             disabled={saving}
             sx={{ color: 'text.secondary', textTransform: 'none', borderRadius: 6 }}
           >
-            Cancel
+            {tc('cancel')}
           </Button>
           <Button
             onClick={handleCreate}
@@ -69,7 +72,7 @@ export function CreateGroupDialog({ open, onClose, onCreate }: CreateGroupDialog
               '&:hover': { bgcolor: brand[800] },
             }}
           >
-            {saving ? 'Creating...' : 'Create Group'}
+            {saving ? t('creating') : t('createButton')}
           </Button>
         </Stack>
       }
@@ -78,8 +81,8 @@ export function CreateGroupDialog({ open, onClose, onCreate }: CreateGroupDialog
         <TextField
           fullWidth
           size="small"
-          label="Group name"
-          placeholder="e.g. Class A, Summer 2026"
+          label={t('nameLabel')}
+          placeholder={t('namePlaceholder')}
           value={name}
           onChange={(e) => setName(e.target.value)}
           slotProps={{ htmlInput: { maxLength: 100 } }}
@@ -88,7 +91,7 @@ export function CreateGroupDialog({ open, onClose, onCreate }: CreateGroupDialog
 
         <Stack gap={0.5}>
           <Typography variant="body2" color="text.secondary">
-            Group emoji
+            {t('emojiLabel')}
           </Typography>
           <EncouragementEmojiPicker value={emoji} onChange={setEmoji} allowEmpty />
         </Stack>

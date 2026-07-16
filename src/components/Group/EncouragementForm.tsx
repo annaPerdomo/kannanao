@@ -2,10 +2,10 @@
 import SendIcon from '@mui/icons-material/Send';
 import { Box, Button, CircularProgress, TextField, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { EncouragementEmojiPicker } from './EncouragementEmojiPicker';
-const QUICK_MESSAGES = ['Great job!', 'Keep going!', "I'm proud of you!", 'Amazing progress!'];
 
 interface EncouragementFormProps {
   memberId: string;
@@ -16,6 +16,13 @@ interface EncouragementFormProps {
 export function EncouragementForm({ memberId, memberName, onSend }: EncouragementFormProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const t = useTranslations('Group.encouragementForm');
+  const QUICK_MESSAGES = [
+    t('quickGreatJob'),
+    t('quickKeepGoing'),
+    t('quickProudOfYou'),
+    t('quickAmazingProgress'),
+  ];
   const [message, setMessage] = useState('');
   const [emoji, setEmoji] = useState('⭐');
   const [sending, setSending] = useState(false);
@@ -56,14 +63,14 @@ export function EncouragementForm({ memberId, memberName, onSend }: Encouragemen
           mb: 1,
         }}
       >
-        Send Encouragement to {memberName}
+        {t('sendEncouragementTo', { name: memberName })}
       </Typography>
 
       {/* Emoji picker */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
         <EncouragementEmojiPicker value={emoji} onChange={setEmoji} />
         <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
-          Tap to change emoji
+          {t('tapToChangeEmoji')}
         </Typography>
       </Box>
 
@@ -98,7 +105,7 @@ export function EncouragementForm({ memberId, memberName, onSend }: Encouragemen
         <TextField
           size="small"
           fullWidth
-          placeholder="Write a custom message..."
+          placeholder={t('writeCustomMessage')}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => {
@@ -128,7 +135,7 @@ export function EncouragementForm({ memberId, memberName, onSend }: Encouragemen
 
       {sent && (
         <Typography sx={{ mt: 1, fontSize: '0.72rem', color: '#22C55E', fontWeight: 600 }}>
-          {emoji} Encouragement sent!
+          {emoji} {t('encouragementSent')}
         </Typography>
       )}
     </Box>

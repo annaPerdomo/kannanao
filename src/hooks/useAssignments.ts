@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,6 +35,7 @@ async function authHeaders(): Promise<Record<string, string>> {
 const ASSIGNMENTS_URL = '/api/group/assignments';
 
 export function useAssignments(groupId?: string | null, enabled = true) {
+  const t = useTranslations('Group.useAssignments');
   const url = groupId ? `${ASSIGNMENTS_URL}?groupId=${groupId}` : ASSIGNMENTS_URL;
   // Seed from the cache so returning to a page paints instantly; the effect
   // below still revalidates stale data in the background.
@@ -61,12 +63,12 @@ export function useAssignments(groupId?: string | null, enabled = true) {
         );
         setAssignments(data);
       } catch {
-        setError('Failed to load assignments');
+        setError(t('failedToLoad'));
       } finally {
         setLoading(false);
       }
     },
-    [user, url, enabled],
+    [user, url, enabled, t],
   );
 
   useEffect(() => {
@@ -95,14 +97,14 @@ export function useAssignments(groupId?: string | null, enabled = true) {
       });
       if (!res.ok) {
         const json = await res.json().catch(() => null);
-        throw new Error(json?.error ?? 'Failed to create assignment');
+        throw new Error(json?.error ?? t('failedToCreate'));
       }
       const data = await res.json();
       // Refetch to get full joined data
       await fetchAssignments();
       return data;
     },
-    [fetchAssignments, groupId],
+    [fetchAssignments, groupId, t],
   );
 
   const updateAssignment = useCallback(

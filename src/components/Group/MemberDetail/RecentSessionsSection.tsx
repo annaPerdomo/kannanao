@@ -5,6 +5,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef } from 'react';
 
 import { modeColor, modeLabel } from '@/components/Stats/constants';
@@ -21,6 +22,7 @@ interface RecentSessionsSectionProps {
 
 export function RecentSessionsSection({ memberId, initialSessions }: RecentSessionsSectionProps) {
   const { brand } = useTheme().palette;
+  const t = useTranslations('Group.recentSessions');
   const { sessions, loading, loadingMore, hasMore, loadMore } = useMemberSessions(memberId);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -60,7 +62,7 @@ export function RecentSessionsSection({ memberId, initialSessions }: RecentSessi
           mb: 1.5,
         }}
       >
-        Recent Sessions
+        {t('heading')}
       </Typography>
       <Paper
         elevation={0}
@@ -87,7 +89,6 @@ export function RecentSessionsSection({ memberId, initialSessions }: RecentSessi
             const accuracy =
               s.cardsStudied > 0 ? Math.round((s.cardsCorrect / s.cardsStudied) * 100) : 0;
             const isSpeech = s.practiceMode?.startsWith('speech_');
-            const unit = isSpeech ? 'lines' : 'cards';
 
             return (
               <Box
@@ -120,13 +121,13 @@ export function RecentSessionsSection({ memberId, initialSessions }: RecentSessi
                     }}
                   />
                   <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
-                    {s.cardsStudied > 0 ? (
-                      <>
-                        {s.cardsStudied} {unit} · {accuracy}%
-                      </>
-                    ) : (
-                      `No ${unit}`
-                    )}
+                    {s.cardsStudied > 0
+                      ? isSpeech
+                        ? t('linesStats', { count: s.cardsStudied, accuracy })
+                        : t('cardsStats', { count: s.cardsStudied, accuracy })
+                      : isSpeech
+                        ? t('noLines')
+                        : t('noCards')}
                   </Typography>
                 </Box>
 
@@ -141,7 +142,7 @@ export function RecentSessionsSection({ memberId, initialSessions }: RecentSessi
                 >
                   {s.xpEarned > 0 && (
                     <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color }}>
-                      +{s.xpEarned} XP
+                      {t('xpEarned', { xp: s.xpEarned })}
                     </Typography>
                   )}
                   <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
@@ -169,7 +170,7 @@ export function RecentSessionsSection({ memberId, initialSessions }: RecentSessi
                 py: 1,
               }}
             >
-              All sessions loaded
+              {t('allLoaded')}
             </Typography>
           )}
         </Box>

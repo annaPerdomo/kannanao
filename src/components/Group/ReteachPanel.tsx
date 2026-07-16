@@ -8,6 +8,7 @@ import Paper from '@mui/material/Paper';
 import Select from '@mui/material/Select';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -20,12 +21,24 @@ interface ReteachPanelProps {
   decks: Deck[];
 }
 
-/** Turns one card's stats into a plain sentence a busy teacher can act on. */
-export function reteachSentence(struggling: number, attempts: number): string {
+/**
+ * Turns one card's stats into a plain sentence a busy teacher can act on.
+ * `t` is optional so this stays a pure, easily-testable function in English;
+ * the panel always passes its translator so the rendered copy is localized.
+ */
+export function reteachSentence(
+  struggling: number,
+  attempts: number,
+  t?: ReturnType<typeof useTranslations<'Group.reteachPanel'>>,
+): string {
   if (struggling === attempts) {
-    return `All ${attempts} student${attempts === 1 ? '' : 's'} who tried it keep missing this word.`;
+    return t
+      ? t('allStudentsStruggling', { attempts })
+      : `All ${attempts} student${attempts === 1 ? '' : 's'} who tried it keep missing this word.`;
   }
-  return `${struggling} of ${attempts} students who tried it keep missing this word.`;
+  return t
+    ? t('someStudentsStruggling', { struggling, attempts })
+    : `${struggling} of ${attempts} students who tried it keep missing this word.`;
 }
 
 /**
@@ -34,6 +47,7 @@ export function reteachSentence(struggling: number, attempts: number): string {
  * charts). Organizer dashboard only; data is organizer-gated server-side.
  */
 export function ReteachPanel({ decks }: ReteachPanelProps) {
+  const t = useTranslations('Group.reteachPanel');
   const theme = useTheme();
   const { brand, error: errorColor } = theme.palette;
   const [deckId, setDeckId] = useState<string>('');
@@ -65,14 +79,14 @@ export function ReteachPanel({ decks }: ReteachPanelProps) {
             letterSpacing: '0.06em',
           }}
         >
-          📖 What to reteach
+          {t('heading')}
         </Typography>
         <FormControl size="small" sx={{ minWidth: 200 }}>
           <Select
             value={deckId}
             onChange={(e) => setDeckId(e.target.value)}
             displayEmpty
-            aria-label="Pick a deck to analyze"
+            aria-label={t('pickDeckAriaLabel')}
             sx={{
               borderRadius: 2.5,
               fontSize: '0.85rem',
@@ -83,7 +97,7 @@ export function ReteachPanel({ decks }: ReteachPanelProps) {
             }}
           >
             <MenuItem value="" disabled>
-              Pick a deck…
+              {t('pickDeckPlaceholder')}
             </MenuItem>
             {decks.map((d) => (
               <MenuItem key={d.id} value={d.id} sx={{ fontSize: '0.85rem' }}>
@@ -107,11 +121,11 @@ export function ReteachPanel({ decks }: ReteachPanelProps) {
         >
           <MenuBookIcon sx={{ fontSize: 32, color: alpha(brand[400], 0.5), mb: 0.5 }} />
           <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
-            Pick a deck to see which words your class is missing.
+            {t('pickDeckBody')}
           </Typography>
         </Paper>
       ) : loading ? (
-        <Loading message="Checking what the class is missing..." />
+        <Loading message={t('checkingMessage')} />
       ) : error ? (
         <Alert severity="error">{error}</Alert>
       ) : tricky.length === 0 ? (
@@ -127,7 +141,7 @@ export function ReteachPanel({ decks }: ReteachPanelProps) {
         >
           <Typography sx={{ fontSize: '1.75rem', mb: 0.5 }}>🎉</Typography>
           <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
-            No tricky words here yet — the class is doing well on this deck.
+            {t('noTrickyWords')}
           </Typography>
         </Paper>
       ) : (
@@ -165,7 +179,7 @@ export function ReteachPanel({ decks }: ReteachPanelProps) {
                   )}
                 </Box>
                 <Typography sx={{ fontSize: '0.78rem', color: errorColor.main, fontWeight: 600 }}>
-                  {reteachSentence(c.strugglingCount, c.attemptCount)}
+                  {reteachSentence(c.strugglingCount, c.attemptCount, t)}
                 </Typography>
               </Box>
               <Typography
@@ -176,7 +190,7 @@ export function ReteachPanel({ decks }: ReteachPanelProps) {
                   color: 'text.secondary',
                 }}
               >
-                {c.classAccuracy}% right
+                {t('percentRight', { percent: c.classAccuracy })}
               </Typography>
             </Paper>
           ))}

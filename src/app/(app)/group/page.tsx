@@ -9,6 +9,7 @@ import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { CreateGroupDialog, GroupCard } from '@/components/Group';
@@ -19,6 +20,7 @@ import { useGroups } from '@/hooks/useGroups';
 import { LAYOUT } from '@/theme';
 
 export default function GroupListPage() {
+  const t = useTranslations('Group.groupsPage');
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
@@ -36,7 +38,7 @@ export default function GroupListPage() {
   if (loading || authLoading) {
     return (
       <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
-        <Loading message="Loading groups..." />
+        <Loading message={t('loadingGroups')} />
       </Box>
     );
   }
@@ -61,8 +63,8 @@ export default function GroupListPage() {
       <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
         <PageHeader
           icon={<Diversity3Icon />}
-          title="Groups"
-          subtitle={`${groups.length} group${groups.length !== 1 ? 's' : ''}`}
+          title={t('title')}
+          subtitle={t('groupCount', { count: groups.length })}
           onBack={() => router.push('/')}
           action={
             <Button
@@ -78,7 +80,7 @@ export default function GroupListPage() {
                 color: brand[700],
               }}
             >
-              New Group
+              {t('newGroupButton')}
             </Button>
           }
         />
@@ -97,10 +99,10 @@ export default function GroupListPage() {
         >
           <Typography sx={{ fontSize: '2.5rem', mb: 1 }}>👥</Typography>
           <Typography sx={{ fontWeight: 700, color: brand[700], mb: 0.5 }}>
-            No groups yet
+            {t('noGroupsTitle')}
           </Typography>
           <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', mb: 2 }}>
-            Create a group to start organizing your members.
+            {t('noGroupsBody')}
           </Typography>
           <Button
             variant="contained"
@@ -114,7 +116,7 @@ export default function GroupListPage() {
               '&:hover': { bgcolor: brand[800] },
             }}
           >
-            Create your first group
+            {t('createFirstGroupButton')}
           </Button>
         </Paper>
       ) : (

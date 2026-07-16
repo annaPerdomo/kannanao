@@ -25,6 +25,31 @@ export function timeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
+/**
+ * Structured (translation-key-friendly) breakdown of the same relative-time
+ * logic as `timeAgo`, for callers that render via next-intl instead of the
+ * hardcoded English above (see MessageBubble, which translates under the
+ * "Group.messageThread" namespace).
+ */
+export type TimeAgoInfo =
+  | { unit: 'justNow' }
+  | { unit: 'minutes'; value: number }
+  | { unit: 'hours'; value: number }
+  | { unit: 'yesterday' }
+  | { unit: 'days'; value: number };
+
+export function timeAgoInfo(dateStr: string): TimeAgoInfo {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return { unit: 'justNow' };
+  if (mins < 60) return { unit: 'minutes', value: mins };
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return { unit: 'hours', value: hours };
+  const days = Math.floor(hours / 24);
+  if (days === 1) return { unit: 'yesterday' };
+  return { unit: 'days', value: days };
+}
+
 export interface TextSegment {
   text: string;
   isLink: boolean;

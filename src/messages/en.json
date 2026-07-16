@@ -747,5 +747,324 @@
       "celebrationExtra": "{matches} matches · {misses} misses",
       "loadError": "Couldn’t load your cards: {error}"
     }
+  },
+  "Group": {
+    "memberCard": {
+      "never": "Never",
+      "justNow": "Just now",
+      "minutesAgo": "{mins}m ago",
+      "hoursAgo": "{hours}h ago",
+      "yesterday": "Yesterday",
+      "daysAgo": "{days}d ago",
+      "level": "Level {level}",
+      "xpProgress": "{current}/{needed} XP",
+      "cardsStudied": "{count, plural, one {# card studied} other {# cards studied}}"
+    },
+    "memberDetail": {
+      "loadingMemberDetails": "Loading member details...",
+      "level": "Level {level}",
+      "totalXp": "{totalXp} total XP",
+      "xpToNextLevel": "{current}/{needed} XP to level {nextLevel}",
+      "cardsStudiedLabel": "Cards Studied",
+      "accuracyLabel": "Accuracy",
+      "streakLabel": "Streak",
+      "sessionsLabel": "Sessions",
+      "deckProgress": "Deck Progress",
+      "cardsStudiedCount": "{count} studied",
+      "accuracyPercent": "{accuracy}% accuracy",
+      "achievements": "Achievements"
+    },
+    "practiceBreakdown": {
+      "heading": "Practice Mode Breakdown",
+      "deckPractice": "Deck Practice",
+      "speechPractice": "Speech Practice",
+      "sessionsCount": "{count, plural, one {# session} other {# sessions}}",
+      "cardsUnit": "cards",
+      "linesUnit": "lines",
+      "accuracyLabel": "accuracy",
+      "xpLabel": "XP",
+      "timeLabel": "time"
+    },
+    "recentSessions": {
+      "heading": "Recent Sessions",
+      "cardsStats": "{count, plural, one {# card} other {# cards}} · {accuracy}%",
+      "linesStats": "{count, plural, one {# line} other {# lines}} · {accuracy}%",
+      "noCards": "No cards",
+      "noLines": "No lines",
+      "xpEarned": "+{xp} XP",
+      "allLoaded": "All sessions loaded"
+    },
+    "trickyWords": {
+      "toggleAriaLabel": "Toggle tricky words",
+      "heading": "Tricky words",
+      "missedTimes": "{count, plural, one {Missed # time} other {Missed # times}}"
+    },
+    "useGroup": {
+      "failedToLoadMembers": "Failed to load members",
+      "failedToLoadDetails": "Failed to load details"
+    },
+    "assignmentCard": {
+      "unknownDeck": "Unknown Deck",
+      "goalProgress": "🎯 Goal: {goal}{state, select, best { — Best so far: {accuracy}%} other {}}",
+      "study": "Study",
+      "overdueBy": "Overdue by {days}d",
+      "dueToday": "Due today",
+      "dueTomorrow": "Due tomorrow",
+      "dueInDays": "Due in {days}d"
+    },
+    "assignmentsList": {
+      "noAssignmentsTitle": "No assignments yet",
+      "noAssignmentsBody": "Use the \"Assign Deck\" button to assign decks to your members.",
+      "completedCount": "Completed ({count})",
+      "assignedToLabel": "Assigned to:",
+      "unknownMember": "Unknown",
+      "unknownDeck": "Unknown Deck",
+      "dueOn": "Due {date}",
+      "editAssignmentAria": "Edit assignment for {deckName}",
+      "removeAssignmentAria": "Remove assignment for {deckName}",
+      "goalProgress": "🎯 Goal: {goal}{state, select, best { — Best so far: {accuracy}%} reached { — reached {accuracy}%} other {}}",
+      "overdueBy": "Overdue by {days}d",
+      "dueToday": "Due today",
+      "dueTomorrow": "Due tomorrow",
+      "dueInDays": "Due in {days}d"
+    },
+    "createAssignment": {
+      "title": "Assign a Deck",
+      "subtitle": "Choose a deck and members to assign it to",
+      "selectDeck": "Select Deck",
+      "assignTo": "Assign To",
+      "noteLabel": "Note (optional)",
+      "notePlaceholder": "Focus on chapter 3 vocab",
+      "dueDateLabel": "Due Date (optional)",
+      "assign": "Assign",
+      "assigning": "Assigning...",
+      "failedToCreate": "Failed to create assignment"
+    },
+    "editAssignment": {
+      "title": "Edit Assignment",
+      "subtitle": "{emoji} {deckName} — {memberName}",
+      "deckFallback": "Deck",
+      "memberFallback": "Member",
+      "noteLabel": "Note (optional)",
+      "notePlaceholder": "Focus on chapter 3 vocab",
+      "dueDateLabel": "Due Date (optional)",
+      "saving": "Saving...",
+      "failedToUpdate": "Failed to update assignment"
+    },
+    "useAssignments": {
+      "failedToLoad": "Failed to load assignments",
+      "failedToCreate": "Failed to create assignment"
+    },
+    "createGroup": {
+      "title": "Create Group",
+      "subtitle": "Organize your members into groups",
+      "createFailed": "Failed to create group",
+      "creating": "Creating...",
+      "createButton": "Create Group",
+      "nameLabel": "Group name",
+      "namePlaceholder": "e.g. Class A, Summer 2026",
+      "emojiLabel": "Group emoji"
+    },
+    "createInvite": {
+      "title": "Create Invite Link",
+      "subtitle": "Generate a QR code to onboard new members",
+      "createFailed": "Failed to create invite",
+      "creating": "Creating...",
+      "createButton": "Create Invite",
+      "labelField": "Label (optional)",
+      "labelPlaceholder": "e.g. Yuki's class, Summer camp group",
+      "labelHelper": "A friendly name to help you identify this invite",
+      "maxUses": "Max uses",
+      "membersCount": "{count, plural, one {# member} other {# members}}",
+      "maxUsesUnlimited": "Unlimited",
+      "expiresLabel": "Expires",
+      "expires24h": "24 hours",
+      "expires7d": "7 days",
+      "expires30d": "30 days",
+      "expiresNever": "Never"
+    },
+    "groupCard": {
+      "memberCount": "{count, plural, one {# member} other {# members}}",
+      "unpinGroup": "Unpin group",
+      "pinGroup": "Pin group"
+    },
+    "inviteList": {
+      "emptyState": "No invite codes yet. Create one to onboard members!",
+      "never": "Never",
+      "expired": "Expired",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "daysLeft": "{days, plural, one {# day} other {# days}}",
+      "usesCount": "{count} used",
+      "usesLeft": "{remaining}/{max} left",
+      "expiresPrefix": "Expires: {value}",
+      "showQrCode": "Show QR code",
+      "revokeInvite": "Revoke invite"
+    },
+    "inviteQRCode": {
+      "title": "Invite QR Code",
+      "shareSubtitle": "Share this with new members",
+      "printTitle": "Kannanao Invite",
+      "scanMessage": "Scan this code to join <b>{organizerName}</b>’s study group on Kannanao!",
+      "copyLink": "Copy link",
+      "print": "Print",
+      "linkCopied": "Link copied to clipboard!"
+    },
+    "useGroups": {
+      "loadFailed": "Failed to load groups",
+      "createFailed": "Failed to create group"
+    },
+    "useInvites": {
+      "loadFailed": "Failed to load invites",
+      "createFailed": "Failed to create invite"
+    },
+    "emojiPicker": {
+      "chooseEmoji": "Choose emoji",
+      "removeEmoji": "Remove emoji",
+      "remove": "Remove"
+    },
+    "encouragementForm": {
+      "quickGreatJob": "Great job!",
+      "quickKeepGoing": "Keep going!",
+      "quickProudOfYou": "I'm proud of you!",
+      "quickAmazingProgress": "Amazing progress!",
+      "sendEncouragementTo": "Send Encouragement to {name}",
+      "tapToChangeEmoji": "Tap to change emoji",
+      "writeCustomMessage": "Write a custom message...",
+      "encouragementSent": "Encouragement sent!"
+    },
+    "groupEncouragementForm": {
+      "quickGreatJob": "Great job!",
+      "quickKeepGoing": "Keep going!",
+      "quickProudOfYou": "I'm proud of you!",
+      "quickAmazingProgress": "Amazing progress!",
+      "sendToGroupTitle": "Send Encouragement to Entire Group",
+      "sendToMembersDescription": "{count, plural, one {Your message will be sent to your member} other {Your message will be sent to all # members}}",
+      "tapToChangeEmoji": "Tap to change emoji",
+      "writeCustomMessage": "Write a custom message...",
+      "sendEncouragementAriaLabel": "Send encouragement",
+      "sentToAllMembers": "Encouragement sent to all members!",
+      "failedToSendToSome": "Failed to send to some members. Please try again."
+    },
+    "messageBubble": {
+      "sharedPhotoAlt": "Shared photo",
+      "readAriaLabel": "Read",
+      "sentAriaLabel": "Sent",
+      "addReactionAriaLabel": "Add reaction",
+      "meLabel": "Me"
+    },
+    "messageThread": {
+      "justNow": "Just now",
+      "minutesAgo": "{minutes}m ago",
+      "hoursAgo": "{hours}h ago",
+      "yesterday": "Yesterday",
+      "daysAgo": "{days}d ago"
+    },
+    "useEncouragements": {
+      "sendFailed": "Failed to send encouragement"
+    },
+    "groupPage": {
+      "loadingDashboard": "Loading group dashboard...",
+      "groupNamePlaceholder": "Group name",
+      "saveTooltip": "Save (Enter)",
+      "cancelTooltip": "Cancel (Esc)",
+      "changeEmoji": "Change emoji",
+      "addEmoji": "Add emoji",
+      "changeGroupEmoji": "Change group emoji",
+      "addGroupEmoji": "Add group emoji",
+      "renameGroup": "Rename group",
+      "defaultTitle": "Group Dashboard",
+      "memberCountInGroup": "{count, plural, one {# member} other {# members}} in this group",
+      "inviteButton": "Invite",
+      "assignDeckButton": "Assign Deck",
+      "membersHeading": "Members",
+      "noMembersTitle": "No members yet",
+      "noMembersBody": "Create an invite code to add members to this group.",
+      "weeklyLeaderboard": "🏆 Weekly Leaderboard",
+      "visible": "Visible",
+      "hidden": "Hidden",
+      "loadingLeaderboard": "Loading leaderboard...",
+      "leaderboardHiddenBody": "Leaderboard is hidden from members.",
+      "inviteCodesHeading": "Invite Codes",
+      "encouragementHeading": "💬 Encouragement",
+      "assignmentsHeading": "Assignments",
+      "recentActivityHeading": "Recent Activity",
+      "loadingActivity": "Loading activity..."
+    },
+    "groupsPage": {
+      "loadingGroups": "Loading groups...",
+      "title": "Groups",
+      "groupCount": "{count, plural, one {# group} other {# groups}}",
+      "newGroupButton": "New Group",
+      "noGroupsTitle": "No groups yet",
+      "noGroupsBody": "Create a group to start organizing your members.",
+      "createFirstGroupButton": "Create your first group"
+    },
+    "joinPage": {
+      "invalidInviteCode": "Invalid invite code.",
+      "unableToVerify": "Unable to verify invite code. Please try again.",
+      "usernameInvalidChars": "Letters, numbers, _ or - only",
+      "passwordsDoNotMatch": "Passwords do not match.",
+      "usernameLengthError": "Username must be 2-30 characters.",
+      "usernameCharsError": "Username can only contain letters, numbers, _ or -",
+      "passwordLengthError": "Password must be at least 6 characters.",
+      "createAccountFailed": "Failed to create account.",
+      "networkError": "Network error. Please try again.",
+      "inviteNotAvailable": "Invite Not Available",
+      "goToSignIn": "Go to sign in",
+      "joiningWithGroup": "You're joining <bold>{organizerName}</bold>'s group \"{groupName}\"",
+      "joiningNoGroup": "You're joining <bold>{organizerName}</bold>'s study group",
+      "usernameLabel": "Username",
+      "checking": "Checking...",
+      "usernameHelperText": "Letters, numbers, _ or - (2-30 chars)",
+      "displayNameLabel": "Display name (optional)",
+      "displayNameHelperText": "The name shown in the app",
+      "passwordLabel": "Password",
+      "passwordHelperText": "Minimum 6 characters",
+      "hidePassword": "Hide password",
+      "showPassword": "Show password",
+      "confirmPasswordLabel": "Confirm password",
+      "joinButton": "Join Study Group"
+    },
+    "activityFeed": {
+      "noActivity": "No recent activity yet.",
+      "justNow": "Just now"
+    },
+    "homeWidget": {
+      "memberLabel": "{count, plural, one {member} other {members}}",
+      "xpLabel": "XP",
+      "cardsLabel": "cards",
+      "membersHeading": "Members:",
+      "neverActive": "Never active",
+      "activeToday": "Active today",
+      "activeYesterday": "Active yesterday",
+      "activeDaysAgo": "{days, plural, one {Active # day ago} other {Active # days ago}}",
+      "moreCount": "+{count} more",
+      "activeThisWeek": "{count} active this week",
+      "dashboardButton": "Dashboard"
+    },
+    "overview": {
+      "membersLabel": "Members",
+      "activeThisWeek": "{count} active this week",
+      "totalGroupXpLabel": "Total Group XP",
+      "bestStreakLabel": "Best Streak",
+      "longestStreakSub": "Longest active streak",
+      "cardsStudiedLabel": "Cards Studied",
+      "allTimeAcrossGroupSub": "All time across group"
+    },
+    "reteachPanel": {
+      "heading": "📖 What to reteach",
+      "pickDeckAriaLabel": "Pick a deck to analyze",
+      "pickDeckPlaceholder": "Pick a deck…",
+      "pickDeckBody": "Pick a deck to see which words your class is missing.",
+      "checkingMessage": "Checking what the class is missing...",
+      "noTrickyWords": "No tricky words here yet — the class is doing well on this deck.",
+      "allStudentsStruggling": "{attempts, plural, one {All # student who tried it keep missing this word.} other {All # students who tried it keep missing this word.}}",
+      "someStudentsStruggling": "{struggling} of {attempts} students who tried it keep missing this word.",
+      "percentRight": "{percent}% right"
+    },
+    "useItemAnalysis": {
+      "failedToLoad": "Failed to load analysis"
+    }
   }
 }

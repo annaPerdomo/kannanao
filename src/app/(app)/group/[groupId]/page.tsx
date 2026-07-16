@@ -21,6 +21,7 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
 
 import { EmojiPickerPopover } from '@/components/EmojiPickerPopover';
@@ -52,6 +53,8 @@ import { useInvites } from '@/hooks/useInvites';
 import { LAYOUT } from '@/theme';
 
 export default function GroupDashboardPage() {
+  const t = useTranslations('Group.groupPage');
+  const tc = useTranslations('Common');
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
@@ -128,7 +131,7 @@ export default function GroupDashboardPage() {
   if (loading || authLoading) {
     return (
       <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
-        <Loading message="Loading group dashboard..." />
+        <Loading message={t('loadingDashboard')} />
       </Box>
     );
   }
@@ -162,7 +165,7 @@ export default function GroupDashboardPage() {
                 size="small"
                 autoComplete="off"
                 disabled={renaming}
-                placeholder="Group name"
+                placeholder={t('groupNamePlaceholder')}
                 sx={{
                   flexGrow: 1,
                   '& .MuiOutlinedInput-root': {
@@ -181,10 +184,10 @@ export default function GroupDashboardPage() {
                 <CircularProgress size={18} sx={{ color: 'primary.main', flexShrink: 0 }} />
               ) : (
                 <>
-                  <Tooltip title="Save (Enter)">
+                  <Tooltip title={t('saveTooltip')}>
                     <IconButton
                       size="small"
-                      aria-label="Save"
+                      aria-label={tc('save')}
                       onClick={commitEdit}
                       sx={{
                         width: 30,
@@ -199,10 +202,10 @@ export default function GroupDashboardPage() {
                       <CheckIcon sx={{ fontSize: 15 }} />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Cancel (Esc)">
+                  <Tooltip title={t('cancelTooltip')}>
                     <IconButton
                       size="small"
-                      aria-label="Cancel"
+                      aria-label={tc('cancel')}
                       onClick={cancelEdit}
                       sx={{
                         width: 30,
@@ -227,9 +230,9 @@ export default function GroupDashboardPage() {
               onBack={() => router.push('/group')}
               title={
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                  <Tooltip title={group?.emoji ? 'Change emoji' : 'Add emoji'}>
+                  <Tooltip title={group?.emoji ? t('changeEmoji') : t('addEmoji')}>
                     <ButtonBase
-                      aria-label={group?.emoji ? 'Change group emoji' : 'Add group emoji'}
+                      aria-label={group?.emoji ? t('changeGroupEmoji') : t('addGroupEmoji')}
                       onClick={(e) => setEmojiAnchor(e.currentTarget)}
                       sx={{
                         fontSize: { xs: '1.5rem', sm: '1.75rem' },
@@ -251,12 +254,12 @@ export default function GroupDashboardPage() {
                         variant="h4"
                         sx={{ color: brand[800], lineHeight: 1.1, minWidth: 0 }}
                       >
-                        {group?.name ?? 'Group Dashboard'}
+                        {group?.name ?? t('defaultTitle')}
                       </Typography>
-                      <Tooltip title="Rename group">
+                      <Tooltip title={t('renameGroup')}>
                         <IconButton
                           size="small"
-                          aria-label="Rename group"
+                          aria-label={t('renameGroup')}
                           onClick={startEdit}
                           sx={{
                             width: 26,
@@ -272,7 +275,7 @@ export default function GroupDashboardPage() {
                       </Tooltip>
                     </Box>
                     <Typography variant="body2" sx={{ color: brand[600], mt: 0.25 }}>
-                      {members.length} member{members.length !== 1 ? 's' : ''} in this group
+                      {t('memberCountInGroup', { count: members.length })}
                     </Typography>
                   </Box>
                 </Box>
@@ -294,7 +297,7 @@ export default function GroupDashboardPage() {
                       color: brand[700],
                     }}
                   >
-                    Invite
+                    {t('inviteButton')}
                   </Button>
                   {members.length > 0 && (
                     <Button
@@ -310,7 +313,7 @@ export default function GroupDashboardPage() {
                         color: brand[700],
                       }}
                     >
-                      Assign Deck
+                      {t('assignDeckButton')}
                     </Button>
                   )}
                 </Stack>
@@ -341,7 +344,7 @@ export default function GroupDashboardPage() {
           mb: 1.5,
         }}
       >
-        Members
+        {t('membersHeading')}
       </Typography>
       {members.length === 0 ? (
         <Paper
@@ -356,10 +359,10 @@ export default function GroupDashboardPage() {
         >
           <Typography sx={{ fontSize: '2.5rem', mb: 1 }}>👋</Typography>
           <Typography sx={{ fontWeight: 700, color: brand[700], mb: 0.5 }}>
-            No members yet
+            {t('noMembersTitle')}
           </Typography>
           <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
-            Create an invite code to add members to this group.
+            {t('noMembersBody')}
           </Typography>
         </Paper>
       ) : (
@@ -389,7 +392,7 @@ export default function GroupDashboardPage() {
               letterSpacing: '0.06em',
             }}
           >
-            🏆 Weekly Leaderboard
+            {t('weeklyLeaderboard')}
           </Typography>
           <FormControlLabel
             control={
@@ -407,7 +410,7 @@ export default function GroupDashboardPage() {
             }
             label={
               <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                {group?.show_leaderboard !== false ? 'Visible' : 'Hidden'}
+                {group?.show_leaderboard !== false ? t('visible') : t('hidden')}
               </Typography>
             }
             labelPlacement="start"
@@ -416,7 +419,7 @@ export default function GroupDashboardPage() {
         </Box>
         {group?.show_leaderboard !== false ? (
           lbLoading ? (
-            <Loading message="Loading leaderboard..." />
+            <Loading message={t('loadingLeaderboard')} />
           ) : (
             <LeaderboardWidget entries={leaderboard} />
           )
@@ -433,7 +436,7 @@ export default function GroupDashboardPage() {
           >
             <EmojiEventsIcon sx={{ fontSize: 32, color: alpha(brand[400], 0.5), mb: 0.5 }} />
             <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
-              Leaderboard is hidden from members.
+              {t('leaderboardHiddenBody')}
             </Typography>
           </Paper>
         )}
@@ -452,7 +455,7 @@ export default function GroupDashboardPage() {
               mb: 1.5,
             }}
           >
-            Invite Codes
+            {t('inviteCodesHeading')}
           </Typography>
           <InviteList
             invites={invites}
@@ -475,7 +478,7 @@ export default function GroupDashboardPage() {
               mb: 1.5,
             }}
           >
-            💬 Encouragement
+            {t('encouragementHeading')}
           </Typography>
           <GroupEncouragementForm members={members} onSend={handleSendEncouragement} />
         </Box>
@@ -493,7 +496,7 @@ export default function GroupDashboardPage() {
             mb: 1.5,
           }}
         >
-          Assignments
+          {t('assignmentsHeading')}
         </Typography>
         <AssignmentsList
           assignments={assignments}
@@ -522,9 +525,9 @@ export default function GroupDashboardPage() {
             mb: 1.5,
           }}
         >
-          Recent Activity
+          {t('recentActivityHeading')}
         </Typography>
-        {feedLoading ? <Loading message="Loading activity..." /> : <ActivityFeed items={feed} />}
+        {feedLoading ? <Loading message={t('loadingActivity')} /> : <ActivityFeed items={feed} />}
       </Box>
 
       <CreateAssignmentDialog

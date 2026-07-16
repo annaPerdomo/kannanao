@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
 import { sb } from '@/lib/supabase';
@@ -10,6 +11,8 @@ async function authHeaders(): Promise<Record<string, string>> {
 }
 
 export function useEncouragements() {
+  const t = useTranslations('Group.useEncouragements');
+
   const sendEncouragement = useCallback(
     async (memberId: string, message: string, emoji?: string) => {
       const res = await fetch('/api/group/encouragements', {
@@ -19,11 +22,11 @@ export function useEncouragements() {
       });
       if (!res.ok) {
         const json = await res.json().catch(() => null);
-        throw new Error(json?.error ?? 'Failed to send encouragement');
+        throw new Error(json?.error ?? t('sendFailed'));
       }
       return res.json();
     },
-    [],
+    [t],
   );
 
   return { sendEncouragement };

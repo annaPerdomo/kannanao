@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,6 +32,7 @@ export function useGroups(enabled = true) {
   const [loading, setLoading] = useState(enabled && peekApiCache(GROUPS_URL) === undefined);
   const [error, setError] = useState<string | null>(null);
   const { user, isMemberAccount } = useAuth();
+  const t = useTranslations('Group.useGroups');
 
   const load = useCallback(
     async (freshMs?: number) => {
@@ -51,12 +53,12 @@ export function useGroups(enabled = true) {
         );
         setGroups(data);
       } catch {
-        setError('Failed to load groups');
+        setError(t('loadFailed'));
       } finally {
         setLoading(false);
       }
     },
-    [user, isMemberAccount, enabled],
+    [user, isMemberAccount, enabled, t],
   );
 
   useEffect(() => {
@@ -65,21 +67,24 @@ export function useGroups(enabled = true) {
 
   const fetchGroups = useCallback(() => load(0), [load]);
 
-  const createGroup = useCallback(async (name: string, emoji?: string): Promise<Group> => {
-    const res = await fetch('/api/group/groups', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-      body: JSON.stringify({ name, emoji }),
-    });
-    if (!res.ok) {
-      const json = await res.json().catch(() => ({}));
-      throw new Error(json.error ?? 'Failed to create group');
-    }
-    const group: Group = await res.json();
-    invalidateApiCache(GROUPS_URL);
-    setGroups((prev) => [...prev, group]);
-    return group;
-  }, []);
+  const createGroup = useCallback(
+    async (name: string, emoji?: string): Promise<Group> => {
+      const res = await fetch('/api/group/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+        body: JSON.stringify({ name, emoji }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.error ?? t('createFailed'));
+      }
+      const group: Group = await res.json();
+      invalidateApiCache(GROUPS_URL);
+      setGroups((prev) => [...prev, group]);
+      return group;
+    },
+    [t],
+  );
 
   const updateGroup = useCallback(
     async (
