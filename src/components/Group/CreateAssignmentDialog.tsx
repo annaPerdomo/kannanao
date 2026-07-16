@@ -9,6 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
@@ -50,6 +51,8 @@ export function CreateAssignmentDialog({
   onCreate,
 }: CreateAssignmentDialogProps) {
   const theme = useTheme();
+  const t = useTranslations('Group.createAssignment');
+  const tc = useTranslations('Common');
   const { brand, accent } = theme.palette;
 
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(
@@ -94,7 +97,7 @@ export function CreateAssignmentDialog({
       setGoalMode(null);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create assignment');
+      setError(err instanceof Error ? err.message : t('failedToCreate'));
     } finally {
       setSaving(false);
     }
@@ -104,8 +107,8 @@ export function CreateAssignmentDialog({
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Assign a Deck"
-      subtitle="Choose a deck and members to assign it to"
+      title={t('title')}
+      subtitle={t('subtitle')}
       maxWidth="sm"
       actions={
         <>
@@ -114,7 +117,7 @@ export function CreateAssignmentDialog({
             disabled={saving}
             sx={{ textTransform: 'none', color: 'text.secondary' }}
           >
-            Cancel
+            {tc('cancel')}
           </Button>
           <Button
             variant="contained"
@@ -129,7 +132,7 @@ export function CreateAssignmentDialog({
               '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
             }}
           >
-            {saving ? 'Assigning...' : 'Assign'}
+            {saving ? t('assigning') : t('assign')}
           </Button>
         </>
       }
@@ -149,7 +152,7 @@ export function CreateAssignmentDialog({
               mb: 1,
             }}
           >
-            Select Deck
+            {t('selectDeck')}
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
             {decks.map((deck) => (
@@ -187,7 +190,7 @@ export function CreateAssignmentDialog({
               mb: 0.5,
             }}
           >
-            Assign To
+            {t('assignTo')}
           </Typography>
           <Box sx={{ maxHeight: 180, overflow: 'auto' }}>
             {members.map((m) => (
@@ -213,8 +216,8 @@ export function CreateAssignmentDialog({
 
         {/* Note */}
         <TextField
-          label="Note (optional)"
-          placeholder="Focus on chapter 3 vocab"
+          label={t('noteLabel')}
+          placeholder={t('notePlaceholder')}
           value={note}
           onChange={(e) => setNote(e.target.value)}
           size="small"
@@ -226,7 +229,7 @@ export function CreateAssignmentDialog({
 
         {/* Due date */}
         <TextField
-          label="Due Date (optional)"
+          label={t('dueDateLabel')}
           type="date"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}

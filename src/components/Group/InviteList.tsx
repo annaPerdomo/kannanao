@@ -4,6 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import { Box, Chip, IconButton, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 import type { InviteCode } from '@/hooks/useInvites';
 
@@ -13,25 +14,27 @@ interface InviteListProps {
   onShowQR: (invite: InviteCode) => void;
 }
 
+type InviteListT = ReturnType<typeof useTranslations<'Group.inviteList'>>;
+
 function maskCode(code: string): string {
   if (code.length <= 4) return code;
   return code.slice(0, 3) + '***' + code.slice(-2);
 }
 
-function formatExpiry(expiresAt: string | null): string {
-  if (!expiresAt) return 'Never';
+function formatExpiry(expiresAt: string | null, t: InviteListT): string {
+  if (!expiresAt) return t('never');
   const date = new Date(expiresAt);
-  if (date < new Date()) return 'Expired';
+  if (date < new Date()) return t('expired');
   const days = Math.ceil((date.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-  if (days === 0) return 'Today';
-  if (days === 1) return 'Tomorrow';
-  return `${days} days`;
+  if (days === 0) return t('today');
+  if (days === 1) return t('tomorrow');
+  return t('daysLeft', { days });
 }
 
-function usesLabel(invite: InviteCode): string {
-  if (invite.max_uses === null) return `${invite.times_used} used`;
+function usesLabel(invite: InviteCode, t: InviteListT): string {
+  if (invite.max_uses === null) return t('usesCount', { count: invite.times_used });
   const remaining = invite.max_uses - invite.times_used;
-  return `${remaining}/${invite.max_uses} left`;
+  return t('usesLeft', { remaining, max: invite.max_uses });
 }
 
 function isExpired(invite: InviteCode): boolean {
@@ -43,11 +46,12 @@ function isExpired(invite: InviteCode): boolean {
 export function InviteList({ invites, onRevoke, onShowQR }: InviteListProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+  const t = useTranslations('Group.inviteList');
 
   if (invites.length === 0) {
     return (
       <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', py: 1 }}>
-        No invite codes yet. Create one to onboard members!
+        {t('emptyState')}
       </Typography>
     );
   }
@@ -99,10 +103,10 @@ export function InviteList({ invites, onRevoke, onShowQR }: InviteListProps) {
               </Stack>
               <Stack direction="row" gap={1.5} sx={{ mt: 0.5 }}>
                 <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
-                  {usesLabel(invite)}
+                  {usesLabel(invite, t)}
                 </Typography>
                 <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
-                  Expires: {formatExpiry(invite.expires_at)}
+                  {t('expiresPrefix', { value: formatExpiry(invite.expires_at, t) })}
                 </Typography>
               </Stack>
             </Box>
@@ -111,7 +115,7 @@ export function InviteList({ invites, onRevoke, onShowQR }: InviteListProps) {
               size="small"
               onClick={() => onShowQR(invite)}
               disabled={expired}
-              aria-label="Show QR code"
+              aria-label={t('showQrCode')}
               sx={{ color: brand[500] }}
             >
               <QrCode2Icon sx={{ fontSize: '1.1rem' }} />
@@ -119,7 +123,7 @@ export function InviteList({ invites, onRevoke, onShowQR }: InviteListProps) {
             <IconButton
               size="small"
               onClick={() => onRevoke(invite.id)}
-              aria-label="Revoke invite"
+              aria-label={t('revokeInvite')}
               sx={{ color: theme.palette.error.main }}
             >
               <DeleteIcon sx={{ fontSize: '1.1rem' }} />

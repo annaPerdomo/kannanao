@@ -6,9 +6,12 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import type { Assignment } from '@/hooks/useAssignments';
 import { goalLabel } from '@/lib/assignmentMastery';
+
+type Translator = ReturnType<typeof useTranslations>;
 
 function dueDateColor(dueDate: string | null): 'green' | 'orange' | 'red' | null {
   if (!dueDate) return null;
@@ -19,14 +22,14 @@ function dueDateColor(dueDate: string | null): 'green' | 'orange' | 'red' | null
   return 'green';
 }
 
-function dueDateLabel(dueDate: string | null): string {
+function dueDateLabel(dueDate: string | null, t: Translator): string {
   if (!dueDate) return '';
   const diff = new Date(dueDate).getTime() - Date.now();
   const days = Math.ceil(diff / (24 * 60 * 60 * 1000));
-  if (days < 0) return `Overdue by ${Math.abs(days)}d`;
-  if (days === 0) return 'Due today';
-  if (days === 1) return 'Due tomorrow';
-  return `Due in ${days}d`;
+  if (days < 0) return t('overdueBy', { days: Math.abs(days) });
+  if (days === 0) return t('dueToday');
+  if (days === 1) return t('dueTomorrow');
+  return t('dueInDays', { days });
 }
 
 const DUE_COLORS = {
@@ -42,6 +45,7 @@ interface AssignmentCardProps {
 
 export function AssignmentCard({ assignment, onStudy }: AssignmentCardProps) {
   const theme = useTheme();
+  const t = useTranslations('Group.assignmentCard');
   const { brand } = theme.palette;
   const isCompleted = !!assignment.completed_at;
   const deck = assignment.decks;
@@ -78,7 +82,7 @@ export function AssignmentCard({ assignment, onStudy }: AssignmentCardProps) {
           }}
           noWrap
         >
-          {deck?.name || 'Unknown Deck'}
+          {deck?.name || t('unknownDeck')}
         </Typography>
         {assignment.note && (
           <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', mt: 0.2 }} noWrap>
@@ -90,10 +94,11 @@ export function AssignmentCard({ assignment, onStudy }: AssignmentCardProps) {
             sx={{ fontSize: '0.7rem', fontWeight: 600, color: 'text.primary', mt: 0.2 }}
             noWrap
           >
-            🎯 Goal: {goal}
-            {!isCompleted && assignment.progress_accuracy != null
-              ? ` — Best so far: ${assignment.progress_accuracy}%`
-              : ''}
+            {t('goalProgress', {
+              goal,
+              state: !isCompleted && assignment.progress_accuracy != null ? 'best' : 'none',
+              accuracy: assignment.progress_accuracy ?? 0,
+            })}
           </Typography>
         )}
         {urgency && !isCompleted && (
@@ -111,7 +116,7 @@ export function AssignmentCard({ assignment, onStudy }: AssignmentCardProps) {
               color: DUE_COLORS[urgency].text,
             }}
           >
-            {dueDateLabel(assignment.due_date)}
+            {dueDateLabel(assignment.due_date, t)}
           </Box>
         )}
       </Box>
@@ -133,7 +138,7 @@ export function AssignmentCard({ assignment, onStudy }: AssignmentCardProps) {
             flexShrink: 0,
           }}
         >
-          Study
+          {t('study')}
         </Button>
       )}
       {isCompleted && <CheckCircleIcon sx={{ color: '#22C55E', fontSize: 20, flexShrink: 0 }} />}

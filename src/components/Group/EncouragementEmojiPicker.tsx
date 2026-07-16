@@ -2,6 +2,7 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { EmojiPickerPopover } from '@/components/EmojiPickerPopover';
@@ -19,6 +20,7 @@ export function EncouragementEmojiPicker({
 }: EncouragementEmojiPickerProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+  const t = useTranslations('Group.emojiPicker');
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   return (
@@ -26,7 +28,7 @@ export function EncouragementEmojiPicker({
       <Box
         role="button"
         tabIndex={0}
-        aria-label="Choose emoji"
+        aria-label={t('chooseEmoji')}
         onClick={(e) => setAnchorEl(e.currentTarget)}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') setAnchorEl(e.currentTarget);
@@ -52,7 +54,7 @@ export function EncouragementEmojiPicker({
         <Box
           role="button"
           tabIndex={0}
-          aria-label="Remove emoji"
+          aria-label={t('removeEmoji')}
           onClick={() => onChange('')}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') onChange('');
@@ -64,7 +66,7 @@ export function EncouragementEmojiPicker({
             '&:hover': { color: 'text.primary' },
           }}
         >
-          Remove
+          {t('remove')}
         </Box>
       )}
       <EmojiPickerPopover

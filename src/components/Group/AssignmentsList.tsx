@@ -6,12 +6,15 @@ import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import type { Assignment } from '@/hooks/useAssignments';
 import { goalLabel } from '@/lib/assignmentMastery';
 
 import { EditAssignmentDialog } from './EditAssignmentDialog';
+
+type Translator = ReturnType<typeof useTranslations>;
 
 function dueDateColor(dueDate: string | null): 'green' | 'orange' | 'red' | null {
   if (!dueDate) return null;
@@ -22,18 +25,18 @@ function dueDateColor(dueDate: string | null): 'green' | 'orange' | 'red' | null
   return 'green';
 }
 
-function dueDateLabel(dueDate: string | null): string {
+function dueDateLabel(dueDate: string | null, t: Translator): string {
   if (!dueDate) return '';
   const diff = new Date(dueDate).getTime() - Date.now();
   const days = Math.ceil(diff / (24 * 60 * 60 * 1000));
-  if (days < 0) return `Overdue by ${Math.abs(days)}d`;
-  if (days === 0) return 'Due today';
-  if (days === 1) return 'Due tomorrow';
-  return `Due in ${days}d`;
+  if (days < 0) return t('overdueBy', { days: Math.abs(days) });
+  if (days === 0) return t('dueToday');
+  if (days === 1) return t('dueTomorrow');
+  return t('dueInDays', { days });
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString(undefined, {
+function formatDate(dateStr: string, locale: string): string {
+  return new Date(dateStr).toLocaleDateString(locale, {
     month: 'short',
     day: 'numeric',
   });
@@ -53,6 +56,7 @@ interface AssignmentsListProps {
 
 export function AssignmentsList({ assignments, onEdit, onDelete }: AssignmentsListProps) {
   const theme = useTheme();
+  const t = useTranslations('Group.assignmentsList');
   const { brand } = theme.palette;
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
 
@@ -73,10 +77,10 @@ export function AssignmentsList({ assignments, onEdit, onDelete }: AssignmentsLi
       >
         <Typography sx={{ fontSize: '1.5rem', mb: 0.5 }}>📋</Typography>
         <Typography sx={{ fontWeight: 700, color: brand[700], fontSize: '0.85rem' }}>
-          No assignments yet
+          {t('noAssignmentsTitle')}
         </Typography>
         <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-          Use the &quot;Assign Deck&quot; button to assign decks to your members.
+          {t('noAssignmentsBody')}
         </Typography>
       </Paper>
     );
@@ -106,7 +110,7 @@ export function AssignmentsList({ assignments, onEdit, onDelete }: AssignmentsLi
                 mb: 0.25,
               }}
             >
-              Completed ({completed.length})
+              {t('completedCount', { count: completed.length })}
             </Typography>
             {completed.map((a) => (
               <AssignmentRow
@@ -140,12 +144,15 @@ function AssignmentRow({
   onDelete: (id: string) => void;
 }) {
   const theme = useTheme();
+  const t = useTranslations('Group.assignmentsList');
+  const locale = useLocale();
   const { brand } = theme.palette;
   const isCompleted = !!assignment.completed_at;
   const deck = assignment.decks;
   const member = assignment.profiles;
   const urgency = !isCompleted ? dueDateColor(assignment.due_date) : null;
   const goal = goalLabel(assignment);
+  const deckName = deck?.name || t('unknownDeck');
 
   return (
     <Paper
@@ -176,10 +183,10 @@ function AssignmentRow({
           noWrap
         >
           <Box component="span" sx={{ fontWeight: 500 }}>
-            Assigned to:
+            {t('assignedToLabel')}
           </Box>{' '}
           <Box component="span" sx={{ fontWeight: 700, color: brand[600] }}>
-            {member?.display_name || member?.username || 'Unknown'}
+            {member?.display_name || member?.username || t('unknownMember')}
           </Box>
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
@@ -192,7 +199,7 @@ function AssignmentRow({
             }}
             noWrap
           >
-            {deck?.name || 'Unknown Deck'}
+            {deckName}
           </Typography>
           {assignment.due_date && (
             <>
@@ -207,7 +214,7 @@ function AssignmentRow({
                 }}
               />
               <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
-                Due {formatDate(assignment.due_date)}
+                {t('dueOn', { date: formatDate(assignment.due_date, locale) })}
               </Typography>
             </>
           )}
@@ -225,7 +232,7 @@ function AssignmentRow({
                 color: DUE_COLORS[urgency].text,
               }}
             >
-              {dueDateLabel(assignment.due_date)}
+              {dueDateLabel(assignment.due_date, t)}
             </Box>
           )}
         </Box>
@@ -242,12 +249,12 @@ function AssignmentRow({
             sx={{ fontSize: '0.65rem', fontWeight: 600, color: 'text.primary', mt: 0.25 }}
             noWrap
           >
-            🎯 Goal: {goal}
-            {assignment.progress_accuracy != null
-              ? isCompleted
-                ? ` — reached ${assignment.progress_accuracy}%`
-                : ` — Best so far: ${assignment.progress_accuracy}%`
-              : ''}
+            {t('goalProgress', {
+              goal,
+              state:
+                assignment.progress_accuracy == null ? 'none' : isCompleted ? 'reached' : 'best',
+              accuracy: assignment.progress_accuracy ?? 0,
+            })}
           </Typography>
         )}
       </Box>
@@ -257,7 +264,7 @@ function AssignmentRow({
         <IconButton
           size="small"
           onClick={onEdit}
-          aria-label={`Edit assignment for ${deck?.name || 'deck'}`}
+          aria-label={t('editAssignmentAria', { deckName })}
           sx={{
             color: alpha(brand[400], 0.6),
             '&:hover': { color: brand[600] },
@@ -268,7 +275,7 @@ function AssignmentRow({
         <IconButton
           size="small"
           onClick={() => onDelete(assignment.id)}
-          aria-label={`Remove assignment for ${deck?.name || 'deck'}`}
+          aria-label={t('removeAssignmentAria', { deckName })}
           sx={{
             color: alpha(brand[400], 0.6),
             '&:hover': { color: 'error.main' },

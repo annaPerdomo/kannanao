@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { fetchJsonCached, peekApiCache } from '@/lib/apiCache';
@@ -36,6 +37,7 @@ async function authHeaders(): Promise<Record<string, string>> {
  * (no deck picked yet) keeps the hook idle.
  */
 export function useItemAnalysis(deckId: string | null) {
+  const t = useTranslations('Group.useItemAnalysis');
   const [analysis, setAnalysis] = useState<ItemAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +60,7 @@ export function useItemAnalysis(deckId: string | null) {
         const data = await fetchJsonCached<ItemAnalysis>(url, authHeaders);
         if (!cancelled) setAnalysis(data);
       } catch {
-        if (!cancelled) setError('Failed to load analysis');
+        if (!cancelled) setError(t('failedToLoad'));
       } finally {
         if (!cancelled) setLoading(false);
       }

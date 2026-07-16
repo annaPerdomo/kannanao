@@ -16,11 +16,13 @@ import {
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { dbRecordLogin, sb } from '@/lib/supabase';
 
 export default function JoinPage() {
+  const t = useTranslations('Group.joinPage');
   const params = useParams();
   const router = useRouter();
   const code = (params?.code as string) ?? '';
@@ -55,10 +57,10 @@ export default function JoinPage() {
           if (data.groupName) setGroupName(data.groupName);
         } else {
           setValid(false);
-          setInvalidReason(data.reason || 'Invalid invite code.');
+          setInvalidReason(data.reason || t('invalidInviteCode'));
         }
       } catch {
-        setInvalidReason('Unable to verify invite code. Please try again.');
+        setInvalidReason(t('unableToVerify'));
       } finally {
         setValidating(false);
       }
@@ -74,7 +76,7 @@ export default function JoinPage() {
         return;
       }
       if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
-        setUsernameError('Letters, numbers, _ or - only');
+        setUsernameError(t('usernameInvalidChars'));
         return;
       }
       setCheckingUsername(true);
@@ -108,19 +110,19 @@ export default function JoinPage() {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t('passwordsDoNotMatch'));
       return;
     }
     if (username.length < 2 || username.length > 30) {
-      setError('Username must be 2-30 characters.');
+      setError(t('usernameLengthError'));
       return;
     }
     if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-      setError('Username can only contain letters, numbers, _ or -');
+      setError(t('usernameCharsError'));
       return;
     }
     if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError(t('passwordLengthError'));
       return;
     }
 
@@ -139,7 +141,7 @@ export default function JoinPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? 'Failed to create account.');
+        setError(data.error ?? t('createAccountFailed'));
         setBusy(false);
         return;
       }
@@ -155,7 +157,7 @@ export default function JoinPage() {
 
       router.push('/');
     } catch {
-      setError('Network error. Please try again.');
+      setError(t('networkError'));
       setBusy(false);
     }
   };
@@ -219,7 +221,7 @@ export default function JoinPage() {
                 mb: 1,
               }}
             >
-              Invite Not Available
+              {t('inviteNotAvailable')}
             </Typography>
             <Typography sx={{ fontSize: '0.88rem', color: 'text.secondary', mb: 2 }}>
               {invalidReason}
@@ -232,7 +234,7 @@ export default function JoinPage() {
                 borderRadius: 6,
               }}
             >
-              Go to sign in
+              {t('goToSignIn')}
             </Button>
           </CardContent>
         </Card>
@@ -283,8 +285,16 @@ export default function JoinPage() {
               mb: 3,
             }}
           >
-            You&apos;re joining <strong>{organizerName}</strong>&apos;s
-            {groupName ? ` group "${groupName}"` : ' study group'}
+            {groupName
+              ? t.rich('joiningWithGroup', {
+                  organizerName,
+                  groupName,
+                  bold: (chunks) => <strong>{chunks}</strong>,
+                })
+              : t.rich('joiningNoGroup', {
+                  organizerName,
+                  bold: (chunks) => <strong>{chunks}</strong>,
+                })}
           </Typography>
 
           <Box
@@ -293,7 +303,7 @@ export default function JoinPage() {
             sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
           >
             <TextField
-              label="Username"
+              label={t('usernameLabel')}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               size="small"
@@ -301,24 +311,23 @@ export default function JoinPage() {
               required
               error={Boolean(usernameError)}
               helperText={
-                usernameError ??
-                (checkingUsername ? 'Checking...' : 'Letters, numbers, _ or - (2-30 chars)')
+                usernameError ?? (checkingUsername ? t('checking') : t('usernameHelperText'))
               }
               autoComplete="username"
             />
 
             <TextField
-              label="Display name (optional)"
+              label={t('displayNameLabel')}
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               size="small"
               fullWidth
-              helperText="The name shown in the app"
+              helperText={t('displayNameHelperText')}
               slotProps={{ htmlInput: { maxLength: 100 } }}
             />
 
             <TextField
-              label="Password"
+              label={t('passwordLabel')}
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -326,7 +335,7 @@ export default function JoinPage() {
               fullWidth
               required
               autoComplete="new-password"
-              helperText="Minimum 6 characters"
+              helperText={t('passwordHelperText')}
               slotProps={{
                 input: {
                   endAdornment: (
@@ -335,7 +344,7 @@ export default function JoinPage() {
                         size="small"
                         onClick={() => setShowPassword((s) => !s)}
                         edge="end"
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        aria-label={showPassword ? t('hidePassword') : t('showPassword')}
                       >
                         {showPassword ? (
                           <VisibilityOff fontSize="small" />
@@ -350,7 +359,7 @@ export default function JoinPage() {
             />
 
             <TextField
-              label="Confirm password"
+              label={t('confirmPasswordLabel')}
               type={showPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -379,7 +388,7 @@ export default function JoinPage() {
                 '&:hover': { bgcolor: 'primary.dark', filter: 'brightness(0.9)' },
               }}
             >
-              {busy ? <CircularProgress size={20} color="inherit" /> : 'Join Study Group'}
+              {busy ? <CircularProgress size={20} color="inherit" /> : t('joinButton')}
             </Button>
           </Box>
         </CardContent>

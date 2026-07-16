@@ -11,6 +11,7 @@ import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import type { GroupMember } from '@/hooks/useGroup';
 
@@ -30,13 +31,16 @@ function statusColor(lastActive: string | null, brand: Record<number, string>): 
   return brand[300];
 }
 
-function statusTooltip(lastActive: string | null): string {
-  if (!lastActive) return 'Never active';
+function statusTooltip(
+  lastActive: string | null,
+  t: ReturnType<typeof useTranslations<'Group.homeWidget'>>,
+): string {
+  if (!lastActive) return t('neverActive');
   const diff = Date.now() - new Date(lastActive).getTime();
   const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-  if (days < 1) return 'Active today';
-  if (days === 1) return 'Active yesterday';
-  return `Active ${days} days ago`;
+  if (days < 1) return t('activeToday');
+  if (days === 1) return t('activeYesterday');
+  return t('activeDaysAgo', { days });
 }
 
 export function GroupHomeWidget({
@@ -45,6 +49,7 @@ export function GroupHomeWidget({
   groupName,
   groupEmoji,
 }: GroupHomeWidgetProps) {
+  const t = useTranslations('Group.homeWidget');
   const theme = useTheme();
   const { brand } = theme.palette;
 
@@ -92,7 +97,7 @@ export function GroupHomeWidget({
             {members.length}
           </Typography>
           <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
-            member{members.length !== 1 ? 's' : ''}
+            {t('memberLabel', { count: members.length })}
           </Typography>
         </Stack>
         <Stack direction="row" alignItems="center" spacing={0.5}>
@@ -100,24 +105,28 @@ export function GroupHomeWidget({
           <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: brand[700] }}>
             {totalXp.toLocaleString()}
           </Typography>
-          <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>XP</Typography>
+          <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
+            {t('xpLabel')}
+          </Typography>
         </Stack>
         <Stack direction="row" alignItems="center" spacing={0.5}>
           <SchoolIcon sx={{ fontSize: 16, color: brand[500] }} />
           <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: brand[700] }}>
             {totalCards.toLocaleString()}
           </Typography>
-          <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>cards</Typography>
+          <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
+            {t('cardsLabel')}
+          </Typography>
         </Stack>
       </Stack>
 
       {/* Member list */}
       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.5, flexWrap: 'wrap' }}>
         <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: brand[600] }}>
-          Members:
+          {t('membersHeading')}
         </Typography>
         {members.slice(0, 5).map((m) => (
-          <Tooltip key={m.id} title={statusTooltip(m.lastActive)} arrow>
+          <Tooltip key={m.id} title={statusTooltip(m.lastActive, t)} arrow>
             <Stack direction="row" alignItems="center" spacing={0.5}>
               <Box
                 sx={{
@@ -139,7 +148,7 @@ export function GroupHomeWidget({
         ))}
         {members.length > 5 && (
           <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
-            +{members.length - 5} more
+            {t('moreCount', { count: members.length - 5 })}
           </Typography>
         )}
       </Stack>
@@ -147,7 +156,7 @@ export function GroupHomeWidget({
       {/* Footer */}
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
-          {activeCount} active this week
+          {t('activeThisWeek', { count: activeCount })}
         </Typography>
         <Button
           size="small"
@@ -162,7 +171,7 @@ export function GroupHomeWidget({
             '&:hover': { bgcolor: 'transparent', color: brand[800] },
           }}
         >
-          Dashboard
+          {t('dashboardButton')}
         </Button>
       </Stack>
     </Paper>

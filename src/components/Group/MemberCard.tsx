@@ -4,21 +4,22 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import type { GroupMember } from '@/hooks/useGroup';
 import { xpProgressInLevel } from '@/hooks/useProgress';
 
-function timeAgo(dateStr: string | null): string {
-  if (!dateStr) return 'Never';
+function timeAgo(dateStr: string | null, t: ReturnType<typeof useTranslations>): string {
+  if (!dateStr) return t('never');
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t('justNow');
+  if (mins < 60) return t('minutesAgo', { mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t('hoursAgo', { hours });
   const days = Math.floor(hours / 24);
-  if (days === 1) return 'Yesterday';
-  return `${days}d ago`;
+  if (days === 1) return t('yesterday');
+  return t('daysAgo', { days });
 }
 
 function statusColor(lastActive: string | null): string {
@@ -38,6 +39,7 @@ interface MemberCardProps {
 export function MemberCard({ member, onClick }: MemberCardProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+  const t = useTranslations('Group.memberCard');
   const { current, needed } = xpProgressInLevel(member.totalXp);
   const pct = Math.round((current / needed) * 100);
   const status = statusColor(member.lastActive);
@@ -93,10 +95,10 @@ export function MemberCard({ member, onClick }: MemberCardProps) {
       <Box sx={{ mb: 1 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.3 }}>
           <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, color: brand[600] }}>
-            Level {member.level}
+            {t('level', { level: member.level })}
           </Typography>
           <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
-            {current}/{needed} XP
+            {t('xpProgress', { current, needed })}
           </Typography>
         </Box>
         <LinearProgress
@@ -116,10 +118,10 @@ export function MemberCard({ member, onClick }: MemberCardProps) {
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography sx={{ fontSize: '0.68rem', color: 'text.secondary' }}>
-          {member.totalCardsStudied.toLocaleString()} cards studied
+          {t('cardsStudied', { count: member.totalCardsStudied })}
         </Typography>
         <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary', fontStyle: 'italic' }}>
-          {timeAgo(member.lastActive)}
+          {timeAgo(member.lastActive, t)}
         </Typography>
       </Box>
     </Paper>

@@ -8,6 +8,7 @@ import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import type { MemberDetail } from '@/hooks/useGroup';
 
@@ -25,6 +26,7 @@ interface TrickyWordsProps {
 export function TrickyWords({ weakWords }: TrickyWordsProps) {
   const theme = useTheme();
   const { brand, error } = theme.palette;
+  const t = useTranslations('Group.trickyWords');
 
   if (weakWords.length === 0) return null;
 
@@ -43,7 +45,7 @@ export function TrickyWords({ weakWords }: TrickyWordsProps) {
     >
       <AccordionSummary
         expandIcon={<ExpandMoreIcon sx={{ color: brand[600] }} />}
-        aria-label="Toggle tricky words"
+        aria-label={t('toggleAriaLabel')}
         sx={{ px: 1.5 }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -57,7 +59,7 @@ export function TrickyWords({ weakWords }: TrickyWordsProps) {
               letterSpacing: '0.06em',
             }}
           >
-            Tricky words
+            {t('heading')}
           </Typography>
           <Chip
             label={weakWords.length}
@@ -110,7 +112,7 @@ export function TrickyWords({ weakWords }: TrickyWordsProps) {
             <Chip
               label={`✗ ${w.wrongCount}`}
               size="small"
-              aria-label={`Missed ${w.wrongCount} times`}
+              aria-label={t('missedTimes', { count: w.wrongCount })}
               sx={{
                 flexShrink: 0,
                 height: 22,

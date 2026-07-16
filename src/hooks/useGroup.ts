@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -134,6 +135,7 @@ export function useGroupMembers(groupId?: string | null, enabled = true) {
   const [loading, setLoading] = useState(enabled && peekApiCache(url) === undefined);
   const [error, setError] = useState<string | null>(null);
   const { user, isMemberAccount } = useAuth();
+  const t = useTranslations('Group.useGroup');
 
   const load = useCallback(
     async (freshMs?: number) => {
@@ -154,12 +156,12 @@ export function useGroupMembers(groupId?: string | null, enabled = true) {
         );
         setMembers(data);
       } catch {
-        setError('Failed to load members');
+        setError(t('failedToLoadMembers'));
       } finally {
         setLoading(false);
       }
     },
-    [user, isMemberAccount, url, enabled],
+    [user, isMemberAccount, url, enabled, t],
   );
 
   useEffect(() => {
@@ -175,6 +177,7 @@ export function useMemberDetail(memberId: string | null) {
   const [detail, setDetail] = useState<MemberDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations('Group.useGroup');
 
   const fetchDetail = useCallback(async () => {
     if (!memberId) {
@@ -190,11 +193,11 @@ export function useMemberDetail(memberId: string | null) {
       const data = await fetchJsonCached<MemberDetail>(url, authHeaders);
       setDetail(data);
     } catch {
-      setError('Failed to load details');
+      setError(t('failedToLoadDetails'));
     } finally {
       setLoading(false);
     }
-  }, [memberId]);
+  }, [memberId, t]);
 
   useEffect(() => {
     void fetchDetail();

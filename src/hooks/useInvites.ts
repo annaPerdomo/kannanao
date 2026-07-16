@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,6 +33,7 @@ export function useInvites(groupId?: string | null) {
   const [invites, setInvites] = useState<InviteCode[]>(() => peekApiCache(url) ?? []);
   const [loading, setLoading] = useState(() => peekApiCache(url) === undefined);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations('Group.useInvites');
 
   const headers = useCallback(() => {
     const h: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -53,12 +55,12 @@ export function useInvites(groupId?: string | null) {
         );
         setInvites(data);
       } catch {
-        setError('Failed to load invites');
+        setError(t('loadFailed'));
       } finally {
         setLoading(false);
       }
     },
-    [headers, url],
+    [headers, url, t],
   );
 
   useEffect(() => {
@@ -79,14 +81,14 @@ export function useInvites(groupId?: string | null) {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? 'Failed to create invite');
+        throw new Error(data.error ?? t('createFailed'));
       }
       const invite: InviteCode = await res.json();
       invalidateApiCache(INVITES_URL);
       setInvites((prev) => [invite, ...prev]);
       return invite;
     },
-    [headers, groupId],
+    [headers, groupId, t],
   );
 
   const revokeInvite = useCallback(

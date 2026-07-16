@@ -8,6 +8,7 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import type { Group } from '@/hooks/useGroups';
 
@@ -20,6 +21,7 @@ interface GroupCardProps {
 export function GroupCard({ group, onClick, onPin }: GroupCardProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+  const t = useTranslations('Group.groupCard');
 
   return (
     <Paper
@@ -52,14 +54,14 @@ export function GroupCard({ group, onClick, onPin }: GroupCardProps) {
               {group.name}
             </Typography>
             <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-              {group.memberCount} member{group.memberCount !== 1 ? 's' : ''}
+              {t('memberCount', { count: group.memberCount })}
             </Typography>
           </Box>
         </Stack>
 
         <IconButton
           size="small"
-          aria-label={group.pinned ? 'Unpin group' : 'Pin group'}
+          aria-label={group.pinned ? t('unpinGroup') : t('pinGroup')}
           onClick={(e) => {
             e.stopPropagation();
             onPin(group.id, !group.pinned);

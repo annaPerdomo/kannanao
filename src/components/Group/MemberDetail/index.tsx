@@ -11,6 +11,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import { Loading } from '@/components/Loading';
 import { AchievementBadge } from '@/components/Stats/AchievementBadge';
@@ -35,8 +36,10 @@ interface MemberDetailProps {
 export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: MemberDetailProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const t = useTranslations('Group.memberDetail');
+  const tc = useTranslations('Common');
 
-  if (loading) return <Loading message="Loading member details..." />;
+  if (loading) return <Loading message={t('loadingMemberDetails')} />;
   if (!detail) return null;
 
   const {
@@ -66,7 +69,7 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
           onClick={onBack}
           sx={{ textTransform: 'none', fontWeight: 700, color: brand[700] }}
         >
-          Back
+          {tc('back')}
         </Button>
         <Typography sx={{ fontWeight: 800, fontSize: '1.2rem', color: brand[800] }}>
           {member.displayName || member.username}
@@ -89,10 +92,10 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
           <Typography sx={{ fontWeight: 800, color: brand[700] }}>
-            Level {progress.level}
+            {t('level', { level: progress.level })}
           </Typography>
           <Typography sx={{ fontSize: '0.8rem', color: brand[600], fontWeight: 600 }}>
-            {progress.totalXp.toLocaleString()} total XP
+            {t('totalXp', { totalXp: progress.totalXp })}
           </Typography>
         </Box>
         <LinearProgress
@@ -109,7 +112,7 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
           }}
         />
         <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', mt: 0.5 }}>
-          {current}/{needed} XP to level {progress.level + 1}
+          {t('xpToNextLevel', { current, needed, nextLevel: progress.level + 1 })}
         </Typography>
       </Paper>
 
@@ -117,22 +120,22 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
         <StatCard
           icon={<SchoolIcon sx={{ fontSize: 18 }} />}
-          label="Cards Studied"
+          label={t('cardsStudiedLabel')}
           value={progress.totalCardsStudied.toLocaleString()}
         />
         <StatCard
           icon={<TargetIcon sx={{ fontSize: 18 }} />}
-          label="Accuracy"
+          label={t('accuracyLabel')}
           value={`${accuracy}%`}
         />
         <StatCard
           icon={<LocalFireDepartmentIcon sx={{ fontSize: 18 }} />}
-          label="Streak"
+          label={t('streakLabel')}
           value={`${progress.streakDays}d`}
         />
         <StatCard
           icon={<EmojiEventsIcon sx={{ fontSize: 18 }} />}
-          label="Sessions"
+          label={t('sessionsLabel')}
           value={progress.totalSessions}
         />
       </Box>
@@ -156,7 +159,7 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
               mb: 1.5,
             }}
           >
-            Deck Progress
+            {t('deckProgress')}
           </Typography>
           <Grid container spacing={1.5}>
             {deckProgress.map((dp) => (
@@ -182,8 +185,8 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
                   <Box
                     sx={{ display: 'flex', gap: 2, fontSize: '0.7rem', color: 'text.secondary' }}
                   >
-                    <span>{dp.cardsStudied} studied</span>
-                    <span>{dp.accuracy}% accuracy</span>
+                    <span>{t('cardsStudiedCount', { count: dp.cardsStudied })}</span>
+                    <span>{t('accuracyPercent', { accuracy: dp.accuracy })}</span>
                     <span>{formatDate(dp.lastStudied)}</span>
                   </Box>
                 </Paper>
@@ -222,7 +225,7 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
             mb: 1.5,
           }}
         >
-          Achievements
+          {t('achievements')}
         </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
           {ACHIEVEMENTS.map((ach) => (

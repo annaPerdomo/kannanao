@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
@@ -24,6 +25,8 @@ export function EditAssignmentDialog({
   onSave,
 }: EditAssignmentDialogProps) {
   const theme = useTheme();
+  const t = useTranslations('Group.editAssignment');
+  const tc = useTranslations('Common');
   const { brand, accent } = theme.palette;
 
   const [note, setNote] = useState('');
@@ -50,7 +53,7 @@ export function EditAssignmentDialog({
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update assignment');
+      setError(err instanceof Error ? err.message : t('failedToUpdate'));
     } finally {
       setSaving(false);
     }
@@ -65,8 +68,12 @@ export function EditAssignmentDialog({
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Edit Assignment"
-      subtitle={`${deck?.emoji || '📚'} ${deck?.name || 'Deck'} — ${member?.display_name || member?.username || 'Member'}`}
+      title={t('title')}
+      subtitle={t('subtitle', {
+        emoji: deck?.emoji || '📚',
+        deckName: deck?.name || t('deckFallback'),
+        memberName: member?.display_name || member?.username || t('memberFallback'),
+      })}
       maxWidth="sm"
       actions={
         <>
@@ -75,7 +82,7 @@ export function EditAssignmentDialog({
             disabled={saving}
             sx={{ textTransform: 'none', color: 'text.secondary' }}
           >
-            Cancel
+            {tc('cancel')}
           </Button>
           <Button
             variant="contained"
@@ -90,7 +97,7 @@ export function EditAssignmentDialog({
               '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
             }}
           >
-            {saving ? 'Saving...' : 'Save'}
+            {saving ? t('saving') : tc('save')}
           </Button>
         </>
       }
@@ -99,8 +106,8 @@ export function EditAssignmentDialog({
         {error && <Typography sx={{ color: 'error.main', fontSize: '0.8rem' }}>{error}</Typography>}
 
         <TextField
-          label="Note (optional)"
-          placeholder="Focus on chapter 3 vocab"
+          label={t('noteLabel')}
+          placeholder={t('notePlaceholder')}
           value={note}
           onChange={(e) => setNote(e.target.value)}
           size="small"
@@ -111,7 +118,7 @@ export function EditAssignmentDialog({
         />
 
         <TextField
-          label="Due Date (optional)"
+          label={t('dueDateLabel')}
           type="date"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}

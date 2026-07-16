@@ -5,6 +5,7 @@ import PrintIcon from '@mui/icons-material/Print';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import { Alert, Box, Button, Snackbar, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { QRCodeSVG } from 'qrcode.react';
 import { useRef, useState } from 'react';
 
@@ -21,6 +22,7 @@ interface InviteQRCodeProps {
 export function InviteQRCode({ open, onClose, code, label, organizerName }: InviteQRCodeProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+  const t = useTranslations('Group.inviteQRCode');
   const printRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
 
@@ -42,7 +44,7 @@ export function InviteQRCode({ open, onClose, code, label, organizerName }: Invi
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Kannanao Invite</title>
+        <title>${t('printTitle')}</title>
         <style>
           @media print {
             @page { margin: 1.5cm; }
@@ -100,7 +102,7 @@ export function InviteQRCode({ open, onClose, code, label, organizerName }: Invi
           ${content.querySelector('svg')?.outerHTML ?? ''}
         </div>
         <div class="message">
-          Scan this code to join <strong>${organizerName}</strong>'s study group on Kannanao!
+          ${t.markup('scanMessage', { organizerName, b: (chunks) => `<strong>${chunks}</strong>` })}
         </div>
         <div class="url">${inviteUrl}</div>
       </body>
@@ -116,8 +118,8 @@ export function InviteQRCode({ open, onClose, code, label, organizerName }: Invi
       <StyledDialog
         open={open}
         onClose={onClose}
-        title="Invite QR Code"
-        subtitle={label || 'Share this with new members'}
+        title={t('title')}
+        subtitle={label || t('shareSubtitle')}
         icon={<QrCode2Icon sx={{ color: brand[600], fontSize: 22 }} />}
         maxWidth="xs"
       >
@@ -145,7 +147,7 @@ export function InviteQRCode({ open, onClose, code, label, organizerName }: Invi
               lineHeight: 1.6,
             }}
           >
-            Scan this code to join <strong>{organizerName}</strong>&apos;s study group on Kannanao!
+            {t.rich('scanMessage', { organizerName, b: (chunks) => <strong>{chunks}</strong> })}
           </Typography>
 
           <Box
@@ -177,7 +179,7 @@ export function InviteQRCode({ open, onClose, code, label, organizerName }: Invi
                 color: brand[700],
               }}
             >
-              Copy link
+              {t('copyLink')}
             </Button>
             <Button
               startIcon={<PrintIcon />}
@@ -191,7 +193,7 @@ export function InviteQRCode({ open, onClose, code, label, organizerName }: Invi
                 color: brand[700],
               }}
             >
-              Print
+              {t('print')}
             </Button>
           </Stack>
         </Stack>
@@ -204,7 +206,7 @@ export function InviteQRCode({ open, onClose, code, label, organizerName }: Invi
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert severity="success" onClose={() => setCopied(false)}>
-          Link copied to clipboard!
+          {t('linkCopied')}
         </Alert>
       </Snackbar>
     </>

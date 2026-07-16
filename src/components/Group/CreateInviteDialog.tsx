@@ -3,6 +3,7 @@
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import { Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
@@ -23,6 +24,8 @@ export function CreateInviteDialog({
 }: CreateInviteDialogProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+  const t = useTranslations('Group.createInvite');
+  const tc = useTranslations('Common');
 
   const [label, setLabel] = useState('');
   const [maxUses, setMaxUses] = useState<string>('1');
@@ -45,7 +48,7 @@ export function CreateInviteDialog({
       setMaxUses('1');
       setExpiresIn('7d');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create invite');
+      setError(err instanceof Error ? err.message : t('createFailed'));
     } finally {
       setSaving(false);
     }
@@ -55,8 +58,8 @@ export function CreateInviteDialog({
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Create Invite Link"
-      subtitle="Generate a QR code to onboard new members"
+      title={t('title')}
+      subtitle={t('subtitle')}
       icon={<QrCode2Icon sx={{ color: brand[600], fontSize: 22 }} />}
       closeDisabled={saving}
       actions={
@@ -66,7 +69,7 @@ export function CreateInviteDialog({
             disabled={saving}
             sx={{ color: 'text.secondary', textTransform: 'none', borderRadius: 6 }}
           >
-            Cancel
+            {tc('cancel')}
           </Button>
           <Button
             onClick={handleCreate}
@@ -81,7 +84,7 @@ export function CreateInviteDialog({
               '&:hover': { bgcolor: brand[800] },
             }}
           >
-            {saving ? 'Creating...' : 'Create Invite'}
+            {saving ? t('creating') : t('createButton')}
           </Button>
         </Stack>
       }
@@ -90,35 +93,35 @@ export function CreateInviteDialog({
         <TextField
           fullWidth
           size="small"
-          label="Label (optional)"
-          placeholder="e.g. Yuki's class, Summer camp group"
+          label={t('labelField')}
+          placeholder={t('labelPlaceholder')}
           value={label}
           onChange={(e) => setLabel(e.target.value)}
-          helperText="A friendly name to help you identify this invite"
+          helperText={t('labelHelper')}
           slotProps={{ htmlInput: { maxLength: 100 } }}
         />
 
         <FormControl fullWidth size="small">
-          <InputLabel>Max uses</InputLabel>
-          <Select value={maxUses} label="Max uses" onChange={(e) => setMaxUses(e.target.value)}>
-            <MenuItem value="1">1 member</MenuItem>
-            <MenuItem value="5">5 members</MenuItem>
-            <MenuItem value="10">10 members</MenuItem>
-            <MenuItem value="unlimited">Unlimited</MenuItem>
+          <InputLabel>{t('maxUses')}</InputLabel>
+          <Select value={maxUses} label={t('maxUses')} onChange={(e) => setMaxUses(e.target.value)}>
+            <MenuItem value="1">{t('membersCount', { count: 1 })}</MenuItem>
+            <MenuItem value="5">{t('membersCount', { count: 5 })}</MenuItem>
+            <MenuItem value="10">{t('membersCount', { count: 10 })}</MenuItem>
+            <MenuItem value="unlimited">{t('maxUsesUnlimited')}</MenuItem>
           </Select>
         </FormControl>
 
         <FormControl fullWidth size="small">
-          <InputLabel>Expires</InputLabel>
+          <InputLabel>{t('expiresLabel')}</InputLabel>
           <Select
             value={expiresIn}
-            label="Expires"
+            label={t('expiresLabel')}
             onChange={(e) => setExpiresIn(e.target.value as typeof expiresIn)}
           >
-            <MenuItem value="24h">24 hours</MenuItem>
-            <MenuItem value="7d">7 days</MenuItem>
-            <MenuItem value="30d">30 days</MenuItem>
-            <MenuItem value="never">Never</MenuItem>
+            <MenuItem value="24h">{t('expires24h')}</MenuItem>
+            <MenuItem value="7d">{t('expires7d')}</MenuItem>
+            <MenuItem value="30d">{t('expires30d')}</MenuItem>
+            <MenuItem value="never">{t('expiresNever')}</MenuItem>
           </Select>
         </FormControl>
 
