@@ -5,6 +5,8 @@ import { Suspense } from 'react';
 import { AppBackground } from '@/components/AppBackground';
 import { AppShell } from '@/components/AppShell';
 import { LocaleHtmlLang } from '@/components/LocaleHtmlLang';
+import { LocaleSync } from '@/components/LocaleSync';
+import { resolveLocale } from '@/i18n/config';
 import { getInitialAppData } from '@/lib/serverData';
 
 import Providers from '../providers';
@@ -27,7 +29,8 @@ async function AppRoot({ children }: { children: React.ReactNode }) {
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <LocaleHtmlLang />
-      <Providers initialAuth={appData.auth}>
+      <Providers initialAuth={appData.auth} locale={resolveLocale(locale)}>
+        <LocaleSync />
         <AppBackground>
           <AppShell initialUnreadCount={appData.unreadCount}>{children}</AppShell>
         </AppBackground>

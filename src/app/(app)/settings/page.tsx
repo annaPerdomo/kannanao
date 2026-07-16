@@ -6,6 +6,7 @@ import KeyIcon from '@mui/icons-material/Key';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import SettingsIcon from '@mui/icons-material/Settings';
+import TranslateIcon from '@mui/icons-material/Translate';
 import {
   Alert,
   Box,
@@ -31,6 +32,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { InviteCode } from '@/hooks/useInvites';
 import { useInvites } from '@/hooks/useInvites';
 import { LAYOUT } from '@/theme';
+
+import { LanguagePicker } from './LanguagePicker';
 
 interface SectionProps {
   icon: React.ReactNode;
@@ -366,6 +369,19 @@ export default function SettingsPage() {
               </Stack>
             </Stack>
           )}
+        </Section>
+
+        <Divider />
+
+        {/* Language — title deliberately bilingual and NOT a message key: it is
+            the signpost a user who can't read the current UI scans for, so it
+            has to read in both languages in both locales. */}
+        <Section
+          icon={<TranslateIcon />}
+          title="Language / 言語"
+          description={t('language.description')}
+        >
+          <LanguagePicker />
         </Section>
 
         <Divider />

@@ -14,6 +14,7 @@ import {
 import { flushSync } from 'react-dom';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { DEFAULT_LOCALE, type Locale } from '@/i18n/config';
 import { type ColorScheme, createAppTheme } from '@/theme';
 
 type ViewTransitionDocument = Document & {
@@ -74,7 +75,20 @@ const ThemeCtx = createContext<ThemeContextValue>({
   setScheme: () => {},
 });
 
-export function AppThemeProvider({ children }: { children: ReactNode }) {
+export function AppThemeProvider({
+  children,
+  locale = DEFAULT_LOCALE,
+}: {
+  children: ReactNode;
+  /**
+   * The active UI locale, for MUI's own built-in strings (see createAppTheme).
+   * A prop, not `useLocale()`: this provider also renders outside any intl
+   * provider (the bare-render cases in this file's tests), where that hook
+   * throws. Callers that know their locale — both landing builds and the (app)
+   * layout — pass it; everything else gets English, which is what it had before.
+   */
+  locale?: Locale;
+}) {
   const { colorScheme: savedScheme, updateColorScheme, user, loading: authLoading } = useAuth();
   // Always start from the default so first paint is instant; the user's real
   // scheme then *rolls in* with an animation once it's resolved (see below).
@@ -129,7 +143,7 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const muiTheme = useMemo(() => createAppTheme(scheme), [scheme]);
+  const muiTheme = useMemo(() => createAppTheme(scheme, locale), [scheme, locale]);
 
   return (
     <ThemeCtx.Provider value={{ scheme, setScheme }}>

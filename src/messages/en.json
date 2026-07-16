@@ -1231,6 +1231,12 @@
       "confirmFieldLabel": "Confirm new password",
       "updatedSuccess": "Password updated!",
       "mismatchError": "Passwords do not match."
+    },
+    "language": {
+      "description": "The language for buttons, menus and labels. Your Japanese words and cards do not change.",
+      "ariaLabel": "Choose a language",
+      "saved": "Language saved!",
+      "saveError": "Couldn't save your language. Please try again."
     }
   },
   "Messages": {

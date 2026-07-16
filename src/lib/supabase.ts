@@ -2,6 +2,7 @@
 
 import { createBrowserClient } from '@supabase/ssr';
 
+import { type Locale, parseLocale } from '@/i18n/config';
 import {
   type AccountType,
   dbCardToApp,
@@ -416,7 +417,7 @@ export async function loadProfile(userId: string): Promise<UserProfile | null> {
   const { data, error } = await sb
     .from('profiles')
     .select(
-      'username, display_name, color_scheme, show_todo, home_sections, review_reminders, account_type, organizer_id, group_id, travel_main_view_mode, groups:group_id (show_leaderboard)',
+      'username, display_name, color_scheme, show_todo, home_sections, review_reminders, account_type, organizer_id, group_id, travel_main_view_mode, locale, groups:group_id (show_leaderboard)',
     )
     .eq('id', userId)
     .single();
@@ -435,7 +436,30 @@ export async function loadProfile(userId: string): Promise<UserProfile | null> {
     groupId: data.group_id ?? null,
     groupShowLeaderboard: groupRow?.show_leaderboard ?? true,
     travelMainViewMode: data.travel_main_view_mode ?? null,
+    locale: parseLocale(data.locale),
   };
+}
+
+/**
+ * Reports failure to the caller, like updateProfileReviewReminders and unlike
+ * the fire-and-forget siblings above: the language picker writes the cookie and
+ * the row as a pair, and a silent DB failure would leave the UI in Japanese with
+ * an account that has no idea. The caller needs to know to roll the cookie back.
+ */
+export async function updateProfileLocale(
+  userId: string,
+  locale: Locale,
+): Promise<{ error: string | null }> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    return { error: 'Not connected to the database.' };
+  }
+  const { error } = await sb.from('profiles').update({ locale }).eq('id', userId);
+  if (error) {
+    console.error('updateProfileLocale error', error);
+    return { error: error.message };
+  }
+  return { error: null };
 }
 
 export async function updateProfileColorScheme(userId: string, colorScheme: string): Promise<void> {

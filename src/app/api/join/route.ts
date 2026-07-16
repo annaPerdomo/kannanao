@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { LOCALES } from '@/i18n/config';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../_lib/rateLimit';
@@ -21,6 +22,18 @@ const JoinSchema = z.object({
     .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, _ or -'),
   displayName: z.string().max(100).optional(),
   password: z.string().min(6, 'Password must be at least 6 characters'),
+  /**
+   * The joiner's current NEXT_LOCALE, sent by the join page so the language they
+   * picked on the landing survives account creation instead of resetting to
+   * English at the door.
+   *
+   * Optional, and absent means NULL rather than 'en' — a member who never
+   * touched the toggle has expressed no preference, and writing 'en' would
+   * silently out-rank their device's Japanese at every later sign-in. Validated
+   * against LOCALES because it lands in a CHECK-constrained column; an unknown
+   * value would fail the insert and take the whole join with it.
+   */
+  locale: z.enum(LOCALES).optional(),
 });
 
 /** POST — public: validate invite code, create member account, auto-share decks */
@@ -37,7 +50,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { code, username, displayName, password } = parsed.data;
+  const { code, username, displayName, password, locale } = parsed.data;
   const lowerUsername = username.trim().toLowerCase();
   const sb = getServiceSupabase();
 
@@ -127,6 +140,7 @@ export async function POST(req: NextRequest) {
     account_type: 'member',
     organizer_id: invite.organizer_id,
     group_id: invite.group_id ?? null,
+    locale: locale ?? null,
   });
 
   if (profileError) {

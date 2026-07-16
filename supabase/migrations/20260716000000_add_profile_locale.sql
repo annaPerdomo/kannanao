@@ -1,0 +1,23 @@
+-- The account's UI language.
+--
+-- next-intl resolves the locale from the NEXT_LOCALE cookie (src/i18n/request.ts),
+-- which is per-device: a student who picks 日本語 on the classroom iPad is back to
+-- English on their own phone, and a cleared cookie loses the choice entirely.
+-- This column is the durable half of that pair — the account's own preference,
+-- synced into the cookie at sign-in — so the language follows the user instead of
+-- the browser.
+--
+-- NULLABLE, AND DELIBERATELY NOT BACKFILLED. NULL does not mean English; it means
+-- "no explicit choice — follow the device", which is honestly what every existing
+-- row is: they all predate the picker. A `DEFAULT 'en'` would instead assert that
+-- each of them actively chose English, and would then out-rank the
+-- Accept-Language / landing-toggle pick for a user signing in on a Japanese
+-- device — the exact case this whole feature exists to serve. The column only
+-- becomes non-null when someone picks a language on purpose.
+--
+-- The CHECK mirrors LOCALES in src/i18n/config.ts, so adding a third language
+-- means touching both. That coupling is the point: an unconstrained text column
+-- would let a typo'd locale land in the row, and resolveLocale() would silently
+-- fall back to English forever with nothing to point at.
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS locale text CHECK (locale IN ('en', 'ja'));
