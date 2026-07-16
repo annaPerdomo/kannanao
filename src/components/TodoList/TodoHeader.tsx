@@ -7,6 +7,7 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 interface TodoHeaderProps {
   view: 'week' | 'month';
@@ -23,6 +24,7 @@ export function TodoHeader({
   brandPalette: brand,
   accentPalette: accent,
 }: TodoHeaderProps) {
+  const t = useTranslations('Todo.todoHeader');
   return (
     <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.25}>
       <Stack direction="row" alignItems="center" spacing={0.75}>
@@ -38,7 +40,7 @@ export function TodoHeader({
             backgroundClip: 'text',
           }}
         >
-          My To-Do List
+          {t('title')}
         </Typography>
         <Typography sx={{ fontSize: '0.85rem' }}>✨</Typography>
       </Stack>
@@ -101,7 +103,7 @@ export function TodoHeader({
               ) : (
                 <CalendarMonthRoundedIcon sx={{ fontSize: '0.82rem' }} />
               )}
-              <span style={{ textTransform: 'capitalize' }}>{v}</span>
+              <span>{v === 'week' ? t('weekView') : t('monthView')}</span>
             </Box>
           ))}
         </Stack>

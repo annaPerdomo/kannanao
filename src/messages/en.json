@@ -1816,5 +1816,575 @@
       "next": "Next →",
       "quitAndSave": "Quit & Save Progress"
     }
+  },
+  "Todo": {
+    "addEntryDialog": {
+      "title": "📅 Add a Special Day",
+      "addButton": "Add ✨",
+      "errorAdd": "Oops! Couldn't add it. Please try again.",
+      "whatIsIt": "What is it? ✨",
+      "kind": "Kind",
+      "manageLabels": "Manage labels",
+      "when": "When? 📅",
+      "showLess": "Show less",
+      "lastsMoreThanOneDay": "Lasts more than one day? Or repeat?",
+      "lastDay": "Last day 📅"
+    },
+    "addTodoInput": {
+      "placeholder": "Write a new to-do...",
+      "addTooltip": "Add it!"
+    },
+    "calendarEntrySection": {
+      "specialDays": "🎊 Special Days",
+      "add": "Add",
+      "emptyPrompt": "Nothing here — tap to add! ✨",
+      "addAnother": "+ Add another",
+      "untilDate": "until {date}",
+      "weeklyRepeat": "🔁 every week"
+    },
+    "dayDetailPanel": {
+      "myToDoList": "✅ My To-Do List",
+      "allDone": "{celebration} All done! 🎊",
+      "loadingList": "Loading your list... 🌸",
+      "nothingPlannedPast": "Nothing planned for this day 🌸",
+      "nothingHereYet": "Nothing here yet!",
+      "writeATodoHint": "Write a to-do above and tap + to add it! ⭐"
+    },
+    "dayProgress": {
+      "allDone": "All done! ⭐",
+      "xpEach": "+{xp} XP each",
+      "doneCount": "{completed}/{total} done"
+    },
+    "editEntryDialog": {
+      "title": "Edit Special Day",
+      "errorSave": "Oops! Couldn't save. Please try again.",
+      "saving": "Saving...",
+      "whatIsIt": "What is it?",
+      "kind": "Kind",
+      "when": "When? 📅",
+      "showLess": "Show less",
+      "lastsMoreThanOneDay": "Lasts more than one day? Or repeat?",
+      "lastDay": "Last day 📅"
+    },
+    "editTodoDialog": {
+      "title": "Edit Task",
+      "saving": "Saving...",
+      "errorSave": "Failed to save. Please try again.",
+      "taskLabel": "Task",
+      "whichDayLabel": "Which day?"
+    },
+    "frequencyPicker": {
+      "untilDone": "Until done",
+      "everyDay": "Every day",
+      "weekdays": "Weekdays",
+      "weekends": "Weekends"
+    },
+    "manageEntryTypesDialog": {
+      "title": "My Event Labels",
+      "builtInLabels": "Built-in labels",
+      "myLabels": "My labels",
+      "noCustomLabels": "No custom labels yet — make one below!",
+      "pickEmoji": "Pick emoji",
+      "nameLabel": "Name",
+      "makeNewLabel": "Make a new label",
+      "errorAdd": "Oops! Couldn't add that. Try again?",
+      "errorSave": "Oops! Couldn't save. Try again?",
+      "errorDelete": "Oops! Couldn't delete. Try again?",
+      "labelAdded": "Label added! ✨",
+      "labelNameLabel": "Label name",
+      "addButton": "Add"
+    },
+    "monthCalendar": {
+      "legendAllDone": "All done",
+      "legendSomeDone": "Some done",
+      "legendSpecialDay": "Special day",
+      "legendToday": "Today"
+    },
+    "todoHeader": {
+      "title": "My To-Do List",
+      "weekView": "Week",
+      "monthView": "Month"
+    },
+    "todoItem": {
+      "changePicture": "Change picture",
+      "freqDailyUntilDone": "↻ Daily until done",
+      "freqEveryDay": "↻ Every day",
+      "freqWeekdays": "↻ Weekdays",
+      "freqWeekends": "↻ Weekends"
+    },
+    "useTodos": {
+      "loadError": "Could not load your to-do list",
+      "addError": "Could not add item — please try again",
+      "toggleError": "Could not update item — please try again",
+      "saveChangesError": "Could not save changes — please try again",
+      "emojiError": "Could not save emoji — please try again",
+      "deleteError": "Could not delete item — please try again",
+      "reorderError": "Could not save order — please try again"
+    },
+    "useEventTypes": {
+      "loadError": "Could not load event types",
+      "deleteError": "Could not delete event type"
+    },
+    "defaultEntryTypeNames": {
+      "event": "Event",
+      "birthday": "Birthday",
+      "holiday": "Holiday",
+      "reminder": "Reminder"
+    },
+    "celebrationMessages": {
+      "amazingWork": "🎉 Amazing work!",
+      "onFire": "⭐ You're on fire!",
+      "productive": "🌸 So productive!",
+      "keepItUp": "✨ Keep it up!",
+      "unstoppable": "🦋 Unstoppable!",
+      "youDidIt": "🌈 You did it!",
+      "wonderful": "💕 Wonderful!",
+      "fabulous": "🎀 Fabulous!"
+    }
+  },
+  "Stats": {
+    "pageHeader": {
+      "title": "My Progress",
+      "subtitle": "Keep studying every day to build your streak!"
+    },
+    "statCards": {
+      "dayStreak": "Day Streak",
+      "dayStreakSub": "{days, plural, one {Best: # day} other {Best: # days}}",
+      "cardsStudied": "Cards Studied",
+      "cardsStudiedSub": "{count, plural, one {# session} other {# sessions}}",
+      "accuracy": "Accuracy",
+      "accuracySub": "{count} correct",
+      "totalXp": "Total XP",
+      "totalXpSub": "{spendable} spendable · Level {level}"
+    },
+    "achievements": {
+      "heading": "Achievements"
+    },
+    "achievementBadge": {
+      "locked": "???",
+      "unlockedTooltip": "{description} · Unlocked {date}"
+    },
+    "recentSessions": {
+      "heading": "Recent Sessions",
+      "empty": "No sessions yet — start studying to see your history! 🌸"
+    },
+    "sessionRow": {
+      "xpValue": "+{xp} XP",
+      "minutes": "{mins}m",
+      "percent": "{pct}%"
+    },
+    "studyActivity": {
+      "heading": "Study Activity"
+    },
+    "periodSummary": {
+      "thisWeek": "This Week",
+      "daysStudied": "Days studied",
+      "cardsStudied": "Cards studied",
+      "xpEarned": "XP earned",
+      "sessions": "Sessions",
+      "byMode": "{month} by mode"
+    },
+    "studyCalendar": {
+      "cardsStudiedTooltip": "{cards, plural, one {# card studied} other {# cards studied}}"
+    }
+  },
+  "Shop": {
+    "title": "Shop",
+    "subtitle": "Earn XP by studying and unlock treasures!",
+    "yourXp": "Your XP",
+    "level": "Level {level}",
+    "loadingShop": "Loading shop…",
+    "itemUnlocked": "{name} unlocked!",
+    "keepStudying": "Keep studying to earn more XP!",
+    "everyCardEarnsCoins": "Every card you practice earns you coins for the shop",
+    "categories": {
+      "all": "All",
+      "themes": "Themes",
+      "cardBorders": "Card Borders",
+      "bordersFilter": "Borders",
+      "celebrations": "Celebrations",
+      "studyBuddies": "Study Buddies",
+      "buddiesFilter": "Buddies"
+    },
+    "purchaseDialog": {
+      "unlockTitle": "Unlock {name}?",
+      "cost": "Cost",
+      "yourBalance": "Your balance",
+      "balanceXp": "{amount} XP",
+      "afterPurchase": "After purchase",
+      "maybeLater": "Maybe later",
+      "unlocking": "Unlocking...",
+      "unlock": "Unlock!"
+    },
+    "previewingBanner": {
+      "previewing": "Previewing <strong>{name}</strong>",
+      "endPreview": "End Preview"
+    },
+    "borderPreviewModal": {
+      "previewTitle": "Preview: {name}",
+      "studyCard": "Study Card",
+      "collectionCard": "Collection Card"
+    },
+    "itemCard": {
+      "comingSoon": "Coming Soon",
+      "needMoreXp": "Need {amount} more",
+      "preview": "Preview",
+      "free": "FREE",
+      "owned": "Owned",
+      "active": "Active",
+      "equip": "Equip",
+      "buy": "Buy",
+      "keepStudyingTooltip": "Keep studying to earn more XP!"
+    },
+    "errors": {
+      "itemNotFound": "Item not found",
+      "alreadyOwned": "Already owned",
+      "notEnoughXp": "Not enough XP",
+      "notAuthenticated": "Not authenticated",
+      "itemNotOwned": "Item not owned",
+      "purchaseFailed": "Purchase failed",
+      "equipFailed": "Equip failed",
+      "unequipFailed": "Unequip failed"
+    },
+    "items": {
+      "theme_sakura": {
+        "name": "Sakura",
+        "description": "Classic kawaii pink & lavender"
+      },
+      "theme_murasaki": {
+        "name": "Murasaki",
+        "description": "Dreamy violet & pink"
+      },
+      "theme_yuki": {
+        "name": "Yuki",
+        "description": "Frosty sky blue & violet"
+      },
+      "theme_ocean": {
+        "name": "Ocean Blue",
+        "description": "Deep blue seas & teal waves"
+      },
+      "theme_forest": {
+        "name": "Forest Green",
+        "description": "Lush green canopy & emerald accents"
+      },
+      "theme_sunset": {
+        "name": "Sunset Orange",
+        "description": "Warm golden hour glow"
+      },
+      "theme_lavender": {
+        "name": "Lavender",
+        "description": "Soft purple fields & delicate pink"
+      },
+      "theme_midnight": {
+        "name": "Midnight",
+        "description": "Cool slate & starlit blue"
+      },
+      "theme_matcha": {
+        "name": "Matcha",
+        "description": "Earthy green tea & fresh lime"
+      },
+      "theme_rosegold": {
+        "name": "Rose Gold",
+        "description": "Elegant rose & warm amber shimmer"
+      },
+      "border_none": {
+        "name": "Default",
+        "description": "Clean, no extra border"
+      },
+      "border_golden": {
+        "name": "Golden Frame",
+        "description": "Luxurious gold border with warm glow"
+      },
+      "border_rainbow": {
+        "name": "Rainbow",
+        "description": "Shifting rainbow gradient border"
+      },
+      "border_sakura": {
+        "name": "Cherry Blossom",
+        "description": "Soft pink petals with gentle glow"
+      },
+      "border_starry": {
+        "name": "Starry Night",
+        "description": "Deep blue with twinkling star shimmer"
+      },
+      "border_neon": {
+        "name": "Neon Glow",
+        "description": "Electric neon cyan with bright glow"
+      },
+      "border_watercolor": {
+        "name": "Watercolor",
+        "description": "Soft pastel watercolor wash"
+      },
+      "border_origami": {
+        "name": "Origami",
+        "description": "Geometric paper-fold pattern in warm tones"
+      },
+      "border_dragon": {
+        "name": "Dragon Scale",
+        "description": "Fiery red & gold with blazing glow"
+      },
+      "celeb_hearts": {
+        "name": "Heart Burst",
+        "description": "Fill the screen with cascading hearts!"
+      },
+      "celeb_stars": {
+        "name": "Star Shower",
+        "description": "A golden rain of twinkling stars"
+      },
+      "celeb_bunnies": {
+        "name": "Bunny Parade",
+        "description": "Adorable bunnies hop across your screen"
+      },
+      "celeb_rainbow": {
+        "name": "Rainbow Pop",
+        "description": "Explode with all the colors of the rainbow"
+      },
+      "celeb_sparkle_pink": {
+        "name": "Sparkle Pink",
+        "description": "Dreamy pink sparkles and glitter cascade"
+      },
+      "celeb_galaxy": {
+        "name": "Galaxy Burst",
+        "description": "Deep space fireworks with cosmic shimmer"
+      },
+      "buddy_bunny": {
+        "name": "Bunny",
+        "description": "An adorable bunny hopping with encouragement"
+      },
+      "buddy_penguin": {
+        "name": "Penguin",
+        "description": "A cool penguin who loves learning!"
+      },
+      "buddy_panda": {
+        "name": "Panda",
+        "description": "A gentle panda with wise study vibes"
+      },
+      "buddy_fox": {
+        "name": "Fox",
+        "description": "A clever fox that keeps you sharp!"
+      },
+      "buddy_pink_cat": {
+        "name": "Pink Cat",
+        "description": "A cheerful pink kitty that cheers you on!"
+      },
+      "theme_cottagecore": {
+        "name": "Cottagecore",
+        "description": "Cozy countryside warmth — coming soon!"
+      },
+      "theme_galaxy": {
+        "name": "Galaxy",
+        "description": "Deep space sparkles — coming soon!"
+      },
+      "border_crystal": {
+        "name": "Crystal Ice",
+        "description": "Shimmering frozen crystal edges — coming soon!"
+      },
+      "border_floral": {
+        "name": "Floral Garden",
+        "description": "Blooming flower frame — coming soon!"
+      }
+    },
+    "buddies": {
+      "buddy_pink_cat": {
+        "correct": [
+          "Nyaa~ Perfect!",
+          "Purr-fect answer!",
+          "Meow yeah!",
+          "You're paw-some!",
+          "Nyan~ So smart!",
+          "Kitty is proud! ✨",
+          "Sugoi nya~!",
+          "That's right, nya!"
+        ],
+        "wrong": [
+          "Mew… try again!",
+          "Don't give up, nya~",
+          "Almost there, meow!",
+          "One more try, nya!",
+          "Kitty believes in you!",
+          "Hmm, not quite nya~"
+        ],
+        "idle": [
+          "♪ zzZ~",
+          "~purrs softly~",
+          "~chases yarn~",
+          "Nya~ let's study!",
+          "~stretches~",
+          "~grooms paws~",
+          "♪ la la nya~",
+          "~bats at butterfly~"
+        ],
+        "homePhrases": [
+          "Nya~ Time to study! 📚",
+          "Let's practice together!",
+          "Kitty wants to learn too~",
+          "Pick a deck, nya!",
+          "Study makes us stronger!",
+          "日本語 time, meow!",
+          "I'll cheer you on, nya~",
+          "Tap a deck to start! ✨"
+        ]
+      },
+      "buddy_bunny": {
+        "correct": [
+          "Hop hop hooray!",
+          "Bunny bounce! 🎉",
+          "That's amazing!",
+          "Ear-resistible answer!",
+          "You did it!",
+          "So proud of you!",
+          "Sugoi! Sugoi!",
+          "Happy hops!"
+        ],
+        "wrong": [
+          "Oops, one more time!",
+          "Try again, friend!",
+          "Don't worry, hop to it!",
+          "Almost! Keep going!",
+          "You'll get it next hop!",
+          "Bunny believes in you!"
+        ],
+        "idle": [
+          "~munches carrot~",
+          "~wiggles nose~",
+          "~does a little hop~",
+          "Let's learn together!",
+          "~flops over~",
+          "~thumps foot~",
+          "~sniff sniff~",
+          "~hides in flowers~"
+        ],
+        "homePhrases": [
+          "Let's hop into studying! 🥕",
+          "Time to practice!",
+          "Pick a deck and let's go!",
+          "Study time is fun time!",
+          "I'll hop along with you!",
+          "Ready to learn together?",
+          "Every card makes you smarter!",
+          "がんばろう! Let's go!"
+        ]
+      },
+      "buddy_penguin": {
+        "correct": [
+          "Cool! Nailed it!",
+          "Ice-credible!",
+          "Waddle yeah!",
+          "Penguin approved! 🧊",
+          "You're on fire… wait, I melt!",
+          "Spectacular!",
+          "Chill answer! 🎉",
+          "Flipper high-five!"
+        ],
+        "wrong": [
+          "Brrr, not quite…",
+          "Slide into another try!",
+          "Keep waddling forward!",
+          "Almost! Try once more!",
+          "Don't slip up now!",
+          "You got this, friend!"
+        ],
+        "idle": [
+          "~waddles~",
+          "~slides on tummy~",
+          "~looks at fish~",
+          "Brr, study time!",
+          "~flaps flippers~",
+          "~huddles for warmth~",
+          "~catches snowflake~",
+          "~does penguin dance~"
+        ],
+        "homePhrases": [
+          "Cool study session ahead! 🧊",
+          "Let's slide into learning!",
+          "Pick a deck, friend!",
+          "Waddle we learn today?",
+          "Time to chill and study!",
+          "I'll keep you company!",
+          "Study buddies forever!",
+          "Let's practice 日本語!"
+        ]
+      },
+      "buddy_panda": {
+        "correct": [
+          "Bamboo-tiful!",
+          "Panda-stic work!",
+          "You rock! 🎋",
+          "That's the way!",
+          "So wise! Like bamboo~",
+          "Amazing answer!",
+          "Panda proud moment!",
+          "Subarashii!"
+        ],
+        "wrong": [
+          "Hmm, keep going!",
+          "Roll with it, try again!",
+          "Don't give up!",
+          "Almost there!",
+          "Panda patience~",
+          "Take your time!"
+        ],
+        "idle": [
+          "~noms bamboo~",
+          "~rolls around~",
+          "~takes a nap~",
+          "Mmm, study break?",
+          "~stretches lazily~",
+          "~climbs tree~",
+          "~sits and thinks~",
+          "~munches thoughtfully~"
+        ],
+        "homePhrases": [
+          "Study time~ 🎋",
+          "Let's munch on knowledge!",
+          "Pick a deck to practice!",
+          "Learning is bamboo-tiful!",
+          "Take it one card at a time~",
+          "Wise pandas always study!",
+          "Ready when you are!",
+          "いっしょに がんばろう!"
+        ]
+      },
+      "buddy_fox": {
+        "correct": [
+          "Clever answer!",
+          "Fox-tastic!",
+          "Sharp as always!",
+          "Brilliant mind! 🌟",
+          "What does the fox say? YAY!",
+          "Smarty-paws!",
+          "Quick thinking!",
+          "Sly and smart!"
+        ],
+        "wrong": [
+          "Almost, think again!",
+          "Fox tip: try once more!",
+          "So close! Be cunning!",
+          "Don't worry, be foxy!",
+          "Tricky, but you've got this!",
+          "A clever fox never gives up!"
+        ],
+        "idle": [
+          "~curls up~",
+          "~sniffs the air~",
+          "~chases leaves~",
+          "What shall we learn?",
+          "~flicks tail~",
+          "~yawns softly~",
+          "~perks ears up~",
+          "~does a little trot~"
+        ],
+        "homePhrases": [
+          "Clever foxes always study! 🌟",
+          "Time to sharpen our minds!",
+          "Pick a deck, smarty-paws!",
+          "Let's outsmart those cards!",
+          "Knowledge is power!",
+          "A quick study session?",
+          "Stay sharp, stay foxy!",
+          "べんきょう しましょう!"
+        ]
+      }
+    }
   }
 }

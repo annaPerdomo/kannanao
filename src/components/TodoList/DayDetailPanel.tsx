@@ -17,6 +17,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import type { CalendarEntry, EntryType, Todo } from '@/types/todo';
 
@@ -102,6 +103,8 @@ export function DayDetailPanel({
   brandPalette: brand,
   accentPalette: accent,
 }: DayDetailPanelProps) {
+  const t = useTranslations('Todo.dayDetailPanel');
+  const tCelebration = useTranslations('Todo.celebrationMessages');
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
@@ -154,7 +157,7 @@ export function DayDetailPanel({
               letterSpacing: 0.5,
             }}
           >
-            ✅ My To-Do List
+            {t('myToDoList')}
           </Typography>
           <DayProgress completedCount={completedCount} totalCount={totalCount} />
         </Box>
@@ -184,7 +187,7 @@ export function DayDetailPanel({
             }}
           >
             <Typography sx={{ fontWeight: 800, fontSize: '0.88rem', color: brand[700] }}>
-              {celebration} All done! 🎊
+              {celebration && t('allDone', { celebration: tCelebration(celebration) })}
             </Typography>
           </Box>
         </Collapse>
@@ -214,18 +217,18 @@ export function DayDetailPanel({
               variant="caption"
               sx={{ display: 'block', textAlign: 'center', mt: 1, color: 'text.disabled' }}
             >
-              Loading your list... 🌸
+              {t('loadingList')}
             </Typography>
           </Box>
         ) : todosForDay.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 2.5 }}>
             <Typography sx={{ fontSize: '1.75rem', mb: 0.5 }}>🌷</Typography>
             <Typography sx={{ color: 'text.secondary', fontSize: '0.82rem', fontWeight: 700 }}>
-              {isPastDate ? 'Nothing planned for this day 🌸' : 'Nothing here yet!'}
+              {isPastDate ? t('nothingPlannedPast') : t('nothingHereYet')}
             </Typography>
             {!isPastDate && (
               <Typography sx={{ color: 'text.disabled', fontSize: '0.72rem', mt: 0.25 }}>
-                Write a to-do above and tap + to add it! ⭐
+                {t('writeATodoHint')}
               </Typography>
             )}
           </Box>

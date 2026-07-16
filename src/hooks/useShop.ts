@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -397,7 +398,16 @@ export const CELEBRATION_THEMES: Record<string, CelebTheme> = {
   },
 };
 
-/** Map buddy item key → config with emoji and reaction text */
+/**
+ * Map buddy item key → config with emoji and reaction text.
+ *
+ * The `reactions` arrays are also translated under the `Shop.buddies.<key>`
+ * namespace in messages/en.json — StudyBuddy.tsx reads them via
+ * `useTranslations('Shop.buddies')` + `t.raw(...)`. The English literals here
+ * are kept as a non-UI fallback because BuddyPreviewModal.tsx and
+ * BuddyCardPreview.tsx still read `config.reactions` directly and have not
+ * been converted to i18n yet.
+ */
 export const BUDDY_CONFIG: Record<string, BuddyConfig> = {
   buddy_pink_cat: {
     emoji: '🐱',
@@ -566,60 +576,6 @@ export const BUDDY_CONFIG: Record<string, BuddyConfig> = {
   },
 };
 
-/** Home page encouragement phrases per buddy */
-export const BUDDY_HOME_PHRASES: Record<string, string[]> = {
-  buddy_pink_cat: [
-    'Nya~ Time to study! 📚',
-    "Let's practice together!",
-    'Kitty wants to learn too~',
-    'Pick a deck, nya!',
-    'Study makes us stronger!',
-    '日本語 time, meow!',
-    "I'll cheer you on, nya~",
-    'Tap a deck to start! ✨',
-  ],
-  buddy_bunny: [
-    "Let's hop into studying! 🥕",
-    'Time to practice!',
-    "Pick a deck and let's go!",
-    'Study time is fun time!',
-    "I'll hop along with you!",
-    'Ready to learn together?',
-    'Every card makes you smarter!',
-    "がんばろう! Let's go!",
-  ],
-  buddy_penguin: [
-    'Cool study session ahead! 🧊',
-    "Let's slide into learning!",
-    'Pick a deck, friend!',
-    'Waddle we learn today?',
-    'Time to chill and study!',
-    "I'll keep you company!",
-    'Study buddies forever!',
-    "Let's practice 日本語!",
-  ],
-  buddy_panda: [
-    'Study time~ 🎋',
-    "Let's munch on knowledge!",
-    'Pick a deck to practice!',
-    'Learning is bamboo-tiful!',
-    'Take it one card at a time~',
-    'Wise pandas always study!',
-    'Ready when you are!',
-    'いっしょに がんばろう!',
-  ],
-  buddy_fox: [
-    'Clever foxes always study! 🌟',
-    'Time to sharpen our minds!',
-    'Pick a deck, smarty-paws!',
-    "Let's outsmart those cards!",
-    'Knowledge is power!',
-    'A quick study session?',
-    'Stay sharp, stay foxy!',
-    'べんきょう しましょう!',
-  ],
-};
-
 /** Map theme item key → ColorScheme value used by the app */
 export const THEME_KEY_TO_SCHEME: Record<string, string> = {
   theme_sakura: 'sakura',
@@ -640,6 +596,7 @@ const FREE_ITEM_KEYS = SHOP_ITEMS.filter((i) => i.price === 0 && !i.comingSoon).
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
 export function useShop(initialShop?: InitialShop | null) {
+  const t = useTranslations('Shop.errors');
   const { isAdmin, user } = useAuth();
   const supabase = sb;
   const [purchases, setPurchases] = useState<UserPurchase[]>(initialShop?.purchases ?? []);
@@ -693,14 +650,14 @@ export function useShop(initialShop?: InitialShop | null) {
   const purchaseItem = useCallback(
     async (itemKey: string, spendableXp: number): Promise<{ error: string | null }> => {
       const item = SHOP_ITEMS.find((i) => i.key === itemKey);
-      if (!item) return { error: 'Item not found' };
-      if (ownsItem(itemKey)) return { error: 'Already owned' };
-      if (spendableXp < item.price) return { error: 'Not enough XP' };
+      if (!item) return { error: t('itemNotFound') };
+      if (ownsItem(itemKey)) return { error: t('alreadyOwned') };
+      if (spendableXp < item.price) return { error: t('notEnoughXp') };
 
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return { error: 'Not authenticated' };
+      if (!user) return { error: t('notAuthenticated') };
 
       // Optimistic update
       const prevPurchases = [...purchases];
@@ -757,25 +714,25 @@ export function useShop(initialShop?: InitialShop | null) {
         // Rollback
         setPurchases(prevPurchases);
         setEquipped(prevEquipped);
-        const msg = err instanceof Error ? err.message : 'Purchase failed';
+        const msg = err instanceof Error ? err.message : t('purchaseFailed');
         setError(msg);
         return { error: msg };
       }
     },
-    [purchases, equipped, ownsItem, supabase, fetchShopData],
+    [purchases, equipped, ownsItem, supabase, fetchShopData, t],
   );
 
   /** Equip an owned item in its category slot */
   const equipItem = useCallback(
     async (itemKey: string): Promise<{ error: string | null }> => {
       const item = SHOP_ITEMS.find((i) => i.key === itemKey);
-      if (!item) return { error: 'Item not found' };
-      if (!ownsItem(itemKey)) return { error: 'Item not owned' };
+      if (!item) return { error: t('itemNotFound') };
+      if (!ownsItem(itemKey)) return { error: t('itemNotOwned') };
 
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return { error: 'Not authenticated' };
+      if (!user) return { error: t('notAuthenticated') };
 
       const prevEquipped = { ...equipped };
       setEquipped((prev) => ({ ...prev, [item.category]: itemKey }));
@@ -792,12 +749,12 @@ export function useShop(initialShop?: InitialShop | null) {
         return { error: null };
       } catch (err) {
         setEquipped(prevEquipped);
-        const msg = err instanceof Error ? err.message : 'Equip failed';
+        const msg = err instanceof Error ? err.message : t('equipFailed');
         setError(msg);
         return { error: msg };
       }
     },
-    [equipped, ownsItem, supabase],
+    [equipped, ownsItem, supabase, t],
   );
 
   /** Unequip an item slot (reverts to default) */
@@ -806,7 +763,7 @@ export function useShop(initialShop?: InitialShop | null) {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return { error: 'Not authenticated' };
+      if (!user) return { error: t('notAuthenticated') };
 
       const prevEquipped = { ...equipped };
       setEquipped((prev) => {
@@ -826,12 +783,12 @@ export function useShop(initialShop?: InitialShop | null) {
         return { error: null };
       } catch (err) {
         setEquipped(prevEquipped);
-        const msg = err instanceof Error ? err.message : 'Unequip failed';
+        const msg = err instanceof Error ? err.message : t('unequipFailed');
         setError(msg);
         return { error: msg };
       }
     },
-    [equipped, supabase],
+    [equipped, supabase, t],
   );
 
   return {

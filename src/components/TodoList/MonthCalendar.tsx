@@ -7,6 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useLocale, useTranslations } from 'next-intl';
 
 import type { CalendarEntry, EntryType, Todo } from '@/types/todo';
 
@@ -14,10 +15,11 @@ import {
   DEFAULT_ENTRY_TYPES,
   getEntryType,
   getMonthCalendarDates,
+  getMonthName,
+  getWeekdayNames,
   isCompletedOnDate,
   isEntryOnDate,
   isScheduledForDate,
-  MONTH_NAMES,
   todayISO,
   toISODate,
 } from './helpers';
@@ -43,6 +45,9 @@ export function MonthCalendar({
 }: MonthCalendarProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const t = useTranslations('Todo.monthCalendar');
+  const locale = useLocale();
+  const weekdayHeaders = getWeekdayNames(locale, [0, 1, 2, 3, 4, 5, 6]);
 
   const now = new Date();
   const year = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1).getFullYear();
@@ -95,7 +100,7 @@ export function MonthCalendar({
           <ChevronLeftRoundedIcon sx={{ fontSize: '1.1rem' }} />
         </IconButton>
         <Typography sx={{ fontWeight: 800, fontSize: '0.92rem', color: brand[700] }}>
-          {MONTH_NAMES[month]} {year}
+          {getMonthName(month, locale)} {year}
         </Typography>
         <IconButton
           size="small"
@@ -113,7 +118,7 @@ export function MonthCalendar({
 
       {/* Day-of-week headers */}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5, mb: 0.5 }}>
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+        {weekdayHeaders.map((d) => (
           <Typography
             key={d}
             sx={{ textAlign: 'center', fontSize: '0.68rem', fontWeight: 800, color: brand[500] }}
@@ -220,10 +225,10 @@ export function MonthCalendar({
         useFlexGap
       >
         {[
-          { label: 'All done', icon: '⭐' },
-          { label: 'Some done', color: alpha(accent[200], 0.5) },
-          { label: 'Special day', color: alpha(DEFAULT_ENTRY_TYPES[1].color, 0.35) },
-          { label: 'Today', border: brand[300] },
+          { label: t('legendAllDone'), icon: '⭐' },
+          { label: t('legendSomeDone'), color: alpha(accent[200], 0.5) },
+          { label: t('legendSpecialDay'), color: alpha(DEFAULT_ENTRY_TYPES[1].color, 0.35) },
+          { label: t('legendToday'), border: brand[300] },
         ].map(({ label, color, icon, border }) => (
           <Stack key={label} direction="row" spacing={0.4} alignItems="center">
             {icon ? (

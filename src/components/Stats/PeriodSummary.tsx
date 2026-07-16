@@ -3,12 +3,15 @@
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useLocale, useTranslations } from 'next-intl';
 
 import type { SessionMode, StudySession } from '@/hooks/useProgress';
 
 import { modeColor, modeLabel, sessionLocalDate } from './constants';
 
 export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
+  const t = useTranslations('Stats.periodSummary');
+  const locale = useLocale();
   const theme = useTheme();
   const { brand } = theme.palette;
 
@@ -36,7 +39,7 @@ export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
   const week = aggregate(forPeriod(weekStart));
   const month = aggregate(forPeriod(monthStart));
 
-  const monthName = today.toLocaleDateString(undefined, { month: 'long' });
+  const monthName = today.toLocaleDateString(locale, { month: 'long' });
 
   const monthSessions = forPeriod(monthStart);
   const modeCounts = monthSessions.reduce<Record<string, number>>((acc, s) => {
@@ -77,10 +80,10 @@ export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
       </Typography>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         {[
-          { label: 'Days studied', value: data.days },
-          { label: 'Cards studied', value: data.cards.toLocaleString() },
-          { label: 'XP earned', value: `+${data.xp.toLocaleString()}` },
-          { label: 'Sessions', value: data.sessions },
+          { label: t('daysStudied'), value: data.days },
+          { label: t('cardsStudied'), value: data.cards.toLocaleString() },
+          { label: t('xpEarned'), value: `+${data.xp.toLocaleString()}` },
+          { label: t('sessions'), value: data.sessions },
         ].map(({ label, value }) => (
           <Box
             key={label}
@@ -106,7 +109,7 @@ export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       <Box sx={{ display: 'flex', gap: 1.5 }}>
-        <PeriodCard title="This Week" data={week} />
+        <PeriodCard title={t('thisWeek')} data={week} />
         <PeriodCard title={monthName} data={month} />
       </Box>
 
@@ -128,7 +131,7 @@ export function PeriodSummary({ sessions }: { sessions: StudySession[] }) {
               mb: 1,
             }}
           >
-            {monthName} by mode
+            {t('byMode', { month: monthName })}
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
             {modeBreakdown.map(([mode, count]) => {

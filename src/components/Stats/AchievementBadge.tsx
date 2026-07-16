@@ -3,8 +3,9 @@
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useLocale, useTranslations } from 'next-intl';
 
-import { ACHIEVEMENTS } from '@/hooks/useProgress';
+import { ACHIEVEMENTS, achievementSlug } from '@/hooks/useProgress';
 
 export function AchievementBadge({
   achievementKey,
@@ -15,10 +16,17 @@ export function AchievementBadge({
   unlocked: boolean;
   unlockedAt?: string;
 }) {
+  const t = useTranslations('Review.achievements');
+  const tStats = useTranslations('Stats.achievementBadge');
+  const locale = useLocale();
   const def = ACHIEVEMENTS.find((a) => a.key === achievementKey);
   if (!def) return null;
 
-  const label = (
+  const slug = achievementSlug(def.key);
+  const label = t(`${slug}.label`);
+  const description = t(`${slug}.description`);
+
+  const badge = (
     <Box
       sx={{
         display: 'flex',
@@ -58,7 +66,7 @@ export function AchievementBadge({
           lineHeight: 1.3,
         }}
       >
-        {unlocked ? def.label : '???'}
+        {unlocked ? label : tStats('locked')}
       </Typography>
     </Box>
   );
@@ -67,12 +75,17 @@ export function AchievementBadge({
     <Tooltip
       title={
         unlocked
-          ? `${def.description}${unlockedAt ? ` · Unlocked ${new Date(unlockedAt).toLocaleDateString()}` : ''}`
-          : def.description
+          ? unlockedAt
+            ? tStats('unlockedTooltip', {
+                description,
+                date: new Date(unlockedAt).toLocaleDateString(locale),
+              })
+            : description
+          : description
       }
       arrow
     >
-      <Box>{label}</Box>
+      <Box>{badge}</Box>
     </Tooltip>
   );
 }

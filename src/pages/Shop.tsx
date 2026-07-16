@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -42,6 +43,8 @@ import { type ColorScheme, LAYOUT } from '@/theme';
 import type { ShopCategory, ShopItem } from '@/types/shop';
 
 export default function Shop() {
+  const t = useTranslations('Shop');
+  const tItems = useTranslations('Shop.items');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const {
@@ -84,34 +87,34 @@ export default function Shop() {
     () => [
       {
         key: 'theme' as const,
-        title: 'Themes',
+        title: t('categories.themes'),
         icon: <ColorLensIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />,
         filterIcon: <ColorLensIcon />,
-        filterLabel: 'Themes',
+        filterLabel: t('categories.themes'),
       },
       {
         key: 'card_border' as const,
-        title: 'Card Borders',
+        title: t('categories.cardBorders'),
         icon: <BorderStyleIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />,
         filterIcon: <BorderStyleIcon />,
-        filterLabel: 'Borders',
+        filterLabel: t('categories.bordersFilter'),
       },
       {
         key: 'celebration' as const,
-        title: 'Celebrations',
+        title: t('categories.celebrations'),
         icon: <CelebrationIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />,
         filterIcon: <CelebrationIcon />,
-        filterLabel: 'Celebrations',
+        filterLabel: t('categories.celebrations'),
       },
       {
         key: 'study_buddy' as const,
-        title: 'Study Buddies',
+        title: t('categories.studyBuddies'),
         icon: <PetsIcon sx={{ fontSize: '1.1rem', color: brand[500] }} />,
         filterIcon: <PetsIcon />,
-        filterLabel: 'Buddies',
+        filterLabel: t('categories.buddiesFilter'),
       },
     ],
-    [brand],
+    [brand, t],
   );
 
   const itemsByCategory = useMemo(() => {
@@ -136,7 +139,7 @@ export default function Shop() {
       setErrorMsg(error);
     } else {
       setShowCoinBurst(true);
-      setSuccessMsg(`${confirmItem.name} unlocked!`);
+      setSuccessMsg(t('itemUnlocked', { name: tItems(`${confirmItem.key}.name`) }));
       const scheme = THEME_KEY_TO_SCHEME[confirmItem.key];
       if (scheme) {
         setScheme(scheme as Parameters<typeof setScheme>[0]);
@@ -207,8 +210,8 @@ export default function Shop() {
         <Sparkles color={brand[300]} count={10} />
         <PageHeader
           icon={<CardGiftcardIcon />}
-          title="Shop"
-          subtitle="Earn XP by studying and unlock treasures!"
+          title={t('title')}
+          subtitle={t('subtitle')}
           mb={0}
           endContent={
             loading ? (
@@ -235,7 +238,7 @@ export default function Shop() {
                     letterSpacing: '0.1em',
                   }}
                 >
-                  Your XP
+                  {t('yourXp')}
                 </Typography>
                 <Box
                   sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}
@@ -243,7 +246,7 @@ export default function Shop() {
                   <AutoAwesomeIcon sx={{ fontSize: '1rem', color: '#D97706' }} />
                   <Typography
                     sx={{
-                      fontFamily: (t) => t.fonts.cute,
+                      fontFamily: (muiTheme) => muiTheme.fonts.cute,
                       fontSize: { xs: '1.6rem', sm: '2rem' },
                       color: '#D97706',
                       lineHeight: 1,
@@ -254,7 +257,7 @@ export default function Shop() {
                   </Typography>
                 </Box>
                 <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary', mt: 0.25 }}>
-                  Level {progress.level}
+                  {t('level', { level: progress.level })}
                 </Typography>
               </Box>
             ) : null
@@ -275,7 +278,7 @@ export default function Shop() {
       >
         <CategoryButton
           icon={<AutoAwesomeIcon />}
-          label="All"
+          label={t('categories.all')}
           active={activeCategory === 'all'}
           onClick={() => setActiveCategory('all')}
           color={brand[500]}
@@ -413,7 +416,7 @@ export default function Shop() {
               zIndex: 1,
             }}
           >
-            <Loading message="Loading shop…" />
+            <Loading message={t('loadingShop')} />
           </Box>
         </Box>
       ) : activeCategory === 'all' ? (
@@ -490,16 +493,16 @@ export default function Shop() {
           <AutoAwesomeIcon sx={{ fontSize: '1.4rem', color: brand[400], mb: 0.5 }} />
           <Typography
             sx={{
-              fontFamily: (t) => t.fonts.cute,
+              fontFamily: (muiTheme) => muiTheme.fonts.cute,
               fontSize: '0.82rem',
               color: brand[700],
               fontWeight: 600,
             }}
           >
-            Keep studying to earn more XP!
+            {t('keepStudying')}
           </Typography>
           <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary', mt: 0.25 }}>
-            Every card you practice earns you coins for the shop
+            {t('everyCardEarnsCoins')}
           </Typography>
         </Paper>
       )}
@@ -559,7 +562,7 @@ export default function Shop() {
 
             <DialogTitle
               sx={{
-                fontFamily: (t) => t.fonts.cute,
+                fontFamily: (muiTheme) => muiTheme.fonts.cute,
                 color: brand[700],
                 textAlign: 'center',
                 pt: 6,
@@ -567,13 +570,13 @@ export default function Shop() {
                 fontSize: '1.2rem',
               }}
             >
-              Unlock {confirmItem.name}?
+              {t('purchaseDialog.unlockTitle', { name: tItems(`${confirmItem.key}.name`) })}
             </DialogTitle>
             <DialogContent>
               <Typography
                 sx={{ fontSize: '0.82rem', color: 'text.secondary', textAlign: 'center', mb: 2.5 }}
               >
-                {confirmItem.description}
+                {tItems(`${confirmItem.key}.description`)}
               </Typography>
               <Box
                 sx={{
@@ -590,7 +593,7 @@ export default function Shop() {
                   sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 >
                   <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary' }}>
-                    Cost
+                    {t('purchaseDialog.cost')}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
                     <AutoAwesomeIcon sx={{ fontSize: '0.8rem', color: '#D97706' }} />
@@ -601,10 +604,10 @@ export default function Shop() {
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary' }}>
-                    Your balance
+                    {t('purchaseDialog.yourBalance')}
                   </Typography>
                   <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: 'text.primary' }}>
-                    {spendableXp.toLocaleString()} XP
+                    {t('purchaseDialog.balanceXp', { amount: spendableXp.toLocaleString() })}
                   </Typography>
                 </Box>
                 <Box
@@ -616,7 +619,7 @@ export default function Shop() {
                   }}
                 >
                   <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary' }}>
-                    After purchase
+                    {t('purchaseDialog.afterPurchase')}
                   </Typography>
                   <Typography
                     sx={{
@@ -625,7 +628,9 @@ export default function Shop() {
                       color: spendableXp - confirmItem.price >= 0 ? '#059669' : '#DC2626',
                     }}
                   >
-                    {(spendableXp - confirmItem.price).toLocaleString()} XP
+                    {t('purchaseDialog.balanceXp', {
+                      amount: (spendableXp - confirmItem.price).toLocaleString(),
+                    })}
                   </Typography>
                 </Box>
               </Box>
@@ -636,7 +641,7 @@ export default function Shop() {
                 disabled={purchasing}
                 sx={{ color: 'text.secondary', textTransform: 'none', borderRadius: 2, px: 3 }}
               >
-                Maybe later
+                {t('purchaseDialog.maybeLater')}
               </Button>
               <Button
                 onClick={handleBuy}
@@ -647,7 +652,7 @@ export default function Shop() {
                   borderRadius: 2,
                   px: 4,
                   py: 1,
-                  fontFamily: (t) => t.fonts.cute,
+                  fontFamily: (muiTheme) => muiTheme.fonts.cute,
                   fontSize: '0.95rem',
                   background: `linear-gradient(135deg, ${brand[300]}, ${brand[500]})`,
                   boxShadow: `0 4px 16px ${alpha(brand[400], 0.3)}`,
@@ -657,7 +662,7 @@ export default function Shop() {
                   },
                 }}
               >
-                {purchasing ? 'Unlocking...' : 'Unlock!'}
+                {purchasing ? t('purchaseDialog.unlocking') : t('purchaseDialog.unlock')}
               </Button>
             </DialogActions>
           </>
@@ -689,9 +694,16 @@ export default function Shop() {
         >
           <VisibilityIcon sx={{ color: brand[500], fontSize: '1.2rem' }} />
           <Typography
-            sx={{ fontFamily: (t) => t.fonts.cute, fontSize: '0.9rem', color: brand[700] }}
+            sx={{
+              fontFamily: (muiTheme) => muiTheme.fonts.cute,
+              fontSize: '0.9rem',
+              color: brand[700],
+            }}
           >
-            Previewing <strong>{previewingTheme.item.name}</strong>
+            {t.rich('previewingBanner.previewing', {
+              name: tItems(`${previewingTheme.item.key}.name`),
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </Typography>
           <Button
             onClick={handleEndThemePreview}
@@ -699,13 +711,13 @@ export default function Shop() {
             variant="outlined"
             sx={{
               borderRadius: 2,
-              fontFamily: (t) => t.fonts.cute,
+              fontFamily: (muiTheme) => muiTheme.fonts.cute,
               fontSize: '0.78rem',
               px: 2,
               minWidth: 0,
             }}
           >
-            End Preview
+            {t('previewingBanner.endPreview')}
           </Button>
         </Paper>
       )}
@@ -714,7 +726,7 @@ export default function Shop() {
         open={!!borderPreviewItem}
         onClose={() => setBorderPreviewItem(null)}
         borderKey={borderPreviewItem?.key ?? 'border_none'}
-        borderName={borderPreviewItem?.name ?? ''}
+        borderName={borderPreviewItem ? tItems(`${borderPreviewItem.key}.name`) : ''}
       />
 
       <CelebrationPreviewModal

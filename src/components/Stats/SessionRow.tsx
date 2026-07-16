@@ -5,6 +5,7 @@ import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useLocale, useTranslations } from 'next-intl';
 
 import type { SessionMode } from '@/hooks/useProgress';
 
@@ -25,6 +26,8 @@ export function SessionRow({
   secs: number;
   mode: SessionMode | null;
 }) {
+  const t = useTranslations('Stats.sessionRow');
+  const locale = useLocale();
   const theme = useTheme();
   const { brand } = theme.palette;
   const pct = studied > 0 ? Math.round((correct / studied) * 100) : 0;
@@ -42,7 +45,7 @@ export function SessionRow({
       }}
     >
       <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', minWidth: 72 }}>
-        {new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+        {new Date(date).toLocaleDateString(locale, { month: 'short', day: 'numeric' })}
       </Typography>
 
       <Chip
@@ -76,11 +79,11 @@ export function SessionRow({
       </Box>
 
       <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', minWidth: 36 }}>
-        {pct}%
+        {t('percent', { pct })}
       </Typography>
 
       <Chip
-        label={`+${xp} XP`}
+        label={t('xpValue', { xp })}
         size="small"
         sx={{
           bgcolor: alpha(brand[300], 0.22),
@@ -93,7 +96,7 @@ export function SessionRow({
       />
 
       <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary', minWidth: 40 }}>
-        {mins}m
+        {t('minutes', { mins })}
       </Typography>
     </Box>
   );

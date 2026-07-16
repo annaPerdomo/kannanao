@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
@@ -29,6 +30,8 @@ interface EditTodoDialogProps {
 export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogProps) {
   const { palette } = useTheme();
   const { brand, accent } = palette;
+  const t = useTranslations('Todo.editTodoDialog');
+  const tCommon = useTranslations('Common');
 
   const [text, setText] = useState('');
   const [frequencyDays, setFrequencyDays] = useState<number[]>([]);
@@ -61,7 +64,7 @@ export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogPr
       onClose();
     } catch (err) {
       console.error('Failed to save todo:', err);
-      setError('Failed to save. Please try again.');
+      setError(t('errorSave'));
     } finally {
       setSaving(false);
     }
@@ -73,7 +76,7 @@ export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogPr
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Edit Task"
+      title={t('title')}
       actions={
         <Stack direction="row" spacing={1}>
           <Button
@@ -85,7 +88,7 @@ export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogPr
               fontSize: '0.875rem',
             }}
           >
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             onClick={handleSave}
@@ -107,7 +110,7 @@ export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogPr
               '&:disabled': { background: alpha(brand[200], 0.3), color: alpha('#000', 0.3) },
             }}
           >
-            {saving ? 'Saving...' : 'Save'}
+            {saving ? t('saving') : tCommon('save')}
           </Button>
         </Stack>
       }
@@ -123,7 +126,7 @@ export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogPr
           </Alert>
         )}
         <TextField
-          label="Task"
+          label={t('taskLabel')}
           value={text}
           onChange={(e) => setText(e.target.value)}
           fullWidth
@@ -149,7 +152,7 @@ export function EditTodoDialog({ open, onClose, todo, onSave }: EditTodoDialogPr
         </Box>
         {frequencyDays.length === 0 && !repeatUntilDone && (
           <TextField
-            label="Which day?"
+            label={t('whichDayLabel')}
             type="date"
             value={assignedDate}
             onChange={(e) => setAssignedDate(e.target.value)}

@@ -7,6 +7,7 @@ import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { FrequencyPicker } from './FrequencyPicker';
@@ -34,6 +35,7 @@ export function AddTodoInput({
 }: AddTodoInputProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const t = useTranslations('Todo.addTodoInput');
   const [focused, setFocused] = useState(false);
   const showOptions = focused || value.length > 0;
 
@@ -48,7 +50,7 @@ export function AddTodoInput({
           }}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholder="Write a new to-do..."
+          placeholder={t('placeholder')}
           size="small"
           fullWidth
           disabled={disabled}
@@ -67,7 +69,7 @@ export function AddTodoInput({
             '& .MuiInputBase-input::placeholder': { color: brand[400], opacity: 1 },
           }}
         />
-        <Tooltip title="Add it!">
+        <Tooltip title={t('addTooltip')}>
           <span>
             <IconButton
               onClick={onAdd}

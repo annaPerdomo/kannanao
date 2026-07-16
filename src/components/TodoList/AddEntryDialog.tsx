@@ -14,13 +14,14 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { type Dayjs } from 'dayjs';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
 import type { CalendarEntry, EntryType } from '@/types/todo';
 
 import { FrequencyPicker } from './FrequencyPicker';
-import { DEFAULT_ENTRY_TYPES, getEntryType, toISODate } from './helpers';
+import { DEFAULT_ENTRY_TYPES, getEntryType, getEntryTypeName, toISODate } from './helpers';
 import { ManageEntryTypesDialog } from './ManageEntryTypesDialog';
 
 interface AddEntryDialogProps {
@@ -46,6 +47,9 @@ export function AddEntryDialog({
 }: AddEntryDialogProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const t = useTranslations('Todo.addEntryDialog');
+  const tCommon = useTranslations('Common');
+  const tEntryTypeNames = useTranslations('Todo.defaultEntryTypeNames');
 
   const [title, setTitle] = useState('');
   const [typeId, setTypeId] = useState(DEFAULT_ENTRY_TYPES[0].id);
@@ -89,7 +93,7 @@ export function AddEntryDialog({
       onAddEntry(newEntry);
       onClose();
     } catch {
-      setError("Oops! Couldn't add it. Please try again.");
+      setError(t('errorAdd'));
     }
   }, [
     title,
@@ -101,6 +105,7 @@ export function AddEntryDialog({
     selectedDate,
     onAddEntry,
     onClose,
+    t,
   ]);
 
   const datePickerSx = {
@@ -160,14 +165,14 @@ export function AddEntryDialog({
       <StyledDialog
         open={open}
         onClose={onClose}
-        title="📅 Add a Special Day"
+        title={t('title')}
         actions={
           <Stack direction="row" spacing={1}>
             <Button
               onClick={onClose}
               sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'none' }}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
               onClick={handleSave}
@@ -190,7 +195,7 @@ export function AddEntryDialog({
                 transition: 'all 0.2s ease',
               }}
             >
-              Add ✨
+              {t('addButton')}
             </Button>
           </Stack>
         }
@@ -207,7 +212,7 @@ export function AddEntryDialog({
           )}
 
           <TextField
-            label="What is it? ✨"
+            label={t('whatIsIt')}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={(e) => {
@@ -240,9 +245,9 @@ export function AddEntryDialog({
                   letterSpacing: 0.5,
                 }}
               >
-                Kind
+                {t('kind')}
               </Typography>
-              <Tooltip title="Manage labels">
+              <Tooltip title={t('manageLabels')}>
                 <IconButton
                   size="small"
                   onClick={() => setManageTypesOpen(true)}
@@ -293,7 +298,7 @@ export function AddEntryDialog({
                         color: selected ? type.color : 'text.secondary',
                       }}
                     >
-                      {type.name}
+                      {getEntryTypeName(type, tEntryTypeNames)}
                     </Typography>
                   </Box>
                 );
@@ -302,7 +307,7 @@ export function AddEntryDialog({
           </Box>
 
           <DatePicker
-            label="When? 📅"
+            label={t('when')}
             value={startDate}
             onChange={(val) => {
               setStartDate(val);
@@ -339,12 +344,12 @@ export function AddEntryDialog({
               ) : (
                 <ExpandMoreRoundedIcon sx={{ fontSize: '1rem' }} />
               )}
-              {showMore ? 'Show less' : 'Lasts more than one day? Or repeat?'}
+              {showMore ? t('showLess') : t('lastsMoreThanOneDay')}
             </Box>
             <Collapse in={showMore}>
               <Stack spacing={1.75} mt={1.5}>
                 <DatePicker
-                  label="Last day 📅"
+                  label={t('lastDay')}
                   value={endDate}
                   onChange={(val) => setEndDate(val)}
                   minDate={startDate ?? undefined}

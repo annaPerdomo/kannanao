@@ -7,17 +7,28 @@ import IconButton from '@mui/material/IconButton';
 import { alpha, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import type { StudySession } from '@/hooks/useProgress';
 
 import { sessionLocalDate, toLocalDateStr } from './constants';
 
-const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+// Aug 2, 2021 was a Monday — used as a stable anchor to derive locale-aware,
+// Monday-first weekday labels via Intl instead of hand-written English strings.
+const MONDAY_ANCHOR = new Date(2021, 7, 2);
 
 export function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
+  const t = useTranslations('Stats.studyCalendar');
+  const locale = useLocale();
   const theme = useTheme();
   const { brand } = theme.palette;
+
+  const dayLabels = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(MONDAY_ANCHOR);
+    d.setDate(MONDAY_ANCHOR.getDate() + i);
+    return new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(d);
+  });
 
   const todayReal = new Date();
   todayReal.setHours(0, 0, 0, 0);
@@ -69,7 +80,7 @@ export function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
     return brand[700];
   };
 
-  const monthLabel = firstDay.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  const monthLabel = firstDay.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 
   return (
     <Box>
@@ -98,7 +109,7 @@ export function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
       </Box>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5, mb: 0.5 }}>
-        {DAY_LABELS.map((d) => (
+        {dayLabels.map((d) => (
           <Typography
             key={d}
             sx={{
@@ -131,7 +142,7 @@ export function StudyCalendar({ sessions }: { sessions: StudySession[] }) {
             return (
               <Tooltip
                 key={dateStr}
-                title={isFuture || cards === 0 ? '' : `${cards} cards studied`}
+                title={isFuture || cards === 0 ? '' : t('cardsStudiedTooltip', { cards })}
                 arrow
               >
                 <Box

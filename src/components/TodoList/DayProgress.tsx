@@ -4,6 +4,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import { XP_PER_TODO } from './helpers';
 
@@ -15,6 +16,7 @@ interface DayProgressProps {
 export function DayProgress({ completedCount, totalCount }: DayProgressProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const t = useTranslations('Todo.dayProgress');
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   if (totalCount === 0) return null;
@@ -23,10 +25,11 @@ export function DayProgress({ completedCount, totalCount }: DayProgressProps) {
     <Box>
       <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1} mb={0.75}>
         <Typography sx={{ color: 'text.disabled', fontWeight: 700, fontSize: '0.68rem' }}>
-          {progress === 100 ? 'All done! ⭐' : `+${XP_PER_TODO} XP each`}
+          {progress === 100 ? t('allDone') : t('xpEach', { xp: XP_PER_TODO })}
         </Typography>
         <Typography sx={{ color: brand[700], fontWeight: 800, fontSize: '0.72rem' }}>
-          {progress === 100 ? '🎊' : '🌟'} {completedCount}/{totalCount} done
+          {progress === 100 ? '🎊' : '🌟'}{' '}
+          {t('doneCount', { completed: completedCount, total: totalCount })}
         </Typography>
       </Stack>
       <LinearProgress
