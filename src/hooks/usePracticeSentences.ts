@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
@@ -10,6 +11,7 @@ import {
 import { dbSentenceToApp, type PracticeSentence } from '@/types/practiceSentence';
 
 export function usePracticeSentences(deckId: string) {
+  const t = useTranslations('Practice.usePracticeSentences');
   const [sentences, setSentences] = useState<PracticeSentence[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -36,7 +38,7 @@ export function usePracticeSentences(deckId: string) {
         if (!cancelled) setSentences(rows.map(dbSentenceToApp));
       })
       .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load');
+        if (!cancelled) setError(err instanceof Error ? err.message : t('failedToLoad'));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -45,7 +47,7 @@ export function usePracticeSentences(deckId: string) {
     return () => {
       cancelled = true;
     };
-  }, [deckId]);
+  }, [deckId, t]);
 
   const generate = useCallback(async () => {
     setGenerating(true);
@@ -58,12 +60,12 @@ export function usePracticeSentences(deckId: string) {
       }
     } catch (err) {
       if (mountedRef.current) {
-        setError(err instanceof Error ? err.message : 'Failed to generate');
+        setError(err instanceof Error ? err.message : t('failedToGenerate'));
       }
     } finally {
       if (mountedRef.current) setGenerating(false);
     }
-  }, [deckId]);
+  }, [deckId, t]);
 
   const regenerate = useCallback(async () => {
     setGenerating(true);
@@ -77,12 +79,12 @@ export function usePracticeSentences(deckId: string) {
       }
     } catch (err) {
       if (mountedRef.current) {
-        setError(err instanceof Error ? err.message : 'Failed to regenerate');
+        setError(err instanceof Error ? err.message : t('failedToRegenerate'));
       }
     } finally {
       if (mountedRef.current) setGenerating(false);
     }
-  }, [deckId]);
+  }, [deckId, t]);
 
   const clearJustGenerated = useCallback(() => setJustGenerated(false), []);
 
@@ -98,14 +100,14 @@ export function usePracticeSentences(deckId: string) {
         if (mountedRef.current) setSentences(rows.map(dbSentenceToApp));
       } catch (err) {
         if (mountedRef.current) {
-          setError(err instanceof Error ? err.message : 'Failed to save changes');
+          setError(err instanceof Error ? err.message : t('failedToSaveChanges'));
         }
         throw err;
       } finally {
         if (mountedRef.current) setSaving(false);
       }
     },
-    [deckId],
+    [deckId, t],
   );
 
   return {

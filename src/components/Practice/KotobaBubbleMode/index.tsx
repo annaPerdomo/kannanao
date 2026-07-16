@@ -13,6 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ComboChip } from '@/components/ComboChip';
@@ -55,6 +56,9 @@ function buildOptions(sentence: PracticeSentence): string[] {
 }
 
 export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBubbleModeProps) {
+  const t = useTranslations('Practice.kotobaBubble');
+  const tCommon = useTranslations('Practice.common');
+  const tBack = useTranslations('Common');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const { isMemberAccount } = useAuth();
@@ -237,7 +241,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
 
   // ── Loading / generation states ────────────────────────────────────────────
   if (loading) {
-    return <Loading message="Loading Sentence Builder..." />;
+    return <Loading message={t('loadingBuilder')} />;
   }
 
   if (error && !hasContent) {
@@ -247,14 +251,14 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
           {error}
         </Alert>
         <Button onClick={onExit} variant="outlined">
-          Back
+          {tBack('back')}
         </Button>
       </Box>
     );
   }
 
   if (generating) {
-    return <Loading message="Generating practice sentences..." />;
+    return <Loading message={t('generatingSentences')} />;
   }
 
   if (!hasContent) {
@@ -262,12 +266,10 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
       <Box sx={{ textAlign: 'center', py: 6 }}>
         <Typography sx={{ fontSize: '3rem', mb: 2 }}>🫧</Typography>
         <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>
-          Sentence Builder
+          {t('title')}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 360, mx: 'auto' }}>
-          {isMemberAccount
-            ? "Your teacher hasn't set up this game for this deck yet. Ask them to generate practice sentences!"
-            : "Generate fun practice sentences from this deck's vocabulary. The AI will create natural conversations your student can practice with!"}
+          {isMemberAccount ? t('memberEmptyMsg') : t('organizerEmptyMsg')}
         </Typography>
         {!isMemberAccount && (
           <Button
@@ -277,7 +279,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
             startIcon={<AutoAwesomeIcon />}
             sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700, px: 4 }}
           >
-            Generate Practice
+            {t('generatePractice')}
           </Button>
         )}
         {error && (
@@ -287,7 +289,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
         )}
         <Box sx={{ mt: 2 }}>
           <Button onClick={onExit} color="inherit" size="small">
-            Back
+            {tBack('back')}
           </Button>
         </Box>
       </Box>
@@ -298,10 +300,10 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
     return (
       <Box sx={{ textAlign: 'center', py: 6 }}>
         <Typography color="text.secondary">
-          Not enough practice sentences. Need at least {MIN_SENTENCES}.
+          {t('notEnoughSentences', { count: MIN_SENTENCES })}
         </Typography>
         <Button onClick={onExit} sx={{ mt: 2 }} variant="outlined">
-          Back
+          {tBack('back')}
         </Button>
       </Box>
     );
@@ -315,8 +317,11 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
       <CelebrationScreen
         heading={praise.jp}
         headingEn={praise.en}
-        subheading={`${totalCorrect} / ${gameSentences.length} correct`}
-        extra={bestStreak >= 3 ? `Best streak: ${bestStreak} in a row!` : undefined}
+        subheading={tCommon('correctSummary', {
+          correct: totalCorrect,
+          total: gameSentences.length,
+        })}
+        extra={bestStreak >= 3 ? t('bestStreakRow', { count: bestStreak }) : undefined}
         mode="kotoba-bubble"
         onExit={() => setShowSummary(true)}
       />
@@ -330,11 +335,11 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
         {/* Score header */}
         <Box sx={{ textAlign: 'center', mb: 3 }}>
           <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>
-            Sentence Review
+            {t('sentenceReview')}
           </Typography>
           <Typography color="text.secondary">
-            {totalCorrect} / {gameSentences.length} correct
-            {bestStreak >= 3 ? ` · Best streak: ${bestStreak}` : ''}
+            {tCommon('correctSummary', { correct: totalCorrect, total: gameSentences.length })}
+            {bestStreak >= 3 ? t('bestStreakInline', { count: bestStreak }) : ''}
           </Typography>
         </Box>
 
@@ -389,7 +394,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
                       fontWeight: 600,
                     }}
                   >
-                    Particle: {r.sentence.targetParticle}
+                    {t('particleLabel', { particle: r.sentence.targetParticle })}
                     {!r.correct &&
                       PARTICLE_HINTS[r.sentence.targetParticle] &&
                       ` — ${PARTICLE_HINTS[r.sentence.targetParticle]}`}
@@ -409,14 +414,14 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
             onClick={handleRestart}
             sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700 }}
           >
-            Practice Again
+            {t('practiceAgain')}
           </Button>
           <Button
             variant="outlined"
             onClick={onExit}
             sx={{ borderRadius: 3, textTransform: 'none' }}
           >
-            Back to Deck
+            {tCommon('backToDeck')}
           </Button>
         </Stack>
       </Box>
@@ -428,8 +433,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
 
   const progress = (index / gameSentences.length) * 100;
   const plainText = stripFurigana(currentSentence.sentenceJp);
-  const hintText =
-    PARTICLE_HINTS[currentSentence.targetParticle] ?? 'connects parts of the sentence';
+  const hintText = PARTICLE_HINTS[currentSentence.targetParticle] ?? t('defaultParticleHint');
 
   return (
     <Box
@@ -505,7 +509,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
               letterSpacing: '0.08em',
             }}
           >
-            {currentSentence.sentenceType === 'question' ? 'Question' : 'Response'}
+            {currentSentence.sentenceType === 'question' ? t('question') : t('response')}
           </Typography>
         )}
 
@@ -563,7 +567,11 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
                   color: 'text.primary',
                 }}
               >
-                The answer is <strong>{currentSentence.targetParticle}</strong> — {hintText}
+                {t.rich('wrongAnswer', {
+                  particle: currentSentence.targetParticle,
+                  hint: hintText,
+                  b: (chunks) => <strong>{chunks}</strong>,
+                })}
               </Typography>
             </Box>
           </Box>
@@ -611,7 +619,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
               fontSize: '1rem',
             }}
           >
-            Next
+            {tCommon('next')}
           </Button>
         </Box>
       )}

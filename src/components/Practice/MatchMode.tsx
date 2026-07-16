@@ -4,6 +4,7 @@ import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined';
 import { Box, Button, Chip, Grid, LinearProgress, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { SpeakButton } from '@/components/SpeakButton';
@@ -44,15 +45,17 @@ function formatTime(secs: number): string {
   return m > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${s}s`;
 }
 
-function speedLabel(secs: number, pairs: number): string {
+function speedLabelKey(secs: number, pairs: number): string {
   const norm = (secs / pairs) * 10;
-  if (norm < 30) return 'Lightning fast! ⚡';
-  if (norm < 60) return 'Nice speed! 🚀';
-  if (norm < 120) return 'Well done! 👏';
-  return 'Keep it up! 💪';
+  if (norm < 30) return 'speedLightning';
+  if (norm < 60) return 'speedNice';
+  if (norm < 120) return 'speedWellDone';
+  return 'speedKeepUp';
 }
 
 export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) {
+  const t = useTranslations('Practice.matchMode');
+  const tCommon = useTranslations('Practice.common');
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
 
@@ -113,8 +116,8 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
   // Live timer
   useEffect(() => {
     if (roundComplete || queue.phase !== 'playing') return;
-    const t = setInterval(() => setElapsed((s) => s + 1), 1000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => clearInterval(timer);
   }, [roundComplete, queue.phase]);
 
   // When round is complete, save time and tell the queue
@@ -204,13 +207,16 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
 
   // ── All rounds complete ────────────────────────────────────────────────────
   if (queue.phase === 'allDone') {
-    const batchLabel = queue.totalBatches > 1 ? `${queue.totalBatches} rounds` : '1 round';
+    const roundsLabel = t('roundsCount', { count: queue.totalBatches });
     return (
       <CelebrationScreen
         heading={pickPraise(1, praiseSeed).jp}
-        headingEn="All matched!"
-        subheading={`${queue.totalCards} pairs · ${batchLabel}`}
-        extra={`⏱ ${formatTime(totalTime)} · ${speedLabel(totalTime, queue.totalCards)}`}
+        headingEn={t('allMatched')}
+        subheading={t('pairsSummary', { count: queue.totalCards, rounds: roundsLabel })}
+        extra={t('timeSpeed', {
+          time: formatTime(totalTime),
+          speed: t(speedLabelKey(totalTime, queue.totalCards)),
+        })}
         mode="match"
         onExit={onExit}
       />
@@ -244,16 +250,19 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant="h5">Match</Typography>
+          <Typography variant="h5">{t('title')}</Typography>
           {queue.totalBatches > 1 && (
             <Chip
-              label={`Batch ${queue.batchIndex + 1}/${queue.totalBatches}`}
+              label={t('batchChip', {
+                current: queue.batchIndex + 1,
+                total: queue.totalBatches,
+              })}
               size="small"
               variant="outlined"
             />
           )}
           {queue.isRetryRound && (
-            <Chip label="Review" size="small" color="warning" variant="outlined" />
+            <Chip label={tCommon('reviewChip')} size="small" color="warning" variant="outlined" />
           )}
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -358,7 +367,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
 
       <Box sx={{ mt: 3, textAlign: 'right' }}>
         <Button size="small" color="inherit" onClick={handleExit} sx={{ opacity: 0.5 }}>
-          Quit &amp; Save Progress
+          {tCommon('quitAndSave')}
         </Button>
       </Box>
 

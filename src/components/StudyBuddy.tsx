@@ -3,6 +3,7 @@
 import Box from '@mui/material/Box';
 import { alpha, keyframes, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { BUDDY_CONFIG } from '@/hooks/useShop';
@@ -66,17 +67,6 @@ const BUDDY_ACCENTS: Record<string, string> = {
   buddy_fox: '#FCD34D',
 };
 
-const TAP_PHRASES = [
-  'Hehe! That tickles!',
-  'Again! Again!',
-  'Hey~!',
-  'Wheee!',
-  'So much fun!',
-  'You found me!',
-  "Let's play!",
-  'Tee-hee!',
-];
-
 function pickRandom(items: string | string[]): string {
   if (typeof items === 'string') return items;
   return items[Math.floor(Math.random() * items.length)];
@@ -90,8 +80,10 @@ interface StudyBuddyProps {
 }
 
 export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
+  const t = useTranslations('Practice.studyBuddy');
   const theme = useTheme();
   const { brand } = theme.palette;
+  const tapPhrases = t.raw('tapPhrases') as string[];
   const config = BUDDY_CONFIG[buddyKey];
   const accent = BUDDY_ACCENTS[buddyKey] ?? brand[300];
   const [showBubble, setShowBubble] = useState(false);
@@ -136,13 +128,13 @@ export function StudyBuddy({ buddyKey, reaction = 'idle' }: StudyBuddyProps) {
     setTapped(true);
     setTapHearts(true);
     setTapCount((c) => c + 1);
-    setBubbleText(TAP_PHRASES[Math.floor(Math.random() * TAP_PHRASES.length)]);
+    setBubbleText(tapPhrases[Math.floor(Math.random() * tapPhrases.length)]);
     setShowBubble(true);
 
     setTimeout(() => setTapped(false), 500);
     setTimeout(() => setTapHearts(false), 600);
     setTimeout(() => setShowBubble(false), 2000);
-  }, [config]);
+  }, [config, tapPhrases]);
 
   const handlePointerUp = useCallback(
     (e: React.PointerEvent) => {

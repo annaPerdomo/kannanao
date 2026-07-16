@@ -3,6 +3,7 @@
 import { alpha, Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useMemo, useRef, useState } from 'react';
 
 import { CelebrationScreen } from '@/components/Practice/CelebrationScreen';
@@ -17,6 +18,7 @@ export function QuestionQuest() {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
   const router = useRouter();
+  const t = useTranslations('Games.questionQuest');
   const { answer, finish, comboCount } = useGameSession('question-quiz');
 
   const items = useMemo(() => shuffle(QA_ITEMS), []);
@@ -50,8 +52,11 @@ export function QuestionQuest() {
   if (done) {
     return (
       <CelebrationScreen
-        heading="Question Quest complete!"
-        subheading={`${correctRef.current} / ${items.length} answered correctly`}
+        heading={t('celebrationHeading')}
+        subheading={t('celebrationSubheading', {
+          correct: correctRef.current,
+          total: items.length,
+        })}
         mode="question-quiz"
         onExit={() => router.push('/review')}
       />
@@ -60,9 +65,9 @@ export function QuestionQuest() {
 
   return (
     <GameShell
-      title="Question Quest"
+      title={t('title')}
       emoji="❓"
-      howTo="Read the question, then tap the answer that fits it best."
+      howTo={t('howTo')}
       current={index}
       total={items.length}
       comboCount={comboCount}
@@ -80,7 +85,7 @@ export function QuestionQuest() {
           <SpeakButton text={item.question} iconSize="1rem" />
         </Box>
         <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-          {picked ? item.questionEn : 'Pick the answer that fits the question!'}
+          {picked ? item.questionEn : t('pickPrompt')}
         </Typography>
       </Box>
 

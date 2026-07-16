@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -312,6 +313,11 @@ export const ACHIEVEMENTS: AchievementDef[] = [
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+/** achievement key (snake_case) → i18n slug (camelCase), e.g. first_card → firstCard */
+function achievementSlug(key: string): string {
+  return key.replace(/_([a-z0-9])/g, (_, c: string) => c.toUpperCase());
+}
+
 /** Returns a YYYY-MM-DD string in the user's local timezone (not UTC). */
 function toLocalDateString(date: Date): string {
   return [
@@ -332,6 +338,7 @@ export function useProgress(
 ) {
   const supabase = sb;
   const { user } = useAuth();
+  const tAch = useTranslations('Review.achievements');
   const [progress, setProgress] = useState<UserProgress | null>(initialProgress?.progress ?? null);
   const [achievements, setAchievements] = useState<Achievement[]>(
     initialProgress?.achievements ?? [],
@@ -713,13 +720,21 @@ export function useProgress(
 
   const spendableXp = progress ? progress.total_xp - (progress.total_xp_spent ?? 0) : 0;
 
+  // Localize the newly-unlocked toast copy at the render boundary. The source
+  // ACHIEVEMENTS array keeps its English label/description as the fallback and
+  // for callers that read the const directly.
+  const translatedNewlyUnlocked = newlyUnlocked.map((def) => {
+    const slug = achievementSlug(def.key);
+    return { ...def, label: tAch(`${slug}.label`), description: tAch(`${slug}.description`) };
+  });
+
   return {
     progress,
     spendableXp,
     achievements,
     recentSessions,
     loading,
-    newlyUnlocked,
+    newlyUnlocked: translatedNewlyUnlocked,
     clearNewlyUnlocked,
     recordAnswer,
     endSession,

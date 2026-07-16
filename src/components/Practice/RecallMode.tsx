@@ -2,6 +2,7 @@
 import { Box, Button, Chip, LinearProgress, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
@@ -28,6 +29,8 @@ interface RecallModeProps {
 }
 
 export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps) {
+  const t = useTranslations('Practice.recallMode');
+  const tCommon = useTranslations('Practice.common');
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
 
@@ -95,8 +98,8 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
   // Auto-advance 1.2 s after a correct pick
   useEffect(() => {
     if (selected && card && selected === card.meaning) {
-      const t = setTimeout(next, 1200);
-      return () => clearTimeout(t);
+      const timer = setTimeout(next, 1200);
+      return () => clearTimeout(timer);
     }
   }, [selected, card, next]);
 
@@ -180,8 +183,11 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
       <CelebrationScreen
         heading={praise.jp}
         headingEn={praise.en}
-        subheading={`${queue.firstAttemptCorrect} / ${queue.totalCards} correct`}
-        extra={bestStreak >= 3 ? `🔥 Best streak: ${bestStreak} in a row!` : undefined}
+        subheading={tCommon('correctSummary', {
+          correct: queue.firstAttemptCorrect,
+          total: queue.totalCards,
+        })}
+        extra={bestStreak >= 3 ? tCommon('bestStreakRow', { count: bestStreak }) : undefined}
         mode="recall"
         onExit={onExit}
       />
@@ -200,9 +206,9 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant="h5">Guess It!</Typography>
+          <Typography variant="h5">{t('title')}</Typography>
           {queue.isRetryRound && (
-            <Chip label="Review" size="small" color="warning" variant="outlined" />
+            <Chip label={tCommon('reviewChip')} size="small" color="warning" variant="outlined" />
           )}
           {streak >= 2 && (
             <Chip label={`🔥 ${streak}`} size="small" color="warning" sx={{ fontWeight: 700 }} />
@@ -311,7 +317,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
             variant="caption"
             sx={{ color: 'text.secondary', letterSpacing: '0.12em', display: 'block', mt: 1.5 }}
           >
-            WHAT DOES THIS MEAN?
+            {t('whatDoesThisMean')}
           </Typography>
         </Box>
       </Box>
@@ -328,21 +334,21 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
       {answeredWrong && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
           <Button variant="contained" onClick={next} size="large">
-            {index + 1 >= queue.currentCards.length ? 'See Results' : 'Next →'}
+            {index + 1 >= queue.currentCards.length ? t('seeResults') : t('nextArrow')}
           </Button>
         </Box>
       )}
       {answeredCorrectly && (
         <Box sx={{ textAlign: 'center', mb: 2 }}>
           <Typography variant="body2" color="success.main" sx={{ fontStyle: 'italic' }}>
-            ✓ Correct — moving on…
+            {tCommon('correctMovingOn')}
           </Typography>
         </Box>
       )}
 
       <Box sx={{ mt: 2, textAlign: 'right' }}>
         <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
-          Quit &amp; Save Progress
+          {tCommon('quitAndSave')}
         </Button>
       </Box>
 

@@ -3,6 +3,7 @@
 import { alpha, Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useMemo, useRef, useState } from 'react';
 
 import { CelebrationScreen } from '@/components/Practice/CelebrationScreen';
@@ -16,6 +17,7 @@ export function ParticlePicker() {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
   const router = useRouter();
+  const t = useTranslations('Games.particlePicker');
   const { answer, finish, comboCount } = useGameSession('particle-quiz');
 
   const sentences = useMemo(() => shuffle(PARTICLE_SENTENCES), []);
@@ -77,8 +79,11 @@ export function ParticlePicker() {
   if (done) {
     return (
       <CelebrationScreen
-        heading="Particle Pro!"
-        subheading={`${correctRef.current} / ${totalBlanks} particles right on the first try`}
+        heading={t('celebrationHeading')}
+        subheading={t('celebrationSubheading', {
+          correct: correctRef.current,
+          total: totalBlanks,
+        })}
         mode="particle-quiz"
         onExit={() => router.push('/review')}
       />
@@ -89,9 +94,9 @@ export function ParticlePicker() {
   let blankCursor = -1;
   return (
     <GameShell
-      title="Particle Picker"
+      title={t('title')}
       emoji="🎏"
-      howTo="Tap the little word (は・が・を…) that fills each blank."
+      howTo={t('howTo')}
       current={index}
       total={sentences.length}
       comboCount={comboCount}
@@ -162,7 +167,7 @@ export function ParticlePicker() {
         </Box>
         {sentenceDone && (
           <Typography sx={{ mt: 1.5, color: 'success.main', fontWeight: 600 }}>
-            せいかい！ 🎉
+            {t('correct')}
           </Typography>
         )}
       </Box>

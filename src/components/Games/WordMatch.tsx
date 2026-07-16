@@ -4,6 +4,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import { Alert, alpha, Box, Grid, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -46,6 +47,7 @@ interface MatchGridProps {
 function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit }: MatchGridProps) {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
+  const t = useTranslations('Games.wordMatch');
 
   const rounds = useMemo(() => chunkRounds(words, PAIRS_PER_ROUND), [words]);
   const [roundIdx, setRoundIdx] = useState(0);
@@ -116,9 +118,9 @@ function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit }: MatchGrid
 
   return (
     <GameShell
-      title="Word Match"
+      title={t('title')}
       emoji="🍉"
-      howTo="Tap a Japanese word, then the picture that means the same thing."
+      howTo={t('howTo')}
       current={roundIdx}
       total={rounds.length}
       comboCount={comboCount}
@@ -197,6 +199,7 @@ function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit }: MatchGrid
 
 /** Standalone Word Match board — owns its own deckless session. */
 function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void }) {
+  const t = useTranslations('Games.wordMatch');
   const { answer, finish, comboCount } = useGameSession('word-match');
   const [done, setDone] = useState(false);
   const statsRef = useRef({ correct: 0, total: 0 });
@@ -221,9 +224,9 @@ function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void 
     const { correct, total } = statsRef.current;
     return (
       <CelebrationScreen
-        heading="All matched!"
-        subheading={`${words.length} words`}
-        extra={`${correct} matches · ${total - correct} misses`}
+        heading={t('celebrationHeading')}
+        subheading={t('celebrationSubheading', { count: words.length })}
+        extra={t('celebrationExtra', { matches: correct, misses: total - correct })}
         mode="word-match"
         onExit={onExit}
       />
@@ -246,6 +249,7 @@ function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void 
 
 export function WordMatch() {
   const router = useRouter();
+  const t = useTranslations('Games.wordMatch');
   const { dueCards, allCards, loading, error } = useReviewCards();
   // Pick the session's words once per load — due cards first, topped up at random.
   const words = useMemo(
@@ -257,7 +261,7 @@ export function WordMatch() {
   if (error) {
     return (
       <Alert severity="error" sx={{ m: 3 }}>
-        Couldn’t load your cards: {error}
+        {t('loadError', { error })}
       </Alert>
     );
   }

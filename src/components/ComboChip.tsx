@@ -2,6 +2,7 @@
 
 import { Box } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { COMBO_THRESHOLDS } from '@/lib/combo';
@@ -26,6 +27,7 @@ export function ComboChip({ count }: ComboChipProps) {
   const theme = useTheme();
   const { accent } = theme.palette;
   const reducedMotion = useReducedMotion();
+  const t = useTranslations('Review.comboChip');
 
   if (count < 2) return null;
 
@@ -37,7 +39,7 @@ export function ComboChip({ count }: ComboChipProps) {
       // Re-key on the count so the pop replays each time the number changes.
       key={reducedMotion ? undefined : count}
       role="status"
-      aria-label={`Combo ${count} in a row`}
+      aria-label={t('ariaCombo', { count })}
       sx={{
         display: 'inline-flex',
         alignItems: 'center',

@@ -2,6 +2,7 @@
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -13,6 +14,7 @@ import type { Flashcard } from '@/types/flashcard';
 
 /** Shown when nothing is due — calm, encouraging, points back to practice. */
 function AllDone({ onGames, onHome }: { onGames: () => void; onHome: () => void }) {
+  const t = useTranslations('Review.todayPage');
   return (
     <Box
       sx={{
@@ -25,10 +27,10 @@ function AllDone({ onGames, onHome }: { onGames: () => void; onHome: () => void 
     >
       <Typography sx={{ fontSize: '3.5rem', mb: 1 }}>🎉</Typography>
       <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>
-        All done for today!
+        {t('allDoneTitle')}
       </Typography>
       <Typography color="text.secondary" sx={{ mb: 4 }}>
-        You&apos;ve reviewed everything that came due. Play a game to keep the streak going ✨
+        {t('allDoneBody')}
       </Typography>
       <Stack direction="row" spacing={2} justifyContent="center">
         <Button
@@ -45,7 +47,7 @@ function AllDone({ onGames, onHome }: { onGames: () => void; onHome: () => void 
             },
           }}
         >
-          Play a game
+          {t('playAGame')}
         </Button>
         <Button
           variant="outlined"
@@ -57,7 +59,7 @@ function AllDone({ onGames, onHome }: { onGames: () => void; onHome: () => void 
             color: (t) => t.palette.brand[600],
           }}
         >
-          Back home
+          {t('backHome')}
         </Button>
       </Stack>
     </Box>
@@ -72,6 +74,7 @@ function AllDone({ onGames, onHome }: { onGames: () => void; onHome: () => void 
  * least once ever become due (see getDueCards), so this never floods day one.
  */
 export default function ReviewTodayPage() {
+  const t = useTranslations('Review.todayPage');
   const router = useRouter();
   const { user } = useAuth();
   const [cards, setCards] = useState<Flashcard[] | null>(null);
@@ -90,7 +93,7 @@ export default function ReviewTodayPage() {
   if (cards === null) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
-        <Loading message="Finding your reviews…" />
+        <Loading message={t('findingReviews')} />
       </Box>
     );
   }
