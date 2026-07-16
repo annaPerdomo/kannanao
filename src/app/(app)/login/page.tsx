@@ -16,12 +16,14 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import WaitlistForm from '@/components/WaitlistForm';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
+  const t = useTranslations('Auth.login');
   const { signInWithUsername } = useAuth();
 
   const [showWaitlist, setShowWaitlist] = useState(false);
@@ -78,11 +80,11 @@ export default function LoginPage() {
               textAlign: 'center',
             }}
           >
-            🌸 Kannanao
+            {t('brandName')}
           </Typography>
 
           <Chip
-            label="Beta · Sign-ups paused"
+            label={t('betaBadge')}
             size="small"
             sx={{
               display: 'flex',
@@ -100,8 +102,7 @@ export default function LoginPage() {
           {showWaitlist ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
-                Sign-ups are currently closed while we&apos;re in beta. Leave your email and
-                we&apos;ll let you know when we open up!
+                {t('waitlistIntro')}
               </Typography>
               <WaitlistForm compact />
               <Divider sx={{ my: 0.5 }} />
@@ -110,7 +111,7 @@ export default function LoginPage() {
                 sx={{ textAlign: 'center', color: 'primary.dark', cursor: 'pointer' }}
                 onClick={() => setShowWaitlist(false)}
               >
-                Already have an account? Sign in
+                {t('backToSignIn')}
               </Typography>
             </Box>
           ) : (
@@ -120,7 +121,7 @@ export default function LoginPage() {
               sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
             >
               <TextField
-                label="Username"
+                label={t('usernameLabel')}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 autoComplete="username"
@@ -129,7 +130,7 @@ export default function LoginPage() {
                 required
               />
               <TextField
-                label="Password"
+                label={t('passwordLabel')}
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -175,7 +176,7 @@ export default function LoginPage() {
                   '&:hover': { bgcolor: 'primary.dark', filter: 'brightness(0.9)' },
                 }}
               >
-                {busy ? <CircularProgress size={20} color="inherit" /> : 'Sign In'}
+                {busy ? <CircularProgress size={20} color="inherit" /> : t('submit')}
               </Button>
               <Divider sx={{ my: 0.5 }} />
               <Typography
@@ -186,7 +187,7 @@ export default function LoginPage() {
                   setError(null);
                 }}
               >
-                Don&apos;t have an account? Join the waitlist
+                {t('joinWaitlist')}
               </Typography>
             </Box>
           )}

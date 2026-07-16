@@ -4,6 +4,7 @@ import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -19,6 +20,7 @@ import { ConversationList } from './_components/ConversationList';
 const PUSH_DISMISSED_KEY = 'kannanao:push-prompt-dismissed-v2';
 
 export default function NotificationsLayout({ children }: { children: React.ReactNode }) {
+  const t = useTranslations('Messages.notificationsLayout');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const router = useRouter();
@@ -80,9 +82,9 @@ export default function NotificationsLayout({ children }: { children: React.Reac
       setPushJustEnabled(true);
     } catch (err) {
       const e = err as Error;
-      setPushError(`${e?.name ?? 'Error'}: ${e?.message ?? String(err)}`);
+      setPushError(`${e?.name ?? t('genericErrorName')}: ${e?.message ?? String(err)}`);
     }
-  }, [pushSubscribe]);
+  }, [pushSubscribe, t]);
 
   // Let the success confirmation dismiss itself instead of pinning the banner forever
   useEffect(() => {
@@ -151,10 +153,7 @@ export default function NotificationsLayout({ children }: { children: React.Reac
           {showInstallBanner && (
             <Box sx={{ px: 2, pt: 1.5 }}>
               <Alert severity="info" sx={{ borderRadius: 2.5, fontSize: '0.8rem' }}>
-                Message notifications only work in the Kannanao app, not in the browser. Open{' '}
-                <strong>Kannanao from your Home Screen icon</strong> — or to add it, tap
-                Safari&apos;s <strong>Share</strong> button and choose{' '}
-                <strong>&ldquo;Add to Home Screen&rdquo;</strong>.
+                {t.rich('installBanner', { bold: (chunks) => <strong>{chunks}</strong> })}
               </Alert>
             </Box>
           )}
@@ -162,12 +161,11 @@ export default function NotificationsLayout({ children }: { children: React.Reac
             <Box sx={{ px: 2, pt: 1.5 }}>
               {pushJustEnabled && push.isSubscribed ? (
                 <Alert severity="success" sx={{ borderRadius: 2.5, fontSize: '0.8rem' }}>
-                  Notifications are on! 🎉
+                  {t('notificationsOnSuccess')}
                 </Alert>
               ) : push.permission === 'denied' ? (
                 <Alert severity="warning" sx={{ borderRadius: 2.5, fontSize: '0.8rem' }}>
-                  Notifications are blocked for Kannanao — turn them on in your device Settings,
-                  then come back here.
+                  {t('notificationsBlockedWarning')}
                 </Alert>
               ) : (
                 <Button
@@ -187,7 +185,7 @@ export default function NotificationsLayout({ children }: { children: React.Reac
                     '&:hover': { bgcolor: alpha(brand[100], 0.6) },
                   }}
                 >
-                  {push.loading ? 'Turning on…' : 'Turn on notifications'}
+                  {push.loading ? t('turningOn') : t('turnOnNotifications')}
                 </Button>
               )}
               {pushError && (
@@ -224,8 +222,8 @@ export default function NotificationsLayout({ children }: { children: React.Reac
       <StyledDialog
         open={showPushPrompt}
         onClose={dismissPrompt}
-        title="Stay in the loop!"
-        subtitle="Get notified when you receive new messages"
+        title={t('promptTitle')}
+        subtitle={t('promptSubtitle')}
         icon={<NotificationsActiveIcon sx={{ color: brand[600], fontSize: 22 }} />}
         maxWidth="xs"
         actions={
@@ -239,7 +237,7 @@ export default function NotificationsLayout({ children }: { children: React.Reac
                 color: 'text.secondary',
               }}
             >
-              Not now
+              {t('notNow')}
             </Button>
             <Button
               variant="contained"
@@ -260,14 +258,14 @@ export default function NotificationsLayout({ children }: { children: React.Reac
                 background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
               }}
             >
-              {push.loading ? 'Enabling...' : 'Enable'}
+              {push.loading ? t('enabling') : t('enable')}
             </Button>
           </Stack>
         }
         actionsJustify="center"
       >
         <Typography sx={{ color: 'text.secondary', fontSize: '0.88rem', textAlign: 'center' }}>
-          Turn on notifications so you never miss a message from your group.
+          {t('promptBody')}
         </Typography>
       </StyledDialog>
     </>

@@ -8,6 +8,7 @@ import type { SxProps, Theme } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useEffect } from 'react';
 
@@ -19,6 +20,7 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ navBtnSx }: UserMenuProps) {
+  const t = useTranslations('Nav.userMenu');
   const router = useRouter();
   const { brand, surfaces } = useTheme().palette;
   const { user, isAdmin, displayName, signOut } = useAuth();
@@ -47,7 +49,7 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
         sx={{ ...(navBtnSx as object), '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } } }}
       >
         <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-          Sign In
+          {t('signIn')}
         </Box>
       </Button>
     );
@@ -80,7 +82,7 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
             }}
             sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontWeight: 600 }}
           >
-            <AdminPanelSettingsIcon sx={{ fontSize: '1rem' }} /> Admin
+            <AdminPanelSettingsIcon sx={{ fontSize: '1rem' }} /> {t('admin')}
           </MenuItem>
         )}
 
@@ -91,14 +93,14 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
           }}
           sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontWeight: 600 }}
         >
-          <SettingsIcon sx={{ fontSize: '1rem' }} /> Account
+          <SettingsIcon sx={{ fontSize: '1rem' }} /> {t('account')}
         </MenuItem>
 
         <MenuItem
           onClick={signOut}
           sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontWeight: 600 }}
         >
-          <LogoutIcon sx={{ fontSize: '1rem' }} /> Sign out
+          <LogoutIcon sx={{ fontSize: '1rem' }} /> {t('signOut')}
         </MenuItem>
 
         <Divider sx={{ my: 0.5 }} />
@@ -108,7 +110,7 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
           sx={{ gap: 1, cursor: 'default', '&:hover': { bgcolor: 'transparent' } }}
         >
           <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, flex: 1 }}>
-            Theme
+            {t('theme')}
           </Typography>
           <Box sx={{ display: 'flex', gap: 0.75 }}>
             {(['sakura', 'murasaki', 'yuki'] as ColorScheme[]).map((s) => (

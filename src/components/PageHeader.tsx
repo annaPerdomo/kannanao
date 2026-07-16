@@ -8,6 +8,7 @@ import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 interface PageHeaderProps {
   title: React.ReactNode;
@@ -44,6 +45,7 @@ export function PageHeader({
   mb = 4,
   compact,
 }: PageHeaderProps) {
+  const t = useTranslations('Common');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
 
@@ -64,7 +66,7 @@ export function PageHeader({
           >
             {onBack && (
               <IconButton
-                aria-label="Back"
+                aria-label={t('back')}
                 onClick={onBack}
                 size="small"
                 sx={{

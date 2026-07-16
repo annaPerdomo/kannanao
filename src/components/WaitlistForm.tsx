@@ -7,6 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { alpha } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface WaitlistFormProps {
@@ -17,6 +18,7 @@ interface WaitlistFormProps {
 }
 
 export default function WaitlistForm({ compact, dark }: WaitlistFormProps) {
+  const t = useTranslations('Auth.waitlistForm');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
@@ -43,10 +45,10 @@ export default function WaitlistForm({ compact, dark }: WaitlistFormProps) {
         setName('');
         setMessage('');
       } else {
-        setResult({ type: 'error', text: data.error ?? 'Something went wrong.' });
+        setResult({ type: 'error', text: data.error ?? t('genericError') });
       }
     } catch {
-      setResult({ type: 'error', text: 'Network error. Please try again.' });
+      setResult({ type: 'error', text: t('networkError') });
     } finally {
       setBusy(false);
     }
@@ -75,31 +77,31 @@ export default function WaitlistForm({ compact, dark }: WaitlistFormProps) {
             mb: 0.5,
           }}
         >
-          Join the waitlist
+          {t('heading')}
         </Typography>
       )}
 
       <TextField
-        label="Email"
+        label={t('emailLabel')}
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         size="small"
         fullWidth
         required
-        placeholder="you@example.com"
+        placeholder={t('emailPlaceholder')}
       />
       <TextField
-        label="Name (optional)"
+        label={t('nameLabel')}
         value={name}
         onChange={(e) => setName(e.target.value)}
         size="small"
         fullWidth
-        placeholder="Your name"
+        placeholder={t('namePlaceholder')}
       />
       {!compact && (
         <TextField
-          label="What do you want to use Kannanao for? (optional)"
+          label={t('messageLabel')}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           size="small"
@@ -107,7 +109,7 @@ export default function WaitlistForm({ compact, dark }: WaitlistFormProps) {
           multiline
           minRows={2}
           maxRows={4}
-          placeholder="I'm studying for JLPT N3…"
+          placeholder={t('messagePlaceholder')}
         />
       )}
 
@@ -139,7 +141,7 @@ export default function WaitlistForm({ compact, dark }: WaitlistFormProps) {
             : { bgcolor: 'primary.dark', filter: 'brightness(0.9)' },
         }}
       >
-        {busy ? <CircularProgress size={20} color="inherit" /> : 'Notify me when spots open 🌸'}
+        {busy ? <CircularProgress size={20} color="inherit" /> : t('submitButton')}
       </Button>
     </Box>
   );

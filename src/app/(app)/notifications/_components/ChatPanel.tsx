@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { groupByDate } from '@/components/Group/MessageThread/constants';
@@ -39,6 +40,7 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatPanelProps) {
+  const t = useTranslations('Messages.chatPanel');
   const router = useRouter();
   const theme = useTheme();
   const { brand, accent } = theme.palette;
@@ -208,7 +210,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
     e.target.value = '';
     if (!file) return;
     if (file.type.startsWith('video/') && file.size > MAX_CHAT_VIDEO_SIZE) {
-      setSendError('Video must be under 20 MB');
+      setSendError(t('videoTooLarge'));
       return;
     }
     setAttachmentFile(file);
@@ -234,14 +236,14 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
           },
           body: JSON.stringify({ mimeType: attachmentFile.type }),
         });
-        if (!initRes.ok) throw new Error('Video upload failed');
+        if (!initRes.ok) throw new Error(t('videoUploadFailed'));
         const { path, token: uploadToken, publicUrl } = await initRes.json();
         const { error: uploadError } = await sb.storage
           .from('card-images')
           .uploadToSignedUrl(path, uploadToken, attachmentFile, {
             contentType: attachmentFile.type,
           });
-        if (uploadError) throw new Error('Video upload failed');
+        if (uploadError) throw new Error(t('videoUploadFailed'));
         videoUrl = publicUrl;
       } else if (attachmentFile) {
         const buf = await attachmentFile.arrayBuffer();
@@ -256,7 +258,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
           },
           body: JSON.stringify({ base64, mimeType: attachmentFile.type }),
         });
-        if (!res.ok) throw new Error('Image upload failed');
+        if (!res.ok) throw new Error(t('imageUploadFailed'));
         const { url } = await res.json();
         imageUrl = url;
       }
@@ -270,7 +272,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
       void refetchGlobalRef.current().catch(() => {});
     } catch (err) {
       // Keep the draft text/attachment so the user can retry
-      setSendError(err instanceof Error ? err.message : 'Failed to send message');
+      setSendError(err instanceof Error ? err.message : t('sendFailedFallback'));
     } finally {
       setSending(false);
     }
@@ -301,7 +303,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
         <IconButton
           onClick={() => router.push('/notifications')}
           size="small"
-          aria-label="Back to conversations"
+          aria-label={t('backAriaLabel')}
           sx={{
             display: { xs: 'inline-flex', sm: 'none' },
             border: `1.5px solid ${alpha(brand[400], 0.4)}`,
@@ -414,10 +416,10 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
             >
               <Typography sx={{ fontSize: '3rem', mb: 1 }}>💌</Typography>
               <Typography sx={{ fontWeight: 700, color: brand[600], fontSize: '1rem', mb: 0.5 }}>
-                No messages yet!
+                {t('emptyTitle')}
               </Typography>
               <Typography sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
-                Say hi to {recipientName} to start chatting
+                {t('emptySubtitle', { name: recipientName })}
               </Typography>
             </Box>
           ) : (
@@ -494,14 +496,14 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
                 <Box
                   component="img"
                   src={attachmentPreview}
-                  alt="Selected"
+                  alt={t('selectedImageAlt')}
                   sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               )}
               <IconButton
                 size="small"
                 onClick={clearAttachment}
-                aria-label="Remove attachment"
+                aria-label={t('removeAttachmentAriaLabel')}
                 sx={{
                   position: 'absolute',
                   top: 2,
@@ -567,7 +569,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
           <IconButton
             onClick={() => fileInputRef.current?.click()}
             disabled={sending}
-            aria-label="Attach photo or video"
+            aria-label={t('attachAriaLabel')}
             size="small"
             sx={{
               color: brand[500],
@@ -580,7 +582,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
           <TextField
             size="small"
             fullWidth
-            placeholder="Type a message..."
+            placeholder={t('inputPlaceholder')}
             value={text}
             onChange={(e) => {
               setText(e.target.value);
@@ -609,7 +611,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
             variant="contained"
             onClick={() => void handleSend()}
             disabled={sending || (!text.trim() && !attachmentFile)}
-            aria-label="Send message"
+            aria-label={t('sendAriaLabel')}
             sx={{
               minWidth: 0,
               width: isMemberAccount ? 48 : 42,

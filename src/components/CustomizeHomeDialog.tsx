@@ -6,6 +6,7 @@ import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import { StyledDialog } from '@/components/StyledDialog';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,6 +19,7 @@ interface CustomizeHomeDialogProps {
 }
 
 export function CustomizeHomeDialog({ open, onClose }: CustomizeHomeDialogProps) {
+  const t = useTranslations('Home.customizeDialog');
   const { homeSections, updateHomeSections, isMemberAccount, groupShowLeaderboard } = useAuth();
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -32,8 +34,8 @@ export function CustomizeHomeDialog({ open, onClose }: CustomizeHomeDialogProps)
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Customize Home"
-      subtitle="Toggle sections on or off"
+      title={t('title')}
+      subtitle={t('subtitle')}
       icon={<Typography sx={{ fontSize: '1.3rem' }}>🎨</Typography>}
       maxWidth="xs"
     >
@@ -70,7 +72,7 @@ export function CustomizeHomeDialog({ open, onClose }: CustomizeHomeDialogProps)
                     checked={enabled}
                     onChange={() => handleToggle(key)}
                     size="small"
-                    inputProps={{ 'aria-label': `Toggle ${meta.label}` }}
+                    inputProps={{ 'aria-label': t('toggleAriaLabel', { label: meta.label }) }}
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': { color: brand[600] },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {

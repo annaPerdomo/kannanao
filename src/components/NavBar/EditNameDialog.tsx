@@ -3,6 +3,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
+import { useTranslations } from 'next-intl';
 
 import { StyledDialog } from '@/components/StyledDialog';
 
@@ -23,20 +24,22 @@ export function EditNameDialog({
   onSave,
   saving,
 }: EditNameDialogProps) {
+  const t = useTranslations('Nav.editNameDialog');
+  const tCommon = useTranslations('Common');
   const { brand } = useTheme().palette;
 
   return (
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Edit your name"
+      title={t('title')}
       actions={
         <Stack direction="row" spacing={1}>
           <Button
             onClick={onClose}
             sx={{ color: 'text.secondary', textTransform: 'none', borderRadius: 6 }}
           >
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             onClick={onSave}
@@ -50,7 +53,7 @@ export function EditNameDialog({
               '&:hover': { bgcolor: brand[800] },
             }}
           >
-            {saving ? 'Saving…' : 'Save'}
+            {saving ? t('saving') : tCommon('save')}
           </Button>
         </Stack>
       }
@@ -59,7 +62,7 @@ export function EditNameDialog({
         autoFocus
         fullWidth
         size="small"
-        label="Display name"
+        label={t('fieldLabel')}
         value={nameInput}
         onChange={(e) => onNameInputChange(e.target.value)}
         onKeyDown={(e) => {

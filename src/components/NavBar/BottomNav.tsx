@@ -9,11 +9,12 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { useAuth } from '@/contexts/AuthContext';
 
 interface NavItem {
-  label: string;
+  labelKey: string;
   icon: React.ReactNode;
   path: string;
   organizerOnly?: boolean;
@@ -22,18 +23,20 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Home', icon: <HomeIcon />, path: '/', exact: true },
-  { label: 'Decks', icon: <LibraryBooksIcon />, path: '/decks' },
-  { label: 'Groups', icon: <GroupsIcon />, path: '/group', organizerOnly: true },
-  { label: 'Speech', icon: <MicIcon />, path: '/ohanashikai' },
-  { label: 'Travel', icon: <FlightIcon />, path: '/travel' },
-  { label: 'Stats', icon: <BarChartIcon />, path: '/stats' },
-  { label: 'Shop', icon: <StorefrontIcon />, path: '/shop' },
+  { labelKey: 'home', icon: <HomeIcon />, path: '/', exact: true },
+  { labelKey: 'decks', icon: <LibraryBooksIcon />, path: '/decks' },
+  { labelKey: 'groups', icon: <GroupsIcon />, path: '/group', organizerOnly: true },
+  { labelKey: 'speech', icon: <MicIcon />, path: '/ohanashikai' },
+  { labelKey: 'travel', icon: <FlightIcon />, path: '/travel' },
+  { labelKey: 'stats', icon: <BarChartIcon />, path: '/stats' },
+  { labelKey: 'shop', icon: <StorefrontIcon />, path: '/shop' },
 ];
 
 export const BOTTOM_NAV_HEIGHT = 56;
 
 export function BottomNav() {
+  const t = useTranslations('Nav');
+  const tItems = useTranslations('Nav.items');
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
   const pathname = usePathname();
@@ -52,7 +55,7 @@ export function BottomNav() {
   return (
     <Paper
       component="nav"
-      aria-label="Main navigation"
+      aria-label={t('mainNavigationAriaLabel')}
       sx={{
         display: { xs: 'block', sm: 'none' },
         position: 'fixed',
@@ -94,7 +97,7 @@ export function BottomNav() {
         }}
       >
         {items.map((item) => (
-          <BottomNavigationAction key={item.path} label={item.label} icon={item.icon} />
+          <BottomNavigationAction key={item.path} label={tItems(item.labelKey)} icon={item.icon} />
         ))}
       </BottomNavigation>
     </Paper>

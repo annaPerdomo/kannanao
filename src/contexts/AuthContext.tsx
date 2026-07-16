@@ -1,5 +1,6 @@
 'use client';
 import type { Session, User } from '@supabase/supabase-js';
+import { useTranslations } from 'next-intl';
 import {
   createContext,
   type ReactNode,
@@ -100,6 +101,7 @@ export function AuthProvider({
    */
   initialAuth?: InitialAuth;
 }) {
+  const t = useTranslations('Auth.context');
   const seeded = initialAuth !== undefined;
   const initialProfile = initialAuth?.profile ?? null;
   const seededScheme =
@@ -222,21 +224,24 @@ export function AuthProvider({
 
   const signUpWithUsername = useCallback(
     async (_username: string, _password: string, _name?: string) => {
-      return { error: 'Sign-ups are currently closed. Join the waitlist at the landing page.' };
+      return { error: t('signupsClosedError') };
     },
-    [],
+    [t],
   );
 
-  const updateDisplayName = useCallback(async (name: string) => {
-    const {
-      data: { user },
-    } = await sb.auth.getUser();
-    if (!user) return { error: 'Not authenticated' };
-    const username = user.email?.split('@')[0] ?? '';
-    await upsertProfile(user.id, username, name.trim());
-    setDisplayName(name.trim());
-    return { error: null };
-  }, []);
+  const updateDisplayName = useCallback(
+    async (name: string) => {
+      const {
+        data: { user },
+      } = await sb.auth.getUser();
+      if (!user) return { error: t('notAuthenticatedError') };
+      const username = user.email?.split('@')[0] ?? '';
+      await upsertProfile(user.id, username, name.trim());
+      setDisplayName(name.trim());
+      return { error: null };
+    },
+    [t],
+  );
 
   const updateColorScheme = useCallback(async (scheme: ColorScheme) => {
     setColorScheme(scheme);
@@ -261,19 +266,22 @@ export function AuthProvider({
 
   // Optimistic, and it rolls back: the switch flips instantly, but if the write
   // fails the UI must not keep claiming a setting the database never took.
-  const updateReviewReminders = useCallback(async (enabled: boolean) => {
-    setReviewReminders(enabled);
-    const {
-      data: { user },
-    } = await sb.auth.getUser();
-    if (!user) {
-      setReviewReminders(!enabled);
-      return { error: 'You are signed out.' };
-    }
-    const { error } = await updateProfileReviewReminders(user.id, enabled);
-    if (error) setReviewReminders(!enabled);
-    return { error };
-  }, []);
+  const updateReviewReminders = useCallback(
+    async (enabled: boolean) => {
+      setReviewReminders(enabled);
+      const {
+        data: { user },
+      } = await sb.auth.getUser();
+      if (!user) {
+        setReviewReminders(!enabled);
+        return { error: t('signedOutError') };
+      }
+      const { error } = await updateProfileReviewReminders(user.id, enabled);
+      if (error) setReviewReminders(!enabled);
+      return { error };
+    },
+    [t],
+  );
 
   const updateHomeSectionsHandler = useCallback(async (sections: HomeSections) => {
     setHomeSections(sections);
