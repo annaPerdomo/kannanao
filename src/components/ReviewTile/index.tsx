@@ -3,6 +3,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { Box, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { useDueCount } from '@/hooks/useDueCount';
 
@@ -17,6 +18,7 @@ export function ReviewTile() {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const { dueCount, loading } = useDueCount();
+  const t = useTranslations('Review.reviewTile');
 
   // Don't flash a placeholder before the count is known.
   if (loading) return null;
@@ -28,7 +30,7 @@ export function ReviewTile() {
     <Box
       role="button"
       tabIndex={0}
-      aria-label={due ? `Review — ${dueCount} due today` : 'Review — all caught up'}
+      aria-label={due ? t('ariaReviewDue', { count: dueCount }) : t('ariaReviewCaughtUp')}
       onClick={go}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -78,7 +80,7 @@ export function ReviewTile() {
           variant="subtitle1"
           sx={{ fontWeight: 800, lineHeight: 1.2, color: due ? '#fff' : 'text.primary' }}
         >
-          Review
+          {t('review')}
         </Typography>
         <Typography
           variant="body2"
@@ -87,9 +89,7 @@ export function ReviewTile() {
             color: due ? alpha('#fff', 0.92) : 'text.secondary',
           }}
         >
-          {due
-            ? `${dueCount} word${dueCount === 1 ? '' : 's'} waiting ⚔️`
-            : 'All caught up — nothing due'}
+          {due ? t('wordsWaiting', { count: dueCount }) : t('allCaughtUp')}
         </Typography>
       </Box>
       {due && <AutoAwesomeIcon sx={{ color: alpha('#fff', 0.9), flexShrink: 0 }} />}

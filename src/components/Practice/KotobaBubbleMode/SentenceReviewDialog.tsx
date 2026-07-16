@@ -3,6 +3,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import { Alert, Box, Button, Chip, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
@@ -22,12 +23,6 @@ interface SentenceReviewDialogProps {
   onSave: (updates: SentenceUpdate[], deletes: string[]) => Promise<void>;
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  question: 'Q',
-  response: 'A',
-  statement: 'S',
-};
-
 export function SentenceReviewDialog({
   open,
   onClose,
@@ -35,8 +30,16 @@ export function SentenceReviewDialog({
   saving,
   onSave,
 }: SentenceReviewDialogProps) {
+  const t = useTranslations('Practice.sentenceReview');
+  const tCommon = useTranslations('Common');
   const theme = useTheme();
   const { brand } = theme.palette;
+
+  const typeLabels: Record<string, string> = {
+    question: t('typeQuestion'),
+    response: t('typeResponse'),
+    statement: t('typeStatement'),
+  };
 
   // Local edits: map of id → edited fields
   const [jpEdits, setJpEdits] = useState<Record<string, string>>({});
@@ -92,9 +95,9 @@ export function SentenceReviewDialog({
       await onSave(updates, [...deletes]);
       onClose();
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Failed to save');
+      setSaveError(err instanceof Error ? err.message : t('failedToSave'));
     }
-  }, [jpEdits, enEdits, deletes, onSave, onClose]);
+  }, [jpEdits, enEdits, deletes, onSave, onClose, t]);
 
   // Group sentences by conversation
   const groups = new Map<number, PracticeSentence[]>();
@@ -111,8 +114,8 @@ export function SentenceReviewDialog({
     <StyledDialog
       open={open}
       onClose={onClose}
-      title="Review Sentences"
-      subtitle={`${sentences.length} sentences generated — edit or remove any that don't fit`}
+      title={t('title')}
+      subtitle={t('subtitle', { count: sentences.length })}
       icon={<EditNoteIcon />}
       maxWidth="md"
       closeDisabled={saving}
@@ -124,7 +127,7 @@ export function SentenceReviewDialog({
             color="inherit"
             sx={{ textTransform: 'none' }}
           >
-            {hasChanges ? 'Cancel' : 'Close'}
+            {hasChanges ? tCommon('cancel') : tCommon('close')}
           </Button>
           {hasChanges && (
             <Button
@@ -133,7 +136,7 @@ export function SentenceReviewDialog({
               disabled={saving || remaining < 3}
               sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
             >
-              {saving ? 'Saving...' : `Save Changes (${remaining} sentences)`}
+              {saving ? t('saving') : t('saveChanges', { count: remaining })}
             </Button>
           )}
         </Stack>
@@ -148,7 +151,7 @@ export function SentenceReviewDialog({
 
       {remaining < 3 && deletes.size > 0 && (
         <Alert severity="warning" sx={{ mb: 2 }}>
-          Need at least 3 sentences to play. Undo some deletions or regenerate.
+          {t('needMinSentences')}
         </Alert>
       )}
 
@@ -165,7 +168,7 @@ export function SentenceReviewDialog({
                 mb: 1,
               }}
             >
-              Conversation {groupNum}
+              {t('conversationLabel', { num: groupNum })}
             </Typography>
 
             <Stack spacing={1.5}>
@@ -191,7 +194,7 @@ export function SentenceReviewDialog({
                         {/* Type + particle chips */}
                         <Stack direction="row" alignItems="center" spacing={0.75} sx={{ mb: 0.75 }}>
                           <Chip
-                            label={TYPE_LABELS[s.sentenceType] ?? 'S'}
+                            label={typeLabels[s.sentenceType] ?? t('typeStatement')}
                             size="small"
                             sx={{ fontSize: '0.65rem', fontWeight: 700, height: 20, minWidth: 24 }}
                           />
@@ -256,7 +259,7 @@ export function SentenceReviewDialog({
                       <IconButton
                         onClick={() => handleToggleDelete(s.id)}
                         disabled={saving}
-                        aria-label={isDeleted ? 'Undo delete' : 'Delete sentence'}
+                        aria-label={isDeleted ? t('undoDelete') : t('deleteSentence')}
                         size="small"
                         sx={{
                           mt: 0.5,

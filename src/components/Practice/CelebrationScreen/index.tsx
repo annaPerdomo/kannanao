@@ -1,6 +1,7 @@
 'use client';
 import { Box, Button, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import FuriganaText from '@/components/FuriganaText';
@@ -56,7 +57,7 @@ export interface CelebrationScreenProps {
   mode: PracticeMode;
   /** When set, a tappable daily chest appears above the exit button. */
   chest?: CelebrationChest;
-  /** Exit button label (defaults to "Back to Deck"). */
+  /** Exit button label (defaults to the translated "Back to Deck"). */
   exitLabel?: string;
   onExit: () => void;
 }
@@ -104,6 +105,7 @@ export function CelebParticleStage({ itemKey }: { itemKey: string }) {
  * clear. The shimmy/burst is skipped when the user prefers reduced motion.
  */
 function ChestReward({ chest, textColor }: { chest: CelebrationChest; textColor: string }) {
+  const t = useTranslations('Practice.celebration');
   const [opened, setOpened] = useState(false);
   const reducedMotion = useReducedMotion();
   const gold = chest.variant === 'gold';
@@ -120,7 +122,7 @@ function ChestReward({ chest, textColor }: { chest: CelebrationChest; textColor:
       <Box
         role="button"
         tabIndex={opened ? -1 : 0}
-        aria-label={opened ? `Chest opened — ${chest.xp} XP` : 'Open your daily chest'}
+        aria-label={opened ? t('chestOpenedAria', { xp: chest.xp }) : t('openChestAria')}
         onClick={open}
         onKeyDown={(e) => {
           if (!opened && (e.key === 'Enter' || e.key === ' ')) {
@@ -168,10 +170,10 @@ function ChestReward({ chest, textColor }: { chest: CelebrationChest; textColor:
         </Box>
         <Typography sx={{ fontWeight: 800, fontSize: '0.95rem', color: textColor }}>
           {opened
-            ? `+${chest.xp} XP!`
+            ? t('chestReward', { xp: chest.xp })
             : gold
-              ? 'Golden chest — tap to open!'
-              : 'Daily chest — tap to open!'}
+              ? t('goldenChestTap')
+              : t('dailyChestTap')}
         </Typography>
       </Box>
     </Box>
@@ -185,9 +187,11 @@ export function CelebrationScreen({
   extra,
   mode,
   chest,
-  exitLabel = 'Back to Deck',
+  exitLabel,
   onExit,
 }: CelebrationScreenProps) {
+  const tCommon = useTranslations('Practice.common');
+  const resolvedExitLabel = exitLabel ?? tCommon('backToDeck');
   const { equipped } = useShop();
   const randomTheme = useMemo<CelebTheme>(
     () => ALL_THEMES[Math.floor(Math.random() * ALL_THEMES.length)],
@@ -361,7 +365,7 @@ export function CelebrationScreen({
               transition: 'transform 0.15s, filter 0.15s, box-shadow 0.15s',
             }}
           >
-            {exitLabel}
+            {resolvedExitLabel}
           </Button>
         </Box>
       </Box>

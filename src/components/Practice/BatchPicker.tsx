@@ -1,6 +1,7 @@
 'use client';
 import { Box, Button, Chip, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import type { PracticeMode } from '@/types/app';
@@ -26,8 +27,8 @@ interface BatchPickerProps {
 
 interface BatchOption {
   size: number;
-  label: string;
-  desc: string;
+  descKey: string;
+  all?: boolean;
   recommended?: boolean;
 }
 
@@ -37,18 +38,17 @@ function getOptions(totalCards: number, mode: PracticeMode): BatchOption[] {
   const maxBatch = mode === 'match' ? 10 : mode === 'kotoba-bubble' ? 15 : 20;
   const options: BatchOption[] = [];
 
-  if (totalCards > 5) options.push({ size: 5, label: '5 cards', desc: 'Quick review' });
-  if (totalCards > 10)
-    options.push({ size: 10, label: '10 cards', desc: 'Recommended', recommended: true });
-  if (maxBatch >= 20 && totalCards > 20)
-    options.push({ size: 20, label: '20 cards', desc: 'Challenge' });
+  if (totalCards > 5) options.push({ size: 5, descKey: 'quickReview' });
+  if (totalCards > 10) options.push({ size: 10, descKey: 'recommended', recommended: true });
+  if (maxBatch >= 20 && totalCards > 20) options.push({ size: 20, descKey: 'challenge' });
 
-  options.push({ size: totalCards, label: `All ${totalCards} cards`, desc: 'Full deck' });
+  options.push({ size: totalCards, descKey: 'fullDeck', all: true });
 
   return options;
 }
 
 export function BatchPicker({ totalCards, mode, onSelect, icon, footer }: BatchPickerProps) {
+  const t = useTranslations('Practice.batchPicker');
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
 
@@ -77,10 +77,10 @@ export function BatchPicker({ totalCards, mode, onSelect, icon, footer }: BatchP
       {icon ?? defaultIcon}
 
       <Typography variant="h5" sx={{ mb: 0.5, fontWeight: 700, color: 'text.primary' }}>
-        How many cards?
+        {t('heading')}
       </Typography>
       <Typography sx={{ mb: 3, color: 'text.secondary' }}>
-        This deck has {totalCards} cards. Pick a batch size to practice.
+        {t('subheading', { count: totalCards })}
       </Typography>
 
       <Stack spacing={1.5} sx={{ maxWidth: 340, mx: 'auto' }}>
@@ -110,7 +110,9 @@ export function BatchPicker({ totalCards, mode, onSelect, icon, footer }: BatchP
                   }),
             }}
           >
-            <span>{opt.label}</span>
+            <span>
+              {opt.all ? t('allCards', { count: opt.size }) : t('cardCount', { count: opt.size })}
+            </span>
             {opt.recommended ? (
               <Typography
                 component="span"
@@ -124,11 +126,11 @@ export function BatchPicker({ totalCards, mode, onSelect, icon, footer }: BatchP
                   fontWeight: 700,
                 }}
               >
-                {opt.desc}
+                {t(opt.descKey)}
               </Typography>
             ) : (
               <Chip
-                label={opt.desc}
+                label={t(opt.descKey)}
                 size="small"
                 variant="outlined"
                 sx={{
@@ -149,7 +151,7 @@ export function BatchPicker({ totalCards, mode, onSelect, icon, footer }: BatchP
         variant="caption"
         sx={{ display: 'block', mt: 2.5, maxWidth: 300, mx: 'auto', color: 'text.secondary' }}
       >
-        Wrong answers come back for review so you master every card
+        {t('footerHint')}
       </Typography>
     </Box>
   );

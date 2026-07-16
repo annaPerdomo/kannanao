@@ -4,6 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Chip, LinearProgress, Stack, TextField, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
@@ -37,6 +38,8 @@ function maskWord(sentence: string, word: string, reading?: string): string {
 }
 
 export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
+  const t = useTranslations('Practice.fillMode');
+  const tCommon = useTranslations('Practice.common');
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
 
@@ -101,8 +104,8 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
   // Auto-advance 1.5 s after a correct answer
   useEffect(() => {
     if (result === 'correct') {
-      const t = setTimeout(next, 1500);
-      return () => clearTimeout(t);
+      const timer = setTimeout(next, 1500);
+      return () => clearTimeout(timer);
     }
   }, [result, next]);
 
@@ -180,8 +183,11 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
       <CelebrationScreen
         heading={praise.jp}
         headingEn={praise.en}
-        subheading={`${queue.firstAttemptCorrect} / ${queue.totalCards} correct`}
-        extra={bestStreak >= 3 ? `🔥 Best streak: ${bestStreak} in a row!` : undefined}
+        subheading={tCommon('correctSummary', {
+          correct: queue.firstAttemptCorrect,
+          total: queue.totalCards,
+        })}
+        extra={bestStreak >= 3 ? tCommon('bestStreakRow', { count: bestStreak }) : undefined}
         mode="fill"
         onExit={onExit}
       />
@@ -195,9 +201,9 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant="h5">Fill in the Blank</Typography>
+          <Typography variant="h5">{t('title')}</Typography>
           {queue.isRetryRound && (
-            <Chip label="Review" size="small" color="warning" variant="outlined" />
+            <Chip label={tCommon('reviewChip')} size="small" color="warning" variant="outlined" />
           )}
           {streak >= 2 && (
             <Chip label={`🔥 ${streak}`} size="small" color="warning" sx={{ fontWeight: 700 }} />
@@ -262,7 +268,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
             variant="caption"
             sx={{ color: 'primary.main', letterSpacing: '0.12em', display: 'block', mb: 2 }}
           >
-            FILL IN THE BLANK
+            {t('fillPrompt')}
           </Typography>
 
           {/* Sentence with blank (or revealed after answer) */}
@@ -296,7 +302,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
             {card.example_en}
           </Typography>
           <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1 }}>
-            Meaning: {card.meaning}
+            {t('meaningLabel', { meaning: card.meaning })}
           </Typography>
         </Box>
       </Box>
@@ -330,8 +336,10 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
             sx={{ flexGrow: 1 }}
           >
             {result === 'correct'
-              ? '✓ Correct — moving on…'
-              : `Incorrect — answer: ${card.word}${card.reading !== card.word ? ` (${card.reading})` : ''}`}
+              ? tCommon('correctMovingOn')
+              : card.reading !== card.word
+                ? t('incorrectAnswerWithReading', { word: card.word, reading: card.reading })
+                : t('incorrectAnswer', { word: card.word })}
           </Typography>
           <SpeakButton text={card.word} iconSize="1.1rem" />
         </Box>
@@ -345,8 +353,8 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !result) check();
           }}
-          label="Your answer"
-          placeholder="Word or reading…"
+          label={t('answerLabel')}
+          placeholder={t('answerPlaceholder')}
           disabled={!!result}
           fullWidth
           size="small"
@@ -359,18 +367,18 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
             disabled={!input.trim()}
             sx={{ flexShrink: 0 }}
           >
-            Check
+            {t('check')}
           </Button>
         ) : result === 'wrong' ? (
           <Button variant="outlined" onClick={next} sx={{ flexShrink: 0 }}>
-            Next
+            {tCommon('next')}
           </Button>
         ) : null}
       </Stack>
 
       <Box sx={{ mt: 3, textAlign: 'right' }}>
         <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
-          Quit &amp; Save Progress
+          {tCommon('quitAndSave')}
         </Button>
       </Box>
 

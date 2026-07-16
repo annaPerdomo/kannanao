@@ -398,5 +398,354 @@
       "loadingDecks": "Loading your decks…",
       "completionSubheading": "{count, plural, one {You studied all # card!} other {You studied all # cards!}}"
     }
+  },
+  "Review": {
+    "reviewTile": {
+      "review": "Review",
+      "ariaReviewDue": "Review — {count} due today",
+      "ariaReviewCaughtUp": "Review — all caught up",
+      "wordsWaiting": "{count, plural, one {# word waiting ⚔️} other {# words waiting ⚔️}}",
+      "allCaughtUp": "All caught up — nothing due"
+    },
+    "comboChip": {
+      "ariaCombo": "Combo {count} in a row"
+    },
+    "bossRound": {
+      "title": "Boss Round",
+      "progress": "{current} / {total}",
+      "whatDoesThisMean": "WHAT DOES THIS MEAN?"
+    },
+    "questInterstitial": {
+      "letsGo": "Let's go",
+      "continue": "Continue"
+    },
+    "reviewQuest": {
+      "settingUpQuest": "Setting up today's quest…",
+      "clearedReview": "You cleared today's review!",
+      "backToReview": "Back to Review",
+      "bossRoundTitle": "Boss Round",
+      "bossRoundSubtitle": "Your last 3 words — pick the meaning. Worth double!",
+      "todaysPractice": "Today's Practice",
+      "cardsBadge": "{count, plural, one {# card} other {# cards}}"
+    },
+    "todayPage": {
+      "findingReviews": "Finding your reviews…",
+      "allDoneTitle": "All done for today!",
+      "allDoneBody": "You've reviewed everything that came due. Play a game to keep the streak going ✨",
+      "playAGame": "Play a game",
+      "backHome": "Back home"
+    },
+    "achievements": {
+      "firstCard": {
+        "label": "First Step!",
+        "description": "Study your very first card"
+      },
+      "cards10": {
+        "label": "Getting Warmed Up",
+        "description": "Study 10 cards total"
+      },
+      "cards50": {
+        "label": "Flashcard Fan",
+        "description": "Study 50 cards total"
+      },
+      "cards100": {
+        "label": "Century Club!",
+        "description": "Study 100 cards total"
+      },
+      "cards250": {
+        "label": "Knowledge Seeker",
+        "description": "Study 250 cards total"
+      },
+      "cards500": {
+        "label": "Study Superstar",
+        "description": "Study 500 cards total"
+      },
+      "cards1000": {
+        "label": "Grand Scholar",
+        "description": "Study 1,000 cards total"
+      },
+      "cards2500": {
+        "label": "Legendary Learner",
+        "description": "Study 2,500 cards total"
+      },
+      "streak3": {
+        "label": "3-Day Streak",
+        "description": "Study 3 days in a row"
+      },
+      "streak7": {
+        "label": "One Full Week!",
+        "description": "Study 7 days in a row"
+      },
+      "streak14": {
+        "label": "Two-Week Warrior",
+        "description": "Study 14 days in a row"
+      },
+      "streak30": {
+        "label": "Month Master",
+        "description": "30-day streak — incredible!"
+      },
+      "streak60": {
+        "label": "Unstoppable!",
+        "description": "60-day streak — truly dedicated"
+      },
+      "streak100": {
+        "label": "100 Days Strong",
+        "description": "100-day streak — you are a legend"
+      },
+      "level5": {
+        "label": "Level 5 Reached!",
+        "description": "Reach level 5"
+      },
+      "level10": {
+        "label": "Level 10 — Amazing!",
+        "description": "Reach level 10"
+      },
+      "level15": {
+        "label": "Rising Star",
+        "description": "Reach level 15"
+      },
+      "level20": {
+        "label": "Sakura Master",
+        "description": "Reach level 20"
+      },
+      "level30": {
+        "label": "Elite Scholar",
+        "description": "Reach level 30"
+      },
+      "level50": {
+        "label": "Grandmaster",
+        "description": "Reach level 50 — the pinnacle!"
+      },
+      "xp1000": {
+        "label": "First Thousand",
+        "description": "Earn 1,000 total XP"
+      },
+      "xp5000": {
+        "label": "XP Collector",
+        "description": "Earn 5,000 total XP"
+      },
+      "xp10000": {
+        "label": "XP Hoarder",
+        "description": "Earn 10,000 total XP"
+      },
+      "xp50000": {
+        "label": "XP Tycoon",
+        "description": "Earn 50,000 total XP"
+      },
+      "sessions10": {
+        "label": "Getting Consistent",
+        "description": "Complete 10 study sessions"
+      },
+      "sessions50": {
+        "label": "Dedicated Student",
+        "description": "Complete 50 study sessions"
+      },
+      "sessions100": {
+        "label": "Session Centurion",
+        "description": "Complete 100 study sessions"
+      },
+      "perfectSession": {
+        "label": "Perfect Score!",
+        "description": "Get 100% in a session (5+ cards)"
+      }
+    },
+    "meta": {
+      "kanaTitle": "Kana Builder — Review | Kannanao",
+      "kanaDescription": "Build the kana spelling of words from your decks, one tile at a time.",
+      "matchTitle": "Word Match — Review | Kannanao",
+      "matchDescription": "Match Japanese words from your decks to their meanings — due cards first.",
+      "particlesTitle": "Particle Picker — Review | Kannanao",
+      "particlesDescription": "Fill in the right Japanese particle (は・が・を・に・の…) to complete sentences.",
+      "questionsTitle": "Question Quest — Review | Kannanao",
+      "questionsDescription": "Practice Japanese question words — pick the answer that fits each question."
+    }
+  },
+  "Practice": {
+    "common": {
+      "next": "Next",
+      "quitAndSave": "Quit & Save Progress",
+      "backToDeck": "Back to Deck",
+      "reviewChip": "Review",
+      "correctMovingOn": "✓ Correct — moving on…",
+      "correctSummary": "{correct} / {total} correct",
+      "bestStreakRow": "🔥 Best streak: {count} in a row!"
+    },
+    "page": {
+      "loadingSession": "Loading your practice session…",
+      "notEnoughCards": "Not enough cards to practice. Add more cards to this deck.",
+      "cardsBadge": "{count, plural, one {# card} other {# cards}}",
+      "modeTitles": {
+        "match": "Match JP ↔ EN",
+        "fill": "Fill in the Blank",
+        "recall": "Guess It!",
+        "kotobaBubble": "Sentence Builder",
+        "quiz": "Quiz",
+        "listen": "Listen"
+      }
+    },
+    "batchPicker": {
+      "heading": "How many cards?",
+      "subheading": "This deck has {count, plural, one {# card} other {# cards}}. Pick a batch size to practice.",
+      "cardCount": "{count, plural, one {# card} other {# cards}}",
+      "allCards": "All {count} cards",
+      "quickReview": "Quick review",
+      "recommended": "Recommended",
+      "challenge": "Challenge",
+      "fullDeck": "Full deck",
+      "footerHint": "Wrong answers come back for review so you master every card"
+    },
+    "celebration": {
+      "chestOpenedAria": "Chest opened — {xp} XP",
+      "openChestAria": "Open your daily chest",
+      "chestReward": "+{xp} XP!",
+      "goldenChestTap": "Golden chest — tap to open!",
+      "dailyChestTap": "Daily chest — tap to open!"
+    },
+    "fillMode": {
+      "title": "Fill in the Blank",
+      "fillPrompt": "FILL IN THE BLANK",
+      "meaningLabel": "Meaning: {meaning}",
+      "incorrectAnswer": "Incorrect — answer: {word}",
+      "incorrectAnswerWithReading": "Incorrect — answer: {word} ({reading})",
+      "answerLabel": "Your answer",
+      "answerPlaceholder": "Word or reading…",
+      "check": "Check"
+    },
+    "matchMode": {
+      "title": "Match",
+      "batchChip": "Batch {current}/{total}",
+      "allMatched": "All matched!",
+      "pairsSummary": "{count, plural, one {# pair} other {# pairs}} · {rounds}",
+      "roundsCount": "{count, plural, one {# round} other {# rounds}}",
+      "timeSpeed": "⏱ {time} · {speed}",
+      "speedLightning": "Lightning fast! ⚡",
+      "speedNice": "Nice speed! 🚀",
+      "speedWellDone": "Well done! 👏",
+      "speedKeepUp": "Keep it up! 💪"
+    },
+    "recallMode": {
+      "title": "Guess It!",
+      "whatDoesThisMean": "WHAT DOES THIS MEAN?",
+      "seeResults": "See Results",
+      "nextArrow": "Next →"
+    },
+    "roundTransition": {
+      "allReviewed": "All reviewed!",
+      "almostThere": "Almost there!",
+      "roundDone": "Round {round} done!",
+      "batchOf": "Batch {current} of {total}",
+      "cardsToReview": "{count, plural, one {# card to review} other {# cards to review}}",
+      "movingOnNewCards": "Moving on to new cards",
+      "reviewCards": "{count, plural, one {Review # card} other {Review # cards}}",
+      "nextBatch": "Next batch"
+    },
+    "kotobaBubble": {
+      "title": "Sentence Builder",
+      "memberEmptyMsg": "Your teacher hasn't set up this game for this deck yet. Ask them to generate practice sentences!",
+      "organizerEmptyMsg": "Generate fun practice sentences from this deck's vocabulary. The AI will create natural conversations your student can practice with!",
+      "generatePractice": "Generate Practice",
+      "loadingBuilder": "Loading Sentence Builder...",
+      "generatingSentences": "Generating practice sentences...",
+      "notEnoughSentences": "Not enough practice sentences. Need at least {count}.",
+      "sentenceReview": "Sentence Review",
+      "particleLabel": "Particle: {particle}",
+      "defaultParticleHint": "connects parts of the sentence",
+      "question": "Question",
+      "response": "Response",
+      "wrongAnswer": "The answer is <b>{particle}</b> — {hint}",
+      "practiceAgain": "Practice Again",
+      "bestStreakRow": "Best streak: {count} in a row!",
+      "bestStreakInline": " · Best streak: {count}",
+      "particleAria": "Particle {particle}",
+      "reviewCount": "Review ({count})",
+      "regenerate": "Regenerate"
+    },
+    "sentenceReview": {
+      "title": "Review Sentences",
+      "subtitle": "{count} sentences generated — edit or remove any that don't fit",
+      "saving": "Saving...",
+      "saveChanges": "{count, plural, one {Save Changes (# sentence)} other {Save Changes (# sentences)}}",
+      "needMinSentences": "Need at least 3 sentences to play. Undo some deletions or regenerate.",
+      "conversationLabel": "Conversation {num}",
+      "typeQuestion": "Q",
+      "typeResponse": "A",
+      "typeStatement": "S",
+      "undoDelete": "Undo delete",
+      "deleteSentence": "Delete sentence",
+      "failedToSave": "Failed to save"
+    },
+    "studyBuddy": {
+      "tapPhrases": [
+        "Hehe! That tickles!",
+        "Again! Again!",
+        "Hey~!",
+        "Wheee!",
+        "So much fun!",
+        "You found me!",
+        "Let's play!",
+        "Tee-hee!"
+      ]
+    },
+    "usePracticeSentences": {
+      "failedToLoad": "Failed to load",
+      "failedToGenerate": "Failed to generate",
+      "failedToRegenerate": "Failed to regenerate",
+      "failedToSaveChanges": "Failed to save changes"
+    }
+  },
+  "Games": {
+    "shell": {
+      "progress": "{current} / {total}",
+      "quitAndSave": "Quit & Save Progress"
+    },
+    "tiles": {
+      "wordMatch": {
+        "title": "Word Match",
+        "description": "Match your words to their pictures — 6 pairs a round."
+      },
+      "kanaBuilder": {
+        "title": "Kana Builder",
+        "description": "Spell words you’ve studied from kana tiles."
+      },
+      "questionQuest": {
+        "title": "Question Quest",
+        "description": "なんさい? なにいろ? だれ? — pick the answer that fits."
+      },
+      "particlePicker": {
+        "title": "Particle Picker",
+        "description": "Fill in は・が・を・に・の to finish each sentence."
+      }
+    },
+    "kanaBuilder": {
+      "title": "Kana Builder",
+      "howTo": "Tap the kana tiles in the right order to spell the word.",
+      "buildPrompt": "Build the Japanese for:",
+      "removeLastCharacter": "Remove last character",
+      "celebrationHeading": "かな Master!",
+      "celebrationSubheading": "{correct} / {total} words right on the first try",
+      "loadError": "Couldn’t load your cards: {error}"
+    },
+    "particlePicker": {
+      "title": "Particle Picker",
+      "howTo": "Tap the little word (は・が・を…) that fills each blank.",
+      "correct": "せいかい！ 🎉",
+      "celebrationHeading": "Particle Pro!",
+      "celebrationSubheading": "{correct} / {total} particles right on the first try"
+    },
+    "questionQuest": {
+      "title": "Question Quest",
+      "howTo": "Read the question, then tap the answer that fits it best.",
+      "pickPrompt": "Pick the answer that fits the question!",
+      "celebrationHeading": "Question Quest complete!",
+      "celebrationSubheading": "{correct} / {total} answered correctly"
+    },
+    "wordMatch": {
+      "title": "Word Match",
+      "howTo": "Tap a Japanese word, then the picture that means the same thing.",
+      "celebrationHeading": "All matched!",
+      "celebrationSubheading": "{count, plural, one {# word} other {# words}}",
+      "celebrationExtra": "{matches} matches · {misses} misses",
+      "loadError": "Couldn’t load your cards: {error}"
+    }
   }
 }

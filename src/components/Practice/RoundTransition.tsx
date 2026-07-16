@@ -3,6 +3,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ReplayIcon from '@mui/icons-material/Replay';
 import { Box, Button, Chip, LinearProgress, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 interface RoundTransitionProps {
   batchIndex: number;
@@ -26,6 +27,8 @@ export function RoundTransition({
   onContinue,
   onExit,
 }: RoundTransitionProps) {
+  const t = useTranslations('Practice.roundTransition');
+  const tCommon = useTranslations('Practice.common');
   const theme = useTheme();
   const { brand } = theme.palette;
   const correctCount = totalInRound - wrongCount;
@@ -65,14 +68,14 @@ export function RoundTransition({
       <Typography variant="h4" sx={{ mb: 1, fontWeight: 700 }}>
         {isRetryRound
           ? pct === 1
-            ? 'All reviewed!'
-            : 'Almost there!'
-          : `Round ${batchIndex + 1} done!`}
+            ? t('allReviewed')
+            : t('almostThere')
+          : t('roundDone', { round: batchIndex + 1 })}
       </Typography>
 
       {/* Score */}
       <Typography color="text.secondary" sx={{ mb: 1 }}>
-        {correctCount} / {totalInRound} correct
+        {tCommon('correctSummary', { correct: correctCount, total: totalInRound })}
       </Typography>
 
       {/* Progress bar */}
@@ -96,7 +99,7 @@ export function RoundTransition({
       {totalBatches > 1 && (
         <Box sx={{ mb: 2 }}>
           <Chip
-            label={`Batch ${batchIndex + 1} of ${totalBatches}`}
+            label={t('batchOf', { current: batchIndex + 1, total: totalBatches })}
             size="small"
             variant="outlined"
           />
@@ -121,7 +124,7 @@ export function RoundTransition({
         >
           <ReplayIcon sx={{ fontSize: '1.2rem', color: 'warning.main' }} />
           <Typography variant="body2" sx={{ fontWeight: 600 }}>
-            {wrongCount} {wrongCount === 1 ? 'card' : 'cards'} to review
+            {t('cardsToReview', { count: wrongCount })}
           </Typography>
         </Box>
       )}
@@ -143,7 +146,7 @@ export function RoundTransition({
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            Moving on to new cards
+            {t('movingOnNewCards')}
           </Typography>
         </Box>
       )}
@@ -156,13 +159,13 @@ export function RoundTransition({
           onClick={onContinue}
           startIcon={willRetry ? <ReplayIcon /> : <ArrowForwardIcon />}
         >
-          {willRetry ? `Review ${wrongCount} ${wrongCount === 1 ? 'card' : 'cards'}` : `Next batch`}
+          {willRetry ? t('reviewCards', { count: wrongCount }) : t('nextBatch')}
         </Button>
       </Box>
 
       <Box sx={{ mt: 2 }}>
         <Button size="small" color="inherit" onClick={onExit} sx={{ opacity: 0.5 }}>
-          Quit &amp; Save Progress
+          {tCommon('quitAndSave')}
         </Button>
       </Box>
     </Box>

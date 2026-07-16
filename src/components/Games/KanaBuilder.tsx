@@ -4,6 +4,7 @@ import BackspaceOutlinedIcon from '@mui/icons-material/BackspaceOutlined';
 import { Alert, alpha, Box, IconButton, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useMemo, useRef, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -24,6 +25,7 @@ interface Tile {
 function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void }) {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
+  const t = useTranslations('Games.kanaBuilder');
   const { answer, finish, comboCount } = useGameSession('kana-build');
 
   const [index, setIndex] = useState(0);
@@ -90,8 +92,11 @@ function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void })
   if (done) {
     return (
       <CelebrationScreen
-        heading="かな Master!"
-        subheading={`${correctCountRef.current} / ${words.length} words right on the first try`}
+        heading={t('celebrationHeading')}
+        subheading={t('celebrationSubheading', {
+          correct: correctCountRef.current,
+          total: words.length,
+        })}
         mode="kana-build"
         onExit={onExit}
       />
@@ -117,9 +122,9 @@ function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void })
 
   return (
     <GameShell
-      title="Kana Builder"
+      title={t('title')}
       emoji="🧩"
-      howTo="Tap the kana tiles in the right order to spell the word."
+      howTo={t('howTo')}
       current={index}
       total={words.length}
       comboCount={comboCount}
@@ -136,7 +141,7 @@ function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void })
           </Typography>
         )}
         <Typography variant="body2" sx={{ color: 'text.secondary', mb: 0.5 }}>
-          Build the Japanese for:
+          {t('buildPrompt')}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
           <Typography sx={{ fontWeight: 700, fontSize: '1.4rem' }}>{word.english}</Typography>
@@ -208,7 +213,7 @@ function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void })
           );
         })}
         <IconButton
-          aria-label="Remove last character"
+          aria-label={t('removeLastCharacter')}
           onClick={handleBackspace}
           disabled={placed.length === 0}
           sx={{ alignSelf: 'center' }}
@@ -249,6 +254,7 @@ function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void })
 
 export function KanaBuilder() {
   const router = useRouter();
+  const t = useTranslations('Games.kanaBuilder');
   const { dueCards, allCards, loading, error } = useReviewCards();
   // Pick the session's words once per load — due cards first, topped up at random.
   const words = useMemo(
@@ -260,7 +266,7 @@ export function KanaBuilder() {
   if (error) {
     return (
       <Alert severity="error" sx={{ m: 3 }}>
-        Couldn’t load your cards: {error}
+        {t('loadError', { error })}
       </Alert>
     );
   }

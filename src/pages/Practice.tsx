@@ -1,5 +1,6 @@
 'use client';
 import { Box, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -22,26 +23,28 @@ interface PracticeProps {
   onBack: () => void;
 }
 
-const LABELS: Record<PracticeMode, string> = {
-  match: 'Match JP ↔ EN',
-  fill: 'Fill in the Blank',
-  recall: 'Guess It!',
-  'kotoba-bubble': 'Sentence Builder',
-  quiz: 'Quiz',
-  listen: 'Listen',
-};
-
 /** Show the batch picker when the deck exceeds this many cards. */
 const BATCH_PICKER_THRESHOLD = 10;
 
 export default function Practice({ deckId, mode, onBack }: PracticeProps) {
+  const t = useTranslations('Practice.page');
   const { cards, loading } = useCards(deckId);
   const [batchSize, setBatchSize] = useState<number | null>(null);
+
+  const modeTitles: Record<PracticeMode, string> = {
+    match: t('modeTitles.match'),
+    fill: t('modeTitles.fill'),
+    recall: t('modeTitles.recall'),
+    'kotoba-bubble': t('modeTitles.kotobaBubble'),
+    quiz: t('modeTitles.quiz'),
+    listen: t('modeTitles.listen'),
+  };
+  const badge = t('cardsBadge', { count: cards.length });
 
   if (loading) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
-        <Loading message="Loading your practice session…" />
+        <Loading message={t('loadingSession')} />
       </Box>
     );
   }
@@ -49,11 +52,9 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   if (cards.length < 2) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
-        <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} mb={3} />
+        <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
         <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Typography color="text.secondary">
-            Not enough cards to practice. Add more cards to this deck.
-          </Typography>
+          <Typography color="text.secondary">{t('notEnoughCards')}</Typography>
         </Box>
       </Box>
     );
@@ -63,7 +64,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   if (mode === 'quiz') {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
-        <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} mb={3} />
+        <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
         <QuizMode cards={cards} deckId={deckId} onExit={onBack} />
       </Box>
     );
@@ -73,7 +74,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   if (mode === 'kotoba-bubble' && batchSize === null) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
-        <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} mb={3} />
+        <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
         <KotobaBubbleSetup deckId={deckId} totalCards={cards.length} onSelect={setBatchSize} />
       </Box>
     );
@@ -84,7 +85,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   if (needsPicker && batchSize === null) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
-        <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} mb={3} />
+        <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
         <BatchPicker totalCards={cards.length} mode={mode} onSelect={setBatchSize} />
       </Box>
     );
@@ -94,7 +95,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
 
   return (
     <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
-      <PageHeader title={LABELS[mode]} onBack={onBack} badge={`${cards.length} cards`} mb={3} />
+      <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
 
       {mode === 'match' && (
         <MatchMode cards={cards} deckId={deckId} batchSize={effectiveBatchSize} onExit={onBack} />

@@ -3,11 +3,21 @@
 import { alpha, Box, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 interface GameCardProps {
   title: string;
   jpTitle: string;
   description: string;
+  emoji: string;
+  gradient: string;
+  href: string;
+}
+
+/** Static config for the game tiles — user-visible strings resolved via i18n keys. */
+interface GameConfig {
+  key: string;
+  jpTitle: string;
   emoji: string;
   gradient: string;
   href: string;
@@ -97,35 +107,31 @@ function GameCard({ title, jpTitle, description, emoji, gradient, href }: GameCa
   );
 }
 
-const GAMES: GameCardProps[] = [
+const GAMES: GameConfig[] = [
   {
-    title: 'Word Match',
+    key: 'wordMatch',
     jpTitle: 'ことばマッチ',
-    description: 'Match your words to their pictures — 6 pairs a round.',
     emoji: '🍉',
     gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
     href: '/review/match',
   },
   {
-    title: 'Kana Builder',
+    key: 'kanaBuilder',
     jpTitle: 'かなビルダー',
-    description: 'Spell words you’ve studied from kana tiles.',
     emoji: '🧩',
     gradient: 'linear-gradient(135deg, #f97316, #ea580c)',
     href: '/review/kana',
   },
   {
-    title: 'Question Quest',
+    key: 'questionQuest',
     jpTitle: 'しつもんクエスト',
-    description: 'なんさい? なにいろ? だれ? — pick the answer that fits.',
     emoji: '❓',
     gradient: 'linear-gradient(135deg, #14b8a6, #0d9488)',
     href: '/review/questions',
   },
   {
-    title: 'Particle Picker',
+    key: 'particlePicker',
     jpTitle: 'じょしピッカー',
-    description: 'Fill in は・が・を・に・の to finish each sentence.',
     emoji: '🎏',
     gradient: 'linear-gradient(135deg, #84cc16, #65a30d)',
     href: '/review/particles',
@@ -138,10 +144,19 @@ const GAMES: GameCardProps[] = [
  * game keeps your whole vocabulary fresh. Every answer earns XP.
  */
 export function GameTiles() {
+  const t = useTranslations('Games.tiles');
   return (
     <Stack spacing={1.5}>
       {GAMES.map((game) => (
-        <GameCard key={game.href} {...game} />
+        <GameCard
+          key={game.href}
+          title={t(`${game.key}.title`)}
+          description={t(`${game.key}.description`)}
+          jpTitle={game.jpTitle}
+          emoji={game.emoji}
+          gradient={game.gradient}
+          href={game.href}
+        />
       ))}
     </Stack>
   );

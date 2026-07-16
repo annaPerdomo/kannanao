@@ -2,6 +2,7 @@
 
 import { alpha, Box, Button, Chip, Container, LinearProgress, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 import { ComboChip } from '@/components/ComboChip';
 
@@ -32,6 +33,7 @@ export function GameShell({
 }: GameShellProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+  const t = useTranslations('Games.shell');
 
   return (
     <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
@@ -46,7 +48,7 @@ export function GameShell({
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <ComboChip count={comboCount} />
-          <Chip label={`${Math.min(current + 1, total)} / ${total}`} />
+          <Chip label={t('progress', { current: Math.min(current + 1, total), total })} />
         </Box>
       </Box>
 
@@ -71,7 +73,7 @@ export function GameShell({
 
       <Box sx={{ mt: 3, textAlign: 'right' }}>
         <Button size="small" color="inherit" onClick={onQuit} sx={{ opacity: 0.5 }}>
-          Quit &amp; Save Progress
+          {t('quitAndSave')}
         </Button>
       </Box>
     </Container>

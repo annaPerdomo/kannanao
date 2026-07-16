@@ -3,6 +3,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { Alert, Box, Button, Stack, Typography } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -19,6 +20,7 @@ interface KotobaBubbleSetupProps {
 }
 
 export function KotobaBubbleSetup({ deckId, totalCards, onSelect }: KotobaBubbleSetupProps) {
+  const t = useTranslations('Practice.kotobaBubble');
   const { isMemberAccount } = useAuth();
 
   const {
@@ -51,11 +53,11 @@ export function KotobaBubbleSetup({ deckId, totalCards, onSelect }: KotobaBubble
 
   // Loading state
   if (loading) {
-    return <Loading message="Loading Sentence Builder..." />;
+    return <Loading message={t('loadingBuilder')} />;
   }
 
   if (generating) {
-    return <Loading message="Generating practice sentences..." />;
+    return <Loading message={t('generatingSentences')} />;
   }
 
   // No content — show generate prompt
@@ -64,12 +66,10 @@ export function KotobaBubbleSetup({ deckId, totalCards, onSelect }: KotobaBubble
       <Box sx={{ textAlign: 'center', py: 4 }}>
         <Typography sx={{ fontSize: '3rem', mb: 2 }}>🫧</Typography>
         <Typography variant="h5" sx={{ mb: 0.5, fontWeight: 700, color: 'text.primary' }}>
-          Sentence Builder
+          {t('title')}
         </Typography>
         <Typography sx={{ mb: 3, color: 'text.secondary', maxWidth: 360, mx: 'auto' }}>
-          {isMemberAccount
-            ? "Your teacher hasn't set up this game for this deck yet. Ask them to generate practice sentences!"
-            : "Generate fun practice sentences from this deck's vocabulary. The AI will create natural conversations your student can practice with!"}
+          {isMemberAccount ? t('memberEmptyMsg') : t('organizerEmptyMsg')}
         </Typography>
         {!isMemberAccount && (
           <Button
@@ -79,7 +79,7 @@ export function KotobaBubbleSetup({ deckId, totalCards, onSelect }: KotobaBubble
             startIcon={<AutoAwesomeIcon />}
             sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700, px: 4 }}
           >
-            Generate Practice
+            {t('generatePractice')}
           </Button>
         )}
         {error && (
@@ -100,7 +100,7 @@ export function KotobaBubbleSetup({ deckId, totalCards, onSelect }: KotobaBubble
         onClick={() => setReviewOpen(true)}
         sx={{ textTransform: 'none', color: 'text.secondary' }}
       >
-        Review ({sentences.length})
+        {t('reviewCount', { count: sentences.length })}
       </Button>
       <Button
         size="small"
@@ -109,7 +109,7 @@ export function KotobaBubbleSetup({ deckId, totalCards, onSelect }: KotobaBubble
         disabled={generating}
         sx={{ textTransform: 'none', color: 'text.secondary' }}
       >
-        Regenerate
+        {t('regenerate')}
       </Button>
     </Stack>
   ) : undefined;

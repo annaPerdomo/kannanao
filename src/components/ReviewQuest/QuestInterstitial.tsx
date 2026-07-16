@@ -3,6 +3,7 @@
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Box, Button, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 interface QuestInterstitialProps {
   emoji: string;
@@ -27,6 +28,7 @@ export function QuestInterstitial({
 }: QuestInterstitialProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const t = useTranslations('Review.questInterstitial');
 
   return (
     <Box
@@ -82,7 +84,7 @@ export function QuestInterstitial({
             : { fontWeight: 800 }
         }
       >
-        {dark ? "Let's go" : 'Continue'}
+        {dark ? t('letsGo') : t('continue')}
       </Button>
     </Box>
   );

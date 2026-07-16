@@ -2,6 +2,7 @@
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import { BUBBLE_COLORS } from './constants';
 
@@ -14,13 +15,14 @@ interface BubbleButtonProps {
 }
 
 export function BubbleButton({ particle, index, disabled, state, onClick }: BubbleButtonProps) {
+  const t = useTranslations('Practice.kotobaBubble');
   const color = BUBBLE_COLORS[index % BUBBLE_COLORS.length];
 
   return (
     <Box
       role="button"
       tabIndex={disabled ? -1 : 0}
-      aria-label={`Particle ${particle}`}
+      aria-label={t('particleAria', { particle })}
       onClick={disabled ? undefined : onClick}
       onKeyDown={
         disabled

@@ -4,6 +4,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Grid, LinearProgress, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ComboChip } from '@/components/ComboChip';
@@ -45,6 +46,7 @@ export function BossRound({
 }: BossRoundProps) {
   const theme = useTheme();
   const { brand, accent, surfaces } = theme.palette;
+  const t = useTranslations('Review.bossRound');
 
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -111,12 +113,12 @@ export function BossRound({
           <Box component="span" aria-hidden>
             ⚔️
           </Box>
-          Boss Round
+          {t('title')}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <ComboChip count={comboCount} />
           <Typography sx={{ fontWeight: 700, opacity: 0.9 }}>
-            {index + 1} / {cards.length}
+            {t('progress', { current: index + 1, total: cards.length })}
           </Typography>
         </Box>
       </Box>
@@ -169,7 +171,7 @@ export function BossRound({
           variant="caption"
           sx={{ color: 'text.secondary', letterSpacing: '0.12em', display: 'block', mt: 1 }}
         >
-          WHAT DOES THIS MEAN?
+          {t('whatDoesThisMean')}
         </Typography>
       </Box>
 

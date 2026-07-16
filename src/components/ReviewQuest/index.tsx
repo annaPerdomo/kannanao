@@ -1,6 +1,7 @@
 'use client';
 
 import { Box } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import FlipStudy, { type FlipStudyController } from '@/components/FlipStudy';
@@ -38,6 +39,7 @@ export interface ReviewQuestProps {
  * once, at the end.
  */
 export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
+  const t = useTranslations('Review.reviewQuest');
   const { user } = useAuth();
   const { startSession, recordAnswer, endSession, addBonusXp, openDailyChest, progress } =
     useProgress();
@@ -160,7 +162,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
   if (!ready) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
-        <Loading message="Setting up today's quest…" />
+        <Loading message={t('settingUpQuest')} />
       </Box>
     );
   }
@@ -173,9 +175,9 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
       <CelebrationScreen
         heading={praise.jp}
         headingEn={praise.en}
-        subheading="You cleared today's review!"
+        subheading={t('clearedReview')}
         mode="study"
-        exitLabel="Back to Review"
+        exitLabel={t('backToReview')}
         chest={
           chestEligible
             ? {
@@ -202,8 +204,8 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <QuestInterstitial
           emoji="⚔️"
-          title="Boss Round"
-          subtitle="Your last 3 words — pick the meaning. Worth double!"
+          title={t('bossRoundTitle')}
+          subtitle={t('bossRoundSubtitle')}
           dark
           onContinue={() => setShowBossIntro(false)}
         />
@@ -218,8 +220,8 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
       {node?.type === 'warmup' && (
         <FlipStudy
           cards={plan.warmup}
-          title="Today's Practice"
-          badge={`${plan.warmup.length} card${plan.warmup.length === 1 ? '' : 's'}`}
+          title={t('todaysPractice')}
+          badge={t('cardsBadge', { count: plan.warmup.length })}
           sessionMode="review"
           sessionDeckId={null}
           onBack={onExit}
