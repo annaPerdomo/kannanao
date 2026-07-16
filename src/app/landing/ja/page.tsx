@@ -9,9 +9,13 @@ import { landingMessagesFor } from '@/i18n/messages';
 import Providers from '../../providers';
 import LandingContent from '../LandingContent';
 
-const TITLE = 'Kannanao — AI日本語フラッシュカードスタジオ';
+// Kept in step with the ja.json glossary by hand, not by import: metadata is
+// resolved outside the intl provider (see the comment below), so nothing here
+// can read the catalog. The terms that must match the in-app copy are the
+// practice-mode names (穴うめ / 当ててみよう) and ランキング — never リーダーボード.
+const TITLE = 'Kannanao — AIで作る日本語フラッシュカードスタジオ';
 const DESCRIPTION =
-  'AIで日本語のフラッシュカードを作成。マッチ・穴埋め・リコールの練習モード、トラベルモードのフレーズ集、リーダーボードと課題つきのグループ学習、XPと実績、10種類のテーマ、PDFの取り込み、デッキの共有と埋め込みに対応しています。';
+  'AIで日本語のフラッシュカードを作成。マッチ・穴うめ・当ててみようの練習モード、トラベルモードのフレーズ集、ランキングと課題つきのグループ学習、XPと実績、10種類のテーマ、PDFの取り込み、デッキの共有と埋め込みに対応しています。';
 
 // Static and generate-free: a generateMetadata() would run per request and take
 // the page's static prerender with it. The copy is written here rather than
@@ -62,10 +66,6 @@ export const metadata: Metadata = {
 // static. That is also why this is a route of its own rather than a `?lang=ja`
 // or a cookie branch inside /landing — a static page can only have one output,
 // so a second language needs a second URL. Which hreflang wants anyway.
-//
-// Until the translation pass lands, ja.json is empty and every string here
-// falls back to its English copy (see messagesFor). The page is correct; the
-// copy just isn't Japanese yet.
 const LOCALE: Locale = 'ja';
 const messages = landingMessagesFor(LOCALE);
 
