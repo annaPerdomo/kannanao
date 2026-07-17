@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { cardXp, getFlashcardDisplayText, titleFontSize } from '@/lib/flashcardUtils';
+import {
+  buildMeaningChoices,
+  cardXp,
+  getFlashcardDisplayText,
+  titleFontSize,
+} from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -113,5 +118,62 @@ describe('titleFontSize', () => {
   it('should never go below the minimum size', () => {
     expect(titleFontSize('a'.repeat(30), 3, 1.3)).toBe('1.65rem');
     expect(titleFontSize('a'.repeat(30), 3, 2)).toBe('2rem');
+  });
+});
+
+// ─── buildMeaningChoices ───────────────────────────────────────────────────────
+
+describe('buildMeaningChoices', () => {
+  it('includes the correct meaning and up to three distractors', () => {
+    const correct = makeCard({ id: 'c1', meaning: 'cat' });
+    const pool = [
+      correct,
+      makeCard({ id: 'c2', meaning: 'dog' }),
+      makeCard({ id: 'c3', meaning: 'bird' }),
+      makeCard({ id: 'c4', meaning: 'fish' }),
+      makeCard({ id: 'c5', meaning: 'horse' }),
+    ];
+    const choices = buildMeaningChoices(correct, pool);
+    expect(choices).toHaveLength(4);
+    expect(choices).toContain('cat');
+  });
+
+  it('never emits a distractor equal to the correct meaning (synonym cards)', () => {
+    const correct = makeCard({ id: 'c1', meaning: 'cold' });
+    const pool = [
+      correct,
+      makeCard({ id: 'c2', meaning: 'cold' }), // 寒い vs 冷たい — same gloss
+      makeCard({ id: 'c3', meaning: 'hot' }),
+    ];
+    for (let i = 0; i < 20; i++) {
+      const choices = buildMeaningChoices(correct, pool);
+      expect(choices.filter((c) => c === 'cold')).toHaveLength(1);
+    }
+  });
+
+  it('dedupes identical meanings among the distractors themselves', () => {
+    const correct = makeCard({ id: 'c1', meaning: 'cat' });
+    const pool = [
+      correct,
+      makeCard({ id: 'c2', meaning: 'dog' }),
+      makeCard({ id: 'c3', meaning: 'dog' }),
+      makeCard({ id: 'c4', meaning: 'dog' }),
+    ];
+    for (let i = 0; i < 20; i++) {
+      const choices = buildMeaningChoices(correct, pool);
+      expect(new Set(choices).size).toBe(choices.length);
+    }
+  });
+
+  it('skips cards with empty meanings', () => {
+    const correct = makeCard({ id: 'c1', meaning: 'cat' });
+    const pool = [
+      correct,
+      makeCard({ id: 'c2', meaning: '  ' }),
+      makeCard({ id: 'c3', meaning: 'dog' }),
+    ];
+    const choices = buildMeaningChoices(correct, pool);
+    expect(choices).toEqual(expect.arrayContaining(['cat', 'dog']));
+    expect(choices).toHaveLength(2);
   });
 });

@@ -16,6 +16,7 @@ import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import { useShop } from '@/hooks/useShop';
 import { cardXp } from '@/lib/flashcardUtils';
+import { hiraganaToKatakana } from '@/lib/reviewGames';
 import type { Flashcard } from '@/types/flashcard';
 
 import { CelebrationScreen, pickPraise } from './CelebrationScreen';
@@ -29,12 +30,27 @@ interface FillModeProps {
   onExit: () => void;
 }
 
-function maskWord(sentence: string, word: string, reading?: string): string {
-  if (sentence.includes(word)) return sentence.replace(word, '＿'.repeat(word.length));
-  const target = reading || word;
-  if (target && sentence.includes(target))
-    return sentence.replace(target, '＿'.repeat(target.length));
-  return sentence;
+export function maskWord(sentence: string, word: string, reading?: string): string {
+  // Mask EVERY occurrence of both the word and its reading — .replace() only
+  // masked the first, so a word appearing twice left the answer visible.
+  let out = sentence;
+  for (const target of [word, reading]) {
+    if (target && out.includes(target)) out = out.split(target).join('＿'.repeat(target.length));
+  }
+  return out;
+}
+
+/**
+ * Forgiving typed-answer comparison: strips ALL whitespace (incl. full-width
+ * spaces from Japanese IMEs) from both sides and folds hiragana/katakana to one
+ * script — typing チーズ for a card whose reading is stored ちーず is a correct
+ * answer, not a spelling mistake.
+ */
+export function answerMatches(input: string, word: string, reading?: string | null): boolean {
+  const fold = (s: string | undefined | null) =>
+    hiraganaToKatakana((s ?? '').replace(/[\s　]+/g, ''));
+  const typed = fold(input);
+  return typed.length > 0 && (typed === fold(word) || (!!reading && typed === fold(reading)));
 }
 
 export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
@@ -75,14 +91,18 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
     });
   }, [deckId, startSession]);
 
-  // Reset per-round state when a new round starts
-  useEffect(() => {
-    if (queue.roundKey === 0) return;
+  // Reset per-round state the moment a new round arrives — during render, not
+  // in an effect. An effect reset left one render where `roundDone` was still
+  // computed from the PREVIOUS round's index, and the finish effect below saw
+  // it and ended the fresh retry round instantly with every card marked wrong.
+  const [prevRoundKey, setPrevRoundKey] = useState(queue.roundKey);
+  if (prevRoundKey !== queue.roundKey) {
+    setPrevRoundKey(queue.roundKey);
     setIndex(0);
     setInput('');
     setResult(null);
     setRoundScore(0);
-  }, [queue.roundKey]);
+  }
 
   const card = queue.currentCards[index];
   const roundDone = index >= queue.currentCards.length;
@@ -110,7 +130,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
   }, [result, next]);
 
   const check = async () => {
-    const correct = input.trim() === card.word || input.trim() === card.reading;
+    const correct = answerMatches(input, card.word, card.reading);
     setResult(correct ? 'correct' : 'wrong');
     queue.reportResult(card.id, correct);
     totalAnsweredRef.current += 1;

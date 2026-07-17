@@ -1,5 +1,6 @@
 import { toRomaji } from 'wanakana';
 
+import { shuffle } from '@/lib/reviewGames';
 import type { Flashcard, JlptLevel } from '@/types/flashcard';
 
 /** XP earned (and HP displayed) per card, scaled by JLPT difficulty. */
@@ -27,13 +28,19 @@ export function cardXp(jlptLevel?: JlptLevel | null): number {
  * lives in one place.
  */
 export function buildMeaningChoices(correct: Flashcard, pool: Flashcard[]): string[] {
-  const others = pool.filter((c) => c.id !== correct.id);
-  const count = Math.min(3, others.length);
-  const distractors = [...others]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, count)
-    .map((c) => c.meaning);
-  return [...distractors, correct.meaning].sort(() => Math.random() - 0.5);
+  // Dedupe by meaning text: a pool with synonyms (two cards meaning "cold")
+  // used to produce two identical options — one graded wrong — plus duplicate
+  // React keys in every choice grid.
+  const seen = new Set<string>([correct.meaning.trim()]);
+  const candidates: string[] = [];
+  for (const c of pool) {
+    if (c.id === correct.id) continue;
+    const meaning = c.meaning?.trim();
+    if (!meaning || seen.has(meaning)) continue;
+    seen.add(meaning);
+    candidates.push(meaning);
+  }
+  return shuffle([...shuffle(candidates).slice(0, 3), correct.meaning]);
 }
 
 /**
