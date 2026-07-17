@@ -14,7 +14,7 @@ import { modeColor, modeLabel } from '@/components/Stats/constants';
 import type { MemberDetail } from '@/hooks/useGroup';
 import type { SessionMode } from '@/hooks/useProgress';
 
-import { formatDuration } from './helpers';
+import { useMemberFormatters } from './helpers';
 
 type PracticeModeStat = MemberDetail['practiceModeStats'][number];
 
@@ -31,6 +31,7 @@ function ModeCard({
   maxSessions: number;
   t: ReturnType<typeof useTranslations>;
 }) {
+  const { formatDuration } = useMemberFormatters();
   const color = modeColor(s.mode as SessionMode);
   const isSpeech = s.source === 'speech';
   const unitLabel = isSpeech ? t('linesUnit') : t('cardsUnit');

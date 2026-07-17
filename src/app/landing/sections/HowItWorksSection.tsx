@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import { useInView } from '@/hooks/useInView';
 import { purple, sky } from '@/theme';
@@ -14,30 +15,27 @@ const STEPS = [
   {
     n: 1,
     emoji: '✍️',
-    title: 'Create your decks',
-    desc: 'Type a word and AI fills readings, meanings, and examples. Or upload a PDF to generate cards in bulk. Unsplash photos and furigana are added automatically.',
+    key: 'createYourDecks',
   },
   {
     n: 2,
     emoji: '🎮',
-    title: 'Study your way',
-    desc: 'Flip cards, play Match, Fill-in-the-blank, or Recall. Open Travel Mode for real-world phrases across 9 modules, or practice speeches line-by-line.',
+    key: 'studyYourWay',
   },
   {
     n: 3,
     emoji: '🎨',
-    title: 'Earn & customise',
-    desc: 'Every session earns XP. Level up to unlock colour themes, card borders, celebration effects, and study buddies from the shop.',
+    key: 'earnAndCustomise',
   },
   {
     n: 4,
     emoji: '👥',
-    title: 'Learn together',
-    desc: 'Create a group, invite members via QR code, assign decks with deadlines, climb the weekly leaderboard, and share or embed decks anywhere.',
+    key: 'learnTogether',
   },
 ];
 
 export function HowItWorksSection() {
+  const t = useTranslations('Landing.howItWorks');
   const { ref, inView } = useInView(0.1);
 
   return (
@@ -100,21 +98,18 @@ export function HowItWorksSection() {
               mb: 2,
             }}
           >
-            Up and running
-            <br />
-            in minutes
+            {t.rich('heading', { br: () => <br /> })}
           </Typography>
           <Typography
             sx={{ fontSize: '1rem', color: alpha(sky[700], 0.62), lineHeight: 1.8, mb: 4 }}
           >
-            No complicated setup. Create an account, build your first deck with AI, and start
-            earning XP in minutes. Everything syncs automatically.
+            {t('subheading')}
           </Typography>
           <Stack direction="row" spacing={4} flexWrap="wrap" useFlexGap>
             {[
-              ['9', 'travel modules'],
-              ['12+', 'achievements'],
-              ['10', 'themes'],
+              ['9', t('stats.travelModules')],
+              ['12+', t('stats.achievements')],
+              ['10', t('stats.themes')],
             ].map(([n, label]) => (
               <Box key={label}>
                 <Typography
@@ -208,12 +203,12 @@ export function HowItWorksSection() {
                     mb: 0.75,
                   }}
                 >
-                  {s.emoji} {s.title}
+                  {s.emoji} {t(`steps.${s.key}.title`)}
                 </Typography>
                 <Typography
                   sx={{ fontSize: '0.9rem', color: alpha(sky[700], 0.62), lineHeight: 1.75 }}
                 >
-                  {s.desc}
+                  {t(`steps.${s.key}.desc`)}
                 </Typography>
               </Box>
             </Box>

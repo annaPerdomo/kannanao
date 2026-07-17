@@ -7,6 +7,7 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { alpha, ThemeProvider } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { PublicFlashcard } from '@/components/PublicFlashcard';
@@ -28,17 +29,26 @@ const LEADERBOARD = [
 ];
 
 const ASSIGNMENTS = [
-  { deck: 'JLPT N5 Verbs', due: 'Tomorrow', progress: 80, emoji: '📚' },
-  { deck: 'Daily Greetings', due: 'Friday', progress: 45, emoji: '👋' },
-  { deck: 'Food & Drinks', due: 'Next week', progress: 20, emoji: '🍱' },
+  { key: 'jlptN5Verbs', progress: 80, emoji: '📚' },
+  { key: 'dailyGreetings', progress: 45, emoji: '👋' },
+  { key: 'foodAndDrinks', progress: 20, emoji: '🍱' },
 ];
 
-const ENCOURAGEMENTS = [
-  { from: 'Sensei', message: 'Great streak! Keep going! 💪', time: '2h ago' },
-  { from: 'Sensei', message: 'You mastered all N5 verbs!', time: '1d ago' },
+const ENCOURAGEMENTS = [{ key: 'greatStreak' }, { key: 'masteredVerbs' }];
+
+const SHARE_TAGS = ['oneClickSharing', 'embeddableWidget', 'noAccountNeeded'];
+
+const PILLS = [
+  'oneClickSharing',
+  'organizerMemberRoles',
+  'assignDecksWithDeadlines',
+  'weeklyXpLeaderboard',
+  'sendEncouragements',
+  'qrCodeInvites',
 ];
 
 export function GroupSection() {
+  const t = useTranslations('Landing.group');
   const { ref, inView } = useInView(0.06);
   const [leaderboardVisible, setLeaderboardVisible] = useState(0);
   const [showEncouragements, setShowEncouragements] = useState(false);
@@ -104,7 +114,7 @@ export function GroupSection() {
           }}
         >
           <Chip
-            label="SHARE & COLLABORATE"
+            label={t('badge')}
             size="small"
             sx={{
               mb: 2,
@@ -127,7 +137,7 @@ export function GroupSection() {
               lineHeight: 1.05,
             }}
           >
-            Better together
+            {t('heading')}
           </Typography>
           <Typography
             sx={{
@@ -138,8 +148,7 @@ export function GroupSection() {
               lineHeight: 1.7,
             }}
           >
-            Share decks with a link, embed cards on any website, or create a full classroom with
-            assignments, leaderboards, and encouragements.
+            {t('subheading')}
           </Typography>
         </Box>
 
@@ -234,7 +243,7 @@ export function GroupSection() {
                     fontFamily: (t) => t.fonts.mono,
                   }}
                 >
-                  Powered by Kannanao
+                  {t('poweredBy')}
                 </Typography>
               </Box>
             </Paper>
@@ -251,32 +260,28 @@ export function GroupSection() {
                 lineHeight: 1.1,
               }}
             >
-              Share & embed your decks
+              {t('shareHeading')}
             </Typography>
             <Typography
               sx={{ fontSize: '0.95rem', color: alpha(ocean[800], 0.6), lineHeight: 1.8, mb: 3 }}
             >
-              Share any deck with a single link — friends and classmates can study instantly with no
-              account required. Or embed an interactive flashcard widget directly on your blog,
-              Notion page, or website.
+              {t('shareBody')}
             </Typography>
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              {['🔗 One-click sharing', '🌐 Embeddable widget', '🔒 No account needed'].map(
-                (tag) => (
-                  <Chip
-                    key={tag}
-                    label={tag}
-                    size="small"
-                    sx={{
-                      bgcolor: alpha(ocean[50], 0.95),
-                      color: ocean[700],
-                      fontSize: '0.72rem',
-                      border: `1px solid ${alpha(ocean[300], 0.55)}`,
-                      borderRadius: 4,
-                    }}
-                  />
-                ),
-              )}
+              {SHARE_TAGS.map((tagKey) => (
+                <Chip
+                  key={tagKey}
+                  label={t(`shareTags.${tagKey}`)}
+                  size="small"
+                  sx={{
+                    bgcolor: alpha(ocean[50], 0.95),
+                    color: ocean[700],
+                    fontSize: '0.72rem',
+                    border: `1px solid ${alpha(ocean[300], 0.55)}`,
+                    borderRadius: 4,
+                  }}
+                />
+              ))}
             </Stack>
           </Box>
         </Box>
@@ -303,7 +308,7 @@ export function GroupSection() {
               lineHeight: 1.1,
             }}
           >
-            Or build a full classroom
+            {t('classroomHeading')}
           </Typography>
           <Typography
             sx={{
@@ -314,7 +319,7 @@ export function GroupSection() {
               lineHeight: 1.7,
             }}
           >
-            Invite members with a QR code, assign decks, track progress, and send encouragements.
+            {t('classroomSubheading')}
           </Typography>
         </Box>
 
@@ -351,7 +356,7 @@ export function GroupSection() {
             >
               <Typography sx={{ fontSize: '1rem' }}>🏆</Typography>
               <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: 'common.white' }}>
-                Weekly Leaderboard
+                {t('leaderboard.title')}
               </Typography>
             </Box>
             <Box sx={{ p: 1.5 }}>
@@ -392,7 +397,10 @@ export function GroupSection() {
                           {member.name}
                         </Typography>
                         <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>
-                          Lv.{member.level} · 🔥 {member.streak}d
+                          {t('leaderboard.levelStreak', {
+                            level: member.level,
+                            streak: member.streak,
+                          })}
                         </Typography>
                       </Box>
                       <Box sx={{ textAlign: 'right' }}>
@@ -402,7 +410,7 @@ export function GroupSection() {
                           {member.xp.toLocaleString()}
                         </Typography>
                         <Typography sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
-                          {member.cards} cards
+                          {t('leaderboard.cards', { count: member.cards })}
                         </Typography>
                       </Box>
                     </Paper>
@@ -434,14 +442,14 @@ export function GroupSection() {
             >
               <Typography sx={{ fontSize: '1rem' }}>📋</Typography>
               <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: 'common.white' }}>
-                Assignments
+                {t('assignments.title')}
               </Typography>
             </Box>
             <Box sx={{ p: 2 }}>
               <Stack spacing={1.25}>
                 {ASSIGNMENTS.map((a) => (
                   <Paper
-                    key={a.deck}
+                    key={a.key}
                     elevation={0}
                     sx={{
                       p: 1.5,
@@ -456,10 +464,12 @@ export function GroupSection() {
                         <Typography
                           sx={{ fontSize: '0.78rem', fontWeight: 700, color: 'text.primary' }}
                         >
-                          {a.deck}
+                          {t(`assignments.items.${a.key}.deck`)}
                         </Typography>
                         <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>
-                          Due: {a.due}
+                          {t('assignments.dueLabel', {
+                            due: t(`assignments.items.${a.key}.due`),
+                          })}
                         </Typography>
                       </Box>
                     </Box>
@@ -512,14 +522,14 @@ export function GroupSection() {
             >
               <Typography sx={{ fontSize: '1rem' }}>💌</Typography>
               <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: 'common.white' }}>
-                Encouragements
+                {t('encouragements.title')}
               </Typography>
             </Box>
             <Box sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column' }}>
               <Stack spacing={1.25} sx={{ flex: 1 }}>
                 {ENCOURAGEMENTS.map((e, i) => (
                   <Paper
-                    key={i}
+                    key={e.key}
                     elevation={0}
                     sx={{
                       p: 1.5,
@@ -542,16 +552,16 @@ export function GroupSection() {
                       <Typography
                         sx={{ fontSize: '0.68rem', fontWeight: 700, color: emerald[700] }}
                       >
-                        {e.from}
+                        {t(`encouragements.items.${e.key}.from`)}
                       </Typography>
                       <Typography sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
-                        {e.time}
+                        {t(`encouragements.items.${e.key}.time`)}
                       </Typography>
                     </Box>
                     <Typography
                       sx={{ fontSize: '0.75rem', color: 'text.primary', lineHeight: 1.5 }}
                     >
-                      {e.message}
+                      {t(`encouragements.items.${e.key}.message`)}
                     </Typography>
                   </Paper>
                 ))}
@@ -597,12 +607,12 @@ export function GroupSection() {
                 </Box>
                 <Box>
                   <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: ocean[700] }}>
-                    Invite with QR
+                    {t('encouragements.qrTitle')}
                   </Typography>
                   <Typography
                     sx={{ fontSize: '0.62rem', color: 'text.secondary', lineHeight: 1.4 }}
                   >
-                    Members scan to join instantly
+                    {t('encouragements.qrSubtitle')}
                   </Typography>
                 </Box>
               </Box>
@@ -623,17 +633,10 @@ export function GroupSection() {
             transition: 'opacity 0.8s ease 0.5s',
           }}
         >
-          {[
-            '🔗 One-click sharing',
-            '👥 Organizer & member roles',
-            '📋 Assign decks with deadlines',
-            '🏆 Weekly XP leaderboard',
-            '💌 Send encouragements',
-            '📱 QR code invites',
-          ].map((tag) => (
+          {PILLS.map((pillKey) => (
             <Chip
-              key={tag}
-              label={tag}
+              key={pillKey}
+              label={t(`pills.${pillKey}`)}
               size="small"
               sx={{
                 bgcolor: alpha(ocean[50], 0.95),

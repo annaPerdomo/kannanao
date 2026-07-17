@@ -8,6 +8,7 @@ import Link from '@mui/material/Link';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import WaitlistForm from '@/components/WaitlistForm';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +18,7 @@ import { darkPurple, pink, purple, sky } from '@/theme';
 import { Blob } from './Blob';
 
 export function CtaSection() {
+  const t = useTranslations('Landing.cta');
   const router = useRouter();
   const { session } = useAuth();
   const { ref, inView } = useInView(0.08);
@@ -90,7 +92,7 @@ export function CtaSection() {
               sx={{ fontSize: '0.85rem !important', color: `${purple[300]} !important` }}
             />
           }
-          label="Closed beta — spots opening soon"
+          label={t('betaChipLabel')}
           size="small"
           sx={{
             mb: 3,
@@ -113,9 +115,7 @@ export function CtaSection() {
             mb: 2.5,
           }}
         >
-          Ready to level up your
-          <br />
-          Japanese skills?
+          {t.rich('headline', { br: () => <br /> })}
         </Typography>
 
         <Typography
@@ -128,8 +128,7 @@ export function CtaSection() {
             lineHeight: 1.8,
           }}
         >
-          Kannanao is currently in closed beta. Drop your email and we&apos;ll notify you the moment
-          new spots open up.
+          {t('subtitle')}
         </Typography>
 
         {session ? (
@@ -152,7 +151,7 @@ export function CtaSection() {
               },
             }}
           >
-            Go to dashboard 🌸
+            {t('dashboardButton')}
           </Button>
         ) : (
           <WaitlistForm dark />
@@ -179,7 +178,7 @@ export function CtaSection() {
                 color: alpha('#fff', 0.35),
               }}
             >
-              🌸 Kannanao
+              {t('brandName')}
             </Typography>
             <Typography
               sx={{
@@ -189,7 +188,7 @@ export function CtaSection() {
                 textTransform: 'uppercase',
               }}
             >
-              AI-powered Japanese flashcard studio
+              {t('tagline')}
             </Typography>
           </Box>
           <Typography
@@ -199,22 +198,25 @@ export function CtaSection() {
               color: alpha('#fff', 0.25),
             }}
           >
-            Made with 💕 by{' '}
-            <Link
-              href="https://www.variationsonastring.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              underline="hover"
-              sx={{
-                fontFamily: (t) => t.fonts.display,
-                fontSize: '0.75rem',
-                color: alpha('#fff', 0.4),
-                fontStyle: 'italic',
-                '&:hover': { color: alpha('#fff', 0.65) },
-              }}
-            >
-              Variations on a String
-            </Link>
+            {t.rich('madeBy', {
+              link: (chunks) => (
+                <Link
+                  href="https://www.variationsonastring.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  sx={{
+                    fontFamily: (t) => t.fonts.display,
+                    fontSize: '0.75rem',
+                    color: alpha('#fff', 0.4),
+                    fontStyle: 'italic',
+                    '&:hover': { color: alpha('#fff', 0.65) },
+                  }}
+                >
+                  {chunks}
+                </Link>
+              ),
+            })}
           </Typography>
         </Box>
       </Box>

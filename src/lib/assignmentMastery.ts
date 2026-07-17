@@ -96,6 +96,9 @@ export function evaluateMastery(
 /**
  * One plain-words description of a goal, or null when the assignment has none.
  * Reads like "80% in Match", "80%", or "practice in Match".
+ *
+ * English-only — UI components must use `useGoalLabel` from
+ * `@/components/Group/useGoalLabel` so the label follows the active locale.
  */
 export function goalLabel(criteria: MasteryCriteria): string | null {
   const { required_accuracy, required_mode } = criteria;

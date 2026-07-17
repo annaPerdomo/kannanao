@@ -11,6 +11,7 @@ import {
   useState,
 } from 'react';
 
+import type { Locale } from '@/i18n/config';
 import { isAdminUser } from '@/lib/admin';
 import { invalidateApiCache } from '@/lib/apiCache';
 import type { InitialAuth } from '@/lib/dbMappers';
@@ -43,6 +44,13 @@ interface AuthContextValue {
   groupShowLeaderboard: boolean;
   displayName: string | null;
   colorScheme: ColorScheme | null;
+  /**
+   * profiles.locale — the account's explicit language, or null for "never
+   * chose". Exposed for LocaleSync, which reconciles it against the cookie after
+   * sign-in. Note this is NOT the active UI locale: read that from next-intl's
+   * useLocale(), which reflects the cookie the server actually rendered with.
+   */
+  profileLocale: Locale | null;
   showTodo: boolean;
   homeSections: HomeSections;
   reviewReminders: boolean;
@@ -118,6 +126,7 @@ export function AuthProvider({
     initialProfile?.displayName ?? null,
   );
   const [colorScheme, setColorScheme] = useState<ColorScheme | null>(seededScheme);
+  const [profileLocale, setProfileLocale] = useState<Locale | null>(initialProfile?.locale ?? null);
   const [showTodo, setShowTodo] = useState(seededSections.todo);
   const [homeSections, setHomeSections] = useState<HomeSections>(seededSections);
   const [reviewReminders, setReviewReminders] = useState(initialProfile?.reviewReminders !== false);
@@ -143,6 +152,7 @@ export function AuthProvider({
     if (saved && VALID_SCHEMES.includes(saved as ColorScheme)) {
       setColorScheme(saved as ColorScheme);
     }
+    setProfileLocale(profile?.locale ?? null);
     const resolved = resolveHomeSections(profile?.homeSections, profile?.showTodo);
     setShowTodo(resolved.todo);
     setHomeSections(resolved);
@@ -195,6 +205,11 @@ export function AuthProvider({
       if (event === 'SIGNED_OUT') {
         setDisplayName(null);
         setColorScheme(null);
+        // The account's preference goes; the NEXT_LOCALE cookie deliberately
+        // stays. Signing out shouldn't yank the UI back to English mid-session —
+        // the language the user is reading is now simply the device's, which is
+        // the same state a visitor who never signed in is in.
+        setProfileLocale(null);
         setShowTodo(true);
         setHomeSections(DEFAULT_HOME_SECTIONS);
         setTravelMainViewMode(null);
@@ -320,6 +335,7 @@ export function AuthProvider({
       groupShowLeaderboard,
       displayName,
       colorScheme,
+      profileLocale,
       showTodo,
       homeSections,
       reviewReminders,
@@ -343,6 +359,7 @@ export function AuthProvider({
       groupShowLeaderboard,
       displayName,
       colorScheme,
+      profileLocale,
       showTodo,
       homeSections,
       reviewReminders,

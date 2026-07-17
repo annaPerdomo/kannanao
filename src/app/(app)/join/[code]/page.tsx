@@ -19,6 +19,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
+import { readLocaleCookie } from '@/i18n/localeCookie';
 import { dbRecordLogin, sb } from '@/lib/supabase';
 
 export default function JoinPage() {
@@ -136,6 +137,11 @@ export default function JoinPage() {
           username: username.trim(),
           displayName: displayName.trim() || undefined,
           password,
+          // Carries the landing toggle's pick into the new account. Sent from the
+          // cookie rather than read server-side from the request: this is the one
+          // moment the choice can be attached to the row, and `undefined` (no
+          // cookie = no preference) has to stay distinct from 'en'.
+          locale: readLocaleCookie() ?? undefined,
         }),
       });
       const data = await res.json();

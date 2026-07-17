@@ -6,10 +6,16 @@ import type { ReactNode } from 'react';
 /**
  * Full-page wrapper that applies the theme-aware radial gradient background.
  * Must be a client component so the sx function can access the live theme.
+ *
+ * `lang` exists for /landing/ja: the root <html lang="en"> is the shared static
+ * shell and can't vary per route, so the page marks its own subtree instead.
+ * This is the outermost element a page owns, which makes it the one place that
+ * covers the nav as well as the content.
  */
-export function AppBackground({ children }: { children: ReactNode }) {
+export function AppBackground({ children, lang }: { children: ReactNode; lang?: string }) {
   return (
     <Box
+      lang={lang}
       sx={(theme) => ({
         minHeight: '100vh',
         display: 'flex',

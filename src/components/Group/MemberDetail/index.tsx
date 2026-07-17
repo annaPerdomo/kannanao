@@ -21,7 +21,7 @@ import { ACHIEVEMENTS, xpProgressInLevel } from '@/hooks/useProgress';
 
 import { EncouragementForm } from '../EncouragementForm';
 import { AssignmentsSection } from './AssignmentsSection';
-import { formatDate } from './helpers';
+import { useMemberFormatters } from './helpers';
 import { PracticeModeBreakdown } from './PracticeModeBreakdown';
 import { RecentSessionsSection } from './RecentSessionsSection';
 import { TrickyWords } from './TrickyWords';
@@ -38,6 +38,7 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
   const { brand, accent } = theme.palette;
   const t = useTranslations('Group.memberDetail');
   const tc = useTranslations('Common');
+  const { formatDate } = useMemberFormatters();
 
   if (loading) return <Loading message={t('loadingMemberDetails')} />;
   if (!detail) return null;

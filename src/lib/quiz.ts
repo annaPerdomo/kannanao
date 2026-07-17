@@ -59,18 +59,6 @@ export function quizStars(accuracyPct: number): 1 | 2 | 3 {
   return 1;
 }
 
-/** One friendly, non-anxious line for the finish screen, keyed to the star tier. */
-export function quizEncouragement(stars: 1 | 2 | 3): string {
-  switch (stars) {
-    case 3:
-      return 'Amazing! You really know these. 🌟';
-    case 2:
-      return 'Great work — so close to perfect! 💪';
-    default:
-      return 'Nice try! A little more practice and these are yours. 🌱';
-  }
-}
-
 /** Accuracy as a rounded 0–100 integer; 0 when no questions were answered. */
 export function quizAccuracy(score: number, total: number): number {
   if (total <= 0) return 0;

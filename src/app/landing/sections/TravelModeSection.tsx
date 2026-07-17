@@ -17,6 +17,7 @@ import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useInView } from '@/hooks/useInView';
@@ -26,42 +27,39 @@ import { Blob } from './Blob';
 
 const FREE_MODULES = [
   {
+    key: 'survivalPhrases',
     icon: <MenuBookIcon />,
-    title: 'Survival Phrases',
-    desc: '60+ essential phrases by situation — greetings, restaurants, shopping, transport, and emergencies. Each with romaji pronunciation, breakdowns, and cultural tips.',
     href: '/travel/phrases',
     gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)',
     shadow: '#6366f1',
     sample: '「すみません」 sumimasen',
   },
   {
+    key: 'foodMenu',
     icon: <RestaurantIcon />,
-    title: 'Food Menu Cheat Sheet',
-    desc: 'Decode any Japanese menu. Ramen types, sushi, common dishes, drinks, and konbini food — with notes on what each item actually is.',
     href: '/travel/food',
     gradient: 'linear-gradient(135deg, #ea580c, #c2410c)',
     shadow: '#ea580c',
     sample: '「豚骨ラーメン」 tonkotsu',
   },
   {
+    key: 'whatDidTheySay',
     icon: <VolumeUpIcon />,
-    title: '"What Did They Say?"',
-    desc: 'The phrases Japanese people say TO you — at convenience stores, restaurants, train stations, and shops. Know what they mean and how to respond.',
     href: '/travel/heard',
     gradient: 'linear-gradient(135deg, #0891b2, #0e7490)',
     shadow: '#0891b2',
     sample: '「袋いりますか？」 Need a bag?',
   },
   {
+    key: 'katakanaDecoder',
     icon: <TranslateIcon />,
-    title: 'Katakana Decoder',
-    desc: 'Learn the 46 characters used for foreign words on menus and signs. Master katakana and suddenly half of Japan becomes readable.',
     href: '/travel/katakana',
     gradient: 'linear-gradient(135deg, #10b981, #059669)',
     shadow: '#10b981',
     sample: 'コーヒー = koohii = coffee',
   },
   {
+    key: 'cultureGuide',
     icon: (
       <Typography
         component="span"
@@ -70,8 +68,6 @@ const FREE_MODULES = [
         ⛩️
       </Typography>
     ),
-    title: 'Culture Guide',
-    desc: "Do's, don'ts, and etiquette for temples, restaurants, trains, and onsen. Each tip includes the useful phrases for that situation.",
     href: '/travel/culture',
     gradient: 'linear-gradient(135deg, #dc2626, #991b1b)',
     shadow: '#dc2626',
@@ -81,23 +77,20 @@ const FREE_MODULES = [
 
 const AI_MODULES = [
   {
+    key: 'dailyPhrasePack',
     icon: <TodayIcon />,
-    title: 'Daily Phrase Pack',
-    desc: "Tell the AI your plans for the day and get a personalized set of phrases you'll actually need.",
     gradient: `linear-gradient(135deg, ${teal[400]}, ${teal[700]})`,
     shadow: teal[400],
   },
   {
+    key: 'scenarioPractice',
     icon: <RecordVoiceOverIcon />,
-    title: 'Scenario Practice',
-    desc: 'Practice real conversations — ordering food, checking in at hotels, asking for directions. The AI plays the other person.',
     gradient: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
     shadow: '#7c3aed',
   },
   {
+    key: 'pointCommunicate',
     icon: <PanToolIcon />,
-    title: 'Point & Communicate',
-    desc: 'Generate show cards for any situation — allergies, directions, special requests. Show your phone when words fail.',
     gradient: `linear-gradient(135deg, ${lavender[400]}, ${lavender[700]})`,
     shadow: lavender[400],
   },
@@ -106,6 +99,7 @@ const AI_MODULES = [
 const DEMO_STEP_COUNT = 5;
 
 export function TravelModeSection() {
+  const t = useTranslations('Landing.travelMode');
   const { ref, inView } = useInView(0.06);
   const [scenarioStep, setScenarioStep] = useState(0);
 
@@ -158,7 +152,7 @@ export function TravelModeSection() {
           }}
         >
           <Chip
-            label="TRAVEL MODE"
+            label={t('badge')}
             size="small"
             sx={{
               mb: 2,
@@ -181,9 +175,7 @@ export function TravelModeSection() {
               lineHeight: 1.05,
             }}
           >
-            Your pocket phrasebook
-            <br />
-            for Japan
+            {t.rich('heading', { br: () => <br /> })}
           </Typography>
           <Typography
             sx={{
@@ -195,8 +187,7 @@ export function TravelModeSection() {
               mb: 3,
             }}
           >
-            Zero Japanese required. Free phrasebooks, food guides, and cultural tips to navigate
-            Japan with confidence.
+            {t('subheading')}
           </Typography>
           <Box
             component={Link}
@@ -221,7 +212,7 @@ export function TravelModeSection() {
               },
             }}
           >
-            Explore free phrasebooks
+            {t('exploreCta')}
             <ArrowForwardIcon sx={{ fontSize: 18 }} />
           </Box>
         </Box>
@@ -245,7 +236,7 @@ export function TravelModeSection() {
               textAlign: 'center',
             }}
           >
-            FREE — NO ACCOUNT NEEDED
+            {t('freeSectionLabel')}
           </Typography>
 
           <Box
@@ -259,7 +250,7 @@ export function TravelModeSection() {
           >
             {FREE_MODULES.map((f, i) => (
               <Paper
-                key={f.title}
+                key={f.key}
                 component={Link}
                 href={f.href}
                 elevation={0}
@@ -313,7 +304,7 @@ export function TravelModeSection() {
                           lineHeight: 1.2,
                         }}
                       >
-                        {f.title}
+                        {t(`freeModules.${f.key}.title`)}
                       </Typography>
                       <ArrowForwardIcon
                         className="module-arrow"
@@ -339,7 +330,7 @@ export function TravelModeSection() {
                   </Box>
                 </Box>
                 <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', lineHeight: 1.55 }}>
-                  {f.desc}
+                  {t(`freeModules.${f.key}.desc`)}
                 </Typography>
               </Paper>
             ))}
@@ -372,7 +363,7 @@ export function TravelModeSection() {
                 color: purple[600],
               }}
             >
-              AI-POWERED — ACCOUNT REQUIRED
+              {t('aiSectionLabel')}
             </Typography>
           </Box>
 
@@ -388,7 +379,7 @@ export function TravelModeSection() {
             <Stack spacing={2} sx={{ flex: 1 }}>
               {AI_MODULES.map((f, i) => (
                 <Paper
-                  key={f.title}
+                  key={f.key}
                   elevation={0}
                   sx={{
                     p: 2.5,
@@ -425,10 +416,10 @@ export function TravelModeSection() {
                       <Typography
                         sx={{ fontSize: '0.88rem', fontWeight: 700, color: 'text.primary' }}
                       >
-                        {f.title}
+                        {t(`aiModules.${f.key}.title`)}
                       </Typography>
                       <Chip
-                        label="AI"
+                        label={t('aiChipLabel')}
                         size="small"
                         sx={{
                           height: 18,
@@ -448,7 +439,7 @@ export function TravelModeSection() {
                         mt: 0.25,
                       }}
                     >
-                      {f.desc}
+                      {t(`aiModules.${f.key}.desc`)}
                     </Typography>
                   </Box>
                 </Paper>
@@ -504,16 +495,16 @@ export function TravelModeSection() {
                   </Box>
                   <Box sx={{ flex: 1 }}>
                     <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: 'common.white' }}>
-                      Ordering Ramen
+                      {t('demo.scenarioTitle')}
                     </Typography>
                     <Typography
                       sx={{ fontSize: '0.6rem', color: alpha('#fff', 0.7), fontWeight: 500 }}
                     >
-                      Say what you want in English
+                      {t('demo.scenarioSubtitle')}
                     </Typography>
                   </Box>
                   <Chip
-                    label="DEMO"
+                    label={t('demo.demoChip')}
                     size="small"
                     sx={{
                       height: 20,
@@ -546,7 +537,7 @@ export function TravelModeSection() {
                           lineHeight: 1.4,
                         }}
                       >
-                        A small ramen shop with counter seating. The staff greets you warmly.
+                        {t('demo.contextLine')}
                       </Typography>
                     </Box>
 
@@ -648,7 +639,7 @@ export function TravelModeSection() {
                               letterSpacing: '0.06em',
                             }}
                           >
-                            SAY THIS
+                            {t('demo.sayThis')}
                           </Typography>
                         </Box>
                         <Typography
@@ -693,8 +684,7 @@ export function TravelModeSection() {
                       <Typography
                         sx={{ fontSize: '0.62rem', color: 'text.secondary', lineHeight: 1.45 }}
                       >
-                        Solo diners are very common — many ramen shops have counter seating just for
-                        you!
+                        {t('demo.culturalTip')}
                       </Typography>
                     </Box>
                   </Stack>
@@ -714,10 +704,10 @@ export function TravelModeSection() {
                         mb: 0.5,
                       }}
                     >
-                      Suggestions:
+                      {t('demo.suggestionsLabel')}
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 0.5, mb: 1 }}>
-                      {['Ask for recommendations', 'Order tonkotsu'].map((choice) => (
+                      {(t.raw('demo.suggestions') as string[]).map((choice) => (
                         <Box
                           key={choice}
                           sx={{
@@ -749,7 +739,7 @@ export function TravelModeSection() {
                         }}
                       >
                         <Typography sx={{ fontSize: '0.62rem', color: alpha(emerald[800], 0.3) }}>
-                          What do you want to say?
+                          {t('demo.inputPlaceholder')}
                         </Typography>
                       </Box>
                       <Box

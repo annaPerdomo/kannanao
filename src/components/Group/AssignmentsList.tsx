@@ -10,9 +10,9 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import type { Assignment } from '@/hooks/useAssignments';
-import { goalLabel } from '@/lib/assignmentMastery';
 
 import { EditAssignmentDialog } from './EditAssignmentDialog';
+import { useGoalLabel } from './useGoalLabel';
 
 type Translator = ReturnType<typeof useTranslations>;
 
@@ -151,7 +151,7 @@ function AssignmentRow({
   const deck = assignment.decks;
   const member = assignment.profiles;
   const urgency = !isCompleted ? dueDateColor(assignment.due_date) : null;
-  const goal = goalLabel(assignment);
+  const goal = useGoalLabel()(assignment);
   const deckName = deck?.name || t('unknownDeck');
 
   return (

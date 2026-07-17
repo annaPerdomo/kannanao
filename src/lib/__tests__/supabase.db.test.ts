@@ -75,6 +75,7 @@ import {
   loadProfile,
   loadTodos,
   updateProfileColorScheme,
+  updateProfileLocale,
   updateProfileShowTodo,
   upsertCardProgress,
   upsertProfile,
@@ -531,6 +532,23 @@ describe('loadProfile', () => {
     const result = await loadProfile('u1');
     expect(result?.showTodo).toBe(true);
   });
+
+  it('should map an explicit locale', async () => {
+    setTable('profiles', { username: 'u', locale: 'ja' });
+    expect((await loadProfile('u1'))?.locale).toBe('ja');
+  });
+
+  // NULL is "never chose — follow the device", not English. Mapping it to 'en'
+  // here would make every pre-existing account override a Japanese browser.
+  it('should map a null locale to null, not English', async () => {
+    setTable('profiles', { username: 'u', locale: null });
+    expect((await loadProfile('u1'))?.locale).toBeNull();
+  });
+
+  it('should map an unrecognized locale to null', async () => {
+    setTable('profiles', { username: 'u', locale: 'klingon' });
+    expect((await loadProfile('u1'))?.locale).toBeNull();
+  });
 });
 
 // ─── updateProfileColorScheme ─────────────────────────────────────────────────
@@ -548,6 +566,33 @@ describe('updateProfileColorScheme', () => {
   it('should not throw on error (just logs)', async () => {
     setTable('profiles', null, { message: 'Error' });
     await expect(updateProfileColorScheme('u1', 'murasaki')).resolves.toBeUndefined();
+  });
+});
+
+// ─── updateProfileLocale ──────────────────────────────────────────────────────
+
+describe('updateProfileLocale', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setTable('profiles', null, null);
+  });
+
+  it('should return no error on success', async () => {
+    await expect(updateProfileLocale('u1', 'ja')).resolves.toEqual({ error: null });
+  });
+
+  // Unlike its fire-and-forget siblings: the language picker writes this row
+  // before it touches the cookie, so it has to know whether the write landed.
+  it('should report the error to the caller rather than swallowing it', async () => {
+    setTable('profiles', null, { message: 'permission denied' });
+    await expect(updateProfileLocale('u1', 'ja')).resolves.toEqual({
+      error: 'permission denied',
+    });
+  });
+
+  it('should write to the profiles table', async () => {
+    await updateProfileLocale('u1', 'ja');
+    expect(mockFrom.mock.calls.map((c) => c[0])).toContain('profiles');
   });
 });
 

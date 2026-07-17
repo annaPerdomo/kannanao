@@ -1,1 +1,2886 @@
-{}
+{
+  "Common": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "delete": "削除",
+    "edit": "編集",
+    "done": "完了",
+    "back": "戻る",
+    "loading": "読み込み中…",
+    "retry": "もう一度",
+    "somethingWentWrong": "うまくいきませんでした",
+    "errorFallbackBody": "予期しないエラーが発生しました。ページを更新するか、もう一度お試しください。",
+    "readAloud": "読み上げ"
+  },
+  "Deck": {
+    "addCardsModal": {
+      "title": "✨ カードを追加",
+      "subtitle": "新しいカードを作成・コピー・取り込み",
+      "generating": "カードを作成中…"
+    },
+    "addCardsSection": {
+      "mainDisplayMode": "メインの表示:",
+      "hiragana": "ひ ひらがな",
+      "kanji": "漢 漢字",
+      "generateWithAi": "AIで作る",
+      "generateCards": "カードを作成",
+      "wordsQueued": "{count, plural, other {#語が待機中}}"
+    },
+    "addExistingCardsDialog": {
+      "title": "既存のカードを追加",
+      "subtitle": "ほかのデッキから選ぶと、ここにコピーされます",
+      "searchPlaceholder": "単語・読み方・意味で検索…",
+      "copying": "コピー中…",
+      "copyButton": "{count, plural, other {カード#枚をコピー}}",
+      "deselectAll": "すべて解除",
+      "selectAll": "すべて選択",
+      "selectedCount": "{count}枚を選択中",
+      "cardCount": "{count, plural, other {カード#枚}}",
+      "emptyNoCards": "ほかのデッキにカードがありません",
+      "emptyNoMatch": "検索に一致するカードがありません"
+    },
+    "confirmRemoveImageDialog": {
+      "title": "画像を削除",
+      "subtitle": "この操作は取り消せません",
+      "removeForever": "完全に削除",
+      "removing": "削除中...",
+      "body": "画像はストレージから完全に削除されます。元に戻すことはできません。"
+    },
+    "createDeckDialog": {
+      "title": "新しいデッキ",
+      "subtitle": "デッキに名前をつけて始めましょう",
+      "creating": "作成中…",
+      "create": "作成",
+      "generating": "カードを作成中…",
+      "deckNameLabel": "デッキ名",
+      "descriptionLabel": "説明（任意）",
+      "pinToHome": "ホームにピン留め",
+      "pinToHomeHelper": "このデッキをホームに表示します",
+      "addCardsOptional": "カードを追加（任意）"
+    },
+    "deckHeader": {
+      "saveTooltip": "保存（Enter）",
+      "cancelTooltip": "キャンセル（Esc）",
+      "deckNamePlaceholder": "デッキ名",
+      "descriptionPlaceholder": "説明（任意）",
+      "cardCount": "{count, plural, other {カード#枚}}",
+      "changeEmojiTooltip": "絵文字を変更",
+      "addEmojiTooltip": "絵文字を追加",
+      "changeDeckEmojiAria": "デッキの絵文字を変更",
+      "addDeckEmojiAria": "デッキの絵文字を追加",
+      "renameDeckTooltip": "デッキ名を変更",
+      "renameDeckAria": "デッキ名を変更",
+      "shared": "共有中",
+      "share": "共有",
+      "unpinFromHome": "ホームのピンを外す",
+      "pinToHome": "ホームにピン留め"
+    },
+    "practiceHero": {
+      "letsPractice": "練習しよう！",
+      "startFlashcardStudyAria": "フラッシュカード学習を始める",
+      "flashcardsTitle": "フラッシュカード",
+      "flashcardsDescription": "めくって全部おぼえよう",
+      "letsGo": "はじめる →",
+      "startPracticeAria": "{label}の練習を始める",
+      "lockedAria": "{label}（ロック中）",
+      "locked": "ロック中 🔒",
+      "play": "あそぶ →",
+      "unlockHint": "カードを2枚以上追加すると練習モードが使えます。"
+    },
+    "practiceModes": {
+      "match": {
+        "label": "マッチ",
+        "description": "日本語と英語をペアにする"
+      },
+      "fill": {
+        "label": "穴うめ",
+        "description": "文を完成させる"
+      },
+      "recall": {
+        "label": "当ててみよう！",
+        "description": "正しい意味を選ぶ"
+      },
+      "kotobaBubble": {
+        "label": "文づくり",
+        "description": "助詞を選んで文を完成させる"
+      },
+      "listen": {
+        "label": "リスニング",
+        "description": "聞いて意味を選ぶ"
+      },
+      "quiz": {
+        "label": "クイズ",
+        "description": "一発勝負で実力チェック"
+      }
+    },
+    "deckCard": {
+      "cardDeck": "カードデッキ",
+      "xp": "XP",
+      "starCards": "★ カード",
+      "cardsCount": "{count, plural, other {カード#枚}}",
+      "changeEmojiTooltip": "絵文字を変更",
+      "addEmojiTooltip": "絵文字を追加",
+      "changeDeckEmojiAria": "デッキの絵文字を変更",
+      "addDeckEmojiAria": "デッキの絵文字を追加",
+      "removeEmoji": "絵文字を削除",
+      "unpinFromHome": "ホームのピンを外す",
+      "pinToHome": "ホームにピン留め",
+      "shared": "共有中",
+      "shareDeck": "デッキを共有",
+      "deleteDeck": "デッキを削除",
+      "openDeckAria": "デッキを開く: {name}"
+    },
+    "editCardDialog": {
+      "title": "カードを編集",
+      "saving": "保存中…",
+      "saveChanges": "変更を保存",
+      "settingsPanel": {
+        "modeHintRomaji": "ローマ字がカードのタイトルになります",
+        "modeHintHiragana": "ひらがなの読みがカードのタイトルになります",
+        "modeHintKanji": "漢字の読みがカードのタイトルになります",
+        "mainViewModeLabel": "メインの表示",
+        "romajiTooltip": "ローマ字をメインに表示",
+        "hiraganaTooltip": "ひらがなをメインに表示",
+        "kanjiTooltip": "漢字をメインに表示",
+        "romajiOption": "ABC",
+        "hiraganaFallback": "ひ",
+        "kanjiFallback": "漢",
+        "cardTypeLabel": "カードの種類",
+        "cardTypePhraseDesc": "複数の語からなる表現や文",
+        "cardTypeWordDesc": "単語ひとつ",
+        "wordTypeOption": "単語",
+        "phraseTypeOption": "フレーズ",
+        "jlptLevelLabel": "JLPTレベル",
+        "jlptTagged": "{level}に設定中",
+        "jlptNoLevel": "レベルなし"
+      },
+      "imageSection": {
+        "cardImageLabel": "カードの画像",
+        "altCardImagePreview": "カード画像のプレビュー",
+        "removeImageTooltip": "画像を削除",
+        "membersManagedMessage": "画像はリーダーが管理しています。",
+        "imageSearchQueryLabel": "画像の検索ワード",
+        "imageSearchPlaceholder": "この意味を表すことば",
+        "noImageFoundError": "画像が見つかりませんでした。別のことばで探してみてください。",
+        "fetchImageError": "画像を取得できませんでした。もう一度お試しください。",
+        "uploadImageError": "画像をアップロードできませんでした。もう一度お試しください。",
+        "deleteImageError": "画像を削除できませんでした。",
+        "regenerateTooltip": "Unsplashから取り直す",
+        "searchTooltip": "Unsplashで検索",
+        "searching": "検索中...",
+        "regen": "取り直し",
+        "fetch": "取得",
+        "uploadOwnImageTooltip": "自分の画像をアップロード",
+        "uploading": "アップロード中...",
+        "upload": "アップロード"
+      },
+      "fields": {
+        "word": {
+          "label": "日本語の単語",
+          "placeholder": "例: 猫",
+          "helperText": "日本語の単語やフレーズ（漢字）"
+        },
+        "reading": {
+          "label": "読み方（ふりがな）",
+          "placeholder": "例: ねこ",
+          "helperText": "ひらがな・カタカナの読み"
+        },
+        "meaning": {
+          "label": "意味（英語）",
+          "placeholder": "例: cat",
+          "helperText": "英語の訳"
+        },
+        "exampleJp": {
+          "label": "例文（日本語）",
+          "placeholder": "例: 猫が好きです。",
+          "helperText": "日本語の例文"
+        },
+        "exampleEn": {
+          "label": "例文（英語）",
+          "placeholder": "例: I like cats.",
+          "helperText": "例文の英訳"
+        }
+      }
+    },
+    "imageCard": {
+      "modeKanji": "漢字",
+      "modeRomaji": "ABC",
+      "modeHiragana": "かな",
+      "phraseTypeLabel": "フレーズ",
+      "wordTypeLabel": "単語",
+      "xp": "XP",
+      "meaningLabel": "★ 意味",
+      "sampleSentenceLabel": "* 例文",
+      "jlptLabel": "JLPT {level}",
+      "editCardTooltip": "カードを編集",
+      "deleteCardTooltip": "カードを削除"
+    },
+    "generateForm": {
+      "wordPlaceholder": "単語やフレーズを入力…",
+      "generating": "作成中…",
+      "generateCards": "カードを作成",
+      "itemsQueued": "{count, plural, other {#件が待機中}}"
+    },
+    "pdfImportModal": {
+      "title": "📄 PDFから取り込み",
+      "subtitle": "書類から単語を抜き出します",
+      "extractCards": "カードを抽出",
+      "reExtract": "もう一度抽出",
+      "addCardsToDeck": "{count, plural, other {カード#枚をデッキに追加}}",
+      "extracting": "カードを抽出中…",
+      "pleaseUploadPdf": "PDFファイルをアップロードしてください。",
+      "fileSizeError": "ファイルは20MB以下にしてください。",
+      "readFailedError": "読み込みに失敗しました",
+      "extractionFailedFallback": "抽出に失敗しました",
+      "extractFailedGeneric": "カードを抽出できませんでした。PDFを確認して、もう一度お試しください。",
+      "dropPdfHere": "PDFをここにドロップ",
+      "orClickToBrowse": "またはクリックして選択 · PDFのみ · 20MBまで",
+      "clickToReplace": "{size} KB · クリックで差し替え",
+      "fieldsExtracted": "抽出される項目",
+      "extractedFields": ["単語", "読み方", "意味", "日本語の例文", "英語の例文", "JLPTレベル"],
+      "cardsExtractedCount": "{count, plural, other {カード#枚を抽出}}",
+      "moreCards": "{count, plural, other {ほか#枚}}"
+    },
+    "reorderBanner": {
+      "defaultLabel": "ドラッグして並べ替えできます。終わったら「完了」を押してください。"
+    },
+    "reviewCardsDialog": {
+      "cardRow": {
+        "removeCardTooltip": "カードを削除",
+        "imageSearchLabel": "画像を検索",
+        "searchTermPlaceholder": "検索ワード…",
+        "fetchFromUnsplashTooltip": "Unsplashから取得",
+        "uploadImageTooltip": "画像をアップロード",
+        "removeImageTooltip": "画像を削除",
+        "displayLabel": "表示:",
+        "romajiOption": "A",
+        "hiraganaFallback": "ひ",
+        "kanjiFallback": "漢",
+        "typeLabel": "種類:",
+        "wordOption": "単語",
+        "phraseOption": "フレーズ",
+        "jlptLabel": "JLPT:",
+        "noneOption": "—",
+        "noImagePlaceholder": "—",
+        "autoAddFuriganaTooltip": "AIでふりがなを自動でつける",
+        "wordFieldLabel": "単語（漢字）",
+        "readingFieldLabel": "読み方（ひらがな）",
+        "meaningFieldLabel": "意味",
+        "furiganaHint": "💡 <code>{example}</code> と書くと、カードの漢字の上に読みがつきます",
+        "furiganaHintExample": "{漢字|かんじ}",
+        "exampleJpFieldLabel": "例文（日本語）",
+        "exampleEnFieldLabel": "例文（英語）"
+      }
+    },
+    "shareDeckDialog": {
+      "title": "デッキを共有",
+      "usernamePlaceholder": "ユーザー名",
+      "shareButton": "共有",
+      "sharedWithLabel": "共有中の相手",
+      "notSharedYet": "まだ誰とも共有していません",
+      "removeShareAria": "共有を解除"
+    },
+    "shareEmbedDialog": {
+      "title": "デッキを埋め込み",
+      "publicEmbedding": "一般公開して埋め込む",
+      "publicHintOn": "リンクを知っている人はこのデッキを見られます",
+      "publicHintOff": "オンにすると、このデッキを埋め込めます",
+      "canvasEmbedCode": "Canvasの埋め込みコード",
+      "copied": "コピーしました！",
+      "copyToClipboard": "クリップボードにコピー",
+      "howToAddToCanvas": "Canvasへの追加方法:",
+      "canvasSteps": [
+        "Canvasのページをリッチコンテンツエディタで開きます",
+        "「挿入」→「埋め込み」を選ぶか、HTMLエディタ（</>）に切り替えます",
+        "上の埋め込みコードを貼り付けます",
+        "保存すれば、生徒はログインなしでカードをめくれます"
+      ],
+      "previewEmbed": "埋め込みをプレビュー"
+    },
+    "wordChipInput": {
+      "placeholder": "単語やフレーズを入力してEnter…"
+    },
+    "useDecks": {
+      "notConfiguredError": "Supabaseが設定されていません"
+    },
+    "deckPage": {
+      "loadingCards": "カードを読み込み中…",
+      "deckNotFound": "デッキが見つかりません。",
+      "cardsInDeckLabel": "デッキのカード",
+      "reorderButton": "並べ替え",
+      "addCardsButton": "カードを追加",
+      "reorderBannerLabel": "ドラッグしてカードを並べ替えできます。終わったら「完了」を押してください。",
+      "noCardsMemberMessage": "まだカードがありません。リーダーがもうすぐ追加してくれます！",
+      "noCardsOwnerMessage": "まだカードがありません。<link>追加して</link>始めましょう。"
+    },
+    "decksPage": {
+      "loadingDecks": "デッキを読み込み中…",
+      "title": "デッキ",
+      "subtitle": "ピン留めするとホームに表示されます。✨",
+      "reorderButton": "並べ替え",
+      "newDeckButton": "新しいデッキ",
+      "reorderBannerLabel": "ドラッグしてデッキを並べ替えできます。終わったら「完了」を押してください。",
+      "noDecksSharedYet": "共有されたデッキはまだありません！",
+      "noDecksYet": "デッキがまだありません！",
+      "memberEmptyHint": "リーダーがもうすぐデッキを共有してくれます。またあとで見てみてください！",
+      "ownerEmptyHint": "最初のデッキを作って、フラッシュカードを始めましょう",
+      "createDeckButton": "デッキを作成",
+      "pinnedToHome": "📌 ホームにピン留め中",
+      "allDecks": "すべてのデッキ"
+    },
+    "useGenerateFlashcards": {
+      "generationFailed": "作成に失敗しました"
+    }
+  },
+  "Study": {
+    "flashcard": {
+      "modeKanji": "漢字",
+      "modeRomaji": "ABC",
+      "modeHiragana": "かな",
+      "xp": "XP",
+      "tapToFlip": "✦ タップしてめくる ✦",
+      "answer": "こたえ",
+      "kanjiLabel": "★ 漢字",
+      "meaningLabel": "★ 意味",
+      "exampleLabel": "★ 例文",
+      "tapToFlipBack": "タップしてもどる",
+      "jlptLabel": "JLPT {level}"
+    },
+    "flipStudy": {
+      "emptyMessage": "学習するカードがまだありません。",
+      "cardsBadge": "{count, plural, other {カード#枚}}",
+      "progressLabel": "{current} / {total}",
+      "stillLearningJp": "まだ",
+      "stillLearning": "おぼえ中",
+      "gotItJp": "{知|し}ってた！",
+      "gotIt": "かんぺき",
+      "previousCardAria": "前のカード",
+      "nextCardAria": "次のカード",
+      "howDidYouDo": "どうだった？",
+      "tapCardToFlip": "カードをタップしてめくる",
+      "finishSession": "おわる ✨",
+      "nextRound": "次のラウンド →",
+      "completionSubheading": "{count, plural, other {カード#枚ぜんぶ学習しました！}}"
+    },
+    "mainViewModeToggle": {
+      "testWith": "テストの表示:",
+      "romaji": "ローマ字",
+      "hiragana": "ひらがな",
+      "kanji": "漢字"
+    },
+    "publicViewer": {
+      "loadingCards": "カードを読み込み中…",
+      "notAvailableForEmbed": "このデッキは埋め込みに対応していません。",
+      "noCardsYet": "このデッキにはまだカードがありません。",
+      "failedToLoadDeck": "デッキを読み込めませんでした",
+      "celebrationHeading": "すごい！",
+      "reviewedAllCards": "{count, plural, other {カード<b>{count}</b>枚ぜんぶ復習しました！}}",
+      "tapToReviewAgain": "タップしてもう一度",
+      "plainThemeOption": "◻ シンプル",
+      "tapCardToFlip": "カードをタップしてめくる",
+      "clickCardToFlip": "カードをクリックしてめくる",
+      "poweredBy": "提供",
+      "brandName": "Kannanao",
+      "madeBy": "制作: Variations on a String"
+    },
+    "useReviewCards": {
+      "failedToLoadCards": "カードを読み込めませんでした"
+    },
+    "study": {
+      "defaultDeckName": "デッキ",
+      "cardsBadge": "{count, plural, other {カード#枚}}",
+      "loadingDecks": "デッキを読み込み中…",
+      "completionSubheading": "{count, plural, other {カード#枚ぜんぶ学習しました！}}"
+    }
+  },
+  "Review": {
+    "reviewTile": {
+      "review": "復習",
+      "ariaReviewDue": "復習 — 今日は{count}枚",
+      "ariaReviewCaughtUp": "復習 — すべて完了",
+      "wordsWaiting": "{count, plural, other {#語が待っています ⚔️}}",
+      "allCaughtUp": "すべて完了 — 今日の復習はありません"
+    },
+    "comboChip": {
+      "ariaCombo": "{count}連続コンボ"
+    },
+    "bossRound": {
+      "title": "ボスラウンド",
+      "progress": "{current} / {total}",
+      "whatDoesThisMean": "これはどういう意味？"
+    },
+    "questInterstitial": {
+      "letsGo": "はじめる",
+      "continue": "つづける"
+    },
+    "reviewQuest": {
+      "settingUpQuest": "今日のクエストを準備中…",
+      "clearedReview": "今日の復習をクリアしました！",
+      "backToReview": "復習にもどる",
+      "bossRoundTitle": "ボスラウンド",
+      "bossRoundSubtitle": "最後の3語 — 意味を選ぼう。XPは2倍！",
+      "todaysPractice": "今日の練習",
+      "cardsBadge": "{count, plural, other {カード#枚}}"
+    },
+    "todayPage": {
+      "findingReviews": "復習をさがしています…",
+      "allDoneTitle": "今日はぜんぶ完了！",
+      "allDoneBody": "今日の復習はぜんぶ終わりました。ゲームであそんで連続記録をのばそう ✨",
+      "playAGame": "ゲームであそぶ",
+      "backHome": "ホームにもどる"
+    },
+    "achievements": {
+      "firstCard": {
+        "label": "はじめの一歩！",
+        "description": "はじめてのカードを学習する"
+      },
+      "cards10": {
+        "label": "ウォーミングアップ",
+        "description": "合計10枚のカードを学習する"
+      },
+      "cards50": {
+        "label": "フラッシュカード好き",
+        "description": "合計50枚のカードを学習する"
+      },
+      "cards100": {
+        "label": "100枚クラブ！",
+        "description": "合計100枚のカードを学習する"
+      },
+      "cards250": {
+        "label": "知識の探求者",
+        "description": "合計250枚のカードを学習する"
+      },
+      "cards500": {
+        "label": "学習スーパースター",
+        "description": "合計500枚のカードを学習する"
+      },
+      "cards1000": {
+        "label": "大学者",
+        "description": "合計1,000枚のカードを学習する"
+      },
+      "cards2500": {
+        "label": "伝説の学習者",
+        "description": "合計2,500枚のカードを学習する"
+      },
+      "streak3": {
+        "label": "3日連続",
+        "description": "3日連続で学習する"
+      },
+      "streak7": {
+        "label": "まる1週間！",
+        "description": "7日連続で学習する"
+      },
+      "streak14": {
+        "label": "2週間の勇者",
+        "description": "14日連続で学習する"
+      },
+      "streak30": {
+        "label": "1か月マスター",
+        "description": "30日連続 — すごい！"
+      },
+      "streak60": {
+        "label": "とまらない！",
+        "description": "60日連続 — 本当にすごい"
+      },
+      "streak100": {
+        "label": "100日達成",
+        "description": "100日連続 — もう伝説です"
+      },
+      "level5": {
+        "label": "レベル5到達！",
+        "description": "レベル5になる"
+      },
+      "level10": {
+        "label": "レベル10 — すごい！",
+        "description": "レベル10になる"
+      },
+      "level15": {
+        "label": "期待の星",
+        "description": "レベル15になる"
+      },
+      "level20": {
+        "label": "さくらマスター",
+        "description": "レベル20になる"
+      },
+      "level30": {
+        "label": "エリート学者",
+        "description": "レベル30になる"
+      },
+      "level50": {
+        "label": "グランドマスター",
+        "description": "レベル50になる — 頂点です！"
+      },
+      "xp1000": {
+        "label": "はじめての1,000",
+        "description": "合計1,000 XPを獲得する"
+      },
+      "xp5000": {
+        "label": "XPコレクター",
+        "description": "合計5,000 XPを獲得する"
+      },
+      "xp10000": {
+        "label": "XPの達人",
+        "description": "合計10,000 XPを獲得する"
+      },
+      "xp50000": {
+        "label": "XP王",
+        "description": "合計50,000 XPを獲得する"
+      },
+      "sessions10": {
+        "label": "習慣づいてきた",
+        "description": "学習を10回おえる"
+      },
+      "sessions50": {
+        "label": "がんばりや",
+        "description": "学習を50回おえる"
+      },
+      "sessions100": {
+        "label": "100回の達人",
+        "description": "学習を100回おえる"
+      },
+      "perfectSession": {
+        "label": "満点！",
+        "description": "1回の学習で全問正解する（5枚以上）"
+      }
+    },
+    "meta": {
+      "kanaTitle": "かなビルダー — 復習 | Kannanao",
+      "kanaDescription": "デッキの単語を、かなタイルを1枚ずつ並べてつづります。",
+      "matchTitle": "ワードマッチ — 復習 | Kannanao",
+      "matchDescription": "デッキの日本語の単語と意味をマッチ。復習の近いカードから出題します。",
+      "particlesTitle": "助詞ピッカー — 復習 | Kannanao",
+      "particlesDescription": "正しい助詞（は・が・を・に・の…）を選んで文を完成させます。",
+      "questionsTitle": "しつもんクエスト — 復習 | Kannanao",
+      "questionsDescription": "日本語の疑問詞を練習。しつもんに合う答えを選びます。"
+    }
+  },
+  "Practice": {
+    "common": {
+      "next": "次へ",
+      "quitAndSave": "やめて記録を保存",
+      "backToDeck": "デッキにもどる",
+      "reviewChip": "復習",
+      "correctMovingOn": "✓ 正解 — 次にいきます…",
+      "correctSummary": "{correct} / {total} 正解",
+      "bestStreakRow": "🔥 最高連続記録: {count}問！"
+    },
+    "page": {
+      "loadingSession": "練習を準備しています…",
+      "notEnoughCards": "練習するにはカードが足りません。このデッキにカードを追加してください。",
+      "cardsBadge": "{count, plural, other {カード#枚}}",
+      "modeTitles": {
+        "match": "マッチ 日本語 ↔ 英語",
+        "fill": "穴うめ",
+        "recall": "当ててみよう！",
+        "kotobaBubble": "文づくり",
+        "quiz": "クイズ",
+        "listen": "リスニング"
+      }
+    },
+    "batchPicker": {
+      "heading": "何枚にする？",
+      "subheading": "このデッキにはカードが{count, plural, other {#枚}}あります。練習する枚数を選んでください。",
+      "cardCount": "{count, plural, other {カード#枚}}",
+      "allCards": "ぜんぶ {count}枚",
+      "quickReview": "さくっと復習",
+      "recommended": "おすすめ",
+      "challenge": "チャレンジ",
+      "fullDeck": "デッキぜんぶ",
+      "footerHint": "まちがえたカードはもう一度出てくるので、全部おぼえられます"
+    },
+    "celebration": {
+      "chestOpenedAria": "チェストを開けました — {xp} XP",
+      "openChestAria": "デイリーチェストを開ける",
+      "chestReward": "+{xp} XP！",
+      "goldenChestTap": "ゴールドチェスト — タップして開けよう！",
+      "dailyChestTap": "デイリーチェスト — タップして開けよう！"
+    },
+    "fillMode": {
+      "title": "穴うめ",
+      "fillPrompt": "あなをうめよう",
+      "meaningLabel": "意味: {meaning}",
+      "incorrectAnswer": "ざんねん — こたえ: {word}",
+      "incorrectAnswerWithReading": "ざんねん — こたえ: {word}（{reading}）",
+      "answerLabel": "こたえ",
+      "answerPlaceholder": "単語か読み方…",
+      "check": "チェック"
+    },
+    "matchMode": {
+      "title": "マッチ",
+      "batchChip": "{current}/{total}セット目",
+      "allMatched": "ぜんぶマッチ！",
+      "pairsSummary": "{count, plural, other {#ペア}} · {rounds}",
+      "roundsCount": "{count, plural, other {#ラウンド}}",
+      "timeSpeed": "⏱ {time} · {speed}",
+      "speedLightning": "はやい！ ⚡",
+      "speedNice": "いいペース！ 🚀",
+      "speedWellDone": "よくできました！ 👏",
+      "speedKeepUp": "その調子！ 💪"
+    },
+    "recallMode": {
+      "title": "当ててみよう！",
+      "whatDoesThisMean": "これはどういう意味？",
+      "seeResults": "結果を見る",
+      "nextArrow": "次へ →"
+    },
+    "quizMode": {
+      "title": "クイズ",
+      "progressChip": "{current} / {total}",
+      "whatDoesThisMean": "これはどういう意味？",
+      "typeTheJapaneseWord": "日本語で書いてみよう",
+      "answerLabel": "こたえ",
+      "answerPlaceholder": "単語か読み方…",
+      "check": "チェック",
+      "answerReveal": "こたえ: {word}",
+      "answerRevealWithReading": "こたえ: {word}（{reading}）",
+      "seeResults": "結果を見る",
+      "nextArrow": "次へ →",
+      "quit": "やめる",
+      "starsAria": "星3つのうち{stars}つ",
+      "percentCorrect": "正解率 {accuracy}%",
+      "encouragement1": "おしい！もう少し練習すればかんぺきです。🌱",
+      "encouragement2": "よくできました — あと少しで満点！💪",
+      "encouragement3": "すごい！ばっちり覚えていますね。🌟"
+    },
+    "listenMode": {
+      "title": "リスニング",
+      "warmingUpVoice": "音声を準備中…",
+      "noVoiceTitle": "このデバイスはまだ日本語を話せません",
+      "noVoiceBody": "リスニングには日本語の音声が必要です。ChromeかSafariを試すか、デバイスの読み上げ設定で日本語の音声を追加してから、もどってきてください。ほかの機能はそのまま使えます！",
+      "pickAnotherGame": "ほかのゲームを選ぶ",
+      "whatDidYouHear": "なんて聞こえた？",
+      "tapToHear": "タップして聞いてみよう",
+      "playAgain": "もう一度聞く",
+      "playWordAria": "単語を再生",
+      "playWordAgainAria": "単語をもう一度再生",
+      "seeResults": "結果を見る",
+      "nextArrow": "次へ →"
+    },
+    "roundTransition": {
+      "allReviewed": "ぜんぶ復習した！",
+      "almostThere": "あと少し！",
+      "roundDone": "ラウンド{round}おわり！",
+      "batchOf": "{total}セット中{current}セット目",
+      "cardsToReview": "{count, plural, other {復習するカード#枚}}",
+      "movingOnNewCards": "新しいカードにいきます",
+      "reviewCards": "{count, plural, other {カード#枚を復習}}",
+      "nextBatch": "次のセット"
+    },
+    "kotobaBubble": {
+      "title": "文づくり",
+      "memberEmptyMsg": "このデッキではまだこのゲームが準備されていません。リーダーに練習の文を作ってもらいましょう！",
+      "organizerEmptyMsg": "このデッキの単語から、楽しい練習の文を作りましょう。生徒が練習できる自然な会話をAIが作ります！",
+      "generatePractice": "練習を作る",
+      "loadingBuilder": "文づくりを読み込み中...",
+      "generatingSentences": "練習の文を作成中...",
+      "notEnoughSentences": "練習の文が足りません。{count}文以上必要です。",
+      "sentenceReview": "文の確認",
+      "particleLabel": "助詞: {particle}",
+      "defaultParticleHint": "ことばとことばをつなぎます",
+      "question": "しつもん",
+      "response": "こたえ",
+      "wrongAnswer": "こたえは <b>{particle}</b> — {hint}",
+      "practiceAgain": "もう一度練習",
+      "bestStreakRow": "最高連続記録: {count}問！",
+      "bestStreakInline": " · 最高連続記録: {count}",
+      "particleAria": "助詞 {particle}",
+      "reviewCount": "確認（{count}）",
+      "regenerate": "作り直す"
+    },
+    "sentenceReview": {
+      "title": "文を確認",
+      "subtitle": "{count}文できました。合わないものは編集または削除してください",
+      "saving": "保存中...",
+      "saveChanges": "{count, plural, other {変更を保存（#文）}}",
+      "needMinSentences": "あそぶには3文以上必要です。削除を取り消すか、作り直してください。",
+      "conversationLabel": "会話 {num}",
+      "typeQuestion": "問",
+      "typeResponse": "答",
+      "typeStatement": "文",
+      "undoDelete": "削除を取り消す",
+      "deleteSentence": "文を削除",
+      "failedToSave": "保存に失敗しました"
+    },
+    "studyBuddy": {
+      "tapPhrases": [
+        "えへへ！くすぐったい！",
+        "もう一回！もう一回！",
+        "ねぇ〜！",
+        "わーい！",
+        "たのしい！",
+        "見つかっちゃった！",
+        "あそぼう！",
+        "うふふ！"
+      ]
+    },
+    "usePracticeSentences": {
+      "failedToLoad": "読み込みに失敗しました",
+      "failedToGenerate": "作成に失敗しました",
+      "failedToRegenerate": "作り直しに失敗しました",
+      "failedToSaveChanges": "変更の保存に失敗しました"
+    }
+  },
+  "Games": {
+    "shell": {
+      "progress": "{current} / {total}",
+      "quitAndSave": "やめて記録を保存"
+    },
+    "tiles": {
+      "wordMatch": {
+        "title": "ワードマッチ",
+        "description": "単語と絵をマッチ。1ラウンド6ペア。"
+      },
+      "kanaBuilder": {
+        "title": "かなビルダー",
+        "description": "学習した単語を、かなタイルでつづります。"
+      },
+      "questionQuest": {
+        "title": "しつもんクエスト",
+        "description": "なんさい？ なにいろ？ だれ？ — 合う答えを選ぼう。"
+      },
+      "particlePicker": {
+        "title": "助詞ピッカー",
+        "description": "は・が・を・に・の をうめて文を完成させよう。"
+      }
+    },
+    "kanaBuilder": {
+      "title": "かなビルダー",
+      "howTo": "かなタイルを正しい順にタップして単語をつづろう。",
+      "buildPrompt": "この日本語をつくろう:",
+      "removeLastCharacter": "最後の文字を消す",
+      "celebrationHeading": "かなマスター！",
+      "celebrationSubheading": "{correct} / {total} 語を一発で正解",
+      "loadError": "カードを読み込めませんでした: {error}"
+    },
+    "particlePicker": {
+      "title": "助詞ピッカー",
+      "howTo": "あなにあてはまる小さなことば（は・が・を…）をタップしよう。",
+      "correct": "せいかい！ 🎉",
+      "celebrationHeading": "助詞マスター！",
+      "celebrationSubheading": "{correct} / {total} の助詞を一発で正解"
+    },
+    "questionQuest": {
+      "title": "しつもんクエスト",
+      "howTo": "しつもんを読んで、いちばん合う答えをタップしよう。",
+      "pickPrompt": "しつもんに合う答えを選ぼう！",
+      "celebrationHeading": "しつもんクエスト クリア！",
+      "celebrationSubheading": "{correct} / {total} 問正解"
+    },
+    "wordMatch": {
+      "title": "ワードマッチ",
+      "howTo": "日本語の単語をタップして、同じ意味の絵をタップしよう。",
+      "celebrationHeading": "ぜんぶマッチ！",
+      "celebrationSubheading": "{count, plural, other {#語}}",
+      "celebrationExtra": "{matches}マッチ · {misses}ミス",
+      "loadError": "カードを読み込めませんでした: {error}"
+    }
+  },
+  "Group": {
+    "memberCard": {
+      "never": "まだなし",
+      "justNow": "たった今",
+      "minutesAgo": "{mins}分前",
+      "hoursAgo": "{hours}時間前",
+      "yesterday": "きのう",
+      "daysAgo": "{days}日前",
+      "level": "レベル {level}",
+      "xpProgress": "{current}/{needed} XP",
+      "cardsStudied": "{count, plural, other {カード#枚を学習}}"
+    },
+    "memberDetail": {
+      "loadingMemberDetails": "メンバーの詳細を読み込み中...",
+      "level": "レベル {level}",
+      "totalXp": "合計 {totalXp} XP",
+      "xpToNextLevel": "レベル{nextLevel}まで {current}/{needed} XP",
+      "cardsStudiedLabel": "学習したカード",
+      "accuracyLabel": "正解率",
+      "streakLabel": "連続記録",
+      "sessionsLabel": "学習回数",
+      "deckProgress": "デッキの進み具合",
+      "cardsStudiedCount": "{count}枚を学習",
+      "accuracyPercent": "正解率 {accuracy}%",
+      "achievements": "実績",
+      "assignmentsHeading": "課題",
+      "assignmentsCompleted": "{completed}/{total} 完了",
+      "assignmentsPending": "残り{count}件",
+      "assignmentsOverdue": "期限切れ{count}件",
+      "dueOn": "{date}まで",
+      "never": "まだ",
+      "durationSeconds": "{secs}秒",
+      "durationMinutes": "{mins}分"
+    },
+    "practiceBreakdown": {
+      "heading": "練習モード別の記録",
+      "deckPractice": "デッキの練習",
+      "speechPractice": "スピーチの練習",
+      "sessionsCount": "{count, plural, other {#回}}",
+      "cardsUnit": "枚",
+      "linesUnit": "行",
+      "accuracyLabel": "正解率",
+      "xpLabel": "XP",
+      "timeLabel": "時間"
+    },
+    "recentSessions": {
+      "heading": "最近の学習",
+      "cardsStats": "{count, plural, other {カード#枚}} · {accuracy}%",
+      "linesStats": "{count, plural, other {#行}} · {accuracy}%",
+      "noCards": "カードなし",
+      "noLines": "行なし",
+      "xpEarned": "+{xp} XP",
+      "allLoaded": "すべて読み込みました"
+    },
+    "trickyWords": {
+      "toggleAriaLabel": "にがてな単語の表示を切り替え",
+      "heading": "にがてな単語",
+      "missedTimes": "{count, plural, other {#回まちがえました}}"
+    },
+    "useGroup": {
+      "failedToLoadMembers": "メンバーを読み込めませんでした",
+      "failedToLoadDetails": "詳細を読み込めませんでした"
+    },
+    "assignmentCard": {
+      "unknownDeck": "不明なデッキ",
+      "goalProgress": "🎯 目標: {goal}{state, select, best { — これまでの最高: {accuracy}%} other {}}",
+      "study": "学習する",
+      "overdueBy": "{days}日おくれ",
+      "dueToday": "今日まで",
+      "dueTomorrow": "明日まで",
+      "dueInDays": "あと{days}日"
+    },
+    "quizScores": {
+      "heading": "📝 クイズの成績",
+      "downloadCsv": "CSVをダウンロード",
+      "loading": "成績を読み込み中…",
+      "colMember": "メンバー",
+      "colBest": "最高",
+      "colLatest": "最新",
+      "colTries": "回数",
+      "noMembers": "このグループにはまだメンバーがいません。",
+      "noAttempts": "まだ誰もこのクイズを受けていません。",
+      "loadFailed": "クイズの成績を読み込めませんでした"
+    },
+    "goalPicker": {
+      "addGoal": "🎯 目標を追加（任意）",
+      "scoreToBeat": "目標スコア",
+      "noScoreGoal": "スコア目標なし",
+      "inWhichActivity": "どのモードで",
+      "anyActivity": "どれでも",
+      "modes": {
+        "study": "学習",
+        "review": "復習",
+        "match": "マッチ",
+        "fill": "穴うめ",
+        "recall": "当ててみよう",
+        "kotobaBubble": "文づくり",
+        "quiz": "クイズ",
+        "listen": "リスニング"
+      },
+      "goalBoth": "{mode}で{accuracy}%",
+      "goalAccuracyOnly": "{accuracy}%",
+      "goalModeOnly": "{mode}で練習"
+    },
+    "assignmentsList": {
+      "noAssignmentsTitle": "課題がまだありません",
+      "noAssignmentsBody": "「課題を出す」ボタンから、メンバーにデッキを出せます。",
+      "completedCount": "完了（{count}）",
+      "assignedToLabel": "対象:",
+      "unknownMember": "不明",
+      "unknownDeck": "不明なデッキ",
+      "dueOn": "{date}まで",
+      "editAssignmentAria": "{deckName}の課題を編集",
+      "removeAssignmentAria": "{deckName}の課題を削除",
+      "goalProgress": "🎯 目標: {goal}{state, select, best { — これまでの最高: {accuracy}%} reached { — {accuracy}%を達成} other {}}",
+      "overdueBy": "{days}日おくれ",
+      "dueToday": "今日まで",
+      "dueTomorrow": "明日まで",
+      "dueInDays": "あと{days}日"
+    },
+    "createAssignment": {
+      "title": "課題を出す",
+      "subtitle": "デッキと出すメンバーを選びましょう",
+      "selectDeck": "デッキを選ぶ",
+      "assignTo": "出す相手",
+      "noteLabel": "メモ（任意）",
+      "notePlaceholder": "3章の単語を中心に",
+      "dueDateLabel": "しめ切り（任意）",
+      "assign": "出す",
+      "assigning": "送信中...",
+      "failedToCreate": "課題を出せませんでした"
+    },
+    "editAssignment": {
+      "title": "課題を編集",
+      "subtitle": "{emoji} {deckName} — {memberName}",
+      "deckFallback": "デッキ",
+      "memberFallback": "メンバー",
+      "noteLabel": "メモ（任意）",
+      "notePlaceholder": "3章の単語を中心に",
+      "dueDateLabel": "しめ切り（任意）",
+      "saving": "保存中...",
+      "failedToUpdate": "課題を更新できませんでした"
+    },
+    "useAssignments": {
+      "failedToLoad": "課題を読み込めませんでした",
+      "failedToCreate": "課題を出せませんでした"
+    },
+    "createGroup": {
+      "title": "グループを作成",
+      "subtitle": "メンバーをグループにまとめましょう",
+      "createFailed": "グループを作成できませんでした",
+      "creating": "作成中...",
+      "createButton": "グループを作成",
+      "nameLabel": "グループ名",
+      "namePlaceholder": "例: Aクラス、2026年夏",
+      "emojiLabel": "グループの絵文字"
+    },
+    "createInvite": {
+      "title": "招待リンクを作成",
+      "subtitle": "QRコードを作って新しいメンバーを招待しましょう",
+      "createFailed": "招待を作成できませんでした",
+      "creating": "作成中...",
+      "createButton": "招待を作成",
+      "labelField": "ラベル（任意）",
+      "labelPlaceholder": "例: ゆきのクラス、サマーキャンプ",
+      "labelHelper": "この招待を見分けるための名前です",
+      "maxUses": "使える回数",
+      "membersCount": "{count, plural, other {#人}}",
+      "maxUsesUnlimited": "無制限",
+      "expiresLabel": "有効期限",
+      "expires24h": "24時間",
+      "expires7d": "7日",
+      "expires30d": "30日",
+      "expiresNever": "なし"
+    },
+    "groupCard": {
+      "memberCount": "{count, plural, other {メンバー#人}}",
+      "unpinGroup": "グループのピンを外す",
+      "pinGroup": "グループをピン留め"
+    },
+    "inviteList": {
+      "emptyState": "招待コードがまだありません。作ってメンバーを招待しましょう！",
+      "never": "なし",
+      "expired": "期限切れ",
+      "today": "今日",
+      "tomorrow": "明日",
+      "daysLeft": "{days, plural, other {#日}}",
+      "usesCount": "{count}回使用",
+      "usesLeft": "残り {remaining}/{max}",
+      "expiresPrefix": "有効期限: {value}",
+      "showQrCode": "QRコードを表示",
+      "revokeInvite": "招待を取り消す"
+    },
+    "inviteQRCode": {
+      "title": "招待QRコード",
+      "shareSubtitle": "新しいメンバーに共有しましょう",
+      "printTitle": "Kannanao の招待",
+      "scanMessage": "このコードを読み取って、Kannanaoの<b>{organizerName}</b>さんの学習グループに参加しよう！",
+      "copyLink": "リンクをコピー",
+      "print": "印刷",
+      "linkCopied": "リンクをコピーしました！"
+    },
+    "useGroups": {
+      "loadFailed": "グループを読み込めませんでした",
+      "createFailed": "グループを作成できませんでした"
+    },
+    "useInvites": {
+      "loadFailed": "招待を読み込めませんでした",
+      "createFailed": "招待を作成できませんでした",
+      "revokeFailed": "招待を取り消せませんでした"
+    },
+    "emojiPicker": {
+      "chooseEmoji": "絵文字を選ぶ",
+      "removeEmoji": "絵文字を削除",
+      "remove": "削除"
+    },
+    "encouragementForm": {
+      "quickGreatJob": "よくできました！",
+      "quickKeepGoing": "その調子！",
+      "quickProudOfYou": "がんばったね！",
+      "quickAmazingProgress": "すごい進歩！",
+      "sendEncouragementTo": "{name}さんに応援メッセージを送る",
+      "tapToChangeEmoji": "タップして絵文字を変更",
+      "writeCustomMessage": "メッセージを書く...",
+      "encouragementSent": "応援メッセージを送りました！"
+    },
+    "groupEncouragementForm": {
+      "quickGreatJob": "よくできました！",
+      "quickKeepGoing": "その調子！",
+      "quickProudOfYou": "がんばったね！",
+      "quickAmazingProgress": "すごい進歩！",
+      "sendToGroupTitle": "グループ全員に応援メッセージを送る",
+      "sendToMembersDescription": "{count, plural, other {メンバー#人全員にメッセージが送られます}}",
+      "tapToChangeEmoji": "タップして絵文字を変更",
+      "writeCustomMessage": "メッセージを書く...",
+      "sendEncouragementAriaLabel": "応援メッセージを送る",
+      "sentToAllMembers": "全員に応援メッセージを送りました！",
+      "failedToSendToSome": "一部のメンバーに送れませんでした。もう一度お試しください。"
+    },
+    "messageBubble": {
+      "sharedPhotoAlt": "共有された写真",
+      "readAriaLabel": "既読",
+      "sentAriaLabel": "送信ずみ",
+      "addReactionAriaLabel": "リアクションを追加",
+      "meLabel": "自分"
+    },
+    "messageThread": {
+      "justNow": "たった今",
+      "minutesAgo": "{minutes}分前",
+      "hoursAgo": "{hours}時間前",
+      "yesterday": "きのう",
+      "daysAgo": "{days}日前"
+    },
+    "useEncouragements": {
+      "sendFailed": "応援メッセージを送れませんでした"
+    },
+    "groupPage": {
+      "loadingDashboard": "グループのダッシュボードを読み込み中...",
+      "groupNamePlaceholder": "グループ名",
+      "saveTooltip": "保存（Enter）",
+      "cancelTooltip": "キャンセル（Esc）",
+      "changeEmoji": "絵文字を変更",
+      "addEmoji": "絵文字を追加",
+      "changeGroupEmoji": "グループの絵文字を変更",
+      "addGroupEmoji": "グループの絵文字を追加",
+      "renameGroup": "グループ名を変更",
+      "defaultTitle": "グループのダッシュボード",
+      "memberCountInGroup": "このグループにメンバー{count, plural, other {#人}}",
+      "inviteButton": "招待",
+      "assignDeckButton": "課題を出す",
+      "membersHeading": "メンバー",
+      "noMembersTitle": "メンバーがまだいません",
+      "noMembersBody": "招待コードを作って、このグループにメンバーを追加しましょう。",
+      "weeklyLeaderboard": "🏆 今週のランキング",
+      "visible": "表示中",
+      "hidden": "非表示",
+      "loadingLeaderboard": "ランキングを読み込み中...",
+      "leaderboardHiddenBody": "ランキングはメンバーには表示されていません。",
+      "inviteCodesHeading": "招待コード",
+      "encouragementHeading": "💬 応援メッセージ",
+      "assignmentsHeading": "課題",
+      "recentActivityHeading": "最近の活動",
+      "loadingActivity": "活動を読み込み中..."
+    },
+    "groupsPage": {
+      "loadingGroups": "グループを読み込み中...",
+      "title": "グループ",
+      "groupCount": "{count, plural, other {グループ#個}}",
+      "newGroupButton": "新しいグループ",
+      "noGroupsTitle": "グループがまだありません",
+      "noGroupsBody": "グループを作って、メンバーをまとめましょう。",
+      "createFirstGroupButton": "最初のグループを作成"
+    },
+    "joinPage": {
+      "invalidInviteCode": "招待コードが正しくありません。",
+      "unableToVerify": "招待コードを確認できませんでした。もう一度お試しください。",
+      "usernameInvalidChars": "英数字と _ - のみ",
+      "passwordsDoNotMatch": "パスワードが一致しません。",
+      "usernameLengthError": "ユーザー名は2〜30文字にしてください。",
+      "usernameCharsError": "ユーザー名に使えるのは英数字と _ - のみです",
+      "passwordLengthError": "パスワードは6文字以上にしてください。",
+      "createAccountFailed": "アカウントを作成できませんでした。",
+      "networkError": "通信エラーです。もう一度お試しください。",
+      "inviteNotAvailable": "この招待は使えません",
+      "goToSignIn": "ログインへ",
+      "joiningWithGroup": "<bold>{organizerName}</bold>さんのグループ「{groupName}」に参加します",
+      "joiningNoGroup": "<bold>{organizerName}</bold>さんの学習グループに参加します",
+      "usernameLabel": "ユーザー名",
+      "checking": "確認中...",
+      "usernameHelperText": "英数字と _ - （2〜30文字）",
+      "displayNameLabel": "表示名（任意）",
+      "displayNameHelperText": "アプリに表示される名前です",
+      "passwordLabel": "パスワード",
+      "passwordHelperText": "6文字以上",
+      "hidePassword": "パスワードを隠す",
+      "showPassword": "パスワードを表示",
+      "confirmPasswordLabel": "パスワード（確認）",
+      "joinButton": "学習グループに参加"
+    },
+    "activityFeed": {
+      "noActivity": "最近の活動はまだありません。",
+      "justNow": "たった今"
+    },
+    "homeWidget": {
+      "memberLabel": "{count, plural, other {人}}",
+      "xpLabel": "XP",
+      "cardsLabel": "枚",
+      "membersHeading": "メンバー:",
+      "neverActive": "活動なし",
+      "activeToday": "今日活動",
+      "activeYesterday": "きのう活動",
+      "activeDaysAgo": "{days, plural, other {#日前に活動}}",
+      "moreCount": "ほか{count}人",
+      "activeThisWeek": "今週 {count}人が活動",
+      "dashboardButton": "ダッシュボード"
+    },
+    "overview": {
+      "membersLabel": "メンバー",
+      "activeThisWeek": "今週 {count}人が活動",
+      "totalGroupXpLabel": "グループの合計XP",
+      "bestStreakLabel": "最高の連続記録",
+      "longestStreakSub": "いちばん長い連続記録",
+      "cardsStudiedLabel": "学習したカード",
+      "allTimeAcrossGroupSub": "グループ全体の累計"
+    },
+    "reteachPanel": {
+      "heading": "📖 もう一度教えたいこと",
+      "pickDeckAriaLabel": "分析するデッキを選ぶ",
+      "pickDeckPlaceholder": "デッキを選ぶ…",
+      "pickDeckBody": "デッキを選ぶと、クラスがまちがえやすい単語がわかります。",
+      "checkingMessage": "クラスのまちがいを確認中...",
+      "noTrickyWords": "にがてな単語はまだありません。このデッキはクラス全体でよくできています。",
+      "allStudentsStruggling": "{attempts, plural, other {この単語は、やってみた生徒#人全員がまちがえ続けています。}}",
+      "someStudentsStruggling": "やってみた生徒{attempts}人のうち{struggling}人が、この単語をまちがえ続けています。",
+      "percentRight": "正解率 {percent}%"
+    },
+    "useItemAnalysis": {
+      "failedToLoad": "分析を読み込めませんでした"
+    }
+  },
+  "Nav": {
+    "brandName": "🌸 Kannanao",
+    "mainNavigationAriaLabel": "メインナビゲーション",
+    "messagesAriaLabel": "メッセージ",
+    "achievementUnlocked": "実績を解除:",
+    "items": {
+      "home": "ホーム",
+      "decks": "デッキ",
+      "groups": "グループ",
+      "speech": "スピーチ",
+      "travel": "トラベル",
+      "stats": "記録",
+      "shop": "ショップ"
+    },
+    "userMenu": {
+      "signIn": "ログイン",
+      "admin": "管理",
+      "account": "アカウント",
+      "signOut": "ログアウト",
+      "theme": "テーマ"
+    },
+    "editNameDialog": {
+      "title": "名前を変更",
+      "fieldLabel": "表示名",
+      "saving": "保存中…"
+    }
+  },
+  "Home": {
+    "greeting": {
+      "morning": "おはよう、{name}さん！",
+      "afternoon": "こんにちは、{name}さん！",
+      "evening": "こんばんは、{name}さん！"
+    },
+    "welcomeBanner": {
+      "openShopAriaLabel": "ショップを開く",
+      "xpProgressLabel": "XPの進み具合",
+      "xpToLevel": "レベル{level}まであと{xp} XP 🚀",
+      "xpToSpend": "使える{xp} XP",
+      "moreXp": "あと{xp} XP！"
+    },
+    "dashboardSection": {
+      "hideAriaLabel": "{label}を非表示"
+    },
+    "editModeControls": {
+      "addSection": "セクションを追加",
+      "editLayout": "レイアウトを編集"
+    },
+    "hiddenSections": {
+      "heading": "非表示のセクション",
+      "resetLayout": "レイアウトをリセット"
+    },
+    "sectionNav": {
+      "allGroups": "すべてのグループ",
+      "allDecks": "すべてのデッキ",
+      "allSpeeches": "すべてのスピーチ"
+    },
+    "groupsSection": {
+      "emptyCreate": "グループを作って始めましょう"
+    },
+    "leaderboardSection": {
+      "emptyCheckBack": "もっと人が参加したら見てみてね！"
+    },
+    "assignmentsSection": {
+      "emptyAllCaughtUp": "ぜんぶ完了！"
+    },
+    "decksSection": {
+      "emptyCreateFirstTitle": "最初のデッキを作ろう！",
+      "emptyPinTitle": "デッキをピン留めするとここに表示されます",
+      "emptyCreateFirstSub": "デッキのページでフラッシュカードを作ろう ✨",
+      "emptyPinSub": "デッキのピンのアイコンをタップ ✨"
+    },
+    "speechesSection": {
+      "emptyCreateFirstTitle": "お話し会のスピーチを練習しよう！",
+      "emptyPinTitle": "スピーチをピン留めするとここに表示されます",
+      "emptyCreateFirstSub": "行を追加して覚えはじめよう ✨",
+      "emptyPinSub": "スピーチのピンのアイコンをタップ ✨",
+      "lineCount": "{count, plural, other {#行}}"
+    },
+    "customizeDialog": {
+      "title": "ホームをカスタマイズ",
+      "subtitle": "セクションの表示を切り替えます",
+      "toggleAriaLabel": "{label}の表示を切り替え"
+    },
+    "buddy": {
+      "defaultPhrase": "勉強しよう！"
+    }
+  },
+  "Auth": {
+    "login": {
+      "brandName": "🌸 Kannanao",
+      "betaBadge": "ベータ · 新規登録は停止中",
+      "waitlistIntro": "ベータ版のため、現在新規登録を停止しています。メールアドレスを登録すると、受付を再開したときにおしらせします！",
+      "backToSignIn": "アカウントをお持ちの方はログイン",
+      "usernameLabel": "ユーザー名",
+      "passwordLabel": "パスワード",
+      "submit": "ログイン",
+      "joinWaitlist": "アカウントがない方はウェイトリストへ"
+    },
+    "context": {
+      "signupsClosedError": "現在、新規登録を停止しています。トップページのウェイトリストにご登録ください。",
+      "notAuthenticatedError": "ログインしていません",
+      "signedOutError": "ログアウトしています。"
+    },
+    "waitlistForm": {
+      "heading": "ウェイトリストに登録",
+      "emailLabel": "メールアドレス",
+      "emailPlaceholder": "you@example.com",
+      "nameLabel": "お名前（任意）",
+      "namePlaceholder": "お名前",
+      "messageLabel": "Kannanaoを何に使いたいですか？（任意）",
+      "messagePlaceholder": "JLPT N3の勉強のために…",
+      "submitButton": "受付が始まったら知らせる 🌸",
+      "genericError": "うまくいきませんでした。",
+      "networkError": "通信エラーです。もう一度お試しください。"
+    }
+  },
+  "Settings": {
+    "pageHeader": {
+      "title": "アカウント設定",
+      "subtitle": "プロフィールとログイン情報を管理します"
+    },
+    "currentLabel": "現在:",
+    "noneFallback": "なし",
+    "saving": "保存中…",
+    "networkError": "通信エラーです。",
+    "displayName": {
+      "title": "表示名",
+      "description": "アプリ全体に表示される名前です。空にするとユーザー名が使われます。",
+      "changeButton": "表示名を変更",
+      "fieldLabel": "新しい表示名",
+      "fieldHelper": "アプリに表示される名前です（100文字まで）",
+      "updatedSuccess": "表示名を変更しました！"
+    },
+    "username": {
+      "title": "ユーザー名",
+      "description": "ログインに使うユーザー名です。変更するとログアウトします。",
+      "changeButton": "ユーザー名を変更",
+      "fieldLabel": "新しいユーザー名",
+      "fieldHelper": "英数字と _ - （2〜30文字）。保存するとログアウトします。",
+      "updatedSuccess": "ユーザー名を変更しました！ログアウトします…"
+    },
+    "reminders": {
+      "title": "リマインダー",
+      "description": "復習する単語があるとき、1日1回おしらせします。端末の通知がオンのときだけ届きます。",
+      "ariaLabel": "毎日の復習リマインダー",
+      "saveError": "保存できませんでした。もう一度お試しください。",
+      "onSuccess": "毎日のリマインダーをオンにしました！",
+      "offSuccess": "毎日のリマインダーをオフにしました。"
+    },
+    "inviteMembers": {
+      "title": "メンバーを招待",
+      "description": "招待リンクを作って、QRコードで学習グループにメンバーを迎えましょう。",
+      "createButton": "招待リンクを作成"
+    },
+    "password": {
+      "title": "パスワード",
+      "description": "ログイン用のパスワードを変更します。6文字以上。",
+      "changeButton": "パスワードを変更",
+      "newFieldLabel": "新しいパスワード",
+      "newFieldHelper": "6文字以上",
+      "confirmFieldLabel": "新しいパスワード（確認）",
+      "updatedSuccess": "パスワードを変更しました！",
+      "mismatchError": "パスワードが一致しません。"
+    },
+    "language": {
+      "description": "ボタン・メニュー・ラベルの言語です。日本語の単語やカードは変わりません。",
+      "ariaLabel": "言語を選ぶ",
+      "saved": "言語を保存しました！",
+      "saveError": "言語を保存できませんでした。もう一度お試しください。"
+    }
+  },
+  "Messages": {
+    "chatPanel": {
+      "backAriaLabel": "会話一覧にもどる",
+      "videoTooLarge": "動画は20MB以下にしてください",
+      "videoUploadFailed": "動画をアップロードできませんでした",
+      "imageUploadFailed": "画像をアップロードできませんでした",
+      "sendFailedFallback": "メッセージを送れませんでした",
+      "selectedImageAlt": "選択した画像",
+      "removeAttachmentAriaLabel": "添付を削除",
+      "emptyTitle": "メッセージがまだありません！",
+      "emptySubtitle": "{name}さんにあいさつして、話しはじめよう",
+      "attachAriaLabel": "写真か動画を添付",
+      "inputPlaceholder": "メッセージを入力...",
+      "sendAriaLabel": "メッセージを送信",
+      "dateToday": "今日",
+      "dateYesterday": "きのう"
+    },
+    "conversationList": {
+      "heading": "メッセージ",
+      "searchPlaceholder": "チャットを検索...",
+      "newMessageButton": "新しいメッセージ",
+      "noMatches": "一致するものがありません",
+      "noMessagesYet": "メッセージがまだありません",
+      "tryDifferentSearch": "別のことばで検索してみてください",
+      "tapNewMessage": "「新しいメッセージ」をタップして話しはじめよう！",
+      "youPrefix": "自分: ",
+      "photoFallback": "📷 写真",
+      "newMessageDialogTitle": "新しいメッセージ",
+      "newMessageDialogSubtitle": "話す相手を選びましょう",
+      "organizerChip": "リーダー",
+      "memberFallback": "メンバー"
+    },
+    "notificationsLayout": {
+      "installBanner": "メッセージの通知はブラウザでは届きません。Kannanaoアプリでのみ使えます。<bold>ホーム画面のKannanaoアイコン</bold>から開いてください。追加するには、Safariの<bold>共有</bold>ボタンをタップして<bold>「ホーム画面に追加」</bold>を選びます。",
+      "notificationsOnSuccess": "通知をオンにしました！ 🎉",
+      "notificationsBlockedWarning": "Kannanaoの通知がブロックされています。端末の設定でオンにしてから、ここにもどってください。",
+      "turningOn": "オンにしています…",
+      "turnOnNotifications": "通知をオンにする",
+      "genericErrorName": "エラー",
+      "promptTitle": "おしらせを受け取ろう！",
+      "promptSubtitle": "新しいメッセージが届いたらおしらせします",
+      "notNow": "あとで",
+      "enabling": "オンにしています...",
+      "enable": "オンにする",
+      "promptBody": "通知をオンにすると、グループのメッセージを見のがしません。"
+    },
+    "emptyConversation": {
+      "title": "会話を選んでください",
+      "subtitle": "左からチャットを選ぶと、メッセージを送れます"
+    },
+    "pushNotifications": {
+      "notConfigured": "プッシュ通知が設定されていません（VAPID公開鍵がありません）。",
+      "registrationFailed": "{host} でService Workerの登録に失敗しました: {error}",
+      "notReady": "{host} でService Workerが準備できていません。登録が完了しませんでした。もう一度お試しください。",
+      "saveFailed": "購読情報をサーバーに保存できませんでした。もう一度お試しください。"
+    }
+  },
+  "Travel": {
+    "hub": {
+      "title": "トラベルモード",
+      "subtitle": "日本語がわからなくても大丈夫。日本を安心して旅するために必要なものが、ぜんぶそろっています。",
+      "signInToUnlock": "ログインして使う",
+      "aiBadge": "AI",
+      "features": {
+        "culture": {
+          "title": "カルチャーガイド",
+          "description": "マナーの基本、してよいこと・いけないこと、旅がスムーズになるコツ。"
+        },
+        "dailyPhrase": {
+          "title": "今日のフレーズパック",
+          "description": "今日の予定を教えると、必要なフレーズがそろいます。"
+        },
+        "scenarios": {
+          "title": "シーン練習",
+          "description": "本物の会話を練習。英語で入力すると、日本語がわかります。"
+        },
+        "pointCommunicate": {
+          "title": "指さし会話",
+          "description": "話せないときに見せるカード。アレルギー、道案内、お願いごと。"
+        },
+        "heard": {
+          "title": "「今なんて言った？」",
+          "description": "お店・レストラン・駅で、日本人があなたに言うフレーズ。"
+        },
+        "food": {
+          "title": "メニューの早見表",
+          "description": "注文するものがわかる。ラーメン、寿司、飲みもの、コンビニごはん。"
+        },
+        "katakana": {
+          "title": "カタカナ解読",
+          "description": "メニューや看板の外来語で使う46文字を覚えます。"
+        },
+        "phrases": {
+          "title": "サバイバルフレーズ",
+          "description": "場面ごとの必須フレーズ。ローマ字の読み方とコツつき。"
+        },
+        "emergency": {
+          "title": "緊急カード",
+          "description": "ホテルの住所、医療情報、緊急連絡先。すぐに見せられます。"
+        }
+      }
+    },
+    "displayToggle": {
+      "label": "日本語の表示:",
+      "options": {
+        "romaji": {
+          "label": "ローマ字",
+          "tooltip": "ローマ字の読みを大きく表示"
+        },
+        "hiragana": {
+          "label": "ひらがな",
+          "tooltip": "漢字の上にふりがな、下にローマ字"
+        },
+        "kanji": {
+          "label": "漢字",
+          "tooltip": "日本語のみ、下にローマ字"
+        }
+      }
+    },
+    "requireAuth": {
+      "checkingAccount": "アカウントを確認中...",
+      "signInToAccess": "{feature}を使うにはログインしてください",
+      "accountRequired": "この機能にはアカウントが必要です。ログインするか、アカウントを作って始めましょう。",
+      "signIn": "ログイン",
+      "backToTravel": "トラベルにもどる"
+    },
+    "authGatedSave": {
+      "title": "ログインしてフレーズを保存",
+      "subtitle": "自分の学習デッキにフレーズを保存できます",
+      "maybeLater": "あとで",
+      "signIn": "ログイン",
+      "body": "ログインすると、旅のフレーズをフラッシュカードのデッキに保存して、いつでも学習・練習できます。"
+    },
+    "saveToDeck": {
+      "title": "{count, plural, other {フレーズ#個を保存}}",
+      "subtitle": "既存のデッキに追加するか、新しく作りましょう",
+      "defaultDeckName": "旅のフレーズ",
+      "createNewDeck": "新しいデッキを作る",
+      "loadingDecks": "デッキを読み込み中...",
+      "orAddToExisting": "または既存のデッキに追加:",
+      "cardsCount": "{count, plural, other {カード#枚}}",
+      "noExistingDecks": "既存のデッキがありません。上で新しく作ってください。",
+      "deckNameLabel": "デッキ名",
+      "saving": "保存中...",
+      "createAndSave": "作成して保存",
+      "failedToSave": "保存に失敗しました",
+      "failedToCreateDeck": "デッキを作成できませんでした",
+      "createdFromTravelMode": "トラベルモードから作成"
+    },
+    "phrases": {
+      "backToHub": "トラベルのトップにもどる",
+      "title": "サバイバルフレーズ",
+      "subtitle": "読み方とコツつきの必須フレーズ",
+      "saved": "保存しました！",
+      "saveAll": "すべて保存",
+      "all": "すべて",
+      "situations": {
+        "greetings": "あいさつ",
+        "restaurant": "レストラン",
+        "shopping": "買いもの",
+        "transport": "交通",
+        "hotel": "ホテル",
+        "directions": "道案内",
+        "polite": "ていねいなひとこと",
+        "numbers": "数字",
+        "emergency": "緊急"
+      },
+      "difficulty": {
+        "easy": "かんたん",
+        "medium": "ふつう",
+        "longer": "長め"
+      },
+      "formality": {
+        "casual": "カジュアル",
+        "polite": "ていねい",
+        "veryPolite": "とてもていねい"
+      },
+      "phraseCount": "{count, plural, other {フレーズ#個}}",
+      "listen": "聞く",
+      "listenAria": "読み方を聞く",
+      "saveToDeck": "デッキに保存",
+      "savePhraseAria": "フレーズをデッキに保存",
+      "breakdown": "分解",
+      "whenToUse": "使う場面",
+      "culturalNote": "文化のメモ",
+      "deckName": "旅: {label}",
+      "deckNameAll": "旅: サバイバルフレーズすべて"
+    },
+    "dailyPack": {
+      "backToHub": "トラベルのトップにもどる",
+      "title": "今日のフレーズパック",
+      "subtitle": "今日の予定に合わせたフレーズ",
+      "planPlaceholder": "例: 電車で浅草へ行って、浅草寺をお参りして、お昼においしいラーメン屋をさがす…",
+      "tryExample": "例を試す:",
+      "examplePlans": [
+        "電車で渋谷へ行って、買いものして、お昼はラーメン",
+        "伏見稲荷大社をお参りして、錦市場を歩く",
+        "ホテルをチェックアウトして、新幹線で大阪へ、次のホテルにチェックイン",
+        "チームラボに行って、お台場のお寿司屋さんで夕ごはん",
+        "一日秋葉原ですごして、ゲームセンターに行って、コーヒーを飲む"
+      ],
+      "generateButton": "フレーズを作る",
+      "generatingMessage": "フレーズを作成中...",
+      "generateFailed": "フレーズを作成できませんでした",
+      "youSay": "自分が言う",
+      "youllHear": "相手が言う",
+      "listen": "聞く",
+      "newDay": "新しい予定",
+      "saved": "保存しました！",
+      "saveToDeck": "デッキに保存",
+      "todaysPhrasesDeckName": "今日のフレーズ"
+    },
+    "emergency": {
+      "backToHub": "トラベルのトップにもどる",
+      "title": "緊急カード",
+      "intro": "旅の前に記入しておきましょう。必要なときにすぐ開いて、タクシーの運転手さんやホテルの人に見せたり、緊急時に使えます。",
+      "emergencyNumbersTitle": "日本の緊急連絡先",
+      "police": "警察",
+      "ambulanceFire": "救急・消防",
+      "helpline": "ジャパンヘルプライン（英語・24時間）",
+      "myHotel": "ホテル",
+      "hotelName": "ホテル名",
+      "hotelAddressLabel": "住所（できれば日本語で。予約情報から貼り付け）",
+      "hotelPhone": "ホテルの電話番号",
+      "notSet": "（未設定）",
+      "medicalInfo": "医療情報",
+      "medicalConditions": "持病",
+      "medicalConditionsPlaceholder": "例: ぜんそく、糖尿病",
+      "allergies": "アレルギー",
+      "allergiesPlaceholder": "例: ピーナッツ、甲殻類、ペニシリン",
+      "bloodType": "血液型",
+      "bloodTypePlaceholder": "例: O+",
+      "conditionsLabel": "持病:",
+      "allergiesLabel": "アレルギー:",
+      "bloodTypeLabel": "血液型:",
+      "contacts": "連絡先",
+      "emergencyContactLabel": "緊急連絡先（名前と電話番号）",
+      "emergencyContactPlaceholder": "例: お母さん: +1-555-123-4567",
+      "embassyInfoLabel": "大使館・領事館の情報",
+      "embassyInfoPlaceholder": "例: 在日米国大使館: 03-3224-5000",
+      "otherNotes": "その他のメモ",
+      "otherNotesPlaceholder": "例: 旅行保険の証券番号、薬",
+      "contactLabel": "連絡先:",
+      "embassyLabel": "大使館:",
+      "notesLabel": "メモ:",
+      "emergencyPhrasesTitle": "緊急のフレーズ",
+      "fillInInfo": "情報を記入する"
+    },
+    "showCards": {
+      "backToHub": "トラベルのトップにもどる",
+      "title": "指さし会話",
+      "subtitle": "話せないときに、このカードを見せましょう",
+      "create": "作成",
+      "englishLabel": "英語",
+      "japaneseLabel": "日本語",
+      "romajiLabel": "ローマ字",
+      "whenToShowLabel": "見せる場面",
+      "aiChipLabel": "AI",
+      "editCard": "カードを編集",
+      "editCustomCardAria": "自分のカードを編集",
+      "deleteCard": "カードを削除",
+      "deleteCustomCardAria": "自分のカードを削除",
+      "listen": "聞く",
+      "listenAria": "読み方を聞く",
+      "copied": "コピーしました！",
+      "copyJapaneseText": "日本語をコピー",
+      "copyJapaneseTextAria": "日本語をコピー",
+      "createWithAiTitle": "AIで作る",
+      "createWithAiDescription": "伝えたいことを英語で入力すると、AIがぴったりのカードを作ります。",
+      "createPlaceholder": "例:「グルテンが食べられません」「トイレはどこですか？」",
+      "creatingEllipsis": "作成中...",
+      "generateCardButton": "カードを作る",
+      "creatingCardMessage": "カードを作成中...",
+      "cardCreatedSuccess": "カードができました！いちばん上にあります。",
+      "categories": {
+        "all": "すべて",
+        "allergies": "アレルギー",
+        "directions": "道案内",
+        "help": "助け",
+        "medical": "医療",
+        "communication": "コミュニケーション",
+        "preferences": "好み",
+        "custom": "自分のカード"
+      },
+      "loadingSavedCards": "保存したカードを読み込み中...",
+      "emptyState": "このカテゴリにはまだカードがありません。AIで作ってみましょう！",
+      "savedToDeck": "デッキに保存しました！",
+      "saveCardsToDeck": "{count, plural, other {カード#枚をデッキに保存}}",
+      "deckName": "指さし会話カード"
+    },
+    "foodMenu": {
+      "backAriaLabel": "トラベルのトップにもどる",
+      "title": "メニューの早見表",
+      "subtitle": "注文するものがわかります",
+      "saved": "保存しました！",
+      "saveAll": "すべて保存",
+      "allFilter": "すべて",
+      "categories": {
+        "ramen": "ラーメンの種類",
+        "sushi": "寿司・魚",
+        "common": "定番の料理",
+        "drinks": "飲みもの",
+        "konbini": "コンビニごはん",
+        "ordering": "注文のことば"
+      },
+      "itemsCount": "{count}品",
+      "listen": "聞く",
+      "saveToDeck": "デッキに保存",
+      "defaultDeckName": "日本の食べもの単語"
+    },
+    "katakana": {
+      "backAriaLabel": "トラベルのトップにもどる",
+      "title": "カタカナ解読",
+      "intro": "カタカナは外来語に使われます。多くは英語を日本語の音で読んだものです。覚えれば、何百もの看板が「読める」ようになります！",
+      "tabs": {
+        "chart": "表",
+        "quiz": "フラッシュクイズ",
+        "decode": "単語を解読"
+      },
+      "rowLabels": {
+        "vowels": "母音",
+        "k": "K",
+        "s": "S",
+        "t": "T",
+        "n": "N",
+        "h": "H",
+        "m": "M",
+        "y": "Y",
+        "r": "R",
+        "w": "W",
+        "nn": "N"
+      },
+      "tapToHear": "文字をタップすると音が聞けます。長音は ー で書きます（例: コーヒー = ko-o-hi-i = coffee）。",
+      "quizInstructions": "文字をタップすると音が聞けます。下にローマ字を入力してください。",
+      "romajiPlaceholder": "ローマ字を入力...",
+      "go": "決定",
+      "correct": "正解！",
+      "incorrect": "こたえは「{romaji}」",
+      "next": "次へ",
+      "decodeIntro": "カタカナで書かれた英語です。こたえを見る前に、声に出して読んでみましょう！",
+      "decodeCategories": {
+        "all": "すべて",
+        "food": "食べもの・飲みもの",
+        "places": "場所",
+        "transport": "交通",
+        "things": "もの",
+        "signs": "看板"
+      },
+      "listen": "聞く",
+      "tapToReveal": "タップしてこたえを見る"
+    },
+    "culture": {
+      "backAriaLabel": "トラベルのトップにもどる",
+      "title": "カルチャーガイド",
+      "saveAll": "すべて保存",
+      "intro": "日本を旅するときのマナーと文化のコツ。それぞれのカードに、その場面で使えるフレーズがついています。",
+      "topics": {
+        "all": "すべて",
+        "general": "基本",
+        "restaurants": "食事",
+        "trains": "電車",
+        "shopping": "買いもの",
+        "onsen": "温泉",
+        "shrines": "神社",
+        "taboos": "タブー",
+        "gestures": "しぐさ"
+      },
+      "importance": {
+        "essential": "必ず知っておこう",
+        "recommended": "知っておくと安心",
+        "nice_to_know": "豆知識"
+      },
+      "usefulPhrases": "使えるフレーズ",
+      "listen": "聞く",
+      "listenToPhrase": "フレーズを聞く",
+      "saveToDeck": "デッキに保存",
+      "defaultDeckName": "カルチャーガイドのフレーズ"
+    },
+    "scenario": {
+      "backToHub": "トラベルのトップにもどる",
+      "heading": "シーン練習",
+      "subheading": "英語で入力すると、日本語がわかります",
+      "categories": {
+        "restaurant": {
+          "title": "ラーメンを注文",
+          "description": "にぎやかなラーメン屋に入りました。注文しましょう！"
+        },
+        "convenienceStore": {
+          "title": "コンビニで買いもの",
+          "description": "コンビニでおやつと日用品をさっと買います。"
+        },
+        "train": {
+          "title": "電車の乗りかえ",
+          "description": "どの電車に乗るか、どこで乗りかえるかを調べます。"
+        },
+        "hotel": {
+          "title": "ホテルのチェックイン",
+          "description": "ホテルに着いて、部屋にチェックインします。"
+        },
+        "shopping": {
+          "title": "おみやげを買う",
+          "description": "ぴったりのおみやげをさがして、日本のお店をまわります。"
+        },
+        "taxi": {
+          "title": "タクシーに乗る",
+          "description": "タクシーを止めて、行き先を伝えます。"
+        },
+        "emergency": {
+          "title": "助けをもとめる",
+          "description": "困ったときに、助けをもとめる練習をします。"
+        },
+        "greeting": {
+          "title": "人と出会う",
+          "description": "カジュアルなあいさつと自己紹介を練習します。"
+        }
+      },
+      "backToScenarios": "シーン一覧にもどる",
+      "sayInEnglish": "言いたいことを英語で入力",
+      "listen": "聞く",
+      "listenToPronunciation": "読み方を聞く",
+      "saveToDeck": "デッキに保存",
+      "saved": "保存ずみ",
+      "saveNpcPhrase": "相手のフレーズを保存",
+      "sayThis": "こう言おう",
+      "listenToPhrase": "フレーズを聞く",
+      "savePhrase": "フレーズを保存",
+      "simplerAlternative": "もっとかんたんな言い方",
+      "listenToAlternative": "別の言い方を聞く",
+      "saveAlternative": "別の言い方を保存",
+      "settingScene": "場面を準備中...",
+      "thinking": "考え中...",
+      "suggestions": "ヒント:",
+      "inputPlaceholder": "何と言いたいですか？",
+      "send": "送信",
+      "conversationComplete": "会話おわり！",
+      "endingWithSaves": "フレーズを{count}個保存しました。デッキに保存すると、あとで練習できます！",
+      "endingNoSaves": "別のシーンを試すか、次はフレーズを保存してみましょう！",
+      "replay": "もう一度",
+      "saveToDeckCount": "デッキに保存（{count}）",
+      "savedChip": "保存しました！",
+      "savePhrasesToDeck": "フレーズ{count}個をデッキに保存",
+      "deckName": "旅: {title}",
+      "scenarioFallback": "シーン"
+    },
+    "whatDidTheySay": {
+      "backToHub": "トラベルのトップにもどる",
+      "heading": "今なんて言った？",
+      "subheading": "自分に言われるフレーズがわかるようになります",
+      "saveAll": "すべて保存",
+      "saved": "保存しました！",
+      "all": "すべて",
+      "locations": {
+        "konbini": {
+          "label": "コンビニ"
+        },
+        "restaurant": {
+          "label": "レストラン"
+        },
+        "station": {
+          "label": "駅"
+        },
+        "shop": {
+          "label": "お店"
+        },
+        "hotel": {
+          "label": "ホテル"
+        },
+        "general": {
+          "label": "どこでも"
+        }
+      },
+      "phraseCount": "{count, plural, other {フレーズ#個}}",
+      "listen": "聞く",
+      "saveToDeck": "デッキに保存",
+      "yourResponse": "こう答えよう",
+      "listenToResponse": "返事を聞く",
+      "deckNameSuffix": "のフレーズ"
+    },
+    "errors": {
+      "failedStartScenario": "シーンを開始できませんでした",
+      "failedContinueScenario": "会話を続けられませんでした",
+      "failedGenerateCard": "カードを作成できませんでした"
+    }
+  },
+  "Ohanashikai": {
+    "home": {
+      "loadingSpeeches": "スピーチを読み込み中…",
+      "subtitle": "スピーチ練習",
+      "description": "スピーチを追加して、ぜんぶ覚えるまで練習しよう！ ✨",
+      "newSpeech": "新しいスピーチ",
+      "emptyTitle": "スピーチがまだありません！",
+      "emptyDescription": "最初のスピーチを作って練習を始めましょう",
+      "createSpeech": "スピーチを作成",
+      "lineCount": "{count, plural, other {#行}}",
+      "unpinFromHome": "ホームのピンを外す",
+      "pinToHome": "ホームにピン留め",
+      "newSpeechDialogTitle": "🎤 新しいスピーチ",
+      "newSpeechDialogSubtitle": "スピーチに名前をつけて始めましょう",
+      "creating": "作成中…",
+      "createButton": "作成 ✨",
+      "speechTitleLabel": "スピーチのタイトル",
+      "speechTitlePlaceholder": "例: 2026年 春のお話し会",
+      "descriptionLabel": "説明（任意）",
+      "descriptionPlaceholder": "例: 学校のスピーチ大会"
+    },
+    "detail": {
+      "genericError": "うまくいきませんでした。もう一度お試しください。",
+      "loadingSpeech": "スピーチを読み込み中…",
+      "speechFallbackTitle": "スピーチ",
+      "rename": "名前を変更",
+      "lineCount": "{count, plural, other {#行}}",
+      "speechLines": "スピーチの行",
+      "stop": "止める",
+      "listenToFullSpeech": "スピーチ全体を聞く",
+      "listen": "聞く",
+      "autoAddFuriganaHint": "保存ずみのすべての行に、漢字とふりがなを自動でつけます",
+      "formatting": "変換中…",
+      "autoFuriganaAll": "全部にふりがな",
+      "lineByLine": "1行ずつ",
+      "importLines": "行を取り込む",
+      "autoFuriganaFailed": "ふりがなの自動付与に失敗しました: {error}",
+      "addingFuriganaToAll": "すべての行にふりがなをつけています…",
+      "howToTitle": "ふりがなのつけ方",
+      "autoHint": "<strong>自動:</strong> ふつうの日本語を入力して行を追加し、上の<em>全部にふりがな</em> ✨ を押すと、まとめて変換できます。",
+      "manualHint": "<strong>手動:</strong> <kanjiReadingCode></kanjiReadingCode> の形で書きます。例: <exampleCode></exampleCode>。ひらがなだけでも大丈夫！",
+      "newLinePlaceholder": "新しい行を入力してEnter…",
+      "add": "追加",
+      "saveEnter": "保存（Enter）",
+      "cancelEsc": "キャンセル（Esc）",
+      "editLine": "行を編集",
+      "deleteLine": "行を削除"
+    },
+    "bulkImport": {
+      "genericError": "うまくいきませんでした。もう一度お試しください。",
+      "howToTitle": "ふりがなのつけ方",
+      "option1": "<strong>方法1 — 自動:</strong> ふつうの日本語を貼り付けて、<em>ふりがなをつける</em> ✨ を押すと、漢字と読みを自動でつけます。",
+      "option2": "<strong>方法2 — 手動:</strong> <kanjiReadingCode></kanjiReadingCode> の形で書きます。例: <exampleCode></exampleCode>。ひらがなだけの行でも大丈夫！",
+      "addingFurigana": "ふりがなをつけています…",
+      "pastePlaceholder": "スピーチの1行目\nスピーチの2行目\n…",
+      "autoFuriganaFailed": "ふりがなの自動付与に失敗しました: {error}",
+      "linesDetected": "{count}行を認識しました",
+      "autoFurigana": "ふりがなをつける",
+      "addLines": "行を追加",
+      "importing": "取り込み中…"
+    },
+    "practiceTiles": {
+      "letsPractice": "練習しよう！",
+      "readthrough": {
+        "label": "読み通し",
+        "description": "すべての行を順番に読む"
+      },
+      "linerecall": {
+        "label": "行あて",
+        "description": "覚えた行を入力する"
+      },
+      "start": "はじめる →",
+      "locked": "まず行を追加 🔒",
+      "unlockHint": "行を1つ以上追加すると練習モードが使えます。"
+    },
+    "practice": {
+      "loadingSession": "練習を準備しています…",
+      "readThroughTitle": "📖 読み通し",
+      "lineRecallTitle": "🎯 行あて",
+      "noLinesYet": "行がまだありません！まずスピーチに行を追加してください。"
+    },
+    "lineRecall": {
+      "perfectScore": "完璧！ぜんぶ正解！",
+      "greatEffort": "よくがんばりました！",
+      "linesCorrect": "{score} / {total} 行正解",
+      "perfectMessage": "ぜんぶの行を覚えていました！ 🎊",
+      "tryAgain": "もう一度",
+      "backToSpeech": "スピーチにもどる",
+      "title": "🎯 行あて",
+      "whatIsLine": "🎯 {number}行目はなに？",
+      "hintArrow": "← ヒント",
+      "theAnswer": "こたえ:",
+      "correctResult": "完璧！ +10 XP ✨",
+      "wrongResult": "おしい…でもその調子！ +2 XP",
+      "inputLabel": "覚えた行をぜんぶ入力…",
+      "inputPlaceholder": "ここに入力…",
+      "check": "チェック ✓",
+      "showAnswer": "こたえを見る",
+      "next": "次へ →",
+      "quitAndSave": "やめて記録を保存"
+    }
+  },
+  "Todo": {
+    "addEntryDialog": {
+      "title": "📅 とくべつな日を追加",
+      "addButton": "追加 ✨",
+      "errorAdd": "あれ？追加できませんでした。もう一度お試しください。",
+      "whatIsIt": "なにがある？ ✨",
+      "kind": "種類",
+      "manageLabels": "ラベルを管理",
+      "when": "いつ？ 📅",
+      "showLess": "とじる",
+      "lastsMoreThanOneDay": "2日以上つづく？くり返す？",
+      "lastDay": "最終日 📅"
+    },
+    "addTodoInput": {
+      "placeholder": "新しいやることを書く...",
+      "addTooltip": "追加！"
+    },
+    "calendarEntrySection": {
+      "specialDays": "🎊 とくべつな日",
+      "add": "追加",
+      "emptyPrompt": "なにもありません。タップして追加！ ✨",
+      "addAnother": "+ もうひとつ追加",
+      "untilDate": "{date}まで",
+      "weeklyRepeat": "🔁 毎週"
+    },
+    "dayDetailPanel": {
+      "myToDoList": "✅ やることリスト",
+      "allDone": "{celebration} ぜんぶ完了！ 🎊",
+      "loadingList": "リストを読み込み中... 🌸",
+      "nothingPlannedPast": "この日の予定はありません 🌸",
+      "nothingHereYet": "まだなにもありません！",
+      "writeATodoHint": "上にやることを書いて、+ をタップで追加！ ⭐"
+    },
+    "dayProgress": {
+      "allDone": "ぜんぶ完了！ ⭐",
+      "xpEach": "1つ +{xp} XP",
+      "doneCount": "{completed}/{total} 完了"
+    },
+    "editEntryDialog": {
+      "title": "とくべつな日を編集",
+      "errorSave": "あれ？保存できませんでした。もう一度お試しください。",
+      "saving": "保存中...",
+      "whatIsIt": "なにがある？",
+      "kind": "種類",
+      "when": "いつ？ 📅",
+      "showLess": "とじる",
+      "lastsMoreThanOneDay": "2日以上つづく？くり返す？",
+      "lastDay": "最終日 📅"
+    },
+    "editTodoDialog": {
+      "title": "やることを編集",
+      "saving": "保存中...",
+      "errorSave": "保存できませんでした。もう一度お試しください。",
+      "taskLabel": "やること",
+      "whichDayLabel": "どの日？"
+    },
+    "frequencyPicker": {
+      "untilDone": "終わるまで",
+      "everyDay": "毎日",
+      "weekdays": "平日",
+      "weekends": "週末"
+    },
+    "manageEntryTypesDialog": {
+      "title": "イベントのラベル",
+      "builtInLabels": "もとからあるラベル",
+      "myLabels": "自分のラベル",
+      "noCustomLabels": "自分のラベルはまだありません。下で作ってみよう！",
+      "pickEmoji": "絵文字を選ぶ",
+      "nameLabel": "名前",
+      "makeNewLabel": "新しいラベルを作る",
+      "errorAdd": "あれ？追加できませんでした。もう一度試す？",
+      "errorSave": "あれ？保存できませんでした。もう一度試す？",
+      "errorDelete": "あれ？削除できませんでした。もう一度試す？",
+      "labelAdded": "ラベルを追加しました！ ✨",
+      "labelNameLabel": "ラベル名",
+      "addButton": "追加"
+    },
+    "monthCalendar": {
+      "legendAllDone": "ぜんぶ完了",
+      "legendSomeDone": "一部完了",
+      "legendSpecialDay": "とくべつな日",
+      "legendToday": "今日"
+    },
+    "todoHeader": {
+      "title": "やることリスト",
+      "weekView": "週",
+      "monthView": "月"
+    },
+    "todoItem": {
+      "changePicture": "絵を変える",
+      "freqDailyUntilDone": "↻ 終わるまで毎日",
+      "freqEveryDay": "↻ 毎日",
+      "freqWeekdays": "↻ 平日",
+      "freqWeekends": "↻ 週末"
+    },
+    "useTodos": {
+      "loadError": "やることリストを読み込めませんでした",
+      "addError": "追加できませんでした。もう一度お試しください",
+      "toggleError": "更新できませんでした。もう一度お試しください",
+      "saveChangesError": "変更を保存できませんでした。もう一度お試しください",
+      "emojiError": "絵文字を保存できませんでした。もう一度お試しください",
+      "deleteError": "削除できませんでした。もう一度お試しください",
+      "reorderError": "並び順を保存できませんでした。もう一度お試しください"
+    },
+    "useEventTypes": {
+      "loadError": "イベントの種類を読み込めませんでした",
+      "deleteError": "イベントの種類を削除できませんでした"
+    },
+    "defaultEntryTypeNames": {
+      "event": "イベント",
+      "birthday": "たんじょう日",
+      "holiday": "おやすみ",
+      "reminder": "リマインダー"
+    },
+    "celebrationMessages": {
+      "amazingWork": "🎉 すごい！",
+      "onFire": "⭐ ノリノリ！",
+      "productive": "🌸 はかどってる！",
+      "keepItUp": "✨ その調子！",
+      "unstoppable": "🦋 とまらない！",
+      "youDidIt": "🌈 やったね！",
+      "wonderful": "💕 すばらしい！",
+      "fabulous": "🎀 さいこう！"
+    }
+  },
+  "Stats": {
+    "pageHeader": {
+      "title": "学習の記録",
+      "subtitle": "毎日学習して連続記録をのばそう！"
+    },
+    "statCards": {
+      "dayStreak": "連続記録",
+      "dayStreakSub": "{days, plural, other {最高: #日}}",
+      "cardsStudied": "学習したカード",
+      "cardsStudiedSub": "{count, plural, other {#回の学習}}",
+      "accuracy": "正解率",
+      "accuracySub": "{count}問正解",
+      "totalXp": "合計XP",
+      "totalXpSub": "使える{spendable} · レベル{level}"
+    },
+    "achievements": {
+      "heading": "実績"
+    },
+    "achievementBadge": {
+      "locked": "???",
+      "unlockedTooltip": "{description} · {date}に解除"
+    },
+    "recentSessions": {
+      "heading": "最近の学習",
+      "empty": "まだ記録がありません。学習を始めると、ここに出てきます！ 🌸"
+    },
+    "sessionRow": {
+      "xpValue": "+{xp} XP",
+      "minutes": "{mins}分",
+      "percent": "{pct}%"
+    },
+    "studyActivity": {
+      "heading": "学習カレンダー"
+    },
+    "periodSummary": {
+      "thisWeek": "今週",
+      "daysStudied": "学習した日数",
+      "cardsStudied": "学習したカード",
+      "xpEarned": "獲得したXP",
+      "sessions": "学習回数",
+      "byMode": "{month}のモード別"
+    },
+    "studyCalendar": {
+      "cardsStudiedTooltip": "{cards, plural, other {カード#枚を学習}}"
+    }
+  },
+  "Shop": {
+    "title": "ショップ",
+    "subtitle": "学習してXPをためて、おたからを手に入れよう！",
+    "yourXp": "持っているXP",
+    "level": "レベル {level}",
+    "loadingShop": "ショップを読み込み中…",
+    "itemUnlocked": "{name}を入手しました！",
+    "keepStudying": "学習をつづけてXPをためよう！",
+    "everyCardEarnsCoins": "カードを練習するたびに、ショップで使えるコインがたまります",
+    "categories": {
+      "all": "すべて",
+      "themes": "テーマ",
+      "cardBorders": "カードフレーム",
+      "bordersFilter": "フレーム",
+      "celebrations": "お祝いエフェクト",
+      "studyBuddies": "スタディバディ",
+      "buddiesFilter": "バディ"
+    },
+    "purchaseDialog": {
+      "unlockTitle": "{name}を入手しますか？",
+      "cost": "ねだん",
+      "yourBalance": "持っているXP",
+      "balanceXp": "{amount} XP",
+      "afterPurchase": "入手後",
+      "maybeLater": "あとで",
+      "unlocking": "入手中...",
+      "unlock": "入手する！"
+    },
+    "previewingBanner": {
+      "previewing": "<strong>{name}</strong>をプレビュー中",
+      "endPreview": "プレビューを終了"
+    },
+    "borderPreviewModal": {
+      "previewTitle": "プレビュー: {name}",
+      "studyCard": "学習カード",
+      "collectionCard": "コレクションカード"
+    },
+    "itemCard": {
+      "comingSoon": "近日公開",
+      "needMoreXp": "あと{amount} XP",
+      "preview": "プレビュー",
+      "free": "無料",
+      "owned": "入手ずみ",
+      "active": "使用中",
+      "equip": "使う",
+      "buy": "買う",
+      "keepStudyingTooltip": "学習をつづけてXPをためよう！"
+    },
+    "errors": {
+      "itemNotFound": "アイテムが見つかりません",
+      "alreadyOwned": "すでに持っています",
+      "notEnoughXp": "XPが足りません",
+      "notAuthenticated": "ログインしていません",
+      "itemNotOwned": "このアイテムを持っていません",
+      "purchaseFailed": "購入に失敗しました",
+      "equipFailed": "使用に失敗しました",
+      "unequipFailed": "解除に失敗しました"
+    },
+    "items": {
+      "theme_sakura": {
+        "name": "さくら",
+        "description": "定番のかわいいピンク＆ラベンダー"
+      },
+      "theme_murasaki": {
+        "name": "むらさき",
+        "description": "夢みるバイオレット＆ピンク"
+      },
+      "theme_yuki": {
+        "name": "ゆき",
+        "description": "凍てつくスカイブルー＆バイオレット"
+      },
+      "theme_ocean": {
+        "name": "オーシャンブルー",
+        "description": "深い青の海とティールの波"
+      },
+      "theme_forest": {
+        "name": "フォレストグリーン",
+        "description": "みずみずしい緑とエメラルドのアクセント"
+      },
+      "theme_sunset": {
+        "name": "サンセットオレンジ",
+        "description": "あたたかい夕暮れの光"
+      },
+      "theme_lavender": {
+        "name": "ラベンダー",
+        "description": "やわらかな紫の花畑と繊細なピンク"
+      },
+      "theme_midnight": {
+        "name": "ミッドナイト",
+        "description": "クールなスレートと星あかりのブルー"
+      },
+      "theme_matcha": {
+        "name": "抹茶",
+        "description": "やさしい緑茶とフレッシュなライム"
+      },
+      "theme_rosegold": {
+        "name": "ローズゴールド",
+        "description": "上品なローズとあたたかいアンバーの輝き"
+      },
+      "border_none": {
+        "name": "デフォルト",
+        "description": "フレームなしのシンプル"
+      },
+      "border_golden": {
+        "name": "ゴールドフレーム",
+        "description": "あたたかく輝く豪華なゴールドのフレーム"
+      },
+      "border_rainbow": {
+        "name": "レインボー",
+        "description": "色が移りかわる虹のグラデーション"
+      },
+      "border_sakura": {
+        "name": "さくらの花びら",
+        "description": "やさしく光るピンクの花びら"
+      },
+      "border_starry": {
+        "name": "星空",
+        "description": "深い青にきらめく星の輝き"
+      },
+      "border_neon": {
+        "name": "ネオングロー",
+        "description": "まぶしく光るネオンシアン"
+      },
+      "border_watercolor": {
+        "name": "水彩",
+        "description": "やわらかなパステルの水彩"
+      },
+      "border_origami": {
+        "name": "折り紙",
+        "description": "あたたかい色の折り目模様"
+      },
+      "border_dragon": {
+        "name": "龍のうろこ",
+        "description": "燃えるような赤と金の輝き"
+      },
+      "celeb_hearts": {
+        "name": "ハートバースト",
+        "description": "画面いっぱいにハートがふりそそぐ！"
+      },
+      "celeb_stars": {
+        "name": "スターシャワー",
+        "description": "きらめく星の金色の雨"
+      },
+      "celeb_bunnies": {
+        "name": "うさぎパレード",
+        "description": "かわいいうさぎが画面をぴょんぴょん"
+      },
+      "celeb_rainbow": {
+        "name": "レインボーポップ",
+        "description": "虹のぜんぶの色がはじける"
+      },
+      "celeb_sparkle_pink": {
+        "name": "スパークルピンク",
+        "description": "夢みるピンクのきらきらが降りそそぐ"
+      },
+      "celeb_galaxy": {
+        "name": "ギャラクシーバースト",
+        "description": "宇宙にひろがる花火ときらめき"
+      },
+      "buddy_bunny": {
+        "name": "うさぎ",
+        "description": "ぴょんぴょんはねて応援してくれる、かわいいうさぎ"
+      },
+      "buddy_penguin": {
+        "name": "ペンギン",
+        "description": "勉強が大好きなクールなペンギン！"
+      },
+      "buddy_panda": {
+        "name": "パンダ",
+        "description": "おだやかで物知りなパンダ"
+      },
+      "buddy_fox": {
+        "name": "きつね",
+        "description": "かしこくて、頭をさえさせてくれるきつね！"
+      },
+      "buddy_pink_cat": {
+        "name": "ピンクねこ",
+        "description": "元気に応援してくれるピンクのねこ！"
+      },
+      "theme_cottagecore": {
+        "name": "コテージコア",
+        "description": "いなかのぬくもり — 近日公開！"
+      },
+      "theme_galaxy": {
+        "name": "ギャラクシー",
+        "description": "宇宙のきらめき — 近日公開！"
+      },
+      "border_crystal": {
+        "name": "クリスタルアイス",
+        "description": "きらめく氷のクリスタル — 近日公開！"
+      },
+      "border_floral": {
+        "name": "フラワーガーデン",
+        "description": "花がさきほこるフレーム — 近日公開！"
+      }
+    },
+    "buddies": {
+      "buddy_pink_cat": {
+        "correct": [
+          "にゃ〜！かんぺき！",
+          "にゃんぺきな答え！",
+          "にゃっほー！",
+          "さいこうだにゃ！",
+          "にゃ〜ん、かしこい！",
+          "ねこはうれしいにゃ！ ✨",
+          "すごいにゃ〜！",
+          "せいかいだにゃ！"
+        ],
+        "wrong": [
+          "にゃ…もう一回！",
+          "あきらめないでにゃ〜",
+          "おしいにゃ！",
+          "もう一回だけにゃ！",
+          "ねこは信じてるにゃ！",
+          "うーん、ちがうにゃ〜"
+        ],
+        "idle": [
+          "♪ zzZ〜",
+          "〜ごろごろ〜",
+          "〜毛糸であそぶ〜",
+          "にゃ〜、勉強しよう！",
+          "〜のびのび〜",
+          "〜手をなめる〜",
+          "♪ ら・ら・にゃ〜",
+          "〜ちょうちょをつかまえる〜"
+        ],
+        "homePhrases": [
+          "にゃ〜！勉強の時間！ 📚",
+          "いっしょに練習しよう！",
+          "ねこもおぼえたいにゃ〜",
+          "デッキを選んでにゃ！",
+          "勉強すると強くなれる！",
+          "日本語の時間だにゃ！",
+          "応援するにゃ〜",
+          "デッキをタップしてスタート！ ✨"
+        ]
+      },
+      "buddy_bunny": {
+        "correct": [
+          "ぴょんぴょん、やったー！",
+          "うさぎジャンプ！ 🎉",
+          "すごーい！",
+          "みみよりな答え！",
+          "やったね！",
+          "がんばったね！",
+          "すごい！すごい！",
+          "うれしくてぴょんぴょん！"
+        ],
+        "wrong": [
+          "あれ、もう一回！",
+          "もう一回やってみよう！",
+          "だいじょうぶ、ぴょんといこう！",
+          "おしい！その調子！",
+          "次はきっとできるよ！",
+          "うさぎは信じてるよ！"
+        ],
+        "idle": [
+          "〜にんじんをかじる〜",
+          "〜鼻をひくひく〜",
+          "〜ちょこんとジャンプ〜",
+          "いっしょにおぼえよう！",
+          "〜ころんと寝ころぶ〜",
+          "〜足をとんとん〜",
+          "〜くんくん〜",
+          "〜お花にかくれる〜"
+        ],
+        "homePhrases": [
+          "ぴょんと勉強はじめよう！ 🥕",
+          "練習の時間！",
+          "デッキを選んでいこう！",
+          "勉強の時間はたのしい時間！",
+          "いっしょにぴょんぴょんついていくよ！",
+          "いっしょにおぼえる準備はいい？",
+          "1枚ごとにかしこくなれる！",
+          "がんばろう！いくよ！"
+        ]
+      },
+      "buddy_penguin": {
+        "correct": [
+          "クール！ばっちり！",
+          "こおりゃすごい！",
+          "よちよち、やったー！",
+          "ペンギンのお墨つき！ 🧊",
+          "もえてるね…あ、とけちゃう！",
+          "みごと！",
+          "クールな答え！ 🎉",
+          "フリッパーでハイタッチ！"
+        ],
+        "wrong": [
+          "ぶるる、ちょっとちがう…",
+          "すべってもう一回！",
+          "よちよち前へすすもう！",
+          "おしい！もう一回！",
+          "ここですべらないで！",
+          "きみならできる！"
+        ],
+        "idle": [
+          "〜よちよち〜",
+          "〜おなかですべる〜",
+          "〜魚をながめる〜",
+          "ぶるる、勉強の時間！",
+          "〜フリッパーをぱたぱた〜",
+          "〜みんなでくっついてあたたまる〜",
+          "〜雪をつかまえる〜",
+          "〜ペンギンダンス〜"
+        ],
+        "homePhrases": [
+          "クールな勉強の時間だよ！ 🧊",
+          "すべりこんで勉強しよう！",
+          "デッキを選んで！",
+          "今日はなにをおぼえる？",
+          "のんびり勉強しよう！",
+          "そばにいるよ！",
+          "ずっとスタディバディ！",
+          "日本語を練習しよう！"
+        ]
+      },
+      "buddy_panda": {
+        "correct": [
+          "竹ばらしい！",
+          "パンダも大満足！",
+          "さいこう！ 🎋",
+          "その調子！",
+          "竹みたいにまっすぐかしこい〜",
+          "すごい答え！",
+          "パンダもほこらしい！",
+          "すばらしい！"
+        ],
+        "wrong": [
+          "うーん、つづけよう！",
+          "ころころ、もう一回！",
+          "あきらめないで！",
+          "あと少し！",
+          "パンダはあわてない〜",
+          "ゆっくりでいいよ！"
+        ],
+        "idle": [
+          "〜竹をもぐもぐ〜",
+          "〜ごろごろ〜",
+          "〜おひるね〜",
+          "んー、ひとやすみする？",
+          "〜のんびりのびる〜",
+          "〜木にのぼる〜",
+          "〜すわって考える〜",
+          "〜考えながらもぐもぐ〜"
+        ],
+        "homePhrases": [
+          "勉強の時間〜 🎋",
+          "知識をもぐもぐ食べよう！",
+          "練習するデッキを選ぼう！",
+          "学ぶことは竹ばらしい！",
+          "1枚ずつ、ゆっくりいこう〜",
+          "かしこいパンダはいつも勉強する！",
+          "いつでもいいよ！",
+          "いっしょに がんばろう！"
+        ]
+      },
+      "buddy_fox": {
+        "correct": [
+          "かしこい答え！",
+          "きつねもびっくり！",
+          "今日もさえてる！",
+          "あたまいい！ 🌟",
+          "きつねはなんて言う？ やったー！",
+          "さすが、かしこい！",
+          "はやい！",
+          "ずるがしこい！"
+        ],
+        "wrong": [
+          "おしい、もう一度考えて！",
+          "きつねのヒント: もう一回！",
+          "すごくおしい！かしこくいこう！",
+          "だいじょうぶ、きつねらしくいこう！",
+          "むずかしいけど、きみならできる！",
+          "かしこいきつねはあきらめない！"
+        ],
+        "idle": [
+          "〜まるくなる〜",
+          "〜においをかぐ〜",
+          "〜落ち葉をおいかける〜",
+          "なにをおぼえようか？",
+          "〜しっぽをふる〜",
+          "〜そっとあくび〜",
+          "〜耳をぴんと立てる〜",
+          "〜とことこ歩く〜"
+        ],
+        "homePhrases": [
+          "かしこいきつねはいつも勉強する！ 🌟",
+          "あたまをするどくする時間！",
+          "デッキを選んで、かしこいきみ！",
+          "カードをやっつけよう！",
+          "知識は力！",
+          "ちょっとだけ勉強する？",
+          "するどく、きつねらしく！",
+          "べんきょう しましょう！"
+        ]
+      }
+    }
+  },
+  "Landing": {
+    "seo": {
+      "appDescription": "AIで作る日本語フラッシュカードスタジオ。旅のフレーズ集、スピーチ練習、グループ学習、XPと実績、10種類のテーマ、いろいろな練習モードがそろっています。",
+      "featureList": [
+        "Google Geminiによるフラッシュカードの自動生成",
+        "9つのモジュールがそろったトラベルモード",
+        "マッチ・穴うめ・当ててみようの練習モード",
+        "スピーチの暗記練習",
+        "課題とランキングつきのグループ学習",
+        "実績と毎日の連続記録があるXPシステム",
+        "10種類のカラーテーマ",
+        "PDFからの単語取り込み",
+        "デッキの共有と埋め込みウィジェット"
+      ],
+      "faq": [
+        {
+          "question": "Kannanaoとは？",
+          "answer": "Kannanaoは、AIで日本語のフラッシュカードを作れる無料の学習スタジオです。入力した単語に対して、Google Geminiが読み方・意味・日英の例文を生成します。旅のフレーズ集「トラベルモード」、グループ学習、ゲーム感覚のXP、10種類のテーマも使えます。"
+        },
+        {
+          "question": "AIのカード生成はどう動きますか？",
+          "answer": "英語でも日本語でも、単語を入力するだけ。Google Gemini AIがひらがなの読み・漢字・意味・日英の例文を生成します。PDFをアップロードして単語を抜き出し、まとめてカードを作ることもできます。"
+        },
+        {
+          "question": "トラベルモードとは？",
+          "answer": "トラベルモードは、9つのモジュールが入ったポケットサイズのフレーズ集です。今日のフレーズ、シーン練習、メニューの早見表、緊急カード、リスニング練習、カタカナ解読、カルチャーガイド、指さし会話、見せるカード。どれも日本での本物の会話にそなえられます。"
+        },
+        {
+          "question": "友だちやクラスでいっしょに学習できますか？",
+          "answer": "はい。Kannanaoはグループ学習に対応しています。リーダーはグループを作り、QRコードでメンバーを招待し、しめ切りつきの課題を出し、週間のXPランキングを見て、応援メッセージを送れます。デッキはリンクで共有したり、ウェブサイトに埋め込んだりもできます。"
+        },
+        {
+          "question": "どんな練習モードがありますか？",
+          "answer": "3つの練習モードがあります。マッチ（時間と競争しながら単語と意味をペアにする）、穴うめ（文の足りない単語を入力する）、当ててみよう（意味を見て日本語を入力する）。どのモードも、学習するたびに次のレベルへのXPがたまります。"
+        },
+        {
+          "question": "Kannanaoは無料ですか？",
+          "answer": "Kannanaoは現在クローズドベータで、無料でお使いいただけます。新しい枠が空きしだいおしらせしますので、トップページのウェイトリストにご登録ください。"
+        }
+      ]
+    },
+    "languageToggle": {
+      "ariaLabel": "言語",
+      "en": "英語",
+      "ja": "日本語"
+    },
+    "hero": {
+      "waitlistBadge": "✨ クローズドベータ — ウェイトリスト受付中",
+      "headline": "日本語を、<br></br>1枚ずつ、<br></br>楽しく。",
+      "subtitle": "AIで作るフラッシュカード、旅のフレーズ集、スピーチ練習、ゲーム感覚のXPと実績、自由に変えられるテーマ、グループ学習。日本語の勉強が<em>ほんとうに</em>楽しくなる道具が、ぜんぶそろっています。",
+      "dashboardButton": "ダッシュボードへ 🌸",
+      "waitlistButton": "ウェイトリストに登録 🌸",
+      "signInButton": "ログイン",
+      "tags": {
+        "japanese": "🎌 日本語",
+        "aiPowered": "🤖 AI",
+        "gamified": "🎮 ゲーム感覚",
+        "travelMode": "✈️ トラベルモード",
+        "groups": "👥 グループ",
+        "themes": "🎨 テーマ"
+      },
+      "scroll": "スクロール"
+    },
+    "features": {
+      "heading": "かしこく学ぶための<br></br>道具が、ぜんぶ。",
+      "subheading": "AIフラッシュカード、旅のフレーズ集、グループ学習、スピーチ練習、ゲーム要素。日本語学習のすべてが、ここに。",
+      "items": {
+        "aiCardGeneration": {
+          "title": "AIカード生成",
+          "desc": "単語を入力するだけ。Google Geminiが読み方・意味・日英の例文をすぐに埋めます。"
+        },
+        "travelMode": {
+          "title": "トラベルモード",
+          "desc": "現実で使う日本語のための9つのモジュール。今日のフレーズ、メニュー、シーン練習、緊急カードなど。"
+        },
+        "threePracticeModes": {
+          "title": "3つの練習モード",
+          "desc": "マッチ、穴うめ、当ててみよう。学習するたびに正解率を記録して、XPがもらえます。"
+        },
+        "themesAndShop": {
+          "title": "テーマとショップ",
+          "desc": "10種類のカラーテーマ、カードフレーム、お祝いエフェクト、スタディバディ。すべてXPで手に入ります。"
+        },
+        "groupStudy": {
+          "title": "グループ学習",
+          "desc": "グループを作り、QRコードでメンバーを招待。課題を出して、進み具合を見て、応援メッセージを送れます。"
+        },
+        "speechPractice": {
+          "title": "スピーチ練習",
+          "desc": "読み通しと行あてで、スピーチを1行ずつ暗記。発表の練習にぴったり。"
+        },
+        "streaksAndAchievements": {
+          "title": "連続記録と実績",
+          "desc": "毎日の連続記録、12種類以上の実績バッジ、XPレベル、学習カレンダー。やる気がつづきます。"
+        },
+        "pdfImport": {
+          "title": "PDF取り込み",
+          "desc": "教科書や単語リストのPDFをアップロードするだけ。Kannanaoが単語を抜き出してカードにします。"
+        },
+        "leaderboard": {
+          "title": "ランキング",
+          "desc": "グループの週間XPランキング。いちばん学習した人を、みんなでお祝いしましょう。"
+        },
+        "habitTracker": {
+          "title": "習慣トラッカー",
+          "desc": "やることリストで毎日の学習を習慣に。ひとつ終えるたびにXPがもらえます。"
+        },
+        "beautifulCards": {
+          "title": "美しいカード",
+          "desc": "Unsplashの写真、フレーム、ふりがな、そして選べる表示モード。"
+        },
+        "shareAndEmbed": {
+          "title": "共有と埋め込み",
+          "desc": "デッキをリンクで共有したり、どんなサイトにもカードを埋め込んだり。アカウントは要りません。"
+        }
+      }
+    },
+    "aiDemo": {
+      "heading": "デッキひとつを、<br></br>数分で。",
+      "subheading": "単語をいくつか入力するか、PDFを置くだけ。Gemini AIが1枚ずつ、読み方・意味・日英の例文を作ります。",
+      "steps": {
+        "generateCards": "カードを作成",
+        "reviewAndEdit": "確認して編集"
+      },
+      "addCardsPanelTitle": "✨ カードを追加",
+      "mainDisplayModeLabel": "メインの表示:",
+      "viewModes": {
+        "hiragana": "ひ ひらがな",
+        "kanji": "漢 漢字"
+      },
+      "generateWithAiLabel": "AIで作る",
+      "generatingCardsMessage": "カードを作成中…",
+      "typeWordsPlaceholder": "どの言語でも、単語を入力…",
+      "generateButton": "カードを作成",
+      "cardsGeneratedButton": "{count, plural, other {✓ カード#枚ができました！}}",
+      "orDivider": "または",
+      "addOptions": {
+        "addExisting": {
+          "title": "既存のカードを追加",
+          "desc": "ほかのデッキからコピー"
+        },
+        "importPdf": {
+          "title": "PDFから取り込み",
+          "desc": "書類から単語を抜き出す"
+        }
+      },
+      "reviewCardsPanelTitle": "📋 カードを確認",
+      "reviewCardsStatus": "{count, plural, other {カード#枚ができました。追加する前に編集できます}}",
+      "reviewCardsWaiting": "生成を待っています…",
+      "setViewModeLabel": "すべてのカードのメイン表示:",
+      "cancelButton": "キャンセル",
+      "addCardsToDeckButton": "{count, plural, other {✓ カード#枚をデッキに追加}}",
+      "studyYourDeckLabel": "デッキで学習"
+    },
+    "travelMode": {
+      "badge": "トラベルモード",
+      "heading": "日本の旅に、<br></br>ポケットのフレーズ集。",
+      "subheading": "日本語がわからなくても大丈夫。無料のフレーズ集、食べもののガイド、文化のコツで、安心して日本を旅できます。",
+      "exploreCta": "無料のフレーズ集を見る",
+      "freeSectionLabel": "無料 — アカウント不要",
+      "freeModules": {
+        "survivalPhrases": {
+          "title": "サバイバルフレーズ",
+          "desc": "場面ごとの必須フレーズ60以上。あいさつ、レストラン、買いもの、交通、緊急時。すべてにローマ字の読み方、分解、文化のコツつき。"
+        },
+        "foodMenu": {
+          "title": "メニューの早見表",
+          "desc": "日本のメニューが読めるようになります。ラーメンの種類、寿司、定番の料理、飲みもの、コンビニごはん。それぞれが何なのかメモつき。"
+        },
+        "whatDidTheySay": {
+          "title": "「今なんて言った？」",
+          "desc": "コンビニ、レストラン、駅、お店で、日本人があなたに言うフレーズ。意味と返し方がわかります。"
+        },
+        "katakanaDecoder": {
+          "title": "カタカナ解読",
+          "desc": "メニューや看板の外来語で使う46文字を覚えます。カタカナがわかれば、日本の半分が急に読めるようになります。"
+        },
+        "cultureGuide": {
+          "title": "カルチャーガイド",
+          "desc": "お寺、レストラン、電車、温泉でのマナーと、してよいこと・いけないこと。それぞれに、その場面で使えるフレーズつき。"
+        }
+      },
+      "aiSectionLabel": "AI機能 — アカウントが必要",
+      "aiChipLabel": "AI",
+      "aiModules": {
+        "dailyPhrasePack": {
+          "title": "今日のフレーズパック",
+          "desc": "今日の予定をAIに伝えると、ほんとうに必要なフレーズだけがそろいます。"
+        },
+        "scenarioPractice": {
+          "title": "シーン練習",
+          "desc": "本物の会話を練習。注文、ホテルのチェックイン、道をたずねる。AIが相手役になります。"
+        },
+        "pointCommunicate": {
+          "title": "指さし会話",
+          "desc": "どんな場面でも見せるカードを作れます。アレルギー、道案内、特別なお願い。ことばに困ったら、スマホを見せるだけ。"
+        }
+      },
+      "demo": {
+        "scenarioTitle": "ラーメンを注文",
+        "scenarioSubtitle": "言いたいことを英語で入力",
+        "demoChip": "デモ",
+        "contextLine": "カウンター席の小さなラーメン屋。店員さんがあたたかく迎えてくれます。",
+        "sayThis": "こう言おう",
+        "culturalTip": "ひとりで食べる人はとても多いです。カウンター席のあるラーメン屋がたくさんあります！",
+        "suggestionsLabel": "ヒント:",
+        "suggestions": ["おすすめを聞く", "とんこつを注文"],
+        "inputPlaceholder": "何と言いたいですか？"
+      }
+    },
+    "practice": {
+      "heading": "練習は3つのやり方で",
+      "subheading": "モードを切り替えれば、飽きずに歯ごたえもつづきます。どれも次のレベルへのXPになります。",
+      "modes": {
+        "match": {
+          "name": "マッチ",
+          "desc": "時間と競争しながら、日本語と意味をペアにします。単語の高速ドリルにぴったり。"
+        },
+        "fillInTheBlank": {
+          "name": "穴うめ",
+          "desc": "文を読んで、足りない単語を入力します。単語といっしょに読解力もつきます。"
+        },
+        "recall": {
+          "name": "当ててみよう",
+          "desc": "意味を見て、日本語を入力します。いちばんむずかしく、いちばん記憶に残るモード。"
+        }
+      }
+    },
+    "gamification": {
+      "heading": "学習するたび、XP。<br></br>レベルが上がるたび、新しいごほうび。",
+      "subheading": "学習するとXPがたまり、XPでテーマ、カードフレーム、お祝いエフェクト、スタディバディを手に入れられます。実績が節目を記録します。ゲームみたいに学べます。",
+      "levelBadge": "レベル7",
+      "xpTotal": "2,450 XP",
+      "progressToNextLevel": "レベル8までの進み具合",
+      "stats": {
+        "streak": "日",
+        "accuracy": "平均",
+        "cards": "学習"
+      },
+      "achievementsHeading": "実績",
+      "achievementCount": "4/12",
+      "achievements": {
+        "firstSteps": {
+          "name": "はじめの一歩"
+        },
+        "onFire": {
+          "name": "ノリノリ"
+        },
+        "sharpshooter": {
+          "name": "百発百中"
+        },
+        "century": {
+          "name": "100枚"
+        },
+        "speedDemon": {
+          "name": "スピードスター"
+        },
+        "summit": {
+          "name": "頂点"
+        }
+      },
+      "customizeHeading": "🎨 なんでもカスタマイズ",
+      "colorThemesLabel": "10種類のカラーテーマ",
+      "themes": {
+        "sakura": {
+          "name": "さくら"
+        },
+        "murasaki": {
+          "name": "むらさき"
+        },
+        "yuki": {
+          "name": "ゆき"
+        },
+        "ocean": {
+          "name": "オーシャン"
+        },
+        "forest": {
+          "name": "フォレスト"
+        },
+        "sunset": {
+          "name": "サンセット"
+        },
+        "lavender": {
+          "name": "ラベンダー"
+        },
+        "midnight": {
+          "name": "ミッドナイト"
+        },
+        "matcha": {
+          "name": "抹茶"
+        },
+        "roseGold": {
+          "name": "ローズゴールド"
+        }
+      },
+      "shopItems": {
+        "sunsetOrange": {
+          "name": "サンセットオレンジ",
+          "type": "テーマ"
+        },
+        "cherryBlossom": {
+          "name": "さくらの花びら",
+          "type": "カードフレーム"
+        },
+        "starShower": {
+          "name": "スターシャワー",
+          "type": "お祝いエフェクト"
+        },
+        "foxBuddy": {
+          "name": "きつねバディ",
+          "type": "スタディバディ"
+        }
+      },
+      "counters": {
+        "colorThemes": "カラーテーマ",
+        "cardBorders": "カードフレーム",
+        "achievements": "実績",
+        "shopCategories": "ショップのカテゴリ"
+      }
+    },
+    "group": {
+      "badge": "共有して、いっしょに",
+      "heading": "みんなで、もっと",
+      "subheading": "デッキをリンクで共有。カードをどんなサイトにも埋め込み。課題・ランキング・応援メッセージがそろった教室も作れます。",
+      "poweredBy": "提供 Kannanao",
+      "shareHeading": "デッキを共有・埋め込み",
+      "shareBody": "リンクひとつでデッキを共有。友だちやクラスメイトは、アカウントなしですぐに学習できます。ブログやNotion、ウェブサイトにカードを直接埋め込むこともできます。",
+      "shareTags": {
+        "oneClickSharing": "🔗 ワンクリック共有",
+        "embeddableWidget": "🌐 埋め込みウィジェット",
+        "noAccountNeeded": "🔒 アカウント不要"
+      },
+      "classroomHeading": "本格的な教室も作れます",
+      "classroomSubheading": "QRコードでメンバーを招待し、課題を出して、進み具合を見て、応援メッセージを送れます。",
+      "leaderboard": {
+        "title": "今週のランキング",
+        "levelStreak": "Lv.{level} · 🔥 {streak}日",
+        "cards": "{count, plural, other {カード#枚}}"
+      },
+      "assignments": {
+        "title": "課題",
+        "dueLabel": "しめ切り: {due}",
+        "items": {
+          "jlptN5Verbs": {
+            "deck": "JLPT N5の動詞",
+            "due": "明日"
+          },
+          "dailyGreetings": {
+            "deck": "毎日のあいさつ",
+            "due": "金曜日"
+          },
+          "foodAndDrinks": {
+            "deck": "食べもの・飲みもの",
+            "due": "来週"
+          }
+        }
+      },
+      "encouragements": {
+        "title": "応援メッセージ",
+        "qrTitle": "QRコードで招待",
+        "qrSubtitle": "読み取るだけですぐ参加",
+        "items": {
+          "greatStreak": {
+            "from": "先生",
+            "message": "連続記録すごい！その調子！ 💪",
+            "time": "2時間前"
+          },
+          "masteredVerbs": {
+            "from": "先生",
+            "message": "N5の動詞、ぜんぶマスターしたね！",
+            "time": "1日前"
+          }
+        }
+      },
+      "pills": {
+        "oneClickSharing": "🔗 ワンクリック共有",
+        "organizerMemberRoles": "👥 リーダーとメンバー",
+        "assignDecksWithDeadlines": "📋 しめ切りつきの課題",
+        "weeklyXpLeaderboard": "🏆 週間XPランキング",
+        "sendEncouragements": "💌 応援メッセージ",
+        "qrCodeInvites": "📱 QRコード招待"
+      }
+    },
+    "howItWorks": {
+      "heading": "はじめるまで、<br></br>ほんの数分。",
+      "subheading": "めんどうな設定はありません。アカウントを作って、AIで最初のデッキを作れば、すぐにXPがたまりはじめます。同期は自動です。",
+      "stats": {
+        "travelModules": "トラベルモジュール",
+        "achievements": "実績",
+        "themes": "テーマ"
+      },
+      "steps": {
+        "createYourDecks": {
+          "title": "デッキを作る",
+          "desc": "単語を入力すれば、AIが読み方・意味・例文を埋めます。PDFをアップロードすれば、まとめてカードに。Unsplashの写真とふりがなは自動でつきます。"
+        },
+        "studyYourWay": {
+          "title": "好きなやり方で学ぶ",
+          "desc": "カードをめくる。マッチ、穴うめ、当ててみようであそぶ。トラベルモードの9つのモジュールで実際に使うフレーズを覚える。スピーチを1行ずつ練習する。"
+        },
+        "earnAndCustomise": {
+          "title": "ためて、着せかえる",
+          "desc": "学習するたびXPがたまります。レベルを上げて、ショップでカラーテーマ、カードフレーム、お祝いエフェクト、スタディバディを手に入れましょう。"
+        },
+        "learnTogether": {
+          "title": "いっしょに学ぶ",
+          "desc": "グループを作り、QRコードでメンバーを招待。しめ切りつきの課題を出し、週間ランキングをのぼり、デッキをどこでも共有・埋め込みできます。"
+        }
+      }
+    },
+    "cta": {
+      "betaChipLabel": "クローズドベータ — まもなく枠が空きます",
+      "headline": "日本語を、<br></br>レベルアップしませんか？",
+      "subtitle": "Kannanaoは現在クローズドベータです。メールアドレスをご登録いただければ、新しい枠が空きしだいおしらせします。",
+      "dashboardButton": "ダッシュボードへ 🌸",
+      "brandName": "🌸 Kannanao",
+      "tagline": "AIで作る日本語フラッシュカードスタジオ",
+      "madeBy": "💕 をこめて <link>Variations on a String</link> が制作"
+    }
+  }
+}

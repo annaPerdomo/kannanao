@@ -4,7 +4,6 @@ import {
   buildQuizQuestions,
   checkTypedAnswer,
   quizAccuracy,
-  quizEncouragement,
   quizResultsToCsv,
   type QuizScoreRow,
   quizStars,
@@ -72,13 +71,6 @@ describe('quizStars', () => {
     [0, 1],
   ])('%i%% → %i stars', (pct, stars) => {
     expect(quizStars(pct)).toBe(stars);
-  });
-});
-
-describe('quizEncouragement', () => {
-  it('returns a distinct line per star tier', () => {
-    const lines = new Set([quizEncouragement(1), quizEncouragement(2), quizEncouragement(3)]);
-    expect(lines.size).toBe(3);
   });
 });
 

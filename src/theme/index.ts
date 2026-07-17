@@ -1,4 +1,7 @@
-import { alpha, createTheme, type Theme } from '@mui/material/styles';
+import { jaJP } from '@mui/material/locale';
+import { alpha, createTheme, type Theme, type ThemeOptions } from '@mui/material/styles';
+
+import type { Locale } from '@/i18n/config';
 
 export type ColorScheme =
   | 'sakura'
@@ -34,7 +37,68 @@ export type FontConfig = {
   cute: string; // decorative / playful accents
 };
 
-export const themeFonts: Record<ColorScheme, FontConfig> = {
+// Japanese system-font fallbacks, appended to every stack below by
+// withJpFallbacks(). Ordered macOS/iOS first, then Windows: Hiragino ships on
+// every Mac and iPhone, Yu Gothic/Meiryo on every Windows since 8.1. No webfont
+// — a CJK face is megabytes, and these are already on the device.
+//
+// This is NOT gated on the UI locale, deliberately. The app renders Japanese
+// vocabulary on every deck, card and quiz no matter which language the chrome is
+// in, so an English-locale user hits these stacks just as hard as a Japanese one.
+// (Locale-conditional composition is a separate concern — see createAppTheme.)
+const JP_SANS_FALLBACK = "'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo'";
+const JP_SERIF_FALLBACK = "'Hiragino Mincho ProN', 'Yu Mincho'";
+
+// Keyed by the generic keyword each stack already ends in, so a serif display
+// face falls back to a mincho and a sans body face to a gothic — matching the
+// Latin face's tone instead of flattening every JP glyph to one default.
+// `monospace` takes the gothic chain: there is no JP monospace we can rely on
+// being installed, and JP glyphs are full-width (so they still align).
+const JP_FALLBACK_FOR_GENERIC: Record<string, string> = {
+  serif: JP_SERIF_FALLBACK,
+  'sans-serif': JP_SANS_FALLBACK,
+  monospace: JP_SANS_FALLBACK,
+};
+
+/**
+ * Splices the Japanese chain in just before a stack's trailing generic keyword.
+ *
+ * The ~20 Google families these stacks lead with are Latin-only — Fredoka and
+ * Abril Fatface have no CJK glyphs at all. Without this the browser hits の,
+ * finds nothing in Fredoka, and falls through to the generic `sans-serif`, which
+ * on macOS resolves to Helvetica — also no CJK — leaving the glyph to last-resort
+ * system matching. That rarely produces tofu, but it does produce a font nobody
+ * chose, varying by OS and mismatched in weight against the Latin text beside it.
+ * Naming the families makes the fallback deterministic and tonally matched.
+ *
+ * Single quotes on the JP families is load-bearing: theme/fontLoader.ts builds
+ * each scheme's Google Fonts URL by parsing the FIRST double-quoted name out of
+ * each stack, so single-quoted system families stay invisible to it and no
+ * request is made for a font that was never on Google Fonts.
+ */
+function withJpFallback(stack: string): string {
+  const lastComma = stack.lastIndexOf(',');
+  if (lastComma === -1) return stack;
+  const generic = stack.slice(lastComma + 1).trim();
+  const chain = JP_FALLBACK_FOR_GENERIC[generic];
+  return chain ? `${stack.slice(0, lastComma)}, ${chain}, ${generic}` : stack;
+}
+
+function withJpFallbacks(config: FontConfig): FontConfig {
+  return {
+    primary: withJpFallback(config.primary),
+    display: withJpFallback(config.display),
+    jp: withJpFallback(config.jp),
+    mono: withJpFallback(config.mono),
+    cute: withJpFallback(config.cute),
+  };
+}
+
+// The Latin-lead stacks, exactly as authored. Only `themeFonts` (below) is
+// public — components and typography read the JP-extended form, because plenty
+// of them set `fontFamily: (t) => t.fonts.display` straight from the theme
+// rather than going through a typography variant.
+const latinThemeFonts: Record<ColorScheme, FontConfig> = {
   sakura: {
     primary: '"Nunito", sans-serif',
     display: '"DM Serif Display", serif',
@@ -106,6 +170,11 @@ export const themeFonts: Record<ColorScheme, FontConfig> = {
     cute: '"Quicksand", sans-serif',
   },
 };
+
+/** The font stacks the app renders: Latin face first, JP system fallbacks, generic. */
+export const themeFonts: Record<ColorScheme, FontConfig> = Object.fromEntries(
+  Object.entries(latinThemeFonts).map(([scheme, config]) => [scheme, withJpFallbacks(config)]),
+) as Record<ColorScheme, FontConfig>;
 
 export const LAYOUT = {
   contentMaxWidth: 1440,
@@ -590,7 +659,21 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
 
 // ─── Factory ──────────────────────────────────────────────────────────────────
 
-export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
+/**
+ * Builds the MUI theme for a color scheme, in a given UI locale.
+ *
+ * `locale` only selects MUI's own built-in strings — the ones baked into the
+ * components rather than passed as props, which next-intl therefore can't reach:
+ * TablePagination's "1–5 of 13", the Autocomplete "No options" text, and the
+ * aria-labels on the pagination arrows. Everything the app itself writes is
+ * already a message key. Defaulted to 'en' so the ~40 existing callers and tests
+ * keep their current behavior untouched.
+ *
+ * The locale must be PASSED IN, never read from the cookie here: /landing and
+ * /landing/ja render this at build time with their locale pinned, and a cookie
+ * read anywhere in that tree turns both of them into per-request renders.
+ */
+export function createAppTheme(scheme: ColorScheme = 'sakura', locale: Locale = 'en'): Theme {
   const s = schemes[scheme];
   const { brand, accent, rainbow, fonts } = s;
 
@@ -601,7 +684,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
     chip: brand[100],
   };
 
-  return createTheme({
+  const options: ThemeOptions = {
     fonts,
     palette: {
       mode: 'light',
@@ -835,7 +918,14 @@ export function createAppTheme(scheme: ColorScheme = 'sakura'): Theme {
         },
       },
     },
-  });
+  };
+
+  // The locale bundle goes in as a second argument rather than via a second
+  // createTheme() pass over a finished theme: both are documented, but this way
+  // the options are processed exactly once, so nothing that reads
+  // `theme.palette.*` inside a component override is computed against a
+  // half-merged theme.
+  return locale === 'ja' ? createTheme(options, jaJP) : createTheme(options);
 }
 
 /** Default export — sakura scheme, kept for any code that imports `theme` directly */

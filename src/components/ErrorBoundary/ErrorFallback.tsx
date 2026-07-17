@@ -2,6 +2,7 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 interface ErrorFallbackProps {
   error: Error;
@@ -9,6 +10,7 @@ interface ErrorFallbackProps {
 }
 
 export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
+  const t = useTranslations('Common');
   return (
     <Box
       sx={{
@@ -23,15 +25,13 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
       }}
     >
       <Typography variant="h5" color="text.primary">
-        Something went wrong
+        {t('somethingWentWrong')}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 480 }}>
-        {process.env.NODE_ENV === 'development'
-          ? error.message
-          : 'An unexpected error occurred. Please refresh the page or try again.'}
+        {process.env.NODE_ENV === 'development' ? error.message : t('errorFallbackBody')}
       </Typography>
       <Button variant="contained" onClick={resetError}>
-        Try again
+        {t('retry')}
       </Button>
     </Box>
   );
