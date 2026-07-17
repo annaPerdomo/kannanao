@@ -11,7 +11,12 @@
     "retry": "もう一度",
     "somethingWentWrong": "うまくいきませんでした",
     "errorFallbackBody": "予期しないエラーが発生しました。ページを更新するか、もう一度お試しください。",
-    "readAloud": "読み上げ"
+    "readAloud": "読み上げ",
+    "language": {
+      "ariaLabel": "言語を選ぶ",
+      "saved": "言語を保存しました！",
+      "saveError": "言語を保存できませんでした。もう一度お試しください。"
+    }
   },
   "Deck": {
     "addCardsModal": {
@@ -1318,10 +1323,7 @@
       "mismatchError": "パスワードが一致しません。"
     },
     "language": {
-      "description": "ボタン・メニュー・ラベルの言語です。日本語の単語やカードは変わりません。",
-      "ariaLabel": "言語を選ぶ",
-      "saved": "言語を保存しました！",
-      "saveError": "言語を保存できませんでした。もう一度お試しください。"
+      "description": "ボタン・メニュー・ラベルの言語です。日本語の単語やカードは変わりません。"
     }
   },
   "Messages": {

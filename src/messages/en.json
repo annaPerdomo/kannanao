@@ -11,7 +11,12 @@
     "retry": "Retry",
     "somethingWentWrong": "Something went wrong",
     "errorFallbackBody": "An unexpected error occurred. Please refresh the page or try again.",
-    "readAloud": "Read aloud"
+    "readAloud": "Read aloud",
+    "language": {
+      "ariaLabel": "Choose a language",
+      "saved": "Language saved!",
+      "saveError": "Couldn't save your language. Please try again."
+    }
   },
   "Deck": {
     "addCardsModal": {
@@ -1325,10 +1330,7 @@
       "mismatchError": "Passwords do not match."
     },
     "language": {
-      "description": "The language for buttons, menus and labels. Your Japanese words and cards do not change.",
-      "ariaLabel": "Choose a language",
-      "saved": "Language saved!",
-      "saveError": "Couldn't save your language. Please try again."
+      "description": "The language for buttons, menus and labels. Your Japanese words and cards do not change."
     }
   },
   "Messages": {
