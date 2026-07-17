@@ -1,9 +1,9 @@
 'use client';
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { ReviewQuest } from '@/components/ReviewQuest';
@@ -78,17 +78,49 @@ export default function ReviewTodayPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [cards, setCards] = useState<Flashcard[] | null>(null);
+  const [error, setError] = useState(false);
+  // Bumped by the retry button; re-runs the fetch effect.
+  const [attempt, setAttempt] = useState(0);
+  const retry = useCallback(() => {
+    setError(false);
+    setCards(null);
+    setAttempt((a) => a + 1);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-    void getDueCards(user.id).then((due) => {
-      if (!cancelled) setCards(due);
-    });
+    getDueCards(user.id)
+      .then((due) => {
+        if (!cancelled) setCards(due);
+      })
+      .catch(() => {
+        // An empty array must mean "nothing due", never "the fetch failed" —
+        // otherwise an outage renders the 🎉 all-done celebration.
+        if (!cancelled) setError(true);
+      });
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, attempt]);
+
+  if (error) {
+    return (
+      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
+        <Alert
+          severity="error"
+          sx={{ borderRadius: 3 }}
+          action={
+            <Button color="inherit" size="small" onClick={retry}>
+              {t('retry')}
+            </Button>
+          }
+        >
+          {t('loadError')}
+        </Alert>
+      </Box>
+    );
+  }
 
   if (cards === null) {
     return (

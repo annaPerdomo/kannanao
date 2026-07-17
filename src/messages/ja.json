@@ -402,6 +402,21 @@
       "wordsWaiting": "{count, plural, other {#語が待っています ⚔️}}",
       "allCaughtUp": "すべて完了 — 今日の復習はありません"
     },
+    "hubPage": {
+      "wordsWaiting": "{count, plural, other {#語が待っています}}",
+      "waitingBody": "数分の復習でことばを忘れにくく — ぜんぶクリアしてチェストをゲット 🎁",
+      "startTodaysPractice": "今日の練習をはじめる",
+      "caughtUpTitle": "すべて完了！",
+      "caughtUpBody": "今は復習がありません — 下のゲームであそんで力をキープしよう",
+      "funWaysToPractice": "たのしく練習",
+      "loadError": "復習することばを確認できませんでした。ページを更新してもう一度ためしてください。"
+    },
+    "questMap": {
+      "warmup": "ウォームアップ",
+      "match": "ワードマッチ",
+      "boss": "ボスラウンド",
+      "chest": "チェスト"
+    },
     "comboChip": {
       "ariaCombo": "{count}連続コンボ"
     },
@@ -425,6 +440,8 @@
     },
     "todayPage": {
       "findingReviews": "復習をさがしています…",
+      "loadError": "復習を読み込めませんでした。もう一度ためしてください。",
+      "retry": "もう一度ためす",
       "allDoneTitle": "今日はぜんぶ完了！",
       "allDoneBody": "今日の復習はぜんぶ終わりました。ゲームであそんで連続記録をのばそう ✨",
       "playAGame": "ゲームであそぶ",

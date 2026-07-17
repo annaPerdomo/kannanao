@@ -1,7 +1,8 @@
 'use client';
-import { Box, Button, Typography } from '@mui/material';
+import { Alert, Box, Button, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { GameTiles } from '@/components/Games';
 import { Loading } from '@/components/Loading';
@@ -10,6 +11,7 @@ import { LAYOUT } from '@/theme';
 
 /** Bright call-to-action when cards are waiting: count + one big start button. */
 function DueHero({ count, onStart }: { count: number; onStart: () => void }) {
+  const t = useTranslations('Review.hubPage');
   return (
     <Box
       sx={{
@@ -25,11 +27,9 @@ function DueHero({ count, onStart }: { count: number; onStart: () => void }) {
     >
       <Typography sx={{ fontSize: '3rem', lineHeight: 1, mb: 1 }}>⚔️</Typography>
       <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>
-        {count} word{count === 1 ? '' : 's'} are waiting
+        {t('wordsWaiting', { count })}
       </Typography>
-      <Typography sx={{ color: alpha('#fff', 0.92), mb: 3 }}>
-        A few minutes keeps your words fresh — clear them for a chest 🎁
-      </Typography>
+      <Typography sx={{ color: alpha('#fff', 0.92), mb: 3 }}>{t('waitingBody')}</Typography>
       <Button
         variant="contained"
         onClick={onStart}
@@ -44,7 +44,7 @@ function DueHero({ count, onStart }: { count: number; onStart: () => void }) {
           '&:hover': { bgcolor: alpha('#fff', 0.9) },
         }}
       >
-        Start today’s practice
+        {t('startTodaysPractice')}
       </Button>
     </Box>
   );
@@ -52,6 +52,7 @@ function DueHero({ count, onStart }: { count: number; onStart: () => void }) {
 
 /** Calm state when nothing is due — never a dead end; games are right below. */
 function CaughtUpHero() {
+  const t = useTranslations('Review.hubPage');
   return (
     <Box
       sx={{
@@ -65,11 +66,9 @@ function CaughtUpHero() {
     >
       <Typography sx={{ fontSize: '3rem', lineHeight: 1, mb: 1 }}>🌿</Typography>
       <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', mb: 0.5 }}>
-        All caught up!
+        {t('caughtUpTitle')}
       </Typography>
-      <Typography sx={{ color: 'text.secondary' }}>
-        Nothing due right now — pick a game below to stay sharp.
-      </Typography>
+      <Typography sx={{ color: 'text.secondary' }}>{t('caughtUpBody')}</Typography>
     </Box>
   );
 }
@@ -81,8 +80,9 @@ function CaughtUpHero() {
  * here; no SRS jargon ever surfaces.
  */
 export default function ReviewHubPage() {
+  const t = useTranslations('Review.hubPage');
   const router = useRouter();
-  const { dueCount, loading } = useDueCount();
+  const { dueCount, loading, error } = useDueCount();
 
   return (
     <Box
@@ -95,6 +95,10 @@ export default function ReviewHubPage() {
     >
       {loading ? (
         <Loading />
+      ) : error ? (
+        <Alert severity="error" sx={{ borderRadius: 3 }}>
+          {t('loadError')}
+        </Alert>
       ) : dueCount > 0 ? (
         <DueHero count={dueCount} onStart={() => router.push('/review/today')} />
       ) : (
@@ -102,7 +106,7 @@ export default function ReviewHubPage() {
       )}
 
       <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', mt: 5, mb: 2 }}>
-        Fun ways to practice
+        {t('funWaysToPractice')}
       </Typography>
       <GameTiles />
     </Box>

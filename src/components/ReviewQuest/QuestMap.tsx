@@ -3,6 +3,7 @@
 import CheckIcon from '@mui/icons-material/Check';
 import { Box, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
 import type { QuestNode } from '@/lib/quest';
 
@@ -20,6 +21,7 @@ interface QuestMapProps {
  * while it's still there to win. Presentational only.
  */
 export function QuestMap({ nodes, currentIndex, chestAvailable }: QuestMapProps) {
+  const t = useTranslations('Review.questMap');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   if (nodes.length === 0) return null;
@@ -80,7 +82,7 @@ export function QuestMap({ nodes, currentIndex, chestAvailable }: QuestMapProps)
                   lineHeight: 1.2,
                 }}
               >
-                {node.label}
+                {t(node.type)}
               </Typography>
             </Box>
             {/* Connector to the next node / chest */}
@@ -119,7 +121,7 @@ export function QuestMap({ nodes, currentIndex, chestAvailable }: QuestMapProps)
           🎁
         </Box>
         <Typography sx={{ mt: 0.5, fontSize: '0.68rem', fontWeight: 600, color: 'text.secondary' }}>
-          Chest
+          {t('chest')}
         </Typography>
       </Box>
     </Box>
