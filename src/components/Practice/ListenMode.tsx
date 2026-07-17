@@ -4,6 +4,7 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { Box, Button, Chip, IconButton, LinearProgress, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -31,6 +32,8 @@ interface ListenModeProps {
 export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps) {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
+  const t = useTranslations('Practice.listenMode');
+  const tCommon = useTranslations('Practice.common');
 
   const voiceStatus = useJapaneseVoice();
   const { speak, speaking } = useSpeech();
@@ -185,7 +188,7 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
 
   // ── No Japanese voice on this device ───────────────────────────────────────
   if (voiceStatus === 'checking') {
-    return <Loading message="Warming up the voice…" />;
+    return <Loading message={t('warmingUpVoice')} />;
   }
 
   if (voiceStatus === 'unavailable') {
@@ -195,14 +198,13 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
           🔇
         </Typography>
         <Typography variant="h6" sx={{ mb: 1 }}>
-          This device can&apos;t speak Japanese yet
+          {t('noVoiceTitle')}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 420, mx: 'auto' }}>
-          Listen needs a Japanese voice. Try Chrome or Safari, or add a Japanese voice in your
-          device&apos;s speech settings — then come back. Everything else still works!
+          {t('noVoiceBody')}
         </Typography>
         <Button variant="contained" size="large" onClick={onExit}>
-          Pick another game
+          {t('pickAnotherGame')}
         </Button>
       </Box>
     );
@@ -232,8 +234,11 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
       <CelebrationScreen
         heading={praise.jp}
         headingEn={praise.en}
-        subheading={`${queue.firstAttemptCorrect} / ${queue.totalCards} correct`}
-        extra={bestStreak >= 3 ? `🔥 Best streak: ${bestStreak} in a row!` : undefined}
+        subheading={tCommon('correctSummary', {
+          correct: queue.firstAttemptCorrect,
+          total: queue.totalCards,
+        })}
+        extra={bestStreak >= 3 ? tCommon('bestStreakRow', { count: bestStreak }) : undefined}
         mode="listen"
         onExit={onExit}
       />
@@ -251,9 +256,9 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant="h5">Listen</Typography>
+          <Typography variant="h5">{t('title')}</Typography>
           {queue.isRetryRound && (
-            <Chip label="Review" size="small" color="warning" variant="outlined" />
+            <Chip label={tCommon('reviewChip')} size="small" color="warning" variant="outlined" />
           )}
           {streak >= 2 && (
             <Chip label={`🔥 ${streak}`} size="small" color="warning" sx={{ fontWeight: 700 }} />
@@ -303,7 +308,7 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
       >
         <IconButton
           onClick={play}
-          aria-label={selected ? 'Play the word again' : 'Play the word'}
+          aria-label={selected ? t('playWordAgainAria') : t('playWordAria')}
           sx={{
             width: 104,
             height: 104,
@@ -352,7 +357,7 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
             variant="caption"
             sx={{ color: 'text.secondary', letterSpacing: '0.12em', display: 'block' }}
           >
-            {unlocked ? 'WHAT DID YOU HEAR?' : 'TAP TO HEAR THE WORD'}
+            {unlocked ? t('whatDidYouHear') : t('tapToHear')}
           </Typography>
         )}
 
@@ -363,7 +368,7 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
             onClick={play}
             sx={{ color: 'text.secondary' }}
           >
-            Play again
+            {t('playAgain')}
           </Button>
         </Box>
       </Box>
@@ -378,21 +383,21 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
       {answeredWrong && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
           <Button variant="contained" onClick={next} size="large">
-            {index + 1 >= queue.currentCards.length ? 'See Results' : 'Next →'}
+            {index + 1 >= queue.currentCards.length ? t('seeResults') : t('nextArrow')}
           </Button>
         </Box>
       )}
       {answeredCorrectly && (
         <Box sx={{ textAlign: 'center', mb: 2 }}>
           <Typography variant="body2" color="success.main" sx={{ fontStyle: 'italic' }}>
-            ✓ Correct — moving on…
+            {tCommon('correctMovingOn')}
           </Typography>
         </Box>
       )}
 
       <Box sx={{ mt: 2, textAlign: 'right' }}>
         <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
-          Quit &amp; Save Progress
+          {tCommon('quitAndSave')}
         </Button>
       </Box>
 

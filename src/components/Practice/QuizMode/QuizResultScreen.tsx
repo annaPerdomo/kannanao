@@ -1,8 +1,9 @@
 'use client';
 import { Box, Button, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 
-import { quizEncouragement, quizStars } from '@/lib/quiz';
+import { quizStars } from '@/lib/quiz';
 
 interface QuizResultScreenProps {
   score: number;
@@ -19,6 +20,8 @@ interface QuizResultScreenProps {
 export function QuizResultScreen({ score, total, accuracy, onExit }: QuizResultScreenProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const t = useTranslations('Practice.quizMode');
+  const tCommon = useTranslations('Practice.common');
   const stars = quizStars(accuracy);
 
   return (
@@ -38,7 +41,7 @@ export function QuizResultScreen({ score, total, accuracy, onExit }: QuizResultS
       <Box
         sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 2 }}
         role="img"
-        aria-label={`${stars} out of 3 stars`}
+        aria-label={t('starsAria', { stars })}
       >
         {[1, 2, 3].map((n) => (
           <Box
@@ -70,16 +73,16 @@ export function QuizResultScreen({ score, total, accuracy, onExit }: QuizResultS
         {score} / {total}
       </Typography>
       <Typography sx={{ fontSize: '1rem', color: 'text.secondary', mt: 0.5 }}>
-        {accuracy}% correct
+        {t('percentCorrect', { accuracy })}
       </Typography>
 
       <Typography sx={{ fontSize: '1.05rem', fontWeight: 700, color: brand[600], mt: 2.5 }}>
-        {quizEncouragement(stars)}
+        {t(`encouragement${stars}`)}
       </Typography>
 
       <Box sx={{ mt: 4 }}>
         <Button variant="contained" size="large" onClick={onExit} sx={{ px: 4, fontWeight: 800 }}>
-          Back to Deck
+          {tCommon('backToDeck')}
         </Button>
       </Box>
     </Box>

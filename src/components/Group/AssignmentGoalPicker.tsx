@@ -5,14 +5,12 @@ import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-import {
-  GOAL_ACCURACY_CHOICES,
-  GOAL_MODE_LABELS,
-  GOAL_MODES,
-  type GoalMode,
-} from '@/lib/assignmentMastery';
+import { GOAL_ACCURACY_CHOICES, GOAL_MODES, type GoalMode } from '@/lib/assignmentMastery';
+
+import { goalModeMessageKey } from './useGoalLabel';
 
 interface AssignmentGoalPickerProps {
   accuracy: number | null;
@@ -34,6 +32,7 @@ export function AssignmentGoalPicker({
 }: AssignmentGoalPickerProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+  const t = useTranslations('Group.goalPicker');
   const [open, setOpen] = useState(false);
 
   const toggle = () => setOpen((o) => !o);
@@ -93,7 +92,7 @@ export function AssignmentGoalPicker({
         }}
       >
         <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: brand[600] }}>
-          🎯 Add a goal (optional)
+          {t('addGoal')}
         </Typography>
         {open ? (
           <ExpandLessIcon sx={{ fontSize: 18, color: brand[500] }} />
@@ -115,10 +114,10 @@ export function AssignmentGoalPicker({
                 mb: 1,
               }}
             >
-              Score to beat
+              {t('scoreToBeat')}
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-              {chip(accuracy === null, 'No score goal', () => onAccuracyChange(null))}
+              {chip(accuracy === null, t('noScoreGoal'), () => onAccuracyChange(null))}
               {GOAL_ACCURACY_CHOICES.map((pct) =>
                 chip(accuracy === pct, `${pct}%`, () => onAccuracyChange(pct)),
               )}
@@ -136,11 +135,13 @@ export function AssignmentGoalPicker({
                 mb: 1,
               }}
             >
-              In which activity
+              {t('inWhichActivity')}
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-              {chip(mode === null, 'Any', () => onModeChange(null))}
-              {GOAL_MODES.map((m) => chip(mode === m, GOAL_MODE_LABELS[m], () => onModeChange(m)))}
+              {chip(mode === null, t('anyActivity'), () => onModeChange(null))}
+              {GOAL_MODES.map((m) =>
+                chip(mode === m, t(`modes.${goalModeMessageKey(m)}`), () => onModeChange(m)),
+              )}
             </Box>
           </Box>
         </Box>

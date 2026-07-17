@@ -17,10 +17,10 @@ import {
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { groupByDate } from '@/components/Group/MessageThread/constants';
+import { dateLabelInfo, groupByDate } from '@/components/Group/MessageThread/constants';
 import { MessageBubble } from '@/components/Group/MessageThread/MessageBubble';
 import { TypingBubble } from '@/components/Group/MessageThread/TypingBubble';
 import { useAuth } from '@/contexts/AuthContext';
@@ -41,6 +41,7 @@ interface ChatPanelProps {
 
 export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatPanelProps) {
   const t = useTranslations('Messages.chatPanel');
+  const locale = useLocale();
   const router = useRouter();
   const theme = useTheme();
   const { brand, accent } = theme.palette;
@@ -283,7 +284,12 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
   // panel was a large layout shift on every open.
   const showSkeleton = loading && displayMessages.length === 0;
   const sorted = [...displayMessages].reverse();
-  const groups = groupByDate(sorted);
+  const groups = groupByDate(sorted, (dateStr) => {
+    const info = dateLabelInfo(dateStr);
+    if (info.unit === 'today') return t('dateToday');
+    if (info.unit === 'yesterday') return t('dateYesterday');
+    return new Date(dateStr).toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+  });
 
   return (
     <>

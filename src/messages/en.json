@@ -10,6 +10,7 @@
     "loading": "Loading…",
     "retry": "Retry",
     "somethingWentWrong": "Something went wrong",
+    "errorFallbackBody": "An unexpected error occurred. Please refresh the page or try again.",
     "readAloud": "Read aloud"
   },
   "Deck": {
@@ -630,6 +631,39 @@
       "seeResults": "See Results",
       "nextArrow": "Next →"
     },
+    "quizMode": {
+      "title": "Quiz",
+      "progressChip": "{current} of {total}",
+      "whatDoesThisMean": "WHAT DOES THIS MEAN?",
+      "typeTheJapaneseWord": "TYPE THE JAPANESE WORD",
+      "answerLabel": "Your answer",
+      "answerPlaceholder": "Word or reading…",
+      "check": "Check",
+      "answerReveal": "Answer: {word}",
+      "answerRevealWithReading": "Answer: {word} ({reading})",
+      "seeResults": "See Results",
+      "nextArrow": "Next →",
+      "quit": "Quit",
+      "starsAria": "{stars} out of 3 stars",
+      "percentCorrect": "{accuracy}% correct",
+      "encouragement1": "Nice try! A little more practice and these are yours. 🌱",
+      "encouragement2": "Great work — so close to perfect! 💪",
+      "encouragement3": "Amazing! You really know these. 🌟"
+    },
+    "listenMode": {
+      "title": "Listen",
+      "warmingUpVoice": "Warming up the voice…",
+      "noVoiceTitle": "This device can't speak Japanese yet",
+      "noVoiceBody": "Listen needs a Japanese voice. Try Chrome or Safari, or add a Japanese voice in your device's speech settings — then come back. Everything else still works!",
+      "pickAnotherGame": "Pick another game",
+      "whatDidYouHear": "WHAT DID YOU HEAR?",
+      "tapToHear": "TAP TO HEAR THE WORD",
+      "playAgain": "Play again",
+      "playWordAria": "Play the word",
+      "playWordAgainAria": "Play the word again",
+      "seeResults": "See Results",
+      "nextArrow": "Next →"
+    },
     "roundTransition": {
       "allReviewed": "All reviewed!",
       "almostThere": "Almost there!",
@@ -773,7 +807,15 @@
       "deckProgress": "Deck Progress",
       "cardsStudiedCount": "{count} studied",
       "accuracyPercent": "{accuracy}% accuracy",
-      "achievements": "Achievements"
+      "achievements": "Achievements",
+      "assignmentsHeading": "Assignments",
+      "assignmentsCompleted": "{completed}/{total} completed",
+      "assignmentsPending": "{count} pending",
+      "assignmentsOverdue": "{count} overdue",
+      "dueOn": "Due {date}",
+      "never": "Never",
+      "durationSeconds": "{secs}s",
+      "durationMinutes": "{mins}m"
     },
     "practiceBreakdown": {
       "heading": "Practice Mode Breakdown",
@@ -812,6 +854,38 @@
       "dueToday": "Due today",
       "dueTomorrow": "Due tomorrow",
       "dueInDays": "Due in {days}d"
+    },
+    "quizScores": {
+      "heading": "📝 Quiz Scores",
+      "downloadCsv": "Download CSV",
+      "loading": "Loading quiz scores...",
+      "colMember": "Member",
+      "colBest": "Best",
+      "colLatest": "Latest",
+      "colTries": "Tries",
+      "noMembers": "No members in this group yet.",
+      "noAttempts": "No one has taken this quiz yet.",
+      "loadFailed": "Failed to load quiz scores"
+    },
+    "goalPicker": {
+      "addGoal": "🎯 Add a goal (optional)",
+      "scoreToBeat": "Score to beat",
+      "noScoreGoal": "No score goal",
+      "inWhichActivity": "In which activity",
+      "anyActivity": "Any",
+      "modes": {
+        "study": "Study",
+        "review": "Review",
+        "match": "Match",
+        "fill": "Fill",
+        "recall": "Recall",
+        "kotobaBubble": "Sentence Builder",
+        "quiz": "Quiz",
+        "listen": "Listen"
+      },
+      "goalBoth": "{accuracy}% in {mode}",
+      "goalAccuracyOnly": "{accuracy}%",
+      "goalModeOnly": "practice in {mode}"
     },
     "assignmentsList": {
       "noAssignmentsTitle": "No assignments yet",
@@ -917,7 +991,8 @@
     },
     "useInvites": {
       "loadFailed": "Failed to load invites",
-      "createFailed": "Failed to create invite"
+      "createFailed": "Failed to create invite",
+      "revokeFailed": "Failed to revoke invite"
     },
     "emojiPicker": {
       "chooseEmoji": "Choose emoji",
@@ -1252,7 +1327,9 @@
       "emptySubtitle": "Say hi to {name} to start chatting",
       "attachAriaLabel": "Attach photo or video",
       "inputPlaceholder": "Type a message...",
-      "sendAriaLabel": "Send message"
+      "sendAriaLabel": "Send message",
+      "dateToday": "Today",
+      "dateYesterday": "Yesterday"
     },
     "conversationList": {
       "heading": "Messages",

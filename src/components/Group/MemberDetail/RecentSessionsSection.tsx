@@ -13,7 +13,7 @@ import type { MemberSession } from '@/hooks/useGroup';
 import { useMemberSessions } from '@/hooks/useGroup';
 import type { SessionMode } from '@/hooks/useProgress';
 
-import { formatDate, formatDuration } from './helpers';
+import { useMemberFormatters } from './helpers';
 
 interface RecentSessionsSectionProps {
   memberId: string;
@@ -23,6 +23,7 @@ interface RecentSessionsSectionProps {
 export function RecentSessionsSection({ memberId, initialSessions }: RecentSessionsSectionProps) {
   const { brand } = useTheme().palette;
   const t = useTranslations('Group.recentSessions');
+  const { formatDate, formatDuration } = useMemberFormatters();
   const { sessions, loading, loadingMore, hasMore, loadMore } = useMemberSessions(memberId);
   const sentinelRef = useRef<HTMLDivElement>(null);
 

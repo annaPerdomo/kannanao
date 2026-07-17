@@ -12,6 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { SpeakButton } from '@/components/SpeakButton';
@@ -37,6 +38,8 @@ const CHOICE_LABELS = ['A', 'B', 'C', 'D'];
 export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
+  const t = useTranslations('Practice.quizMode');
+  const tCommon = useTranslations('Practice.common');
 
   const quiz = useQuizFlow(cards, count);
   const { startSession, recordAnswer, endSession } = useProgress();
@@ -141,8 +144,8 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
     <Box sx={{ position: 'relative' }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5">Quiz</Typography>
-        <Chip label={`${quiz.index + 1} of ${quiz.total}`} />
+        <Typography variant="h5">{t('title')}</Typography>
+        <Chip label={t('progressChip', { current: quiz.index + 1, total: quiz.total })} />
       </Box>
 
       <LinearProgress
@@ -194,7 +197,7 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
                 variant="caption"
                 sx={{ color: 'text.secondary', letterSpacing: '0.12em', display: 'block', mt: 1.5 }}
               >
-                WHAT DOES THIS MEAN?
+                {t('whatDoesThisMean')}
               </Typography>
             </>
           ) : (
@@ -206,7 +209,7 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
                 variant="caption"
                 sx={{ color: 'text.secondary', letterSpacing: '0.12em', display: 'block', mt: 1.5 }}
               >
-                TYPE THE JAPANESE WORD
+                {t('typeTheJapaneseWord')}
               </Typography>
             </>
           )}
@@ -304,8 +307,8 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
               if (e.key === 'Enter' && !answered && input.trim())
                 void grade(checkTypedAnswer(input, card));
             }}
-            label="Your answer"
-            placeholder="Word or reading…"
+            label={t('answerLabel')}
+            placeholder={t('answerPlaceholder')}
             disabled={!!answered}
             fullWidth
             size="small"
@@ -318,7 +321,7 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
               disabled={!input.trim()}
               sx={{ flexShrink: 0 }}
             >
-              Check
+              {t('check')}
             </Button>
           )}
         </Stack>
@@ -352,12 +355,14 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
             sx={{ flexGrow: 1 }}
           >
             {answered.correct
-              ? '✓ Correct — moving on…'
-              : `Answer: ${card.word}${card.reading && card.reading !== card.word ? ` (${card.reading})` : ''}`}
+              ? tCommon('correctMovingOn')
+              : card.reading && card.reading !== card.word
+                ? t('answerRevealWithReading', { word: card.word, reading: card.reading })
+                : t('answerReveal', { word: card.word })}
           </Typography>
           {!answered.correct && (
             <Button variant="contained" size="small" onClick={advance} sx={{ flexShrink: 0 }}>
-              {quiz.index + 1 >= quiz.total ? 'See Results' : 'Next →'}
+              {quiz.index + 1 >= quiz.total ? t('seeResults') : t('nextArrow')}
             </Button>
           )}
         </Box>
@@ -365,7 +370,7 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
 
       <Box sx={{ mt: 2, textAlign: 'right' }}>
         <Button size="small" onClick={onExit} sx={{ color: 'text.secondary' }}>
-          Quit
+          {t('quit')}
         </Button>
       </Box>
     </Box>

@@ -10,6 +10,7 @@
     "loading": "読み込み中…",
     "retry": "もう一度",
     "somethingWentWrong": "うまくいきませんでした",
+    "errorFallbackBody": "予期しないエラーが発生しました。ページを更新するか、もう一度お試しください。",
     "readAloud": "読み上げ"
   },
   "Deck": {
@@ -623,6 +624,39 @@
       "seeResults": "結果を見る",
       "nextArrow": "次へ →"
     },
+    "quizMode": {
+      "title": "クイズ",
+      "progressChip": "{current} / {total}",
+      "whatDoesThisMean": "これはどういう意味？",
+      "typeTheJapaneseWord": "日本語で書いてみよう",
+      "answerLabel": "こたえ",
+      "answerPlaceholder": "単語か読み方…",
+      "check": "チェック",
+      "answerReveal": "こたえ: {word}",
+      "answerRevealWithReading": "こたえ: {word}（{reading}）",
+      "seeResults": "結果を見る",
+      "nextArrow": "次へ →",
+      "quit": "やめる",
+      "starsAria": "星3つのうち{stars}つ",
+      "percentCorrect": "正解率 {accuracy}%",
+      "encouragement1": "おしい！もう少し練習すればかんぺきです。🌱",
+      "encouragement2": "よくできました — あと少しで満点！💪",
+      "encouragement3": "すごい！ばっちり覚えていますね。🌟"
+    },
+    "listenMode": {
+      "title": "リスニング",
+      "warmingUpVoice": "音声を準備中…",
+      "noVoiceTitle": "このデバイスはまだ日本語を話せません",
+      "noVoiceBody": "リスニングには日本語の音声が必要です。ChromeかSafariを試すか、デバイスの読み上げ設定で日本語の音声を追加してから、もどってきてください。ほかの機能はそのまま使えます！",
+      "pickAnotherGame": "ほかのゲームを選ぶ",
+      "whatDidYouHear": "なんて聞こえた？",
+      "tapToHear": "タップして聞いてみよう",
+      "playAgain": "もう一度聞く",
+      "playWordAria": "単語を再生",
+      "playWordAgainAria": "単語をもう一度再生",
+      "seeResults": "結果を見る",
+      "nextArrow": "次へ →"
+    },
     "roundTransition": {
       "allReviewed": "ぜんぶ復習した！",
       "almostThere": "あと少し！",
@@ -766,7 +800,15 @@
       "deckProgress": "デッキの進み具合",
       "cardsStudiedCount": "{count}枚を学習",
       "accuracyPercent": "正解率 {accuracy}%",
-      "achievements": "実績"
+      "achievements": "実績",
+      "assignmentsHeading": "課題",
+      "assignmentsCompleted": "{completed}/{total} 完了",
+      "assignmentsPending": "残り{count}件",
+      "assignmentsOverdue": "期限切れ{count}件",
+      "dueOn": "{date}まで",
+      "never": "まだ",
+      "durationSeconds": "{secs}秒",
+      "durationMinutes": "{mins}分"
     },
     "practiceBreakdown": {
       "heading": "練習モード別の記録",
@@ -805,6 +847,38 @@
       "dueToday": "今日まで",
       "dueTomorrow": "明日まで",
       "dueInDays": "あと{days}日"
+    },
+    "quizScores": {
+      "heading": "📝 クイズの成績",
+      "downloadCsv": "CSVをダウンロード",
+      "loading": "成績を読み込み中…",
+      "colMember": "メンバー",
+      "colBest": "最高",
+      "colLatest": "最新",
+      "colTries": "回数",
+      "noMembers": "このグループにはまだメンバーがいません。",
+      "noAttempts": "まだ誰もこのクイズを受けていません。",
+      "loadFailed": "クイズの成績を読み込めませんでした"
+    },
+    "goalPicker": {
+      "addGoal": "🎯 目標を追加（任意）",
+      "scoreToBeat": "目標スコア",
+      "noScoreGoal": "スコア目標なし",
+      "inWhichActivity": "どのモードで",
+      "anyActivity": "どれでも",
+      "modes": {
+        "study": "学習",
+        "review": "復習",
+        "match": "マッチ",
+        "fill": "穴うめ",
+        "recall": "当ててみよう",
+        "kotobaBubble": "文づくり",
+        "quiz": "クイズ",
+        "listen": "リスニング"
+      },
+      "goalBoth": "{mode}で{accuracy}%",
+      "goalAccuracyOnly": "{accuracy}%",
+      "goalModeOnly": "{mode}で練習"
     },
     "assignmentsList": {
       "noAssignmentsTitle": "課題がまだありません",
@@ -910,7 +984,8 @@
     },
     "useInvites": {
       "loadFailed": "招待を読み込めませんでした",
-      "createFailed": "招待を作成できませんでした"
+      "createFailed": "招待を作成できませんでした",
+      "revokeFailed": "招待を取り消せませんでした"
     },
     "emojiPicker": {
       "chooseEmoji": "絵文字を選ぶ",
@@ -1245,7 +1320,9 @@
       "emptySubtitle": "{name}さんにあいさつして、話しはじめよう",
       "attachAriaLabel": "写真か動画を添付",
       "inputPlaceholder": "メッセージを入力...",
-      "sendAriaLabel": "メッセージを送信"
+      "sendAriaLabel": "メッセージを送信",
+      "dateToday": "今日",
+      "dateYesterday": "きのう"
     },
     "conversationList": {
       "heading": "メッセージ",

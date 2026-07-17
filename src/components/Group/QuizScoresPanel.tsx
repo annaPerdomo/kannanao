@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -44,6 +45,7 @@ function downloadCsv(filename: string, csv: string) {
 export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+  const t = useTranslations('Group.quizScores');
   const [selectedDeck, setSelectedDeck] = useState<string>(decks[0]?.id ?? '');
   const { rows, loading, error } = useQuizResults(selectedDeck || null, groupId);
 
@@ -71,7 +73,7 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
             letterSpacing: '0.06em',
           }}
         >
-          📝 Quiz Scores
+          {t('heading')}
         </Typography>
         <Button
           variant="outlined"
@@ -87,7 +89,7 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
             color: brand[700],
           }}
         >
-          Download CSV
+          {t('downloadCsv')}
         </Button>
       </Box>
 
@@ -130,7 +132,7 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
       {error ? (
         <Typography sx={{ color: 'error.main', fontSize: '0.8rem' }}>{error}</Typography>
       ) : loading ? (
-        <Loading message="Loading quiz scores..." />
+        <Loading message={t('loading')} />
       ) : (
         <Paper
           elevation={0}
@@ -155,22 +157,22 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
               color: brand[700],
             }}
           >
-            <Box>Member</Box>
-            <Box sx={{ textAlign: 'center' }}>Best</Box>
-            <Box sx={{ textAlign: 'center' }}>Latest</Box>
-            <Box sx={{ textAlign: 'center' }}>Tries</Box>
+            <Box>{t('colMember')}</Box>
+            <Box sx={{ textAlign: 'center' }}>{t('colBest')}</Box>
+            <Box sx={{ textAlign: 'center' }}>{t('colLatest')}</Box>
+            <Box sx={{ textAlign: 'center' }}>{t('colTries')}</Box>
           </Box>
 
           {rows.length === 0 ? (
             <Box sx={{ p: 3, textAlign: 'center' }}>
               <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
-                No members in this group yet.
+                {t('noMembers')}
               </Typography>
             </Box>
           ) : !anyAttempts ? (
             <Box sx={{ p: 3, textAlign: 'center' }}>
               <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
-                No one has taken this quiz yet.
+                {t('noAttempts')}
               </Typography>
             </Box>
           ) : (
