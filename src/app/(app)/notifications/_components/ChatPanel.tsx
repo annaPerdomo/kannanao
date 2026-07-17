@@ -185,10 +185,19 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
   }, [recipientId]);
 
   // Mark messages as read when unread messages appear in the open conversation
+  // — but only while the tab is actually on screen. A hidden tab left on a chat
+  // would otherwise mark messages read the user never saw (wrong read receipts
+  // for the sender, and the push badge gets cleared for unseen messages). The
+  // visibilitychange listener catches up the moment the user comes back.
   useEffect(() => {
-    if (hasUnread) {
+    if (!hasUnread || typeof document === 'undefined') return;
+    const markIfVisible = () => {
+      if (document.visibilityState !== 'visible') return;
       void markAndSync().catch(() => {});
-    }
+    };
+    markIfVisible();
+    document.addEventListener('visibilitychange', markIfVisible);
+    return () => document.removeEventListener('visibilitychange', markIfVisible);
   }, [hasUnread, markAndSync]);
 
   const clearAttachment = useCallback(() => {

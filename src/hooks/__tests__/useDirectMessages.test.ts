@@ -110,6 +110,83 @@ describe('useDirectMessages', () => {
     expect(result.current.unreadCount).toBe(1);
   });
 
+  // ── app icon badge (Badging API) ──────────────────────────────────────────
+
+  function installBadgeApi() {
+    const setAppBadge = vi.fn().mockResolvedValue(undefined);
+    const clearAppBadge = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'setAppBadge', { value: setAppBadge, configurable: true });
+    Object.defineProperty(navigator, 'clearAppBadge', { value: clearAppBadge, configurable: true });
+    return {
+      setAppBadge,
+      clearAppBadge,
+      uninstall: () => {
+        delete (navigator as unknown as Record<string, unknown>).setAppBadge;
+        delete (navigator as unknown as Record<string, unknown>).clearAppBadge;
+      },
+    };
+  }
+
+  it('mirrors the unread count onto the app icon badge', async () => {
+    const badge = installBadgeApi();
+    try {
+      mockUnreadCount.mockReturnValue(3);
+      renderHook(() => useDirectMessages());
+      await waitFor(() => expect(badge.setAppBadge).toHaveBeenCalledWith(3));
+    } finally {
+      badge.uninstall();
+    }
+  });
+
+  it('clears the icon badge when everything is read', async () => {
+    const badge = installBadgeApi();
+    try {
+      mockUnreadCount.mockReturnValue(0);
+      const { result } = renderHook(() => useDirectMessages());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      await waitFor(() => expect(badge.clearAppBadge).toHaveBeenCalled());
+      expect(badge.setAppBadge).not.toHaveBeenCalled();
+    } finally {
+      badge.uninstall();
+    }
+  });
+
+  it('re-asserts the icon badge on return to foreground even when the count is unchanged', async () => {
+    // The service worker stamps the icon from a push's pre-read count; if the
+    // page's own count never changes (message read the instant it landed), only
+    // the visibilitychange re-sync can repair the icon.
+    const badge = installBadgeApi();
+    try {
+      mockUnreadCount.mockReturnValue(0);
+      const { result } = renderHook(() => useDirectMessages());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      await waitFor(() => expect(badge.clearAppBadge).toHaveBeenCalled());
+      badge.clearAppBadge.mockClear();
+      act(() => {
+        document.dispatchEvent(new Event('visibilitychange'));
+      });
+      await waitFor(() => expect(badge.clearAppBadge).toHaveBeenCalled());
+    } finally {
+      badge.uninstall();
+    }
+  });
+
+  it('never touches the icon badge from a per-conversation instance', async () => {
+    const badge = installBadgeApi();
+    try {
+      mockFetch.mockResolvedValue({ ok: true, json: async () => [DM_UNREAD] });
+      const { result } = renderHook(() => useDirectMessages('org1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      act(() => {
+        document.dispatchEvent(new Event('visibilitychange'));
+      });
+      expect(badge.setAppBadge).not.toHaveBeenCalled();
+      expect(badge.clearAppBadge).not.toHaveBeenCalled();
+    } finally {
+      badge.uninstall();
+    }
+  });
+
   // ── active conversation (realtime INSERT) ─────────────────────────────────
 
   function getInsertHandler(): (payload: { new: DirectMessage }) => void {

@@ -44,10 +44,6 @@ sw.addEventListener('push', (event) => {
 
   event.waitUntil(
     (async () => {
-      // Always sync the badge from the server's count, even if we suppress the
-      // notification below — the icon should reflect unread state regardless.
-      await syncAppBadge(data.badgeCount);
-
       // Don't interrupt someone who's already in the app. A visible same-origin
       // window means the user is actively using the site/PWA, and the in-app
       // realtime handler already surfaces the message (chime + unread badge), so
@@ -64,7 +60,14 @@ sw.addEventListener('push', (event) => {
       const appIsVisible = clients.some(
         (c) => c.visibilityState === 'visible' && new URL(c.url).origin === sw.location.origin,
       );
+      // While the app is on screen the page owns the badge: it marks incoming
+      // messages read the moment they land, so the push's pre-read count would
+      // stamp a stale "1" onto the icon that nothing ever clears (the page only
+      // re-syncs when its own count changes, and it stays 0 the whole time).
+      // Only badge for a backgrounded/closed app.
       if (appIsVisible) return;
+
+      await syncAppBadge(data.badgeCount);
 
       await sw.registration.showNotification(data.title, {
         body: data.body,
