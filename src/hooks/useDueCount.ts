@@ -9,10 +9,13 @@ import { getDueCount } from '@/lib/supabase';
  * How many cards are due for Smart Review right now. Loads client-side like the
  * other home widgets (assignments, leaderboard); `loading` stays true until the
  * first count resolves so the tile can avoid flashing a placeholder zero.
+ * `error` is set when the count couldn't load — consumers must NOT show
+ * "all caught up" in that case (0-due and unknown are different states).
  */
-export function useDueCount(): { dueCount: number; loading: boolean } {
+export function useDueCount(): { dueCount: number; loading: boolean; error: string | null } {
   const { user } = useAuth();
   const [count, setCount] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -20,13 +23,19 @@ export function useDueCount(): { dueCount: number; loading: boolean } {
       return;
     }
     let cancelled = false;
-    void getDueCount(user.id).then((c) => {
-      if (!cancelled) setCount(c);
-    });
+    getDueCount(user.id)
+      .then((c) => {
+        if (!cancelled) setCount(c);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        setError(e instanceof Error ? e.message : String(e));
+        setCount(0);
+      });
     return () => {
       cancelled = true;
     };
   }, [user]);
 
-  return { dueCount: count ?? 0, loading: count === null };
+  return { dueCount: count ?? 0, loading: count === null, error };
 }

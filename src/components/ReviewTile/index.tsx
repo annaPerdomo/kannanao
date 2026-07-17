@@ -17,11 +17,12 @@ export function ReviewTile() {
   const router = useRouter();
   const theme = useTheme();
   const { brand, accent } = theme.palette;
-  const { dueCount, loading } = useDueCount();
+  const { dueCount, loading, error } = useDueCount();
   const t = useTranslations('Review.reviewTile');
 
-  // Don't flash a placeholder before the count is known.
-  if (loading) return null;
+  // Don't flash a placeholder before the count is known — and if the count
+  // failed to load, hide the tile rather than falsely claim "all caught up".
+  if (loading || error) return null;
 
   const due = dueCount > 0;
   const go = () => router.push('/review');

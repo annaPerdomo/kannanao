@@ -962,6 +962,10 @@ export async function getCardProgressForUser(userId: string): Promise<CardProgre
  * arrived, ordered soonest-first, capped. Joins card_progress → cards, so cards
  * the student has NEVER graded (no progress row) are excluded by construction —
  * reviews never flood day one. RLS scopes progress rows to the user.
+ *
+ * THROWS on a query error (as does getDueCount): swallowing it into [] made
+ * every caller render "all caught up! 🎉" during an outage — the one thing a
+ * review surface must never claim falsely.
  */
 export async function getDueCards(userId: string, limit = 20): Promise<Flashcard[]> {
   if (!isConfigured()) {
@@ -977,7 +981,7 @@ export async function getDueCards(userId: string, limit = 20): Promise<Flashcard
     .limit(limit);
   if (error) {
     console.error('Error loading due cards', error);
-    return [];
+    throw new Error(error.message);
   }
   return (data ?? [])
     .map((row) => (row as unknown as { cards: SupabaseCardRow | null }).cards)
@@ -995,7 +999,7 @@ export async function getDueCount(userId: string): Promise<number> {
     .lte('next_review_at', new Date().toISOString());
   if (error) {
     console.error('Error loading due count', error);
-    return 0;
+    throw new Error(error.message);
   }
   return count ?? 0;
 }
