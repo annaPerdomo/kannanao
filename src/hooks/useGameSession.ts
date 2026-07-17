@@ -24,19 +24,22 @@ export function useGameSession(mode: SessionMode) {
   const combo = useCombo(addBonusXp);
 
   const sessionIdRef = useRef<string>('');
+  // The in-flight session insert. `answer`/`finish` await this instead of
+  // checking sessionIdRef directly — a fast first answer used to race the
+  // insert and be silently dropped (no XP, no SRS write).
+  const sessionStartRef = useRef<Promise<string> | null>(null);
   const startTimeRef = useRef<number>(Date.now());
   const answeredRef = useRef(0);
   const correctRef = useRef(0);
-  const startedRef = useRef(false);
 
   useEffect(() => {
     // startSession's identity changes whenever progress updates; only the
     // first invocation should create a session row.
-    if (startedRef.current) return;
-    startedRef.current = true;
-    startSession(null, mode).then((id) => {
+    if (sessionStartRef.current) return;
+    sessionStartRef.current = startSession(null, mode).then((id) => {
       sessionIdRef.current = id;
       startTimeRef.current = Date.now();
+      return id;
     });
   }, [mode, startSession]);
 
@@ -45,10 +48,11 @@ export function useGameSession(mode: SessionMode) {
       answeredRef.current += 1;
       if (correct) correctRef.current += 1;
       triggerXpEarned(correct ? cardXp(jlptLevel) : XP_PER_WRONG);
-      if (sessionIdRef.current) {
+      const sessionId = sessionIdRef.current || (await sessionStartRef.current) || '';
+      if (sessionId) {
         // Passing cardId advances that card's review schedule (card-based games
         // only). Grammar games call answer() without it — nothing to schedule.
-        await recordAnswer(sessionIdRef.current, correct, jlptLevel, cardId);
+        await recordAnswer(sessionId, correct, jlptLevel, cardId);
       }
       // Advance the combo AFTER the answer is recorded so its bonus write lands
       // on the updated progress snapshot.
@@ -58,6 +62,9 @@ export function useGameSession(mode: SessionMode) {
   );
 
   const finish = useCallback(async () => {
+    // Make sure the insert has settled — quitting instantly used to leave the
+    // row open forever because sessionIdRef was still empty.
+    if (!sessionIdRef.current && sessionStartRef.current) await sessionStartRef.current;
     if (!sessionIdRef.current) return;
     const id = sessionIdRef.current;
     sessionIdRef.current = '';

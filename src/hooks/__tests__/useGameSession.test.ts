@@ -104,6 +104,53 @@ describe('useGameSession', () => {
     expect(mockAddBonusXp).toHaveBeenCalledWith(5);
   });
 
+  it('records an answer given BEFORE the session insert resolves (fast first answer)', async () => {
+    let resolveStart!: (id: string) => void;
+    mockStartSession.mockImplementationOnce(
+      () => new Promise<string>((resolve) => (resolveStart = resolve)),
+    );
+    const { result } = renderHook(() => useGameSession('word-match'));
+    await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+
+    // Answer while the session row is still being created — this used to be
+    // silently dropped (no XP, no SRS write).
+    let answered: Promise<void>;
+    act(() => {
+      answered = result.current.answer(true, 'N5', 'card-1');
+    });
+    expect(mockRecordAnswer).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveStart('sess-late');
+      await answered;
+    });
+
+    expect(mockRecordAnswer).toHaveBeenCalledWith('sess-late', true, 'N5', 'card-1');
+  });
+
+  it('finish waits for the session insert so an instant quit still closes the row', async () => {
+    let resolveStart!: (id: string) => void;
+    mockStartSession.mockImplementationOnce(
+      () => new Promise<string>((resolve) => (resolveStart = resolve)),
+    );
+    const { result } = renderHook(() => useGameSession('word-match'));
+    await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+
+    let finished: Promise<void>;
+    act(() => {
+      finished = result.current.finish();
+    });
+    expect(mockEndSession).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveStart('sess-late');
+      await finished;
+    });
+
+    expect(mockEndSession).toHaveBeenCalledTimes(1);
+    expect(mockEndSession.mock.calls[0][0]).toBe('sess-late');
+  });
+
   it('resets the combo on a wrong answer', async () => {
     const { result } = renderHook(() => useGameSession('word-match'));
     await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
