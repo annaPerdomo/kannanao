@@ -1,5 +1,5 @@
 'use client';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { useCallback, useState } from 'react';
 
@@ -31,6 +31,7 @@ import { sb, updateProfileLocale } from '@/lib/supabase';
 export function useLocalePreference() {
   const active = resolveLocale(useLocale());
   const router = useRouter();
+  const pathname = usePathname();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -68,9 +69,19 @@ export function useLocalePreference() {
       // Only when it changes anything: refresh() refetches this route's whole
       // server tree, which is pure waste for a no-op re-pick of the current
       // language. The cookie and the row are already written either way.
-      if (next !== active) router.refresh();
+      if (next !== active) {
+        // The landing pages are per-language STATIC routes — refresh() would
+        // re-serve the same page in the same language and the switch would
+        // silently no-op. Navigate to the new language's canonical URL instead
+        // (same pair the landing's own toggle links to).
+        if (pathname === '/landing' || pathname?.startsWith('/landing/')) {
+          window.location.assign(next === 'ja' ? '/landing/ja' : '/');
+          return;
+        }
+        router.refresh();
+      }
     },
-    [active, router],
+    [active, router, pathname],
   );
 
   return { locale: active, setLocale, saving, error, saved };
