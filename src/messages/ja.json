@@ -1351,6 +1351,7 @@
       "tapNewMessage": "「新しいメッセージ」をタップして話しはじめよう！",
       "youPrefix": "自分: ",
       "photoFallback": "📷 写真",
+      "videoFallback": "🎥 動画",
       "newMessageDialogTitle": "新しいメッセージ",
       "newMessageDialogSubtitle": "話す相手を選びましょう",
       "organizerChip": "リーダー",
