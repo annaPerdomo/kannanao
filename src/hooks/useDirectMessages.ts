@@ -82,6 +82,19 @@ export function enrichFromThread(row: DirectMessage, known: DirectMessage[]): Di
   return { ...row, sender, recipient };
 }
 
+/** Mirror an unread count onto the installed-app icon badge (no-op where the
+ * Badging API is unavailable). setAppBadge/clearAppBadge ship together (same
+ * spec), but guard each anyway so a partial implementation can't throw. */
+function syncBadgeToIcon(count: number) {
+  if (typeof navigator === 'undefined' || !('setAppBadge' in navigator)) return;
+  const nav = navigator as Navigator & {
+    setAppBadge?: (count?: number) => Promise<void>;
+    clearAppBadge?: () => Promise<void>;
+  };
+  if (count > 0) nav.setAppBadge?.(count).catch(() => {});
+  else nav.clearAppBadge?.().catch(() => {});
+}
+
 async function authHeaders(): Promise<Record<string, string>> {
   const { data } = await sb.auth.getSession();
   const token = data.session?.access_token;
@@ -145,21 +158,14 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
   // thread's unread count, not the user's total.
   useEffect(() => {
     if (memberId) return;
-    if (typeof navigator === 'undefined' || !('setAppBadge' in navigator)) return;
-    // setAppBadge/clearAppBadge ship together (same spec), but guard each anyway
-    // so a partial implementation can't throw.
-    const nav = navigator as Navigator & {
-      setAppBadge?: (count?: number) => Promise<void>;
-      clearAppBadge?: () => Promise<void>;
-    };
-    if (unreadCount > 0) nav.setAppBadge?.(unreadCount).catch(() => {});
-    else nav.clearAppBadge?.().catch(() => {});
+    syncBadgeToIcon(unreadCount);
   }, [memberId, unreadCount]);
 
-  const refreshUnreadCount = useCallback(async () => {
+  /** Returns the fresh server count, or null when the query failed. */
+  const refreshUnreadCount = useCallback(async (): Promise<number | null> => {
     if (!user) {
       setUnreadCountState(0);
-      return;
+      return 0;
     }
     const { count, error } = await sb
       .from('direct_messages')
@@ -168,8 +174,9 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
       .is('read_at', null);
     // On error `count` comes back null — leave the previous badge intact rather
     // than incorrectly clearing the unread indicator to 0.
-    if (error) return;
+    if (error) return null;
     setUnreadCountState(count ?? 0);
+    return count ?? 0;
   }, [user]);
 
   const fetchMessages = useCallback(async () => {
@@ -265,6 +272,26 @@ export function useDirectMessages(memberId?: string, initialUnreadCount?: number
       seededCountRef.current = false;
     }
   }, [user, memberId, fetchMessages, refreshUnreadCount]);
+
+  // Re-sync when the app returns to the foreground. While backgrounded,
+  // realtime events are dropped (iOS freezes the socket) and the service worker
+  // may have stamped the icon badge from a push, so both the in-memory state
+  // and the icon can be stale. The count-mirroring effect above can't repair a
+  // wrong icon when the count didn't change (0 → 0 after reading everything),
+  // so re-assert the badge explicitly from a fresh server count.
+  useEffect(() => {
+    if (memberId || !user || typeof document === 'undefined') return;
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') return;
+      // Refresh read/unread state of the loaded list (nav badge derives from it)
+      if (loadedRef.current) void fetchMessages();
+      void refreshUnreadCount().then((fresh) => {
+        if (fresh !== null) syncBadgeToIcon(fresh);
+      });
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, [memberId, user, fetchMessages, refreshUnreadCount]);
 
   // Supabase Realtime: subscribe to new messages and read receipt updates
   useEffect(() => {

@@ -1360,6 +1360,7 @@
       "tapNewMessage": "Tap \"New message\" to start chatting!",
       "youPrefix": "You: ",
       "photoFallback": "📷 Photo",
+      "videoFallback": "🎥 Video",
       "newMessageDialogTitle": "New message",
       "newMessageDialogSubtitle": "Choose someone to chat with",
       "organizerChip": "Organizer",

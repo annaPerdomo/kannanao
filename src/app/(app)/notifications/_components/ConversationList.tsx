@@ -305,7 +305,12 @@ export function ConversationList({
                       }}
                     >
                       {c.lastMessage.sender_id === userId ? t('youPrefix') : ''}
-                      {c.lastMessage.message || (c.lastMessage.image_url ? t('photoFallback') : '')}
+                      {c.lastMessage.message ||
+                        (c.lastMessage.video_url
+                          ? t('videoFallback')
+                          : c.lastMessage.image_url
+                            ? t('photoFallback')
+                            : '')}
                     </Typography>
                   </Box>
                   {c.unreadCount > 0 && (
