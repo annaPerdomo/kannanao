@@ -14,6 +14,7 @@ import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import { useShop } from '@/hooks/useShop';
 import { cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
+import { shuffle } from '@/lib/reviewGames';
 import type { Flashcard } from '@/types/flashcard';
 
 import { CelebrationScreen, pickPraise } from './CelebrationScreen';
@@ -33,10 +34,6 @@ interface Tile {
   cardId: string;
   side: Side;
   label: string;
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  return [...arr].sort(() => Math.random() - 0.5);
 }
 
 function formatTime(secs: number): string {
@@ -102,16 +99,21 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
     return shuffle(t);
   }, [queue.currentCards, queue.roundKey]);
 
-  const roundComplete = matched.size === queue.currentCards.length && queue.phase === 'playing';
-
-  // Reset per-round state when a new round starts
-  useEffect(() => {
-    if (queue.roundKey === 0) return;
+  // Reset per-round state the moment a new round arrives — during render, not
+  // in an effect. An effect reset left one render where `roundComplete` was
+  // still computed from the PREVIOUS round's matched set; when its size matched
+  // the new round's length, the finish effect ended the fresh round instantly
+  // with every card marked wrong.
+  const [prevRoundKey, setPrevRoundKey] = useState(queue.roundKey);
+  if (prevRoundKey !== queue.roundKey) {
+    setPrevRoundKey(queue.roundKey);
     setSelected(null);
     setMatched(new Set());
     setWrong(null);
     setElapsed(0);
-  }, [queue.roundKey]);
+  }
+
+  const roundComplete = matched.size === queue.currentCards.length && queue.phase === 'playing';
 
   // Live timer
   useEffect(() => {
@@ -142,7 +144,10 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
   }, [queue.phase]);
 
   const handleSelect = async (tile: Tile) => {
-    if (matched.has(tile.cardId)) return;
+    // Lock input during the wrong-flash: `selected` is only cleared by the
+    // 600ms timeout below, so a tap in that window would re-grade against the
+    // stale selection (double XP + a duplicate wrong report).
+    if (matched.has(tile.cardId) || wrong) return;
     if (tile.id === selected?.id) {
       setSelected(null);
       return;

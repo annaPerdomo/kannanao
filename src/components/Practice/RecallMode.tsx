@@ -66,13 +66,17 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
     });
   }, [deckId, startSession]);
 
-  // Reset per-round state when a new round starts
-  useEffect(() => {
-    if (queue.roundKey === 0) return;
+  // Reset per-round state the moment a new round arrives — during render, not
+  // in an effect. An effect reset left one render where `roundDone` was still
+  // computed from the PREVIOUS round's index, and the finish effect below saw
+  // it and ended the fresh retry round instantly with every card marked wrong.
+  const [prevRoundKey, setPrevRoundKey] = useState(queue.roundKey);
+  if (prevRoundKey !== queue.roundKey) {
+    setPrevRoundKey(queue.roundKey);
     setIndex(0);
     setSelected(null);
     setRoundScore(0);
-  }, [queue.roundKey]);
+  }
 
   const card = queue.currentCards[index];
   const roundDone = index >= queue.currentCards.length;

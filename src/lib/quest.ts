@@ -19,28 +19,17 @@ import type { Flashcard } from '@/types/flashcard';
 export type QuestNodeType = 'warmup' | 'match' | 'boss';
 
 export interface QuestNode {
+  /** Node kind — also the message key for its label (Review.questMap.<type>). */
   type: QuestNodeType;
-  /** Plain-words label a kid can read. */
-  label: string;
   /** Emoji shown on the node in the map. */
   emoji: string;
   /** How many cards this node covers. */
   cardCount: number;
 }
 
-const WARMUP = (cardCount: number): QuestNode => ({
-  type: 'warmup',
-  label: 'Warm-up',
-  emoji: '🔖',
-  cardCount,
-});
-const MATCH = (cardCount: number): QuestNode => ({
-  type: 'match',
-  label: 'Word Match',
-  emoji: '🍉',
-  cardCount,
-});
-const BOSS: QuestNode = { type: 'boss', label: 'Boss Round', emoji: '⚔️', cardCount: 3 };
+const WARMUP = (cardCount: number): QuestNode => ({ type: 'warmup', emoji: '🔖', cardCount });
+const MATCH = (cardCount: number): QuestNode => ({ type: 'match', emoji: '🍉', cardCount });
+const BOSS: QuestNode = { type: 'boss', emoji: '⚔️', cardCount: 3 };
 
 /** How many trailing due cards make up the Boss Round. */
 export const BOSS_CARDS = 3;

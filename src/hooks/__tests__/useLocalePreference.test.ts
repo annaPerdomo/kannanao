@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LOCALE_COOKIE } from '@/i18n/config';
 
@@ -7,9 +7,11 @@ const mockRefresh = vi.fn();
 const mockGetUser = vi.fn();
 const mockUpdateProfileLocale = vi.fn();
 let activeLocale = 'en';
+let activePathname = '/';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: mockRefresh }),
+  usePathname: () => activePathname,
 }));
 
 vi.mock('next-intl', () => ({
@@ -31,6 +33,7 @@ describe('useLocalePreference', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     activeLocale = 'en';
+    activePathname = '/';
     document.cookie = `${LOCALE_COOKIE}=; path=/; max-age=0`;
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
     mockUpdateProfileLocale.mockResolvedValue({ error: null });
@@ -147,5 +150,69 @@ describe('useLocalePreference', () => {
     });
     expect(result.current.error).toBeNull();
     expect(result.current.saved).toBe(true);
+  });
+
+  // The landing pages are per-language STATIC routes; router.refresh() re-serves
+  // the same page, so the switch must hard-navigate to the other language's
+  // canonical URL (en → '/', ja → '/landing/ja') instead.
+  describe('on the static landing pages', () => {
+    let assign: ReturnType<typeof vi.fn>;
+    const originalLocation = window.location;
+
+    beforeEach(() => {
+      assign = vi.fn();
+      Object.defineProperty(window, 'location', {
+        value: { ...originalLocation, assign },
+        writable: true,
+        configurable: true,
+      });
+    });
+
+    afterEach(() => {
+      Object.defineProperty(window, 'location', {
+        value: originalLocation,
+        writable: true,
+        configurable: true,
+      });
+    });
+
+    it('navigates from the Japanese landing to the English canonical URL', async () => {
+      activePathname = '/landing/ja';
+      activeLocale = 'ja';
+      const { result } = renderHook(() => useLocalePreference());
+
+      await act(async () => {
+        await result.current.setLocale('en');
+      });
+
+      expect(readCookie()).toBe('en');
+      expect(assign).toHaveBeenCalledWith('/');
+      expect(mockRefresh).not.toHaveBeenCalled();
+    });
+
+    it('navigates from the English landing to the Japanese canonical URL', async () => {
+      activePathname = '/landing';
+      const { result } = renderHook(() => useLocalePreference());
+
+      await act(async () => {
+        await result.current.setLocale('ja');
+      });
+
+      expect(assign).toHaveBeenCalledWith('/landing/ja');
+      expect(mockRefresh).not.toHaveBeenCalled();
+    });
+
+    it('does not navigate on a no-op re-pick of the current language', async () => {
+      activePathname = '/landing/ja';
+      activeLocale = 'ja';
+      const { result } = renderHook(() => useLocalePreference());
+
+      await act(async () => {
+        await result.current.setLocale('ja');
+      });
+
+      expect(assign).not.toHaveBeenCalled();
+      expect(mockRefresh).not.toHaveBeenCalled();
+    });
   });
 });

@@ -64,6 +64,23 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
   const correctCountRef = useRef(0);
   const totalAnsweredRef = useRef(0);
 
+  // Card the audio has already been played for, so the auto-play effect doesn't
+  // repeat a word the learner just triggered by hand.
+  const playedForRef = useRef<string | null>(null);
+
+  // Reset per-round state the moment a new round arrives — during render, not
+  // in an effect. An effect reset left one render where `roundDone` was still
+  // computed from the PREVIOUS round's index, and the finish effect below saw
+  // it and ended the fresh retry round instantly with every card marked wrong.
+  const [prevRoundKey, setPrevRoundKey] = useState(queue.roundKey);
+  if (prevRoundKey !== queue.roundKey) {
+    setPrevRoundKey(queue.roundKey);
+    setIndex(0);
+    setSelected(null);
+    setRoundScore(0);
+    playedForRef.current = null;
+  }
+
   const card = queue.currentCards[index];
   const roundDone = index >= queue.currentCards.length;
 
@@ -76,18 +93,6 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
       startTimeRef.current = Date.now();
     });
   }, [deckId, startSession, voiceStatus]);
-
-  // Card the audio has already been played for, so the auto-play effect doesn't
-  // repeat a word the learner just triggered by hand.
-  const playedForRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (queue.roundKey === 0) return;
-    setIndex(0);
-    setSelected(null);
-    setRoundScore(0);
-    playedForRef.current = null;
-  }, [queue.roundKey]);
 
   useEffect(() => {
     if (card) setChoices(buildMeaningChoices(card, cards));

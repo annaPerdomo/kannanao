@@ -20,17 +20,26 @@ export type Messages = typeof en;
  * instead of throwing — which is what lets us ship extraction (which lands
  * first) ahead of translation.
  */
+// Both JSON trees are build-time constants, so the merge result is too — cache
+// it per locale instead of re-merging two ~100KB trees on every request (per-
+// request CPU is the scarce resource on the Hobby tier). Callers must treat the
+// returned tree as read-only, which they already do.
+const mergedCache = new Map<Locale, Messages>();
+
 export function messagesFor(locale: Locale): Messages {
-  return locale === DEFAULT_LOCALE
-    ? en
-    : deepmerge<Messages>(en, ja as Partial<Messages>, {
-        // deepmerge CONCATENATES arrays by default, which is wrong for every
-        // array we keep in messages (Landing.seo.featureList, the FAQ list,
-        // Shop.buddies.*.homePhrases…): a translated 9-item list would merge
-        // into 18 items, English first. A locale's array replaces English
-        // wholesale; omitting it still falls back, since the key is absent.
-        arrayMerge: (_english, translated) => translated,
-      });
+  if (locale === DEFAULT_LOCALE) return en;
+  const cached = mergedCache.get(locale);
+  if (cached) return cached;
+  const merged = deepmerge<Messages>(en, ja as Partial<Messages>, {
+    // deepmerge CONCATENATES arrays by default, which is wrong for every
+    // array we keep in messages (Landing.seo.featureList, the FAQ list,
+    // Shop.buddies.*.homePhrases…): a translated 9-item list would merge
+    // into 18 items, English first. A locale's array replaces English
+    // wholesale; omitting it still falls back, since the key is absent.
+    arrayMerge: (_english, translated) => translated,
+  });
+  mergedCache.set(locale, merged);
+  return merged;
 }
 
 /**

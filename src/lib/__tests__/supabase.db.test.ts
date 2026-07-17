@@ -977,10 +977,9 @@ describe('getDueCards', () => {
     expect(cards).toHaveLength(1);
   });
 
-  it('should return empty array when the query errors', async () => {
+  it('should throw when the query errors (a failed fetch must never read as "nothing due")', async () => {
     setTable('card_progress', null, { message: 'DB error' });
-    const cards = await getDueCards('u1');
-    expect(cards).toEqual([]);
+    await expect(getDueCards('u1')).rejects.toThrow('DB error');
   });
 });
 
@@ -1003,10 +1002,9 @@ describe('getDueCount', () => {
     expect(count).toBe(0);
   });
 
-  it('should return 0 when the query errors', async () => {
+  it('should throw when the query errors (a failed fetch must never read as "nothing due")', async () => {
     setTable('card_progress', null, { message: 'DB error' }, 5);
-    const count = await getDueCount('u1');
-    expect(count).toBe(0);
+    await expect(getDueCount('u1')).rejects.toThrow('DB error');
   });
 });
 

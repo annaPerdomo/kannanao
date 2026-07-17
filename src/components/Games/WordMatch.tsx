@@ -5,7 +5,7 @@ import { Alert, alpha, Box, Grid, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { CelebrationScreen } from '@/components/Practice/CelebrationScreen';
@@ -58,11 +58,19 @@ function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit }: MatchGrid
   const answeredRef = useRef(0);
   const byJp = useMemo(() => new Map(words.map((w) => [w.jp, w])), [words]);
 
-  const round = rounds[roundIdx];
+  // An embedded quest node can be fed an empty word list (e.g. every due card
+  // lacked a display text or meaning) — hand back immediately instead of
+  // crashing on rounds[0] below.
+  useEffect(() => {
+    if (words.length === 0) onComplete({ correct: 0, total: 0 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [words.length]);
+
+  const round = rounds[roundIdx] ?? [];
   const tiles = useMemo<Tile[]>(
     () =>
       shuffle(
-        rounds[roundIdx].flatMap((w): Tile[] => [
+        (rounds[roundIdx] ?? []).flatMap((w): Tile[] => [
           { id: `jp-${w.jp}`, jp: w.jp, side: 'jp', label: w.jp, speak: w.speak },
           {
             id: `en-${w.jp}`,
@@ -85,9 +93,15 @@ function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit }: MatchGrid
       setSelected(tile);
       return;
     }
+    // Tapping another tile on the SAME side switches the selection — it's a
+    // re-pick, not an answer, so it must never be graded (or penalize the SRS).
+    if (selected.side === tile.side) {
+      setSelected(tile);
+      return;
+    }
 
     answeredRef.current += 1;
-    if (selected.jp === tile.jp && selected.side !== tile.side) {
+    if (selected.jp === tile.jp) {
       correctRef.current += 1;
       // The pair IS one card — grade it once, correct, so it advances the SRS.
       onGrade(true, byJp.get(tile.jp));
@@ -105,8 +119,10 @@ function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit }: MatchGrid
         }, 800);
       }
     } else {
-      // A wrong attempt pairs two different cards, so it earns XP but no
-      // card_progress (no single card to blame).
+      // A wrong attempt is blamed on the clicked card (same convention as the
+      // deck-practice MatchMode) so a word the player struggles with comes back
+      // SOONER — dropping the cardId here meant games could only ever push a
+      // card's schedule forward, never reset it.
       onGrade(false, byJp.get(tile.jp));
       setWrongId(tile.id);
       setTimeout(() => {
@@ -115,6 +131,8 @@ function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit }: MatchGrid
       }, 600);
     }
   };
+
+  if (words.length === 0) return null;
 
   return (
     <GameShell
@@ -206,7 +224,7 @@ function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void 
 
   const handleGrade = useCallback<MatchGradeFn>(
     (correct, word) => {
-      void answer(correct, word?.jlpt, correct ? word?.cardId : undefined);
+      void answer(correct, word?.jlpt, word?.cardId);
     },
     [answer],
   );
@@ -297,7 +315,7 @@ export function WordMatchEmbedded({
 }: WordMatchEmbeddedProps) {
   const handleGrade = useCallback<MatchGradeFn>(
     (correct, word) => {
-      onPairResolved(correct, correct ? word?.cardId : undefined, word?.jlpt);
+      onPairResolved(correct, word?.cardId, word?.jlpt);
     },
     [onPairResolved],
   );

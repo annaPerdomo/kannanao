@@ -409,6 +409,21 @@
       "wordsWaiting": "{count, plural, one {# word waiting ⚔️} other {# words waiting ⚔️}}",
       "allCaughtUp": "All caught up — nothing due"
     },
+    "hubPage": {
+      "wordsWaiting": "{count, plural, one {# word is waiting} other {# words are waiting}}",
+      "waitingBody": "A few minutes keeps your words fresh — clear them for a chest 🎁",
+      "startTodaysPractice": "Start today’s practice",
+      "caughtUpTitle": "All caught up!",
+      "caughtUpBody": "Nothing due right now — pick a game below to stay sharp.",
+      "funWaysToPractice": "Fun ways to practice",
+      "loadError": "Couldn't check which words are due. Please refresh to try again."
+    },
+    "questMap": {
+      "warmup": "Warm-up",
+      "match": "Word Match",
+      "boss": "Boss Round",
+      "chest": "Chest"
+    },
     "comboChip": {
       "ariaCombo": "Combo {count} in a row"
     },
@@ -432,6 +447,8 @@
     },
     "todayPage": {
       "findingReviews": "Finding your reviews…",
+      "loadError": "Couldn't load your reviews. Please try again.",
+      "retry": "Try again",
       "allDoneTitle": "All done for today!",
       "allDoneBody": "You've reviewed everything that came due. Play a game to keep the streak going ✨",
       "playAGame": "Play a game",

@@ -23,6 +23,10 @@ describe('messagesFor', () => {
     expect(messagesFor('ja').Common.close).toBe('閉じる');
   });
 
+  it('memoizes the merged catalog — the deepmerge must not run per request', () => {
+    expect(messagesFor('ja')).toBe(messagesFor('ja'));
+  });
+
   it('falls back to English for keys Japanese has not translated yet', () => {
     expect(messagesFor('ja').Common.cancel).toBe('Cancel');
     expect(messagesFor('ja').Landing.hero.signInButton).toBe('Sign in');

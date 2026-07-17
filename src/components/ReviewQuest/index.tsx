@@ -44,7 +44,21 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
   const { startSession, recordAnswer, endSession, addBonusXp, openDailyChest, progress } =
     useProgress();
   const { triggerXpEarned } = useXpAnimation();
-  const combo = useCombo(addBonusXp);
+
+  // Every answer/bonus write is tracked here and awaited in finishQuest:
+  // endSession re-reads progress from the DB (an in-flight bonus write would be
+  // clobbered), and the chest's due-count check must see the SRS rows the final
+  // node just wrote.
+  const pendingWritesRef = useRef<Promise<unknown>[]>([]);
+  const trackedAddBonusXp = useCallback(
+    (amount: number) => {
+      const write = Promise.resolve(addBonusXp(amount));
+      pendingWritesRef.current.push(write);
+      return write;
+    },
+    [addBonusXp],
+  );
+  const combo = useCombo(trackedAddBonusXp);
 
   const plan = useMemo(() => planQuest(cards), [cards]);
   const matchWords = useMemo(() => cardsToMatchWords(plan.match), [plan.match]);
@@ -85,6 +99,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
   const finishQuest = useCallback(async () => {
     if (endedRef.current) return;
     endedRef.current = true;
+    await Promise.allSettled(pendingWritesRef.current);
     const studied = answeredRef.current;
     const correct = correctRef.current;
     if (sessionIdRef.current) {
@@ -116,13 +131,28 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
     setDone(true);
   }, [endSession, user]);
 
+  // Cards already SRS-advanced by a correct answer this quest. The Boss Round
+  // deliberately re-tests the last Word Match cards, and without this a card
+  // answered correctly in both nodes had its schedule advanced twice in one
+  // session (pushed days further out than one review should).
+  const correctlyGradedRef = useRef<Set<string>>(new Set());
+
   // The single grading primitive every node calls.
   const grade = useCallback<QuestGrade>(
     (correct, jlpt, cardId) => {
       answeredRef.current += 1;
       if (correct) correctRef.current += 1;
       triggerXpEarned(correct ? cardXp(jlpt) : XP_PER_WRONG);
-      if (sessionIdRef.current) void recordAnswer(sessionIdRef.current, correct, jlpt, cardId);
+      if (sessionIdRef.current) {
+        // A repeat CORRECT drops the cardId (XP still counts, schedule doesn't
+        // move twice); a wrong always records — a lapse must reset the card.
+        let srsCardId = cardId;
+        if (cardId && correct) {
+          if (correctlyGradedRef.current.has(cardId)) srsCardId = undefined;
+          else correctlyGradedRef.current.add(cardId);
+        }
+        pendingWritesRef.current.push(recordAnswer(sessionIdRef.current, correct, jlpt, srsCardId));
+      }
       // Combo steps AFTER the answer is recorded so its bonus builds on the
       // updated progress snapshot.
       return combo.onAnswer(correct);
@@ -143,10 +173,10 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
   const awardBossBonus = useCallback(
     (amount: number) => {
       if (amount <= 0) return;
-      void addBonusXp(amount);
+      void trackedAddBonusXp(amount);
       triggerXpEarned(amount);
     },
-    [addBonusXp, triggerXpEarned],
+    [trackedAddBonusXp, triggerXpEarned],
   );
 
   const flipController = useMemo<FlipStudyController>(
@@ -184,8 +214,12 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
                 variant: chestVariant(perfect),
                 xp: CHEST_XP,
                 onOpen: () => {
-                  triggerXpEarned(CHEST_XP);
-                  void openDailyChest();
+                  // Only animate the XP once the write actually landed —
+                  // openDailyChest rolls back and returns false on failure,
+                  // and a count-up for XP that was never persisted is a lie.
+                  void openDailyChest().then((ok) => {
+                    if (ok) triggerXpEarned(CHEST_XP);
+                  });
                 },
               }
             : undefined
