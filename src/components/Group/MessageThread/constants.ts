@@ -2,15 +2,29 @@ import type { DirectMessage } from '@/hooks/useDirectMessages';
 
 /** Return a human-friendly date label for grouping */
 export function dateLabel(dateStr: string): string {
+  const info = dateLabelInfo(dateStr);
+  if (info.unit === 'today') return 'Today';
+  if (info.unit === 'yesterday') return 'Yesterday';
+  return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+/**
+ * Structured (translation-key-friendly) breakdown of `dateLabel`, for callers
+ * that render via next-intl and a locale-aware date format instead of the
+ * hardcoded English above (see ChatPanel).
+ */
+export type DateLabelInfo = { unit: 'today' } | { unit: 'yesterday' } | { unit: 'other' };
+
+export function dateLabelInfo(dateStr: string): DateLabelInfo {
   const date = new Date(dateStr);
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const msgDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diff = today.getTime() - msgDay.getTime();
   const days = Math.round(diff / 86_400_000);
-  if (days === 0) return 'Today';
-  if (days === 1) return 'Yesterday';
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  if (days === 0) return { unit: 'today' };
+  if (days === 1) return { unit: 'yesterday' };
+  return { unit: 'other' };
 }
 
 export function timeAgo(dateStr: string): string {
@@ -84,12 +98,18 @@ export function splitLinks(text: string): TextSegment[] {
   return segments;
 }
 
-/** Group sorted (oldest-first) messages by date label */
-export function groupByDate(messages: DirectMessage[]): { label: string; msgs: DirectMessage[] }[] {
+/**
+ * Group sorted (oldest-first) messages by date label. Pass a `labeler` to
+ * localize the labels; the default is the hardcoded-English `dateLabel`.
+ */
+export function groupByDate(
+  messages: DirectMessage[],
+  labeler: (dateStr: string) => string = dateLabel,
+): { label: string; msgs: DirectMessage[] }[] {
   const groups: { label: string; msgs: DirectMessage[] }[] = [];
   let current: { label: string; msgs: DirectMessage[] } | null = null;
   for (const m of messages) {
-    const lbl = dateLabel(m.created_at);
+    const lbl = labeler(m.created_at);
     if (!current || current.label !== lbl) {
       current = { label: lbl, msgs: [] };
       groups.push(current);

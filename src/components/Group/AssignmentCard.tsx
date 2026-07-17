@@ -9,7 +9,8 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
 import type { Assignment } from '@/hooks/useAssignments';
-import { goalLabel } from '@/lib/assignmentMastery';
+
+import { useGoalLabel } from './useGoalLabel';
 
 type Translator = ReturnType<typeof useTranslations>;
 
@@ -50,7 +51,7 @@ export function AssignmentCard({ assignment, onStudy }: AssignmentCardProps) {
   const isCompleted = !!assignment.completed_at;
   const deck = assignment.decks;
   const urgency = dueDateColor(assignment.due_date);
-  const goal = goalLabel(assignment);
+  const goal = useGoalLabel()(assignment);
 
   return (
     <Paper

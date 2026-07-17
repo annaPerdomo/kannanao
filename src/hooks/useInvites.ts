@@ -103,13 +103,13 @@ export function useInvites(groupId?: string | null) {
         if (!res.ok) {
           // Rollback
           void fetchInvites();
-          throw new Error('Failed to revoke invite');
+          throw new Error(t('revokeFailed'));
         }
       } catch {
         void fetchInvites();
       }
     },
-    [headers, fetchInvites],
+    [headers, fetchInvites, t],
   );
 
   return { invites, loading, error, createInvite, revokeInvite, refresh: fetchInvites };

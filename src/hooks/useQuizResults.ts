@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,6 +28,7 @@ export function useQuizResults(deckId: string | null, groupId?: string | null) {
   );
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const t = useTranslations('Group.quizScores');
 
   const load = useCallback(async () => {
     if (!url || !user) {
@@ -42,11 +44,11 @@ export function useQuizResults(deckId: string | null, groupId?: string | null) {
       const data = await fetchJsonCached<QuizScoreRow[]>(url, authHeaders);
       setRows(data);
     } catch {
-      setError('Failed to load quiz scores');
+      setError(t('loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [url, user]);
+  }, [url, user, t]);
 
   useEffect(() => {
     void load();

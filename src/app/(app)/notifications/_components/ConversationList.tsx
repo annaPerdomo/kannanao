@@ -21,7 +21,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
-import { timeAgo } from '@/components/Group/MessageThread/constants';
+import { timeAgoInfo } from '@/components/Group/MessageThread/constants';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { DirectMessage } from '@/hooks/useDirectMessages';
 import { sb } from '@/lib/supabase';
@@ -80,9 +80,26 @@ export function ConversationList({
   loading = false,
 }: ConversationListProps) {
   const t = useTranslations('Messages.conversationList');
+  const tThread = useTranslations('Group.messageThread');
   const router = useRouter();
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+
+  const renderTimeAgo = (dateStr: string) => {
+    const info = timeAgoInfo(dateStr);
+    switch (info.unit) {
+      case 'justNow':
+        return tThread('justNow');
+      case 'minutes':
+        return tThread('minutesAgo', { minutes: info.value });
+      case 'hours':
+        return tThread('hoursAgo', { hours: info.value });
+      case 'yesterday':
+        return tThread('yesterday');
+      case 'days':
+        return tThread('daysAgo', { days: info.value });
+    }
+  };
 
   const [search, setSearch] = useState('');
   const [newMsgOpen, setNewMsgOpen] = useState(false);
@@ -275,7 +292,7 @@ export function ConversationList({
                         {c.recipientName}
                       </Typography>
                       <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>
-                        {timeAgo(c.lastMessage.created_at)}
+                        {renderTimeAgo(c.lastMessage.created_at)}
                       </Typography>
                     </Stack>
                     <Typography

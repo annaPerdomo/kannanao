@@ -6,11 +6,12 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
 import type { MemberDetail } from '@/hooks/useGroup';
-import { goalLabel } from '@/lib/assignmentMastery';
 
-import { formatDate } from './helpers';
+import { useGoalLabel } from '../useGoalLabel';
+import { useMemberFormatters } from './helpers';
 
 type Assignments = MemberDetail['assignments'];
 
@@ -21,6 +22,10 @@ interface AssignmentsSectionProps {
 export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+  const t = useTranslations('Group.memberDetail');
+  const tList = useTranslations('Group.assignmentsList');
+  const getGoalLabel = useGoalLabel();
+  const { formatDate } = useMemberFormatters();
 
   return (
     <Box sx={{ mb: 3 }}>
@@ -34,7 +39,7 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
           mb: 1.5,
         }}
       >
-        Assignments
+        {t('assignmentsHeading')}
       </Typography>
 
       {/* Completion summary */}
@@ -59,7 +64,10 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <AssignmentIcon sx={{ fontSize: 18, color: brand[600] }} />
             <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: brand[800] }}>
-              {assignments.completed}/{assignments.total} completed
+              {t('assignmentsCompleted', {
+                completed: assignments.completed,
+                total: assignments.total,
+              })}
             </Typography>
           </Box>
           <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: brand[600] }}>
@@ -78,7 +86,7 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
           }}
         />
         <Box sx={{ display: 'flex', gap: 2, fontSize: '0.7rem', color: 'text.secondary' }}>
-          <span>{assignments.pending} pending</span>
+          <span>{t('assignmentsPending', { count: assignments.pending })}</span>
           {assignments.overdue > 0 && (
             <Box
               component="span"
@@ -91,7 +99,7 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
               }}
             >
               <WarningAmberIcon sx={{ fontSize: 12 }} />
-              {assignments.overdue} overdue
+              {t('assignmentsOverdue', { count: assignments.overdue })}
             </Box>
           )}
         </Box>
@@ -102,7 +110,7 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
         const isCompleted = !!a.completedAt;
         const isOverdue =
           !isCompleted && !!a.dueDate && a.dueDate < new Date().toISOString().slice(0, 10);
-        const goal = goalLabel({
+        const goal = getGoalLabel({
           required_accuracy: a.requiredAccuracy,
           required_mode: a.requiredMode,
         });
@@ -156,12 +164,11 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
                   sx={{ fontSize: '0.65rem', fontWeight: 600, color: 'text.primary', mt: 0.25 }}
                   noWrap
                 >
-                  🎯 Goal: {goal}
-                  {a.progressAccuracy != null
-                    ? isCompleted
-                      ? ` — reached ${a.progressAccuracy}%`
-                      : ` — Best so far: ${a.progressAccuracy}%`
-                    : ''}
+                  {tList('goalProgress', {
+                    goal,
+                    state: a.progressAccuracy != null ? (isCompleted ? 'reached' : 'best') : 'none',
+                    accuracy: a.progressAccuracy ?? 0,
+                  })}
                 </Typography>
               )}
             </Box>
@@ -174,7 +181,7 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
                     fontWeight: isOverdue ? 600 : 400,
                   }}
                 >
-                  Due {formatDate(a.dueDate)}
+                  {t('dueOn', { date: formatDate(a.dueDate) })}
                 </Typography>
               )}
               {isCompleted && (
