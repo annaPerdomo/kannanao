@@ -10,29 +10,19 @@ import { useTranslations } from 'next-intl';
 import { useLocalePreference } from '@/hooks/useLocalePreference';
 import type { Locale } from '@/i18n/config';
 
-// Each language is written in its own language, and these two strings are the
-// one bit of copy in the app that must never be translated or turned into
-// message keys. Translating them would render this control useless in exactly
-// the situation it exists for: someone who cannot read the current UI and needs
-// to find their way out. "日本語" is what a lost Japanese reader scans for; a
-// translated "Japanese" is not. No flags, either — a flag is a country, and
-// neither language belongs to one.
+// Never translate these labels or turn them into message keys: someone stuck
+// in a language they can't read has to be able to spot their own.
 const OPTIONS: { locale: Locale; label: string }[] = [
   { locale: 'en', label: 'English' },
   { locale: 'ja', label: '日本語' },
 ];
 
 /**
- * The Settings language picker — the app's only language control (the landing
- * has its own pre-signup toggle; see src/app/landing/LanguageToggle.tsx).
- *
- * Both options are always on screen rather than behind a <Select>: a user who
- * can't read the current language can't be asked to open a menu to escape it,
- * and two big pills are a better tap target for the youngest users than a
- * dropdown. Two languages is also small enough that a menu would save nothing.
+ * The Settings language picker. The NavBar's LanguageMenu is the everyday
+ * fast path; this stays as the place the choice is explained.
  */
 export function LanguagePicker() {
-  const t = useTranslations('Settings.language');
+  const t = useTranslations('Common.language');
   const { locale, setLocale, saving, error, saved } = useLocalePreference();
 
   return (
@@ -43,12 +33,8 @@ export function LanguagePicker() {
         disabled={saving}
         aria-label={t('ariaLabel')}
         onChange={(_, next: Locale | null) => {
-          // `next` is null when the already-selected pill is clicked, which
-          // ToggleButtonGroup reads as a deselect. There is no "no language"
-          // state to deselect into, so treat it as re-affirming the current
-          // choice and let it through: for an account whose locale column is
-          // still NULL ("never chose"), that click is the user explicitly
-          // picking, and it has to be recorded. See useLocalePreference.
+          // null = a click on the already-selected pill. Record it anyway:
+          // that's how a NULL profile locale becomes an explicit choice.
           void setLocale(next ?? locale);
         }}
         sx={{ gap: 1, flexWrap: 'wrap' }}
@@ -67,8 +53,8 @@ export function LanguagePicker() {
               textTransform: 'none',
               fontSize: '0.95rem',
               fontWeight: 600,
-              // text.primary, not a brand mid-tone: this sits on the section's
-              // pastel glass surface and has to clear WCAG AA on it.
+              // text.primary clears WCAG AA on the pastel surface; brand
+              // mid-tones don't.
               color: 'text.primary',
               '&.Mui-selected': {
                 bgcolor: alpha(theme.palette.brand[300], 0.32),

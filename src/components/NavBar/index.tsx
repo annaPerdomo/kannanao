@@ -30,6 +30,7 @@ import { useProgressCtx } from '@/contexts/ProgressContext';
 import { LAYOUT } from '@/theme';
 
 import { EditNameDialog } from './EditNameDialog';
+import { LanguageMenu } from './LanguageMenu';
 import { UserMenu } from './UserMenu';
 import { XpDisplay } from './XpDisplay';
 
@@ -271,10 +272,14 @@ export function NavBar() {
                 </Box>
               )}
 
+              <LanguageMenu />
               <UserMenu navBtnSx={navBtn} />
             </Box>
           ) : (
-            !authLoading && pathname !== '/login' && <UserMenu navBtnSx={navBtn} />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
+              <LanguageMenu />
+              {!authLoading && pathname !== '/login' && <UserMenu navBtnSx={navBtn} />}
+            </Box>
           )}
         </Toolbar>
       </AppBar>
