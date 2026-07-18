@@ -1,11 +1,9 @@
 'use client';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import SchoolIcon from '@mui/icons-material/School';
 import TargetIcon from '@mui/icons-material/TrackChanges';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
@@ -14,10 +12,12 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
 import { Loading } from '@/components/Loading';
+import { PageHeader } from '@/components/PageHeader';
 import { AchievementBadge } from '@/components/Stats/AchievementBadge';
 import { StatCard } from '@/components/Stats/StatCard';
 import type { MemberDetail as MemberDetailData } from '@/hooks/useGroup';
 import { ACHIEVEMENTS, xpProgressInLevel } from '@/hooks/useProgress';
+import { LAYOUT } from '@/theme';
 
 import { EncouragementForm } from '../EncouragementForm';
 import { AssignmentsSection } from './AssignmentsSection';
@@ -37,7 +37,6 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const t = useTranslations('Group.memberDetail');
-  const tc = useTranslations('Common');
   const { formatDate } = useMemberFormatters();
 
   if (loading) return <Loading message={t('loadingMemberDetails')} />;
@@ -64,20 +63,14 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
   return (
     <Box>
       {/* Back + Name */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={onBack}
-          sx={{ textTransform: 'none', fontWeight: 700, color: brand[700] }}
-        >
-          {tc('back')}
-        </Button>
-        <Typography sx={{ fontWeight: 800, fontSize: '1.2rem', color: brand[800] }}>
-          {member.displayName || member.username}
-        </Typography>
-        <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
-          @{member.username}
-        </Typography>
+      <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto', width: '100%' }}>
+        <PageHeader
+          compact
+          mb={2}
+          onBack={onBack}
+          title={member.displayName || member.username}
+          subtitle={`@${member.username}`}
+        />
       </Box>
 
       {/* Level bar */}

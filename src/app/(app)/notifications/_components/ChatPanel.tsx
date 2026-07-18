@@ -315,22 +315,23 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
           flexShrink: 0,
         }}
       >
+        {/* Mobile-only: matches the PageHeader back-button spec */}
         <IconButton
           onClick={() => router.push('/notifications')}
           size="small"
           aria-label={t('backAriaLabel')}
           sx={{
             display: { xs: 'inline-flex', sm: 'none' },
-            border: `1.5px solid ${alpha(brand[400], 0.4)}`,
-            borderRadius: '10px',
-            width: 34,
-            height: 34,
-            color: brand[700],
-            bgcolor: alpha('#FFFFFF', 0.5),
-            '&:hover': { bgcolor: alpha('#FFFFFF', 0.8) },
+            border: `1.5px solid ${alpha(brand[300], 0.45)}`,
+            borderRadius: '9px',
+            width: 32,
+            height: 32,
+            color: brand[600],
+            bgcolor: alpha(brand[50], 0.6),
+            '&:hover': { bgcolor: alpha(brand[100], 0.8), borderColor: brand[400] },
           }}
         >
-          <ArrowBackIcon sx={{ fontSize: 16 }} />
+          <ArrowBackIcon sx={{ fontSize: 15 }} />
         </IconButton>
         <Avatar
           sx={{
