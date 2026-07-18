@@ -1,6 +1,5 @@
 'use client';
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import HearingIcon from '@mui/icons-material/Hearing';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
@@ -11,7 +10,6 @@ import {
   Box,
   Button,
   Chip,
-  Container,
   IconButton,
   Stack,
   TextField,
@@ -25,9 +23,11 @@ import { useCallback, useState } from 'react';
 
 import { stripFurigana } from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
+import { PageHeader } from '@/components/PageHeader';
 import { useTravelDisplay } from '@/contexts/TravelDisplayContext';
 import { useSpeech } from '@/hooks/useSpeech';
 import { logTravelEvent, sb } from '@/lib/supabase';
+import { LAYOUT } from '@/theme';
 
 import { SaveToDeckDialog } from './SaveToDeckDialog';
 import { TravelPhrase } from './TravelPhrase';
@@ -112,22 +112,17 @@ export function DailyPhrasePack() {
   }, [plans, displayMode, t, tc]);
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+    <Box
+      sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 4 } }}
+    >
       <Stack spacing={3}>
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label={t('backToHub')}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Box>
-            <Typography variant="h5" sx={{ color: 'text.primary' }}>
-              {t('title')}
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
-              {t('subtitle')}
-            </Typography>
-          </Box>
-        </Box>
+        <PageHeader
+          title={t('title')}
+          subtitle={t('subtitle')}
+          onBack={() => router.push('/travel')}
+          mb={0}
+        />
 
         {/* Input */}
         {!result && !loading && (
@@ -349,6 +344,6 @@ export function DailyPhrasePack() {
           defaultDeckName={t('todaysPhrasesDeckName')}
         />
       )}
-    </Container>
+    </Box>
   );
 }

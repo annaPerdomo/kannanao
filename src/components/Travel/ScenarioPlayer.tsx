@@ -1,6 +1,5 @@
 'use client';
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
@@ -15,7 +14,6 @@ import {
   Box,
   Button,
   Chip,
-  Container,
   IconButton,
   Stack,
   TextField,
@@ -27,10 +25,12 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
 
+import { PageHeader } from '@/components/PageHeader';
 import { useTravelDisplay } from '@/contexts/TravelDisplayContext';
 import { useSpeech } from '@/hooks/useSpeech';
 import { useScenario } from '@/hooks/useTravel';
 import { logTravelEvent } from '@/lib/supabase';
+import { LAYOUT } from '@/theme';
 import type { ScenarioCategory } from '@/types/travel';
 
 import { Loading } from '../Loading';
@@ -157,21 +157,21 @@ export function ScenarioPlayer() {
   // Scenario selection screen
   if (!activeScenario) {
     return (
-      <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+      <Box
+        sx={{
+          maxWidth: LAYOUT.narrowMaxWidth,
+          mx: 'auto',
+          px: LAYOUT.pagePx,
+          py: { xs: 3, sm: 4 },
+        }}
+      >
         <Stack spacing={3}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <IconButton onClick={() => router.push('/travel')} aria-label={t('backToHub')}>
-              <ArrowBackIcon />
-            </IconButton>
-            <Box>
-              <Typography variant="h5" sx={{ color: 'text.primary' }}>
-                {t('heading')}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
-                {t('subheading')}
-              </Typography>
-            </Box>
-          </Box>
+          <PageHeader
+            title={t('heading')}
+            subtitle={t('subheading')}
+            onBack={() => router.push('/travel')}
+            mb={0}
+          />
 
           <Box
             sx={{
@@ -251,7 +251,7 @@ export function ScenarioPlayer() {
             ))}
           </Box>
         </Stack>
-      </Container>
+      </Box>
     );
   }
 
@@ -260,67 +260,45 @@ export function ScenarioPlayer() {
   const isEnded = lastTurn?.isEnding;
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+    <Box
+      sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 4 } }}
+    >
       <Stack spacing={2.5}>
         {/* Header */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.5,
-            pb: 2,
-            borderBottom: `1px solid ${alpha(brand[200], 0.4)}`,
-          }}
-        >
-          <IconButton onClick={handleBack} aria-label={t('backToScenarios')}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Box
-            sx={{
-              width: 36,
-              height: 36,
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              bgcolor: alpha(brand[100], 0.6),
-              border: `1px solid ${alpha(brand[200], 0.4)}`,
-            }}
-          >
-            <Typography sx={{ fontSize: '1.1rem', lineHeight: 1 }}>
-              {activeScenario.icon}
-            </Typography>
-          </Box>
-          <Box sx={{ flex: 1 }}>
-            <Typography
-              sx={{
-                fontWeight: 700,
-                fontSize: '1rem',
-                color: 'text.primary',
-                lineHeight: 1.2,
-              }}
-            >
-              {t(`categories.${activeScenario.labelKey}.title`)}
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              {t('sayInEnglish')}
-            </Typography>
-          </Box>
-          {savedPhrases.length > 0 && (
-            <Chip
-              icon={<LibraryAddCheckIcon sx={{ fontSize: '14px !important' }} />}
-              label={`${savedPhrases.length}`}
-              size="small"
-              sx={{
-                height: 24,
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                bgcolor: alpha(brand[500], 0.1),
-                color: brand[700],
-                '& .MuiChip-label': { px: 0.5 },
-              }}
-            />
-          )}
+        <Box sx={{ pb: 2, borderBottom: `1px solid ${alpha(brand[200], 0.4)}` }}>
+          <PageHeader
+            compact
+            mb={0}
+            onBack={handleBack}
+            icon={
+              <Box
+                component="span"
+                aria-hidden
+                sx={{ fontSize: { xs: '1.4rem', sm: '1.6rem' }, lineHeight: 1 }}
+              >
+                {activeScenario.icon}
+              </Box>
+            }
+            title={t(`categories.${activeScenario.labelKey}.title`)}
+            subtitle={t('sayInEnglish')}
+            endContent={
+              savedPhrases.length > 0 && (
+                <Chip
+                  icon={<LibraryAddCheckIcon sx={{ fontSize: '14px !important' }} />}
+                  label={`${savedPhrases.length}`}
+                  size="small"
+                  sx={{
+                    height: 24,
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    bgcolor: alpha(brand[500], 0.1),
+                    color: brand[700],
+                    '& .MuiChip-label': { px: 0.5 },
+                  }}
+                />
+              )
+            }
+          />
         </Box>
 
         {error && <Alert severity="error">{error}</Alert>}
@@ -834,6 +812,6 @@ export function ScenarioPlayer() {
             : t('scenarioFallback'),
         })}`}
       />
-    </Container>
+    </Box>
   );
 }

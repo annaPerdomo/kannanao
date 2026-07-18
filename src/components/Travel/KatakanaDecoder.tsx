@@ -1,6 +1,5 @@
 'use client';
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
@@ -10,7 +9,6 @@ import {
   Button,
   Card,
   Chip,
-  Container,
   IconButton,
   Stack,
   TextField,
@@ -22,8 +20,10 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { PageHeader } from '@/components/PageHeader';
 import { useSpeech } from '@/hooks/useSpeech';
 import { logTravelEvent } from '@/lib/supabase';
+import { LAYOUT } from '@/theme';
 
 // ─── Katakana Data ────────────────────────────────────────────────
 
@@ -166,21 +166,15 @@ export function KatakanaDecoder() {
   }, []);
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
       <Stack spacing={3}>
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label={t('backAriaLabel')}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h5" sx={{ color: 'text.primary' }}>
-            {t('title')}
-          </Typography>
-        </Box>
-
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {t('intro')}
-        </Typography>
+        <PageHeader
+          title={t('title')}
+          subtitle={t('intro')}
+          onBack={() => router.push('/travel')}
+          mb={0}
+        />
 
         {/* Mode tabs */}
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -207,7 +201,7 @@ export function KatakanaDecoder() {
         {mode === 'quiz' && <QuizView speak={speak} />}
         {mode === 'decode' && <DecodeView speak={speak} />}
       </Stack>
-    </Container>
+    </Box>
   );
 }
 

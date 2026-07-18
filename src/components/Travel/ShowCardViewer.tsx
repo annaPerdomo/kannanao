@@ -1,7 +1,6 @@
 'use client';
 
 import AddIcon from '@mui/icons-material/Add';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -17,7 +16,6 @@ import {
   Button,
   Card,
   Chip,
-  Container,
   IconButton,
   Stack,
   TextField,
@@ -31,10 +29,12 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { stripFurigana } from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
+import { PageHeader } from '@/components/PageHeader';
 import { useTravelDisplay } from '@/contexts/TravelDisplayContext';
 import { useSpeech } from '@/hooks/useSpeech';
 import { useShowCards } from '@/hooks/useTravel';
 import { logTravelEvent } from '@/lib/supabase';
+import { LAYOUT } from '@/theme';
 import type { ShowCard, ShowCardCategory } from '@/types/travel';
 
 import { SaveToDeckDialog } from './SaveToDeckDialog';
@@ -376,39 +376,28 @@ export function ShowCardViewer() {
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+    <Box
+      sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 4 } }}
+    >
       <Stack spacing={2.5}>
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label={t('backToHub')}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Box sx={{ flex: 1 }}>
-            <Typography
-              variant="h5"
-              sx={{
-                color: 'text.primary',
-              }}
+        <PageHeader
+          title={t('title')}
+          subtitle={t('subtitle')}
+          onBack={() => router.push('/travel')}
+          mb={0}
+          action={
+            <Button
+              startIcon={showCreate ? undefined : <AddIcon />}
+              onClick={() => setShowCreate(!showCreate)}
+              variant={showCreate ? 'outlined' : 'contained'}
+              size="small"
+              sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.8rem' }}
             >
-              {t('title')}
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{ color: 'text.secondary', mt: 0.25, fontSize: '0.78rem' }}
-            >
-              {t('subtitle')}
-            </Typography>
-          </Box>
-          <Button
-            startIcon={showCreate ? undefined : <AddIcon />}
-            onClick={() => setShowCreate(!showCreate)}
-            variant={showCreate ? 'outlined' : 'contained'}
-            size="small"
-            sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.8rem' }}
-          >
-            {showCreate ? tc('cancel') : t('create')}
-          </Button>
-        </Box>
+              {showCreate ? tc('cancel') : t('create')}
+            </Button>
+          }
+        />
 
         {/* Create custom card */}
         {showCreate && (
@@ -549,6 +538,6 @@ export function ShowCardViewer() {
         onSaved={() => setDeckSaved(true)}
         defaultDeckName={t('deckName')}
       />
-    </Container>
+    </Box>
   );
 }

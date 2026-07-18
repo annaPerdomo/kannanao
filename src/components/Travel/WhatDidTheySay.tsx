@@ -1,28 +1,19 @@
 'use client';
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
-import {
-  alpha,
-  Box,
-  Button,
-  Chip,
-  Container,
-  IconButton,
-  Stack,
-  Tooltip,
-  Typography,
-} from '@mui/material';
+import { alpha, Box, Button, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { stripFurigana } from '@/components/FuriganaText';
+import { PageHeader } from '@/components/PageHeader';
 import { useSpeech } from '@/hooks/useSpeech';
 import { logTravelEvent } from '@/lib/supabase';
+import { LAYOUT } from '@/theme';
 
 import { AuthGatedSaveDialog } from './AuthGatedSaveDialog';
 import { TravelPhrase } from './TravelPhrase';
@@ -384,42 +375,39 @@ export function WhatDidTheySay() {
     activeFilter !== 'all' ? LOCATIONS.find((l) => l.key === activeFilter) : null;
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+    <Box
+      sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 4 } }}
+    >
       <Stack spacing={3}>
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label={t('backToHub')}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h5" sx={{ color: 'text.primary' }}>
-              {t('heading')}
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
-              {t('subheading')}
-            </Typography>
-          </Box>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<LibraryAddIcon sx={{ fontSize: 14 }} />}
-            onClick={() => {
-              setDeckSaved(false);
-              setPhrasesToSave(
-                allVisiblePhrases.map((p) => ({
-                  japanese: p.japanese,
-                  romaji: p.romaji,
-                  english: p.english,
-                })),
-              );
-              setSaveDialogOpen(true);
-            }}
-            disabled={deckSaved}
-            sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.72rem' }}
-          >
-            {deckSaved ? t('saved') : t('saveAll')}
-          </Button>
-        </Box>
+        <PageHeader
+          title={t('heading')}
+          subtitle={t('subheading')}
+          onBack={() => router.push('/travel')}
+          mb={0}
+          action={
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<LibraryAddIcon sx={{ fontSize: 14 }} />}
+              onClick={() => {
+                setDeckSaved(false);
+                setPhrasesToSave(
+                  allVisiblePhrases.map((p) => ({
+                    japanese: p.japanese,
+                    romaji: p.romaji,
+                    english: p.english,
+                  })),
+                );
+                setSaveDialogOpen(true);
+              }}
+              disabled={deckSaved}
+              sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.72rem' }}
+            >
+              {deckSaved ? t('saved') : t('saveAll')}
+            </Button>
+          }
+        />
 
         {/* Filter chips */}
         <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
@@ -608,6 +596,6 @@ export function WhatDidTheySay() {
             : `👂 ${t('heading')}`
         }
       />
-    </Container>
+    </Box>
   );
 }
