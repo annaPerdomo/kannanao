@@ -37,6 +37,7 @@ interface MatchGridProps {
   onGrade: MatchGradeFn;
   onComplete: (stats: { correct: number; total: number }) => void;
   onQuit: () => void | Promise<void>;
+  questMap?: React.ReactNode;
 }
 
 /**
@@ -44,7 +45,7 @@ interface MatchGridProps {
  * game and the embedded quest node render this; they differ only in how they
  * grade answers and what happens on completion.
  */
-function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit }: MatchGridProps) {
+function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit, questMap }: MatchGridProps) {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
   const t = useTranslations('Games.wordMatch');
@@ -143,6 +144,7 @@ function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit }: MatchGrid
       total={rounds.length}
       comboCount={comboCount}
       onQuit={onQuit}
+      questMap={questMap}
     >
       <Grid container spacing={1.5}>
         {tiles.map((tile) => {
@@ -298,6 +300,7 @@ interface WordMatchEmbeddedProps {
   ) => void;
   onComplete: () => void;
   onQuit: () => void;
+  questMap?: React.ReactNode;
 }
 
 /**
@@ -312,6 +315,7 @@ export function WordMatchEmbedded({
   onPairResolved,
   onComplete,
   onQuit,
+  questMap,
 }: WordMatchEmbeddedProps) {
   const handleGrade = useCallback<MatchGradeFn>(
     (correct, word) => {
@@ -327,6 +331,7 @@ export function WordMatchEmbedded({
       onGrade={handleGrade}
       onComplete={() => onComplete()}
       onQuit={onQuit}
+      questMap={questMap}
     />
   );
 }

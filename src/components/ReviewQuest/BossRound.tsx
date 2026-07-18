@@ -28,6 +28,8 @@ interface BossRoundProps {
   /** Batched double-XP: the sum of cardXp for every correct boss card, once. */
   onBossBonus: (amount: number) => void;
   onComplete: () => void;
+  /** Quest step map (Warm-up/Word Match/Boss Round/Chest), rendered between the header and the progress bar. */
+  questMap?: React.ReactNode;
 }
 
 /**
@@ -43,6 +45,7 @@ export function BossRound({
   grade,
   onBossBonus,
   onComplete,
+  questMap,
 }: BossRoundProps) {
   const theme = useTheme();
   const { brand, accent, surfaces } = theme.palette;
@@ -122,6 +125,8 @@ export function BossRound({
           </Typography>
         </Box>
       </Box>
+
+      {questMap}
 
       <LinearProgress
         variant="determinate"

@@ -20,6 +20,8 @@ interface GameShellProps {
   comboCount?: number;
   onQuit: () => void;
   children: React.ReactNode;
+  /** Quest step map (Warm-up/Word Match/Boss Round/Chest), rendered between the header and the progress bar. */
+  questMap?: React.ReactNode;
 }
 
 /** Shared frame for the review games: header, how-to line, progress, quit. */
@@ -32,6 +34,7 @@ export function GameShell({
   comboCount = 0,
   onQuit,
   children,
+  questMap,
 }: GameShellProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -62,6 +65,8 @@ export function GameShell({
           </Box>
         }
       />
+
+      {questMap}
 
       <LinearProgress
         variant="determinate"

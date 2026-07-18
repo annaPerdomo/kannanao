@@ -59,6 +59,8 @@ export interface FlipStudyProps {
   completionSubheading?: string;
   /** Present when embedded in the review quest (parent owns the session). */
   controller?: FlipStudyController;
+  /** Quest step map (Warm-up/Word Match/Boss Round/Chest), rendered between the header and the progress bar. */
+  questMap?: React.ReactNode;
 }
 
 // Exit animation duration — card slides out before the next one slides in.
@@ -96,6 +98,7 @@ export default function FlipStudy({
   emptyState,
   completionSubheading,
   controller,
+  questMap,
 }: FlipStudyProps) {
   const t = useTranslations('Study.flipStudy');
   const tCommon = useTranslations('Common');
@@ -294,6 +297,8 @@ export default function FlipStudy({
         compact
         mb={3}
       />
+
+      {questMap}
 
       {/* Progress bar */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
