@@ -198,7 +198,7 @@ function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit }: MatchGrid
                   <CheckIcon sx={{ fontSize: '1.2rem', color: 'success.main' }} />
                 ) : tile.side === 'jp' ? (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.05rem' }}>
+                    <Typography sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.05rem' }}>
                       {tile.label}
                     </Typography>
                     {tile.speak && <SpeakButton text={tile.speak} iconSize="0.9rem" />}

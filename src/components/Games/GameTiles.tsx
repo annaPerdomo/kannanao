@@ -88,7 +88,7 @@ function GameCard({ title, jpTitle, description, emoji, gradient, href }: GameCa
           </Typography>
           <Typography
             sx={{
-              fontFamily: '"Noto Serif JP", serif',
+              fontFamily: (t) => t.fonts.jp,
               fontSize: '0.75rem',
               color: 'text.secondary',
             }}

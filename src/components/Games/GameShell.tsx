@@ -1,10 +1,12 @@
 'use client';
 
-import { alpha, Box, Button, Chip, Container, LinearProgress, Typography } from '@mui/material';
+import { alpha, Box, Button, Chip, LinearProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 
 import { ComboChip } from '@/components/ComboChip';
+import { PageHeader } from '@/components/PageHeader';
+import { LAYOUT } from '@/theme';
 
 interface GameShellProps {
   title: string;
@@ -36,26 +38,30 @@ export function GameShell({
   const t = useTranslations('Games.shell');
 
   return (
-    <Container maxWidth="sm" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
-      <Box
-        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.75 }}
-      >
-        <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box component="span" aria-hidden>
+    <Box
+      sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 4 } }}
+    >
+      {/* howTo is the subtitle: plain-words so the first screen is
+          self-explanatory to a kid. Back = quit-and-save (same as the footer
+          button), so leaving mid-game never loses progress. */}
+      <PageHeader
+        compact
+        mb={2}
+        onBack={onQuit}
+        icon={
+          <Box component="span" aria-hidden sx={{ fontSize: { xs: '1.4rem', sm: '1.6rem' } }}>
             {emoji}
           </Box>
-          {title}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <ComboChip count={comboCount} />
-          <Chip label={t('progress', { current: Math.min(current + 1, total), total })} />
-        </Box>
-      </Box>
-
-      {/* Plain-words how-to so the first screen is self-explanatory to a kid. */}
-      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
-        {howTo}
-      </Typography>
+        }
+        title={title}
+        subtitle={howTo}
+        endContent={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ComboChip count={comboCount} />
+            <Chip label={t('progress', { current: Math.min(current + 1, total), total })} />
+          </Box>
+        }
+      />
 
       <LinearProgress
         variant="determinate"
@@ -69,13 +75,18 @@ export function GameShell({
         }}
       />
 
-      {children}
+      {/* The board stays narrower than the page frame on purpose: game tiles
+          are tap targets and matching pairs shouldn't drift a full 900px
+          apart on desktop. */}
+      <Box sx={{ maxWidth: 600, mx: 'auto' }}>
+        {children}
 
-      <Box sx={{ mt: 3, textAlign: 'right' }}>
-        <Button size="small" color="inherit" onClick={onQuit} sx={{ opacity: 0.5 }}>
-          {t('quitAndSave')}
-        </Button>
+        <Box sx={{ mt: 3, textAlign: 'right' }}>
+          <Button size="small" color="inherit" onClick={onQuit} sx={{ opacity: 0.5 }}>
+            {t('quitAndSave')}
+          </Button>
+        </Box>
       </Box>
-    </Container>
+    </Box>
   );
 }

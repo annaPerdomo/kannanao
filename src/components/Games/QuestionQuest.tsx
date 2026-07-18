@@ -79,7 +79,7 @@ export function QuestionQuest() {
       {/* Question */}
       <Box sx={{ textAlign: 'center', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-          <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.7rem' }}>
+          <Typography sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.7rem' }}>
             {item.question}
           </Typography>
           <SpeakButton text={item.question} iconSize="1rem" />
@@ -133,7 +133,7 @@ export function QuestionQuest() {
                   : {},
               }}
             >
-              <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.25rem' }}>
+              <Typography sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.25rem' }}>
                 {opt.text}
               </Typography>
               {showResult && opt.correct && (
