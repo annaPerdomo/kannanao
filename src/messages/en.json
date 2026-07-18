@@ -415,6 +415,8 @@
       "allCaughtUp": "All caught up — nothing due"
     },
     "hubPage": {
+      "title": "Review",
+      "subtitle": "Practice your due words and play games",
       "wordsWaiting": "{count, plural, one {# word is waiting} other {# words are waiting}}",
       "waitingBody": "A few minutes keeps your words fresh — clear them for a chest 🎁",
       "startTodaysPractice": "Start today’s practice",

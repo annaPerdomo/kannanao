@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { GameTiles } from '@/components/Games';
 import { Loading } from '@/components/Loading';
+import { PageHeader } from '@/components/PageHeader';
 import { useDueCount } from '@/hooks/useDueCount';
 import { LAYOUT } from '@/theme';
 
@@ -93,6 +94,18 @@ export default function ReviewHubPage() {
         py: { xs: 3, sm: 5 },
       }}
     >
+      <PageHeader
+        icon={
+          <Box component="span" aria-hidden sx={{ fontSize: { xs: '1.7rem', sm: '2rem' } }}>
+            🎯
+          </Box>
+        }
+        title={t('title')}
+        subtitle={t('subtitle')}
+        onBack={() => router.push('/')}
+        mb={3}
+      />
+
       {loading ? (
         <Loading />
       ) : error ? (
