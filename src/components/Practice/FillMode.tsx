@@ -9,12 +9,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
-import { type BuddyReaction, StudyBuddy } from '@/components/StudyBuddy';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
+import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
-import { useShop } from '@/hooks/useShop';
 import { cardXp } from '@/lib/flashcardUtils';
 import { hiraganaToKatakana } from '@/lib/reviewGames';
 import type { Flashcard } from '@/types/flashcard';
@@ -71,9 +70,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
     null,
   );
 
-  const { equipped } = useShop();
-  const equippedBuddy = equipped['study_buddy'];
-  const [buddyReaction, setBuddyReaction] = useState<BuddyReaction>('idle');
+  const { triggerReaction } = useBuddyReaction();
 
   const { startSession, recordAnswer, endSession } = useProgress();
   // Stable per-session pick so the completion phrase doesn't flicker on re-render.
@@ -139,7 +136,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
     setXpPop({ amount: xpAmount, correct, key: Date.now() });
     setTimeout(() => setXpPop(null), 1300);
     triggerXpEarned(xpAmount);
-    setBuddyReaction(correct ? 'correct' : 'wrong');
+    triggerReaction(correct ? 'correct' : 'wrong');
 
     if (correct) {
       setRoundScore((s) => s + 1);
@@ -401,8 +398,6 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
           {tCommon('quitAndSave')}
         </Button>
       </Box>
-
-      {equippedBuddy && <StudyBuddy buddyKey={equippedBuddy} reaction={buddyReaction} />}
     </Box>
   );
 }

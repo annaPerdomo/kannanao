@@ -402,11 +402,11 @@ export const CELEBRATION_THEMES: Record<string, CelebTheme> = {
  * Map buddy item key → config with emoji and reaction text.
  *
  * The `reactions` arrays are also translated under the `Shop.buddies.<key>`
- * namespace in messages/en.json — StudyBuddy.tsx reads them via
- * `useTranslations('Shop.buddies')` + `t.raw(...)`. The English literals here
- * are kept as a non-UI fallback because BuddyPreviewModal.tsx and
- * BuddyCardPreview.tsx still read `config.reactions` directly and have not
- * been converted to i18n yet.
+ * namespace in messages/en.json — HomeBuddy.tsx (the one global buddy) reads
+ * them via `useTranslations('Shop.buddies')` + `t.raw(...)`. The English
+ * literals here are kept as a non-UI fallback because BuddyPreviewModal.tsx
+ * and BuddyCardPreview.tsx still read `config.reactions` directly and have
+ * not been converted to i18n yet.
  */
 export const BUDDY_CONFIG: Record<string, BuddyConfig> = {
   buddy_pink_cat: {

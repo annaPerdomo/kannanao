@@ -8,11 +8,10 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { SpeakButton } from '@/components/SpeakButton';
-import { type BuddyReaction, StudyBuddy } from '@/components/StudyBuddy';
+import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
-import { useShop } from '@/hooks/useShop';
 import { cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
 import { shuffle } from '@/lib/reviewGames';
 import type { Flashcard } from '@/types/flashcard';
@@ -67,9 +66,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
   // Totals across all rounds
   const [totalTime, setTotalTime] = useState(0);
 
-  const { equipped } = useShop();
-  const equippedBuddy = equipped['study_buddy'];
-  const [buddyReaction, setBuddyReaction] = useState<BuddyReaction>('idle');
+  const { triggerReaction } = useBuddyReaction();
 
   const { startSession, recordAnswer, endSession } = useProgress();
   // Stable per-session pick so the completion phrase doesn't flicker on re-render.
@@ -159,7 +156,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
 
     if (selected.cardId === tile.cardId && selected.side !== tile.side) {
       // Correct match
-      setBuddyReaction('correct');
+      triggerReaction('correct');
       setMatched((prev) => new Set([...prev, tile.cardId]));
       correctCountRef.current += 1;
       totalAnsweredRef.current += 1;
@@ -175,7 +172,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
       }
     } else {
       // Wrong match — mark both cards as struggled
-      setBuddyReaction('wrong');
+      triggerReaction('wrong');
       setWrong(tile.id);
       totalAnsweredRef.current += 1;
       queue.reportResult(selected.cardId, false);
@@ -375,8 +372,6 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
           {tCommon('quitAndSave')}
         </Button>
       </Box>
-
-      {equippedBuddy && <StudyBuddy buddyKey={equippedBuddy} reaction={buddyReaction} />}
     </Box>
   );
 }

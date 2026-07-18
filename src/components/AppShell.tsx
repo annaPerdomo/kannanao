@@ -2,6 +2,7 @@
 import Box from '@mui/material/Box';
 import { usePathname } from 'next/navigation';
 
+import { BuddyReactionProvider } from '@/contexts/BuddyReactionContext';
 import { DirectMessagesProvider } from '@/contexts/DirectMessagesContext';
 import { ProgressProvider } from '@/contexts/ProgressContext';
 import { XpAnimationProvider } from '@/contexts/XpAnimationContext';
@@ -33,24 +34,26 @@ export function AppShell({
     <XpAnimationProvider>
       <ProgressProvider initialProgress={initialProgress}>
         <DirectMessagesProvider initialUnreadCount={initialUnreadCount}>
-          <NavBar />
-          <Box
-            component="main"
-            id="main-content"
-            sx={{
-              flex: 1,
-              pb: isFullHeight
-                ? 0
-                : { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom))`, sm: 0 },
-              ...(isFullHeight && { overflow: 'hidden' }),
-            }}
-          >
-            <AuthGuard>{children}</AuthGuard>
-          </Box>
-          {!isFullHeight && <Footer />}
-          <BottomNav />
-          <GlobalBuddy />
-          <PushAutoResubscribe />
+          <BuddyReactionProvider>
+            <NavBar />
+            <Box
+              component="main"
+              id="main-content"
+              sx={{
+                flex: 1,
+                pb: isFullHeight
+                  ? 0
+                  : { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom))`, sm: 0 },
+                ...(isFullHeight && { overflow: 'hidden' }),
+              }}
+            >
+              <AuthGuard>{children}</AuthGuard>
+            </Box>
+            {!isFullHeight && <Footer />}
+            <BottomNav />
+            <GlobalBuddy />
+            <PushAutoResubscribe />
+          </BuddyReactionProvider>
         </DirectMessagesProvider>
       </ProgressProvider>
     </XpAnimationProvider>

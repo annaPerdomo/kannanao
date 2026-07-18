@@ -7,12 +7,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
-import { type BuddyReaction, StudyBuddy } from '@/components/StudyBuddy';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
+import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
-import { useShop } from '@/hooks/useShop';
 import { buildMeaningChoices, cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -46,9 +45,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
     null,
   );
 
-  const { equipped } = useShop();
-  const equippedBuddy = equipped['study_buddy'];
-  const [buddyReaction, setBuddyReaction] = useState<BuddyReaction>('idle');
+  const { triggerReaction } = useBuddyReaction();
 
   const { startSession, recordAnswer, endSession } = useProgress();
   // Stable per-session pick so the completion phrase doesn't flicker on re-render.
@@ -120,7 +117,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
       setTimeout(() => setXpPop(null), 1300);
       triggerXpEarned(xpAmount);
 
-      setBuddyReaction(correct ? 'correct' : 'wrong');
+      triggerReaction(correct ? 'correct' : 'wrong');
 
       if (correct) {
         setRoundScore((s) => s + 1);
@@ -137,7 +134,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
         await recordAnswer(sessionIdRef.current, correct, card.jlptLevel, card.id);
       }
     },
-    [selected, card, recordAnswer, queue, triggerXpEarned],
+    [selected, card, recordAnswer, queue, triggerXpEarned, triggerReaction],
   );
 
   const handleExit = async () => {
@@ -355,8 +352,6 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
           {tCommon('quitAndSave')}
         </Button>
       </Box>
-
-      {equippedBuddy && <StudyBuddy buddyKey={equippedBuddy} reaction={buddyReaction} />}
     </Box>
   );
 }
