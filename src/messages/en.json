@@ -280,7 +280,7 @@
         "readingFieldLabel": "Reading (ひらがな)",
         "meaningFieldLabel": "Meaning",
         "furiganaHint": "💡 Use <code>{example}</code> to show readings above kanji on the card",
-        "furiganaHintExample": "{漢字|かんじ}",
+        "furiganaHintExample": "'{'漢字|かんじ'}'",
         "exampleJpFieldLabel": "Example (JP)",
         "exampleEnFieldLabel": "Example (EN)"
       }
@@ -365,7 +365,7 @@
       "progressLabel": "{current} / {total}",
       "stillLearningJp": "まだ",
       "stillLearning": "Still learning",
-      "gotItJp": "{知|し}ってた！",
+      "gotItJp": "'{'知|し'}'ってた！",
       "gotIt": "Got it",
       "previousCardAria": "Previous card",
       "nextCardAria": "Next card",

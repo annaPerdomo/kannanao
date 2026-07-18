@@ -273,7 +273,7 @@
         "readingFieldLabel": "読み方（ひらがな）",
         "meaningFieldLabel": "意味",
         "furiganaHint": "💡 <code>{example}</code> と書くと、カードの漢字の上に読みがつきます",
-        "furiganaHintExample": "{漢字|かんじ}",
+        "furiganaHintExample": "'{'漢字|かんじ'}'",
         "exampleJpFieldLabel": "例文（日本語）",
         "exampleEnFieldLabel": "例文（英語）"
       }
@@ -358,7 +358,7 @@
       "progressLabel": "{current} / {total}",
       "stillLearningJp": "まだ",
       "stillLearning": "おぼえ中",
-      "gotItJp": "{知|し}ってた！",
+      "gotItJp": "'{'知|し'}'ってた！",
       "gotIt": "かんぺき",
       "previousCardAria": "前のカード",
       "nextCardAria": "次のカード",
