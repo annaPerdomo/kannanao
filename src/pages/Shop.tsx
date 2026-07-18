@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
@@ -43,6 +44,7 @@ import { type ColorScheme, LAYOUT } from '@/theme';
 import type { ShopCategory, ShopItem } from '@/types/shop';
 
 export default function Shop() {
+  const router = useRouter();
   const t = useTranslations('Shop');
   const tItems = useTranslations('Shop.items');
   const theme = useTheme();
@@ -212,6 +214,7 @@ export default function Shop() {
           icon={<CardGiftcardIcon />}
           title={t('title')}
           subtitle={t('subtitle')}
+          onBack={() => router.push('/')}
           mb={0}
           endContent={
             loading ? (

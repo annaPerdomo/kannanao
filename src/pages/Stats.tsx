@@ -8,6 +8,7 @@ import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import SchoolIcon from '@mui/icons-material/School';
 import { Box, Chip, Paper, Skeleton, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { PageHeader } from '@/components/PageHeader';
@@ -21,6 +22,7 @@ import { ACHIEVEMENTS, useProgress } from '@/hooks/useProgress';
 import { LAYOUT } from '@/theme';
 
 export default function Stats() {
+  const router = useRouter();
   const t = useTranslations('Stats');
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -49,6 +51,7 @@ export default function Stats() {
         icon={<InsightsIcon />}
         title={t('pageHeader.title')}
         subtitle={t('pageHeader.subtitle')}
+        onBack={() => router.push('/')}
         mb={3}
       />
 
