@@ -57,7 +57,7 @@ export function LanguageMenu() {
         slotProps={{
           paper: {
             sx: {
-              borderRadius: 3,
+              borderRadius: (theme) => theme.radii.md,
               border: `1px solid ${alpha(brand[300], 0.35)}`,
               boxShadow: `0 8px 32px ${alpha(brand[700], 0.12)}`,
               bgcolor: surfaces.overlay,

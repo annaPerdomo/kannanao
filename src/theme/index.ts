@@ -183,12 +183,37 @@ export const LAYOUT = {
   pagePx: { xs: 2, sm: 4, lg: 6 } as const,
 } as const;
 
+/**
+ * Semantic corner-radius scale, in CSS px strings.
+ *
+ * Stored as strings on purpose: MUI multiplies *numeric* `sx` `borderRadius`
+ * values by `shape.borderRadius`, so a bare number here would be silently scaled
+ * (e.g. `radii.md` of 12 would render as 96px). Strings pass straight through in
+ * both `sx` and `styleOverrides`. Change a value here and every element that
+ * references `theme.radii.*` updates at once.
+ */
+export type Radii = {
+  sm: string; // small controls (buttons, inputs, chips)
+  md: string; // menus, popovers, cards, standard containers
+  lg: string; // dialogs and large hero surfaces
+  pill: string; // fully-rounded pills
+};
+
+export const radii: Radii = {
+  sm: '8px',
+  md: '12px',
+  lg: '16px',
+  pill: '9999px',
+};
+
 declare module '@mui/material/styles' {
   interface Theme {
     fonts: FontConfig;
+    radii: Radii;
   }
   interface ThemeOptions {
     fonts?: FontConfig;
+    radii?: Radii;
   }
   interface Palette {
     /** Primary brand color scale (50–900) — changes per scheme */
@@ -686,6 +711,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura', locale: Locale = 
 
   const options: ThemeOptions = {
     fonts,
+    radii,
     palette: {
       mode: 'light',
       primary: { main: s.primaryMain, light: s.primaryLight, dark: s.primaryDark },
@@ -728,7 +754,11 @@ export function createAppTheme(scheme: ColorScheme = 'sakura', locale: Locale = 
       },
     },
 
-    shape: { borderRadius: 12 },
+    // Base radius unit. MUI multiplies every numeric `sx` `borderRadius` by this,
+    // so keeping it modest (8, not 12) stops the ubiquitous `borderRadius: 2/3`
+    // from rendering as 24–36px pills that clip text on small surfaces. Large
+    // panels still read as soft because they use larger multipliers.
+    shape: { borderRadius: 8 },
 
     components: {
       MuiButton: {
@@ -776,7 +806,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura', locale: Locale = 
           root: ({ theme }) => ({
             backgroundColor: '#FFFFFF',
             border: `1.5px solid ${alpha(theme.palette.brand[300], 0.3)}`,
-            borderRadius: 14,
+            borderRadius: radii.md,
             boxShadow: `0 2px 10px ${alpha(theme.palette.brand[300], 0.12)}`,
             backgroundImage: 'none',
             transition: 'box-shadow 0.2s ease, transform 0.2s ease',
@@ -867,7 +897,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura', locale: Locale = 
 
       MuiPaper: {
         styleOverrides: {
-          root: { borderRadius: 14, backgroundImage: 'none' },
+          root: { borderRadius: radii.md, backgroundImage: 'none' },
           elevation1: ({ theme }) => ({
             boxShadow: `0 2px 10px ${alpha(theme.palette.brand[300], 0.1)}`,
           }),

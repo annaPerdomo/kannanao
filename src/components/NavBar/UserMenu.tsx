@@ -33,7 +33,7 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
   }, [user]);
 
   const menuPaperSx = {
-    borderRadius: 3,
+    borderRadius: (theme: Theme) => theme.radii.md,
     border: `1px solid ${alpha(brand[300], 0.35)}`,
     boxShadow: `0 8px 32px ${alpha(brand[700], 0.12)}`,
     bgcolor: surfaces.overlay,

@@ -55,7 +55,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
             cursor: cardCount > 0 ? 'pointer' : 'default',
             position: 'relative',
             overflow: 'hidden',
-            borderRadius: '18px',
+            borderRadius: (theme) => theme.radii.md,
             p: { xs: '20px 18px', sm: '24px 22px' },
             minHeight: 160,
             display: 'flex',
@@ -123,7 +123,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
               alignSelf: 'flex-end',
               position: 'relative',
               zIndex: 1,
-              borderRadius: '24px',
+              borderRadius: (theme) => theme.radii.lg,
               p: '2px',
               background: `linear-gradient(90deg, ${brand[200]}, ${accent[300]})`,
               boxShadow: '0 4px 16px rgba(0,0,0,0.22)',
@@ -132,7 +132,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
             <Box
               sx={{
                 bgcolor: '#fff',
-                borderRadius: '22px',
+                borderRadius: (theme) => theme.radii.md,
                 px: 1.75,
                 py: 0.65,
               }}
@@ -191,7 +191,7 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
                   cursor: practiceDisabled ? 'default' : 'pointer',
                   position: 'relative',
                   overflow: 'hidden',
-                  borderRadius: '18px',
+                  borderRadius: (theme) => theme.radii.md,
                   p: { xs: '20px 18px', sm: '24px 22px' },
                   minHeight: 160,
                   display: 'flex',

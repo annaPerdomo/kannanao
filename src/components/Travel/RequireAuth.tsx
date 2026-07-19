@@ -38,7 +38,7 @@ export function RequireAuth({ children, feature }: RequireAuthProps) {
             sx={{
               width: 64,
               height: 64,
-              borderRadius: '16px',
+              borderRadius: (theme) => theme.radii.lg,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -64,7 +64,7 @@ export function RequireAuth({ children, feature }: RequireAuthProps) {
                 bgcolor: brand[700],
                 color: '#fff',
                 textTransform: 'none',
-                borderRadius: '20px',
+                borderRadius: (theme) => theme.radii.md,
                 px: 3,
                 '&:hover': { bgcolor: brand[800] },
               }}
@@ -76,7 +76,7 @@ export function RequireAuth({ children, feature }: RequireAuthProps) {
               onClick={() => router.push('/travel')}
               sx={{
                 textTransform: 'none',
-                borderRadius: '20px',
+                borderRadius: (theme) => theme.radii.md,
                 borderColor: alpha(brand[400], 0.5),
                 color: brand[700],
               }}

@@ -198,7 +198,7 @@ export function ScenarioPlayer() {
                   gap: 2,
                   p: 2,
                   cursor: 'pointer',
-                  borderRadius: '16px',
+                  borderRadius: (theme) => theme.radii.lg,
                   bgcolor: 'background.paper',
                   border: `1px solid ${alpha(brand[300], 0.2)}`,
                   boxShadow: `0 1px 3px ${alpha(brand[400], 0.08)}`,
@@ -352,7 +352,7 @@ export function ScenarioPlayer() {
                 <Box
                   sx={{
                     p: 2,
-                    borderRadius: '16px',
+                    borderRadius: (theme) => theme.radii.lg,
                     borderTopLeftRadius: '4px',
                     bgcolor: alpha(brand[50], 0.8),
                     border: `1px solid ${alpha(brand[200], 0.4)}`,
@@ -433,7 +433,7 @@ export function ScenarioPlayer() {
                 <Box
                   sx={{
                     p: 2,
-                    borderRadius: '16px',
+                    borderRadius: (theme) => theme.radii.lg,
                     borderTopRightRadius: '4px',
                     background: `linear-gradient(135deg, ${alpha(brand[500], 0.06)}, ${alpha(brand[400], 0.03)})`,
                     border: `1px solid ${alpha(brand[400], 0.2)}`,
@@ -662,7 +662,7 @@ export function ScenarioPlayer() {
                       size="small"
                       onClick={() => setUserInput(suggestion)}
                       sx={{
-                        borderRadius: '20px',
+                        borderRadius: (theme) => theme.radii.md,
                         fontSize: '0.73rem',
                         height: 28,
                         cursor: 'pointer',
@@ -696,7 +696,7 @@ export function ScenarioPlayer() {
                 }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: '20px',
+                    borderRadius: (theme) => theme.radii.md,
                     fontSize: '0.88rem',
                     bgcolor: 'background.paper',
                   },
@@ -728,7 +728,7 @@ export function ScenarioPlayer() {
           <Box
             sx={{
               p: 3,
-              borderRadius: '16px',
+              borderRadius: (theme) => theme.radii.lg,
               background: alpha('#10b981', 0.04),
               border: `1px solid ${alpha('#10b981', 0.15)}`,
               textAlign: 'center',

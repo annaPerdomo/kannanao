@@ -129,7 +129,7 @@ export function DailyPhrasePack() {
           <Box
             sx={{
               p: 2.5,
-              borderRadius: '16px',
+              borderRadius: (theme) => theme.radii.lg,
               bgcolor: 'background.paper',
               border: `1px solid ${alpha(brand[300], 0.2)}`,
               boxShadow: `0 1px 3px ${alpha(brand[400], 0.08)}`,
@@ -162,7 +162,7 @@ export function DailyPhrasePack() {
                       onClick={() => setPlans(example)}
                       sx={{
                         fontSize: '0.68rem',
-                        borderRadius: '20px',
+                        borderRadius: (theme) => theme.radii.md,
                         bgcolor: alpha(brand[50], 0.8),
                         border: `1px solid ${alpha(brand[200], 0.3)}`,
                         transition: 'all 0.15s',
@@ -233,7 +233,7 @@ export function DailyPhrasePack() {
                   key={i}
                   sx={{
                     p: 2,
-                    borderRadius: '14px',
+                    borderRadius: (theme) => theme.radii.md,
                     bgcolor: 'background.paper',
                     border: `1px solid ${alpha(
                       phrase.type === 'hear' ? '#f59e0b' : brand[300],

@@ -150,7 +150,7 @@ function CelebrationOverlay({ cardCount, onReset }: { cardCount: number; onReset
           textAlign: 'center',
           px: 4,
           py: 3,
-          borderRadius: '28px',
+          borderRadius: (theme) => theme.radii.lg,
           background: 'rgba(255,255,255,0.1)',
           backdropFilter: 'blur(16px)',
           border: '1.5px solid rgba(255,255,255,0.22)',
