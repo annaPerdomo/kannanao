@@ -1,7 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { APP_NAME } from '@/lib/brand';
+
 import { rateLimit } from '../_lib/rateLimit';
 import { requireOrganizerAccount } from '../_lib/requireOrganizerAccount';
+
+const UTM_SOURCE = APP_NAME.toLowerCase();
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
 
@@ -54,8 +58,8 @@ export async function GET(req: NextRequest) {
           url: photo.urls?.regular,
           downloadLocation: photo.links?.download_location,
           photographerName: photo.user?.name,
-          photographerUrl: `${photo.user?.links?.html}?utm_source=kannanao&utm_medium=referral`,
-          photoPageUrl: `${photo.links?.html}?utm_source=kannanao&utm_medium=referral`,
+          photographerUrl: `${photo.user?.links?.html}?utm_source=${UTM_SOURCE}&utm_medium=referral`,
+          photoPageUrl: `${photo.links?.html}?utm_source=${UTM_SOURCE}&utm_medium=referral`,
         },
       },
       { status: 200 },

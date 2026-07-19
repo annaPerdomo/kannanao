@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 
 import { PublicFlashcard } from '@/components/PublicFlashcard';
 import { useInView } from '@/hooks/useInView';
+import { APP_DOMAIN } from '@/lib/brand';
 import { createAppTheme, emerald, macChrome, ocean, pink, purple, sky } from '@/theme';
 
 import { Blob } from './Blob';
@@ -218,7 +219,7 @@ export function GroupSection() {
                       fontFamily: (t) => t.fonts.mono,
                     }}
                   >
-                    kannanao.com/embed/demo-yume
+                    {APP_DOMAIN}/embed/demo-yume
                   </Typography>
                 </Box>
               </Box>

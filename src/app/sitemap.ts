@@ -1,7 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { MetadataRoute } from 'next';
 
-const BASE = 'https://www.kannanao.com';
+import { APP_URL } from '@/lib/brand';
+
+const BASE = APP_URL;
 
 function getServerSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
@@ -21,6 +23,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1,
+    },
+    {
+      // The Japanese landing is its own URL (`/` is language-picked per visitor
+      // by the middleware), so it needs its own sitemap entry to be discovered.
+      url: `${BASE}/landing/ja`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
     },
     {
       url: `${BASE}/login`,

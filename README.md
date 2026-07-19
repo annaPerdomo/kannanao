@@ -1,14 +1,14 @@
 <div align="center">
 
-# Kannanao
+# Tangodachi
 
 ### AI-powered Japanese flashcard studio
 
 Spaced practice, gamification, speech memorization, and group study — everything you need to make learning Japanese _actually_ enjoyable. Built for and used by a real base of language learners.
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-kannanao.com-EC4899?style=for-the-badge&logo=vercel&logoColor=white)](https://kannanao.com)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-tangodachi.app-EC4899?style=for-the-badge&logo=vercel&logoColor=white)](https://tangodachi.app)
 
-[![CI](https://github.com/annaPerdomo/kannanao/actions/workflows/ci.yml/badge.svg)](https://github.com/annaPerdomo/kannanao/actions/workflows/ci.yml)
+[![CI](https://github.com/annaPerdomo/tangodachi/actions/workflows/ci.yml/badge.svg)](https://github.com/annaPerdomo/tangodachi/actions/workflows/ci.yml)
 ![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)
 ![Tested with](https://img.shields.io/badge/tested_with-Vitest_%2B_Playwright-6E9F18?logo=vitest&logoColor=white)
 ![License](https://img.shields.io/badge/license-All_Rights_Reserved-lightgrey)
@@ -21,7 +21,7 @@ Spaced practice, gamification, speech memorization, and group study — everythi
 ![MUI](https://img.shields.io/badge/MUI_7-007FFF?style=flat&logo=mui&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)
 
-<img src="docs/screenshot.png" alt="Kannanao — Learn Japanese, one card at a time" width="100%" />
+<img src="docs/screenshot.png" alt="Tangodachi — Learn Japanese, one card at a time" width="100%" />
 
 </div>
 
@@ -213,7 +213,7 @@ A Husky pre-push hook runs `format:check`, `lint`, `tsc --noEmit`, and `test:run
 
 ## 👥 Group system
 
-Kannanao supports **organizer** and **member** account types. Organizers have full access and can create invite codes (displayed as QR codes) to onboard members. Members get a focused study experience — they can practice shared decks, earn XP, and view leaderboards, but cannot access AI generation or create decks.
+Tangodachi supports **organizer** and **member** account types. Organizers have full access and can create invite codes (displayed as QR codes) to onboard members. Members get a focused study experience — they can practice shared decks, earn XP, and view leaderboards, but cannot access AI generation or create decks.
 
 Key features:
 

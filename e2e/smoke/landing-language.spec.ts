@@ -19,11 +19,11 @@ test.describe('Japanese landing', () => {
     await page.goto('/landing/ja');
     await expect(page.locator('link[rel="alternate"][hreflang="ja"]')).toHaveAttribute(
       'href',
-      'https://www.kannanao.com/landing/ja',
+      'https://www.tangodachi.app/landing/ja',
     );
     await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute(
       'href',
-      'https://www.kannanao.com',
+      'https://www.tangodachi.app',
     );
   });
 

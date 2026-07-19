@@ -4,49 +4,52 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
 
 import { SkipToContent } from '@/components/SkipToContent';
+import { APP_NAME, APP_URL } from '@/lib/brand';
 
-const TITLE = 'Kannanao — AI Japanese Flashcard Studio';
+const TITLE = `${APP_NAME} — Japanese Practice for Students & Classrooms`;
 const DESCRIPTION =
-  'Create Japanese flashcards with AI, practice with Match, Fill-in-the-blank & Recall modes, explore Travel Mode phrasebooks, study in groups with leaderboards & assignments, earn XP & achievements, customize with 10 themes, import PDFs, and share or embed decks anywhere.';
+  'Tangodachi is a supplemental Japanese practice app for classrooms. Teachers build decks, assign them with deadlines, and track each student’s progress; students get more ways to study what they’re learning in class — daily review, practice modes, games, quizzes, and AI-assisted flashcards.';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.kannanao.com'),
+  metadataBase: new URL(APP_URL),
   alternates: {
     canonical: '/',
     languages: {
-      en: 'https://www.kannanao.com',
+      en: APP_URL,
       // The Japanese landing is its own URL: `/` is language-picked per visitor
       // by the middleware, which is exactly what hreflang must not point at.
       // x-default stays on the root — it is where an unmatched visitor should
       // land, and the pick sends them somewhere sensible from there.
-      ja: 'https://www.kannanao.com/landing/ja',
-      'x-default': 'https://www.kannanao.com',
+      ja: `${APP_URL}/landing/ja`,
+      'x-default': APP_URL,
     },
   },
   keywords: [
+    'Japanese practice for classrooms',
+    'Japanese practice for students',
+    'Japanese classroom app',
+    'supplemental Japanese material',
+    'Japanese teacher tools',
+    'Japanese practice for students',
+    'Japanese vocabulary practice',
+    'assign Japanese homework',
+    'JLPT N5 practice',
+    'kanji and hiragana practice',
     'Japanese flashcards',
-    'AI flashcard generator',
     'learn Japanese',
-    'Japanese study app',
-    'travel Japanese',
-    'JLPT study',
-    'kanji flashcards',
-    'hiragana practice',
-    'Japanese phrasebook',
-    'group study Japanese',
   ],
   title: TITLE,
   description: DESCRIPTION,
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
-    url: 'https://www.kannanao.com',
-    siteName: 'Kannanao',
+    url: APP_URL,
+    siteName: APP_NAME,
     type: 'website',
     locale: 'en_US',
     images: [
       {
-        url: 'https://www.kannanao.com/og-image.jpg',
+        url: `${APP_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
         type: 'image/jpeg',
@@ -57,7 +60,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: TITLE,
     description: DESCRIPTION,
-    images: ['https://www.kannanao.com/og-image.jpg'],
+    images: [`${APP_URL}/og-image.jpg`],
   },
 };
 
@@ -94,7 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* iOS home screen */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Kannanao" />
+        <meta name="apple-mobile-web-app-title" content={APP_NAME} />
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png" />
         <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167.png" />
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png" />

@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 
 import { AppBackground } from '@/components/AppBackground';
 import { Loading } from '@/components/Loading';
+import { APP_NAME_WITH_EMOJI } from '@/lib/brand';
 import { createAppTheme, LAYOUT } from '@/theme';
 
 // Boot loader shown while the root layout streams in the auth + provider data.
@@ -56,7 +57,7 @@ function NavBarSkeleton() {
             whiteSpace: 'nowrap',
           }}
         >
-          🌸 Kannanao
+          {APP_NAME_WITH_EMOJI}
         </Typography>
 
         {/* Centered nav-link placeholders */}

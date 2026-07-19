@@ -1,7 +1,7 @@
 {
-  "name": "Kannanao — Japanese Flashcards",
-  "short_name": "Kannanao",
-  "description": "AI-powered Japanese flashcard studio",
+  "name": "Tangodachi — Japanese Practice",
+  "short_name": "Tangodachi",
+  "description": "Supplemental Japanese practice for the classroom",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FDE8F3",

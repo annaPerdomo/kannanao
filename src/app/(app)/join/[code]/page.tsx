@@ -20,6 +20,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { readLocaleCookie } from '@/i18n/localeCookie';
+import { APP_NAME_WITH_EMOJI } from '@/lib/brand';
 import { dbRecordLogin, sb } from '@/lib/supabase';
 
 export default function JoinPage() {
@@ -216,7 +217,7 @@ export default function JoinPage() {
                 mb: 2,
               }}
             >
-              🌸 Kannanao
+              {APP_NAME_WITH_EMOJI}
             </Typography>
             <Typography sx={{ fontSize: '3rem', mb: 1 }}>😔</Typography>
             <Typography
@@ -280,7 +281,7 @@ export default function JoinPage() {
               textAlign: 'center',
             }}
           >
-            🌸 Kannanao
+            {APP_NAME_WITH_EMOJI}
           </Typography>
 
           <Typography

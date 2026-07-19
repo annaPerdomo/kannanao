@@ -10,6 +10,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useRef, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
+import { APP_NAME_WITH_EMOJI } from '@/lib/brand';
 
 interface InviteQRCodeProps {
   open: boolean;
@@ -96,7 +97,7 @@ export function InviteQRCode({ open, onClose, code, label, organizerName }: Invi
         </style>
       </head>
       <body>
-        <div class="logo">🌸 Kannanao</div>
+        <div class="logo">${APP_NAME_WITH_EMOJI}</div>
         ${label ? `<div class="label">${label}</div>` : ''}
         <div class="qr-container">
           ${content.querySelector('svg')?.outerHTML ?? ''}

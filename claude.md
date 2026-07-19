@@ -1,8 +1,8 @@
 ---
-description: 'Kannanao (Next.js/React/MUI) development guidelines. Use when: writing components, styling, creating features, or improving code. Follow functional components, MUI styling patterns.'
+description: 'Tangodachi (Next.js/React/MUI) development guidelines. Use when: writing components, styling, creating features, or improving code. Follow functional components, MUI styling patterns.'
 ---
 
-# Kannanao Development Guidelines
+# Tangodachi Development Guidelines
 
 Next.js 15 app with React 19, MUI 7, Supabase, TypeScript.
 

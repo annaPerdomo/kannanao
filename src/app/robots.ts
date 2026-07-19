@@ -1,5 +1,7 @@
 import type { MetadataRoute } from 'next';
 
+import { APP_URL } from '@/lib/brand';
+
 // App-internal surfaces with no value to an anonymous crawler. Keeping bots off
 // them avoids a dynamic SSR render on every hit.
 const DISALLOWED_PATHS = [
@@ -59,6 +61,6 @@ export default function robots(): MetadataRoute.Robots {
       // Greedy, no-value crawlers: block them from the whole site.
       { userAgent: BLOCKED_BOTS, disallow: '/' },
     ],
-    sitemap: 'https://www.kannanao.com/sitemap.xml',
+    sitemap: `${APP_URL}/sitemap.xml`,
   };
 }

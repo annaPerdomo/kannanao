@@ -5,7 +5,7 @@ test.describe('Navigation smoke tests', () => {
     const response = await page.goto('/');
     expect(response?.status()).toBeLessThan(500);
     // .first(): the brand appears several times on the landing page
-    await expect(page.getByText(/Kannanao/i).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/Tangodachi/i).first()).toBeVisible({ timeout: 10000 });
   });
 
   test('login page is reachable', async ({ page }) => {
@@ -22,7 +22,7 @@ test.describe('Navigation smoke tests', () => {
 
   test('navbar renders with brand link', async ({ page }) => {
     await page.goto('/login');
-    const brand = page.getByText(/Kannanao/i).first();
+    const brand = page.getByText(/Tangodachi/i).first();
     await expect(brand).toBeVisible({ timeout: 10000 });
   });
 });

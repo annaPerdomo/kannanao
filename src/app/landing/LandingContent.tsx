@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 
 import type { Locale } from '@/i18n/config';
 import { landingSeoFor } from '@/i18n/messages';
+import { APP_NAME, APP_URL } from '@/lib/brand';
 import { amber, darkPurple, emerald, ocean, pink, purple, sky } from '@/theme';
 
 import LandingAuthGuard from './LandingAuthGuard';
@@ -33,16 +34,23 @@ function buildJsonLd(locale: Locale) {
     {
       '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
-      name: 'Kannanao',
+      name: APP_NAME,
       applicationCategory: 'EducationApplication',
       operatingSystem: 'Web',
       description: seo.appDescription,
-      url: 'https://www.kannanao.com',
+      url: APP_URL,
       offers: {
         '@type': 'Offer',
         price: '0',
         priceCurrency: 'USD',
       },
+      // Signal to search engines that this is a classroom tool for both the
+      // teacher who assigns practice and the student who does it — the core of
+      // the supplemental-practice positioning.
+      audience: [
+        { '@type': 'EducationalAudience', educationalRole: 'teacher' },
+        { '@type': 'EducationalAudience', educationalRole: 'student' },
+      ],
       inLanguage: ['en', 'ja'],
       featureList: seo.featureList,
     },
@@ -51,7 +59,7 @@ function buildJsonLd(locale: Locale) {
       '@type': 'Organization',
       name: 'Variations on a String',
       url: 'https://www.variationsonastring.com',
-      logo: 'https://www.kannanao.com/icons/icon-512.png',
+      logo: `${APP_URL}/icons/icon-512.png`,
     },
     {
       '@context': 'https://schema.org',

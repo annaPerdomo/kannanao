@@ -63,7 +63,7 @@ function row(overrides: Record<string, unknown> = {}) {
 }
 
 function request(authorization?: string) {
-  return new NextRequest('https://kannanao.app/api/cron/review-reminders', {
+  return new NextRequest('https://tangodachi.app/api/cron/review-reminders', {
     headers: authorization ? { authorization } : {},
   });
 }
@@ -129,7 +129,7 @@ describe('GET /api/cron/review-reminders', () => {
       const [devices, payload] = sendPushToSubscriptions.mock.calls[0];
       expect(devices).toHaveLength(1);
       expect(payload).toEqual({
-        title: 'Kannanao',
+        title: 'Tangodachi',
         body: '5 words are ready to review! 🌱',
         url: '/review',
       });

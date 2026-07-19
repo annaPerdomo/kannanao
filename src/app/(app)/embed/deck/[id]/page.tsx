@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { use } from 'react';
 
 import PublicStudyViewer from '@/components/PublicStudyViewer';
+import { APP_NAME, APP_URL } from '@/lib/brand';
 
 function getServerSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
@@ -39,12 +40,12 @@ export async function generateMetadata({
     .select('id', { count: 'exact', head: true })
     .eq('deck_id', id);
 
-  const title = `${deck.emoji ?? '📚'} ${deck.name} — Kannanao`;
+  const title = `${deck.emoji ?? '📚'} ${deck.name} — ${APP_NAME}`;
   const description =
     deck.description ||
     (count != null
-      ? `Study ${count} Japanese flashcard${count !== 1 ? 's' : ''} from the "${deck.name}" deck on Kannanao.`
-      : `Study Japanese flashcards from the "${deck.name}" deck on Kannanao.`);
+      ? `Study ${count} Japanese flashcard${count !== 1 ? 's' : ''} from the "${deck.name}" deck on ${APP_NAME}.`
+      : `Study Japanese flashcards from the "${deck.name}" deck on ${APP_NAME}.`);
 
   return {
     title,
@@ -56,7 +57,7 @@ export async function generateMetadata({
       title,
       description,
       type: 'website',
-      url: `https://www.kannanao.com/embed/deck/${id}`,
+      url: `${APP_URL}/embed/deck/${id}`,
     },
     twitter: {
       card: 'summary_large_image',
