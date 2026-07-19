@@ -2494,42 +2494,47 @@
   },
   "Landing": {
     "seo": {
-      "appDescription": "AI-powered Japanese flashcard studio with travel phrasebooks, speech practice, group classrooms, gamified XP & achievements, multiple themes, and multiple practice modes.",
+      "appDescription": "Tangodachi is a supplemental Japanese practice app for classrooms. Teachers build decks, assign them with deadlines, and track each student's progress; students get more ways to study what they're learning in class — daily review, practice modes, games, graded quizzes, and AI-assisted flashcards.",
       "featureList": [
+        "Classroom groups with assignments, deadlines, and per-student progress tracking",
+        "Daily review that resurfaces each student's due words",
+        "Multiple practice modes: Match, Fill-in-the-blank, and Recall",
+        "Graded quizzes with results teachers can export",
         "AI flashcard generation with Google Gemini",
-        "Travel Mode with 9 phrasebook modules",
-        "Match, Fill-in-the-blank, and Recall practice modes",
-        "Speech memorization practice",
-        "Group classrooms with assignments and leaderboards",
-        "XP system with achievements and daily streaks",
-        "10 customizable color themes",
-        "PDF vocabulary import",
-        "Deck sharing and embeddable widgets"
+        "PDF vocabulary import from textbooks and handouts",
+        "Travel Mode with 9 real-world phrasebook modules",
+        "Speech memorization practice for presentations",
+        "XP, achievements, and daily streaks to keep students practicing",
+        "Deck sharing and embeddable widgets — no account needed"
       ],
       "faq": [
         {
           "question": "What is Tangodachi?",
-          "answer": "Tangodachi is a free, AI-powered Japanese flashcard studio. It uses Google Gemini to generate readings, meanings, and bilingual example sentences for any word you type. It also includes Travel Mode phrasebooks, group study classrooms, gamified XP, and 10 customizable themes."
+          "answer": "Tangodachi is a free, supplemental Japanese practice app built for classrooms. Teachers create decks, assign them with deadlines, and track how each student is doing. Students get more ways to study what they're learning in class — daily review, practice modes, games, graded quizzes, and AI-generated flashcards. It works on any device — no install required."
+        },
+        {
+          "question": "Is Tangodachi good for teachers and classrooms?",
+          "answer": "Yes — it's designed for it. Teachers invite a whole class with a single QR code, assign specific decks with due dates, monitor each student's progress and accuracy, run graded quizzes with exportable results, and send encouragement messages. Tangodachi supplements what you already teach, giving students structured practice between classes."
+        },
+        {
+          "question": "Can students practice what they learn in class?",
+          "answer": "Yes. Once a teacher assigns a deck, students get daily review that resurfaces the words they need to see, plus practice modes and quick games built from those same words. It turns classroom vocabulary and grammar into short, repeatable practice students can do on their phone between lessons."
+        },
+        {
+          "question": "What practice and review modes are available?",
+          "answer": "Every student gets a Daily Review that surfaces the words due that day, plus three practice modes — Match (race the clock pairing words to meanings), Fill-in-the-blank (type the missing word in a sentence), and Recall (see the meaning, type the Japanese) — quick games, and graded quizzes. Every session earns XP toward the next level."
         },
         {
           "question": "How does AI flashcard generation work?",
-          "answer": "Type any word in English or Japanese and Tangodachi uses Google Gemini AI to generate the hiragana reading, kanji, meaning, and bilingual example sentences. You can also upload a PDF to extract vocabulary and generate cards in bulk."
+          "answer": "Teachers type any word in English or Japanese and Google Gemini generates the hiragana reading, kanji, meaning, and bilingual example sentences — so building classroom material takes minutes, not hours. You can also upload a PDF of a textbook or handout to extract vocabulary and generate cards in bulk."
         },
         {
           "question": "What is Travel Mode?",
-          "answer": "Travel Mode is a built-in pocket phrasebook with 9 interactive modules: Daily Phrases, Scenarios, Food Menu, Emergency, Listening Practice, Katakana Decoder, Culture Guide, Point & Communicate, and Show Cards. Each module prepares you for real conversations in Japan."
-        },
-        {
-          "question": "Can I study with friends or in a class?",
-          "answer": "Yes! Tangodachi supports group study. Organizers can create a group, invite members via QR code, assign decks with deadlines, view a weekly XP leaderboard, and send encouragement messages. You can also share any deck with a link or embed flashcards on a website."
-        },
-        {
-          "question": "What practice modes are available?",
-          "answer": "Tangodachi offers three practice modes: Match (race the clock pairing words to meanings), Fill-in-the-blank (type the missing word in a sentence), and Recall (see the meaning, type the Japanese). Every session earns XP toward your next level."
+          "answer": "Travel Mode is a built-in pocket phrasebook with 9 interactive modules: Daily Phrases, Scenarios, Food Menu, Emergency, Listening Practice, Katakana Decoder, Culture Guide, Point & Communicate, and Show Cards. Each module prepares students for real conversations in Japan."
         },
         {
           "question": "Is Tangodachi free?",
-          "answer": "Tangodachi is currently free and in closed beta. You can join the waitlist on the homepage to be notified when new spots open up."
+          "answer": "Tangodachi is currently free and in closed beta. Teachers and students can join the waitlist on the homepage to be notified when new spots open up."
         }
       ]
     },
@@ -2540,25 +2545,37 @@
     },
     "hero": {
       "waitlistBadge": "✨ Closed beta — join the waitlist",
-      "headline": "Learn Japanese,<br></br>one card<br></br>at a time.",
-      "subtitle": "AI-powered flashcards, travel phrasebooks, speech practice, gamified XP & achievements, customizable themes, and group study — everything you need to make learning Japanese <em>actually</em> enjoyable.",
+      "headline": "Japanese practice<br></br>for the whole<br></br>classroom.",
+      "subtitle": "Teachers build decks, assign them, and track every student. Students get more ways to study what they learn in class — daily review, practice modes, games, and quizzes — everything that makes Japanese <em>actually</em> stick.",
       "dashboardButton": "Go to dashboard 🌸",
       "waitlistButton": "Join the waitlist 🌸",
       "signInButton": "Sign in",
       "tags": {
-        "japanese": "🎌 Japanese",
+        "classrooms": "🏫 Classrooms",
+        "dailyReview": "🔁 Daily review",
         "aiPowered": "🤖 AI-powered",
-        "gamified": "🎮 Gamified",
+        "quizzes": "📝 Quizzes",
         "travelMode": "✈️ Travel Mode",
-        "groups": "👥 Groups",
-        "themes": "🎨 Themes"
+        "gamified": "🎮 Gamified"
       },
       "scroll": "scroll"
     },
     "features": {
-      "heading": "Everything you need<br></br>to study smarter",
-      "subheading": "AI flashcards, travel phrasebooks, group classrooms, speech practice, gamification, and more — a complete Japanese learning studio.",
+      "heading": "Everything a class needs<br></br>to practice Japanese",
+      "subheading": "Classroom groups, daily review, practice modes, graded quizzes, AI card generation, and more — a complete supplemental practice platform for Japanese class.",
       "items": {
+        "classroomGroups": {
+          "title": "Classroom Groups",
+          "desc": "Invite a class with a QR code, assign decks with deadlines, and track every student's progress and accuracy."
+        },
+        "dailyReview": {
+          "title": "Daily Review",
+          "desc": "Each student gets a short daily session that resurfaces the exact words they need to see next."
+        },
+        "gradedQuizzes": {
+          "title": "Graded Quizzes",
+          "desc": "Give a no-retry quiz on any deck and export the results — perfect for checking what stuck after a lesson."
+        },
         "aiCardGeneration": {
           "title": "AI Card Generation",
           "desc": "Type a word — Google Gemini fills readings, meanings, and bilingual example sentences instantly."
@@ -2703,9 +2720,13 @@
       }
     },
     "practice": {
-      "heading": "Three ways to practice",
-      "subheading": "Switch between modes to keep sessions fresh and challenging. Each one earns XP toward your next level.",
+      "heading": "Practice that fits every lesson",
+      "subheading": "Students start with a daily review of what's due, then switch between practice modes to keep it fresh. Every session earns XP toward the next level.",
       "modes": {
+        "dailyReview": {
+          "name": "Daily Review",
+          "desc": "A short daily session that resurfaces each student's due words — the fastest way to make class vocabulary stick."
+        },
         "match": {
           "name": "Match",
           "desc": "Race the clock matching Japanese words to their meanings. Great for rapid-fire vocabulary drilling."
@@ -2908,7 +2929,7 @@
       "subtitle": "Tangodachi is currently in closed beta. Drop your email and we'll notify you the moment new spots open up.",
       "dashboardButton": "Go to dashboard 🌸",
       "brandName": "🌸 Tangodachi",
-      "tagline": "AI-powered Japanese flashcard studio",
+      "tagline": "Japanese practice for the classroom",
       "madeBy": "Made with 💕 by <link>Variations on a String</link>"
     }
   }

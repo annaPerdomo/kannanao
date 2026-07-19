@@ -25,6 +25,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
+      // The Japanese landing is its own URL (`/` is language-picked per visitor
+      // by the middleware), so it needs its own sitemap entry to be discovered.
+      url: `${BASE}/landing/ja`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
       url: `${BASE}/login`,
       lastModified: new Date(),
       changeFrequency: 'monthly',

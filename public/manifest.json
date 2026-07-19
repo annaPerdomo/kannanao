@@ -1,7 +1,7 @@
 {
-  "name": "Tangodachi — Japanese Flashcards",
+  "name": "Tangodachi — Japanese Practice",
   "short_name": "Tangodachi",
-  "description": "AI-powered Japanese flashcard studio",
+  "description": "Supplemental Japanese practice for the classroom",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FDE8F3",

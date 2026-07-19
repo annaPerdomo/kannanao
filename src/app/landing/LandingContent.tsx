@@ -44,6 +44,13 @@ function buildJsonLd(locale: Locale) {
         price: '0',
         priceCurrency: 'USD',
       },
+      // Signal to search engines that this is a classroom tool for both the
+      // teacher who assigns practice and the student who does it — the core of
+      // the supplemental-practice positioning.
+      audience: [
+        { '@type': 'EducationalAudience', educationalRole: 'teacher' },
+        { '@type': 'EducationalAudience', educationalRole: 'student' },
+      ],
       inLanguage: ['en', 'ja'],
       featureList: seo.featureList,
     },

@@ -6,9 +6,9 @@ import type { Metadata } from 'next';
 import { SkipToContent } from '@/components/SkipToContent';
 import { APP_NAME, APP_URL } from '@/lib/brand';
 
-const TITLE = `${APP_NAME} — AI Japanese Flashcard Studio`;
+const TITLE = `${APP_NAME} — Japanese Practice for Students & Classrooms`;
 const DESCRIPTION =
-  'Create Japanese flashcards with AI, practice with Match, Fill-in-the-blank & Recall modes, explore Travel Mode phrasebooks, study in groups with leaderboards & assignments, earn XP & achievements, customize with 10 themes, import PDFs, and share or embed decks anywhere.';
+  'Tangodachi is a supplemental Japanese practice app for classrooms. Teachers build decks, assign them with deadlines, and track each student’s progress; students get more ways to study what they’re learning in class — daily review, practice modes, games, quizzes, and AI-assisted flashcards.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
@@ -25,16 +25,18 @@ export const metadata: Metadata = {
     },
   },
   keywords: [
+    'Japanese practice for classrooms',
+    'Japanese practice for students',
+    'Japanese classroom app',
+    'supplemental Japanese material',
+    'Japanese teacher tools',
+    'Japanese practice for students',
+    'Japanese vocabulary practice',
+    'assign Japanese homework',
+    'JLPT N5 practice',
+    'kanji and hiragana practice',
     'Japanese flashcards',
-    'AI flashcard generator',
     'learn Japanese',
-    'Japanese study app',
-    'travel Japanese',
-    'JLPT study',
-    'kanji flashcards',
-    'hiragana practice',
-    'Japanese phrasebook',
-    'group study Japanese',
   ],
   title: TITLE,
   description: DESCRIPTION,

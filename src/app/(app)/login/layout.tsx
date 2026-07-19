@@ -4,7 +4,7 @@ import { APP_NAME } from '@/lib/brand';
 
 export const metadata: Metadata = {
   title: `Sign In · ${APP_NAME}`,
-  description: `Sign in to ${APP_NAME} — your AI-powered Japanese flashcard studio. Practice vocabulary, track your progress, and learn Japanese.`,
+  description: `Sign in to ${APP_NAME} — supplemental Japanese practice for the classroom. Teachers assign decks; students get more ways to study what they learn in class.`,
   alternates: {
     canonical: '/login',
   },

@@ -21,7 +21,14 @@ import { SakuraFallEffect } from './SakuraFallEffect';
 
 const sakuraTheme = createAppTheme('sakura');
 
-const TAG_KEYS = ['japanese', 'aiPowered', 'gamified', 'travelMode', 'groups', 'themes'] as const;
+const TAG_KEYS = [
+  'classrooms',
+  'dailyReview',
+  'aiPowered',
+  'quizzes',
+  'travelMode',
+  'gamified',
+] as const;
 
 export function HeroSection() {
   const router = useRouter();

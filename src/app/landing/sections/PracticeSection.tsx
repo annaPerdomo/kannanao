@@ -7,11 +7,18 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
 import { useInView } from '@/hooks/useInView';
-import { emerald, pink, purple } from '@/theme';
+import { emerald, pink, purple, sky } from '@/theme';
 
 import { Blob } from './Blob';
 
 const MODES = [
+  {
+    key: 'dailyReview',
+    emoji: '🔁',
+    color: sky[600],
+    bg: alpha(sky[100], 0.6),
+    border: alpha(sky[300], 0.55),
+  },
   {
     key: 'match',
     emoji: '🔗',
@@ -93,7 +100,7 @@ export function PracticeSection() {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
             gap: 2.5,
           }}
         >

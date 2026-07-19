@@ -12,17 +12,17 @@ import { darkPurple, pink, purple, sky } from '@/theme';
 import { Blob } from './Blob';
 
 const FEATURES = [
-  { key: 'aiCardGeneration', emoji: '🤖' },
-  { key: 'travelMode', emoji: '✈️' },
+  { key: 'classroomGroups', emoji: '🏫' },
+  { key: 'dailyReview', emoji: '🔁' },
   { key: 'threePracticeModes', emoji: '🎮' },
-  { key: 'themesAndShop', emoji: '🎨' },
-  { key: 'groupStudy', emoji: '👥' },
+  { key: 'gradedQuizzes', emoji: '📝' },
+  { key: 'aiCardGeneration', emoji: '🤖' },
+  { key: 'pdfImport', emoji: '📄' },
+  { key: 'travelMode', emoji: '✈️' },
   { key: 'speechPractice', emoji: '🎤' },
   { key: 'streaksAndAchievements', emoji: '🔥' },
-  { key: 'pdfImport', emoji: '📄' },
   { key: 'leaderboard', emoji: '🏆' },
-  { key: 'habitTracker', emoji: '✅' },
-  { key: 'beautifulCards', emoji: '🖼️' },
+  { key: 'themesAndShop', emoji: '🎨' },
   { key: 'shareAndEmbed', emoji: '🤝' },
 ];
 
