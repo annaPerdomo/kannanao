@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
+import { APP_NAME } from '@/lib/brand';
 import { LAYOUT } from '@/theme';
 
 export function Footer() {
@@ -57,7 +58,7 @@ export function Footer() {
             '&:hover': { color: brand[700] },
           }}
         >
-          About Kannanao
+          About {APP_NAME}
         </Link>
 
         <Typography

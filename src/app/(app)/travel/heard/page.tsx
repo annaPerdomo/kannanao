@@ -1,16 +1,17 @@
 import type { Metadata } from 'next';
 
 import { WhatDidTheySay } from '@/components/Travel';
+import { APP_NAME, APP_URL } from '@/lib/brand';
 
 export const metadata: Metadata = {
-  title: '"What Did They Say?" — Phrases You\'ll Hear in Japan | Kannanao',
+  title: `"What Did They Say?" — Phrases You'll Hear in Japan | ${APP_NAME}`,
   description:
     'Understand what Japanese people say TO you at convenience stores, restaurants, train stations, shops, and hotels. With pronunciation and how to respond.',
   openGraph: {
     title: '"What Did They Say?" — Phrases You\'ll Hear in Japan',
     description:
       'Common Japanese phrases said to tourists at stores, restaurants, stations, and hotels — with translations and suggested responses.',
-    url: 'https://www.kannanao.com/travel/heard',
+    url: `${APP_URL}/travel/heard`,
   },
   alternates: {
     canonical: '/travel/heard',

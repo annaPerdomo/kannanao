@@ -1,7 +1,8 @@
+import { APP_NAME } from '@/lib/brand';
 import ShopPage from '@/pages/Shop';
 
 export const metadata = {
-  title: 'Shop · Kannanao',
+  title: `Shop · ${APP_NAME}`,
 };
 
 export default function Shop() {

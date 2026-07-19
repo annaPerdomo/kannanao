@@ -1,7 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { MetadataRoute } from 'next';
 
-const BASE = 'https://www.kannanao.com';
+import { APP_URL } from '@/lib/brand';
+
+const BASE = APP_URL;
 
 function getServerSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';

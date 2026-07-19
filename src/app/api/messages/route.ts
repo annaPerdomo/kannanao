@@ -160,7 +160,7 @@ export async function POST(req: NextRequest) {
   after(
     sendPushToUser(recipientId, {
       // Keep the title short — iOS truncates around 30 characters and
-      // already appends "from Kannanao" with the app icon
+      // already appends "from Tangodachi" with the app icon
       title: `${senderName} sent you a ${text ? 'message' : (mediaKind ?? 'message')}! 🌸`,
       body: text ? text.slice(0, 100) : videoUrl ? '🎥' : '📷',
       url: `/notifications/${sender.id}`,

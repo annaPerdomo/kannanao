@@ -5,6 +5,7 @@ import { AppShell } from '@/components/AppShell';
 import { StaticIntlProvider } from '@/components/StaticIntlProvider';
 import type { Locale } from '@/i18n/config';
 import { landingMessagesFor } from '@/i18n/messages';
+import { APP_NAME, APP_URL } from '@/lib/brand';
 
 import Providers from '../../providers';
 import LandingContent from '../LandingContent';
@@ -13,7 +14,7 @@ import LandingContent from '../LandingContent';
 // resolved outside the intl provider (see the comment below), so nothing here
 // can read the catalog. The terms that must match the in-app copy are the
 // practice-mode names (穴うめ / 当ててみよう) and ランキング — never リーダーボード.
-const TITLE = 'Kannanao — AIで作る日本語フラッシュカードスタジオ';
+const TITLE = `${APP_NAME} — AIで作る日本語フラッシュカードスタジオ`;
 const DESCRIPTION =
   'AIで日本語のフラッシュカードを作成。マッチ・穴うめ・当ててみようの練習モード、トラベルモードのフレーズ集、ランキングと課題つきのグループ学習、XPと実績、10種類のテーマ、PDFの取り込み、デッキの共有と埋め込みに対応しています。';
 
@@ -31,21 +32,21 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/landing/ja',
     languages: {
-      en: 'https://www.kannanao.com',
-      ja: 'https://www.kannanao.com/landing/ja',
-      'x-default': 'https://www.kannanao.com',
+      en: APP_URL,
+      ja: `${APP_URL}/landing/ja`,
+      'x-default': APP_URL,
     },
   },
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
-    url: 'https://www.kannanao.com/landing/ja',
-    siteName: 'Kannanao',
+    url: `${APP_URL}/landing/ja`,
+    siteName: APP_NAME,
     type: 'website',
     locale: 'ja_JP',
     images: [
       {
-        url: 'https://www.kannanao.com/og-image.jpg',
+        url: `${APP_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
         type: 'image/jpeg',
@@ -56,7 +57,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: TITLE,
     description: DESCRIPTION,
-    images: ['https://www.kannanao.com/og-image.jpg'],
+    images: [`${APP_URL}/og-image.jpg`],
   },
 };
 

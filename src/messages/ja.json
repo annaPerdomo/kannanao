@@ -386,7 +386,7 @@
       "tapCardToFlip": "カードをタップしてめくる",
       "clickCardToFlip": "カードをクリックしてめくる",
       "poweredBy": "提供",
-      "brandName": "Kannanao",
+      "brandName": "Tangodachi",
       "madeBy": "制作: Variations on a String"
     },
     "useReviewCards": {
@@ -569,13 +569,13 @@
       }
     },
     "meta": {
-      "kanaTitle": "かなビルダー — 復習 | Kannanao",
+      "kanaTitle": "かなビルダー — 復習 | Tangodachi",
       "kanaDescription": "デッキの単語を、かなタイルを1枚ずつ並べてつづります。",
-      "matchTitle": "ワードマッチ — 復習 | Kannanao",
+      "matchTitle": "ワードマッチ — 復習 | Tangodachi",
       "matchDescription": "デッキの日本語の単語と意味をマッチ。復習の近いカードから出題します。",
-      "particlesTitle": "助詞ピッカー — 復習 | Kannanao",
+      "particlesTitle": "助詞ピッカー — 復習 | Tangodachi",
       "particlesDescription": "正しい助詞（は・が・を・に・の…）を選んで文を完成させます。",
-      "questionsTitle": "しつもんクエスト — 復習 | Kannanao",
+      "questionsTitle": "しつもんクエスト — 復習 | Tangodachi",
       "questionsDescription": "日本語の疑問詞を練習。しつもんに合う答えを選びます。"
     }
   },
@@ -996,8 +996,8 @@
     "inviteQRCode": {
       "title": "招待QRコード",
       "shareSubtitle": "新しいメンバーに共有しましょう",
-      "printTitle": "Kannanao の招待",
-      "scanMessage": "このコードを読み取って、Kannanaoの<b>{organizerName}</b>さんの学習グループに参加しよう！",
+      "printTitle": "Tangodachi の招待",
+      "scanMessage": "このコードを読み取って、Tangodachiの<b>{organizerName}</b>さんの学習グループに参加しよう！",
       "copyLink": "リンクをコピー",
       "print": "印刷",
       "linkCopied": "リンクをコピーしました！"
@@ -1161,7 +1161,7 @@
     }
   },
   "Nav": {
-    "brandName": "🌸 Kannanao",
+    "brandName": "🌸 Tangodachi",
     "mainNavigationAriaLabel": "メインナビゲーション",
     "messagesAriaLabel": "メッセージ",
     "achievementUnlocked": "実績を解除:",
@@ -1249,7 +1249,7 @@
   },
   "Auth": {
     "login": {
-      "brandName": "🌸 Kannanao",
+      "brandName": "🌸 Tangodachi",
       "betaBadge": "ベータ · 新規登録は停止中",
       "waitlistIntro": "ベータ版のため、現在新規登録を停止しています。メールアドレスを登録すると、受付を再開したときにおしらせします！",
       "backToSignIn": "アカウントをお持ちの方はログイン",
@@ -1269,7 +1269,7 @@
       "emailPlaceholder": "you@example.com",
       "nameLabel": "お名前（任意）",
       "namePlaceholder": "お名前",
-      "messageLabel": "Kannanaoを何に使いたいですか？（任意）",
+      "messageLabel": "Tangodachiを何に使いたいですか？（任意）",
       "messagePlaceholder": "JLPT N3の勉強のために…",
       "submitButton": "受付が始まったら知らせる 🌸",
       "genericError": "うまくいきませんでした。",
@@ -1362,9 +1362,9 @@
       "memberFallback": "メンバー"
     },
     "notificationsLayout": {
-      "installBanner": "メッセージの通知はブラウザでは届きません。Kannanaoアプリでのみ使えます。<bold>ホーム画面のKannanaoアイコン</bold>から開いてください。追加するには、Safariの<bold>共有</bold>ボタンをタップして<bold>「ホーム画面に追加」</bold>を選びます。",
+      "installBanner": "メッセージの通知はブラウザでは届きません。Tangodachiアプリでのみ使えます。<bold>ホーム画面のTangodachiアイコン</bold>から開いてください。追加するには、Safariの<bold>共有</bold>ボタンをタップして<bold>「ホーム画面に追加」</bold>を選びます。",
       "notificationsOnSuccess": "通知をオンにしました！ 🎉",
-      "notificationsBlockedWarning": "Kannanaoの通知がブロックされています。端末の設定でオンにしてから、ここにもどってください。",
+      "notificationsBlockedWarning": "Tangodachiの通知がブロックされています。端末の設定でオンにしてから、ここにもどってください。",
       "turningOn": "オンにしています…",
       "turnOnNotifications": "通知をオンにする",
       "genericErrorName": "エラー",
@@ -2501,8 +2501,8 @@
       ],
       "faq": [
         {
-          "question": "Kannanaoとは？",
-          "answer": "Kannanaoは、AIで日本語のフラッシュカードを作れる無料の学習スタジオです。入力した単語に対して、Google Geminiが読み方・意味・日英の例文を生成します。旅のフレーズ集「トラベルモード」、グループ学習、ゲーム感覚のXP、10種類のテーマも使えます。"
+          "question": "Tangodachiとは？",
+          "answer": "Tangodachiは、AIで日本語のフラッシュカードを作れる無料の学習スタジオです。入力した単語に対して、Google Geminiが読み方・意味・日英の例文を生成します。旅のフレーズ集「トラベルモード」、グループ学習、ゲーム感覚のXP、10種類のテーマも使えます。"
         },
         {
           "question": "AIのカード生成はどう動きますか？",
@@ -2514,15 +2514,15 @@
         },
         {
           "question": "友だちやクラスでいっしょに学習できますか？",
-          "answer": "はい。Kannanaoはグループ学習に対応しています。リーダーはグループを作り、QRコードでメンバーを招待し、しめ切りつきの課題を出し、週間のXPランキングを見て、応援メッセージを送れます。デッキはリンクで共有したり、ウェブサイトに埋め込んだりもできます。"
+          "answer": "はい。Tangodachiはグループ学習に対応しています。リーダーはグループを作り、QRコードでメンバーを招待し、しめ切りつきの課題を出し、週間のXPランキングを見て、応援メッセージを送れます。デッキはリンクで共有したり、ウェブサイトに埋め込んだりもできます。"
         },
         {
           "question": "どんな練習モードがありますか？",
           "answer": "3つの練習モードがあります。マッチ（時間と競争しながら単語と意味をペアにする）、穴うめ（文の足りない単語を入力する）、当ててみよう（意味を見て日本語を入力する）。どのモードも、学習するたびに次のレベルへのXPがたまります。"
         },
         {
-          "question": "Kannanaoは無料ですか？",
-          "answer": "Kannanaoは現在クローズドベータで、無料でお使いいただけます。新しい枠が空きしだいおしらせしますので、トップページのウェイトリストにご登録ください。"
+          "question": "Tangodachiは無料ですか？",
+          "answer": "Tangodachiは現在クローズドベータで、無料でお使いいただけます。新しい枠が空きしだいおしらせしますので、トップページのウェイトリストにご登録ください。"
         }
       ]
     },
@@ -2582,7 +2582,7 @@
         },
         "pdfImport": {
           "title": "PDF取り込み",
-          "desc": "教科書や単語リストのPDFをアップロードするだけ。Kannanaoが単語を抜き出してカードにします。"
+          "desc": "教科書や単語リストのPDFをアップロードするだけ。Tangodachiが単語を抜き出してカードにします。"
         },
         "leaderboard": {
           "title": "ランキング",
@@ -2809,7 +2809,7 @@
       "badge": "共有して、いっしょに",
       "heading": "みんなで、もっと",
       "subheading": "デッキをリンクで共有。カードをどんなサイトにも埋め込み。課題・ランキング・応援メッセージがそろった教室も作れます。",
-      "poweredBy": "提供 Kannanao",
+      "poweredBy": "提供 Tangodachi",
       "shareHeading": "デッキを共有・埋め込み",
       "shareBody": "リンクひとつでデッキを共有。友だちやクラスメイトは、アカウントなしですぐに学習できます。ブログやNotion、ウェブサイトにカードを直接埋め込むこともできます。",
       "shareTags": {
@@ -2898,9 +2898,9 @@
     "cta": {
       "betaChipLabel": "クローズドベータ — まもなく枠が空きます",
       "headline": "日本語を、<br></br>レベルアップしませんか？",
-      "subtitle": "Kannanaoは現在クローズドベータです。メールアドレスをご登録いただければ、新しい枠が空きしだいおしらせします。",
+      "subtitle": "Tangodachiは現在クローズドベータです。メールアドレスをご登録いただければ、新しい枠が空きしだいおしらせします。",
       "dashboardButton": "ダッシュボードへ 🌸",
-      "brandName": "🌸 Kannanao",
+      "brandName": "🌸 Tangodachi",
       "tagline": "AIで作る日本語フラッシュカードスタジオ",
       "madeBy": "💕 をこめて <link>Variations on a String</link> が制作"
     }

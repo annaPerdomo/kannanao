@@ -675,7 +675,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
           </Box>
         </Box>
 
-        {/* Branding: Powered by Kannanao first, then Made by Variations on a String */}
+        {/* Branding: Powered by Tangodachi first, then Made by Variations on a String */}
         <Box
           sx={{
             mt: 1,

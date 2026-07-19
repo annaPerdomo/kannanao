@@ -7,6 +7,8 @@
  * here; the cron route (src/app/api/cron/review-reminders) only does I/O.
  */
 
+import { APP_NAME } from './brand';
+
 /**
  * The timezone the reminder job calls "today".
  *
@@ -109,7 +111,7 @@ export function buildReminderPayload(candidate: ReminderCandidate, today: string
       } ready!`
     : `${ready} ${candidate.dueCount === 1 ? 'is' : 'are'} ready to review! 🌱`;
 
-  return { title: 'Kannanao', body, url: '/review' };
+  return { title: APP_NAME, body, url: '/review' };
 }
 
 /** Split the candidates into the pushes to send and a tally of why the rest got none. */

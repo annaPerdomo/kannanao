@@ -393,7 +393,7 @@
       "tapCardToFlip": "TAP CARD TO FLIP",
       "clickCardToFlip": "CLICK CARD TO FLIP",
       "poweredBy": "Powered by",
-      "brandName": "Kannanao",
+      "brandName": "Tangodachi",
       "madeBy": "Made by Variations on a String"
     },
     "useReviewCards": {
@@ -576,13 +576,13 @@
       }
     },
     "meta": {
-      "kanaTitle": "Kana Builder — Review | Kannanao",
+      "kanaTitle": "Kana Builder — Review | Tangodachi",
       "kanaDescription": "Build the kana spelling of words from your decks, one tile at a time.",
-      "matchTitle": "Word Match — Review | Kannanao",
+      "matchTitle": "Word Match — Review | Tangodachi",
       "matchDescription": "Match Japanese words from your decks to their meanings — due cards first.",
-      "particlesTitle": "Particle Picker — Review | Kannanao",
+      "particlesTitle": "Particle Picker — Review | Tangodachi",
       "particlesDescription": "Fill in the right Japanese particle (は・が・を・に・の…) to complete sentences.",
-      "questionsTitle": "Question Quest — Review | Kannanao",
+      "questionsTitle": "Question Quest — Review | Tangodachi",
       "questionsDescription": "Practice Japanese question words — pick the answer that fits each question."
     }
   },
@@ -1003,8 +1003,8 @@
     "inviteQRCode": {
       "title": "Invite QR Code",
       "shareSubtitle": "Share this with new members",
-      "printTitle": "Kannanao Invite",
-      "scanMessage": "Scan this code to join <b>{organizerName}</b>’s study group on Kannanao!",
+      "printTitle": "Tangodachi Invite",
+      "scanMessage": "Scan this code to join <b>{organizerName}</b>’s study group on Tangodachi!",
       "copyLink": "Copy link",
       "print": "Print",
       "linkCopied": "Link copied to clipboard!"
@@ -1168,7 +1168,7 @@
     }
   },
   "Nav": {
-    "brandName": "🌸 Kannanao",
+    "brandName": "🌸 Tangodachi",
     "mainNavigationAriaLabel": "Main navigation",
     "messagesAriaLabel": "Messages",
     "achievementUnlocked": "Achievement unlocked:",
@@ -1256,7 +1256,7 @@
   },
   "Auth": {
     "login": {
-      "brandName": "🌸 Kannanao",
+      "brandName": "🌸 Tangodachi",
       "betaBadge": "Beta · Sign-ups paused",
       "waitlistIntro": "Sign-ups are currently closed while we're in beta. Leave your email and we'll let you know when we open up!",
       "backToSignIn": "Already have an account? Sign in",
@@ -1276,7 +1276,7 @@
       "emailPlaceholder": "you@example.com",
       "nameLabel": "Name (optional)",
       "namePlaceholder": "Your name",
-      "messageLabel": "What do you want to use Kannanao for? (optional)",
+      "messageLabel": "What do you want to use Tangodachi for? (optional)",
       "messagePlaceholder": "I'm studying for JLPT N3…",
       "submitButton": "Notify me when spots open 🌸",
       "genericError": "Something went wrong.",
@@ -1369,9 +1369,9 @@
       "memberFallback": "Member"
     },
     "notificationsLayout": {
-      "installBanner": "Message notifications only work in the Kannanao app, not in the browser. Open <bold>Kannanao from your Home Screen icon</bold> — or to add it, tap Safari's <bold>Share</bold> button and choose <bold>“Add to Home Screen”</bold>.",
+      "installBanner": "Message notifications only work in the Tangodachi app, not in the browser. Open <bold>Tangodachi from your Home Screen icon</bold> — or to add it, tap Safari's <bold>Share</bold> button and choose <bold>“Add to Home Screen”</bold>.",
       "notificationsOnSuccess": "Notifications are on! 🎉",
-      "notificationsBlockedWarning": "Notifications are blocked for Kannanao — turn them on in your device Settings, then come back here.",
+      "notificationsBlockedWarning": "Notifications are blocked for Tangodachi — turn them on in your device Settings, then come back here.",
       "turningOn": "Turning on…",
       "turnOnNotifications": "Turn on notifications",
       "genericErrorName": "Error",
@@ -2508,12 +2508,12 @@
       ],
       "faq": [
         {
-          "question": "What is Kannanao?",
-          "answer": "Kannanao is a free, AI-powered Japanese flashcard studio. It uses Google Gemini to generate readings, meanings, and bilingual example sentences for any word you type. It also includes Travel Mode phrasebooks, group study classrooms, gamified XP, and 10 customizable themes."
+          "question": "What is Tangodachi?",
+          "answer": "Tangodachi is a free, AI-powered Japanese flashcard studio. It uses Google Gemini to generate readings, meanings, and bilingual example sentences for any word you type. It also includes Travel Mode phrasebooks, group study classrooms, gamified XP, and 10 customizable themes."
         },
         {
           "question": "How does AI flashcard generation work?",
-          "answer": "Type any word in English or Japanese and Kannanao uses Google Gemini AI to generate the hiragana reading, kanji, meaning, and bilingual example sentences. You can also upload a PDF to extract vocabulary and generate cards in bulk."
+          "answer": "Type any word in English or Japanese and Tangodachi uses Google Gemini AI to generate the hiragana reading, kanji, meaning, and bilingual example sentences. You can also upload a PDF to extract vocabulary and generate cards in bulk."
         },
         {
           "question": "What is Travel Mode?",
@@ -2521,15 +2521,15 @@
         },
         {
           "question": "Can I study with friends or in a class?",
-          "answer": "Yes! Kannanao supports group study. Organizers can create a group, invite members via QR code, assign decks with deadlines, view a weekly XP leaderboard, and send encouragement messages. You can also share any deck with a link or embed flashcards on a website."
+          "answer": "Yes! Tangodachi supports group study. Organizers can create a group, invite members via QR code, assign decks with deadlines, view a weekly XP leaderboard, and send encouragement messages. You can also share any deck with a link or embed flashcards on a website."
         },
         {
           "question": "What practice modes are available?",
-          "answer": "Kannanao offers three practice modes: Match (race the clock pairing words to meanings), Fill-in-the-blank (type the missing word in a sentence), and Recall (see the meaning, type the Japanese). Every session earns XP toward your next level."
+          "answer": "Tangodachi offers three practice modes: Match (race the clock pairing words to meanings), Fill-in-the-blank (type the missing word in a sentence), and Recall (see the meaning, type the Japanese). Every session earns XP toward your next level."
         },
         {
-          "question": "Is Kannanao free?",
-          "answer": "Kannanao is currently free and in closed beta. You can join the waitlist on the homepage to be notified when new spots open up."
+          "question": "Is Tangodachi free?",
+          "answer": "Tangodachi is currently free and in closed beta. You can join the waitlist on the homepage to be notified when new spots open up."
         }
       ]
     },
@@ -2589,7 +2589,7 @@
         },
         "pdfImport": {
           "title": "PDF Import",
-          "desc": "Upload a textbook or word list PDF — Kannanao extracts and builds flashcards for you."
+          "desc": "Upload a textbook or word list PDF — Tangodachi extracts and builds flashcards for you."
         },
         "leaderboard": {
           "title": "Leaderboard",
@@ -2816,7 +2816,7 @@
       "badge": "SHARE & COLLABORATE",
       "heading": "Better together",
       "subheading": "Share decks with a link, embed cards on any website, or create a full classroom with assignments, leaderboards, and encouragements.",
-      "poweredBy": "Powered by Kannanao",
+      "poweredBy": "Powered by Tangodachi",
       "shareHeading": "Share & embed your decks",
       "shareBody": "Share any deck with a single link — friends and classmates can study instantly with no account required. Or embed an interactive flashcard widget directly on your blog, Notion page, or website.",
       "shareTags": {
@@ -2905,9 +2905,9 @@
     "cta": {
       "betaChipLabel": "Closed beta — spots opening soon",
       "headline": "Ready to level up your<br></br>Japanese skills?",
-      "subtitle": "Kannanao is currently in closed beta. Drop your email and we'll notify you the moment new spots open up.",
+      "subtitle": "Tangodachi is currently in closed beta. Drop your email and we'll notify you the moment new spots open up.",
       "dashboardButton": "Go to dashboard 🌸",
-      "brandName": "🌸 Kannanao",
+      "brandName": "🌸 Tangodachi",
       "tagline": "AI-powered Japanese flashcard studio",
       "madeBy": "Made with 💕 by <link>Variations on a String</link>"
     }
