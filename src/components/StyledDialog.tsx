@@ -60,7 +60,7 @@ export function StyledDialog({
             backgroundImage: 'none',
             border: `1.5px solid ${alpha(brand[300], 0.4)}`,
             boxShadow: `0 20px 60px ${alpha(brand[500], 0.14)}, 0 4px 16px ${alpha(brand[300], 0.2)}`,
-            borderRadius: '20px',
+            borderRadius: (theme) => theme.radii.lg,
             overflow: 'hidden',
             ...((paperSx ?? {}) as Record<string, unknown>),
           },

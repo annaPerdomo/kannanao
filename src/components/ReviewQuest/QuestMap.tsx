@@ -34,6 +34,10 @@ export function QuestMap({ nodes, currentIndex, chestAvailable }: QuestMapProps)
         justifyContent: 'center',
         gap: 0.5,
         mb: 3,
+        // Setting only overflowX forces the computed overflowY to 'auto' too
+        // (CSS overflow-x/y coupling), which clips the active node's
+        // scale(1.08) growth at the top edge — pt gives it room to breathe.
+        pt: 1,
         flexWrap: 'nowrap',
         overflowX: 'auto',
       }}

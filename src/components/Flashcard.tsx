@@ -84,7 +84,7 @@ export function Flashcard({
     backfaceVisibility: 'hidden' as const,
     WebkitBackfaceVisibility: 'hidden' as const,
     background: hasCustomBorder ? (equippedBorder.background ?? brand[50]) : CARD_FRAME,
-    borderRadius: '20px',
+    borderRadius: theme.radii.md,
     p: { xs: '5px', sm: '6px' },
     border: hasCustomBorder ? equippedBorder.border : undefined,
     boxShadow: hasCustomBorder

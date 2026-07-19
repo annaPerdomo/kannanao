@@ -7,11 +7,28 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
+import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { BUDDY_CONFIG } from '@/hooks/useShop';
 
 const idleFloat = keyframes`
   0%, 100% { transform: translateY(0) rotate(-2deg); }
   50% { transform: translateY(-8px) rotate(2deg); }
+`;
+
+const bounce = keyframes`
+  0%, 100% { transform: translateY(0) scale(1); }
+  20% { transform: translateY(-14px) scale(1.1); }
+  40% { transform: translateY(-4px) scale(1); }
+  60% { transform: translateY(-10px) scale(1.05); }
+  80% { transform: translateY(-2px) scale(1); }
+`;
+
+const wobble = keyframes`
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  20% { transform: rotate(-8deg) scale(0.95); }
+  40% { transform: rotate(8deg) scale(0.95); }
+  60% { transform: rotate(-5deg) scale(0.98); }
+  80% { transform: rotate(3deg) scale(1); }
 `;
 
 const bubbleIn = keyframes`
@@ -35,6 +52,11 @@ const heartPop = keyframes`
   100% { transform: scale(0.3) translateY(-22px); opacity: 0; }
 `;
 
+const sparkleFloat = keyframes`
+  0% { transform: scale(0) translateY(0); opacity: 1; }
+  100% { transform: scale(1) translateY(-20px); opacity: 0; }
+`;
+
 const pulseGlow = keyframes`
   0%, 100% { box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
   50% { box-shadow: 0 6px 28px rgba(0,0,0,0.12), 0 0 20px rgba(244,114,182,0.15); }
@@ -48,6 +70,11 @@ const BUDDY_ACCENTS: Record<string, string> = {
   buddy_fox: '#FCD34D',
 };
 
+function pickRandom(items: string | string[]): string {
+  if (typeof items === 'string') return items;
+  return items[Math.floor(Math.random() * items.length)];
+}
+
 function isNonEmptyStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.length > 0 && value.every((v) => typeof v === 'string');
 }
@@ -56,11 +83,18 @@ interface HomeBuddyProps {
   buddyKey: string;
 }
 
+/**
+ * The single global buddy widget — mounted once (via GlobalBuddy) and shown
+ * on every page. It cycles ambient "home" phrases on its own, and reacts to
+ * correct/wrong answers from whatever practice screen is active via
+ * BuddyReactionContext, since no page renders its own buddy instance.
+ */
 export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const t = useTranslations('Home.buddy');
   const tBuddies = useTranslations('Shop.buddies');
   const theme = useTheme();
   const { brand } = theme.palette;
+  const { reactionEvent } = useBuddyReaction();
   const config = BUDDY_CONFIG[buddyKey];
   const accent = BUDDY_ACCENTS[buddyKey] ?? brand[300];
   const phrases = useMemo(() => {
@@ -75,6 +109,8 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
 
   const [bubbleText, setBubbleText] = useState('');
   const [showBubble, setShowBubble] = useState(true);
+  const [reaction, setReaction] = useState<'idle' | 'correct' | 'wrong'>('idle');
+  const [sparkles, setSparkles] = useState(false);
   const [tapped, setTapped] = useState(false);
   const [tapHearts, setTapHearts] = useState(false);
   const phraseIndex = useRef(0);
@@ -94,6 +130,37 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     }, 8000);
     return () => clearInterval(interval);
   }, [phrases]);
+
+  // React to correct/wrong answers reported by whatever practice screen is
+  // active. Keyed on reactionEvent.key (not just .reaction) so firing the
+  // same reaction twice in a row still re-triggers the bubble/animation.
+  useEffect(() => {
+    if (!reactionEvent || !config) return;
+
+    let lines: string | string[] = config.reactions[reactionEvent.reaction];
+    try {
+      const raw = tBuddies.raw(`${buddyKey}.${reactionEvent.reaction}`);
+      if (isNonEmptyStringArray(raw)) lines = raw;
+    } catch {
+      // missing translation key — keep the English fallback above
+    }
+
+    setReaction(reactionEvent.reaction);
+    setBubbleText(pickRandom(lines));
+    setShowBubble(true);
+    setSparkles(reactionEvent.reaction === 'correct');
+
+    const reactionTimer = setTimeout(() => {
+      setReaction('idle');
+      setShowBubble(false);
+    }, 2500);
+    const sparkleTimer = setTimeout(() => setSparkles(false), 800);
+    return () => {
+      clearTimeout(reactionTimer);
+      clearTimeout(sparkleTimer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reactionEvent?.key]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     dragging.current = true;
@@ -141,6 +208,31 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
         right: { xs: 12, sm: 24 },
       };
 
+  const bubbleColor =
+    reaction === 'correct'
+      ? alpha('#059669', 0.08)
+      : reaction === 'wrong'
+        ? alpha('#DC2626', 0.06)
+        : alpha('#fff', 0.95);
+
+  const bubbleBorder =
+    reaction === 'correct'
+      ? alpha('#059669', 0.3)
+      : reaction === 'wrong'
+        ? alpha('#DC2626', 0.25)
+        : alpha(accent, 0.4);
+
+  const textColor =
+    reaction === 'correct' ? '#059669' : reaction === 'wrong' ? '#DC2626' : brand[700];
+
+  const emojiAnimation = tapped
+    ? `${tapWiggle} 0.5s ease-in-out`
+    : reaction === 'correct'
+      ? `${bounce} 0.7s ease-in-out`
+      : reaction === 'wrong'
+        ? `${wobble} 0.5s ease-in-out`
+        : `${idleFloat} 3s ease-in-out infinite, ${pulseGlow} 3s ease-in-out infinite`;
+
   return (
     <Box
       sx={{
@@ -165,9 +257,9 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
           key={bubbleText}
           sx={{
             position: 'relative',
-            bgcolor: alpha('#fff', 0.95),
+            bgcolor: bubbleColor,
             backdropFilter: 'blur(8px)',
-            border: `1.5px solid ${alpha(accent, 0.4)}`,
+            border: `1.5px solid ${bubbleBorder}`,
             borderRadius: 2.5,
             px: 1.5,
             py: 0.75,
@@ -185,7 +277,7 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
               height: 0,
               borderLeft: '6px solid transparent',
               borderRight: '6px solid transparent',
-              borderTop: `6px solid ${alpha('#fff', 0.95)}`,
+              borderTop: `6px solid ${bubbleColor}`,
             },
           }}
         >
@@ -193,7 +285,7 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
             sx={{
               fontSize: '0.72rem',
               fontWeight: 700,
-              color: brand[700],
+              color: textColor,
               textAlign: 'center',
               lineHeight: 1.3,
             }}
@@ -204,6 +296,28 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
       )}
 
       <Box sx={{ position: 'relative' }}>
+        {/* Sparkle particles on correct */}
+        {sparkles &&
+          [0, 1, 2, 3, 4].map((i) => (
+            <Box
+              key={`sparkle-${i}`}
+              sx={{
+                position: 'absolute',
+                top: '20%',
+                left: '50%',
+                fontSize: '0.8rem',
+                animation: `${sparkleFloat} 0.6s ease-out forwards`,
+                animationDelay: `${i * 0.08}s`,
+                transform: 'scale(0)',
+                ml: `${Math.cos(i * 1.25) * 18}px`,
+                mt: `${Math.sin(i * 1.25) * 12}px`,
+                pointerEvents: 'none',
+              }}
+            >
+              {['✨', '⭐', '💖', '🌟', '✨'][i]}
+            </Box>
+          ))}
+
         {/* Heart burst on tap */}
         {tapHearts &&
           [0, 1, 2, 3, 4, 5].map((i) => (
@@ -235,12 +349,11 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            animation: tapped
-              ? `${tapWiggle} 0.5s ease-in-out`
-              : `${idleFloat} 3s ease-in-out infinite, ${pulseGlow} 3s ease-in-out infinite`,
+            animation: emojiAnimation,
             fontSize: { xs: '2rem', sm: '2.3rem' },
             lineHeight: 1,
             boxShadow: `0 6px 20px ${alpha(accent, 0.2)}`,
+            transition: 'box-shadow 0.2s',
           }}
         >
           {config.emoji}

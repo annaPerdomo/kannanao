@@ -1,28 +1,18 @@
 'use client';
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import PhoneIcon from '@mui/icons-material/Phone';
 import SaveIcon from '@mui/icons-material/Save';
-import {
-  alpha,
-  Box,
-  Button,
-  Card,
-  Container,
-  Divider,
-  IconButton,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { alpha, Box, Button, Card, Divider, Stack, TextField, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
+import { PageHeader } from '@/components/PageHeader';
 import { logTravelEvent } from '@/lib/supabase';
+import { LAYOUT } from '@/theme';
 
 import { TravelPhrase } from './TravelPhrase';
 
@@ -90,36 +80,28 @@ export function EmergencyCard() {
   if (!loaded) return null;
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+    <Box
+      sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 4 } }}
+    >
       <Stack spacing={3}>
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label={t('backToHub')}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography
-            variant="h5"
-            sx={{
-              color: 'text.primary',
-              flex: 1,
-            }}
-          >
-            {t('title')}
-          </Typography>
-          <Button
-            startIcon={editing ? <SaveIcon /> : <EditIcon />}
-            onClick={editing ? handleSave : () => setEditing(true)}
-            variant={editing ? 'contained' : 'outlined'}
-            size="small"
-            sx={{ textTransform: 'none', borderRadius: 2 }}
-          >
-            {editing ? tc('save') : tc('edit')}
-          </Button>
-        </Box>
-
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {t('intro')}
-        </Typography>
+        <PageHeader
+          title={t('title')}
+          subtitle={t('intro')}
+          onBack={() => router.push('/travel')}
+          mb={0}
+          action={
+            <Button
+              startIcon={editing ? <SaveIcon /> : <EditIcon />}
+              onClick={editing ? handleSave : () => setEditing(true)}
+              variant={editing ? 'contained' : 'outlined'}
+              size="small"
+              sx={{ textTransform: 'none', borderRadius: 2 }}
+            >
+              {editing ? tc('save') : tc('edit')}
+            </Button>
+          }
+        />
 
         {/* Emergency Numbers — always visible */}
         <Card
@@ -448,6 +430,6 @@ export function EmergencyCard() {
           </Box>
         )}
       </Stack>
-    </Container>
+    </Box>
   );
 }

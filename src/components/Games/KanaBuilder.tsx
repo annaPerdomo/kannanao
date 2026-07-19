@@ -150,7 +150,7 @@ function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void })
         {word.hint && (
           <Typography
             sx={{
-              fontFamily: '"Noto Serif JP", serif',
+              fontFamily: (t) => t.fonts.jp,
               fontSize: '1.2rem',
               color: 'text.secondary',
             }}
@@ -206,7 +206,7 @@ function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void })
                 transition: 'all 0.15s',
               }}
             >
-              <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.5rem' }}>
+              <Typography sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.5rem' }}>
                 {filled?.char ?? ''}
               </Typography>
             </Box>
@@ -241,7 +241,7 @@ function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void })
               }}
               sx={tileSx(used ? 'used' : 'idle')}
             >
-              <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.4rem' }}>
+              <Typography sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.4rem' }}>
                 {tile.char}
               </Typography>
             </Box>

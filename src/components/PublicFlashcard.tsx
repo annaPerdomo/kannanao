@@ -55,7 +55,7 @@ export function PublicFlashcard({ card, width = '100%', height = 300 }: PublicFl
     background: CARD_FRAME,
     backgroundSize: '240% 240%',
     animation: 'holoFrame 10s ease infinite',
-    borderRadius: '20px',
+    borderRadius: theme.radii.md,
     p: '5px',
     boxShadow: `0 6px 28px rgba(0,0,0,0.12), 0 2px 8px ${alpha(brand[400], 0.2)}`,
   };

@@ -8,11 +8,10 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
-import { type BuddyReaction, StudyBuddy } from '@/components/StudyBuddy';
+import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
-import { useShop } from '@/hooks/useShop';
 import { speechNeedsGesture, useJapaneseVoice, useSpeech } from '@/hooks/useSpeech';
 import { buildMeaningChoices, cardXp } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
@@ -52,9 +51,7 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
   // for a tap on the play button; every question after it auto-plays.
   const [unlocked, setUnlocked] = useState(() => !speechNeedsGesture());
 
-  const { equipped } = useShop();
-  const equippedBuddy = equipped['study_buddy'];
-  const [buddyReaction, setBuddyReaction] = useState<BuddyReaction>('idle');
+  const { triggerReaction } = useBuddyReaction();
 
   const { startSession, recordAnswer, endSession } = useProgress();
   const praiseSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
@@ -149,7 +146,7 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
       setTimeout(() => setXpPop(null), 1300);
       triggerXpEarned(xpAmount);
 
-      setBuddyReaction(correct ? 'correct' : 'wrong');
+      triggerReaction(correct ? 'correct' : 'wrong');
 
       if (correct) {
         setRoundScore((s) => s + 1);
@@ -166,7 +163,7 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
         await recordAnswer(sessionIdRef.current, correct, card.jlptLevel, card.id);
       }
     },
-    [selected, card, recordAnswer, queue, triggerXpEarned],
+    [selected, card, recordAnswer, queue, triggerXpEarned, triggerReaction],
   );
 
   const handleExit = async () => {
@@ -405,8 +402,6 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
           {tCommon('quitAndSave')}
         </Button>
       </Box>
-
-      {equippedBuddy && <StudyBuddy buddyKey={equippedBuddy} reaction={buddyReaction} />}
     </Box>
   );
 }

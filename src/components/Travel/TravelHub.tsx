@@ -16,8 +16,10 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
+import { PageHeader } from '@/components/PageHeader';
 import { useAuth } from '@/contexts/AuthContext';
 import { logTravelEvent } from '@/lib/supabase';
+import { LAYOUT } from '@/theme';
 
 import { TravelDisplayToggle } from './TravelDisplayToggle';
 
@@ -178,6 +180,7 @@ function FeatureCard({
 
 export function TravelHub() {
   const t = useTranslations('Travel.hub');
+  const router = useRouter();
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const { user } = useAuth();
@@ -270,37 +273,15 @@ export function TravelHub() {
     <Container maxWidth="lg" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
       <Stack spacing={3}>
         {/* Header */}
-        <Box sx={{ textAlign: 'center', mb: 1 }}>
-          <Box
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 56,
-              height: 56,
-              borderRadius: '16px',
-              background: `linear-gradient(135deg, ${brand[500]}, ${brand[700]})`,
-              mb: 2,
-              boxShadow: `0 4px 16px ${alpha(brand[500], 0.3)}`,
-            }}
-          >
-            <FlightIcon sx={{ fontSize: 28, color: '#fff' }} />
-          </Box>
-          <Typography
-            variant="h5"
-            sx={{
-              color: 'text.primary',
-              mb: 0.5,
-            }}
-          >
-            {t('title')}
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 360, mx: 'auto' }}>
-            {t('subtitle')}
-          </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1.5 }}>
-            <TravelDisplayToggle />
-          </Box>
+        <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto', width: '100%' }}>
+          <PageHeader
+            icon={<FlightIcon />}
+            title={t('title')}
+            subtitle={t('subtitle')}
+            onBack={() => router.push('/')}
+            mb={0}
+            endContent={<TravelDisplayToggle />}
+          />
         </Box>
 
         {/* Feature Cards */}

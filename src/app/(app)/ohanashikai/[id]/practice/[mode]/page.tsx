@@ -13,6 +13,7 @@ import { LineRecallMode } from '@/components/Ohanashikai/LineRecallMode';
 import { ReadThroughMode } from '@/components/Ohanashikai/ReadThroughMode';
 import { PageHeader } from '@/components/PageHeader';
 import { useOhanashikaiLines, useOhanashikais } from '@/hooks/useOhanashikais';
+import { LAYOUT } from '@/theme';
 import type { OhanashikaiPracticeMode } from '@/types/ohanashikai';
 
 const VALID_MODES: OhanashikaiPracticeMode[] = ['readthrough', 'linerecall'];
@@ -43,14 +44,14 @@ export default function OhanashikaiPracticePage({
 
   if (loading) {
     return (
-      <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
+      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <Loading message={t('loadingSession')} />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 4 }, py: 4 }}>
+    <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
       <PageHeader
         title={practiceMode === 'readthrough' ? t('readThroughTitle') : t('lineRecallTitle')}
         onBack={() => router.push(backUrl)}

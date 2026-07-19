@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { GameTiles } from '@/components/Games';
 import { Loading } from '@/components/Loading';
+import { PageHeader } from '@/components/PageHeader';
 import { useDueCount } from '@/hooks/useDueCount';
 import { LAYOUT } from '@/theme';
 
@@ -39,9 +40,13 @@ function DueHero({ count, onStart }: { count: number; onStart: () => void }) {
           py: 1.25,
           fontWeight: 800,
           fontSize: '1rem',
-          color: (t) => t.palette.brand[700],
-          bgcolor: '#fff',
-          '&:hover': { bgcolor: alpha('#fff', 0.9) },
+          // The contained variant already paints the brand[600]→[700] gradient
+          // with white text (theme/index.ts). Don't set `bgcolor`/`color` here:
+          // `bgcolor` only sets background-color, which sits *behind* the opaque
+          // gradient background-image and never shows — so a light text color set
+          // to pair with it renders dark-on-dark and goes illegible (worst on
+          // rose gold, where both are deep reds). White-on-gradient is legible on
+          // every theme since brand[600]/[700] are dark across all schemes.
         }}
       >
         {t('startTodaysPractice')}
@@ -93,6 +98,18 @@ export default function ReviewHubPage() {
         py: { xs: 3, sm: 5 },
       }}
     >
+      <PageHeader
+        icon={
+          <Box component="span" aria-hidden sx={{ fontSize: { xs: '1.7rem', sm: '2rem' } }}>
+            🎯
+          </Box>
+        }
+        title={t('title')}
+        subtitle={t('subtitle')}
+        onBack={() => router.push('/')}
+        mb={3}
+      />
+
       {loading ? (
         <Loading />
       ) : error ? (

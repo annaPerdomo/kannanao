@@ -13,11 +13,10 @@ import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
 import { XpEarnedPop } from '@/components/Practice/XpEarnedPop';
-import { type BuddyReaction, StudyBuddy } from '@/components/StudyBuddy';
+import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { useCombo } from '@/hooks/useCombo';
 import { type SessionMode, useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
-import { useShop } from '@/hooks/useShop';
 import type { ComboStepResult } from '@/lib/combo';
 import { cardXp } from '@/lib/flashcardUtils';
 import { LAYOUT } from '@/theme';
@@ -59,6 +58,8 @@ export interface FlipStudyProps {
   completionSubheading?: string;
   /** Present when embedded in the review quest (parent owns the session). */
   controller?: FlipStudyController;
+  /** Quest step map (Warm-up/Word Match/Boss Round/Chest), rendered between the header and the progress bar. */
+  questMap?: React.ReactNode;
 }
 
 // Exit animation duration — card slides out before the next one slides in.
@@ -96,14 +97,14 @@ export default function FlipStudy({
   emptyState,
   completionSubheading,
   controller,
+  questMap,
 }: FlipStudyProps) {
   const t = useTranslations('Study.flipStudy');
   const tCommon = useTranslations('Common');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
-  const { equipped } = useShop();
   const { triggerXpEarned } = useXpAnimation();
-  const equippedBuddy = equipped['study_buddy'];
+  const { triggerReaction } = useBuddyReaction();
   const embedded = !!controller;
   const [index, setIndex] = useState(0);
   const [navigating, setNavigating] = useState(false);
@@ -113,8 +114,6 @@ export default function FlipStudy({
   const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(
     null,
   );
-  // Buddy cheers when a combo threshold lands; idle otherwise.
-  const [buddyReaction, setBuddyReaction] = useState<BuddyReaction>('idle');
   // True once the current card has been flipped to its answer — gates the
   // self-grading buttons so they only appear after the student has seen it.
   const [flipped, setFlipped] = useState(false);
@@ -218,7 +217,7 @@ export default function FlipStudy({
           void recordAnswer(sessionId, correct, card.jlptLevel, card.id);
           combo = standaloneCombo.onAnswer(correct);
         }
-        if (combo.bonusAwarded > 0) setBuddyReaction('correct');
+        if (combo.bonusAwarded > 0) triggerReaction('correct');
       }
 
       if (index < cards.length - 1) {
@@ -239,6 +238,7 @@ export default function FlipStudy({
       controller,
       recordAnswer,
       triggerXpEarned,
+      triggerReaction,
       standaloneCombo,
       flashXpPop,
       navigate,
@@ -294,6 +294,8 @@ export default function FlipStudy({
         compact
         mb={3}
       />
+
+      {questMap}
 
       {/* Progress bar */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
@@ -566,8 +568,6 @@ export default function FlipStudy({
             />
           );
         })()}
-
-      {equippedBuddy && <StudyBuddy buddyKey={equippedBuddy} reaction={buddyReaction} />}
     </Box>
   );
 }

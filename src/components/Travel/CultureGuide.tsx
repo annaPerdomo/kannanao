@@ -1,6 +1,5 @@
 'use client';
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -13,7 +12,6 @@ import {
   Button,
   Card,
   Chip,
-  Container,
   IconButton,
   Stack,
   Tooltip,
@@ -24,9 +22,11 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
+import { PageHeader } from '@/components/PageHeader';
 import { useSpeech } from '@/hooks/useSpeech';
 import { useCultureCards } from '@/hooks/useTravel';
 import { logTravelEvent } from '@/lib/supabase';
+import { LAYOUT } from '@/theme';
 import type { CultureTopic } from '@/types/travel';
 
 import { AuthGatedSaveDialog } from './AuthGatedSaveDialog';
@@ -78,40 +78,38 @@ export function CultureGuide() {
   const filteredCards = getCards(activeTopic);
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+    <Box
+      sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 4 } }}
+    >
       <Stack spacing={3}>
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label={t('backAriaLabel')}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h5" sx={{ color: 'text.primary', flex: 1 }}>
-            {t('title')}
-          </Typography>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<LibraryAddIcon sx={{ fontSize: 14 }} />}
-            onClick={() => {
-              const allPhrases = filteredCards.flatMap((c) =>
-                c.phrases.map((p) => ({
-                  japanese: p.japanese,
-                  romaji: p.romaji,
-                  english: p.english,
-                })),
-              );
-              setPhrasesToSave(allPhrases);
-              setSaveDialogOpen(true);
-            }}
-            sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.72rem' }}
-          >
-            {t('saveAll')}
-          </Button>
-        </Box>
-
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {t('intro')}
-        </Typography>
+        <PageHeader
+          title={t('title')}
+          subtitle={t('intro')}
+          onBack={() => router.push('/travel')}
+          mb={0}
+          action={
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<LibraryAddIcon sx={{ fontSize: 14 }} />}
+              onClick={() => {
+                const allPhrases = filteredCards.flatMap((c) =>
+                  c.phrases.map((p) => ({
+                    japanese: p.japanese,
+                    romaji: p.romaji,
+                    english: p.english,
+                  })),
+                );
+                setPhrasesToSave(allPhrases);
+                setSaveDialogOpen(true);
+              }}
+              sx={{ textTransform: 'none', borderRadius: '20px', fontSize: '0.72rem' }}
+            >
+              {t('saveAll')}
+            </Button>
+          }
+        />
 
         {/* Topic filter */}
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -311,6 +309,6 @@ export function CultureGuide() {
         onSaved={() => {}}
         defaultDeckName={`⛩️ ${t('defaultDeckName')}`}
       />
-    </Container>
+    </Box>
   );
 }

@@ -225,7 +225,7 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
                   sx={{
                     px: 1,
                     py: 0.25,
-                    borderRadius: '20px',
+                    borderRadius: (theme) => theme.radii.md,
                     border: `1px solid ${alpha(brand[300], 0.25)}`,
                     bgcolor: alpha(brand[100], 0.2),
                   }}

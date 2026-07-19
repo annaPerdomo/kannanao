@@ -1,6 +1,5 @@
 'use client';
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import HearingIcon from '@mui/icons-material/Hearing';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
@@ -11,7 +10,6 @@ import {
   Box,
   Button,
   Chip,
-  Container,
   IconButton,
   Stack,
   TextField,
@@ -25,9 +23,11 @@ import { useCallback, useState } from 'react';
 
 import { stripFurigana } from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
+import { PageHeader } from '@/components/PageHeader';
 import { useTravelDisplay } from '@/contexts/TravelDisplayContext';
 import { useSpeech } from '@/hooks/useSpeech';
 import { logTravelEvent, sb } from '@/lib/supabase';
+import { LAYOUT } from '@/theme';
 
 import { SaveToDeckDialog } from './SaveToDeckDialog';
 import { TravelPhrase } from './TravelPhrase';
@@ -112,29 +112,24 @@ export function DailyPhrasePack() {
   }, [plans, displayMode, t, tc]);
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+    <Box
+      sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 4 } }}
+    >
       <Stack spacing={3}>
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label={t('backToHub')}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Box>
-            <Typography variant="h5" sx={{ color: 'text.primary' }}>
-              {t('title')}
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
-              {t('subtitle')}
-            </Typography>
-          </Box>
-        </Box>
+        <PageHeader
+          title={t('title')}
+          subtitle={t('subtitle')}
+          onBack={() => router.push('/travel')}
+          mb={0}
+        />
 
         {/* Input */}
         {!result && !loading && (
           <Box
             sx={{
               p: 2.5,
-              borderRadius: '16px',
+              borderRadius: (theme) => theme.radii.lg,
               bgcolor: 'background.paper',
               border: `1px solid ${alpha(brand[300], 0.2)}`,
               boxShadow: `0 1px 3px ${alpha(brand[400], 0.08)}`,
@@ -167,7 +162,7 @@ export function DailyPhrasePack() {
                       onClick={() => setPlans(example)}
                       sx={{
                         fontSize: '0.68rem',
-                        borderRadius: '20px',
+                        borderRadius: (theme) => theme.radii.md,
                         bgcolor: alpha(brand[50], 0.8),
                         border: `1px solid ${alpha(brand[200], 0.3)}`,
                         transition: 'all 0.15s',
@@ -238,7 +233,7 @@ export function DailyPhrasePack() {
                   key={i}
                   sx={{
                     p: 2,
-                    borderRadius: '14px',
+                    borderRadius: (theme) => theme.radii.md,
                     bgcolor: 'background.paper',
                     border: `1px solid ${alpha(
                       phrase.type === 'hear' ? '#f59e0b' : brand[300],
@@ -349,6 +344,6 @@ export function DailyPhrasePack() {
           defaultDeckName={t('todaysPhrasesDeckName')}
         />
       )}
-    </Container>
+    </Box>
   );
 }

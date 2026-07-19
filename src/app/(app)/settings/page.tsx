@@ -249,6 +249,7 @@ export default function SettingsPage() {
         icon={<SettingsIcon />}
         title={t('pageHeader.title')}
         subtitle={t('pageHeader.subtitle')}
+        onBack={() => router.push('/')}
         mb={0}
       />
 

@@ -1,30 +1,21 @@
 'use client';
 
 import AddIcon from '@mui/icons-material/Add';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import SchoolIcon from '@mui/icons-material/School';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
-import {
-  alpha,
-  Box,
-  Button,
-  Chip,
-  Container,
-  IconButton,
-  Stack,
-  Tooltip,
-  Typography,
-} from '@mui/material';
+import { alpha, Box, Button, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
 import { stripFurigana } from '@/components/FuriganaText';
+import { PageHeader } from '@/components/PageHeader';
 import { useSpeech } from '@/hooks/useSpeech';
 import { logTravelEvent } from '@/lib/supabase';
+import { LAYOUT } from '@/theme';
 import type { PhraseSituation } from '@/types/travel';
 
 import { SURVIVAL_PHRASES } from '../../hooks/survivalPhrasesData';
@@ -96,22 +87,18 @@ export function PhraseBrowser() {
     activeFilter !== 'all' ? SITUATIONS.find((s) => s.key === activeFilter) : null;
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+    <Box
+      sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 4 } }}
+    >
       <Stack spacing={3}>
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <IconButton onClick={() => router.push('/travel')} aria-label={t('backToHub')}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h5" sx={{ color: 'text.primary' }}>
-              {t('title')}
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
-              {t('subtitle')}
-            </Typography>
-          </Box>
-          {filteredPhrases.length > 0 &&
+        <PageHeader
+          title={t('title')}
+          subtitle={t('subtitle')}
+          onBack={() => router.push('/travel')}
+          mb={0}
+          action={
+            filteredPhrases.length > 0 &&
             (deckSaved ? (
               <Chip
                 icon={<BookmarkAddedIcon sx={{ fontSize: '14px !important' }} />}
@@ -143,8 +130,9 @@ export function PhraseBrowser() {
               >
                 {t('saveAll')}
               </Button>
-            ))}
-        </Box>
+            ))
+          }
+        />
 
         {/* Filter chips */}
         <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
@@ -416,6 +404,6 @@ export function PhraseBrowser() {
             : `🗾 ${t('deckNameAll')}`
         }
       />
-    </Container>
+    </Box>
   );
 }

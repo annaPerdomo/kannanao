@@ -177,7 +177,7 @@ export function TodoList({ onXpEarned, initialTodos, initialEntryTypes }: TodoLi
           maxWidth: '100%',
           mx: 'auto',
           background: `linear-gradient(160deg, ${alpha(brand[50], 0.97)} 0%, ${alpha(accent[50], 0.93)} 100%)`,
-          borderRadius: { xs: 0, sm: 4 },
+          borderRadius: { xs: 0, sm: 3 },
           border: { xs: 'none', sm: `2px solid ${alpha(brand[300], 0.45)}` },
           boxShadow: {
             xs: 'none',

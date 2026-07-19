@@ -232,7 +232,7 @@ export function CelebrationScreen({
           textAlign: 'center',
           px: { xs: 3, sm: 5 },
           py: 4,
-          borderRadius: '28px',
+          borderRadius: (theme) => theme.radii.lg,
           background: cfg.cardBg,
           backdropFilter: 'blur(22px)',
           WebkitBackdropFilter: 'blur(22px)',

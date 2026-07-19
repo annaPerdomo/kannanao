@@ -62,7 +62,7 @@ export function SpeechPracticeTiles({ canPractice, onPractice }: SpeechPracticeT
                 cursor: canPractice ? 'pointer' : 'default',
                 position: 'relative',
                 overflow: 'hidden',
-                borderRadius: '18px',
+                borderRadius: (theme) => theme.radii.md,
                 p: { xs: '20px 18px', sm: '24px 22px' },
                 minHeight: 150,
                 display: 'flex',

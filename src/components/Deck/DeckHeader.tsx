@@ -232,7 +232,10 @@ export function DeckHeader({
             )}
             <Box sx={{ minWidth: 0 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                <Typography variant="h4" sx={{ color: brand[800], lineHeight: 1.1, minWidth: 0 }}>
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: 800, color: brand[800], lineHeight: 1.1, minWidth: 0 }}
+                >
                   {deck.name}
                 </Typography>
                 {!readOnly && (
@@ -255,7 +258,7 @@ export function DeckHeader({
                   </Tooltip>
                 )}
               </Box>
-              <Typography variant="body2" sx={{ color: brand[600], mt: 0.25 }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
                 {deck.description ? `${deck.description}  ·  ${cardLabel}` : cardLabel}
               </Typography>
             </Box>

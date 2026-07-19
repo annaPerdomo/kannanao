@@ -122,10 +122,7 @@ export function ParticlePicker() {
           {sentence.segments.map((seg, i) => {
             if (typeof seg === 'string') {
               return (
-                <Typography
-                  key={i}
-                  sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.5rem' }}
-                >
+                <Typography key={i} sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.5rem' }}>
                   {seg}
                 </Typography>
               );
@@ -158,7 +155,7 @@ export function ParticlePicker() {
                   transition: 'all 0.15s',
                 }}
               >
-                <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.3rem' }}>
+                <Typography sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.3rem' }}>
                   {isFilled ? filled[blankCursor] : ''}
                 </Typography>
               </Box>
@@ -209,7 +206,7 @@ export function ParticlePicker() {
                 '&:hover': { borderColor: brand[500], bgcolor: alpha(brand[300], 0.2) },
               }}
             >
-              <Typography sx={{ fontFamily: '"Noto Serif JP", serif', fontSize: '1.5rem' }}>
+              <Typography sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.5rem' }}>
                 {p}
               </Typography>
             </Box>

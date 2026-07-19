@@ -231,6 +231,9 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
 
   const chestAvailable = lastChestDateRef.current !== localDateString(new Date());
   const node = plan.nodes[nodeIdx];
+  const questMap = (
+    <QuestMap nodes={plan.nodes} currentIndex={nodeIdx} chestAvailable={chestAvailable} />
+  );
 
   // ── Boss intro interstitial ────────────────────────────────────────────────
   if (showBossIntro && node?.type === 'boss') {
@@ -249,8 +252,6 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
 
   return (
     <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, pt: 3 }}>
-      <QuestMap nodes={plan.nodes} currentIndex={nodeIdx} chestAvailable={chestAvailable} />
-
       {node?.type === 'warmup' && (
         <FlipStudy
           cards={plan.warmup}
@@ -260,6 +261,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
           sessionDeckId={null}
           onBack={onExit}
           controller={flipController}
+          questMap={questMap}
         />
       )}
 
@@ -270,6 +272,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
           onPairResolved={(correct, cardId, jlpt) => grade(correct, jlpt, cardId)}
           onComplete={advanceNode}
           onQuit={onExit}
+          questMap={questMap}
         />
       )}
 
@@ -281,6 +284,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
           grade={grade}
           onBossBonus={awardBossBonus}
           onComplete={advanceNode}
+          questMap={questMap}
         />
       )}
     </Box>

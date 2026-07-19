@@ -32,8 +32,8 @@ vi.mock('@/contexts/XpAnimationContext', () => ({
   useXpAnimation: () => ({ pendingXp: [], triggerXpEarned: vi.fn(), dismissXpEvent: vi.fn() }),
 }));
 
-vi.mock('@/components/StudyBuddy', () => ({
-  StudyBuddy: () => null,
+vi.mock('@/contexts/BuddyReactionContext', () => ({
+  useBuddyReaction: () => ({ reactionEvent: null, triggerReaction: vi.fn() }),
 }));
 
 vi.mock('@/components/FuriganaText', () => ({

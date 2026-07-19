@@ -35,6 +35,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
@@ -164,6 +165,7 @@ function formatRelativeTime(dateStr: string | null) {
 }
 
 export default function AdminPage() {
+  const router = useRouter();
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
   const { session } = useAuth();
@@ -305,12 +307,15 @@ export default function AdminPage() {
         gap: 3,
       }}
     >
-      <PageHeader
-        icon={<BuildIcon />}
-        title="Admin Dashboard"
-        subtitle="Manage users, analytics, and waitlist"
-        mb={0}
-      />
+      <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto', width: '100%' }}>
+        <PageHeader
+          icon={<BuildIcon />}
+          title="Admin Dashboard"
+          subtitle="Manage users, analytics, and waitlist"
+          onBack={() => router.push('/')}
+          mb={0}
+        />
+      </Box>
 
       {/* Overview Stats */}
       <Stack direction="row" flexWrap="wrap" gap={2} sx={{ mb: 4 }}>

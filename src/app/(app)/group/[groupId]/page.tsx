@@ -252,7 +252,7 @@ export default function GroupDashboardPage() {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                       <Typography
                         variant="h4"
-                        sx={{ color: brand[800], lineHeight: 1.1, minWidth: 0 }}
+                        sx={{ fontWeight: 800, color: brand[800], lineHeight: 1.1, minWidth: 0 }}
                       >
                         {group?.name ?? t('defaultTitle')}
                       </Typography>
@@ -274,7 +274,7 @@ export default function GroupDashboardPage() {
                         </IconButton>
                       </Tooltip>
                     </Box>
-                    <Typography variant="body2" sx={{ color: brand[600], mt: 0.25 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
                       {t('memberCountInGroup', { count: members.length })}
                     </Typography>
                   </Box>
