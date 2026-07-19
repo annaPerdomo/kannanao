@@ -92,7 +92,7 @@ describe('buildReminderPayload', () => {
   it('writes the plain nudge when no streak is at stake', () => {
     const payload = buildReminderPayload(candidate({ streakDays: 0 }), TODAY);
     expect(payload).toEqual({
-      title: 'Kannanao',
+      title: 'Tangodachi',
       body: '12 words are ready to review! 🌱',
       url: '/review',
     });
