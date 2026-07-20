@@ -49,10 +49,10 @@ export const metadata: Metadata = {
     locale: 'en_US',
     images: [
       {
-        url: `${APP_URL}/og-image.jpg`,
+        url: `${APP_URL}/og-image.png`,
         width: 1200,
         height: 630,
-        type: 'image/jpeg',
+        type: 'image/png',
       },
     ],
   },
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: TITLE,
     description: DESCRIPTION,
-    images: [`${APP_URL}/og-image.jpg`],
+    images: [`${APP_URL}/og-image.png`],
   },
 };
 
