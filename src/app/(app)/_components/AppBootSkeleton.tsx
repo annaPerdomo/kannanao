@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 
 import { AppBackground } from '@/components/AppBackground';
 import { Loading } from '@/components/Loading';
-import { APP_NAME_WITH_EMOJI } from '@/lib/brand';
+import { APP_NAME } from '@/lib/brand';
 import { createAppTheme, LAYOUT } from '@/theme';
 
 // Boot loader shown while the root layout streams in the auth + provider data.
@@ -46,19 +46,13 @@ function NavBarSkeleton() {
           gap: 1.5,
         }}
       >
-        <Typography
-          sx={{
-            fontFamily: (t) => t.fonts.cute,
-            fontWeight: 600,
-            fontSize: { xs: '1.2rem', sm: '1.4rem' },
-            color: (t) => t.palette.brand[700],
-            lineHeight: 1,
-            letterSpacing: '-0.01em',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {APP_NAME_WITH_EMOJI}
-        </Typography>
+        {/* Must match the real NavBar lockup so boot → hydration doesn't visibly swap. */}
+        <Box
+          component="img"
+          src="/brand/logo-lockup.png"
+          alt={APP_NAME}
+          sx={{ display: 'block', height: { xs: 40, sm: 48 }, width: 'auto', flex: 'none' }}
+        />
 
         {/* Centered nav-link placeholders */}
         <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 1, mx: 'auto' }}>

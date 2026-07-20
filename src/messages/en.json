@@ -1168,7 +1168,7 @@
     }
   },
   "Nav": {
-    "brandName": "🌸 Tangodachi",
+    "brandName": "Tangodachi",
     "mainNavigationAriaLabel": "Main navigation",
     "messagesAriaLabel": "Messages",
     "achievementUnlocked": "Achievement unlocked:",
@@ -1256,7 +1256,7 @@
   },
   "Auth": {
     "login": {
-      "brandName": "🌸 Tangodachi",
+      "brandName": "Tangodachi",
       "betaBadge": "Beta · Sign-ups paused",
       "waitlistIntro": "Sign-ups are currently closed while we're in beta. Leave your email and we'll let you know when we open up!",
       "backToSignIn": "Already have an account? Sign in",
@@ -2928,7 +2928,7 @@
       "headline": "Ready to level up your<br></br>Japanese skills?",
       "subtitle": "Tangodachi is currently in closed beta. Drop your email and we'll notify you the moment new spots open up.",
       "dashboardButton": "Go to dashboard 🌸",
-      "brandName": "🌸 Tangodachi",
+      "brandName": "Tangodachi",
       "tagline": "Japanese practice for the classroom",
       "madeBy": "Made with 💕 by <link>Variations on a String</link>"
     }

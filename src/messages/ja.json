@@ -1161,7 +1161,7 @@
     }
   },
   "Nav": {
-    "brandName": "🌸 Tangodachi",
+    "brandName": "Tangodachi",
     "mainNavigationAriaLabel": "メインナビゲーション",
     "messagesAriaLabel": "メッセージ",
     "achievementUnlocked": "実績を解除:",
@@ -1249,7 +1249,7 @@
   },
   "Auth": {
     "login": {
-      "brandName": "🌸 Tangodachi",
+      "brandName": "Tangodachi",
       "betaBadge": "ベータ · 新規登録は停止中",
       "waitlistIntro": "ベータ版のため、現在新規登録を停止しています。メールアドレスを登録すると、受付を再開したときにおしらせします！",
       "backToSignIn": "アカウントをお持ちの方はログイン",
@@ -2921,7 +2921,7 @@
       "headline": "日本語を、<br></br>レベルアップしませんか？",
       "subtitle": "Tangodachiは現在クローズドベータです。メールアドレスをご登録いただければ、新しい枠が空きしだいおしらせします。",
       "dashboardButton": "ダッシュボードへ 🌸",
-      "brandName": "🌸 Tangodachi",
+      "brandName": "Tangodachi",
       "tagline": "教室のための日本語練習アプリ",
       "madeBy": "💕 をこめて <link>Variations on a String</link> が制作"
     }
