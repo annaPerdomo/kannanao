@@ -75,7 +75,7 @@ export default function LandingJaRoute() {
     <StaticIntlProvider locale={LOCALE} messages={messages}>
       <Providers initialAuth={{ session: null, profile: null }} locale={LOCALE}>
         <AppBackground lang={LOCALE}>
-          <AppShell initialUnreadCount={0}>
+          <AppShell initialUnreadCount={0} showFooter={false}>
             <LandingContent locale={LOCALE} />
           </AppShell>
         </AppBackground>

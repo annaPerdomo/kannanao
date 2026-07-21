@@ -158,6 +158,7 @@ export function CtaSection() {
         )}
 
         <Box
+          component="footer"
           sx={{
             mt: 8,
             pt: 3,

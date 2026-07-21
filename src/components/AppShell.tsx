@@ -19,10 +19,14 @@ export function AppShell({
   children,
   initialProgress,
   initialUnreadCount,
+  showFooter = true,
 }: {
   children: React.ReactNode;
   initialProgress?: InitialProgress | null;
   initialUnreadCount?: number;
+  /** The landing page brings its own footer (the CTA section), so it opts out
+   *  of the shared one to avoid rendering two stacked footers. */
+  showFooter?: boolean;
 }) {
   const pathname = usePathname();
   const isEmbed = pathname?.startsWith('/embed/');
@@ -49,7 +53,7 @@ export function AppShell({
             >
               <AuthGuard>{children}</AuthGuard>
             </Box>
-            {!isFullHeight && <Footer />}
+            {!isFullHeight && showFooter && <Footer />}
             <BottomNav />
             <GlobalBuddy />
             <PushAutoResubscribe />
