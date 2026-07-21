@@ -76,7 +76,7 @@ const JP_FALLBACK_FOR_GENERIC: Record<string, string> = {
  * each stack, so single-quoted system families stay invisible to it and no
  * request is made for a font that was never on Google Fonts.
  */
-function withJpFallback(stack: string): string {
+export function withJpFallback(stack: string): string {
   const lastComma = stack.lastIndexOf(',');
   if (lastComma === -1) return stack;
   const generic = stack.slice(lastComma + 1).trim();
