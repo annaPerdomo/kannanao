@@ -1,6 +1,11 @@
 'use client';
 
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutlineRounded';
+import JoinFullIcon from '@mui/icons-material/JoinFullRounded';
+import PsychologyIcon from '@mui/icons-material/PsychologyRounded';
+import ReplayIcon from '@mui/icons-material/ReplayRounded';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
@@ -10,32 +15,33 @@ import { useInView } from '@/hooks/useInView';
 import { emerald, pink, purple, sky } from '@/theme';
 
 import { Blob } from './Blob';
+import { SrsDemo } from './SrsDemo';
 
 const MODES = [
   {
     key: 'dailyReview',
-    emoji: '🔁',
+    Icon: ReplayIcon,
     color: sky[600],
     bg: alpha(sky[100], 0.6),
     border: alpha(sky[300], 0.55),
   },
   {
     key: 'match',
-    emoji: '🔗',
+    Icon: JoinFullIcon,
     color: emerald[500],
     bg: alpha(emerald[100], 0.55),
     border: alpha(emerald[300], 0.55),
   },
   {
     key: 'fillInTheBlank',
-    emoji: '✏️',
+    Icon: DriveFileRenameOutlineIcon,
     color: purple[600],
     bg: alpha(purple[100], 0.6),
     border: alpha(purple[300], 0.55),
   },
   {
     key: 'recall',
-    emoji: '🧠',
+    Icon: PsychologyIcon,
     color: pink[600],
     bg: alpha(pink[100], 0.6),
     border: alpha(pink[300], 0.55),
@@ -49,9 +55,11 @@ export function PracticeSection() {
   return (
     <Box
       ref={ref}
+      id="for-learners"
       sx={{
         position: 'relative',
         overflow: 'hidden',
+        scrollMarginTop: 72,
         background: `linear-gradient(148deg, ${pink[50]} 0%, ${alpha(pink[100], 0.6)} 35%, ${alpha(purple[50], 0.75)} 70%, ${pink[50]} 100%)`,
         display: 'flex',
         alignItems: 'center',
@@ -72,6 +80,20 @@ export function PracticeSection() {
             transition: 'opacity 0.8s ease, transform 0.8s ease',
           }}
         >
+          <Chip
+            label={t('badge')}
+            size="small"
+            sx={{
+              mb: 2,
+              bgcolor: alpha(pink[100], 0.7),
+              color: pink[700],
+              fontWeight: 800,
+              fontSize: '0.68rem',
+              letterSpacing: '0.14em',
+              border: `1px solid ${alpha(pink[300], 0.55)}`,
+              borderRadius: 6,
+            }}
+          />
           <Typography
             component="h2"
             sx={{
@@ -88,7 +110,7 @@ export function PracticeSection() {
             sx={{
               fontSize: '1rem',
               color: alpha(pink[700], 0.6),
-              maxWidth: 480,
+              maxWidth: 520,
               mx: 'auto',
               lineHeight: 1.7,
             }}
@@ -96,6 +118,8 @@ export function PracticeSection() {
             {t('subheading')}
           </Typography>
         </Box>
+
+        <SrsDemo />
 
         <Box
           sx={{
@@ -126,7 +150,20 @@ export function PracticeSection() {
                 },
               }}
             >
-              <Typography sx={{ fontSize: '2.6rem', lineHeight: 1 }}>{m.emoji}</Typography>
+              <Box
+                sx={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 3.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: alpha(m.color, 0.12),
+                  border: `1px solid ${alpha(m.color, 0.22)}`,
+                }}
+              >
+                <m.Icon sx={{ fontSize: '1.8rem', color: m.color }} />
+              </Box>
               <Typography
                 sx={{ fontFamily: (t) => t.fonts.display, fontSize: '1.3rem', color: m.color }}
               >

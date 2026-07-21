@@ -1,4 +1,5 @@
 export { AiDemoSection } from './sections/AiDemoSection';
+export { AudienceSection } from './sections/AudienceSection';
 export { CtaSection } from './sections/CtaSection';
 export { FeaturesSection } from './sections/FeaturesSection';
 export { GamificationSection } from './sections/GamificationSection';

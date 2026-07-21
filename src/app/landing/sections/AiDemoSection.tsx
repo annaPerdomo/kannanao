@@ -1,8 +1,11 @@
 'use client';
 
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import AssignmentIcon from '@mui/icons-material/AssignmentRounded';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesomeRounded';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooksRounded';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdfRounded';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -106,9 +109,11 @@ export function AiDemoSection() {
   return (
     <Box
       ref={ref}
+      id="for-educators"
       sx={{
         position: 'relative',
         overflow: 'hidden',
+        scrollMarginTop: 72,
         background: `linear-gradient(148deg, ${pink[50]} 0%, ${pink[100]} 30%, ${alpha(pink[50], 0.6)} 60%, ${pink[50]} 100%)`,
         py: { xs: 10, md: 10 },
         px: { xs: 2, sm: 4, md: 6, lg: 8 },
@@ -145,6 +150,20 @@ export function AiDemoSection() {
             transition: 'opacity 0.8s ease, transform 0.8s ease',
           }}
         >
+          <Chip
+            label={t('badge')}
+            size="small"
+            sx={{
+              mb: 2,
+              bgcolor: alpha(purple[100], 0.7),
+              color: purple[700],
+              fontWeight: 800,
+              fontSize: '0.68rem',
+              letterSpacing: '0.14em',
+              border: `1px solid ${alpha(purple[300], 0.55)}`,
+              borderRadius: 6,
+            }}
+          />
           <Typography
             component="h2"
             sx={{
@@ -261,9 +280,12 @@ export function AiDemoSection() {
                   justifyContent: 'space-between',
                 }}
               >
-                <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: '#fff' }}>
-                  {t('addCardsPanelTitle')}
-                </Typography>
+                <Stack direction="row" spacing={0.75} alignItems="center">
+                  <AutoAwesomeIcon sx={{ fontSize: '0.95rem', color: '#fff' }} />
+                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: '#fff' }}>
+                    {t('addCardsPanelTitle')}
+                  </Typography>
+                </Stack>
                 <Stack direction="row" spacing={0.75}>
                   {[0, 1, 2].map((i) => (
                     <Box
@@ -459,8 +481,8 @@ export function AiDemoSection() {
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                       {[
-                        { key: 'addExisting' as const, icon: '📚' },
-                        { key: 'importPdf' as const, icon: '📄' },
+                        { key: 'addExisting' as const, Icon: LibraryBooksIcon },
+                        { key: 'importPdf' as const, Icon: PictureAsPdfIcon },
                       ].map((btn) => (
                         <Box
                           key={btn.key}
@@ -486,10 +508,14 @@ export function AiDemoSection() {
                               alignItems: 'center',
                               justifyContent: 'center',
                               flexShrink: 0,
-                              fontSize: '1rem',
                             }}
                           >
-                            {btn.icon}
+                            <btn.Icon
+                              sx={{
+                                fontSize: '1.15rem',
+                                color: btn.key === 'importPdf' ? purple[600] : pink[600],
+                              }}
+                            />
                           </Box>
                           <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                             <Typography
@@ -557,17 +583,19 @@ export function AiDemoSection() {
                   }}
                 >
                   <Box>
-                    <Typography
-                      sx={{
-                        fontSize: '1.05rem',
-                        fontWeight: 900,
-                        color: '#9D174D',
-                        lineHeight: 1.2,
-                        mb: 0.4,
-                      }}
-                    >
-                      {t('reviewCardsPanelTitle')}
-                    </Typography>
+                    <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mb: 0.4 }}>
+                      <AssignmentIcon sx={{ fontSize: '1.1rem', color: '#9D174D' }} />
+                      <Typography
+                        sx={{
+                          fontSize: '1.05rem',
+                          fontWeight: 900,
+                          color: '#9D174D',
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {t('reviewCardsPanelTitle')}
+                      </Typography>
+                    </Stack>
                     <Typography sx={{ fontSize: '0.7rem', color: '#C2709A', fontWeight: 600 }}>
                       {showReview
                         ? t('reviewCardsStatus', { count: DEMO_WORDS.length })

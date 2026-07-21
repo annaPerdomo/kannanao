@@ -20,7 +20,7 @@
   },
   "Deck": {
     "addCardsModal": {
-      "title": "✨ Add Cards",
+      "title": "Add Cards",
       "subtitle": "Generate, copy, or import new flashcards",
       "generating": "Generating cards…"
     },
@@ -1278,7 +1278,7 @@
       "namePlaceholder": "Your name",
       "messageLabel": "What do you want to use Tangodachi for? (optional)",
       "messagePlaceholder": "I'm studying for JLPT N3…",
-      "submitButton": "Notify me when spots open 🌸",
+      "submitButton": "Notify me when spots open",
       "genericError": "Something went wrong.",
       "networkError": "Network error. Please try again."
     }
@@ -2494,9 +2494,9 @@
   },
   "Landing": {
     "seo": {
-      "appDescription": "Tangodachi is a supplemental Japanese practice app for classrooms. Teachers build decks, assign them with deadlines, and track each student's progress; students get more ways to study what they're learning in class — daily review, practice modes, games, graded quizzes, and AI-assisted flashcards.",
+      "appDescription": "Tangodachi is a Japanese practice app for educators and learners. Educators build decks with AI in minutes, assign them with deadlines, and track each learner's progress; learners study with daily review, spaced repetition, practice games, and graded quizzes — so what they learn actually sticks.",
       "featureList": [
-        "Classroom groups with assignments, deadlines, and per-student progress tracking",
+        "Groups with assignments, deadlines, and per-student progress tracking",
         "Daily review that resurfaces each student's due words",
         "Multiple practice modes: Match, Fill-in-the-blank, and Recall",
         "Graded quizzes with results teachers can export",
@@ -2510,23 +2510,23 @@
       "faq": [
         {
           "question": "What is Tangodachi?",
-          "answer": "Tangodachi is a free, supplemental Japanese practice app built for classrooms. Teachers create decks, assign them with deadlines, and track how each student is doing. Students get more ways to study what they're learning in class — daily review, practice modes, games, graded quizzes, and AI-generated flashcards. It works on any device — no install required."
+          "answer": "Tangodachi is a free Japanese practice app for educators and learners. Educators create decks with AI, assign them with deadlines, and track how each learner is doing. Learners study with daily review, spaced repetition, practice games, and graded quizzes — more ways to make what they're learning stick. It works on any device — no install required."
         },
         {
-          "question": "Is Tangodachi good for teachers and classrooms?",
-          "answer": "Yes — it's designed for it. Teachers invite a whole class with a single QR code, assign specific decks with due dates, monitor each student's progress and accuracy, run graded quizzes with exportable results, and send encouragement messages. Tangodachi supplements what you already teach, giving students structured practice between classes."
+          "question": "Is Tangodachi good for teachers?",
+          "answer": "Yes — it's designed for it. Teachers invite their whole group with a single QR code, assign specific decks with due dates, monitor each student's progress and accuracy, run graded quizzes with exportable results, and send encouragement messages. Tangodachi supplements what you already teach, giving students structured practice between lessons."
         },
         {
           "question": "Can students practice what they learn in class?",
-          "answer": "Yes. Once a teacher assigns a deck, students get daily review that resurfaces the words they need to see, plus practice modes and quick games built from those same words. It turns classroom vocabulary and grammar into short, repeatable practice students can do on their phone between lessons."
+          "answer": "Yes. Once a teacher assigns a deck, students get daily review that resurfaces the words they need to see, plus practice modes and quick games built from those same words. It turns lesson vocabulary and grammar into short, repeatable practice students can do on their phone between lessons."
         },
         {
           "question": "What practice and review modes are available?",
-          "answer": "Every student gets a Daily Review that surfaces the words due that day, plus three practice modes — Match (race the clock pairing words to meanings), Fill-in-the-blank (type the missing word in a sentence), and Recall (see the meaning, type the Japanese) — quick games, and graded quizzes. Every session earns XP toward the next level."
+          "answer": "Every student gets a Daily Review, powered by spaced repetition, that surfaces the words due that day, plus three practice modes — Match (race the clock pairing words to meanings), Fill-in-the-blank (type the missing word in a sentence), and Recall (see the meaning, type the Japanese) — quick games, and graded quizzes. Every session earns XP toward the next level."
         },
         {
           "question": "How does AI flashcard generation work?",
-          "answer": "Teachers type any word in English or Japanese and Google Gemini generates the hiragana reading, kanji, meaning, and bilingual example sentences — so building classroom material takes minutes, not hours. You can also upload a PDF of a textbook or handout to extract vocabulary and generate cards in bulk."
+          "answer": "Teachers type any word in English or Japanese and Google Gemini generates the hiragana reading, kanji, meaning, and bilingual example sentences — so building course material takes minutes, not hours. You can also upload a PDF of a textbook or handout to extract vocabulary and generate cards in bulk."
         },
         {
           "question": "What is Travel Mode?",
@@ -2544,29 +2544,59 @@
       "ja": "Japanese"
     },
     "hero": {
-      "waitlistBadge": "✨ Closed beta — join the waitlist",
-      "headline": "Japanese practice<br></br>for the whole<br></br>classroom.",
-      "subtitle": "Teachers build decks, assign them, and track every student. Students get more ways to study what they learn in class — daily review, practice modes, games, and quizzes — everything that makes Japanese <em>actually</em> stick.",
-      "dashboardButton": "Go to dashboard 🌸",
-      "waitlistButton": "Join the waitlist 🌸",
+      "waitlistBadge": "Closed beta — join the waitlist",
+      "headline": "Create less.<br></br>Teach more.<br></br>Learn better.",
+      "subtitle": "Tangodachi gives educators AI that builds practice materials in minutes — and gives learners games powered by spaced repetition, so new words <em>actually</em> stick.",
+      "dashboardButton": "Go to dashboard",
+      "educatorButton": "I'm an educator",
+      "learnerButton": "I'm a learner",
+      "waitlistLink": "or join the waitlist →",
+      "waitlistButton": "Join the waitlist",
       "signInButton": "Sign in",
       "tags": {
-        "classrooms": "🏫 Classrooms",
-        "dailyReview": "🔁 Daily review",
-        "aiPowered": "🤖 AI-powered",
-        "quizzes": "📝 Quizzes",
-        "travelMode": "✈️ Travel Mode",
-        "gamified": "🎮 Gamified"
+        "spacedRepetition": "Spaced repetition",
+        "dailyReview": "Daily review",
+        "aiPowered": "AI-powered",
+        "quizzes": "Quizzes",
+        "travelMode": "Travel Mode",
+        "gamified": "Gamified"
       },
       "scroll": "scroll"
     },
+    "audience": {
+      "badge": "Two experiences. One goal.",
+      "heading": "Built for educators<br></br>and learners",
+      "subheading": "Everything you need to create, practice, and remember Japanese — together.",
+      "educators": {
+        "label": "For educators",
+        "title": "AI that builds practice materials in minutes",
+        "points": [
+          "Type a few words — get full decks with readings, meanings, and example sentences",
+          "Drop in a textbook PDF and get flashcards back",
+          "Assign decks with deadlines and track every learner's progress",
+          "Save hours of prep every week"
+        ],
+        "cta": "Watch the AI build a deck"
+      },
+      "learners": {
+        "label": "For learners",
+        "title": "Games that make Japanese stick",
+        "points": [
+          "Spaced repetition brings each word back right before you'd forget it",
+          "Match, Fill-in-the-blank, Recall, and quick games keep practice fun",
+          "Streaks, XP, and levels celebrate your progress",
+          "Study smarter, not longer"
+        ],
+        "cta": "See how you'll learn"
+      }
+    },
     "features": {
-      "heading": "Everything a class needs<br></br>to practice Japanese",
-      "subheading": "Classroom groups, daily review, practice modes, graded quizzes, AI card generation, and more — a complete supplemental practice platform for Japanese class.",
+      "heading": "And everything else<br></br>you need",
+      "subheading": "Groups, daily review, practice modes, graded quizzes, AI card generation, and more — one home for teaching and learning Japanese.",
       "items": {
-        "classroomGroups": {
-          "title": "Classroom Groups",
-          "desc": "Invite a class with a QR code, assign decks with deadlines, and track every student's progress and accuracy."
+        "groups": {
+          "title": "Groups & Assignments",
+          "desc": "Invite your whole group with a QR code, assign decks with deadlines, and track every learner's progress and accuracy."
         },
         "dailyReview": {
           "title": "Daily Review",
@@ -2627,13 +2657,14 @@
       }
     },
     "aiDemo": {
-      "heading": "Generate a full deck<br></br>in minutes",
-      "subheading": "Type a few words or drop any PDF — Gemini AI generates readings, meanings, and bilingual example sentences for every card instantly.",
+      "badge": "FOR EDUCATORS",
+      "heading": "Create practice materials<br></br>in minutes, not hours",
+      "subheading": "Type a few words or drop in a PDF from your curriculum — AI generates readings, meanings, and bilingual example sentences for every card while you watch. This is a live preview of the real flow.",
       "steps": {
         "generateCards": "Generate cards",
         "reviewAndEdit": "Review & edit"
       },
-      "addCardsPanelTitle": "✨ Add Cards",
+      "addCardsPanelTitle": "Add Cards",
       "mainDisplayModeLabel": "Main display mode:",
       "viewModes": {
         "hiragana": "ひ Hiragana",
@@ -2655,7 +2686,7 @@
           "desc": "Extract vocabulary from a document"
         }
       },
-      "reviewCardsPanelTitle": "📋 Review Cards",
+      "reviewCardsPanelTitle": "Review Cards",
       "reviewCardsStatus": "{count, plural, one {# card generated — edit before adding} other {# cards generated — edit before adding}}",
       "reviewCardsWaiting": "Waiting for generation…",
       "setViewModeLabel": "Set main view mode for all cards:",
@@ -2720,8 +2751,22 @@
       }
     },
     "practice": {
-      "heading": "Practice that fits every lesson",
-      "subheading": "Students start with a daily review of what's due, then switch between practice modes to keep it fresh. Every session earns XP toward the next level.",
+      "badge": "FOR LEARNERS",
+      "heading": "Play. Practice. Remember.",
+      "subheading": "Start with a short daily review of what's due, then keep it fresh with games. Every session is scheduled by spaced repetition and earns XP toward the next level.",
+      "srs": {
+        "title": "Why it sticks: spaced repetition",
+        "subtitle": "Tangodachi brings each word back right before you'd forget it. Reviews start close together, then spread out as your memory gets stronger.",
+        "wordLabel": "One word's journey",
+        "memoryLabel": "Memory strength",
+        "learnedChip": "Long-term memory ✓",
+        "steps": {
+          "today": "Today",
+          "threeDays": "3 days",
+          "oneWeek": "1 week",
+          "oneMonth": "1 month"
+        }
+      },
       "modes": {
         "dailyReview": {
           "name": "Daily Review",
@@ -2774,7 +2819,7 @@
           "name": "Summit"
         }
       },
-      "customizeHeading": "🎨 Customize Everything",
+      "customizeHeading": "Customize Everything",
       "colorThemesLabel": "10 COLOR THEMES",
       "themes": {
         "sakura": {
@@ -2836,17 +2881,17 @@
     "group": {
       "badge": "SHARE & COLLABORATE",
       "heading": "Better together",
-      "subheading": "Share decks with a link, embed cards on any website, or create a full classroom with assignments, leaderboards, and encouragements.",
+      "subheading": "Share decks with a link, embed cards on any website, or run a full group with assignments, leaderboards, and encouragements.",
       "poweredBy": "Powered by Tangodachi",
       "shareHeading": "Share & embed your decks",
       "shareBody": "Share any deck with a single link — friends and classmates can study instantly with no account required. Or embed an interactive flashcard widget directly on your blog, Notion page, or website.",
       "shareTags": {
-        "oneClickSharing": "🔗 One-click sharing",
-        "embeddableWidget": "🌐 Embeddable widget",
-        "noAccountNeeded": "🔒 No account needed"
+        "oneClickSharing": "One-click sharing",
+        "embeddableWidget": "Embeddable widget",
+        "noAccountNeeded": "No account needed"
       },
-      "classroomHeading": "Or build a full classroom",
-      "classroomSubheading": "Invite members with a QR code, assign decks, track progress, and send encouragements.",
+      "groupHeading": "Or run your whole group",
+      "groupSubheading": "Invite members with a QR code, assign decks, track progress, and send encouragements.",
       "leaderboard": {
         "title": "Weekly Leaderboard",
         "levelStreak": "Lv.{level} · 🔥 {streak}d",
@@ -2888,12 +2933,12 @@
         }
       },
       "pills": {
-        "oneClickSharing": "🔗 One-click sharing",
-        "organizerMemberRoles": "👥 Organizer & member roles",
-        "assignDecksWithDeadlines": "📋 Assign decks with deadlines",
-        "weeklyXpLeaderboard": "🏆 Weekly XP leaderboard",
-        "sendEncouragements": "💌 Send encouragements",
-        "qrCodeInvites": "📱 QR code invites"
+        "oneClickSharing": "One-click sharing",
+        "organizerMemberRoles": "Organizer & member roles",
+        "assignDecksWithDeadlines": "Assign decks with deadlines",
+        "weeklyXpLeaderboard": "Weekly XP leaderboard",
+        "sendEncouragements": "Send encouragements",
+        "qrCodeInvites": "QR code invites"
       }
     },
     "howItWorks": {
@@ -2927,9 +2972,9 @@
       "betaChipLabel": "Closed beta — spots opening soon",
       "headline": "Ready to level up your<br></br>Japanese skills?",
       "subtitle": "Tangodachi is currently in closed beta. Drop your email and we'll notify you the moment new spots open up.",
-      "dashboardButton": "Go to dashboard 🌸",
+      "dashboardButton": "Go to dashboard",
       "brandName": "Tangodachi",
-      "tagline": "Japanese practice for the classroom",
+      "tagline": "Japanese practice for educators and learners",
       "madeBy": "Made with 💕 by <link>Variations on a String</link>"
     }
   }

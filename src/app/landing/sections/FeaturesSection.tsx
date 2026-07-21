@@ -1,5 +1,17 @@
 'use client';
 
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesomeRounded';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEventsRounded';
+import FactCheckIcon from '@mui/icons-material/FactCheckRounded';
+import FlightIcon from '@mui/icons-material/FlightRounded';
+import GroupsIcon from '@mui/icons-material/GroupsRounded';
+import IosShareIcon from '@mui/icons-material/IosShareRounded';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartmentRounded';
+import PaletteIcon from '@mui/icons-material/PaletteRounded';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdfRounded';
+import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOverRounded';
+import ReplayIcon from '@mui/icons-material/ReplayRounded';
+import SportsEsportsIcon from '@mui/icons-material/SportsEsportsRounded';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import { alpha } from '@mui/material/styles';
@@ -12,18 +24,18 @@ import { darkPurple, pink, purple, sky } from '@/theme';
 import { Blob } from './Blob';
 
 const FEATURES = [
-  { key: 'classroomGroups', emoji: '🏫' },
-  { key: 'dailyReview', emoji: '🔁' },
-  { key: 'threePracticeModes', emoji: '🎮' },
-  { key: 'gradedQuizzes', emoji: '📝' },
-  { key: 'aiCardGeneration', emoji: '🤖' },
-  { key: 'pdfImport', emoji: '📄' },
-  { key: 'travelMode', emoji: '✈️' },
-  { key: 'speechPractice', emoji: '🎤' },
-  { key: 'streaksAndAchievements', emoji: '🔥' },
-  { key: 'leaderboard', emoji: '🏆' },
-  { key: 'themesAndShop', emoji: '🎨' },
-  { key: 'shareAndEmbed', emoji: '🤝' },
+  { key: 'groups', Icon: GroupsIcon },
+  { key: 'dailyReview', Icon: ReplayIcon },
+  { key: 'threePracticeModes', Icon: SportsEsportsIcon },
+  { key: 'gradedQuizzes', Icon: FactCheckIcon },
+  { key: 'aiCardGeneration', Icon: AutoAwesomeIcon },
+  { key: 'pdfImport', Icon: PictureAsPdfIcon },
+  { key: 'travelMode', Icon: FlightIcon },
+  { key: 'speechPractice', Icon: RecordVoiceOverIcon },
+  { key: 'streaksAndAchievements', Icon: LocalFireDepartmentIcon },
+  { key: 'leaderboard', Icon: EmojiEventsIcon },
+  { key: 'themesAndShop', Icon: PaletteIcon },
+  { key: 'shareAndEmbed', Icon: IosShareIcon },
 ];
 
 export function FeaturesSection() {
@@ -133,7 +145,20 @@ export function FeaturesSection() {
                 },
               }}
             >
-              <Typography sx={{ fontSize: '2rem', lineHeight: 1 }}>{f.emoji}</Typography>
+              <Box
+                sx={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: `linear-gradient(135deg, ${alpha(purple[400], 0.28)} 0%, ${alpha(pink[400], 0.22)} 100%)`,
+                  border: `1px solid ${alpha(purple[300], 0.28)}`,
+                }}
+              >
+                <f.Icon sx={{ fontSize: '1.5rem', color: purple[200] }} />
+              </Box>
               <Typography
                 sx={{
                   fontFamily: (t) => t.fonts.display,

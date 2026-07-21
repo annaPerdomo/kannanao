@@ -1,5 +1,9 @@
 'use client';
 
+import EditNoteIcon from '@mui/icons-material/EditNoteRounded';
+import GroupsIcon from '@mui/icons-material/GroupsRounded';
+import PaletteIcon from '@mui/icons-material/PaletteRounded';
+import SportsEsportsIcon from '@mui/icons-material/SportsEsportsRounded';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
@@ -14,22 +18,22 @@ import { Blob } from './Blob';
 const STEPS = [
   {
     n: 1,
-    emoji: '✍️',
+    Icon: EditNoteIcon,
     key: 'createYourDecks',
   },
   {
     n: 2,
-    emoji: '🎮',
+    Icon: SportsEsportsIcon,
     key: 'studyYourWay',
   },
   {
     n: 3,
-    emoji: '🎨',
+    Icon: PaletteIcon,
     key: 'earnAndCustomise',
   },
   {
     n: 4,
-    emoji: '👥',
+    Icon: GroupsIcon,
     key: 'learnTogether',
   },
 ];
@@ -195,16 +199,18 @@ export function HowItWorksSection() {
                 )}
               </Box>
               <Box sx={{ pb: i < STEPS.length - 1 ? 5 : 0, pt: 0.5 }}>
-                <Typography
-                  sx={{
-                    fontFamily: (t) => t.fonts.display,
-                    fontSize: '1.25rem',
-                    color: sky[700],
-                    mb: 0.75,
-                  }}
-                >
-                  {s.emoji} {t(`steps.${s.key}.title`)}
-                </Typography>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.75 }}>
+                  <s.Icon sx={{ fontSize: '1.5rem', color: sky[500] }} />
+                  <Typography
+                    sx={{
+                      fontFamily: (t) => t.fonts.display,
+                      fontSize: '1.25rem',
+                      color: sky[700],
+                    }}
+                  >
+                    {t(`steps.${s.key}.title`)}
+                  </Typography>
+                </Stack>
                 <Typography
                   sx={{ fontSize: '0.9rem', color: alpha(sky[700], 0.62), lineHeight: 1.75 }}
                 >

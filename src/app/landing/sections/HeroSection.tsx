@@ -1,12 +1,19 @@
 'use client';
 
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesomeRounded';
+import FlightIcon from '@mui/icons-material/FlightRounded';
+import PsychologyIcon from '@mui/icons-material/PsychologyRounded';
+import QuizIcon from '@mui/icons-material/QuizRounded';
+import ReplayIcon from '@mui/icons-material/ReplayRounded';
+import SchoolIcon from '@mui/icons-material/SchoolRounded';
+import SportsEsportsIcon from '@mui/icons-material/SportsEsportsRounded';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import { alpha, ThemeProvider } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
@@ -21,14 +28,17 @@ import { SakuraFallEffect } from './SakuraFallEffect';
 
 const sakuraTheme = createAppTheme('sakura');
 
-const TAG_KEYS = [
-  'classrooms',
-  'dailyReview',
-  'aiPowered',
-  'quizzes',
-  'travelMode',
-  'gamified',
+const TAGS = [
+  { key: 'aiPowered', Icon: AutoAwesomeIcon },
+  { key: 'spacedRepetition', Icon: PsychologyIcon },
+  { key: 'dailyReview', Icon: ReplayIcon },
+  { key: 'quizzes', Icon: QuizIcon },
+  { key: 'travelMode', Icon: FlightIcon },
+  { key: 'gamified', Icon: SportsEsportsIcon },
 ] as const;
+
+const scrollTo = (id: string) =>
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 
 export function HeroSection() {
   const router = useRouter();
@@ -188,9 +198,30 @@ export function HeroSection() {
                 <Button
                   variant="contained"
                   size="large"
-                  onClick={() =>
-                    document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' })
-                  }
+                  onClick={() => scrollTo('for-educators')}
+                  startIcon={<SchoolIcon />}
+                  sx={{
+                    fontFamily: (t) => t.fonts.display,
+                    fontSize: '1.05rem',
+                    textTransform: 'none',
+                    borderRadius: 8,
+                    px: 4,
+                    py: 1.5,
+                    background: `linear-gradient(135deg, ${purple[400]} 0%, ${purple[600]} 100%)`,
+                    boxShadow: `0 8px 28px ${alpha(purple[500], 0.42)}`,
+                    '&:hover': {
+                      transform: 'translateY(-3px)',
+                      boxShadow: `0 14px 40px ${alpha(purple[500], 0.52)}`,
+                    },
+                  }}
+                >
+                  {t('educatorButton')}
+                </Button>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => scrollTo('for-learners')}
+                  startIcon={<SportsEsportsIcon />}
                   sx={{
                     fontFamily: (t) => t.fonts.display,
                     fontSize: '1.05rem',
@@ -206,29 +237,28 @@ export function HeroSection() {
                     },
                   }}
                 >
-                  {t('waitlistButton')}
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="large"
-                  onClick={() => router.push('/login')}
-                  sx={{
-                    fontFamily: (t) => t.fonts.display,
-                    fontSize: '1.05rem',
-                    textTransform: 'none',
-                    borderRadius: 8,
-                    px: 3.5,
-                    py: 1.5,
-                    borderColor: alpha(pink[400], 0.6),
-                    color: pink[700],
-                    '&:hover': { borderColor: pink[500], bgcolor: alpha(pink[100], 0.6) },
-                  }}
-                >
-                  {t('signInButton')}
+                  {t('learnerButton')}
                 </Button>
               </>
             )}
           </Stack>
+
+          {!session && (
+            <Button
+              onClick={() => scrollTo('waitlist')}
+              sx={{
+                mb: 3,
+                mt: -1.5,
+                textTransform: 'none',
+                fontSize: '0.88rem',
+                fontWeight: 700,
+                color: pink[600],
+                '&:hover': { bgcolor: alpha(pink[100], 0.5) },
+              }}
+            >
+              {t('waitlistLink')}
+            </Button>
+          )}
 
           <Stack
             direction="row"
@@ -237,17 +267,22 @@ export function HeroSection() {
             useFlexGap
             justifyContent={{ xs: 'center', lg: 'flex-start' }}
           >
-            {TAG_KEYS.map((key) => (
+            {TAGS.map(({ key, Icon }) => (
               <Chip
                 key={key}
+                icon={
+                  <Icon sx={{ fontSize: '0.95rem !important', color: `${pink[500]} !important` }} />
+                }
                 label={t(`tags.${key}`)}
                 size="small"
                 sx={{
                   bgcolor: alpha(pink[50], 0.95),
                   color: pink[700],
+                  fontWeight: 600,
                   fontSize: '0.72rem',
                   border: `1px solid ${alpha(pink[300], 0.55)}`,
                   borderRadius: 4,
+                  pl: 0.5,
                 }}
               />
             ))}
@@ -257,7 +292,8 @@ export function HeroSection() {
         <Box
           sx={{
             flex: '0 0 auto',
-            width: { xs: '100%', sm: 390, lg: 430 },
+            width: 320,
+            maxWidth: '100%',
             position: 'relative',
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateX(0)' : 'translateX(48px)',
@@ -268,7 +304,7 @@ export function HeroSection() {
           <Box
             sx={{
               position: 'absolute',
-              inset: '8% 4%',
+              inset: '4% -6%',
               borderRadius: 8,
               background: `radial-gradient(ellipse at center, ${alpha(pink[400], 0.38)} 0%, transparent 70%)`,
               filter: 'blur(36px)',
@@ -277,8 +313,28 @@ export function HeroSection() {
           />
           <Box sx={{ animation: 'floatCard 7s ease-in-out infinite', position: 'relative' }}>
             <ThemeProvider theme={sakuraTheme}>
-              <Flashcard card={SAKURA_CARD} height={450} />
+              <Flashcard card={SAKURA_CARD} width={320} height={452} />
             </ThemeProvider>
+          </Box>
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: -18,
+              left: { xs: -14, sm: -66 },
+              width: { xs: 118, sm: 150 },
+              zIndex: 2,
+              pointerEvents: 'none',
+              animation: 'gentleBounce 4.5s ease-in-out infinite',
+            }}
+          >
+            <Image
+              src="/mascot/wave.png"
+              width={336}
+              height={366}
+              priority
+              alt=""
+              style={{ width: '100%', height: 'auto' }}
+            />
           </Box>
         </Box>
       </Box>

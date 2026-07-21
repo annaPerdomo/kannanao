@@ -1,5 +1,16 @@
 'use client';
 
+import AssignmentIcon from '@mui/icons-material/AssignmentRounded';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEventsRounded';
+import FavoriteIcon from '@mui/icons-material/FavoriteRounded';
+import GroupsIcon from '@mui/icons-material/GroupsRounded';
+import LinkIcon from '@mui/icons-material/LinkRounded';
+import LockOpenIcon from '@mui/icons-material/LockOpenRounded';
+import MenuBookIcon from '@mui/icons-material/MenuBookRounded';
+import PublicIcon from '@mui/icons-material/PublicRounded';
+import QrCode2Icon from '@mui/icons-material/QrCode2Rounded';
+import RestaurantIcon from '@mui/icons-material/RestaurantRounded';
+import WavingHandIcon from '@mui/icons-material/WavingHandRounded';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -30,22 +41,26 @@ const LEADERBOARD = [
 ];
 
 const ASSIGNMENTS = [
-  { key: 'jlptN5Verbs', progress: 80, emoji: '📚' },
-  { key: 'dailyGreetings', progress: 45, emoji: '👋' },
-  { key: 'foodAndDrinks', progress: 20, emoji: '🍱' },
+  { key: 'jlptN5Verbs', progress: 80, Icon: MenuBookIcon },
+  { key: 'dailyGreetings', progress: 45, Icon: WavingHandIcon },
+  { key: 'foodAndDrinks', progress: 20, Icon: RestaurantIcon },
 ];
 
 const ENCOURAGEMENTS = [{ key: 'greatStreak' }, { key: 'masteredVerbs' }];
 
-const SHARE_TAGS = ['oneClickSharing', 'embeddableWidget', 'noAccountNeeded'];
+const SHARE_TAGS = [
+  { key: 'oneClickSharing', Icon: LinkIcon },
+  { key: 'embeddableWidget', Icon: PublicIcon },
+  { key: 'noAccountNeeded', Icon: LockOpenIcon },
+];
 
 const PILLS = [
-  'oneClickSharing',
-  'organizerMemberRoles',
-  'assignDecksWithDeadlines',
-  'weeklyXpLeaderboard',
-  'sendEncouragements',
-  'qrCodeInvites',
+  { key: 'oneClickSharing', Icon: LinkIcon },
+  { key: 'organizerMemberRoles', Icon: GroupsIcon },
+  { key: 'assignDecksWithDeadlines', Icon: AssignmentIcon },
+  { key: 'weeklyXpLeaderboard', Icon: EmojiEventsIcon },
+  { key: 'sendEncouragements', Icon: FavoriteIcon },
+  { key: 'qrCodeInvites', Icon: QrCode2Icon },
 ];
 
 export function GroupSection() {
@@ -269,17 +284,24 @@ export function GroupSection() {
               {t('shareBody')}
             </Typography>
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              {SHARE_TAGS.map((tagKey) => (
+              {SHARE_TAGS.map(({ key, Icon }) => (
                 <Chip
-                  key={tagKey}
-                  label={t(`shareTags.${tagKey}`)}
+                  key={key}
+                  icon={
+                    <Icon
+                      sx={{ fontSize: '0.95rem !important', color: `${ocean[500]} !important` }}
+                    />
+                  }
+                  label={t(`shareTags.${key}`)}
                   size="small"
                   sx={{
                     bgcolor: alpha(ocean[50], 0.95),
                     color: ocean[700],
+                    fontWeight: 600,
                     fontSize: '0.72rem',
                     border: `1px solid ${alpha(ocean[300], 0.55)}`,
                     borderRadius: 4,
+                    pl: 0.5,
                   }}
                 />
               ))}
@@ -309,7 +331,7 @@ export function GroupSection() {
               lineHeight: 1.1,
             }}
           >
-            {t('classroomHeading')}
+            {t('groupHeading')}
           </Typography>
           <Typography
             sx={{
@@ -320,7 +342,7 @@ export function GroupSection() {
               lineHeight: 1.7,
             }}
           >
-            {t('classroomSubheading')}
+            {t('groupSubheading')}
           </Typography>
         </Box>
 
@@ -355,7 +377,7 @@ export function GroupSection() {
                 gap: 1,
               }}
             >
-              <Typography sx={{ fontSize: '1rem' }}>🏆</Typography>
+              <EmojiEventsIcon sx={{ fontSize: '1.05rem', color: 'common.white' }} />
               <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: 'common.white' }}>
                 {t('leaderboard.title')}
               </Typography>
@@ -441,7 +463,7 @@ export function GroupSection() {
                 gap: 1,
               }}
             >
-              <Typography sx={{ fontSize: '1rem' }}>📋</Typography>
+              <AssignmentIcon sx={{ fontSize: '1.05rem', color: 'common.white' }} />
               <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: 'common.white' }}>
                 {t('assignments.title')}
               </Typography>
@@ -460,7 +482,7 @@ export function GroupSection() {
                     }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.25 }}>
-                      <Typography sx={{ fontSize: '1.1rem' }}>{a.emoji}</Typography>
+                      <a.Icon sx={{ fontSize: '1.15rem', color: purple[500] }} />
                       <Box sx={{ flex: 1 }}>
                         <Typography
                           sx={{ fontSize: '0.78rem', fontWeight: 700, color: 'text.primary' }}
@@ -521,7 +543,7 @@ export function GroupSection() {
                 gap: 1,
               }}
             >
-              <Typography sx={{ fontSize: '1rem' }}>💌</Typography>
+              <FavoriteIcon sx={{ fontSize: '1.05rem', color: 'common.white' }} />
               <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: 'common.white' }}>
                 {t('encouragements.title')}
               </Typography>
@@ -634,17 +656,22 @@ export function GroupSection() {
             transition: 'opacity 0.8s ease 0.5s',
           }}
         >
-          {PILLS.map((pillKey) => (
+          {PILLS.map(({ key, Icon }) => (
             <Chip
-              key={pillKey}
-              label={t(`pills.${pillKey}`)}
+              key={key}
+              icon={
+                <Icon sx={{ fontSize: '0.95rem !important', color: `${ocean[500]} !important` }} />
+              }
+              label={t(`pills.${key}`)}
               size="small"
               sx={{
                 bgcolor: alpha(ocean[50], 0.95),
                 color: ocean[700],
+                fontWeight: 600,
                 fontSize: '0.72rem',
                 border: `1px solid ${alpha(ocean[300], 0.5)}`,
                 borderRadius: 4,
+                pl: 0.5,
               }}
             />
           ))}

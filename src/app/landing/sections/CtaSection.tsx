@@ -7,6 +7,7 @@ import Chip from '@mui/material/Chip';
 import Link from '@mui/material/Link';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
@@ -85,6 +86,25 @@ export function CtaSection() {
         >
           頑張ろう
         </Typography>
+
+        <Box
+          sx={{
+            width: { xs: 96, md: 118 },
+            mx: 'auto',
+            mt: { xs: -7, md: -10 },
+            mb: 2,
+            animation: 'gentleBounce 4.5s ease-in-out infinite',
+            filter: `drop-shadow(0 10px 28px ${alpha(pink[500], 0.35)})`,
+          }}
+        >
+          <Image
+            src="/mascot/sit.png"
+            width={266}
+            height={358}
+            alt=""
+            style={{ width: '100%', height: 'auto' }}
+          />
+        </Box>
 
         <Chip
           icon={
