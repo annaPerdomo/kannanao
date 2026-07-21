@@ -2554,6 +2554,14 @@
         "travelMode": "トラベルモード",
         "gamified": "ゲーム感覚"
       },
+      "scene": {
+        "aiBadge": "AIが30秒で12枚作成",
+        "classProgress": "クラスの進捗",
+        "assigned": "24人に配信ずみ",
+        "todayReview": "今日の復習",
+        "reviewDone": "{total}枚中{done}枚",
+        "streak": "{days}日連続"
+      },
       "scroll": "スクロール"
     },
     "audience": {

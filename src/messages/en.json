@@ -2561,6 +2561,14 @@
         "travelMode": "Travel Mode",
         "gamified": "Gamified"
       },
+      "scene": {
+        "aiBadge": "12 cards, written by AI in 30 seconds",
+        "classProgress": "Class progress",
+        "assigned": "Assigned to 24 learners",
+        "todayReview": "Today's review",
+        "reviewDone": "{done} of {total} done",
+        "streak": "{days}-day streak"
+      },
       "scroll": "scroll"
     },
     "audience": {

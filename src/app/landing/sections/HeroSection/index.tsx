@@ -11,22 +11,18 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
-import { alpha, ThemeProvider } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
-import { Flashcard } from '@/components/Flashcard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInView } from '@/hooks/useInView';
-import { amber, createAppTheme, pink, purple, sky } from '@/theme';
+import { amber, pink, purple } from '@/theme';
 
-import { Blob } from './Blob';
-import { SAKURA_CARD } from './demoData';
-import { SakuraFallEffect } from './SakuraFallEffect';
-
-const sakuraTheme = createAppTheme('sakura');
+import { Blob } from '../Blob';
+import { SakuraFallEffect } from '../SakuraFallEffect';
+import { HeroScene } from './HeroScene';
 
 const TAGS = [
   { key: 'aiPowered', Icon: AutoAwesomeIcon },
@@ -102,7 +98,7 @@ export function HeroSection() {
           display: 'flex',
           flexDirection: { xs: 'column', lg: 'row' },
           alignItems: 'center',
-          gap: { xs: 7, lg: 10 },
+          gap: { xs: 7, lg: 8 },
           position: 'relative',
           zIndex: 1,
         }}
@@ -110,6 +106,7 @@ export function HeroSection() {
         <Box
           sx={{
             flex: 1,
+            minWidth: 0,
             textAlign: { xs: 'center', lg: 'left' },
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateX(0)' : 'translateX(-48px)',
@@ -139,11 +136,10 @@ export function HeroSection() {
           <Typography
             component="h1"
             sx={{
-              fontFamily: (t) => t.fonts.display,
-              fontSize: { xs: '3.4rem', sm: '4.2rem', lg: '5.2rem' },
-              lineHeight: 0.98,
+              fontSize: { xs: '3rem', sm: '3.9rem', lg: '4.7rem' },
+              lineHeight: 1.02,
               mb: 2.5,
-              background: `linear-gradient(135deg, ${pink[600]} 0%, ${purple[500]} 50%, ${sky[500]} 100%)`,
+              background: `linear-gradient(120deg, ${purple[600]} 0%, ${purple[500]} 30%, ${pink[500]} 70%, ${pink[600]} 100%)`,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -154,11 +150,11 @@ export function HeroSection() {
 
           <Typography
             sx={{
-              fontSize: { xs: '1rem', sm: '1.15rem' },
+              fontSize: { xs: '1rem', sm: '1.1rem' },
               color: alpha(pink[700], 0.72),
-              lineHeight: 1.8,
+              lineHeight: 1.75,
               mb: 4,
-              maxWidth: 520,
+              maxWidth: 500,
               mx: { xs: 'auto', lg: 0 },
             }}
           >
@@ -177,7 +173,7 @@ export function HeroSection() {
                 size="large"
                 onClick={() => router.push('/')}
                 sx={{
-                  fontFamily: (t) => t.fonts.display,
+                  fontFamily: (theme) => theme.fonts.display,
                   fontSize: '1.05rem',
                   textTransform: 'none',
                   borderRadius: 8,
@@ -201,7 +197,7 @@ export function HeroSection() {
                   onClick={() => scrollTo('for-educators')}
                   startIcon={<SchoolIcon />}
                   sx={{
-                    fontFamily: (t) => t.fonts.display,
+                    fontFamily: (theme) => theme.fonts.display,
                     fontSize: '1.05rem',
                     textTransform: 'none',
                     borderRadius: 8,
@@ -223,7 +219,7 @@ export function HeroSection() {
                   onClick={() => scrollTo('for-learners')}
                   startIcon={<SportsEsportsIcon />}
                   sx={{
-                    fontFamily: (t) => t.fonts.display,
+                    fontFamily: (theme) => theme.fonts.display,
                     fontSize: '1.05rem',
                     textTransform: 'none',
                     borderRadius: 8,
@@ -289,53 +285,20 @@ export function HeroSection() {
           </Stack>
         </Box>
 
+        {/* The whole product in one glance: a deck the AI wrote, the card a
+            learner studies, and the progress both sides get back. */}
         <Box
           sx={{
-            flex: '0 0 auto',
-            width: 320,
-            maxWidth: '100%',
-            position: 'relative',
+            flex: { lg: '0 0 520px' },
+            width: '100%',
+            maxWidth: 520,
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateX(0)' : 'translateX(48px)',
             transition:
               'opacity 0.9s cubic-bezier(0.16,1,0.3,1) 0.18s, transform 0.9s cubic-bezier(0.16,1,0.3,1) 0.18s',
           }}
         >
-          <Box
-            sx={{
-              position: 'absolute',
-              inset: '4% -6%',
-              borderRadius: 8,
-              background: `radial-gradient(ellipse at center, ${alpha(pink[400], 0.38)} 0%, transparent 70%)`,
-              filter: 'blur(36px)',
-              pointerEvents: 'none',
-            }}
-          />
-          <Box sx={{ animation: 'floatCard 7s ease-in-out infinite', position: 'relative' }}>
-            <ThemeProvider theme={sakuraTheme}>
-              <Flashcard card={SAKURA_CARD} width={320} height={452} />
-            </ThemeProvider>
-          </Box>
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: -18,
-              left: { xs: -14, sm: -66 },
-              width: { xs: 118, sm: 150 },
-              zIndex: 2,
-              pointerEvents: 'none',
-              animation: 'gentleBounce 4.5s ease-in-out infinite',
-            }}
-          >
-            <Image
-              src="/mascot/wave.png"
-              width={336}
-              height={366}
-              priority
-              alt=""
-              style={{ width: '100%', height: 'auto' }}
-            />
-          </Box>
+          <HeroScene inView={inView} />
         </Box>
       </Box>
 
@@ -344,7 +307,9 @@ export function HeroSection() {
           position: 'absolute',
           bottom: 28,
           left: '50%',
-          display: 'flex',
+          // Hidden on phones, where the scene already fills the fold and the cue
+          // lands on top of it.
+          display: { xs: 'none', md: 'flex' },
           flexDirection: 'column',
           alignItems: 'center',
           gap: 0.75,
