@@ -320,7 +320,8 @@ export function AuthProvider({
   }, []);
 
   const signOut = useCallback(async () => {
-    await sb.auth.signOut();
+    // Scope 'local' signs out only this device.
+    await sb.auth.signOut({ scope: 'local' });
   }, []);
 
   const value = useMemo<AuthContextValue>(
