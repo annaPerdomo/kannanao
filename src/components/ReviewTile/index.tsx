@@ -7,17 +7,28 @@ import { useTranslations } from 'next-intl';
 
 import { useDueCount } from '@/hooks/useDueCount';
 
+interface ReviewTileProps {
+  /**
+   * For the home greeting hero, where the tile sits on the mascot's sky: the
+   * caught-up state's pale surface and dark type would vanish there, so it
+   * switches to a translucent white surface with white type.
+   */
+  onDark?: boolean;
+  /**
+   * Renders as a single gradient pill — "24 cards due today ›" — instead of the
+   * three-row tile. For the hero, where the banner art needs the room and the
+   * count is the only thing worth saying.
+   */
+  compact?: boolean;
+}
+
 /**
  * The single home-screen entry point to Review. When cards are due it's a
  * bright, inviting "N due today" call to action; when nothing is due it stays as
  * a calm "all caught up" state. Either way it leads to /review — the practice
  * hub (due-cards hero + games). No SRS jargon ever surfaces — just "Review".
- *
- * `onDark` is for the home greeting hero, where the tile sits on the mascot's
- * night sky: the caught-up state's pale surface and dark type would vanish
- * there, so it switches to a translucent white surface with white type.
  */
-export function ReviewTile({ onDark = false }: { onDark?: boolean } = {}) {
+export function ReviewTile({ onDark = false, compact = false }: ReviewTileProps = {}) {
   const router = useRouter();
   const theme = useTheme();
   const { brand, accent } = theme.palette;
@@ -30,6 +41,55 @@ export function ReviewTile({ onDark = false }: { onDark?: boolean } = {}) {
 
   const due = dueCount > 0;
   const go = () => router.push('/review');
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      go();
+    }
+  };
+
+  if (compact) {
+    return (
+      <Box
+        role="button"
+        tabIndex={0}
+        aria-label={due ? t('ariaReviewDue', { count: dueCount }) : t('ariaReviewCaughtUp')}
+        onClick={go}
+        onKeyDown={onKeyDown}
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          // Trimmed on phones so "24 cards due today ›" stays on one line even
+          // on a 320px screen.
+          gap: { xs: 1, sm: 1.25 },
+          px: { xs: 2, sm: 2.75 },
+          py: { xs: 1.375, sm: 1.625 },
+          borderRadius: theme.radii.md,
+          cursor: 'pointer',
+          fontWeight: 800,
+          fontSize: { xs: '0.9rem', sm: '1rem' },
+          color: '#fff',
+          // Caught-up keeps the same shape but drops the shout: a translucent
+          // pill on the artwork rather than a gradient asking to be pressed.
+          background: due
+            ? `linear-gradient(90deg, ${brand[500]}, ${accent[500]})`
+            : alpha('#fff', 0.18),
+          border: due ? 'none' : `1.5px solid ${alpha('#fff', 0.35)}`,
+          boxShadow: due ? `0 12px 26px ${alpha(brand[900], 0.45)}` : 'none',
+          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            ...(due ? {} : { bgcolor: alpha('#fff', 0.26) }),
+          },
+        }}
+      >
+        {/* No icon here on purpose: the pill sits on painted artwork and the
+            count is the whole message. The full tile keeps its emoji. */}
+        {due ? t('cardsDueToday', { count: dueCount }) : t('allCaughtUp')}
+        <ChevronRightRoundedIcon sx={{ fontSize: '1.35rem', flexShrink: 0 }} />
+      </Box>
+    );
+  }
 
   // Three surfaces, not two: due (always the bright gradient), caught-up on the
   // night hero, and caught-up on the page background.
@@ -43,12 +103,7 @@ export function ReviewTile({ onDark = false }: { onDark?: boolean } = {}) {
       tabIndex={0}
       aria-label={due ? t('ariaReviewDue', { count: dueCount }) : t('ariaReviewCaughtUp')}
       onClick={go}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          go();
-        }
-      }}
+      onKeyDown={onKeyDown}
       sx={{
         display: 'flex',
         alignItems: 'center',

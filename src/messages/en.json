@@ -412,7 +412,8 @@
       "ariaReviewDue": "Review — {count} due today",
       "ariaReviewCaughtUp": "Review — all caught up",
       "wordsWaiting": "{count, plural, one {# word waiting ⚔️} other {# words waiting ⚔️}}",
-      "allCaughtUp": "All caught up — nothing due"
+      "allCaughtUp": "All caught up — nothing due",
+      "cardsDueToday": "{count, plural, one {# card due today} other {# cards due today}}"
     },
     "hubPage": {
       "title": "Review",
