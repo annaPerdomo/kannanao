@@ -1,6 +1,4 @@
 'use client';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import StorefrontIcon from '@mui/icons-material/Storefront';
 import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
@@ -9,42 +7,33 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
 import { xpProgressInLevel } from '@/hooks/useProgress';
-import { SHOP_ITEMS } from '@/hooks/useShop';
 
 import { LevelBadge } from './LevelBadge';
 
 interface XpProgressCardProps {
   level: number;
   totalXp: number;
-  spendableXp: number;
-  ownedItemKeys: string[];
   onShopClick: () => void;
 }
 
 /**
- * The home dashboard's XP panel: progress through the current level on the
- * left, the level medal on the right. The whole card is the entry point to the
- * Shop, which is where spendable XP goes.
+ * The home hero's XP panel: progress through the current level on the left, the
+ * level medal on the right. Floats over the banner's right edge on wide screens
+ * (see GreetingHero's aside), which is why the surface is near-opaque white with
+ * a blur behind it rather than a flat card — it has painted sky underneath it.
+ *
+ * The whole card is the entry point to the Shop, which is where spendable XP
+ * goes. It doesn't restate the spendable total: the nav bar's XP chip is on
+ * screen directly above it and already does, and this card only has room to make
+ * one point well.
  */
-export function XpProgressCard({
-  level,
-  totalXp,
-  spendableXp,
-  ownedItemKeys,
-  onShopClick,
-}: XpProgressCardProps) {
+export function XpProgressCard({ level, totalXp, onShopClick }: XpProgressCardProps) {
   const t = useTranslations('Home.welcomeBanner');
-  const { brand, accent } = useTheme().palette;
+  const { palette, radii } = useTheme();
+  const { brand, accent } = palette;
 
   const { current, needed } = xpProgressInLevel(totalXp);
   const pct = Math.round((current / needed) * 100);
-
-  // The cheapest thing they haven't bought yet — a concrete reason to keep going.
-  const nextItem =
-    SHOP_ITEMS.filter((i) => i.price > 0 && !ownedItemKeys.includes(i.key)).sort(
-      (a, b) => a.price - b.price,
-    )[0] ?? null;
-  const xpNeeded = nextItem ? Math.max(0, nextItem.price - spendableXp) : 0;
 
   return (
     <Box
@@ -59,21 +48,22 @@ export function XpProgressCard({
         }
       }}
       sx={{
-        height: '100%',
         display: 'flex',
         alignItems: 'center',
-        gap: { xs: 1.5, sm: 2 },
-        px: { xs: 2, sm: 2.5 },
-        py: { xs: 2.5, sm: 3 },
-        borderRadius: 4,
+        gap: 1.75,
+        px: 2,
+        py: 1.875,
+        borderRadius: radii.md,
         cursor: 'pointer',
-        bgcolor: 'background.paper',
-        border: `1.5px solid ${alpha(brand[300], 0.35)}`,
-        boxShadow: `0 10px 30px ${alpha(brand[400], 0.14)}`,
+        bgcolor: alpha(palette.background.paper, 0.96),
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        border: `1.5px solid ${alpha(brand[300], 0.45)}`,
+        boxShadow: `0 18px 40px ${alpha(brand[900], 0.28)}`,
         transition: 'transform 0.18s ease, box-shadow 0.18s ease',
         '&:hover': {
           transform: 'translateY(-2px)',
-          boxShadow: `0 14px 38px ${alpha(brand[400], 0.22)}`,
+          boxShadow: `0 22px 44px ${alpha(brand[900], 0.34)}`,
         },
         '@keyframes shimmer': {
           '0%': { backgroundPosition: '-200% 0' },
@@ -82,38 +72,40 @@ export function XpProgressCard({
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        {/* The caption variant is monospaced and this card is the narrow half of
-            the hero row, so the label and the fraction each keep their own words
-            together and drop onto separate lines when there isn't room. Never
-            ellipsis: a truncated "2…" would be a lie about the XP total. */}
+        {/* The label and the fraction each keep their own words together and
+            drop onto separate lines when there isn't room. Never ellipsis: a
+            truncated "2…" would be a lie about the XP total. */}
         <Stack
           direction="row"
           justifyContent="space-between"
           alignItems="baseline"
           gap={1}
-          mb={0.75}
+          mb={1}
           sx={{ flexWrap: 'wrap' }}
         >
+          {/* body2, not caption: this theme's caption face is monospaced, which
+              turns the one number the card exists to show into a readout. */}
           <Typography
-            variant="caption"
+            variant="body2"
             sx={{
-              fontWeight: 800,
-              fontSize: '0.68rem',
-              letterSpacing: '0.06em',
+              fontWeight: 900,
+              fontSize: '0.65rem',
+              letterSpacing: '0.11em',
               textTransform: 'uppercase',
               whiteSpace: 'nowrap',
-              color: brand[700],
+              color: 'text.secondary',
             }}
           >
             {t('xpProgressLabel')}
           </Typography>
           <Typography
-            variant="caption"
+            variant="body2"
             sx={{
-              fontWeight: 700,
-              fontSize: '0.68rem',
+              fontWeight: 900,
+              fontSize: '0.82rem',
               whiteSpace: 'nowrap',
-              color: 'text.secondary',
+              fontVariantNumeric: 'tabular-nums',
+              color: accent[700],
             }}
           >
             {current} / {needed}
@@ -124,11 +116,11 @@ export function XpProgressCard({
           variant="determinate"
           value={pct}
           sx={{
-            height: 12,
-            borderRadius: 6,
+            height: 8,
+            borderRadius: radii.pill,
             bgcolor: alpha(brand[200], 0.5),
             '& .MuiLinearProgress-bar': {
-              borderRadius: 6,
+              borderRadius: radii.pill,
               background: `linear-gradient(90deg, ${brand[400]}, ${accent[400]}, ${brand[300]}, ${accent[400]}, ${brand[400]})`,
               backgroundSize: '200% 100%',
               animation: 'shimmer 3s ease-in-out infinite',
@@ -139,36 +131,29 @@ export function XpProgressCard({
 
         <Typography
           variant="body2"
-          sx={{ color: brand[700], fontWeight: 700, fontSize: '0.82rem', mt: 1, display: 'block' }}
+          sx={{
+            display: 'block',
+            mt: 1,
+            fontWeight: 700,
+            fontSize: '0.78rem',
+            color: 'text.secondary',
+          }}
         >
-          {t('xpToLevel', { xp: needed - current, level: level + 1 })}
+          {/* The number is what the reader is actually looking for, so it gets
+              the brand colour and the rest stays quiet around it. */}
+          {t.rich('xpToLevel', {
+            xp: (needed - current).toLocaleString(),
+            level: level + 1,
+            b: (chunks) => (
+              <Box component="b" sx={{ color: brand[600], fontWeight: 900 }}>
+                {chunks}
+              </Box>
+            ),
+          })}
         </Typography>
-
-        <Box sx={{ mt: 1.25, pt: 1.25, borderTop: `1px solid ${alpha(brand[300], 0.3)}` }}>
-          <Stack direction="row" alignItems="center" spacing={0.5} mb={nextItem ? 0.5 : 0}>
-            <AutoAwesomeIcon sx={{ fontSize: '0.9rem', color: accent[500], flexShrink: 0 }} />
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: 800, fontSize: '0.82rem', color: accent[600] }}
-            >
-              {t('xpToSpend', { xp: spendableXp.toLocaleString() })}
-            </Typography>
-            <StorefrontIcon
-              sx={{ fontSize: '0.9rem', color: brand[500], ml: 'auto', flexShrink: 0 }}
-            />
-          </Stack>
-          {nextItem && xpNeeded > 0 && (
-            <Typography
-              variant="caption"
-              sx={{ color: 'text.secondary', fontWeight: 600, display: 'block' }}
-            >
-              {nextItem.emoji} {nextItem.name} — {t('moreXp', { xp: xpNeeded.toLocaleString() })}
-            </Typography>
-          )}
-        </Box>
       </Box>
 
-      <LevelBadge level={level} size={84} />
+      <LevelBadge level={level} />
     </Box>
   );
 }

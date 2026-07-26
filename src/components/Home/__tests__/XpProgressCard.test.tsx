@@ -8,8 +8,6 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 const BASE = {
   level: 10,
   totalXp: 20708,
-  spendableXp: 9208,
-  ownedItemKeys: [] as string[],
   onShopClick: () => {},
 };
 
@@ -25,13 +23,11 @@ describe('XpProgressCard', () => {
     expect(screen.getByText(/to level 11/)).toBeInTheDocument();
   });
 
-  it('should show the spendable XP total', () => {
-    renderWithProviders(<XpProgressCard {...BASE} />);
-    expect(screen.getByText(/9,208 XP to spend/)).toBeInTheDocument();
-  });
-
-  it('should render the level on the badge', () => {
+  // The copy only ever names the *next* level, so the badge is the one place the
+  // current one is stated — and it has to be readable, not decorative.
+  it('should state the current level on the badge', () => {
     renderWithProviders(<XpProgressCard {...BASE} level={7} />);
+    expect(screen.getByText('Level')).toBeInTheDocument();
     expect(screen.getByText('7')).toBeInTheDocument();
   });
 

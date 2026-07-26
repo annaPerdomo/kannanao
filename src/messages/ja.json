@@ -1190,17 +1190,15 @@
   },
   "Home": {
     "greeting": {
-      "morning": "おはよう、{name}さん！",
-      "afternoon": "こんにちは、{name}さん！",
-      "evening": "こんばんは、{name}さん！",
-      "subtitle": "日本語のれんぞく記録をつづけよう！🌸"
+      "morning": "おはよう、<n>{name}さん！</n>",
+      "afternoon": "こんにちは、<n>{name}さん！</n>",
+      "evening": "こんばんは、<n>{name}さん！</n>"
     },
     "welcomeBanner": {
       "openShopAriaLabel": "ショップを開く",
       "xpProgressLabel": "XPの進み具合",
-      "xpToLevel": "レベル{level}まであと{xp} XP 🚀",
-      "xpToSpend": "使える{xp} XP",
-      "moreXp": "あと{xp} XP！"
+      "xpToLevel": "レベル{level}まであと<b>{xp} XP</b>",
+      "levelBadgeLabel": "レベル"
     },
     "dashboardSection": {
       "hideAriaLabel": "{label}を非表示"
@@ -1247,6 +1245,9 @@
     },
     "buddy": {
       "defaultPhrase": "勉強しよう！"
+    },
+    "heroDate": {
+      "today": "今日"
     }
   },
   "Auth": {

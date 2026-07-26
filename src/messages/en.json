@@ -1197,17 +1197,15 @@
   },
   "Home": {
     "greeting": {
-      "morning": "Good morning, {name}!",
-      "afternoon": "Hey there, {name}!",
-      "evening": "Good evening, {name}!",
-      "subtitle": "Let's keep your Japanese streak going! 🌸"
+      "morning": "おはよう、<n>{name}さん！</n>",
+      "afternoon": "こんにちは、<n>{name}さん！</n>",
+      "evening": "こんばんは、<n>{name}さん！</n>"
     },
     "welcomeBanner": {
       "openShopAriaLabel": "Open shop",
       "xpProgressLabel": "XP Progress",
-      "xpToLevel": "{xp} XP to level {level} 🚀",
-      "xpToSpend": "{xp} XP to spend",
-      "moreXp": "{xp} more XP!"
+      "xpToLevel": "<b>{xp} XP</b> to level {level}",
+      "levelBadgeLabel": "Level"
     },
     "dashboardSection": {
       "hideAriaLabel": "Hide {label}"
@@ -1254,6 +1252,9 @@
     },
     "buddy": {
       "defaultPhrase": "Let's study!"
+    },
+    "heroDate": {
+      "today": "Today"
     }
   },
   "Auth": {

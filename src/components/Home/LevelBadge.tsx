@@ -2,123 +2,71 @@
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 
-/** Six-sided medal outline, shared by the badge's rim and its face. */
+/** Six-sided medal outline. Slightly taller than wide, like a real badge. */
 const HEXAGON = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)';
-
-/**
- * Where each decorative sparkle sits, and how big it is. All on the outboard
- * side — the badge's other edge is up against the XP copy, and a sparkle there
- * reads as punctuation on the number beside it.
- */
-const SPARKLES = [
-  { top: '-2%', right: '-12%', size: '0.85rem' },
-  { top: '38%', right: '-16%', size: '0.6rem' },
-  { bottom: '20%', right: '-6%', size: '0.7rem' },
-] as const;
 
 interface LevelBadgeProps {
   level: number;
-  /** Rendered size in px. Defaults to the home dashboard's 96px. */
+  /** Rendered width in px; the badge is ~13% taller than this. */
   size?: number;
 }
 
 /**
- * The hexagonal level medal on the home XP card — a gradient rim around a
- * darker face carrying the level number, with two ribbon tails and a few
- * sparkles. Purely decorative: the level is also stated in the card's text, so
- * this is hidden from assistive tech.
+ * The hexagonal level medal on the home XP card: a gradient hex carrying the
+ * word "Level" and the number.
+ *
+ * Not decorative, and so not hidden from assistive tech — the card's copy names
+ * the *next* level ("1,352 XP to level 11"), which makes this the only place the
+ * current one is stated. The caption is a real word rather than a styled
+ * abbreviation so it reads as "Level 10" either way.
  */
-export function LevelBadge({ level, size = 96 }: LevelBadgeProps) {
+export function LevelBadge({ level, size = 60 }: LevelBadgeProps) {
+  const t = useTranslations('Home.welcomeBanner');
   const { brand, accent } = useTheme().palette;
 
   return (
     <Box
-      aria-hidden
       sx={{
-        position: 'relative',
-        width: size,
-        height: size * 1.18,
         flexShrink: 0,
+        width: size,
+        height: Math.round(size * 1.13),
+        clipPath: HEXAGON,
         display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
         justifyContent: 'center',
+        gap: '1px',
+        color: '#fff',
+        background: `linear-gradient(160deg, ${brand[300]} 0%, ${brand[500]} 52%, ${accent[600]} 100%)`,
+        filter: `drop-shadow(0 6px 14px ${alpha(brand[500], 0.4)})`,
       }}
     >
-      {/* Ribbon tails, tucked behind the medal */}
-      <Box
+      <Typography
+        component="span"
         sx={{
-          position: 'absolute',
-          bottom: 0,
-          display: 'flex',
-          gap: `${size * 0.16}px`,
+          fontSize: size * 0.135,
+          fontWeight: 900,
+          lineHeight: 1,
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          opacity: 0.85,
         }}
       >
-        {[-1, 1].map((dir) => (
-          <Box
-            key={dir}
-            sx={{
-              width: size * 0.2,
-              height: size * 0.36,
-              transform: `rotate(${dir * 8}deg)`,
-              background: `linear-gradient(180deg, ${accent[400]} 0%, ${accent[600]} 100%)`,
-              clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%)',
-            }}
-          />
-        ))}
-      </Box>
-
-      {/* Medal: gradient rim wrapping a darker face */}
-      <Box
+        {t('levelBadgeLabel')}
+      </Typography>
+      <Typography
+        component="span"
         sx={{
-          position: 'relative',
-          width: size,
-          height: size,
-          p: `${Math.round(size * 0.06)}px`,
-          clipPath: HEXAGON,
-          background: `linear-gradient(160deg, ${brand[200]} 0%, ${brand[400]} 100%)`,
-          filter: `drop-shadow(0 6px 14px ${alpha(brand[500], 0.45)})`,
+          fontSize: size * 0.43,
+          fontWeight: 900,
+          lineHeight: 1,
+          textShadow: '0 2px 6px rgba(0,0,0,0.28)',
         }}
       >
-        <Box
-          sx={{
-            width: '100%',
-            height: '100%',
-            clipPath: HEXAGON,
-            background: `linear-gradient(160deg, ${brand[500]} 0%, ${brand[700]} 55%, ${accent[600]} 100%)`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Typography
-            sx={{
-              fontSize: size * 0.36,
-              fontWeight: 900,
-              lineHeight: 1,
-              color: '#fff',
-              textShadow: '0 2px 6px rgba(0,0,0,0.35)',
-            }}
-          >
-            {level}
-          </Typography>
-        </Box>
-      </Box>
-
-      {SPARKLES.map(({ size: fontSize, ...position }, i) => (
-        <Box
-          key={i}
-          component="span"
-          sx={{
-            position: 'absolute',
-            ...position,
-            fontSize,
-            lineHeight: 1,
-            color: i % 2 === 0 ? accent[300] : brand[300],
-          }}
-        >
-          ✦
-        </Box>
-      ))}
+        {level}
+      </Typography>
     </Box>
   );
 }

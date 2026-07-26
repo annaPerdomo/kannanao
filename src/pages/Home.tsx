@@ -29,7 +29,6 @@ import { ReviewTile } from '@/components/ReviewTile';
 import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProgressCtx } from '@/contexts/ProgressContext';
-import { useShopCtx } from '@/contexts/ShopContext';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
 import { useGroupMembers } from '@/hooks/useGroup';
@@ -37,7 +36,7 @@ import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
 import { useGroups } from '@/hooks/useGroups';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
 import type { HomeData } from '@/lib/dbMappers';
-import { LAYOUT } from '@/theme';
+import { resolveTimeOfDay } from '@/lib/timeOfDay';
 import type { SectionKey } from '@/types/homeSections';
 import {
   getSectionsForRole,
@@ -73,14 +72,28 @@ function useHasOpened(open: boolean): boolean {
   return opened;
 }
 
+/**
+ * Tango's greeting — おはよう / こんにちは / こんばんは, in Japanese whichever locale
+ * the UI is in. It shares `resolveTimeOfDay` with the hero's banner art, so
+ * こんばんは can never end up over the sunrise illustration.
+ *
+ * Rich rather than plain text because Japanese permits a line break between any
+ * two characters: left alone, a narrow hero splits the reader's own name as
+ * «Annaさ / ん！». The `<n>` run holds the name and its honorific together, which
+ * leaves the 、as the only place the line may break.
+ */
 function getGreeting(
   name: string,
-  t: (key: string, values?: Record<string, string>) => string,
-): string {
-  const h = new Date().getHours();
-  if (h < 12) return t('morning', { name });
-  if (h < 17) return t('afternoon', { name });
-  return t('evening', { name });
+  t: ReturnType<typeof useTranslations<'Home.greeting'>>,
+): React.ReactNode {
+  return t.rich(resolveTimeOfDay(new Date()), {
+    name,
+    n: (chunks) => (
+      <Box component="span" sx={{ whiteSpace: 'nowrap' }}>
+        {chunks}
+      </Box>
+    ),
+  });
 }
 
 function DashboardSection({
@@ -264,18 +277,16 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
     homeSections.decks,
     initialData?.decks ?? undefined,
   );
-  const { progress, spendableXp, addBonusXp } = useProgressCtx();
+  const { progress, addBonusXp } = useProgressCtx();
   const { ohanashikais, pinOhanashikai } = useOhanashikais(
     homeSections.speeches,
     initialData?.ohanashikais ?? undefined,
   );
-  const { purchases } = useShopCtx();
   const { assignments } = useAssignments(undefined, homeSections.assignments);
   const { groups } = useGroups(homeSections.groups);
   const { members: groupMembers } = useGroupMembers(undefined, homeSections.groups);
   const { leaderboard } = useGroupLeaderboard(undefined, homeSections.leaderboard);
   const router = useRouter();
-  const ownedItemKeys = purchases.map((p) => p.item_key);
 
   const pendingAssignments = assignments.filter((a) => !a.completed_at);
   const [shareDeckId, setShareDeckId] = useState<string | null>(null);
@@ -639,42 +650,41 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
         py: { xs: 3, sm: 5 },
       }}
     >
-      {/* Hero row: the mascot's night sky carries the greeting and the day's one
-          call to action; the XP card sits beside it. The hero renders
-          immediately — only the XP card waits on progress, and it holds its
-          space with a skeleton so the row doesn't reflow when the number lands. */}
-      <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto', mb: { xs: 3, sm: 4 } }}>
-        <Grid container spacing={{ xs: 2, md: 2.5 }} alignItems="stretch">
-          <Grid size={{ xs: 12, md: 7 }}>
-            <GreetingHero greeting={getGreeting(username, tGreeting)}>
-              {/* The single home entry point to Smart Review — cross-deck due cards. */}
-              <ReviewTile onDark />
-            </GreetingHero>
-          </Grid>
-          <Grid size={{ xs: 12, md: 5 }}>
-            {progress ? (
+      {/* Hero: the mascot's banner for the current time of day carries the
+          greeting, today's date in Japanese and the day's one call to action,
+          with the XP card floated over its right edge (stacking underneath on
+          narrower screens). The hero renders immediately — only the XP card
+          waits on progress, and it holds its space with a skeleton so nothing
+          below it jumps when the number lands.
+
+          Full content width, flush with the dashboard columns below it. Boxed to
+          the narrower header width it read as an inset thumbnail on a wide
+          screen, and the banner's own proportions meant a shorter one too. */}
+      <Box sx={{ mb: { xs: 3, sm: 4 } }}>
+        <GreetingHero
+          greeting={getGreeting(username, tGreeting)}
+          aside={
+            progress ? (
               <XpProgressCard
                 level={progress.level}
                 totalXp={progress.total_xp}
-                spendableXp={spendableXp}
-                ownedItemKeys={ownedItemKeys}
                 onShopClick={() => router.push('/shop')}
               />
             ) : (
               <Skeleton
                 variant="rounded"
+                height={94}
                 sx={{
-                  height: '100%',
-                  // Matches GreetingHero's minHeight so the row doesn't shrink
-                  // when the real card replaces this.
-                  minHeight: { xs: 160, md: 264 },
-                  borderRadius: 4,
-                  bgcolor: (t) => alpha(t.palette.brand[100], 0.5),
+                  borderRadius: (t) => t.radii.md,
+                  bgcolor: (t) => alpha(t.palette.brand[100], 0.6),
                 }}
               />
-            )}
-          </Grid>
-        </Grid>
+            )
+          }
+        >
+          {/* The single home entry point to Smart Review — cross-deck due cards. */}
+          <ReviewTile onDark compact />
+        </GreetingHero>
       </Box>
 
       {/* ── Dashboard grid ── */}
