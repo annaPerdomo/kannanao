@@ -2002,7 +2002,6 @@
       "weeklyRepeat": "🔁 every week"
     },
     "dayDetailPanel": {
-      "myToDoList": "✅ My To-Do List",
       "allDone": "{celebration} All done! 🎊",
       "loadingList": "Loading your list... 🌸",
       "nothingPlannedPast": "Nothing planned for this day 🌸",
@@ -2063,6 +2062,10 @@
       "title": "My To-Do List",
       "weekView": "Week",
       "monthView": "Month"
+    },
+    "weekStrip": {
+      "previousWeek": "Previous week",
+      "nextWeek": "Next week"
     },
     "todoItem": {
       "changePicture": "Change picture",

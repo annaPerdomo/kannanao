@@ -2,11 +2,8 @@ import type { CalendarEntry, EntryType, Todo } from '@/types/todo';
 
 export const XP_PER_TODO = 5;
 
-// English fallback labels — kept for non-manifest consumers (e.g. WeekStrip.tsx)
-// that haven't been converted to Intl-derived weekday names yet.
-export const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 export const DAY_LABELS_SHORT = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-// weekday index in DAY_LABELS → JS getDay() value
+// Mon-first weekday index → JS getDay() value
 export const DAY_INDEX_TO_JS = [1, 2, 3, 4, 5, 6, 0]; // Mon=1, Tue=2, ..., Sun=0
 export const MONTH_NAMES = [
   'January',

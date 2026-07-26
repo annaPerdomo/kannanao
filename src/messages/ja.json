@@ -1995,7 +1995,6 @@
       "weeklyRepeat": "🔁 毎週"
     },
     "dayDetailPanel": {
-      "myToDoList": "✅ やることリスト",
       "allDone": "{celebration} ぜんぶ完了！ 🎊",
       "loadingList": "リストを読み込み中... 🌸",
       "nothingPlannedPast": "この日の予定はありません 🌸",
@@ -2056,6 +2055,10 @@
       "title": "やることリスト",
       "weekView": "週",
       "monthView": "月"
+    },
+    "weekStrip": {
+      "previousWeek": "前の週",
+      "nextWeek": "次の週"
     },
     "todoItem": {
       "changePicture": "絵を変える",

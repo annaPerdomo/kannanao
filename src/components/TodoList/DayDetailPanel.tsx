@@ -147,22 +147,11 @@ export function DayDetailPanel({
       <Divider sx={{ borderColor: alpha(brand[200], 0.3) }} />
 
       <Stack spacing={1} useFlexGap>
-        <Box>
-          <Typography
-            sx={{
-              fontSize: '0.72rem',
-              fontWeight: 800,
-              color: brand[600],
-              textTransform: 'uppercase',
-              letterSpacing: 0.5,
-            }}
-          >
-            {t('myToDoList')}
-          </Typography>
-          <DayProgress completedCount={completedCount} totalCount={totalCount} />
-        </Box>
+        {/* No heading here — the card's own title already says what this list
+            is, and the design gives the row to the progress meter instead. */}
+        <DayProgress completedCount={completedCount} totalCount={totalCount} />
 
-        <Box sx={{ mt: 0.75 }}>
+        <Box sx={{ mt: 0.25 }}>
           <AddTodoInput
             value={input}
             onChange={onInputChange}
@@ -233,7 +222,7 @@ export function DayDetailPanel({
             )}
           </Box>
         ) : (
-          <Stack spacing={0.5}>
+          <Stack spacing={0}>
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
