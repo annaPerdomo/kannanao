@@ -2,6 +2,7 @@ import { after, type NextRequest, NextResponse } from 'next/server';
 
 import { MAX_CHAT_VIDEO_SIZE } from '@/lib/chatMedia';
 import { logger } from '@/lib/logger';
+import { parseSticker } from '@/lib/stickers';
 
 import { rateLimit } from '../_lib/rateLimit';
 import { type AuthenticatedUser, requireAuthenticatedUser } from '../_lib/requireAuthenticatedUser';
@@ -157,12 +158,15 @@ export async function POST(req: NextRequest) {
   const senderName = sender.display_name || sender.username;
   const text = message?.trim();
   const mediaKind = videoUrl ? 'video' : imageUrl ? 'photo' : null;
+  // A sticker rides along as its keyword token — a push saying ":wave:" would
+  // be gibberish, so name it and show the sticker's stand-in emoji instead.
+  const sticker = mediaKind ? null : parseSticker(text);
   after(
     sendPushToUser(recipientId, {
       // Keep the title short — iOS truncates around 30 characters and
       // already appends "from Tangodachi" with the app icon
-      title: `${senderName} sent you a ${text ? 'message' : (mediaKind ?? 'message')}! 🌸`,
-      body: text ? text.slice(0, 100) : videoUrl ? '🎥' : '📷',
+      title: `${senderName} sent you a ${sticker ? 'sticker' : text ? 'message' : (mediaKind ?? 'message')}! 🌸`,
+      body: sticker ? sticker.emoji : text ? text.slice(0, 100) : videoUrl ? '🎥' : '📷',
       url: `/notifications/${sender.id}`,
     }).catch((err) => {
       logger.error('Push notification failed', { error: String(err) });

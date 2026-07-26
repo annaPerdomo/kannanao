@@ -24,6 +24,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { timeAgoInfo } from '@/components/Group/MessageThread/constants';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { DirectMessage } from '@/hooks/useDirectMessages';
+import { parseSticker } from '@/lib/stickers';
 import { sb } from '@/lib/supabase';
 
 /* ── Helpers ─────────────────────────────────────────────────────────── */
@@ -84,6 +85,16 @@ export function ConversationList({
   const router = useRouter();
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+
+  /** One-line preview of a conversation's newest message. Media and stickers
+   * have no text to show, so they get a labelled stand-in instead. */
+  const renderPreview = (m: DirectMessage) => {
+    if (m.video_url) return t('videoFallback');
+    if (m.image_url) return t('photoFallback');
+    const sticker = parseSticker(m.message);
+    if (sticker) return t('stickerFallback', { emoji: sticker.emoji });
+    return m.message || '';
+  };
 
   const renderTimeAgo = (dateStr: string) => {
     const info = timeAgoInfo(dateStr);
@@ -305,12 +316,7 @@ export function ConversationList({
                       }}
                     >
                       {c.lastMessage.sender_id === userId ? t('youPrefix') : ''}
-                      {c.lastMessage.message ||
-                        (c.lastMessage.video_url
-                          ? t('videoFallback')
-                          : c.lastMessage.image_url
-                            ? t('photoFallback')
-                            : '')}
+                      {renderPreview(c.lastMessage)}
                     </Typography>
                   </Box>
                   {c.unreadCount > 0 && (

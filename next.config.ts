@@ -123,6 +123,11 @@ const pwaConfig = withPWA({
   aggressiveFrontEndNavCaching: false,
   reloadOnOnline: false,
   disable: process.env.NODE_ENV === 'development',
+  // Chat stickers are ~670 KB across 35 files. Precaching them would put that
+  // on the service-worker install path for every user, including everyone who
+  // never opens a chat. They're fetched on demand instead and kept by the
+  // runtime `static-image-assets` cache after first use.
+  publicExcludes: ['!noprecache/**/*', '!stickers/**/*'],
   workboxOptions: {
     disableDevLogs: true,
     runtimeCaching,

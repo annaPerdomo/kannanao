@@ -1367,7 +1367,8 @@
       "newMessageDialogTitle": "New message",
       "newMessageDialogSubtitle": "Choose someone to chat with",
       "organizerChip": "Organizer",
-      "memberFallback": "Member"
+      "memberFallback": "Member",
+      "stickerFallback": "{emoji} Sticker"
     },
     "notificationsLayout": {
       "installBanner": "Message notifications only work in the Tangodachi app, not in the browser. Open <bold>Tangodachi from your Home Screen icon</bold> — or to add it, tap Safari's <bold>Share</bold> button and choose <bold>“Add to Home Screen”</bold>.",
@@ -1392,6 +1393,47 @@
       "registrationFailed": "Service worker registration failed on {host}: {error}",
       "notReady": "Service worker not ready on {host}. Registration never completed. Please try again.",
       "saveFailed": "Could not save the subscription to the server. Please try again."
+    },
+    "stickerPicker": {
+      "title": "Stickers",
+      "openAriaLabel": "Send a sticker"
+    },
+    "stickerNames": {
+      "wave": "Hello",
+      "happy": "So happy",
+      "amazing": "Amazing!",
+      "heart": "Big heart",
+      "love": "Love it",
+      "yay": "Yay!",
+      "cute": "Hi there",
+      "sad": "Sad puppy eyes",
+      "goodnight": "Goodnight",
+      "surprised": "Surprised",
+      "worried": "Worried",
+      "angry": "Grumpy",
+      "phew": "Phew",
+      "wink": "Wink",
+      "cool": "Cool",
+      "shy": "Shy",
+      "lol": "Laughing",
+      "blush": "Blushing",
+      "thinking": "Thinking",
+      "dance": "Dancing",
+      "fire": "Fired up",
+      "study": "Studying Japanese",
+      "homework": "Doing homework",
+      "cheer": "Cheering you on",
+      "tea": "Tea break",
+      "laptop": "At the laptop",
+      "ganbaru": "Ganbaru!",
+      "party": "Party time",
+      "crying": "Crying",
+      "relax": "Relaxing",
+      "peek": "Peeking",
+      "box": "In a box",
+      "thumbsup": "Thumbs up",
+      "cozy": "Cozy",
+      "hooray": "Hooray!"
     }
   },
   "Travel": {

@@ -10,6 +10,7 @@ import { useState } from 'react';
 
 import { EmojiPickerPopover } from '@/components/EmojiPickerPopover';
 import type { DirectMessage } from '@/hooks/useDirectMessages';
+import { parseSticker, stickerSrc } from '@/lib/stickers';
 
 import { splitLinks } from './constants';
 import { MessageMeta } from './MessageMeta';
@@ -41,9 +42,15 @@ export function MessageBubble({
   const { palette } = useTheme();
   const { brand } = palette;
   const t = useTranslations('Group.messageBubble');
+  const tStickers = useTranslations('Messages.stickerNames');
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const reactions = message.reactions || {};
+
+  // A message whose whole text is a sticker keyword (":wave:") renders as the
+  // artwork instead — no bubble chrome, so it reads like a sticker and not
+  // like a text message that happens to contain a picture.
+  const sticker = message.image_url || message.video_url ? null : parseSticker(message.message);
   const hasMedia = Boolean(message.image_url || message.video_url);
 
   return (
@@ -90,15 +97,37 @@ export function MessageBubble({
         {/* Bubble */}
         <Box
           sx={{
-            px: hasMedia ? 0.5 : 1.5,
-            py: hasMedia ? 0.5 : 1,
+            px: sticker ? 0 : hasMedia ? 0.5 : 1.5,
+            py: sticker ? 0 : hasMedia ? 0.5 : 1,
             borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-            bgcolor: isMine ? alpha(brand[400], 0.2) : alpha(brand[100], 0.5),
-            border: `1px solid ${isMine ? alpha(brand[400], 0.3) : alpha(brand[200], 0.4)}`,
-            overflow: 'hidden',
+            // A sticker stands on its own — the bubble would just box it in
+            ...(sticker
+              ? { bgcolor: 'transparent', border: 'none', overflow: 'visible' }
+              : {
+                  bgcolor: isMine ? alpha(brand[400], 0.2) : alpha(brand[100], 0.5),
+                  border: `1px solid ${isMine ? alpha(brand[400], 0.3) : alpha(brand[200], 0.4)}`,
+                  overflow: 'hidden',
+                }),
             '&:hover .react-btn': { opacity: 1 },
           }}
         >
+          {sticker && (
+            // Deliberately NOT loading="lazy". A just-sent sticker is appended
+            // below the fold of the scroll container, and lazy images there
+            // often don't fetch until something else nudges the observer — and
+            // because a sticker bubble has no background, an unloaded one is
+            // invisible, so the message looks like it never sent. The sticker
+            // IS the message; at ~18 KB it should always load.
+            <Box
+              component="img"
+              src={stickerSrc(sticker.id)}
+              alt={tStickers(sticker.id)}
+              decoding="async"
+              width={128}
+              height={128}
+              sx={{ width: 128, height: 128, display: 'block' }}
+            />
+          )}
           {message.image_url && (
             <Box
               component="a"
@@ -146,7 +175,7 @@ export function MessageBubble({
               }}
             />
           )}
-          {message.message && (
+          {message.message && !sticker && (
             <Typography
               sx={{
                 // Must visually match the input box text exactly (size AND

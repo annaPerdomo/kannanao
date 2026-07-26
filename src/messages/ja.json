@@ -1360,7 +1360,8 @@
       "newMessageDialogTitle": "新しいメッセージ",
       "newMessageDialogSubtitle": "話す相手を選びましょう",
       "organizerChip": "リーダー",
-      "memberFallback": "メンバー"
+      "memberFallback": "メンバー",
+      "stickerFallback": "{emoji} スタンプ"
     },
     "notificationsLayout": {
       "installBanner": "メッセージの通知はブラウザでは届きません。Tangodachiアプリでのみ使えます。<bold>ホーム画面のTangodachiアイコン</bold>から開いてください。追加するには、Safariの<bold>共有</bold>ボタンをタップして<bold>「ホーム画面に追加」</bold>を選びます。",
@@ -1385,6 +1386,47 @@
       "registrationFailed": "{host} でService Workerの登録に失敗しました: {error}",
       "notReady": "{host} でService Workerが準備できていません。登録が完了しませんでした。もう一度お試しください。",
       "saveFailed": "購読情報をサーバーに保存できませんでした。もう一度お試しください。"
+    },
+    "stickerPicker": {
+      "title": "スタンプ",
+      "openAriaLabel": "スタンプを送る"
+    },
+    "stickerNames": {
+      "wave": "こんにちは",
+      "happy": "うれしい",
+      "amazing": "すごい！",
+      "heart": "だいすき",
+      "love": "ラブ",
+      "yay": "やったー！",
+      "cute": "やあ",
+      "sad": "かなしい",
+      "goodnight": "おやすみ",
+      "surprised": "びっくり",
+      "worried": "こまった",
+      "angry": "おこった",
+      "phew": "ほっ",
+      "wink": "ウィンク",
+      "cool": "クール",
+      "shy": "てれる",
+      "lol": "わらう",
+      "blush": "はずかしい",
+      "thinking": "かんがえちゅう",
+      "dance": "ダンス",
+      "fire": "もえてる",
+      "study": "日本語のべんきょう",
+      "homework": "しゅくだいちゅう",
+      "cheer": "おうえん",
+      "tea": "おちゃタイム",
+      "laptop": "パソコンちゅう",
+      "ganbaru": "がんばる！",
+      "party": "パーティー",
+      "crying": "ないてる",
+      "relax": "のんびり",
+      "peek": "のぞきみ",
+      "box": "はこの中",
+      "thumbsup": "いいね",
+      "cozy": "ぬくぬく",
+      "hooray": "ばんざーい！"
     }
   },
   "Travel": {

@@ -2,6 +2,7 @@
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
+import PetsIcon from '@mui/icons-material/Pets';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import SendIcon from '@mui/icons-material/Send';
 import {
@@ -23,12 +24,14 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { dateLabelInfo, groupByDate } from '@/components/Group/MessageThread/constants';
 import { MessageBubble } from '@/components/Group/MessageThread/MessageBubble';
 import { TypingBubble } from '@/components/Group/MessageThread/TypingBubble';
+import { StickerPicker } from '@/components/StickerPicker';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
 import { useTick } from '@/hooks/useTick';
 import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 import { MAX_CHAT_VIDEO_SIZE } from '@/lib/chatMedia';
+import { parseSticker, stickerToken } from '@/lib/stickers';
 import { sb } from '@/lib/supabase';
 
 import { SendingIndicator, sendPulse } from './SendingIndicator';
@@ -41,6 +44,7 @@ interface ChatPanelProps {
 
 export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatPanelProps) {
   const t = useTranslations('Messages.chatPanel');
+  const tSticker = useTranslations('Messages.stickerPicker');
   const locale = useLocale();
   const router = useRouter();
   const theme = useTheme();
@@ -90,6 +94,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
   const [sendError, setSendError] = useState<string | null>(null);
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
+  const [stickerAnchor, setStickerAnchor] = useState<HTMLElement | null>(null);
   const attachmentKind = attachmentFile?.type.startsWith('video/') ? 'video' : 'image';
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -227,8 +232,37 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
     setAttachmentPreview(URL.createObjectURL(file));
   };
 
+  /** After a message lands: return to the newest message and refresh the
+   * conversation list so its preview/ordering reflects what was just sent. */
+  const afterSend = useCallback(() => {
+    pinnedRef.current = true;
+    scrollToBottom();
+    void refetchGlobalRef.current().catch(() => {});
+  }, [scrollToBottom]);
+
+  // Stickers send on tap as their own message — they're a reply, not a
+  // decoration for the draft, so anything already typed is left untouched.
+  const handleSendSticker = async (id: string) => {
+    if (sending) return;
+    setSending(true);
+    setSendError(null);
+    try {
+      await sendMessage(recipientId, stickerToken(id));
+      afterSend();
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : t('sendFailedFallback'));
+    } finally {
+      setSending(false);
+    }
+  };
+
   const handleSend = async () => {
-    const message = text.trim();
+    const typed = text.trim();
+    // Typing a keyword sends the sticker itself. Normalizing here means aliases
+    // (":hi:") are stored as the canonical token, so every reader — including
+    // the push-notification builder — resolves the same sticker.
+    const typedSticker = attachmentFile ? null : parseSticker(typed);
+    const message = typedSticker ? stickerToken(typedSticker.id) : typed;
     if ((!message && !attachmentFile) || sending) return;
     setSending(true);
     setSendError(null);
@@ -275,11 +309,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
       await sendMessage(recipientId, message, imageUrl, videoUrl);
       setText('');
       clearAttachment();
-      // Sending always returns the view to the newest message
-      pinnedRef.current = true;
-      scrollToBottom();
-      // Sync sent message to global context so conversation list updates
-      void refetchGlobalRef.current().catch(() => {});
+      afterSend();
     } catch (err) {
       // Keep the draft text/attachment so the user can retry
       setSendError(err instanceof Error ? err.message : t('sendFailedFallback'));
@@ -595,6 +625,26 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
           >
             <PhotoCameraIcon sx={{ fontSize: isMemberAccount ? 24 : 20 }} />
           </IconButton>
+          <IconButton
+            onClick={(e) => {
+              // Dismiss the on-screen keyboard before the sheet opens. iOS
+              // anchors position:fixed to the layout viewport, which the
+              // keyboard does not shrink — a bottom sheet opened with the
+              // keyboard up can render behind it.
+              (document.activeElement as HTMLElement | null)?.blur?.();
+              setStickerAnchor(e.currentTarget);
+            }}
+            disabled={sending}
+            aria-label={tSticker('openAriaLabel')}
+            size="small"
+            sx={{
+              color: brand[500],
+              flexShrink: 0,
+              '&:hover': { color: brand[700], bgcolor: alpha(brand[100], 0.5) },
+            }}
+          >
+            <PetsIcon sx={{ fontSize: isMemberAccount ? 24 : 20 }} />
+          </IconButton>
           <TextField
             size="small"
             fullWidth
@@ -652,6 +702,12 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
         </Box>
       </Box>
       {/* end footer */}
+
+      <StickerPicker
+        anchorEl={stickerAnchor}
+        onClose={() => setStickerAnchor(null)}
+        onSelect={(id) => void handleSendSticker(id)}
+      />
     </>
   );
 }
