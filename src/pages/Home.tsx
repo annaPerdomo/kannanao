@@ -1,24 +1,18 @@
 'use client';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckIcon from '@mui/icons-material/Check';
 import DragIndicatorRoundedIcon from '@mui/icons-material/DragIndicatorRounded';
-import NightsStayIcon from '@mui/icons-material/NightsStay';
-import StorefrontIcon from '@mui/icons-material/Storefront';
 import TuneIcon from '@mui/icons-material/Tune';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import WbSunnyIcon from '@mui/icons-material/WbSunny';
-import WbTwilightIcon from '@mui/icons-material/WbTwilight';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import GlobalStyles from '@mui/material/GlobalStyles';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
-import LinearProgress from '@mui/material/LinearProgress';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
-import { alpha, useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import dynamic from 'next/dynamic';
@@ -30,7 +24,7 @@ import { GridLayout } from 'react-grid-layout';
 
 import { DeckCard } from '@/components/DeckCard';
 import { AssignmentCard, GroupHomeWidget, LeaderboardWidget } from '@/components/Group';
-import { PageHeader } from '@/components/PageHeader';
+import { GreetingHero, SpeechCard, XpProgressCard } from '@/components/Home';
 import { ReviewTile } from '@/components/ReviewTile';
 import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,8 +36,6 @@ import { useGroupMembers } from '@/hooks/useGroup';
 import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
 import { useGroups } from '@/hooks/useGroups';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
-import { xpProgressInLevel } from '@/hooks/useProgress';
-import { SHOP_ITEMS } from '@/hooks/useShop';
 import type { HomeData } from '@/lib/dbMappers';
 import { LAYOUT } from '@/theme';
 import type { SectionKey } from '@/types/homeSections';
@@ -84,132 +76,11 @@ function useHasOpened(open: boolean): boolean {
 function getGreeting(
   name: string,
   t: (key: string, values?: Record<string, string>) => string,
-): { text: string; icon: React.ReactNode } {
+): string {
   const h = new Date().getHours();
-  if (h < 12) return { text: t('morning', { name }), icon: <WbTwilightIcon /> };
-  if (h < 17) return { text: t('afternoon', { name }), icon: <WbSunnyIcon /> };
-  return { text: t('evening', { name }), icon: <NightsStayIcon /> };
-}
-
-function WelcomeBanner({
-  username,
-  level,
-  totalXp,
-  spendableXp,
-  ownedItemKeys,
-  onShopClick,
-  xpReady,
-}: {
-  username: string;
-  level: number;
-  totalXp: number;
-  spendableXp: number;
-  ownedItemKeys: string[];
-  onShopClick: () => void;
-  xpReady: boolean;
-}) {
-  const t = useTranslations('Home.welcomeBanner');
-  const tGreeting = useTranslations('Home.greeting');
-  const { text, icon } = getGreeting(username, tGreeting);
-  const { current, needed } = xpProgressInLevel(totalXp);
-  const pct = Math.round((current / needed) * 100);
-  const theme = useTheme();
-  const { brand, accent } = theme.palette;
-
-  const nextItem =
-    SHOP_ITEMS.filter((i) => i.price > 0 && !ownedItemKeys.includes(i.key)).sort(
-      (a, b) => a.price - b.price,
-    )[0] ?? null;
-  const xpNeeded = nextItem ? Math.max(0, nextItem.price - spendableXp) : 0;
-
-  return (
-    <PageHeader
-      icon={icon}
-      title={text}
-      gradientTitle
-      mb={1.5}
-      endContent={
-        // Only render the XP widget once progress has loaded — otherwise it
-        // would flash a placeholder 0 and then jump to the real number.
-        !xpReady ? undefined : (
-          <Box
-            role="button"
-            tabIndex={0}
-            aria-label={t('openShopAriaLabel')}
-            onClick={onShopClick}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onShopClick();
-              }
-            }}
-            sx={{
-              minWidth: { sm: 220 },
-              width: { xs: '100%', sm: 260 },
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              '& *': { pointerEvents: 'none' },
-              '&:hover': { opacity: 0.85 },
-              '@keyframes shimmer': {
-                '0%': { backgroundPosition: '-200% 0' },
-                '100%': { backgroundPosition: '200% 0' },
-              },
-            }}
-          >
-            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: brand[700] }}>
-                {t('xpProgressLabel')}
-              </Typography>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: brand[600] }}>
-                {current} / {needed}
-              </Typography>
-            </Stack>
-            <LinearProgress
-              variant="determinate"
-              value={pct}
-              sx={{
-                height: 12,
-                borderRadius: 6,
-                bgcolor: alpha(brand[200], 0.5),
-                '& .MuiLinearProgress-bar': {
-                  borderRadius: 6,
-                  background: `linear-gradient(90deg, ${brand[400]}, ${accent[400]}, ${brand[300]}, ${accent[400]}, ${brand[400]})`,
-                  backgroundSize: '200% 100%',
-                  animation: 'shimmer 3s ease-in-out infinite',
-                  transition: 'width 0.6s ease',
-                },
-              }}
-            />
-            <Typography
-              variant="caption"
-              sx={{ color: brand[600], fontWeight: 600, mt: 0.5, display: 'block' }}
-            >
-              {t('xpToLevel', { xp: needed - current, level: level + 1 })}
-            </Typography>
-
-            <Box sx={{ mt: 1, pt: 1, borderTop: `1px solid ${alpha(brand[300], 0.25)}` }}>
-              <Stack direction="row" alignItems="center" spacing={0.5} mb={nextItem ? 0.5 : 0}>
-                <AutoAwesomeIcon sx={{ fontSize: '0.85rem', color: accent[500] }} />
-                <Typography variant="caption" sx={{ fontWeight: 800, color: accent[600] }}>
-                  {t('xpToSpend', { xp: spendableXp.toLocaleString() })}
-                </Typography>
-                <StorefrontIcon sx={{ fontSize: '0.85rem', color: brand[500], ml: 'auto' }} />
-              </Stack>
-              {nextItem && xpNeeded > 0 && (
-                <Typography
-                  variant="caption"
-                  sx={{ color: brand[500], fontWeight: 600, fontSize: '0.7rem', display: 'block' }}
-                >
-                  {nextItem.emoji} {nextItem.name} —{' '}
-                  {t('moreXp', { xp: xpNeeded.toLocaleString() })}
-                </Typography>
-              )}
-            </Box>
-          </Box>
-        )
-      }
-    ></PageHeader>
-  );
+  if (h < 12) return t('morning', { name });
+  if (h < 17) return t('afternoon', { name });
+  return t('evening', { name });
 }
 
 function DashboardSection({
@@ -218,6 +89,7 @@ function DashboardSection({
   onToggle,
   title,
   titleAction,
+  panel,
   children,
 }: {
   id: string;
@@ -225,6 +97,8 @@ function DashboardSection({
   onToggle: () => void;
   title?: React.ReactNode;
   titleAction?: React.ReactNode;
+  /** Wrap the section in a raised white surface (see PANEL_SECTIONS). */
+  panel?: boolean;
   children: React.ReactNode;
 }) {
   const t = useTranslations('Home.dashboardSection');
@@ -236,6 +110,16 @@ function DashboardSection({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
+        ...(panel &&
+          !editMode && {
+            borderRadius: 4,
+            px: { xs: 2, sm: 2.5 },
+            pt: 2,
+            pb: 0.5,
+            bgcolor: 'background.paper',
+            border: (t) => `1.5px solid ${alpha(t.palette.brand[300], 0.35)}`,
+            boxShadow: (t) => `0 10px 30px ${alpha(t.palette.brand[400], 0.12)}`,
+          }),
         ...(editMode && {
           borderRadius: 1,
           border: (t: { palette: { brand: Record<number, string> } }) =>
@@ -334,6 +218,16 @@ function DashboardSection({
   );
 }
 
+/**
+ * Sections that get a raised white surface behind them. The rule is what the
+ * section's content already looks like: list-shaped sections (groups,
+ * leaderboard, assignments) need a surface to sit on, while `decks` and
+ * `speeches` are grids of cards that already carry their own frame — panelling
+ * those would double-frame every tile. `todo` is left out because the TodoList
+ * widget draws its own panel.
+ */
+const PANEL_SECTIONS = new Set<SectionKey>(['groups', 'leaderboard', 'assignments']);
+
 /** Placeholder for the dashboard grid shown until it's mounted + measured. */
 function DashboardGridSkeleton() {
   return (
@@ -357,6 +251,7 @@ function DashboardGridSkeleton() {
 export default function Home({ initialData }: { initialData?: HomeData }) {
   const t = useTranslations('Home');
   const tCommon = useTranslations('Common');
+  const tGreeting = useTranslations('Home.greeting');
   const {
     user,
     displayName,
@@ -370,7 +265,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
     initialData?.decks ?? undefined,
   );
   const { progress, spendableXp, addBonusXp } = useProgressCtx();
-  const { ohanashikais } = useOhanashikais(
+  const { ohanashikais, pinOhanashikai } = useOhanashikais(
     homeSections.speeches,
     initialData?.ohanashikais ?? undefined,
   );
@@ -710,53 +605,18 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                 </Box>
               </Box>
             ) : (
-              <Stack spacing={1}>
-                {pinnedSpeeches.map((item, i) => {
-                  const cardEmojis = ['🌸', '✨', '🌟', '💫', '🎀'];
-                  return (
-                    <Box
-                      key={item.id}
-                      onClick={() => router.push(`/ohanashikai/${item.id}?from=home`)}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1.5,
-                        p: 1.5,
-                        borderRadius: 3,
-                        bgcolor: 'background.paper',
-                        border: (t) => `1.5px solid ${alpha(t.palette.brand[300], 0.3)}`,
-                        boxShadow: (t) => `0 2px 10px ${alpha(t.palette.brand[300], 0.1)}`,
-                        transition: 'all 0.18s ease',
-                        cursor: 'pointer',
-                        '&:hover': {
-                          boxShadow: (t) => `0 5px 20px ${alpha(t.palette.brand[300], 0.2)}`,
-                          transform: 'translateY(-1px)',
-                        },
-                      }}
-                    >
-                      <Typography sx={{ fontSize: '1.2rem', flexShrink: 0 }}>
-                        {cardEmojis[i % cardEmojis.length]}
-                      </Typography>
-                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                        <Typography
-                          variant="body2"
-                          sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.2 }}
-                          noWrap
-                        >
-                          {item.title}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ fontSize: '0.65rem' }}
-                        >
-                          {t('speechesSection.lineCount', { count: item.lineCount })}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  );
-                })}
-              </Stack>
+              <Grid container spacing={1.5}>
+                {pinnedSpeeches.map((item, i) => (
+                  <Grid size={{ xs: 6, sm: 4 }} key={item.id}>
+                    <SpeechCard
+                      speech={item}
+                      index={i}
+                      onOpen={(id) => router.push(`/ohanashikai/${id}?from=home`)}
+                      onPin={pinOhanashikai}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
             )}
           </>
         );
@@ -779,22 +639,42 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
         py: { xs: 3, sm: 5 },
       }}
     >
-      {/* Welcome banner — always shown so the greeting/header is present even
-          before (or if) XP progress finishes loading. Falls back to zeroed XP. */}
-      <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
-        <WelcomeBanner
-          username={username}
-          level={progress?.level ?? 0}
-          totalXp={progress?.total_xp ?? 0}
-          spendableXp={spendableXp}
-          ownedItemKeys={ownedItemKeys}
-          onShopClick={() => router.push('/shop')}
-          xpReady={progress != null}
-        />
-        {/* The single home entry point to Smart Review — cross-deck due cards. */}
-        <Box sx={{ mt: 1.5, mb: 1 }}>
-          <ReviewTile />
-        </Box>
+      {/* Hero row: the mascot's night sky carries the greeting and the day's one
+          call to action; the XP card sits beside it. The hero renders
+          immediately — only the XP card waits on progress, and it holds its
+          space with a skeleton so the row doesn't reflow when the number lands. */}
+      <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto', mb: { xs: 3, sm: 4 } }}>
+        <Grid container spacing={{ xs: 2, md: 2.5 }} alignItems="stretch">
+          <Grid size={{ xs: 12, md: 7 }}>
+            <GreetingHero greeting={getGreeting(username, tGreeting)}>
+              {/* The single home entry point to Smart Review — cross-deck due cards. */}
+              <ReviewTile onDark />
+            </GreetingHero>
+          </Grid>
+          <Grid size={{ xs: 12, md: 5 }}>
+            {progress ? (
+              <XpProgressCard
+                level={progress.level}
+                totalXp={progress.total_xp}
+                spendableXp={spendableXp}
+                ownedItemKeys={ownedItemKeys}
+                onShopClick={() => router.push('/shop')}
+              />
+            ) : (
+              <Skeleton
+                variant="rounded"
+                sx={{
+                  height: '100%',
+                  // Matches GreetingHero's minHeight so the row doesn't shrink
+                  // when the real card replaces this.
+                  minHeight: { xs: 160, md: 264 },
+                  borderRadius: 4,
+                  bgcolor: (t) => alpha(t.palette.brand[100], 0.5),
+                }}
+              />
+            )}
+          </Grid>
+        </Grid>
       </Box>
 
       {/* ── Dashboard grid ── */}
@@ -896,6 +776,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                 onToggle={() => handleToggleSection(key)}
                 title={sectionTitle(key)}
                 titleAction={sectionTitleAction(key)}
+                panel={PANEL_SECTIONS.has(key)}
               >
                 {renderSectionContent(key)}
               </DashboardSection>
@@ -948,6 +829,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                   onToggle={() => handleToggleSection(key)}
                   title={sectionTitle(key)}
                   titleAction={sectionTitleAction(key)}
+                  panel={PANEL_SECTIONS.has(key)}
                 >
                   {renderSectionContent(key)}
                 </DashboardSection>

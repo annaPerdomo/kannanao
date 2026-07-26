@@ -40,8 +40,11 @@ export const SECTION_META: Record<SectionKey, SectionMeta> = {
   groups: { label: 'My Groups', emoji: '👥' },
   leaderboard: { label: 'Leaderboard', emoji: '🏆' },
   assignments: { label: 'Assignments', emoji: '📋' },
-  decks: { label: 'Decks', emoji: '📚' },
-  speeches: { label: 'Speech Practice', emoji: '✨' },
+  // "Pinned" is load-bearing: the home versions of these two sections only ever
+  // show pinned items, and the label is what tells you why a deck you own isn't
+  // here. The empty states point at the pin icon to match.
+  decks: { label: 'Pinned Decks', emoji: '📚' },
+  speeches: { label: 'Pinned Speeches', emoji: '🎤' },
 };
 
 export function getSectionsForRole(

@@ -1191,7 +1191,8 @@
     "greeting": {
       "morning": "おはよう、{name}さん！",
       "afternoon": "こんにちは、{name}さん！",
-      "evening": "こんばんは、{name}さん！"
+      "evening": "こんばんは、{name}さん！",
+      "subtitle": "日本語のれんぞく記録をつづけよう！🌸"
     },
     "welcomeBanner": {
       "openShopAriaLabel": "ショップを開く",
@@ -1913,6 +1914,15 @@
       "showAnswer": "こたえを見る",
       "next": "次へ →",
       "quitAndSave": "やめて記録を保存"
+    },
+    "speechCard": {
+      "speech": "スピーチ",
+      "xp": "XP",
+      "starLines": "★ セリフ",
+      "linesCount": "{count, plural, other {#行}}",
+      "unpinFromHome": "ホームのピンを外す",
+      "pinToHome": "ホームにピン留め",
+      "openSpeechAria": "スピーチを開く: {name}"
     }
   },
   "Todo": {

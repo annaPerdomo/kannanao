@@ -1198,7 +1198,8 @@
     "greeting": {
       "morning": "Good morning, {name}!",
       "afternoon": "Hey there, {name}!",
-      "evening": "Good evening, {name}!"
+      "evening": "Good evening, {name}!",
+      "subtitle": "Let's keep your Japanese streak going! 🌸"
     },
     "welcomeBanner": {
       "openShopAriaLabel": "Open shop",
@@ -1920,6 +1921,15 @@
       "showAnswer": "Show Answer",
       "next": "Next →",
       "quitAndSave": "Quit & Save Progress"
+    },
+    "speechCard": {
+      "speech": "Speech",
+      "xp": "XP",
+      "starLines": "★ Lines",
+      "linesCount": "{count, plural, one {# line} other {# lines}}",
+      "unpinFromHome": "Unpin from home",
+      "pinToHome": "Pin to home",
+      "openSpeechAria": "Open speech: {name}"
     }
   },
   "Todo": {
