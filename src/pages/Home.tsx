@@ -27,6 +27,7 @@ import { DeckTile } from '@/components/DeckCard';
 import { DECK_TILE_MIN_HEIGHT } from '@/components/DeckCard/DeckTile';
 import { AssignmentCard, GroupRow, LeaderboardWidget } from '@/components/Group';
 import { GreetingHero, SpeechRow, XpProgressCard } from '@/components/Home';
+import { LoadingOverlay } from '@/components/Loading';
 import { ReviewTile } from '@/components/ReviewTile';
 import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
@@ -266,22 +267,24 @@ const listGridSx = {
 } as const;
 
 /** Placeholder for the dashboard grid shown until it's mounted + measured. */
-function DashboardGridSkeleton() {
+function DashboardGridSkeleton({ message }: { message: string }) {
   return (
-    <Grid container spacing={2}>
-      {[0, 1, 2, 3].map((i) => (
-        <Grid size={{ xs: 12, md: 6 }} key={i}>
-          <Stack spacing={1.5}>
-            <Skeleton variant="text" width={150} height={30} />
-            <Skeleton
-              variant="rounded"
-              height={180}
-              sx={{ borderRadius: 3, bgcolor: (t) => alpha(t.palette.brand[100], 0.5) }}
-            />
-          </Stack>
-        </Grid>
-      ))}
-    </Grid>
+    <LoadingOverlay message={message}>
+      <Grid container spacing={2}>
+        {[0, 1, 2, 3].map((i) => (
+          <Grid size={{ xs: 12, md: 6 }} key={i}>
+            <Stack spacing={1.5}>
+              <Skeleton variant="text" width={150} height={30} />
+              <Skeleton
+                variant="rounded"
+                height={180}
+                sx={{ borderRadius: 3, bgcolor: (t) => alpha(t.palette.brand[100], 0.5) }}
+              />
+            </Stack>
+          </Grid>
+        ))}
+      </Grid>
+    </LoadingOverlay>
   );
 }
 
@@ -793,7 +796,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
         }}
       >
         {!mounted ? (
-          <DashboardGridSkeleton />
+          <DashboardGridSkeleton message={tCommon('loading')} />
         ) : isMobile ? (
           <Stack spacing={3}>
             {sectionOrder.map((key) => (

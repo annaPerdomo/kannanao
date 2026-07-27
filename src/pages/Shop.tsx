@@ -25,7 +25,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
-import { Loading } from '@/components/Loading';
+import { LoadingOverlay } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { celebrate, float } from '@/components/Shop/animations';
 import { BorderCardPreview } from '@/components/Shop/BorderCardPreview';
@@ -327,7 +327,7 @@ export default function Shop() {
 
       {/* Item sections */}
       {loading ? (
-        <Box sx={{ position: 'relative' }}>
+        <LoadingOverlay message={t('loadingShop')}>
           <Box
             sx={{
               width: '100%',
@@ -339,8 +339,6 @@ export default function Shop() {
               },
               gap: 2,
               alignItems: 'start',
-              filter: 'blur(2px)',
-              opacity: 0.6,
             }}
           >
             {categories.map((cat) => (
@@ -409,19 +407,7 @@ export default function Shop() {
               </Paper>
             ))}
           </Box>
-          <Box
-            sx={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1,
-            }}
-          >
-            <Loading message={t('loadingShop')} />
-          </Box>
-        </Box>
+        </LoadingOverlay>
       ) : activeCategory === 'all' ? (
         <Box
           sx={{

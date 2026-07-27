@@ -6,12 +6,17 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
 
-// Placeholder shown while the dashboard's server data streams in. Mirrors the
-// home layout (greeting banner + a grid of section cards) so the shell is
-// visible immediately and there's minimal shift when the real content arrives.
-// The banner block tracks GreetingHero's own minHeight — a shorter placeholder
-// would drag the whole page up and then drop it again a moment later.
+import { LoadingOverlay } from '@/components/Loading';
+
 export default function HomeSkeleton() {
+  return (
+    <LoadingOverlay>
+      <HomeSkeletonLayout />
+    </LoadingOverlay>
+  );
+}
+
+function HomeSkeletonLayout() {
   return (
     <Box
       sx={{
@@ -25,10 +30,7 @@ export default function HomeSkeleton() {
         <Skeleton
           variant="rounded"
           sx={{
-            // Tracks GreetingHero's own sizing: the wide banner's aspect with a
-            // floor from sm up, the phone card's aspect plus its copy below it
-            // on xs. A placeholder of the wrong height drags the whole page up
-            // and then drops it again a moment later.
+            // Mirrors GreetingHero's sizing exactly; the wrong height shifts the page.
             aspectRatio: { xs: '1.363', sm: '4.764' },
             minHeight: { sm: 232, md: 240 },
             mb: { xs: 18, sm: 0 },
