@@ -46,13 +46,13 @@ export function HowItWorksSection() {
     <Box
       ref={ref}
       sx={{
-        minHeight: '100vh',
+        minHeight: '100svh',
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(148deg, ${sky[50]} 0%, ${sky[100]} 35%, ${alpha(sky[100], 0.5)} 65%, ${sky[50]} 100%)`,
         display: 'flex',
         alignItems: 'center',
-        py: { xs: 10, md: 8 },
+        py: { xs: 7, md: 8 },
         px: { xs: 2, sm: 4, md: 6, lg: 8 },
       }}
     >
@@ -79,7 +79,7 @@ export function HowItWorksSection() {
           zIndex: 1,
           display: 'flex',
           flexDirection: { xs: 'column', lg: 'row' },
-          gap: { xs: 8, lg: 14 },
+          gap: { xs: 4.5, lg: 14 },
           alignItems: 'center',
         }}
       >
@@ -96,7 +96,7 @@ export function HowItWorksSection() {
             component="h2"
             sx={{
               fontFamily: (t) => t.fonts.display,
-              fontSize: { xs: '2.4rem', sm: '3rem', lg: '3.6rem' },
+              fontSize: { xs: '2.1rem', sm: '3rem', lg: '3.6rem' },
               color: sky[700],
               lineHeight: 1.05,
               mb: 2,
@@ -105,7 +105,12 @@ export function HowItWorksSection() {
             {t.rich('heading', { br: () => <br /> })}
           </Typography>
           <Typography
-            sx={{ fontSize: '1rem', color: alpha(sky[700], 0.62), lineHeight: 1.8, mb: 4 }}
+            sx={{
+              fontSize: { xs: '0.92rem', sm: '1rem' },
+              color: alpha(sky[700], 0.62),
+              lineHeight: { xs: 1.65, sm: 1.8 },
+              mb: { xs: 3, sm: 4 },
+            }}
           >
             {t('subheading')}
           </Typography>
@@ -147,7 +152,7 @@ export function HowItWorksSection() {
               key={s.n}
               sx={{
                 display: 'flex',
-                gap: 3,
+                gap: { xs: 2, sm: 3 },
                 opacity: inView ? 1 : 0,
                 transform: inView ? 'translateX(0)' : 'translateX(40px)',
                 transition: `opacity 0.65s ease ${0.15 * i}s, transform 0.65s ease ${0.15 * i}s`,
@@ -198,7 +203,7 @@ export function HowItWorksSection() {
                   />
                 )}
               </Box>
-              <Box sx={{ pb: i < STEPS.length - 1 ? 5 : 0, pt: 0.5 }}>
+              <Box sx={{ pb: i < STEPS.length - 1 ? { xs: 3.5, sm: 5 } : 0, pt: 0.5 }}>
                 <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.75 }}>
                   <s.Icon sx={{ fontSize: '1.5rem', color: sky[500] }} />
                   <Typography

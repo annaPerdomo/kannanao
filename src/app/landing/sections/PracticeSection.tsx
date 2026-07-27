@@ -63,7 +63,7 @@ export function PracticeSection() {
         background: `linear-gradient(148deg, ${pink[50]} 0%, ${alpha(pink[100], 0.6)} 35%, ${alpha(purple[50], 0.75)} 70%, ${pink[50]} 100%)`,
         display: 'flex',
         alignItems: 'center',
-        py: { xs: 10, md: 10 },
+        py: { xs: 7, md: 10 },
         px: { xs: 2, sm: 4, md: 6, lg: 8 },
       }}
     >
@@ -74,7 +74,7 @@ export function PracticeSection() {
         <Box
           sx={{
             textAlign: 'center',
-            mb: { xs: 5, md: 7 },
+            mb: { xs: 3.5, md: 7 },
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateY(0)' : 'translateY(32px)',
             transition: 'opacity 0.8s ease, transform 0.8s ease',
@@ -98,7 +98,7 @@ export function PracticeSection() {
             component="h2"
             sx={{
               fontFamily: (t) => t.fonts.display,
-              fontSize: { xs: '2.2rem', sm: '2.8rem', md: '3.4rem' },
+              fontSize: { xs: '2rem', sm: '2.8rem', md: '3.4rem' },
               color: pink[700],
               mb: 1.5,
               lineHeight: 1.05,
@@ -108,11 +108,11 @@ export function PracticeSection() {
           </Typography>
           <Typography
             sx={{
-              fontSize: '1rem',
+              fontSize: { xs: '0.92rem', sm: '1rem' },
               color: alpha(pink[700], 0.6),
               maxWidth: 520,
               mx: 'auto',
-              lineHeight: 1.7,
+              lineHeight: { xs: 1.6, sm: 1.7 },
             }}
           >
             {t('subheading')}
@@ -124,8 +124,8 @@ export function PracticeSection() {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-            gap: 2.5,
+            gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+            gap: { xs: 1.5, sm: 2.5 },
           }}
         >
           {MODES.map((m, i) => (
@@ -133,13 +133,13 @@ export function PracticeSection() {
               key={m.key}
               elevation={0}
               sx={{
-                p: 3.5,
+                p: { xs: 2, sm: 3.5 },
                 borderRadius: 5,
                 background: m.bg,
                 border: `1.5px solid ${m.border}`,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 2,
+                gap: { xs: 1.25, sm: 2 },
                 opacity: inView ? 1 : 0,
                 transform: inView ? 'translateY(0)' : 'translateY(32px)',
                 transition: `opacity 0.65s ease ${0.12 * i}s, transform 0.65s ease ${0.12 * i}s`,
@@ -152,8 +152,8 @@ export function PracticeSection() {
             >
               <Box
                 sx={{
-                  width: 52,
-                  height: 52,
+                  width: { xs: 42, sm: 52 },
+                  height: { xs: 42, sm: 52 },
                   borderRadius: 3.5,
                   display: 'flex',
                   alignItems: 'center',
@@ -162,14 +162,24 @@ export function PracticeSection() {
                   border: `1px solid ${alpha(m.color, 0.22)}`,
                 }}
               >
-                <m.Icon sx={{ fontSize: '1.8rem', color: m.color }} />
+                <m.Icon sx={{ fontSize: { xs: '1.45rem', sm: '1.8rem' }, color: m.color }} />
               </Box>
               <Typography
-                sx={{ fontFamily: (t) => t.fonts.display, fontSize: '1.3rem', color: m.color }}
+                sx={{
+                  fontFamily: (t) => t.fonts.display,
+                  fontSize: { xs: '1.05rem', sm: '1.3rem' },
+                  color: m.color,
+                }}
               >
                 {t(`modes.${m.key}.name`)}
               </Typography>
-              <Typography sx={{ fontSize: '0.87rem', color: 'text.secondary', lineHeight: 1.72 }}>
+              <Typography
+                sx={{
+                  fontSize: { xs: '0.78rem', sm: '0.87rem' },
+                  color: 'text.secondary',
+                  lineHeight: { xs: 1.55, sm: 1.72 },
+                }}
+              >
                 {t(`modes.${m.key}.desc`)}
               </Typography>
             </Paper>

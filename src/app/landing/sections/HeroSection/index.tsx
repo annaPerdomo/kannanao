@@ -11,7 +11,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
-import { alpha } from '@mui/material/styles';
+import { alpha, type Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -35,6 +35,21 @@ const TAGS = [
 const scrollTo = (id: string) =>
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 
+// `flex: 1` on xs makes the pair split the row evenly rather than sizing to
+// their labels, which differ in width between en and ja.
+const HERO_CTA_SX = {
+  fontFamily: (theme: Theme) => theme.fonts.display,
+  fontSize: { xs: '0.85rem', sm: '1.05rem' },
+  textTransform: 'none',
+  borderRadius: 8,
+  px: { xs: 1.25, sm: 4 },
+  py: { xs: 1.15, sm: 1.5 },
+  flex: { xs: 1, sm: '0 0 auto' },
+  whiteSpace: 'nowrap',
+  '& .MuiButton-startIcon': { mr: { xs: 0.5, sm: 1 } },
+  '&:hover': { transform: 'translateY(-3px)' },
+} as const;
+
 export function HeroSection() {
   const router = useRouter();
   const { session } = useAuth();
@@ -43,14 +58,16 @@ export function HeroSection() {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        // svh, not vh: `100vh` on iOS Safari is the URL-bar-collapsed viewport,
+        // so a vh-tall hero is always taller than what you can actually see.
+        minHeight: '100svh',
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(148deg, ${pink[50]} 0%, ${pink[100]} 30%, ${alpha(pink[50], 0.6)} 60%, ${pink[50]} 100%)`,
         display: 'flex',
-        alignItems: 'center',
-        pt: { xs: 14, md: 12 },
-        pb: { xs: 10, md: 10 },
+        alignItems: { xs: 'flex-start', lg: 'center' },
+        pt: { xs: 2.5, sm: 6, md: 12 },
+        pb: { xs: 6, md: 10 },
         px: { xs: 2, sm: 4, md: 6, lg: 8 },
         // The headline is the LCP element, so its entrance must run from CSS
         // (not useInView) and must not touch opacity — Chrome ignores a
@@ -106,7 +123,7 @@ export function HeroSection() {
           display: 'flex',
           flexDirection: { xs: 'column', lg: 'row' },
           alignItems: 'center',
-          gap: { xs: 7, lg: 8 },
+          gap: { xs: 3.5, sm: 6, lg: 8 },
           position: 'relative',
           zIndex: 1,
         }}
@@ -115,6 +132,10 @@ export function HeroSection() {
           sx={{
             flex: 1,
             minWidth: 0,
+            // The parent centers its children, which sizes them to content, and
+            // the tag strip below is `nowrap` — without this the column inherits
+            // the strip's 600px max-content and bleeds off both phone edges.
+            width: { xs: '100%', lg: 'auto' },
             textAlign: { xs: 'center', lg: 'left' },
             animation: 'heroTextIn 0.9s cubic-bezier(0.16,1,0.3,1) both',
             '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
@@ -129,11 +150,11 @@ export function HeroSection() {
             label={t('waitlistBadge')}
             size="small"
             sx={{
-              mb: 3,
+              mb: { xs: 1.75, sm: 3 },
               bgcolor: alpha(amber[400], 0.12),
               color: amber[700],
               fontWeight: 700,
-              fontSize: '0.72rem',
+              fontSize: { xs: '0.68rem', sm: '0.72rem' },
               border: `1px solid ${alpha(amber[400], 0.35)}`,
               borderRadius: 6,
             }}
@@ -142,9 +163,9 @@ export function HeroSection() {
           <Typography
             component="h1"
             sx={{
-              fontSize: { xs: '3rem', sm: '3.9rem', lg: '4.7rem' },
+              fontSize: { xs: '2.55rem', sm: '3.6rem', lg: '4.7rem' },
               lineHeight: 1.02,
-              mb: 2.5,
+              mb: { xs: 1.75, sm: 2.5 },
               background: `linear-gradient(120deg, ${purple[600]} 0%, ${purple[500]} 30%, ${pink[500]} 70%, ${pink[600]} 100%)`,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -156,11 +177,11 @@ export function HeroSection() {
 
           <Typography
             sx={{
-              fontSize: { xs: '1rem', sm: '1.1rem' },
+              fontSize: { xs: '0.95rem', sm: '1.1rem' },
               color: alpha(pink[700], 0.72),
-              lineHeight: 1.75,
-              mb: 4,
-              maxWidth: 500,
+              lineHeight: { xs: 1.55, sm: 1.75 },
+              mb: { xs: 2.5, sm: 4 },
+              maxWidth: { xs: 340, sm: 500 },
               mx: { xs: 'auto', lg: 0 },
             }}
           >
@@ -168,10 +189,10 @@ export function HeroSection() {
           </Typography>
 
           <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={1.5}
+            direction="row"
+            spacing={{ xs: 1, sm: 1.5 }}
             justifyContent={{ xs: 'center', lg: 'flex-start' }}
-            sx={{ mb: 3.5 }}
+            sx={{ mb: { xs: 2, sm: 3.5 } }}
           >
             {session ? (
               <Button
@@ -179,16 +200,11 @@ export function HeroSection() {
                 size="large"
                 onClick={() => router.push('/')}
                 sx={{
-                  fontFamily: (theme) => theme.fonts.display,
-                  fontSize: '1.05rem',
-                  textTransform: 'none',
-                  borderRadius: 8,
-                  px: 4,
-                  py: 1.5,
+                  ...HERO_CTA_SX,
                   background: `linear-gradient(135deg, ${pink[400]} 0%, ${pink[600]} 100%)`,
                   boxShadow: `0 8px 28px ${alpha(pink[500], 0.42)}`,
                   '&:hover': {
-                    transform: 'translateY(-3px)',
+                    ...HERO_CTA_SX['&:hover'],
                     boxShadow: `0 14px 40px ${alpha(pink[500], 0.52)}`,
                   },
                 }}
@@ -203,12 +219,7 @@ export function HeroSection() {
                   onClick={() => scrollTo('for-educators')}
                   startIcon={<SchoolIcon />}
                   sx={{
-                    fontFamily: (theme) => theme.fonts.display,
-                    fontSize: '1.05rem',
-                    textTransform: 'none',
-                    borderRadius: 8,
-                    px: 4,
-                    py: 1.5,
+                    ...HERO_CTA_SX,
                     background: `linear-gradient(135deg, ${purple[400]} 0%, ${purple[600]} 100%)`,
                     boxShadow: `0 8px 28px ${alpha(purple[500], 0.42)}`,
                     '&:hover': {
@@ -225,12 +236,7 @@ export function HeroSection() {
                   onClick={() => scrollTo('for-learners')}
                   startIcon={<SportsEsportsIcon />}
                   sx={{
-                    fontFamily: (theme) => theme.fonts.display,
-                    fontSize: '1.05rem',
-                    textTransform: 'none',
-                    borderRadius: 8,
-                    px: 4,
-                    py: 1.5,
+                    ...HERO_CTA_SX,
                     background: `linear-gradient(135deg, ${pink[400]} 0%, ${pink[600]} 100%)`,
                     boxShadow: `0 8px 28px ${alpha(pink[500], 0.42)}`,
                     '&:hover': {
@@ -249,10 +255,10 @@ export function HeroSection() {
             <Button
               onClick={() => scrollTo('waitlist')}
               sx={{
-                mb: 3,
-                mt: -1.5,
+                mb: { xs: 1.5, sm: 3 },
+                mt: { xs: -0.75, sm: -1.5 },
                 textTransform: 'none',
-                fontSize: '0.88rem',
+                fontSize: { xs: '0.82rem', sm: '0.88rem' },
                 fontWeight: 700,
                 color: pink[600],
                 '&:hover': { bgcolor: alpha(pink[100], 0.5) },
@@ -265,9 +271,21 @@ export function HeroSection() {
           <Stack
             direction="row"
             spacing={1}
-            flexWrap="wrap"
+            flexWrap={{ xs: 'nowrap', sm: 'wrap' }}
             useFlexGap
-            justifyContent={{ xs: 'center', lg: 'flex-start' }}
+            justifyContent={{ xs: 'flex-start', sm: 'center', lg: 'flex-start' }}
+            sx={{
+              overflowX: { xs: 'auto', sm: 'visible' },
+              mx: { xs: -2, sm: 0 },
+              px: { xs: 2, sm: 0 },
+              pb: { xs: 0.5, sm: 0 },
+              scrollbarWidth: 'none',
+              '&::-webkit-scrollbar': { display: 'none' },
+              maskImage: {
+                xs: 'linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 24px), transparent 100%)',
+                sm: 'none',
+              },
+            }}
           >
             {TAGS.map(({ key, Icon }) => (
               <Chip
@@ -285,6 +303,7 @@ export function HeroSection() {
                   border: `1px solid ${alpha(pink[300], 0.55)}`,
                   borderRadius: 4,
                   pl: 0.5,
+                  flexShrink: 0,
                 }}
               />
             ))}

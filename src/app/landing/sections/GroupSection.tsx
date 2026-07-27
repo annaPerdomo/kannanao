@@ -102,7 +102,7 @@ export function GroupSection() {
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(160deg, ${ocean[50]} 0%, ${sky[50]} 35%, ${alpha(ocean[50], 0.5)} 65%, ${purple[50]} 100%)`,
-        py: { xs: 10, md: 12 },
+        py: { xs: 7, md: 12 },
         px: { xs: 2, sm: 4, md: 6, lg: 8 },
       }}
     >
@@ -123,7 +123,7 @@ export function GroupSection() {
         <Box
           sx={{
             textAlign: 'center',
-            mb: { xs: 6, md: 7 },
+            mb: { xs: 4, md: 7 },
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateY(0)' : 'translateY(32px)',
             transition: 'opacity 0.8s ease, transform 0.8s ease',
@@ -147,7 +147,7 @@ export function GroupSection() {
             component="h2"
             sx={{
               fontFamily: (t) => t.fonts.display,
-              fontSize: { xs: '2.2rem', sm: '3rem', md: '3.8rem' },
+              fontSize: { xs: '2rem', sm: '3rem', md: '3.8rem' },
               color: ocean[800],
               mb: 1.5,
               lineHeight: 1.05,
@@ -157,11 +157,11 @@ export function GroupSection() {
           </Typography>
           <Typography
             sx={{
-              fontSize: '1rem',
+              fontSize: { xs: '0.92rem', sm: '1rem' },
               color: alpha(ocean[800], 0.6),
               maxWidth: 560,
               mx: 'auto',
-              lineHeight: 1.7,
+              lineHeight: { xs: 1.6, sm: 1.7 },
             }}
           >
             {t('subheading')}
@@ -173,9 +173,9 @@ export function GroupSection() {
           sx={{
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
-            gap: { xs: 5, md: 6 },
+            gap: { xs: 3, md: 6 },
             alignItems: 'center',
-            mb: { xs: 7, md: 9 },
+            mb: { xs: 4.5, md: 9 },
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateY(0)' : 'translateY(24px)',
             transition: 'opacity 0.8s ease 0.1s, transform 0.8s ease 0.1s',
@@ -279,7 +279,12 @@ export function GroupSection() {
               {t('shareHeading')}
             </Typography>
             <Typography
-              sx={{ fontSize: '0.95rem', color: alpha(ocean[800], 0.6), lineHeight: 1.8, mb: 3 }}
+              sx={{
+                fontSize: { xs: '0.9rem', sm: '0.95rem' },
+                color: alpha(ocean[800], 0.6),
+                lineHeight: { xs: 1.6, sm: 1.8 },
+                mb: { xs: 2, sm: 3 },
+              }}
             >
               {t('shareBody')}
             </Typography>
@@ -313,8 +318,8 @@ export function GroupSection() {
         <Box
           sx={{
             textAlign: 'center',
-            mb: { xs: 4, md: 5 },
-            pt: { xs: 5, md: 6 },
+            mb: { xs: 3, md: 5 },
+            pt: { xs: 3.5, md: 6 },
             borderTop: `1.5px solid ${alpha(ocean[300], 0.25)}`,
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateY(0)' : 'translateY(20px)',

@@ -14,11 +14,13 @@ import { emerald, pink, purple, sky } from '@/theme';
 
 // Review milestones: horizontal position mimics the growing gap between
 // reviews, strength is the memory bar height after that review.
+// `left` is each stop's left edge and its label extends rightward, so the last
+// stop stays well short of 100% or the label clips on a narrow screen.
 const STEPS = [
-  { key: 'today', left: '4%', strength: 0.38, color: pink[500] },
-  { key: 'threeDays', left: '24%', strength: 0.58, color: purple[500] },
-  { key: 'oneWeek', left: '50%', strength: 0.78, color: sky[500] },
-  { key: 'oneMonth', left: '86%', strength: 1, color: emerald[500] },
+  { key: 'today', left: '2%', strength: 0.38, color: pink[500] },
+  { key: 'threeDays', left: '26%', strength: 0.58, color: purple[500] },
+  { key: 'oneWeek', left: '52%', strength: 0.78, color: sky[500] },
+  { key: 'oneMonth', left: '78%', strength: 1, color: emerald[500] },
 ] as const;
 
 const BAR_AREA_HEIGHT = 96;
@@ -60,11 +62,20 @@ export function SrsDemo() {
           {t('title')}
         </Typography>
         <Typography
-          sx={{ fontSize: '0.95rem', color: 'text.secondary', lineHeight: 1.75, mb: 2.5 }}
+          sx={{
+            fontSize: { xs: '0.9rem', sm: '0.95rem' },
+            color: 'text.secondary',
+            lineHeight: { xs: 1.6, sm: 1.75 },
+            mb: 2.5,
+          }}
         >
           {t('subtitle')}
         </Typography>
-        <Stack direction="row" spacing={1.25} alignItems="center">
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={1.25}
+          alignItems={{ xs: 'flex-start', sm: 'center' }}
+        >
           <Paper
             elevation={0}
             sx={{
@@ -102,7 +113,7 @@ export function SrsDemo() {
         </Stack>
       </Box>
 
-      <Box sx={{ position: 'relative', pt: 3.5, pb: 1 }}>
+      <Box sx={{ position: 'relative', pt: { xs: 5, sm: 3.5 }, pb: 1 }}>
         <Typography
           sx={{
             fontSize: '0.68rem',
@@ -195,7 +206,7 @@ export function SrsDemo() {
             sx={{
               position: 'absolute',
               right: 0,
-              top: -8,
+              top: { xs: -36, sm: -8 },
               bgcolor: alpha(emerald[100], 0.9),
               color: emerald[700],
               fontWeight: 800,

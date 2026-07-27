@@ -115,7 +115,7 @@ export function AiDemoSection() {
         overflow: 'hidden',
         scrollMarginTop: 72,
         background: `linear-gradient(148deg, ${pink[50]} 0%, ${pink[100]} 30%, ${alpha(pink[50], 0.6)} 60%, ${pink[50]} 100%)`,
-        py: { xs: 10, md: 10 },
+        py: { xs: 7, md: 10 },
         px: { xs: 2, sm: 4, md: 6, lg: 8 },
       }}
     >
@@ -144,7 +144,7 @@ export function AiDemoSection() {
         <Box
           sx={{
             textAlign: 'center',
-            mb: { xs: 6, md: 7 },
+            mb: { xs: 4, md: 7 },
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateY(0)' : 'translateY(32px)',
             transition: 'opacity 0.8s ease, transform 0.8s ease',
@@ -168,7 +168,7 @@ export function AiDemoSection() {
             component="h2"
             sx={{
               fontFamily: (t) => t.fonts.display,
-              fontSize: { xs: '2.2rem', sm: '3rem', md: '3.8rem' },
+              fontSize: { xs: '2rem', sm: '3rem', md: '3.8rem' },
               color: pink[700],
               mb: 1.5,
               lineHeight: 1.05,
@@ -178,11 +178,11 @@ export function AiDemoSection() {
           </Typography>
           <Typography
             sx={{
-              fontSize: '1rem',
+              fontSize: { xs: '0.92rem', sm: '1rem' },
               color: alpha(pink[700], 0.62),
               maxWidth: 560,
               mx: 'auto',
-              lineHeight: 1.7,
+              lineHeight: { xs: 1.6, sm: 1.7 },
             }}
           >
             {t('subheading')}
@@ -687,10 +687,10 @@ export function AiDemoSection() {
                     <Box
                       key={i}
                       sx={{
+                        display: { xs: i > 2 ? 'none' : 'flex', sm: 'flex' },
                         border: '1.5px solid rgba(249,168,212,0.15)',
                         borderRadius: '14px',
                         bgcolor: 'rgba(255,248,252,0.7)',
-                        display: 'flex',
                         alignItems: 'center',
                         gap: 1.5,
                         px: 1.5,
@@ -938,13 +938,21 @@ export function AiDemoSection() {
             <Box sx={{ flex: 1, height: 1, bgcolor: alpha(pink[300], 0.3) }} />
           </Box>
 
+          {/* Swipeable shelf on phones; the wrapped grid needs five screens. */}
           <Box
             sx={{
               display: 'flex',
-              flexWrap: 'wrap',
+              flexWrap: { xs: 'nowrap', md: 'wrap' },
               gap: 2,
               alignItems: 'stretch',
-              justifyContent: 'center',
+              justifyContent: { xs: 'flex-start', md: 'center' },
+              overflowX: { xs: 'auto', md: 'visible' },
+              scrollSnapType: { xs: 'x mandatory', md: 'none' },
+              mx: { xs: -2, md: 0 },
+              px: { xs: 2, md: 0 },
+              pb: { xs: 1, md: 0 },
+              scrollbarWidth: 'none',
+              '&::-webkit-scrollbar': { display: 'none' },
             }}
           >
             <ThemeProvider theme={sakuraTheme}>
@@ -952,7 +960,9 @@ export function AiDemoSection() {
                 <Box
                   key={card.id}
                   sx={{
-                    width: 240,
+                    width: { xs: 210, md: 240 },
+                    flexShrink: 0,
+                    scrollSnapAlign: { xs: 'center', md: 'none' },
                     '& > div': { height: '100%' },
                     '& > div > div': { height: '100%' },
                     opacity: cardsVisible > i ? 1 : 0,
