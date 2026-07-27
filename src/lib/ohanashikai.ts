@@ -1,6 +1,6 @@
 'use client';
 
-import { type OhanashikaiRow, rowToOhanashikai } from '@/lib/dbMappers';
+import { type OhanashikaiRow, pickFirstLines, rowToOhanashikai } from '@/lib/dbMappers';
 import { isConfigured, sb, showConfigBanner } from '@/lib/supabase';
 import type { Ohanashikai, OhanashikaiLine } from '@/types/ohanashikai';
 
@@ -45,9 +45,21 @@ export async function loadOhanashikais(userId: string): Promise<Ohanashikai[]> {
   const items = rows ?? [];
   if (items.length === 0) return [];
 
+  // One query for every speech's opening line; see pickFirstLines for the ordering rule.
+  const { data: lineRows } = await sb
+    .from('ohanashikai_lines')
+    .select('ohanashikai_id, text, order_index')
+    .in(
+      'ohanashikai_id',
+      items.map((row: OhanashikaiRow) => row.id),
+    );
+  const firstLines = pickFirstLines(lineRows ?? []);
+
   // Line counts come from the trigger-maintained `line_count` column — no second
   // query to fetch (and count) line rows.
-  return items.map((row: OhanashikaiRow) => rowToOhanashikai(row, row.line_count ?? 0));
+  return items.map((row: OhanashikaiRow) =>
+    rowToOhanashikai(row, row.line_count ?? 0, firstLines.get(row.id)),
+  );
 }
 
 export async function dbCreateOhanashikai(
