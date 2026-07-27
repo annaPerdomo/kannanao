@@ -62,3 +62,6 @@ promo/
 # local-only Claude prompt packs / spec documents
 semester-prompts/
 i18n-prompts/
+
+# local-only asset/regeneration scripts (not deployed, don't need to live on GitHub)
+scripts/
