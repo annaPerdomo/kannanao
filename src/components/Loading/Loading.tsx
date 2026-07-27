@@ -51,7 +51,12 @@ export function Loading({ message = 'Loading…' }: LoadingProps) {
             width: STAGE_WIDTH,
             height: STAGE_HEIGHT,
             transform: { xs: `scale(${MOBILE_SCALE})`, sm: 'none' },
-            transformOrigin: 'top center',
+            // Must be `top left`: the wrapper is pre-shrunk to STAGE_WIDTH *
+            // MOBILE_SCALE, so scaling about the inner box's own centre pins
+            // x=STAGE_WIDTH/2 and pushes the stage right of its wrapper by half
+            // the size difference — the mascot drifts off-centre while the
+            // status text below stays centred.
+            transformOrigin: 'top left',
           }}
         >
           <TangoMascot reducedMotion={reducedMotion} />
