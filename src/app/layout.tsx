@@ -97,9 +97,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content={APP_NAME} />
+        {/*
+          Touch icons are full-bleed opaque squares with NO baked-in rounding —
+          iOS masks them with its own squircle. A pre-rounded source would show a
+          pale halo outside the system mask. See scripts/build-icons.py.
+        */}
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png" />
         <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167.png" />
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png" />
+        <link rel="apple-touch-icon" href="/icons/icon-180.png" />
       </head>
       <body>
         <SkipToContent />
