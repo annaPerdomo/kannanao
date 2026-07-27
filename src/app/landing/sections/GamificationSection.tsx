@@ -120,7 +120,7 @@ export function GamificationSection() {
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(160deg, ${amber[50]} 0%, ${sunset[50]} 30%, ${alpha(amber[50], 0.5)} 65%, ${pink[50]} 100%)`,
-        py: { xs: 10, md: 12 },
+        py: { xs: 7, md: 12 },
         px: { xs: 2, sm: 4, md: 6, lg: 8 },
       }}
     >
@@ -160,7 +160,7 @@ export function GamificationSection() {
         <Box
           sx={{
             textAlign: 'center',
-            mb: { xs: 6, md: 7 },
+            mb: { xs: 4, md: 7 },
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateY(0)' : 'translateY(32px)',
             transition: 'opacity 0.8s ease, transform 0.8s ease',
@@ -170,7 +170,7 @@ export function GamificationSection() {
             component="h2"
             sx={{
               fontFamily: (t) => t.fonts.display,
-              fontSize: { xs: '2.2rem', sm: '3rem', md: '3.8rem' },
+              fontSize: { xs: '2rem', sm: '3rem', md: '3.8rem' },
               color: amber[800],
               mb: 1.5,
               lineHeight: 1.05,
@@ -180,11 +180,11 @@ export function GamificationSection() {
           </Typography>
           <Typography
             sx={{
-              fontSize: '1rem',
+              fontSize: { xs: '0.92rem', sm: '1rem' },
               color: alpha(amber[800], 0.6),
               maxWidth: 560,
               mx: 'auto',
-              lineHeight: 1.7,
+              lineHeight: { xs: 1.6, sm: 1.7 },
             }}
           >
             {t('subheading')}
@@ -205,7 +205,7 @@ export function GamificationSection() {
           <Paper
             elevation={0}
             sx={{
-              p: 3,
+              p: { xs: 2.25, sm: 3 },
               borderRadius: 4,
               bgcolor: alpha(amber[50], 0.6),
               border: `1px solid ${alpha(amber[300], 0.4)}`,
@@ -350,7 +350,7 @@ export function GamificationSection() {
           <Paper
             elevation={0}
             sx={{
-              p: 3,
+              p: { xs: 2.25, sm: 3 },
               borderRadius: 4,
               bgcolor: alpha(purple[50], 0.5),
               border: `1px solid ${alpha(purple[200], 0.4)}`,
@@ -419,7 +419,7 @@ export function GamificationSection() {
           <Paper
             elevation={0}
             sx={{
-              p: 3,
+              p: { xs: 2.25, sm: 3 },
               borderRadius: 4,
               bgcolor: alpha(pink[50], 0.5),
               border: `1px solid ${alpha(pink[200], 0.4)}`,
@@ -537,13 +537,13 @@ export function GamificationSection() {
         </Box>
 
         {/* Bottom counter row */}
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={3}
-          justifyContent="center"
-          alignItems="center"
+        <Box
           sx={{
-            mt: 5,
+            display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
+            gap: { xs: 2, sm: 3 },
+            justifyItems: 'center',
+            mt: { xs: 4, sm: 5 },
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateY(0)' : 'translateY(20px)',
             transition: 'opacity 0.8s ease 0.4s, transform 0.8s ease 0.4s',
@@ -555,11 +555,11 @@ export function GamificationSection() {
             { n: String(ACHIEVEMENT_COUNT), key: 'achievements' },
             { n: String(CATEGORIES), key: 'shopCategories' },
           ].map((s) => (
-            <Box key={s.key} sx={{ textAlign: 'center', px: 3 }}>
+            <Box key={s.key} sx={{ textAlign: 'center', px: { xs: 0, sm: 3 } }}>
               <Typography
                 sx={{
                   fontFamily: (t) => t.fonts.cute,
-                  fontSize: '2.4rem',
+                  fontSize: { xs: '2rem', sm: '2.4rem' },
                   color: amber[700],
                   lineHeight: 1,
                 }}
@@ -578,7 +578,7 @@ export function GamificationSection() {
               </Typography>
             </Box>
           ))}
-        </Stack>
+        </Box>
       </Box>
     </Box>
   );

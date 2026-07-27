@@ -5,6 +5,7 @@ import { alpha } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 
 import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Locale } from '@/i18n/config';
 import { writeLocaleCookie } from '@/i18n/localeCookie';
 
@@ -45,6 +46,10 @@ const OPTIONS: { locale: Locale; href: string; label: string }[] = [
  */
 export function LanguageToggle({ current }: { current: Locale }) {
   const t = useTranslations('Landing.languageToggle');
+  // BottomNav renders nothing for a signed-out visitor, so reserving its height
+  // unconditionally floated this pill 56px up, straight onto the hero CTAs.
+  const { user } = useAuth();
+  const bottomNavOffset = user ? `${BOTTOM_NAV_HEIGHT}px + ` : '';
 
   return (
     <Box
@@ -52,9 +57,9 @@ export function LanguageToggle({ current }: { current: Locale }) {
       aria-label={t('ariaLabel')}
       sx={(theme) => ({
         position: 'fixed',
-        right: { xs: 12, sm: 24 },
+        right: { xs: 10, sm: 24 },
         bottom: {
-          xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom) + 8px)`,
+          xs: `calc(${bottomNavOffset}env(safe-area-inset-bottom) + 10px)`,
           sm: 28,
         },
         zIndex: 1200,
@@ -82,8 +87,8 @@ export function LanguageToggle({ current }: { current: Locale }) {
             aria-current={isCurrent ? 'page' : undefined}
             onClick={() => writeLocaleCookie(option.locale)}
             sx={(theme) => ({
-              px: 1.25,
-              py: 0.5,
+              px: 1.5,
+              py: { xs: 1, sm: 0.5 },
               borderRadius: 5,
               // text.primary rather than a brand mid-tone: this floats over
               // every section's pastel background as you scroll.

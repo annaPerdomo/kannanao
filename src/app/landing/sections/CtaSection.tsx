@@ -29,14 +29,14 @@ export function CtaSection() {
       id="waitlist"
       ref={ref}
       sx={{
-        minHeight: '100vh',
+        minHeight: '100svh',
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(160deg, ${darkPurple.base} 0%, ${darkPurple.mid} 40%, ${darkPurple.midAlt} 75%, ${darkPurple.deepest} 100%)`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        py: { xs: 10, md: 8 },
+        py: { xs: 8, md: 8 },
         px: { xs: 2, sm: 4, md: 6 },
       }}
     >
@@ -140,12 +140,12 @@ export function CtaSection() {
 
         <Typography
           sx={{
-            fontSize: '1rem',
+            fontSize: { xs: '0.92rem', sm: '1rem' },
             color: alpha('#fff', 0.52),
-            mb: 5,
+            mb: { xs: 3.5, sm: 5 },
             maxWidth: 520,
             mx: 'auto',
-            lineHeight: 1.8,
+            lineHeight: { xs: 1.65, sm: 1.8 },
           }}
         >
           {t('subtitle')}
@@ -180,7 +180,7 @@ export function CtaSection() {
         <Box
           component="footer"
           sx={{
-            mt: 8,
+            mt: { xs: 5, sm: 8 },
             pt: 3,
             borderTop: `1px solid ${alpha('#fff', 0.1)}`,
             display: 'flex',

@@ -46,13 +46,13 @@ export function FeaturesSection() {
     <Box
       ref={ref}
       sx={{
-        minHeight: '100vh',
+        minHeight: '100svh',
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(160deg, ${darkPurple.base} 0%, ${darkPurple.mid} 40%, ${darkPurple.deeper} 75%, ${darkPurple.deepest} 100%)`,
         display: 'flex',
         alignItems: 'center',
-        py: { xs: 10, md: 8 },
+        py: { xs: 7, md: 8 },
         px: { xs: 2, sm: 4, md: 6, lg: 8 },
       }}
     >
@@ -82,7 +82,7 @@ export function FeaturesSection() {
         <Box
           sx={{
             textAlign: 'center',
-            mb: { xs: 6, md: 8 },
+            mb: { xs: 4, md: 8 },
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateY(0)' : 'translateY(32px)',
             transition: 'opacity 0.8s ease, transform 0.8s ease',
@@ -92,7 +92,7 @@ export function FeaturesSection() {
             component="h2"
             sx={{
               fontFamily: (t) => t.fonts.display,
-              fontSize: { xs: '2.2rem', sm: '3rem', md: '3.8rem' },
+              fontSize: { xs: '2rem', sm: '3rem', md: '3.8rem' },
               color: 'white',
               mb: 1.5,
               lineHeight: 1.05,
@@ -102,11 +102,11 @@ export function FeaturesSection() {
           </Typography>
           <Typography
             sx={{
-              fontSize: '1rem',
+              fontSize: { xs: '0.92rem', sm: '1rem' },
               color: alpha('#fff', 0.5),
               maxWidth: 540,
               mx: 'auto',
-              lineHeight: 1.7,
+              lineHeight: { xs: 1.6, sm: 1.7 },
             }}
           >
             {t('subheading')}
@@ -116,8 +116,8 @@ export function FeaturesSection() {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-            gap: 2,
+            gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+            gap: { xs: 1.25, sm: 2 },
           }}
         >
           {FEATURES.map((f, i) => (
@@ -125,14 +125,14 @@ export function FeaturesSection() {
               key={f.key}
               elevation={0}
               sx={{
-                p: 3,
+                p: { xs: 1.75, sm: 3 },
                 borderRadius: 4,
                 background: alpha('#fff', 0.05),
                 border: `1px solid ${alpha('#fff', 0.09)}`,
                 backdropFilter: 'blur(14px)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 1.5,
+                gap: { xs: 1, sm: 1.5 },
                 opacity: inView ? 1 : 0,
                 transform: inView ? 'translateY(0)' : 'translateY(32px)',
                 transition: `opacity 0.65s ease ${0.06 * i}s, transform 0.65s ease ${0.06 * i}s`,
@@ -147,8 +147,8 @@ export function FeaturesSection() {
             >
               <Box
                 sx={{
-                  width: 44,
-                  height: 44,
+                  width: { xs: 36, sm: 44 },
+                  height: { xs: 36, sm: 44 },
                   borderRadius: 3,
                   display: 'flex',
                   alignItems: 'center',
@@ -157,12 +157,12 @@ export function FeaturesSection() {
                   border: `1px solid ${alpha(purple[300], 0.28)}`,
                 }}
               >
-                <f.Icon sx={{ fontSize: '1.5rem', color: purple[200] }} />
+                <f.Icon sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, color: purple[200] }} />
               </Box>
               <Typography
                 sx={{
                   fontFamily: (t) => t.fonts.display,
-                  fontSize: '1.02rem',
+                  fontSize: { xs: '0.9rem', sm: '1.02rem' },
                   color: alpha(purple[200], 0.95),
                   lineHeight: 1.2,
                 }}
@@ -170,7 +170,11 @@ export function FeaturesSection() {
                 {t(`items.${f.key}.title`)}
               </Typography>
               <Typography
-                sx={{ fontSize: '0.82rem', color: alpha('#fff', 0.48), lineHeight: 1.65 }}
+                sx={{
+                  fontSize: { xs: '0.74rem', sm: '0.82rem' },
+                  color: alpha('#fff', 0.48),
+                  lineHeight: { xs: 1.5, sm: 1.65 },
+                }}
               >
                 {t(`items.${f.key}.desc`)}
               </Typography>

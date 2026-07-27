@@ -178,7 +178,7 @@ export function AudienceSection() {
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(178deg, ${pink[50]} 0%, #FFFFFF 32%, ${alpha(purple[50], 0.85)} 100%)`,
-        py: { xs: 10, md: 12 },
+        py: { xs: 7, md: 12 },
         px: { xs: 2, sm: 4, md: 6, lg: 8 },
       }}
     >
@@ -189,7 +189,7 @@ export function AudienceSection() {
         <Box
           sx={{
             textAlign: 'center',
-            mb: { xs: 5, md: 7 },
+            mb: { xs: 3.5, md: 7 },
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateY(0)' : 'translateY(28px)',
             transition: 'opacity 0.8s ease, transform 0.8s ease',
@@ -217,7 +217,7 @@ export function AudienceSection() {
             component="h2"
             sx={{
               fontFamily: (theme) => theme.fonts.display,
-              fontSize: { xs: '2.2rem', sm: '2.9rem', md: '3.5rem' },
+              fontSize: { xs: '2rem', sm: '2.9rem', md: '3.5rem' },
               lineHeight: 1.05,
               mb: 1.5,
               background: `linear-gradient(135deg, ${purple[600]} 0%, ${pink[600]} 100%)`,
@@ -230,11 +230,11 @@ export function AudienceSection() {
           </Typography>
           <Typography
             sx={{
-              fontSize: '1rem',
+              fontSize: { xs: '0.92rem', sm: '1rem' },
               color: 'text.secondary',
               maxWidth: 520,
               mx: 'auto',
-              lineHeight: 1.7,
+              lineHeight: { xs: 1.6, sm: 1.7 },
             }}
           >
             {t('subheading')}
