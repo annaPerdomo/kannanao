@@ -15,7 +15,7 @@ export default function RootLoading() {
         justifyContent: 'center',
       }}
     >
-      <Loading message="Loading…" />
+      <Loading />
     </Box>
   );
 }

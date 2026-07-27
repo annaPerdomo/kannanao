@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 import { getProfileForUser, getUserFromToken } from '../../_lib/authCache';
 import { rateLimit } from '../../_lib/rateLimit';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
+import { weekStart } from '../_lib/weekStart';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
 
@@ -81,19 +82,12 @@ export async function GET(req: NextRequest) {
 
   const memberIds = members.map((m) => m.id);
 
-  // Get study sessions from this week (Monday start)
-  const now = new Date();
-  const dayOfWeek = now.getDay();
-  const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - mondayOffset);
-  weekStart.setHours(0, 0, 0, 0);
-
+  // Monday-start week, shared with the per-group weekly XP on home (see weekStart)
   const { data: sessions, error: sessErr } = await sb
     .from('study_sessions')
     .select('user_id, xp_earned, cards_studied')
     .in('user_id', memberIds)
-    .gte('started_at', weekStart.toISOString());
+    .gte('started_at', weekStart().toISOString());
 
   if (sessErr) {
     logger.error('Failed to fetch leaderboard sessions', {

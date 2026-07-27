@@ -123,6 +123,17 @@ const pwaConfig = withPWA({
   aggressiveFrontEndNavCaching: false,
   reloadOnOnline: false,
   disable: process.env.NODE_ENV === 'development',
+  // Chat stickers are ~670 KB across 35 files. Precaching them would put that
+  // on the service-worker install path for every user, including everyone who
+  // never opens a chat. They're fetched on demand instead and kept by the
+  // runtime `static-image-assets` cache after first use.
+  //
+  // The hero banners' @2x variants (~290 KB across 3 files) are excluded for the
+  // same reason and then some: they are only ever requested by a large retina
+  // screen, so precaching them bills every phone on mobile data for pixels that
+  // device will never ask for. The 1x bands and the phone cards stay precached —
+  // those are the ones on the critical path for the home screen.
+  publicExcludes: ['!noprecache/**/*', '!stickers/**/*', '!mascot/*@2x.webp'],
   workboxOptions: {
     disableDevLogs: true,
     runtimeCaching,

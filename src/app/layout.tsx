@@ -6,9 +6,9 @@ import type { Metadata } from 'next';
 import { SkipToContent } from '@/components/SkipToContent';
 import { APP_NAME, APP_URL } from '@/lib/brand';
 
-const TITLE = `${APP_NAME} — Japanese Practice for Students & Classrooms`;
+const TITLE = `${APP_NAME} — Japanese Practice for Educators & Learners`;
 const DESCRIPTION =
-  'Tangodachi is a supplemental Japanese practice app for classrooms. Teachers build decks, assign them with deadlines, and track each student’s progress; students get more ways to study what they’re learning in class — daily review, practice modes, games, quizzes, and AI-assisted flashcards.';
+  'Tangodachi is a Japanese practice app for educators and learners. Educators build decks with AI in minutes, assign them with deadlines, and track each learner’s progress; learners study with daily review, spaced repetition, practice games, and graded quizzes — so what they learn actually sticks.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
@@ -25,12 +25,11 @@ export const metadata: Metadata = {
     },
   },
   keywords: [
-    'Japanese practice for classrooms',
     'Japanese practice for students',
-    'Japanese classroom app',
-    'supplemental Japanese material',
     'Japanese teacher tools',
-    'Japanese practice for students',
+    'AI Japanese flashcard generator',
+    'spaced repetition Japanese',
+    'supplemental Japanese material',
     'Japanese vocabulary practice',
     'assign Japanese homework',
     'JLPT N5 practice',
@@ -49,10 +48,10 @@ export const metadata: Metadata = {
     locale: 'en_US',
     images: [
       {
-        url: `${APP_URL}/og-image.jpg`,
+        url: `${APP_URL}/og-image.png`,
         width: 1200,
         height: 630,
-        type: 'image/jpeg',
+        type: 'image/png',
       },
     ],
   },
@@ -60,7 +59,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: TITLE,
     description: DESCRIPTION,
-    images: [`${APP_URL}/og-image.jpg`],
+    images: [`${APP_URL}/og-image.png`],
   },
 };
 

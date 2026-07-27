@@ -6,10 +6,13 @@ import { APP_NAME, APP_URL } from '@/lib/brand';
 import { amber, darkPurple, emerald, ocean, pink, purple, sky } from '@/theme';
 
 import LandingAuthGuard from './LandingAuthGuard';
+import { landingFontClass } from './landingFonts';
 import LandingGlobalStyles from './LandingGlobalStyles';
+import { LandingTheme } from './LandingTheme';
 import { LanguageToggle } from './LanguageToggle';
 import {
   AiDemoSection,
+  AudienceSection,
   CtaSection,
   FeaturesSection,
   GamificationSection,
@@ -44,9 +47,9 @@ function buildJsonLd(locale: Locale) {
         price: '0',
         priceCurrency: 'USD',
       },
-      // Signal to search engines that this is a classroom tool for both the
-      // teacher who assigns practice and the student who does it — the core of
-      // the supplemental-practice positioning.
+      // Signal to search engines that this serves both the educator who
+      // assigns practice and the learner who does it — the core of the
+      // supplemental-practice positioning.
       audience: [
         { '@type': 'EducationalAudience', educationalRole: 'teacher' },
         { '@type': 'EducationalAudience', educationalRole: 'student' },
@@ -80,7 +83,7 @@ export default function LandingPage({ locale }: { locale: Locale }) {
   const jsonLd = buildJsonLd(locale);
 
   return (
-    <Box>
+    <Box id="landing-root" className={landingFontClass}>
       {jsonLd.map((schema, i) => (
         <script
           key={i}
@@ -91,21 +94,31 @@ export default function LandingPage({ locale }: { locale: Locale }) {
       <LandingGlobalStyles />
       <LandingAuthGuard />
       <LanguageToggle current={locale} />
-      <HeroSection />
-      <FeaturesSection />
-      <SectionDivider fromColor={darkPurple.deepest} toColor={pink[50]} />
-      <AiDemoSection />
-      <SectionDivider fromColor={pink[50]} toColor={emerald[50]} />
-      <TravelModeSection />
-      <SectionDivider fromColor={sky[50]} toColor={pink[50]} />
-      <PracticeSection />
-      <SectionDivider fromColor={pink[50]} toColor={amber[50]} />
-      <GamificationSection />
-      <SectionDivider fromColor={pink[50]} toColor={ocean[50]} />
-      <GroupSection />
-      <SectionDivider fromColor={purple[50]} toColor={sky[50]} />
-      <HowItWorksSection />
-      <CtaSection />
+      <LandingTheme>
+        {/*
+          Narrative order: hero → who it's for (Audience) → the educator live
+          demo (AI generation) → the learner live demo (spaced repetition +
+          games) → motivation → groups → travel → full feature grid → setup →
+          CTA. The two Audience cards deep-link to #for-educators / #for-learners.
+        */}
+        <HeroSection />
+        <AudienceSection />
+        <SectionDivider fromColor={purple[50]} toColor={pink[50]} />
+        <AiDemoSection />
+        <SectionDivider fromColor={pink[50]} toColor={pink[50]} />
+        <PracticeSection />
+        <SectionDivider fromColor={pink[50]} toColor={amber[50]} />
+        <GamificationSection />
+        <SectionDivider fromColor={pink[50]} toColor={ocean[50]} />
+        <GroupSection />
+        <SectionDivider fromColor={purple[50]} toColor={emerald[50]} />
+        <TravelModeSection />
+        <SectionDivider fromColor={sky[50]} toColor={darkPurple.base} />
+        <FeaturesSection />
+        <SectionDivider fromColor={darkPurple.deepest} toColor={sky[50]} />
+        <HowItWorksSection />
+        <CtaSection />
+      </LandingTheme>
     </Box>
   );
 }

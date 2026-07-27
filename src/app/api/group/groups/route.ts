@@ -3,10 +3,39 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { rateLimit } from '@/app/api/_lib/rateLimit';
 import { requireOrganizerAccount } from '@/app/api/_lib/requireOrganizerAccount';
 import { logger } from '@/lib/logger';
+// `last_study_date` is a client-local calendar date; reuse the reminder job's
+// reference timezone so "active today" here can't disagree with "studied today" there.
+import { dateStringInTimeZone } from '@/lib/reviewReminder';
 
 import { getServiceSupabase } from '../_lib/serviceSupabase';
+import { weekStart } from '../_lib/weekStart';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 30 };
+
+/** Members shown as initial avatars on a group row; the rest collapse to "+N". */
+const MAX_FACES = 4;
+
+interface GroupMemberFace {
+  id: string;
+  name: string;
+}
+
+/** Per-group rollup returned alongside each group. */
+interface GroupStats {
+  memberCount: number;
+  /** Members whose last study day is today, in REMINDER_TIMEZONE. */
+  activeCount: number;
+  /** Lifetime cards studied, summed across the group's members. */
+  cardsStudied: number;
+  /** XP earned since Monday, summed across the group's members. */
+  weeklyXp: number;
+  /** First MAX_FACES members, for the avatar stack. */
+  faces: GroupMemberFace[];
+}
+
+function emptyStats(): GroupStats {
+  return { memberCount: 0, activeCount: 0, cardsStudied: 0, weeklyXp: 0, faces: [] };
+}
 
 /** GET — list all groups for the authenticated organizer */
 export async function GET(req: NextRequest) {
@@ -30,23 +59,61 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to load groups.' }, { status: 500 });
   }
 
-  // Get member counts per group
-  const { data: memberCounts } = await sb
+  // Three fixed-size queries (members, progress, sessions) instead of one per
+  // group, so an organizer with a dozen groups isn't a dozen round trips.
+  const { data: memberRows } = await sb
     .from('profiles')
-    .select('group_id')
+    .select('id, group_id, username, display_name')
     .eq('organizer_id', orgCheck.id)
-    .eq('account_type', 'member');
+    .eq('account_type', 'member')
+    .order('created_at', { ascending: true });
 
-  const countMap: Record<string, number> = {};
-  for (const row of memberCounts ?? []) {
-    if (row.group_id) {
-      countMap[row.group_id] = (countMap[row.group_id] ?? 0) + 1;
+  const members = memberRows ?? [];
+  const memberIds = members.map((m) => m.id);
+
+  const [progressRes, sessionRes] = memberIds.length
+    ? await Promise.all([
+        sb
+          .from('user_progress')
+          .select('user_id, total_cards_studied, last_study_date')
+          .in('user_id', memberIds),
+        sb
+          .from('study_sessions')
+          .select('user_id, xp_earned')
+          .in('user_id', memberIds)
+          .gte('started_at', weekStart().toISOString()),
+      ])
+    : [{ data: [] }, { data: [] }];
+
+  const progressMap = new Map((progressRes.data ?? []).map((p) => [p.user_id, p]));
+
+  const weeklyXpByUser = new Map<string, number>();
+  for (const s of sessionRes.data ?? []) {
+    weeklyXpByUser.set(s.user_id, (weeklyXpByUser.get(s.user_id) ?? 0) + (s.xp_earned ?? 0));
+  }
+
+  const today = dateStringInTimeZone(new Date());
+  const statsByGroup = new Map<string, GroupStats>();
+
+  for (const m of members) {
+    if (!m.group_id) continue;
+    const stats = statsByGroup.get(m.group_id) ?? emptyStats();
+    const prog = progressMap.get(m.id);
+
+    stats.memberCount += 1;
+    stats.cardsStudied += prog?.total_cards_studied ?? 0;
+    stats.weeklyXp += weeklyXpByUser.get(m.id) ?? 0;
+    if (prog?.last_study_date === today) stats.activeCount += 1;
+    if (stats.faces.length < MAX_FACES) {
+      stats.faces.push({ id: m.id, name: m.display_name || m.username });
     }
+
+    statsByGroup.set(m.group_id, stats);
   }
 
   const result = (groups ?? []).map((g) => ({
     ...g,
-    memberCount: countMap[g.id] ?? 0,
+    ...(statsByGroup.get(g.id) ?? emptyStats()),
   }));
 
   return NextResponse.json(result);
@@ -91,5 +158,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to create group.' }, { status: 500 });
   }
 
-  return NextResponse.json({ ...group, memberCount: 0 }, { status: 201 });
+  // Zeroed rollup so a freshly created group matches the shape GET returns.
+  return NextResponse.json({ ...group, ...emptyStats() }, { status: 201 });
 }

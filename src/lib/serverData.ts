@@ -9,6 +9,7 @@ import {
   dbTodoToApp,
   type HomeData,
   type InitialAuth,
+  pickFirstLines,
   rowToOhanashikai,
   type UserProfile,
 } from '@/lib/dbMappers';
@@ -193,10 +194,24 @@ async function loadOhanashikaisServer(
   ]);
   if (pinnedResult.error) return { items: [], totalCount: 0 };
   const rows = pinnedResult.data ?? [];
+  if (rows.length === 0) return { items: [], totalCount: countResult.count ?? 0 };
+
+  // The home row shows each speech's opening line, so fetch the lines of the
+  // *pinned* speeches only — one query for all of them, not one per speech.
+  const { data: lineRows } = await supabase
+    .from('ohanashikai_lines')
+    .select('ohanashikai_id, text, order_index')
+    .in(
+      'ohanashikai_id',
+      rows.map((r) => r.id),
+    );
+  const firstLines = pickFirstLines(lineRows ?? []);
 
   // Line counts come from the trigger-maintained `line_count` column — no second
   // query to fetch (and count) line rows.
-  const items = rows.map((row) => rowToOhanashikai(row, row.line_count ?? 0));
+  const items = rows.map((row) =>
+    rowToOhanashikai(row, row.line_count ?? 0, firstLines.get(row.id)),
+  );
   return { items, totalCount: countResult.count ?? 0 };
 }
 

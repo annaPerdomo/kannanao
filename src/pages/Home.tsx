@@ -1,24 +1,18 @@
 'use client';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckIcon from '@mui/icons-material/Check';
 import DragIndicatorRoundedIcon from '@mui/icons-material/DragIndicatorRounded';
-import NightsStayIcon from '@mui/icons-material/NightsStay';
-import StorefrontIcon from '@mui/icons-material/Storefront';
 import TuneIcon from '@mui/icons-material/Tune';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import WbSunnyIcon from '@mui/icons-material/WbSunny';
-import WbTwilightIcon from '@mui/icons-material/WbTwilight';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import GlobalStyles from '@mui/material/GlobalStyles';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
-import LinearProgress from '@mui/material/LinearProgress';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
-import { alpha, useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import dynamic from 'next/dynamic';
@@ -28,24 +22,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Layout as RGLLayout } from 'react-grid-layout';
 import { GridLayout } from 'react-grid-layout';
 
-import { DeckCard } from '@/components/DeckCard';
-import { AssignmentCard, GroupHomeWidget, LeaderboardWidget } from '@/components/Group';
-import { PageHeader } from '@/components/PageHeader';
+import { DashedAddRow } from '@/components/DashedAddRow';
+import { DeckTile } from '@/components/DeckCard';
+import { DECK_TILE_MIN_HEIGHT } from '@/components/DeckCard/DeckTile';
+import { AssignmentCard, GroupRow, LeaderboardWidget } from '@/components/Group';
+import { GreetingHero, SpeechRow, XpProgressCard } from '@/components/Home';
 import { ReviewTile } from '@/components/ReviewTile';
 import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProgressCtx } from '@/contexts/ProgressContext';
-import { useShopCtx } from '@/contexts/ShopContext';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
-import { useGroupMembers } from '@/hooks/useGroup';
 import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
 import { useGroups } from '@/hooks/useGroups';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
-import { xpProgressInLevel } from '@/hooks/useProgress';
-import { SHOP_ITEMS } from '@/hooks/useShop';
 import type { HomeData } from '@/lib/dbMappers';
-import { LAYOUT } from '@/theme';
+import { resolveTimeOfDay } from '@/lib/timeOfDay';
 import type { SectionKey } from '@/types/homeSections';
 import {
   getSectionsForRole,
@@ -65,6 +57,18 @@ const ShareEmbedDialog = dynamic(
   () => import('@/components/ShareEmbedDialog').then((m) => m.ShareEmbedDialog),
   { ssr: false },
 );
+const CreateGroupDialog = dynamic(
+  () => import('@/components/Group/CreateGroupDialog').then((m) => m.CreateGroupDialog),
+  { ssr: false },
+);
+const CreateDeckDialog = dynamic(
+  () => import('@/components/CreateDeckDialog').then((m) => m.CreateDeckDialog),
+  { ssr: false },
+);
+const CreateSpeechDialog = dynamic(
+  () => import('@/components/Ohanashikai/CreateSpeechDialog').then((m) => m.CreateSpeechDialog),
+  { ssr: false },
+);
 
 /**
  * Latches to `true` the first time `open` becomes true and stays true.
@@ -81,135 +85,28 @@ function useHasOpened(open: boolean): boolean {
   return opened;
 }
 
+/**
+ * Tango's greeting — おはよう / こんにちは / こんばんは, in Japanese whichever locale
+ * the UI is in. It shares `resolveTimeOfDay` with the hero's banner art, so
+ * こんばんは can never end up over the sunrise illustration.
+ *
+ * Rich rather than plain text because Japanese permits a line break between any
+ * two characters: left alone, a narrow hero splits the reader's own name as
+ * «Annaさ / ん！». The `<n>` run holds the name and its honorific together, which
+ * leaves the 、as the only place the line may break.
+ */
 function getGreeting(
   name: string,
-  t: (key: string, values?: Record<string, string>) => string,
-): { text: string; icon: React.ReactNode } {
-  const h = new Date().getHours();
-  if (h < 12) return { text: t('morning', { name }), icon: <WbTwilightIcon /> };
-  if (h < 17) return { text: t('afternoon', { name }), icon: <WbSunnyIcon /> };
-  return { text: t('evening', { name }), icon: <NightsStayIcon /> };
-}
-
-function WelcomeBanner({
-  username,
-  level,
-  totalXp,
-  spendableXp,
-  ownedItemKeys,
-  onShopClick,
-  xpReady,
-}: {
-  username: string;
-  level: number;
-  totalXp: number;
-  spendableXp: number;
-  ownedItemKeys: string[];
-  onShopClick: () => void;
-  xpReady: boolean;
-}) {
-  const t = useTranslations('Home.welcomeBanner');
-  const tGreeting = useTranslations('Home.greeting');
-  const { text, icon } = getGreeting(username, tGreeting);
-  const { current, needed } = xpProgressInLevel(totalXp);
-  const pct = Math.round((current / needed) * 100);
-  const theme = useTheme();
-  const { brand, accent } = theme.palette;
-
-  const nextItem =
-    SHOP_ITEMS.filter((i) => i.price > 0 && !ownedItemKeys.includes(i.key)).sort(
-      (a, b) => a.price - b.price,
-    )[0] ?? null;
-  const xpNeeded = nextItem ? Math.max(0, nextItem.price - spendableXp) : 0;
-
-  return (
-    <PageHeader
-      icon={icon}
-      title={text}
-      gradientTitle
-      mb={1.5}
-      endContent={
-        // Only render the XP widget once progress has loaded — otherwise it
-        // would flash a placeholder 0 and then jump to the real number.
-        !xpReady ? undefined : (
-          <Box
-            role="button"
-            tabIndex={0}
-            aria-label={t('openShopAriaLabel')}
-            onClick={onShopClick}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onShopClick();
-              }
-            }}
-            sx={{
-              minWidth: { sm: 220 },
-              width: { xs: '100%', sm: 260 },
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              '& *': { pointerEvents: 'none' },
-              '&:hover': { opacity: 0.85 },
-              '@keyframes shimmer': {
-                '0%': { backgroundPosition: '-200% 0' },
-                '100%': { backgroundPosition: '200% 0' },
-              },
-            }}
-          >
-            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: brand[700] }}>
-                {t('xpProgressLabel')}
-              </Typography>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: brand[600] }}>
-                {current} / {needed}
-              </Typography>
-            </Stack>
-            <LinearProgress
-              variant="determinate"
-              value={pct}
-              sx={{
-                height: 12,
-                borderRadius: 6,
-                bgcolor: alpha(brand[200], 0.5),
-                '& .MuiLinearProgress-bar': {
-                  borderRadius: 6,
-                  background: `linear-gradient(90deg, ${brand[400]}, ${accent[400]}, ${brand[300]}, ${accent[400]}, ${brand[400]})`,
-                  backgroundSize: '200% 100%',
-                  animation: 'shimmer 3s ease-in-out infinite',
-                  transition: 'width 0.6s ease',
-                },
-              }}
-            />
-            <Typography
-              variant="caption"
-              sx={{ color: brand[600], fontWeight: 600, mt: 0.5, display: 'block' }}
-            >
-              {t('xpToLevel', { xp: needed - current, level: level + 1 })}
-            </Typography>
-
-            <Box sx={{ mt: 1, pt: 1, borderTop: `1px solid ${alpha(brand[300], 0.25)}` }}>
-              <Stack direction="row" alignItems="center" spacing={0.5} mb={nextItem ? 0.5 : 0}>
-                <AutoAwesomeIcon sx={{ fontSize: '0.85rem', color: accent[500] }} />
-                <Typography variant="caption" sx={{ fontWeight: 800, color: accent[600] }}>
-                  {t('xpToSpend', { xp: spendableXp.toLocaleString() })}
-                </Typography>
-                <StorefrontIcon sx={{ fontSize: '0.85rem', color: brand[500], ml: 'auto' }} />
-              </Stack>
-              {nextItem && xpNeeded > 0 && (
-                <Typography
-                  variant="caption"
-                  sx={{ color: brand[500], fontWeight: 600, fontSize: '0.7rem', display: 'block' }}
-                >
-                  {nextItem.emoji} {nextItem.name} —{' '}
-                  {t('moreXp', { xp: xpNeeded.toLocaleString() })}
-                </Typography>
-              )}
-            </Box>
-          </Box>
-        )
-      }
-    ></PageHeader>
-  );
+  t: ReturnType<typeof useTranslations<'Home.greeting'>>,
+): React.ReactNode {
+  return t.rich(resolveTimeOfDay(new Date()), {
+    name,
+    n: (chunks) => (
+      <Box component="span" sx={{ whiteSpace: 'nowrap' }}>
+        {chunks}
+      </Box>
+    ),
+  });
 }
 
 function DashboardSection({
@@ -218,6 +115,7 @@ function DashboardSection({
   onToggle,
   title,
   titleAction,
+  panel,
   children,
 }: {
   id: string;
@@ -225,6 +123,8 @@ function DashboardSection({
   onToggle: () => void;
   title?: React.ReactNode;
   titleAction?: React.ReactNode;
+  /** Wrap the section in a raised white surface (see PANEL_SECTIONS). */
+  panel?: boolean;
   children: React.ReactNode;
 }) {
   const t = useTranslations('Home.dashboardSection');
@@ -236,6 +136,16 @@ function DashboardSection({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
+        ...(panel &&
+          !editMode && {
+            borderRadius: 4,
+            px: { xs: 2, sm: 2.5 },
+            pt: 2,
+            pb: 0.5,
+            bgcolor: 'background.paper',
+            border: (t) => `1.5px solid ${alpha(t.palette.brand[300], 0.35)}`,
+            boxShadow: (t) => `0 10px 30px ${alpha(t.palette.brand[400], 0.12)}`,
+          }),
         ...(editMode && {
           borderRadius: 1,
           border: (t: { palette: { brand: Record<number, string> } }) =>
@@ -253,7 +163,7 @@ function DashboardSection({
           alignItems="center"
           sx={{
             flexShrink: 0,
-            mb: 1,
+            mb: 0.25,
             ...(editMode && {
               cursor: 'grab',
               '&:active': { cursor: 'grabbing' },
@@ -273,7 +183,7 @@ function DashboardSection({
           <Box sx={{ flex: 1, minWidth: 0 }}>
             {title ?? (
               <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800 }} noWrap>
-                {meta.emoji} {meta.label}
+                {meta.label}
               </Typography>
             )}
           </Box>
@@ -306,8 +216,8 @@ function DashboardSection({
           flex: 1,
           overflowY: 'auto',
           overflowX: 'hidden',
-          pt: 2,
-          pb: 2,
+          pt: 0.75,
+          pb: 1.5,
           px: 0.5,
           mx: -0.5,
           pointerEvents: editMode ? 'none' : 'auto',
@@ -334,6 +244,27 @@ function DashboardSection({
   );
 }
 
+/**
+ * Sections that get a raised white surface behind them. `decks`, `speeches` and
+ * `groups` already render their own card/row frame, so panelling them would
+ * double-frame every tile; `todo` draws its own panel too.
+ */
+const PANEL_SECTIONS = new Set<SectionKey>(['leaderboard', 'assignments']);
+
+/** Fixed (not fractional) width so a deck tile keeps a card's proportions at any column width. */
+const DECK_TILE_WIDTH = 172;
+
+/** Narrowest a group or speech row may get before the list drops to one column. */
+const LIST_COLUMN_MIN_WIDTH = 320;
+
+/** Reflowing column track shared by the group and speech lists. */
+const listGridSx = {
+  display: 'grid',
+  gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${LIST_COLUMN_MIN_WIDTH}px), 1fr))`,
+  gap: 1.25,
+  alignItems: 'stretch',
+} as const;
+
 /** Placeholder for the dashboard grid shown until it's mounted + measured. */
 function DashboardGridSkeleton() {
   return (
@@ -357,6 +288,7 @@ function DashboardGridSkeleton() {
 export default function Home({ initialData }: { initialData?: HomeData }) {
   const t = useTranslations('Home');
   const tCommon = useTranslations('Common');
+  const tGreeting = useTranslations('Home.greeting');
   const {
     user,
     displayName,
@@ -369,29 +301,36 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
     homeSections.decks,
     initialData?.decks ?? undefined,
   );
-  const { progress, spendableXp, addBonusXp } = useProgressCtx();
-  const { ohanashikais } = useOhanashikais(
+  const { progress, addBonusXp } = useProgressCtx();
+  const { ohanashikais, pinOhanashikai, createOhanashikai } = useOhanashikais(
     homeSections.speeches,
     initialData?.ohanashikais ?? undefined,
   );
-  const { purchases } = useShopCtx();
   const { assignments } = useAssignments(undefined, homeSections.assignments);
-  const { groups } = useGroups(homeSections.groups);
-  const { members: groupMembers } = useGroupMembers(undefined, homeSections.groups);
+  const { groups, loading: groupsLoading, createGroup, pinGroup } = useGroups(homeSections.groups);
   const { leaderboard } = useGroupLeaderboard(undefined, homeSections.leaderboard);
   const router = useRouter();
-  const ownedItemKeys = purchases.map((p) => p.item_key);
 
   const pendingAssignments = assignments.filter((a) => !a.completed_at);
   const [shareDeckId, setShareDeckId] = useState<string | null>(null);
   const [shareDeckName, setShareDeckName] = useState('');
   const [editMode, setEditMode] = useState(false);
   const [customizeOpen, setCustomizeOpen] = useState(false);
+  const [createGroupOpen, setCreateGroupOpen] = useState(false);
+  const [createDeckOpen, setCreateDeckOpen] = useState(false);
+  const [createSpeechOpen, setCreateSpeechOpen] = useState(false);
 
   // Defer each dynamically-imported dialog's chunk until its first open, then
   // keep it mounted so close transitions and internal state survive.
   const shareEverOpened = useHasOpened(shareDeckId !== null);
   const customizeEverOpened = useHasOpened(customizeOpen);
+  const createGroupEverOpened = useHasOpened(createGroupOpen);
+  const createDeckEverOpened = useHasOpened(createDeckOpen);
+  const createSpeechEverOpened = useHasOpened(createSpeechOpen);
+
+  // `groups.length` (not pinnedGroups.length) picks the empty state below, so it
+  // can tell "no groups yet" apart from "none pinned".
+  const pinnedGroups = useMemo(() => groups.filter((g) => g.pinned), [groups]);
 
   const username = displayName ?? user?.email?.split('@')[0] ?? 'there';
   const isOwner = (deck: { ownerId: string }) => deck.ownerId === user?.id;
@@ -496,16 +435,23 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
     // TodoList renders its own header internally
     if (key === 'todo') return undefined;
     const meta = SECTION_META[key];
+    // meta.emoji is intentionally unused here — it's still shown in the customize dialog.
     return (
       <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800 }} noWrap>
-        {meta.emoji} {meta.label}
+        {meta.label}
       </Typography>
     );
   };
 
   const sectionTitleAction = (key: SectionKey): React.ReactNode | undefined => {
     const navMap: Partial<Record<SectionKey, { label: string; href: string }>> = {
-      groups: { label: t('sectionNav.allGroups'), href: '/group' },
+      groups: {
+        label:
+          groups.length > 0
+            ? t('sectionNav.allGroupsCount', { count: groups.length })
+            : t('sectionNav.allGroups'),
+        href: '/group',
+      },
       decks: { label: t('sectionNav.allDecks'), href: '/decks' },
       speeches: { label: t('sectionNav.allSpeeches'), href: '/ohanashikai' },
     };
@@ -536,29 +482,47 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
         );
 
       case 'groups':
+        // Without a loading state, the first paint is the empty state — "create
+        // a group" shown to someone who already has four, until the fetch lands.
+        if (groupsLoading && groups.length === 0) {
+          return (
+            <Box sx={listGridSx} aria-busy aria-label={t('groupsSection.loading')}>
+              {[0, 1, 2].map((i) => (
+                <Skeleton
+                  key={i}
+                  variant="rounded"
+                  height={92}
+                  sx={{
+                    borderRadius: (th) => th.radii.lg,
+                    bgcolor: (th) => alpha(th.palette.brand[100], 0.6),
+                  }}
+                />
+              ))}
+            </Box>
+          );
+        }
         return (
-          <>
-            {groups.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">
-                {t('groupsSection.emptyCreate')}
+          <Stack spacing={1.25}>
+            {pinnedGroups.length === 0 && (
+              <Typography variant="body2" color="text.secondary" sx={{ px: 0.5 }}>
+                {groups.length === 0 ? t('groupsSection.emptyCreate') : t('groupsSection.emptyPin')}
               </Typography>
-            ) : (
-              <Stack spacing={1.5}>
-                {(groups.filter((g) => g.pinned).length > 0
-                  ? groups.filter((g) => g.pinned)
-                  : groups.slice(0, 1)
-                ).map((group) => (
-                  <GroupHomeWidget
-                    key={group.id}
-                    members={groupMembers.filter(() => true)}
-                    groupName={group.name}
-                    groupEmoji={group.emoji ?? undefined}
-                    onViewDashboard={() => router.push(`/group/${group.id}`)}
-                  />
-                ))}
-              </Stack>
             )}
-          </>
+            <Box sx={listGridSx}>
+              {pinnedGroups.map((group) => (
+                <GroupRow
+                  key={group.id}
+                  group={group}
+                  onOpen={(id) => router.push(`/group/${id}`)}
+                  onPin={pinGroup}
+                />
+              ))}
+              <DashedAddRow
+                label={t('groupsSection.createGroup')}
+                onClick={() => setCreateGroupOpen(true)}
+              />
+            </Box>
+          </Stack>
         );
 
       case 'leaderboard':
@@ -597,59 +561,39 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
 
       case 'decks':
         return (
-          <>
-            {loading && decks.length === 0 ? (
-              <Grid container spacing={1.5}>
-                {[0, 1, 2].map((i) => (
-                  <Grid size={{ xs: 6, sm: 4 }} key={i}>
+          <Stack spacing={1.25}>
+            {!loading && pinnedDecks.length === 0 && (
+              <Typography variant="body2" color="text.secondary" sx={{ px: 0.5 }}>
+                {totalDeckCount === 0
+                  ? t('decksSection.emptyCreateFirstSub')
+                  : t('decksSection.emptyPinSub')}
+              </Typography>
+            )}
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: `repeat(auto-fill, minmax(0, ${DECK_TILE_WIDTH}px))`,
+                justifyContent: 'start',
+                gap: 1.5,
+              }}
+            >
+              {loading && decks.length === 0
+                ? [0, 1].map((i) => (
                     <Skeleton
+                      key={i}
                       variant="rounded"
-                      height={150}
-                      sx={{ borderRadius: 3, bgcolor: (t) => alpha(t.palette.brand[100], 0.6) }}
+                      height={DECK_TILE_MIN_HEIGHT}
+                      sx={{
+                        borderRadius: (th) => th.radii.card,
+                        bgcolor: (th) => alpha(th.palette.brand[100], 0.6),
+                      }}
                     />
-                  </Grid>
-                ))}
-              </Grid>
-            ) : pinnedDecks.length === 0 ? (
-              <Box
-                onClick={() => router.push('/decks')}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  p: 2,
-                  borderRadius: 3,
-                  border: (t) => `1.5px dashed ${alpha(t.palette.brand[300], 0.4)}`,
-                  bgcolor: (t) => alpha(t.palette.brand[50], 0.7),
-                  cursor: 'pointer',
-                  transition: 'all 0.18s ease',
-                  '&:hover': {
-                    bgcolor: (t) => alpha(t.palette.brand[100], 0.9),
-                    borderColor: (t) => alpha(t.palette.brand[400], 0.55),
-                  },
-                }}
-              >
-                <Typography sx={{ fontSize: '1.8rem', flexShrink: 0 }}>📌</Typography>
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                    {totalDeckCount === 0
-                      ? t('decksSection.emptyCreateFirstTitle')
-                      : t('decksSection.emptyPinTitle')}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {totalDeckCount === 0
-                      ? t('decksSection.emptyCreateFirstSub')
-                      : t('decksSection.emptyPinSub')}
-                  </Typography>
-                </Box>
-              </Box>
-            ) : (
-              <Grid container spacing={1.5}>
-                {pinnedDecks.map((deck) => {
-                  const owned = isOwner(deck);
-                  return (
-                    <Grid size={{ xs: 6, sm: 4 }} key={deck.id}>
-                      <DeckCard
+                  ))
+                : pinnedDecks.map((deck) => {
+                    const owned = isOwner(deck);
+                    return (
+                      <DeckTile
+                        key={deck.id}
                         deck={deck}
                         onOpen={(id) => router.push(`/deck/${id}?from=home`)}
                         onDelete={owned ? deleteDeck : () => {}}
@@ -665,100 +609,45 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                         onEmojiChange={owned ? updateDeckEmoji : undefined}
                         isOwner={owned}
                       />
-                    </Grid>
-                  );
-                })}
-              </Grid>
-            )}
-          </>
+                    );
+                  })}
+              {!(loading && decks.length === 0) && (
+                <DashedAddRow
+                  label={t('decksSection.createDeck')}
+                  onClick={() => setCreateDeckOpen(true)}
+                  cardSlot
+                  minHeight={DECK_TILE_MIN_HEIGHT}
+                />
+              )}
+            </Box>
+          </Stack>
         );
 
       case 'speeches':
         return (
-          <>
-            {pinnedSpeeches.length === 0 ? (
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  p: 2,
-                  borderRadius: 3,
-                  border: (t) => `1.5px dashed ${alpha(t.palette.brand[300], 0.4)}`,
-                  bgcolor: (t) => alpha(t.palette.brand[50], 0.7),
-                  cursor: 'pointer',
-                  transition: 'all 0.18s ease',
-                  '&:hover': {
-                    bgcolor: (t) => alpha(t.palette.brand[100], 0.9),
-                    borderColor: (t) => alpha(t.palette.brand[400], 0.55),
-                  },
-                }}
-                onClick={() => router.push('/ohanashikai')}
-              >
-                <Typography sx={{ fontSize: '1.8rem', flexShrink: 0 }}>🌸</Typography>
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                    {totalSpeechCount === 0
-                      ? t('speechesSection.emptyCreateFirstTitle')
-                      : t('speechesSection.emptyPinTitle')}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {totalSpeechCount === 0
-                      ? t('speechesSection.emptyCreateFirstSub')
-                      : t('speechesSection.emptyPinSub')}
-                  </Typography>
-                </Box>
-              </Box>
-            ) : (
-              <Stack spacing={1}>
-                {pinnedSpeeches.map((item, i) => {
-                  const cardEmojis = ['🌸', '✨', '🌟', '💫', '🎀'];
-                  return (
-                    <Box
-                      key={item.id}
-                      onClick={() => router.push(`/ohanashikai/${item.id}?from=home`)}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1.5,
-                        p: 1.5,
-                        borderRadius: 3,
-                        bgcolor: 'background.paper',
-                        border: (t) => `1.5px solid ${alpha(t.palette.brand[300], 0.3)}`,
-                        boxShadow: (t) => `0 2px 10px ${alpha(t.palette.brand[300], 0.1)}`,
-                        transition: 'all 0.18s ease',
-                        cursor: 'pointer',
-                        '&:hover': {
-                          boxShadow: (t) => `0 5px 20px ${alpha(t.palette.brand[300], 0.2)}`,
-                          transform: 'translateY(-1px)',
-                        },
-                      }}
-                    >
-                      <Typography sx={{ fontSize: '1.2rem', flexShrink: 0 }}>
-                        {cardEmojis[i % cardEmojis.length]}
-                      </Typography>
-                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                        <Typography
-                          variant="body2"
-                          sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.2 }}
-                          noWrap
-                        >
-                          {item.title}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ fontSize: '0.65rem' }}
-                        >
-                          {t('speechesSection.lineCount', { count: item.lineCount })}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  );
-                })}
-              </Stack>
+          <Stack spacing={1.25}>
+            {pinnedSpeeches.length === 0 && (
+              <Typography variant="body2" color="text.secondary" sx={{ px: 0.5 }}>
+                {totalSpeechCount === 0
+                  ? t('speechesSection.emptyCreateFirstSub')
+                  : t('speechesSection.emptyPinSub')}
+              </Typography>
             )}
-          </>
+            <Box sx={listGridSx}>
+              {pinnedSpeeches.map((item) => (
+                <SpeechRow
+                  key={item.id}
+                  speech={item}
+                  onOpen={(id) => router.push(`/ohanashikai/${id}?from=home`)}
+                  onPin={pinOhanashikai}
+                />
+              ))}
+              <DashedAddRow
+                label={t('speechesSection.writeSpeech')}
+                onClick={() => setCreateSpeechOpen(true)}
+              />
+            </Box>
+          </Stack>
         );
 
       default:
@@ -779,22 +668,41 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
         py: { xs: 3, sm: 5 },
       }}
     >
-      {/* Welcome banner — always shown so the greeting/header is present even
-          before (or if) XP progress finishes loading. Falls back to zeroed XP. */}
-      <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
-        <WelcomeBanner
-          username={username}
-          level={progress?.level ?? 0}
-          totalXp={progress?.total_xp ?? 0}
-          spendableXp={spendableXp}
-          ownedItemKeys={ownedItemKeys}
-          onShopClick={() => router.push('/shop')}
-          xpReady={progress != null}
-        />
-        {/* The single home entry point to Smart Review — cross-deck due cards. */}
-        <Box sx={{ mt: 1.5, mb: 1 }}>
-          <ReviewTile />
-        </Box>
+      {/* Hero: the mascot's banner for the current time of day carries the
+          greeting, today's date in Japanese and the day's one call to action,
+          with the XP card floated over its right edge (stacking underneath on
+          narrower screens). The hero renders immediately — only the XP card
+          waits on progress, and it holds its space with a skeleton so nothing
+          below it jumps when the number lands.
+
+          Full content width, flush with the dashboard columns below it. Boxed to
+          the narrower header width it read as an inset thumbnail on a wide
+          screen, and the banner's own proportions meant a shorter one too. */}
+      <Box sx={{ mb: { xs: 1.5, sm: 2 } }}>
+        <GreetingHero
+          greeting={getGreeting(username, tGreeting)}
+          aside={
+            progress ? (
+              <XpProgressCard
+                level={progress.level}
+                totalXp={progress.total_xp}
+                onShopClick={() => router.push('/shop')}
+              />
+            ) : (
+              <Skeleton
+                variant="rounded"
+                height={94}
+                sx={{
+                  borderRadius: (t) => t.radii.md,
+                  bgcolor: (t) => alpha(t.palette.brand[100], 0.6),
+                }}
+              />
+            )
+          }
+        >
+          {/* The single home entry point to Smart Review — cross-deck due cards. */}
+          <ReviewTile onDark compact />
+        </GreetingHero>
       </Box>
 
       {/* ── Dashboard grid ── */}
@@ -826,7 +734,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
           },
         }}
       />
-      <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ pt: 0, pb: 2 }}>
+      <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ pt: 0, pb: 1 }}>
         {editMode && (
           <Button
             size="small"
@@ -896,6 +804,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                 onToggle={() => handleToggleSection(key)}
                 title={sectionTitle(key)}
                 titleAction={sectionTitleAction(key)}
+                panel={PANEL_SECTIONS.has(key)}
               >
                 {renderSectionContent(key)}
               </DashboardSection>
@@ -948,6 +857,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                   onToggle={() => handleToggleSection(key)}
                   title={sectionTitle(key)}
                   titleAction={sectionTitleAction(key)}
+                  panel={PANEL_SECTIONS.has(key)}
                 >
                   {renderSectionContent(key)}
                 </DashboardSection>
@@ -1024,6 +934,26 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
 
       {customizeEverOpened && (
         <CustomizeHomeDialog open={customizeOpen} onClose={() => setCustomizeOpen(false)} />
+      )}
+
+      {createGroupEverOpened && (
+        <CreateGroupDialog
+          open={createGroupOpen}
+          onClose={() => setCreateGroupOpen(false)}
+          onCreate={createGroup}
+        />
+      )}
+
+      {createDeckEverOpened && (
+        <CreateDeckDialog open={createDeckOpen} onClose={() => setCreateDeckOpen(false)} />
+      )}
+
+      {createSpeechEverOpened && (
+        <CreateSpeechDialog
+          open={createSpeechOpen}
+          onClose={() => setCreateSpeechOpen(false)}
+          onCreate={createOhanashikai}
+        />
       )}
     </Box>
   );

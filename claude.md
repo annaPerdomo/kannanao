@@ -167,6 +167,12 @@ GroupOverview, MemberCard, MemberDetail, LeaderboardWidget, ActivityFeed, Create
 - `/group` — organizer dashboard (members, leaderboard, feed, assignments)
 - `/join/[code]` — public join page for QR invite flow
 
+## Chat Stickers
+
+Sticker messages are **plain text, not images**. A sticker is sent as a keyword token (`:wave:`) in `direct_messages.message`, and the client swaps in the artwork at render time — no upload, no storage, no extra column. `src/lib/stickers.ts` owns the registry (`STICKERS`), the token helpers, and `parseSticker()`, which only matches when a message's _entire_ text is one token so a keyword inside a sentence stays text.
+
+Every surface that shows message text must run it through `parseSticker()` first: `MessageBubble` (renders the art), `ConversationList` (preview), and `/api/messages` (push notification body). Artwork lives in `public/stickers/<id>.webp`, generated from `promo/tango-stickers.png` by `scripts/extract-stickers.py` (local-only, not tracked in git — see `scripts/` in `.gitignore`); those files are excluded from the service-worker precache via `publicExcludes` in `next.config.ts`. Adding a sticker means: new entry in `STICKERS`, a name under `Messages.stickerNames` in **both** `en.json` and `ja.json`, and a re-run of the extraction script.
+
 ## Hooks Pattern
 
 Hooks in `src/hooks/` follow this pattern:

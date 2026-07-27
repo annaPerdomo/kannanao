@@ -14,9 +14,9 @@ import LandingContent from '../LandingContent';
 // resolved outside the intl provider (see the comment below), so nothing here
 // can read the catalog. The terms that must match the in-app copy are the
 // practice-mode names (穴うめ / 当ててみよう) and ランキング — never リーダーボード.
-const TITLE = `${APP_NAME} — 授業で使える日本語練習アプリ`;
+const TITLE = `${APP_NAME} — 教える人と学ぶ人のための日本語練習アプリ`;
 const DESCRIPTION =
-  'Tangodachiは、教室のための日本語練習アプリです。先生はデッキを作り、しめ切りつきで課題を出し、一人ひとりの進み具合を確認できます。生徒は授業で学んだことを、毎日の復習・練習モード・ゲーム・小テスト・AIフラッシュカードで、もっとたくさん練習できます。';
+  'Tangodachiは、教える人と学ぶ人のための日本語練習アプリです。先生はAIで数分でデッキを作り、しめ切りつきで課題を出し、一人ひとりの進み具合を確認できます。学ぶ人は、毎日の復習・間隔反復・ゲーム・小テストで、学んだことをほんとうに身につけられます。';
 
 // Static and generate-free: a generateMetadata() would run per request and take
 // the page's static prerender with it. The copy is written here rather than
@@ -46,10 +46,10 @@ export const metadata: Metadata = {
     locale: 'ja_JP',
     images: [
       {
-        url: `${APP_URL}/og-image.jpg`,
+        url: `${APP_URL}/og-image.png`,
         width: 1200,
         height: 630,
-        type: 'image/jpeg',
+        type: 'image/png',
       },
     ],
   },
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: TITLE,
     description: DESCRIPTION,
-    images: [`${APP_URL}/og-image.jpg`],
+    images: [`${APP_URL}/og-image.png`],
   },
 };
 
@@ -75,7 +75,7 @@ export default function LandingJaRoute() {
     <StaticIntlProvider locale={LOCALE} messages={messages}>
       <Providers initialAuth={{ session: null, profile: null }} locale={LOCALE}>
         <AppBackground lang={LOCALE}>
-          <AppShell initialUnreadCount={0}>
+          <AppShell initialUnreadCount={0} showFooter={false}>
             <LandingContent locale={LOCALE} />
           </AppShell>
         </AppBackground>

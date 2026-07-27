@@ -1,5 +1,4 @@
 'use client';
-import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -21,31 +20,35 @@ export function DayProgress({ completedCount, totalCount }: DayProgressProps) {
 
   if (totalCount === 0) return null;
 
+  // One line: what a tick is worth, the bar, and how far the day has got.
   return (
-    <Box>
-      <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1} mb={0.75}>
-        <Typography sx={{ color: 'text.disabled', fontWeight: 700, fontSize: '0.68rem' }}>
-          {progress === 100 ? t('allDone') : t('xpEach', { xp: XP_PER_TODO })}
-        </Typography>
-        <Typography sx={{ color: brand[700], fontWeight: 800, fontSize: '0.72rem' }}>
-          {progress === 100 ? '🎊' : '🌟'}{' '}
-          {t('doneCount', { completed: completedCount, total: totalCount })}
-        </Typography>
-      </Stack>
+    <Stack direction="row" alignItems="center" spacing={1.25}>
+      <Typography
+        sx={{ color: 'text.secondary', fontWeight: 800, fontSize: '0.72rem', whiteSpace: 'nowrap' }}
+      >
+        {progress === 100 ? t('allDone') : t('xpEach', { xp: XP_PER_TODO })}
+      </Typography>
       <LinearProgress
         variant="determinate"
         value={progress}
         sx={{
-          height: 10,
-          borderRadius: 5,
+          flex: 1,
+          minWidth: 40,
+          height: 8,
+          borderRadius: (theme) => theme.radii.pill,
           bgcolor: alpha(brand[200], 0.25),
           '& .MuiLinearProgress-bar': {
-            background: `linear-gradient(90deg, ${brand[400]} 0%, ${brand[500]} 40%, ${accent[400]} 100%)`,
-            borderRadius: 5,
+            background: `linear-gradient(90deg, ${brand[300]} 0%, ${brand[500]} 50%, ${accent[400]} 100%)`,
+            borderRadius: (theme) => theme.radii.pill,
             transition: 'width 0.6s ease',
           },
         }}
       />
-    </Box>
+      <Typography
+        sx={{ color: brand[700], fontWeight: 800, fontSize: '0.72rem', whiteSpace: 'nowrap' }}
+      >
+        {t('doneCount', { completed: completedCount, total: totalCount })}
+      </Typography>
+    </Stack>
   );
 }

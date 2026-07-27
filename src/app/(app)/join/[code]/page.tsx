@@ -20,7 +20,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { readLocaleCookie } from '@/i18n/localeCookie';
-import { APP_NAME_WITH_EMOJI } from '@/lib/brand';
+import { APP_NAME } from '@/lib/brand';
 import { dbRecordLogin, sb } from '@/lib/supabase';
 
 export default function JoinPage() {
@@ -209,16 +209,12 @@ export default function JoinPage() {
           })}
         >
           <CardContent sx={{ p: 4 }}>
-            <Typography
-              variant="h5"
-              sx={{
-                fontFamily: (t) => t.fonts.display,
-                color: 'primary.dark',
-                mb: 2,
-              }}
-            >
-              {APP_NAME_WITH_EMOJI}
-            </Typography>
+            <Box
+              component="img"
+              src="/brand/logo-lockup.png"
+              alt={APP_NAME}
+              sx={{ display: 'block', height: 44, width: 'auto', mx: 'auto', mb: 2 }}
+            />
             <Typography sx={{ fontSize: '3rem', mb: 1 }}>😔</Typography>
             <Typography
               sx={{
@@ -272,17 +268,12 @@ export default function JoinPage() {
         })}
       >
         <CardContent sx={{ p: 4 }}>
-          <Typography
-            variant="h5"
-            sx={{
-              fontFamily: (t) => t.fonts.display,
-              color: 'primary.dark',
-              mb: 1,
-              textAlign: 'center',
-            }}
-          >
-            {APP_NAME_WITH_EMOJI}
-          </Typography>
+          <Box
+            component="img"
+            src="/brand/logo-lockup.png"
+            alt={APP_NAME}
+            sx={{ display: 'block', height: 44, width: 'auto', mx: 'auto', mb: 1 }}
+          />
 
           <Typography
             sx={{

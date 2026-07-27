@@ -1,34 +1,40 @@
 'use client';
 
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesomeRounded';
+import FlightIcon from '@mui/icons-material/FlightRounded';
+import PsychologyIcon from '@mui/icons-material/PsychologyRounded';
+import QuizIcon from '@mui/icons-material/QuizRounded';
+import ReplayIcon from '@mui/icons-material/ReplayRounded';
+import SchoolIcon from '@mui/icons-material/SchoolRounded';
+import SportsEsportsIcon from '@mui/icons-material/SportsEsportsRounded';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
-import { alpha, ThemeProvider } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
-import { Flashcard } from '@/components/Flashcard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInView } from '@/hooks/useInView';
-import { amber, createAppTheme, pink, purple, sky } from '@/theme';
+import { amber, pink, purple } from '@/theme';
 
-import { Blob } from './Blob';
-import { SAKURA_CARD } from './demoData';
-import { SakuraFallEffect } from './SakuraFallEffect';
+import { Blob } from '../Blob';
+import { SakuraFallEffect } from '../SakuraFallEffect';
+import { HeroScene } from './HeroScene';
 
-const sakuraTheme = createAppTheme('sakura');
-
-const TAG_KEYS = [
-  'classrooms',
-  'dailyReview',
-  'aiPowered',
-  'quizzes',
-  'travelMode',
-  'gamified',
+const TAGS = [
+  { key: 'aiPowered', Icon: AutoAwesomeIcon },
+  { key: 'spacedRepetition', Icon: PsychologyIcon },
+  { key: 'dailyReview', Icon: ReplayIcon },
+  { key: 'quizzes', Icon: QuizIcon },
+  { key: 'travelMode', Icon: FlightIcon },
+  { key: 'gamified', Icon: SportsEsportsIcon },
 ] as const;
+
+const scrollTo = (id: string) =>
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 
 export function HeroSection() {
   const router = useRouter();
@@ -92,7 +98,7 @@ export function HeroSection() {
           display: 'flex',
           flexDirection: { xs: 'column', lg: 'row' },
           alignItems: 'center',
-          gap: { xs: 7, lg: 10 },
+          gap: { xs: 7, lg: 8 },
           position: 'relative',
           zIndex: 1,
         }}
@@ -100,6 +106,7 @@ export function HeroSection() {
         <Box
           sx={{
             flex: 1,
+            minWidth: 0,
             textAlign: { xs: 'center', lg: 'left' },
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateX(0)' : 'translateX(-48px)',
@@ -129,11 +136,10 @@ export function HeroSection() {
           <Typography
             component="h1"
             sx={{
-              fontFamily: (t) => t.fonts.display,
-              fontSize: { xs: '3.4rem', sm: '4.2rem', lg: '5.2rem' },
-              lineHeight: 0.98,
+              fontSize: { xs: '3rem', sm: '3.9rem', lg: '4.7rem' },
+              lineHeight: 1.02,
               mb: 2.5,
-              background: `linear-gradient(135deg, ${pink[600]} 0%, ${purple[500]} 50%, ${sky[500]} 100%)`,
+              background: `linear-gradient(120deg, ${purple[600]} 0%, ${purple[500]} 30%, ${pink[500]} 70%, ${pink[600]} 100%)`,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -144,11 +150,11 @@ export function HeroSection() {
 
           <Typography
             sx={{
-              fontSize: { xs: '1rem', sm: '1.15rem' },
+              fontSize: { xs: '1rem', sm: '1.1rem' },
               color: alpha(pink[700], 0.72),
-              lineHeight: 1.8,
+              lineHeight: 1.75,
               mb: 4,
-              maxWidth: 520,
+              maxWidth: 500,
               mx: { xs: 'auto', lg: 0 },
             }}
           >
@@ -167,7 +173,7 @@ export function HeroSection() {
                 size="large"
                 onClick={() => router.push('/')}
                 sx={{
-                  fontFamily: (t) => t.fonts.display,
+                  fontFamily: (theme) => theme.fonts.display,
                   fontSize: '1.05rem',
                   textTransform: 'none',
                   borderRadius: 8,
@@ -188,11 +194,32 @@ export function HeroSection() {
                 <Button
                   variant="contained"
                   size="large"
-                  onClick={() =>
-                    document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' })
-                  }
+                  onClick={() => scrollTo('for-educators')}
+                  startIcon={<SchoolIcon />}
                   sx={{
-                    fontFamily: (t) => t.fonts.display,
+                    fontFamily: (theme) => theme.fonts.display,
+                    fontSize: '1.05rem',
+                    textTransform: 'none',
+                    borderRadius: 8,
+                    px: 4,
+                    py: 1.5,
+                    background: `linear-gradient(135deg, ${purple[400]} 0%, ${purple[600]} 100%)`,
+                    boxShadow: `0 8px 28px ${alpha(purple[500], 0.42)}`,
+                    '&:hover': {
+                      transform: 'translateY(-3px)',
+                      boxShadow: `0 14px 40px ${alpha(purple[500], 0.52)}`,
+                    },
+                  }}
+                >
+                  {t('educatorButton')}
+                </Button>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => scrollTo('for-learners')}
+                  startIcon={<SportsEsportsIcon />}
+                  sx={{
+                    fontFamily: (theme) => theme.fonts.display,
                     fontSize: '1.05rem',
                     textTransform: 'none',
                     borderRadius: 8,
@@ -206,29 +233,28 @@ export function HeroSection() {
                     },
                   }}
                 >
-                  {t('waitlistButton')}
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="large"
-                  onClick={() => router.push('/login')}
-                  sx={{
-                    fontFamily: (t) => t.fonts.display,
-                    fontSize: '1.05rem',
-                    textTransform: 'none',
-                    borderRadius: 8,
-                    px: 3.5,
-                    py: 1.5,
-                    borderColor: alpha(pink[400], 0.6),
-                    color: pink[700],
-                    '&:hover': { borderColor: pink[500], bgcolor: alpha(pink[100], 0.6) },
-                  }}
-                >
-                  {t('signInButton')}
+                  {t('learnerButton')}
                 </Button>
               </>
             )}
           </Stack>
+
+          {!session && (
+            <Button
+              onClick={() => scrollTo('waitlist')}
+              sx={{
+                mb: 3,
+                mt: -1.5,
+                textTransform: 'none',
+                fontSize: '0.88rem',
+                fontWeight: 700,
+                color: pink[600],
+                '&:hover': { bgcolor: alpha(pink[100], 0.5) },
+              }}
+            >
+              {t('waitlistLink')}
+            </Button>
+          )}
 
           <Stack
             direction="row"
@@ -237,49 +263,42 @@ export function HeroSection() {
             useFlexGap
             justifyContent={{ xs: 'center', lg: 'flex-start' }}
           >
-            {TAG_KEYS.map((key) => (
+            {TAGS.map(({ key, Icon }) => (
               <Chip
                 key={key}
+                icon={
+                  <Icon sx={{ fontSize: '0.95rem !important', color: `${pink[500]} !important` }} />
+                }
                 label={t(`tags.${key}`)}
                 size="small"
                 sx={{
                   bgcolor: alpha(pink[50], 0.95),
                   color: pink[700],
+                  fontWeight: 600,
                   fontSize: '0.72rem',
                   border: `1px solid ${alpha(pink[300], 0.55)}`,
                   borderRadius: 4,
+                  pl: 0.5,
                 }}
               />
             ))}
           </Stack>
         </Box>
 
+        {/* The whole product in one glance: a deck the AI wrote, the card a
+            learner studies, and the progress both sides get back. */}
         <Box
           sx={{
-            flex: '0 0 auto',
-            width: { xs: '100%', sm: 390, lg: 430 },
-            position: 'relative',
+            flex: { lg: '0 0 520px' },
+            width: '100%',
+            maxWidth: 520,
             opacity: inView ? 1 : 0,
             transform: inView ? 'translateX(0)' : 'translateX(48px)',
             transition:
               'opacity 0.9s cubic-bezier(0.16,1,0.3,1) 0.18s, transform 0.9s cubic-bezier(0.16,1,0.3,1) 0.18s',
           }}
         >
-          <Box
-            sx={{
-              position: 'absolute',
-              inset: '8% 4%',
-              borderRadius: 8,
-              background: `radial-gradient(ellipse at center, ${alpha(pink[400], 0.38)} 0%, transparent 70%)`,
-              filter: 'blur(36px)',
-              pointerEvents: 'none',
-            }}
-          />
-          <Box sx={{ animation: 'floatCard 7s ease-in-out infinite', position: 'relative' }}>
-            <ThemeProvider theme={sakuraTheme}>
-              <Flashcard card={SAKURA_CARD} height={450} />
-            </ThemeProvider>
-          </Box>
+          <HeroScene inView={inView} />
         </Box>
       </Box>
 
@@ -288,7 +307,9 @@ export function HeroSection() {
           position: 'absolute',
           bottom: 28,
           left: '50%',
-          display: 'flex',
+          // Hidden on phones, where the scene already fills the fold and the cue
+          // lands on top of it.
+          display: { xs: 'none', md: 'flex' },
           flexDirection: 'column',
           alignItems: 'center',
           gap: 0.75,

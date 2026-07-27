@@ -45,6 +45,7 @@ interface TodoListProps {
 export function TodoList({ onXpEarned, initialTodos, initialEntryTypes }: TodoListProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  const { radii } = theme;
 
   const {
     todos,
@@ -176,46 +177,37 @@ export function TodoList({ onXpEarned, initialTodos, initialEntryTypes }: TodoLi
           width: '100%',
           maxWidth: '100%',
           mx: 'auto',
-          background: `linear-gradient(160deg, ${alpha(brand[50], 0.97)} 0%, ${alpha(accent[50], 0.93)} 100%)`,
-          borderRadius: { xs: 0, sm: 3 },
-          border: { xs: 'none', sm: `2px solid ${alpha(brand[300], 0.45)}` },
+          bgcolor: 'background.paper',
+          borderRadius: { xs: 0, sm: radii.md },
+          border: { xs: 'none', sm: `1.5px solid ${alpha(brand[200], 0.6)}` },
           boxShadow: {
             xs: 'none',
-            sm: `0 12px 40px ${alpha(brand[300], 0.28)}, 0 4px 16px ${alpha(accent[200], 0.18)}, inset 0 1px 0 rgba(255,255,255,0.7)`,
+            sm: `0 10px 30px -12px ${alpha(brand[500], 0.28)}`,
           },
+          p: { xs: 1.5, sm: 2.25 },
           overflow: 'hidden',
         }}
       >
-        <Box
-          sx={{
-            background: `linear-gradient(135deg, ${alpha(brand[400], 0.18)} 0%, ${alpha(accent[300], 0.22)} 100%)`,
-            px: { xs: 1.5, sm: 2.5 },
-            pt: 2,
-            pb: 1.25,
-            borderBottom: `1.5px solid ${alpha(brand[300], 0.12)}`,
-          }}
-        >
-          <TodoHeader
-            view={view}
-            onViewChange={setView}
-            streak={streak}
-            brandPalette={brand}
-            accentPalette={accent}
+        <TodoHeader
+          view={view}
+          onViewChange={setView}
+          streak={streak}
+          brandPalette={brand}
+          accentPalette={accent}
+        />
+        {view === 'week' && (
+          <WeekStrip
+            weekDates={weekDates}
+            selectedDayIndex={selectedDayIndex}
+            onSelectDay={setSelectedDayIndex}
+            weekOffset={weekOffset}
+            onWeekChange={setWeekOffset}
+            todos={todos}
+            entries={entries}
           />
-          {view === 'week' && (
-            <WeekStrip
-              weekDates={weekDates}
-              selectedDayIndex={selectedDayIndex}
-              onSelectDay={setSelectedDayIndex}
-              weekOffset={weekOffset}
-              onWeekChange={setWeekOffset}
-              todos={todos}
-              entries={entries}
-            />
-          )}
-        </Box>
+        )}
 
-        <Box sx={{ px: { xs: 1.25, sm: 2 }, py: 1.5 }}>
+        <Box>
           {view === 'month' ? (
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
               <Box sx={{ flex: '0 0 52%', minWidth: 0 }}>

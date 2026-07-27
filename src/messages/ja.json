@@ -20,7 +20,7 @@
   },
   "Deck": {
     "addCardsModal": {
-      "title": "✨ カードを追加",
+      "title": "カードを追加",
       "subtitle": "新しいカードを作成・コピー・取り込み",
       "generating": "カードを作成中…"
     },
@@ -134,7 +134,8 @@
       "shared": "共有中",
       "shareDeck": "デッキを共有",
       "deleteDeck": "デッキを削除",
-      "openDeckAria": "デッキを開く: {name}"
+      "openDeckAria": "デッキを開く: {name}",
+      "cardsLabel": "枚"
     },
     "editCardDialog": {
       "title": "カードを編集",
@@ -405,7 +406,8 @@
       "ariaReviewDue": "復習 — 今日は{count}枚",
       "ariaReviewCaughtUp": "復習 — すべて完了",
       "wordsWaiting": "{count, plural, other {#語が待っています ⚔️}}",
-      "allCaughtUp": "すべて完了 — 今日の復習はありません"
+      "allCaughtUp": "すべて完了 — 今日の復習はありません",
+      "cardsDueToday": "{count, plural, other {今日の#枚を復習}}"
     },
     "hubPage": {
       "title": "復習",
@@ -980,6 +982,14 @@
       "unpinGroup": "グループのピンを外す",
       "pinGroup": "グループをピン留め"
     },
+    "groupRow": {
+      "openAriaLabel": "{name} — メンバー{members}人、{cards, number}枚学習",
+      "cards": "<b>{count, number}</b>枚",
+      "activeToday": "{count, plural, other {今日#人が学習}}",
+      "thisWeek": "今週",
+      "pinToHome": "ホームにピン留め",
+      "unpinFromHome": "ホームからピンを外す"
+    },
     "inviteList": {
       "emptyState": "招待コードがまだありません。作ってメンバーを招待しましょう！",
       "never": "なし",
@@ -1123,19 +1133,6 @@
       "noActivity": "最近の活動はまだありません。",
       "justNow": "たった今"
     },
-    "homeWidget": {
-      "memberLabel": "{count, plural, other {人}}",
-      "xpLabel": "XP",
-      "cardsLabel": "枚",
-      "membersHeading": "メンバー:",
-      "neverActive": "活動なし",
-      "activeToday": "今日活動",
-      "activeYesterday": "きのう活動",
-      "activeDaysAgo": "{days, plural, other {#日前に活動}}",
-      "moreCount": "ほか{count}人",
-      "activeThisWeek": "今週 {count}人が活動",
-      "dashboardButton": "ダッシュボード"
-    },
     "overview": {
       "membersLabel": "メンバー",
       "activeThisWeek": "今週 {count}人が活動",
@@ -1161,7 +1158,7 @@
     }
   },
   "Nav": {
-    "brandName": "🌸 Tangodachi",
+    "brandName": "Tangodachi",
     "mainNavigationAriaLabel": "メインナビゲーション",
     "messagesAriaLabel": "メッセージ",
     "achievementUnlocked": "実績を解除:",
@@ -1189,16 +1186,15 @@
   },
   "Home": {
     "greeting": {
-      "morning": "おはよう、{name}さん！",
-      "afternoon": "こんにちは、{name}さん！",
-      "evening": "こんばんは、{name}さん！"
+      "morning": "おはよう、<n>{name}さん！</n>",
+      "afternoon": "こんにちは、<n>{name}さん！</n>",
+      "evening": "こんばんは、<n>{name}さん！</n>"
     },
     "welcomeBanner": {
       "openShopAriaLabel": "ショップを開く",
       "xpProgressLabel": "XPの進み具合",
-      "xpToLevel": "レベル{level}まであと{xp} XP 🚀",
-      "xpToSpend": "使える{xp} XP",
-      "moreXp": "あと{xp} XP！"
+      "xpToLevel": "レベル{level}まであと<b>{xp} XP</b>",
+      "levelBadgeLabel": "レベル"
     },
     "dashboardSection": {
       "hideAriaLabel": "{label}を非表示"
@@ -1214,10 +1210,14 @@
     "sectionNav": {
       "allGroups": "すべてのグループ",
       "allDecks": "すべてのデッキ",
-      "allSpeeches": "すべてのスピーチ"
+      "allSpeeches": "すべてのスピーチ",
+      "allGroupsCount": "グループ{count}件すべて"
     },
     "groupsSection": {
-      "emptyCreate": "グループを作って始めましょう"
+      "emptyCreate": "グループを作って始めましょう",
+      "loading": "グループを読み込み中…",
+      "createGroup": "グループを作成",
+      "emptyPin": "ピン留めするとここに表示されます。グループのピンアイコンを押してください ✨"
     },
     "leaderboardSection": {
       "emptyCheckBack": "もっと人が参加したら見てみてね！"
@@ -1229,14 +1229,16 @@
       "emptyCreateFirstTitle": "最初のデッキを作ろう！",
       "emptyPinTitle": "デッキをピン留めするとここに表示されます",
       "emptyCreateFirstSub": "デッキのページでフラッシュカードを作ろう ✨",
-      "emptyPinSub": "デッキのピンのアイコンをタップ ✨"
+      "emptyPinSub": "デッキのピンのアイコンをタップ ✨",
+      "createDeck": "デッキを作成"
     },
     "speechesSection": {
       "emptyCreateFirstTitle": "お話し会のスピーチを練習しよう！",
       "emptyPinTitle": "スピーチをピン留めするとここに表示されます",
       "emptyCreateFirstSub": "行を追加して覚えはじめよう ✨",
       "emptyPinSub": "スピーチのピンのアイコンをタップ ✨",
-      "lineCount": "{count, plural, other {#行}}"
+      "lineCount": "{count, plural, other {#行}}",
+      "writeSpeech": "スピーチを書く"
     },
     "customizeDialog": {
       "title": "ホームをカスタマイズ",
@@ -1245,11 +1247,14 @@
     },
     "buddy": {
       "defaultPhrase": "勉強しよう！"
+    },
+    "heroDate": {
+      "today": "今日"
     }
   },
   "Auth": {
     "login": {
-      "brandName": "🌸 Tangodachi",
+      "brandName": "Tangodachi",
       "betaBadge": "ベータ · 新規登録は停止中",
       "waitlistIntro": "ベータ版のため、現在新規登録を停止しています。メールアドレスを登録すると、受付を再開したときにおしらせします！",
       "backToSignIn": "アカウントをお持ちの方はログイン",
@@ -1271,7 +1276,7 @@
       "namePlaceholder": "お名前",
       "messageLabel": "Tangodachiを何に使いたいですか？（任意）",
       "messagePlaceholder": "JLPT N3の勉強のために…",
-      "submitButton": "受付が始まったら知らせる 🌸",
+      "submitButton": "受付が始まったら知らせる",
       "genericError": "うまくいきませんでした。",
       "networkError": "通信エラーです。もう一度お試しください。"
     }
@@ -1359,7 +1364,8 @@
       "newMessageDialogTitle": "新しいメッセージ",
       "newMessageDialogSubtitle": "話す相手を選びましょう",
       "organizerChip": "リーダー",
-      "memberFallback": "メンバー"
+      "memberFallback": "メンバー",
+      "stickerFallback": "{emoji} スタンプ"
     },
     "notificationsLayout": {
       "installBanner": "メッセージの通知はブラウザでは届きません。Tangodachiアプリでのみ使えます。<bold>ホーム画面のTangodachiアイコン</bold>から開いてください。追加するには、Safariの<bold>共有</bold>ボタンをタップして<bold>「ホーム画面に追加」</bold>を選びます。",
@@ -1384,6 +1390,47 @@
       "registrationFailed": "{host} でService Workerの登録に失敗しました: {error}",
       "notReady": "{host} でService Workerが準備できていません。登録が完了しませんでした。もう一度お試しください。",
       "saveFailed": "購読情報をサーバーに保存できませんでした。もう一度お試しください。"
+    },
+    "stickerPicker": {
+      "title": "スタンプ",
+      "openAriaLabel": "スタンプを送る"
+    },
+    "stickerNames": {
+      "wave": "こんにちは",
+      "happy": "うれしい",
+      "amazing": "すごい！",
+      "heart": "だいすき",
+      "love": "ラブ",
+      "yay": "やったー！",
+      "cute": "やあ",
+      "sad": "かなしい",
+      "goodnight": "おやすみ",
+      "surprised": "びっくり",
+      "worried": "こまった",
+      "angry": "おこった",
+      "phew": "ほっ",
+      "wink": "ウィンク",
+      "cool": "クール",
+      "shy": "てれる",
+      "lol": "わらう",
+      "blush": "はずかしい",
+      "thinking": "かんがえちゅう",
+      "dance": "ダンス",
+      "fire": "もえてる",
+      "study": "日本語のべんきょう",
+      "homework": "しゅくだいちゅう",
+      "cheer": "おうえん",
+      "tea": "おちゃタイム",
+      "laptop": "パソコンちゅう",
+      "ganbaru": "がんばる！",
+      "party": "パーティー",
+      "crying": "ないてる",
+      "relax": "のんびり",
+      "peek": "のぞきみ",
+      "box": "はこの中",
+      "thumbsup": "いいね",
+      "cozy": "ぬくぬく",
+      "hooray": "ばんざーい！"
     }
   },
   "Travel": {
@@ -1913,6 +1960,15 @@
       "showAnswer": "こたえを見る",
       "next": "次へ →",
       "quitAndSave": "やめて記録を保存"
+    },
+    "speechCard": {
+      "speech": "スピーチ",
+      "xp": "XP",
+      "starLines": "★ セリフ",
+      "linesCount": "{count, plural, other {#行}}",
+      "unpinFromHome": "ホームのピンを外す",
+      "pinToHome": "ホームにピン留め",
+      "openSpeechAria": "スピーチを開く: {name}"
     }
   },
   "Todo": {
@@ -1941,7 +1997,6 @@
       "weeklyRepeat": "🔁 毎週"
     },
     "dayDetailPanel": {
-      "myToDoList": "✅ やることリスト",
       "allDone": "{celebration} ぜんぶ完了！ 🎊",
       "loadingList": "リストを読み込み中... 🌸",
       "nothingPlannedPast": "この日の予定はありません 🌸",
@@ -2002,6 +2057,10 @@
       "title": "やることリスト",
       "weekView": "週",
       "monthView": "月"
+    },
+    "weekStrip": {
+      "previousWeek": "前の週",
+      "nextWeek": "次の週"
     },
     "todoItem": {
       "changePicture": "絵を変える",
@@ -2487,9 +2546,9 @@
   },
   "Landing": {
     "seo": {
-      "appDescription": "Tangodachiは、教室のための日本語練習アプリです。先生はデッキを作り、しめ切りつきで課題を出し、一人ひとりの進み具合を確認できます。生徒は授業で学んだことを、毎日の復習・練習モード・ゲーム・小テスト・AIフラッシュカードで、もっとたくさん練習できます。",
+      "appDescription": "Tangodachiは、教える人と学ぶ人のための日本語練習アプリです。先生はAIで数分でデッキを作り、しめ切りつきで課題を出し、一人ひとりの進み具合を確認できます。学ぶ人は、毎日の復習・間隔反復・ゲーム・小テストで、学んだことをほんとうに身につけられます。",
       "featureList": [
-        "課題・しめ切り・生徒ごとの進み具合がわかるクラスグループ",
+        "課題・しめ切り・生徒ごとの進み具合がわかるグループ",
         "生徒それぞれの「今日やるべき単語」を出す毎日の復習",
         "マッチ・穴うめ・当ててみようの複数の練習モード",
         "先生が結果を書き出せる採点つきの小テスト",
@@ -2503,11 +2562,11 @@
       "faq": [
         {
           "question": "Tangodachiとは？",
-          "answer": "Tangodachiは、教室のための無料の日本語練習アプリです。先生はデッキを作り、しめ切りつきで課題を出し、生徒一人ひとりの様子を確認できます。生徒は授業で学んでいることを、毎日の復習・練習モード・ゲーム・採点つき小テスト・AIで作ったフラッシュカードで、もっとたくさん練習できます。どの端末でも、インストールなしで使えます。"
+          "answer": "Tangodachiは、教える人と学ぶ人のための無料の日本語練習アプリです。先生はAIでデッキを作り、しめ切りつきで課題を出し、一人ひとりの様子を確認できます。学ぶ人は、毎日の復習・間隔反復・練習ゲーム・採点つき小テストで、学んでいることをしっかり身につけられます。どの端末でも、インストールなしで使えます。"
         },
         {
-          "question": "先生や教室で使うのに向いていますか？",
-          "answer": "はい、そのために作られています。先生はQRコード一つでクラス全体を招待し、しめ切りつきで特定のデッキを課題に出し、生徒ごとの進み具合や正解率を確認し、結果を書き出せる採点つき小テストを実施し、応援メッセージを送れます。授業を補う教材として、授業と授業のあいだに生徒が練習できる仕組みを提供します。"
+          "question": "先生が使うのに向いていますか？",
+          "answer": "はい、そのために作られています。先生はQRコード一つでグループ全体を招待し、しめ切りつきで特定のデッキを課題に出し、生徒ごとの進み具合や正解率を確認し、結果を書き出せる採点つき小テストを実施し、応援メッセージを送れます。授業を補う教材として、授業と授業のあいだに生徒が練習できる仕組みを提供します。"
         },
         {
           "question": "生徒は授業で学んだことを練習できますか？",
@@ -2515,7 +2574,7 @@
         },
         {
           "question": "どんな練習・復習モードがありますか？",
-          "answer": "生徒はまず、その日にやるべき単語を出す「毎日の復習」に取り組めます。さらに3つの練習モード — マッチ（時間と競争しながら単語と意味をペアにする）、穴うめ（文の足りない単語を入力する）、当ててみよう（意味を見て日本語を入力する）— に加えて、かんたんなゲームや採点つきの小テストもあります。どれも次のレベルへのXPになります。"
+          "answer": "生徒はまず、間隔反復のしくみでその日にやるべき単語を出す「毎日の復習」に取り組めます。さらに3つの練習モード — マッチ（時間と競争しながら単語と意味をペアにする）、穴うめ（文の足りない単語を入力する）、当ててみよう（意味を見て日本語を入力する）— に加えて、かんたんなゲームや採点つきの小テストもあります。どれも次のレベルへのXPになります。"
         },
         {
           "question": "AIのカード生成はどう動きますか？",
@@ -2537,29 +2596,67 @@
       "ja": "日本語"
     },
     "hero": {
-      "waitlistBadge": "✨ クローズドベータ — ウェイトリスト受付中",
-      "headline": "クラスみんなの<br></br>日本語練習を、<br></br>ここで。",
-      "subtitle": "先生はデッキを作って課題を出し、生徒一人ひとりを見守れます。生徒は授業で学んだことを、毎日の復習・練習モード・ゲーム・小テストで、もっとたくさん練習。日本語が<em>ほんとうに</em>身につく道具が、ぜんぶそろっています。",
-      "dashboardButton": "ダッシュボードへ 🌸",
-      "waitlistButton": "ウェイトリストに登録 🌸",
+      "waitlistBadge": "クローズドベータ — ウェイトリスト受付中",
+      "headline": "準備は少なく。<br></br>授業はもっと。<br></br>学びはずっと。",
+      "subtitle": "Tangodachiは、教える人には数分で教材を作れるAIを。学ぶ人には、忘れる前にくり返す「間隔反復」のゲームを。新しいことばが<em>ほんとうに</em>身につきます。",
+      "dashboardButton": "ダッシュボードへ",
+      "educatorButton": "教える人はこちら",
+      "learnerButton": "学ぶ人はこちら",
+      "waitlistLink": "ウェイトリストに登録する →",
+      "waitlistButton": "ウェイトリストに登録",
       "signInButton": "ログイン",
       "tags": {
-        "classrooms": "🏫 教室",
-        "dailyReview": "🔁 毎日の復習",
-        "aiPowered": "🤖 AI",
-        "quizzes": "📝 小テスト",
-        "travelMode": "✈️ トラベルモード",
-        "gamified": "🎮 ゲーム感覚"
+        "spacedRepetition": "間隔反復",
+        "dailyReview": "毎日の復習",
+        "aiPowered": "AI",
+        "quizzes": "小テスト",
+        "travelMode": "トラベルモード",
+        "gamified": "ゲーム感覚"
+      },
+      "scene": {
+        "aiBadge": "AIが30秒で12枚作成",
+        "classProgress": "クラスの進捗",
+        "assigned": "24人に配信ずみ",
+        "todayReview": "今日の復習",
+        "reviewDone": "{total}枚中{done}枚",
+        "streak": "{days}日連続"
       },
       "scroll": "スクロール"
     },
+    "audience": {
+      "badge": "ふたつの体験。ひとつのゴール。",
+      "heading": "教える人にも、<br></br>学ぶ人にも",
+      "subheading": "作って、練習して、覚える。日本語のためのすべてが、ここに。",
+      "educators": {
+        "label": "教える人へ",
+        "title": "数分で教材を作れるAI",
+        "points": [
+          "単語をいくつか入力するだけで、読み方・意味・例文つきのデッキが完成",
+          "教科書のPDFを置けば、フラッシュカードになって返ってきます",
+          "しめ切りつきで課題を出して、一人ひとりの進み具合を確認",
+          "毎週の準備時間を何時間も節約"
+        ],
+        "cta": "AIがデッキを作るところを見る"
+      },
+      "learners": {
+        "label": "学ぶ人へ",
+        "title": "日本語が身につくゲーム",
+        "points": [
+          "間隔反復が、忘れそうになる直前にことばを出してくれます",
+          "マッチ・穴うめ・当ててみよう・クイックゲームで、練習が楽しく",
+          "連続記録・XP・レベルが、がんばりをお祝い",
+          "長くやるより、かしこく学ぶ"
+        ],
+        "cta": "学びかたを見る"
+      }
+    },
     "features": {
-      "heading": "クラスで日本語を<br></br>練習するための道具が、ぜんぶ。",
-      "subheading": "クラスグループ、毎日の復習、練習モード、採点つき小テスト、AIカード生成など。日本語の授業を補う練習プラットフォームのすべてが、ここに。",
+      "heading": "そのほかの道具も、<br></br>ぜんぶそろっています。",
+      "subheading": "グループ、毎日の復習、練習モード、採点つき小テスト、AIカード生成など。日本語を教えることと学ぶことの、ひとつの拠点に。",
       "items": {
-        "classroomGroups": {
-          "title": "クラスグループ",
-          "desc": "QRコードでクラスを招待し、しめ切りつきでデッキを課題に出し、生徒ごとの進み具合や正解率を確認できます。"
+        "groups": {
+          "title": "グループと課題",
+          "desc": "QRコードでグループ全体を招待し、しめ切りつきでデッキを課題に出し、一人ひとりの進み具合や正解率を確認できます。"
         },
         "dailyReview": {
           "title": "毎日の復習",
@@ -2620,13 +2717,14 @@
       }
     },
     "aiDemo": {
-      "heading": "デッキひとつを、<br></br>数分で。",
-      "subheading": "単語をいくつか入力するか、PDFを置くだけ。Gemini AIが1枚ずつ、読み方・意味・日英の例文を作ります。",
+      "badge": "教える人へ",
+      "heading": "教材づくりは、<br></br>数時間ではなく数分で。",
+      "subheading": "単語をいくつか入力するか、教材のPDFを置くだけ。AIが1枚ずつ、読み方・意味・日英の例文を作ります。これは実際の流れのライブプレビューです。",
       "steps": {
         "generateCards": "カードを作成",
         "reviewAndEdit": "確認して編集"
       },
-      "addCardsPanelTitle": "✨ カードを追加",
+      "addCardsPanelTitle": "カードを追加",
       "mainDisplayModeLabel": "メインの表示:",
       "viewModes": {
         "hiragana": "ひ ひらがな",
@@ -2648,7 +2746,7 @@
           "desc": "書類から単語を抜き出す"
         }
       },
-      "reviewCardsPanelTitle": "📋 カードを確認",
+      "reviewCardsPanelTitle": "カードを確認",
       "reviewCardsStatus": "{count, plural, other {カード#枚ができました。追加する前に編集できます}}",
       "reviewCardsWaiting": "生成を待っています…",
       "setViewModeLabel": "すべてのカードのメイン表示:",
@@ -2713,8 +2811,22 @@
       }
     },
     "practice": {
-      "heading": "どの授業にも合う練習",
-      "subheading": "生徒はまず今日やるべき単語の復習から始め、練習モードを切り替えて飽きずに続けられます。どのセッションも次のレベルへのXPになります。",
+      "badge": "学ぶ人へ",
+      "heading": "あそぶ。練習する。覚える。",
+      "subheading": "まずは今日やるべき単語の短い復習から。あとはゲームで飽きずに続けられます。どのセッションも間隔反復のしくみで組まれ、次のレベルへのXPになります。",
+      "srs": {
+        "title": "記憶に残る理由：間隔反復",
+        "subtitle": "Tangodachiは、忘れそうになる直前にことばをもう一度出します。復習の間隔は、記憶が強くなるほど広がっていきます。",
+        "wordLabel": "ひとつのことばの旅",
+        "memoryLabel": "記憶の強さ",
+        "learnedChip": "長期記憶に ✓",
+        "steps": {
+          "today": "今日",
+          "threeDays": "3日後",
+          "oneWeek": "1週間後",
+          "oneMonth": "1か月後"
+        }
+      },
       "modes": {
         "dailyReview": {
           "name": "毎日の復習",
@@ -2767,7 +2879,7 @@
           "name": "頂点"
         }
       },
-      "customizeHeading": "🎨 なんでもカスタマイズ",
+      "customizeHeading": "なんでもカスタマイズ",
       "colorThemesLabel": "10種類のカラーテーマ",
       "themes": {
         "sakura": {
@@ -2829,17 +2941,17 @@
     "group": {
       "badge": "共有して、いっしょに",
       "heading": "みんなで、もっと",
-      "subheading": "デッキをリンクで共有。カードをどんなサイトにも埋め込み。課題・ランキング・応援メッセージがそろった教室も作れます。",
+      "subheading": "デッキをリンクで共有。カードをどんなサイトにも埋め込み。課題・ランキング・応援メッセージがそろったグループも作れます。",
       "poweredBy": "提供 Tangodachi",
       "shareHeading": "デッキを共有・埋め込み",
       "shareBody": "リンクひとつでデッキを共有。友だちやクラスメイトは、アカウントなしですぐに学習できます。ブログやNotion、ウェブサイトにカードを直接埋め込むこともできます。",
       "shareTags": {
-        "oneClickSharing": "🔗 ワンクリック共有",
-        "embeddableWidget": "🌐 埋め込みウィジェット",
-        "noAccountNeeded": "🔒 アカウント不要"
+        "oneClickSharing": "ワンクリック共有",
+        "embeddableWidget": "埋め込みウィジェット",
+        "noAccountNeeded": "アカウント不要"
       },
-      "classroomHeading": "本格的な教室も作れます",
-      "classroomSubheading": "QRコードでメンバーを招待し、課題を出して、進み具合を見て、応援メッセージを送れます。",
+      "groupHeading": "本格的なグループも作れます",
+      "groupSubheading": "QRコードでメンバーを招待し、課題を出して、進み具合を見て、応援メッセージを送れます。",
       "leaderboard": {
         "title": "今週のランキング",
         "levelStreak": "Lv.{level} · 🔥 {streak}日",
@@ -2881,12 +2993,12 @@
         }
       },
       "pills": {
-        "oneClickSharing": "🔗 ワンクリック共有",
-        "organizerMemberRoles": "👥 リーダーとメンバー",
-        "assignDecksWithDeadlines": "📋 しめ切りつきの課題",
-        "weeklyXpLeaderboard": "🏆 週間XPランキング",
-        "sendEncouragements": "💌 応援メッセージ",
-        "qrCodeInvites": "📱 QRコード招待"
+        "oneClickSharing": "ワンクリック共有",
+        "organizerMemberRoles": "リーダーとメンバー",
+        "assignDecksWithDeadlines": "しめ切りつきの課題",
+        "weeklyXpLeaderboard": "週間XPランキング",
+        "sendEncouragements": "応援メッセージ",
+        "qrCodeInvites": "QRコード招待"
       }
     },
     "howItWorks": {
@@ -2920,9 +3032,9 @@
       "betaChipLabel": "クローズドベータ — まもなく枠が空きます",
       "headline": "日本語を、<br></br>レベルアップしませんか？",
       "subtitle": "Tangodachiは現在クローズドベータです。メールアドレスをご登録いただければ、新しい枠が空きしだいおしらせします。",
-      "dashboardButton": "ダッシュボードへ 🌸",
-      "brandName": "🌸 Tangodachi",
-      "tagline": "教室のための日本語練習アプリ",
+      "dashboardButton": "ダッシュボードへ",
+      "brandName": "Tangodachi",
+      "tagline": "教える人と学ぶ人のための日本語練習アプリ",
       "madeBy": "💕 をこめて <link>Variations on a String</link> が制作"
     }
   }

@@ -6,12 +6,13 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
+import FuriganaText from '@/components/FuriganaText';
+import { japaneseDateParts } from '@/lib/japaneseDate';
 import type { CalendarEntry, Todo } from '@/types/todo';
 
 import {
-  DAY_LABELS,
   formatWeekRange,
   isCompletedOnDate,
   isEntryOnDate,
@@ -30,9 +31,6 @@ interface WeekStripProps {
   entries: CalendarEntry[];
 }
 
-// Cute mascot emoji per weekday (Mon→Sun)
-const DAY_MASCOTS = ['🐱', '🐰', '🌸', '🧸', '⭐', '🦋', '☀️'];
-
 export function WeekStrip({
   weekDates,
   selectedDayIndex,
@@ -45,8 +43,11 @@ export function WeekStrip({
   const theme = useTheme();
   const { brand, rainbow } = theme.palette;
   const locale = useLocale();
+  const t = useTranslations('Todo.weekStrip');
   const todayStr = todayISO();
 
+  // One colour per weekday, Mon→Sun — the app's own week palette, not the
+  // design's fixed pastels, so every theme keeps its rainbow.
   const TAB_COLORS = [
     rainbow[50],
     rainbow[100],
@@ -59,122 +60,154 @@ export function WeekStrip({
 
   return (
     <Box>
-      {/* Horizontal Day Tabs */}
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(7, 1fr)',
-          gap: 0.75,
-          mb: 1,
-          position: 'relative',
-          height: 80, // Provide space for tabs to "stick out"
+          gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
+          // Cells sit on a shared baseline so today's extra height shows as a
+          // tab standing up out of the row, not as a taller box among equals.
+          alignItems: 'end',
+          gap: 1,
+          mb: 0.75,
+          // Seven cells don't fit a phone at a legible size, so below sm the row
+          // scrolls instead of squeezing.
+          '@media (max-width:600px)': {
+            display: 'flex',
+            overflowX: 'auto',
+            pb: 0.5,
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+          },
         }}
       >
         {weekDates.map((date, i) => {
           const dateISO = toISODate(date);
           const isSelected = i === selectedDayIndex;
           const isToday = dateISO === todayStr;
-          const dayTodos = todos.filter((t) => isScheduledForDate(t, date));
-          const dayCompleted = dayTodos.filter((t) => isCompletedOnDate(t, dateISO)).length;
+          const dayTodos = todos.filter((todo) => isScheduledForDate(todo, date));
+          const dayCompleted = dayTodos.filter((todo) => isCompletedOnDate(todo, dateISO)).length;
           const dayEntries = entries.filter((entry) => isEntryOnDate(entry, date));
           const allDone = dayTodos.length > 0 && dayCompleted === dayTodos.length;
           const tabColor = TAB_COLORS[i % TAB_COLORS.length];
+          const marker = allDone ? '💖' : dayEntries.length > 0 ? dayEntries[0].emoji : null;
 
           return (
             <Box
-              key={i}
+              key={dateISO}
               component="button"
               onClick={() => onSelectDay(i)}
+              aria-pressed={isSelected}
+              aria-current={isToday ? 'date' : undefined}
+              aria-label={new Intl.DateTimeFormat(locale, { dateStyle: 'full' }).format(date)}
               sx={{
                 position: 'relative',
-                height: isSelected ? 76 : 64,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
+                // Centred both ways, so the stack sits in the middle of the tab
+                // whatever it contains — with a marker, without one, tall or short.
                 justifyContent: 'center',
-                gap: 0.5,
+                gap: 0.25,
+                px: 0.25,
+                pt: 0.75,
+                pb: 1,
+                // Today is simply a taller tab — the one cue that reads before
+                // colour does, and the one selection can't take away. A fixed
+                // height, not a minimum: only today may be taller, so nothing
+                // else in the cell is allowed to change it.
+                height: isToday ? { xs: 76, sm: 80 } : { xs: 62, sm: 66 },
                 border: 'none',
-                borderTopLeftRadius: 16,
-                borderTopRightRadius: 16,
-                background: isSelected ? tabColor : alpha(tabColor, 0.45),
-                color: isSelected ? 'white' : 'text.primary',
+                borderRadius: '10px',
+                background: isSelected ? tabColor : alpha(tabColor, isToday ? 0.6 : 0.45),
+                color: isSelected ? '#fff' : 'text.primary',
                 cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: isSelected
-                  ? `0 -5px 15px ${alpha(tabColor, 0.45)}`
-                  : `0 -2px 5px ${alpha(tabColor, 0.2)}`,
-                transform: isSelected ? 'translateY(0px)' : 'translateY(12px)',
-                zIndex: isSelected ? 10 : 1,
+                overflow: 'hidden',
+                transition: 'background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
+                boxShadow: isToday
+                  ? `0 10px 22px -8px ${alpha(tabColor, 0.8)}`
+                  : isSelected
+                    ? `0 8px 18px -8px ${alpha(tabColor, 0.75)}`
+                    : 'none',
+                '@media (max-width:600px)': { minWidth: 62, flexShrink: 0 },
                 '&:hover': {
-                  transform: 'translateY(4px)',
-                  height: 70,
-                  zIndex: 11,
-                  background: isSelected ? tabColor : alpha(tabColor, 0.6),
+                  background: isSelected ? tabColor : alpha(tabColor, isToday ? 0.75 : 0.62),
+                  transform: 'translateY(-1px)',
                 },
               }}
             >
-              <Typography
+              {/* The weekday in kanji with its reading — the strip teaches 月〜日
+                  the same way the hero's date chip does, and in the same face:
+                  the theme's `jp` stack is a serif in several schemes, which at
+                  this size with a reading over it is a wall. */}
+              <FuriganaText
+                text={japaneseDateParts(date).weekday}
+                showFurigana
                 sx={{
-                  fontSize: '1.1rem',
-                  lineHeight: 1,
-                  filter: isSelected ? 'saturate(1.2)' : 'saturate(0.8) opacity(0.7)',
-                  transition: 'filter 0.3s',
+                  display: 'block',
+                  // The kanji leads — it's the part being learned; the date is
+                  // the smaller supporting line under it. Both sit close to the
+                  // page's own type scale: this is a widget on a dashboard, not
+                  // a headline.
+                  fontSize: { xs: '1.05rem', sm: '1.15rem' },
+                  fontWeight: 700,
+                  // Just enough leading to clear the ruby; more and the reading
+                  // drifts away from the kanji it belongs to.
+                  lineHeight: 1.55,
+                  '& rt': { fontSize: '0.45em', fontWeight: 700, opacity: 0.85 },
                 }}
-              >
-                {allDone ? '💖' : DAY_MASCOTS[i]}
-              </Typography>
+              />
               <Typography
+                component="span"
                 sx={{
-                  fontFamily: (t) => t.fonts.cute,
-                  fontSize: '0.6rem',
-                  fontWeight: 800,
-                  color: isSelected ? 'rgba(255,255,255,0.9)' : theme.palette.text.primary,
+                  fontFamily: (th) => th.fonts.cute,
+                  fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                  fontWeight: 700,
                   lineHeight: 1,
-                }}
-              >
-                {DAY_LABELS[i]}
-              </Typography>
-              <Typography
-                sx={{
-                  fontFamily: (t) => t.fonts.cute,
-                  fontSize: '0.9rem',
-                  fontWeight: 900,
-                  color: isSelected ? 'white' : isToday ? brand[700] : theme.palette.text.primary,
-                  lineHeight: 1.2,
+                  // Today keeps its own accent when it isn't the selected day —
+                  // otherwise nothing in a flat strip says which day it is.
+                  color: isSelected ? '#fff' : isToday ? brand[700] : 'text.primary',
                 }}
               >
                 {date.getDate()}
               </Typography>
-
-              {/* Status indicator */}
-              <Box sx={{ position: 'absolute', bottom: 8, display: 'flex', alignItems: 'center' }}>
-                {!allDone && dayEntries.length > 0 ? (
-                  <Typography sx={{ fontSize: '0.65rem', lineHeight: 1 }}>
-                    {dayEntries[0].emoji}
-                  </Typography>
-                ) : null}
-              </Box>
+              {/* Floated out of the stack: in flow it would push its day taller
+                  than the rest of the week and muddy the one thing height is
+                  supposed to mean here. */}
+              {marker && (
+                <Box
+                  aria-hidden
+                  sx={{
+                    position: 'absolute',
+                    bottom: 3,
+                    right: { xs: 2, sm: 4 },
+                    fontSize: { xs: '0.62rem', sm: '0.72rem' },
+                    lineHeight: 1,
+                  }}
+                >
+                  {marker}
+                </Box>
+              )}
             </Box>
           );
         })}
       </Box>
 
       {/* Week navigation */}
-      <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} mb={0.5}>
+      <Stack direction="row" alignItems="center" justifyContent="center" spacing={1.5} mb={1.75}>
         <IconButton
           size="small"
           onClick={() => onWeekChange(weekOffset - 1)}
+          aria-label={t('previousWeek')}
           sx={{ color: brand[500], p: 0.25 }}
         >
-          <ChevronLeftRoundedIcon sx={{ fontSize: '1rem' }} />
+          <ChevronLeftRoundedIcon sx={{ fontSize: '1.1rem' }} />
         </IconButton>
         <Typography
-          variant="caption"
           sx={{
-            fontFamily: (t) => t.fonts.cute,
             fontWeight: 800,
             color: brand[600],
-            fontSize: '0.72rem',
+            fontSize: '0.82rem',
+            textAlign: 'center',
           }}
         >
           {formatWeekRange(weekDates, locale)}
@@ -182,9 +215,10 @@ export function WeekStrip({
         <IconButton
           size="small"
           onClick={() => onWeekChange(weekOffset + 1)}
+          aria-label={t('nextWeek')}
           sx={{ color: brand[500], p: 0.25 }}
         >
-          <ChevronRightRoundedIcon sx={{ fontSize: '1rem' }} />
+          <ChevronRightRoundedIcon sx={{ fontSize: '1.1rem' }} />
         </IconButton>
       </Stack>
     </Box>

@@ -1,6 +1,4 @@
 import AddReactionOutlinedIcon from '@mui/icons-material/AddReactionOutlined';
-import DoneIcon from '@mui/icons-material/Done';
-import DoneAllIcon from '@mui/icons-material/DoneAll';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
@@ -12,8 +10,11 @@ import { useState } from 'react';
 
 import { EmojiPickerPopover } from '@/components/EmojiPickerPopover';
 import type { DirectMessage } from '@/hooks/useDirectMessages';
+import { parseSticker, stickerSrc } from '@/lib/stickers';
 
-import { splitLinks, timeAgoInfo } from './constants';
+import { splitLinks } from './constants';
+import { MessageMeta } from './MessageMeta';
+import { MessageReactions } from './MessageReactions';
 
 interface MessageBubbleProps {
   message: DirectMessage;
@@ -41,28 +42,16 @@ export function MessageBubble({
   const { palette } = useTheme();
   const { brand } = palette;
   const t = useTranslations('Group.messageBubble');
-  const tThread = useTranslations('Group.messageThread');
+  const tStickers = useTranslations('Messages.stickerNames');
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const reactions = message.reactions || {};
-  const reactionEntries = Object.entries(reactions).filter(([, users]) => users.length > 0);
-  const hasReactions = reactionEntries.length > 0;
 
-  const renderTimeAgo = (dateStr: string) => {
-    const info = timeAgoInfo(dateStr);
-    switch (info.unit) {
-      case 'justNow':
-        return tThread('justNow');
-      case 'minutes':
-        return tThread('minutesAgo', { minutes: info.value });
-      case 'hours':
-        return tThread('hoursAgo', { hours: info.value });
-      case 'yesterday':
-        return tThread('yesterday');
-      case 'days':
-        return tThread('daysAgo', { days: info.value });
-    }
-  };
+  // A message whose whole text is a sticker keyword (":wave:") renders as the
+  // artwork instead — no bubble chrome, so it reads like a sticker and not
+  // like a text message that happens to contain a picture.
+  const sticker = message.image_url || message.video_url ? null : parseSticker(message.message);
+  const hasMedia = Boolean(message.image_url || message.video_url);
 
   return (
     <Box
@@ -108,15 +97,37 @@ export function MessageBubble({
         {/* Bubble */}
         <Box
           sx={{
-            px: message.image_url || message.video_url ? 0.5 : 1.5,
-            py: message.image_url || message.video_url ? 0.5 : 1,
+            px: sticker ? 0 : hasMedia ? 0.5 : 1.5,
+            py: sticker ? 0 : hasMedia ? 0.5 : 1,
             borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-            bgcolor: isMine ? alpha(brand[400], 0.2) : alpha(brand[100], 0.5),
-            border: `1px solid ${isMine ? alpha(brand[400], 0.3) : alpha(brand[200], 0.4)}`,
-            overflow: 'hidden',
+            // A sticker stands on its own — the bubble would just box it in
+            ...(sticker
+              ? { bgcolor: 'transparent', border: 'none', overflow: 'visible' }
+              : {
+                  bgcolor: isMine ? alpha(brand[400], 0.2) : alpha(brand[100], 0.5),
+                  border: `1px solid ${isMine ? alpha(brand[400], 0.3) : alpha(brand[200], 0.4)}`,
+                  overflow: 'hidden',
+                }),
             '&:hover .react-btn': { opacity: 1 },
           }}
         >
+          {sticker && (
+            // Deliberately NOT loading="lazy". A just-sent sticker is appended
+            // below the fold of the scroll container, and lazy images there
+            // often don't fetch until something else nudges the observer — and
+            // because a sticker bubble has no background, an unloaded one is
+            // invisible, so the message looks like it never sent. The sticker
+            // IS the message; at ~18 KB it should always load.
+            <Box
+              component="img"
+              src={stickerSrc(sticker.id)}
+              alt={tStickers(sticker.id)}
+              decoding="async"
+              width={128}
+              height={128}
+              sx={{ width: 128, height: 128, display: 'block' }}
+            />
+          )}
           {message.image_url && (
             <Box
               component="a"
@@ -164,7 +175,7 @@ export function MessageBubble({
               }}
             />
           )}
-          {message.message && (
+          {message.message && !sticker && (
             <Typography
               sx={{
                 // Must visually match the input box text exactly (size AND
@@ -174,8 +185,8 @@ export function MessageBubble({
                 lineHeight: 1.45,
                 color: 'text.primary',
                 wordBreak: 'break-word',
-                px: message.image_url || message.video_url ? 1 : 0,
-                pt: message.image_url || message.video_url ? 0.5 : 0,
+                px: hasMedia ? 1 : 0,
+                pt: hasMedia ? 0.5 : 0,
               }}
             >
               {splitLinks(message.message).map((seg, i) =>
@@ -195,33 +206,12 @@ export function MessageBubble({
               )}
             </Typography>
           )}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: isMine ? 'flex-end' : 'flex-start',
-              gap: 0.3,
-              mt: 0.3,
-              px: message.image_url || message.video_url ? 1 : 0,
-              pb: message.image_url || message.video_url ? 0.3 : 0,
-            }}
-          >
-            <Typography component="span" sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>
-              {renderTimeAgo(message.created_at)}
-            </Typography>
-            {isMine &&
-              (message.read_at ? (
-                <DoneAllIcon
-                  sx={{ fontSize: 14, color: brand[600] }}
-                  aria-label={t('readAriaLabel')}
-                />
-              ) : (
-                <DoneIcon
-                  sx={{ fontSize: 14, color: 'text.disabled' }}
-                  aria-label={t('sentAriaLabel')}
-                />
-              ))}
-          </Box>
+          <MessageMeta
+            createdAt={message.created_at}
+            isMine={isMine}
+            readAt={message.read_at}
+            inset={hasMedia}
+          />
 
           {/* Reaction button — appears on hover */}
           {onReact && (
@@ -250,67 +240,12 @@ export function MessageBubble({
         </Box>
 
         {/* Reactions — in normal flow under the bubble, aligned to its side */}
-        {hasReactions && (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: isMine ? 'flex-end' : 'flex-start',
-              gap: 0.4,
-              mt: 0.25,
-              px: 0.5,
-            }}
-          >
-            {reactionEntries.map(([emoji, users]) => {
-              const iReacted = userId ? users.includes(userId) : false;
-              return (
-                <Box
-                  key={emoji}
-                  component="button"
-                  onClick={() => onReact?.(message.id, emoji)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e: React.KeyboardEvent) => {
-                    if (e.key === 'Enter' || e.key === ' ') onReact?.(message.id, emoji);
-                  }}
-                  sx={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 0.3,
-                    px: 0.8,
-                    py: 0.3,
-                    borderRadius: '12px',
-                    border: `1.5px solid ${iReacted ? alpha(brand[500], 0.5) : alpha(brand[300], 0.4)}`,
-                    bgcolor: iReacted ? alpha(brand[200], 0.85) : alpha('#fff', 0.9),
-                    cursor: 'pointer',
-                    fontSize: '1rem',
-                    lineHeight: 1,
-                    transition: 'all 0.12s ease',
-                    boxShadow: `0 1px 4px ${alpha(brand[400], 0.25)}`,
-                    '&:hover': {
-                      bgcolor: alpha(brand[200], 0.8),
-                      borderColor: alpha(brand[400], 0.6),
-                      transform: 'scale(1.1)',
-                    },
-                  }}
-                >
-                  <span>{emoji}</span>
-                  {users.length > 1 && (
-                    <Typography
-                      component="span"
-                      sx={{
-                        fontSize: '0.65rem',
-                        fontWeight: 700,
-                        color: iReacted ? brand[700] : brand[500],
-                      }}
-                    >
-                      {users.length}
-                    </Typography>
-                  )}
-                </Box>
-              );
-            })}
-          </Box>
-        )}
+        <MessageReactions
+          reactions={reactions}
+          isMine={isMine}
+          userId={userId}
+          onToggle={(emoji) => onReact?.(message.id, emoji)}
+        />
       </Box>
 
       {/* Avatar on right for sent messages */}

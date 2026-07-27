@@ -123,21 +123,19 @@ export function NavBar() {
             gap: 1.5,
           }}
         >
-          {/* Brand */}
+          {/* Brand lockup: mascot + wordmark + たんごだち (see public/brand/logo-lockup.png) */}
           <Link href="/" style={{ textDecoration: 'none', userSelect: 'none' }}>
-            <Typography
+            <Box
+              component="img"
+              src="/brand/logo-lockup.png"
+              alt={t('brandName')}
               sx={{
-                fontFamily: (t) => t.fonts.cute,
-                fontWeight: 600,
-                fontSize: { xs: '1.2rem', sm: '1.4rem' },
-                color: brand[700],
-                lineHeight: 1,
-                letterSpacing: '-0.01em',
-                whiteSpace: 'nowrap',
+                display: 'block',
+                height: { xs: 40, sm: 48 },
+                width: 'auto',
+                flex: 'none',
               }}
-            >
-              {t('brandName')}
-            </Typography>
+            />
           </Link>
 
           {/* Nav links — centered group */}

@@ -1,4 +1,6 @@
 'use client';
+import CheckBoxOutlineBlankRoundedIcon from '@mui/icons-material/CheckBoxOutlineBlankRounded';
+import CheckBoxRoundedIcon from '@mui/icons-material/CheckBoxRounded';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import Box from '@mui/material/Box';
@@ -83,21 +85,19 @@ export const TodoItem = memo(function TodoItem({
   };
 
   return (
+    // A ruled list, not a stack of cards: rows are separated by a hairline and
+    // the only thing that carries colour is the checkbox.
     <Box
       sx={{
         position: 'relative',
         display: 'flex',
         alignItems: 'center',
         gap: 0.75,
-        px: 1.25,
-        py: 0.6,
-        borderRadius: 3.5,
-        background: completed
-          ? alpha(brand[100], 0.3)
-          : `linear-gradient(135deg, ${alpha(brand[50], 0.9)} 0%, ${alpha(accent[50], 0.6)} 100%)`,
-        border: '2px solid',
-        borderColor: completed ? alpha(brand[200], 0.4) : alpha(brand[300], 0.3),
-        transition: 'all 0.25s ease',
+        px: 0.75,
+        py: 1,
+        borderTop: `1.5px solid ${alpha(brand[100], 0.9)}`,
+        borderRadius: 1,
+        transition: 'background 0.2s ease, opacity 0.25s ease',
         opacity: completed ? 0.55 : 1,
         animation: 'slide-in 0.3s ease',
         '@keyframes slide-in': {
@@ -105,9 +105,7 @@ export const TodoItem = memo(function TodoItem({
           to: { opacity: 1, transform: 'translateY(0)' },
         },
         '&:hover': {
-          borderColor: brand[400],
-          boxShadow: `0 3px 14px ${alpha(brand[300], 0.18)}`,
-          transform: 'translateY(-1px)',
+          background: alpha(brand[50], 0.55),
           '& .todo-actions': { opacity: 1 },
         },
       }}
@@ -178,11 +176,13 @@ export const TodoItem = memo(function TodoItem({
         checked={completed}
         onChange={handleToggle}
         size="small"
+        icon={<CheckBoxOutlineBlankRoundedIcon />}
+        checkedIcon={<CheckBoxRoundedIcon />}
         sx={{
           p: 0.4,
           color: brand[300],
           '&.Mui-checked': { color: brand[500] },
-          '& .MuiSvgIcon-root': { fontSize: '1.2rem' },
+          '& .MuiSvgIcon-root': { fontSize: '1.4rem' },
         }}
       />
 
@@ -190,8 +190,9 @@ export const TodoItem = memo(function TodoItem({
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography
           sx={{
-            fontSize: '0.85rem',
-            fontWeight: 600,
+            fontSize: '0.875rem',
+            fontWeight: 700,
+            lineHeight: 1.35,
             color: completed ? 'text.disabled' : 'text.primary',
             textDecoration: completed ? 'line-through' : 'none',
             wordBreak: 'break-word',
@@ -202,10 +203,10 @@ export const TodoItem = memo(function TodoItem({
         {frequencyLabel && (
           <Typography
             sx={{
-              fontSize: '0.68rem',
-              fontWeight: 500,
-              mt: 0.2,
-              color: completed ? alpha(brand[300], 0.5) : alpha(brand[500], 0.75),
+              fontSize: '0.72rem',
+              fontWeight: 800,
+              mt: 0.25,
+              color: completed ? alpha(brand[300], 0.6) : 'text.secondary',
               letterSpacing: '0.01em',
             }}
           >

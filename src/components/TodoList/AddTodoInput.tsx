@@ -41,7 +41,7 @@ export function AddTodoInput({
 
   return (
     <Box>
-      <Stack direction="row" spacing={0.75} alignItems="center">
+      <Stack direction="row" spacing={1} alignItems="center">
         <TextField
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -57,15 +57,16 @@ export function AddTodoInput({
           slotProps={{ htmlInput: { maxLength: 200 } }}
           sx={{
             '& .MuiOutlinedInput-root': {
-              borderRadius: 3,
-              fontSize: '0.88rem',
-              fontWeight: 600,
-              bgcolor: alpha('#fff', 0.9),
-              '& fieldset': { borderColor: alpha(brand[400], 0.4), borderWidth: 1.5 },
-              '&:hover fieldset': { borderColor: brand[500] },
+              borderRadius: '10px',
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              bgcolor: alpha(brand[50], 0.4),
+              '& fieldset': { borderColor: alpha(brand[200], 0.9), borderWidth: 1.5 },
+              '&:hover fieldset': { borderColor: brand[400] },
               '&.Mui-focused fieldset': { borderColor: brand[500], borderWidth: 2 },
               '&.Mui-disabled': { bgcolor: alpha('#fff', 0.5) },
             },
+            '& .MuiOutlinedInput-input': { px: 2, py: 1.375 },
             '& .MuiInputBase-input::placeholder': { color: brand[400], opacity: 1 },
           }}
         />
@@ -77,15 +78,15 @@ export function AddTodoInput({
               sx={{
                 background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
                 color: 'white',
-                borderRadius: 2.5,
-                width: 38,
-                height: 38,
+                borderRadius: '10px',
+                width: 44,
+                height: 44,
                 flexShrink: 0,
-                boxShadow: `0 4px 12px ${alpha(brand[400], 0.3)}`,
+                boxShadow: `0 8px 18px -8px ${alpha(brand[500], 0.6)}`,
                 '&:hover': {
                   background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})`,
-                  transform: 'scale(1.1)',
-                  boxShadow: `0 6px 16px ${alpha(brand[400], 0.4)}`,
+                  transform: 'scale(1.06)',
+                  boxShadow: `0 10px 22px -8px ${alpha(brand[500], 0.7)}`,
                 },
                 '&:disabled': {
                   background: alpha(brand[200], 0.35),
@@ -95,7 +96,7 @@ export function AddTodoInput({
                 transition: 'all 0.2s ease',
               }}
             >
-              <AddRoundedIcon sx={{ fontSize: '1.2rem' }} />
+              <AddRoundedIcon sx={{ fontSize: '1.35rem' }} />
             </IconButton>
           </span>
         </Tooltip>

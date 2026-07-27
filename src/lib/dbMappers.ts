@@ -198,7 +198,11 @@ export interface OhanashikaiRow {
   line_count: number | null;
 }
 
-export function rowToOhanashikai(row: OhanashikaiRow, lineCount: number): Ohanashikai {
+export function rowToOhanashikai(
+  row: OhanashikaiRow,
+  lineCount: number,
+  firstLine?: string,
+): Ohanashikai {
   return {
     id: row.id,
     userId: row.user_id,
@@ -207,5 +211,25 @@ export function rowToOhanashikai(row: OhanashikaiRow, lineCount: number): Ohanas
     lineCount,
     createdAt: toNumber(row.created_at),
     pinned: row.pinned ?? false,
+    firstLine,
   };
+}
+
+/**
+ * Reduces `ohanashikai_lines` rows to one opening line per speech.
+ *
+ * Takes the lowest `order_index` rather than trusting query order or assuming
+ * lines start at 0 — a speech whose first line was deleted starts at 1.
+ */
+export function pickFirstLines(
+  rows: { ohanashikai_id: string; text: string; order_index: number }[],
+): Map<string, string> {
+  const best = new Map<string, { text: string; order: number }>();
+  for (const row of rows) {
+    const current = best.get(row.ohanashikai_id);
+    if (!current || row.order_index < current.order) {
+      best.set(row.ohanashikai_id, { text: row.text, order: row.order_index });
+    }
+  }
+  return new Map([...best].map(([id, v]) => [id, v.text]));
 }

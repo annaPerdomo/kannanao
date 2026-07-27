@@ -216,7 +216,7 @@ describe('AuthContext / AuthProvider', () => {
   });
 
   describe('signOut', () => {
-    it('should call supabase signOut', async () => {
+    it('should sign out only the local session, not every device', async () => {
       mockSignOut.mockResolvedValue({});
 
       let capturedHook: ReturnType<typeof useAuth> | null = null;
@@ -231,7 +231,10 @@ describe('AuthContext / AuthProvider', () => {
         await capturedHook?.signOut();
       });
 
+      // supabase-js defaults to scope 'global', which revokes every session the
+      // user has on every device. The app must pass 'local' explicitly.
       expect(mockSignOut).toHaveBeenCalledTimes(1);
+      expect(mockSignOut).toHaveBeenCalledWith({ scope: 'local' });
     });
   });
 

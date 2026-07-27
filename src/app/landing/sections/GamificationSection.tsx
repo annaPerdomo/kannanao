@@ -1,5 +1,6 @@
 'use client';
 
+import PaletteIcon from '@mui/icons-material/PaletteRounded';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -426,9 +427,12 @@ export function GamificationSection() {
               flexDirection: 'column',
             }}
           >
-            <Typography sx={{ fontSize: '0.85rem', fontWeight: 800, color: pink[700], mb: 2 }}>
-              {t('customizeHeading')}
-            </Typography>
+            <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mb: 2 }}>
+              <PaletteIcon sx={{ fontSize: '1.05rem', color: pink[600] }} />
+              <Typography sx={{ fontSize: '0.85rem', fontWeight: 800, color: pink[700] }}>
+                {t('customizeHeading')}
+              </Typography>
+            </Stack>
 
             {/* Theme swatches — like actual theme selector */}
             <Box sx={{ mb: 2 }}>

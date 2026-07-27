@@ -6,6 +6,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { fetchJsonCached, invalidateApiCache, peekApiCache } from '@/lib/apiCache';
 import { sb } from '@/lib/supabase';
 
+/** One member's identity, enough to draw an initial avatar. */
+export interface GroupMemberFace {
+  id: string;
+  name: string;
+}
+
 export interface Group {
   id: string;
   organizer_id: string;
@@ -15,6 +21,15 @@ export interface Group {
   show_leaderboard: boolean;
   created_at: string;
   memberCount: number;
+  // ── Rollups computed by GET /api/group/groups (see that route) ──
+  /** Members who studied today. */
+  activeCount: number;
+  /** Lifetime cards studied across the group. */
+  cardsStudied: number;
+  /** XP earned since Monday across the group — same week as the leaderboard. */
+  weeklyXp: number;
+  /** Up to four members, for the avatar stack. */
+  faces: GroupMemberFace[];
 }
 
 async function authHeaders(): Promise<Record<string, string>> {

@@ -3,6 +3,8 @@
 import GlobalStyles from '@mui/material/GlobalStyles';
 import { useEffect } from 'react';
 
+import { LANDING_DISPLAY_FONT } from './landingFonts';
+
 export default function LandingGlobalStyles() {
   useEffect(() => {
     document.documentElement.style.scrollBehavior = 'smooth';
@@ -14,6 +16,24 @@ export default function LandingGlobalStyles() {
   return (
     <GlobalStyles
       styles={{
+        // Headline weights, in one place instead of on 14 `sx` props.
+        //
+        // Sections render their headings as `<Typography component="h2">` with
+        // no `variant`, so they inherit body1's weight (500) and the theme's
+        // `typography.h2` never applies. That was invisible under the serif,
+        // which ships a single weight — under Poppins it reads far too light.
+        // An id-scoped element selector outranks the emotion class `sx` emits,
+        // and applies to any heading a future section adds.
+        '#landing-root :is(h1, h2)': {
+          fontFamily: LANDING_DISPLAY_FONT,
+          fontWeight: 800,
+          letterSpacing: '-0.028em',
+        },
+        '#landing-root :is(h3, h4)': {
+          fontFamily: LANDING_DISPLAY_FONT,
+          fontWeight: 700,
+          letterSpacing: '-0.018em',
+        },
         '@keyframes sakuraFall-l': {
           '0%': { transform: 'translateY(-60px) translateX(0) rotate(0deg)', opacity: '0' },
           '8%': { opacity: '1' },
