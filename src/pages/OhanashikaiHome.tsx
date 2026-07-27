@@ -12,7 +12,6 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
@@ -20,8 +19,8 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { Loading } from '@/components/Loading';
+import { CreateSpeechDialog } from '@/components/Ohanashikai/CreateSpeechDialog';
 import { PageHeader } from '@/components/PageHeader';
-import { StyledDialog } from '@/components/StyledDialog';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { LAYOUT } from '@/theme';
 
@@ -36,24 +35,6 @@ export default function OhanashikaiHome() {
     useOhanashikais();
 
   const [createOpen, setCreateOpen] = useState(false);
-  const [titleVal, setTitleVal] = useState('');
-  const [descVal, setDescVal] = useState('');
-  const [creating, setCreating] = useState(false);
-
-  const handleCreate = async () => {
-    const title = titleVal.trim();
-    if (!title) return;
-    setCreating(true);
-    try {
-      const item = await createOhanashikai(title, descVal.trim() || undefined);
-      setCreateOpen(false);
-      setTitleVal('');
-      setDescVal('');
-      router.push(`/ohanashikai/${item.id}`);
-    } finally {
-      setCreating(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -227,62 +208,11 @@ export default function OhanashikaiHome() {
       )}
 
       {/* ── Create Dialog ── */}
-      <StyledDialog
+      <CreateSpeechDialog
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        title={t('newSpeechDialogTitle')}
-        subtitle={t('newSpeechDialogSubtitle')}
-        closeDisabled={creating}
-        actions={
-          <Stack direction="row" spacing={1}>
-            <Button
-              onClick={() => setCreateOpen(false)}
-              sx={{ color: 'text.secondary', textTransform: 'none' }}
-            >
-              {tc('cancel')}
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleCreate}
-              disabled={creating || !titleVal.trim()}
-              sx={{
-                bgcolor: brand[700],
-                color: '#fff',
-                textTransform: 'none',
-                borderRadius: 6,
-                px: 2.5,
-                '&:hover': { bgcolor: brand[800] },
-                '&:disabled': { bgcolor: alpha(brand[700], 0.2), color: alpha('#fff', 0.5) },
-              }}
-            >
-              {creating ? t('creating') : t('createButton')}
-            </Button>
-          </Stack>
-        }
-      >
-        <Stack spacing={2}>
-          <TextField
-            autoFocus
-            fullWidth
-            size="small"
-            label={t('speechTitleLabel')}
-            placeholder={t('speechTitlePlaceholder')}
-            value={titleVal}
-            onChange={(e) => setTitleVal(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') void handleCreate();
-            }}
-          />
-          <TextField
-            fullWidth
-            size="small"
-            label={t('descriptionLabel')}
-            placeholder={t('descriptionPlaceholder')}
-            value={descVal}
-            onChange={(e) => setDescVal(e.target.value)}
-          />
-        </Stack>
-      </StyledDialog>
+        onCreate={createOhanashikai}
+      />
     </Box>
   );
 }

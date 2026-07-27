@@ -1,4 +1,4 @@
 export { GreetingHero } from './GreetingHero';
 export { LevelBadge } from './LevelBadge';
-export { SpeechCard } from './SpeechCard';
+export { SpeechRow } from './SpeechRow';
 export { XpProgressCard } from './XpProgressCard';

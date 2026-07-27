@@ -197,6 +197,7 @@ export type Radii = {
   md: string; // menus, popovers, cards, standard containers
   lg: string; // dialogs and large hero surfaces
   pill: string; // fully-rounded pills
+  card: string; // anything shaped like one of the app's cards
 };
 
 export const radii: Radii = {
@@ -204,6 +205,9 @@ export const radii: Radii = {
   md: '12px',
   lg: '16px',
   pill: '9999px',
+  // Not ImageCard's 14px: corner roundness reads relative to box size, and a
+  // deck tile is about half a flashcard's width. Scale with DECK_TILE_WIDTH.
+  card: '8px',
 };
 
 declare module '@mui/material/styles' {

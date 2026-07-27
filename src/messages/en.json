@@ -134,7 +134,8 @@
       "shared": "Shared",
       "shareDeck": "Share deck",
       "deleteDeck": "Delete deck",
-      "openDeckAria": "Open deck: {name}"
+      "openDeckAria": "Open deck: {name}",
+      "cardsLabel": "cards"
     },
     "editCardDialog": {
       "title": "Edit Card",
@@ -988,6 +989,14 @@
       "unpinGroup": "Unpin group",
       "pinGroup": "Pin group"
     },
+    "groupRow": {
+      "openAriaLabel": "{name} — {members, plural, one {# member} other {# members}}, {cards, number} cards studied",
+      "cards": "<b>{count, number}</b> cards",
+      "activeToday": "{count, plural, one {# active today} other {# active today}}",
+      "thisWeek": "This week",
+      "pinToHome": "Pin to home",
+      "unpinFromHome": "Unpin from home"
+    },
     "inviteList": {
       "emptyState": "No invite codes yet. Create one to onboard members!",
       "never": "Never",
@@ -1131,19 +1140,6 @@
       "noActivity": "No recent activity yet.",
       "justNow": "Just now"
     },
-    "homeWidget": {
-      "memberLabel": "{count, plural, one {member} other {members}}",
-      "xpLabel": "XP",
-      "cardsLabel": "cards",
-      "membersHeading": "Members:",
-      "neverActive": "Never active",
-      "activeToday": "Active today",
-      "activeYesterday": "Active yesterday",
-      "activeDaysAgo": "{days, plural, one {Active # day ago} other {Active # days ago}}",
-      "moreCount": "+{count} more",
-      "activeThisWeek": "{count} active this week",
-      "dashboardButton": "Dashboard"
-    },
     "overview": {
       "membersLabel": "Members",
       "activeThisWeek": "{count} active this week",
@@ -1221,10 +1217,14 @@
     "sectionNav": {
       "allGroups": "All groups",
       "allDecks": "All decks",
-      "allSpeeches": "All speeches"
+      "allSpeeches": "All speeches",
+      "allGroupsCount": "All {count, plural, one {# group} other {# groups}}"
     },
     "groupsSection": {
-      "emptyCreate": "Create a group to get started"
+      "emptyCreate": "Create a group to get started",
+      "loading": "Loading your groups…",
+      "createGroup": "Create a group",
+      "emptyPin": "Pin a group to see it here — tap the pin icon on any group ✨"
     },
     "leaderboardSection": {
       "emptyCheckBack": "Check back when more people join!"
@@ -1236,14 +1236,16 @@
       "emptyCreateFirstTitle": "Create your first deck!",
       "emptyPinTitle": "Pin a deck to see it here",
       "emptyCreateFirstSub": "Head to Decks to start building flashcards ✨",
-      "emptyPinSub": "Tap the pin icon on any deck ✨"
+      "emptyPinSub": "Tap the pin icon on any deck ✨",
+      "createDeck": "Create a deck"
     },
     "speechesSection": {
       "emptyCreateFirstTitle": "Practice your お話し会 speech!",
       "emptyPinTitle": "Pin a speech to see it here",
       "emptyCreateFirstSub": "Add your lines and start memorizing ✨",
       "emptyPinSub": "Tap the pin icon on any speech ✨",
-      "lineCount": "{count, plural, one {# line} other {# lines}}"
+      "lineCount": "{count, plural, one {# line} other {# lines}}",
+      "writeSpeech": "Write a speech"
     },
     "customizeDialog": {
       "title": "Customize Home",

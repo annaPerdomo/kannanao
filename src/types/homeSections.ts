@@ -37,12 +37,12 @@ export interface SectionMeta {
 
 export const SECTION_META: Record<SectionKey, SectionMeta> = {
   todo: { label: 'To-Do List', emoji: '✅' },
-  groups: { label: 'My Groups', emoji: '👥' },
+  groups: { label: 'Pinned Groups', emoji: '👥' },
   leaderboard: { label: 'Leaderboard', emoji: '🏆' },
   assignments: { label: 'Assignments', emoji: '📋' },
-  // "Pinned" is load-bearing: the home versions of these two sections only ever
-  // show pinned items, and the label is what tells you why a deck you own isn't
-  // here. The empty states point at the pin icon to match.
+  // "Pinned" is load-bearing: the home versions of these sections only ever show
+  // pinned items, and the label is what tells you why a deck or group you own
+  // isn't here. The empty states point at the pin icon to match.
   decks: { label: 'Pinned Decks', emoji: '📚' },
   speeches: { label: 'Pinned Speeches', emoji: '🎤' },
 };
@@ -88,22 +88,31 @@ export function resolveSectionOrder(
   return [...ordered, ...missing];
 }
 
-/** Default grid layout — two-column dashboard */
+/**
+ * Default grid layout — two-column dashboard.
+ *
+ * Heights are in grid units of 30px plus a 16px gutter, so a section of height
+ * `h` is `46h - 16` pixels tall — set just above what each section's content
+ * actually measures.
+ *
+ * Only new dashboards get these. A saved `gridLayout` always wins, so anyone who
+ * has dragged their sections keeps the sizes they chose until they hit Reset layout.
+ */
 export function getDefaultGridLayout(isMember: boolean): GridLayoutItem[] {
   if (isMember) {
     return [
       { i: 'todo', x: 0, y: 0, w: 6, h: 18 },
       { i: 'leaderboard', x: 6, y: 0, w: 6, h: 7 },
       { i: 'assignments', x: 6, y: 7, w: 6, h: 5 },
-      { i: 'decks', x: 6, y: 12, w: 6, h: 10 },
-      { i: 'speeches', x: 0, y: 18, w: 6, h: 6 },
+      { i: 'decks', x: 6, y: 12, w: 6, h: 7 },
+      { i: 'speeches', x: 0, y: 18, w: 6, h: 5 },
     ];
   }
   return [
     { i: 'todo', x: 0, y: 0, w: 6, h: 18 },
-    { i: 'groups', x: 6, y: 0, w: 6, h: 7 },
-    { i: 'decks', x: 6, y: 7, w: 6, h: 10 },
-    { i: 'speeches', x: 6, y: 17, w: 6, h: 6 },
+    { i: 'groups', x: 6, y: 0, w: 6, h: 6 },
+    { i: 'decks', x: 6, y: 6, w: 6, h: 7 },
+    { i: 'speeches', x: 6, y: 13, w: 6, h: 5 },
   ];
 }
 

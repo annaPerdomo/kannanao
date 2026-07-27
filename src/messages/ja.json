@@ -134,7 +134,8 @@
       "shared": "共有中",
       "shareDeck": "デッキを共有",
       "deleteDeck": "デッキを削除",
-      "openDeckAria": "デッキを開く: {name}"
+      "openDeckAria": "デッキを開く: {name}",
+      "cardsLabel": "枚"
     },
     "editCardDialog": {
       "title": "カードを編集",
@@ -981,6 +982,14 @@
       "unpinGroup": "グループのピンを外す",
       "pinGroup": "グループをピン留め"
     },
+    "groupRow": {
+      "openAriaLabel": "{name} — メンバー{members}人、{cards, number}枚学習",
+      "cards": "<b>{count, number}</b>枚",
+      "activeToday": "{count, plural, other {今日#人が学習}}",
+      "thisWeek": "今週",
+      "pinToHome": "ホームにピン留め",
+      "unpinFromHome": "ホームからピンを外す"
+    },
     "inviteList": {
       "emptyState": "招待コードがまだありません。作ってメンバーを招待しましょう！",
       "never": "なし",
@@ -1124,19 +1133,6 @@
       "noActivity": "最近の活動はまだありません。",
       "justNow": "たった今"
     },
-    "homeWidget": {
-      "memberLabel": "{count, plural, other {人}}",
-      "xpLabel": "XP",
-      "cardsLabel": "枚",
-      "membersHeading": "メンバー:",
-      "neverActive": "活動なし",
-      "activeToday": "今日活動",
-      "activeYesterday": "きのう活動",
-      "activeDaysAgo": "{days, plural, other {#日前に活動}}",
-      "moreCount": "ほか{count}人",
-      "activeThisWeek": "今週 {count}人が活動",
-      "dashboardButton": "ダッシュボード"
-    },
     "overview": {
       "membersLabel": "メンバー",
       "activeThisWeek": "今週 {count}人が活動",
@@ -1214,10 +1210,14 @@
     "sectionNav": {
       "allGroups": "すべてのグループ",
       "allDecks": "すべてのデッキ",
-      "allSpeeches": "すべてのスピーチ"
+      "allSpeeches": "すべてのスピーチ",
+      "allGroupsCount": "グループ{count}件すべて"
     },
     "groupsSection": {
-      "emptyCreate": "グループを作って始めましょう"
+      "emptyCreate": "グループを作って始めましょう",
+      "loading": "グループを読み込み中…",
+      "createGroup": "グループを作成",
+      "emptyPin": "ピン留めするとここに表示されます。グループのピンアイコンを押してください ✨"
     },
     "leaderboardSection": {
       "emptyCheckBack": "もっと人が参加したら見てみてね！"
@@ -1229,14 +1229,16 @@
       "emptyCreateFirstTitle": "最初のデッキを作ろう！",
       "emptyPinTitle": "デッキをピン留めするとここに表示されます",
       "emptyCreateFirstSub": "デッキのページでフラッシュカードを作ろう ✨",
-      "emptyPinSub": "デッキのピンのアイコンをタップ ✨"
+      "emptyPinSub": "デッキのピンのアイコンをタップ ✨",
+      "createDeck": "デッキを作成"
     },
     "speechesSection": {
       "emptyCreateFirstTitle": "お話し会のスピーチを練習しよう！",
       "emptyPinTitle": "スピーチをピン留めするとここに表示されます",
       "emptyCreateFirstSub": "行を追加して覚えはじめよう ✨",
       "emptyPinSub": "スピーチのピンのアイコンをタップ ✨",
-      "lineCount": "{count, plural, other {#行}}"
+      "lineCount": "{count, plural, other {#行}}",
+      "writeSpeech": "スピーチを書く"
     },
     "customizeDialog": {
       "title": "ホームをカスタマイズ",
