@@ -36,45 +36,48 @@ interface ScenePanelProps {
   title: string;
   tilt: number;
   delay: number;
-  inView: boolean;
   children: ReactNode;
 }
 
-function ScenePanel({ accent, icon, title, tilt, delay, inView, children }: ScenePanelProps) {
+// Outer holds the resting tilt, inner runs the keyframe — one `transform` each.
+function ScenePanel({ accent, icon, title, tilt, delay, children }: ScenePanelProps) {
   return (
-    <Box
-      sx={{
-        position: 'relative',
-        flex: 1,
-        minWidth: 0,
-        p: { xs: 1.5, sm: 1.75 },
-        borderRadius: 3,
-        bgcolor: alpha('#fff', 0.94),
-        border: `1.5px solid ${alpha(accent[200], 0.85)}`,
-        boxShadow: `0 14px 34px ${alpha(accent[500], 0.18)}`,
-        backdropFilter: 'blur(6px)',
-        opacity: inView ? 1 : 0,
-        transform: inView ? `rotate(${tilt}deg)` : `translateY(24px) rotate(${tilt}deg)`,
-        transition: `opacity 0.7s ease ${delay}s, transform 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}s`,
-      }}
-    >
-      <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mb: 1.25 }}>
-        <Box sx={{ display: 'flex', color: accent[500], '& svg': { fontSize: '1rem' } }}>
-          {icon}
-        </Box>
-        <Typography
-          sx={{
-            fontSize: '0.68rem',
-            fontWeight: 800,
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            color: accent[700],
-          }}
-        >
-          {title}
-        </Typography>
-      </Stack>
-      {children}
+    <Box sx={{ flex: 1, minWidth: 0, transform: `rotate(${tilt}deg)` }}>
+      <Box
+        sx={{
+          position: 'relative',
+          p: { xs: 1.5, sm: 1.75 },
+          borderRadius: 3,
+          bgcolor: alpha('#fff', 0.94),
+          border: `1.5px solid ${alpha(accent[200], 0.85)}`,
+          boxShadow: `0 14px 34px ${alpha(accent[500], 0.18)}`,
+          backdropFilter: 'blur(6px)',
+          animation: `scenePanelIn 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}s both`,
+          '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+          '@keyframes scenePanelIn': {
+            from: { opacity: 0, transform: 'translateY(24px)' },
+            to: { opacity: 1, transform: 'translateY(0)' },
+          },
+        }}
+      >
+        <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mb: 1.25 }}>
+          <Box sx={{ display: 'flex', color: accent[500], '& svg': { fontSize: '1rem' } }}>
+            {icon}
+          </Box>
+          <Typography
+            sx={{
+              fontSize: '0.68rem',
+              fontWeight: 800,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              color: accent[700],
+            }}
+          >
+            {title}
+          </Typography>
+        </Stack>
+        {children}
+      </Box>
     </Box>
   );
 }
@@ -83,14 +86,12 @@ interface ProgressBarProps {
   pct: number;
   color: string;
   track: string;
-  inView: boolean;
   delay: number;
   height?: number;
 }
 
-// Fills from 0 once the hero scrolls into view. `--target-width` feeds the
-// shared `progressFill` keyframe declared in LandingGlobalStyles.
-function ProgressBar({ pct, color, track, inView, delay, height = 6 }: ProgressBarProps) {
+// `--target-width` feeds the shared `progressFill` keyframe in LandingGlobalStyles.
+function ProgressBar({ pct, color, track, delay, height = 6 }: ProgressBarProps) {
   return (
     <Box sx={{ flex: 1, height, borderRadius: 3, bgcolor: track, overflow: 'hidden' }}>
       <Box
@@ -100,16 +101,14 @@ function ProgressBar({ pct, color, track, inView, delay, height = 6 }: ProgressB
           width: `${pct}%`,
           borderRadius: 3,
           background: color,
-          animation: inView
-            ? `progressFill 1.1s cubic-bezier(0.16,1,0.3,1) ${delay}s both`
-            : 'none',
+          animation: `progressFill 1.1s cubic-bezier(0.16,1,0.3,1) ${delay}s both`,
         }}
       />
     </Box>
   );
 }
 
-export function HeroScene({ inView }: { inView: boolean }) {
+export function HeroScene() {
   const t = useTranslations('Landing.hero.scene');
 
   return (
@@ -141,8 +140,7 @@ export function HeroScene({ inView }: { inView: boolean }) {
           bgcolor: alpha('#fff', 0.94),
           border: `1.5px solid ${alpha(purple[200], 0.9)}`,
           boxShadow: `0 10px 26px ${alpha(purple[500], 0.2)}`,
-          opacity: inView ? 1 : 0,
-          animation: inView ? 'chipPopIn 0.55s ease-out 0.35s both' : 'none',
+          animation: 'chipPopIn 0.55s ease-out 0.35s both',
         }}
       >
         <AutoAwesomeIcon sx={{ fontSize: '0.95rem', color: purple[500] }} />
@@ -205,7 +203,6 @@ export function HeroScene({ inView }: { inView: boolean }) {
             title={t('classProgress')}
             tilt={1.5}
             delay={0.45}
-            inView={inView}
           >
             <Stack spacing={1}>
               {CLASS_ROWS.map((row, i) => (
@@ -225,7 +222,6 @@ export function HeroScene({ inView }: { inView: boolean }) {
                     pct={row.pct}
                     color={`linear-gradient(90deg, ${purple[400]}, ${purple[600]})`}
                     track={alpha(purple[100], 0.9)}
-                    inView={inView}
                     delay={0.7 + i * 0.12}
                   />
                   <Typography
@@ -248,7 +244,6 @@ export function HeroScene({ inView }: { inView: boolean }) {
             title={t('streak', { days: STREAK_DAYS })}
             tilt={-1.5}
             delay={0.6}
-            inView={inView}
           >
             <Stack direction="row" spacing={0.5} sx={{ mb: 1.25 }}>
               {Array.from({ length: STREAK_DAYS + 2 }, (_, i) => (
@@ -274,7 +269,6 @@ export function HeroScene({ inView }: { inView: boolean }) {
               pct={(REVIEW_DONE / REVIEW_TOTAL) * 100}
               color={`linear-gradient(90deg, ${pink[400]}, ${pink[600]})`}
               track={alpha(pink[100], 0.9)}
-              inView={inView}
               delay={0.85}
               height={8}
             />

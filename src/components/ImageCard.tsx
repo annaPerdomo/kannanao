@@ -176,10 +176,15 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                   position: 'relative',
                 }}
               >
+                {/* Not just a scroll win: React hoists a high-priority
+                    <link rel="preload" as="image"> for every eager <img> it
+                    server-renders, and this card sits below the landing fold. */}
                 <Box
                   component="img"
                   src={localCard.imageUrl}
                   alt={localCard.word}
+                  loading="lazy"
+                  decoding="async"
                   sx={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }}
                 />
                 <UnsplashAttribution url={localCard.imageUrl} />

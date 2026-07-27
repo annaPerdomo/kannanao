@@ -17,7 +17,6 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useInView } from '@/hooks/useInView';
 import { amber, pink, purple } from '@/theme';
 
 import { Blob } from '../Blob';
@@ -39,12 +38,10 @@ const scrollTo = (id: string) =>
 export function HeroSection() {
   const router = useRouter();
   const { session } = useAuth();
-  const { ref, inView } = useInView(0.05);
   const t = useTranslations('Landing.hero');
 
   return (
     <Box
-      ref={ref}
       sx={{
         minHeight: '100vh',
         position: 'relative',
@@ -55,6 +52,17 @@ export function HeroSection() {
         pt: { xs: 14, md: 12 },
         pb: { xs: 10, md: 10 },
         px: { xs: 2, sm: 4, md: 6, lg: 8 },
+        // The headline is the LCP element, so its entrance must run from CSS
+        // (not useInView) and must not touch opacity — Chrome ignores a
+        // candidate while opacity is 0, which pins LCP to hydration.
+        '@keyframes heroTextIn': {
+          from: { transform: 'translateX(-48px)' },
+          to: { transform: 'translateX(0)' },
+        },
+        '@keyframes heroSceneIn': {
+          from: { transform: 'translateX(48px)' },
+          to: { transform: 'translateX(0)' },
+        },
         '@keyframes floatCard': {
           '0%,100%': { transform: 'translateY(0px) rotate(-1.5deg)' },
           '50%': { transform: 'translateY(-18px) rotate(0.8deg)' },
@@ -108,10 +116,8 @@ export function HeroSection() {
             flex: 1,
             minWidth: 0,
             textAlign: { xs: 'center', lg: 'left' },
-            opacity: inView ? 1 : 0,
-            transform: inView ? 'translateX(0)' : 'translateX(-48px)',
-            transition:
-              'opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1)',
+            animation: 'heroTextIn 0.9s cubic-bezier(0.16,1,0.3,1) both',
+            '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
           }}
         >
           <Chip
@@ -292,13 +298,11 @@ export function HeroSection() {
             flex: { lg: '0 0 520px' },
             width: '100%',
             maxWidth: 520,
-            opacity: inView ? 1 : 0,
-            transform: inView ? 'translateX(0)' : 'translateX(48px)',
-            transition:
-              'opacity 0.9s cubic-bezier(0.16,1,0.3,1) 0.18s, transform 0.9s cubic-bezier(0.16,1,0.3,1) 0.18s',
+            animation: 'heroSceneIn 0.9s cubic-bezier(0.16,1,0.3,1) 0.18s both',
+            '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
           }}
         >
-          <HeroScene inView={inView} />
+          <HeroScene />
         </Box>
       </Box>
 

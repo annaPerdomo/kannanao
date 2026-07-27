@@ -770,6 +770,9 @@ export function AiDemoSection() {
                               component="img"
                               src={DEMO_IMAGE_CARDS[i].imageUrl}
                               alt=""
+                              // See ImageCard: eager <img> ⇒ server-emitted preload.
+                              loading="lazy"
+                              decoding="async"
                               sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             />
                           ) : (
