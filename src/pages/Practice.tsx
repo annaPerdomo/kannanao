@@ -39,7 +39,11 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
     quiz: t('modeTitles.quiz'),
     listen: t('modeTitles.listen'),
   };
-  const badge = t('cardsBadge', { count: cards.length });
+  // Fill-in-the-blank needs a sentence to blank out. A card with no example
+  // (older Travel saves, or a generation that came back without one) rendered
+  // an empty prompt that could never be answered, so it sits the mode out.
+  const modeCards = mode === 'fill' ? cards.filter((c) => c.example_jp.trim()) : cards;
+  const badge = t('cardsBadge', { count: modeCards.length });
 
   if (loading) {
     return (
@@ -49,7 +53,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
     );
   }
 
-  if (cards.length < 2) {
+  if (modeCards.length < 2) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
@@ -65,7 +69,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
-        <QuizMode cards={cards} deckId={deckId} onExit={onBack} />
+        <QuizMode cards={modeCards} deckId={deckId} onExit={onBack} />
       </Box>
     );
   }
@@ -75,43 +79,63 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
-        <KotobaBubbleSetup deckId={deckId} totalCards={cards.length} onSelect={setBatchSize} />
+        <KotobaBubbleSetup deckId={deckId} totalCards={modeCards.length} onSelect={setBatchSize} />
       </Box>
     );
   }
 
   // Show batch picker for large decks (non-kotoba-bubble)
-  const needsPicker = cards.length > BATCH_PICKER_THRESHOLD;
+  const needsPicker = modeCards.length > BATCH_PICKER_THRESHOLD;
   if (needsPicker && batchSize === null) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
-        <BatchPicker totalCards={cards.length} mode={mode} onSelect={setBatchSize} />
+        <BatchPicker totalCards={modeCards.length} mode={mode} onSelect={setBatchSize} />
       </Box>
     );
   }
 
-  const effectiveBatchSize = batchSize ?? cards.length;
+  const effectiveBatchSize = batchSize ?? modeCards.length;
 
   return (
     <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
       <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
 
       {mode === 'match' && (
-        <MatchMode cards={cards} deckId={deckId} batchSize={effectiveBatchSize} onExit={onBack} />
+        <MatchMode
+          cards={modeCards}
+          deckId={deckId}
+          batchSize={effectiveBatchSize}
+          onExit={onBack}
+        />
       )}
       {mode === 'fill' && (
-        <FillMode cards={cards} deckId={deckId} batchSize={effectiveBatchSize} onExit={onBack} />
+        <FillMode
+          cards={modeCards}
+          deckId={deckId}
+          batchSize={effectiveBatchSize}
+          onExit={onBack}
+        />
       )}
       {mode === 'recall' && (
-        <RecallMode cards={cards} deckId={deckId} batchSize={effectiveBatchSize} onExit={onBack} />
+        <RecallMode
+          cards={modeCards}
+          deckId={deckId}
+          batchSize={effectiveBatchSize}
+          onExit={onBack}
+        />
       )}
       {mode === 'listen' && (
-        <ListenMode cards={cards} deckId={deckId} batchSize={effectiveBatchSize} onExit={onBack} />
+        <ListenMode
+          cards={modeCards}
+          deckId={deckId}
+          batchSize={effectiveBatchSize}
+          onExit={onBack}
+        />
       )}
       {mode === 'kotoba-bubble' && (
         <KotobaBubbleMode
-          cards={cards}
+          cards={modeCards}
           deckId={deckId}
           batchSize={effectiveBatchSize}
           onExit={onBack}
