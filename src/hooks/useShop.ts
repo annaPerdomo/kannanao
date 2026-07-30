@@ -7,7 +7,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { InitialShop } from '@/lib/dbMappers';
 import { sb } from '@/lib/supabase';
 import type {
-  BuddyConfig,
   CardBorderStyle,
   CelebTheme,
   ShopItem,
@@ -243,46 +242,86 @@ export const SHOP_ITEMS: ShopItem[] = [
     emoji: '🌌',
   },
 
-  // ── Study Buddies ──
+  // ── Study Buddies ── artwork and accents in src/lib/buddies.ts
+  {
+    key: 'buddy_tango',
+    name: 'Tango',
+    description: 'Your very first study buddy — cheering for you since day one!',
+    category: 'study_buddy',
+    price: 0,
+    emoji: '🦊',
+  },
   {
     key: 'buddy_bunny',
-    name: 'Bunny',
-    description: 'An adorable bunny hopping with encouragement',
+    name: 'Mochi',
+    description: 'A marshmallow-soft bunny who does one happy hop for every word you learn',
     category: 'study_buddy',
     price: 10000,
     emoji: '🐰',
   },
   {
     key: 'buddy_penguin',
-    name: 'Penguin',
-    description: 'A cool penguin who loves learning!',
+    name: 'Pico',
+    description: 'A little penguin who slid all the way from the icy north to study with you',
     category: 'study_buddy',
     price: 20000,
     emoji: '🐧',
   },
   {
     key: 'buddy_panda',
-    name: 'Panda',
-    description: 'A gentle panda with wise study vibes',
+    name: 'Anko',
+    description: 'A gentle panda who munches bamboo while you think — no rush, Anko waits',
     category: 'study_buddy',
     price: 40000,
     emoji: '🐼',
   },
   {
+    key: 'buddy_otter',
+    name: 'Rakko',
+    description: 'A floaty otter who never lets go of a favorite book — or of you',
+    category: 'study_buddy',
+    price: 60000,
+    emoji: '🦦',
+  },
+  {
     key: 'buddy_fox',
-    name: 'Fox',
-    description: 'A clever fox that keeps you sharp!',
+    name: 'Kon',
+    description: 'A clever fox who answers every question with a proud "kon kon!"',
     category: 'study_buddy',
     price: 65000,
     emoji: '🦊',
   },
   {
+    key: 'buddy_lucky_cat',
+    name: 'Fuku',
+    description: 'A lucky cat who waves good fortune onto every quiz you take',
+    category: 'study_buddy',
+    price: 80000,
+    emoji: '🐱',
+  },
+  {
     key: 'buddy_pink_cat',
-    name: 'Pink Cat',
-    description: 'A cheerful pink kitty that cheers you on!',
+    name: 'Mikan',
+    description: 'A calico who naps on your notebook but always wakes up for study time',
     category: 'study_buddy',
     price: 100000,
-    emoji: '🐱',
+    emoji: '🐈',
+  },
+  {
+    key: 'buddy_kappa',
+    name: 'Kyuri',
+    description: 'A shy river sprite who trades cucumbers for correct answers',
+    category: 'study_buddy',
+    price: 120000,
+    emoji: '🥒',
+  },
+  {
+    key: 'buddy_tanuki',
+    name: 'Ponta',
+    description: 'A playful tanuki who believed in you before you even answered',
+    category: 'study_buddy',
+    price: 150000,
+    emoji: '🦝',
   },
 
   // ── Coming Soon ──
@@ -395,184 +434,6 @@ export const CELEBRATION_THEMES: Record<string, CelebTheme> = {
   celeb_galaxy: {
     colors: ['#6B21A8', '#4338CA', '#0EA5E9', '#818CF8', '#C084FC'],
     emojis: ['🌌', '🪐', '⭐', '🚀', '💫'],
-  },
-};
-
-/**
- * Map buddy item key → config with emoji and reaction text.
- *
- * The `reactions` arrays are also translated under the `Shop.buddies.<key>`
- * namespace in messages/en.json — HomeBuddy.tsx (the one global buddy) reads
- * them via `useTranslations('Shop.buddies')` + `t.raw(...)`. The English
- * literals here are kept as a non-UI fallback because BuddyPreviewModal.tsx
- * and BuddyCardPreview.tsx still read `config.reactions` directly and have
- * not been converted to i18n yet.
- */
-export const BUDDY_CONFIG: Record<string, BuddyConfig> = {
-  buddy_pink_cat: {
-    emoji: '🐱',
-    reactions: {
-      correct: [
-        'Nyaa~ Perfect!',
-        'Purr-fect answer!',
-        'Meow yeah!',
-        "You're paw-some!",
-        'Nyan~ So smart!',
-        'Kitty is proud! ✨',
-        'Sugoi nya~!',
-        "That's right, nya!",
-      ],
-      wrong: [
-        'Mew… try again!',
-        "Don't give up, nya~",
-        'Almost there, meow!',
-        'One more try, nya!',
-        'Kitty believes in you!',
-        'Hmm, not quite nya~',
-      ],
-      idle: [
-        '♪ zzZ~',
-        '~purrs softly~',
-        '~chases yarn~',
-        "Nya~ let's study!",
-        '~stretches~',
-        '~grooms paws~',
-        '♪ la la nya~',
-        '~bats at butterfly~',
-      ],
-    },
-  },
-  buddy_bunny: {
-    emoji: '🐰',
-    reactions: {
-      correct: [
-        'Hop hop hooray!',
-        'Bunny bounce! 🎉',
-        "That's amazing!",
-        'Ear-resistible answer!',
-        'You did it!',
-        'So proud of you!',
-        'Sugoi! Sugoi!',
-        'Happy hops!',
-      ],
-      wrong: [
-        'Oops, one more time!',
-        'Try again, friend!',
-        "Don't worry, hop to it!",
-        'Almost! Keep going!',
-        "You'll get it next hop!",
-        'Bunny believes in you!',
-      ],
-      idle: [
-        '~munches carrot~',
-        '~wiggles nose~',
-        '~does a little hop~',
-        "Let's learn together!",
-        '~flops over~',
-        '~thumps foot~',
-        '~sniff sniff~',
-        '~hides in flowers~',
-      ],
-    },
-  },
-  buddy_penguin: {
-    emoji: '🐧',
-    reactions: {
-      correct: [
-        'Cool! Nailed it!',
-        'Ice-credible!',
-        'Waddle yeah!',
-        'Penguin approved! 🧊',
-        "You're on fire… wait, I melt!",
-        'Spectacular!',
-        'Chill answer! 🎉',
-        'Flipper high-five!',
-      ],
-      wrong: [
-        'Brrr, not quite…',
-        'Slide into another try!',
-        'Keep waddling forward!',
-        'Almost! Try once more!',
-        "Don't slip up now!",
-        'You got this, friend!',
-      ],
-      idle: [
-        '~waddles~',
-        '~slides on tummy~',
-        '~looks at fish~',
-        'Brr, study time!',
-        '~flaps flippers~',
-        '~huddles for warmth~',
-        '~catches snowflake~',
-        '~does penguin dance~',
-      ],
-    },
-  },
-  buddy_panda: {
-    emoji: '🐼',
-    reactions: {
-      correct: [
-        'Bamboo-tiful!',
-        'Panda-stic work!',
-        'You rock! 🎋',
-        "That's the way!",
-        'So wise! Like bamboo~',
-        'Amazing answer!',
-        'Panda proud moment!',
-        'Subarashii!',
-      ],
-      wrong: [
-        'Hmm, keep going!',
-        'Roll with it, try again!',
-        "Don't give up!",
-        'Almost there!',
-        'Panda patience~',
-        'Take your time!',
-      ],
-      idle: [
-        '~noms bamboo~',
-        '~rolls around~',
-        '~takes a nap~',
-        'Mmm, study break?',
-        '~stretches lazily~',
-        '~climbs tree~',
-        '~sits and thinks~',
-        '~munches thoughtfully~',
-      ],
-    },
-  },
-  buddy_fox: {
-    emoji: '🦊',
-    reactions: {
-      correct: [
-        'Clever answer!',
-        'Fox-tastic!',
-        'Sharp as always!',
-        'Brilliant mind! 🌟',
-        'What does the fox say? YAY!',
-        'Smarty-paws!',
-        'Quick thinking!',
-        'Sly and smart!',
-      ],
-      wrong: [
-        'Almost, think again!',
-        'Fox tip: try once more!',
-        'So close! Be cunning!',
-        "Don't worry, be foxy!",
-        "Tricky, but you've got this!",
-        'A clever fox never gives up!',
-      ],
-      idle: [
-        '~curls up~',
-        '~sniffs the air~',
-        '~chases leaves~',
-        'What shall we learn?',
-        '~flicks tail~',
-        '~yawns softly~',
-        '~perks ears up~',
-        '~does a little trot~',
-      ],
-    },
   },
 };
 

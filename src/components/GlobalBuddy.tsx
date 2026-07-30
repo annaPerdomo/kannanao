@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useShopCtx } from '@/contexts/ShopContext';
+import { resolveBuddyKey } from '@/lib/buddies';
 
 import { HomeBuddy } from './HomeBuddy';
 
@@ -19,11 +20,11 @@ export function GlobalBuddy() {
   const pathname = usePathname();
   const { session } = useAuth();
   const { equipped, loading } = useShopCtx();
-  const buddyKey = equipped['study_buddy'];
 
   if (!session) return null;
-  if (loading || !buddyKey) return null;
+  // Hold off until the slot resolves, or a purchased buddy flashes as Tango.
+  if (loading) return null;
   if (HIDE_ON_ROUTES.some((r) => pathname?.includes(r))) return null;
 
-  return <HomeBuddy buddyKey={buddyKey} />;
+  return <HomeBuddy buddyKey={resolveBuddyKey(equipped['study_buddy'])} />;
 }

@@ -133,7 +133,8 @@ const pwaConfig = withPWA({
   // screen, so precaching them bills every phone on mobile data for pixels that
   // device will never ask for. The 1x bands and the phone cards stay precached —
   // those are the ones on the critical path for the home screen.
-  publicExcludes: ['!noprecache/**/*', '!stickers/**/*', '!mascot/*@2x.webp'],
+  // Study-buddy art (~920 KB across 81 files) is excluded on the same grounds.
+  publicExcludes: ['!noprecache/**/*', '!stickers/**/*', '!mascot/*@2x.webp', '!buddies/**/*'],
   workboxOptions: {
     disableDevLogs: true,
     runtimeCaching,

@@ -6,9 +6,10 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import { alpha, keyframes, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
-import { BUDDY_CONFIG } from '@/hooks/useShop';
+import { BUDDY_ART, buddyShopSrc, FALLBACK_REACTIONS } from '@/lib/buddies';
 import type { ShopItem } from '@/types/shop';
 
 const float = keyframes`
@@ -30,6 +31,10 @@ const bubbleIn = keyframes`
 type DemoPhase = 'idle' | 'correct' | 'wrong';
 const DEMO_SEQUENCE: DemoPhase[] = ['idle', 'correct', 'wrong', 'idle'];
 
+function isNonEmptyStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.length > 0 && value.every((v) => typeof v === 'string');
+}
+
 export function BuddyPreviewModal({
   open,
   onClose,
@@ -39,6 +44,9 @@ export function BuddyPreviewModal({
   onClose: () => void;
   item: ShopItem | null;
 }) {
+  const t = useTranslations('Shop');
+  const tItems = useTranslations('Shop.items');
+  const tBuddies = useTranslations('Shop.buddies');
   const theme = useTheme();
   const { brand } = theme.palette;
   const [phase, setPhase] = useState(0);
@@ -52,16 +60,18 @@ export function BuddyPreviewModal({
     return () => clearInterval(t);
   }, [open]);
 
-  if (!item) return null;
-
-  const config = BUDDY_CONFIG[item.key];
-  if (!config) return null;
+  if (!item || !BUDDY_ART[item.key]) return null;
 
   const currentPhase = DEMO_SEQUENCE[phase];
-  const rawReaction = config.reactions[currentPhase];
-  const reactionText = Array.isArray(rawReaction)
-    ? rawReaction[phase % rawReaction.length]
-    : rawReaction;
+  let lines: string[] = FALLBACK_REACTIONS[currentPhase];
+  try {
+    const raw = tBuddies.raw(`${item.key}.${currentPhase}`);
+    if (isNonEmptyStringArray(raw)) lines = raw;
+  } catch {
+    // missing translation set — keep the generic fallback
+  }
+  const reactionText = lines[phase % lines.length];
+  const { accent, bg } = BUDDY_ART[item.key];
 
   return (
     <Dialog
@@ -84,7 +94,7 @@ export function BuddyPreviewModal({
         sx={{
           position: 'relative',
           height: 300,
-          background: `linear-gradient(145deg, ${alpha(brand[100], 0.95)}, ${alpha(brand[200], 0.6)})`,
+          background: `radial-gradient(ellipse at 50% 85%, ${alpha(accent, 0.2)} 0%, ${bg} 70%)`,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -117,26 +127,25 @@ export function BuddyPreviewModal({
           </Typography>
         </Box>
 
-        <Box
-          sx={{
-            width: 80,
-            height: 80,
-            borderRadius: '50%',
-            bgcolor: alpha('#fff', 0.85),
-            border: `2.5px solid ${alpha(brand[300], 0.45)}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '2.8rem',
-            lineHeight: 1,
-            boxShadow: `0 6px 24px ${alpha(brand[400], 0.2)}`,
-            animation:
-              currentPhase === 'correct'
-                ? `${bounce} 0.6s ease-in-out infinite`
-                : `${float} 3s ease-in-out infinite`,
-          }}
-        >
-          {config.emoji}
+        <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+          <Box
+            component="img"
+            src={buddyShopSrc(item.key)}
+            alt=""
+            draggable={false}
+            sx={{
+              height: 108,
+              maxWidth: 160,
+              objectFit: 'contain',
+              objectPosition: 'bottom',
+              pointerEvents: 'none',
+              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))',
+              animation:
+                currentPhase === 'correct'
+                  ? `${bounce} 0.6s ease-in-out infinite`
+                  : `${float} 3s ease-in-out infinite`,
+            }}
+          />
         </Box>
 
         <Typography
@@ -147,7 +156,7 @@ export function BuddyPreviewModal({
             color: brand[700],
           }}
         >
-          {item.name}
+          {tItems(`${item.key}.name`)}
         </Typography>
         <Typography
           sx={{
@@ -157,7 +166,7 @@ export function BuddyPreviewModal({
             px: 3,
           }}
         >
-          {item.description}
+          {tItems(`${item.key}.description`)}
         </Typography>
 
         <Box
@@ -187,7 +196,7 @@ export function BuddyPreviewModal({
                   textTransform: 'capitalize',
                 }}
               >
-                {r}
+                {t(`buddyPreview.${r}`)}
               </Typography>
             </Box>
           ))}
@@ -200,7 +209,7 @@ export function BuddyPreviewModal({
           variant="outlined"
           sx={{ borderRadius: 2, px: 4, fontFamily: (t) => t.fonts.cute }}
         >
-          Close
+          {t('buddyPreview.close')}
         </Button>
       </DialogActions>
     </Dialog>

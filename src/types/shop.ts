@@ -16,17 +16,6 @@ export interface ShopItem {
   comingSoon?: boolean;
 }
 
-export interface BuddyReactions {
-  correct: string | string[];
-  wrong: string | string[];
-  idle: string | string[];
-}
-
-export interface BuddyConfig {
-  emoji: string;
-  reactions: BuddyReactions;
-}
-
 export interface CardBorderStyle {
   border?: string;
   boxShadow?: string;

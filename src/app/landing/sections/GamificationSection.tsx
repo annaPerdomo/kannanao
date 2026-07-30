@@ -52,7 +52,7 @@ const DEMO_SHOP_ITEMS = [
   { key: 'sunsetOrange', icon: '🌅', price: 2500 },
   { key: 'cherryBlossom', icon: '🌸', price: 1500 },
   { key: 'starShower', icon: '⭐', price: 5000 },
-  { key: 'foxBuddy', icon: '🦊', price: 65000 },
+  { key: 'tanukiBuddy', icon: '🦝', price: 150000 },
 ];
 
 export function GamificationSection() {

@@ -41,6 +41,7 @@ import { useShopCtx } from '@/contexts/ShopContext';
 import { useColorScheme } from '@/contexts/ThemeContext';
 import { useProgress } from '@/hooks/useProgress';
 import { SHOP_ITEMS, THEME_KEY_TO_SCHEME } from '@/hooks/useShop';
+import { buddyFaceSrc } from '@/lib/buddies';
 import { type ColorScheme, LAYOUT } from '@/theme';
 import type { ShopCategory, ShopItem } from '@/types/shop';
 
@@ -540,8 +541,14 @@ export default function Shop() {
             >
               {confirmItem.category === 'theme' ? (
                 <ThemeCardPreview themeKey={confirmItem.key} />
-              ) : confirmItem.category === 'celebration' ||
-                confirmItem.category === 'study_buddy' ? (
+              ) : confirmItem.category === 'study_buddy' ? (
+                <Box
+                  component="img"
+                  src={buddyFaceSrc(confirmItem.key, 1)}
+                  alt=""
+                  sx={{ width: 52, height: 52, objectFit: 'contain' }}
+                />
+              ) : confirmItem.category === 'celebration' ? (
                 <Typography sx={{ fontSize: '2.2rem', lineHeight: 1 }}>
                   {confirmItem.emoji}
                 </Typography>
