@@ -17,9 +17,15 @@ vi.mock('@/components/Practice/CelebrationScreen/Particles', () => ({
   SparkleParticles: () => null,
 }));
 
+const shopState = vi.hoisted(() => ({ equipped: {} as Record<string, string> }));
+vi.mock('@/contexts/ShopContext', () => ({
+  useShopCtx: () => shopState,
+}));
+
 vi.mock('@/hooks/useShop', () => ({
-  useShop: () => ({ equipped: {} }),
-  CELEBRATION_THEMES: {},
+  CELEBRATION_THEMES: {
+    celeb_hearts: { colors: ['#FF69B4'], emojis: ['💖'] },
+  },
   CARD_BORDER_STYLES: {},
 }));
 
@@ -237,19 +243,15 @@ describe('CelebrationScreen', () => {
   });
 
   it('should not throw with an equipped celebration item', () => {
-    // Override useShop to return an equipped celebration
-    vi.doMock('@/hooks/useShop', () => ({
-      useShop: () => ({ equipped: { celebration: 'celeb_hearts' } }),
-      CELEBRATION_THEMES: {
-        celeb_hearts: { colors: ['#FF69B4'], emojis: ['💖'] },
-      },
-      CARD_BORDER_STYLES: {},
-    }));
-
-    expect(() =>
-      renderWithProviders(
-        <CelebrationScreen heading="Perfect!" subheading="5/5" mode="recall" onExit={vi.fn()} />,
-      ),
-    ).not.toThrow();
+    shopState.equipped = { celebration: 'celeb_hearts' };
+    try {
+      expect(() =>
+        renderWithProviders(
+          <CelebrationScreen heading="Perfect!" subheading="5/5" mode="recall" onExit={vi.fn()} />,
+        ),
+      ).not.toThrow();
+    } finally {
+      shopState.equipped = {};
+    }
   });
 });

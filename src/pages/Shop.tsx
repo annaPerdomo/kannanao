@@ -37,9 +37,10 @@ import { CelebrationPreviewModal } from '@/components/Shop/CelebrationPreviewMod
 import { CoinBurst } from '@/components/Shop/CoinBurst';
 import { Sparkles } from '@/components/Shop/Sparkles';
 import { ThemeCardPreview } from '@/components/Shop/ThemeCardPreview';
+import { useShopCtx } from '@/contexts/ShopContext';
 import { useColorScheme } from '@/contexts/ThemeContext';
 import { useProgress } from '@/hooks/useProgress';
-import { SHOP_ITEMS, THEME_KEY_TO_SCHEME, useShop } from '@/hooks/useShop';
+import { SHOP_ITEMS, THEME_KEY_TO_SCHEME } from '@/hooks/useShop';
 import { type ColorScheme, LAYOUT } from '@/theme';
 import type { ShopCategory, ShopItem } from '@/types/shop';
 
@@ -62,7 +63,7 @@ export default function Shop() {
     ownsItem,
     purchaseItem,
     equipItem,
-  } = useShop();
+  } = useShopCtx();
   const { scheme, setScheme } = useColorScheme();
 
   const activeThemeKey = useMemo(() => {
