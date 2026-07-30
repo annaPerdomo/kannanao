@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { normalizeFuriganaDeep } from '@/lib/furigana';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../_lib/rateLimit';
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
 - reading: kana pronunciation (empty if already kana)
 - romaji: Hepburn romaji with a SPACE between every word, e.g. "yoroshiku onegaishimasu" not "yoroshikuonegaishimasu". Punctuation keeps a space after it.
 - image_query: 2-4 word English noun phrase for Unsplash (concrete, photographic, child-friendly). Verbs→scene (食べる="child eating noodles"), abstracts→closest visual (楽しい="children laughing"). For phrases, pick the most concrete noun in the phrase.
-- example_jp: simple sentence for a young learner using the word naturally. Wrap every kanji (or kanji compound) with its hiragana reading using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです。 Pure kana words need no wrapping.
+- example_jp: simple sentence for a young learner using the word naturally. Wrap every kanji (or kanji compound) with its hiragana reading using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです。 Each group holds exactly one reading — never split a compound's reading with extra pipes ({無関係|むかんけい} or {無|む}{関|かん}{係|けい}, never {無関係|む|かん|けい}). Pure kana words need no wrapping.
 - example_en: English translation of the example sentence.
 - jlpt_level: JLPT level this word/phrase belongs to ("N5", "N4", "N3", "N2", "N1"), or null if not in any JLPT list.
 If a word has multiple meanings or translations, include all common ones separated by ", " (e.g. "front, surface, outside" for 表). Always list the most common meaning first.`;
@@ -110,7 +111,7 @@ If a word has multiple meanings or translations, include all common ones separat
     }
 
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]';
-    return NextResponse.json(JSON.parse(rawText));
+    return NextResponse.json(normalizeFuriganaDeep(JSON.parse(rawText)));
   } catch (err) {
     logger.error('Unhandled error', {
       route: '/api/generate',

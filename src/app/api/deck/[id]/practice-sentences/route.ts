@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { normalizeFurigana } from '@/lib/furigana';
 import { logger } from '@/lib/logger';
 import type { DbPracticeSentence } from '@/types/practiceSentence';
 
@@ -131,7 +132,7 @@ IMPORTANT RULES:
    - Q: "What does Sakura like?" → A: "Sakura likes cats."
 3. Keep grammar simple and natural — suitable for a beginning learner (short sentences, common structures, plain or polite form consistently within a conversation)
 4. Each sentence must have ONE clearly identifiable target particle to test
-5. Wrap every kanji or kanji compound with furigana using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです
+5. Wrap every kanji or kanji compound with furigana using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです. Each group holds exactly one reading — never split a compound's reading with extra pipes ({無関係|むかんけい} or {無|む}{関|かん}{係|けい}, never {無関係|む|かん|けい}).
 6. Pure hiragana/katakana words need no wrapping
 7. Provide 2-3 plausible distractor particles for each sentence (wrong but reasonable alternatives)
 8. particle_index is the character position of the target particle in the PLAIN text (after removing all {x|y} markup, counting from 0)
@@ -225,7 +226,7 @@ Output a JSON array of objects with these exact fields:
 
     const rows = generated.map((s) => ({
       deck_id: deckId,
-      sentence_jp: s.sentence_jp,
+      sentence_jp: normalizeFurigana(s.sentence_jp),
       sentence_en: s.sentence_en,
       target_particle: s.target_particle,
       particle_index: s.particle_index,

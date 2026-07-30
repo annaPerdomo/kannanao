@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { normalizeFuriganaDeep } from '@/lib/furigana';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
 
   const furiganaRule =
     displayMode === 'hiragana'
-      ? '\nIMPORTANT: For the "japanese" field, use {kanji|reading} syntax for EVERY kanji character to provide furigana. Example: "{助|たす}けてください". Pure hiragana/katakana needs no markup.'
+      ? '\nIMPORTANT: For the "japanese" field, use {kanji|reading} syntax for EVERY kanji character to provide furigana. Example: "{助|たす}けてください". Each group holds exactly one reading — never split it with extra pipes ({無関係|むかんけい}, never {無関係|む|かん|けい}). Pure hiragana/katakana needs no markup.'
       : '';
 
   const prompt = `Create a bilingual "show card" for a tourist in Japan to display on their phone. Tourist wants to communicate: "${message}"
@@ -94,7 +95,7 @@ Japanese: natural, polite (です/ます), concise. Include romaji, situation no
     }
 
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}';
-    return NextResponse.json(JSON.parse(rawText));
+    return NextResponse.json(normalizeFuriganaDeep(JSON.parse(rawText)));
   } catch (err) {
     logger.error('Unhandled error', {
       route: '/api/travel/show-card',

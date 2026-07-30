@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { normalizeFuriganaDeep } from '@/lib/furigana';
 import { logger } from '@/lib/logger';
 import type { GeneratedCard } from '@/types/flashcard';
 
@@ -28,7 +29,7 @@ For each vocabulary word or phrase found, return a JSON object with:
 - "romaji": Hepburn romaji with a SPACE between every word, e.g. "yoroshiku onegaishimasu" not "yoroshikuonegaishimasu"
 - "meaning": English meanings — include all common meanings separated by ", " (e.g. "front, surface, outside" for 表). List the most common meaning first, no periods
 - "image_query": 2-4 word English noun phrase for Unsplash (concrete, photographic, child-friendly). Verbs→scene (食べる="child eating noodles"), abstracts→closest visual (楽しい="children laughing"). For phrases, pick the most concrete noun.
-- "example_jp": simple sentence for a young learner using the word naturally. Wrap every kanji (or kanji compound) with its hiragana reading using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです。 Pure kana words need no wrapping.
+- "example_jp": simple sentence for a young learner using the word naturally. Wrap every kanji (or kanji compound) with its hiragana reading using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです。 Each group holds exactly one reading — never split a compound's reading with extra pipes ({無関係|むかんけい} or {無|む}{関|かん}{係|けい}, never {無関係|む|かん|けい}). Pure kana words need no wrapping.
 - "example_en": English translation of the example sentence, no trailing period.
 - "card_type": "word" for single vocabulary words, "phrase" for multi-word expressions or full phrases.
 - "jlpt_level": JLPT level this word/phrase belongs to ("N5", "N4", "N3", "N2", "N1"), or null if not in any JLPT list.
@@ -133,7 +134,7 @@ export async function POST(req: NextRequest) {
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]';
     const cards: GeneratedCard[] = JSON.parse(rawText);
     const cleaned = cards.map((c) => ({
-      ...c,
+      ...normalizeFuriganaDeep(c),
       word: stripPeriods(c.word),
       reading: stripPeriods(c.reading),
       meaning: stripPeriods(c.meaning),
