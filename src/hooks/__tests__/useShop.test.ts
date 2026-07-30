@@ -375,4 +375,47 @@ describe('useShop', () => {
       expect(unique.size).toBe(keys.length);
     });
   });
+
+  // ── Study buddy price ladder ─────────────────────────────────────────────────
+  // Tuned July 2026 against real earn-rate data: the whole set is collectable
+  // over one Sept–July school year. Shop.tsx renders items in array order, so
+  // array order is the visible ladder.
+
+  describe('study buddy price ladder', () => {
+    const buddies = SHOP_ITEMS.filter((i) => i.category === 'study_buddy');
+
+    it('should price buddies in strictly ascending array order', () => {
+      const prices = buddies.map((b) => b.price);
+      expect(prices).toEqual([...prices].sort((a, b) => a - b));
+      expect(new Set(prices).size).toBe(prices.length);
+    });
+
+    it('should have exactly one free buddy, the default Tango', () => {
+      const free = buddies.filter((b) => b.price === 0);
+      expect(free.map((b) => b.key)).toEqual(['buddy_tango']);
+    });
+
+    it('should crown the ladder with the lucky cat', () => {
+      expect(buddies.at(-1)?.key).toBe('buddy_lucky_cat');
+    });
+
+    it('should put a cat within early reach, between Pico and Anko', () => {
+      const price = (key: string) => buddies.find((b) => b.key === key)!.price;
+      expect(price('buddy_pink_cat')).toBeGreaterThan(price('buddy_penguin'));
+      expect(price('buddy_pink_cat')).toBeLessThan(price('buddy_panda'));
+    });
+
+    it('should keep the full set collectable within a school year', () => {
+      const total = buddies.reduce((sum, b) => sum + b.price, 0);
+      expect(total).toBe(243000);
+    });
+
+    it('should leave the cheapest buddy affordable but the second out of reach on launch day', () => {
+      // Naomania had 26,040 XP banked and nothing spent when this was tuned.
+      const banked = 26040;
+      const paid = buddies.filter((b) => b.price > 0);
+      expect(paid[0].price).toBeLessThanOrEqual(banked);
+      expect(paid[0].price + paid[1].price).toBeGreaterThan(banked);
+    });
+  });
 });
