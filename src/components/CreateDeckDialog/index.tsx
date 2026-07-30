@@ -12,139 +12,27 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
 
 import { AddCardsSection } from '@/components/AddCards';
 import { AddExistingCardsDialog } from '@/components/AddExistingCardsDialog';
 import { Loading } from '@/components/Loading';
 import { PdfImportModal } from '@/components/PdfImportModal';
+import { ReviewCardsDialog } from '@/components/ReviewCardsDialog';
 import { StyledDialog } from '@/components/StyledDialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { useDecks } from '@/hooks/useDecks';
-import { useGenerateFlashcards } from '@/hooks/useGenerateFlashcards';
-import { dbCopyCardsIntoDeck, dbInsertCards } from '@/lib/supabase';
-import type { Flashcard, GeneratedCard, MainViewMode } from '@/types/flashcard';
+
+import { useCreateDeckFlow } from './useCreateDeckFlow';
 
 export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useTranslations('Deck.createDeckDialog');
   const tCommon = useTranslations('Common');
   const { palette } = useTheme();
   const { brand, surfaces } = palette;
-
-  const { createDeck, pinDeck } = useDecks();
   const { user } = useAuth();
-  const router = useRouter();
-  const { generating, error, generate } = useGenerateFlashcards();
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [input, setInput] = useState('');
-  const [words, setWords] = useState<string[]>([]);
-  const [pinToHome, setPinToHome] = useState(false);
-  const [mainViewMode, setMainViewMode] = useState<MainViewMode>('hiragana');
-  const [creating, setCreating] = useState(false);
-  const [createdDeckId, setCreatedDeckId] = useState<string | null>(null);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [pdfOpen, setPdfOpen] = useState(false);
-
-  const busy = creating || generating;
-
-  const reset = () => {
-    setName('');
-    setDescription('');
-    setInput('');
-    setWords([]);
-    setPinToHome(false);
-    setMainViewMode('hiragana');
-    setCreating(false);
-    setCreatedDeckId(null);
-  };
-
-  const handleCreate = async () => {
-    if (!name.trim() || busy) return;
-    setCreating(true);
-    try {
-      const deck = await createDeck(name.trim(), description.trim() || undefined);
-      if (pinToHome) await pinDeck(deck.id, true);
-      const finalWords = input.trim() ? [...words, input.trim()] : words;
-      if (finalWords.length > 0) {
-        const generated = await generate(finalWords, deck.id, mainViewMode);
-        await dbInsertCards(
-          deck.id,
-          generated.map((card) => ({ ...card, deckId: deck.id })),
-        );
-      }
-      reset();
-      onClose();
-      router.push(`/deck/${deck.id}`);
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const navigateToDeck = (deckId: string) => {
-    reset();
-    onClose();
-    router.push(`/deck/${deckId}`);
-  };
-
-  const handleAddExisting = async () => {
-    if (!name.trim() || busy) return;
-    setCreating(true);
-    try {
-      const deck = await createDeck(name.trim(), description.trim() || undefined);
-      if (pinToHome) await pinDeck(deck.id, true);
-      setCreatedDeckId(deck.id);
-      setPickerOpen(true);
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handleImportPdf = async () => {
-    if (!name.trim() || busy) return;
-    setCreating(true);
-    try {
-      const deck = await createDeck(name.trim(), description.trim() || undefined);
-      if (pinToHome) await pinDeck(deck.id, true);
-      setCreatedDeckId(deck.id);
-      setPdfOpen(true);
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handlePdfImportAddCards = async (cards: GeneratedCard[]) => {
-    if (!createdDeckId) return;
-    await dbInsertCards(
-      createdDeckId,
-      cards.map((card) => ({
-        deckId: createdDeckId,
-        word: card.word,
-        reading: card.reading,
-        meaning: card.meaning,
-        image_query: card.image_query,
-        example_jp: card.example_jp,
-        example_en: card.example_en,
-        mainViewMode,
-        cardType: card.card_type,
-        jlptLevel: card.jlpt_level ?? undefined,
-      })),
-    );
-    setPdfOpen(false);
-    navigateToDeck(createdDeckId);
-  };
-
-  const handlePickerConfirm = async (cards: Flashcard[]) => {
-    if (!createdDeckId) return;
-    await dbCopyCardsIntoDeck(createdDeckId, cards);
-    setPickerOpen(false);
-    navigateToDeck(createdDeckId);
-  };
-
-  const canGenerate = words.length > 0 || input.trim().length > 0;
+  const flow = useCreateDeckFlow(onClose);
+  const { busy, creating, generating, canGenerate, review } = flow;
 
   return (
     <>
@@ -164,8 +52,8 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
               {tCommon('cancel')}
             </Button>
             <Button
-              onClick={handleCreate}
-              disabled={!name.trim() || busy}
+              onClick={flow.handleCreate}
+              disabled={!flow.name.trim() || busy}
               variant="contained"
               startIcon={
                 creating ? (
@@ -195,10 +83,10 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
           <>
             <TextField
               label={t('deckNameLabel')}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={flow.name}
+              onChange={(e) => flow.setName(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !canGenerate) void handleCreate();
+                if (e.key === 'Enter' && !canGenerate) void flow.handleCreate();
               }}
               fullWidth
               autoFocus
@@ -207,8 +95,8 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
             />
             <TextField
               label={t('descriptionLabel')}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={flow.description}
+              onChange={(e) => flow.setDescription(e.target.value)}
               fullWidth
               multiline
               rows={2}
@@ -226,14 +114,14 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
                 px: 1.5,
                 py: 1,
                 borderRadius: 3,
-                border: `1.5px solid ${pinToHome ? alpha(brand[400], 0.55) : alpha(brand[300], 0.3)}`,
-                bgcolor: pinToHome ? alpha(brand[50], 0.8) : 'transparent',
+                border: `1.5px solid ${flow.pinToHome ? alpha(brand[400], 0.55) : alpha(brand[300], 0.3)}`,
+                bgcolor: flow.pinToHome ? alpha(brand[50], 0.8) : 'transparent',
                 transition: 'all 0.18s ease',
                 cursor: 'pointer',
               }}
-              onClick={() => setPinToHome((v) => !v)}
+              onClick={() => flow.setPinToHome(!flow.pinToHome)}
             >
-              {pinToHome ? (
+              {flow.pinToHome ? (
                 <PushPinIcon sx={{ fontSize: '1rem', color: brand[600], flexShrink: 0 }} />
               ) : (
                 <PushPinOutlinedIcon
@@ -245,7 +133,7 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
                   sx={{
                     fontSize: '0.78rem',
                     fontWeight: 700,
-                    color: pinToHome ? brand[700] : 'text.secondary',
+                    color: flow.pinToHome ? brand[700] : 'text.secondary',
                     lineHeight: 1.2,
                   }}
                 >
@@ -259,10 +147,10 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
                 control={
                   <Switch
                     size="small"
-                    checked={pinToHome}
+                    checked={flow.pinToHome}
                     onChange={(e) => {
                       e.stopPropagation();
-                      setPinToHome(e.target.checked);
+                      flow.setPinToHome(e.target.checked);
                     }}
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': { color: brand[600] },
@@ -295,16 +183,16 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
             </Box>
 
             <AddCardsSection
-              words={words}
-              onWordsChange={setWords}
-              input={input}
-              onInputChange={setInput}
+              words={flow.words}
+              onWordsChange={flow.setWords}
+              input={flow.input}
+              onInputChange={flow.setInput}
               disabled={busy}
-              error={error}
-              mainViewMode={mainViewMode}
-              onMainViewModeChange={setMainViewMode}
-              onAddExisting={handleAddExisting}
-              onImportPdf={handleImportPdf}
+              error={flow.error}
+              mainViewMode={flow.mainViewMode}
+              onMainViewModeChange={flow.setMainViewMode}
+              onAddExisting={flow.handleAddExisting}
+              onImportPdf={flow.handleImportPdf}
               containerSx={{
                 bgcolor: surfaces.input,
                 border: `1.5px solid ${alpha(brand[300], 0.35)}`,
@@ -319,22 +207,35 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
       </StyledDialog>
 
       <AddExistingCardsDialog
-        open={pickerOpen}
+        open={flow.pickerOpen}
         onClose={() => {
-          setPickerOpen(false);
-          if (createdDeckId) navigateToDeck(createdDeckId);
+          flow.setPickerOpen(false);
+          if (flow.createdDeckId) flow.navigateToDeck(flow.createdDeckId);
         }}
-        targetDeckId={createdDeckId ?? ''}
+        targetDeckId={flow.createdDeckId ?? ''}
         userId={user?.id ?? ''}
-        onConfirm={handlePickerConfirm}
+        onConfirm={flow.handlePickerConfirm}
       />
+
       <PdfImportModal
-        open={pdfOpen}
+        open={flow.pdfOpen}
         onClose={() => {
-          setPdfOpen(false);
-          if (createdDeckId) navigateToDeck(createdDeckId);
+          flow.setPdfOpen(false);
+          if (flow.createdDeckId) flow.navigateToDeck(flow.createdDeckId);
         }}
-        onAddCards={handlePdfImportAddCards}
+        onAddCards={flow.handlePdfCards}
+      />
+
+      <ReviewCardsDialog
+        open={review.open}
+        cards={review.cards}
+        onClose={() => {
+          // The deck already exists — drop the user into it rather than
+          // stranding them behind a closed dialog.
+          if (flow.createdDeckId) flow.navigateToDeck(flow.createdDeckId);
+          else review.clear();
+        }}
+        onConfirm={flow.handleReviewConfirm}
       />
     </>
   );

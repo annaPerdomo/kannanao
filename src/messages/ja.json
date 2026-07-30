@@ -62,7 +62,8 @@
       "descriptionLabel": "説明（任意）",
       "pinToHome": "ホームにピン留め",
       "pinToHomeHelper": "このデッキをホームに表示します",
-      "addCardsOptional": "カードを追加（任意）"
+      "addCardsOptional": "カードを追加（任意）",
+      "createFailed": "デッキを作成できませんでした。もう一度お試しください。"
     },
     "deckHeader": {
       "saveTooltip": "保存（Enter）",
@@ -226,12 +227,6 @@
       "jlptLabel": "JLPT {level}",
       "editCardTooltip": "カードを編集",
       "deleteCardTooltip": "カードを削除"
-    },
-    "generateForm": {
-      "wordPlaceholder": "単語やフレーズを入力…",
-      "generating": "作成中…",
-      "generateCards": "カードを作成",
-      "itemsQueued": "{count, plural, other {#件が待機中}}"
     },
     "pdfImportModal": {
       "title": "📄 PDFから取り込み",

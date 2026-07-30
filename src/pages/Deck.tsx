@@ -30,13 +30,14 @@ import { ReviewCardsDialog } from '@/components/ReviewCardsDialog';
 import { ShareEmbedDialog } from '@/components/ShareEmbedDialog';
 import { SortableImageCard } from '@/components/SortableImageCard';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCardReview } from '@/hooks/useCardReview';
 import { useCards } from '@/hooks/useCards';
 import { useDecks } from '@/hooks/useDecks';
 import { useGenerateFlashcards } from '@/hooks/useGenerateFlashcards';
-import { encodeUnsplashUrl, fetchImage, triggerUnsplashDownload } from '@/services/api';
+import { withImages } from '@/services/cardPipeline';
 import { LAYOUT } from '@/theme';
 import type { PracticeMode } from '@/types/app';
-import type { Flashcard, GeneratedCard, MainViewMode } from '@/types/flashcard';
+import type { GeneratedCard, MainViewMode } from '@/types/flashcard';
 
 interface DeckProps {
   deckId: string;
@@ -67,11 +68,8 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const [embedOpen, setEmbedOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pendingMainViewMode, setPendingMainViewMode] = useState<MainViewMode>('hiragana');
-  const [reviewCards, setReviewCards] = useState<
-    (Omit<Flashcard, 'id' | 'deckId' | 'position'> & { image_query: string })[]
-  >([]);
-  const [reviewOpen, setReviewOpen] = useState(false);
   const [reordering, setReordering] = useState(false);
+  const review = useCardReview();
 
   const handleCountChange = useCallback(
     (count: number) => updateDeckCount(deckId, count),
@@ -110,27 +108,13 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const handleGenerate = async (words: string[], mainViewMode: MainViewMode) => {
     const generated = await generate(words, deckId, mainViewMode);
     setAddCardsOpen(false);
-    setReviewCards(generated as typeof reviewCards);
-    setReviewOpen(true);
+    review.review(generated);
   };
 
   const handlePdfCards = async (extracted: GeneratedCard[]) => {
-    const withImages = await Promise.all(
-      extracted.map(async (card) => {
-        const result = await fetchImage(card.image_query).catch(() => null);
-        if (result) triggerUnsplashDownload(result.downloadLocation);
-        return {
-          ...card,
-          imageUrl: result ? encodeUnsplashUrl(result) : undefined,
-          mainViewMode: pendingMainViewMode,
-          cardType: card.card_type,
-          jlptLevel: card.jlpt_level ?? undefined,
-        };
-      }),
-    );
+    const cards = await withImages(extracted, deckId, pendingMainViewMode);
     setPdfImportOpen(false);
-    setReviewCards(withImages);
-    setReviewOpen(true);
+    review.review(cards);
   };
 
   if (decksLoading || cardsLoading) {
@@ -382,13 +366,12 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
       )}
 
       <ReviewCardsDialog
-        open={reviewOpen}
-        cards={reviewCards}
-        onClose={() => setReviewOpen(false)}
+        open={review.open}
+        cards={review.cards}
+        onClose={review.close}
         onConfirm={(confirmed) => {
           addCards(confirmed.map((c) => ({ ...c, deckId })));
-          setReviewOpen(false);
-          setReviewCards([]);
+          review.clear();
         }}
       />
 
