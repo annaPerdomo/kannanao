@@ -194,7 +194,7 @@ export function ReviewCardsDialog({
         sx={{
           px: 2,
           pt: 2,
-          pb: 0,
+          pb: 1,
           display: 'flex',
           flexDirection: 'column',
           gap: 1,

@@ -282,7 +282,8 @@
         "furiganaHint": "💡 <code>{example}</code> と書くと、カードの漢字の上に読みがつきます",
         "furiganaHintExample": "'{'漢字|かんじ'}'",
         "exampleJpFieldLabel": "例文（日本語）",
-        "exampleEnFieldLabel": "例文（英語）"
+        "exampleEnFieldLabel": "例文（英語）",
+        "noMeaningPlaceholder": "意味が未設定"
       }
     },
     "shareDeckDialog": {

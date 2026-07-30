@@ -282,7 +282,8 @@
         "furiganaHint": "💡 Use <code>{example}</code> to show readings above kanji on the card",
         "furiganaHintExample": "'{'漢字|かんじ'}'",
         "exampleJpFieldLabel": "Example (JP)",
-        "exampleEnFieldLabel": "Example (EN)"
+        "exampleEnFieldLabel": "Example (EN)",
+        "noMeaningPlaceholder": "No meaning yet"
       }
     },
     "shareDeckDialog": {
