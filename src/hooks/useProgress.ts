@@ -580,22 +580,9 @@ export function useProgress(
         .update({ ended_at: new Date().toISOString(), duration_secs: durationSecs })
         .eq('id', sessionId);
 
-      if (
-        cardsStudied >= 5 &&
-        cardsCorrect === cardsStudied &&
-        !achievements.find((a) => a.achievement_key === 'perfect_session')
-      ) {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        await supabase
-          .from('user_achievements')
-          .upsert([{ user_id: user?.id, achievement_key: 'perfect_session' }], {
-            onConflict: 'user_id,achievement_key',
-          });
-
-        // XP bonus — recompute the level too, so the bonus can't leave the
-        // stored level inconsistent with total_xp.
+      if (cardsStudied >= 5 && cardsCorrect === cardsStudied) {
+        // Every perfect session pays, not just the first. Level is recomputed
+        // so it can't drift out of sync with total_xp.
         const base = progressRef.current;
         if (base) {
           const newXp = base.total_xp + XP_PERFECT_BONUS;
@@ -607,10 +594,21 @@ export function useProgress(
             .eq('id', base.id);
         }
 
-        setNewlyUnlocked((prev) => {
-          const def = ACHIEVEMENTS.find((a) => a.key === 'perfect_session');
-          return def ? [...prev, def] : prev;
-        });
+        if (!achievements.find((a) => a.achievement_key === 'perfect_session')) {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          await supabase
+            .from('user_achievements')
+            .upsert([{ user_id: user?.id, achievement_key: 'perfect_session' }], {
+              onConflict: 'user_id,achievement_key',
+            });
+
+          setNewlyUnlocked((prev) => {
+            const def = ACHIEVEMENTS.find((a) => a.key === 'perfect_session');
+            return def ? [...prev, def] : prev;
+          });
+        }
       }
 
       await fetchAll();
