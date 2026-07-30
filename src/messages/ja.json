@@ -232,8 +232,6 @@
       "title": "📄 PDFから取り込み",
       "subtitle": "書類から単語を抜き出します",
       "extractCards": "カードを抽出",
-      "reExtract": "もう一度抽出",
-      "addCardsToDeck": "{count, plural, other {カード#枚をデッキに追加}}",
       "extracting": "カードを抽出中…",
       "pleaseUploadPdf": "PDFファイルをアップロードしてください。",
       "fileSizeError": "ファイルは20MB以下にしてください。",
@@ -253,8 +251,8 @@
         "英語の例文",
         "JLPTレベル"
       ],
-      "cardsExtractedCount": "{count, plural, other {カード#枚を抽出}}",
-      "moreCards": "{count, plural, other {ほか#枚}}"
+      "addingCards": "カードを追加中…",
+      "noCardsFound": "このPDFから単語が見つかりませんでした。別のファイルをお試しください。"
     },
     "reorderBanner": {
       "defaultLabel": "ドラッグして並べ替えできます。終わったら「完了」を押してください。"

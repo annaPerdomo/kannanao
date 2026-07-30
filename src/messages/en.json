@@ -232,8 +232,6 @@
       "title": "📄 Import from PDF",
       "subtitle": "Extract vocabulary from a document",
       "extractCards": "Extract cards",
-      "reExtract": "Re-extract",
-      "addCardsToDeck": "{count, plural, one {Add # card to deck} other {Add # cards to deck}}",
       "extracting": "Extracting cards…",
       "pleaseUploadPdf": "Please upload a PDF file.",
       "fileSizeError": "File must be under 20 MB.",
@@ -253,8 +251,8 @@
         "example sentence in English",
         "JLPT level"
       ],
-      "cardsExtractedCount": "{count, plural, one {# card extracted} other {# cards extracted}}",
-      "moreCards": "{count, plural, one {+# more card} other {+# more cards}}"
+      "addingCards": "Adding cards…",
+      "noCardsFound": "We couldn't find any vocabulary in that PDF. Try a different file."
     },
     "reorderBanner": {
       "defaultLabel": "Drag and drop to reorder. Click Done when finished."

@@ -1,12 +1,13 @@
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import { Alert, Box, Button, Divider, Typography } from '@mui/material';
+import { Alert, Box, Button, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { StyledDialog } from '@/components/StyledDialog';
+import { errorMessage } from '@/lib/errorMessage';
 import { sb } from '@/lib/supabase';
 import type { GeneratedCard } from '@/types/flashcard';
 
@@ -24,7 +25,7 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
 
   const [file, setFile] = useState<File | null>(null);
   const [extracting, setExtracting] = useState(false);
-  const [extracted, setExtracted] = useState<GeneratedCard[] | null>(null);
+  const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -39,7 +40,6 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
       return;
     }
     setFile(f);
-    setExtracted(null);
     setError(null);
   };
 
@@ -58,11 +58,17 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
       r.readAsDataURL(f);
     });
 
+  // Extraction runs straight into the hand-off. There used to be a preview list
+  // with its own "Add N cards" button here, which meant confirming the same
+  // import twice — once against a cramped read-only list, then again in the
+  // Review Cards step that can actually edit them. Only the second one earns
+  // its place, so this modal just does the work and gets out of the way.
   const handleExtract = async () => {
     if (!file) return;
-    setExtracting(true);
     setError(null);
-    setExtracted(null);
+    setExtracting(true);
+
+    let cards: GeneratedCard[];
     try {
       const pdfBase64 = await toBase64(file);
       const { data: sessionData } = await sb.auth.getSession();
@@ -77,25 +83,35 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? t('extractionFailedFallback'));
-      setExtracted(data as GeneratedCard[]);
+      cards = data as GeneratedCard[];
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('extractFailedGeneric'));
+      setError(errorMessage(err, t('extractFailedGeneric')));
+      return;
     } finally {
       setExtracting(false);
     }
-  };
 
-  const handleAdd = () => {
-    if (extracted) {
-      onAddCards(extracted);
-      handleClose();
+    if (cards.length === 0) {
+      setError(t('noCardsFound'));
+      return;
+    }
+
+    // The parent still has to fetch a photo per card before the review step can
+    // open, so stay up and keep the spinner honest rather than closing early.
+    setAdding(true);
+    try {
+      await onAddCards(cards);
+      setFile(null);
+    } catch (err) {
+      setError(errorMessage(err, t('extractFailedGeneric')));
+    } finally {
+      setAdding(false);
     }
   };
 
   const handleClose = () => {
     onClose();
     setFile(null);
-    setExtracted(null);
     setError(null);
   };
 
@@ -106,55 +122,28 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
       title={t('title')}
       subtitle={t('subtitle')}
       maxWidth="sm"
-      closeDisabled={extracting}
+      closeDisabled={extracting || adding}
       actions={
-        !extracted ? (
-          <Button
-            fullWidth
-            variant="contained"
-            disabled={!file || extracting}
-            onClick={handleExtract}
-            sx={{
-              background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
-              borderRadius: '10px',
-              textTransform: 'none',
-              fontWeight: 700,
-              fontSize: '0.76rem',
-              '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
-            }}
-          >
-            {t('extractCards')}
-          </Button>
-        ) : (
-          <>
-            <Button
-              size="small"
-              onClick={() => setExtracted(null)}
-              sx={{ textTransform: 'none', fontSize: '0.74rem' }}
-            >
-              {t('reExtract')}
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleAdd}
-              sx={{
-                background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
-                borderRadius: '10px',
-                textTransform: 'none',
-                fontWeight: 700,
-                fontSize: '0.76rem',
-                flex: 1,
-                '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
-              }}
-            >
-              {t('addCardsToDeck', { count: extracted.length })}
-            </Button>
-          </>
-        )
+        <Button
+          fullWidth
+          variant="contained"
+          disabled={!file || extracting || adding}
+          onClick={handleExtract}
+          sx={{
+            background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
+            borderRadius: '10px',
+            textTransform: 'none',
+            fontWeight: 700,
+            fontSize: '0.76rem',
+            '&:hover': { background: `linear-gradient(135deg, ${brand[500]}, ${accent[400]})` },
+          }}
+        >
+          {t('extractCards')}
+        </Button>
       }
     >
-      {extracting ? (
-        <Loading message={t('extracting')} />
+      {extracting || adding ? (
+        <Loading message={adding ? t('addingCards') : t('extracting')} />
       ) : (
         <>
           {/* Drop zone */}
@@ -242,60 +231,6 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
             <Alert severity="error" sx={{ fontSize: '0.74rem', mb: 1.5 }}>
               {error}
             </Alert>
-          )}
-
-          {extracted && (
-            <Box>
-              <Divider sx={{ mb: 1.5 }} />
-              <Typography
-                fontSize="0.7rem"
-                fontWeight={700}
-                color="text.secondary"
-                sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1 }}
-              >
-                {t('cardsExtractedCount', { count: extracted.length })}
-              </Typography>
-              <Box
-                sx={{
-                  maxHeight: 180,
-                  overflowY: 'auto',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 0.5,
-                }}
-              >
-                {extracted.slice(0, 20).map((card, i) => (
-                  <Box
-                    key={i}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'baseline',
-                      gap: 1,
-                      p: '5px 8px',
-                      bgcolor: 'background.default',
-                      borderRadius: '7px',
-                      border: '0.5px solid',
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <Typography fontSize="0.78rem" fontWeight={700} sx={{ minWidth: 60 }}>
-                      {card.word}
-                    </Typography>
-                    <Typography fontSize="0.7rem" color="text.secondary" sx={{ minWidth: 60 }}>
-                      {card.reading}
-                    </Typography>
-                    <Typography fontSize="0.7rem" color="text.secondary" noWrap>
-                      {card.meaning}
-                    </Typography>
-                  </Box>
-                ))}
-                {extracted.length > 20 && (
-                  <Typography fontSize="0.7rem" color="text.secondary" textAlign="center">
-                    {t('moreCards', { count: extracted.length - 20 })}
-                  </Typography>
-                )}
-              </Box>
-            </Box>
           )}
         </>
       )}
