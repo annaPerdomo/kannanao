@@ -192,6 +192,11 @@
           "placeholder": "e.g. ねこ",
           "helperText": "Hiragana/katakana reading"
         },
+        "romaji": {
+          "label": "Romaji",
+          "placeholder": "e.g. yoroshiku onegaishimasu",
+          "helperText": "Roman letters, with a space between words"
+        },
         "meaning": {
           "label": "Meaning (English)",
           "placeholder": "e.g. cat",
@@ -247,6 +252,7 @@
       "extractedFields": [
         "word",
         "reading",
+        "romaji",
         "meaning",
         "example sentence in Japanese",
         "example sentence in English",

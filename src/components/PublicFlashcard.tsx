@@ -4,10 +4,10 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
-import { toRomaji } from 'wanakana';
 
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
+import { romajiFor } from '@/lib/flashcardUtils';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
 
 interface PublicFlashcardProps {
@@ -35,8 +35,8 @@ export function PublicFlashcard({ card, width = '100%', height = 300 }: PublicFl
   // Kanji front: show kanji; hiragana front: show reading; romaji front: romanize reading
   const frontMainText = isKanji
     ? card.word
-    : isRomaji && card.reading
-      ? toRomaji(card.reading)
+    : isRomaji && (card.reading || card.romaji)
+      ? romajiFor(card)
       : card.reading || card.word;
 
   const CARD_FRAME = `linear-gradient(145deg,

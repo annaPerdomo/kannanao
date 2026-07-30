@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
     const prompt = `Japanese language teacher. Create exactly one card per item for: ${pendingWords.join(', ')}.
 - card_type: "word" for single vocabulary words, "phrase" for multi-word expressions or full phrases.
 - reading: kana pronunciation (empty if already kana)
+- romaji: Hepburn romaji with a SPACE between every word, e.g. "yoroshiku onegaishimasu" not "yoroshikuonegaishimasu". Punctuation keeps a space after it.
 - image_query: 2-4 word English noun phrase for Unsplash (concrete, photographic, child-friendly). Verbs→scene (食べる="child eating noodles"), abstracts→closest visual (楽しい="children laughing"). For phrases, pick the most concrete noun in the phrase.
 - example_jp: simple sentence for a young learner using the word naturally. Wrap every kanji (or kanji compound) with its hiragana reading using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです。 Pure kana words need no wrapping.
 - example_en: English translation of the example sentence.
@@ -67,6 +68,7 @@ If a word has multiple meanings or translations, include all common ones separat
                 properties: {
                   word: { type: 'string' },
                   reading: { type: 'string' },
+                  romaji: { type: 'string' },
                   meaning: { type: 'string' },
                   image_query: { type: 'string' },
                   example_jp: { type: 'string' },
@@ -81,6 +83,7 @@ If a word has multiple meanings or translations, include all common ones separat
                 required: [
                   'word',
                   'reading',
+                  'romaji',
                   'meaning',
                   'image_query',
                   'example_jp',

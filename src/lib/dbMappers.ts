@@ -68,6 +68,8 @@ export interface SupabaseCardRow {
   deck_id: string | number;
   word: string;
   reading: string | null;
+  /** Optional: absent from rows read before the column was added. */
+  romaji?: string | null;
   meaning: string | null;
   image_url: string | null;
   image_query: string | null;
@@ -130,6 +132,7 @@ export function dbCardToApp(card: SupabaseCardRow): Flashcard {
     deckId: String(card.deck_id),
     word: card.word,
     reading: card.reading ?? '',
+    romaji: card.romaji ?? '',
     meaning: card.meaning ?? '',
     image_query: card.image_query ?? '',
     example_jp: card.example_jp ?? '',

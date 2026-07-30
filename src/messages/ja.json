@@ -192,6 +192,11 @@
           "placeholder": "例: ねこ",
           "helperText": "ひらがな・カタカナの読み"
         },
+        "romaji": {
+          "label": "ローマ字",
+          "placeholder": "例：yoroshiku onegaishimasu",
+          "helperText": "単語ごとにスペースを空けたローマ字"
+        },
         "meaning": {
           "label": "意味（英語）",
           "placeholder": "例: cat",
@@ -244,7 +249,15 @@
       "orClickToBrowse": "またはクリックして選択 · PDFのみ · 20MBまで",
       "clickToReplace": "{size} KB · クリックで差し替え",
       "fieldsExtracted": "抽出される項目",
-      "extractedFields": ["単語", "読み方", "意味", "日本語の例文", "英語の例文", "JLPTレベル"],
+      "extractedFields": [
+        "単語",
+        "読み方",
+        "ローマ字",
+        "意味",
+        "日本語の例文",
+        "英語の例文",
+        "JLPTレベル"
+      ],
       "cardsExtractedCount": "{count, plural, other {カード#枚を抽出}}",
       "moreCards": "{count, plural, other {ほか#枚}}"
     },

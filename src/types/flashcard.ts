@@ -6,6 +6,12 @@ export interface Flashcard {
   id: string;
   word: string;
   reading: string;
+  /**
+   * Word-spaced Hepburn romaji. Optional — cards created before the column
+   * existed fall back to romanising `reading`, which is only readable for
+   * single words. See `romajiFor()`.
+   */
+  romaji?: string;
   meaning: string;
   image_query: string;
   example_jp: string;
@@ -25,6 +31,8 @@ export interface GeneratePayload {
 export interface GeneratedCard {
   word: string;
   reading: string;
+  /** Word-spaced Hepburn romaji, e.g. "yoroshiku onegaishimasu". */
+  romaji?: string;
   meaning: string;
   image_query: string;
   example_jp: string;
