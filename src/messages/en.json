@@ -1531,7 +1531,13 @@
       "createAndSave": "Create & Save",
       "failedToSave": "Failed to save",
       "failedToCreateDeck": "Failed to create deck",
-      "createdFromTravelMode": "Created from Travel Mode"
+      "createdFromTravelMode": "Created from Travel Mode",
+      "savingTitle": "{count, plural, one {Making your card…} other {Making your # cards…}}",
+      "savedTitle": "Saved!",
+      "savedBody": "{count, plural, one {# card added to {deck}} other {# cards added to {deck}}}",
+      "savedHint": "They're ready to study whenever you are.",
+      "goToDeck": "Go to deck",
+      "keepBrowsing": "Keep browsing"
     },
     "phrases": {
       "backToHub": "Back to travel hub",

@@ -1531,7 +1531,13 @@
       "createAndSave": "作成して保存",
       "failedToSave": "保存に失敗しました",
       "failedToCreateDeck": "デッキを作成できませんでした",
-      "createdFromTravelMode": "トラベルモードから作成"
+      "createdFromTravelMode": "トラベルモードから作成",
+      "savingTitle": "{count, plural, other {カード#枚を作成中…}}",
+      "savedTitle": "保存しました！",
+      "savedBody": "{count, plural, other {「{deck}」にカード#枚を追加しました}}",
+      "savedHint": "いつでも学習を始められます。",
+      "goToDeck": "デッキを開く",
+      "keepBrowsing": "続けて見る"
     },
     "phrases": {
       "backToHub": "トラベルのトップにもどる",
