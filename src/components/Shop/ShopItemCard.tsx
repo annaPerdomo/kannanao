@@ -139,9 +139,11 @@ export function ShopItemCard({
       {isEquipped && (
         <Box
           sx={{
+            // Positive offsets: the Paper clips to its rounded corners, so an
+            // overhanging badge shows only a sliver.
             position: 'absolute',
-            top: mini ? -6 : -8,
-            right: mini ? -6 : -8,
+            top: mini ? 4 : 6,
+            right: mini ? 4 : 6,
             bgcolor: '#fff',
             borderRadius: '50%',
             width: mini ? 20 : 26,
