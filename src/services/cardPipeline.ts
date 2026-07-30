@@ -1,4 +1,4 @@
-import { stripFurigana } from '@/components/FuriganaText';
+import { furiganaToKana, normalizeFurigana, stripFurigana } from '@/lib/furigana';
 import type { Flashcard, GeneratedCard, MainViewMode } from '@/types/flashcard';
 
 import { encodeUnsplashUrl, fetchImage, generateFlashcards, triggerUnsplashDownload } from './api';
@@ -24,7 +24,7 @@ const KANA_ONLY = /^[぀-ゟ゠-ヿｦ-ﾟ\s、。，．！？!?・…〜~]*$/;
  * kana / half kanji string would break furigana display and typed answers.
  */
 export function readingFromFurigana(japanese: string): string {
-  const kana = japanese.replace(/\{[^|{}]+\|([^|{}]+)\}/g, '$1');
+  const kana = furiganaToKana(japanese);
   return KANA_ONLY.test(kana) ? kana : '';
 }
 
@@ -51,7 +51,10 @@ export async function withImages(
         romaji: card.romaji?.trim() ?? '',
         meaning: card.meaning ?? '',
         image_query: query,
-        example_jp: card.example_jp ?? '',
+        // Canonical markup on the way in: Gemini's per-character variant
+        // (`{無関係|む|かん|けい}`) is understood by the readers but confuses
+        // anyone hand-editing the sentence in the card editor.
+        example_jp: normalizeFurigana(card.example_jp ?? ''),
         example_en: card.example_en ?? '',
         imageUrl: result ? encodeUnsplashUrl(result) : undefined,
         deckId,

@@ -2,34 +2,20 @@
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
 
+import { parseFurigana } from '@/lib/furigana';
+
 interface FuriganaTextProps {
   text: string;
   showFurigana: boolean;
   sx?: SxProps<Theme>;
 }
 
-// Parse {kanji|reading} format into segments
-function parseSegments(text: string) {
-  const segments: Array<{ kanji: string; reading: string } | string> = [];
-  const regex = /\{([^|{}]+)\|([^|{}]+)\}/g;
-  let last = 0;
-  let match;
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > last) segments.push(text.slice(last, match.index));
-    segments.push({ kanji: match[1], reading: match[2] });
-    last = regex.lastIndex;
-  }
-  if (last < text.length) segments.push(text.slice(last));
-  return segments;
-}
-
-// Strip furigana markup, leaving plain kanji text
-export function stripFurigana(text: string): string {
-  return text.replace(/\{([^|{}]+)\|[^|{}]+\}/g, '$1');
-}
+// Parsing lives in `@/lib/furigana` so every reader — this component, the speak
+// button, the Kotoba highlighter — understands the same markup shapes.
+export { stripFurigana } from '@/lib/furigana';
 
 export default function FuriganaText({ text, showFurigana, sx }: FuriganaTextProps) {
-  const segments = parseSegments(text);
+  const segments = parseFurigana(text);
   return (
     <Box
       component="span"

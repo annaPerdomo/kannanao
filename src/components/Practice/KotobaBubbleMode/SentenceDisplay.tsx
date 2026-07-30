@@ -3,7 +3,8 @@ import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
-import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import FuriganaText from '@/components/FuriganaText';
+import { furiganaGroupRegex, stripFurigana } from '@/lib/furigana';
 import type { PracticeSentence } from '@/types/practiceSentence';
 
 interface SentenceDisplayProps {
@@ -24,7 +25,7 @@ function splitAnnotatedAt(
   plainIdx: number,
   plainLen: number,
 ): [string, string, string] {
-  const regex = /\{([^|{}]+)\|[^|{}]+\}/g;
+  const regex = furiganaGroupRegex();
   let plainPos = 0;
   let prevEnd = 0;
   let annotStart = -1;
@@ -56,7 +57,7 @@ function splitAnnotatedAt(
 
 /** Maps a plain-text position to the corresponding annotated-string position. */
 function plainToAnnotatedPos(annotated: string, targetPlainPos: number): number {
-  const regex = /\{([^|{}]+)\|[^|{}]+\}/g;
+  const regex = furiganaGroupRegex();
   let plainPos = 0;
   let prevEnd = 0;
   let match: RegExpExecArray | null;
