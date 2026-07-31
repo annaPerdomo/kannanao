@@ -10,9 +10,11 @@ interface SpeakButtonProps {
   text: string;
   iconSize?: string;
   sx?: SxProps<Theme>;
+  /** Called before playback starts, for surfaces that need to pause on interaction. */
+  onSpeak?: () => void;
 }
 
-export function SpeakButton({ text, iconSize = '1rem', sx }: SpeakButtonProps) {
+export function SpeakButton({ text, iconSize = '1rem', sx, onSpeak }: SpeakButtonProps) {
   const t = useTranslations('Common');
   const { speak, speaking } = useSpeech();
   return (
@@ -20,6 +22,7 @@ export function SpeakButton({ text, iconSize = '1rem', sx }: SpeakButtonProps) {
       size="small"
       onClick={(e) => {
         e.stopPropagation();
+        onSpeak?.();
         speak(text);
       }}
       disabled={speaking}
