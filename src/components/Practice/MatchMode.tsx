@@ -26,13 +26,35 @@ interface MatchModeProps {
   onExit: () => void;
 }
 
-type Side = 'jp' | 'en';
-
-interface Tile {
+interface TileBase {
   id: string;
   cardId: string;
-  side: Side;
   label: string;
+}
+
+// The JP side carries its own TTS text because `label` may be romaji depending
+// on the card's view mode. Keeping `speak` on that variant only means a JP tile
+// can't be built without it.
+type Tile = (TileBase & { side: 'jp'; speak: string }) | (TileBase & { side: 'en' });
+
+// Kana and kanji render about twice as wide as a latin character, so a raw
+// character count would shrink long romaji while letting equally wide kanji
+// overflow the tile.
+function isWideGlyph(ch: string): boolean {
+  const cp = ch.codePointAt(0) ?? 0;
+  return (
+    (cp >= 0x3000 && cp <= 0x30ff) || // CJK punctuation, hiragana, katakana
+    (cp >= 0x3400 && cp <= 0x9fff) || // kanji
+    (cp >= 0xff01 && cp <= 0xff60) // fullwidth forms
+  );
+}
+
+/** Roughly 14 latin characters, or 7 kanji. */
+const JP_TILE_SHRINK_WIDTH = 14;
+
+function jpLabelFontSize(label: string): string {
+  const width = [...label].reduce((w, ch) => w + (isWideGlyph(ch) ? 2 : 1), 0);
+  return width > JP_TILE_SHRINK_WIDTH ? '0.9rem' : '1.1rem';
 }
 
 function formatTime(secs: number): string {
@@ -87,10 +109,21 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
   // Build tiles for the current round
   const tiles = useMemo<Tile[]>(() => {
     const t: Tile[] = queue.currentCards.flatMap((c) => {
-      const { titleText } = getFlashcardDisplayText(c);
+      const { titleText, speakText } = getFlashcardDisplayText(c);
       return [
-        { id: `jp-${c.id}-r${queue.roundKey}`, cardId: c.id, side: 'jp' as Side, label: titleText },
-        { id: `en-${c.id}-r${queue.roundKey}`, cardId: c.id, side: 'en' as Side, label: c.meaning },
+        {
+          id: `jp-${c.id}-r${queue.roundKey}`,
+          cardId: c.id,
+          side: 'jp' as const,
+          label: titleText,
+          speak: speakText,
+        },
+        {
+          id: `en-${c.id}-r${queue.roundKey}`,
+          cardId: c.id,
+          side: 'en' as const,
+          label: c.meaning,
+        },
       ];
     });
     return shuffle(t);
@@ -337,17 +370,27 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                 {isMatched ? (
                   <CheckIcon sx={{ fontSize: '1.2rem', color: 'success.main' }} />
                 ) : tile.side === 'jp' ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      minWidth: 0,
+                      maxWidth: '100%',
+                    }}
+                  >
                     <Typography
                       sx={{
                         fontFamily: '"Noto Serif JP", serif',
-                        fontSize: '1.1rem',
+                        fontSize: jpLabelFontSize(tile.label),
                         color: 'text.primary',
+                        minWidth: 0,
+                        overflowWrap: 'anywhere',
                       }}
                     >
                       {tile.label}
                     </Typography>
-                    <SpeakButton text={tile.label} iconSize="0.9rem" />
+                    <SpeakButton text={tile.speak} iconSize="0.9rem" />
                   </Box>
                 ) : (
                   <Typography
@@ -355,6 +398,8 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                       fontFamily: '"DM Mono", monospace',
                       fontSize: '0.8rem',
                       color: 'text.primary',
+                      minWidth: 0,
+                      overflowWrap: 'anywhere',
                     }}
                   >
                     {tile.label}
