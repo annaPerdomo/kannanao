@@ -10,6 +10,7 @@ import { Box, Chip, Paper, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
 
 import { LoadingOverlay } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
@@ -20,7 +21,8 @@ import { SessionRow } from '@/components/Stats/SessionRow';
 import { StatCard } from '@/components/Stats/StatCard';
 import { StatsSkeleton } from '@/components/Stats/StatsSkeleton';
 import { StudyCalendar } from '@/components/Stats/StudyCalendar';
-import { ACHIEVEMENTS, useProgress } from '@/hooks/useProgress';
+import { useProgressCtx } from '@/contexts/ProgressContext';
+import { ACHIEVEMENTS } from '@/hooks/useProgress';
 import { LAYOUT } from '@/theme';
 
 export default function Stats() {
@@ -29,7 +31,20 @@ export default function Stats() {
   const tCommon = useTranslations('Common');
   const theme = useTheme();
   const { brand } = theme.palette;
-  const { progress, spendableXp, achievements, recentSessions, loading } = useProgress();
+  const {
+    progress,
+    spendableXp,
+    achievements,
+    recentSessions,
+    loading,
+    refetch: refetchProgress,
+  } = useProgressCtx();
+
+  // ProgressContext lives in AppShell and only fetches once per hard load, so a
+  // session finished since then would be missing from these stats entirely.
+  useEffect(() => {
+    void refetchProgress();
+  }, [refetchProgress]);
 
   const accuracy =
     progress && progress.total_cards_studied > 0

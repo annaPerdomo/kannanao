@@ -37,9 +37,9 @@ import { CelebrationPreviewModal } from '@/components/Shop/CelebrationPreviewMod
 import { CoinBurst } from '@/components/Shop/CoinBurst';
 import { Sparkles } from '@/components/Shop/Sparkles';
 import { ThemeCardPreview } from '@/components/Shop/ThemeCardPreview';
+import { useProgressCtx } from '@/contexts/ProgressContext';
 import { useShopCtx } from '@/contexts/ShopContext';
 import { useColorScheme } from '@/contexts/ThemeContext';
-import { useProgress } from '@/hooks/useProgress';
 import { SHOP_ITEMS, THEME_KEY_TO_SCHEME } from '@/hooks/useShop';
 import { buddyFaceSrc } from '@/lib/buddies';
 import { type ColorScheme, LAYOUT } from '@/theme';
@@ -51,12 +51,15 @@ export default function Shop() {
   const tItems = useTranslations('Shop.items');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  // The shared ProgressContext instance — using the hook directly here would
+  // spin up a second copy whose post-purchase refetch the navbar XP display
+  // (which reads the context) never sees.
   const {
     progress,
     spendableXp,
     loading: progressLoading,
     refetch: refetchProgress,
-  } = useProgress();
+  } = useProgressCtx();
   const {
     equipped,
     loading: shopLoading,
@@ -147,6 +150,9 @@ export default function Shop() {
 
     if (error) {
       setErrorMsg(error);
+      // A failure often means our balance was stale to begin with — resync so
+      // the price the learner is looking at stops lying to them.
+      await refetchProgress();
     } else {
       setShowCoinBurst(true);
       setSuccessMsg(t('itemUnlocked', { name: tItems(`${confirmItem.key}.name`) }));
