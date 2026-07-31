@@ -140,7 +140,6 @@ describe('ThemeContext / AppThemeProvider', () => {
         fireEvent.click(screen.getByText('Preview Galaxy'));
       });
 
-      // A try-on the learner hasn't paid for must leave no trace.
       expect(localStorage.getItem('kannanao-color-scheme')).toBeNull();
       expect(mockUpdateColorScheme).not.toHaveBeenCalled();
     });
@@ -176,7 +175,6 @@ describe('ThemeContext / AppThemeProvider', () => {
         fireEvent.click(screen.getByText('Set Murasaki'));
       });
 
-      // The stale galaxy preview must not keep overriding the purchase.
       expect(screen.getByTestId('scheme').textContent).toBe('murasaki');
       expect(screen.getByTestId('rendered').textContent).toBe('murasaki');
       expect(mockUpdateColorScheme).toHaveBeenCalledWith('murasaki');

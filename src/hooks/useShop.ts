@@ -622,10 +622,8 @@ export function useShop(initialShop?: InitialShop | null) {
   // Use the already-resolved user from AuthContext rather than auth.getUser(),
   // which makes an extra auth-server round-trip on the home critical path. RLS
   // still scopes these reads server-side.
-  // Returns false when either read failed, so callers that use a refetch as
-  // their rollback can tell "the server says this" from "we never heard back"
-  // and fall back to restoring local state instead of trusting the optimistic
-  // view they were trying to undo.
+  // Returns false when either read failed, so callers using a refetch as their
+  // rollback can tell "the server says this" from "we never heard back".
   const fetchShopData = useCallback(async () => {
     if (!user) {
       setLoading(false);
@@ -763,9 +761,8 @@ export function useShop(initialShop?: InitialShop | null) {
         });
 
         if (rpcErr) {
-          // Only a missing function may degrade to the non-atomic path. Anything
-          // else (network, RLS, timeout) could mean the transaction committed and
-          // we simply lost the reply — replaying it would double-charge.
+          // Anything but a missing function (network, RLS, timeout) may have
+          // committed already — replaying it through the legacy path double-charges.
           if (!isRpcMissing(rpcErr)) {
             resyncFromServer = true;
             logger.error('purchase_item RPC failed', {
@@ -796,10 +793,9 @@ export function useShop(initialShop?: InitialShop | null) {
         return { error: null };
       } catch (err) {
         // 'already_owned' / 'insufficient_xp' only fire when our local view was
-        // already wrong, so rolling back to it would keep showing a Buy button
-        // that can never succeed. Take the server's word instead — but only if
-        // we actually got one, otherwise the optimistic purchase survives a
-        // failed purchase and the item reads as owned all session.
+        // already wrong — rolling back to it leaves a Buy button that can never
+        // succeed. Resync instead, falling back to the local restore if the
+        // server never answered.
         const resynced = resyncFromServer && (await fetchShopData());
         if (!resynced) {
           setPurchases(prevPurchases);

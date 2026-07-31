@@ -158,7 +158,8 @@ export default function Shop() {
       setSuccessMsg(t('itemUnlocked', { name: tItems(`${confirmItem.key}.name`) }));
       const scheme = THEME_KEY_TO_SCHEME[confirmItem.key];
       if (scheme) {
-        // setScheme also ends any active try-on preview.
+        // setScheme also ends any active try-on preview, so the banner has to go
+        // with it — otherwise its "End preview" button no-ops forever.
         setScheme(scheme as Parameters<typeof setScheme>[0]);
         setPreviewingTheme(null);
       }
@@ -178,8 +179,6 @@ export default function Shop() {
     } else {
       const s = THEME_KEY_TO_SCHEME[item.key];
       if (s) {
-        // setScheme also ends any active try-on preview, so the banner has to go
-        // with it — otherwise its "End preview" button no-ops forever.
         setScheme(s as Parameters<typeof setScheme>[0]);
         setPreviewingTheme(null);
       }

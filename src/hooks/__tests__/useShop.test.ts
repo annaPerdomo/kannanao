@@ -229,7 +229,6 @@ describe('useShop', () => {
         res = await result.current.purchaseItem('border_golden', 500);
       });
       expect(res?.error).toBe('Not enough XP');
-      // Optimistic equip must be rolled back.
       expect(result.current.equipped.card_border).toBeUndefined();
     });
 
@@ -518,7 +517,6 @@ describe('useShop', () => {
   // array order is the visible ladder.
 
   describe('study buddy price ladder', () => {
-    // Coming-soon teasers aren't purchasable, so they're not part of the ladder.
     const buddies = SHOP_ITEMS.filter((i) => i.category === 'study_buddy' && !i.comingSoon);
 
     it('should price buddies in strictly ascending array order', () => {
