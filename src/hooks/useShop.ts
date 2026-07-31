@@ -350,16 +350,16 @@ export const SHOP_ITEMS: ShopItem[] = [
     key: 'buddy_bunny',
     name: 'Tsuki',
     description:
-      'The moon (tsuki!) has a legendary rabbit — this marshmallow-soft one does a happy hop for every word you learn',
+      'A marshmallow-soft rabbit who does a happy hop for every word you learn — named for tsuki, the moon she came from',
     category: 'study_buddy',
     price: 10000,
     emoji: '🐰',
   },
   {
     key: 'buddy_penguin',
-    name: 'Yuki',
+    name: 'Shiro',
     description:
-      "A little penguin named Yuki — that's 'snow'! — who slid all the way from the icy north to study with you",
+      'A little penguin who slid all the way from the icy north to study with you — Shiro means white, like his belly',
     category: 'study_buddy',
     price: 18000,
     emoji: '🐧',
@@ -368,7 +368,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     key: 'buddy_pink_cat',
     name: 'Tama',
     description:
-      "Every storybook cat in Japan is named Tama ('gem') — this calico naps on your notebook but always wakes up for study time",
+      "A calico who naps on your notebook but always wakes up for study time — every storybook cat in Japan is a Tama ('gem')",
     category: 'study_buddy',
     price: 20000,
     emoji: '🐈',
@@ -377,7 +377,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     key: 'buddy_panda',
     name: 'Goro',
     description:
-      'A gentle panda named for goro-goro, the sound of rolling around — he munches bamboo while you think, no rush',
+      'A gentle panda who munches bamboo while you think — no rush, he is named for goro-goro, the sound of rolling about',
     category: 'study_buddy',
     price: 21000,
     emoji: '🐼',
@@ -394,7 +394,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     key: 'buddy_kappa',
     name: 'Sara',
     description:
-      'A shy kappa named for the little water plate (sara) on their head, who trades cucumbers for correct answers',
+      'A shy kappa who trades cucumbers for correct answers — named for the sara, the little water plate on their head',
     category: 'study_buddy',
     price: 29000,
     emoji: '🥒',
@@ -411,7 +411,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     key: 'buddy_red_panda',
     name: 'Momiji',
     description:
-      'A fluffy red panda named for momiji — autumn maple leaves, the exact color of her coat. She takes notes on every word you learn!',
+      'A fluffy red panda who takes notes on every word you learn — momiji means autumn maple leaves, the color of her coat',
     category: 'study_buddy',
     price: 37000,
     emoji: '🍁',
@@ -420,7 +420,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     key: 'buddy_fox',
     name: 'Inari',
     description:
-      'Named for the Inari shrines that foxes guard — this clever one answers every question with a proud "kon kon!"',
+      'A clever fox who answers every question with a proud "kon kon!" — named for the Inari shrines that foxes guard',
     category: 'study_buddy',
     price: 40000,
     emoji: '🦊',
@@ -429,7 +429,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     key: 'buddy_lucky_cat',
     name: 'Suzu',
     description:
-      'Named for the little bell (suzu) on her collar — a lucky cat who waves good fortune onto every quiz you take',
+      'A lucky cat who waves good fortune onto every quiz you take — named for the suzu, the little bell on her collar',
     category: 'study_buddy',
     price: 46000,
     emoji: '🐱',
@@ -440,7 +440,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     key: 'buddy_axolotl',
     name: 'Momo',
     description:
-      'Momo means peach — the perfect name for a peach-pink axolotl who smiles through every study session. Coming soon!',
+      'A peach-pink axolotl who smiles through every study session — momo means peach. Coming soon!',
     category: 'study_buddy',
     price: 0,
     emoji: '🦎',
@@ -451,7 +451,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     key: 'buddy_guinea_pig',
     name: 'Moru',
     description:
-      'In Japan a guinea pig is a morumotto — a \'marmot\'! This squeaky little one cheers with a happy "pui pui!" Coming soon!',
+      'A squeaky guinea pig who cheers with a happy "pui pui!" — in Japan he is a morumotto, a \'marmot\'. Coming soon!',
     category: 'study_buddy',
     price: 0,
     emoji: '🐹',
