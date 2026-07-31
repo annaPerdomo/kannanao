@@ -1,13 +1,15 @@
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 
+import { UserAvatar } from '@/components/UserAvatar';
+
 interface TypingBubbleProps {
   initial: string;
+  avatar?: string | null;
 }
 
 /** Cute animated typing indicator bubble shown when the other person is typing */
-export function TypingBubble({ initial }: TypingBubbleProps) {
+export function TypingBubble({ initial, avatar }: TypingBubbleProps) {
   const { palette } = useTheme();
   const { brand } = palette;
 
@@ -24,25 +26,20 @@ export function TypingBubble({ initial }: TypingBubbleProps) {
         },
       }}
     >
-      <Avatar
+      <UserAvatar
+        avatar={avatar}
+        name=""
+        fallback={initial}
+        size={34}
         sx={{
-          width: 26,
-          height: 26,
-          fontSize: '0.7rem',
-          fontWeight: 700,
-          bgcolor: alpha(brand[400], 0.25),
-          color: brand[700],
           mb: 0.3,
-          flexShrink: 0,
           animation: 'pulse 2s ease-in-out infinite',
           '@keyframes pulse': {
             '0%, 100%': { transform: 'scale(1)' },
             '50%': { transform: 'scale(1.08)' },
           },
         }}
-      >
-        {initial}
-      </Avatar>
+      />
       <Box
         sx={{
           px: 1.8,

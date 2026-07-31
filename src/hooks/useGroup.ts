@@ -10,6 +10,7 @@ export interface GroupMember {
   id: string;
   username: string;
   displayName: string | null;
+  avatar?: string | null;
   createdAt: string;
   level: number;
   totalXp: number;

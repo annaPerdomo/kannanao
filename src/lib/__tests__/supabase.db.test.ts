@@ -63,6 +63,7 @@ import {
   dbUpdateDeckEmoji,
   dbUpdateEventType,
   dbUpdateTodo,
+  fetchPeerIdentity,
   getBestQuizForDeck,
   getCardProgressForUser,
   getDueCards,
@@ -621,6 +622,35 @@ describe('updateProfileAvatar', () => {
   it('should write to the profiles table', async () => {
     await updateProfileAvatar('u1', 'buddy_fox:3');
     expect(mockFrom.mock.calls.map((c) => c[0])).toContain('profiles');
+  });
+});
+
+// ─── fetchPeerIdentity ────────────────────────────────────────────────────────
+
+describe('fetchPeerIdentity', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return the display name and avatar together', async () => {
+    setTable('profiles', { display_name: 'Hana', username: 'hana', avatar: 'buddy_fox:3' });
+    await expect(fetchPeerIdentity('u2')).resolves.toEqual({
+      displayName: 'Hana',
+      avatar: 'buddy_fox:3',
+    });
+  });
+
+  it('should fall back to the username and a null avatar', async () => {
+    setTable('profiles', { display_name: null, username: 'hana', avatar: null });
+    await expect(fetchPeerIdentity('u2')).resolves.toEqual({ displayName: 'hana', avatar: null });
+  });
+
+  it('should return nulls for an unknown profile', async () => {
+    setTable('profiles', null, { message: 'no rows' });
+    await expect(fetchPeerIdentity('nobody')).resolves.toEqual({
+      displayName: null,
+      avatar: null,
+    });
   });
 });
 

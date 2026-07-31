@@ -392,14 +392,27 @@ export async function dbRenameDeck(id: string, name: string, description?: strin
 
 // ─── Auth / profiles ─────────────────────────────────────────────────────────
 
-export async function fetchDisplayName(userId: string): Promise<string | null> {
-  if (!isConfigured()) return null;
+export interface PeerIdentity {
+  displayName: string | null;
+  avatar: string | null;
+}
+
+/**
+ * Name and avatar for someone you have no loaded messages with — an empty
+ * thread would otherwise show the right name beside a generic initial disc
+ * until the first message lands.
+ */
+export async function fetchPeerIdentity(userId: string): Promise<PeerIdentity> {
+  if (!isConfigured()) return { displayName: null, avatar: null };
   const { data } = await sb
     .from('profiles')
-    .select('display_name, username')
+    .select('display_name, username, avatar')
     .eq('id', userId)
     .single();
-  return data?.display_name || data?.username || null;
+  return {
+    displayName: data?.display_name || data?.username || null,
+    avatar: data?.avatar ?? null,
+  };
 }
 
 export async function upsertProfile(

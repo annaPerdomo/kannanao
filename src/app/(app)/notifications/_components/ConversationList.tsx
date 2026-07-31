@@ -5,7 +5,6 @@ import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import ForumRoundedIcon from '@mui/icons-material/ForumRounded';
 import SearchIcon from '@mui/icons-material/Search';
 import {
-  Avatar,
   Box,
   Button,
   Chip,
@@ -23,6 +22,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { timeAgoInfo } from '@/components/Group/MessageThread/constants';
 import { StyledDialog } from '@/components/StyledDialog';
+import { UserAvatar } from '@/components/UserAvatar';
 import type { DirectMessage } from '@/hooks/useDirectMessages';
 import { parseSticker } from '@/lib/stickers';
 import { sb } from '@/lib/supabase';
@@ -32,6 +32,7 @@ import { sb } from '@/lib/supabase';
 interface Conversation {
   recipientId: string;
   recipientName: string;
+  recipientAvatar: string | null;
   lastMessage: DirectMessage;
   unreadCount: number;
 }
@@ -41,18 +42,19 @@ function getConversations(
   userId: string,
   memberFallback: string,
 ): Conversation[] {
-  const map = new Map<string, { msgs: DirectMessage[]; name: string }>();
+  const map = new Map<string, { msgs: DirectMessage[]; name: string; avatar: string | null }>();
   for (const m of messages) {
     const isFromMe = m.sender_id === userId;
     const otherId = isFromMe ? m.recipient_id : m.sender_id;
     const other = isFromMe ? m.recipient : m.sender;
     const name = other?.display_name || other?.username || memberFallback;
-    if (!map.has(otherId)) map.set(otherId, { msgs: [], name });
+    if (!map.has(otherId)) map.set(otherId, { msgs: [], name, avatar: other?.avatar ?? null });
     map.get(otherId)!.msgs.push(m);
   }
-  return Array.from(map.entries()).map(([recipientId, { msgs, name }]) => ({
+  return Array.from(map.entries()).map(([recipientId, { msgs, name, avatar }]) => ({
     recipientId,
     recipientName: name,
+    recipientAvatar: avatar,
     lastMessage: msgs[0],
     unreadCount: msgs.filter((m) => !m.read_at && m.recipient_id === userId).length,
   }));
@@ -62,6 +64,7 @@ export interface Peer {
   id: string;
   username: string;
   display_name: string | null;
+  avatar?: string | null;
   role: string;
 }
 
@@ -229,7 +232,7 @@ export function ConversationList({
                 }}
               >
                 <Stack direction="row" alignItems="center" spacing={1.5}>
-                  <Skeleton variant="circular" width={38} height={38} />
+                  <Skeleton variant="circular" width={46} height={46} />
                   <Box sx={{ flex: 1 }}>
                     <Skeleton variant="text" width="50%" sx={{ fontSize: '0.85rem' }} />
                     <Skeleton variant="text" width="75%" sx={{ fontSize: '0.75rem' }} />
@@ -279,18 +282,7 @@ export function ConversationList({
                 }}
               >
                 <Stack direction="row" alignItems="center" spacing={1.5}>
-                  <Avatar
-                    sx={{
-                      width: 38,
-                      height: 38,
-                      bgcolor: alpha(brand[400], 0.25),
-                      color: brand[700],
-                      fontWeight: 700,
-                      fontSize: '0.85rem',
-                    }}
-                  >
-                    {c.recipientName.charAt(0).toUpperCase()}
-                  </Avatar>
+                  <UserAvatar avatar={c.recipientAvatar} name={c.recipientName} size={46} />
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Stack direction="row" alignItems="center" justifyContent="space-between">
                       <Typography
@@ -375,18 +367,7 @@ export function ConversationList({
               }}
             >
               <Stack direction="row" alignItems="center" spacing={1.5}>
-                <Avatar
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    bgcolor: alpha(brand[400], 0.25),
-                    color: brand[700],
-                    fontWeight: 700,
-                    fontSize: '0.85rem',
-                  }}
-                >
-                  {(p.display_name || p.username).charAt(0).toUpperCase()}
-                </Avatar>
+                <UserAvatar avatar={p.avatar} name={p.display_name || p.username} size={44} />
                 <Typography
                   sx={{ fontWeight: 700, fontSize: '0.88rem', color: brand[700], flex: 1 }}
                 >

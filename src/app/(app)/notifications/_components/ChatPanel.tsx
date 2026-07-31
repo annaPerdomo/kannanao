@@ -7,7 +7,6 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import SendIcon from '@mui/icons-material/Send';
 import {
   Alert,
-  Avatar,
   Box,
   Button,
   CircularProgress,
@@ -25,6 +24,7 @@ import { dateLabelInfo, groupByDate } from '@/components/Group/MessageThread/con
 import { MessageBubble } from '@/components/Group/MessageThread/MessageBubble';
 import { TypingBubble } from '@/components/Group/MessageThread/TypingBubble';
 import { StickerPicker } from '@/components/StickerPicker';
+import { UserAvatar } from '@/components/UserAvatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
@@ -39,17 +39,24 @@ import { SendingIndicator, sendPulse } from './SendingIndicator';
 interface ChatPanelProps {
   recipientId: string;
   recipientName: string;
+  /** Used until a loaded message carries the partner's profile — e.g. an empty thread. */
+  recipientAvatar?: string | null;
   isMemberAccount: boolean;
 }
 
-export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatPanelProps) {
+export function ChatPanel({
+  recipientId,
+  recipientName,
+  recipientAvatar: fallbackAvatar = null,
+  isMemberAccount,
+}: ChatPanelProps) {
   const t = useTranslations('Messages.chatPanel');
   const tSticker = useTranslations('Messages.stickerPicker');
   const locale = useLocale();
   const router = useRouter();
   const theme = useTheme();
   const { brand, accent } = theme.palette;
-  const { user } = useAuth();
+  const { user, avatar: myAvatar } = useAuth();
   const {
     messages,
     sendMessage,
@@ -109,6 +116,16 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
   const openedAtRef = useRef<number>(Date.now());
 
   const initial = recipientName.charAt(0).toUpperCase();
+
+  // The partner's avatar rides on the same profile joins as their name — take
+  // it from any loaded message that carries their profile.
+  const recipientAvatar = useMemo(() => {
+    for (const m of displayMessages) {
+      if (m.sender_id === recipientId && m.sender) return m.sender.avatar ?? null;
+      if (m.recipient_id === recipientId && m.recipient) return m.recipient.avatar ?? null;
+    }
+    return fallbackAvatar;
+  }, [displayMessages, recipientId, fallbackAvatar]);
 
   const hasUnread = messages.some((m) => !m.read_at && m.recipient_id === user?.id);
 
@@ -363,18 +380,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
         >
           <ArrowBackIcon sx={{ fontSize: 15 }} />
         </IconButton>
-        <Avatar
-          sx={{
-            width: 36,
-            height: 36,
-            bgcolor: alpha(brand[400], 0.25),
-            color: brand[700],
-            fontWeight: 700,
-            fontSize: '0.9rem',
-          }}
-        >
-          {initial}
-        </Avatar>
+        <UserAvatar avatar={recipientAvatar} name={recipientName} size={44} />
         <Typography sx={{ fontWeight: 800, fontSize: '1.05rem', color: brand[700] }}>
           {recipientName}
         </Typography>
@@ -492,6 +498,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
                     message={m}
                     isMine={m.sender_id === user?.id}
                     initial={m.sender_id === user?.id ? 'Me' : initial}
+                    avatar={m.sender_id === user?.id ? myAvatar : recipientAvatar}
                     index={i}
                     tick={tick}
                     userId={user?.id}
@@ -502,7 +509,7 @@ export function ChatPanel({ recipientId, recipientName, isMemberAccount }: ChatP
               </Box>
             ))
           )}
-          {isRecipientTyping && <TypingBubble initial={initial} />}
+          {isRecipientTyping && <TypingBubble initial={initial} avatar={recipientAvatar} />}
         </Box>
       </Box>
 

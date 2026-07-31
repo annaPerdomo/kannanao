@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   // Fetch member profiles
   let query = sb
     .from('profiles')
-    .select('id, username, display_name, created_at')
+    .select('id, username, display_name, avatar, created_at')
     .eq('organizer_id', orgCheck.id)
     .order('created_at', { ascending: true });
   if (groupId) query = query.eq('group_id', groupId);
@@ -65,6 +65,7 @@ export async function GET(req: NextRequest) {
       id: m.id,
       username: m.username,
       displayName: m.display_name,
+      avatar: m.avatar,
       createdAt: m.created_at,
       level: prog?.level ?? 1,
       totalXp: prog?.total_xp ?? 0,

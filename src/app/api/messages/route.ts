@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
     .from('direct_messages')
     .insert(insertRow)
     .select(
-      '*, sender:profiles!direct_messages_sender_id_fkey(display_name, username), recipient:profiles!direct_messages_recipient_id_fkey(display_name, username)',
+      '*, sender:profiles!direct_messages_sender_id_fkey(display_name, username, avatar), recipient:profiles!direct_messages_recipient_id_fkey(display_name, username, avatar)',
     )
     .single();
 
@@ -197,7 +197,7 @@ export async function GET(req: NextRequest) {
   let query = sb
     .from('direct_messages')
     .select(
-      '*, sender:profiles!direct_messages_sender_id_fkey(display_name, username), recipient:profiles!direct_messages_recipient_id_fkey(display_name, username)',
+      '*, sender:profiles!direct_messages_sender_id_fkey(display_name, username, avatar), recipient:profiles!direct_messages_recipient_id_fkey(display_name, username, avatar)',
     )
     .order('created_at', { ascending: false })
     .limit(50);

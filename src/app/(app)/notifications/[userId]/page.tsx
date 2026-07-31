@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
-import { fetchDisplayName } from '@/lib/supabase';
+import { fetchPeerIdentity, type PeerIdentity } from '@/lib/supabase';
 
 import { ChatPanel } from '../_components/ChatPanel';
 
@@ -15,7 +15,7 @@ export default function ConversationPage() {
 
   const { isMemberAccount } = useAuth();
   const { messages } = useDirectMessagesCtx();
-  const [fetchedName, setFetchedName] = useState<string | null>(null);
+  const [fetchedPeer, setFetchedPeer] = useState<PeerIdentity | null>(null);
 
   // Resolve recipient name from messages context
   const recipientName = useMemo(() => {
@@ -32,27 +32,30 @@ export default function ConversationPage() {
     return null;
   }, [messages, recipientId]);
 
-  // Fetch from DB if not available in messages context. Reset first so a name
-  // fetched for a previous conversation never shows on this one, and ignore a
-  // slow response that lands after another switch.
+  // Fetch from DB if not available in messages context. Reset first so an
+  // identity fetched for a previous conversation never shows on this one, and
+  // ignore a slow response that lands after another switch. When the name did
+  // come from a message, that row's profile join carries the avatar too, so
+  // ChatPanel already has both.
   useEffect(() => {
-    setFetchedName(null);
+    setFetchedPeer(null);
     if (recipientName) return;
     let active = true;
-    void fetchDisplayName(recipientId).then((name) => {
-      if (active) setFetchedName(name);
+    void fetchPeerIdentity(recipientId).then((peer) => {
+      if (active) setFetchedPeer(peer);
     });
     return () => {
       active = false;
     };
   }, [recipientId, recipientName]);
 
-  const displayName = recipientName || fetchedName || 'Chat';
+  const displayName = recipientName || fetchedPeer?.displayName || 'Chat';
 
   return (
     <ChatPanel
       recipientId={recipientId}
       recipientName={displayName}
+      recipientAvatar={fetchedPeer?.avatar ?? null}
       isMemberAccount={isMemberAccount}
     />
   );
