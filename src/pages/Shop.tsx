@@ -23,7 +23,7 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { LoadingOverlay } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
@@ -65,7 +65,16 @@ export default function Shop() {
     purchaseItem,
     equipItem,
   } = useShopCtx();
-  const { scheme, setScheme } = useColorScheme();
+  const { scheme, setScheme, previewScheme } = useColorScheme();
+
+  // ProgressContext lives in AppShell and only fetches once per hard load, so a
+  // session studied since then would leave the balance here behind the navbar's.
+  useEffect(() => {
+    void refetchProgress();
+  }, [refetchProgress]);
+
+  // Safety net: never leave a try-on theme applied after leaving the shop.
+  useEffect(() => () => previewScheme(null), [previewScheme]);
 
   const activeThemeKey = useMemo(() => {
     const entry = Object.entries(THEME_KEY_TO_SCHEME).find(([, s]) => s === scheme);
@@ -78,10 +87,7 @@ export default function Shop() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showCoinBurst, setShowCoinBurst] = useState(false);
-  const [previewingTheme, setPreviewingTheme] = useState<{
-    item: ShopItem;
-    originalScheme: ColorScheme;
-  } | null>(null);
+  const [previewingTheme, setPreviewingTheme] = useState<ShopItem | null>(null);
   const [borderPreviewItem, setBorderPreviewItem] = useState<ShopItem | null>(null);
   const [celebPreviewItem, setCelebPreviewItem] = useState<ShopItem | null>(null);
   const [buddyPreviewItem, setBuddyPreviewItem] = useState<ShopItem | null>(null);
@@ -146,7 +152,9 @@ export default function Shop() {
       setSuccessMsg(t('itemUnlocked', { name: tItems(`${confirmItem.key}.name`) }));
       const scheme = THEME_KEY_TO_SCHEME[confirmItem.key];
       if (scheme) {
+        // setScheme also ends any active try-on preview.
         setScheme(scheme as Parameters<typeof setScheme>[0]);
+        setPreviewingTheme(null);
       }
       await refetchProgress();
       setTimeout(() => setShowCoinBurst(false), 2000);
@@ -164,7 +172,10 @@ export default function Shop() {
     } else {
       const s = THEME_KEY_TO_SCHEME[item.key];
       if (s) {
+        // setScheme also ends any active try-on preview, so the banner has to go
+        // with it — otherwise its "End preview" button no-ops forever.
         setScheme(s as Parameters<typeof setScheme>[0]);
+        setPreviewingTheme(null);
       }
     }
   };
@@ -173,8 +184,9 @@ export default function Shop() {
     if (item.category === 'theme') {
       const targetScheme = THEME_KEY_TO_SCHEME[item.key] as ColorScheme | undefined;
       if (targetScheme) {
-        setPreviewingTheme({ item, originalScheme: scheme });
-        setScheme(targetScheme);
+        setPreviewingTheme(item);
+        // Render-only try-on — nothing is persisted until the theme is bought.
+        previewScheme(targetScheme);
       }
     } else if (item.category === 'celebration') {
       setCelebPreviewItem(item);
@@ -186,10 +198,8 @@ export default function Shop() {
   };
 
   const handleEndThemePreview = () => {
-    if (previewingTheme) {
-      setScheme(previewingTheme.originalScheme);
-      setPreviewingTheme(null);
-    }
+    previewScheme(null);
+    setPreviewingTheme(null);
   };
 
   return (
@@ -698,7 +708,7 @@ export default function Shop() {
             }}
           >
             {t.rich('previewingBanner.previewing', {
-              name: tItems(`${previewingTheme.item.key}.name`),
+              name: tItems(`${previewingTheme.key}.name`),
               strong: (chunks) => <strong>{chunks}</strong>,
             })}
           </Typography>

@@ -5,6 +5,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import {
   createContext,
   type ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -71,12 +72,24 @@ export const schemeInfo: Record<ColorScheme, { label: string; emoji: string; pre
 
 interface ThemeContextValue {
   scheme: ColorScheme;
+  /** What MUI is actually drawing right now: the preview if one is active,
+   *  otherwise `scheme`. Font loading keys off this. */
+  renderedScheme: ColorScheme;
   setScheme: (s: ColorScheme) => void;
+  /**
+   * Temporarily render a scheme WITHOUT persisting it (no localStorage, no
+   * profile write) — for shop try-before-you-buy. Pass null to end the preview
+   * and fall back to the real scheme. `scheme` keeps reporting the real,
+   * persisted scheme throughout.
+   */
+  previewScheme: (s: ColorScheme | null) => void;
 }
 
 const ThemeCtx = createContext<ThemeContextValue>({
   scheme: 'sakura',
+  renderedScheme: 'sakura',
   setScheme: () => {},
+  previewScheme: () => {},
 });
 
 export function AppThemeProvider({
@@ -97,6 +110,8 @@ export function AppThemeProvider({
   // Always start from the default so first paint is instant; the user's real
   // scheme then *rolls in* with an animation once it's resolved (see below).
   const [scheme, setSchemeState] = useState<ColorScheme>('sakura');
+  const [preview, setPreview] = useState<ColorScheme | null>(null);
+  const previewRef = useRef<ColorScheme | null>(null);
   const rolledInRef = useRef(false);
 
   // Applies a scheme change, wrapped in a View Transition for the animated reveal
@@ -140,6 +155,8 @@ export function AppThemeProvider({
   }, [authLoading, savedScheme]);
 
   function setScheme(s: ColorScheme) {
+    previewRef.current = null;
+    setPreview(null);
     localStorage.setItem(STORAGE_KEY, s);
     applyScheme(s);
     if (user) {
@@ -147,10 +164,30 @@ export function AppThemeProvider({
     }
   }
 
-  const muiTheme = useMemo(() => createAppTheme(scheme, locale), [scheme, locale]);
+  // Memoized so pages can end a preview from an unmount cleanup without the
+  // cleanup re-firing on every provider render.
+  const previewScheme = useCallback((s: ColorScheme | null) => {
+    // Shop's unmount cleanup clears the preview unconditionally; without this
+    // every exit from /shop would pay a view-transition snapshot for no change.
+    if (previewRef.current === s) return;
+    previewRef.current = s;
+    const doc = typeof document !== 'undefined' ? (document as ViewTransitionDocument) : null;
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!doc?.startViewTransition || prefersReducedMotion) {
+      setPreview(s);
+      return;
+    }
+    doc.startViewTransition(() => flushSync(() => setPreview(s)));
+  }, []);
+
+  const renderedScheme = preview ?? scheme;
+  const muiTheme = useMemo(() => createAppTheme(renderedScheme, locale), [renderedScheme, locale]);
 
   return (
-    <ThemeCtx.Provider value={{ scheme, setScheme }}>
+    <ThemeCtx.Provider value={{ scheme, renderedScheme, setScheme, previewScheme }}>
       <ThemeProvider theme={muiTheme}>
         <CssBaseline />
         <GlobalStyles styles={themeTransitionStyles} />

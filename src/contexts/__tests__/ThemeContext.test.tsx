@@ -7,11 +7,16 @@ import { type ColorScheme, createAppTheme, themeFonts } from '@/theme';
 
 // ─── Mock AuthContext (ThemeContext depends on it) ────────────────────────────
 
+const { mockUpdateColorScheme, mockAuth } = vi.hoisted(() => ({
+  mockUpdateColorScheme: vi.fn(),
+  mockAuth: { user: null as { id: string } | null },
+}));
+
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({
     colorScheme: null,
-    updateColorScheme: vi.fn(),
-    user: null,
+    updateColorScheme: mockUpdateColorScheme,
+    user: mockAuth.user,
     loading: false,
   }),
 }));
@@ -31,12 +36,26 @@ function SchemeDisplay() {
   );
 }
 
+function PreviewDisplay() {
+  const { scheme, renderedScheme, setScheme, previewScheme } = useColorScheme();
+  return (
+    <div>
+      <span data-testid="scheme">{scheme}</span>
+      <span data-testid="rendered">{renderedScheme}</span>
+      <button onClick={() => previewScheme('galaxy')}>Preview Galaxy</button>
+      <button onClick={() => previewScheme(null)}>End Preview</button>
+      <button onClick={() => setScheme('murasaki')}>Set Murasaki</button>
+    </div>
+  );
+}
+
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('ThemeContext / AppThemeProvider', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
+    mockAuth.user = null;
   });
 
   it('should default to sakura scheme', () => {
@@ -87,6 +106,82 @@ describe('ThemeContext / AppThemeProvider', () => {
 
     expect(screen.getByTestId('scheme').textContent).toBe('forest');
   });
+
+  // ── previewScheme (shop try-on) ─────────────────────────────────────────────
+
+  describe('previewScheme', () => {
+    beforeEach(() => {
+      mockAuth.user = { id: 'u1' };
+    });
+
+    it('should change renderedScheme without touching the persisted scheme', async () => {
+      renderWithProviders(
+        <AppThemeProvider>
+          <PreviewDisplay />
+        </AppThemeProvider>,
+      );
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Preview Galaxy'));
+      });
+
+      expect(screen.getByTestId('rendered').textContent).toBe('galaxy');
+      expect(screen.getByTestId('scheme').textContent).toBe('sakura');
+    });
+
+    it('should not persist a preview to localStorage or the profile', async () => {
+      renderWithProviders(
+        <AppThemeProvider>
+          <PreviewDisplay />
+        </AppThemeProvider>,
+      );
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Preview Galaxy'));
+      });
+
+      // A try-on the learner hasn't paid for must leave no trace.
+      expect(localStorage.getItem('kannanao-color-scheme')).toBeNull();
+      expect(mockUpdateColorScheme).not.toHaveBeenCalled();
+    });
+
+    it('should restore the real scheme when the preview is cleared', async () => {
+      renderWithProviders(
+        <AppThemeProvider>
+          <PreviewDisplay />
+        </AppThemeProvider>,
+      );
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Preview Galaxy'));
+      });
+      await act(async () => {
+        fireEvent.click(screen.getByText('End Preview'));
+      });
+
+      expect(screen.getByTestId('rendered').textContent).toBe('sakura');
+    });
+
+    it('should clear an active preview when a scheme is bought and set', async () => {
+      renderWithProviders(
+        <AppThemeProvider>
+          <PreviewDisplay />
+        </AppThemeProvider>,
+      );
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Preview Galaxy'));
+      });
+      await act(async () => {
+        fireEvent.click(screen.getByText('Set Murasaki'));
+      });
+
+      // The stale galaxy preview must not keep overriding the purchase.
+      expect(screen.getByTestId('scheme').textContent).toBe('murasaki');
+      expect(screen.getByTestId('rendered').textContent).toBe('murasaki');
+      expect(mockUpdateColorScheme).toHaveBeenCalledWith('murasaki');
+    });
+  });
 });
 
 describe('createAppTheme', () => {
@@ -101,6 +196,8 @@ describe('createAppTheme', () => {
     'midnight',
     'matcha',
     'rosegold',
+    'cottagecore',
+    'galaxy',
   ];
 
   ALL_SCHEMES.forEach((scheme) => {
@@ -167,6 +264,8 @@ describe('createAppTheme', () => {
       'midnight',
       'matcha',
       'rosegold',
+      'cottagecore',
+      'galaxy',
     ];
 
     it('appends a JP chain before the generic keyword on every stack', () => {
@@ -207,7 +306,7 @@ describe('createAppTheme', () => {
     });
   });
 
-  it('should export schemeInfo for all 10 schemes', () => {
+  it('should export schemeInfo for every scheme', () => {
     const ALL_SCHEMES: ColorScheme[] = [
       'sakura',
       'murasaki',
@@ -219,6 +318,8 @@ describe('createAppTheme', () => {
       'midnight',
       'matcha',
       'rosegold',
+      'cottagecore',
+      'galaxy',
     ];
     ALL_SCHEMES.forEach((scheme) => {
       expect(schemeInfo[scheme]).toBeDefined();
