@@ -2304,21 +2304,49 @@
         "name": "ギャラクシーバースト",
         "description": "宇宙にひろがる花火ときらめき"
       },
+      "celeb_bubble_pop": {
+        "name": "バブルポップ",
+        "description": "にじ色のしゃぼん玉といっしょにふわふわ"
+      },
+      "celeb_sakura_storm": {
+        "name": "さくらふぶき",
+        "description": "さくらの花びらがまいおどる"
+      },
+      "celeb_neko_parade": {
+        "name": "ねこパレード",
+        "description": "うれしそうなねこと肉球の大行進"
+      },
+      "celeb_bento_party": {
+        "name": "おべんとうパーティー",
+        "description": "おにぎりもラーメンもだんごも降ってくる — いただきます！"
+      },
+      "celeb_hanabi": {
+        "name": "花火大会",
+        "description": "夏の夜空にあがる、いろとりどりの大花火"
+      },
       "theme_cottagecore": {
         "name": "コテージコア",
-        "description": "いなかのぬくもり — 近日公開！"
+        "description": "はちみつ色とセージグリーンの、いなかのぬくもり"
       },
       "theme_galaxy": {
         "name": "ギャラクシー",
-        "description": "宇宙のきらめき — 近日公開！"
+        "description": "宇宙のインディゴと星くずのきらめき"
       },
       "border_crystal": {
         "name": "クリスタルアイス",
-        "description": "きらめく氷のクリスタル — 近日公開！"
+        "description": "きらめく氷のクリスタルフレーム"
       },
       "border_floral": {
         "name": "フラワーガーデン",
-        "description": "花がさきほこるフレーム — 近日公開！"
+        "description": "花びらと葉っぱがさきほこるフレーム"
+      },
+      "border_kintsugi": {
+        "name": "金継ぎゴールド",
+        "description": "金の川がながれる、しっとり漆黒のフレーム"
+      },
+      "border_koi": {
+        "name": "こいの池",
+        "description": "オレンジと白と黒の、こいが泳ぐフレーム"
       },
       "buddy_tango": {
         "name": "タンゴ",
@@ -2359,6 +2387,14 @@
       "buddy_tanuki": {
         "name": "ぽん太",
         "description": "きみが答える前から信じてる、ゆかいなたぬき"
+      },
+      "buddy_shiba": {
+        "name": "まる",
+        "description": "勉強の日をぜったいに休まない、ちゅうじつな柴犬 — 近日公開！"
+      },
+      "buddy_hedgehog": {
+        "name": "ハリ",
+        "description": "木の実みたいに単語をあつめる、ちいさなハリネズミ — 近日公開！"
       }
     },
     "buddies": {

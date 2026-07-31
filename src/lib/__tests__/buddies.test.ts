@@ -14,7 +14,9 @@ import {
 import en from '../../messages/en.json';
 import ja from '../../messages/ja.json';
 
-const buddyItems = SHOP_ITEMS.filter((i) => i.category === 'study_buddy');
+// Coming-soon teasers render emoji-only cards and can't be bought or equipped,
+// so they don't need artwork or phrase sets yet.
+const buddyItems = SHOP_ITEMS.filter((i) => i.category === 'study_buddy' && !i.comingSoon);
 
 describe('resolveBuddyKey', () => {
   it('falls back to Tango when nothing is equipped', () => {

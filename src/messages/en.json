@@ -2311,21 +2311,49 @@
         "name": "Galaxy Burst",
         "description": "Deep space fireworks with cosmic shimmer"
       },
+      "celeb_bubble_pop": {
+        "name": "Bubble Pop",
+        "description": "Float away on a stream of rainbow bubbles"
+      },
+      "celeb_sakura_storm": {
+        "name": "Sakura Storm",
+        "description": "A whirlwind of cherry blossom petals"
+      },
+      "celeb_neko_parade": {
+        "name": "Neko Parade",
+        "description": "A march of happy cats and paw prints"
+      },
+      "celeb_bento_party": {
+        "name": "Bento Party",
+        "description": "It rains onigiri, ramen & dango — itadakimasu!"
+      },
+      "celeb_hanabi": {
+        "name": "Hanabi Festival",
+        "description": "A grand summer fireworks finale in every color"
+      },
       "theme_cottagecore": {
         "name": "Cottagecore",
-        "description": "Cozy countryside warmth — coming soon!"
+        "description": "Cozy honey & sage countryside warmth"
       },
       "theme_galaxy": {
         "name": "Galaxy",
-        "description": "Deep space sparkles — coming soon!"
+        "description": "Cosmic indigo & fuchsia stardust"
       },
       "border_crystal": {
         "name": "Crystal Ice",
-        "description": "Shimmering frozen crystal edges — coming soon!"
+        "description": "Shimmering frozen crystal edges"
       },
       "border_floral": {
         "name": "Floral Garden",
-        "description": "Blooming flower frame — coming soon!"
+        "description": "A blooming frame of petals and leaves"
+      },
+      "border_kintsugi": {
+        "name": "Kintsugi Gold",
+        "description": "Dark lacquer mended with rivers of gold"
+      },
+      "border_koi": {
+        "name": "Koi Pond",
+        "description": "Swirling koi orange, white & ink black"
       },
       "buddy_tango": {
         "name": "Tango",
@@ -2366,6 +2394,14 @@
       "buddy_tanuki": {
         "name": "Ponta",
         "description": "A playful tanuki who believed in you before you even answered"
+      },
+      "buddy_shiba": {
+        "name": "Maru",
+        "description": "A loyal shiba who never misses a study day — coming soon!"
+      },
+      "buddy_hedgehog": {
+        "name": "Hari",
+        "description": "A tiny hedgehog who collects words like berries — coming soon!"
       }
     },
     "buddies": {

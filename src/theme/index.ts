@@ -13,7 +13,9 @@ export type ColorScheme =
   | 'lavender'
   | 'midnight'
   | 'matcha'
-  | 'rosegold';
+  | 'rosegold'
+  | 'cottagecore'
+  | 'galaxy';
 
 type ColorScale = {
   50: string;
@@ -167,6 +169,20 @@ const latinThemeFonts: Record<ColorScheme, FontConfig> = {
     display: '"Cormorant Garamond", serif',
     jp: '"Noto Serif JP", serif',
     mono: '"DM Mono", monospace',
+    cute: '"Quicksand", sans-serif',
+  },
+  cottagecore: {
+    primary: '"Nunito", sans-serif',
+    display: '"Lora", serif',
+    jp: '"Noto Serif JP", serif',
+    mono: '"DM Mono", monospace',
+    cute: '"Fredoka", sans-serif',
+  },
+  galaxy: {
+    primary: '"Outfit", sans-serif',
+    display: '"Space Grotesk", sans-serif',
+    jp: '"Noto Sans JP", sans-serif',
+    mono: '"Space Mono", monospace',
     cute: '"Quicksand", sans-serif',
   },
 };
@@ -413,6 +429,58 @@ export const matcha: ColorScale = {
   700: '#4D7C0F',
   800: '#3F6212',
   900: '#365314',
+};
+
+export const honey: ColorScale = {
+  50: '#FDF9F3',
+  100: '#F8EFE2',
+  200: '#EEDCC3',
+  300: '#E0C39E',
+  400: '#D2A97B',
+  500: '#C08F5A',
+  600: '#A9763F',
+  700: '#8A5D2F',
+  800: '#6B4623',
+  900: '#52351B',
+};
+
+export const sage: ColorScale = {
+  50: '#F6F7F2',
+  100: '#E9EDE0',
+  200: '#D5DDC6',
+  300: '#B9C7A3',
+  400: '#9BAF80',
+  500: '#7F9663',
+  600: '#64784C',
+  700: '#4F5F3C',
+  800: '#3E4A30',
+  900: '#313A27',
+};
+
+export const indigo: ColorScale = {
+  50: '#EEF2FF',
+  100: '#E0E7FF',
+  200: '#C7D2FE',
+  300: '#A5B4FC',
+  400: '#818CF8',
+  500: '#6366F1',
+  600: '#4F46E5',
+  700: '#4338CA',
+  800: '#3730A3',
+  900: '#312E81',
+};
+
+export const fuchsia: ColorScale = {
+  50: '#FDF4FF',
+  100: '#FAE8FF',
+  200: '#F5D0FE',
+  300: '#F0ABFC',
+  400: '#E879F9',
+  500: '#D946EF',
+  600: '#C026D3',
+  700: '#A21CAF',
+  800: '#86198F',
+  900: '#701A75',
 };
 
 export const rose: ColorScale = {
@@ -683,6 +751,40 @@ const schemes: Record<ColorScheme, SchemeConfig> = {
     bgPaper: '#FFFFFF',
     textPrimary: '#881337',
     textSecondary: '#E11D48',
+  },
+  /** 🧸 Cottagecore — warm honey & sage countryside */
+  cottagecore: {
+    brand: honey,
+    accent: sage,
+    rainbow: rainbowSakura,
+    fonts: themeFonts.cottagecore,
+    primaryMain: honey[400],
+    primaryLight: honey[100],
+    primaryDark: honey[700],
+    secondaryMain: sage[300],
+    secondaryLight: sage[100],
+    secondaryDark: sage[600],
+    bgDefault: '#FDF9F3',
+    bgPaper: '#FFFFFF',
+    textPrimary: '#52351B',
+    textSecondary: '#A9763F',
+  },
+  /** 🪐 Galaxy — cosmic indigo & fuchsia */
+  galaxy: {
+    brand: indigo,
+    accent: fuchsia,
+    rainbow: rainbowMurasaki,
+    fonts: themeFonts.galaxy,
+    primaryMain: indigo[400],
+    primaryLight: indigo[100],
+    primaryDark: indigo[700],
+    secondaryMain: fuchsia[300],
+    secondaryLight: fuchsia[100],
+    secondaryDark: fuchsia[600],
+    bgDefault: '#EEF2FF',
+    bgPaper: '#FFFFFF',
+    textPrimary: '#312E81',
+    textSecondary: '#4F46E5',
   },
 };
 

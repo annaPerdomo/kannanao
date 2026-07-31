@@ -108,6 +108,24 @@ export const SHOP_ITEMS: ShopItem[] = [
     preview: '#FB7185',
     emoji: '🌹',
   },
+  {
+    key: 'theme_cottagecore',
+    name: 'Cottagecore',
+    description: 'Cozy honey & sage countryside warmth',
+    category: 'theme',
+    price: 20000,
+    preview: '#D2A97B',
+    emoji: '🧸',
+  },
+  {
+    key: 'theme_galaxy',
+    name: 'Galaxy',
+    description: 'Cosmic indigo & fuchsia stardust',
+    category: 'theme',
+    price: 30000,
+    preview: '#818CF8',
+    emoji: '🪐',
+  },
 
   // ── Card borders ──
   {
@@ -191,6 +209,42 @@ export const SHOP_ITEMS: ShopItem[] = [
     preview: 'linear-gradient(135deg, #8B0000, #FF4500, #FFD700)',
     emoji: '🐉',
   },
+  {
+    key: 'border_crystal',
+    name: 'Crystal Ice',
+    description: 'Shimmering frozen crystal edges',
+    category: 'card_border',
+    price: 14000,
+    preview: 'linear-gradient(135deg, #E0F7FA, #80DEEA, #B2EBF2)',
+    emoji: '💎',
+  },
+  {
+    key: 'border_floral',
+    name: 'Floral Garden',
+    description: 'A blooming frame of petals and leaves',
+    category: 'card_border',
+    price: 16000,
+    preview: 'linear-gradient(135deg, #F8BBD0, #CE93D8, #F48FB1)',
+    emoji: '🌺',
+  },
+  {
+    key: 'border_kintsugi',
+    name: 'Kintsugi Gold',
+    description: 'Dark lacquer mended with rivers of gold',
+    category: 'card_border',
+    price: 20000,
+    preview: 'linear-gradient(120deg, #2B2B2B, #D4AF37, #2B2B2B, #F5D061)',
+    emoji: '🏺',
+  },
+  {
+    key: 'border_koi',
+    name: 'Koi Pond',
+    description: 'Swirling koi orange, white & ink black',
+    category: 'card_border',
+    price: 24000,
+    preview: 'linear-gradient(135deg, #FF7043, #FFFFFF, #FF7043, #263238)',
+    emoji: '🎏',
+  },
 
   // ── Celebrations ──
   {
@@ -210,12 +264,28 @@ export const SHOP_ITEMS: ShopItem[] = [
     emoji: '⭐',
   },
   {
+    key: 'celeb_bubble_pop',
+    name: 'Bubble Pop',
+    description: 'Float away on a stream of rainbow bubbles',
+    category: 'celebration',
+    price: 8000,
+    emoji: '🫧',
+  },
+  {
     key: 'celeb_bunnies',
     name: 'Bunny Parade',
     description: 'Adorable bunnies hop across your screen',
     category: 'celebration',
     price: 12000,
     emoji: '🐰',
+  },
+  {
+    key: 'celeb_sakura_storm',
+    name: 'Sakura Storm',
+    description: 'A whirlwind of cherry blossom petals',
+    category: 'celebration',
+    price: 18000,
+    emoji: '🌸',
   },
   {
     key: 'celeb_rainbow',
@@ -226,6 +296,14 @@ export const SHOP_ITEMS: ShopItem[] = [
     emoji: '🌈',
   },
   {
+    key: 'celeb_neko_parade',
+    name: 'Neko Parade',
+    description: 'A march of happy cats and paw prints',
+    category: 'celebration',
+    price: 30000,
+    emoji: '🐱',
+  },
+  {
     key: 'celeb_sparkle_pink',
     name: 'Sparkle Pink',
     description: 'Dreamy pink sparkles and glitter cascade',
@@ -234,12 +312,28 @@ export const SHOP_ITEMS: ShopItem[] = [
     emoji: '✨',
   },
   {
+    key: 'celeb_bento_party',
+    name: 'Bento Party',
+    description: 'It rains onigiri, ramen & dango — itadakimasu!',
+    category: 'celebration',
+    price: 50000,
+    emoji: '🍙',
+  },
+  {
     key: 'celeb_galaxy',
     name: 'Galaxy Burst',
     description: 'Deep space fireworks with cosmic shimmer',
     category: 'celebration',
     price: 60000,
     emoji: '🌌',
+  },
+  {
+    key: 'celeb_hanabi',
+    name: 'Hanabi Festival',
+    description: 'A grand summer fireworks finale in every color',
+    category: 'celebration',
+    price: 75000,
+    emoji: '🎆',
   },
 
   // ── Study Buddies ── artwork and accents in src/lib/buddies.ts
@@ -326,43 +420,21 @@ export const SHOP_ITEMS: ShopItem[] = [
 
   // ── Coming Soon ──
   {
-    key: 'theme_cottagecore',
-    name: 'Cottagecore',
-    description: 'Cozy countryside warmth — coming soon!',
-    category: 'theme',
+    key: 'buddy_shiba',
+    name: 'Maru',
+    description: 'A loyal shiba who never misses a study day — coming soon!',
+    category: 'study_buddy',
     price: 0,
-    preview: '#D2B48C',
-    emoji: '🧸',
+    emoji: '🐕',
     comingSoon: true,
   },
   {
-    key: 'theme_galaxy',
-    name: 'Galaxy',
-    description: 'Deep space sparkles — coming soon!',
-    category: 'theme',
+    key: 'buddy_hedgehog',
+    name: 'Hari',
+    description: 'A tiny hedgehog who collects words like berries — coming soon!',
+    category: 'study_buddy',
     price: 0,
-    preview: '#6B21A8',
-    emoji: '🪐',
-    comingSoon: true,
-  },
-  {
-    key: 'border_crystal',
-    name: 'Crystal Ice',
-    description: 'Shimmering frozen crystal edges — coming soon!',
-    category: 'card_border',
-    price: 0,
-    preview: 'linear-gradient(135deg, #E0F7FA, #80DEEA, #B2EBF2)',
-    emoji: '💎',
-    comingSoon: true,
-  },
-  {
-    key: 'border_floral',
-    name: 'Floral Garden',
-    description: 'Blooming flower frame — coming soon!',
-    category: 'card_border',
-    price: 0,
-    preview: 'linear-gradient(135deg, #F8BBD0, #CE93D8, #F48FB1)',
-    emoji: '🌺',
+    emoji: '🦔',
     comingSoon: true,
   },
 ];
@@ -407,6 +479,29 @@ export const CARD_BORDER_STYLES: Record<string, CardBorderStyle> = {
     boxShadow:
       '0 0 12px rgba(255, 69, 0, 0.35), 0 0 24px rgba(139, 0, 0, 0.20), 0 0 4px rgba(255, 215, 0, 0.3)',
   },
+  border_crystal: {
+    border: '2.5px solid #80DEEA',
+    boxShadow:
+      '0 0 14px rgba(128, 222, 234, 0.45), 0 0 28px rgba(178, 235, 242, 0.25), inset 0 0 8px rgba(224, 247, 250, 0.35)',
+  },
+  border_floral: {
+    border: '3px solid transparent',
+    background:
+      'linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #F8BBD0, #CE93D8, #F48FB1, #A5D6A7, #F8BBD0) border-box',
+    boxShadow: '0 0 12px rgba(244, 143, 177, 0.30)',
+  },
+  border_kintsugi: {
+    border: '2.5px solid transparent',
+    background:
+      'linear-gradient(#fff, #fff) padding-box, linear-gradient(120deg, #2B2B2B 0%, #D4AF37 18%, #2B2B2B 34%, #2B2B2B 52%, #F5D061 66%, #2B2B2B 80%, #D4AF37 100%) border-box',
+    boxShadow: '0 0 10px rgba(212, 175, 55, 0.35), inset 0 0 4px rgba(212, 175, 55, 0.12)',
+  },
+  border_koi: {
+    border: '2.5px solid transparent',
+    background:
+      'linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #FF7043 0%, #FFF3E0 25%, #FF7043 50%, #263238 78%, #FF7043 100%) border-box',
+    boxShadow: '0 0 12px rgba(255, 112, 67, 0.30)',
+  },
 };
 
 /** Map celebration item key → CelebTheme config (colors + emoji set) */
@@ -435,6 +530,31 @@ export const CELEBRATION_THEMES: Record<string, CelebTheme> = {
     colors: ['#6B21A8', '#4338CA', '#0EA5E9', '#818CF8', '#C084FC'],
     emojis: ['🌌', '🪐', '⭐', '🚀', '💫'],
   },
+  celeb_bubble_pop: {
+    colors: [
+      'rgba(125, 211, 252, 0.55)',
+      'rgba(165, 180, 252, 0.55)',
+      'rgba(249, 168, 212, 0.55)',
+      'rgba(153, 246, 228, 0.6)',
+    ],
+    emojis: ['🫧', '💧', '✨', '🐬', '🌊'],
+  },
+  celeb_sakura_storm: {
+    colors: ['#F9A8D4', '#FBCFE8', '#F472B6', '#FDA4AF', '#FCE7F3'],
+    emojis: ['🌸', '💮', '🌺', '🍃', '✨'],
+  },
+  celeb_neko_parade: {
+    colors: ['#FDBA74', '#FCD34D', '#F9A8D4', '#A78BFA'],
+    emojis: ['🐱', '😺', '😸', '🐾', '✨'],
+  },
+  celeb_bento_party: {
+    colors: ['#FB923C', '#F87171', '#FCD34D', '#4ADE80'],
+    emojis: ['🍙', '🍱', '🍜', '🍡', '🍣', '🥟'],
+  },
+  celeb_hanabi: {
+    colors: ['#FF0080', '#00FFFF', '#FFD700', '#FF6600', '#CC00FF'],
+    emojis: ['🎆', '🎇', '✨', '🏮', '💫'],
+  },
 };
 
 /** Map theme item key → ColorScheme value used by the app */
@@ -449,6 +569,8 @@ export const THEME_KEY_TO_SCHEME: Record<string, string> = {
   theme_midnight: 'midnight',
   theme_matcha: 'matcha',
   theme_rosegold: 'rosegold',
+  theme_cottagecore: 'cottagecore',
+  theme_galaxy: 'galaxy',
 };
 
 // Free items that every user owns by default

@@ -94,6 +94,8 @@ const VALID_SCHEMES: ColorScheme[] = [
   'midnight',
   'matcha',
   'rosegold',
+  'cottagecore',
+  'galaxy',
 ];
 
 export function AuthProvider({

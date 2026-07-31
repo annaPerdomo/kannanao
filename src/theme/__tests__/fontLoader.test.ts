@@ -14,6 +14,8 @@ const ALL_SCHEMES: ColorScheme[] = [
   'midnight',
   'matcha',
   'rosegold',
+  'cottagecore',
+  'galaxy',
 ];
 
 // Pull the family names out of a built css2 URL (e.g. "Noto+Serif+JP").

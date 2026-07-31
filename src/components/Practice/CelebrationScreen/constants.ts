@@ -263,6 +263,11 @@ export const CELEBRATION_KEY_TO_THEME: Record<string, CelebTheme> = {
   celeb_rainbow: 'confetti',
   celeb_sparkle_pink: 'sparkle',
   celeb_galaxy: 'fireworks',
+  celeb_bubble_pop: 'bubbles',
+  celeb_sakura_storm: 'emojiRain',
+  celeb_neko_parade: 'emojiRain',
+  celeb_bento_party: 'emojiRain',
+  celeb_hanabi: 'fireworks',
 };
 
 export const CELEB_PARTICLE_BG: Record<string, string> = {

@@ -50,6 +50,8 @@ const VALID_SCHEMES: ColorScheme[] = [
   'midnight',
   'matcha',
   'rosegold',
+  'cottagecore',
+  'galaxy',
 ];
 
 export const schemeInfo: Record<ColorScheme, { label: string; emoji: string; preview: string }> = {
@@ -63,6 +65,8 @@ export const schemeInfo: Record<ColorScheme, { label: string; emoji: string; pre
   midnight: { label: 'Midnight', emoji: '🌙', preview: '#475569' },
   matcha: { label: 'Matcha', emoji: '🍵', preview: '#84CC16' },
   rosegold: { label: 'Rose Gold', emoji: '🌹', preview: '#FB7185' },
+  cottagecore: { label: 'Cottagecore', emoji: '🧸', preview: '#D2A97B' },
+  galaxy: { label: 'Galaxy', emoji: '🪐', preview: '#818CF8' },
 };
 
 interface ThemeContextValue {
