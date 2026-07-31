@@ -1181,6 +1181,7 @@
     "userMenu": {
       "signIn": "Sign In",
       "admin": "Admin",
+      "changeAvatar": "Change avatar",
       "account": "Account",
       "signOut": "Sign out",
       "theme": "Theme"
@@ -2151,6 +2152,14 @@
     "studyCalendar": {
       "cardsStudiedTooltip": "{cards, plural, one {# card studied} other {# cards studied}}"
     }
+  },
+  "AvatarPicker": {
+    "title": "Choose your avatar",
+    "subtitle": "Any face from your study buddies",
+    "useInitial": "Use my initial",
+    "faceAriaLabel": "{name} face {number}",
+    "shopLink": "Unlock more buddies in the Shop",
+    "loadError": "Couldn't load your buddies. Please close this and try again."
   },
   "Shop": {
     "title": "Shop",

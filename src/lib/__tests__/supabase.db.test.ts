@@ -74,6 +74,7 @@ import {
   loadEventTypes,
   loadProfile,
   loadTodos,
+  updateProfileAvatar,
   updateProfileColorScheme,
   updateProfileLocale,
   updateProfileShowTodo,
@@ -592,6 +593,33 @@ describe('updateProfileLocale', () => {
 
   it('should write to the profiles table', async () => {
     await updateProfileLocale('u1', 'ja');
+    expect(mockFrom.mock.calls.map((c) => c[0])).toContain('profiles');
+  });
+});
+
+// ─── updateProfileAvatar ──────────────────────────────────────────────────────
+
+describe('updateProfileAvatar', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setTable('profiles', null, null);
+  });
+
+  it('should return no error on success, including clearing back to null', async () => {
+    await expect(updateProfileAvatar('u1', 'buddy_fox:3')).resolves.toEqual({ error: null });
+    await expect(updateProfileAvatar('u1', null)).resolves.toEqual({ error: null });
+  });
+
+  // The picker is optimistic, so it has to know when to roll the face back.
+  it('should report the error to the caller rather than swallowing it', async () => {
+    setTable('profiles', null, { message: 'permission denied' });
+    await expect(updateProfileAvatar('u1', 'buddy_fox:3')).resolves.toEqual({
+      error: 'permission denied',
+    });
+  });
+
+  it('should write to the profiles table', async () => {
+    await updateProfileAvatar('u1', 'buddy_fox:3');
     expect(mockFrom.mock.calls.map((c) => c[0])).toContain('profiles');
   });
 });

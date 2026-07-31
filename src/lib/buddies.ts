@@ -55,6 +55,51 @@ export function randomFaceVariant(): number {
   return 1 + Math.floor(Math.random() * BUDDY_FACE_COUNT);
 }
 
+// ─── Avatars ─────────────────────────────────────────────────────────────────
+// A user avatar is a buddy face, stored on profiles.avatar as
+// '<shop item key>:<face variant>' (e.g. 'buddy_fox:3'). Owning a buddy in the
+// shop is what unlocks its faces; buddy_tango is free, so everyone has avatars.
+
+export interface AvatarRef {
+  buddyKey: string;
+  variant: number;
+}
+
+export function makeAvatar(buddyKey: string, variant: number): string {
+  return `${buddyKey}:${variant}`;
+}
+
+/**
+ * Null for anything that doesn't resolve to a real face — unknown buddy keys
+ * (e.g. a buddy later removed from the registry) and out-of-range variants —
+ * so every surface falls back to the initial instead of a broken image.
+ */
+export function parseAvatar(value: string | null | undefined): AvatarRef | null {
+  if (!value) return null;
+  const sep = value.lastIndexOf(':');
+  if (sep === -1) return null;
+  const buddyKey = value.slice(0, sep);
+  const variant = Number(value.slice(sep + 1));
+  if (!BUDDY_ART[buddyKey]) return null;
+  if (!Number.isInteger(variant) || variant < 1 || variant > BUDDY_FACE_COUNT) return null;
+  return { buddyKey, variant };
+}
+
+export function avatarSrc(value: string | null | undefined): string | null {
+  const ref = parseAvatar(value);
+  return ref ? buddyFaceSrc(ref.buddyKey, ref.variant) : null;
+}
+
+export function avatarAccent(value: string | null | undefined): string | null {
+  const ref = parseAvatar(value);
+  return ref ? BUDDY_ART[ref.buddyKey].accent : null;
+}
+
+export function avatarBg(value: string | null | undefined): string | null {
+  const ref = parseAvatar(value);
+  return ref ? BUDDY_ART[ref.buddyKey].bg : null;
+}
+
 export const FALLBACK_REACTIONS: Record<'correct' | 'wrong' | 'idle', string[]> = {
   correct: ['Yay! You got it!', 'Amazing!', 'Sugoi!', 'That was great!'],
   wrong: ['Almost! Try again!', "Don't give up!", 'One more try!'],

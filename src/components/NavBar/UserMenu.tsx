@@ -1,19 +1,35 @@
 'use client';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import FaceRetouchingNaturalIcon from '@mui/icons-material/FaceRetouchingNatural';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { Box, Button, Divider, Menu, MenuItem, Typography } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useEffect } from 'react';
 
+import { UserAvatar } from '@/components/UserAvatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { type ColorScheme, schemeInfo, useColorScheme } from '@/contexts/ThemeContext';
+import { avatarSrc } from '@/lib/buddies';
+
+// Dynamic on purpose: only signed-in users who click "Change avatar" need it,
+// and a static import would drag the AvatarPicker namespace (and this chunk)
+// into the landing payload via AppShell → NavBar.
+const AvatarPickerDialog = dynamic(
+  () => import('@/components/AvatarPickerDialog').then((m) => m.AvatarPickerDialog),
+  { ssr: false },
+);
+
+// Sized to nearly fill the Toolbar (56 on xs, 64 from sm up) so the buddy's
+// face is legible; the button loses its vertical padding to make room.
+const AVATAR_SIZE = { xs: 44, sm: 52 };
 
 interface UserMenuProps {
   navBtnSx: SxProps<Theme>;
@@ -23,10 +39,11 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
   const t = useTranslations('Nav.userMenu');
   const router = useRouter();
   const { brand, surfaces } = useTheme().palette;
-  const { user, isAdmin, displayName, signOut } = useAuth();
+  const { user, isAdmin, displayName, avatar, signOut } = useAuth();
   const { scheme, setScheme } = useColorScheme();
 
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
 
   useEffect(() => {
     setMenuAnchor(null);
@@ -60,8 +77,23 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
       <Button
         onClick={(e) => setMenuAnchor(e.currentTarget)}
         size="small"
-        startIcon={<AccountCircleIcon sx={{ fontSize: '1.1rem !important' }} />}
-        sx={{ ...(navBtnSx as object), '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } } }}
+        startIcon={
+          avatarSrc(avatar) ? (
+            <UserAvatar
+              avatar={avatar}
+              name={displayName ?? ''}
+              size={48}
+              sx={{ width: AVATAR_SIZE, height: AVATAR_SIZE }}
+            />
+          ) : (
+            <AccountCircleIcon sx={{ fontSize: '1.1rem !important' }} />
+          )
+        }
+        sx={{
+          ...(navBtnSx as object),
+          py: 0,
+          '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
+        }}
       >
         <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
           {displayName ?? user.email?.split('@')[0]}
@@ -85,6 +117,16 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
             <AdminPanelSettingsIcon sx={{ fontSize: '1rem' }} /> {t('admin')}
           </MenuItem>
         )}
+
+        <MenuItem
+          onClick={() => {
+            setMenuAnchor(null);
+            setAvatarPickerOpen(true);
+          }}
+          sx={{ gap: 1.5, color: brand[700], fontSize: '0.88rem', fontWeight: 600 }}
+        >
+          <FaceRetouchingNaturalIcon sx={{ fontSize: '1rem' }} /> {t('changeAvatar')}
+        </MenuItem>
 
         <MenuItem
           onClick={() => {
@@ -134,6 +176,8 @@ export function UserMenu({ navBtnSx }: UserMenuProps) {
           </Box>
         </MenuItem>
       </Menu>
+
+      {avatarPickerOpen && <AvatarPickerDialog open onClose={() => setAvatarPickerOpen(false)} />}
     </>
   );
 }

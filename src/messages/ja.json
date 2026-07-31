@@ -1174,6 +1174,7 @@
     "userMenu": {
       "signIn": "ログイン",
       "admin": "管理",
+      "changeAvatar": "アバター",
       "account": "アカウント",
       "signOut": "ログアウト",
       "theme": "テーマ"
@@ -2144,6 +2145,14 @@
     "studyCalendar": {
       "cardsStudiedTooltip": "{cards, plural, other {カード#枚を学習}}"
     }
+  },
+  "AvatarPicker": {
+    "title": "アバターをえらぼう",
+    "subtitle": "もっているバディの顔からえらべるよ",
+    "useInitial": "イニシャルにする",
+    "faceAriaLabel": "{name}の顔{number}",
+    "shopLink": "ショップでバディをふやそう",
+    "loadError": "バディを読み込めませんでした。とじてもう一度ためしてね。"
   },
   "Shop": {
     "title": "ショップ",

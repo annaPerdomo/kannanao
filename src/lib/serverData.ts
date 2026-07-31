@@ -59,7 +59,7 @@ async function loadProfileServer(
   const { data, error } = await supabase
     .from('profiles')
     .select(
-      'username, display_name, color_scheme, show_todo, home_sections, review_reminders, account_type, organizer_id, group_id, travel_main_view_mode, locale, groups:group_id (show_leaderboard)',
+      'username, display_name, color_scheme, show_todo, home_sections, review_reminders, avatar, account_type, organizer_id, group_id, travel_main_view_mode, locale, groups:group_id (show_leaderboard)',
     )
     .eq('id', userId)
     .single();
@@ -68,6 +68,7 @@ async function loadProfileServer(
   return {
     username: data.username,
     displayName: data.display_name ?? null,
+    avatar: data.avatar ?? null,
     colorScheme: data.color_scheme ?? null,
     showTodo: data.show_todo !== false,
     homeSections: data.home_sections ?? null,

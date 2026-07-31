@@ -27,6 +27,7 @@ vi.mock('@/lib/supabase', () => ({
   loadProfile: vi.fn().mockResolvedValue(null),
   updateProfileColorScheme: vi.fn().mockResolvedValue(undefined),
   updateProfileShowTodo: vi.fn().mockResolvedValue(undefined),
+  updateProfileAvatar: vi.fn().mockResolvedValue({ error: null }),
   dbRecordLogin: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -509,6 +510,78 @@ describe('AuthContext / AuthProvider', () => {
       });
 
       expect(updateProfileShowTodo).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateAvatar', () => {
+    function captureAuth() {
+      const captured: { current: ReturnType<typeof useAuth> | null } = { current: null };
+      function Capture() {
+        captured.current = useAuth();
+        return null;
+      }
+      renderWithAuth(<Capture />);
+      return captured;
+    }
+
+    it('should write the new avatar and keep it on success', async () => {
+      const { updateProfileAvatar } = await import('@/lib/supabase');
+      mockGetUser.mockResolvedValue({ data: { user: { id: 'u1', email: 'test@kannanao.local' } } });
+
+      const auth = captureAuth();
+      await waitFor(() => expect(auth.current?.loading).toBe(false));
+
+      await act(async () => {
+        await auth.current?.updateAvatar('buddy_fox:3');
+      });
+
+      expect(updateProfileAvatar).toHaveBeenCalledWith('u1', 'buddy_fox:3');
+      expect(auth.current?.avatar).toBe('buddy_fox:3');
+    });
+
+    it('should roll back to the previous avatar when the write fails', async () => {
+      const { updateProfileAvatar } = await import('@/lib/supabase');
+      mockGetUser.mockResolvedValue({ data: { user: { id: 'u1', email: 'test@kannanao.local' } } });
+
+      const auth = captureAuth();
+      await waitFor(() => expect(auth.current?.loading).toBe(false));
+
+      // Establish a saved avatar first — rolling back to null would look like
+      // success on a fresh profile and hide the bug this covers.
+      await act(async () => {
+        await auth.current?.updateAvatar('buddy_fox:3');
+      });
+      expect(auth.current?.avatar).toBe('buddy_fox:3');
+
+      vi.mocked(updateProfileAvatar).mockResolvedValueOnce({ error: 'db down' });
+      let result: { error: string | null } | undefined;
+      await act(async () => {
+        result = await auth.current?.updateAvatar('buddy_panda:1');
+      });
+
+      expect(result?.error).toBe('db down');
+      expect(auth.current?.avatar).toBe('buddy_fox:3');
+    });
+
+    it('should roll back and report when the session is gone', async () => {
+      const { updateProfileAvatar } = await import('@/lib/supabase');
+      mockGetUser.mockResolvedValue({ data: { user: { id: 'u1', email: 'test@kannanao.local' } } });
+
+      const auth = captureAuth();
+      await waitFor(() => expect(auth.current?.loading).toBe(false));
+      await act(async () => {
+        await auth.current?.updateAvatar('buddy_fox:3');
+      });
+
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+      let result: { error: string | null } | undefined;
+      await act(async () => {
+        result = await auth.current?.updateAvatar(null);
+      });
+
+      expect(result?.error).toBeTruthy();
+      expect(auth.current?.avatar).toBe('buddy_fox:3');
+      expect(updateProfileAvatar).toHaveBeenCalledTimes(1);
     });
   });
 });

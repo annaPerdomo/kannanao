@@ -5,11 +5,16 @@ import { describe, expect, it } from 'vitest';
 
 import { SHOP_ITEMS } from '@/hooks/useShop';
 import {
+  avatarAccent,
+  avatarBg,
+  avatarSrc,
   BUDDY_ART,
   BUDDY_FACE_COUNT,
   buddyFaceSrc,
   buddyShopSrc,
   DEFAULT_BUDDY_KEY,
+  makeAvatar,
+  parseAvatar,
   randomFaceVariant,
   resolveBuddyKey,
 } from '@/lib/buddies';
@@ -56,6 +61,32 @@ describe('asset paths', () => {
       expect(v).toBeGreaterThanOrEqual(1);
       expect(v).toBeLessThanOrEqual(BUDDY_FACE_COUNT);
     }
+  });
+});
+
+describe('avatars', () => {
+  it('round-trips through makeAvatar and parseAvatar', () => {
+    expect(parseAvatar(makeAvatar('buddy_fox', 3))).toEqual({ buddyKey: 'buddy_fox', variant: 3 });
+  });
+
+  it('rejects anything that does not resolve to a real face', () => {
+    expect(parseAvatar(null)).toBeNull();
+    expect(parseAvatar(undefined)).toBeNull();
+    expect(parseAvatar('')).toBeNull();
+    expect(parseAvatar('buddy_fox')).toBeNull();
+    expect(parseAvatar('buddy_retired:3')).toBeNull();
+    expect(parseAvatar('buddy_fox:0')).toBeNull();
+    expect(parseAvatar(`buddy_fox:${BUDDY_FACE_COUNT + 1}`)).toBeNull();
+    expect(parseAvatar('buddy_fox:2.5')).toBeNull();
+  });
+
+  it('resolves src, accent and bg for a valid avatar, null otherwise', () => {
+    expect(avatarSrc('buddy_pink_cat:2')).toBe('/buddies/faces/calico-2.webp');
+    expect(avatarAccent('buddy_pink_cat:2')).toBe(BUDDY_ART.buddy_pink_cat.accent);
+    expect(avatarBg('buddy_pink_cat:2')).toBe(BUDDY_ART.buddy_pink_cat.bg);
+    expect(avatarSrc('buddy_retired:2')).toBeNull();
+    expect(avatarAccent(null)).toBeNull();
+    expect(avatarBg('buddy_retired:2')).toBeNull();
   });
 });
 

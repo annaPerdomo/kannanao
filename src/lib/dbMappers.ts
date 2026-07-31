@@ -95,6 +95,8 @@ export interface UserProfile {
    * non-null value out-ranks the cookie, and only at sign-in.
    */
   locale: Locale | null;
+  /** profiles.avatar — buddy-face avatar as '<item key>:<variant>', or null for the initial. */
+  avatar: string | null;
   accountType: AccountType;
   organizerId: string | null;
   groupId: string | null;
