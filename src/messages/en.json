@@ -2360,48 +2360,52 @@
         "description": "Your very first study buddy — cheering for you since day one!"
       },
       "buddy_bunny": {
-        "name": "Mochi",
-        "description": "A marshmallow-soft bunny who does one happy hop for every word you learn"
+        "name": "Tsuki",
+        "description": "The moon (tsuki!) has a legendary rabbit — this marshmallow-soft one does a happy hop for every word you learn"
       },
       "buddy_penguin": {
-        "name": "Pico",
-        "description": "A little penguin who slid all the way from the icy north to study with you"
+        "name": "Yuki",
+        "description": "A little penguin named Yuki — that's 'snow'! — who slid all the way from the icy north to study with you"
       },
       "buddy_panda": {
-        "name": "Anko",
-        "description": "A gentle panda who munches bamboo while you think — no rush, Anko waits"
+        "name": "Goro",
+        "description": "A gentle panda named for goro-goro, the sound of rolling around — he munches bamboo while you think, no rush"
+      },
+      "buddy_red_panda": {
+        "name": "Momiji",
+        "description": "A fluffy red panda named for momiji — autumn maple leaves, the exact color of her coat. She takes notes on every word you learn!"
       },
       "buddy_otter": {
         "name": "Rakko",
         "description": "A floaty otter who never lets go of a favorite book — or of you"
       },
       "buddy_fox": {
-        "name": "Kon",
-        "description": "A clever fox who answers every question with a proud \"kon kon!\""
+        "name": "Inari",
+        "description": "Named for the Inari shrines that foxes guard — this clever one answers every question with a proud \"kon kon!\""
       },
       "buddy_lucky_cat": {
-        "name": "Fuku",
-        "description": "A lucky cat who waves good fortune onto every quiz you take"
+        "name": "Suzu",
+        "description": "Named for the little bell (suzu) on her collar — a lucky cat who waves good fortune onto every quiz you take"
       },
       "buddy_pink_cat": {
-        "name": "Mikan",
-        "description": "A calico who naps on your notebook but always wakes up for study time"
+        "name": "Tama",
+        "description": "Every storybook cat in Japan is named Tama ('gem') — this calico naps on your notebook but always wakes up for study time"
       },
       "buddy_kappa": {
-        "name": "Kyuri",
-        "description": "A shy river sprite who trades cucumbers for correct answers"
+        "name": "Sara",
+        "description": "A shy kappa named for the little water plate (sara) on their head, who trades cucumbers for correct answers"
       },
       "buddy_tanuki": {
         "name": "Ponta",
         "description": "A playful tanuki who believed in you before you even answered"
       },
-      "buddy_shiba": {
-        "name": "Maru",
-        "description": "A loyal shiba who never misses a study day — coming soon!"
+      "buddy_axolotl": {
+        "name": "Momo",
+        "description": "Momo means peach — the perfect name for a peach-pink axolotl who smiles through every study session. Coming soon!"
       },
-      "buddy_hedgehog": {
-        "name": "Hari",
-        "description": "A tiny hedgehog who collects words like berries — coming soon!"
+      "buddy_guinea_pig": {
+        "name": "Moru",
+        "description": "In Japan a guinea pig is a morumotto — a 'marmot'! This squeaky little one cheers with a happy \"pui pui!\" Coming soon!"
       }
     },
     "buddies": {
@@ -2469,7 +2473,7 @@
           "Don't worry, hop to it!",
           "Almost! Keep going!",
           "You'll get it next hop!",
-          "Mochi believes in you!"
+          "Tsuki believes in you!"
         ],
         "idle": [
           "~munches carrot~",
@@ -2500,7 +2504,7 @@
           "Ice-credible!",
           "さすが！",
           "Waddle yeah!",
-          "Pico approves! 🧊",
+          "Yuki approves! 🧊",
           "You're on fire… wait, I melt!",
           "Spectacular!",
           "Chill answer! 🎉",
@@ -2547,7 +2551,7 @@
           "That's the way!",
           "So wise! Like bamboo~",
           "Amazing answer!",
-          "Anko is so proud!",
+          "Goro is so proud!",
           "Subarashii!"
         ],
         "wrong": [
@@ -2672,7 +2676,7 @@
           "Fortune favors you! ✨",
           "合格！おめでとう！",
           "Jackpot answer!",
-          "Fuku waves with joy!",
+          "Suzu waves with joy!",
           "That's a golden one!",
           "合格 vibes! You did it!",
           "Purr-fectly lucky!",
@@ -2685,7 +2689,7 @@
           "A lucky cat never quits!",
           "Almost! Wave it in!",
           "Next one's the lucky one!",
-          "Fuku believes in you!"
+          "Suzu believes in you!"
         ],
         "idle": [
           "~waves paw slowly~",
@@ -2699,7 +2703,7 @@
           "Your luck is building!"
         ],
         "homePhrases": [
-          "Fuku beckons: study time! 🔔",
+          "Suzu beckons: study time! 🔔",
           "Lucky days start with practice!",
           "福きたる、にゃ！",
           "A card a day brings luck your way!",
@@ -2763,7 +2767,7 @@
           "The river spirits approve!",
           "Kappa-mazing!",
           "Yes! Crunch crunch! 🥒",
-          "Kyuri does a happy wiggle!",
+          "Sara does a happy wiggle!",
           "Right as rain!"
         ],
         "wrong": [
@@ -2771,7 +2775,7 @@
           "Don't let it slide!",
           "もういっかい、けろ",
           "The river flows on — again!",
-          "Almost! Kyuri peeks and cheers!",
+          "Almost! Sara peeks and cheers!",
           "Shy guess? Try a bold one!",
           "You'll get it, kero~"
         ],
@@ -2793,7 +2797,7 @@
           "Shy but cheering loudly (inside)!",
           "Pick a deck, kero~",
           "Little steps, big splashes!",
-          "Kyuri saved you a cucumber!",
+          "Sara saved you a cucumber!",
           "The river never stops — neither do we!",
           "Let's make ripples today! 💧"
         ]
@@ -2840,6 +2844,48 @@
           "Drum roll… pick a deck! 🥁",
           "Lucky learners study daily!",
           "Let's poko-poko practice!"
+        ]
+      },
+      "buddy_red_panda": {
+        "correct": [
+          "Maple-magnificent! 🍁",
+          "Momiji's tail fluffs with pride!",
+          "すごい！満点だね！",
+          "Noted: you're brilliant! ✏️",
+          "A gold star in her notebook! ⭐",
+          "You make it look easy~",
+          "Sharp as autumn air!",
+          "Momiji pushes up her glasses — perfect!",
+          "Leaf-tastically done!"
+        ],
+        "wrong": [
+          "Almost! Let's check the notes!",
+          "Flip that leaf and try again!",
+          "もういっかい、ゆっくりね",
+          "Even scholars erase sometimes!",
+          "Momiji circles it to review later ✏️",
+          "Momiji still believes in you!",
+          "Close! One more look~"
+        ],
+        "idle": [
+          "~scribbles in her notebook~",
+          "~polishes her glasses~",
+          "こつこつ、かきかき…",
+          "~presses a maple leaf between pages~",
+          "~taps her pencil thoughtfully~",
+          "~fluffs her tail like a cushion~",
+          "Ready when you are! ✏️"
+        ],
+        "homePhrases": [
+          "Momiji took notes on your streak! ⭐",
+          "A page a day — that's the way!",
+          "もみじのノートに単語がいっぱい！",
+          "Autumn leaves, new words~ 🍁",
+          "Little by little, like leaves turning!",
+          "One more card for the notebook~",
+          "Stars shine for students! ✨",
+          "Glasses on, flashcards out!",
+          "Study now, shine later~"
         ]
       }
     },

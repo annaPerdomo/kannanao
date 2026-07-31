@@ -536,15 +536,16 @@ describe('useShop', () => {
       expect(buddies.at(-1)?.key).toBe('buddy_lucky_cat');
     });
 
-    it('should put a cat within early reach, between Pico and Anko', () => {
+    it('should put a cat within early reach, between the penguin and the panda', () => {
       const price = (key: string) => buddies.find((b) => b.key === key)!.price;
       expect(price('buddy_pink_cat')).toBeGreaterThan(price('buddy_penguin'));
       expect(price('buddy_pink_cat')).toBeLessThan(price('buddy_panda'));
     });
 
     it('should keep the full set collectable within a school year', () => {
+      // 243,000 for the July 2026 set; +37,000 when Momiji left coming-soon.
       const total = buddies.reduce((sum, b) => sum + b.price, 0);
-      expect(total).toBe(243000);
+      expect(total).toBe(280000);
     });
 
     it('should leave the cheapest buddy affordable but the second out of reach on launch day', () => {

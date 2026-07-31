@@ -14,8 +14,8 @@ import {
 import en from '../../messages/en.json';
 import ja from '../../messages/ja.json';
 
-// Coming-soon teasers render emoji-only cards and can't be bought or equipped,
-// so they don't need artwork or phrase sets yet.
+// Coming-soon teasers render a static art/emoji card and can't be bought or
+// equipped, so they don't need face artwork or phrase sets yet.
 const buddyItems = SHOP_ITEMS.filter((i) => i.category === 'study_buddy' && !i.comingSoon);
 
 describe('resolveBuddyKey', () => {

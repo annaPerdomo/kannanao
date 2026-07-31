@@ -348,32 +348,36 @@ export const SHOP_ITEMS: ShopItem[] = [
   },
   {
     key: 'buddy_bunny',
-    name: 'Mochi',
-    description: 'A marshmallow-soft bunny who does one happy hop for every word you learn',
+    name: 'Tsuki',
+    description:
+      'The moon (tsuki!) has a legendary rabbit — this marshmallow-soft one does a happy hop for every word you learn',
     category: 'study_buddy',
     price: 10000,
     emoji: '🐰',
   },
   {
     key: 'buddy_penguin',
-    name: 'Pico',
-    description: 'A little penguin who slid all the way from the icy north to study with you',
+    name: 'Yuki',
+    description:
+      "A little penguin named Yuki — that's 'snow'! — who slid all the way from the icy north to study with you",
     category: 'study_buddy',
     price: 18000,
     emoji: '🐧',
   },
   {
     key: 'buddy_pink_cat',
-    name: 'Mikan',
-    description: 'A calico who naps on your notebook but always wakes up for study time',
+    name: 'Tama',
+    description:
+      "Every storybook cat in Japan is named Tama ('gem') — this calico naps on your notebook but always wakes up for study time",
     category: 'study_buddy',
     price: 20000,
     emoji: '🐈',
   },
   {
     key: 'buddy_panda',
-    name: 'Anko',
-    description: 'A gentle panda who munches bamboo while you think — no rush, Anko waits',
+    name: 'Goro',
+    description:
+      'A gentle panda named for goro-goro, the sound of rolling around — he munches bamboo while you think, no rush',
     category: 'study_buddy',
     price: 21000,
     emoji: '🐼',
@@ -388,8 +392,9 @@ export const SHOP_ITEMS: ShopItem[] = [
   },
   {
     key: 'buddy_kappa',
-    name: 'Kyuri',
-    description: 'A shy river sprite who trades cucumbers for correct answers',
+    name: 'Sara',
+    description:
+      'A shy kappa named for the little water plate (sara) on their head, who trades cucumbers for correct answers',
     category: 'study_buddy',
     price: 29000,
     emoji: '🥒',
@@ -403,17 +408,28 @@ export const SHOP_ITEMS: ShopItem[] = [
     emoji: '🦝',
   },
   {
+    key: 'buddy_red_panda',
+    name: 'Momiji',
+    description:
+      'A fluffy red panda named for momiji — autumn maple leaves, the exact color of her coat. She takes notes on every word you learn!',
+    category: 'study_buddy',
+    price: 37000,
+    emoji: '🍁',
+  },
+  {
     key: 'buddy_fox',
-    name: 'Kon',
-    description: 'A clever fox who answers every question with a proud "kon kon!"',
+    name: 'Inari',
+    description:
+      'Named for the Inari shrines that foxes guard — this clever one answers every question with a proud "kon kon!"',
     category: 'study_buddy',
     price: 40000,
     emoji: '🦊',
   },
   {
     key: 'buddy_lucky_cat',
-    name: 'Fuku',
-    description: 'A lucky cat who waves good fortune onto every quiz you take',
+    name: 'Suzu',
+    description:
+      'Named for the little bell (suzu) on her collar — a lucky cat who waves good fortune onto every quiz you take',
     category: 'study_buddy',
     price: 46000,
     emoji: '🐱',
@@ -421,21 +437,25 @@ export const SHOP_ITEMS: ShopItem[] = [
 
   // ── Coming Soon ──
   {
-    key: 'buddy_shiba',
-    name: 'Maru',
-    description: 'A loyal shiba who never misses a study day — coming soon!',
+    key: 'buddy_axolotl',
+    name: 'Momo',
+    description:
+      'Momo means peach — the perfect name for a peach-pink axolotl who smiles through every study session. Coming soon!',
     category: 'study_buddy',
     price: 0,
-    emoji: '🐕',
+    emoji: '🦎',
+    image: '/buddies/shop/axolotl.webp',
     comingSoon: true,
   },
   {
-    key: 'buddy_hedgehog',
-    name: 'Hari',
-    description: 'A tiny hedgehog who collects words like berries — coming soon!',
+    key: 'buddy_guinea_pig',
+    name: 'Moru',
+    description:
+      'In Japan a guinea pig is a morumotto — a \'marmot\'! This squeaky little one cheers with a happy "pui pui!" Coming soon!',
     category: 'study_buddy',
     price: 0,
-    emoji: '🦔',
+    emoji: '🐹',
+    image: '/buddies/shop/guineapig.webp',
     comingSoon: true,
   },
 ];
