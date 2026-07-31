@@ -77,9 +77,26 @@ export function ShopItemCard({
             justifyContent: 'center',
           }}
         >
-          <Typography sx={{ fontSize: '2.5rem', filter: 'grayscale(0.3)' }}>
-            {item.emoji}
-          </Typography>
+          {item.image ? (
+            <Box
+              component="img"
+              src={item.image}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+              sx={{
+                height: '85%',
+                maxWidth: '78%',
+                objectFit: 'contain',
+                filter: 'grayscale(0.25)',
+              }}
+            />
+          ) : (
+            <Typography sx={{ fontSize: '2.5rem', filter: 'grayscale(0.3)' }}>
+              {item.emoji}
+            </Typography>
+          )}
         </Box>
         <Box sx={{ p: { xs: 1.25, sm: 1.5 }, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           <Typography

@@ -14,6 +14,8 @@ export interface ShopItem {
   preview?: string;
   emoji: string;
   comingSoon?: boolean;
+  /** Cutout artwork rendered instead of the emoji on coming-soon cards */
+  image?: string;
 }
 
 export interface CardBorderStyle {
