@@ -14,6 +14,8 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
+import { UserAvatar } from '@/components/UserAvatar';
+import { makeAvatar } from '@/lib/buddies';
 import type { ShopItem } from '@/types/shop';
 
 import { BorderCardPreview } from './BorderCardPreview';
@@ -323,6 +325,26 @@ export function ShopItemCard({
           >
             {itemDescription}
           </Typography>
+        )}
+
+        {/* Buddies double as profile pictures — worth advertising on the card */}
+        {!mini && isBuddy && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+            <Box sx={{ display: 'flex', flexShrink: 0 }}>
+              {[1, 2, 3].map((v) => (
+                <UserAvatar
+                  key={v}
+                  avatar={makeAvatar(item.key, v)}
+                  name=""
+                  size={28}
+                  sx={{ '&:not(:first-of-type)': { ml: '-9px' } }}
+                />
+              ))}
+            </Box>
+            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: brand[600] }}>
+              {t('avatarPerk')}
+            </Typography>
+          </Box>
         )}
 
         {/* Price + action row */}

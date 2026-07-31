@@ -2180,7 +2180,8 @@
       "afterPurchase": "入手後",
       "maybeLater": "あとで",
       "unlocking": "入手中...",
-      "unlock": "入手する！"
+      "unlock": "入手する！",
+      "avatarPerk": "プロフィール画像につかえる顔が8つついてくるよ！"
     },
     "previewingBanner": {
       "previewing": "<strong>{name}</strong>をプレビュー中",
@@ -2200,7 +2201,8 @@
       "active": "使用中",
       "equip": "使う",
       "buy": "買う",
-      "keepStudyingTooltip": "学習をつづけてXPをためよう！"
+      "keepStudyingTooltip": "学習をつづけてXPをためよう！",
+      "avatarPerk": "プロフィール画像が8つふえる"
     },
     "errors": {
       "itemNotFound": "アイテムが見つかりません",
@@ -2892,10 +2894,8 @@
       }
     },
     "buddyPreview": {
-      "correct": "せいかい",
-      "wrong": "まちがい",
-      "idle": "まってるとき",
-      "close": "とじる"
+      "close": "とじる",
+      "avatarPerk": "すきな顔をプロフィール画像にできるよ"
     }
   },
   "Landing": {

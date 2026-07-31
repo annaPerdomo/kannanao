@@ -2187,7 +2187,8 @@
       "afterPurchase": "After purchase",
       "maybeLater": "Maybe later",
       "unlocking": "Unlocking...",
-      "unlock": "Unlock!"
+      "unlock": "Unlock!",
+      "avatarPerk": "Includes 8 faces you can use as your profile picture!"
     },
     "previewingBanner": {
       "previewing": "Previewing <strong>{name}</strong>",
@@ -2207,7 +2208,8 @@
       "active": "Active",
       "equip": "Equip",
       "buy": "Buy",
-      "keepStudyingTooltip": "Keep studying to earn more XP!"
+      "keepStudyingTooltip": "Keep studying to earn more XP!",
+      "avatarPerk": "Unlocks 8 profile pictures"
     },
     "errors": {
       "itemNotFound": "Item not found",
@@ -2899,10 +2901,8 @@
       }
     },
     "buddyPreview": {
-      "correct": "Correct",
-      "wrong": "Wrong",
-      "idle": "Waiting",
-      "close": "Close"
+      "close": "Close",
+      "avatarPerk": "Pick any of these faces as your profile picture"
     }
   },
   "Landing": {

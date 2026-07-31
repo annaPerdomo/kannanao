@@ -586,10 +586,49 @@ export default function Shop() {
             </DialogTitle>
             <DialogContent>
               <Typography
-                sx={{ fontSize: '0.82rem', color: 'text.secondary', textAlign: 'center', mb: 2.5 }}
+                sx={{
+                  fontSize: '0.82rem',
+                  color: 'text.secondary',
+                  textAlign: 'center',
+                  mb: confirmItem.category === 'study_buddy' ? 1.25 : 2.5,
+                }}
               >
                 {tItems(`${confirmItem.key}.description`)}
               </Typography>
+              {confirmItem.category === 'study_buddy' && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 0.75,
+                    mb: 2.5,
+                  }}
+                >
+                  <Box sx={{ display: 'flex' }}>
+                    {[2, 3, 4].map((v) => (
+                      <Box
+                        key={v}
+                        component="img"
+                        src={buddyFaceSrc(confirmItem.key, v)}
+                        alt=""
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: '50%',
+                          bgcolor: '#fff',
+                          border: `1.5px solid ${alpha(brand[300], 0.6)}`,
+                          objectFit: 'contain',
+                          '&:not(:first-of-type)': { ml: '-10px' },
+                        }}
+                      />
+                    ))}
+                  </Box>
+                  <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: brand[600] }}>
+                    {t('purchaseDialog.avatarPerk')}
+                  </Typography>
+                </Box>
+              )}
               <Box
                 sx={{
                   display: 'flex',
