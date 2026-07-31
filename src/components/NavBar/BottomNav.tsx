@@ -1,11 +1,4 @@
 'use client';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import FlightIcon from '@mui/icons-material/Flight';
-import GroupsIcon from '@mui/icons-material/Groups';
-import HomeIcon from '@mui/icons-material/Home';
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-import MicIcon from '@mui/icons-material/Mic';
-import StorefrontIcon from '@mui/icons-material/Storefront';
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { usePathname, useRouter } from 'next/navigation';
@@ -13,24 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { useAuth } from '@/contexts/AuthContext';
 
-interface NavItem {
-  labelKey: string;
-  icon: React.ReactNode;
-  path: string;
-  organizerOnly?: boolean;
-  memberOnly?: boolean;
-  exact?: boolean;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { labelKey: 'home', icon: <HomeIcon />, path: '/', exact: true },
-  { labelKey: 'decks', icon: <LibraryBooksIcon />, path: '/decks' },
-  { labelKey: 'groups', icon: <GroupsIcon />, path: '/group', organizerOnly: true },
-  { labelKey: 'speech', icon: <MicIcon />, path: '/ohanashikai' },
-  { labelKey: 'travel', icon: <FlightIcon />, path: '/travel' },
-  { labelKey: 'stats', icon: <BarChartIcon />, path: '/stats' },
-  { labelKey: 'shop', icon: <StorefrontIcon />, path: '/shop' },
-];
+import { BOTTOM_NAV_ITEMS } from './constants';
 
 export const BOTTOM_NAV_HEIGHT = 56;
 
@@ -45,11 +21,9 @@ export function BottomNav() {
 
   if (!user) return null;
 
-  const items = NAV_ITEMS.filter(
-    (item) => (!item.organizerOnly || !isMemberAccount) && (!item.memberOnly || isMemberAccount),
-  );
+  const items = BOTTOM_NAV_ITEMS.filter((item) => !item.organizerOnly || !isMemberAccount);
   const currentIndex = items.findIndex((item) =>
-    item.exact ? pathname === item.path : pathname?.startsWith(item.path),
+    item.exact ? pathname === item.href : pathname?.startsWith(item.href),
   );
 
   return (
@@ -74,7 +48,7 @@ export function BottomNav() {
     >
       <BottomNavigation
         value={currentIndex >= 0 ? currentIndex : false}
-        onChange={(_, newValue) => router.push(items[newValue].path)}
+        onChange={(_, newValue) => router.push(items[newValue].href)}
         showLabels
         sx={{
           bgcolor: 'transparent',
@@ -96,8 +70,8 @@ export function BottomNav() {
           },
         }}
       >
-        {items.map((item) => (
-          <BottomNavigationAction key={item.path} label={tItems(item.labelKey)} icon={item.icon} />
+        {items.map(({ key, icon: Icon }) => (
+          <BottomNavigationAction key={key} label={tItems(key)} icon={<Icon />} />
         ))}
       </BottomNavigation>
     </Paper>

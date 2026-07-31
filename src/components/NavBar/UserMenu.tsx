@@ -19,6 +19,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { type ColorScheme, schemeInfo, useColorScheme } from '@/contexts/ThemeContext';
 import { avatarSrc } from '@/lib/buddies';
 
+import { AVATAR_SIZE } from './constants';
+
 // Dynamic on purpose: only signed-in users who click "Change avatar" need it,
 // and a static import would drag the AvatarPicker namespace (and this chunk)
 // into the landing payload via AppShell → NavBar.
@@ -26,10 +28,6 @@ const AvatarPickerDialog = dynamic(
   () => import('@/components/AvatarPickerDialog').then((m) => m.AvatarPickerDialog),
   { ssr: false },
 );
-
-// Sized to nearly fill the Toolbar (56 on xs, 64 from sm up) so the buddy's
-// face is legible; the button loses its vertical padding to make room.
-const AVATAR_SIZE = { xs: 44, sm: 52 };
 
 interface UserMenuProps {
   navBtnSx: SxProps<Theme>;

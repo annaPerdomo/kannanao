@@ -1,11 +1,5 @@
 'use client';
-import BarChartIcon from '@mui/icons-material/BarChart';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import FlightIcon from '@mui/icons-material/Flight';
-import GroupsIcon from '@mui/icons-material/Groups';
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-import MicIcon from '@mui/icons-material/Mic';
-import StorefrontIcon from '@mui/icons-material/Storefront';
 import {
   Alert,
   AppBar,
@@ -29,6 +23,7 @@ import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
 import { useProgressCtx } from '@/contexts/ProgressContext';
 import { LAYOUT } from '@/theme';
 
+import { NAV_ITEMS } from './constants';
 import { EditNameDialog } from './EditNameDialog';
 import { LanguageMenu } from './LanguageMenu';
 import { UserMenu } from './UserMenu';
@@ -42,12 +37,6 @@ export function NavBar() {
 
   const pathname = usePathname();
   const router = useRouter();
-  const isStats = pathname === '/stats';
-  const isShop = pathname === '/shop';
-  const isOhanashikai = pathname?.startsWith('/ohanashikai') ?? false;
-  const isDecks = pathname?.startsWith('/decks') ?? false;
-  const isGroup = pathname?.startsWith('/group') ?? false;
-  const isTravel = pathname?.startsWith('/travel') ?? false;
 
   const { progress, newlyUnlocked, clearNewlyUnlocked } = useProgressCtx();
   const { user, loading: authLoading, updateDisplayName, isMemberAccount } = useAuth();
@@ -74,31 +63,36 @@ export function NavBar() {
 
   const navBtn = {
     color: brand[700],
-    fontWeight: 600,
-    fontSize: '0.9rem',
+    fontWeight: 700,
+    fontSize: { xs: '0.88rem', md: '0.95rem' },
     textTransform: 'none' as const,
     letterSpacing: '0.01em',
-    borderRadius: 6,
-    px: 1.5,
+    borderRadius: theme.radii.pill,
+    // Base (xs) values matter even though nav links hide below sm: UserMenu
+    // reuses this sx for the sign-in and avatar buttons, which render on phones.
+    px: { xs: 1.5, md: 2 },
+    py: { xs: 0.5, md: 0.8 },
     minWidth: 0,
-    '&:hover': { bgcolor: alpha(brand[300], 0.18) },
+    whiteSpace: 'nowrap' as const,
+    transition: 'background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease',
+    '&:hover': { bgcolor: alpha(brand[300], 0.22), transform: 'translateY(-1px)' },
+    '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5, md: 0.75 } },
+    // Same selector MUI uses for start-icon sizing, so the sx (injected later) wins.
+    '& .MuiButton-startIcon > *:nth-of-type(1)': { fontSize: { xs: '1rem', md: '1.2rem' } },
   };
 
+  // Current page: flat brand-tint wash + darker text. Deliberately no white
+  // fill, shadow, or hover lift — elevation reads as "press me", a flat tint
+  // reads as "you are here" (same selection language as the shop's chips).
   const navBtnActive = {
     ...navBtn,
-    bgcolor: alpha(brand[300], 0.22),
-    '&:hover': { bgcolor: alpha(brand[300], 0.3) },
+    color: brand[800],
+    bgcolor: alpha(brand[300], 0.32),
+    '&:hover': { bgcolor: alpha(brand[300], 0.32), transform: 'none' },
   };
 
-  const navBtnWithIcon = {
-    ...navBtn,
-    '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
-  };
-
-  const navBtnWithIconActive = {
-    ...navBtnActive,
-    '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
-  };
+  const isActive = (href: string, exact?: boolean) =>
+    exact ? pathname === href : (pathname?.startsWith(href) ?? false);
 
   return (
     <>
@@ -107,20 +101,20 @@ export function NavBar() {
         elevation={0}
         sx={{
           bgcolor: surfaces.glass,
-          backdropFilter: 'blur(14px)',
-          WebkitBackdropFilter: 'blur(14px)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
           borderBottom: `1px solid ${alpha(brand[300], 0.35)}`,
           boxShadow: `0 2px 20px ${alpha(brand[300], 0.12)}`,
         }}
       >
         <Toolbar
           sx={{
-            maxWidth: LAYOUT.headerMaxWidth,
+            maxWidth: LAYOUT.contentMaxWidth,
             width: '100%',
             mx: 'auto',
             px: LAYOUT.pagePx,
-            minHeight: { xs: 56, sm: 64 },
-            gap: 1.5,
+            minHeight: { xs: 56, sm: 64, md: 78 },
+            gap: { xs: 1.5, md: 2.5 },
           }}
         >
           {/* Brand lockup: mascot + wordmark + たんごだち (see public/brand/logo-lockup.png) */}
@@ -131,90 +125,43 @@ export function NavBar() {
               alt={t('brandName')}
               sx={{
                 display: 'block',
-                height: { xs: 40, sm: 48 },
+                height: { xs: 40, sm: 46, md: 60 },
                 width: 'auto',
                 flex: 'none',
+                transition: 'transform 0.2s ease',
+                '&:hover': { transform: 'scale(1.04)' },
               }}
             />
           </Link>
 
-          {/* Nav links — centered group */}
+          {/* Nav links — centered group, active page marked with a flat brand tint */}
           {user && (
             <Box
               sx={{
                 display: { xs: 'none', sm: 'flex' },
                 alignItems: 'center',
-                gap: 0.5,
+                gap: { sm: 0.25, md: 0.75 },
                 mx: 'auto',
               }}
             >
-              <Button
-                onClick={() => router.push('/decks')}
-                size="small"
-                startIcon={<LibraryBooksIcon sx={{ fontSize: '1rem !important' }} />}
-                sx={isDecks ? navBtnWithIconActive : navBtnWithIcon}
-              >
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  {tItems('decks')}
-                </Box>
-              </Button>
-
-              {!isMemberAccount && (
-                <Button
-                  onClick={() => router.push('/group')}
-                  size="small"
-                  startIcon={<GroupsIcon sx={{ fontSize: '1rem !important' }} />}
-                  sx={isGroup ? navBtnWithIconActive : navBtnWithIcon}
-                >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                    {tItems('groups')}
-                  </Box>
-                </Button>
-              )}
-
-              <Button
-                onClick={() => router.push('/ohanashikai')}
-                size="small"
-                startIcon={<MicIcon sx={{ fontSize: '1rem !important' }} />}
-                sx={isOhanashikai ? navBtnWithIconActive : navBtnWithIcon}
-              >
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  {tItems('speech')}
-                </Box>
-              </Button>
-
-              <Button
-                onClick={() => router.push('/travel')}
-                size="small"
-                startIcon={<FlightIcon sx={{ fontSize: '1rem !important' }} />}
-                sx={isTravel ? navBtnWithIconActive : navBtnWithIcon}
-              >
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  {tItems('travel')}
-                </Box>
-              </Button>
-
-              <Button
-                onClick={() => router.push('/stats')}
-                size="small"
-                startIcon={<BarChartIcon sx={{ fontSize: '1rem !important' }} />}
-                sx={isStats ? navBtnWithIconActive : navBtnWithIcon}
-              >
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  {tItems('stats')}
-                </Box>
-              </Button>
-
-              <Button
-                onClick={() => router.push('/shop')}
-                size="small"
-                startIcon={<StorefrontIcon sx={{ fontSize: '1rem !important' }} />}
-                sx={isShop ? navBtnWithIconActive : navBtnWithIcon}
-              >
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  {tItems('shop')}
-                </Box>
-              </Button>
+              {NAV_ITEMS.map(({ key, href, icon: Icon, exact, organizerOnly }) => {
+                if (organizerOnly && isMemberAccount) return null;
+                const active = isActive(href, exact);
+                return (
+                  <Button
+                    key={key}
+                    onClick={() => router.push(href)}
+                    size="small"
+                    startIcon={<Icon />}
+                    aria-current={active ? 'page' : undefined}
+                    sx={active ? navBtnActive : navBtn}
+                  >
+                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                      {tItems(key)}
+                    </Box>
+                  </Button>
+                );
+              })}
             </Box>
           )}
 
@@ -224,7 +171,7 @@ export function NavBar() {
 
           {/* User info — right group */}
           {user ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, md: 1.25 } }}>
               {/* Direct messages — navigate to notifications page */}
               <IconButton
                 aria-label={t('messagesAriaLabel')}
@@ -236,7 +183,7 @@ export function NavBar() {
                   color="error"
                   sx={{ '& .MuiBadge-badge': { fontSize: '0.6rem', minWidth: 16, height: 16 } }}
                 >
-                  <ChatBubbleOutlineIcon sx={{ fontSize: '1.1rem' }} />
+                  <ChatBubbleOutlineIcon sx={{ fontSize: { xs: '1.1rem', md: '1.3rem' } }} />
                 </Badge>
               </IconButton>
               <XpDisplay onClick={() => router.push('/shop')} />
@@ -244,22 +191,30 @@ export function NavBar() {
               {progress && progress.streak_days > 0 && (
                 <Box
                   onClick={() => router.push('/stats')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      router.push('/stats');
+                    }
+                  }}
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: 0.4,
                     bgcolor: 'rgba(254,226,226,0.7)',
                     border: '1px solid rgba(252,165,165,0.5)',
-                    borderRadius: 6,
-                    px: 1.25,
-                    py: 0.4,
+                    borderRadius: theme.radii.pill,
+                    px: { xs: 1.25, md: 1.5 },
+                    py: { xs: 0.4, md: 0.65 },
                     cursor: 'pointer',
                   }}
                 >
-                  <Typography sx={{ fontSize: '0.85rem' }}>🔥</Typography>
+                  <Typography sx={{ fontSize: { xs: '0.85rem', md: '0.95rem' } }}>🔥</Typography>
                   <Typography
                     sx={{
-                      fontSize: '0.85rem',
+                      fontSize: { xs: '0.85rem', md: '0.95rem' },
                       fontWeight: 700,
                       color: '#DC2626',
                       lineHeight: 1,
@@ -274,7 +229,7 @@ export function NavBar() {
               <UserMenu navBtnSx={navBtn} />
             </Box>
           ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, md: 1.25 } }}>
               <LanguageMenu />
               {!authLoading && pathname !== '/login' && <UserMenu navBtnSx={navBtn} />}
             </Box>

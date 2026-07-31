@@ -6,10 +6,10 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Skeleton from '@mui/material/Skeleton';
 import { alpha, ThemeProvider } from '@mui/material/styles';
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 
 import { AppBackground } from '@/components/AppBackground';
 import { Loading } from '@/components/Loading';
+import { AVATAR_SIZE } from '@/components/NavBar/constants';
 import { APP_NAME } from '@/lib/brand';
 import { createAppTheme, LAYOUT } from '@/theme';
 
@@ -28,8 +28,8 @@ function NavBarSkeleton() {
       elevation={0}
       sx={{
         bgcolor: (t) => t.palette.surfaces.glass,
-        backdropFilter: 'blur(14px)',
-        WebkitBackdropFilter: 'blur(14px)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
         borderBottom: (t) => `1px solid ${alpha(t.palette.brand[300], 0.35)}`,
         boxShadow: (t) => `0 2px 20px ${alpha(t.palette.brand[300], 0.12)}`,
         // Tint every skeleton inside the bar with the brand color.
@@ -38,12 +38,12 @@ function NavBarSkeleton() {
     >
       <Toolbar
         sx={{
-          maxWidth: LAYOUT.headerMaxWidth,
+          maxWidth: LAYOUT.contentMaxWidth,
           width: '100%',
           mx: 'auto',
           px: LAYOUT.pagePx,
-          minHeight: { xs: 56, sm: 64 },
-          gap: 1.5,
+          minHeight: { xs: 56, sm: 64, md: 78 },
+          gap: { xs: 1.5, md: 2.5 },
         }}
       >
         {/* Must match the real NavBar lockup so boot → hydration doesn't visibly swap. */}
@@ -51,26 +51,48 @@ function NavBarSkeleton() {
           component="img"
           src="/brand/logo-lockup.png"
           alt={APP_NAME}
-          sx={{ display: 'block', height: { xs: 40, sm: 48 }, width: 'auto', flex: 'none' }}
+          sx={{ display: 'block', height: { xs: 40, sm: 46, md: 60 }, width: 'auto', flex: 'none' }}
         />
 
         {/* Centered nav-link placeholders */}
-        <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 1, mx: 'auto' }}>
+        <Box
+          sx={{
+            display: { xs: 'none', sm: 'flex' },
+            alignItems: 'center',
+            gap: { sm: 0.25, md: 0.75 },
+            mx: 'auto',
+          }}
+        >
           {[64, 64, 64, 64, 56].map((w, i) => (
-            <Skeleton key={i} variant="rounded" width={w} height={28} sx={{ borderRadius: 2 }} />
+            <Skeleton
+              key={i}
+              variant="rounded"
+              width={w}
+              height={30}
+              sx={{ borderRadius: (t) => t.radii.pill }}
+            />
           ))}
         </Box>
 
         {/* Right-side controls (XP / messages / avatar) */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: { xs: 'auto', sm: 0 } }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: { xs: 0.5, md: 1.25 },
+            ml: { xs: 'auto', sm: 0 },
+          }}
+        >
           <Skeleton
             variant="rounded"
             width={72}
             height={30}
-            sx={{ borderRadius: 3, display: { xs: 'none', sm: 'block' } }}
+            sx={{ borderRadius: (t) => t.radii.pill, display: { xs: 'none', sm: 'block' } }}
           />
           <Skeleton variant="circular" width={32} height={32} />
-          <Skeleton variant="circular" width={36} height={36} />
+          <Box sx={{ width: AVATAR_SIZE, height: AVATAR_SIZE }}>
+            <Skeleton variant="circular" sx={{ width: '100%', height: '100%' }} />
+          </Box>
         </Box>
       </Toolbar>
     </AppBar>
