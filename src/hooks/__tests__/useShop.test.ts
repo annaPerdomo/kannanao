@@ -12,12 +12,28 @@ function setTable(table: string, data: unknown, error: unknown = null) {
   tableData[table] = { data, error };
 }
 
+/** Every .update(payload) call, per table — lets tests assert e.g. the legacy
+ *  purchase path's XP refund without threading spies through the chain mock. */
+const updateCalls: { table: string; payload: unknown }[] = [];
+
+/** Every .delete() call, per table — the legacy rollback has to remove the
+ *  purchase row it wrote, not just refund the XP. */
+const deleteCalls: string[] = [];
+
 function makeChain(table: string) {
   const result = () => tableData[table] ?? { data: null, error: null };
   const asPromise = () => Promise.resolve(result());
   const chain: Record<string, unknown> = {};
-  ['select', 'insert', 'update', 'delete', 'eq', 'order', 'in', 'upsert'].forEach((m) => {
+  ['select', 'insert', 'eq', 'order', 'in', 'upsert'].forEach((m) => {
     chain[m] = vi.fn(() => chain);
+  });
+  chain.delete = vi.fn(() => {
+    deleteCalls.push(table);
+    return chain;
+  });
+  chain.update = vi.fn((payload: unknown) => {
+    updateCalls.push({ table, payload });
+    return chain;
   });
   chain.single = vi.fn(() => asPromise());
   chain.maybeSingle = vi.fn(() => asPromise());
@@ -50,9 +66,12 @@ import { SHOP_ITEMS, useShop } from '@/hooks/useShop';
 describe('useShop', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    updateCalls.length = 0;
+    deleteCalls.length = 0;
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
     mockUseAuth.mockReturnValue({ isAdmin: false, user: { id: 'u1' } });
-    mockRpc.mockResolvedValue({ data: null, error: null });
+    // The atomic purchase RPC is deployed and succeeds by default.
+    mockRpc.mockResolvedValue({ data: 'ok', error: null });
     setTable('user_purchases', []);
     setTable('user_equipped', []);
   });
@@ -191,6 +210,27 @@ describe('useShop', () => {
         res = await result.current.purchaseItem('border_golden', 500);
       });
       expect(res?.error).toBeNull();
+      expect(mockRpc).toHaveBeenCalledWith('purchase_item', {
+        p_item_key: 'border_golden',
+        p_price: 300,
+        p_slot: 'card_border',
+      });
+    });
+
+    it('should surface "Not enough XP" when the server-side balance check fails', async () => {
+      // Client-side check passes (stale spendableXp) but the RPC rejects.
+      mockRpc.mockResolvedValue({ data: 'insufficient_xp', error: null });
+
+      const { result } = renderHook(() => useShop());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      let res: { error: string | null } | undefined;
+      await act(async () => {
+        res = await result.current.purchaseItem('border_golden', 500);
+      });
+      expect(res?.error).toBe('Not enough XP');
+      // Optimistic equip must be rolled back.
+      expect(result.current.equipped.card_border).toBeUndefined();
     });
 
     it('should return "Not authenticated" when user is null during purchase', async () => {
@@ -208,8 +248,50 @@ describe('useShop', () => {
       expect(res?.error).toBe('Not authenticated');
     });
 
-    it('should roll back optimistic update when DB insert fails', async () => {
-      // Purchases insert fails
+    it('should not fall back to the legacy path when the RPC fails for a non-missing reason', async () => {
+      // A committed-but-unacknowledged transaction is indistinguishable from a
+      // failed one here; replaying it through the legacy path would double-charge.
+      mockRpc.mockResolvedValue({
+        data: null,
+        error: { code: '57014', message: 'canceling statement due to statement timeout' },
+      });
+
+      const { result } = renderHook(() => useShop());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      let res: { error: string | null } | undefined;
+      await act(async () => {
+        res = await result.current.purchaseItem('border_golden', 500);
+      });
+
+      expect(res?.error).toBe('Purchase failed');
+      expect(updateCalls.filter((c) => c.table === 'user_progress')).toEqual([]);
+    });
+
+    it('should adopt server state instead of stale local state on already_owned', async () => {
+      mockRpc.mockResolvedValue({ data: 'already_owned', error: null });
+
+      const { result } = renderHook(() => useShop());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.ownsItem('border_golden')).toBe(false);
+
+      // Another tab bought it after this one loaded: the server knows, we don't.
+      setTable('user_purchases', [
+        { id: 'p1', item_key: 'border_golden', purchased_at: '2026-07-30T00:00:00Z' },
+      ]);
+
+      await act(async () => {
+        await result.current.purchaseItem('border_golden', 500);
+      });
+
+      // A plain rollback would have restored the stale "not owned" view, leaving
+      // a Buy button that can never succeed.
+      expect(result.current.ownsItem('border_golden')).toBe(true);
+    });
+
+    it('should roll back optimistic update when DB insert fails (legacy path)', async () => {
+      // RPC not deployed → legacy sequential path; purchases insert fails
+      mockRpc.mockResolvedValue({ data: null, error: { code: 'PGRST202', message: 'not found' } });
       setTable('user_purchases', null, { message: 'DB error', code: '42000' });
 
       const { result } = renderHook(() => useShop());
@@ -223,7 +305,61 @@ describe('useShop', () => {
       expect(result.current.equipped.card_border).toBeUndefined();
     });
 
+    it('should refund the deducted XP when a later legacy step fails', async () => {
+      mockRpc.mockResolvedValue({ data: null, error: { code: 'PGRST202', message: 'not found' } });
+      setTable('user_purchases', null, { message: 'DB error', code: '42000' });
+
+      const { result } = renderHook(() => useShop());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.purchaseItem('border_golden', 500);
+      });
+
+      // Deduct wrote spent+price, then the failed insert triggered a
+      // compensating write restoring the original value.
+      const progressUpdates = updateCalls
+        .filter((c) => c.table === 'user_progress')
+        .map((c) => c.payload as { total_xp_spent: number });
+      expect(progressUpdates).toEqual([{ total_xp_spent: 300 }, { total_xp_spent: 0 }]);
+    });
+
+    it('should delete the purchase row when a legacy step after it fails', async () => {
+      mockRpc.mockResolvedValue({ data: null, error: { code: 'PGRST202', message: 'not found' } });
+      // Purchase insert succeeds; the equip upsert is what blows up.
+      setTable('user_equipped', null, { message: 'DB error', code: '42000' });
+
+      const { result } = renderHook(() => useShop());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.purchaseItem('border_golden', 500);
+      });
+
+      // Refunding alone would leave the item owned with the XP back in hand.
+      expect(deleteCalls).toContain('user_purchases');
+    });
+
+    it('should restore local state when the post-failure resync also fails', async () => {
+      mockRpc.mockResolvedValue({ data: 'insufficient_xp', error: null });
+      // The refetch used as the rollback can't reach the server either.
+      setTable('user_purchases', null, { message: 'network', code: '' });
+
+      const { result } = renderHook(() => useShop());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.purchaseItem('border_golden', 500);
+      });
+
+      // Without a server answer the optimistic purchase has to be undone, or the
+      // item reads as owned and equipped for the rest of the session.
+      expect(result.current.ownsItem('border_golden')).toBe(false);
+      expect(result.current.equipped.card_border).toBeUndefined();
+    });
+
     it('should expose error state after a failed purchase', async () => {
+      mockRpc.mockResolvedValue({ data: null, error: { code: 'PGRST202', message: 'not found' } });
       setTable('user_purchases', null, { message: 'DB error', code: '42000' });
 
       const { result } = renderHook(() => useShop());

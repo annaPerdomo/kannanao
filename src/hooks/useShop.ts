@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import type { InitialShop } from '@/lib/dbMappers';
+import { logger } from '@/lib/logger';
 import { sb } from '@/lib/supabase';
 import type {
   CardBorderStyle,
@@ -576,6 +577,16 @@ export const THEME_KEY_TO_SCHEME: Record<string, string> = {
 // Free items that every user owns by default
 const FREE_ITEM_KEYS = SHOP_ITEMS.filter((i) => i.price === 0 && !i.comingSoon).map((i) => i.key);
 
+/**
+ * True only when `purchase_item` itself is absent — PostgREST reports that as
+ * PGRST202, and some proxies drop the code and keep only the message. Every
+ * other error class must stay fatal, since a committed-but-unacknowledged
+ * transaction is indistinguishable from a failed one at this layer.
+ */
+function isRpcMissing(err: { code?: string; message?: string }): boolean {
+  return err.code === 'PGRST202' || /could not find the function/i.test(err.message ?? '');
+}
+
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
 export function useShop(initialShop?: InitialShop | null) {
@@ -591,10 +602,14 @@ export function useShop(initialShop?: InitialShop | null) {
   // Use the already-resolved user from AuthContext rather than auth.getUser(),
   // which makes an extra auth-server round-trip on the home critical path. RLS
   // still scopes these reads server-side.
+  // Returns false when either read failed, so callers that use a refetch as
+  // their rollback can tell "the server says this" from "we never heard back"
+  // and fall back to restoring local state instead of trusting the optimistic
+  // view they were trying to undo.
   const fetchShopData = useCallback(async () => {
     if (!user) {
       setLoading(false);
-      return;
+      return false;
     }
 
     const [{ data: purchaseRows }, { data: equippedRows }] = await Promise.all([
@@ -611,6 +626,7 @@ export function useShop(initialShop?: InitialShop | null) {
       setEquipped(map);
     }
     setLoading(false);
+    return Boolean(purchaseRows && equippedRows);
   }, [supabase, user]);
 
   useEffect(() => {
@@ -629,7 +645,69 @@ export function useShop(initialShop?: InitialShop | null) {
     [isAdmin, purchases],
   );
 
-  /** Purchase an item — deducts XP via total_xp_spent, inserts purchase, auto-equips */
+  /**
+   * Legacy purchase path for environments where the `purchase_item` RPC has
+   * not been deployed yet: three separate writes, with a best-effort refund of
+   * the deducted XP if a later step fails.
+   *
+   * Only reachable via {@link isRpcMissing} — see the call site.
+   */
+  const purchaseItemLegacy = useCallback(
+    async (userId: string, itemKey: string, price: number, slot: string): Promise<void> => {
+      // 1. Deduct XP — increment total_xp_spent (read-modify-write)
+      const { data: prog } = await supabase
+        .from('user_progress')
+        .select('total_xp_spent')
+        .eq('user_id', userId)
+        .single();
+      const currentSpent = prog?.total_xp_spent ?? 0;
+      const { error: updateErr } = await supabase
+        .from('user_progress')
+        .update({ total_xp_spent: currentSpent + price })
+        .eq('user_id', userId);
+      if (updateErr) throw updateErr;
+
+      try {
+        // 2. Insert purchase
+        const { error: purchaseErr } = await supabase
+          .from('user_purchases')
+          .insert({ user_id: userId, item_key: itemKey });
+        if (purchaseErr) throw purchaseErr;
+
+        // 3. Auto-equip
+        const { error: equipErr } = await supabase
+          .from('user_equipped')
+          .upsert({ user_id: userId, slot, item_key: itemKey }, { onConflict: 'user_id,slot' });
+        if (equipErr) throw equipErr;
+      } catch (err) {
+        // Undo both possible writes. The refund alone isn't enough: if step 3
+        // failed, step 2's row is still there, and an owned item with a restored
+        // balance is a free item on the next load.
+        const { error: refundErr } = await supabase
+          .from('user_progress')
+          .update({ total_xp_spent: currentSpent })
+          .eq('user_id', userId);
+        const { error: undoPurchaseErr } = await supabase
+          .from('user_purchases')
+          .delete()
+          .eq('user_id', userId)
+          .eq('item_key', itemKey);
+        if (refundErr || undoPurchaseErr) {
+          // Nothing left to try client-side, but a half-undone purchase needs to
+          // be findable — this is the state that charges a learner for nothing.
+          logger.error('legacy purchase rollback incomplete', {
+            itemKey,
+            refund: refundErr?.message,
+            undoPurchase: undoPurchaseErr?.message,
+          });
+        }
+        throw err;
+      }
+    },
+    [supabase],
+  );
+
+  /** Purchase an item — atomic RPC (deduct XP + record purchase + equip). */
   const purchaseItem = useCallback(
     async (itemKey: string, spendableXp: number): Promise<{ error: string | null }> => {
       const item = SHOP_ITEMS.find((i) => i.key === itemKey);
@@ -653,56 +731,66 @@ export function useShop(initialShop?: InitialShop | null) {
       setPurchases((prev) => [...prev, newPurchase]);
       setEquipped((prev) => ({ ...prev, [item.category]: itemKey }));
 
+      // Set when the server may hold state we don't, so the catch below reads it
+      // back instead of restoring the local view that just proved wrong.
+      let resyncFromServer = false;
+
       try {
-        // 1. Deduct XP — increment total_xp_spent
-        const { error: xpErr } = await supabase.rpc('increment_xp_spent', {
-          p_user_id: user.id,
-          p_amount: item.price,
+        const { data: result, error: rpcErr } = await supabase.rpc('purchase_item', {
+          p_item_key: itemKey,
+          p_price: item.price,
+          p_slot: item.category,
         });
-        // If the RPC doesn't exist, fall back to a manual update
-        if (xpErr) {
-          const { data: prog } = await supabase
-            .from('user_progress')
-            .select('total_xp_spent')
-            .eq('user_id', user.id)
-            .single();
-          const currentSpent = prog?.total_xp_spent ?? 0;
-          const { error: updateErr } = await supabase
-            .from('user_progress')
-            .update({ total_xp_spent: currentSpent + item.price })
-            .eq('user_id', user.id);
-          if (updateErr) throw updateErr;
+
+        if (rpcErr) {
+          // Only a missing function may degrade to the non-atomic path. Anything
+          // else (network, RLS, timeout) could mean the transaction committed and
+          // we simply lost the reply — replaying it would double-charge.
+          if (!isRpcMissing(rpcErr)) {
+            resyncFromServer = true;
+            logger.error('purchase_item RPC failed', {
+              itemKey,
+              code: rpcErr.code,
+              message: rpcErr.message,
+            });
+            throw new Error(t('purchaseFailed'));
+          }
+          logger.warn('purchase_item RPC unavailable, using legacy purchase path', { itemKey });
+          await purchaseItemLegacy(user.id, itemKey, item.price, item.category);
+        } else if (result !== 'ok') {
+          resyncFromServer = true;
+          const msg =
+            result === 'already_owned'
+              ? t('alreadyOwned')
+              : result === 'insufficient_xp'
+                ? t('notEnoughXp')
+                : result === 'not_authenticated'
+                  ? t('notAuthenticated')
+                  : t('purchaseFailed');
+          throw new Error(msg);
         }
-
-        // 2. Insert purchase
-        const { error: purchaseErr } = await supabase
-          .from('user_purchases')
-          .insert({ user_id: user.id, item_key: itemKey });
-        if (purchaseErr) throw purchaseErr;
-
-        // 3. Auto-equip
-        const { error: equipErr } = await supabase
-          .from('user_equipped')
-          .upsert(
-            { user_id: user.id, slot: item.category, item_key: itemKey },
-            { onConflict: 'user_id,slot' },
-          );
-        if (equipErr) throw equipErr;
 
         // Refresh to get real IDs
         await fetchShopData();
         setError(null);
         return { error: null };
       } catch (err) {
-        // Rollback
-        setPurchases(prevPurchases);
-        setEquipped(prevEquipped);
+        // 'already_owned' / 'insufficient_xp' only fire when our local view was
+        // already wrong, so rolling back to it would keep showing a Buy button
+        // that can never succeed. Take the server's word instead — but only if
+        // we actually got one, otherwise the optimistic purchase survives a
+        // failed purchase and the item reads as owned all session.
+        const resynced = resyncFromServer && (await fetchShopData());
+        if (!resynced) {
+          setPurchases(prevPurchases);
+          setEquipped(prevEquipped);
+        }
         const msg = err instanceof Error ? err.message : t('purchaseFailed');
         setError(msg);
         return { error: msg };
       }
     },
-    [purchases, equipped, ownsItem, supabase, fetchShopData, t],
+    [purchases, equipped, ownsItem, supabase, fetchShopData, purchaseItemLegacy, t],
   );
 
   /** Equip an owned item in its category slot */

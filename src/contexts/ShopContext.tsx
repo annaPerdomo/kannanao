@@ -18,7 +18,8 @@ const ShopCtx = createContext<ShopContextValue>({
   purchaseItem: noopAsync,
   equipItem: noopAsync,
   unequipItem: noopAsync,
-  refetch: async () => {},
+  // false = "no server data was read", which is exactly true outside a provider.
+  refetch: async () => false,
 });
 
 export function ShopProvider({
