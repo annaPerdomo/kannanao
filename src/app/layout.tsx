@@ -50,7 +50,7 @@ export const metadata: Metadata = {
       {
         url: `${APP_URL}/og-image.png`,
         width: 1200,
-        height: 630,
+        height: 685,
         type: 'image/png',
       },
     ],
