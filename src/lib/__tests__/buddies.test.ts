@@ -1,3 +1,6 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { SHOP_ITEMS } from '@/hooks/useShop';
@@ -68,6 +71,29 @@ describe('catalog consistency', () => {
     expect(tango).toBeDefined();
     expect(tango?.price).toBe(0);
     expect(tango?.comingSoon).toBeUndefined();
+  });
+
+  // Artwork is generated locally and easy to leave untracked. Buddies are
+  // outside the service-worker precache, so a missing file 404s in production
+  // with nothing else to catch it.
+  describe('artwork exists on disk', () => {
+    const publicPath = (src: string) => join(process.cwd(), 'public', src);
+
+    it.each(buddyItems.map((i) => i.key))('has a shop pose and 8 faces for %s', (key) => {
+      expect(existsSync(publicPath(buddyShopSrc(key))), buddyShopSrc(key)).toBe(true);
+      for (let variant = 1; variant <= BUDDY_FACE_COUNT; variant++) {
+        const face = buddyFaceSrc(key, variant);
+        expect(existsSync(publicPath(face)), face).toBe(true);
+      }
+    });
+
+    it('has the cutout art every coming-soon teaser points at', () => {
+      const teasers = SHOP_ITEMS.filter((i) => i.image);
+      expect(teasers.length).toBeGreaterThan(0);
+      for (const item of teasers) {
+        expect(existsSync(publicPath(item.image!)), item.image).toBe(true);
+      }
+    });
   });
 
   it.each([

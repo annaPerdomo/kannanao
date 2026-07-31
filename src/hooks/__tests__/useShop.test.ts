@@ -543,7 +543,8 @@ describe('useShop', () => {
     });
 
     it('should keep the full set collectable within a school year', () => {
-      // 243,000 for the July 2026 set; +37,000 when Momiji left coming-soon.
+      // Deliberate tripwire, not a derived bound: 243,000 for the July 2026
+      // ladder, +37,000 for Momiji. Re-check the total before updating it.
       const total = buddies.reduce((sum, b) => sum + b.price, 0);
       expect(total).toBe(280000);
     });
