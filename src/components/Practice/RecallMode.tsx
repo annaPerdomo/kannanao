@@ -207,7 +207,16 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant="h5">{t('title')}</Typography>
+          {queue.totalBatches > 1 && (
+            <Chip
+              label={tCommon('batchChip', {
+                current: queue.batchIndex + 1,
+                total: queue.totalBatches,
+              })}
+              size="small"
+              variant="outlined"
+            />
+          )}
           {queue.isRetryRound && (
             <Chip label={tCommon('reviewChip')} size="small" color="warning" variant="outlined" />
           )}
@@ -215,16 +224,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
             <Chip label={`🔥 ${streak}`} size="small" color="warning" sx={{ fontWeight: 700 }} />
           )}
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {queue.totalBatches > 1 && (
-            <Chip
-              label={`${queue.batchIndex + 1}/${queue.totalBatches}`}
-              size="small"
-              variant="outlined"
-            />
-          )}
-          <Chip label={`${roundScore} / ${queue.currentCards.length}`} />
-        </Box>
+        <Chip label={`${roundScore} / ${queue.currentCards.length}`} />
       </Box>
 
       <LinearProgress

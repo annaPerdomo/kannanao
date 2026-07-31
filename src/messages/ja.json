@@ -587,6 +587,7 @@
       "quitAndSave": "やめて記録を保存",
       "backToDeck": "デッキにもどる",
       "reviewChip": "復習",
+      "batchChip": "{current}/{total}セット目",
       "correctMovingOn": "✓ 正解 — 次にいきます…",
       "correctSummary": "{correct} / {total} 正解",
       "bestStreakRow": "🔥 最高連続記録: {count}問！"
@@ -623,7 +624,6 @@
       "dailyChestTap": "デイリーチェスト — タップして開けよう！"
     },
     "fillMode": {
-      "title": "穴うめ",
       "fillPrompt": "あなをうめよう",
       "meaningLabel": "意味: {meaning}",
       "incorrectAnswer": "ざんねん — こたえ: {word}",
@@ -633,8 +633,6 @@
       "check": "チェック"
     },
     "matchMode": {
-      "title": "マッチ",
-      "batchChip": "{current}/{total}セット目",
       "allMatched": "ぜんぶマッチ！",
       "pairsSummary": "{count, plural, other {#ペア}} · {rounds}",
       "roundsCount": "{count, plural, other {#ラウンド}}",
@@ -645,13 +643,11 @@
       "speedKeepUp": "その調子！ 💪"
     },
     "recallMode": {
-      "title": "当ててみよう！",
       "whatDoesThisMean": "これはどういう意味？",
       "seeResults": "結果を見る",
       "nextArrow": "次へ →"
     },
     "quizMode": {
-      "title": "クイズ",
       "progressChip": "{current} / {total}",
       "whatDoesThisMean": "これはどういう意味？",
       "typeTheJapaneseWord": "日本語で書いてみよう",
@@ -670,7 +666,6 @@
       "encouragement3": "すごい！ばっちり覚えていますね。🌟"
     },
     "listenMode": {
-      "title": "リスニング",
       "warmingUpVoice": "音声を準備中…",
       "noVoiceTitle": "このデバイスはまだ日本語を話せません",
       "noVoiceBody": "リスニングには日本語の音声が必要です。ChromeかSafariを試すか、デバイスの読み上げ設定で日本語の音声を追加してから、もどってきてください。ほかの機能はそのまま使えます！",

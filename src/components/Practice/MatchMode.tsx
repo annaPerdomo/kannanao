@@ -252,10 +252,9 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant="h5">{t('title')}</Typography>
           {queue.totalBatches > 1 && (
             <Chip
-              label={t('batchChip', {
+              label={tCommon('batchChip', {
                 current: queue.batchIndex + 1,
                 total: queue.totalBatches,
               })}

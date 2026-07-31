@@ -594,6 +594,7 @@
       "quitAndSave": "Quit & Save Progress",
       "backToDeck": "Back to Deck",
       "reviewChip": "Review",
+      "batchChip": "Batch {current}/{total}",
       "correctMovingOn": "✓ Correct — moving on…",
       "correctSummary": "{correct} / {total} correct",
       "bestStreakRow": "🔥 Best streak: {count} in a row!"
@@ -630,7 +631,6 @@
       "dailyChestTap": "Daily chest — tap to open!"
     },
     "fillMode": {
-      "title": "Fill in the Blank",
       "fillPrompt": "FILL IN THE BLANK",
       "meaningLabel": "Meaning: {meaning}",
       "incorrectAnswer": "Incorrect — answer: {word}",
@@ -640,8 +640,6 @@
       "check": "Check"
     },
     "matchMode": {
-      "title": "Match",
-      "batchChip": "Batch {current}/{total}",
       "allMatched": "All matched!",
       "pairsSummary": "{count, plural, one {# pair} other {# pairs}} · {rounds}",
       "roundsCount": "{count, plural, one {# round} other {# rounds}}",
@@ -652,13 +650,11 @@
       "speedKeepUp": "Keep it up! 💪"
     },
     "recallMode": {
-      "title": "Guess It!",
       "whatDoesThisMean": "WHAT DOES THIS MEAN?",
       "seeResults": "See Results",
       "nextArrow": "Next →"
     },
     "quizMode": {
-      "title": "Quiz",
       "progressChip": "{current} of {total}",
       "whatDoesThisMean": "WHAT DOES THIS MEAN?",
       "typeTheJapaneseWord": "TYPE THE JAPANESE WORD",
@@ -677,7 +673,6 @@
       "encouragement3": "Amazing! You really know these. 🌟"
     },
     "listenMode": {
-      "title": "Listen",
       "warmingUpVoice": "Warming up the voice…",
       "noVoiceTitle": "This device can't speak Japanese yet",
       "noVoiceBody": "Listen needs a Japanese voice. Try Chrome or Safari, or add a Japanese voice in your device's speech settings — then come back. Everything else still works!",

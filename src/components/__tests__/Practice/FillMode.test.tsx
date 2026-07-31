@@ -218,10 +218,10 @@ describe('FillMode', () => {
     });
   });
 
-  it('should show the "Fill in the Blank" heading', async () => {
+  it('should show the fill-in-the-blank prompt', async () => {
     renderWithProviders(<FillMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText('Fill in the Blank')).toBeInTheDocument();
+      expect(screen.getByText('FILL IN THE BLANK')).toBeInTheDocument();
     });
   });
 

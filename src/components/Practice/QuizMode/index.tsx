@@ -142,9 +142,8 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
 
   return (
     <Box sx={{ position: 'relative' }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5">{t('title')}</Typography>
+      {/* Status row — the page-level PageHeader already names the mode */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
         <Chip label={t('progressChip', { current: quiz.index + 1, total: quiz.total })} />
       </Box>
 
