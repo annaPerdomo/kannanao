@@ -23,7 +23,7 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { LoadingOverlay } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
@@ -37,9 +37,11 @@ import { CelebrationPreviewModal } from '@/components/Shop/CelebrationPreviewMod
 import { CoinBurst } from '@/components/Shop/CoinBurst';
 import { Sparkles } from '@/components/Shop/Sparkles';
 import { ThemeCardPreview } from '@/components/Shop/ThemeCardPreview';
+import { useProgressCtx } from '@/contexts/ProgressContext';
+import { useShopCtx } from '@/contexts/ShopContext';
 import { useColorScheme } from '@/contexts/ThemeContext';
-import { useProgress } from '@/hooks/useProgress';
-import { SHOP_ITEMS, THEME_KEY_TO_SCHEME, useShop } from '@/hooks/useShop';
+import { SHOP_ITEMS, THEME_KEY_TO_SCHEME } from '@/hooks/useShop';
+import { buddyFaceSrc } from '@/lib/buddies';
 import { type ColorScheme, LAYOUT } from '@/theme';
 import type { ShopCategory, ShopItem } from '@/types/shop';
 
@@ -49,12 +51,15 @@ export default function Shop() {
   const tItems = useTranslations('Shop.items');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  // The shared ProgressContext instance — using the hook directly here would
+  // spin up a second copy whose post-purchase refetch the navbar XP display
+  // (which reads the context) never sees.
   const {
     progress,
     spendableXp,
     loading: progressLoading,
     refetch: refetchProgress,
-  } = useProgress();
+  } = useProgressCtx();
   const {
     equipped,
     loading: shopLoading,
@@ -62,8 +67,17 @@ export default function Shop() {
     ownsItem,
     purchaseItem,
     equipItem,
-  } = useShop();
-  const { scheme, setScheme } = useColorScheme();
+  } = useShopCtx();
+  const { scheme, setScheme, previewScheme } = useColorScheme();
+
+  // ProgressContext lives in AppShell and only fetches once per hard load, so a
+  // session studied since then would leave the balance here behind the navbar's.
+  useEffect(() => {
+    void refetchProgress();
+  }, [refetchProgress]);
+
+  // Safety net: never leave a try-on theme applied after leaving the shop.
+  useEffect(() => () => previewScheme(null), [previewScheme]);
 
   const activeThemeKey = useMemo(() => {
     const entry = Object.entries(THEME_KEY_TO_SCHEME).find(([, s]) => s === scheme);
@@ -76,10 +90,7 @@ export default function Shop() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showCoinBurst, setShowCoinBurst] = useState(false);
-  const [previewingTheme, setPreviewingTheme] = useState<{
-    item: ShopItem;
-    originalScheme: ColorScheme;
-  } | null>(null);
+  const [previewingTheme, setPreviewingTheme] = useState<ShopItem | null>(null);
   const [borderPreviewItem, setBorderPreviewItem] = useState<ShopItem | null>(null);
   const [celebPreviewItem, setCelebPreviewItem] = useState<ShopItem | null>(null);
   const [buddyPreviewItem, setBuddyPreviewItem] = useState<ShopItem | null>(null);
@@ -139,12 +150,18 @@ export default function Shop() {
 
     if (error) {
       setErrorMsg(error);
+      // A failure often means our balance was stale to begin with — resync so
+      // the price the learner is looking at stops lying to them.
+      await refetchProgress();
     } else {
       setShowCoinBurst(true);
       setSuccessMsg(t('itemUnlocked', { name: tItems(`${confirmItem.key}.name`) }));
       const scheme = THEME_KEY_TO_SCHEME[confirmItem.key];
       if (scheme) {
+        // setScheme also ends any active try-on preview, so the banner has to go
+        // with it — otherwise its "End preview" button no-ops forever.
         setScheme(scheme as Parameters<typeof setScheme>[0]);
+        setPreviewingTheme(null);
       }
       await refetchProgress();
       setTimeout(() => setShowCoinBurst(false), 2000);
@@ -163,6 +180,7 @@ export default function Shop() {
       const s = THEME_KEY_TO_SCHEME[item.key];
       if (s) {
         setScheme(s as Parameters<typeof setScheme>[0]);
+        setPreviewingTheme(null);
       }
     }
   };
@@ -171,8 +189,9 @@ export default function Shop() {
     if (item.category === 'theme') {
       const targetScheme = THEME_KEY_TO_SCHEME[item.key] as ColorScheme | undefined;
       if (targetScheme) {
-        setPreviewingTheme({ item, originalScheme: scheme });
-        setScheme(targetScheme);
+        setPreviewingTheme(item);
+        // Render-only try-on — nothing is persisted until the theme is bought.
+        previewScheme(targetScheme);
       }
     } else if (item.category === 'celebration') {
       setCelebPreviewItem(item);
@@ -184,10 +203,8 @@ export default function Shop() {
   };
 
   const handleEndThemePreview = () => {
-    if (previewingTheme) {
-      setScheme(previewingTheme.originalScheme);
-      setPreviewingTheme(null);
-    }
+    previewScheme(null);
+    setPreviewingTheme(null);
   };
 
   return (
@@ -539,8 +556,14 @@ export default function Shop() {
             >
               {confirmItem.category === 'theme' ? (
                 <ThemeCardPreview themeKey={confirmItem.key} />
-              ) : confirmItem.category === 'celebration' ||
-                confirmItem.category === 'study_buddy' ? (
+              ) : confirmItem.category === 'study_buddy' ? (
+                <Box
+                  component="img"
+                  src={buddyFaceSrc(confirmItem.key, 1)}
+                  alt=""
+                  sx={{ width: 52, height: 52, objectFit: 'contain' }}
+                />
+              ) : confirmItem.category === 'celebration' ? (
                 <Typography sx={{ fontSize: '2.2rem', lineHeight: 1 }}>
                   {confirmItem.emoji}
                 </Typography>
@@ -563,10 +586,49 @@ export default function Shop() {
             </DialogTitle>
             <DialogContent>
               <Typography
-                sx={{ fontSize: '0.82rem', color: 'text.secondary', textAlign: 'center', mb: 2.5 }}
+                sx={{
+                  fontSize: '0.82rem',
+                  color: 'text.secondary',
+                  textAlign: 'center',
+                  mb: confirmItem.category === 'study_buddy' ? 1.25 : 2.5,
+                }}
               >
                 {tItems(`${confirmItem.key}.description`)}
               </Typography>
+              {confirmItem.category === 'study_buddy' && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 0.75,
+                    mb: 2.5,
+                  }}
+                >
+                  <Box sx={{ display: 'flex' }}>
+                    {[2, 3, 4].map((v) => (
+                      <Box
+                        key={v}
+                        component="img"
+                        src={buddyFaceSrc(confirmItem.key, v)}
+                        alt=""
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: '50%',
+                          bgcolor: '#fff',
+                          border: `1.5px solid ${alpha(brand[300], 0.6)}`,
+                          objectFit: 'contain',
+                          '&:not(:first-of-type)': { ml: '-10px' },
+                        }}
+                      />
+                    ))}
+                  </Box>
+                  <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: brand[600] }}>
+                    {t('purchaseDialog.avatarPerk')}
+                  </Typography>
+                </Box>
+              )}
               <Box
                 sx={{
                   display: 'flex',
@@ -690,7 +752,7 @@ export default function Shop() {
             }}
           >
             {t.rich('previewingBanner.previewing', {
-              name: tItems(`${previewingTheme.item.key}.name`),
+              name: tItems(`${previewingTheme.key}.name`),
               strong: (chunks) => <strong>{chunks}</strong>,
             })}
           </Typography>

@@ -74,6 +74,20 @@ export const THEME_COLORS: Record<
     text: '#881337',
     topBar: '#FB7185',
   },
+  theme_cottagecore: {
+    bg: '#FDF9F3',
+    brand: '#D2A97B',
+    accent: '#9BAF80',
+    text: '#52351B',
+    topBar: '#D2A97B',
+  },
+  theme_galaxy: {
+    bg: '#EEF2FF',
+    brand: '#818CF8',
+    accent: '#E879F9',
+    text: '#312E81',
+    topBar: '#818CF8',
+  },
 };
 
 export const SAMPLE_CARD: FlashcardType = {

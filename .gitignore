@@ -60,6 +60,7 @@ benchmarks/
 promo/
 
 # local-only Claude prompt packs / spec documents
+prompts/
 semester-prompts/
 i18n-prompts/
 

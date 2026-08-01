@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 
 import { PinnableRow } from '@/components/PinnableRow';
 import type { Group, GroupMemberFace } from '@/hooks/useGroups';
+import { avatarSrc } from '@/lib/buddies';
 
 interface GroupRowProps {
   group: Group;
@@ -49,26 +50,38 @@ function MemberFaces({ faces, overflow }: { faces: GroupMemberFace[]; overflow: 
   if (faces.length === 0) return null;
 
   const circle = {
-    width: 26,
-    height: 26,
+    width: 34,
+    height: 34,
     borderRadius: '50%',
     display: 'grid',
     placeItems: 'center',
-    fontSize: '0.7rem',
+    fontSize: '0.8rem',
     fontWeight: 900,
     border: `2px solid ${theme.palette.background.paper}`,
     boxShadow: `0 2px 6px ${alpha(theme.palette.brand[900], 0.12)}`,
     flexShrink: 0,
-    '&:not(:first-of-type)': { ml: '-9px' },
+    '&:not(:first-of-type)': { ml: '-11px' },
   } as const;
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }} aria-hidden>
-      {faces.map((f) => (
-        <Box key={f.id} sx={{ ...circle, bgcolor: faceColor(f.id), color: '#fff' }}>
-          {initial(f.name)}
-        </Box>
-      ))}
+      {faces.map((f) => {
+        const src = avatarSrc(f.avatar);
+        return src ? (
+          <Box key={f.id} sx={{ ...circle, bgcolor: '#fff', overflow: 'hidden' }}>
+            <Box
+              component="img"
+              src={src}
+              alt=""
+              sx={{ width: '86%', height: '86%', objectFit: 'contain' }}
+            />
+          </Box>
+        ) : (
+          <Box key={f.id} sx={{ ...circle, bgcolor: faceColor(f.id), color: '#fff' }}>
+            {initial(f.name)}
+          </Box>
+        );
+      })}
       {overflow > 0 && (
         <Box sx={{ ...circle, bgcolor: alpha(brand[200], 0.6), color: brand[800] }}>
           +{overflow}

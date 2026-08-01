@@ -5,8 +5,9 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import FuriganaText from '@/components/FuriganaText';
+import { useShopCtx } from '@/contexts/ShopContext';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { CELEBRATION_THEMES, useShop } from '@/hooks/useShop';
+import { CELEBRATION_THEMES } from '@/hooks/useShop';
 
 import {
   ALL_THEMES,
@@ -192,7 +193,7 @@ export function CelebrationScreen({
 }: CelebrationScreenProps) {
   const tCommon = useTranslations('Practice.common');
   const resolvedExitLabel = exitLabel ?? tCommon('backToDeck');
-  const { equipped } = useShop();
+  const { equipped } = useShopCtx();
   const randomTheme = useMemo<CelebTheme>(
     () => ALL_THEMES[Math.floor(Math.random() * ALL_THEMES.length)],
     [],

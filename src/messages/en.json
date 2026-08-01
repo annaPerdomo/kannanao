@@ -594,6 +594,7 @@
       "quitAndSave": "Quit & Save Progress",
       "backToDeck": "Back to Deck",
       "reviewChip": "Review",
+      "batchChip": "Batch {current}/{total}",
       "correctMovingOn": "✓ Correct — moving on…",
       "correctSummary": "{correct} / {total} correct",
       "bestStreakRow": "🔥 Best streak: {count} in a row!"
@@ -630,7 +631,6 @@
       "dailyChestTap": "Daily chest — tap to open!"
     },
     "fillMode": {
-      "title": "Fill in the Blank",
       "fillPrompt": "FILL IN THE BLANK",
       "meaningLabel": "Meaning: {meaning}",
       "incorrectAnswer": "Incorrect — answer: {word}",
@@ -640,8 +640,6 @@
       "check": "Check"
     },
     "matchMode": {
-      "title": "Match",
-      "batchChip": "Batch {current}/{total}",
       "allMatched": "All matched!",
       "pairsSummary": "{count, plural, one {# pair} other {# pairs}} · {rounds}",
       "roundsCount": "{count, plural, one {# round} other {# rounds}}",
@@ -652,13 +650,11 @@
       "speedKeepUp": "Keep it up! 💪"
     },
     "recallMode": {
-      "title": "Guess It!",
       "whatDoesThisMean": "WHAT DOES THIS MEAN?",
       "seeResults": "See Results",
       "nextArrow": "Next →"
     },
     "quizMode": {
-      "title": "Quiz",
       "progressChip": "{current} of {total}",
       "whatDoesThisMean": "WHAT DOES THIS MEAN?",
       "typeTheJapaneseWord": "TYPE THE JAPANESE WORD",
@@ -677,7 +673,6 @@
       "encouragement3": "Amazing! You really know these. 🌟"
     },
     "listenMode": {
-      "title": "Listen",
       "warmingUpVoice": "Warming up the voice…",
       "noVoiceTitle": "This device can't speak Japanese yet",
       "noVoiceBody": "Listen needs a Japanese voice. Try Chrome or Safari, or add a Japanese voice in your device's speech settings — then come back. Everything else still works!",
@@ -1181,6 +1176,7 @@
     "userMenu": {
       "signIn": "Sign In",
       "admin": "Admin",
+      "changeAvatar": "Change avatar",
       "account": "Account",
       "signOut": "Sign out",
       "theme": "Theme"
@@ -1261,14 +1257,20 @@
   },
   "Auth": {
     "login": {
-      "brandName": "Tangodachi",
       "betaBadge": "Beta · Sign-ups paused",
       "waitlistIntro": "Sign-ups are currently closed while we're in beta. Leave your email and we'll let you know when we open up!",
       "backToSignIn": "Already have an account? Sign in",
       "usernameLabel": "Username",
       "passwordLabel": "Password",
       "submit": "Sign In",
-      "joinWaitlist": "Don't have an account? Join the waitlist"
+      "joinWaitlist": "Don't have an account? Join the waitlist",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "welcomeTitle": "Welcome back!",
+      "welcomeSubtitle": "Sign in to continue your learning adventure.",
+      "tagline1": "Learn Japanese.",
+      "tagline2": "Grow together.",
+      "taglineSubtitle": "AI-powered study materials for educators.\nFun, effective practice for learners."
     },
     "context": {
       "signupsClosedError": "Sign-ups are currently closed. Join the waitlist at the landing page.",
@@ -2152,6 +2154,14 @@
       "cardsStudiedTooltip": "{cards, plural, one {# card studied} other {# cards studied}}"
     }
   },
+  "AvatarPicker": {
+    "title": "Choose your avatar",
+    "subtitle": "Any face from your study buddies",
+    "useInitial": "Use my initial",
+    "faceAriaLabel": "{name} face {number}",
+    "shopLink": "Unlock more buddies in the Shop",
+    "loadError": "Couldn't load your buddies. Please close this and try again."
+  },
   "Shop": {
     "title": "Shop",
     "subtitle": "Earn XP by studying and unlock treasures!",
@@ -2178,7 +2188,8 @@
       "afterPurchase": "After purchase",
       "maybeLater": "Maybe later",
       "unlocking": "Unlocking...",
-      "unlock": "Unlock!"
+      "unlock": "Unlock!",
+      "avatarPerk": "Includes 8 faces you can use as your profile picture!"
     },
     "previewingBanner": {
       "previewing": "Previewing <strong>{name}</strong>",
@@ -2198,7 +2209,8 @@
       "active": "Active",
       "equip": "Equip",
       "buy": "Buy",
-      "keepStudyingTooltip": "Keep studying to earn more XP!"
+      "keepStudyingTooltip": "Keep studying to earn more XP!",
+      "avatarPerk": "Unlocks 8 profile pictures"
     },
     "errors": {
       "itemNotFound": "Item not found",
@@ -2311,88 +2323,154 @@
         "name": "Galaxy Burst",
         "description": "Deep space fireworks with cosmic shimmer"
       },
-      "buddy_bunny": {
-        "name": "Bunny",
-        "description": "An adorable bunny hopping with encouragement"
+      "celeb_bubble_pop": {
+        "name": "Bubble Pop",
+        "description": "Float away on a stream of rainbow bubbles"
       },
-      "buddy_penguin": {
-        "name": "Penguin",
-        "description": "A cool penguin who loves learning!"
+      "celeb_sakura_storm": {
+        "name": "Sakura Storm",
+        "description": "A whirlwind of cherry blossom petals"
       },
-      "buddy_panda": {
-        "name": "Panda",
-        "description": "A gentle panda with wise study vibes"
+      "celeb_neko_parade": {
+        "name": "Neko Parade",
+        "description": "A march of happy cats and paw prints"
       },
-      "buddy_fox": {
-        "name": "Fox",
-        "description": "A clever fox that keeps you sharp!"
+      "celeb_bento_party": {
+        "name": "Bento Party",
+        "description": "It rains onigiri, ramen & dango — itadakimasu!"
       },
-      "buddy_pink_cat": {
-        "name": "Pink Cat",
-        "description": "A cheerful pink kitty that cheers you on!"
+      "celeb_hanabi": {
+        "name": "Hanabi Festival",
+        "description": "A grand summer fireworks finale in every color"
       },
       "theme_cottagecore": {
         "name": "Cottagecore",
-        "description": "Cozy countryside warmth — coming soon!"
+        "description": "Cozy honey & sage countryside warmth"
       },
       "theme_galaxy": {
         "name": "Galaxy",
-        "description": "Deep space sparkles — coming soon!"
+        "description": "Cosmic indigo & fuchsia stardust"
       },
       "border_crystal": {
         "name": "Crystal Ice",
-        "description": "Shimmering frozen crystal edges — coming soon!"
+        "description": "Shimmering frozen crystal edges"
       },
       "border_floral": {
         "name": "Floral Garden",
-        "description": "Blooming flower frame — coming soon!"
+        "description": "A blooming frame of petals and leaves"
+      },
+      "border_kintsugi": {
+        "name": "Kintsugi Gold",
+        "description": "Dark lacquer mended with rivers of gold"
+      },
+      "border_koi": {
+        "name": "Koi Pond",
+        "description": "Swirling koi orange, white & ink black"
+      },
+      "buddy_tango": {
+        "name": "Tango",
+        "description": "Your very first study buddy — cheering for you since day one!"
+      },
+      "buddy_bunny": {
+        "name": "Tsuki",
+        "description": "A marshmallow-soft rabbit who does a happy hop for every word you learn — named for tsuki, the moon she came from"
+      },
+      "buddy_penguin": {
+        "name": "Shiro",
+        "description": "A little penguin who slid all the way from the icy north to study with you — Shiro means white, like his belly"
+      },
+      "buddy_panda": {
+        "name": "Goro",
+        "description": "A gentle panda who munches bamboo while you think — no rush, he is named for goro-goro, the sound of rolling about"
+      },
+      "buddy_red_panda": {
+        "name": "Momiji",
+        "description": "A fluffy red panda who takes notes on every word you learn — momiji means autumn maple leaves, the color of her coat"
+      },
+      "buddy_otter": {
+        "name": "Rakko",
+        "description": "A floaty otter who never lets go of a favorite book — or of you"
+      },
+      "buddy_fox": {
+        "name": "Inari",
+        "description": "A clever fox who answers every question with a proud \"kon kon!\" — named for the Inari shrines that foxes guard"
+      },
+      "buddy_lucky_cat": {
+        "name": "Suzu",
+        "description": "A lucky cat who waves good fortune onto every quiz you take — named for the suzu, the little bell on her collar"
+      },
+      "buddy_pink_cat": {
+        "name": "Tama",
+        "description": "A calico who naps on your notebook but always wakes up for study time — every storybook cat in Japan is a Tama ('gem')"
+      },
+      "buddy_kappa": {
+        "name": "Sara",
+        "description": "A shy kappa who trades cucumbers for correct answers — named for the sara, the little water plate on their head"
+      },
+      "buddy_tanuki": {
+        "name": "Ponta",
+        "description": "A playful tanuki who believed in you before you even answered"
+      },
+      "buddy_axolotl": {
+        "name": "Momo",
+        "description": "A peach-pink axolotl who smiles through every study session — momo means peach. Coming soon!"
+      },
+      "buddy_guinea_pig": {
+        "name": "Moru",
+        "description": "A squeaky guinea pig who cheers with a happy \"pui pui!\" — in Japan he is a morumotto, a 'marmot'. Coming soon!"
       }
     },
     "buddies": {
-      "buddy_pink_cat": {
+      "buddy_tango": {
         "correct": [
-          "Nyaa~ Perfect!",
-          "Purr-fect answer!",
-          "Meow yeah!",
-          "You're paw-some!",
-          "Nyan~ So smart!",
-          "Kitty is proud! ✨",
-          "Sugoi nya~!",
-          "That's right, nya!"
+          "Wan-derful!",
+          "That's my study buddy!",
+          "やったね！",
+          "You got it! Wag wag~",
+          "Tango knew you could!",
+          "せいかい！",
+          "Perfect! High paw! 🐾",
+          "Sugoi! So smart!",
+          "Yes! That's the one!",
+          "Woohoo! Nailed it!"
         ],
         "wrong": [
-          "Mew… try again!",
-          "Don't give up, nya~",
-          "Almost there, meow!",
-          "One more try, nya!",
-          "Kitty believes in you!",
-          "Hmm, not quite nya~"
+          "Almost! Tango believes in you!",
+          "One more try — together!",
+          "だいじょうぶ！",
+          "Hmm, let's sniff out the answer!",
+          "Don't worry, I'm right here!",
+          "So close! Shake it off!",
+          "We'll get the next one!"
         ],
         "idle": [
-          "♪ zzZ~",
-          "~purrs softly~",
-          "~chases yarn~",
-          "Nya~ let's study!",
-          "~stretches~",
-          "~grooms paws~",
-          "♪ la la nya~",
-          "~bats at butterfly~"
+          "~wags tail~",
+          "~tilts head~",
+          "いっしょにがんばろう！",
+          "~fetches a flashcard~",
+          "Ready when you are!",
+          "~happy zoomies~",
+          "~adjusts bandana~",
+          "~sniff sniff~",
+          "Wan! Let's study!"
         ],
         "homePhrases": [
-          "Nya~ Time to study! 📚",
-          "Let's practice together!",
-          "Kitty wants to learn too~",
-          "Pick a deck, nya!",
-          "Study makes us stronger!",
-          "日本語 time, meow!",
-          "I'll cheer you on, nya~",
-          "Tap a deck to start! ✨"
+          "Wan! Let's study together! 🐾",
+          "Pick a deck — I'll cheer you on!",
+          "今日もいっしょに勉強！",
+          "Every day a little stronger!",
+          "Tango's ready when you are!",
+          "Study time is the best time!",
+          "がんばろう! We've got this!",
+          "Your streak makes me wag!",
+          "Let's learn something new! ✨"
         ]
       },
       "buddy_bunny": {
         "correct": [
           "Hop hop hooray!",
           "Bunny bounce! 🎉",
+          "ぴょんぴょん！やったー！",
           "That's amazing!",
           "Ear-resistible answer!",
           "You did it!",
@@ -2403,14 +2481,16 @@
         "wrong": [
           "Oops, one more time!",
           "Try again, friend!",
+          "もういっかい！",
           "Don't worry, hop to it!",
           "Almost! Keep going!",
           "You'll get it next hop!",
-          "Bunny believes in you!"
+          "Tsuki believes in you!"
         ],
         "idle": [
           "~munches carrot~",
           "~wiggles nose~",
+          "にんじん、おいしい〜",
           "~does a little hop~",
           "Let's learn together!",
           "~flops over~",
@@ -2421,6 +2501,7 @@
         "homePhrases": [
           "Let's hop into studying! 🥕",
           "Time to practice!",
+          "ぴょんと始めよう！",
           "Pick a deck and let's go!",
           "Study time is fun time!",
           "I'll hop along with you!",
@@ -2433,8 +2514,9 @@
         "correct": [
           "Cool! Nailed it!",
           "Ice-credible!",
+          "さすが！",
           "Waddle yeah!",
-          "Penguin approved! 🧊",
+          "Shiro approves! 🧊",
           "You're on fire… wait, I melt!",
           "Spectacular!",
           "Chill answer! 🎉",
@@ -2443,6 +2525,7 @@
         "wrong": [
           "Brrr, not quite…",
           "Slide into another try!",
+          "おしい！",
           "Keep waddling forward!",
           "Almost! Try once more!",
           "Don't slip up now!",
@@ -2451,6 +2534,7 @@
         "idle": [
           "~waddles~",
           "~slides on tummy~",
+          "さむくても、へいき！",
           "~looks at fish~",
           "Brr, study time!",
           "~flaps flippers~",
@@ -2461,6 +2545,7 @@
         "homePhrases": [
           "Cool study session ahead! 🧊",
           "Let's slide into learning!",
+          "ペタペタ…勉強の時間！",
           "Pick a deck, friend!",
           "Waddle we learn today?",
           "Time to chill and study!",
@@ -2473,16 +2558,18 @@
         "correct": [
           "Bamboo-tiful!",
           "Panda-stic work!",
+          "じょうずだね！",
           "You rock! 🎋",
           "That's the way!",
           "So wise! Like bamboo~",
           "Amazing answer!",
-          "Panda proud moment!",
+          "Goro is so proud!",
           "Subarashii!"
         ],
         "wrong": [
           "Hmm, keep going!",
           "Roll with it, try again!",
+          "あわてないで〜",
           "Don't give up!",
           "Almost there!",
           "Panda patience~",
@@ -2491,6 +2578,7 @@
         "idle": [
           "~noms bamboo~",
           "~rolls around~",
+          "笹、むしゃむしゃ〜",
           "~takes a nap~",
           "Mmm, study break?",
           "~stretches lazily~",
@@ -2501,6 +2589,7 @@
         "homePhrases": [
           "Study time~ 🎋",
           "Let's munch on knowledge!",
+          "ゆっくりでいいよ〜",
           "Pick a deck to practice!",
           "Learning is bamboo-tiful!",
           "Take it one card at a time~",
@@ -2509,46 +2598,312 @@
           "いっしょに がんばろう!"
         ]
       },
+      "buddy_otter": {
+        "correct": [
+          "Splash-tastic!",
+          "Otterly amazing!",
+          "すいすい〜！",
+          "You're making waves!",
+          "Float on, smarty!",
+          "Right answer, riverside style!",
+          "Shell yeah! 🐚",
+          "Smooth swimming!",
+          "Rakko claps his paws!"
+        ],
+        "wrong": [
+          "Just a ripple — try again!",
+          "Paddle back, one more go!",
+          "ゆっくりね〜",
+          "Don't sink now, friend!",
+          "Almost! Float and think~",
+          "The river takes its time too!",
+          "Rakko's still cheering!"
+        ],
+        "idle": [
+          "~floats on back~",
+          "~holds favorite book~",
+          "ぷかぷか〜",
+          "~cracks a shell snack~",
+          "Drift and study with me~",
+          "~splish splash~",
+          "~rests on a lily pad~",
+          "~hums a river song~",
+          "Nice and easy does it~"
+        ],
+        "homePhrases": [
+          "Float into study time~ 🌊",
+          "Grab a deck and drift with me!",
+          "のんびりいこう〜",
+          "Easy pace, steady progress!",
+          "Rakko saved your page!",
+          "A little each day goes far~",
+          "Let's paddle through some cards!",
+          "Study buddies stick together!",
+          "Ready for a cozy review? 📖"
+        ]
+      },
       "buddy_fox": {
         "correct": [
+          "Kon kon! Correct!",
           "Clever answer!",
+          "こんこん！せいかい！",
           "Fox-tastic!",
           "Sharp as always!",
-          "Brilliant mind! 🌟",
-          "What does the fox say? YAY!",
+          "Brilliant! 🌟",
           "Smarty-paws!",
-          "Quick thinking!",
-          "Sly and smart!"
+          "Quick thinking!"
         ],
         "wrong": [
           "Almost, think again!",
-          "Fox tip: try once more!",
+          "こんこん…もう一回！",
           "So close! Be cunning!",
-          "Don't worry, be foxy!",
+          "A clever fox never gives up!",
           "Tricky, but you've got this!",
-          "A clever fox never gives up!"
+          "Don't worry, be foxy!"
         ],
         "idle": [
-          "~curls up~",
+          "~flicks tail~",
+          "こんこん〜",
           "~sniffs the air~",
           "~chases leaves~",
           "What shall we learn?",
-          "~flicks tail~",
-          "~yawns softly~",
           "~perks ears up~",
+          "~yawns softly~",
           "~does a little trot~"
         ],
         "homePhrases": [
-          "Clever foxes always study! 🌟",
-          "Time to sharpen our minds!",
-          "Pick a deck, smarty-paws!",
-          "Let's outsmart those cards!",
-          "Knowledge is power!",
-          "A quick study session?",
-          "Stay sharp, stay foxy!",
-          "べんきょう しましょう!"
+          "Kon kon! Quiz time! 🦊",
+          "A fox knows: practice makes clever!",
+          "こんこん！勉強しよう！",
+          "Pick a deck — be quick like a fox!",
+          "Sharp minds study daily!",
+          "Follow my tail to the flashcards~",
+          "Outfox the tricky words!",
+          "Let's hunt for new words! ✨"
+        ]
+      },
+      "buddy_lucky_cat": {
+        "correct": [
+          "Lucky AND smart!",
+          "Fortune favors you! ✨",
+          "合格！おめでとう！",
+          "Jackpot answer!",
+          "Suzu waves with joy!",
+          "That's a golden one!",
+          "合格 vibes! You did it!",
+          "Purr-fectly lucky!",
+          "Good fortune earned!"
+        ],
+        "wrong": [
+          "Luck's still loading…",
+          "Try again — fortune waits!",
+          "つぎは合格！",
+          "A lucky cat never quits!",
+          "Almost! Wave it in!",
+          "Next one's the lucky one!",
+          "Suzu believes in you!"
+        ],
+        "idle": [
+          "~waves paw slowly~",
+          "~polishes gold charm~",
+          "まねきまねき〜",
+          "Luck comes to those who study!",
+          "~ring ring~ 🔔",
+          "~beckons good fortune~",
+          "Nya~ feeling lucky?",
+          "~counts lucky coins~",
+          "Your luck is building!"
+        ],
+        "homePhrases": [
+          "Suzu beckons: study time! 🔔",
+          "Lucky days start with practice!",
+          "福きたる、にゃ！",
+          "A card a day brings luck your way!",
+          "Wave hello to your streak!",
+          "Fortune favors the prepared~",
+          "Let's earn some good luck!",
+          "Nya~ pick a deck!",
+          "Today feels lucky! ✨"
+        ]
+      },
+      "buddy_pink_cat": {
+        "correct": [
+          "Nyaa~ Perfect!",
+          "Purr-fect answer!",
+          "にゃいす！",
+          "Meow yeah!",
+          "You're paw-some!",
+          "Nyan~ So smart!",
+          "Kitty is proud! ✨",
+          "Sugoi nya~!",
+          "That's right, nya!"
+        ],
+        "wrong": [
+          "Mew… try again!",
+          "Don't give up, nya~",
+          "がんばれ、にゃ！",
+          "Almost there, meow!",
+          "One more try, nya!",
+          "Kitty believes in you!",
+          "Hmm, not quite nya~"
+        ],
+        "idle": [
+          "♪ zzZ~",
+          "~purrs softly~",
+          "おひるね中…にゃ",
+          "~chases yarn~",
+          "Nya~ let's study!",
+          "~stretches~",
+          "~grooms paws~",
+          "♪ la la nya~",
+          "~bats at butterfly~"
+        ],
+        "homePhrases": [
+          "Nya~ Time to study! 📚",
+          "Let's practice together!",
+          "にゃんばれ！",
+          "Kitty wants to learn too~",
+          "Pick a deck, nya!",
+          "Study makes us stronger!",
+          "日本語 time, meow!",
+          "I'll cheer you on, nya~",
+          "Tap a deck to start! ✨"
+        ]
+      },
+      "buddy_kappa": {
+        "correct": [
+          "Kyu-kyu! Correct!",
+          "Worth a whole cucumber!",
+          "きゅうり、あげる！",
+          "Splendid splash!",
+          "The river spirits approve!",
+          "Kappa-mazing!",
+          "Yes! Crunch crunch! 🥒",
+          "Sara does a happy wiggle!",
+          "Right as rain!"
+        ],
+        "wrong": [
+          "Kyu… one more try!",
+          "Don't let it slide!",
+          "もういっかい、けろ",
+          "The river flows on — again!",
+          "Almost! Sara peeks and cheers!",
+          "Shy guess? Try a bold one!",
+          "You'll get it, kero~"
+        ],
+        "idle": [
+          "~nibbles cucumber~",
+          "~splashes quietly~",
+          "かっぱっぱ〜",
+          "~peeks from the water~",
+          "~polishes head plate~",
+          "Study by the river~",
+          "~shy little wave~",
+          "~blows a bubble~",
+          "Kyu~ let's learn!"
+        ],
+        "homePhrases": [
+          "Kyu! Study by the river~ 🥒",
+          "A cucumber for your thoughts?",
+          "川へおいで〜",
+          "Shy but cheering loudly (inside)!",
+          "Pick a deck, kero~",
+          "Little steps, big splashes!",
+          "Sara saved you a cucumber!",
+          "The river never stops — neither do we!",
+          "Let's make ripples today! 💧"
+        ]
+      },
+      "buddy_tanuki": {
+        "correct": [
+          "Pom-poko-perfect!",
+          "Ponta drums with joy! 🥁",
+          "ぽんぽこ！すごい！",
+          "Magic? No — skill!",
+          "That's the spirit!",
+          "Transform-ally awesome!",
+          "Leaf it to you! 🍃",
+          "Ponta's belly-drumming!",
+          "Amazing! No tricks needed!"
+        ],
+        "wrong": [
+          "Poko? Try once more!",
+          "No trick gets past you twice!",
+          "まだまだ、ぽん！",
+          "Shake your leaf and retry!",
+          "Almost! Ponta's still drumming!",
+          "A tanuki never gives up!",
+          "Believe! Ponta already does!"
+        ],
+        "idle": [
+          "~drums on belly~ pom poko",
+          "~balances leaf on head~",
+          "ぽんぽこぽん〜",
+          "~practices a transformation~",
+          "~giggles mischievously~",
+          "Ponta believes in you!",
+          "~shakes the lucky jar~",
+          "~rolls in the leaves~",
+          "Poko-poko~ study time?"
+        ],
+        "homePhrases": [
+          "Pom poko! Deck time! 🍃",
+          "Ponta bet his leaf on you!",
+          "まかせて、ぽん！",
+          "Transform study into fun!",
+          "Believe in yourself — I already do!",
+          "A little magic, a lot of practice!",
+          "Drum roll… pick a deck! 🥁",
+          "Lucky learners study daily!",
+          "Let's poko-poko practice!"
+        ]
+      },
+      "buddy_red_panda": {
+        "correct": [
+          "Maple-magnificent! 🍁",
+          "Momiji's tail fluffs with pride!",
+          "すごい！満点だね！",
+          "Noted: you're brilliant! ✏️",
+          "A gold star in her notebook! ⭐",
+          "You make it look easy~",
+          "Sharp as autumn air!",
+          "Momiji's ears perk right up — perfect!",
+          "Leaf-tastically done!"
+        ],
+        "wrong": [
+          "Almost! Let's check the notes!",
+          "Flip that leaf and try again!",
+          "もういっかい、ゆっくりね",
+          "Even scholars erase sometimes!",
+          "Momiji circles it to review later ✏️",
+          "Momiji still believes in you!",
+          "Close! One more look~"
+        ],
+        "idle": [
+          "~scribbles in her notebook~",
+          "~sharpens her pencil~",
+          "こつこつ、かきかき…",
+          "~presses a maple leaf between pages~",
+          "~taps her pencil thoughtfully~",
+          "~fluffs her tail like a cushion~",
+          "Ready when you are! ✏️"
+        ],
+        "homePhrases": [
+          "Momiji took notes on your streak! ⭐",
+          "A page a day — that's the way!",
+          "もみじのノートに単語がいっぱい！",
+          "Autumn leaves, new words~ 🍁",
+          "Little by little, like leaves turning!",
+          "One more card for the notebook~",
+          "Stars shine for students! ✨",
+          "Notebook open, flashcards out!",
+          "Study now, shine later~"
         ]
       }
+    },
+    "buddyPreview": {
+      "close": "Close",
+      "avatarPerk": "Pick any of these faces as your profile picture"
     }
   },
   "Landing": {
@@ -2933,8 +3288,8 @@
           "name": "Star Shower",
           "type": "Celebrations"
         },
-        "foxBuddy": {
-          "name": "Fox Buddy",
+        "tanukiBuddy": {
+          "name": "Ponta the Tanuki",
           "type": "Study Buddies"
         }
       },

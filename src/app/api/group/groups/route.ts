@@ -18,6 +18,7 @@ const MAX_FACES = 4;
 interface GroupMemberFace {
   id: string;
   name: string;
+  avatar: string | null;
 }
 
 /** Per-group rollup returned alongside each group. */
@@ -63,7 +64,7 @@ export async function GET(req: NextRequest) {
   // group, so an organizer with a dozen groups isn't a dozen round trips.
   const { data: memberRows } = await sb
     .from('profiles')
-    .select('id, group_id, username, display_name')
+    .select('id, group_id, username, display_name, avatar')
     .eq('organizer_id', orgCheck.id)
     .eq('account_type', 'member')
     .order('created_at', { ascending: true });
@@ -105,7 +106,7 @@ export async function GET(req: NextRequest) {
     stats.weeklyXp += weeklyXpByUser.get(m.id) ?? 0;
     if (prog?.last_study_date === today) stats.activeCount += 1;
     if (stats.faces.length < MAX_FACES) {
-      stats.faces.push({ id: m.id, name: m.display_name || m.username });
+      stats.faces.push({ id: m.id, name: m.display_name || m.username, avatar: m.avatar });
     }
 
     statsByGroup.set(m.group_id, stats);

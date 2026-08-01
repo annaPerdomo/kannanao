@@ -14,17 +14,8 @@ export interface ShopItem {
   preview?: string;
   emoji: string;
   comingSoon?: boolean;
-}
-
-export interface BuddyReactions {
-  correct: string | string[];
-  wrong: string | string[];
-  idle: string | string[];
-}
-
-export interface BuddyConfig {
-  emoji: string;
-  reactions: BuddyReactions;
+  /** Cutout artwork rendered instead of the emoji on coming-soon cards */
+  image?: string;
 }
 
 export interface CardBorderStyle {

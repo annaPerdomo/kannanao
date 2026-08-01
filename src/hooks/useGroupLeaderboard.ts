@@ -9,6 +9,7 @@ export interface LeaderboardEntry {
   id: string;
   username: string;
   displayName: string | null;
+  avatar?: string | null;
   weeklyXp: number;
   weeklyCards: number;
   streakDays: number;

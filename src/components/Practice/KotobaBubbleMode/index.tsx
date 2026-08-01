@@ -224,12 +224,12 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
     });
   }, [deckId, results.length, totalCorrect, startSession, endSession, combo]);
 
-  // Trigger perfect bonus XP animation once when game completes perfectly
   const perfectBonusTriggeredRef = useRef(false);
   useEffect(() => {
     if (gameComplete && !perfectBonusTriggeredRef.current) {
       const pct = totalCorrect / gameSentences.length;
       if (pct === 1) {
+        addBonusXp(XP_PERFECT_BONUS);
         triggerXpEarned(XP_PERFECT_BONUS);
       }
       perfectBonusTriggeredRef.current = true;
@@ -237,7 +237,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
     if (!gameComplete) {
       perfectBonusTriggeredRef.current = false;
     }
-  }, [gameComplete, totalCorrect, gameSentences.length, triggerXpEarned]);
+  }, [gameComplete, totalCorrect, gameSentences.length, addBonusXp, triggerXpEarned]);
 
   // ── Loading / generation states ────────────────────────────────────────────
   if (loading) {

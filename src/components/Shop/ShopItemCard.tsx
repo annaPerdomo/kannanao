@@ -14,6 +14,8 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
+import { UserAvatar } from '@/components/UserAvatar';
+import { makeAvatar } from '@/lib/buddies';
 import type { ShopItem } from '@/types/shop';
 
 import { BorderCardPreview } from './BorderCardPreview';
@@ -77,9 +79,26 @@ export function ShopItemCard({
             justifyContent: 'center',
           }}
         >
-          <Typography sx={{ fontSize: '2.5rem', filter: 'grayscale(0.3)' }}>
-            {item.emoji}
-          </Typography>
+          {item.image ? (
+            <Box
+              component="img"
+              src={item.image}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+              sx={{
+                height: '85%',
+                maxWidth: '78%',
+                objectFit: 'contain',
+                filter: 'grayscale(0.25)',
+              }}
+            />
+          ) : (
+            <Typography sx={{ fontSize: '2.5rem', filter: 'grayscale(0.3)' }}>
+              {item.emoji}
+            </Typography>
+          )}
         </Box>
         <Box sx={{ p: { xs: 1.25, sm: 1.5 }, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           <Typography
@@ -139,9 +158,11 @@ export function ShopItemCard({
       {isEquipped && (
         <Box
           sx={{
+            // Positive offsets: the Paper clips to its rounded corners, so an
+            // overhanging badge shows only a sliver.
             position: 'absolute',
-            top: mini ? -6 : -8,
-            right: mini ? -6 : -8,
+            top: mini ? 4 : 6,
+            right: mini ? 4 : 6,
             bgcolor: '#fff',
             borderRadius: '50%',
             width: mini ? 20 : 26,
@@ -304,6 +325,26 @@ export function ShopItemCard({
           >
             {itemDescription}
           </Typography>
+        )}
+
+        {/* Buddies double as profile pictures — worth advertising on the card */}
+        {!mini && isBuddy && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+            <Box sx={{ display: 'flex', flexShrink: 0 }}>
+              {[1, 2, 3].map((v) => (
+                <UserAvatar
+                  key={v}
+                  avatar={makeAvatar(item.key, v)}
+                  name=""
+                  size={28}
+                  sx={{ '&:not(:first-of-type)': { ml: '-9px' } }}
+                />
+              ))}
+            </Box>
+            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: brand[600] }}>
+              {t('avatarPerk')}
+            </Typography>
+          </Box>
         )}
 
         {/* Price + action row */}

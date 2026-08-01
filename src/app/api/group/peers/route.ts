@@ -21,7 +21,13 @@ export async function GET(req: NextRequest) {
   const user = authCheck as AuthenticatedUser;
 
   const sb = getServiceSupabase();
-  const peers: { id: string; username: string; display_name: string | null; role: string }[] = [];
+  const peers: {
+    id: string;
+    username: string;
+    display_name: string | null;
+    avatar: string | null;
+    role: string;
+  }[] = [];
 
   if (user.account_type === 'member' && !user.organizer_id) {
     return NextResponse.json([], { status: 200 });
@@ -32,11 +38,15 @@ export async function GET(req: NextRequest) {
     const [membersResult, organizerResult] = await Promise.all([
       sb
         .from('profiles')
-        .select('id, username, display_name')
+        .select('id, username, display_name, avatar')
         .eq('organizer_id', user.organizer_id)
         .neq('id', user.id)
         .order('username'),
-      sb.from('profiles').select('id, username, display_name').eq('id', user.organizer_id).single(),
+      sb
+        .from('profiles')
+        .select('id, username, display_name, avatar')
+        .eq('id', user.organizer_id)
+        .single(),
     ]);
 
     if (membersResult.error) {
@@ -55,7 +65,7 @@ export async function GET(req: NextRequest) {
     // Organizers see all their members
     const { data, error } = await sb
       .from('profiles')
-      .select('id, username, display_name')
+      .select('id, username, display_name, avatar')
       .eq('organizer_id', user.id)
       .order('username');
 

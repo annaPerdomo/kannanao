@@ -3,14 +3,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cardXp } from '@/lib/flashcardUtils';
 
-import { useProgress, type UserProgress } from '../useProgress';
+import { type Achievement, useProgress, type UserProgress, XP_PERFECT_BONUS } from '../useProgress';
 
-// Regression tests for two session-tracking bugs:
+// Regression tests for three session-tracking bugs:
 // 1. `startSession` identity changing whenever progress state changed — mount
 //    effects in Study/Practice/Ohanashikai depend on it, so every recorded
 //    answer re-fired the effect and inserted a duplicate study_sessions row.
 // 2. Rapid consecutive `recordAnswer` calls both computing from the same stale
 //    progress snapshot, losing XP and card counts.
+// 3. The perfect-session XP bonus sitting inside the achievement-unlock guard,
+//    so it paid out once per account instead of once per perfect session.
 
 const { updates, sbMock, upsertCardProgressMock } = vi.hoisted(() => {
   const updates: Array<{ table: string; payload: Record<string, unknown> }> = [];
@@ -93,11 +95,13 @@ function seededProgress(): UserProgress {
   };
 }
 
-function renderProgress() {
+function renderProgress(achievements: Achievement[] = []) {
   return renderHook(() =>
-    useProgress({ progress: seededProgress(), achievements: [], recentSessions: [] }),
+    useProgress({ progress: seededProgress(), achievements, recentSessions: [] }),
   );
 }
+
+const PERFECT_RUN = { cardsStudied: 5, cardsCorrect: 5, durationSecs: 60 };
 
 describe('useProgress session tracking', () => {
   beforeEach(() => {
@@ -184,5 +188,32 @@ describe('useProgress session tracking', () => {
     expect(result.current.progress?.total_sessions).toBe(2);
     const sessionWrites = updates.filter((u) => u.table === 'user_progress');
     expect(sessionWrites.at(-1)?.payload.total_sessions).toBe(2);
+  });
+
+  it('awards the perfect-session bonus even when the achievement is already unlocked', async () => {
+    const { result } = renderProgress([
+      { id: 'a1', achievement_key: 'perfect_session', unlocked_at: '2026-01-01' },
+    ]);
+
+    await act(async () => {
+      await result.current.endSession('s1', PERFECT_RUN);
+    });
+
+    const write = updates.filter((u) => u.table === 'user_progress').at(-1);
+    expect(write?.payload.total_xp).toBe(100 + XP_PERFECT_BONUS);
+  });
+
+  it('does not award the perfect bonus for an imperfect session', async () => {
+    const { result } = renderProgress();
+
+    await act(async () => {
+      await result.current.endSession('s1', {
+        cardsStudied: 5,
+        cardsCorrect: 4,
+        durationSecs: 60,
+      });
+    });
+
+    expect(updates.filter((u) => u.table === 'user_progress')).toHaveLength(0);
   });
 });

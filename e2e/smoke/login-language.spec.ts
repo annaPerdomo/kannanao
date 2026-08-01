@@ -4,44 +4,42 @@ import en from '../../src/messages/en.json';
 import ja from '../../src/messages/ja.json';
 
 /**
- * NavBar language menu, exercised signed-out on /login — the page where the
- * Settings picker is unreachable, and credential-free so it runs everywhere.
+ * The login page's LocalePill, exercised signed-out — /login hides the NavBar
+ * (and its LanguageMenu), so the pill is the only language switch on the page
+ * where Settings is unreachable, and credential-free so it runs everywhere.
  */
-test.describe('NavBar language menu (anonymous)', () => {
+test.describe('Login locale pill (anonymous)', () => {
   test('is present on /login, where Settings is unreachable', async ({ page }) => {
     await page.goto('/login');
-    await expect(page.getByRole('button', { name: en.Common.language.ariaLabel })).toBeVisible({
+    await expect(page.getByRole('navigation', { name: en.Common.language.ariaLabel })).toBeVisible({
       timeout: 10000,
     });
   });
 
   test('offers each language in its own language', async ({ page }) => {
     await page.goto('/login');
-    await page.getByRole('button', { name: en.Common.language.ariaLabel }).click();
+    const pill = page.getByRole('navigation', { name: en.Common.language.ariaLabel });
 
     // Exact strings, not message keys — these labels are untranslatable by design.
-    await expect(page.getByRole('menuitem', { name: 'English' })).toBeVisible();
-    await expect(page.getByRole('menuitem', { name: '日本語' })).toBeVisible();
+    await expect(pill.getByRole('button', { name: 'English' })).toBeVisible({ timeout: 10000 });
+    await expect(pill.getByRole('button', { name: '日本語' })).toBeVisible();
   });
 
   test('switches the app to Japanese and back, persisting the cookie', async ({ page }) => {
     await page.goto('/login');
-    await page.getByRole('button', { name: en.Common.language.ariaLabel }).click();
-    await page.getByRole('menuitem', { name: '日本語' }).click();
+    const enPill = page.getByRole('navigation', { name: en.Common.language.ariaLabel });
+    await enPill.getByRole('button', { name: '日本語' }).click();
 
-    const jaTrigger = page.getByRole('button', { name: ja.Common.language.ariaLabel });
-    await expect(jaTrigger).toBeVisible({ timeout: 15000 });
+    const jaPill = page.getByRole('navigation', { name: ja.Common.language.ariaLabel });
+    await expect(jaPill).toBeVisible({ timeout: 15000 });
     await expect(page.locator('html')).toHaveAttribute('lang', 'ja', { timeout: 10000 });
     expect((await page.context().cookies()).find((c) => c.name === 'NEXT_LOCALE')?.value).toBe(
       'ja',
     );
 
     // And back out again, from the Japanese UI.
-    await jaTrigger.click();
-    await page.getByRole('menuitem', { name: 'English' }).click();
-    await expect(page.getByRole('button', { name: en.Common.language.ariaLabel })).toBeVisible({
-      timeout: 15000,
-    });
+    await jaPill.getByRole('button', { name: 'English' }).click();
+    await expect(enPill).toBeVisible({ timeout: 15000 });
     await expect(page.locator('html')).toHaveAttribute('lang', 'en', { timeout: 10000 });
     expect((await page.context().cookies()).find((c) => c.name === 'NEXT_LOCALE')?.value).toBe(
       'en',

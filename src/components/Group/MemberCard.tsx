@@ -6,6 +6,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
+import { UserAvatar } from '@/components/UserAvatar';
 import type { GroupMember } from '@/hooks/useGroup';
 import { xpProgressInLevel } from '@/hooks/useProgress';
 
@@ -63,16 +64,27 @@ export function MemberCard({ member, onClick }: MemberCardProps) {
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-        <Box
-          sx={{
-            width: 10,
-            height: 10,
-            borderRadius: '50%',
-            bgcolor: status,
-            flexShrink: 0,
-            boxShadow: `0 0 6px ${alpha(status, 0.5)}`,
-          }}
-        />
+        {/* Status dot rides the avatar's corner so the row reads as one identity */}
+        <Box sx={{ position: 'relative', flexShrink: 0 }}>
+          <UserAvatar
+            avatar={member.avatar}
+            name={member.displayName || member.username}
+            size={44}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: -1,
+              right: -1,
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              bgcolor: status,
+              border: `1.5px solid ${theme.palette.background.paper}`,
+              boxShadow: `0 0 6px ${alpha(status, 0.5)}`,
+            }}
+          />
+        </Box>
         <Box sx={{ minWidth: 0, flex: 1 }}>
           <Typography
             sx={{ fontWeight: 800, fontSize: '0.9rem', color: brand[800], lineHeight: 1.2 }}

@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
   // Get all group members + organizer
   let membersQuery = sb
     .from('profiles')
-    .select('id, username, display_name')
+    .select('id, username, display_name, avatar')
     .or(`id.eq.${organizerId},organizer_id.eq.${organizerId}`);
   if (groupId) membersQuery = membersQuery.or(`group_id.eq.${groupId},id.eq.${organizerId}`);
 
@@ -121,6 +121,7 @@ export async function GET(req: NextRequest) {
         id: m.id,
         username: m.username,
         displayName: m.display_name,
+        avatar: m.avatar,
         weeklyXp: weekly.xp,
         weeklyCards: weekly.cards,
         streakDays: prog?.streak_days ?? 0,

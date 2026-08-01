@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { renderWithProviders } from '@/test/renderWithProviders';
 import type { Flashcard } from '@/types/flashcard';
@@ -47,8 +47,19 @@ vi.mock('@/components/FuriganaText', () => ({
 }));
 
 vi.mock('@/components/SpeakButton', () => ({
-  SpeakButton: () => null,
+  SpeakButton: ({ onSpeak }: { onSpeak?: () => void }) => (
+    <button type="button" aria-label="read aloud" onClick={onSpeak} />
+  ),
 }));
+
+// The component preloads the answer image and only reveals it once loaded;
+// jsdom never fetches, so resolve the load synchronously.
+class LoadedImage {
+  onload: (() => void) | null = null;
+  set src(_url: string) {
+    this.onload?.();
+  }
+}
 
 import { RecallMode } from '@/components/Practice/RecallMode';
 
@@ -77,6 +88,27 @@ const CARDS: Flashcard[] = [
   makeCard('c3', 'fish'),
   makeCard('c4', 'bird'),
 ];
+
+// Every card carries an image and an example sentence, so the gating assertions
+// hold whichever card the queue happens to serve first.
+const RICH_CARDS: Flashcard[] = CARDS.map((c) => ({
+  ...c,
+  imageUrl: `https://images.test/${c.id}.jpg`,
+  example_jp: `example-${c.id}`,
+}));
+
+/** The choice tile for a given meaning, by its `Answer A: cat` accessible name. */
+function choiceFor(meaning: string) {
+  return screen.getByRole('button', { name: new RegExp(`: ${meaning}$`) });
+}
+
+/** The card the queue is currently showing, identified by its reading. */
+function currentCard(cards: Flashcard[]): Flashcard {
+  const body = document.body.textContent ?? '';
+  const card = cards.find((c) => body.includes(c.reading));
+  if (!card) throw new Error('no card rendered');
+  return card;
+}
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
@@ -121,12 +153,12 @@ describe('RecallMode', () => {
       });
     });
 
-    it('should render the "Guess It!" heading', async () => {
+    it('should render the question prompt', async () => {
       renderWithProviders(
         <RecallMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
       );
       await waitFor(() => {
-        expect(screen.getByText('Guess It!')).toBeInTheDocument();
+        expect(screen.getByText('WHAT DOES THIS MEAN?')).toBeInTheDocument();
       });
     });
 
@@ -220,6 +252,90 @@ describe('RecallMode', () => {
           );
         });
       }
+    });
+  });
+
+  describe('answer gating', () => {
+    beforeEach(() => {
+      vi.stubGlobal('Image', LoadedImage);
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('should hide the image and example sentence until an answer is picked', async () => {
+      renderWithProviders(
+        <RecallMode cards={RICH_CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
+      );
+      await waitFor(() => expect(screen.getByText('WHAT DOES THIS MEAN?')).toBeInTheDocument());
+
+      // Both would give the meaning away before the learner commits to a guess.
+      expect(screen.queryByRole('img')).not.toBeInTheDocument();
+      expect(screen.queryByText(/^example-/)).not.toBeInTheDocument();
+    });
+
+    it('should reveal the image and example sentence after answering', async () => {
+      renderWithProviders(
+        <RecallMode cards={RICH_CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
+      );
+      await waitFor(() => expect(screen.getByText('WHAT DOES THIS MEAN?')).toBeInTheDocument());
+
+      const card = currentCard(RICH_CARDS);
+      fireEvent.click(choiceFor(card.meaning));
+
+      await waitFor(() => expect(screen.getByText(`example-${card.id}`)).toBeInTheDocument());
+      expect(screen.getByRole('img')).toHaveAttribute('src', card.imageUrl);
+    });
+
+    it('should leave the image out when it has not finished loading', async () => {
+      // No load event ever fires — the card must not open a blank image slot it
+      // would auto-advance past before anything painted.
+      vi.stubGlobal(
+        'Image',
+        class {
+          onload: (() => void) | null = null;
+        },
+      );
+      renderWithProviders(
+        <RecallMode cards={RICH_CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
+      );
+      await waitFor(() => expect(screen.getByText('WHAT DOES THIS MEAN?')).toBeInTheDocument());
+
+      const card = currentCard(RICH_CARDS);
+      fireEvent.click(choiceFor(card.meaning));
+
+      await waitFor(() => expect(screen.getByText(`example-${card.id}`)).toBeInTheDocument());
+      expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('auto-advance', () => {
+    beforeEach(() => {
+      vi.stubGlobal('Image', LoadedImage);
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('should hold the card open when the learner replays the audio', async () => {
+      renderWithProviders(
+        <RecallMode cards={RICH_CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
+      );
+      await waitFor(() => expect(screen.getByText('WHAT DOES THIS MEAN?')).toBeInTheDocument());
+
+      const card = currentCard(RICH_CARDS);
+      fireEvent.click(choiceFor(card.meaning));
+      await waitFor(() => expect(screen.getByText('✓ Correct — moving on…')).toBeInTheDocument());
+
+      // Replaying the example must swap the countdown for a manual Next, or the
+      // card advances mid-utterance and the audio runs over the next prompt.
+      const speakers = screen.getAllByLabelText('read aloud');
+      fireEvent.click(speakers[speakers.length - 1]);
+
+      expect(screen.queryByText('✓ Correct — moving on…')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Next|See Results/ })).toBeInTheDocument();
     });
   });
 

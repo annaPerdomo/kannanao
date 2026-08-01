@@ -47,7 +47,7 @@ export function LanguageMenu() {
         disabled={saving}
         sx={{ color: brand[500] }}
       >
-        <TranslateIcon sx={{ fontSize: '1.1rem' }} />
+        <TranslateIcon sx={{ fontSize: { xs: '1.1rem', md: '1.3rem' } }} />
       </IconButton>
 
       <Menu

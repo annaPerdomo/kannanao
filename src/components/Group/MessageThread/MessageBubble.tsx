@@ -1,5 +1,4 @@
 import AddReactionOutlinedIcon from '@mui/icons-material/AddReactionOutlined';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
@@ -9,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { EmojiPickerPopover } from '@/components/EmojiPickerPopover';
+import { UserAvatar } from '@/components/UserAvatar';
 import type { DirectMessage } from '@/hooks/useDirectMessages';
 import { parseSticker, stickerSrc } from '@/lib/stickers';
 
@@ -20,6 +20,8 @@ interface MessageBubbleProps {
   message: DirectMessage;
   isMine: boolean;
   initial: string;
+  /** Buddy-face avatar of whoever sent this bubble, or null for the initial. */
+  avatar?: string | null;
   index: number;
   /** Changed periodically by useTick to force timestamp refresh */
   tick?: number;
@@ -33,6 +35,7 @@ export function MessageBubble({
   message,
   isMine,
   initial,
+  avatar,
   index,
   tick: _tick,
   userId,
@@ -77,20 +80,7 @@ export function MessageBubble({
     >
       {/* Avatar on left for received messages */}
       {!isMine && (
-        <Avatar
-          sx={{
-            width: 26,
-            height: 26,
-            fontSize: '0.7rem',
-            fontWeight: 700,
-            bgcolor: alpha(brand[400], 0.25),
-            color: brand[700],
-            mb: 0.3,
-            flexShrink: 0,
-          }}
-        >
-          {initial}
-        </Avatar>
+        <UserAvatar avatar={avatar} name="" fallback={initial} size={34} sx={{ mb: 0.3 }} />
       )}
 
       <Box sx={{ maxWidth: '75%', position: 'relative' }}>
@@ -250,20 +240,13 @@ export function MessageBubble({
 
       {/* Avatar on right for sent messages */}
       {isMine && (
-        <Avatar
-          sx={{
-            width: 26,
-            height: 26,
-            fontSize: '0.7rem',
-            fontWeight: 700,
-            bgcolor: alpha(brand[600], 0.2),
-            color: brand[700],
-            mb: 0.3,
-            flexShrink: 0,
-          }}
-        >
-          {t('meLabel')}
-        </Avatar>
+        <UserAvatar
+          avatar={avatar}
+          name=""
+          fallback={t('meLabel')}
+          size={34}
+          sx={{ mb: 0.3, ...(avatar ? {} : { bgcolor: alpha(brand[600], 0.2) }) }}
+        />
       )}
 
       {/* Emoji picker popover */}

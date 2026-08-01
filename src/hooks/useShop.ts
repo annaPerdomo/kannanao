@@ -5,9 +5,9 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import type { InitialShop } from '@/lib/dbMappers';
+import { logger } from '@/lib/logger';
 import { sb } from '@/lib/supabase';
 import type {
-  BuddyConfig,
   CardBorderStyle,
   CelebTheme,
   ShopItem,
@@ -109,6 +109,24 @@ export const SHOP_ITEMS: ShopItem[] = [
     preview: '#FB7185',
     emoji: '🌹',
   },
+  {
+    key: 'theme_cottagecore',
+    name: 'Cottagecore',
+    description: 'Cozy honey & sage countryside warmth',
+    category: 'theme',
+    price: 20000,
+    preview: '#D2A97B',
+    emoji: '🧸',
+  },
+  {
+    key: 'theme_galaxy',
+    name: 'Galaxy',
+    description: 'Cosmic indigo & fuchsia stardust',
+    category: 'theme',
+    price: 30000,
+    preview: '#818CF8',
+    emoji: '🪐',
+  },
 
   // ── Card borders ──
   {
@@ -192,6 +210,42 @@ export const SHOP_ITEMS: ShopItem[] = [
     preview: 'linear-gradient(135deg, #8B0000, #FF4500, #FFD700)',
     emoji: '🐉',
   },
+  {
+    key: 'border_crystal',
+    name: 'Crystal Ice',
+    description: 'Shimmering frozen crystal edges',
+    category: 'card_border',
+    price: 14000,
+    preview: 'linear-gradient(135deg, #E0F7FA, #80DEEA, #B2EBF2)',
+    emoji: '💎',
+  },
+  {
+    key: 'border_floral',
+    name: 'Floral Garden',
+    description: 'A blooming frame of petals and leaves',
+    category: 'card_border',
+    price: 16000,
+    preview: 'linear-gradient(135deg, #F8BBD0, #CE93D8, #F48FB1)',
+    emoji: '🌺',
+  },
+  {
+    key: 'border_kintsugi',
+    name: 'Kintsugi Gold',
+    description: 'Dark lacquer mended with rivers of gold',
+    category: 'card_border',
+    price: 20000,
+    preview: 'linear-gradient(120deg, #2B2B2B, #D4AF37, #2B2B2B, #F5D061)',
+    emoji: '🏺',
+  },
+  {
+    key: 'border_koi',
+    name: 'Koi Pond',
+    description: 'Swirling koi orange, white & ink black',
+    category: 'card_border',
+    price: 24000,
+    preview: 'linear-gradient(135deg, #FF7043, #FFFFFF, #FF7043, #263238)',
+    emoji: '🎏',
+  },
 
   // ── Celebrations ──
   {
@@ -211,12 +265,28 @@ export const SHOP_ITEMS: ShopItem[] = [
     emoji: '⭐',
   },
   {
+    key: 'celeb_bubble_pop',
+    name: 'Bubble Pop',
+    description: 'Float away on a stream of rainbow bubbles',
+    category: 'celebration',
+    price: 8000,
+    emoji: '🫧',
+  },
+  {
     key: 'celeb_bunnies',
     name: 'Bunny Parade',
     description: 'Adorable bunnies hop across your screen',
     category: 'celebration',
     price: 12000,
     emoji: '🐰',
+  },
+  {
+    key: 'celeb_sakura_storm',
+    name: 'Sakura Storm',
+    description: 'A whirlwind of cherry blossom petals',
+    category: 'celebration',
+    price: 18000,
+    emoji: '🌸',
   },
   {
     key: 'celeb_rainbow',
@@ -227,12 +297,28 @@ export const SHOP_ITEMS: ShopItem[] = [
     emoji: '🌈',
   },
   {
+    key: 'celeb_neko_parade',
+    name: 'Neko Parade',
+    description: 'A march of happy cats and paw prints',
+    category: 'celebration',
+    price: 30000,
+    emoji: '🐱',
+  },
+  {
     key: 'celeb_sparkle_pink',
     name: 'Sparkle Pink',
     description: 'Dreamy pink sparkles and glitter cascade',
     category: 'celebration',
     price: 40000,
     emoji: '✨',
+  },
+  {
+    key: 'celeb_bento_party',
+    name: 'Bento Party',
+    description: 'It rains onigiri, ramen & dango — itadakimasu!',
+    category: 'celebration',
+    price: 50000,
+    emoji: '🍙',
   },
   {
     key: 'celeb_galaxy',
@@ -242,88 +328,134 @@ export const SHOP_ITEMS: ShopItem[] = [
     price: 60000,
     emoji: '🌌',
   },
+  {
+    key: 'celeb_hanabi',
+    name: 'Hanabi Festival',
+    description: 'A grand summer fireworks finale in every color',
+    category: 'celebration',
+    price: 75000,
+    emoji: '🎆',
+  },
 
-  // ── Study Buddies ──
+  // ── Study Buddies ── artwork and accents in src/lib/buddies.ts
+  {
+    key: 'buddy_tango',
+    name: 'Tango',
+    description: 'Your very first study buddy — cheering for you since day one!',
+    category: 'study_buddy',
+    price: 0,
+    emoji: '🦊',
+  },
   {
     key: 'buddy_bunny',
-    name: 'Bunny',
-    description: 'An adorable bunny hopping with encouragement',
+    name: 'Tsuki',
+    description:
+      'A marshmallow-soft rabbit who does a happy hop for every word you learn — named for tsuki, the moon she came from',
     category: 'study_buddy',
     price: 10000,
     emoji: '🐰',
   },
   {
     key: 'buddy_penguin',
-    name: 'Penguin',
-    description: 'A cool penguin who loves learning!',
+    name: 'Shiro',
+    description:
+      'A little penguin who slid all the way from the icy north to study with you — Shiro means white, like his belly',
     category: 'study_buddy',
-    price: 20000,
+    price: 18000,
     emoji: '🐧',
   },
   {
-    key: 'buddy_panda',
-    name: 'Panda',
-    description: 'A gentle panda with wise study vibes',
+    key: 'buddy_pink_cat',
+    name: 'Tama',
+    description:
+      "A calico who naps on your notebook but always wakes up for study time — every storybook cat in Japan is a Tama ('gem')",
     category: 'study_buddy',
-    price: 40000,
+    price: 20000,
+    emoji: '🐈',
+  },
+  {
+    key: 'buddy_panda',
+    name: 'Goro',
+    description:
+      'A gentle panda who munches bamboo while you think — no rush, he is named for goro-goro, the sound of rolling about',
+    category: 'study_buddy',
+    price: 21000,
     emoji: '🐼',
   },
   {
-    key: 'buddy_fox',
-    name: 'Fox',
-    description: 'A clever fox that keeps you sharp!',
+    key: 'buddy_otter',
+    name: 'Rakko',
+    description: 'A floaty otter who never lets go of a favorite book — or of you',
     category: 'study_buddy',
-    price: 65000,
+    price: 25000,
+    emoji: '🦦',
+  },
+  {
+    key: 'buddy_kappa',
+    name: 'Sara',
+    description:
+      'A shy kappa who trades cucumbers for correct answers — named for the sara, the little water plate on their head',
+    category: 'study_buddy',
+    price: 29000,
+    emoji: '🥒',
+  },
+  {
+    key: 'buddy_tanuki',
+    name: 'Ponta',
+    description: 'A playful tanuki who believed in you before you even answered',
+    category: 'study_buddy',
+    price: 34000,
+    emoji: '🦝',
+  },
+  {
+    key: 'buddy_red_panda',
+    name: 'Momiji',
+    description:
+      'A fluffy red panda who takes notes on every word you learn — momiji means autumn maple leaves, the color of her coat',
+    category: 'study_buddy',
+    price: 37000,
+    emoji: '🍁',
+  },
+  {
+    key: 'buddy_fox',
+    name: 'Inari',
+    description:
+      'A clever fox who answers every question with a proud "kon kon!" — named for the Inari shrines that foxes guard',
+    category: 'study_buddy',
+    price: 40000,
     emoji: '🦊',
   },
   {
-    key: 'buddy_pink_cat',
-    name: 'Pink Cat',
-    description: 'A cheerful pink kitty that cheers you on!',
+    key: 'buddy_lucky_cat',
+    name: 'Suzu',
+    description:
+      'A lucky cat who waves good fortune onto every quiz you take — named for the suzu, the little bell on her collar',
     category: 'study_buddy',
-    price: 100000,
+    price: 46000,
     emoji: '🐱',
   },
 
   // ── Coming Soon ──
   {
-    key: 'theme_cottagecore',
-    name: 'Cottagecore',
-    description: 'Cozy countryside warmth — coming soon!',
-    category: 'theme',
+    key: 'buddy_axolotl',
+    name: 'Momo',
+    description:
+      'A peach-pink axolotl who smiles through every study session — momo means peach. Coming soon!',
+    category: 'study_buddy',
     price: 0,
-    preview: '#D2B48C',
-    emoji: '🧸',
+    emoji: '🦎',
+    image: '/buddies/shop/axolotl.webp',
     comingSoon: true,
   },
   {
-    key: 'theme_galaxy',
-    name: 'Galaxy',
-    description: 'Deep space sparkles — coming soon!',
-    category: 'theme',
+    key: 'buddy_guinea_pig',
+    name: 'Moru',
+    description:
+      'A squeaky guinea pig who cheers with a happy "pui pui!" — in Japan he is a morumotto, a \'marmot\'. Coming soon!',
+    category: 'study_buddy',
     price: 0,
-    preview: '#6B21A8',
-    emoji: '🪐',
-    comingSoon: true,
-  },
-  {
-    key: 'border_crystal',
-    name: 'Crystal Ice',
-    description: 'Shimmering frozen crystal edges — coming soon!',
-    category: 'card_border',
-    price: 0,
-    preview: 'linear-gradient(135deg, #E0F7FA, #80DEEA, #B2EBF2)',
-    emoji: '💎',
-    comingSoon: true,
-  },
-  {
-    key: 'border_floral',
-    name: 'Floral Garden',
-    description: 'Blooming flower frame — coming soon!',
-    category: 'card_border',
-    price: 0,
-    preview: 'linear-gradient(135deg, #F8BBD0, #CE93D8, #F48FB1)',
-    emoji: '🌺',
+    emoji: '🐹',
+    image: '/buddies/shop/guineapig.webp',
     comingSoon: true,
   },
 ];
@@ -368,6 +500,29 @@ export const CARD_BORDER_STYLES: Record<string, CardBorderStyle> = {
     boxShadow:
       '0 0 12px rgba(255, 69, 0, 0.35), 0 0 24px rgba(139, 0, 0, 0.20), 0 0 4px rgba(255, 215, 0, 0.3)',
   },
+  border_crystal: {
+    border: '2.5px solid #80DEEA',
+    boxShadow:
+      '0 0 14px rgba(128, 222, 234, 0.45), 0 0 28px rgba(178, 235, 242, 0.25), inset 0 0 8px rgba(224, 247, 250, 0.35)',
+  },
+  border_floral: {
+    border: '3px solid transparent',
+    background:
+      'linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #F8BBD0, #CE93D8, #F48FB1, #A5D6A7, #F8BBD0) border-box',
+    boxShadow: '0 0 12px rgba(244, 143, 177, 0.30)',
+  },
+  border_kintsugi: {
+    border: '2.5px solid transparent',
+    background:
+      'linear-gradient(#fff, #fff) padding-box, linear-gradient(120deg, #2B2B2B 0%, #D4AF37 18%, #2B2B2B 34%, #2B2B2B 52%, #F5D061 66%, #2B2B2B 80%, #D4AF37 100%) border-box',
+    boxShadow: '0 0 10px rgba(212, 175, 55, 0.35), inset 0 0 4px rgba(212, 175, 55, 0.12)',
+  },
+  border_koi: {
+    border: '2.5px solid transparent',
+    background:
+      'linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #FF7043 0%, #FFF3E0 25%, #FF7043 50%, #263238 78%, #FF7043 100%) border-box',
+    boxShadow: '0 0 12px rgba(255, 112, 67, 0.30)',
+  },
 };
 
 /** Map celebration item key → CelebTheme config (colors + emoji set) */
@@ -396,183 +551,30 @@ export const CELEBRATION_THEMES: Record<string, CelebTheme> = {
     colors: ['#6B21A8', '#4338CA', '#0EA5E9', '#818CF8', '#C084FC'],
     emojis: ['🌌', '🪐', '⭐', '🚀', '💫'],
   },
-};
-
-/**
- * Map buddy item key → config with emoji and reaction text.
- *
- * The `reactions` arrays are also translated under the `Shop.buddies.<key>`
- * namespace in messages/en.json — HomeBuddy.tsx (the one global buddy) reads
- * them via `useTranslations('Shop.buddies')` + `t.raw(...)`. The English
- * literals here are kept as a non-UI fallback because BuddyPreviewModal.tsx
- * and BuddyCardPreview.tsx still read `config.reactions` directly and have
- * not been converted to i18n yet.
- */
-export const BUDDY_CONFIG: Record<string, BuddyConfig> = {
-  buddy_pink_cat: {
-    emoji: '🐱',
-    reactions: {
-      correct: [
-        'Nyaa~ Perfect!',
-        'Purr-fect answer!',
-        'Meow yeah!',
-        "You're paw-some!",
-        'Nyan~ So smart!',
-        'Kitty is proud! ✨',
-        'Sugoi nya~!',
-        "That's right, nya!",
-      ],
-      wrong: [
-        'Mew… try again!',
-        "Don't give up, nya~",
-        'Almost there, meow!',
-        'One more try, nya!',
-        'Kitty believes in you!',
-        'Hmm, not quite nya~',
-      ],
-      idle: [
-        '♪ zzZ~',
-        '~purrs softly~',
-        '~chases yarn~',
-        "Nya~ let's study!",
-        '~stretches~',
-        '~grooms paws~',
-        '♪ la la nya~',
-        '~bats at butterfly~',
-      ],
-    },
+  celeb_bubble_pop: {
+    colors: [
+      'rgba(125, 211, 252, 0.55)',
+      'rgba(165, 180, 252, 0.55)',
+      'rgba(249, 168, 212, 0.55)',
+      'rgba(153, 246, 228, 0.6)',
+    ],
+    emojis: ['🫧', '💧', '✨', '🐬', '🌊'],
   },
-  buddy_bunny: {
-    emoji: '🐰',
-    reactions: {
-      correct: [
-        'Hop hop hooray!',
-        'Bunny bounce! 🎉',
-        "That's amazing!",
-        'Ear-resistible answer!',
-        'You did it!',
-        'So proud of you!',
-        'Sugoi! Sugoi!',
-        'Happy hops!',
-      ],
-      wrong: [
-        'Oops, one more time!',
-        'Try again, friend!',
-        "Don't worry, hop to it!",
-        'Almost! Keep going!',
-        "You'll get it next hop!",
-        'Bunny believes in you!',
-      ],
-      idle: [
-        '~munches carrot~',
-        '~wiggles nose~',
-        '~does a little hop~',
-        "Let's learn together!",
-        '~flops over~',
-        '~thumps foot~',
-        '~sniff sniff~',
-        '~hides in flowers~',
-      ],
-    },
+  celeb_sakura_storm: {
+    colors: ['#F9A8D4', '#FBCFE8', '#F472B6', '#FDA4AF', '#FCE7F3'],
+    emojis: ['🌸', '💮', '🌺', '🍃', '✨'],
   },
-  buddy_penguin: {
-    emoji: '🐧',
-    reactions: {
-      correct: [
-        'Cool! Nailed it!',
-        'Ice-credible!',
-        'Waddle yeah!',
-        'Penguin approved! 🧊',
-        "You're on fire… wait, I melt!",
-        'Spectacular!',
-        'Chill answer! 🎉',
-        'Flipper high-five!',
-      ],
-      wrong: [
-        'Brrr, not quite…',
-        'Slide into another try!',
-        'Keep waddling forward!',
-        'Almost! Try once more!',
-        "Don't slip up now!",
-        'You got this, friend!',
-      ],
-      idle: [
-        '~waddles~',
-        '~slides on tummy~',
-        '~looks at fish~',
-        'Brr, study time!',
-        '~flaps flippers~',
-        '~huddles for warmth~',
-        '~catches snowflake~',
-        '~does penguin dance~',
-      ],
-    },
+  celeb_neko_parade: {
+    colors: ['#FDBA74', '#FCD34D', '#F9A8D4', '#A78BFA'],
+    emojis: ['🐱', '😺', '😸', '🐾', '✨'],
   },
-  buddy_panda: {
-    emoji: '🐼',
-    reactions: {
-      correct: [
-        'Bamboo-tiful!',
-        'Panda-stic work!',
-        'You rock! 🎋',
-        "That's the way!",
-        'So wise! Like bamboo~',
-        'Amazing answer!',
-        'Panda proud moment!',
-        'Subarashii!',
-      ],
-      wrong: [
-        'Hmm, keep going!',
-        'Roll with it, try again!',
-        "Don't give up!",
-        'Almost there!',
-        'Panda patience~',
-        'Take your time!',
-      ],
-      idle: [
-        '~noms bamboo~',
-        '~rolls around~',
-        '~takes a nap~',
-        'Mmm, study break?',
-        '~stretches lazily~',
-        '~climbs tree~',
-        '~sits and thinks~',
-        '~munches thoughtfully~',
-      ],
-    },
+  celeb_bento_party: {
+    colors: ['#FB923C', '#F87171', '#FCD34D', '#4ADE80'],
+    emojis: ['🍙', '🍱', '🍜', '🍡', '🍣', '🥟'],
   },
-  buddy_fox: {
-    emoji: '🦊',
-    reactions: {
-      correct: [
-        'Clever answer!',
-        'Fox-tastic!',
-        'Sharp as always!',
-        'Brilliant mind! 🌟',
-        'What does the fox say? YAY!',
-        'Smarty-paws!',
-        'Quick thinking!',
-        'Sly and smart!',
-      ],
-      wrong: [
-        'Almost, think again!',
-        'Fox tip: try once more!',
-        'So close! Be cunning!',
-        "Don't worry, be foxy!",
-        "Tricky, but you've got this!",
-        'A clever fox never gives up!',
-      ],
-      idle: [
-        '~curls up~',
-        '~sniffs the air~',
-        '~chases leaves~',
-        'What shall we learn?',
-        '~flicks tail~',
-        '~yawns softly~',
-        '~perks ears up~',
-        '~does a little trot~',
-      ],
-    },
+  celeb_hanabi: {
+    colors: ['#FF0080', '#00FFFF', '#FFD700', '#FF6600', '#CC00FF'],
+    emojis: ['🎆', '🎇', '✨', '🏮', '💫'],
   },
 };
 
@@ -588,10 +590,22 @@ export const THEME_KEY_TO_SCHEME: Record<string, string> = {
   theme_midnight: 'midnight',
   theme_matcha: 'matcha',
   theme_rosegold: 'rosegold',
+  theme_cottagecore: 'cottagecore',
+  theme_galaxy: 'galaxy',
 };
 
 // Free items that every user owns by default
 const FREE_ITEM_KEYS = SHOP_ITEMS.filter((i) => i.price === 0 && !i.comingSoon).map((i) => i.key);
+
+/**
+ * True only when `purchase_item` itself is absent — PostgREST reports that as
+ * PGRST202, and some proxies drop the code and keep only the message. Every
+ * other error class must stay fatal, since a committed-but-unacknowledged
+ * transaction is indistinguishable from a failed one at this layer.
+ */
+function isRpcMissing(err: { code?: string; message?: string }): boolean {
+  return err.code === 'PGRST202' || /could not find the function/i.test(err.message ?? '');
+}
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
@@ -608,10 +622,12 @@ export function useShop(initialShop?: InitialShop | null) {
   // Use the already-resolved user from AuthContext rather than auth.getUser(),
   // which makes an extra auth-server round-trip on the home critical path. RLS
   // still scopes these reads server-side.
+  // Returns false when either read failed, so callers using a refetch as their
+  // rollback can tell "the server says this" from "we never heard back".
   const fetchShopData = useCallback(async () => {
     if (!user) {
       setLoading(false);
-      return;
+      return false;
     }
 
     const [{ data: purchaseRows }, { data: equippedRows }] = await Promise.all([
@@ -628,6 +644,7 @@ export function useShop(initialShop?: InitialShop | null) {
       setEquipped(map);
     }
     setLoading(false);
+    return Boolean(purchaseRows && equippedRows);
   }, [supabase, user]);
 
   useEffect(() => {
@@ -646,7 +663,69 @@ export function useShop(initialShop?: InitialShop | null) {
     [isAdmin, purchases],
   );
 
-  /** Purchase an item — deducts XP via total_xp_spent, inserts purchase, auto-equips */
+  /**
+   * Legacy purchase path for environments where the `purchase_item` RPC has
+   * not been deployed yet: three separate writes, with a best-effort refund of
+   * the deducted XP if a later step fails.
+   *
+   * Only reachable via {@link isRpcMissing} — see the call site.
+   */
+  const purchaseItemLegacy = useCallback(
+    async (userId: string, itemKey: string, price: number, slot: string): Promise<void> => {
+      // 1. Deduct XP — increment total_xp_spent (read-modify-write)
+      const { data: prog } = await supabase
+        .from('user_progress')
+        .select('total_xp_spent')
+        .eq('user_id', userId)
+        .single();
+      const currentSpent = prog?.total_xp_spent ?? 0;
+      const { error: updateErr } = await supabase
+        .from('user_progress')
+        .update({ total_xp_spent: currentSpent + price })
+        .eq('user_id', userId);
+      if (updateErr) throw updateErr;
+
+      try {
+        // 2. Insert purchase
+        const { error: purchaseErr } = await supabase
+          .from('user_purchases')
+          .insert({ user_id: userId, item_key: itemKey });
+        if (purchaseErr) throw purchaseErr;
+
+        // 3. Auto-equip
+        const { error: equipErr } = await supabase
+          .from('user_equipped')
+          .upsert({ user_id: userId, slot, item_key: itemKey }, { onConflict: 'user_id,slot' });
+        if (equipErr) throw equipErr;
+      } catch (err) {
+        // Undo both possible writes. The refund alone isn't enough: if step 3
+        // failed, step 2's row is still there, and an owned item with a restored
+        // balance is a free item on the next load.
+        const { error: refundErr } = await supabase
+          .from('user_progress')
+          .update({ total_xp_spent: currentSpent })
+          .eq('user_id', userId);
+        const { error: undoPurchaseErr } = await supabase
+          .from('user_purchases')
+          .delete()
+          .eq('user_id', userId)
+          .eq('item_key', itemKey);
+        if (refundErr || undoPurchaseErr) {
+          // Nothing left to try client-side, but a half-undone purchase needs to
+          // be findable — this is the state that charges a learner for nothing.
+          logger.error('legacy purchase rollback incomplete', {
+            itemKey,
+            refund: refundErr?.message,
+            undoPurchase: undoPurchaseErr?.message,
+          });
+        }
+        throw err;
+      }
+    },
+    [supabase],
+  );
+
+  /** Purchase an item — atomic RPC (deduct XP + record purchase + equip). */
   const purchaseItem = useCallback(
     async (itemKey: string, spendableXp: number): Promise<{ error: string | null }> => {
       const item = SHOP_ITEMS.find((i) => i.key === itemKey);
@@ -670,56 +749,64 @@ export function useShop(initialShop?: InitialShop | null) {
       setPurchases((prev) => [...prev, newPurchase]);
       setEquipped((prev) => ({ ...prev, [item.category]: itemKey }));
 
+      // Set when the server may hold state we don't, so the catch below reads it
+      // back instead of restoring the local view that just proved wrong.
+      let resyncFromServer = false;
+
       try {
-        // 1. Deduct XP — increment total_xp_spent
-        const { error: xpErr } = await supabase.rpc('increment_xp_spent', {
-          p_user_id: user.id,
-          p_amount: item.price,
+        const { data: result, error: rpcErr } = await supabase.rpc('purchase_item', {
+          p_item_key: itemKey,
+          p_price: item.price,
+          p_slot: item.category,
         });
-        // If the RPC doesn't exist, fall back to a manual update
-        if (xpErr) {
-          const { data: prog } = await supabase
-            .from('user_progress')
-            .select('total_xp_spent')
-            .eq('user_id', user.id)
-            .single();
-          const currentSpent = prog?.total_xp_spent ?? 0;
-          const { error: updateErr } = await supabase
-            .from('user_progress')
-            .update({ total_xp_spent: currentSpent + item.price })
-            .eq('user_id', user.id);
-          if (updateErr) throw updateErr;
+
+        if (rpcErr) {
+          // Anything but a missing function (network, RLS, timeout) may have
+          // committed already — replaying it through the legacy path double-charges.
+          if (!isRpcMissing(rpcErr)) {
+            resyncFromServer = true;
+            logger.error('purchase_item RPC failed', {
+              itemKey,
+              code: rpcErr.code,
+              message: rpcErr.message,
+            });
+            throw new Error(t('purchaseFailed'));
+          }
+          logger.warn('purchase_item RPC unavailable, using legacy purchase path', { itemKey });
+          await purchaseItemLegacy(user.id, itemKey, item.price, item.category);
+        } else if (result !== 'ok') {
+          resyncFromServer = true;
+          const msg =
+            result === 'already_owned'
+              ? t('alreadyOwned')
+              : result === 'insufficient_xp'
+                ? t('notEnoughXp')
+                : result === 'not_authenticated'
+                  ? t('notAuthenticated')
+                  : t('purchaseFailed');
+          throw new Error(msg);
         }
-
-        // 2. Insert purchase
-        const { error: purchaseErr } = await supabase
-          .from('user_purchases')
-          .insert({ user_id: user.id, item_key: itemKey });
-        if (purchaseErr) throw purchaseErr;
-
-        // 3. Auto-equip
-        const { error: equipErr } = await supabase
-          .from('user_equipped')
-          .upsert(
-            { user_id: user.id, slot: item.category, item_key: itemKey },
-            { onConflict: 'user_id,slot' },
-          );
-        if (equipErr) throw equipErr;
 
         // Refresh to get real IDs
         await fetchShopData();
         setError(null);
         return { error: null };
       } catch (err) {
-        // Rollback
-        setPurchases(prevPurchases);
-        setEquipped(prevEquipped);
+        // 'already_owned' / 'insufficient_xp' only fire when our local view was
+        // already wrong — rolling back to it leaves a Buy button that can never
+        // succeed. Resync instead, falling back to the local restore if the
+        // server never answered.
+        const resynced = resyncFromServer && (await fetchShopData());
+        if (!resynced) {
+          setPurchases(prevPurchases);
+          setEquipped(prevEquipped);
+        }
         const msg = err instanceof Error ? err.message : t('purchaseFailed');
         setError(msg);
         return { error: msg };
       }
     },
-    [purchases, equipped, ownsItem, supabase, fetchShopData, t],
+    [purchases, equipped, ownsItem, supabase, fetchShopData, purchaseItemLegacy, t],
   );
 
   /** Equip an owned item in its category slot */

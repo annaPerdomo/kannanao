@@ -4,11 +4,15 @@ import Box from '@mui/material/Box';
 import { alpha, keyframes, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
 import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
-import { BUDDY_CONFIG } from '@/hooks/useShop';
+import { BUDDY_ART, buddyFaceSrc, FALLBACK_REACTIONS, randomFaceVariant } from '@/lib/buddies';
+
+// SSR renders face 1 and the effect swaps in the random one before paint, so
+// the randomness never reaches hydration.
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 const idleFloat = keyframes`
   0%, 100% { transform: translateY(0) rotate(-2deg); }
@@ -62,14 +66,6 @@ const pulseGlow = keyframes`
   50% { box-shadow: 0 6px 28px rgba(0,0,0,0.12), 0 0 20px rgba(244,114,182,0.15); }
 `;
 
-const BUDDY_ACCENTS: Record<string, string> = {
-  buddy_pink_cat: '#F472B6',
-  buddy_bunny: '#FDA4AF',
-  buddy_penguin: '#7DD3FC',
-  buddy_panda: '#86EFAC',
-  buddy_fox: '#FCD34D',
-};
-
 function pickRandom(items: string | string[]): string {
   if (typeof items === 'string') return items;
   return items[Math.floor(Math.random() * items.length)];
@@ -95,8 +91,12 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
   const { reactionEvent } = useBuddyReaction();
-  const config = BUDDY_CONFIG[buddyKey];
-  const accent = BUDDY_ACCENTS[buddyKey] ?? brand[300];
+  const accent = BUDDY_ART[buddyKey]?.accent ?? brand[300];
+
+  const [faceVariant, setFaceVariant] = useState(1);
+  useIsomorphicLayoutEffect(() => {
+    setFaceVariant(randomFaceVariant());
+  }, [buddyKey]);
   const phrases = useMemo(() => {
     try {
       const raw = tBuddies.raw(`${buddyKey}.homePhrases`);
@@ -135,9 +135,9 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   // active. Keyed on reactionEvent.key (not just .reaction) so firing the
   // same reaction twice in a row still re-triggers the bubble/animation.
   useEffect(() => {
-    if (!reactionEvent || !config) return;
+    if (!reactionEvent) return;
 
-    let lines: string | string[] = config.reactions[reactionEvent.reaction];
+    let lines: string | string[] = FALLBACK_REACTIONS[reactionEvent.reaction];
     try {
       const raw = tBuddies.raw(`${buddyKey}.${reactionEvent.reaction}`);
       if (isNonEmptyStringArray(raw)) lines = raw;
@@ -198,8 +198,6 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     },
     [phrases],
   );
-
-  if (!config) return null;
 
   const positionStyle = pos
     ? { left: pos.x, top: pos.y, bottom: 'auto', right: 'auto' }
@@ -350,13 +348,22 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
             alignItems: 'center',
             justifyContent: 'center',
             animation: emojiAnimation,
-            fontSize: { xs: '2rem', sm: '2.3rem' },
-            lineHeight: 1,
             boxShadow: `0 6px 20px ${alpha(accent, 0.2)}`,
             transition: 'box-shadow 0.2s',
           }}
         >
-          {config.emoji}
+          <Box
+            component="img"
+            src={buddyFaceSrc(buddyKey, faceVariant)}
+            alt=""
+            draggable={false}
+            sx={{
+              width: { xs: 46, sm: 52 },
+              height: { xs: 46, sm: 52 },
+              objectFit: 'contain',
+              pointerEvents: 'none',
+            }}
+          />
         </Box>
 
         <Box

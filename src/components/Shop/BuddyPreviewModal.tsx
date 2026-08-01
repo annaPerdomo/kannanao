@@ -4,31 +4,23 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import { alpha, keyframes, useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
-import { BUDDY_CONFIG } from '@/hooks/useShop';
+import { UserAvatar } from '@/components/UserAvatar';
+import {
+  BUDDY_ART,
+  BUDDY_FACE_COUNT,
+  buddyShopSrc,
+  FALLBACK_REACTIONS,
+  makeAvatar,
+} from '@/lib/buddies';
 import type { ShopItem } from '@/types/shop';
 
-const float = keyframes`
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-`;
-
-const bounce = keyframes`
-  0%, 100% { transform: translateY(0) scale(1); }
-  40% { transform: translateY(-16px) scale(1.1); }
-  60% { transform: translateY(-8px) scale(1.05); }
-`;
-
-const bubbleIn = keyframes`
-  0% { transform: scale(0); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-`;
-
-type DemoPhase = 'idle' | 'correct' | 'wrong';
-const DEMO_SEQUENCE: DemoPhase[] = ['idle', 'correct', 'wrong', 'idle'];
+function isNonEmptyStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.length > 0 && value.every((v) => typeof v === 'string');
+}
 
 export function BuddyPreviewModal({
   open,
@@ -39,29 +31,22 @@ export function BuddyPreviewModal({
   onClose: () => void;
   item: ShopItem | null;
 }) {
+  const t = useTranslations('Shop');
+  const tItems = useTranslations('Shop.items');
+  const tBuddies = useTranslations('Shop.buddies');
   const theme = useTheme();
-  const { brand } = theme.palette;
-  const [phase, setPhase] = useState(0);
+  const { brand, surfaces } = theme.palette;
 
-  useEffect(() => {
-    if (!open) {
-      setPhase(0);
-      return;
-    }
-    const t = setInterval(() => setPhase((p) => (p + 1) % DEMO_SEQUENCE.length), 2000);
-    return () => clearInterval(t);
-  }, [open]);
+  if (!item || !BUDDY_ART[item.key]) return null;
 
-  if (!item) return null;
-
-  const config = BUDDY_CONFIG[item.key];
-  if (!config) return null;
-
-  const currentPhase = DEMO_SEQUENCE[phase];
-  const rawReaction = config.reactions[currentPhase];
-  const reactionText = Array.isArray(rawReaction)
-    ? rawReaction[phase % rawReaction.length]
-    : rawReaction;
+  let greetingLines = FALLBACK_REACTIONS.idle;
+  try {
+    const raw = tBuddies.raw(`${item.key}.idle`);
+    if (isNonEmptyStringArray(raw)) greetingLines = raw;
+  } catch {
+    // missing translation set — keep the generic fallback
+  }
+  const { accent, bg } = BUDDY_ART[item.key];
 
   return (
     <Dialog
@@ -74,6 +59,7 @@ export function BuddyPreviewModal({
           sx: {
             borderRadius: 4,
             overflow: 'hidden',
+            bgcolor: surfaces.overlay,
             border: `2px solid ${alpha(brand[300], 0.35)}`,
             boxShadow: `0 12px 48px ${alpha(brand[700], 0.18)}`,
           },
@@ -82,27 +68,25 @@ export function BuddyPreviewModal({
     >
       <Box
         sx={{
-          position: 'relative',
-          height: 300,
-          background: `linear-gradient(145deg, ${alpha(brand[100], 0.95)}, ${alpha(brand[200], 0.6)})`,
+          background: `radial-gradient(ellipse at 50% 100%, ${alpha(accent, 0.22)} 0%, ${bg} 70%)`,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
           gap: 1.5,
+          px: 3,
+          pt: 2.5,
+          pb: 3,
         }}
       >
         <Box
-          key={phase}
           sx={{
-            bgcolor: alpha('#fff', 0.9),
+            bgcolor: alpha('#fff', 0.92),
             border: `1.5px solid ${alpha(brand[300], 0.4)}`,
             borderRadius: 3,
-            px: 2.5,
-            py: 1,
-            maxWidth: 200,
+            px: 2,
+            py: 0.75,
+            maxWidth: 240,
             boxShadow: `0 4px 16px ${alpha(brand[400], 0.15)}`,
-            animation: `${bubbleIn} 0.3s ease-out`,
           }}
         >
           <Typography
@@ -113,94 +97,74 @@ export function BuddyPreviewModal({
               textAlign: 'center',
             }}
           >
-            {reactionText}
+            {greetingLines[0]}
           </Typography>
         </Box>
 
         <Box
+          component="img"
+          src={buddyShopSrc(item.key)}
+          alt=""
+          draggable={false}
           sx={{
-            width: 80,
-            height: 80,
-            borderRadius: '50%',
-            bgcolor: alpha('#fff', 0.85),
-            border: `2.5px solid ${alpha(brand[300], 0.45)}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '2.8rem',
-            lineHeight: 1,
-            boxShadow: `0 6px 24px ${alpha(brand[400], 0.2)}`,
-            animation:
-              currentPhase === 'correct'
-                ? `${bounce} 0.6s ease-in-out infinite`
-                : `${float} 3s ease-in-out infinite`,
+            height: 140,
+            maxWidth: '70%',
+            objectFit: 'contain',
+            pointerEvents: 'none',
+            filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.12))',
           }}
-        >
-          {config.emoji}
-        </Box>
+        />
 
         <Typography
           sx={{
-            fontFamily: (t) => t.fonts.cute,
-            fontSize: '1.2rem',
-            fontWeight: 700,
+            fontFamily: (muiTheme) => muiTheme.fonts.cute,
+            fontSize: '1.35rem',
             color: brand[700],
+            lineHeight: 1.2,
           }}
         >
-          {item.name}
+          {tItems(`${item.key}.name`)}
         </Typography>
         <Typography
-          sx={{
-            fontSize: '0.78rem',
-            color: 'text.secondary',
-            textAlign: 'center',
-            px: 3,
-          }}
+          sx={{ fontSize: '0.82rem', color: 'text.primary', textAlign: 'center', lineHeight: 1.5 }}
         >
-          {item.description}
+          {tItems(`${item.key}.description`)}
         </Typography>
+      </Box>
 
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 1,
-            mt: 0.5,
-          }}
+      {/* The other half of the purchase: every face is a profile picture */}
+      <Box
+        sx={{
+          px: 3,
+          py: 2.5,
+          borderTop: `1px solid ${alpha(brand[300], 0.3)}`,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 1.5,
+        }}
+      >
+        <Typography
+          sx={{ fontSize: '0.82rem', fontWeight: 700, color: brand[700], textAlign: 'center' }}
         >
-          {(['correct', 'wrong', 'idle'] as const).map((r) => (
-            <Box
-              key={r}
-              sx={{
-                px: 1.5,
-                py: 0.5,
-                borderRadius: 2,
-                bgcolor: currentPhase === r ? alpha(brand[300], 0.25) : alpha(brand[100], 0.5),
-                border: `1px solid ${alpha(brand[300], currentPhase === r ? 0.5 : 0.15)}`,
-                transition: 'all 0.2s',
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: '0.65rem',
-                  fontWeight: 600,
-                  color: brand[600],
-                  textTransform: 'capitalize',
-                }}
-              >
-                {r}
-              </Typography>
-            </Box>
+          {t('buddyPreview.avatarPerk')}
+        </Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 0.75 }}>
+          {Array.from({ length: BUDDY_FACE_COUNT }, (_, i) => (
+            <UserAvatar key={i} avatar={makeAvatar(item.key, i + 1)} name="" size={40} />
           ))}
         </Box>
       </Box>
 
-      <DialogActions sx={{ justifyContent: 'center', py: 2 }}>
+      <DialogActions
+        sx={{ justifyContent: 'center', py: 2, borderTop: `1px solid ${alpha(brand[300], 0.3)}` }}
+      >
         <Button
           onClick={onClose}
           variant="outlined"
-          sx={{ borderRadius: 2, px: 4, fontFamily: (t) => t.fonts.cute }}
+          sx={{ borderRadius: 2, px: 4, fontFamily: (muiTheme) => muiTheme.fonts.cute }}
         >
-          Close
+          {t('buddyPreview.close')}
         </Button>
       </DialogActions>
     </Dialog>

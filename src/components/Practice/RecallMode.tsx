@@ -27,6 +27,9 @@ interface RecallModeProps {
   onExit: () => void;
 }
 
+/** Long enough to take in the image and example sentence revealed with the answer. */
+const AUTO_ADVANCE_MS = 1800;
+
 export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps) {
   const t = useTranslations('Practice.recallMode');
   const tCommon = useTranslations('Practice.common');
@@ -44,6 +47,8 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
   const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(
     null,
   );
+  const [imageReady, setImageReady] = useState(false);
+  const [holdForReplay, setHoldForReplay] = useState(false);
 
   const { triggerReaction } = useBuddyReaction();
 
@@ -73,6 +78,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
     setIndex(0);
     setSelected(null);
     setRoundScore(0);
+    setHoldForReplay(false);
   }
 
   const card = queue.currentCards[index];
@@ -91,18 +97,39 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roundDone, queue.phase, queue.finishRound]);
 
+  // Fetch the answer image while the learner is still choosing, and only reveal
+  // it once it has loaded. Mounting it at reveal time meant the fetch started
+  // with under two seconds left, so on a slow connection the card advanced past
+  // an empty 200px slot before the image ever painted.
+  useEffect(() => {
+    setImageReady(false);
+    if (!card?.imageUrl) return;
+    const preload = new Image();
+    preload.onload = () => setImageReady(true);
+    preload.src = card.imageUrl;
+    return () => {
+      preload.onload = null;
+    };
+  }, [card?.imageUrl]);
+
   const next = useCallback(() => {
     setIndex((i) => i + 1);
     setSelected(null);
+    setHoldForReplay(false);
   }, []);
 
-  // Auto-advance 1.2 s after a correct pick
   useEffect(() => {
+    if (holdForReplay) return;
     if (selected && card && selected === card.meaning) {
-      const timer = setTimeout(next, 1200);
+      const timer = setTimeout(next, AUTO_ADVANCE_MS);
       return () => clearTimeout(timer);
     }
-  }, [selected, card, next]);
+  }, [selected, card, next, holdForReplay]);
+
+  // Tapping a speaker in the revealed answer stops the clock and swaps in a Next
+  // button — otherwise the card advances mid-utterance and the audio carries
+  // over the following prompt.
+  const holdCard = useCallback(() => setHoldForReplay(true), []);
 
   const handleSelect = useCallback(
     async (choice: string) => {
@@ -207,7 +234,16 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant="h5">{t('title')}</Typography>
+          {queue.totalBatches > 1 && (
+            <Chip
+              label={tCommon('batchChip', {
+                current: queue.batchIndex + 1,
+                total: queue.totalBatches,
+              })}
+              size="small"
+              variant="outlined"
+            />
+          )}
           {queue.isRetryRound && (
             <Chip label={tCommon('reviewChip')} size="small" color="warning" variant="outlined" />
           )}
@@ -215,16 +251,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
             <Chip label={`🔥 ${streak}`} size="small" color="warning" sx={{ fontWeight: 700 }} />
           )}
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {queue.totalBatches > 1 && (
-            <Chip
-              label={`${queue.batchIndex + 1}/${queue.totalBatches}`}
-              size="small"
-              variant="outlined"
-            />
-          )}
-          <Chip label={`${roundScore} / ${queue.currentCards.length}`} />
-        </Box>
+        <Chip label={`${roundScore} / ${queue.currentCards.length}`} />
       </Box>
 
       <LinearProgress
@@ -256,7 +283,9 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
           transition: 'border-color 0.25s',
         }}
       >
-        {card.imageUrl && (
+        {/* Image and example sentence would give the meaning away, so they only
+            appear after answering, as feedback that reinforces the word. */}
+        {selected && card.imageUrl && imageReady && (
           <Box sx={{ position: 'relative' }}>
             <Box
               component="img"
@@ -280,14 +309,19 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
             >
               {display.titleText}
             </Typography>
-            <SpeakButton text={card.word} iconSize="1.4rem" sx={{ mb: 0.5 }} />
+            <SpeakButton
+              text={card.word}
+              iconSize="1.4rem"
+              onSpeak={selected ? holdCard : undefined}
+              sx={{ mb: 0.5 }}
+            />
           </Box>
           {display.subtitleText && (
             <Typography variant="body1" color="text.secondary">
               {display.subtitleText}
             </Typography>
           )}
-          {!card.imageUrl && card.example_jp && (
+          {selected && card.example_jp && (
             <Box
               sx={{
                 display: 'flex',
@@ -306,20 +340,21 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
                   fontSize: '0.9rem',
                 }}
               />
-              <SpeakButton text={stripFurigana(card.example_jp)} iconSize="1.1rem" />
+              <SpeakButton
+                text={stripFurigana(card.example_jp)}
+                iconSize="1.1rem"
+                onSpeak={holdCard}
+              />
             </Box>
           )}
-          {card.imageUrl && card.example_jp && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 0.5 }}>
-              <SpeakButton text={stripFurigana(card.example_jp)} iconSize="1.1rem" />
-            </Box>
+          {!selected && (
+            <Typography
+              variant="caption"
+              sx={{ color: 'text.secondary', letterSpacing: '0.12em', display: 'block', mt: 1.5 }}
+            >
+              {t('whatDoesThisMean')}
+            </Typography>
           )}
-          <Typography
-            variant="caption"
-            sx={{ color: 'text.secondary', letterSpacing: '0.12em', display: 'block', mt: 1.5 }}
-          >
-            {t('whatDoesThisMean')}
-          </Typography>
         </Box>
       </Box>
 
@@ -331,15 +366,14 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
         onSelect={handleSelect}
       />
 
-      {/* On wrong: manual next; on correct: auto-advance hint */}
-      {answeredWrong && (
+      {(answeredWrong || holdForReplay) && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
           <Button variant="contained" onClick={next} size="large">
             {index + 1 >= queue.currentCards.length ? t('seeResults') : t('nextArrow')}
           </Button>
         </Box>
       )}
-      {answeredCorrectly && (
+      {answeredCorrectly && !holdForReplay && (
         <Box sx={{ textAlign: 'center', mb: 2 }}>
           <Typography variant="body2" color="success.main" sx={{ fontStyle: 'italic' }}>
             {tCommon('correctMovingOn')}

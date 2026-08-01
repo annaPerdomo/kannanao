@@ -8,6 +8,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -20,6 +21,7 @@ import {
   dbRecordLogin,
   loadProfile,
   sb,
+  updateProfileAvatar,
   updateProfileColorScheme,
   updateProfileHomeSections,
   updateProfileReviewReminders,
@@ -43,6 +45,8 @@ interface AuthContextValue {
   groupId: string | null;
   groupShowLeaderboard: boolean;
   displayName: string | null;
+  /** Buddy-face avatar as '<item key>:<variant>', or null for the initial. */
+  avatar: string | null;
   colorScheme: ColorScheme | null;
   /**
    * profiles.locale — the account's explicit language, or null for "never
@@ -64,6 +68,7 @@ interface AuthContextValue {
   ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   updateDisplayName: (name: string) => Promise<{ error: string | null }>;
+  updateAvatar: (avatar: string | null) => Promise<{ error: string | null }>;
   updateColorScheme: (scheme: ColorScheme) => Promise<void>;
   updateShowTodo: (show: boolean) => Promise<void>;
   updateReviewReminders: (enabled: boolean) => Promise<{ error: string | null }>;
@@ -94,6 +99,8 @@ const VALID_SCHEMES: ColorScheme[] = [
   'midnight',
   'matcha',
   'rosegold',
+  'cottagecore',
+  'galaxy',
 ];
 
 export function AuthProvider({
@@ -125,6 +132,12 @@ export function AuthProvider({
   const [displayName, setDisplayName] = useState<string | null>(
     initialProfile?.displayName ?? null,
   );
+  const [avatar, setAvatar] = useState<string | null>(initialProfile?.avatar ?? null);
+  // Mirrors `avatar` so updateAvatar can read the pre-write value without a
+  // setState updater — React may defer those to render, which would leave the
+  // rollback holding null and wipe an avatar the database still has.
+  const avatarRef = useRef(avatar);
+  avatarRef.current = avatar;
   const [colorScheme, setColorScheme] = useState<ColorScheme | null>(seededScheme);
   const [profileLocale, setProfileLocale] = useState<Locale | null>(initialProfile?.locale ?? null);
   const [showTodo, setShowTodo] = useState(seededSections.todo);
@@ -148,6 +161,7 @@ export function AuthProvider({
   async function fetchProfile(userId: string) {
     const profile = await loadProfile(userId);
     setDisplayName(profile?.displayName ?? null);
+    setAvatar(profile?.avatar ?? null);
     const saved = profile?.colorScheme;
     if (saved && VALID_SCHEMES.includes(saved as ColorScheme)) {
       setColorScheme(saved as ColorScheme);
@@ -204,6 +218,7 @@ export function AuthProvider({
       }
       if (event === 'SIGNED_OUT') {
         setDisplayName(null);
+        setAvatar(null);
         setColorScheme(null);
         // The account's preference goes; the NEXT_LOCALE cookie deliberately
         // stays. Signing out shouldn't yank the UI back to English mid-session —
@@ -254,6 +269,26 @@ export function AuthProvider({
       await upsertProfile(user.id, username, name.trim());
       setDisplayName(name.trim());
       return { error: null };
+    },
+    [t],
+  );
+
+  // Optimistic with rollback, like updateReviewReminders: the picker closes on
+  // tap, so a failed write must put the old face back rather than lie.
+  const updateAvatar = useCallback(
+    async (next: string | null) => {
+      const prev = avatarRef.current;
+      setAvatar(next);
+      const {
+        data: { user },
+      } = await sb.auth.getUser();
+      if (!user) {
+        setAvatar(prev);
+        return { error: t('signedOutError') };
+      }
+      const { error } = await updateProfileAvatar(user.id, next);
+      if (error) setAvatar(prev);
+      return { error };
     },
     [t],
   );
@@ -335,6 +370,7 @@ export function AuthProvider({
       groupId,
       groupShowLeaderboard,
       displayName,
+      avatar,
       colorScheme,
       profileLocale,
       showTodo,
@@ -346,6 +382,7 @@ export function AuthProvider({
       signUpWithUsername,
       signOut,
       updateDisplayName,
+      updateAvatar,
       updateColorScheme,
       updateShowTodo,
       updateReviewReminders,
@@ -359,6 +396,7 @@ export function AuthProvider({
       groupId,
       groupShowLeaderboard,
       displayName,
+      avatar,
       colorScheme,
       profileLocale,
       showTodo,
@@ -370,6 +408,7 @@ export function AuthProvider({
       signUpWithUsername,
       signOut,
       updateDisplayName,
+      updateAvatar,
       updateColorScheme,
       updateShowTodo,
       updateReviewReminders,

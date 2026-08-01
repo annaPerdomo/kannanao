@@ -55,8 +55,8 @@ export interface DirectMessage {
   reactions?: Record<string, string[]> | null;
   read_at: string | null;
   created_at: string;
-  sender?: { display_name: string | null; username: string } | null;
-  recipient?: { display_name: string | null; username: string } | null;
+  sender?: { display_name: string | null; username: string; avatar?: string | null } | null;
+  recipient?: { display_name: string | null; username: string; avatar?: string | null } | null;
 }
 
 type Profile = NonNullable<DirectMessage['sender']>;

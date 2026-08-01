@@ -4,6 +4,7 @@ import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
+import { UserAvatar } from '@/components/UserAvatar';
 import type { LeaderboardEntry } from '@/hooks/useGroupLeaderboard';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
@@ -47,6 +48,11 @@ export function LeaderboardWidget({ entries, compact }: LeaderboardWidgetProps) 
           >
             {i < 3 ? MEDALS[i] : `${i + 1}.`}
           </Typography>
+          <UserAvatar
+            avatar={entry.avatar}
+            name={entry.displayName || entry.username}
+            size={compact ? 32 : 36}
+          />
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography
               sx={{ fontWeight: 700, fontSize: compact ? '0.78rem' : '0.85rem', color: brand[800] }}

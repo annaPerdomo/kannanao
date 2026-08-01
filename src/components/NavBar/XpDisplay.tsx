@@ -93,6 +93,14 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
   return (
     <Box
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       sx={{
         position: 'relative',
         display: 'flex',
@@ -101,9 +109,9 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
         background: (theme) =>
           `linear-gradient(135deg, ${alpha(theme.palette.brand[100], 0.85)}, ${alpha('#fef3c7', 0.85)})`,
         border: `1.5px solid ${alpha('#f59e0b', 0.4)}`,
-        borderRadius: 6,
-        px: 1.25,
-        py: 0.4,
+        borderRadius: (theme) => theme.radii.pill,
+        px: { xs: 1.25, md: 1.75 },
+        py: { xs: 0.4, md: 0.65 },
         cursor: 'pointer',
         overflow: 'visible',
         transition: 'transform 0.15s, box-shadow 0.15s',
@@ -128,7 +136,7 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
           sx={{
             position: 'absolute',
             inset: -4,
-            borderRadius: 8,
+            borderRadius: (theme) => theme.radii.pill,
             border: `2px solid ${alpha('#f59e0b', 0.6)}`,
             pointerEvents: 'none',
             animation: 'xpRingExpand 0.6s ease-out forwards',
@@ -142,7 +150,7 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
 
       <Typography
         sx={{
-          fontSize: '0.8rem',
+          fontSize: { xs: '0.8rem', md: '0.95rem' },
           lineHeight: 1,
           animation: xpBounce ? 'xpStarSpin 0.6s ease-in-out' : 'none',
           '@keyframes xpStarSpin': {
@@ -156,7 +164,7 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
       </Typography>
       <Typography
         sx={{
-          fontSize: '0.85rem',
+          fontSize: { xs: '0.85rem', md: '0.95rem' },
           color: '#b45309',
           lineHeight: 1,
           fontVariantNumeric: 'tabular-nums',

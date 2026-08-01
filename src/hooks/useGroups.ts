@@ -8,6 +8,7 @@ import { sb } from '@/lib/supabase';
 
 /** One member's identity, enough to draw an initial avatar. */
 export interface GroupMemberFace {
+  avatar?: string | null;
   id: string;
   name: string;
 }

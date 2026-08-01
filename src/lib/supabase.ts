@@ -392,14 +392,27 @@ export async function dbRenameDeck(id: string, name: string, description?: strin
 
 // ─── Auth / profiles ─────────────────────────────────────────────────────────
 
-export async function fetchDisplayName(userId: string): Promise<string | null> {
-  if (!isConfigured()) return null;
+export interface PeerIdentity {
+  displayName: string | null;
+  avatar: string | null;
+}
+
+/**
+ * Name and avatar for someone you have no loaded messages with — an empty
+ * thread would otherwise show the right name beside a generic initial disc
+ * until the first message lands.
+ */
+export async function fetchPeerIdentity(userId: string): Promise<PeerIdentity> {
+  if (!isConfigured()) return { displayName: null, avatar: null };
   const { data } = await sb
     .from('profiles')
-    .select('display_name, username')
+    .select('display_name, username, avatar')
     .eq('id', userId)
     .single();
-  return data?.display_name || data?.username || null;
+  return {
+    displayName: data?.display_name || data?.username || null,
+    avatar: data?.avatar ?? null,
+  };
 }
 
 export async function upsertProfile(
@@ -417,7 +430,7 @@ export async function loadProfile(userId: string): Promise<UserProfile | null> {
   const { data, error } = await sb
     .from('profiles')
     .select(
-      'username, display_name, color_scheme, show_todo, home_sections, review_reminders, account_type, organizer_id, group_id, travel_main_view_mode, locale, groups:group_id (show_leaderboard)',
+      'username, display_name, color_scheme, show_todo, home_sections, review_reminders, avatar, account_type, organizer_id, group_id, travel_main_view_mode, locale, groups:group_id (show_leaderboard)',
     )
     .eq('id', userId)
     .single();
@@ -427,6 +440,7 @@ export async function loadProfile(userId: string): Promise<UserProfile | null> {
   return {
     username: data.username,
     displayName: data.display_name ?? null,
+    avatar: data.avatar ?? null,
     colorScheme: data.color_scheme ?? null,
     showTodo: data.show_todo !== false,
     homeSections: (data.home_sections as Partial<HomeSections>) ?? null,
@@ -457,6 +471,26 @@ export async function updateProfileLocale(
   const { error } = await sb.from('profiles').update({ locale }).eq('id', userId);
   if (error) {
     console.error('updateProfileLocale error', error);
+    return { error: error.message };
+  }
+  return { error: null };
+}
+
+/**
+ * Reports failure like updateProfileReviewReminders: the avatar picker is
+ * optimistic, so it has to know when to roll back and say so.
+ */
+export async function updateProfileAvatar(
+  userId: string,
+  avatar: string | null,
+): Promise<{ error: string | null }> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    return { error: 'Not connected to the database.' };
+  }
+  const { error } = await sb.from('profiles').update({ avatar }).eq('id', userId);
+  if (error) {
+    console.error('updateProfileAvatar error', error);
     return { error: error.message };
   }
   return { error: null };

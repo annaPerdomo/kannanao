@@ -16,10 +16,10 @@ import { buildFontHref } from '@/theme/fontLoader';
 // a flash back to fallback fonts during a switch. `display=swap` (baked into the
 // URL) keeps text visible in a system fallback until the web fonts arrive.
 export function ThemeFonts() {
-  const { scheme } = useColorScheme();
+  const { renderedScheme } = useColorScheme();
 
   useEffect(() => {
-    const href = buildFontHref(scheme);
+    const href = buildFontHref(renderedScheme);
     const existing = document.querySelectorAll<HTMLLinkElement>('link[data-theme-fonts]');
     for (const link of existing) {
       if (link.dataset.href === href) return; // already loaded for this theme
@@ -43,7 +43,7 @@ export function ThemeFonts() {
     document.head.appendChild(link);
     // Cached sheets can be ready synchronously, before the load event fires.
     if (link.sheet) promote();
-  }, [scheme]);
+  }, [renderedScheme]);
 
   return null;
 }
