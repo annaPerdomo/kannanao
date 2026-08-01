@@ -8,18 +8,13 @@ import type { PracticeMode } from '@/types/app';
 
 import { PRACTICE_CONFIG } from './constants';
 import { Label } from './Label';
-import { ReadingSwitch } from './ReadingSwitch';
 
 interface PracticeHeroProps {
   cardCount: number;
   onStudy: () => void;
   onPractice: (mode: PracticeMode) => void;
-  /** Kanji Reading practice is unlocked for this deck. */
+  /** Kanji Reading practice is unlocked for this deck (deck settings). */
   readingUnlocked?: boolean;
-  /** Cards in this deck that Reading could ask — 0 means there is nothing to unlock. */
-  readingCardCount?: number;
-  /** Owner-only control. Omit to render no switch (learners never see one). */
-  onToggleReading?: (enabled: boolean) => void;
 }
 
 export function PracticeHero({
@@ -27,8 +22,6 @@ export function PracticeHero({
   onStudy,
   onPractice,
   readingUnlocked = false,
-  readingCardCount = 0,
-  onToggleReading,
 }: PracticeHeroProps) {
   const t = useTranslations('Deck.practiceHero');
   const tModes = useTranslations('Deck.practiceModes');
@@ -299,14 +292,6 @@ export function PracticeHero({
         >
           {t('unlockHint')}
         </Typography>
-      )}
-
-      {onToggleReading && (
-        <ReadingSwitch
-          unlocked={readingUnlocked}
-          cardCount={readingCardCount}
-          onToggle={onToggleReading}
-        />
       )}
     </Box>
   );

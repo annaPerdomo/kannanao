@@ -79,6 +79,7 @@
       "renameDeckAria": "Rename deck",
       "shared": "Shared",
       "share": "Share",
+      "settings": "Settings",
       "unpinFromHome": "Unpin from home",
       "pinToHome": "Pin to home"
     },
@@ -92,12 +93,7 @@
       "lockedAria": "{label} (locked)",
       "locked": "Locked 🔒",
       "play": "Play →",
-      "unlockHint": "Add at least 2 cards to unlock practice modes.",
-      "readingSwitchTitle": "Kanji reading practice",
-      "readingSwitchOn": "On — learners can practice {count, plural, one {# kanji word} other {# kanji words}} in this deck",
-      "readingSwitchOff": "Off — turn it on when your learners are ready for kanji",
-      "readingSwitchNoKanji": "This deck has no kanji words yet",
-      "readingSwitchAria": "Kanji reading practice for this deck"
+      "unlockHint": "Add at least 2 cards to unlock practice modes."
     },
     "practiceModes": {
       "match": {
@@ -302,6 +298,16 @@
       "sharedWithLabel": "Shared with",
       "notSharedYet": "Not shared with anyone yet",
       "removeShareAria": "Remove share"
+    },
+    "settingsDialog": {
+      "title": "Deck settings",
+      "practiceSection": "Practice",
+      "sharingSection": "Sharing",
+      "readingTitle": "Kanji reading practice",
+      "readingOn": "On — learners can practice {count, plural, one {# kanji word} other {# kanji words}} in this deck",
+      "readingOff": "Off — turn it on when your learners are ready for kanji",
+      "readingNoKanji": "This deck has no kanji words yet",
+      "readingAria": "Kanji reading practice for this deck"
     },
     "shareEmbedDialog": {
       "title": "Embed Deck",

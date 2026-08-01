@@ -3,7 +3,7 @@ import { Box, Switch, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 
-interface ReadingSwitchProps {
+interface ReadingPracticeRowProps {
   unlocked: boolean;
   /** Cards in the deck that Reading could ask; 0 disables the switch. */
   cardCount: number;
@@ -11,52 +11,50 @@ interface ReadingSwitchProps {
 }
 
 /**
- * Owner-only unlock for the 📖 Reading tile. Learners never see this row — for
+ * Unlocks the 📖 Reading tile for this deck. Learners never see this row — for
  * them the tile is simply absent until their educator turns it on.
  */
-export function ReadingSwitch({ unlocked, cardCount, onToggle }: ReadingSwitchProps) {
-  const t = useTranslations('Deck.practiceHero');
+export function ReadingPracticeRow({ unlocked, cardCount, onToggle }: ReadingPracticeRowProps) {
+  const t = useTranslations('Deck.settingsDialog');
   const { brand } = useTheme().palette;
   const noKanji = cardCount === 0;
 
   return (
     <Box
       sx={{
-        mt: 2,
-        px: 2,
-        py: 1.25,
         display: 'flex',
         alignItems: 'center',
         gap: 1.5,
-        borderRadius: (theme) => theme.radii.md,
-        border: '1.5px solid',
-        borderColor: alpha(brand[300], 0.4),
-        bgcolor: alpha(brand[100], 0.35),
+        p: 2,
+        borderRadius: 3,
+        bgcolor: unlocked ? alpha(brand[100], 0.6) : alpha(brand[100], 0.3),
+        border: `1.5px solid ${alpha(brand[300], unlocked ? 0.5 : 0.3)}`,
+        opacity: noKanji ? 0.65 : 1,
+        transition: 'all 0.2s ease',
       }}
     >
       <Typography sx={{ fontSize: '1.4rem', lineHeight: 1 }} aria-hidden>
         📖
       </Typography>
       <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-        <Typography sx={{ fontSize: '0.85rem', fontWeight: 800, color: 'text.primary' }}>
-          {t('readingSwitchTitle')}
+        <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: 'text.primary' }}>
+          {t('readingTitle')}
         </Typography>
-        <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.25 }}>
           {noKanji
-            ? t('readingSwitchNoKanji')
+            ? t('readingNoKanji')
             : unlocked
-              ? t('readingSwitchOn', { count: cardCount })
-              : t('readingSwitchOff')}
+              ? t('readingOn', { count: cardCount })
+              : t('readingOff')}
         </Typography>
       </Box>
       <Switch
-        size="small"
         checked={unlocked}
         disabled={noKanji}
         onChange={(e) => onToggle(e.target.checked)}
-        inputProps={{ 'aria-label': t('readingSwitchAria') }}
+        slotProps={{ input: { 'aria-label': t('readingAria') } }}
         sx={{
-          '& .MuiSwitch-switchBase.Mui-checked': { color: brand[600] },
+          '& .MuiSwitch-switchBase.Mui-checked': { color: brand[500] },
           '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: brand[400] },
         }}
       />
