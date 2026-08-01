@@ -4,7 +4,14 @@ import type { Flashcard, JlptLevel } from '@/types/flashcard';
 
 export type EditableFields = Pick<
   Flashcard,
-  'word' | 'reading' | 'meaning' | 'example_jp' | 'example_en' | 'imageUrl' | 'image_query'
+  | 'word'
+  | 'reading'
+  | 'romaji'
+  | 'meaning'
+  | 'example_jp'
+  | 'example_en'
+  | 'imageUrl'
+  | 'image_query'
 >;
 
 export const JLPT_LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
@@ -28,6 +35,12 @@ export const FIELD_CONFIG: {
     labelKey: 'reading.label',
     placeholderKey: 'reading.placeholder',
     helperTextKey: 'reading.helperText',
+  },
+  {
+    key: 'romaji',
+    labelKey: 'romaji.label',
+    placeholderKey: 'romaji.placeholder',
+    helperTextKey: 'romaji.helperText',
   },
   {
     key: 'meaning',

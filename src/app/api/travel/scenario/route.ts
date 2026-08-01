@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { normalizeFuriganaDeep } from '@/lib/furigana';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
 
   const furiganaRule =
     displayMode === 'hiragana'
-      ? '\nIMPORTANT: For ALL Japanese text fields (npcJapanese, bestPhrase, alternative), use {kanji|reading} syntax for EVERY kanji to provide furigana. Example: "{助|たす}けて" or "お{会計|かいけい}". Pure hiragana/katakana needs no markup.'
+      ? '\nIMPORTANT: For ALL Japanese text fields (npcJapanese, bestPhrase, alternative), use {kanji|reading} syntax for EVERY kanji to provide furigana. Example: "{助|たす}けて" or "お{会計|かいけい}". Each group holds exactly one reading — never split it with extra pipes ({無関係|むかんけい}, never {無関係|む|かん|けい}). Pure hiragana/katakana needs no markup.'
       : '';
 
   const prompt = `Japanese conversation coach for a zero-Japanese tourist. Scenario: ${categoryDescriptions[category] || category}${setting ? `. Setting: ${setting}` : ''}${historyContext}${userIntentContext}
@@ -144,7 +145,7 @@ Rules: short realistic phrases, desu-masu form, practical cultural tips only, 2-
     }
 
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}';
-    return NextResponse.json(JSON.parse(rawText));
+    return NextResponse.json(normalizeFuriganaDeep(JSON.parse(rawText)));
   } catch (err) {
     logger.error('Unhandled error', {
       route: '/api/travel/scenario',

@@ -57,6 +57,23 @@ export function titleFontSize(text: string, baseRem: number, minRem: number): st
   return `${size}rem`;
 }
 
+/**
+ * Romaji for the front of a card.
+ *
+ * Prefers the stored, word-spaced romaji. Romanising the kana reading is only
+ * readable for a single word — a whole phrase comes back as one unbroken run
+ * ("hajimemashite,yoroshikuonegaishimasu") because kana carries no word
+ * boundaries. Cards written before the `romaji` column existed still take that
+ * path, so at least give the punctuation room to breathe.
+ */
+export function romajiFor(card: Pick<Flashcard, 'romaji' | 'reading'>): string {
+  const stored = card.romaji?.trim();
+  if (stored) return stored;
+  return toRomaji(card.reading)
+    .replace(/([,.!?;:])(?=\S)/g, '$1 ')
+    .trim();
+}
+
 export interface FlashcardDisplayText {
   titleText: string;
   subtitleText?: string;
@@ -66,6 +83,7 @@ export interface FlashcardDisplayText {
 
 export function getFlashcardDisplayText(card: Flashcard): FlashcardDisplayText {
   const hasReading = Boolean(card.reading?.trim());
+  const hasRomaji = hasReading || Boolean(card.romaji?.trim());
 
   let titleText: string;
   let subtitleText: string | undefined;
@@ -74,7 +92,7 @@ export function getFlashcardDisplayText(card: Flashcard): FlashcardDisplayText {
     titleText = card.word;
     subtitleText = hasReading ? card.reading : undefined;
   } else if (card.mainViewMode === 'romaji') {
-    titleText = hasReading ? toRomaji(card.reading) : card.word;
+    titleText = hasRomaji ? romajiFor(card) : card.word;
     subtitleText = card.word;
   } else {
     // hiragana

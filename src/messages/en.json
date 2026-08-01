@@ -62,7 +62,8 @@
       "descriptionLabel": "Description (optional)",
       "pinToHome": "Pin to home",
       "pinToHomeHelper": "Show this deck on your home page",
-      "addCardsOptional": "add cards (optional)"
+      "addCardsOptional": "add cards (optional)",
+      "createFailed": "Couldn't create the deck. Please try again."
     },
     "deckHeader": {
       "saveTooltip": "Save (Enter)",
@@ -192,6 +193,11 @@
           "placeholder": "e.g. ねこ",
           "helperText": "Hiragana/katakana reading"
         },
+        "romaji": {
+          "label": "Romaji",
+          "placeholder": "e.g. yoroshiku onegaishimasu",
+          "helperText": "Roman letters, with a space between words"
+        },
         "meaning": {
           "label": "Meaning (English)",
           "placeholder": "e.g. cat",
@@ -222,18 +228,10 @@
       "editCardTooltip": "Edit card",
       "deleteCardTooltip": "Delete card"
     },
-    "generateForm": {
-      "wordPlaceholder": "Type a word or phrase…",
-      "generating": "Generating…",
-      "generateCards": "Generate Cards",
-      "itemsQueued": "{count, plural, one {# item queued} other {# items queued}}"
-    },
     "pdfImportModal": {
       "title": "📄 Import from PDF",
       "subtitle": "Extract vocabulary from a document",
       "extractCards": "Extract cards",
-      "reExtract": "Re-extract",
-      "addCardsToDeck": "{count, plural, one {Add # card to deck} other {Add # cards to deck}}",
       "extracting": "Extracting cards…",
       "pleaseUploadPdf": "Please upload a PDF file.",
       "fileSizeError": "File must be under 20 MB.",
@@ -247,13 +245,14 @@
       "extractedFields": [
         "word",
         "reading",
+        "romaji",
         "meaning",
         "example sentence in Japanese",
         "example sentence in English",
         "JLPT level"
       ],
-      "cardsExtractedCount": "{count, plural, one {# card extracted} other {# cards extracted}}",
-      "moreCards": "{count, plural, one {+# more card} other {+# more cards}}"
+      "addingCards": "Adding cards…",
+      "noCardsFound": "We couldn't find any vocabulary in that PDF. Try a different file."
     },
     "reorderBanner": {
       "defaultLabel": "Drag and drop to reorder. Click Done when finished."
@@ -283,7 +282,8 @@
         "furiganaHint": "💡 Use <code>{example}</code> to show readings above kanji on the card",
         "furiganaHintExample": "'{'漢字|かんじ'}'",
         "exampleJpFieldLabel": "Example (JP)",
-        "exampleEnFieldLabel": "Example (EN)"
+        "exampleEnFieldLabel": "Example (EN)",
+        "noMeaningPlaceholder": "No meaning yet"
       }
     },
     "shareDeckDialog": {
@@ -1532,7 +1532,13 @@
       "createAndSave": "Create & Save",
       "failedToSave": "Failed to save",
       "failedToCreateDeck": "Failed to create deck",
-      "createdFromTravelMode": "Created from Travel Mode"
+      "createdFromTravelMode": "Created from Travel Mode",
+      "savingTitle": "{count, plural, one {Making your card…} other {Making your # cards…}}",
+      "savedTitle": "Saved!",
+      "savedBody": "{count, plural, one {# card added to {deck}} other {# cards added to {deck}}}",
+      "savedHint": "They're ready to study whenever you are.",
+      "goToDeck": "Go to deck",
+      "keepBrowsing": "Keep browsing"
     },
     "phrases": {
       "backToHub": "Back to travel hub",

@@ -22,9 +22,9 @@ import {
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
-import { toRomaji } from 'wanakana';
 
 import { ConfirmRemoveImageDialog } from '@/components/ConfirmRemoveImageDialog';
+import { romajiFor } from '@/lib/flashcardUtils';
 import {
   deleteStorageImage,
   encodeUnsplashUrl,
@@ -148,20 +148,12 @@ export function CardRow({
     onUpdate(index, { [key]: e.target.value });
   };
 
-  const titleText =
-    card.mainViewMode === 'kanji'
-      ? card.word
-      : card.mainViewMode === 'romaji'
-        ? card.reading
-          ? toRomaji(card.reading)
-          : card.word
-        : card.reading || card.word;
-  const subtitleText =
-    card.mainViewMode === 'kanji' && card.reading
-      ? card.reading
-      : card.mainViewMode === 'romaji'
-        ? card.word
-        : card.meaning;
+  // Show the word, how it sounds, and what it means — all three, every time.
+  // Deriving the summary from mainViewMode meant the kanji was invisible in
+  // hiragana mode and the meaning was invisible in kanji mode, so a quick scan
+  // down the list could never confirm a card was right.
+  const pronunciation = card.mainViewMode === 'romaji' ? romajiFor(card) : card.reading;
+  const showPronunciation = Boolean(pronunciation?.trim()) && pronunciation !== card.word;
 
   const toggleSx = compactToggleSx(theme);
 
@@ -172,6 +164,10 @@ export function CardRow({
         borderRadius: '14px',
         bgcolor: brand[50],
         overflow: 'hidden',
+        // The dialog body is a height-capped flex column, so without this every
+        // row shrank to share the space and `overflow: hidden` sliced the
+        // meaning in half. Rows keep their height; the list scrolls instead.
+        flexShrink: 0,
         transition: 'box-shadow 0.15s ease',
         '&:hover': { boxShadow: `0 2px 12px ${alpha(brand[300], 0.18)}` },
       }}
@@ -183,7 +179,8 @@ export function CardRow({
           alignItems: 'center',
           gap: 1.5,
           px: 1.5,
-          py: 1,
+          py: 1.25,
+          minHeight: 62,
           cursor: 'pointer',
           userSelect: 'none',
         }}
@@ -191,8 +188,8 @@ export function CardRow({
       >
         <Box
           sx={{
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             borderRadius: '8px',
             flexShrink: 0,
             overflow: 'hidden',
@@ -217,22 +214,38 @@ export function CardRow({
         </Box>
 
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-          <Typography
-            noWrap
-            sx={{ fontSize: '0.88rem', fontWeight: 800, color: brand[800], lineHeight: 1.25 }}
-          >
-            {titleText}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, minWidth: 0 }}>
+            <Typography
+              noWrap
+              sx={{ fontSize: '0.95rem', fontWeight: 800, color: brand[800], lineHeight: 1.3 }}
+            >
+              {card.word}
+            </Typography>
+            {showPronunciation && (
+              <Typography
+                noWrap
+                sx={{
+                  fontSize: '0.75rem',
+                  color: alpha(brand[700], 0.55),
+                  fontWeight: 600,
+                  lineHeight: 1.3,
+                  flexShrink: 1,
+                }}
+              >
+                {pronunciation}
+              </Typography>
+            )}
+          </Box>
           <Typography
             noWrap
             sx={{
-              fontSize: '0.72rem',
-              color: alpha(brand[700], 0.6),
+              fontSize: '0.78rem',
+              color: alpha(brand[700], 0.75),
               fontWeight: 600,
-              lineHeight: 1.2,
+              lineHeight: 1.35,
             }}
           >
-            {subtitleText}
+            {card.meaning || t('noMeaningPlaceholder')}
           </Typography>
         </Box>
 

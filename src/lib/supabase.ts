@@ -238,6 +238,7 @@ export async function dbInsertCards(
     deck_id: deckId,
     word: card.word,
     reading: card.reading || '',
+    romaji: card.romaji || '',
     meaning: card.meaning || '',
     image_url: card.imageUrl || '',
     image_query: card.image_query || '',
@@ -277,6 +278,7 @@ export async function dbUpdateCard(
   const payload: Partial<SupabaseCardRow> = {};
   if (patch.word !== undefined) payload.word = patch.word;
   if (patch.reading !== undefined) payload.reading = patch.reading;
+  if (patch.romaji !== undefined) payload.romaji = patch.romaji;
   if (patch.meaning !== undefined) payload.meaning = patch.meaning;
   if (patch.imageUrl !== undefined) payload.image_url = patch.imageUrl;
   if (patch.image_query !== undefined) payload.image_query = patch.image_query;
@@ -352,6 +354,7 @@ export async function dbCopyCardsIntoDeck(
     deck_id: targetDeckId,
     word: card.word,
     reading: card.reading || '',
+    romaji: card.romaji || '',
     meaning: card.meaning || '',
     image_url: card.imageUrl || '',
     image_query: card.image_query || '',

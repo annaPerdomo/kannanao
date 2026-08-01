@@ -4,6 +4,7 @@ import {
   buildMeaningChoices,
   cardXp,
   getFlashcardDisplayText,
+  romajiFor,
   titleFontSize,
 } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
@@ -97,6 +98,53 @@ describe('getFlashcardDisplayText', () => {
     const card = makeCard({ mainViewMode: 'hiragana', word: 'hello', reading: '   ' });
     const { titleText } = getFlashcardDisplayText(card);
     expect(titleText).toBe('hello');
+  });
+});
+
+// ─── romajiFor ────────────────────────────────────────────────────────────────
+
+describe('romajiFor', () => {
+  it('prefers the stored, word-spaced romaji', () => {
+    const card = makeCard({
+      reading: 'はじめまして、よろしくおねがいします',
+      romaji: 'hajimemashite, yoroshiku onegaishimasu',
+    });
+    expect(romajiFor(card)).toBe('hajimemashite, yoroshiku onegaishimasu');
+  });
+
+  it('romanises the reading when no romaji is stored', () => {
+    expect(romajiFor(makeCard({ reading: 'ねこ', romaji: '' }))).toBe('neko');
+  });
+
+  it('gives punctuation a space when falling back on a legacy card', () => {
+    // Not real word boundaries — kana cannot give those back — but at least the
+    // run-on does not swallow the comma.
+    expect(romajiFor(makeCard({ reading: 'はい、そうです', romaji: undefined }))).toBe(
+      'hai, soudesu',
+    );
+  });
+
+  it('ignores whitespace-only stored romaji', () => {
+    expect(romajiFor(makeCard({ reading: 'ねこ', romaji: '   ' }))).toBe('neko');
+  });
+});
+
+describe('getFlashcardDisplayText in romaji mode', () => {
+  it('uses the stored romaji as the title', () => {
+    const card = makeCard({
+      mainViewMode: 'romaji',
+      word: 'はじめまして、よろしくお願いします',
+      reading: 'はじめまして、よろしくおねがいします',
+      romaji: 'hajimemashite, yoroshiku onegaishimasu',
+    });
+    const { titleText, subtitleText } = getFlashcardDisplayText(card);
+    expect(titleText).toBe('hajimemashite, yoroshiku onegaishimasu');
+    expect(subtitleText).toBe('はじめまして、よろしくお願いします');
+  });
+
+  it('still shows romaji when the card has romaji but no kana reading', () => {
+    const card = makeCard({ mainViewMode: 'romaji', word: '会計', reading: '', romaji: 'kaikei' });
+    expect(getFlashcardDisplayText(card).titleText).toBe('kaikei');
   });
 });
 

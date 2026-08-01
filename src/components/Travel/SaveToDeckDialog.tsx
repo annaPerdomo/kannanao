@@ -1,8 +1,10 @@
 'use client';
 
 import AddIcon from '@mui/icons-material/Add';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import {
+  Alert,
   alpha,
   Box,
   Button,
@@ -14,23 +16,35 @@ import {
   Typography,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
-import { stripFurigana } from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
 import { StyledDialog } from '@/components/StyledDialog';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTravelDisplay } from '@/contexts/TravelDisplayContext';
+import { errorMessage } from '@/lib/errorMessage';
 import { dbCreateDeck, dbInsertCards, loadDecks } from '@/lib/supabase';
+import { buildTravelCards, type TravelPhrase } from '@/services/cardPipeline';
 import type { Deck } from '@/types/deck';
 
 interface SaveToDeckDialogProps {
   open: boolean;
   onClose: () => void;
-  phrases: Array<{ japanese: string; romaji: string; english: string }>;
+  phrases: TravelPhrase[];
   onSaved: () => void;
   defaultDeckName?: string;
 }
+
+/**
+ * Saving a travel phrase runs the full card pipeline (readings, example
+ * sentences, a photo per card), which takes seconds rather than milliseconds.
+ * The step is explicit in the UI: pick a deck, watch it build, then land on a
+ * confirmation with a way into the deck — not a dialog that sits there looking
+ * idle and then vanishes.
+ */
+type Step = 'choose' | 'new' | 'saving' | 'done';
 
 export function SaveToDeckDialog({
   open,
@@ -43,22 +57,24 @@ export function SaveToDeckDialog({
   const tc = useTranslations('Common');
   const theme = useTheme();
   const { brand } = theme.palette;
-  const { user } = useAuth();
+  const { user, isMemberAccount } = useAuth();
+  const { mode: displayMode } = useTravelDisplay();
+  const router = useRouter();
   const resolvedDefaultDeckName = defaultDeckName ?? t('defaultDeckName');
 
-  const [mode, setMode] = useState<'choose' | 'new'>('choose');
+  const [step, setStep] = useState<Step>('choose');
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loadingDecks, setLoadingDecks] = useState(false);
   const [newName, setNewName] = useState(resolvedDefaultDeckName);
-  const [saving, setSaving] = useState(false);
+  const [savedDeck, setSavedDeck] = useState<{ id: string; name: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open || !user) return;
-    setMode('choose');
+    setStep('choose');
     setNewName(resolvedDefaultDeckName);
     setError(null);
-    setSaving(false);
+    setSavedDeck(null);
     setLoadingDecks(true);
     loadDecks(user.id).then((loaded) => {
       setDecks(loaded);
@@ -68,68 +84,84 @@ export function SaveToDeckDialog({
 
   const insertCards = useCallback(
     async (deckId: string) => {
-      const cards = phrases.map((p) => ({
-        word: stripFurigana(p.japanese),
-        reading: p.romaji,
-        meaning: p.english,
-        image_query: '',
-        example_jp: '',
-        example_en: '',
-        deckId,
-        mainViewMode: 'romaji' as const,
-        cardType: 'phrase' as const,
-      }));
+      // Same generation + imagery as typing the phrase into the card generator,
+      // so a travel card isn't a second-class card. Member accounts have no
+      // access to the paid routes, so they get the local build instead.
+      const cards = await buildTravelCards(phrases, deckId, {
+        mainViewMode: displayMode,
+        enrich: !isMemberAccount,
+      });
       await dbInsertCards(deckId, cards);
     },
-    [phrases],
+    [phrases, displayMode, isMemberAccount],
   );
 
   const handleAddToExisting = useCallback(
     async (deck: Deck) => {
-      setSaving(true);
+      setStep('saving');
       setError(null);
       try {
         await insertCards(deck.id);
+        setSavedDeck({ id: deck.id, name: deck.name });
+        setStep('done');
         onSaved();
-        onClose();
       } catch (err) {
-        setError(err instanceof Error ? err.message : t('failedToSave'));
-      } finally {
-        setSaving(false);
+        setError(errorMessage(err, t('failedToSave')));
+        setStep('choose');
       }
     },
-    [insertCards, onSaved, onClose, t],
+    [insertCards, onSaved, t],
   );
 
   const handleCreateNew = useCallback(async () => {
     if (!newName.trim()) return;
-    setSaving(true);
+    const name = newName.trim();
+    setStep('saving');
     setError(null);
     try {
-      const deck = await dbCreateDeck(newName.trim(), t('createdFromTravelMode'));
+      const deck = await dbCreateDeck(name, t('createdFromTravelMode'));
       await insertCards(deck.id);
+      setSavedDeck({ id: deck.id, name });
+      setStep('done');
       onSaved();
-      onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('failedToCreateDeck'));
-    } finally {
-      setSaving(false);
+      setError(errorMessage(err, t('failedToCreateDeck')));
+      setStep('new');
     }
-  }, [newName, insertCards, onSaved, onClose, t]);
+  }, [newName, insertCards, onSaved, t]);
+
+  const handleGoToDeck = useCallback(() => {
+    if (!savedDeck) return;
+    onClose();
+    router.push(`/deck/${savedDeck.id}`);
+  }, [savedDeck, onClose, router]);
 
   const actions =
-    mode === 'new' ? (
+    step === 'new' ? (
       <Stack direction="row" spacing={1}>
-        <Button onClick={() => setMode('choose')} sx={{ textTransform: 'none' }}>
+        <Button onClick={() => setStep('choose')} sx={{ textTransform: 'none' }}>
           {tc('back')}
         </Button>
         <Button
           onClick={handleCreateNew}
           variant="contained"
-          disabled={!newName.trim() || saving}
+          disabled={!newName.trim()}
           sx={{ textTransform: 'none', borderRadius: 2 }}
         >
-          {saving ? t('saving') : t('createAndSave')}
+          {t('createAndSave')}
+        </Button>
+      </Stack>
+    ) : step === 'done' ? (
+      <Stack direction="row" spacing={1}>
+        <Button onClick={onClose} sx={{ textTransform: 'none' }}>
+          {t('keepBrowsing')}
+        </Button>
+        <Button
+          onClick={handleGoToDeck}
+          variant="contained"
+          sx={{ textTransform: 'none', borderRadius: 2 }}
+        >
+          {t('goToDeck')}
         </Button>
       </Stack>
     ) : undefined;
@@ -137,24 +169,45 @@ export function SaveToDeckDialog({
   return (
     <StyledDialog
       open={open}
-      onClose={onClose}
-      title={t('title', { count: phrases.length })}
-      subtitle={t('subtitle')}
+      onClose={step === 'saving' ? () => {} : onClose}
+      closeDisabled={step === 'saving'}
+      title={step === 'done' ? t('savedTitle') : t('title', { count: phrases.length })}
+      subtitle={step === 'done' ? undefined : t('subtitle')}
       icon={<LibraryAddIcon sx={{ fontSize: 22, color: brand[600] }} />}
       actions={actions}
       titleId="save-to-deck-title"
     >
       {error && (
-        <Typography variant="body2" sx={{ color: 'error.main', mb: 1.5 }}>
+        <Alert severity="error" sx={{ mb: 2, fontSize: '0.8rem', borderRadius: 2 }}>
           {error}
-        </Typography>
+        </Alert>
       )}
 
-      {mode === 'choose' && (
+      {/* One message, not two — the mascot and the message together already say
+          "this is working, give it a moment". */}
+      {step === 'saving' && (
+        <Box sx={{ py: 2 }}>
+          <Loading message={t('savingTitle', { count: phrases.length })} />
+        </Box>
+      )}
+
+      {step === 'done' && savedDeck && (
+        <Stack spacing={1.5} sx={{ alignItems: 'center', py: 1.5, textAlign: 'center' }}>
+          <CheckCircleIcon sx={{ fontSize: 40, color: 'success.main' }} />
+          <Typography variant="body1" sx={{ fontWeight: 700 }}>
+            {t('savedBody', { count: phrases.length, deck: savedDeck.name })}
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {t('savedHint')}
+          </Typography>
+        </Stack>
+      )}
+
+      {step === 'choose' && (
         <Stack spacing={1.5}>
           <Button
             startIcon={<AddIcon />}
-            onClick={() => setMode('new')}
+            onClick={() => setStep('new')}
             variant="outlined"
             fullWidth
             sx={{
@@ -191,7 +244,6 @@ export function SaveToDeckDialog({
                   <ListItemButton
                     key={deck.id}
                     onClick={() => handleAddToExisting(deck)}
-                    disabled={saving}
                     sx={{ borderRadius: 1.5 }}
                   >
                     <ListItemText
@@ -212,7 +264,7 @@ export function SaveToDeckDialog({
         </Stack>
       )}
 
-      {mode === 'new' && (
+      {step === 'new' && (
         <Stack spacing={2}>
           <TextField
             label={t('deckNameLabel')}

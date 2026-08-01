@@ -80,11 +80,14 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // ─── ResizeObserver mock ─────────────────────────────────────────────────────
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+// A real class, not `vi.fn().mockImplementation(...)`: MUI's TextareaAutosize
+// calls `new ResizeObserver(...)`, and the mock form threw "is not a
+// constructor" for any test that mounted a multiline TextField.
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
 
 // ─── localStorage mock ───────────────────────────────────────────────────────
 const localStorageMock = (() => {

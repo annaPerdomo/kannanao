@@ -18,6 +18,16 @@ interface CardSettingsPanelProps {
   reading: string;
 }
 
+/**
+ * The mode toggles preview the card's own text. A phrase card ("はじめまして、
+ * よろしくおねがいします") used that whole string as a button label and pushed
+ * the row off the side of the dialog, so the preview is clipped — the real
+ * value is in the editable field a few rows below.
+ */
+const PREVIEW_MAX = 8;
+const preview = (text: string) =>
+  text.length > PREVIEW_MAX ? `${text.slice(0, PREVIEW_MAX)}…` : text;
+
 export function CardSettingsPanel({
   mainViewMode,
   onMainViewModeChange,
@@ -31,7 +41,7 @@ export function CardSettingsPanel({
   const t = useTranslations('Deck.editCardDialog.settingsPanel');
   const theme = useTheme();
   const { brand } = theme.palette;
-  const modeField = mainViewMode === 'kanji' ? word : reading;
+  const modeField = preview(mainViewMode === 'kanji' ? word : reading);
   const modeHint =
     mainViewMode === 'romaji'
       ? t('modeHintRomaji')
@@ -58,7 +68,7 @@ export function CardSettingsPanel({
     <>
       {/* View Mode */}
       <Box sx={rowSx}>
-        <Box>
+        <Box sx={{ minWidth: 0 }}>
           <Typography sx={labelSx}>{t('mainViewModeLabel')}</Typography>
           <Typography sx={{ ...descSx, transition: 'opacity 0.15s ease' }}>
             {modeHint}
@@ -85,10 +95,12 @@ export function CardSettingsPanel({
             <ToggleButton value="romaji">{t('romajiOption')}</ToggleButton>
           </Tooltip>
           <Tooltip title={t('hiraganaTooltip')} placement="top">
-            <ToggleButton value="hiragana">{reading || t('hiraganaFallback')}</ToggleButton>
+            <ToggleButton value="hiragana">
+              {preview(reading) || t('hiraganaFallback')}
+            </ToggleButton>
           </Tooltip>
           <Tooltip title={t('kanjiTooltip')} placement="top">
-            <ToggleButton value="kanji">{word || t('kanjiFallback')}</ToggleButton>
+            <ToggleButton value="kanji">{preview(word) || t('kanjiFallback')}</ToggleButton>
           </Tooltip>
         </ToggleButtonGroup>
       </Box>

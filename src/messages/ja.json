@@ -62,7 +62,8 @@
       "descriptionLabel": "説明（任意）",
       "pinToHome": "ホームにピン留め",
       "pinToHomeHelper": "このデッキをホームに表示します",
-      "addCardsOptional": "カードを追加（任意）"
+      "addCardsOptional": "カードを追加（任意）",
+      "createFailed": "デッキを作成できませんでした。もう一度お試しください。"
     },
     "deckHeader": {
       "saveTooltip": "保存（Enter）",
@@ -192,6 +193,11 @@
           "placeholder": "例: ねこ",
           "helperText": "ひらがな・カタカナの読み"
         },
+        "romaji": {
+          "label": "ローマ字",
+          "placeholder": "例：yoroshiku onegaishimasu",
+          "helperText": "単語ごとにスペースを空けたローマ字"
+        },
         "meaning": {
           "label": "意味（英語）",
           "placeholder": "例: cat",
@@ -222,18 +228,10 @@
       "editCardTooltip": "カードを編集",
       "deleteCardTooltip": "カードを削除"
     },
-    "generateForm": {
-      "wordPlaceholder": "単語やフレーズを入力…",
-      "generating": "作成中…",
-      "generateCards": "カードを作成",
-      "itemsQueued": "{count, plural, other {#件が待機中}}"
-    },
     "pdfImportModal": {
       "title": "📄 PDFから取り込み",
       "subtitle": "書類から単語を抜き出します",
       "extractCards": "カードを抽出",
-      "reExtract": "もう一度抽出",
-      "addCardsToDeck": "{count, plural, other {カード#枚をデッキに追加}}",
       "extracting": "カードを抽出中…",
       "pleaseUploadPdf": "PDFファイルをアップロードしてください。",
       "fileSizeError": "ファイルは20MB以下にしてください。",
@@ -244,9 +242,17 @@
       "orClickToBrowse": "またはクリックして選択 · PDFのみ · 20MBまで",
       "clickToReplace": "{size} KB · クリックで差し替え",
       "fieldsExtracted": "抽出される項目",
-      "extractedFields": ["単語", "読み方", "意味", "日本語の例文", "英語の例文", "JLPTレベル"],
-      "cardsExtractedCount": "{count, plural, other {カード#枚を抽出}}",
-      "moreCards": "{count, plural, other {ほか#枚}}"
+      "extractedFields": [
+        "単語",
+        "読み方",
+        "ローマ字",
+        "意味",
+        "日本語の例文",
+        "英語の例文",
+        "JLPTレベル"
+      ],
+      "addingCards": "カードを追加中…",
+      "noCardsFound": "このPDFから単語が見つかりませんでした。別のファイルをお試しください。"
     },
     "reorderBanner": {
       "defaultLabel": "ドラッグして並べ替えできます。終わったら「完了」を押してください。"
@@ -276,7 +282,8 @@
         "furiganaHint": "💡 <code>{example}</code> と書くと、カードの漢字の上に読みがつきます",
         "furiganaHintExample": "'{'漢字|かんじ'}'",
         "exampleJpFieldLabel": "例文（日本語）",
-        "exampleEnFieldLabel": "例文（英語）"
+        "exampleEnFieldLabel": "例文（英語）",
+        "noMeaningPlaceholder": "意味が未設定"
       }
     },
     "shareDeckDialog": {
@@ -1525,7 +1532,13 @@
       "createAndSave": "作成して保存",
       "failedToSave": "保存に失敗しました",
       "failedToCreateDeck": "デッキを作成できませんでした",
-      "createdFromTravelMode": "トラベルモードから作成"
+      "createdFromTravelMode": "トラベルモードから作成",
+      "savingTitle": "{count, plural, other {カード#枚を作成中…}}",
+      "savedTitle": "保存しました！",
+      "savedBody": "{count, plural, other {「{deck}」にカード#枚を追加しました}}",
+      "savedHint": "いつでも学習を始められます。",
+      "goToDeck": "デッキを開く",
+      "keepBrowsing": "続けて見る"
     },
     "phrases": {
       "backToHub": "トラベルのトップにもどる",

@@ -168,4 +168,15 @@ describe('POST /api/generate', () => {
     const body = await res.json();
     expect(body.error).toBe('Internal server error');
   });
+
+  it('normalizes per-character furigana before returning the cards', async () => {
+    // Gemini writes compounds both ways; the app downstream should only ever
+    // see one of them, whatever the prompt asked for.
+    mockGeminiSuccess([
+      { word: '学校', reading: 'がっこう', example_jp: '{学校|がっ|こう}へ行きます' },
+    ]);
+    const res = await POST(makeRequest({ pendingWords: ['学校'] }));
+    const body = await res.json();
+    expect(body[0].example_jp).toBe('{学|がっ}{校|こう}へ行きます');
+  });
 });
