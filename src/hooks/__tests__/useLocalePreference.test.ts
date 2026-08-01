@@ -123,6 +123,9 @@ describe('useLocalePreference', () => {
   });
 
   it('still writes the cookie when there is no signed-in user', async () => {
+    // Not `/` — an anonymous visitor there is on the rewritten landing, which
+    // hard-navigates instead of refreshing (see the landing describe block).
+    activePathname = '/decks/abc';
     mockGetUser.mockResolvedValue({ data: { user: null } });
     const { result } = renderHook(() => useLocalePreference());
 
@@ -200,6 +203,37 @@ describe('useLocalePreference', () => {
 
       expect(assign).toHaveBeenCalledWith('/landing/ja');
       expect(mockRefresh).not.toHaveBeenCalled();
+    });
+
+    // The English landing is a middleware REWRITE of `/`, so usePathname() says
+    // `/`, never '/landing'. Match the target path alone and every real
+    // anonymous visitor is stuck: cookie written, snackbar saved, still English.
+    it('navigates from the rewritten `/` landing to the Japanese canonical URL', async () => {
+      activePathname = '/';
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+      const { result } = renderHook(() => useLocalePreference());
+
+      await act(async () => {
+        await result.current.setLocale('ja');
+      });
+
+      expect(readCookie()).toBe('ja');
+      expect(assign).toHaveBeenCalledWith('/landing/ja');
+      expect(mockRefresh).not.toHaveBeenCalled();
+    });
+
+    // Same URL, opposite route: for a signed-in user `/` is the dashboard, a
+    // dynamic route where refresh() picks the new language up correctly.
+    it('refreshes rather than navigating on `/` for a signed-in user', async () => {
+      activePathname = '/';
+      const { result } = renderHook(() => useLocalePreference());
+
+      await act(async () => {
+        await result.current.setLocale('ja');
+      });
+
+      expect(assign).not.toHaveBeenCalled();
+      expect(mockRefresh).toHaveBeenCalledTimes(1);
     });
 
     it('does not navigate on a no-op re-pick of the current language', async () => {

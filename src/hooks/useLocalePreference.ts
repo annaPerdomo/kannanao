@@ -7,6 +7,11 @@ import { type Locale, resolveLocale } from '@/i18n/config';
 import { writeLocaleCookie } from '@/i18n/localeCookie';
 import { sb, updateProfileLocale } from '@/lib/supabase';
 
+function isStaticLanding(pathname: string | null, user: { id: string } | null) {
+  if (pathname === '/landing' || pathname?.startsWith('/landing/')) return true;
+  return pathname === '/' && !user;
+}
+
 /**
  * The language picker's persistence: the account row, the cookie, and the
  * re-render, in that order.
@@ -72,9 +77,11 @@ export function useLocalePreference() {
       if (next !== active) {
         // The landing pages are per-language STATIC routes — refresh() would
         // re-serve the same page in the same language and the switch would
-        // silently no-op. Navigate to the new language's canonical URL instead
-        // (same pair the landing's own toggle links to).
-        if (pathname === '/landing' || pathname?.startsWith('/landing/')) {
+        // silently no-op. Navigate to the new language's canonical URL instead.
+        // `/` counts too, but only when anonymous: the middleware REWRITES
+        // anonymous `/` to /landing, so usePathname() reports `/`, never
+        // '/landing'. Signed in, the same `/` is the dashboard — refresh() there.
+        if (isStaticLanding(pathname, user)) {
           window.location.assign(next === 'ja' ? '/landing/ja' : '/');
           return;
         }
