@@ -1,22 +1,5 @@
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
 
-export const SAKURA_CARD: FlashcardType = {
-  id: 'demo-sakura',
-  word: '桜',
-  reading: 'さくら',
-  meaning: 'cherry blossom',
-  image_query: 'cherry blossom japan',
-  imageUrl:
-    'https://images.unsplash.com/photo-1522383225653-ed111181a951?auto=format&fit=crop&w=600&q=80',
-  example_jp: '{桜|さくら}の{花|はな}が{綺麗|きれい}に{咲|さ}いています。',
-  example_en: 'The cherry blossoms are blooming beautifully.',
-  deckId: 'demo',
-  mainViewMode: 'kanji',
-  cardType: 'word',
-  jlptLevel: 'N5',
-  position: 0,
-};
-
 export const YUME_CARD: FlashcardType = {
   id: 'demo-yume',
   word: '夢',

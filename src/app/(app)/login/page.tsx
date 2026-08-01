@@ -22,13 +22,13 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { LANDING_DISPLAY_FONT, landingFontClass } from '@/app/landing/landingFonts';
+import { SakuraDrift } from '@/components/SakuraDrift';
 import { SakuraIcon } from '@/components/SakuraIcon';
 import WaitlistForm from '@/components/WaitlistForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { APP_NAME } from '@/lib/brand';
 
 import { LocalePill } from './LocalePill';
-import { SakuraDrift } from './SakuraDrift';
 
 export default function LoginPage() {
   const t = useTranslations('Auth.login');

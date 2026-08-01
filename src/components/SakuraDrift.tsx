@@ -3,10 +3,10 @@
 import Box from '@mui/material/Box';
 import { keyframes } from '@mui/material/styles';
 
-// Wind petals matching the painted ones in /login/background*.webp: soft pink
-// ovals blowing from the top-right canopy toward the lower left. Colors are
-// sampled from the artwork, not the theme — the backdrop is the same in every
-// color scheme.
+// Wind petals matching the painted sakura backdrops (login background, landing
+// hero): soft pink ovals blowing from the top-right canopy toward the lower
+// left. Colors are sampled from the artwork, not the theme — the backdrops are
+// the same in every color scheme.
 const drift = keyframes`
   0% { transform: translate3d(0, -8vh, 0); opacity: 0; }
   7% { opacity: var(--petal-o); }
@@ -90,7 +90,16 @@ const PETALS = [
   },
 ];
 
-export function SakuraDrift() {
+interface SakuraDriftProps {
+  /**
+   * Default 0 keeps the petals in the backdrop; raise it above the content's
+   * layer to have them blow across the front of the scene. Safe at any depth —
+   * the layer never takes pointers.
+   */
+  zIndex?: number;
+}
+
+export function SakuraDrift({ zIndex = 0 }: SakuraDriftProps) {
   return (
     <Box
       aria-hidden
@@ -99,7 +108,7 @@ export function SakuraDrift() {
         inset: 0,
         pointerEvents: 'none',
         overflow: 'hidden',
-        zIndex: 0,
+        zIndex,
         '@media (prefers-reduced-motion: reduce)': { display: 'none' },
       }}
     >
