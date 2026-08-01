@@ -26,8 +26,8 @@ interface ShareEmbedSectionProps {
 }
 
 /**
- * Public-sharing switch plus the embed snippet it unlocks. Lives on its own so
- * the deck settings dialog and the standalone share dialog show the same thing.
+ * Public-sharing switch plus the embed snippet it unlocks. Shared so the deck
+ * settings dialog and the standalone share dialog stay identical.
  */
 export function ShareEmbedSection({
   deckId,

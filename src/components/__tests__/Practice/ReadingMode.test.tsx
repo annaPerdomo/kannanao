@@ -4,8 +4,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import type { Flashcard } from '@/types/flashcard';
 
-// ─── Mocks ────────────────────────────────────────────────────────────────────
-
 const recordAnswer = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('@/hooks/useProgress', () => ({
@@ -32,8 +30,6 @@ vi.mock('@/contexts/BuddyReactionContext', () => ({
 vi.mock('@/components/SpeakButton', () => ({ SpeakButton: () => null }));
 
 import { ReadingMode } from '@/components/Practice/ReadingMode';
-
-// ─── Test data ────────────────────────────────────────────────────────────────
 
 function makeCard(id: string, overrides: Partial<Flashcard> = {}): Flashcard {
   return {

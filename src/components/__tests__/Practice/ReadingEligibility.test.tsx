@@ -5,8 +5,6 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 import type { PracticeMode } from '@/types/app';
 import type { Flashcard } from '@/types/flashcard';
 
-// ─── Mocks ────────────────────────────────────────────────────────────────────
-
 const cards = vi.hoisted(() => ({ current: [] as Flashcard[] }));
 const readingUnlocked = vi.hoisted(() => ({ current: true }));
 
@@ -44,7 +42,6 @@ vi.mock('@/contexts/BuddyReactionContext', () => ({
 
 vi.mock('@/components/SpeakButton', () => ({ SpeakButton: () => null }));
 
-// The other modes are irrelevant here and only slow the page down — stub them.
 vi.mock('@/components/Practice/MatchMode', () => ({ MatchMode: () => null }));
 vi.mock('@/components/Practice/FillMode', () => ({ FillMode: () => null }));
 vi.mock('@/components/Practice/RecallMode', () => ({ RecallMode: () => null }));
@@ -56,8 +53,6 @@ vi.mock('@/components/Practice/KotobaBubbleMode/KotobaBubbleSetup', () => ({
 }));
 
 import Practice from '@/pages/Practice';
-
-// ─── Test data ────────────────────────────────────────────────────────────────
 
 function makeCard(id: string, word: string, reading: string): Flashcard {
   return {

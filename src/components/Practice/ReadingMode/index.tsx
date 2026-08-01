@@ -57,7 +57,6 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
   const correctCountRef = useRef(0);
   const totalAnsweredRef = useRef(0);
 
-  // localStorage is client-only, so the remembered choice is read after mount.
   useEffect(() => setInputMode(loadInputMode()), []);
 
   useEffect(() => {
@@ -156,7 +155,6 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queue.phase]);
 
-  // ── Round transition screen ────────────────────────────────────────────────
   if (queue.phase === 'roundEnd') {
     return (
       <RoundTransition
@@ -172,7 +170,6 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
     );
   }
 
-  // ── Completion screen ──────────────────────────────────────────────────────
   if (queue.phase === 'allDone') {
     const pct = queue.totalCards > 0 ? queue.firstAttemptCorrect / queue.totalCards : 0;
     const praise = pickPraise(pct, praiseSeed);
@@ -193,7 +190,6 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
 
   if (!card) return null;
 
-  // ── Reading question ───────────────────────────────────────────────────────
   return (
     <Box sx={{ position: 'relative' }}>
       {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}

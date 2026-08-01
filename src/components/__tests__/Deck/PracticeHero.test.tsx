@@ -1,8 +1,7 @@
 import { screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-// Direct import, not the barrel: pulling in DeckHeader & friends would only
-// slow this suite down and muddy its coverage.
+// Direct import, not the barrel — DeckHeader & friends would muddy the coverage.
 import { PracticeHero } from '@/components/Deck/PracticeHero';
 import { renderWithProviders } from '@/test/renderWithProviders';
 

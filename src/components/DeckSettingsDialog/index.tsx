@@ -24,10 +24,7 @@ interface DeckSettingsDialogProps {
   onReadingChange: (enabled: boolean) => void;
 }
 
-/**
- * Everything a deck's owner can switch on or off, in one place: which practice
- * modes are open to learners, and whether the deck is shared publicly.
- */
+/** Everything a deck's owner can switch on or off, in one place. */
 export function DeckSettingsDialog({
   open,
   onClose,

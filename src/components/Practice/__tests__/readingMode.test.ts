@@ -25,8 +25,6 @@ function makeCard(overrides: Partial<Flashcard> = {}): Flashcard {
   };
 }
 
-// ─── eligibility ──────────────────────────────────────────────────────────────
-
 describe('isReadingCard', () => {
   it('accepts a kanji word with a kana reading', () => {
     expect(isReadingCard(makeCard())).toBe(true);
@@ -74,8 +72,6 @@ describe('eligibleReadingCards', () => {
     expect(MIN_READING_CARDS).toBeGreaterThan(1);
   });
 });
-
-// ─── remembered input style ───────────────────────────────────────────────────
 
 describe('reading input preference', () => {
   beforeEach(() => localStorage.clear());

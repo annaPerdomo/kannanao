@@ -72,8 +72,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   const readingLocked =
     mode === 'reading' && decks.find((d) => d.id === deckId)?.readingPractice !== true;
 
-  // Reading needs the deck unlocked AND a few kanji cards, or the round is over
-  // before it starts — either way the learner gets one message, not a dead end.
+  // Locked and too-few-cards get the same message, so neither is a dead end.
   if (readingLocked || (mode === 'reading' && modeCards.length < MIN_READING_CARDS)) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>

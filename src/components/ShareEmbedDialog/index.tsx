@@ -21,8 +21,7 @@ interface ShareEmbedDialogProps {
 
 /**
  * Share-only dialog for the deck list and the dashboard, where there is no deck
- * page to hang settings off. The deck page shows the same section inside
- * DeckSettingsDialog instead.
+ * page to hang settings off — the deck page uses DeckSettingsDialog instead.
  */
 export function ShareEmbedDialog({
   open,
