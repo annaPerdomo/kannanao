@@ -46,8 +46,9 @@ export function HeroSection() {
         // toward the copy; reclaiming the top padding buys the row ~24px.
         '@media (min-width: 1200px) and (max-height: 900px)': { pt: 2 },
         // Below lg the copy stacks above the unveiled band of artwork at the
-        // hero's bottom edge; this keeps it clear of the characters.
-        pb: { xs: 26, sm: 32, lg: 4 },
+        // hero's bottom edge; this keeps it clear of the characters on short
+        // viewports. Where the friends sit is HeroBackdrop's objectPosition.
+        pb: { xs: 16, sm: 26, lg: 4 },
         px: { xs: 2, sm: 4, md: 6, lg: 7 },
         // The headline is the LCP element wherever the artwork doesn't outsize
         // it, so its entrance must run from CSS (not useInView) and must not
@@ -98,7 +99,9 @@ export function HeroSection() {
           }}
         >
           {/* Frosted reading surface — the trees and sun glow behind the copy
-              vary too much for halos alone. Below lg the backdrop's wash does it. */}
+              vary too much for halos alone. Below lg the portrait cut keeps a
+              bank of open sky where the copy lands, so nothing has to cover the
+              painting. */}
           <Box
             aria-hidden
             sx={{
@@ -136,11 +139,25 @@ export function HeroSection() {
               component="h1"
               sx={{
                 // Each step sets the longest headline line ("Remember forever.")
-                // flush with the column's right padding at that breakpoint.
-                fontSize: { xs: '2.1rem', sm: '2.9rem', lg: '3.35rem', xl: '3.75rem' },
+                // flush with the column's right padding. The phone step tracks
+                // the viewport: at a fixed 2.1rem the line wraps to five on a
+                // 375px screen and shoves the friends off it.
+                fontSize: {
+                  xs: 'clamp(1.5rem, 8.2vw, 2.1rem)',
+                  sm: '2.9rem',
+                  lg: '3.35rem',
+                  xl: '3.75rem',
+                },
                 lineHeight: 1.02,
                 mb: { xs: 1.75, sm: 2 },
-                background: `linear-gradient(120deg, ${purple[600]} 0%, ${purple[500]} 30%, ${pink[500]} 70%, ${pink[600]} 100%)`,
+                // Two steps darker below lg, where the headline sits on the
+                // portrait cut's canopy rather than the frosted card and the
+                // mid-tones measured ~2:1. The white drop-shadow halos below
+                // don't count toward WCAG.
+                background: {
+                  xs: `linear-gradient(120deg, ${purple[800]} 0%, ${purple[700]} 30%, ${pink[800]} 70%, ${pink[900]} 100%)`,
+                  lg: `linear-gradient(120deg, ${purple[600]} 0%, ${purple[500]} 30%, ${pink[500]} 70%, ${pink[600]} 100%)`,
+                },
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -156,10 +173,10 @@ export function HeroSection() {
 
             <Typography
               sx={{
-                fontSize: { xs: '0.95rem', sm: '1.05rem' },
+                fontSize: { xs: '0.9rem', sm: '1.05rem' },
                 color: 'text.primary',
                 fontWeight: 500,
-                lineHeight: { xs: 1.55, sm: 1.7 },
+                lineHeight: { xs: 1.45, sm: 1.7 },
                 // Reaches the same right edge as the headline and the CTA row.
                 maxWidth: { xs: 340, sm: 480, lg: 620, xl: 630 },
                 mx: { xs: 'auto', lg: 0 },

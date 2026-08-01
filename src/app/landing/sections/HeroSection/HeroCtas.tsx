@@ -31,8 +31,13 @@ function WaitlistLink({ sx }: { sx?: SxProps<Theme> }) {
           textShadow: '0 1px 3px rgba(255,255,255,0.9), 0 1px 10px rgba(255,255,255,0.7)',
           borderRadius: 99,
           px: 1.5,
+          // Below lg the link lands on bare artwork — usually a friend's face —
+          // so it carries its own pill; inside the desktop card it needs none.
+          // No backdrop-filter: at 0.85 there is nothing left to blur, and it
+          // would promote the pill to its own layer under SakuraDrift.
+          bgcolor: { xs: alpha('#fff', 0.85), lg: 'transparent' },
           transition: 'background-color 0.2s ease',
-          '&:hover': { bgcolor: alpha('#fff', 0.62) },
+          '&:hover': { bgcolor: alpha('#fff', 0.86) },
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -185,8 +190,10 @@ export function HeroCtas() {
       <Box sx={{ flexBasis: '100%', height: 0, display: { xs: 'none', sm: 'block' } }} />
       {/* Negative `mt` tucks the link under the pills: the card's bottom padding
           is deliberately thin (it would clip the painted friends), so the link
-          has to come up to leave its hover pill clearance from the card's edge. */}
-      <WaitlistLink sx={{ mt: { lg: -1.25 } }} />
+          has to come up to leave its hover pill clearance from the card's edge.
+          `alignSelf` keeps the stacked Stack from stretching the pill into what
+          reads as a third button. */}
+      <WaitlistLink sx={{ alignSelf: { xs: 'center', sm: 'auto' }, mt: { lg: -1.25 } }} />
     </Stack>
   );
 }
