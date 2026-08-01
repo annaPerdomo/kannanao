@@ -16,7 +16,7 @@ const JA_LANDING = '/landing/ja';
  * then English.
  *
  * The cookie comes first because it is the only signal the visitor chose on
- * purpose — the landing's language toggle writes it. A Japanese browser whose
+ * purpose — the NavBar's language menu writes it. A Japanese browser whose
  * owner clicked EN must keep getting English, which is why an explicit pick is
  * not merely a tiebreak against the header.
  *

@@ -2999,11 +2999,6 @@
         }
       ]
     },
-    "languageToggle": {
-      "ariaLabel": "Language",
-      "en": "English",
-      "ja": "Japanese"
-    },
     "hero": {
       "waitlistBadge": "Closed beta — join the waitlist",
       "headline": "Create less.<br></br>Teach more.<br></br>Learn better.",

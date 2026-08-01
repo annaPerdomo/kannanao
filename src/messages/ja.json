@@ -2999,11 +2999,6 @@
         }
       ]
     },
-    "languageToggle": {
-      "ariaLabel": "言語",
-      "en": "英語",
-      "ja": "日本語"
-    },
     "hero": {
       "waitlistBadge": "クローズドベータ — ウェイトリスト受付中",
       "headline": "準備は少なく。<br></br>授業はもっと。<br></br>学びはずっと。",
