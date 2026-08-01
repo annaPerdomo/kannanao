@@ -92,7 +92,12 @@
       "lockedAria": "{label} (locked)",
       "locked": "Locked 🔒",
       "play": "Play →",
-      "unlockHint": "Add at least 2 cards to unlock practice modes."
+      "unlockHint": "Add at least 2 cards to unlock practice modes.",
+      "readingSwitchTitle": "Kanji reading practice",
+      "readingSwitchOn": "On — learners can practice {count, plural, one {# kanji word} other {# kanji words}} in this deck",
+      "readingSwitchOff": "Off — turn it on when your learners are ready for kanji",
+      "readingSwitchNoKanji": "This deck has no kanji words yet",
+      "readingSwitchAria": "Kanji reading practice for this deck"
     },
     "practiceModes": {
       "match": {
@@ -607,6 +612,7 @@
       "loadingSession": "Loading your practice session…",
       "notEnoughCards": "Not enough cards to practice. Add more cards to this deck.",
       "noKanjiCards": "This deck needs a few kanji words before you can practice reading. Cards written only in kana already show their reading!",
+      "readingLocked": "Reading practice isn't open for this deck yet.",
       "pickAnotherMode": "Pick another way to practice",
       "cardsBadge": "{count, plural, one {# card} other {# cards}}",
       "modeTitles": {

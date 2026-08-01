@@ -58,6 +58,7 @@ import {
   dbPinDeck,
   dbRenameDeck,
   dbSetDeckPublic,
+  dbSetDeckReadingPractice,
   dbShareDeck,
   dbUpdateCard,
   dbUpdateDeckEmoji,
@@ -296,6 +297,24 @@ describe('dbSetDeckPublic', () => {
   it('should throw when the update errors', async () => {
     setTable('decks', null, new Error('Public error'));
     await expect(dbSetDeckPublic('deck-1', true)).rejects.toThrow('Public error');
+  });
+});
+
+// ─── dbSetDeckReadingPractice ─────────────────────────────────────────────────
+
+describe('dbSetDeckReadingPractice', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setTable('decks', null, null);
+  });
+
+  it('should resolve without throwing on success', async () => {
+    await expect(dbSetDeckReadingPractice('deck-1', true)).resolves.toBeUndefined();
+  });
+
+  it('should throw when the update errors', async () => {
+    setTable('decks', null, new Error('Reading error'));
+    await expect(dbSetDeckReadingPractice('deck-1', true)).rejects.toThrow('Reading error');
   });
 });
 

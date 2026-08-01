@@ -9,9 +9,11 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 function Harness({
   onAccuracyChange = vi.fn(),
   onModeChange = vi.fn(),
+  unavailableModes,
 }: {
   onAccuracyChange?: (v: number | null) => void;
   onModeChange?: (v: GoalMode | null) => void;
+  unavailableModes?: readonly GoalMode[];
 }) {
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [mode, setMode] = useState<GoalMode | null>(null);
@@ -19,6 +21,7 @@ function Harness({
     <AssignmentGoalPicker
       accuracy={accuracy}
       mode={mode}
+      unavailableModes={unavailableModes}
       onAccuracyChange={(v) => {
         setAccuracy(v);
         onAccuracyChange(v);
@@ -48,6 +51,19 @@ describe('AssignmentGoalPicker', () => {
     expect(screen.getByRole('button', { name: '80%' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Match' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sentence Builder' })).toBeInTheDocument();
+  });
+
+  it('offers Reading when the deck has unlocked it', () => {
+    renderWithProviders(<Harness />);
+    fireEvent.click(screen.getByRole('button', { name: /add a goal/i }));
+    expect(screen.getByRole('button', { name: 'Reading' })).toBeInTheDocument();
+  });
+
+  it('hides a goal mode the chosen deck cannot answer', () => {
+    renderWithProviders(<Harness unavailableModes={['reading']} />);
+    fireEvent.click(screen.getByRole('button', { name: /add a goal/i }));
+    expect(screen.queryByRole('button', { name: 'Reading' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Match' })).toBeInTheDocument();
   });
 
   it('reports accuracy chip selection', () => {

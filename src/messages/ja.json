@@ -92,7 +92,12 @@
       "lockedAria": "{label}（ロック中）",
       "locked": "ロック中 🔒",
       "play": "あそぶ →",
-      "unlockHint": "カードを2枚以上追加すると練習モードが使えます。"
+      "unlockHint": "カードを2枚以上追加すると練習モードが使えます。",
+      "readingSwitchTitle": "漢字のよみかた練習",
+      "readingSwitchOn": "オン — このデッキの漢字{count, plural, other {#語}}を練習できます",
+      "readingSwitchOff": "オフ — 漢字の準備ができたらオンにしてください",
+      "readingSwitchNoKanji": "このデッキにはまだ漢字の言葉がありません",
+      "readingSwitchAria": "このデッキの漢字のよみかた練習"
     },
     "practiceModes": {
       "match": {
@@ -607,6 +612,7 @@
       "loadingSession": "練習を準備しています…",
       "notEnoughCards": "練習するにはカードが足りません。このデッキにカードを追加してください。",
       "noKanjiCards": "よみかたの練習には、漢字のカードがもう少し必要です。かなだけのカードは、もう読み方が見えています！",
+      "readingLocked": "このデッキのよみかた練習は、まだ開いていません。",
       "pickAnotherMode": "ほかの練習を選ぶ",
       "cardsBadge": "{count, plural, other {カード#枚}}",
       "modeTitles": {

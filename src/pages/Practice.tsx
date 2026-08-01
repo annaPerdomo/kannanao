@@ -19,6 +19,7 @@ import {
 } from '@/components/Practice/ReadingMode';
 import { RecallMode } from '@/components/Practice/RecallMode';
 import { useCards } from '@/hooks/useCards';
+import { useDecks } from '@/hooks/useDecks';
 import { LAYOUT } from '@/theme';
 import type { PracticeMode } from '@/types/app';
 
@@ -34,6 +35,8 @@ const BATCH_PICKER_THRESHOLD = 10;
 export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   const t = useTranslations('Practice.page');
   const { cards, loading } = useCards(deckId);
+  // Only Reading is deck-gated, so only Reading pays for the decks query.
+  const { decks, loading: decksLoading } = useDecks(mode === 'reading');
   const [batchSize, setBatchSize] = useState<number | null>(null);
 
   const modeTitles: Record<PracticeMode, string> = {
@@ -57,7 +60,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
         : cards;
   const badge = t('cardsBadge', { count: modeCards.length });
 
-  if (loading) {
+  if (loading || decksLoading) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <Loading message={t('loadingSession')} />
@@ -65,8 +68,13 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
     );
   }
 
-  // Reading needs a few kanji cards or the round is over before it starts.
-  if (mode === 'reading' && modeCards.length < MIN_READING_CARDS) {
+  // Typing the URL must not get past the deck's Reading switch either.
+  const readingLocked =
+    mode === 'reading' && decks.find((d) => d.id === deckId)?.readingPractice !== true;
+
+  // Reading needs the deck unlocked AND a few kanji cards, or the round is over
+  // before it starts — either way the learner gets one message, not a dead end.
+  if (readingLocked || (mode === 'reading' && modeCards.length < MIN_READING_CARDS)) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
@@ -75,7 +83,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
             📖
           </Typography>
           <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 420, mx: 'auto' }}>
-            {t('noKanjiCards')}
+            {readingLocked ? t('readingLocked') : t('noKanjiCards')}
           </Typography>
           <Button variant="contained" size="large" onClick={onBack}>
             {t('pickAnotherMode')}

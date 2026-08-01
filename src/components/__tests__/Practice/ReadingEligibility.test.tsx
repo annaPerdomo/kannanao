@@ -2,14 +2,23 @@ import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { renderWithProviders } from '@/test/renderWithProviders';
+import type { PracticeMode } from '@/types/app';
 import type { Flashcard } from '@/types/flashcard';
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
 const cards = vi.hoisted(() => ({ current: [] as Flashcard[] }));
+const readingUnlocked = vi.hoisted(() => ({ current: true }));
 
 vi.mock('@/hooks/useCards', () => ({
   useCards: () => ({ cards: cards.current, loading: false }),
+}));
+
+vi.mock('@/hooks/useDecks', () => ({
+  useDecks: () => ({
+    decks: [{ id: 'deck-1', readingPractice: readingUnlocked.current }],
+    loading: false,
+  }),
 }));
 
 vi.mock('@/hooks/useProgress', () => ({
@@ -83,10 +92,26 @@ function renderReading() {
   return renderWithProviders(<Practice deckId="deck-1" mode="reading" onBack={vi.fn()} />);
 }
 
+function renderMode(mode: PracticeMode) {
+  return renderWithProviders(<Practice deckId="deck-1" mode={mode} onBack={vi.fn()} />);
+}
+
 describe('Reading mode eligibility on the practice page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    readingUnlocked.current = true;
+  });
+
+  it('turns away a learner who types the URL for a locked deck', async () => {
+    cards.current = KANJI_CARDS;
+    readingUnlocked.current = false;
+    renderReading();
+
+    await waitFor(() =>
+      expect(screen.getByText(/isn't open for this deck yet/)).toBeInTheDocument(),
+    );
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 
   it('sends a kana-only deck back to the picker instead of an empty round', async () => {
@@ -111,5 +136,50 @@ describe('Reading mode eligibility on the practice page', () => {
 
     await waitFor(() => expect(screen.getByRole('progressbar')).toBeInTheDocument());
     expect(screen.getByText('4 cards')).toBeInTheDocument();
+  });
+});
+
+// The gate sits in the middle of the page's mode routing, so keep the ordinary
+// paths honest too — none of them should be reading-gated.
+describe('practice page mode routing', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    readingUnlocked.current = false;
+  });
+
+  it('starts an ungated mode without consulting the reading switch', async () => {
+    cards.current = KANA_CARDS;
+    renderMode('match');
+
+    await waitFor(() => expect(screen.getByText('Match JP ↔ EN')).toBeInTheDocument());
+    expect(screen.queryByText(/isn't open for this deck yet/)).not.toBeInTheDocument();
+  });
+
+  it('asks for a batch size on a big deck', async () => {
+    cards.current = [
+      ...KANJI_CARDS,
+      ...KANA_CARDS,
+      ...KANJI_CARDS.map((c) => ({ ...c, id: `x${c.id}` })),
+    ];
+    renderMode('recall');
+
+    await waitFor(() => expect(screen.getByText('How many cards?')).toBeInTheDocument());
+  });
+
+  it('says so when the deck is too small for any mode', async () => {
+    cards.current = [makeCard('k1', '猫', 'ねこ')];
+    renderMode('listen');
+
+    await waitFor(() =>
+      expect(screen.getByText(/Not enough cards to practice/)).toBeInTheDocument(),
+    );
+  });
+
+  it('skips the batch picker for Quiz', async () => {
+    cards.current = [...KANJI_CARDS, ...KANA_CARDS];
+    renderMode('quiz');
+
+    await waitFor(() => expect(screen.getByText('Quiz')).toBeInTheDocument());
+    expect(screen.queryByText('How many cards?')).not.toBeInTheDocument();
   });
 });

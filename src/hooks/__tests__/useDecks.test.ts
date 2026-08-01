@@ -10,6 +10,7 @@ const mockRenameDeck = vi.fn();
 const mockUpdateDeckEmoji = vi.fn();
 const mockPinDeck = vi.fn();
 const mockSetDeckPublic = vi.fn();
+const mockSetDeckReadingPractice = vi.fn();
 const mockReorderDecks = vi.fn();
 
 vi.mock('@/lib/supabase', () => ({
@@ -22,6 +23,7 @@ vi.mock('@/lib/supabase', () => ({
   dbUpdateDeckEmoji: (...args: unknown[]) => mockUpdateDeckEmoji(...args),
   dbPinDeck: (...args: unknown[]) => mockPinDeck(...args),
   dbSetDeckPublic: (...args: unknown[]) => mockSetDeckPublic(...args),
+  dbSetDeckReadingPractice: (...args: unknown[]) => mockSetDeckReadingPractice(...args),
   dbReorderDecks: (...args: unknown[]) => mockReorderDecks(...args),
 }));
 
@@ -297,6 +299,37 @@ describe('useDecks', () => {
       });
 
       expect(result.current.decks[0].isPublic).toBe(false);
+    });
+  });
+
+  describe('setDeckReadingPractice', () => {
+    it('should optimistically unlock reading practice', async () => {
+      mockLoadDecks.mockResolvedValue([makeDeck({ id: 'deck-1', readingPractice: false })]);
+      mockSetDeckReadingPractice.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.setDeckReadingPractice('deck-1', true);
+      });
+
+      expect(result.current.decks[0].readingPractice).toBe(true);
+      expect(mockSetDeckReadingPractice).toHaveBeenCalledWith('deck-1', true);
+    });
+
+    it('should roll back to locked on error', async () => {
+      mockLoadDecks.mockResolvedValue([makeDeck({ id: 'deck-1', readingPractice: false })]);
+      mockSetDeckReadingPractice.mockRejectedValue(new Error('DB error'));
+
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.setDeckReadingPractice('deck-1', true);
+      });
+
+      expect(result.current.decks[0].readingPractice).toBe(false);
     });
   });
 

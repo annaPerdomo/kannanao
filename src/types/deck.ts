@@ -9,5 +9,7 @@ export interface Deck {
   emoji: string;
   pinned?: boolean;
   isPublic?: boolean;
+  /** Owner has unlocked the kanji Reading practice mode for this deck. */
+  readingPractice?: boolean;
   position: number;
 }
