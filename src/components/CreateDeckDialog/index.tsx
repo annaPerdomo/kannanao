@@ -2,15 +2,7 @@
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
-import {
-  Box,
-  Button,
-  CircularProgress,
-  FormControlLabel,
-  Switch,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Box, Button, CircularProgress, TextField, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 
@@ -22,6 +14,7 @@ import { ReviewCardsDialog } from '@/components/ReviewCardsDialog';
 import { StyledDialog } from '@/components/StyledDialog';
 import { useAuth } from '@/contexts/AuthContext';
 
+import { ToggleRow } from './ToggleRow';
 import { useCreateDeckFlow } from './useCreateDeckFlow';
 
 export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -104,65 +97,48 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
               sx={{ mb: 2 }}
             />
 
-            {/* Pin toggle */}
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                mb: 2.5,
-                px: 1.5,
-                py: 1,
-                borderRadius: 3,
-                border: `1.5px solid ${flow.pinToHome ? alpha(brand[400], 0.55) : alpha(brand[300], 0.3)}`,
-                bgcolor: flow.pinToHome ? alpha(brand[50], 0.8) : 'transparent',
-                transition: 'all 0.18s ease',
-                cursor: 'pointer',
-              }}
-              onClick={() => flow.setPinToHome(!flow.pinToHome)}
-            >
-              {flow.pinToHome ? (
-                <PushPinIcon sx={{ fontSize: '1rem', color: brand[600], flexShrink: 0 }} />
-              ) : (
-                <PushPinOutlinedIcon
-                  sx={{ fontSize: '1rem', color: alpha(brand[500], 0.55), flexShrink: 0 }}
-                />
-              )}
-              <Box sx={{ flexGrow: 1 }}>
-                <Typography
-                  sx={{
-                    fontSize: '0.78rem',
-                    fontWeight: 700,
-                    color: flow.pinToHome ? brand[700] : 'text.secondary',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  {t('pinToHome')}
-                </Typography>
-                <Typography sx={{ fontSize: '0.68rem', color: 'text.secondary' }}>
-                  {t('pinToHomeHelper')}
-                </Typography>
-              </Box>
-              <FormControlLabel
-                control={
-                  <Switch
-                    size="small"
-                    checked={flow.pinToHome}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      flow.setPinToHome(e.target.checked);
-                    }}
-                    sx={{
-                      '& .MuiSwitch-switchBase.Mui-checked': { color: brand[600] },
-                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        bgcolor: brand[400],
-                      },
-                    }}
-                  />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, mb: 2.5 }}>
+              <ToggleRow
+                icon={
+                  flow.pinToHome ? (
+                    <PushPinIcon sx={{ fontSize: '1rem', color: brand[600] }} />
+                  ) : (
+                    <PushPinOutlinedIcon
+                      sx={{ fontSize: '1rem', color: alpha(brand[500], 0.55) }}
+                    />
+                  )
                 }
-                label=""
-                sx={{ m: 0 }}
-                onClick={(e) => e.stopPropagation()}
+                title={t('pinToHome')}
+                helper={t('pinToHomeHelper')}
+                checked={flow.pinToHome}
+                onChange={flow.setPinToHome}
+                ariaLabel={t('pinToHome')}
+              />
+              <ToggleRow
+                icon={
+                  <Typography
+                    sx={{
+                      fontFamily: (th) => th.fonts.jp,
+                      fontWeight: 900,
+                      fontSize: '1.05rem',
+                      lineHeight: 1,
+                      color: flow.readingPractice ? brand[600] : alpha(brand[500], 0.55),
+                    }}
+                  >
+                    読
+                  </Typography>
+                }
+                title={t('readingToggle')}
+                helper={
+                  flow.readingAuto
+                    ? t('readingToggleAuto')
+                    : flow.readingPractice
+                      ? t('readingToggleOn')
+                      : t('readingToggleOff')
+                }
+                checked={flow.readingPractice}
+                onChange={flow.setReadingPractice}
+                ariaLabel={t('readingToggleAria')}
               />
             </Box>
 

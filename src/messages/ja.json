@@ -62,6 +62,11 @@
       "descriptionLabel": "説明（任意）",
       "pinToHome": "ホームにピン留め",
       "pinToHomeHelper": "このデッキをホームに表示します",
+      "readingToggle": "漢字のよみかた練習",
+      "readingToggleOff": "漢字の準備ができたらオンにしてください",
+      "readingToggleOn": "このデッキの漢字のよみかたを練習できます",
+      "readingToggleAuto": "漢字表示のデッキなので自動でオンになりました！",
+      "readingToggleAria": "漢字のよみかた練習",
       "addCardsOptional": "カードを追加（任意）",
       "createFailed": "デッキを作成できませんでした。もう一度お試しください。"
     },

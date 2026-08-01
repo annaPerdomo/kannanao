@@ -19,7 +19,7 @@ import type { Flashcard, GeneratedCard, MainViewMode } from '@/types/flashcard';
 export function useCreateDeckFlow(onClose: () => void) {
   const t = useTranslations('Deck.createDeckDialog');
   const router = useRouter();
-  const { createDeck, pinDeck } = useDecks();
+  const { createDeck, pinDeck, setDeckReadingPractice } = useDecks();
   const { generating, error: generateError, generate } = useGenerateFlashcards();
   const review = useCardReview();
 
@@ -29,6 +29,8 @@ export function useCreateDeckFlow(onClose: () => void) {
   const [words, setWords] = useState<string[]>([]);
   const [pinToHome, setPinToHome] = useState(false);
   const [mainViewMode, setMainViewMode] = useState<MainViewMode>('hiragana');
+  const [readingPractice, setReadingPracticeState] = useState(false);
+  const [readingTouched, setReadingTouched] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createdDeckId, setCreatedDeckId] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -38,6 +40,22 @@ export function useCreateDeckFlow(onClose: () => void) {
   const busy = creating || generating;
   const canGenerate = words.length > 0 || input.trim().length > 0;
 
+  // A deck whose cards lead with kanji is exactly the deck Reading was built
+  // for, so the toggle follows the view choice — until one manual flip, after
+  // which it stays where the user put it.
+  const changeMainViewMode = (mode: MainViewMode) => {
+    setMainViewMode(mode);
+    if (!readingTouched) setReadingPracticeState(mode === 'kanji');
+  };
+
+  const setReadingPractice = (enabled: boolean) => {
+    setReadingTouched(true);
+    setReadingPracticeState(enabled);
+  };
+
+  /** True while Reading was switched on by the kanji-view choice, not the user. */
+  const readingAuto = readingPractice && !readingTouched;
+
   const reset = () => {
     setName('');
     setDescription('');
@@ -45,6 +63,8 @@ export function useCreateDeckFlow(onClose: () => void) {
     setWords([]);
     setPinToHome(false);
     setMainViewMode('hiragana');
+    setReadingPracticeState(false);
+    setReadingTouched(false);
     setCreating(false);
     setCreatedDeckId(null);
     setFlowError(null);
@@ -65,6 +85,7 @@ export function useCreateDeckFlow(onClose: () => void) {
     try {
       const deck = await createDeck(name.trim(), description.trim() || undefined);
       if (pinToHome) await pinDeck(deck.id, true);
+      if (readingPractice) await setDeckReadingPractice(deck.id, true);
       setCreatedDeckId(deck.id);
       return deck.id;
     } catch (err) {
@@ -151,7 +172,10 @@ export function useCreateDeckFlow(onClose: () => void) {
     pinToHome,
     setPinToHome,
     mainViewMode,
-    setMainViewMode,
+    setMainViewMode: changeMainViewMode,
+    readingPractice,
+    readingAuto,
+    setReadingPractice,
     // flow state
     busy,
     creating,

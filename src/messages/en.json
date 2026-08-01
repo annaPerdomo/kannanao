@@ -62,6 +62,11 @@
       "descriptionLabel": "Description (optional)",
       "pinToHome": "Pin to home",
       "pinToHomeHelper": "Show this deck on your home page",
+      "readingToggle": "Kanji reading practice",
+      "readingToggleOff": "Turn on when your learners are ready for kanji",
+      "readingToggleOn": "Learners can practice reading this deck's kanji",
+      "readingToggleAuto": "Turned on for you — these cards lead with kanji!",
+      "readingToggleAria": "Kanji reading practice",
       "addCardsOptional": "add cards (optional)",
       "createFailed": "Couldn't create the deck. Please try again."
     },
