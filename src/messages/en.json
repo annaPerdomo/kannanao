@@ -115,6 +115,10 @@
         "label": "Listen",
         "description": "Hear the word, pick what it means"
       },
+      "reading": {
+        "label": "Reading",
+        "description": "See the kanji, build its reading"
+      },
       "quiz": {
         "label": "Quiz",
         "description": "Show what you know — one try each"
@@ -602,6 +606,8 @@
     "page": {
       "loadingSession": "Loading your practice session…",
       "notEnoughCards": "Not enough cards to practice. Add more cards to this deck.",
+      "noKanjiCards": "This deck needs a few kanji words before you can practice reading. Cards written only in kana already show their reading!",
+      "pickAnotherMode": "Pick another way to practice",
       "cardsBadge": "{count, plural, one {# card} other {# cards}}",
       "modeTitles": {
         "match": "Match JP ↔ EN",
@@ -609,7 +615,8 @@
         "recall": "Guess It!",
         "kotobaBubble": "Sentence Builder",
         "quiz": "Quiz",
-        "listen": "Listen"
+        "listen": "Listen",
+        "reading": "Reading"
       }
     },
     "batchPicker": {
@@ -684,6 +691,18 @@
       "playWordAgainAria": "Play the word again",
       "seeResults": "See Results",
       "nextArrow": "Next →"
+    },
+    "readingMode": {
+      "readPrompt": "HOW DO YOU READ THIS?",
+      "incorrectAnswer": "Not quite — it reads {reading}",
+      "typedLabel": "Reading",
+      "typedPlaceholder": "Type it in kana or romaji…",
+      "check": "Check",
+      "switchToTyping": "Type it instead",
+      "switchToTiles": "Use tiles instead",
+      "removeLastCharacter": "Remove the last character",
+      "placeCharacterAria": "Add {character}",
+      "seeResults": "See Results"
     },
     "roundTransition": {
       "allReviewed": "All reviewed!",
@@ -902,7 +921,8 @@
         "recall": "Recall",
         "kotobaBubble": "Sentence Builder",
         "quiz": "Quiz",
-        "listen": "Listen"
+        "listen": "Listen",
+        "reading": "Reading"
       },
       "goalBoth": "{accuracy}% in {mode}",
       "goalAccuracyOnly": "{accuracy}%",

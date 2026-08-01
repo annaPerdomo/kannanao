@@ -63,6 +63,7 @@ promo/
 prompts/
 semester-prompts/
 i18n-prompts/
+reading-prompts/
 
 # local-only asset/regeneration scripts (not deployed, don't need to live on GitHub)
 scripts/

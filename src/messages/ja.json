@@ -115,6 +115,10 @@
         "label": "リスニング",
         "description": "聞いて意味を選ぶ"
       },
+      "reading": {
+        "label": "よみかた",
+        "description": "漢字の読み方をつくる"
+      },
       "quiz": {
         "label": "クイズ",
         "description": "一発勝負で実力チェック"
@@ -602,6 +606,8 @@
     "page": {
       "loadingSession": "練習を準備しています…",
       "notEnoughCards": "練習するにはカードが足りません。このデッキにカードを追加してください。",
+      "noKanjiCards": "よみかたの練習には、漢字のカードがもう少し必要です。かなだけのカードは、もう読み方が見えています！",
+      "pickAnotherMode": "ほかの練習を選ぶ",
       "cardsBadge": "{count, plural, other {カード#枚}}",
       "modeTitles": {
         "match": "マッチ 日本語 ↔ 英語",
@@ -609,7 +615,8 @@
         "recall": "当ててみよう！",
         "kotobaBubble": "文づくり",
         "quiz": "クイズ",
-        "listen": "リスニング"
+        "listen": "リスニング",
+        "reading": "よみかた"
       }
     },
     "batchPicker": {
@@ -684,6 +691,18 @@
       "playWordAgainAria": "単語をもう一度再生",
       "seeResults": "結果を見る",
       "nextArrow": "次へ →"
+    },
+    "readingMode": {
+      "readPrompt": "なんて読む？",
+      "incorrectAnswer": "おしい！ 読み方は「{reading}」",
+      "typedLabel": "よみかた",
+      "typedPlaceholder": "かな か ローマ字で入力…",
+      "check": "チェック",
+      "switchToTyping": "入力して答える",
+      "switchToTiles": "タイルで答える",
+      "removeLastCharacter": "最後の文字を消す",
+      "placeCharacterAria": "「{character}」を入れる",
+      "seeResults": "結果を見る"
     },
     "roundTransition": {
       "allReviewed": "ぜんぶ復習した！",
@@ -902,7 +921,8 @@
         "recall": "当ててみよう",
         "kotobaBubble": "文づくり",
         "quiz": "クイズ",
-        "listen": "リスニング"
+        "listen": "リスニング",
+        "reading": "よみかた"
       },
       "goalBoth": "{mode}で{accuracy}%",
       "goalAccuracyOnly": "{accuracy}%",

@@ -1,5 +1,5 @@
 'use client';
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
@@ -12,6 +12,11 @@ import { KotobaBubbleSetup } from '@/components/Practice/KotobaBubbleMode/Kotoba
 import { ListenMode } from '@/components/Practice/ListenMode';
 import { MatchMode } from '@/components/Practice/MatchMode';
 import { QuizMode } from '@/components/Practice/QuizMode';
+import {
+  eligibleReadingCards,
+  MIN_READING_CARDS,
+  ReadingMode,
+} from '@/components/Practice/ReadingMode';
 import { RecallMode } from '@/components/Practice/RecallMode';
 import { useCards } from '@/hooks/useCards';
 import { LAYOUT } from '@/theme';
@@ -38,17 +43,44 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
     'kotoba-bubble': t('modeTitles.kotobaBubble'),
     quiz: t('modeTitles.quiz'),
     listen: t('modeTitles.listen'),
+    reading: t('modeTitles.reading'),
   };
   // Fill-in-the-blank needs a sentence to blank out. A card with no example
   // (older Travel saves, or a generation that came back without one) rendered
   // an empty prompt that could never be answered, so it sits the mode out.
-  const modeCards = mode === 'fill' ? cards.filter((c) => c.example_jp.trim()) : cards;
+  // Reading needs kanji to hide a reading behind — kana-only cards sit it out.
+  const modeCards =
+    mode === 'fill'
+      ? cards.filter((c) => c.example_jp.trim())
+      : mode === 'reading'
+        ? eligibleReadingCards(cards)
+        : cards;
   const badge = t('cardsBadge', { count: modeCards.length });
 
   if (loading) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <Loading message={t('loadingSession')} />
+      </Box>
+    );
+  }
+
+  // Reading needs a few kanji cards or the round is over before it starts.
+  if (mode === 'reading' && modeCards.length < MIN_READING_CARDS) {
+    return (
+      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+        <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
+        <Box sx={{ textAlign: 'center', py: 8 }}>
+          <Typography sx={{ fontSize: '3rem', mb: 1 }} aria-hidden>
+            📖
+          </Typography>
+          <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 420, mx: 'auto' }}>
+            {t('noKanjiCards')}
+          </Typography>
+          <Button variant="contained" size="large" onClick={onBack}>
+            {t('pickAnotherMode')}
+          </Button>
+        </Box>
       </Box>
     );
   }
@@ -127,6 +159,14 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
       )}
       {mode === 'listen' && (
         <ListenMode
+          cards={modeCards}
+          deckId={deckId}
+          batchSize={effectiveBatchSize}
+          onExit={onBack}
+        />
+      )}
+      {mode === 'reading' && (
+        <ReadingMode
           cards={modeCards}
           deckId={deckId}
           batchSize={effectiveBatchSize}

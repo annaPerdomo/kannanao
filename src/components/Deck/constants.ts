@@ -71,6 +71,17 @@ export const PRACTICE_CONFIG: PracticeTileConfig[] = [
     shadowColor: 'rgba(67,56,202,0.22)',
   },
   {
+    mode: 'reading',
+    labelKey: 'reading.label',
+    descriptionKey: 'reading.description',
+    emoji: '📖',
+    watermark: '読',
+    color: '#047857',
+    bg: 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)',
+    border: 'rgba(52,211,153,0.6)',
+    shadowColor: 'rgba(4,120,87,0.22)',
+  },
+  {
     mode: 'quiz',
     labelKey: 'quiz.label',
     descriptionKey: 'quiz.description',

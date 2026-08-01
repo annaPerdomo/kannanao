@@ -31,7 +31,8 @@ export function PracticeHero({ cardCount, onStudy, onPractice }: PracticeHeroPro
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(5, 1fr)' },
+          // 8 tiles (Flashcards + 7 modes) — four per row fills both rows exactly.
+          gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' },
           gap: { xs: 1.5, sm: 2 },
         }}
       >
