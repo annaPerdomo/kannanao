@@ -84,14 +84,18 @@
       "pinToHome": "Pin to home"
     },
     "practiceHero": {
-      "letsPractice": "Let's practice!",
+      "choosePractice": "Choose a practice",
+      "cheer0": "You've got this!",
+      "cheer1": "Ready to level up?",
+      "cheer2": "Your cards are waiting!",
+      "cheer3": "Let's make today count!",
       "startFlashcardStudyAria": "Start flashcard study",
       "flashcardsTitle": "Flashcards",
       "flashcardsDescription": "Flip & learn every card",
       "letsGo": "Let's go →",
       "startPracticeAria": "Start {label} practice",
       "lockedAria": "{label} (locked)",
-      "locked": "Locked 🔒",
+      "locked": "Locked",
       "play": "Play →",
       "unlockHint": "Add at least 2 cards to unlock practice modes."
     },
@@ -335,7 +339,7 @@
     "deckPage": {
       "loadingCards": "Loading cards…",
       "deckNotFound": "Deck not found.",
-      "cardsInDeckLabel": "Cards in Deck",
+      "cardsInDeckLabel": "Cards in this deck ({count})",
       "reorderButton": "Reorder",
       "addCardsButton": "Add Cards",
       "reorderBannerLabel": "Drag and drop cards to reorder. Click Done when finished.",

@@ -84,14 +84,18 @@
       "pinToHome": "ホームにピン留め"
     },
     "practiceHero": {
-      "letsPractice": "練習しよう！",
+      "choosePractice": "練習をえらぼう",
+      "cheer0": "きみならできる！",
+      "cheer1": "レベルアップしよう！",
+      "cheer2": "カードが待ってるよ！",
+      "cheer3": "今日もがんばろう！",
       "startFlashcardStudyAria": "フラッシュカード学習を始める",
       "flashcardsTitle": "フラッシュカード",
       "flashcardsDescription": "めくって全部おぼえよう",
       "letsGo": "はじめる →",
       "startPracticeAria": "{label}の練習を始める",
       "lockedAria": "{label}（ロック中）",
-      "locked": "ロック中 🔒",
+      "locked": "ロック中",
       "play": "あそぶ →",
       "unlockHint": "カードを2枚以上追加すると練習モードが使えます。"
     },
@@ -335,7 +339,7 @@
     "deckPage": {
       "loadingCards": "カードを読み込み中…",
       "deckNotFound": "デッキが見つかりません。",
-      "cardsInDeckLabel": "デッキのカード",
+      "cardsInDeckLabel": "デッキのカード（{count}）",
       "reorderButton": "並べ替え",
       "addCardsButton": "カードを追加",
       "reorderBannerLabel": "ドラッグしてカードを並べ替えできます。終わったら「完了」を押してください。",

@@ -15,7 +15,7 @@ describe('listen mode registration', () => {
   it('should have a tile on the deck practice picker', () => {
     const tile = PRACTICE_CONFIG.find((t) => t.mode === 'listen');
     expect(tile).toBeDefined();
-    expect(tile?.emoji).toBe('🎧');
+    expect(tile?.kanji).toBe('聞');
     expect(tile?.labelKey).toBe('listen.label');
   });
 
@@ -39,7 +39,7 @@ describe('reading mode registration', () => {
   it('should have a tile on the deck practice picker', () => {
     const tile = PRACTICE_CONFIG.find((t) => t.mode === 'reading');
     expect(tile).toBeDefined();
-    expect(tile?.emoji).toBe('📖');
+    expect(tile?.kanji).toBe('読');
     expect(tile?.labelKey).toBe('reading.label');
   });
 

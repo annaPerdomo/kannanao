@@ -26,7 +26,7 @@ import { DeckSettingsDialog } from '@/components/DeckSettingsDialog';
 import { ImageCard } from '@/components/ImageCard';
 import { Loading } from '@/components/Loading';
 import { PdfImportModal } from '@/components/PdfImportModal';
-// Direct module import, not the barrel: the deck page only needs the pure
+// Direct module import, not the barrel: the deck page needs only the pure
 // filter, not the whole Reading mode component tree.
 import { eligibleReadingCards } from '@/components/Practice/ReadingMode/eligibility';
 import { ReorderBanner } from '@/components/ReorderBanner';
@@ -234,7 +234,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         <Box
           sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}
         >
-          <Label>{t('cardsInDeckLabel')}</Label>
+          <Label>{t('cardsInDeckLabel', { count: cards.length })}</Label>
           <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
             {canReorder && (
               <Button

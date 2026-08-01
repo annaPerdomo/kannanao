@@ -1,13 +1,225 @@
 'use client';
 import { Box, Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 
 import type { PracticeMode } from '@/types/app';
 
 import { PRACTICE_CONFIG } from './constants';
 import { Label } from './Label';
+
+// Tiles keep light pastel surfaces in every color scheme, dark ones included, so
+// in-tile text needs a fixed ink — theme text tokens would invert underneath it.
+const TILE_INK = '#1F1B24';
+
+/** Rotating cheer keys — picked per visit via cardCount so SSR and client agree. */
+const CHEER_COUNT = 4;
+
+interface PracticeTileProps {
+  kanji: string;
+  color: string;
+  label: string;
+  description: string;
+  cta: string;
+  ctaFilled?: boolean;
+  disabled?: boolean;
+  ariaLabel: string;
+  onActivate: () => void;
+}
+
+function PracticeTile({
+  kanji,
+  color,
+  label,
+  description,
+  cta,
+  ctaFilled = false,
+  disabled = false,
+  ariaLabel,
+  onActivate,
+}: PracticeTileProps) {
+  const theme = useTheme();
+  const { brand, accent } = theme.palette;
+
+  return (
+    <Box
+      role={!disabled ? 'button' : undefined}
+      tabIndex={!disabled ? 0 : undefined}
+      onClick={!disabled ? onActivate : undefined}
+      onKeyDown={
+        !disabled
+          ? (e: React.KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onActivate();
+              }
+            }
+          : undefined
+      }
+      aria-label={ariaLabel}
+      sx={{
+        cursor: disabled ? 'default' : 'pointer',
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: theme.radii.lg,
+        p: { xs: '18px 14px', sm: '22px 18px' },
+        minHeight: 190,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        textAlign: 'center',
+        background: `linear-gradient(150deg, #FFFFFF 0%, ${alpha(color, 0.07)} 55%, ${alpha(color, 0.17)} 100%)`,
+        border: `1.5px solid ${alpha(color, 0.35)}`,
+        boxShadow: `0 3px 12px ${alpha(color, 0.08)}`,
+        opacity: disabled ? 0.45 : 1,
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        ...(!disabled && {
+          '&:hover': {
+            transform: 'translateY(-5px) scale(1.02)',
+            boxShadow: `0 14px 32px ${alpha(color, 0.25)}`,
+            '& .tile-badge': { transform: 'rotate(3deg) scale(1.12)' },
+            '& .tile-sparkle': { opacity: 0.75, transform: 'scale(1.35) rotate(20deg)' },
+            '& .tile-cta': ctaFilled
+              ? { boxShadow: `0 5px 16px ${alpha(brand[500], 0.5)}` }
+              : { bgcolor: alpha(color, 0.1) },
+          },
+        }),
+      }}
+    >
+      <Typography
+        aria-hidden
+        sx={{
+          position: 'absolute',
+          bottom: -18,
+          right: 2,
+          fontSize: '5rem',
+          lineHeight: 1,
+          fontFamily: theme.fonts.jp,
+          fontWeight: 900,
+          color,
+          opacity: 0.08,
+          userSelect: 'none',
+        }}
+      >
+        {kanji}
+      </Typography>
+      <Box
+        aria-hidden
+        className="tile-sparkle"
+        sx={{
+          position: 'absolute',
+          top: 10,
+          right: 12,
+          fontSize: '0.85rem',
+          lineHeight: 1,
+          color,
+          opacity: 0.3,
+          userSelect: 'none',
+          transition: 'opacity 0.2s ease, transform 0.25s ease',
+        }}
+      >
+        ✦
+      </Box>
+
+      <Box
+        sx={{
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Box
+          className="tile-badge"
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: theme.radii.md,
+            display: 'grid',
+            placeItems: 'center',
+            background: `linear-gradient(135deg, ${alpha(color, 0.2)}, ${alpha(color, 0.08)})`,
+            border: `1.5px solid ${alpha(color, 0.25)}`,
+            transform: 'rotate(-4deg)',
+            transition: 'transform 0.25s ease',
+            mb: 1.25,
+          }}
+        >
+          <Typography
+            aria-hidden
+            sx={{
+              fontFamily: theme.fonts.jp,
+              fontWeight: 900,
+              fontSize: '1.75rem',
+              lineHeight: 1,
+              color,
+              userSelect: 'none',
+              transform: 'rotate(4deg)',
+            }}
+          >
+            {kanji}
+          </Typography>
+        </Box>
+        <Typography
+          sx={{
+            fontWeight: 900,
+            fontSize: { xs: '0.95rem', sm: '1rem' },
+            color,
+            lineHeight: 1.2,
+          }}
+        >
+          {label}
+        </Typography>
+        <Typography
+          sx={{
+            fontSize: '0.72rem',
+            color: alpha(TILE_INK, 0.62),
+            mt: 0.5,
+            lineHeight: 1.35,
+          }}
+        >
+          {description}
+        </Typography>
+      </Box>
+
+      <Typography
+        className="tile-cta"
+        sx={{
+          position: 'relative',
+          mt: 1.5,
+          width: '100%',
+          maxWidth: 170,
+          px: 2,
+          py: '5px',
+          borderRadius: theme.radii.pill,
+          fontSize: '0.78rem',
+          fontWeight: 800,
+          lineHeight: 1.4,
+          fontFamily: theme.fonts.cute,
+          letterSpacing: '0.02em',
+          transition: 'background-color 0.2s ease, box-shadow 0.2s ease',
+          // `disabled` gates the filled branch too: without it an empty deck
+          // left Flashcards reading "Let's go →" in full brand gradient while
+          // every locked tile beside it went grey.
+          ...(ctaFilled && !disabled
+            ? {
+                border: '1.5px solid transparent',
+                background: `linear-gradient(135deg, ${brand[400]}, ${accent[400]})`,
+                color: '#FFFFFF',
+                boxShadow: `0 3px 10px ${alpha(brand[500], 0.35)}`,
+              }
+            : {
+                border: `1.5px solid ${disabled ? alpha(TILE_INK, 0.2) : alpha(color, 0.45)}`,
+                color: disabled ? alpha(TILE_INK, 0.4) : color,
+                bgcolor: alpha('#FFFFFF', 0.55),
+              }),
+        }}
+      >
+        {cta}
+      </Typography>
+    </Box>
+  );
+}
 
 interface PracticeHeroProps {
   cardCount: number;
@@ -25,19 +237,39 @@ export function PracticeHero({
 }: PracticeHeroProps) {
   const t = useTranslations('Deck.practiceHero');
   const tModes = useTranslations('Deck.practiceModes');
-  const { brand, accent } = useTheme().palette;
+  const { brand } = useTheme().palette;
   const practiceDisabled = cardCount < 2;
-  // Reading stays out of the grid until the deck's owner unlocks it: kana comes
-  // long before kanji, and a locked tile is just a question a learner can't answer.
+  // Absent, not locked, until the owner unlocks it: kana comes long before kanji.
   const tiles = PRACTICE_CONFIG.filter((tile) => tile.mode !== 'reading' || readingUnlocked);
 
   return (
-    <Box
-      sx={{
-        mb: 3,
-      }}
-    >
-      <Label>{t('letsPractice')}</Label>
+    <Box sx={{ mb: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          gap: 1,
+        }}
+      >
+        <Label>{t('choosePractice')}</Label>
+        <Typography
+          sx={{
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            fontFamily: (th) => th.fonts.cute,
+            color: brand[700],
+            bgcolor: alpha(brand[100], 0.7),
+            border: `1.5px solid ${alpha(brand[300], 0.5)}`,
+            borderRadius: (th) => th.radii.pill,
+            px: 1.5,
+            py: '3px',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {t(`cheer${cardCount % CHEER_COUNT}`)}
+        </Typography>
+      </Box>
       <Box
         sx={{
           display: 'grid',
@@ -46,240 +278,35 @@ export function PracticeHero({
           gap: { xs: 1.5, sm: 2 },
         }}
       >
-        {/* Flashcards – primary CTA */}
-        <Box
-          role={cardCount > 0 ? 'button' : undefined}
-          tabIndex={cardCount > 0 ? 0 : undefined}
-          onClick={cardCount > 0 ? onStudy : undefined}
-          onKeyDown={
-            cardCount > 0
-              ? (e: React.KeyboardEvent) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onStudy();
-                  }
-                }
-              : undefined
-          }
-          aria-label={cardCount > 0 ? t('startFlashcardStudyAria') : undefined}
-          sx={{
-            cursor: cardCount > 0 ? 'pointer' : 'default',
-            position: 'relative',
-            overflow: 'hidden',
-            borderRadius: (theme) => theme.radii.md,
-            p: { xs: '20px 18px', sm: '24px 22px' },
-            minHeight: 160,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            background:
-              cardCount > 0
-                ? `linear-gradient(145deg, ${brand[400]} 0%, ${brand[500]} 40%, ${accent[400]} 100%)`
-                : 'rgba(200,200,200,0.3)',
-            border: '1.5px solid transparent',
-            opacity: cardCount > 0 ? 1 : 0.5,
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            boxShadow: cardCount > 0 ? `0 6px 24px ${alpha(brand[500], 0.35)}` : 'none',
-            ...(cardCount > 0 && {
-              '&:hover': {
-                transform: 'translateY(-5px) scale(1.02)',
-                boxShadow: `0 14px 36px ${alpha(brand[500], 0.45)}`,
-              },
-            }),
-          }}
-        >
-          <Typography
-            aria-hidden
-            sx={{
-              position: 'absolute',
-              bottom: -16,
-              right: 6,
-              fontSize: '5.5rem',
-              lineHeight: 1,
-              opacity: 0.18,
-              userSelect: 'none',
-              fontFamily: (t) => t.fonts.jp,
-              fontWeight: 900,
-            }}
-          >
-            学
-          </Typography>
-
-          <Box>
-            <Typography sx={{ fontSize: '2rem', lineHeight: 1, mb: 1 }}>✨</Typography>
-            <Typography
-              sx={{
-                fontWeight: 900,
-                fontSize: { xs: '1rem', sm: '1.05rem' },
-                color: '#FFFFFF',
-                lineHeight: 1.2,
-                textShadow: '0 1px 4px rgba(0,0,0,0.15)',
-              }}
-            >
-              {t('flashcardsTitle')}
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: '0.72rem',
-                color: 'rgba(255,255,255,0.85)',
-                mt: 0.4,
-              }}
-            >
-              {t('flashcardsDescription')}
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              alignSelf: 'flex-end',
-              position: 'relative',
-              zIndex: 1,
-              borderRadius: (theme) => theme.radii.lg,
-              p: '2px',
-              background: `linear-gradient(90deg, ${brand[200]}, ${accent[300]})`,
-              boxShadow: '0 4px 16px rgba(0,0,0,0.22)',
-            }}
-          >
-            <Box
-              sx={{
-                bgcolor: '#fff',
-                borderRadius: (theme) => theme.radii.md,
-                px: 1.75,
-                py: 0.65,
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: '0.82rem',
-                  fontWeight: 900,
-                  color: brand[700],
-                  fontFamily: (t) => t.fonts.cute,
-                  letterSpacing: '0.02em',
-                  lineHeight: 1,
-                }}
-              >
-                {t('letsGo')}
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* Practice mode tiles */}
-        {tiles.map(
-          ({
-            mode,
-            labelKey,
-            descriptionKey,
-            emoji,
-            watermark,
-            color,
-            bg,
-            border,
-            shadowColor,
-          }) => {
-            const label = tModes(labelKey);
-            const description = tModes(descriptionKey);
-            return (
-              <Box
-                key={mode}
-                role={!practiceDisabled ? 'button' : undefined}
-                tabIndex={!practiceDisabled ? 0 : undefined}
-                onClick={!practiceDisabled ? () => onPractice(mode) : undefined}
-                onKeyDown={
-                  !practiceDisabled
-                    ? (e: React.KeyboardEvent) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          onPractice(mode);
-                        }
-                      }
-                    : undefined
-                }
-                aria-label={
-                  !practiceDisabled ? t('startPracticeAria', { label }) : t('lockedAria', { label })
-                }
-                sx={{
-                  cursor: practiceDisabled ? 'default' : 'pointer',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  borderRadius: (theme) => theme.radii.md,
-                  p: { xs: '20px 18px', sm: '24px 22px' },
-                  minHeight: 160,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  background: bg,
-                  border: '1.5px solid',
-                  borderColor: border,
-                  opacity: practiceDisabled ? 0.45 : 1,
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                  ...(!practiceDisabled && {
-                    '&:hover': {
-                      transform: 'translateY(-5px) scale(1.02)',
-                      boxShadow: `0 12px 32px ${shadowColor}`,
-                    },
-                  }),
-                }}
-              >
-                <Typography
-                  aria-hidden
-                  sx={{
-                    position: 'absolute',
-                    bottom: -16,
-                    right: 6,
-                    fontSize: '5.5rem',
-                    lineHeight: 1,
-                    color,
-                    opacity: 0.08,
-                    fontFamily: (t) => t.fonts.jp,
-                    fontWeight: 900,
-                    userSelect: 'none',
-                  }}
-                >
-                  {watermark}
-                </Typography>
-
-                <Box>
-                  <Typography sx={{ fontSize: '1.85rem', lineHeight: 1, mb: 1 }}>
-                    {emoji}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontWeight: 900,
-                      fontSize: { xs: '0.92rem', sm: '0.98rem' },
-                      color,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {label}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: '0.7rem',
-                      color: `${color}BB`,
-                      mt: 0.4,
-                    }}
-                  >
-                    {description}
-                  </Typography>
-                </Box>
-
-                <Typography
-                  sx={{
-                    fontSize: '0.7rem',
-                    fontWeight: 800,
-                    color: practiceDisabled ? 'text.disabled' : color,
-                    letterSpacing: '0.04em',
-                    opacity: practiceDisabled ? 0.5 : 0.8,
-                    alignSelf: 'flex-end',
-                  }}
-                >
-                  {practiceDisabled ? t('locked') : t('play')}
-                </Typography>
-              </Box>
-            );
-          },
-        )}
+        <PracticeTile
+          kanji="学"
+          color={brand[600]}
+          label={t('flashcardsTitle')}
+          description={t('flashcardsDescription')}
+          cta={t('letsGo')}
+          ctaFilled
+          disabled={cardCount === 0}
+          ariaLabel={t('startFlashcardStudyAria')}
+          onActivate={onStudy}
+        />
+        {tiles.map(({ mode, labelKey, descriptionKey, kanji, color }) => {
+          const label = tModes(labelKey);
+          return (
+            <PracticeTile
+              key={mode}
+              kanji={kanji}
+              color={color}
+              label={label}
+              description={tModes(descriptionKey)}
+              cta={practiceDisabled ? t('locked') : t('play')}
+              disabled={practiceDisabled}
+              ariaLabel={
+                practiceDisabled ? t('lockedAria', { label }) : t('startPracticeAria', { label })
+              }
+              onActivate={() => onPractice(mode)}
+            />
+          );
+        })}
       </Box>
       {practiceDisabled && cardCount > 0 && (
         <Typography
