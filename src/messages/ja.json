@@ -1250,14 +1250,20 @@
   },
   "Auth": {
     "login": {
-      "brandName": "Tangodachi",
       "betaBadge": "ベータ · 新規登録は停止中",
       "waitlistIntro": "ベータ版のため、現在新規登録を停止しています。メールアドレスを登録すると、受付を再開したときにおしらせします！",
       "backToSignIn": "アカウントをお持ちの方はログイン",
       "usernameLabel": "ユーザー名",
       "passwordLabel": "パスワード",
       "submit": "ログイン",
-      "joinWaitlist": "アカウントがない方はウェイトリストへ"
+      "joinWaitlist": "アカウントがない方はウェイトリストへ",
+      "showPassword": "パスワードを表示",
+      "hidePassword": "パスワードを隠す",
+      "welcomeTitle": "おかえりなさい！",
+      "welcomeSubtitle": "ログインして、学びのぼうけんを続けよう！",
+      "tagline1": "日本語をまなぶ。",
+      "tagline2": "いっしょにそだつ。",
+      "taglineSubtitle": "教える人には、AIが作る学習教材を。\n学ぶ人には、たのしく身につく練習を。"
     },
     "context": {
       "signupsClosedError": "現在、新規登録を停止しています。トップページのウェイトリストにご登録ください。",

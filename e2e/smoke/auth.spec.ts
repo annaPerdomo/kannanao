@@ -50,9 +50,9 @@ test.describe('Auth smoke tests', () => {
 
   test('should show the Tangodachi branding on the login page', async ({ page }) => {
     await page.goto('/login');
-    // The heading role pins this to the login card's title; the brand also
-    // appears in the nav, which would trip strict mode with a bare getByText.
-    await expect(page.getByRole('heading', { name: /Tangodachi/i })).toBeVisible({
+    // The brand is the wordmark image in the sign-in card — the page headings
+    // are the tagline and welcome title, neither of which names the brand.
+    await expect(page.getByRole('img', { name: /Tangodachi/i })).toBeVisible({
       timeout: 10000,
     });
   });

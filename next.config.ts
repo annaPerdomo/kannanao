@@ -134,7 +134,15 @@ const pwaConfig = withPWA({
   // device will never ask for. The 1x bands and the phone cards stay precached —
   // those are the ones on the critical path for the home screen.
   // Study-buddy art (~920 KB across 81 files) is excluded on the same grounds.
-  publicExcludes: ['!noprecache/**/*', '!stickers/**/*', '!mascot/*@2x.webp', '!buddies/**/*'],
+  // Login backgrounds (~350 KB) only matter to signed-out visitors, who by
+  // definition haven't installed the PWA yet.
+  publicExcludes: [
+    '!noprecache/**/*',
+    '!stickers/**/*',
+    '!mascot/*@2x.webp',
+    '!buddies/**/*',
+    '!login/**/*',
+  ],
   workboxOptions: {
     disableDevLogs: true,
     runtimeCaching,

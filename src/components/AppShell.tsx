@@ -31,6 +31,9 @@ export function AppShell({
   const pathname = usePathname();
   const isEmbed = pathname?.startsWith('/embed/');
   const isFullHeight = pathname?.startsWith('/notifications');
+  // The login page is a full-bleed brand scene with its own floating language
+  // toggle; app chrome would double the branding and crop the artwork.
+  const isLogin = pathname === '/login';
 
   if (isEmbed) return <>{children}</>;
 
@@ -39,23 +42,24 @@ export function AppShell({
       <ProgressProvider initialProgress={initialProgress}>
         <DirectMessagesProvider initialUnreadCount={initialUnreadCount}>
           <BuddyReactionProvider>
-            <NavBar />
+            {!isLogin && <NavBar />}
             <Box
               component="main"
               id="main-content"
               sx={{
                 flex: 1,
-                pb: isFullHeight
-                  ? 0
-                  : { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom))`, sm: 0 },
+                pb:
+                  isFullHeight || isLogin
+                    ? 0
+                    : { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom))`, sm: 0 },
                 ...(isFullHeight && { overflow: 'hidden' }),
               }}
             >
               <AuthGuard>{children}</AuthGuard>
             </Box>
-            {!isFullHeight && showFooter && <Footer />}
-            <BottomNav />
-            <GlobalBuddy />
+            {!isFullHeight && showFooter && !isLogin && <Footer />}
+            {!isLogin && <BottomNav />}
+            {!isLogin && <GlobalBuddy />}
             <PushAutoResubscribe />
           </BuddyReactionProvider>
         </DirectMessagesProvider>

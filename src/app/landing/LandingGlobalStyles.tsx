@@ -34,28 +34,8 @@ export default function LandingGlobalStyles() {
           fontWeight: 700,
           letterSpacing: '-0.018em',
         },
-        '@keyframes sakuraFall-l': {
-          '0%': { transform: 'translateY(-60px) translateX(0) rotate(0deg)', opacity: '0' },
-          '8%': { opacity: '1' },
-          '50%': { transform: 'translateY(48vh) translateX(-70px) rotate(340deg)' },
-          '92%': { opacity: '0.5' },
-          '100%': { transform: 'translateY(105vh) translateX(-20px) rotate(700deg)', opacity: '0' },
-        },
-        '@keyframes sakuraFall-r': {
-          '0%': { transform: 'translateY(-60px) translateX(0) rotate(0deg)', opacity: '0' },
-          '8%': { opacity: '1' },
-          '50%': { transform: 'translateY(48vh) translateX(70px) rotate(360deg)' },
-          '92%': { opacity: '0.5' },
-          '100%': { transform: 'translateY(105vh) translateX(20px) rotate(680deg)', opacity: '0' },
-        },
-        '@keyframes sakuraFall-c': {
-          '0%': { transform: 'translateY(-60px) translateX(0) rotate(0deg)', opacity: '0' },
-          '8%': { opacity: '1' },
-          '30%': { transform: 'translateY(28vh) translateX(35px) rotate(200deg)' },
-          '70%': { transform: 'translateY(72vh) translateX(-25px) rotate(500deg)' },
-          '92%': { opacity: '0.5' },
-          '100%': { transform: 'translateY(105vh) translateX(10px) rotate(680deg)', opacity: '0' },
-        },
+        // sakuraFall keyframes moved into SakuraFallEffect (emotion `keyframes`)
+        // so the effect is self-contained and mountable outside the landing.
         '@keyframes cursorBlink': {
           '0%,49%': { opacity: '1' },
           '50%,100%': { opacity: '0' },

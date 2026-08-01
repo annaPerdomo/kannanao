@@ -1257,14 +1257,20 @@
   },
   "Auth": {
     "login": {
-      "brandName": "Tangodachi",
       "betaBadge": "Beta · Sign-ups paused",
       "waitlistIntro": "Sign-ups are currently closed while we're in beta. Leave your email and we'll let you know when we open up!",
       "backToSignIn": "Already have an account? Sign in",
       "usernameLabel": "Username",
       "passwordLabel": "Password",
       "submit": "Sign In",
-      "joinWaitlist": "Don't have an account? Join the waitlist"
+      "joinWaitlist": "Don't have an account? Join the waitlist",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "welcomeTitle": "Welcome back!",
+      "welcomeSubtitle": "Sign in to continue your learning adventure.",
+      "tagline1": "Learn Japanese.",
+      "tagline2": "Grow together.",
+      "taglineSubtitle": "AI-powered study materials for educators.\nFun, effective practice for learners."
     },
     "context": {
       "signupsClosedError": "Sign-ups are currently closed. Join the waitlist at the landing page.",
