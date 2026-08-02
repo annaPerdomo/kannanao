@@ -1106,6 +1106,20 @@ describe('getCardProgressForUser', () => {
     const rows = await getCardProgressForUser('u1');
     expect(rows).toEqual([]);
   });
+
+  it('should scope the read to the given cards', async () => {
+    setTable('card_progress', []);
+    await getCardProgressForUser('u1', ['card-1', 'card-2']);
+    const chain = mockFrom.mock.results[0].value as Record<string, ReturnType<typeof vi.fn>>;
+    expect(chain.in).toHaveBeenCalledWith('card_id', ['card-1', 'card-2']);
+  });
+
+  it('should not query at all for an empty card list', async () => {
+    setTable('card_progress', []);
+    const rows = await getCardProgressForUser('u1', []);
+    expect(rows).toEqual([]);
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
 });
 
 // ─── getDueCards ──────────────────────────────────────────────────────────────

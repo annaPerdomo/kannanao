@@ -109,7 +109,8 @@
       "lockedAria": "{label}（ロック中）",
       "locked": "ロック中",
       "play": "あそぶ →",
-      "unlockHint": "カードを2枚以上追加すると練習モードが使えます。"
+      "unlockHint": "カードを2枚以上追加すると練習モードが使えます。",
+      "mixedError": "練習をはじめられませんでした。もう一度おためしください。"
     },
     "practiceModes": {
       "match": {

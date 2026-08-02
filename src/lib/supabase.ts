@@ -1060,13 +1060,22 @@ export async function upsertCardProgress(cardId: string, correct: boolean): Prom
   if (error) console.error('upsertCardProgress error', error);
 }
 
-/** Load every per-card progress row for a user (RLS scopes this to `userId`). */
-export async function getCardProgressForUser(userId: string): Promise<CardProgress[]> {
+/**
+ * Per-card progress rows for a user (RLS scopes this to `userId`). Pass
+ * `cardIds`: unscoped, a long-running account hits PostgREST's row cap and the
+ * silently dropped overflow reads back as cards never studied.
+ */
+export async function getCardProgressForUser(
+  userId: string,
+  cardIds?: string[],
+): Promise<CardProgress[]> {
   if (!isConfigured()) {
     showConfigBanner();
     return [];
   }
-  const { data, error } = await sb.from('card_progress').select('*').eq('user_id', userId);
+  if (cardIds && cardIds.length === 0) return [];
+  const query = sb.from('card_progress').select('*').eq('user_id', userId);
+  const { data, error } = await (cardIds ? query.in('card_id', cardIds) : query);
   if (error) {
     console.error('Error loading card progress', error);
     return [];

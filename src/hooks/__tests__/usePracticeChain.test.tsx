@@ -16,7 +16,7 @@ const mockCardCount = vi.fn();
 const mockProgress = vi.fn();
 vi.mock('@/lib/supabase', () => ({
   dbDeckCardCount: (deckId: string) => mockCardCount(deckId),
-  getCardProgressForUser: (userId: string) => mockProgress(userId),
+  getCardProgressForUser: (userId: string, cardIds?: string[]) => mockProgress(userId, cardIds),
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
@@ -147,6 +147,31 @@ describe('useStartMixedPractice', () => {
 
     expect(push).not.toHaveBeenCalled();
     expect(readChainState()).toBeNull();
+    expect(result.current.starting).toBe(false);
+  });
+
+  it('reads progress for this deck only', async () => {
+    const { result } = renderHook(() => useStartMixedPractice());
+    await act(async () => {
+      await result.current.start('d1', cards, { readingUnlocked: false, ttsReady: false });
+    });
+
+    expect(mockProgress).toHaveBeenCalledWith(
+      'u1',
+      cards.map((c) => c.id),
+    );
+  });
+
+  it('surfaces a failed start instead of leaving the button busy forever', async () => {
+    mockProgress.mockRejectedValue(new Error('offline'));
+    const { result } = renderHook(() => useStartMixedPractice());
+    await act(async () => {
+      await result.current.start('d1', cards, { readingUnlocked: false, ttsReady: false });
+    });
+
+    expect(result.current.error).toBe('offline');
+    expect(result.current.starting).toBe(false);
+    expect(push).not.toHaveBeenCalled();
   });
 });
 

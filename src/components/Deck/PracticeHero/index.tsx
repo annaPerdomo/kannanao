@@ -1,6 +1,6 @@
 'use client';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Box, Button, Collapse, Typography } from '@mui/material';
+import { Alert, Box, Button, Collapse, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -25,6 +25,8 @@ interface PracticeHeroProps {
   onMixedPractice?: () => void;
   /** The mixed session is being planned — the progress read has not landed yet. */
   mixedStarting?: boolean;
+  /** The progress read failed — the button is live again for another try. */
+  mixedError?: boolean;
 }
 
 export function PracticeHero({
@@ -34,6 +36,7 @@ export function PracticeHero({
   readingUnlocked = false,
   onMixedPractice,
   mixedStarting = false,
+  mixedError = false,
 }: PracticeHeroProps) {
   const t = useTranslations('Deck.practiceHero');
   const tModes = useTranslations('Deck.practiceModes');
@@ -56,6 +59,12 @@ export function PracticeHero({
           busy={mixedStarting}
           onActivate={onMixedPractice}
         />
+      )}
+
+      {mixed && mixedError && (
+        <Alert severity="error" sx={{ mb: 1.5 }}>
+          {t('mixedError')}
+        </Alert>
       )}
 
       {mixed && (

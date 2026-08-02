@@ -74,6 +74,7 @@ export function useStartMixedPractice() {
   const router = useRouter();
   const { user } = useAuth();
   const [starting, setStarting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const start = useCallback(
     async (
@@ -82,39 +83,50 @@ export function useStartMixedPractice() {
       support: { readingUnlocked: boolean; ttsReady: boolean },
     ) => {
       setStarting(true);
-      const progress = user ? await getCardProgressForUser(user.id) : [];
-      // Plan against the cards this session will actually play, not the deck:
-      // if none of the twelve carry an example sentence there is no Fill leg.
-      const session = pickMixedSessionCards(cards, progress);
-      const legs = planMixedPractice({
-        support: deckSupport(session, support),
-        counts: countStrengths(
-          session.map((c) => c.id),
-          progress,
-        ),
-      });
-      const href = legs.length > 0 ? chainLegHref(deckId, legs[0], 'mixed') : null;
-      if (!href) {
+      setError(null);
+      try {
+        const progress = user
+          ? await getCardProgressForUser(
+              user.id,
+              cards.map((c) => c.id),
+            )
+          : [];
+        // Plan against the cards this session will actually play, not the deck:
+        // if none of the twelve carry an example sentence there is no Fill leg.
+        const session = pickMixedSessionCards(cards, progress);
+        const legs = planMixedPractice({
+          support: deckSupport(session, support),
+          counts: countStrengths(
+            session.map((c) => c.id),
+            progress,
+          ),
+        });
+        const href = legs.length > 0 ? chainLegHref(deckId, legs[0], 'mixed') : null;
+        if (!href) return;
+        writeChainState({
+          kind: 'mixed',
+          deckId,
+          index: 0,
+          legs,
+          cardIds: session.map((c) => c.id),
+          assignmentId: null,
+          requiredMode: null,
+          requiredAccuracy: null,
+          cardCount: session.length,
+        });
+        router.push(href);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Could not start mixed practice');
+      } finally {
+        // Cleared on the way out too — the deck page outlives a failed
+        // navigation, and a permanently busy button is unclickable.
         setStarting(false);
-        return;
       }
-      writeChainState({
-        kind: 'mixed',
-        deckId,
-        index: 0,
-        legs,
-        cardIds: session.map((c) => c.id),
-        assignmentId: null,
-        requiredMode: null,
-        requiredAccuracy: null,
-        cardCount: session.length,
-      });
-      router.push(href);
     },
     [router, user],
   );
 
-  return { start, starting };
+  return { start, starting, error };
 }
 
 /** The next action an end-of-session screen offers inside a chain. */

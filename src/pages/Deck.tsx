@@ -97,7 +97,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     setAllMainViewMode,
   } = useCards(deckId, handleCountChange);
   const { generating, error, generate, regenerate } = useGenerateFlashcards();
-  const { start: startMixed, starting: mixedStarting } = useStartMixedPractice();
+  const { start: startMixed, starting: mixedStarting, error: mixedError } = useStartMixedPractice();
   // Asked here, not inside the session: a mixed plan must drop the Listen leg
   // silently on a device with no Japanese voice, never stall on it mid-chain.
   const voiceStatus = useJapaneseVoice();
@@ -278,6 +278,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
             })
           }
           mixedStarting={mixedStarting}
+          mixedError={!!mixedError}
         />
 
         {cards.length > 0 && <BestQuizLine deckId={deckId} />}

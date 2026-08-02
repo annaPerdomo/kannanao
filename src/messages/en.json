@@ -109,7 +109,8 @@
       "lockedAria": "{label} (locked)",
       "locked": "Locked",
       "play": "Play →",
-      "unlockHint": "Add at least 2 cards to unlock practice modes."
+      "unlockHint": "Add at least 2 cards to unlock practice modes.",
+      "mixedError": "We couldn't start practice. Please try again."
     },
     "practiceModes": {
       "match": {
