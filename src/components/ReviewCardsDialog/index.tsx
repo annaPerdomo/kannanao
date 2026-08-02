@@ -34,6 +34,7 @@ export function ReviewCardsDialog({
 }: ReviewCardsDialogProps) {
   const theme = useTheme();
   const tRegen = useTranslations('Deck.reviewCardsDialog.regenerate');
+  const tReuse = useTranslations('Deck.reviewCardsDialog.reuse');
   const { brand, accent } = theme.palette;
   const [cards, setCards] = useState<PendingCard[]>(initialCards);
   const [originalExamples, setOriginalExamples] = useState<string[]>(() =>
@@ -89,6 +90,20 @@ export function ReviewCardsDialog({
   const handleToggleExpand = useCallback((index: number) => {
     setExpandedIndex((prev) => (prev === index ? null : index));
   }, []);
+
+  const reusedCount = cards.filter((c) => c.reusedFrom !== undefined).length;
+
+  /**
+   * Trade every saved card back for what the model wrote. The fresh copy has no
+   * image — reuse is what skipped the lookup — so the row shows the placeholder
+   * until the reviewer fetches one from the expanded panel.
+   */
+  const handleUseFresh = useCallback(() => {
+    setCards((prev) => prev.map((c) => c.freshVersion ?? c));
+    setOriginalExamples((prev) =>
+      prev.map((example, i) => cards[i]?.freshVersion?.example_jp ?? example),
+    );
+  }, [cards]);
 
   const handleConfirm = () => {
     if (cards.length === 0) return;
@@ -170,6 +185,39 @@ export function ReviewCardsDialog({
         onSetAllViewMode={handleSetAllViewMode}
         onClose={onClose}
       />
+
+      {reusedCount > 0 && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            flexWrap: 'wrap',
+            px: 2.5,
+            py: 1.25,
+            bgcolor: alpha(accent[100], 0.5),
+            borderBottom: `1px solid ${alpha(accent[300], 0.35)}`,
+          }}
+        >
+          <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'text.primary' }}>
+            {tReuse('banner', { count: reusedCount })}
+          </Typography>
+          <Button
+            size="small"
+            onClick={handleUseFresh}
+            sx={{
+              minWidth: 0,
+              px: 0.75,
+              fontSize: '0.68rem',
+              fontWeight: 800,
+              textTransform: 'none',
+              color: brand[700],
+            }}
+          >
+            {tReuse('useNewInstead')}
+          </Button>
+        </Box>
+      )}
 
       {/* Card list */}
       <DialogContent

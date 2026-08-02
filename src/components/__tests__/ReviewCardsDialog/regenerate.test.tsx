@@ -31,7 +31,9 @@ function card(word: string, meaning = 'x'): PendingCard {
 
 const CARDS = [card('月曜日'), card('1月'), card('2月')];
 
-function setup(onRegenerate?: ReturnType<typeof vi.fn>) {
+type RegenerateFn = (words: string[], instruction: string) => Promise<PendingCard[]>;
+
+function setup(onRegenerate?: RegenerateFn) {
   const onConfirm = vi.fn();
   renderWithProviders(
     <ReviewCardsDialog

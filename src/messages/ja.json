@@ -299,7 +299,10 @@
         "exampleJpFieldLabel": "例文（日本語）",
         "exampleEnFieldLabel": "例文（英語）",
         "noMeaningPlaceholder": "意味が未設定",
-        "selectCardAria": "{word}を作り直す対象に選ぶ"
+        "selectCardAria": "{word}を作り直す対象に選ぶ",
+        "reusedFromDeck": "{deck}から",
+        "reused": "再利用",
+        "reusedTooltip": "すでに保存されているカードです。設定した画像や例文がそのまま使われます"
       },
       "regenerate": {
         "selectedCount": "{count, plural, =0 {作り直すカードを選んでください} other {#枚を選択中}}",
@@ -310,6 +313,10 @@
         "regenerating": "作り直しています…",
         "failed": "作り直せませんでした。もう一度お試しください。",
         "partial": "{asked}枚中{got}枚だけ戻りました。残りはそのままです。"
+      },
+      "reuse": {
+        "banner": "{count, plural, other {#枚はすでに持っているので、保存済みのカードを使います}}",
+        "useNewInstead": "新しく作ったものを使う"
       }
     },
     "shareDeckDialog": {

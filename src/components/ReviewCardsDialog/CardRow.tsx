@@ -8,6 +8,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import HideImageIcon from '@mui/icons-material/HideImage';
 import ImageSearchIcon from '@mui/icons-material/ImageSearch';
+import ReplayIcon from '@mui/icons-material/Replay';
 import {
   Box,
   Checkbox,
@@ -40,7 +41,14 @@ import type { Flashcard, JlptLevel } from '@/types/flashcard';
 import { SmallField } from './SmallField';
 import { compactToggleSx } from './styles';
 
-export type PendingCard = Omit<Flashcard, 'id' | 'deckId' | 'position'> & { image_query: string };
+type CardFields = Omit<Flashcard, 'id' | 'deckId' | 'position'> & { image_query: string };
+
+export type PendingCard = CardFields & {
+  /** Deck the saved copy came from; '' when its name couldn't be read. */
+  reusedFrom?: string;
+  /** What the model wrote, kept so the reviewer can switch back to it. */
+  freshVersion?: CardFields;
+};
 
 const JLPT_LEVELS: (JlptLevel | 'none')[] = ['N5', 'N4', 'N3', 'N2', 'N1', 'none'];
 
@@ -270,6 +278,32 @@ export function CardRow({
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, ml: -0.5 }}>
+          {card.reusedFrom !== undefined && (
+            <Tooltip title={t('reusedTooltip')}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.3,
+                  px: 0.75,
+                  py: 0.2,
+                  mr: 0.25,
+                  borderRadius: '6px',
+                  bgcolor: alpha(accent[100], 0.7),
+                  border: `1px solid ${alpha(accent[300], 0.5)}`,
+                  flexShrink: 0,
+                }}
+              >
+                <ReplayIcon sx={{ fontSize: 11, color: 'text.primary' }} />
+                <Typography
+                  sx={{ fontSize: '0.58rem', fontWeight: 800, color: 'text.primary' }}
+                  noWrap
+                >
+                  {card.reusedFrom ? t('reusedFromDeck', { deck: card.reusedFrom }) : t('reused')}
+                </Typography>
+              </Box>
+            </Tooltip>
+          )}
           <Tooltip title={t('removeCardTooltip')}>
             <IconButton
               size="small"

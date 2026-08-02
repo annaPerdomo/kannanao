@@ -335,6 +335,42 @@ export async function loadAllCards(): Promise<Flashcard[]> {
   return (data ?? []).map(dbCardToApp);
 }
 
+export interface ExistingCardMatch {
+  card: Flashcard;
+  deckName: string;
+}
+
+/**
+ * Find cards the user already owns for any of `words`. RLS scopes this to the
+ * requester, so no user id is needed — the same arrangement loadAllCards uses.
+ * Returns at most one match per word: the oldest, which is the one most likely
+ * to carry hand-picked artwork and a corrected example sentence.
+ */
+export async function dbFindCardsByWords(words: string[]): Promise<Map<string, ExistingCardMatch>> {
+  const matches = new Map<string, ExistingCardMatch>();
+  if (!isConfigured() || words.length === 0) return matches;
+
+  const { data, error } = await sb
+    .from('cards')
+    .select('*, decks(name)')
+    .in('word', [...new Set(words)])
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    // A failed lookup only costs the reuse offer, so the caller carries on.
+    console.error('Error finding existing cards', error);
+    return matches;
+  }
+
+  for (const row of data ?? []) {
+    const card = dbCardToApp(row);
+    if (matches.has(card.word)) continue;
+    const deck = (row as { decks?: { name?: string } | null }).decks;
+    matches.set(card.word, { card, deckName: deck?.name ?? '' });
+  }
+  return matches;
+}
+
 /**
  * Duplicate the given cards into a different deck.
  * The originals are untouched; new rows are inserted with targetDeckId.

@@ -2,14 +2,19 @@
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
+import { dbFindCardsByWords } from '@/lib/supabase';
 import { generateFlashcards } from '@/services/api';
-import { type NewCard, withImages } from '@/services/cardPipeline';
+import { applyReuse, type NewCard, type ReusableCard, withImages } from '@/services/cardPipeline';
 import type { MainViewMode } from '@/types/flashcard';
 
 interface UseGenerateResult {
   generating: boolean;
   error: string | null;
-  generate: (words: string[], deckId: string, mainViewMode?: MainViewMode) => Promise<NewCard[]>;
+  generate: (
+    words: string[],
+    deckId: string,
+    mainViewMode?: MainViewMode,
+  ) => Promise<ReusableCard[]>;
   regenerate: (
     words: string[],
     instruction: string,
@@ -28,13 +33,22 @@ export function useGenerateFlashcards(): UseGenerateResult {
       words: string[],
       deckId: string,
       mainViewMode: MainViewMode,
-      options: { expandTopics: boolean; instruction?: string },
-    ): Promise<NewCard[]> => {
+      options: { expandTopics: boolean; instruction?: string; reuseExisting?: boolean },
+    ): Promise<ReusableCard[]> => {
+      const { reuseExisting, ...payload } = options;
       setGenerating(true);
       setError(null);
       try {
-        const generated = await generateFlashcards({ pendingWords: words, ...options });
-        return await withImages(generated, deckId, mainViewMode);
+        const generated = await generateFlashcards({ pendingWords: words, ...payload });
+        if (!reuseExisting) return await withImages(generated, deckId, mainViewMode);
+
+        const existing = await dbFindCardsByWords(generated.map((c) => c.word));
+        const { reused, toFetch } = applyReuse(generated, existing, deckId, mainViewMode);
+        const fetched = await withImages(toFetch, deckId, mainViewMode);
+
+        // Weave the fetched cards back into the gaps the reused ones left.
+        let next = 0;
+        return reused.map((card) => card ?? fetched[next++]);
       } catch (err) {
         const msg = err instanceof Error ? err.message : t('generationFailed');
         setError(msg);
@@ -48,7 +62,7 @@ export function useGenerateFlashcards(): UseGenerateResult {
 
   const generate = useCallback(
     (words: string[], deckId: string, mainViewMode: MainViewMode = 'hiragana') =>
-      run(words, deckId, mainViewMode, { expandTopics: true }),
+      run(words, deckId, mainViewMode, { expandTopics: true, reuseExisting: true }),
     [run],
   );
 

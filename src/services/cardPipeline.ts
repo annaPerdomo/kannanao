@@ -11,6 +11,64 @@ import { encodeUnsplashUrl, fetchImage, generateFlashcards, triggerUnsplashDownl
  */
 export type NewCard = Omit<Flashcard, 'id' | 'position'>;
 
+/**
+ * A card the reviewer can still swap: `reusedFrom` names the deck the saved
+ * copy came from, and `freshVersion` holds what the model just wrote, so
+ * "use the new one instead" costs nothing but an image fetch. Neither field is
+ * a column — dbInsertCards maps its columns explicitly, so both are dropped on
+ * the way into the database.
+ */
+export interface ReusableCard extends NewCard {
+  reusedFrom?: string;
+  freshVersion?: NewCard;
+}
+
+/**
+ * Swap in the user's own saved card for any word they already have. Their copy
+ * keeps the artwork they chose and the sentence they corrected, and — because
+ * this runs before withImages — a reused word never spends an Unsplash call.
+ */
+export function applyReuse(
+  generated: GeneratedCard[],
+  existing: Map<string, { card: Flashcard; deckName: string }>,
+  deckId: string,
+  mainViewMode: MainViewMode,
+): { reused: (ReusableCard | null)[]; toFetch: GeneratedCard[] } {
+  const reused: (ReusableCard | null)[] = [];
+  const toFetch: GeneratedCard[] = [];
+
+  for (const card of generated) {
+    const match = existing.get(card.word);
+    if (!match) {
+      reused.push(null);
+      toFetch.push(card);
+      continue;
+    }
+    const { id: _id, position: _position, ...saved } = match.card;
+    reused.push({
+      ...saved,
+      deckId,
+      mainViewMode,
+      reusedFrom: match.deckName,
+      freshVersion: {
+        word: card.word,
+        reading: card.reading ?? '',
+        romaji: card.romaji?.trim() ?? '',
+        meaning: card.meaning ?? '',
+        image_query: card.image_query?.trim() ?? '',
+        example_jp: normalizeFurigana(card.example_jp ?? ''),
+        example_en: card.example_en ?? '',
+        deckId,
+        mainViewMode,
+        cardType: card.card_type ?? 'word',
+        jlptLevel: card.jlpt_level ?? undefined,
+      },
+    });
+  }
+
+  return { reused, toFetch };
+}
+
 /** Gemini caps out at 50 items per generate request. */
 const GENERATE_CHUNK = 50;
 
