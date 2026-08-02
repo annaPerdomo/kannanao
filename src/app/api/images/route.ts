@@ -1,11 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { APP_NAME } from '@/lib/brand';
-
 import { rateLimit } from '../_lib/rateLimit';
 import { requireOrganizerAccount } from '../_lib/requireOrganizerAccount';
-
-const UTM_SOURCE = APP_NAME.toLowerCase();
+import { searchPhoto } from '../_lib/unsplash';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
 
@@ -27,43 +24,22 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'UNSPLASH_ACCESS_KEY not configured' }, { status: 500 });
     }
 
-    const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`;
-    const res = await fetch(url, {
-      headers: { Authorization: `Client-ID ${accessKey}` },
-    });
+    const search = await searchPhoto(query, accessKey);
 
-    if (!res.ok) {
-      const errorText = await res.text();
+    if (!search.ok) {
       return NextResponse.json(
         {
           error: 'Unsplash error',
-          status: res.status,
-          statusText: res.statusText,
-          detail: errorText,
+          rateLimited: search.rateLimited,
+          status: search.status,
+          statusText: search.statusText,
+          detail: search.detail,
         },
         { status: 502 },
       );
     }
 
-    const data = await res.json();
-    const results = data?.results;
-    if (!Array.isArray(results) || results.length === 0) {
-      return NextResponse.json({ result: null }, { status: 200 });
-    }
-
-    const photo = results[0];
-    return NextResponse.json(
-      {
-        result: {
-          url: photo.urls?.regular,
-          downloadLocation: photo.links?.download_location,
-          photographerName: photo.user?.name,
-          photographerUrl: `${photo.user?.links?.html}?utm_source=${UTM_SOURCE}&utm_medium=referral`,
-          photoPageUrl: `${photo.links?.html}?utm_source=${UTM_SOURCE}&utm_medium=referral`,
-        },
-      },
-      { status: 200 },
-    );
+    return NextResponse.json({ result: search.photo }, { status: 200 });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
