@@ -25,6 +25,10 @@ const GenerateSchema = z.object({
   // it asked about by position, so it needs the strict one-card-per-item
   // contract. Only the card-authoring UI opts in.
   expandTopics: z.boolean().optional().default(false),
+  // A retry note from Review Cards ("use kanji numbers"). Free text, so it goes
+  // in last and is framed as a correction — the field rules above still bound
+  // the shape, and the response schema bounds it regardless.
+  instruction: z.string().trim().max(300, 'Instruction is too long').optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -42,7 +46,7 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  const { pendingWords, expandTopics } = parsed.data;
+  const { pendingWords, expandTopics, instruction } = parsed.data;
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -70,7 +74,11 @@ Each item is either one word/phrase, or a topic naming a group of words.
 - example_jp: simple sentence for a young learner using the word naturally. Wrap every kanji (or kanji compound) with its hiragana reading using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです。 Each group holds exactly one reading — never split a compound's reading with extra pipes ({無関係|むかんけい} or {無|む}{関|かん}{係|けい}, never {無関係|む|かん|けい}). Pure kana words need no wrapping.
 - example_en: English translation of the example sentence.
 - jlpt_level: JLPT level this word/phrase belongs to ("N5", "N4", "N3", "N2", "N1"), or null if not in any JLPT list.
-If a word has multiple meanings or translations, include all common ones separated by ", " (e.g. "front, surface, outside" for 表). Always list the most common meaning first.`;
+If a word has multiple meanings or translations, include all common ones separated by ", " (e.g. "front, surface, outside" for 表). Always list the most common meaning first.${
+      instruction
+        ? `\nThese cards were generated once already and the teacher is asking for them again with one correction. Apply it, and where it conflicts with a rule above, the correction wins: ${instruction}`
+        : ''
+    }`;
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,

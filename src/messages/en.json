@@ -30,7 +30,8 @@
       "kanji": "漢 Kanji",
       "generateWithAi": "Generate with AI",
       "generateCards": "Generate Cards",
-      "wordsQueued": "{count, plural, one {# word queued} other {# words queued}}"
+      "wordsQueued": "{count, plural, one {# word queued} other {# words queued}}",
+      "inputHint": "Add as many as you like — a word, a phrase, or a whole topic like \"days of the week\"."
     },
     "addExistingCardsDialog": {
       "title": "Add Existing Cards",
@@ -297,7 +298,18 @@
         "furiganaHintExample": "'{'漢字|かんじ'}'",
         "exampleJpFieldLabel": "Example (JP)",
         "exampleEnFieldLabel": "Example (EN)",
-        "noMeaningPlaceholder": "No meaning yet"
+        "noMeaningPlaceholder": "No meaning yet",
+        "selectCardAria": "Select {word} to redo"
+      },
+      "regenerate": {
+        "selectedCount": "{count, plural, =0 {Tick any cards to redo} one {# card selected} other {# cards selected}}",
+        "selectAll": "Select all",
+        "clearSelection": "Clear",
+        "placeholder": "What should change? e.g. use kanji numbers, not 1月",
+        "regenerate": "{count, plural, =0 {Redo} other {Redo #}}",
+        "regenerating": "Redoing…",
+        "failed": "Couldn't redo those cards. Please try again.",
+        "partial": "Only {got} of {asked} cards came back — the rest were left as they were."
       }
     },
     "shareDeckDialog": {

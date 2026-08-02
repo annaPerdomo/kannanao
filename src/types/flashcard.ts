@@ -28,6 +28,8 @@ export interface GeneratePayload {
   pendingWords: string[];
   /** Let an entry name a group ("days of the week") and yield a card per member. */
   expandTopics?: boolean;
+  /** A correction to apply on a retry, e.g. "use kanji numbers, not 1月". */
+  instruction?: string;
 }
 
 export interface GeneratedCard {

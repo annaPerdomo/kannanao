@@ -89,7 +89,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     copyExistingCards,
     reorderCards,
   } = useCards(deckId, handleCountChange);
-  const { generating, error, generate } = useGenerateFlashcards();
+  const { generating, error, generate, regenerate } = useGenerateFlashcards();
 
   const canReorder = !isMemberAccount && cards.length > 1;
   const readingCardCount = useMemo(() => eligibleReadingCards(cards).length, [cards]);
@@ -379,6 +379,9 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         open={review.open}
         cards={review.cards}
         onClose={review.close}
+        onRegenerate={(words, instruction) =>
+          regenerate(words, instruction, deckId, pendingMainViewMode)
+        }
         onConfirm={(confirmed) => {
           addCards(confirmed.map((c) => ({ ...c, deckId })));
           review.clear();

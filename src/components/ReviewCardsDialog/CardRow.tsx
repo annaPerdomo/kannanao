@@ -10,6 +10,7 @@ import HideImageIcon from '@mui/icons-material/HideImage';
 import ImageSearchIcon from '@mui/icons-material/ImageSearch';
 import {
   Box,
+  Checkbox,
   CircularProgress,
   Collapse,
   IconButton,
@@ -51,6 +52,8 @@ interface CardRowProps {
   onToggleExpand: (index: number) => void;
   onUpdate: (index: number, patch: Partial<PendingCard>) => void;
   onDelete: (index: number) => void;
+  selected?: boolean;
+  onToggleSelect?: (index: number) => void;
 }
 
 export function CardRow({
@@ -61,6 +64,8 @@ export function CardRow({
   onToggleExpand,
   onUpdate,
   onDelete,
+  selected = false,
+  onToggleSelect,
 }: CardRowProps) {
   const t = useTranslations('Deck.reviewCardsDialog.cardRow');
   const theme = useTheme();
@@ -186,6 +191,21 @@ export function CardRow({
         }}
         onClick={() => onToggleExpand(index)}
       >
+        {onToggleSelect && (
+          <Checkbox
+            checked={selected}
+            onChange={() => onToggleSelect(index)}
+            onClick={(e) => e.stopPropagation()}
+            size="small"
+            inputProps={{ 'aria-label': t('selectCardAria', { word: card.word }) }}
+            sx={{
+              p: 0.25,
+              flexShrink: 0,
+              color: alpha(brand[400], 0.7),
+              '&.Mui-checked': { color: brand[600] },
+            }}
+          />
+        )}
         <Box
           sx={{
             width: 44,
@@ -253,6 +273,7 @@ export function CardRow({
           <Tooltip title={t('removeCardTooltip')}>
             <IconButton
               size="small"
+              aria-label={t('removeCardTooltip')}
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(index);

@@ -212,6 +212,7 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
           else review.clear();
         }}
         onConfirm={flow.handleReviewConfirm}
+        onRegenerate={flow.handleRegenerate}
       />
     </>
   );

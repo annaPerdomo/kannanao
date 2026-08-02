@@ -30,7 +30,8 @@
       "kanji": "漢 漢字",
       "generateWithAi": "AIで作る",
       "generateCards": "カードを作成",
-      "wordsQueued": "{count, plural, other {#語が待機中}}"
+      "wordsQueued": "{count, plural, other {#語が待機中}}",
+      "inputHint": "単語・フレーズ・「曜日」のようなテーマを、いくつでも追加できます。"
     },
     "addExistingCardsDialog": {
       "title": "既存のカードを追加",
@@ -297,7 +298,18 @@
         "furiganaHintExample": "'{'漢字|かんじ'}'",
         "exampleJpFieldLabel": "例文（日本語）",
         "exampleEnFieldLabel": "例文（英語）",
-        "noMeaningPlaceholder": "意味が未設定"
+        "noMeaningPlaceholder": "意味が未設定",
+        "selectCardAria": "{word}を作り直す対象に選ぶ"
+      },
+      "regenerate": {
+        "selectedCount": "{count, plural, =0 {作り直すカードを選んでください} other {#枚を選択中}}",
+        "selectAll": "すべて選択",
+        "clearSelection": "選択を解除",
+        "placeholder": "どう変えますか？ 例：数字は漢字で（1月ではなく一月）",
+        "regenerate": "{count, plural, =0 {作り直す} other {#枚を作り直す}}",
+        "regenerating": "作り直しています…",
+        "failed": "作り直せませんでした。もう一度お試しください。",
+        "partial": "{asked}枚中{got}枚だけ戻りました。残りはそのままです。"
       }
     },
     "shareDeckDialog": {

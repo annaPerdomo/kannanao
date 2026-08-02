@@ -192,6 +192,33 @@ describe('POST /api/generate', () => {
     }
   });
 
+  it('should append a retry instruction and let it win over the field rules', async () => {
+    mockGeminiSuccess([]);
+    await POST(makeRequest({ pendingWords: ['1月'], instruction: 'spell numbers out in kana' }));
+
+    const prompt = JSON.parse(mockFetch.mock.calls[0][1].body).contents[0].parts[0].text;
+    expect(prompt).toContain('spell numbers out in kana');
+    expect(prompt).toContain('the correction wins');
+    // Last word, so it overrides the rules above rather than being overridden.
+    expect(prompt.indexOf('spell numbers out in kana')).toBeGreaterThan(
+      prompt.indexOf('一月 not 1月'),
+    );
+  });
+
+  it('should leave the prompt alone when no instruction is given', async () => {
+    mockGeminiSuccess([]);
+    await POST(makeRequest({ pendingWords: ['猫'] }));
+
+    const prompt = JSON.parse(mockFetch.mock.calls[0][1].body).contents[0].parts[0].text;
+    expect(prompt).not.toContain('the correction wins');
+  });
+
+  it('should reject an over-long instruction', async () => {
+    const res = await POST(makeRequest({ pendingWords: ['猫'], instruction: 'x'.repeat(301) }));
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toContain('too long');
+  });
+
   it('should return more cards than words when a topic expands', async () => {
     const days = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
     mockGeminiSuccess(

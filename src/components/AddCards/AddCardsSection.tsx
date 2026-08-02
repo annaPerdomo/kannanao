@@ -144,6 +144,19 @@ export function AddCardsSection({
           inputId="add-cards-word-input"
         />
 
+        <Typography
+          sx={{
+            fontSize: '0.68rem',
+            color: alpha(brand[700], 0.65),
+            fontWeight: 600,
+            lineHeight: 1.4,
+            mt: -0.5,
+            mb: 1.25,
+          }}
+        >
+          {t('inputHint')}
+        </Typography>
+
         {error && (
           <Alert
             severity="error"
