@@ -11,6 +11,7 @@
     "retry": "Retry",
     "somethingWentWrong": "Something went wrong",
     "errorFallbackBody": "An unexpected error occurred. Please refresh the page or try again.",
+    "unsplashCredit": "Photo by <photographer>{name}</photographer> on <unsplash>Unsplash</unsplash>",
     "readAloud": "Read aloud",
     "language": {
       "ariaLabel": "Choose a language",

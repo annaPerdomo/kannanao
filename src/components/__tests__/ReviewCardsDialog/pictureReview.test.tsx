@@ -13,6 +13,7 @@ vi.mock('@/services/api', () => ({
   deleteStorageImage: vi.fn(),
   isStorageImage: vi.fn(() => false),
   encodeUnsplashUrl: vi.fn((r: { url: string }) => r.url),
+  decodeUnsplashAttribution: vi.fn(() => null),
   triggerUnsplashDownload: vi.fn(),
   formatFurigana: vi.fn(),
 }));

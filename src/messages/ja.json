@@ -11,6 +11,7 @@
     "retry": "もう一度",
     "somethingWentWrong": "うまくいきませんでした",
     "errorFallbackBody": "予期しないエラーが発生しました。ページを更新するか、もう一度お試しください。",
+    "unsplashCredit": "<photographer>{name}</photographer>による写真（<unsplash>Unsplash</unsplash>）",
     "readAloud": "読み上げ",
     "language": {
       "ariaLabel": "言語を選ぶ",
