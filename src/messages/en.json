@@ -316,7 +316,9 @@
       },
       "reuse": {
         "banner": "{count, plural, one {# card is already in your decks — reusing your saved copy} other {# cards are already in your decks — reusing your saved copies}}",
-        "useNewInstead": "Use the new ones instead"
+        "useNewInstead": "Use the new ones instead",
+        "bannerFresh": "{count, plural, one {# card is showing the newly made version} other {# cards are showing the newly made versions}}",
+        "useSavedInstead": "Go back to my saved ones"
       }
     },
     "shareDeckDialog": {

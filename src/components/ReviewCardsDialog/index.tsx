@@ -6,6 +6,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
+import { swapReusedVersion } from '@/services/cardPipeline';
 import type { MainViewMode } from '@/types/flashcard';
 
 import { CardRow, type PendingCard } from './CardRow';
@@ -91,17 +92,19 @@ export function ReviewCardsDialog({
     setExpandedIndex((prev) => (prev === index ? null : index));
   }, []);
 
-  const reusedCount = cards.filter((c) => c.reusedFrom !== undefined).length;
+  const swappable = cards.filter((c) => c.alternate);
+  const reusedCount = swappable.length;
+  const showingFresh = reusedCount > 0 && swappable.every((c) => c.showingFresh);
 
   /**
-   * Trade every saved card back for what the model wrote. The fresh copy has no
-   * image — reuse is what skipped the lookup — so the row shows the placeholder
-   * until the reviewer fetches one from the expanded panel.
+   * Flip every swappable row to its other version. The card coming off screen
+   * becomes the new alternate, so this button reverses itself — the reviewer
+   * can go back and forth as many times as they like.
    */
-  const handleUseFresh = useCallback(() => {
-    setCards((prev) => prev.map((c) => c.freshVersion ?? c));
+  const handleSwapVersions = useCallback(() => {
+    setCards((prev) => prev.map(swapReusedVersion));
     setOriginalExamples((prev) =>
-      prev.map((example, i) => cards[i]?.freshVersion?.example_jp ?? example),
+      prev.map((example, i) => cards[i]?.alternate?.example_jp ?? example),
     );
   }, [cards]);
 
@@ -200,11 +203,13 @@ export function ReviewCardsDialog({
           }}
         >
           <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'text.primary' }}>
-            {tReuse('banner', { count: reusedCount })}
+            {showingFresh
+              ? tReuse('bannerFresh', { count: reusedCount })
+              : tReuse('banner', { count: reusedCount })}
           </Typography>
           <Button
             size="small"
-            onClick={handleUseFresh}
+            onClick={handleSwapVersions}
             sx={{
               minWidth: 0,
               px: 0.75,
@@ -214,7 +219,7 @@ export function ReviewCardsDialog({
               color: brand[700],
             }}
           >
-            {tReuse('useNewInstead')}
+            {showingFresh ? tReuse('useSavedInstead') : tReuse('useNewInstead')}
           </Button>
         </Box>
       )}

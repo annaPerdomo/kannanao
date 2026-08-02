@@ -13,14 +13,34 @@ export type NewCard = Omit<Flashcard, 'id' | 'position'>;
 
 /**
  * A card the reviewer can still swap: `reusedFrom` names the deck the saved
- * copy came from, and `freshVersion` holds what the model just wrote, so
- * "use the new one instead" costs nothing but an image fetch. Neither field is
- * a column — dbInsertCards maps its columns explicitly, so both are dropped on
- * the way into the database.
+ * copy came from and `alternate` holds the version that isn't showing. None of
+ * the three are columns — dbInsertCards maps its columns explicitly, so they
+ * are dropped on the way into the database.
  */
 export interface ReusableCard extends NewCard {
   reusedFrom?: string;
-  freshVersion?: NewCard;
+  alternate?: NewCard;
+  showingFresh?: boolean;
+}
+
+/**
+ * Trade a row for its other version. The card being replaced becomes the new
+ * alternate, so this is an involution — swap twice and you are exactly back
+ * where you started, however many times the reviewer changes their mind.
+ */
+export function swapReusedVersion<
+  T extends { reusedFrom?: string; alternate?: object; showingFresh?: boolean },
+>(card: T): T {
+  if (!card.alternate) return card;
+  const { reusedFrom, alternate, showingFresh, ...current } = card;
+  // The two versions hold the same fields, so the result is still a T — the
+  // compiler can't see that through the spread of an unknown-shaped alternate.
+  return {
+    ...alternate,
+    reusedFrom,
+    alternate: current,
+    showingFresh: !showingFresh,
+  } as T;
 }
 
 /**
@@ -50,7 +70,8 @@ export function applyReuse(
       deckId,
       mainViewMode,
       reusedFrom: match.deckName,
-      freshVersion: {
+      showingFresh: false,
+      alternate: {
         word: card.word,
         reading: card.reading ?? '',
         romaji: card.romaji?.trim() ?? '',

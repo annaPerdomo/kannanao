@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { applyReuse } from '@/services/cardPipeline';
+import { applyReuse, swapReusedVersion } from '@/services/cardPipeline';
 import type { Flashcard, GeneratedCard } from '@/types/flashcard';
 
 function generated(word: string, over: Partial<GeneratedCard> = {}): GeneratedCard {
@@ -78,17 +78,18 @@ describe('applyReuse', () => {
     expect(reused[0]).not.toHaveProperty('position');
   });
 
-  it('should keep the generated card as the fresh alternative', () => {
+  it('should keep the generated card as the alternative', () => {
     const { reused } = applyReuse([generated('猫')], match('猫'), 'deck-1', 'hiragana');
 
-    expect(reused[0]?.freshVersion).toMatchObject({
+    expect(reused[0]?.showingFresh).toBe(false);
+    expect(reused[0]?.alternate).toMatchObject({
       word: '猫',
       meaning: 'fresh meaning',
       example_en: 'fresh example',
       deckId: 'deck-1',
     });
     // Reuse is what skipped the lookup, so the alternative has no image.
-    expect(reused[0]?.freshVersion?.imageUrl).toBeUndefined();
+    expect(reused[0]?.alternate?.imageUrl).toBeUndefined();
   });
 
   it('should mark a match whose deck name could not be read', () => {
@@ -109,5 +110,40 @@ describe('applyReuse', () => {
 
     expect(reused.map((c) => c?.word ?? null)).toEqual([null, '犬', null, '鳥']);
     expect(toFetch.map((c) => c.word)).toEqual(['猫', '魚']);
+  });
+});
+
+describe('swapReusedVersion', () => {
+  const reusedCard = () =>
+    applyReuse([generated('猫')], match('猫'), 'deck-1', 'hiragana').reused[0]!;
+
+  it('should show the generated card after one swap', () => {
+    const swapped = swapReusedVersion(reusedCard());
+
+    expect(swapped.meaning).toBe('fresh meaning');
+    expect(swapped.showingFresh).toBe(true);
+    // The chip stays, so the row still reads as one that has another version.
+    expect(swapped.reusedFrom).toBe('Japanese Level 1');
+  });
+
+  it('should come back to the saved card on a second swap', () => {
+    const back = swapReusedVersion(swapReusedVersion(reusedCard()));
+
+    expect(back.meaning).toBe('the meaning I fixed');
+    expect(back.imageUrl).toBe('https://example.com/mine.jpg');
+    expect(back.showingFresh).toBe(false);
+  });
+
+  it('should survive being swapped back and forth repeatedly', () => {
+    const start = reusedCard();
+    let card = start;
+    for (let i = 0; i < 6; i++) card = swapReusedVersion(card);
+
+    expect(card).toEqual(start);
+  });
+
+  it('should leave a card with no alternative untouched', () => {
+    const plain = { word: '犬', meaning: 'dog', alternate: undefined };
+    expect(swapReusedVersion(plain)).toBe(plain);
   });
 });

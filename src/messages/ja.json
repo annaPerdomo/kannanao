@@ -316,7 +316,9 @@
       },
       "reuse": {
         "banner": "{count, plural, other {#枚はすでに持っているので、保存済みのカードを使います}}",
-        "useNewInstead": "新しく作ったものを使う"
+        "useNewInstead": "新しく作ったものを使う",
+        "bannerFresh": "{count, plural, other {#枚は新しく作った方を表示中}}",
+        "useSavedInstead": "保存済みのカードに戻す"
       }
     },
     "shareDeckDialog": {

@@ -46,8 +46,13 @@ type CardFields = Omit<Flashcard, 'id' | 'deckId' | 'position'> & { image_query:
 export type PendingCard = CardFields & {
   /** Deck the saved copy came from; '' when its name couldn't be read. */
   reusedFrom?: string;
-  /** What the model wrote, kept so the reviewer can switch back to it. */
-  freshVersion?: CardFields;
+  /**
+   * The version of this row that isn't showing. Swapping trades places with it,
+   * so the move works in both directions however many times it's made.
+   */
+  alternate?: CardFields;
+  /** True while the model's card is showing and the saved one is the alternate. */
+  showingFresh?: boolean;
 };
 
 const JLPT_LEVELS: (JlptLevel | 'none')[] = ['N5', 'N4', 'N3', 'N2', 'N1', 'none'];

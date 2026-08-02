@@ -6,7 +6,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 
 import type { MainViewMode } from '@/types/flashcard';
 
-import { compactToggleSx } from './styles';
+import { prominentToggleSx } from './styles';
 
 interface ReviewHeaderProps {
   cardCount: number;
@@ -79,20 +79,20 @@ export function ReviewHeader({
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
-          gap: 1.5,
-          bgcolor: alpha('#fff', 0.6),
+          gap: 1.25,
+          bgcolor: alpha('#fff', 0.75),
           border: `1px solid ${alpha(brand[300], 0.25)}`,
           borderRadius: '10px',
           px: 1.5,
-          py: 1,
+          py: 1.25,
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Typography
             sx={{
-              fontSize: '0.6rem',
-              fontWeight: 700,
-              color: alpha(brand[700], 0.6),
+              fontSize: '0.72rem',
+              fontWeight: 800,
+              color: 'text.primary',
               whiteSpace: 'nowrap',
             }}
           >
@@ -105,7 +105,7 @@ export function ReviewHeader({
             onChange={(_, v) => {
               if (v) onSetAllViewMode(v);
             }}
-            sx={compactToggleSx(theme)}
+            sx={prominentToggleSx(theme)}
           >
             <ToggleButton value="romaji">ABC Romaji</ToggleButton>
             <ToggleButton value="hiragana">ひ Hiragana</ToggleButton>
