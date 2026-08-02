@@ -324,7 +324,7 @@ describe('dbSetDeckReadingPractice', () => {
 describe('dbSetCardsMainViewMode', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    setTable('cards', null, null);
+    setTable('cards', [{ id: 'card-1' }, { id: 'card-2' }], null);
   });
 
   it('should resolve without throwing on success', async () => {
@@ -334,6 +334,15 @@ describe('dbSetCardsMainViewMode', () => {
   it('should throw when the update errors', async () => {
     setTable('cards', null, new Error('View mode error'));
     await expect(dbSetCardsMainViewMode('deck-1', 'kanji')).rejects.toThrow('View mode error');
+  });
+
+  // A row-level policy that refuses the write filters it to zero rows instead
+  // of erroring, which used to read back as a successful bulk change.
+  it('should throw when the update matched no rows', async () => {
+    setTable('cards', [], null);
+    await expect(dbSetCardsMainViewMode('deck-1', 'kanji')).rejects.toThrow(
+      'No cards were updated',
+    );
   });
 });
 
@@ -502,6 +511,29 @@ describe('dbUpdateCard', () => {
     setTable('cards', null, null);
     const result = await dbUpdateCard('card-1', { word: 'test' });
     expect(result).toBeNull();
+  });
+
+  function lastUpdatePayload() {
+    const chain = mockFrom.mock.results[0].value as { update: { mock: { calls: unknown[][] } } };
+    return chain.update.mock.calls[0][0] as Record<string, unknown>;
+  }
+
+  // Every remove-image button clears the field to undefined, so reading that as
+  // "not in the patch" made removing a picture a silent no-op.
+  it('should clear the picture when imageUrl is explicitly undefined', async () => {
+    setTable('cards', makeCardRow({ image_url: null }));
+
+    await dbUpdateCard('card-1', { imageUrl: undefined });
+
+    expect(lastUpdatePayload()).toHaveProperty('image_url', '');
+  });
+
+  it('should leave the picture alone when imageUrl is not in the patch', async () => {
+    setTable('cards', makeCardRow());
+
+    await dbUpdateCard('card-1', { meaning: 'kitten' });
+
+    expect(lastUpdatePayload()).not.toHaveProperty('image_url');
   });
 });
 

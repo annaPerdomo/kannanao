@@ -208,8 +208,16 @@ export async function dbSetCardsMainViewMode(deckId: string, mode: MainViewMode)
     showConfigBanner();
     throw new Error('Supabase not configured');
   }
-  const { error } = await sb.from('cards').update({ main_view_mode: mode }).eq('deck_id', deckId);
+  const { data, error } = await sb
+    .from('cards')
+    .update({ main_view_mode: mode })
+    .eq('deck_id', deckId)
+    .select('id');
   if (error) throw error;
+  // A row-level policy that refuses the write filters it to zero rows rather
+  // than erroring, so an empty result is a silent failure, not a success. The
+  // toggle is disabled on an empty deck, so there is always a row to hit.
+  if (!data || data.length === 0) throw new Error('No cards were updated');
 }
 
 export async function loadCards(deckId: string): Promise<Flashcard[]> {
@@ -298,7 +306,9 @@ export async function dbUpdateCard(
   if (patch.reading !== undefined) payload.reading = patch.reading;
   if (patch.romaji !== undefined) payload.romaji = patch.romaji;
   if (patch.meaning !== undefined) payload.meaning = patch.meaning;
-  if (patch.imageUrl !== undefined) payload.image_url = patch.imageUrl;
+  // `in`, not `!== undefined`: clearing a picture sets imageUrl to undefined,
+  // and reading that as "leave it alone" made every remove-image button a no-op.
+  if ('imageUrl' in patch) payload.image_url = patch.imageUrl ?? '';
   if (patch.image_query !== undefined) payload.image_query = patch.image_query;
   if (patch.example_jp !== undefined) payload.example_jp = patch.example_jp;
   if (patch.example_en !== undefined) payload.example_en = patch.example_en;
