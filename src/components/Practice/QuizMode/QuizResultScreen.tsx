@@ -3,6 +3,7 @@ import { Box, Button, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 
+import { useQuestHandoff } from '@/contexts/QuestHandoffContext';
 import { quizStars } from '@/lib/quiz';
 
 interface QuizResultScreenProps {
@@ -22,6 +23,8 @@ export function QuizResultScreen({ score, total, accuracy, onExit }: QuizResultS
   const { brand, accent } = theme.palette;
   const t = useTranslations('Practice.quizMode');
   const tCommon = useTranslations('Practice.common');
+  // Inside an assignment quest this is the quest's one next step instead.
+  const handoff = useQuestHandoff();
   const stars = quizStars(accuracy);
 
   return (
@@ -81,8 +84,13 @@ export function QuizResultScreen({ score, total, accuracy, onExit }: QuizResultS
       </Typography>
 
       <Box sx={{ mt: 4 }}>
-        <Button variant="contained" size="large" onClick={onExit} sx={{ px: 4, fontWeight: 800 }}>
-          {tCommon('backToDeck')}
+        <Button
+          variant="contained"
+          size="large"
+          onClick={handoff ? handoff.onNext : onExit}
+          sx={{ px: 4, fontWeight: 800 }}
+        >
+          {handoff?.label ?? tCommon('backToDeck')}
         </Button>
       </Box>
     </Box>

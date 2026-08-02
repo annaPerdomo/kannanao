@@ -27,12 +27,14 @@ interface PracticeProps {
   deckId: string;
   mode: PracticeMode;
   onBack: () => void;
+  /** Assignment-quest step chrome, shown under the header when a quest is running. */
+  questBanner?: React.ReactNode;
 }
 
 /** Show the batch picker when the deck exceeds this many cards. */
 const BATCH_PICKER_THRESHOLD = 10;
 
-export default function Practice({ deckId, mode, onBack }: PracticeProps) {
+export default function Practice({ deckId, mode, onBack, questBanner }: PracticeProps) {
   const t = useTranslations('Practice.page');
   const { cards, loading } = useCards(deckId);
   // Only Reading is deck-gated, so only Reading pays for the decks query.
@@ -108,6 +110,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
+        {questBanner}
         <QuizMode cards={modeCards} deckId={deckId} onExit={onBack} />
       </Box>
     );
@@ -118,6 +121,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
+        {questBanner}
         <KotobaBubbleSetup deckId={deckId} totalCards={modeCards.length} onSelect={setBatchSize} />
       </Box>
     );
@@ -129,6 +133,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
+        {questBanner}
         <BatchPicker totalCards={modeCards.length} mode={mode} onSelect={setBatchSize} />
       </Box>
     );
@@ -139,6 +144,8 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
   return (
     <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
       <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
+
+      {questBanner}
 
       {mode === 'match' && (
         <MatchMode

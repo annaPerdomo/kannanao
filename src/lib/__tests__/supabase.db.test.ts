@@ -50,6 +50,7 @@ import {
   dbCreateDeck,
   dbCreateEventType,
   dbCreateTodo,
+  dbDeckCardCount,
   dbDeleteCard,
   dbDeleteDeck,
   dbDeleteEventType,
@@ -316,6 +317,29 @@ describe('dbSetDeckReadingPractice', () => {
   it('should throw when the update errors', async () => {
     setTable('decks', null, new Error('Reading error'));
     await expect(dbSetDeckReadingPractice('deck-1', true)).rejects.toThrow('Reading error');
+  });
+});
+
+// ─── dbDeckCardCount ──────────────────────────────────────────────────────────
+
+describe('dbDeckCardCount', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return the trigger-maintained count', async () => {
+    setTable('decks', { card_count: 12 }, null);
+    await expect(dbDeckCardCount('deck-1')).resolves.toBe(12);
+  });
+
+  it('should read a deck with no cards as zero', async () => {
+    setTable('decks', { card_count: null }, null);
+    await expect(dbDeckCardCount('deck-1')).resolves.toBe(0);
+  });
+
+  it('should return null when the deck is missing or unreadable', async () => {
+    setTable('decks', null, new Error('nope'));
+    await expect(dbDeckCardCount('deck-1')).resolves.toBeNull();
   });
 });
 

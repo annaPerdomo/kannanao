@@ -169,6 +169,14 @@ export default function FlipStudy({
     });
   }, [embedded, endSession, sessionId]);
 
+  // Close the session as soon as the finish screen appears rather than when its
+  // button is tapped: inside an assignment quest that button hands off to the
+  // next leg instead of exiting, and a session left open never counts toward
+  // the goal. `finishSession` is idempotent, so the exit path can still call it.
+  useEffect(() => {
+    if (showCelebration) finishSession().catch(() => {});
+  }, [showCelebration, finishSession]);
+
   const handleBack = useCallback(() => {
     finishSession().catch(() => {});
     onBack();

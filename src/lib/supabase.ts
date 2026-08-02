@@ -170,6 +170,22 @@ export async function dbSetDeckPublic(id: string, isPublic: boolean): Promise<vo
   if (error) throw error;
 }
 
+/**
+ * One deck's card count, from the trigger-maintained `card_count` column.
+ * Cheap enough for the assignment quest to size its steps without loading the
+ * learner's whole library. Null when the deck is gone or unreadable.
+ */
+export async function dbDeckCardCount(deckId: string): Promise<number | null> {
+  if (!isConfigured()) return null;
+  const { data, error } = await sb
+    .from('decks')
+    .select('card_count')
+    .eq('id', deckId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data.card_count ?? 0;
+}
+
 export async function dbSetDeckReadingPractice(id: string, enabled: boolean): Promise<void> {
   if (!isConfigured()) {
     showConfigBanner();

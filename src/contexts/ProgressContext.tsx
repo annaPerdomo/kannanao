@@ -19,7 +19,7 @@ const ProgressCtx = createContext<ProgressContextValue>({
   newlyUnlocked: [],
   clearNewlyUnlocked: noop,
   recordAnswer: noopAsync,
-  endSession: noopAsync,
+  endSession: async () => null,
   startSession: async () => '',
   addBonusXp: noopAsync,
   openDailyChest: async () => false,

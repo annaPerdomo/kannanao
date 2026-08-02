@@ -41,10 +41,11 @@ const DUE_COLORS = {
 
 interface AssignmentCardProps {
   assignment: Assignment;
-  onStudy: (deckId: string) => void;
+  /** Begins the assignment's guided quest — the card never offers a menu. */
+  onStart: (assignment: Assignment) => void;
 }
 
-export function AssignmentCard({ assignment, onStudy }: AssignmentCardProps) {
+export function AssignmentCard({ assignment, onStart }: AssignmentCardProps) {
   const theme = useTheme();
   const t = useTranslations('Group.assignmentCard');
   const { brand } = theme.palette;
@@ -128,7 +129,7 @@ export function AssignmentCard({ assignment, onStudy }: AssignmentCardProps) {
           size="small"
           variant="contained"
           startIcon={<PlayArrowIcon sx={{ fontSize: 14 }} />}
-          onClick={() => onStudy(assignment.deck_id)}
+          onClick={() => onStart(assignment)}
           sx={{
             borderRadius: 2,
             textTransform: 'none',
@@ -139,7 +140,7 @@ export function AssignmentCard({ assignment, onStudy }: AssignmentCardProps) {
             flexShrink: 0,
           }}
         >
-          {t('study')}
+          {t('start')}
         </Button>
       )}
       {isCompleted && <CheckCircleIcon sx={{ color: '#22C55E', fontSize: 20, flexShrink: 0 }} />}

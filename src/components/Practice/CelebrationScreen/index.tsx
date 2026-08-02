@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import FuriganaText from '@/components/FuriganaText';
+import { useQuestHandoff } from '@/contexts/QuestHandoffContext';
 import { useShopCtx } from '@/contexts/ShopContext';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { CELEBRATION_THEMES } from '@/hooks/useShop';
@@ -192,7 +193,10 @@ export function CelebrationScreen({
   onExit,
 }: CelebrationScreenProps) {
   const tCommon = useTranslations('Practice.common');
-  const resolvedExitLabel = exitLabel ?? tCommon('backToDeck');
+  // Inside an assignment quest the exit button becomes the one step forward —
+  // the learner is never shown a choice at the end of a leg.
+  const handoff = useQuestHandoff();
+  const resolvedExitLabel = handoff?.label ?? exitLabel ?? tCommon('backToDeck');
   const { equipped } = useShopCtx();
   const randomTheme = useMemo<CelebTheme>(
     () => ALL_THEMES[Math.floor(Math.random() * ALL_THEMES.length)],
@@ -346,7 +350,7 @@ export function CelebrationScreen({
 
         <Box sx={{ mt: 3, animation: 'fadeUp 0.5s 0.72s ease both' }}>
           <Button
-            onClick={onExit}
+            onClick={handoff ? handoff.onNext : onExit}
             size="large"
             sx={{
               bgcolor: cfg.btnBg,

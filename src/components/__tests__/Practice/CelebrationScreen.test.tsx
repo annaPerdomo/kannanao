@@ -36,6 +36,7 @@ import {
   PRAISE_GREAT,
   PRAISE_PERFECT,
 } from '@/components/Practice/CelebrationScreen';
+import { QuestHandoffProvider } from '@/contexts/QuestHandoffContext';
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
@@ -253,5 +254,28 @@ describe('CelebrationScreen', () => {
     } finally {
       shopState.equipped = {};
     }
+  });
+});
+
+describe('CelebrationScreen inside an assignment quest', () => {
+  it("replaces the exit button with the quest's one next step", () => {
+    const onNext = vi.fn();
+    const onExit = vi.fn();
+    renderWithProviders(
+      <QuestHandoffProvider value={{ label: 'Next: Practice', onNext }}>
+        <CelebrationScreen
+          heading="Done!"
+          subheading="cleared"
+          mode="study"
+          exitLabel="Back to Deck"
+          onExit={onExit}
+        />
+      </QuestHandoffProvider>,
+    );
+
+    expect(screen.queryByRole('button', { name: 'Back to Deck' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Next: Practice' }));
+    expect(onNext).toHaveBeenCalled();
+    expect(onExit).not.toHaveBeenCalled();
   });
 });

@@ -965,7 +965,7 @@
     "assignmentCard": {
       "unknownDeck": "Unknown Deck",
       "goalProgress": "🎯 Goal: {goal}{state, select, best { — Best so far: {accuracy}%} other {}}",
-      "study": "Study",
+      "start": "Start",
       "overdueBy": "Overdue by {days}d",
       "dueToday": "Due today",
       "dueTomorrow": "Due tomorrow",
@@ -3489,5 +3489,23 @@
       "tagline": "Japanese practice for educators and learners",
       "madeBy": "Made with 💕 by <link>Variations on a String</link>"
     }
+  },
+  "AssignmentQuest": {
+    "stepOf": "Step {current} of {total}",
+    "stepName": {
+      "warmup": "Warm up",
+      "practice": "Practice",
+      "goal": "Show what you know"
+    },
+    "nextStep": "Next: {step}",
+    "seeHowYouDid": "See how you did",
+    "checking": "Checking your goal…",
+    "completeHeading": "Assignment complete!",
+    "completeSubheading": "You hit your goal — nice work!",
+    "soCloseHeading": "So close!",
+    "bestSoFar": "Best so far: {best}% — goal {goal}%",
+    "tryOneMoreTime": "Give it one more go to reach your goal.",
+    "tryAgain": "Try again",
+    "backHome": "Back to home"
   }
 }

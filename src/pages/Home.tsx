@@ -32,6 +32,7 @@ import { ReviewTile } from '@/components/ReviewTile';
 import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProgressCtx } from '@/contexts/ProgressContext';
+import { useStartAssignmentQuest } from '@/hooks/useAssignmentQuest';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
 import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
@@ -313,6 +314,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
   const { groups, loading: groupsLoading, createGroup, pinGroup } = useGroups(homeSections.groups);
   const { leaderboard } = useGroupLeaderboard(undefined, homeSections.leaderboard);
   const router = useRouter();
+  const startQuest = useStartAssignmentQuest();
 
   const pendingAssignments = assignments.filter((a) => !a.completed_at);
   const [shareDeckId, setShareDeckId] = useState<string | null>(null);
@@ -550,7 +552,12 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                   <AssignmentCard
                     key={a.id}
                     assignment={a}
-                    onStudy={(deckId) => router.push(`/deck/${deckId}`)}
+                    onStart={(assignment) =>
+                      startQuest(
+                        assignment,
+                        decks.find((d) => d.id === assignment.deck_id),
+                      )
+                    }
                   />
                 ))}
               </Stack>
