@@ -92,6 +92,11 @@
     },
     "practiceHero": {
       "choosePractice": "練習をえらぼう",
+      "mixedTitle": "れんしゅう",
+      "mixedDescription": "いろいろなゲームをまぜてお届け",
+      "mixedStarting": "じゅんび中…",
+      "startMixedAria": "ミックス練習を始める",
+      "moreGames": "ほかのゲーム",
       "cheer0": "きみならできる！",
       "cheer1": "レベルアップしよう！",
       "cheer2": "カードが待ってるよ！",

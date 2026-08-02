@@ -4,16 +4,16 @@ import { Box, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 
-import type { QuestLeg, QuestStep } from '@/lib/assignmentQuest';
+import type { ChainLeg, ChainStep } from '@/lib/practiceChain';
 
-const STEP_EMOJI: Record<QuestStep, string> = {
+const STEP_EMOJI: Record<ChainStep, string> = {
   warmup: '🔖',
   practice: '🍉',
   goal: '🎯',
 };
 
 interface QuestStepBannerProps {
-  legs: QuestLeg[];
+  legs: ChainLeg[];
   currentIndex: number;
 }
 
@@ -47,7 +47,8 @@ export function QuestStepBanner({ legs, currentIndex }: QuestStepBannerProps) {
           const active = i === currentIndex;
           return (
             <Box
-              key={leg.step}
+              // Index, not step: a mixed session has several practice legs.
+              key={i}
               sx={{
                 width: 28,
                 height: 28,

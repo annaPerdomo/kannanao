@@ -4,32 +4,33 @@ import { use } from 'react';
 
 import { QuestFinishScreen, QuestStepBanner } from '@/components/AssignmentQuest';
 import { QuestHandoffProvider } from '@/contexts/QuestHandoffContext';
-import { useAssignmentQuest } from '@/hooks/useAssignmentQuest';
+import { usePracticeChain } from '@/hooks/usePracticeChain';
 import Study from '@/pages/Study';
 
 export default function StudyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const quest = useAssignmentQuest({ deckId: id, mode: 'study' });
+  const chain = usePracticeChain({ deckId: id, mode: 'study' });
 
-  if (quest?.phase === 'finish') {
+  if (chain?.phase === 'finish' && chain.state.assignmentId) {
     return (
       <QuestFinishScreen
-        assignmentId={quest.state.assignmentId}
-        onRetry={quest.retry}
-        onDone={quest.goHome}
+        assignmentId={chain.state.assignmentId}
+        onRetry={chain.retry}
+        onDone={chain.goHome}
       />
     );
   }
 
   return (
-    <QuestHandoffProvider value={quest?.handoff ?? null}>
+    <QuestHandoffProvider value={chain?.handoff ?? null}>
       <Study
-        key={quest?.attempt ?? 0}
+        key={chain?.attempt ?? 0}
         deckId={id}
-        onBack={quest ? quest.abandon : () => router.push(`/deck/${id}`)}
+        onBack={chain ? chain.abandon : () => router.push(`/deck/${id}`)}
+        cardIds={chain?.state.cardIds ?? undefined}
         questBanner={
-          quest ? <QuestStepBanner legs={quest.legs} currentIndex={quest.index} /> : null
+          chain ? <QuestStepBanner legs={chain.legs} currentIndex={chain.index} /> : null
         }
       />
     </QuestHandoffProvider>

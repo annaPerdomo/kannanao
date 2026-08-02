@@ -38,6 +38,8 @@ import { useCardReview } from '@/hooks/useCardReview';
 import { useCards } from '@/hooks/useCards';
 import { useDecks } from '@/hooks/useDecks';
 import { useGenerateFlashcards } from '@/hooks/useGenerateFlashcards';
+import { useStartMixedPractice } from '@/hooks/usePracticeChain';
+import { useJapaneseVoice } from '@/hooks/useSpeech';
 import { withImages } from '@/services/cardPipeline';
 import { LAYOUT } from '@/theme';
 import type { PracticeMode } from '@/types/app';
@@ -95,6 +97,10 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     setAllMainViewMode,
   } = useCards(deckId, handleCountChange);
   const { generating, error, generate, regenerate } = useGenerateFlashcards();
+  const { start: startMixed, starting: mixedStarting } = useStartMixedPractice();
+  // Asked here, not inside the session: a mixed plan must drop the Listen leg
+  // silently on a device with no Japanese voice, never stall on it mid-chain.
+  const voiceStatus = useJapaneseVoice();
 
   const canReorder = !isMemberAccount && cards.length > 1;
   const readingCardCount = useMemo(() => eligibleReadingCards(cards).length, [cards]);
@@ -265,6 +271,13 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           onStudy={onStudy}
           onPractice={onPractice}
           readingUnlocked={deck.readingPractice === true}
+          onMixedPractice={() =>
+            void startMixed(deckId, cards, {
+              readingUnlocked: deck.readingPractice === true,
+              ttsReady: voiceStatus === 'ready',
+            })
+          }
+          mixedStarting={mixedStarting}
         />
 
         {cards.length > 0 && <BestQuizLine deckId={deckId} />}

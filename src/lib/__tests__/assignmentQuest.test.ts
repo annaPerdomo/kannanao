@@ -1,13 +1,7 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import {
-  clearQuestState,
-  planAssignmentQuest,
-  QUEST_PRACTICE_MIN_CARDS,
-  questLegHref,
-  readQuestState,
-  writeQuestState,
-} from '@/lib/assignmentQuest';
+import { planAssignmentQuest } from '@/lib/assignmentQuest';
+import { MIXED_GAME_MIN_CARDS } from '@/lib/mixedPractice';
 
 const plan = (requiredMode: string | null, cardCount = 12) =>
   planAssignmentQuest({ cardCount, requiredMode });
@@ -25,34 +19,37 @@ describe('planAssignmentQuest', () => {
     expect(plan('study')).toEqual([{ step: 'goal', mode: 'study' }]);
   });
 
-  it('walks warm-up → practice → goal for a normal goal mode', () => {
+  it('walks warm-up → a mixed block → goal for a normal goal mode', () => {
     expect(plan('quiz')).toEqual([
       { step: 'warmup', mode: 'study' },
+      { step: 'practice', mode: 'recall' },
       { step: 'practice', mode: 'match' },
       { step: 'goal', mode: 'quiz' },
     ]);
   });
 
-  it('skips the middle leg when the goal already is Word Match', () => {
+  it('never repeats the goal mode inside the middle block', () => {
     expect(plan('match')).toEqual([
       { step: 'warmup', mode: 'study' },
+      { step: 'practice', mode: 'recall' },
       { step: 'goal', mode: 'match' },
     ]);
   });
 
-  it('skips the middle leg on a deck too small for it', () => {
-    expect(plan('listen', QUEST_PRACTICE_MIN_CARDS - 1)).toEqual([
+  it('shrinks the middle block on a deck too small for a match grid', () => {
+    expect(plan('listen', MIXED_GAME_MIN_CARDS - 1)).toEqual([
       { step: 'warmup', mode: 'study' },
+      { step: 'practice', mode: 'recall' },
       { step: 'goal', mode: 'listen' },
     ]);
   });
 
-  it('keeps the middle leg at exactly the card threshold', () => {
-    expect(plan('listen', QUEST_PRACTICE_MIN_CARDS).map((leg) => leg.step)).toEqual([
-      'warmup',
-      'practice',
-      'goal',
-    ]);
+  // The block is planned before any card progress is loaded — it must offer only
+  // the rungs that need none, or two leg pages would disagree on the plan.
+  it('leaves the progress-gated exercises out of a quest', () => {
+    const modes = plan('quiz').map((leg) => leg.mode);
+    expect(modes).not.toContain('listen');
+    expect(modes).not.toContain('fill');
   });
 
   it('always starts on flip study, so the first leg needs no deck data', () => {
@@ -66,76 +63,5 @@ describe('planAssignmentQuest', () => {
       const legs = plan(mode);
       expect(legs[legs.length - 1]).toEqual({ step: 'goal', mode });
     }
-  });
-});
-
-describe('questLegHref', () => {
-  it('routes the study leg to the deck study page', () => {
-    expect(questLegHref('d1', { step: 'warmup', mode: 'study' })).toBe(
-      '/deck/d1/study?quest=assignment',
-    );
-  });
-
-  it('routes a practice leg to that mode', () => {
-    expect(questLegHref('d1', { step: 'goal', mode: 'kotoba-bubble' })).toBe(
-      '/deck/d1/practice/kotoba-bubble?quest=assignment',
-    );
-  });
-
-  // Smart Review is cross-deck, so there is no deck route to send the learner
-  // to — callers fall back to the plain deck page rather than guess.
-  it('has nowhere to send a review goal', () => {
-    expect(questLegHref('d1', { step: 'goal', mode: 'review' })).toBeNull();
-  });
-});
-
-describe('quest state storage', () => {
-  const state = {
-    assignmentId: 'a1',
-    deckId: 'd1',
-    requiredMode: 'match',
-    requiredAccuracy: 80,
-    cardCount: 12,
-    index: 1,
-  };
-
-  beforeEach(() => {
-    window.sessionStorage.clear();
-  });
-
-  it('round-trips a quest across a navigation', () => {
-    writeQuestState(state);
-    expect(readQuestState()).toEqual(state);
-  });
-
-  it('reads nothing once cleared', () => {
-    writeQuestState(state);
-    clearQuestState();
-    expect(readQuestState()).toBeNull();
-  });
-
-  it('ignores an unreadable entry instead of throwing', () => {
-    window.sessionStorage.setItem('kannanao:assignment-quest', '{not json');
-    expect(readQuestState()).toBeNull();
-  });
-
-  it('ignores an entry missing the fields a quest needs', () => {
-    window.sessionStorage.setItem('kannanao:assignment-quest', JSON.stringify({ deckId: 'd1' }));
-    expect(readQuestState()).toBeNull();
-  });
-
-  it('defaults the optional fields when they are absent', () => {
-    window.sessionStorage.setItem(
-      'kannanao:assignment-quest',
-      JSON.stringify({ assignmentId: 'a1', deckId: 'd1', index: 0 }),
-    );
-    expect(readQuestState()).toEqual({
-      assignmentId: 'a1',
-      deckId: 'd1',
-      requiredMode: null,
-      requiredAccuracy: null,
-      cardCount: null,
-      index: 0,
-    });
   });
 });

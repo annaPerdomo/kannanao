@@ -92,6 +92,11 @@
     },
     "practiceHero": {
       "choosePractice": "Choose a practice",
+      "mixedTitle": "Practice",
+      "mixedDescription": "A mix of games, picked for you",
+      "mixedStarting": "Getting ready…",
+      "startMixedAria": "Start mixed practice",
+      "moreGames": "More games",
       "cheer0": "You've got this!",
       "cheer1": "Ready to level up?",
       "cheer2": "Your cards are waiting!",

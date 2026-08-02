@@ -1,19 +1,10 @@
 'use client';
 import { Box, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
-import { useTranslations } from 'next-intl';
-
-import type { PracticeMode } from '@/types/app';
-
-import { PRACTICE_CONFIG } from './constants';
-import { Label } from './Label';
 
 // Tiles keep light pastel surfaces in every color scheme, dark ones included, so
 // in-tile text needs a fixed ink — theme text tokens would invert underneath it.
 const TILE_INK = '#1F1B24';
-
-/** Rotating cheer keys — picked per visit via cardCount so SSR and client agree. */
-const CHEER_COUNT = 4;
 
 interface PracticeTileProps {
   kanji: string;
@@ -27,7 +18,7 @@ interface PracticeTileProps {
   onActivate: () => void;
 }
 
-function PracticeTile({
+export function PracticeTile({
   kanji,
   color,
   label,
@@ -217,109 +208,6 @@ function PracticeTile({
       >
         {cta}
       </Typography>
-    </Box>
-  );
-}
-
-interface PracticeHeroProps {
-  cardCount: number;
-  onStudy: () => void;
-  onPractice: (mode: PracticeMode) => void;
-  /** Kanji Reading practice is unlocked for this deck (deck settings). */
-  readingUnlocked?: boolean;
-}
-
-export function PracticeHero({
-  cardCount,
-  onStudy,
-  onPractice,
-  readingUnlocked = false,
-}: PracticeHeroProps) {
-  const t = useTranslations('Deck.practiceHero');
-  const tModes = useTranslations('Deck.practiceModes');
-  const { brand } = useTheme().palette;
-  const practiceDisabled = cardCount < 2;
-  // Absent, not locked, until the owner unlocks it: kana comes long before kanji.
-  const tiles = PRACTICE_CONFIG.filter((tile) => tile.mode !== 'reading' || readingUnlocked);
-
-  return (
-    <Box sx={{ mb: 3 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'baseline',
-          justifyContent: 'space-between',
-          gap: 1,
-        }}
-      >
-        <Label>{t('choosePractice')}</Label>
-        <Typography
-          sx={{
-            fontSize: '0.72rem',
-            fontWeight: 700,
-            fontFamily: (th) => th.fonts.cute,
-            color: brand[700],
-            bgcolor: alpha(brand[100], 0.7),
-            border: `1.5px solid ${alpha(brand[300], 0.5)}`,
-            borderRadius: (th) => th.radii.pill,
-            px: 1.5,
-            py: '3px',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {t(`cheer${cardCount % CHEER_COUNT}`)}
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          display: 'grid',
-          // 8 tiles (Flashcards + 7 modes) — four per row fills both rows exactly.
-          gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' },
-          gap: { xs: 1.5, sm: 2 },
-        }}
-      >
-        <PracticeTile
-          kanji="学"
-          color={brand[600]}
-          label={t('flashcardsTitle')}
-          description={t('flashcardsDescription')}
-          cta={t('letsGo')}
-          ctaFilled
-          disabled={cardCount === 0}
-          ariaLabel={t('startFlashcardStudyAria')}
-          onActivate={onStudy}
-        />
-        {tiles.map(({ mode, labelKey, descriptionKey, kanji, color }) => {
-          const label = tModes(labelKey);
-          return (
-            <PracticeTile
-              key={mode}
-              kanji={kanji}
-              color={color}
-              label={label}
-              description={tModes(descriptionKey)}
-              cta={practiceDisabled ? t('locked') : t('play')}
-              disabled={practiceDisabled}
-              ariaLabel={
-                practiceDisabled ? t('lockedAria', { label }) : t('startPracticeAria', { label })
-              }
-              onActivate={() => onPractice(mode)}
-            />
-          );
-        })}
-      </Box>
-      {practiceDisabled && cardCount > 0 && (
-        <Typography
-          sx={{
-            fontSize: '0.7rem',
-            color: 'text.secondary',
-            mt: 1.5,
-            textAlign: 'center',
-          }}
-        >
-          {t('unlockHint')}
-        </Typography>
-      )}
     </Box>
   );
 }
