@@ -62,8 +62,9 @@ Each item is either one word/phrase, or a topic naming a group of words.
       : `Japanese language teacher. Create exactly one card per item for: ${pendingWords.join(', ')}.`;
 
     const prompt = `${scope}
+- word: the Japanese as it belongs on the card. Numbers are kanji, never Arabic numerals — 一月 not 1月, 二十日 not 20日, 七時 not 7時. An item already typed in Japanese is kept exactly as typed.
 - card_type: "word" for single vocabulary words, "phrase" for multi-word expressions or full phrases.
-- reading: kana pronunciation (empty if already kana)
+- reading: kana pronunciation (empty if already kana). Date and counter words keep their irregular readings — 一日 is ついたち, 二日 ふつか, 二十日 はつか.
 - romaji: Hepburn romaji with a SPACE between every word, e.g. "yoroshiku onegaishimasu" not "yoroshikuonegaishimasu". Punctuation keeps a space after it.
 - image_query: 2-4 word English noun phrase for Unsplash (concrete, photographic, child-friendly). Verbs→scene (食べる="child eating noodles"), abstracts→closest visual (楽しい="children laughing"). For phrases, pick the most concrete noun in the phrase.
 - example_jp: simple sentence for a young learner using the word naturally. Wrap every kanji (or kanji compound) with its hiragana reading using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです。 Each group holds exactly one reading — never split a compound's reading with extra pipes ({無関係|むかんけい} or {無|む}{関|かん}{係|けい}, never {無関係|む|かん|けい}). Pure kana words need no wrapping.

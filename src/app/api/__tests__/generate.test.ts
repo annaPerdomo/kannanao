@@ -177,6 +177,21 @@ describe('POST /api/generate', () => {
     expect(prompt).not.toContain('exactly one card per item');
   });
 
+  // Months and days are the topics people reach for first, and the model's
+  // default is Arabic numerals — 1月, 20日 — which teaches no kanji at all.
+  it('should ask for kanji numerals whether or not topics expand', async () => {
+    mockGeminiSuccess([]);
+    await POST(makeRequest({ pendingWords: ['months'], expandTopics: true }));
+    mockGeminiSuccess([]);
+    await POST(makeRequest({ pendingWords: ['一月'] }));
+
+    for (const call of mockFetch.mock.calls) {
+      const prompt = JSON.parse(call[1].body).contents[0].parts[0].text;
+      expect(prompt).toContain('一月 not 1月');
+      expect(prompt).toContain('はつか');
+    }
+  });
+
   it('should return more cards than words when a topic expands', async () => {
     const days = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
     mockGeminiSuccess(
