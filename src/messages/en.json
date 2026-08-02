@@ -331,13 +331,22 @@
     },
     "settingsDialog": {
       "title": "Deck settings",
+      "cardsSection": "Cards",
       "practiceSection": "Practice",
       "sharingSection": "Sharing",
       "readingTitle": "Kanji reading practice",
       "readingOn": "On — learners can practice {count, plural, one {# kanji word} other {# kanji words}} in this deck",
       "readingOff": "Off — turn it on when your learners are ready for kanji",
       "readingNoKanji": "This deck has no kanji words yet",
-      "readingAria": "Kanji reading practice for this deck"
+      "readingAria": "Kanji reading practice for this deck",
+      "viewModeTitle": "What every card shows first",
+      "viewModeAll": "{count, plural, one {# card starts} other {All # cards start}} with {mode}",
+      "viewModeMixed": "These cards use a mix — pick one to change them all",
+      "viewModeEmpty": "Add some cards first, then pick what they show",
+      "viewModeSaving": "Changing every card…",
+      "viewModeSaved": "Done — every card in this deck changed",
+      "viewModeError": "Those cards didn't change. Please try again.",
+      "viewModeAria": "What every card shows first"
     },
     "shareEmbedDialog": {
       "title": "Embed Deck",

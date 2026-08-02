@@ -88,11 +88,19 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     updateCard,
     copyExistingCards,
     reorderCards,
+    setAllMainViewMode,
   } = useCards(deckId, handleCountChange);
   const { generating, error, generate, regenerate } = useGenerateFlashcards();
 
   const canReorder = !isMemberAccount && cards.length > 1;
   const readingCardCount = useMemo(() => eligibleReadingCards(cards).length, [cards]);
+  const deckViewMode = useMemo(
+    () =>
+      cards.length > 0 && cards.every((c) => c.mainViewMode === cards[0].mainViewMode)
+        ? cards[0].mainViewMode
+        : null,
+    [cards],
+  );
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
@@ -398,6 +406,9 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         readingUnlocked={deck.readingPractice === true}
         readingCardCount={readingCardCount}
         onReadingChange={(enabled) => setDeckReadingPractice(deckId, enabled)}
+        cardViewMode={deckViewMode}
+        cardCount={cards.length}
+        onCardViewModeChange={setAllMainViewMode}
       />
     </Box>
   );

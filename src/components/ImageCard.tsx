@@ -32,6 +32,16 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
   const [editOpen, setEditOpen] = useState(false);
   const [localCard, setLocalCard] = useState<Flashcard>(card);
 
+  // The edit dialog writes to localCard so the tile updates before the save
+  // round-trips. That copy also has to follow the row when the deck rewrites it
+  // underneath us — deck settings can flip every card's view mode at once, and
+  // without this the grid kept showing the pre-change card until a reload.
+  const [syncedCard, setSyncedCard] = useState<Flashcard>(card);
+  if (card !== syncedCard) {
+    setSyncedCard(card);
+    setLocalCard(card);
+  }
+
   const { titleText, subtitleText, speakText } = getFlashcardDisplayText(localCard);
   const handleSave = (updated: Flashcard) => {
     setLocalCard(updated);

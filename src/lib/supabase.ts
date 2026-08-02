@@ -13,7 +13,7 @@ import {
   type UserProfile,
 } from '@/lib/dbMappers';
 import type { Deck } from '@/types/deck';
-import type { Flashcard } from '@/types/flashcard';
+import type { Flashcard, MainViewMode } from '@/types/flashcard';
 import type { HomeSections } from '@/types/homeSections';
 import type { EntryType, Todo } from '@/types/todo';
 import type { ShowCard, ShowCardCategory } from '@/types/travel';
@@ -201,6 +201,15 @@ export async function dbReorderCards(orderedIds: string[]): Promise<void> {
   );
   const failed = results.find((r) => r.error);
   if (failed?.error) throw failed.error;
+}
+
+export async function dbSetCardsMainViewMode(deckId: string, mode: MainViewMode): Promise<void> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    throw new Error('Supabase not configured');
+  }
+  const { error } = await sb.from('cards').update({ main_view_mode: mode }).eq('deck_id', deckId);
+  if (error) throw error;
 }
 
 export async function loadCards(deckId: string): Promise<Flashcard[]> {

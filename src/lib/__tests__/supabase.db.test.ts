@@ -57,6 +57,7 @@ import {
   dbInsertCards,
   dbPinDeck,
   dbRenameDeck,
+  dbSetCardsMainViewMode,
   dbSetDeckPublic,
   dbSetDeckReadingPractice,
   dbShareDeck,
@@ -315,6 +316,24 @@ describe('dbSetDeckReadingPractice', () => {
   it('should throw when the update errors', async () => {
     setTable('decks', null, new Error('Reading error'));
     await expect(dbSetDeckReadingPractice('deck-1', true)).rejects.toThrow('Reading error');
+  });
+});
+
+// ─── dbSetCardsMainViewMode ───────────────────────────────────────────────────
+
+describe('dbSetCardsMainViewMode', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setTable('cards', null, null);
+  });
+
+  it('should resolve without throwing on success', async () => {
+    await expect(dbSetCardsMainViewMode('deck-1', 'kanji')).resolves.toBeUndefined();
+  });
+
+  it('should throw when the update errors', async () => {
+    setTable('cards', null, new Error('View mode error'));
+    await expect(dbSetCardsMainViewMode('deck-1', 'kanji')).rejects.toThrow('View mode error');
   });
 });
 

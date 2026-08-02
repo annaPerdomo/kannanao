@@ -6,9 +6,12 @@ import { useTranslations } from 'next-intl';
 
 import { ShareEmbedSection } from '@/components/ShareEmbedDialog';
 import { StyledDialog } from '@/components/StyledDialog';
+import type { MainViewMode } from '@/types/flashcard';
 
+import { CardViewModeRow } from './CardViewModeRow';
 import { ReadingPracticeRow } from './ReadingPracticeRow';
 
+export { CardViewModeRow } from './CardViewModeRow';
 export { ReadingPracticeRow } from './ReadingPracticeRow';
 
 interface DeckSettingsDialogProps {
@@ -22,6 +25,10 @@ interface DeckSettingsDialogProps {
   /** Cards in this deck that Reading could ask. */
   readingCardCount: number;
   onReadingChange: (enabled: boolean) => void;
+  /** The mode every card shares, or null when the deck mixes modes. */
+  cardViewMode: MainViewMode | null;
+  cardCount: number;
+  onCardViewModeChange: (mode: MainViewMode) => Promise<void>;
 }
 
 /** Everything a deck's owner can switch on or off, in one place. */
@@ -35,6 +42,9 @@ export function DeckSettingsDialog({
   readingUnlocked,
   readingCardCount,
   onReadingChange,
+  cardViewMode,
+  cardCount,
+  onCardViewModeChange,
 }: DeckSettingsDialogProps) {
   const t = useTranslations('Deck.settingsDialog');
   const tCommon = useTranslations('Common');
@@ -72,6 +82,15 @@ export function DeckSettingsDialog({
         </Button>
       }
     >
+      <Box sx={{ mb: 3 }}>
+        {sectionLabel(t('cardsSection'))}
+        <CardViewModeRow
+          value={cardViewMode}
+          cardCount={cardCount}
+          onChange={onCardViewModeChange}
+        />
+      </Box>
+
       <Box sx={{ mb: 3 }}>
         {sectionLabel(t('practiceSection'))}
         <ReadingPracticeRow

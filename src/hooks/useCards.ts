@@ -6,12 +6,13 @@ import {
   dbDeleteCard,
   dbInsertCards,
   dbReorderCards,
+  dbSetCardsMainViewMode,
   dbUpdateCard,
   isConfigured,
   loadCards,
   showConfigBanner,
 } from '@/lib/supabase';
-import type { Flashcard } from '@/types/flashcard';
+import type { Flashcard, MainViewMode } from '@/types/flashcard';
 
 export function useCards(deckId: string, onCountChange?: (count: number) => void) {
   const [cards, setCards] = useState<Flashcard[]>([]);
@@ -137,6 +138,25 @@ export function useCards(deckId: string, onCountChange?: (count: number) => void
     [cards],
   );
 
+  const setAllMainViewMode = useCallback(
+    async (mode: MainViewMode): Promise<void> => {
+      if (!isConfigured()) {
+        showConfigBanner();
+        return;
+      }
+
+      const prev = cards;
+      setCards(prev.map((c) => (c.mainViewMode === mode ? c : { ...c, mainViewMode: mode })));
+      try {
+        await dbSetCardsMainViewMode(deckId, mode);
+      } catch (err) {
+        setCards(prev);
+        throw err;
+      }
+    },
+    [cards, deckId],
+  );
+
   return {
     cards,
     copyExistingCards,
@@ -145,6 +165,7 @@ export function useCards(deckId: string, onCountChange?: (count: number) => void
     deleteCard,
     updateCard,
     reorderCards,
+    setAllMainViewMode,
     loading,
   };
 }

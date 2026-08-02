@@ -331,13 +331,22 @@
     },
     "settingsDialog": {
       "title": "デッキの設定",
+      "cardsSection": "カード",
       "practiceSection": "練習",
       "sharingSection": "共有",
       "readingTitle": "漢字のよみかた練習",
       "readingOn": "オン — このデッキの漢字{count, plural, other {#語}}を練習できます",
       "readingOff": "オフ — 漢字の準備ができたらオンにしてください",
       "readingNoKanji": "このデッキにはまだ漢字の言葉がありません",
-      "readingAria": "このデッキの漢字のよみかた練習"
+      "readingAria": "このデッキの漢字のよみかた練習",
+      "viewModeTitle": "カードに最初に見えるもの",
+      "viewModeAll": "{count, plural, other {#枚すべてのカード}}が{mode}で始まります",
+      "viewModeMixed": "カードの表示がそろっていません — ひとつ選ぶと全部そろいます",
+      "viewModeEmpty": "カードを追加すると、表示を選べます",
+      "viewModeSaving": "すべてのカードを変更しています…",
+      "viewModeSaved": "完了 — このデッキのカードがすべて変わりました",
+      "viewModeError": "カードを変更できませんでした。もう一度お試しください。",
+      "viewModeAria": "カードに最初に見えるもの"
     },
     "shareEmbedDialog": {
       "title": "デッキを埋め込み",
