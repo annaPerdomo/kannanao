@@ -2999,38 +2999,26 @@
         }
       ]
     },
-    "languageToggle": {
-      "ariaLabel": "言語",
-      "en": "英語",
-      "ja": "日本語"
-    },
     "hero": {
       "waitlistBadge": "クローズドベータ — ウェイトリスト受付中",
-      "headline": "準備は少なく。<br></br>授業はもっと。<br></br>学びはずっと。",
-      "subtitle": "Tangodachiは、教える人には数分で教材を作れるAIを。学ぶ人には、忘れる前にくり返す「間隔反復」のゲームを。新しいことばが<em>ほんとうに</em>身につきます。",
+      "headline": "つくるのは数分。<br></br>まなぶのはどこでも。<br></br>おぼえたらずっと。",
+      "subtitle": "教える人にも、学ぶ人にも。教える人はAIで教材をすばやくかんたんに作れて、学ぶ人はスマホでもノートPCでもパソコンでも練習できます。ゲームで新しいことばが<em>ほんとうに</em>身につき、スタディバディが応援してくれます。",
       "dashboardButton": "ダッシュボードへ",
       "educatorButton": "教える人はこちら",
+      "educatorCardDesc": "数分で教材を作って、そのまま課題に",
       "learnerButton": "学ぶ人はこちら",
+      "learnerCardDesc": "ゲームと間隔反復で、楽しく練習",
+      "demoDeckName": "レベル2・第4課",
+      "demoEducatorTag": "教える人の画面",
+      "demoLearnerTag": "学ぶ人の画面",
+      "demoPracticeMode": "文づくり",
+      "demoPracticeTranslation": "桜がきれいに咲きました。",
       "waitlistLink": "ウェイトリストに登録する →",
       "waitlistButton": "ウェイトリストに登録",
       "signInButton": "ログイン",
       "tags": {
-        "spacedRepetition": "間隔反復",
-        "dailyReview": "毎日の復習",
-        "aiPowered": "AI",
-        "quizzes": "小テスト",
-        "travelMode": "トラベルモード",
-        "gamified": "ゲーム感覚"
-      },
-      "scene": {
-        "aiBadge": "AIが30秒で12枚作成",
-        "classProgress": "クラスの進捗",
-        "assigned": "24人に配信ずみ",
-        "todayReview": "今日の復習",
-        "reviewDone": "{total}枚中{done}枚",
-        "streak": "{days}日連続"
-      },
-      "scroll": "スクロール"
+        "dailyReview": "毎日の復習"
+      }
     },
     "audience": {
       "badge": "ふたつの体験。ひとつのゴール。",

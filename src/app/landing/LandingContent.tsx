@@ -9,7 +9,6 @@ import LandingAuthGuard from './LandingAuthGuard';
 import { landingFontClass } from './landingFonts';
 import LandingGlobalStyles from './LandingGlobalStyles';
 import { LandingTheme } from './LandingTheme';
-import { LanguageToggle } from './LanguageToggle';
 import {
   AiDemoSection,
   AudienceSection,
@@ -93,7 +92,10 @@ export default function LandingPage({ locale }: { locale: Locale }) {
       ))}
       <LandingGlobalStyles />
       <LandingAuthGuard />
-      <LanguageToggle current={locale} />
+      {/* The language pick lives in the NavBar's 文A menu, the same control every
+          other page uses — on the landing it navigates to the other language's
+          canonical URL (see useLocalePreference). hreflang metadata and the
+          sitemap, not a visible link, are what point crawlers at /landing/ja. */}
       <LandingTheme>
         {/*
           Narrative order: hero → who it's for (Audience) → the educator live

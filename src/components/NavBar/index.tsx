@@ -29,6 +29,19 @@ import { LanguageMenu } from './LanguageMenu';
 import { UserMenu } from './UserMenu';
 import { XpDisplay } from './XpDisplay';
 
+/**
+ * Toolbar height per breakpoint. Exported because full-height sections subtract
+ * it — the bar sits above them in flow, so a `100svh` child overruns the fold.
+ */
+export const NAVBAR_TOOLBAR_HEIGHT = { xs: 56, sm: 64, md: 78 } as const;
+
+/** Toolbar plus the AppBar's 1px bottom border — what a `100svh - x` needs. */
+export const NAVBAR_HEIGHT = {
+  xs: NAVBAR_TOOLBAR_HEIGHT.xs + 1,
+  sm: NAVBAR_TOOLBAR_HEIGHT.sm + 1,
+  md: NAVBAR_TOOLBAR_HEIGHT.md + 1,
+} as const;
+
 export function NavBar() {
   const t = useTranslations('Nav');
   const tItems = useTranslations('Nav.items');
@@ -113,7 +126,7 @@ export function NavBar() {
             width: '100%',
             mx: 'auto',
             px: LAYOUT.pagePx,
-            minHeight: { xs: 56, sm: 64, md: 78 },
+            minHeight: NAVBAR_TOOLBAR_HEIGHT,
             gap: { xs: 1.5, md: 2.5 },
           }}
         >

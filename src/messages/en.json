@@ -2999,38 +2999,26 @@
         }
       ]
     },
-    "languageToggle": {
-      "ariaLabel": "Language",
-      "en": "English",
-      "ja": "Japanese"
-    },
     "hero": {
       "waitlistBadge": "Closed beta — join the waitlist",
-      "headline": "Create less.<br></br>Teach more.<br></br>Learn better.",
-      "subtitle": "Tangodachi gives educators AI that builds practice materials in minutes — and gives learners games powered by spaced repetition, so new words <em>actually</em> stick.",
+      "headline": "Create in minutes.<br></br>Practice anywhere.<br></br>Remember forever.",
+      "subtitle": "Built for educators and learners: educators create practice materials quickly and easily with AI, and learners pick them up on their phone, laptop, or computer — with games that make new words <em>actually</em> stick and study buddies to cheer them on.",
       "dashboardButton": "Go to dashboard",
       "educatorButton": "I'm an educator",
+      "educatorCardDesc": "Create & assign practice in minutes",
       "learnerButton": "I'm a learner",
+      "learnerCardDesc": "Practice with games, spaced repetition & more",
+      "demoDeckName": "Level 2 · Unit 4",
+      "demoEducatorTag": "Educator view",
+      "demoLearnerTag": "Learner view",
+      "demoPracticeMode": "Sentence Builder",
+      "demoPracticeTranslation": "The cherry blossoms bloomed beautifully.",
       "waitlistLink": "or join the waitlist →",
       "waitlistButton": "Join the waitlist",
       "signInButton": "Sign in",
       "tags": {
-        "spacedRepetition": "Spaced repetition",
-        "dailyReview": "Daily review",
-        "aiPowered": "AI-powered",
-        "quizzes": "Quizzes",
-        "travelMode": "Travel Mode",
-        "gamified": "Gamified"
-      },
-      "scene": {
-        "aiBadge": "12 cards, written by AI in 30 seconds",
-        "classProgress": "Class progress",
-        "assigned": "Assigned to 24 learners",
-        "todayReview": "Today's review",
-        "reviewDone": "{done} of {total} done",
-        "streak": "{days}-day streak"
-      },
-      "scroll": "scroll"
+        "dailyReview": "Daily review"
+      }
     },
     "audience": {
       "badge": "Two experiences. One goal.",
