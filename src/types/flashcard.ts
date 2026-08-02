@@ -26,6 +26,8 @@ export interface Flashcard {
 
 export interface GeneratePayload {
   pendingWords: string[];
+  /** Let an entry name a group ("days of the week") and yield a card per member. */
+  expandTopics?: boolean;
 }
 
 export interface GeneratedCard {

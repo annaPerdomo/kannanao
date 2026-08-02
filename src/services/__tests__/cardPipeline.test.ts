@@ -126,6 +126,19 @@ describe('buildTravelCards', () => {
     english: 'Check, please',
   };
 
+  // Travel pairs each generated card back to the phrase it asked about by
+  // position, so it must never opt into topic expansion — one extra card would
+  // shift every phrase after it onto the wrong entry.
+  it('never asks /api/generate to expand topics', async () => {
+    vi.mocked(generateFlashcards).mockResolvedValue([generated({ word: 'お会計お願いします' })]);
+    vi.mocked(fetchImage).mockResolvedValue(image);
+
+    await buildTravelCards([phrase], 'deck-1', { mainViewMode: 'romaji', enrich: true });
+
+    const payload = vi.mocked(generateFlashcards).mock.calls[0][0];
+    expect(payload.expandTopics).toBeUndefined();
+  });
+
   it('generates full cards and keeps the traveller-facing English as the meaning', async () => {
     vi.mocked(generateFlashcards).mockResolvedValue([
       generated({

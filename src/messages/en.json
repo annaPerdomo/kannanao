@@ -336,7 +336,7 @@
       "previewEmbed": "Preview embed"
     },
     "wordChipInput": {
-      "placeholder": "Type words or phrases, press Enter…"
+      "placeholder": "Words or topics like \"days of the week\", press Enter…"
     },
     "useDecks": {
       "notConfiguredError": "Supabase is not configured"

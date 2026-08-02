@@ -336,7 +336,7 @@
       "previewEmbed": "埋め込みをプレビュー"
     },
     "wordChipInput": {
-      "placeholder": "単語やフレーズを入力してEnter…"
+      "placeholder": "単語やテーマ（「曜日」など）を入力してEnter…"
     },
     "useDecks": {
       "notConfiguredError": "Supabaseが設定されていません"

@@ -26,7 +26,7 @@ export function useGenerateFlashcards(): UseGenerateResult {
       setGenerating(true);
       setError(null);
       try {
-        const generated = await generateFlashcards({ pendingWords: words });
+        const generated = await generateFlashcards({ pendingWords: words, expandTopics: true });
         return await withImages(generated, deckId, mainViewMode);
       } catch (err) {
         const msg = err instanceof Error ? err.message : t('generationFailed');

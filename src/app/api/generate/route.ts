@@ -9,11 +9,22 @@ import { requireOrganizerAccount } from '../_lib/requireOrganizerAccount';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 10 };
 
+/**
+ * Ceiling on cards returned when topics are expanded. Five broad topics could
+ * otherwise run to hundreds of cards in one response — past what the model will
+ * emit before truncating its JSON, and far past what anyone reviews in a sitting.
+ */
+const MAX_EXPANDED_CARDS = 60;
+
 const GenerateSchema = z.object({
   pendingWords: z
     .array(z.string().min(1).max(200))
     .min(1, 'No words provided')
     .max(50, 'Too many words — max 50 per request'),
+  // Off by default: Travel enrichment pairs generated cards back to the phrases
+  // it asked about by position, so it needs the strict one-card-per-item
+  // contract. Only the card-authoring UI opts in.
+  expandTopics: z.boolean().optional().default(false),
 });
 
 export async function POST(req: NextRequest) {
@@ -31,7 +42,7 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  const { pendingWords } = parsed.data;
+  const { pendingWords, expandTopics } = parsed.data;
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -39,7 +50,18 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const prompt = `Japanese language teacher. Create exactly one card per item for: ${pendingWords.join(', ')}.
+    const scope = expandTopics
+      ? `Japanese language teacher. Make cards for: ${pendingWords.join(', ')}.
+Each item is either one word/phrase, or a topic naming a group of words.
+- A word or phrase ("猫", "ごちそうさま") gets exactly one card.
+- A topic ("days of the week", "months", "colors", "family members") gets one card per member of the group.
+- Closed groups come back complete and in conventional order: 7 days, 12 months, 4 seasons, 10 for numbers 1-10.
+- Open-ended topics ("food", "animals", "verbs") get the 12 most useful for a beginner, JLPT N5 and N4 first.
+- When an item reads as both — "family" could be the word 家族 or the group of family members — prefer the single word. A plural or a phrase like "kinds of X" means the group.
+- Return at most ${MAX_EXPANDED_CARDS} cards in total across every item.`
+      : `Japanese language teacher. Create exactly one card per item for: ${pendingWords.join(', ')}.`;
+
+    const prompt = `${scope}
 - card_type: "word" for single vocabulary words, "phrase" for multi-word expressions or full phrases.
 - reading: kana pronunciation (empty if already kana)
 - romaji: Hepburn romaji with a SPACE between every word, e.g. "yoroshiku onegaishimasu" not "yoroshikuonegaishimasu". Punctuation keeps a space after it.
@@ -111,7 +133,18 @@ If a word has multiple meanings or translations, include all common ones separat
     }
 
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]';
-    return NextResponse.json(normalizeFuriganaDeep(JSON.parse(rawText)));
+    const cards = normalizeFuriganaDeep(JSON.parse(rawText));
+    // Backstop for the prompt's own limit. Without expansion the input cap
+    // already bounds this, so only trim when the model was free to expand.
+    if (expandTopics && Array.isArray(cards) && cards.length > MAX_EXPANDED_CARDS) {
+      logger.info('Trimmed expanded generation', {
+        route: '/api/generate',
+        returned: cards.length,
+        kept: MAX_EXPANDED_CARDS,
+      });
+      return NextResponse.json(cards.slice(0, MAX_EXPANDED_CARDS));
+    }
+    return NextResponse.json(cards);
   } catch (err) {
     logger.error('Unhandled error', {
       route: '/api/generate',
