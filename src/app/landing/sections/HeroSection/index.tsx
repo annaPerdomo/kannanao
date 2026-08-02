@@ -154,7 +154,11 @@ export function HeroSection() {
                 // portrait cut's canopy rather than the frosted card and the
                 // mid-tones measured ~2:1. The white drop-shadow halos below
                 // don't count toward WCAG.
-                background: {
+                // backgroundImage, not the `background` shorthand: responsive
+                // values land in @media blocks emitted after these declarations,
+                // and the shorthand resets background-clip to border-box —
+                // hiding the headline inside its own gradient.
+                backgroundImage: {
                   xs: `linear-gradient(120deg, ${purple[800]} 0%, ${purple[700]} 30%, ${pink[800]} 70%, ${pink[900]} 100%)`,
                   lg: `linear-gradient(120deg, ${purple[600]} 0%, ${purple[500]} 30%, ${pink[500]} 70%, ${pink[600]} 100%)`,
                 },
