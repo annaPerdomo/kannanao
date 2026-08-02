@@ -1,10 +1,15 @@
 'use client';
 import { createContext, type ReactNode, useContext } from 'react';
 
-/** The single next action an end-of-session screen offers inside a quest. */
+/** The next action an end-of-session screen offers inside a quest. */
 export interface QuestHandoff {
   label: string;
   onNext: () => void;
+  /**
+   * Leave mid-chain. The finish screens sit above the nav and the header's back
+   * button, so without this the only way out is the system back gesture.
+   */
+  onStop: () => void;
 }
 
 const QuestHandoffCtx = createContext<QuestHandoff | null>(null);

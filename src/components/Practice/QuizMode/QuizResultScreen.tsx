@@ -23,6 +23,7 @@ export function QuizResultScreen({ score, total, accuracy, onExit }: QuizResultS
   const { brand, accent } = theme.palette;
   const t = useTranslations('Practice.quizMode');
   const tCommon = useTranslations('Practice.common');
+  const tQuest = useTranslations('AssignmentQuest');
   // In a quest this button becomes the quest's one next step.
   const handoff = useQuestHandoff();
   const stars = quizStars(accuracy);
@@ -92,6 +93,13 @@ export function QuizResultScreen({ score, total, accuracy, onExit }: QuizResultS
         >
           {handoff?.label ?? tCommon('backToDeck')}
         </Button>
+        {handoff && (
+          <Box sx={{ mt: 1 }}>
+            <Button onClick={handoff.onStop} sx={{ textTransform: 'none', fontWeight: 700 }}>
+              {tQuest('stopForNow')}
+            </Button>
+          </Box>
+        )}
       </Box>
     </Box>
   );

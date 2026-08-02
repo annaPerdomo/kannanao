@@ -27,6 +27,7 @@ import {
   useStartAssignmentQuest,
   useStartMixedPractice,
 } from '@/hooks/usePracticeChain';
+import type { GoalMode } from '@/lib/assignmentMastery';
 import { readChainState, writeChainState } from '@/lib/practiceChain';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -194,6 +195,17 @@ describe('usePracticeChain', () => {
     expect(readChainState()?.index).toBe(1);
   });
 
+  it('lets the learner stop mid-chain from the handoff', async () => {
+    writeChainState(questState());
+    const { result } = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'study' }));
+    await waitFor(() => expect(result.current).not.toBeNull());
+
+    act(() => result.current!.handoff!.onStop());
+
+    expect(push).toHaveBeenCalledWith('/deck/d1');
+    expect(readChainState()).toBeNull();
+  });
+
   it('shows the finish screen instead of advancing past the goal leg', async () => {
     writeChainState(questState({ index: 3 }));
     const { result } = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'quiz' }));
@@ -224,6 +236,24 @@ describe('usePracticeChain', () => {
 
     await waitFor(() => expect(readChainState()).toBeNull());
     expect(result.current).toBeNull();
+  });
+
+  it('still drops a hand-navigated chain after a hand-off', async () => {
+    writeChainState(questState({ index: 0 }));
+    const { result, rerender } = renderHook(
+      ({ mode }: { mode: GoalMode }) => usePracticeChain({ deckId: 'd1', mode }),
+      { initialProps: { mode: 'study' as GoalMode } },
+    );
+    await waitFor(() => expect(result.current).not.toBeNull());
+
+    // Advancing exempts the mismatch it creates; landing on the new leg must
+    // end that exemption, or nothing is guarded for the rest of the chain.
+    act(() => result.current!.handoff!.onNext());
+    rerender({ mode: 'recall' });
+    await waitFor(() => expect(result.current).not.toBeNull());
+
+    rerender({ mode: 'listen' });
+    await waitFor(() => expect(readChainState()).toBeNull());
   });
 
   it('drops a chain stored for another deck', async () => {

@@ -117,10 +117,12 @@ export function useStartMixedPractice() {
   return { start, starting };
 }
 
-/** The single next action an end-of-session screen offers inside a chain. */
+/** The next action an end-of-session screen offers inside a chain. */
 export interface ChainHandoff {
   label: string;
   onNext: () => void;
+  /** Leave mid-chain. The finish screens cover the app's own back controls. */
+  onStop: () => void;
 }
 
 /** What a leg page needs to render chain chrome and hand off to the next leg. */
@@ -223,8 +225,14 @@ export function usePracticeChain({
   const advancingRef = useRef(false);
   const matches = !!leg && leg.mode === mode;
   useEffect(() => {
+    // Page and stored leg agreeing again means the hand-off landed, so the
+    // exemption ends — left set it would swallow every later mismatch.
+    if (matches) {
+      advancingRef.current = false;
+      return;
+    }
     if (advancingRef.current) return;
-    if (state && legs.length > 0 && !matches) clearChainState();
+    if (state && legs.length > 0) clearChainState();
   }, [state, legs, matches]);
 
   const stop = useCallback(() => {
@@ -274,9 +282,9 @@ export function usePracticeChain({
       : modeLabel(nextLeg.mode, tModes, tHero)
     : null;
   const handoff: ChainHandoff | null = nextLabel
-    ? { label: t('nextStep', { step: nextLabel }), onNext: advance }
+    ? { label: t('nextStep', { step: nextLabel }), onNext: advance, onStop: abandon }
     : state.kind === 'assignment'
-      ? { label: t('seeHowYouDid'), onNext: () => setPhase('finish') }
+      ? { label: t('seeHowYouDid'), onNext: () => setPhase('finish'), onStop: abandon }
       : null;
 
   return {

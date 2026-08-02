@@ -36,7 +36,7 @@ import {
   PRAISE_GREAT,
   PRAISE_PERFECT,
 } from '@/components/Practice/CelebrationScreen';
-import { QuestHandoffProvider } from '@/contexts/QuestHandoffContext';
+import { type QuestHandoff, QuestHandoffProvider } from '@/contexts/QuestHandoffContext';
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
@@ -258,11 +258,18 @@ describe('CelebrationScreen', () => {
 });
 
 describe('CelebrationScreen inside an assignment quest', () => {
+  const handoff = (over: Partial<QuestHandoff> = {}): QuestHandoff => ({
+    label: 'Next: Practice',
+    onNext: vi.fn(),
+    onStop: vi.fn(),
+    ...over,
+  });
+
   it("replaces the exit button with the quest's one next step", () => {
     const onNext = vi.fn();
     const onExit = vi.fn();
     renderWithProviders(
-      <QuestHandoffProvider value={{ label: 'Next: Practice', onNext }}>
+      <QuestHandoffProvider value={handoff({ onNext })}>
         <CelebrationScreen
           heading="Done!"
           subheading="cleared"
@@ -277,5 +284,39 @@ describe('CelebrationScreen inside an assignment quest', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next: Practice' }));
     expect(onNext).toHaveBeenCalled();
     expect(onExit).not.toHaveBeenCalled();
+  });
+
+  it('offers a way out of the chain, since this screen covers the app chrome', () => {
+    const onStop = vi.fn();
+    renderWithProviders(
+      <QuestHandoffProvider value={handoff({ onStop })}>
+        <CelebrationScreen heading="Done!" subheading="cleared" mode="study" onExit={vi.fn()} />
+      </QuestHandoffProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Stop for now' }));
+    expect(onStop).toHaveBeenCalled();
+  });
+
+  it('leaves the button alone when the mode opts out', () => {
+    const onNext = vi.fn();
+    const onExit = vi.fn();
+    renderWithProviders(
+      <QuestHandoffProvider value={handoff({ onNext })}>
+        <CelebrationScreen
+          heading="Done!"
+          subheading="cleared"
+          mode="kotoba-bubble"
+          exitLabel="Review sentences"
+          onExit={onExit}
+          disableHandoff
+        />
+      </QuestHandoffProvider>,
+    );
+
+    expect(screen.queryByRole('button', { name: 'Stop for now' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Review sentences' }));
+    expect(onExit).toHaveBeenCalled();
+    expect(onNext).not.toHaveBeenCalled();
   });
 });
