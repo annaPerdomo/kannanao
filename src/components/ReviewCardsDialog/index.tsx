@@ -1,7 +1,15 @@
 'use client';
 
 import CheckIcon from '@mui/icons-material/Check';
-import { Box, Button, Dialog, DialogContent, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  Typography,
+} from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -24,6 +32,22 @@ interface ReviewCardsDialogProps {
    * the selection UI entirely.
    */
   onRegenerate?: (words: string[], instruction: string) => Promise<PendingCard[]>;
+  /**
+   * Copy overrides for the picture review, which reopens this dialog over cards
+   * that are already in the deck — "add them" would be the wrong promise there.
+   */
+  title?: string;
+  subtitle?: string;
+  confirmLabel?: string;
+  /**
+   * Off for the picture review. Removing a row means "don't add this card",
+   * which is only true while the cards are still pending — over saved cards the
+   * button looked like a delete and did nothing at all.
+   */
+  allowRemove?: boolean;
+  /** Confirm is in flight; the dialog stays open and locked until it lands. */
+  saving?: boolean;
+  saveError?: string | null;
 }
 
 export function ReviewCardsDialog({
@@ -32,6 +56,12 @@ export function ReviewCardsDialog({
   onConfirm,
   onClose,
   onRegenerate,
+  title,
+  subtitle,
+  confirmLabel,
+  allowRemove = true,
+  saving = false,
+  saveError = null,
 }: ReviewCardsDialogProps) {
   const theme = useTheme();
   const tRegen = useTranslations('Deck.reviewCardsDialog.regenerate');
@@ -132,7 +162,14 @@ export function ReviewCardsDialog({
         setCards((prev) => {
           const next = [...prev];
           indices.forEach((cardIndex, n) => {
-            if (fresh[n]) next[cardIndex] = fresh[n];
+            if (!fresh[n]) return;
+            // A replacement is generated with the flow's default mode, so
+            // without this a redo quietly undoes the header's set-them-all
+            // toggle for that one row.
+            next[cardIndex] = {
+              ...fresh[n],
+              mainViewMode: prev[cardIndex].mainViewMode,
+            };
           });
           return next;
         });
@@ -187,6 +224,8 @@ export function ReviewCardsDialog({
         allViewMode={allViewMode}
         onSetAllViewMode={handleSetAllViewMode}
         onClose={onClose}
+        title={title}
+        subtitle={subtitle}
       />
 
       {reusedCount > 0 && (
@@ -253,7 +292,7 @@ export function ReviewCardsDialog({
             expanded={expandedIndex === i}
             onToggleExpand={handleToggleExpand}
             onUpdate={handleUpdate}
-            onDelete={handleDelete}
+            onDelete={allowRemove ? handleDelete : undefined}
             selected={selected.has(i)}
             onToggleSelect={onRegenerate ? handleToggleSelect : undefined}
           />
@@ -272,6 +311,12 @@ export function ReviewCardsDialog({
         />
       )}
 
+      {saveError && (
+        <Alert severity="error" sx={{ mx: 2.5, mb: 1, fontSize: '0.78rem', py: 0 }}>
+          {saveError}
+        </Alert>
+      )}
+
       {/* Footer */}
       <Box
         sx={{
@@ -286,6 +331,7 @@ export function ReviewCardsDialog({
       >
         <Button
           variant="outlined"
+          disabled={saving}
           onClick={onClose}
           sx={{
             borderRadius: '10px',
@@ -301,9 +347,15 @@ export function ReviewCardsDialog({
         </Button>
         <Button
           variant="contained"
-          disabled={cards.length === 0 || regenerating}
+          disabled={cards.length === 0 || regenerating || saving}
           onClick={handleConfirm}
-          startIcon={<CheckIcon sx={{ fontSize: 16 }} />}
+          startIcon={
+            saving ? (
+              <CircularProgress size={14} color="inherit" />
+            ) : (
+              <CheckIcon sx={{ fontSize: 16 }} />
+            )
+          }
           sx={{
             borderRadius: '10px',
             fontWeight: 800,
@@ -317,7 +369,7 @@ export function ReviewCardsDialog({
             '&:hover': { boxShadow: `0 6px 20px ${alpha(brand[500], 0.45)}` },
           }}
         >
-          Add {cards.length} Card{cards.length !== 1 ? 's' : ''} to Deck
+          {confirmLabel ?? `Add ${cards.length} Card${cards.length !== 1 ? 's' : ''} to Deck`}
         </Button>
       </Box>
     </Dialog>

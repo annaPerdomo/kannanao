@@ -109,6 +109,50 @@ export async function fetchImage(query: string): Promise<UnsplashImageResult | n
   return data.result ?? null;
 }
 
+/**
+ * How many queries a caller sends per batch. Must stay at or below
+ * MAX_BATCH_QUERIES in `app/api/_lib/unsplash.ts`, which the route enforces.
+ */
+export const IMAGE_BATCH_SIZE = 25;
+
+export interface ImageBatchItem {
+  query: string;
+  /** Ask for a photo other than the top hit — this card is replacing one. */
+  variety?: boolean;
+}
+
+export interface BatchImagesResponse {
+  results: { query: string; result: UnsplashImageResult | null }[];
+  /** Unsplash's hourly allowance ran out partway through — retry later. */
+  rateLimited: boolean;
+  /**
+   * The run ended early on a fault rather than on the allowance. The queries
+   * with no entry in `results` were never asked, so they must not be reported
+   * as "no picture found".
+   */
+  stopped: boolean;
+  /** Unsplash requests left this hour, or null when it didn't say. */
+  remaining: number | null;
+}
+
+/**
+ * Search up to MAX_BATCH_QUERIES photos in one request. The route already
+ * triggers each photo's download ping, so callers must not also call
+ * triggerUnsplashDownload for these results.
+ */
+export async function fetchImagesBatch(items: ImageBatchItem[]): Promise<BatchImagesResponse> {
+  const res = await fetch(`${BASE}/images/batch`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify({ items }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? res.statusText);
+  }
+  return res.json();
+}
+
 export async function triggerUnsplashDownload(downloadLocation: string): Promise<void> {
   const headers = await authHeaders();
   // Fire-and-forget — errors are non-critical

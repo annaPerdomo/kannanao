@@ -346,7 +346,27 @@
       "viewModeSaving": "Changing every card…",
       "viewModeSaved": "Done — every card in this deck changed",
       "viewModeError": "Those cards didn't change. Please try again.",
-      "viewModeAria": "What every card shows first"
+      "viewModeAria": "What every card shows first",
+      "imagesTitle": "Card pictures",
+      "imagesMissing": "{count, plural, one {# card has} other {# cards have}} no picture yet",
+      "imagesAllHavePictures": "Every card has a picture",
+      "imagesEmpty": "Add some cards first",
+      "imagesChooseButton": "Choose pictures",
+      "imagesDialogTitle": "Choose pictures",
+      "imagesPickLabel": "Tap the cards you want a new picture for",
+      "imagesSelectedCount": "{count, plural, one {# card picked} other {# cards picked}}",
+      "imagesSelectAll": "Select all",
+      "imagesSelectNone": "Clear",
+      "imagesReplaceNote": "{count, plural, one {# ticked card already has a picture and will get a different one.} other {# ticked cards already have pictures and will get different ones.}}",
+      "imagesWorking": "Looking for pictures…",
+      "imagesFindButton": "Find {count, plural, one {# picture} other {# pictures}}",
+      "imagesHourlyHint": "Pictures come from a free service that only allows a few searches an hour. Come back later to finish the rest.",
+      "imagesAdded": "Added {count, plural, one {# picture} other {# pictures}}.",
+      "imagesNoneFound": "No pictures matched these words. You can add your own from any card.",
+      "imagesRanOut": "The free picture searches ran out for this hour. Added {count, plural, one {# picture} other {# pictures}} — try again in an hour for the rest.",
+      "imagesError": "The pictures didn't load. Please try again.",
+      "imagesErrorPartial": "Saved {count, plural, one {# picture} other {# pictures}}, then something went wrong. Try again for the rest.",
+      "imagesStopped": "The picture search stopped early. {count, plural, one {# card wasn't} other {# cards weren't}} looked up — try again."
     },
     "shareEmbedDialog": {
       "title": "Embed Deck",
@@ -379,7 +399,11 @@
       "addCardsButton": "Add Cards",
       "reorderBannerLabel": "Drag and drop cards to reorder. Click Done when finished.",
       "noCardsMemberMessage": "No cards yet — your organizer will add them soon!",
-      "noCardsOwnerMessage": "No cards yet — <link>add some</link> to get started."
+      "noCardsOwnerMessage": "No cards yet — <link>add some</link> to get started.",
+      "pictureReviewTitle": "🖼️ New pictures",
+      "pictureReviewSubtitle": "{count, plural, one {# card got a picture} other {# cards got pictures}} — try again on any you don't like",
+      "pictureReviewSave": "Save pictures",
+      "pictureReviewSaveError": "Those changes didn't save. Please try again."
     },
     "decksPage": {
       "loadingDecks": "Loading your decks…",

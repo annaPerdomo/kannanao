@@ -346,7 +346,27 @@
       "viewModeSaving": "すべてのカードを変更しています…",
       "viewModeSaved": "完了 — このデッキのカードがすべて変わりました",
       "viewModeError": "カードを変更できませんでした。もう一度お試しください。",
-      "viewModeAria": "カードに最初に見えるもの"
+      "viewModeAria": "カードに最初に見えるもの",
+      "imagesTitle": "カードの絵",
+      "imagesMissing": "{count, plural, other {#枚のカード}}にまだ絵がありません",
+      "imagesAllHavePictures": "すべてのカードに絵があります",
+      "imagesEmpty": "まずカードを追加してください",
+      "imagesChooseButton": "絵をえらぶ",
+      "imagesDialogTitle": "絵をえらぶ",
+      "imagesPickLabel": "新しい絵にしたいカードをタップしてください",
+      "imagesSelectedCount": "{count, plural, other {#枚}}を選択中",
+      "imagesSelectAll": "すべて選ぶ",
+      "imagesSelectNone": "選択を解除",
+      "imagesReplaceNote": "チェックした{count, plural, other {#枚のカード}}にはすでに絵があります。ちがう絵に入れかわります。",
+      "imagesWorking": "絵をさがしています…",
+      "imagesFindButton": "{count, plural, other {#枚の絵}}をさがす",
+      "imagesHourlyHint": "絵は無料のサービスから取得しているため、1時間に使える回数が限られています。残りは時間をおいてからどうぞ。",
+      "imagesAdded": "{count, plural, other {#枚の絵}}を追加しました。",
+      "imagesNoneFound": "この言葉に合う絵が見つかりませんでした。カードごとに自分の絵を追加できます。",
+      "imagesRanOut": "1時間に使える絵の検索回数がなくなりました。{count, plural, other {#枚の絵}}を追加しました — 1時間ほどしてから残りをお試しください。",
+      "imagesError": "絵を取得できませんでした。もう一度お試しください。",
+      "imagesErrorPartial": "{count, plural, other {#枚の絵}}を保存したところで問題が起きました。残りはもう一度お試しください。",
+      "imagesStopped": "絵の検索が途中で止まりました。{count, plural, other {#枚のカード}}はまだ調べていません — もう一度お試しください。"
     },
     "shareEmbedDialog": {
       "title": "デッキを埋め込み",
@@ -379,7 +399,11 @@
       "addCardsButton": "カードを追加",
       "reorderBannerLabel": "ドラッグしてカードを並べ替えできます。終わったら「完了」を押してください。",
       "noCardsMemberMessage": "まだカードがありません。リーダーがもうすぐ追加してくれます！",
-      "noCardsOwnerMessage": "まだカードがありません。<link>追加して</link>始めましょう。"
+      "noCardsOwnerMessage": "まだカードがありません。<link>追加して</link>始めましょう。",
+      "pictureReviewTitle": "🖼️ 新しい絵",
+      "pictureReviewSubtitle": "{count, plural, other {#枚のカード}}に絵がつきました — 気に入らないものはもう一度さがせます",
+      "pictureReviewSave": "絵を保存",
+      "pictureReviewSaveError": "変更を保存できませんでした。もう一度お試しください。"
     },
     "decksPage": {
       "loadingDecks": "デッキを読み込み中…",

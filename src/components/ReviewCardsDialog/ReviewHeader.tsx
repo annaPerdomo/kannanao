@@ -13,6 +13,9 @@ interface ReviewHeaderProps {
   allViewMode: MainViewMode | null;
   onSetAllViewMode: (mode: MainViewMode) => void;
   onClose: () => void;
+  /** Overridden when the dialog reviews saved cards rather than new ones. */
+  title?: string;
+  subtitle?: string;
 }
 
 export function ReviewHeader({
@@ -20,6 +23,8 @@ export function ReviewHeader({
   allViewMode,
   onSetAllViewMode,
   onClose,
+  title,
+  subtitle,
 }: ReviewHeaderProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
@@ -53,10 +58,11 @@ export function ReviewHeader({
               mb: 0.4,
             }}
           >
-            📋 Review Cards
+            {title ?? '📋 Review Cards'}
           </Typography>
           <Typography sx={{ fontSize: '0.75rem', color: alpha(brand[700], 0.6), fontWeight: 600 }}>
-            {cardCount} card{cardCount !== 1 ? 's' : ''} generated — edit before adding
+            {subtitle ??
+              `${cardCount} card${cardCount !== 1 ? 's' : ''} generated — edit before adding`}
           </Typography>
         </Box>
         <IconButton

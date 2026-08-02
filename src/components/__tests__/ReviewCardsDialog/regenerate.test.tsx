@@ -15,7 +15,7 @@ vi.mock('@/services/api', () => ({
   formatFurigana: vi.fn(),
 }));
 
-function card(word: string, meaning = 'x'): PendingCard {
+function card(word: string, meaning = 'x', mainViewMode = 'kanji'): PendingCard {
   return {
     word,
     reading: '',
@@ -24,7 +24,7 @@ function card(word: string, meaning = 'x'): PendingCard {
     image_query: '',
     example_jp: `${word}の例`,
     example_en: 'example',
-    mainViewMode: 'kanji',
+    mainViewMode,
     cardType: 'word',
   } as PendingCard;
 }
@@ -155,6 +155,26 @@ describe('ReviewCardsDialog regeneration', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
     expect(screen.getByText('Tick any cards to redo')).toBeInTheDocument();
+  });
+
+  it('should keep the row view mode a replacement card did not ask about', async () => {
+    const onRegenerate = vi.fn().mockResolvedValue([card('一月', 'x', 'hiragana')]);
+    const { onConfirm } = setup(onRegenerate);
+
+    selectCard('1月');
+    fireEvent.change(screen.getByPlaceholderText(/What should change/), {
+      target: { value: 'kanji' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /^Redo/ }));
+
+    await waitFor(() => expect(screen.getByText('一月')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /Add 3 Cards to Deck/ }));
+
+    expect(onConfirm.mock.calls[0][0].map((c: PendingCard) => c.mainViewMode)).toEqual([
+      'kanji',
+      'kanji',
+      'kanji',
+    ]);
   });
 
   it('should keep selection pointing at the right cards after a delete', async () => {
