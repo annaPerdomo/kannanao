@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { evaluateMastery, goalLabel, isGoalMode, MASTERY_MIN_CARDS } from '@/lib/assignmentMastery';
+import {
+  evaluateMastery,
+  goalLabel,
+  isGoalMode,
+  MASTERY_MIN_CARDS,
+  masteryMinCards,
+} from '@/lib/assignmentMastery';
 
 const session = (overrides: Partial<Parameters<typeof evaluateMastery>[1]> = {}) => ({
   practice_mode: 'study',
@@ -125,6 +131,43 @@ describe('evaluateMastery', () => {
     expect(result.completes).toBe(true);
   });
 
+  // ── the floor on a deck smaller than the floor ────────────────────────────
+  it('lets a deck smaller than the floor complete on the whole deck', () => {
+    const result = evaluateMastery(
+      { required_accuracy: 80, required_mode: null },
+      session({ cards_studied: 3, cards_correct: 3 }),
+      3,
+    );
+    expect(result).toEqual({ completes: true, qualifyingAccuracy: 100 });
+  });
+
+  it('still rejects a short session on a deck bigger than the floor', () => {
+    const result = evaluateMastery(
+      { required_accuracy: 80, required_mode: null },
+      session({ cards_studied: 1, cards_correct: 1 }),
+      20,
+    );
+    expect(result).toEqual({ completes: false, qualifyingAccuracy: null });
+  });
+
+  it('still rejects a partial session on a small deck', () => {
+    const result = evaluateMastery(
+      { required_accuracy: 80, required_mode: null },
+      session({ cards_studied: 1, cards_correct: 1 }),
+      3,
+    );
+    expect(result).toEqual({ completes: false, qualifyingAccuracy: null });
+  });
+
+  it('falls back to the flat floor when the deck size is unknown', () => {
+    const result = evaluateMastery(
+      { required_accuracy: 80, required_mode: null },
+      session({ cards_studied: 3, cards_correct: 3 }),
+      null,
+    );
+    expect(result.completes).toBe(false);
+  });
+
   // ── combined criteria ─────────────────────────────────────────────────────
   it('requires BOTH mode and accuracy when both are set', () => {
     const criteria = { required_accuracy: 80, required_mode: 'match' };
@@ -178,5 +221,23 @@ describe('isGoalMode', () => {
     expect(isGoalMode('word-match')).toBe(false);
     expect(isGoalMode(42)).toBe(false);
     expect(isGoalMode(null)).toBe(false);
+  });
+});
+
+describe('masteryMinCards', () => {
+  it('caps the floor at the deck size', () => {
+    expect(masteryMinCards(3)).toBe(3);
+    expect(masteryMinCards(1)).toBe(1);
+  });
+
+  it('keeps the flat floor for decks at or above it', () => {
+    expect(masteryMinCards(MASTERY_MIN_CARDS)).toBe(MASTERY_MIN_CARDS);
+    expect(masteryMinCards(50)).toBe(MASTERY_MIN_CARDS);
+  });
+
+  it('keeps the flat floor when the count is unknown or nonsense', () => {
+    expect(masteryMinCards(null)).toBe(MASTERY_MIN_CARDS);
+    expect(masteryMinCards(undefined)).toBe(MASTERY_MIN_CARDS);
+    expect(masteryMinCards(0)).toBe(MASTERY_MIN_CARDS);
   });
 });

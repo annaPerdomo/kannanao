@@ -100,6 +100,19 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // The card floor is capped at the deck's size, so an assignment on a deck of
+  // fewer than MASTERY_MIN_CARDS cards can still be completed. Only fetched when
+  // a session actually has to be graded.
+  let deckCardCount: number | null = null;
+  if (sessionStats) {
+    const { data: deck } = await sb
+      .from('decks')
+      .select('card_count')
+      .eq('id', deckId)
+      .maybeSingle();
+    deckCardCount = deck?.card_count ?? null;
+  }
+
   const toComplete: string[] = [];
   const progressUpdates: { id: string; accuracy: number }[] = [];
 
@@ -110,7 +123,7 @@ export async function POST(req: NextRequest) {
       continue;
     }
     if (!sessionStats) continue; // can't evaluate criteria without session stats
-    const { completes, qualifyingAccuracy } = evaluateMastery(a, sessionStats);
+    const { completes, qualifyingAccuracy } = evaluateMastery(a, sessionStats, deckCardCount);
     if (completes) toComplete.push(a.id);
     if (qualifyingAccuracy != null && qualifyingAccuracy > (a.progress_accuracy ?? -1)) {
       progressUpdates.push({ id: a.id, accuracy: qualifyingAccuracy });

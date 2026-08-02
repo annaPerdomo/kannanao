@@ -4,8 +4,22 @@ import type { SessionMode } from '@/hooks/useProgress';
  * Minimum cards a session must contain before an accuracy goal is evaluated.
  * Without a floor, a single-card session (1/1 = 100%) would satisfy any
  * accuracy goal, so the goal would carry no information for the teacher.
+ *
+ * A deck smaller than this can't reach the flat floor at all, so the effective
+ * floor is capped at the deck's size (see {@link masteryMinCards}) — otherwise
+ * an assignment on a 3-card deck could never be completed.
  */
 export const MASTERY_MIN_CARDS = 5;
+
+/**
+ * The card floor for one deck: the flat minimum, or the whole deck when the
+ * deck is smaller. Passing the deck size is what keeps the anti-gaming intent —
+ * a 1-card session on a 20-card deck still falls short of the flat floor.
+ */
+export function masteryMinCards(deckCardCount?: number | null): number {
+  if (deckCardCount == null || deckCardCount <= 0) return MASTERY_MIN_CARDS;
+  return Math.min(MASTERY_MIN_CARDS, deckCardCount);
+}
 
 /**
  * Modes a goal can require. Only modes whose sessions carry a deck_id can ever
@@ -72,13 +86,14 @@ export interface MasteryResult {
  *
  * Rules: (required_mode is null OR the session used it) AND
  * (required_accuracy is null OR the session hit it with at least
- * MASTERY_MIN_CARDS cards). The accuracy comparison is done in integer math
- * (correct * 100 >= required * studied) so boundary cases like 4/5 vs 80%
- * can't be lost to float rounding.
+ * `masteryMinCards(deckCardCount)` cards). The accuracy comparison is done in
+ * integer math (correct * 100 >= required * studied) so boundary cases like
+ * 4/5 vs 80% can't be lost to float rounding.
  */
 export function evaluateMastery(
   criteria: MasteryCriteria,
   session: MasterySessionStats,
+  deckCardCount?: number | null,
 ): MasteryResult {
   if (criteria.required_mode != null && session.practice_mode !== criteria.required_mode) {
     return { completes: false, qualifyingAccuracy: null };
@@ -86,7 +101,7 @@ export function evaluateMastery(
   if (criteria.required_accuracy == null) {
     return { completes: true, qualifyingAccuracy: null };
   }
-  if (session.cards_studied < MASTERY_MIN_CARDS) {
+  if (session.cards_studied < masteryMinCards(deckCardCount)) {
     return { completes: false, qualifyingAccuracy: null };
   }
   const accuracy = Math.round((session.cards_correct / session.cards_studied) * 100);

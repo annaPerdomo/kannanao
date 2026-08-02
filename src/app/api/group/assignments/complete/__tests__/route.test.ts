@@ -185,6 +185,24 @@ describe('POST /api/group/assignments/complete', () => {
     expect(json.progressUpdated).toBe(0);
   });
 
+  it('completes a small deck on its whole deck (floor capped at deck size)', async () => {
+    setTable('assignments', [assignment({ required_accuracy: 80 })]);
+    setTable('study_sessions', session({ cards_studied: 3, cards_correct: 3 }));
+    setTable('decks', { card_count: 3 });
+    const res = await POST(makeRequest({ deckId: 'deck-1', sessionId: 's1' }));
+    const json = await res.json();
+    expect(json.completed).toBe(1);
+    expect(completedIds()).toEqual(['a1']);
+  });
+
+  it('keeps rejecting a short session on a deck bigger than the floor', async () => {
+    setTable('assignments', [assignment({ required_accuracy: 80 })]);
+    setTable('study_sessions', session({ cards_studied: 3, cards_correct: 3 }));
+    setTable('decks', { card_count: 20 });
+    const res = await POST(makeRequest({ deckId: 'deck-1', sessionId: 's1' }));
+    expect((await res.json()).completed).toBe(0);
+  });
+
   it('ignores criteria assignments when no sessionId is sent', async () => {
     setTable('assignments', [assignment({ required_accuracy: 80 })]);
     const res = await POST(makeRequest({ deckId: 'deck-1' }));
