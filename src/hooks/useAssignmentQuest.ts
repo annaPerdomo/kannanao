@@ -20,11 +20,10 @@ import { dbDeckCardCount } from '@/lib/supabase';
 import type { Deck } from '@/types/deck';
 
 /**
- * Start the quest for an assignment: store the plan's inputs and open the first
- * leg. The first leg is always flip study, so no deck data is needed to make
- * the jump — `deck` only saves the leg page a card-count lookup and lets an
- * unwinnable goal (a mode the deck can't run) fall back to the plain deck page
- * instead of walking the learner into a dead end.
+ * Store the quest and open its first leg — always flip study, so the jump needs
+ * no deck data. `deck` is optional: it saves the leg page a card-count lookup,
+ * and lets a goal the deck can't run fall back to the plain deck page instead
+ * of walking the learner into a dead end.
  */
 export function useStartAssignmentQuest() {
   const router = useRouter();
@@ -61,28 +60,26 @@ export function useStartAssignmentQuest() {
 export interface ActiveQuest {
   state: AssignmentQuestState;
   legs: QuestLeg[];
-  /** Index of the leg being played (0-based). */
   index: number;
   leg: QuestLeg;
-  /** 'play' while the leg runs, 'finish' once the goal leg's session is over. */
+  /** 'finish' once the goal leg's session is over. */
   phase: 'play' | 'finish';
   /** Bumped by `retry` so the page can remount the mode for a fresh session. */
   attempt: number;
-  /** The one button the end-of-session screen shows. */
+  /** The one button the end-of-session screen shows instead of its exit. */
   handoff: { label: string; onNext: () => void };
-  /** Leave the quest (header back, quit, a mode that can't run) — never traps. */
+  /** Leave the quest — header back, quit, or a mode that can't run. */
   abandon: () => void;
   /** Re-run the goal leg after a near miss. */
   retry: () => void;
-  /** Finish for now and go back to the dashboard. */
   goHome: () => void;
 }
 
 /**
- * The quest as seen from one leg's route. Returns null whenever this page isn't
- * a live quest leg — no marker in the URL, no stored quest, a different deck,
- * or a stored step that doesn't match the mode being rendered. In every one of
- * those cases the page is left exactly as it was before the quest existed.
+ * The quest as seen from one leg's route. Null whenever this page isn't a live
+ * leg — no URL marker, no stored quest, another deck, or a stored step that
+ * doesn't match the mode rendered here — and then the page behaves exactly as
+ * it did before quests existed.
  */
 export function useAssignmentQuest({
   deckId,
@@ -100,8 +97,8 @@ export function useAssignmentQuest({
   const [phase, setPhase] = useState<'play' | 'finish'>('play');
   const [attempt, setAttempt] = useState(0);
 
-  // sessionStorage is client-only, so the quest resolves after mount. The leg
-  // pages are already loading cards at that point, so nothing visibly waits.
+  // sessionStorage is client-only, so the quest resolves after mount — the leg
+  // pages are still loading cards then, so nothing visibly waits on it.
   useEffect(() => {
     if (!marked) {
       setState(null);
@@ -116,9 +113,9 @@ export function useAssignmentQuest({
     setState(stored);
   }, [marked, deckId]);
 
-  // The deck size decides whether the quest has a middle leg, so it is resolved
-  // once and written back — otherwise a later leg could renumber the steps. A
-  // deck that can't be read is a dead quest: drop it and leave the plain page.
+  // Deck size decides whether there's a middle leg, so it is resolved once and
+  // written back — a later leg must not renumber the steps. An unreadable deck
+  // is a dead quest: drop it and leave the plain page.
   useEffect(() => {
     if (!state || state.cardCount !== null) return;
     let cancelled = false;
@@ -147,11 +144,10 @@ export function useAssignmentQuest({
   );
 
   const leg = state ? legs[state.index] : undefined;
-  // A stored step that doesn't match what this page renders means the learner
-  // navigated by hand (or the plan changed under us) — end the quest quietly.
-  // Advancing deliberately creates that mismatch for the instant before the
-  // next leg's route takes over, so it is exempt: clearing there would wipe the
-  // quest the page we are navigating to is about to read.
+  // A stored step that doesn't match this page means the learner navigated by
+  // hand — end the quest quietly. Advancing creates that same mismatch for the
+  // instant before the next route takes over, so it is exempt: clearing there
+  // would wipe the quest the page we're navigating to is about to read.
   const advancingRef = useRef(false);
   const matches = !!leg && leg.mode === mode;
   useEffect(() => {

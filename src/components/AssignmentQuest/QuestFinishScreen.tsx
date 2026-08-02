@@ -9,11 +9,9 @@ import { type Assignment, useAssignments } from '@/hooks/useAssignments';
 import { LAYOUT } from '@/theme';
 
 /**
- * How long to wait before the single re-check. The goal leg's session closes
- * itself and posts the completion in the background, so a very fast tap on the
- * finish button can read the assignment a beat before the server has written
- * it. One delayed re-read is enough to turn that into a correct celebration
- * instead of a wrong "so close".
+ * The goal leg posts its completion in the background, so a very fast tap can
+ * read the assignment a beat before the server has written it. One delayed
+ * re-read turns that race into a correct celebration instead of a wrong miss.
  */
 const RECHECK_DELAY_MS = 900;
 
@@ -25,9 +23,8 @@ interface QuestFinishScreenProps {
 
 /**
  * The end of the quest. The verdict is the server's — the assignment row is
- * re-read after the goal leg rather than re-deriving mastery on the client —
- * so this screen can never celebrate something the teacher's dashboard won't
- * show as done.
+ * re-read rather than mastery re-derived here — so this screen can't celebrate
+ * something the teacher's dashboard won't show as done.
  */
 export function QuestFinishScreen({ assignmentId, onRetry, onDone }: QuestFinishScreenProps) {
   const t = useTranslations('AssignmentQuest');
@@ -54,8 +51,7 @@ export function QuestFinishScreen({ assignmentId, onRetry, onDone }: QuestFinish
     };
   }, [refetch]);
 
-  // The first read is enough once it says "done" — only a near miss pays for
-  // the re-check, and it does so behind the same spinner.
+  // A "done" first read needs no re-check; only a near miss pays for one.
   if (!settled && !completed) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>

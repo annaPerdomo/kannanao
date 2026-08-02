@@ -1,12 +1,8 @@
 /**
- * Assignment quest planning — pure, so the whole step sequence can be unit
- * tested without a browser. Tapping an assignment must never present a menu:
- * it starts a fixed path of one-tap legs that ends on the mode the goal asks
- * for.
- *
- * Each leg is a REAL session on the existing route (`/deck/x/study`,
- * `/deck/x/practice/match`, …), so XP, streaks and the server-side assignment
- * completion all keep working untouched.
+ * Assignment quest planning — pure, so the step sequence can be unit tested
+ * without a browser. Each leg is a REAL session on the existing route
+ * (`/deck/x/study`, `/deck/x/practice/match`), which is what lets XP, streaks
+ * and the server-side assignment completion keep working untouched.
  */
 import { PRACTICE_CONFIG } from '@/components/Deck/constants';
 
@@ -19,27 +15,18 @@ export interface QuestLeg {
   mode: GoalMode;
 }
 
-/**
- * Below this many cards the middle practice leg is skipped — the same
- * threshold the review quest uses to decide a deck is too small for a third
- * format (BOSS_MIN_DUE in `quest.ts`).
- */
+/** Middle-leg cutoff; mirrors BOSS_MIN_DUE, the review quest's own cutoff. */
 export const QUEST_PRACTICE_MIN_CARDS = 4;
 
-/** The one middle leg, chosen once: Word Match is the most approachable mode. */
+/** The middle leg is always Word Match — the most approachable mode. */
 const PRACTICE_LEG_MODE = 'match' satisfies GoalMode;
 
 const PRACTICE_ROUTE_MODES: readonly string[] = PRACTICE_CONFIG.map((tile) => tile.mode);
 
 /**
- * The legs for an assignment, in order. Deterministic — no randomness, no
- * time-of-day, so every leg page derives the identical plan from the deck size
- * and the goal.
- *
- * - No goal mode (legacy assignment) or a `study` goal → a single study leg;
- *   completion already fires on any study of the deck.
- * - Otherwise warm-up (flip study) → Word Match → the goal mode, dropping Word
- *   Match when the deck is too small for it or when it *is* the goal.
+ * The legs for an assignment, in order. Deterministic on (deck size, goal) so
+ * every leg page derives the identical plan — the banner would otherwise
+ * renumber itself between steps.
  */
 export function planAssignmentQuest({
   cardCount,
@@ -63,9 +50,8 @@ export const QUEST_PARAM = 'quest';
 export const QUEST_PARAM_VALUE = 'assignment';
 
 /**
- * Where a leg is played. Null when the mode has no deck route to send the
- * learner to — `review` is cross-deck, so an assignment can't require it and
- * the quest declines to start rather than navigating somewhere wrong.
+ * Where a leg is played. Null for a mode with no deck route — `review` is
+ * cross-deck — so callers can decline to start rather than navigate wrong.
  */
 export function questLegHref(deckId: string, leg: QuestLeg): string | null {
   const marker = `?${QUEST_PARAM}=${QUEST_PARAM_VALUE}`;
@@ -83,11 +69,7 @@ export interface AssignmentQuestState {
   deckId: string;
   requiredMode: string | null;
   requiredAccuracy: number | null;
-  /**
-   * Deck size, resolved once and kept so every leg plans the same number of
-   * steps (the banner would otherwise renumber itself mid-quest). Null until
-   * the first leg that knows it writes it back.
-   */
+  /** Deck size, resolved once; null until the first leg that knows it writes it back. */
   cardCount: number | null;
   /** Index into `planAssignmentQuest(...)`. */
   index: number;
@@ -96,9 +78,9 @@ export interface AssignmentQuestState {
 const STORAGE_KEY = 'kannanao:assignment-quest';
 
 /**
- * sessionStorage, not React state: the quest spans full route navigations and
- * has to survive a refresh mid-leg. Every read re-validates the shape so a
- * stale or hand-edited entry degrades to "no quest" instead of throwing.
+ * sessionStorage, because the quest spans full route navigations and a refresh
+ * mid-leg. Reads re-validate the shape so a stale or hand-edited entry degrades
+ * to "no quest" instead of throwing.
  */
 export function readQuestState(): AssignmentQuestState | null {
   if (typeof window === 'undefined') return null;
@@ -128,7 +110,7 @@ export function writeQuestState(state: AssignmentQuestState): void {
   try {
     window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
-    // Private-mode quota failures just mean no quest chrome — never a crash.
+    // A private-mode quota failure just means no quest chrome — never a crash.
   }
 }
 

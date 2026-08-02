@@ -193,8 +193,7 @@ export function CelebrationScreen({
   onExit,
 }: CelebrationScreenProps) {
   const tCommon = useTranslations('Practice.common');
-  // Inside an assignment quest the exit button becomes the one step forward —
-  // the learner is never shown a choice at the end of a leg.
+  // In a quest the exit button becomes the one step forward.
   const handoff = useQuestHandoff();
   const resolvedExitLabel = handoff?.label ?? exitLabel ?? tCommon('backToDeck');
   const { equipped } = useShopCtx();

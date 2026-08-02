@@ -41,7 +41,7 @@ const DUE_COLORS = {
 
 interface AssignmentCardProps {
   assignment: Assignment;
-  /** Begins the assignment's guided quest — the card never offers a menu. */
+  /** Begins the assignment's guided quest. */
   onStart: (assignment: Assignment) => void;
 }
 

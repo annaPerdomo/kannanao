@@ -14,15 +14,10 @@ const STEP_EMOJI: Record<QuestStep, string> = {
 
 interface QuestStepBannerProps {
   legs: QuestLeg[];
-  /** Index of the leg being played. */
   currentIndex: number;
 }
 
-/**
- * The one line of quest chrome on a leg's page: where the learner is now and
- * how much is left. Same node-path language as the review quest map, shrunk to
- * a banner so the mode below it keeps the full screen.
- */
+/** The review quest's node path, shrunk to one line so the mode keeps the screen. */
 export function QuestStepBanner({ legs, currentIndex }: QuestStepBannerProps) {
   const t = useTranslations('AssignmentQuest');
   const theme = useTheme();

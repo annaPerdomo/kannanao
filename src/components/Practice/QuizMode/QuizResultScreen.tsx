@@ -23,7 +23,7 @@ export function QuizResultScreen({ score, total, accuracy, onExit }: QuizResultS
   const { brand, accent } = theme.palette;
   const t = useTranslations('Practice.quizMode');
   const tCommon = useTranslations('Practice.common');
-  // Inside an assignment quest this is the quest's one next step instead.
+  // In a quest this button becomes the quest's one next step.
   const handoff = useQuestHandoff();
   const stars = quizStars(accuracy);
 

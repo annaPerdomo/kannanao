@@ -100,9 +100,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // The card floor is capped at the deck's size, so an assignment on a deck of
-  // fewer than MASTERY_MIN_CARDS cards can still be completed. Only fetched when
-  // a session actually has to be graded.
+  // Caps the card floor at the deck's size so a deck smaller than the floor can
+  // still be completed. Only fetched when a session actually has to be graded.
   let deckCardCount: number | null = null;
   if (sessionStats) {
     const { data: deck } = await sb
