@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { invalidateApiCache } from '@/lib/apiCache';
+import { publishAssignmentComplete } from '@/lib/assignmentSignal';
 import { CHEST_XP } from '@/lib/chest';
 import { cardXp } from '@/lib/flashcardUtils';
 import { sb, upsertCardProgress } from '@/lib/supabase';
@@ -625,6 +626,7 @@ export function useProgress(
       // Awaited (not fired and forgotten) so that anything reading the
       // assignment afterwards — the quest's finish screen most of all — can't
       // race the write and report a goal as missed.
+      let result: AssignmentCompleteResult | null = null;
       try {
         const { data: session } = await supabase
           .from('study_sessions')
@@ -648,13 +650,16 @@ export function useProgress(
             // The assignment list is cached client-side; drop it so the
             // dashboard reflects the auto-completed assignment right away.
             invalidateApiCache('/api/group/assignments');
-            return (await res.json().catch(() => null)) as AssignmentCompleteResult | null;
+            result = (await res.json().catch(() => null)) as AssignmentCompleteResult | null;
           }
         }
       } catch {
         // Non-critical — don't block the session end flow
       }
-      return null;
+      // Published on the failure paths too — a screen waiting on this has to be
+      // released whether or not the write got through.
+      publishAssignmentComplete(result?.completed ?? 0);
+      return result;
     },
     [achievements, supabase, fetchAll, applyProgress],
   );

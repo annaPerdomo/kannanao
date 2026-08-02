@@ -3511,6 +3511,9 @@
     "bestSoFar": "これまでの最高: {best}% — 目標 {goal}%",
     "tryOneMoreTime": "もう一度ちょうせんして目標をめざそう。",
     "tryAgain": "もう一度",
-    "backHome": "ホームにもどる"
+    "backHome": "ホームにもどる",
+    "checkFailed": "いま目標をかくにんできませんでした。",
+    "checkAgain": "もう一度かくにん",
+    "stopForNow": "ここでやめる"
   }
 }

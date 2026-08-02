@@ -3511,6 +3511,9 @@
     "bestSoFar": "Best so far: {best}% — goal {goal}%",
     "tryOneMoreTime": "Give it one more go to reach your goal.",
     "tryAgain": "Try again",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "checkFailed": "We couldn't check your goal just now.",
+    "checkAgain": "Check again",
+    "stopForNow": "Stop for now"
   }
 }
