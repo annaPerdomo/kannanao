@@ -13,7 +13,7 @@ import {
   type UserProfile,
 } from '@/lib/dbMappers';
 import type { Deck } from '@/types/deck';
-import type { Flashcard } from '@/types/flashcard';
+import type { Flashcard, MainViewMode } from '@/types/flashcard';
 import type { HomeSections } from '@/types/homeSections';
 import type { EntryType, Todo } from '@/types/todo';
 import type { ShowCard, ShowCardCategory } from '@/types/travel';
@@ -203,6 +203,23 @@ export async function dbReorderCards(orderedIds: string[]): Promise<void> {
   if (failed?.error) throw failed.error;
 }
 
+export async function dbSetCardsMainViewMode(deckId: string, mode: MainViewMode): Promise<void> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    throw new Error('Supabase not configured');
+  }
+  const { data, error } = await sb
+    .from('cards')
+    .update({ main_view_mode: mode })
+    .eq('deck_id', deckId)
+    .select('id');
+  if (error) throw error;
+  // A row-level policy that refuses the write filters it to zero rows rather
+  // than erroring, so an empty result is a silent failure, not a success. The
+  // toggle is disabled on an empty deck, so there is always a row to hit.
+  if (!data || data.length === 0) throw new Error('No cards were updated');
+}
+
 export async function loadCards(deckId: string): Promise<Flashcard[]> {
   if (!isConfigured()) {
     showConfigBanner();
@@ -289,7 +306,9 @@ export async function dbUpdateCard(
   if (patch.reading !== undefined) payload.reading = patch.reading;
   if (patch.romaji !== undefined) payload.romaji = patch.romaji;
   if (patch.meaning !== undefined) payload.meaning = patch.meaning;
-  if (patch.imageUrl !== undefined) payload.image_url = patch.imageUrl;
+  // `in`, not `!== undefined`: clearing a picture sets imageUrl to undefined,
+  // and reading that as "leave it alone" made every remove-image button a no-op.
+  if ('imageUrl' in patch) payload.image_url = patch.imageUrl ?? '';
   if (patch.image_query !== undefined) payload.image_query = patch.image_query;
   if (patch.example_jp !== undefined) payload.example_jp = patch.example_jp;
   if (patch.example_en !== undefined) payload.example_en = patch.example_en;
@@ -333,6 +352,42 @@ export async function loadAllCards(): Promise<Flashcard[]> {
   }
 
   return (data ?? []).map(dbCardToApp);
+}
+
+export interface ExistingCardMatch {
+  card: Flashcard;
+  deckName: string;
+}
+
+/**
+ * Find cards the user already owns for any of `words`. RLS scopes this to the
+ * requester, so no user id is needed — the same arrangement loadAllCards uses.
+ * Returns at most one match per word: the oldest, which is the one most likely
+ * to carry hand-picked artwork and a corrected example sentence.
+ */
+export async function dbFindCardsByWords(words: string[]): Promise<Map<string, ExistingCardMatch>> {
+  const matches = new Map<string, ExistingCardMatch>();
+  if (!isConfigured() || words.length === 0) return matches;
+
+  const { data, error } = await sb
+    .from('cards')
+    .select('*, decks(name)')
+    .in('word', [...new Set(words)])
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    // A failed lookup only costs the reuse offer, so the caller carries on.
+    console.error('Error finding existing cards', error);
+    return matches;
+  }
+
+  for (const row of data ?? []) {
+    const card = dbCardToApp(row);
+    if (matches.has(card.word)) continue;
+    const deck = (row as { decks?: { name?: string } | null }).decks;
+    matches.set(card.word, { card, deckName: deck?.name ?? '' });
+  }
+  return matches;
 }
 
 /**

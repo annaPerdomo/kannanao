@@ -31,6 +31,7 @@ import { PdfImportModal } from '@/components/PdfImportModal';
 import { eligibleReadingCards } from '@/components/Practice/ReadingMode/eligibility';
 import { ReorderBanner } from '@/components/ReorderBanner';
 import { ReviewCardsDialog } from '@/components/ReviewCardsDialog';
+import type { PendingCard } from '@/components/ReviewCardsDialog/CardRow';
 import { SortableImageCard } from '@/components/SortableImageCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCardReview } from '@/hooks/useCardReview';
@@ -40,7 +41,7 @@ import { useGenerateFlashcards } from '@/hooks/useGenerateFlashcards';
 import { withImages } from '@/services/cardPipeline';
 import { LAYOUT } from '@/theme';
 import type { PracticeMode } from '@/types/app';
-import type { GeneratedCard, MainViewMode } from '@/types/flashcard';
+import type { Flashcard, GeneratedCard, MainViewMode } from '@/types/flashcard';
 
 interface DeckProps {
   deckId: string;
@@ -74,6 +75,9 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const [pendingMainViewMode, setPendingMainViewMode] = useState<MainViewMode>('hiragana');
   const [reordering, setReordering] = useState(false);
   const review = useCardReview();
+  const pictureReview = useCardReview();
+  const [savingPictures, setSavingPictures] = useState(false);
+  const [pictureSaveError, setPictureSaveError] = useState<string | null>(null);
 
   const handleCountChange = useCallback(
     (count: number) => updateDeckCount(deckId, count),
@@ -88,11 +92,19 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     updateCard,
     copyExistingCards,
     reorderCards,
+    setAllMainViewMode,
   } = useCards(deckId, handleCountChange);
-  const { generating, error, generate } = useGenerateFlashcards();
+  const { generating, error, generate, regenerate } = useGenerateFlashcards();
 
   const canReorder = !isMemberAccount && cards.length > 1;
   const readingCardCount = useMemo(() => eligibleReadingCards(cards).length, [cards]);
+  const deckViewMode = useMemo(
+    () =>
+      cards.length > 0 && cards.every((c) => c.mainViewMode === cards[0].mainViewMode)
+        ? cards[0].mainViewMode
+        : null,
+    [cards],
+  );
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
@@ -120,6 +132,35 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     const cards = await withImages(extracted, deckId, pendingMainViewMode);
     setPdfImportOpen(false);
     review.review(cards);
+  };
+
+  /** The cards are saved already — the review is a second look at what Unsplash
+   * picked, not a confirmation step. */
+  const handleImagesFilled = (filled: Flashcard[]) => {
+    setSettingsOpen(false);
+    setPictureSaveError(null);
+    pictureReview.review(filled);
+  };
+
+  const handleSavePictures = async (reviewed: PendingCard[]) => {
+    setSavingPictures(true);
+    setPictureSaveError(null);
+    try {
+      const saved = await Promise.all(
+        reviewed
+          .filter((card) => card.id)
+          // `imageUrl ?? ''` so clearing a picture is written as a clear rather
+          // than read as "this field wasn't touched".
+          .map((card) => updateCard(card.id!, { ...card, imageUrl: card.imageUrl ?? '' })),
+      );
+      if (saved.some((card) => card === null)) {
+        setPictureSaveError(t('pictureReviewSaveError'));
+        return;
+      }
+      pictureReview.clear();
+    } finally {
+      setSavingPictures(false);
+    }
   };
 
   if (decksLoading || cardsLoading) {
@@ -379,6 +420,9 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         open={review.open}
         cards={review.cards}
         onClose={review.close}
+        onRegenerate={(words, instruction) =>
+          regenerate(words, instruction, deckId, pendingMainViewMode)
+        }
         onConfirm={(confirmed) => {
           addCards(confirmed.map((c) => ({ ...c, deckId })));
           review.clear();
@@ -395,6 +439,24 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         readingUnlocked={deck.readingPractice === true}
         readingCardCount={readingCardCount}
         onReadingChange={(enabled) => setDeckReadingPractice(deckId, enabled)}
+        cardViewMode={deckViewMode}
+        cards={cards}
+        onCardViewModeChange={setAllMainViewMode}
+        onUpdateCard={updateCard}
+        onImagesFilled={handleImagesFilled}
+      />
+
+      <ReviewCardsDialog
+        open={pictureReview.open}
+        cards={pictureReview.cards}
+        onClose={pictureReview.close}
+        onConfirm={handleSavePictures}
+        title={t('pictureReviewTitle')}
+        subtitle={t('pictureReviewSubtitle', { count: pictureReview.cards.length })}
+        confirmLabel={t('pictureReviewSave')}
+        allowRemove={false}
+        saving={savingPictures}
+        saveError={pictureSaveError}
       />
     </Box>
   );

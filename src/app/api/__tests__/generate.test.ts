@@ -159,6 +159,107 @@ describe('POST /api/generate', () => {
     expect(body.error).toBe('Network error');
   });
 
+  it('should not mention topics in the prompt by default', async () => {
+    mockGeminiSuccess([]);
+    await POST(makeRequest({ pendingWords: ['猫'] }));
+
+    const prompt = JSON.parse(mockFetch.mock.calls[0][1].body).contents[0].parts[0].text;
+    expect(prompt).toContain('exactly one card per item');
+    expect(prompt).not.toContain('days of the week');
+  });
+
+  it('should ask for topic expansion when the flag is set', async () => {
+    mockGeminiSuccess([]);
+    await POST(makeRequest({ pendingWords: ['days of the week'], expandTopics: true }));
+
+    const prompt = JSON.parse(mockFetch.mock.calls[0][1].body).contents[0].parts[0].text;
+    expect(prompt).toContain('one card per member');
+    expect(prompt).not.toContain('exactly one card per item');
+  });
+
+  // Months and days are the topics people reach for first, and the model's
+  // default is Arabic numerals — 1月, 20日 — which teaches no kanji at all.
+  it('should ask for kanji numerals whether or not topics expand', async () => {
+    mockGeminiSuccess([]);
+    await POST(makeRequest({ pendingWords: ['months'], expandTopics: true }));
+    mockGeminiSuccess([]);
+    await POST(makeRequest({ pendingWords: ['一月'] }));
+
+    for (const call of mockFetch.mock.calls) {
+      const prompt = JSON.parse(call[1].body).contents[0].parts[0].text;
+      expect(prompt).toContain('一月 not 1月');
+      expect(prompt).toContain('はつか');
+    }
+  });
+
+  it('should append a retry instruction and let it win over the field rules', async () => {
+    mockGeminiSuccess([]);
+    await POST(makeRequest({ pendingWords: ['1月'], instruction: 'spell numbers out in kana' }));
+
+    const prompt = JSON.parse(mockFetch.mock.calls[0][1].body).contents[0].parts[0].text;
+    expect(prompt).toContain('spell numbers out in kana');
+    expect(prompt).toContain('the correction wins');
+    // Last word, so it overrides the rules above rather than being overridden.
+    expect(prompt.indexOf('spell numbers out in kana')).toBeGreaterThan(
+      prompt.indexOf('一月 not 1月'),
+    );
+  });
+
+  it('should leave the prompt alone when no instruction is given', async () => {
+    mockGeminiSuccess([]);
+    await POST(makeRequest({ pendingWords: ['猫'] }));
+
+    const prompt = JSON.parse(mockFetch.mock.calls[0][1].body).contents[0].parts[0].text;
+    expect(prompt).not.toContain('the correction wins');
+  });
+
+  it('should reject an over-long instruction', async () => {
+    const res = await POST(makeRequest({ pendingWords: ['猫'], instruction: 'x'.repeat(301) }));
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toContain('too long');
+  });
+
+  it('should return more cards than words when a topic expands', async () => {
+    const days = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
+    mockGeminiSuccess(
+      days.map((word) => ({
+        word,
+        reading: '',
+        romaji: '',
+        meaning: 'day',
+        image_query: 'calendar',
+        example_jp: '',
+        example_en: '',
+        card_type: 'word',
+        jlpt_level: 'N5',
+      })),
+    );
+
+    const res = await POST(makeRequest({ pendingWords: ['days of the week'], expandTopics: true }));
+    const body = await res.json();
+    expect(body).toHaveLength(7);
+    expect(body.map((c: { word: string }) => c.word)).toEqual(days);
+  });
+
+  it('should trim an expanded response to the card ceiling', async () => {
+    mockGeminiSuccess(Array.from({ length: 80 }, (_, i) => ({ word: `語${i}` })));
+
+    const res = await POST(makeRequest({ pendingWords: ['everything'], expandTopics: true }));
+    expect(await res.json()).toHaveLength(60);
+  });
+
+  it('should not trim when expansion was not requested', async () => {
+    mockGeminiSuccess(Array.from({ length: 80 }, (_, i) => ({ word: `語${i}` })));
+
+    const res = await POST(makeRequest({ pendingWords: ['猫'] }));
+    expect(await res.json()).toHaveLength(80);
+  });
+
+  it('should reject a non-boolean expandTopics', async () => {
+    const res = await POST(makeRequest({ pendingWords: ['猫'], expandTopics: 'yes' }));
+    expect(res.status).toBe(400);
+  });
+
   it('should return generic message when a non-Error is thrown', async () => {
     mockFetch.mockRejectedValueOnce('unexpected string rejection');
 

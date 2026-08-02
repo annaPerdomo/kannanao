@@ -9,6 +9,7 @@ const mockUpdateCard = vi.fn();
 const mockDeleteCard = vi.fn();
 const mockCopyCards = vi.fn();
 const mockReorderCards = vi.fn();
+const mockSetCardsMainViewMode = vi.fn();
 
 vi.mock('@/lib/supabase', () => ({
   isConfigured: vi.fn(() => true),
@@ -19,6 +20,7 @@ vi.mock('@/lib/supabase', () => ({
   dbDeleteCard: (...args: unknown[]) => mockDeleteCard(...args),
   dbCopyCardsIntoDeck: (...args: unknown[]) => mockCopyCards(...args),
   dbReorderCards: (...args: unknown[]) => mockReorderCards(...args),
+  dbSetCardsMainViewMode: (...args: unknown[]) => mockSetCardsMainViewMode(...args),
 }));
 
 import { useCards } from '@/hooks/useCards';
@@ -277,6 +279,40 @@ describe('useCards', () => {
       expect(result.current.cards[0].position).toBe(0);
       expect(result.current.cards[1].id).toBe('b');
       expect(result.current.cards[1].position).toBe(1);
+    });
+  });
+
+  describe('setAllMainViewMode', () => {
+    it('should switch every card in the deck at once', async () => {
+      mockLoadCards.mockResolvedValue([
+        makeCard('a', { mainViewMode: 'hiragana' }),
+        makeCard('b', { mainViewMode: 'romaji' }),
+      ]);
+      mockSetCardsMainViewMode.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.setAllMainViewMode('kanji');
+      });
+
+      expect(mockSetCardsMainViewMode).toHaveBeenCalledWith('deck-1', 'kanji');
+      expect(result.current.cards.map((c) => c.mainViewMode)).toEqual(['kanji', 'kanji']);
+    });
+
+    it('should roll back and rethrow when the write fails', async () => {
+      mockLoadCards.mockResolvedValue([makeCard('a', { mainViewMode: 'hiragana' })]);
+      mockSetCardsMainViewMode.mockRejectedValue(new Error('DB error'));
+
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await expect(result.current.setAllMainViewMode('kanji')).rejects.toThrow('DB error');
+      });
+
+      expect(result.current.cards[0].mainViewMode).toBe('hiragana');
     });
   });
 

@@ -1,19 +1,16 @@
 'use client';
 
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
-import AutorenewIcon from '@mui/icons-material/Autorenew';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
-import HideImageIcon from '@mui/icons-material/HideImage';
-import ImageSearchIcon from '@mui/icons-material/ImageSearch';
+import ReplayIcon from '@mui/icons-material/Replay';
 import {
   Box,
+  Checkbox,
   CircularProgress,
   Collapse,
   IconButton,
-  TextField,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
@@ -21,25 +18,35 @@ import {
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 
-import { ConfirmRemoveImageDialog } from '@/components/ConfirmRemoveImageDialog';
 import { romajiFor } from '@/lib/flashcardUtils';
-import {
-  deleteStorageImage,
-  encodeUnsplashUrl,
-  fetchImage,
-  formatFurigana,
-  isStorageImage,
-  triggerUnsplashDownload,
-  uploadImage,
-} from '@/services/api';
+import { formatFurigana } from '@/services/api';
 import type { Flashcard, JlptLevel } from '@/types/flashcard';
 
+import { CardRowImage } from './CardRowImage';
 import { SmallField } from './SmallField';
 import { compactToggleSx } from './styles';
 
-export type PendingCard = Omit<Flashcard, 'id' | 'deckId' | 'position'> & { image_query: string };
+type CardFields = Omit<Flashcard, 'id' | 'deckId' | 'position'> & { image_query: string };
+
+export type PendingCard = CardFields & {
+  /**
+   * Set only when the row is a card that already lives in the deck — the
+   * picture review reopens this dialog over saved cards, and the confirm step
+   * needs the id to write the edits back instead of inserting copies.
+   */
+  id?: string;
+  /** Deck the saved copy came from; '' when its name couldn't be read. */
+  reusedFrom?: string;
+  /**
+   * The version of this row that isn't showing. Swapping trades places with it,
+   * so the move works in both directions however many times it's made.
+   */
+  alternate?: CardFields;
+  /** True while the model's card is showing and the saved one is the alternate. */
+  showingFresh?: boolean;
+};
 
 const JLPT_LEVELS: (JlptLevel | 'none')[] = ['N5', 'N4', 'N3', 'N2', 'N1', 'none'];
 
@@ -50,7 +57,10 @@ interface CardRowProps {
   expanded: boolean;
   onToggleExpand: (index: number) => void;
   onUpdate: (index: number, patch: Partial<PendingCard>) => void;
-  onDelete: (index: number) => void;
+  /** Left off where a row can't be dropped — see `allowRemove` on the dialog. */
+  onDelete?: (index: number) => void;
+  selected?: boolean;
+  onToggleSelect?: (index: number) => void;
 }
 
 export function CardRow({
@@ -61,75 +71,20 @@ export function CardRow({
   onToggleExpand,
   onUpdate,
   onDelete,
+  selected = false,
+  onToggleSelect,
 }: CardRowProps) {
   const t = useTranslations('Deck.reviewCardsDialog.cardRow');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
-  const [refreshingImage, setRefreshingImage] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [formattingFurigana, setFormattingFurigana] = useState(false);
-  const [imageQuery, setImageQuery] = useState(card.image_query || card.word);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const imageBusy = refreshingImage || uploading;
   const exampleJpEdited = card.example_jp !== originalExampleJp;
 
-  const handleRefreshImage = useCallback(async () => {
-    const query = imageQuery.trim() || card.word;
-    if (!query) return;
-    setRefreshingImage(true);
-    try {
-      const result = await fetchImage(query);
-      if (result) {
-        triggerUnsplashDownload(result.downloadLocation);
-        onUpdate(index, { imageUrl: encodeUnsplashUrl(result) });
-      }
-    } catch {
-      // keep existing image if fetch fails
-    } finally {
-      setRefreshingImage(false);
-    }
-  }, [imageQuery, card.word, index, onUpdate]);
-
-  const handleUploadImage = useCallback(
-    async (file: File) => {
-      setUploading(true);
-      try {
-        const url = await uploadImage(file);
-        onUpdate(index, { imageUrl: url });
-      } catch {
-        // keep existing image if upload fails
-      } finally {
-        setUploading(false);
-      }
-    },
+  const handleImageChange = useCallback(
+    (patch: { imageUrl?: string }) => onUpdate(index, patch),
     [index, onUpdate],
   );
-
-  const handleRemoveClick = useCallback(() => {
-    if (isStorageImage(card.imageUrl)) {
-      setConfirmOpen(true);
-    } else {
-      onUpdate(index, { imageUrl: undefined });
-    }
-  }, [card.imageUrl, index, onUpdate]);
-
-  const handleConfirmRemove = useCallback(async () => {
-    setDeleting(true);
-    try {
-      if (isStorageImage(card.imageUrl)) {
-        await deleteStorageImage(card.imageUrl!);
-      }
-      onUpdate(index, { imageUrl: undefined });
-      setConfirmOpen(false);
-    } catch {
-      setConfirmOpen(false);
-    } finally {
-      setDeleting(false);
-    }
-  }, [card.imageUrl, index, onUpdate]);
 
   const handleAutoFurigana = useCallback(async () => {
     if (!card.example_jp.trim()) return;
@@ -186,6 +141,21 @@ export function CardRow({
         }}
         onClick={() => onToggleExpand(index)}
       >
+        {onToggleSelect && (
+          <Checkbox
+            checked={selected}
+            onChange={() => onToggleSelect(index)}
+            onClick={(e) => e.stopPropagation()}
+            size="small"
+            inputProps={{ 'aria-label': t('selectCardAria', { word: card.word }) }}
+            sx={{
+              p: 0.25,
+              flexShrink: 0,
+              color: alpha(brand[400], 0.7),
+              '&.Mui-checked': { color: brand[600] },
+            }}
+          />
+        )}
         <Box
           sx={{
             width: 44,
@@ -250,23 +220,52 @@ export function CardRow({
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, ml: -0.5 }}>
-          <Tooltip title={t('removeCardTooltip')}>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(index);
-              }}
-              sx={{
-                width: 24,
-                height: 24,
-                color: 'rgba(248,113,113,0.5)',
-                '&:hover': { color: '#F87171', bgcolor: 'rgba(248,113,113,0.08)' },
-              }}
-            >
-              <DeleteOutlineIcon sx={{ fontSize: 14 }} />
-            </IconButton>
-          </Tooltip>
+          {card.reusedFrom !== undefined && (
+            <Tooltip title={t('reusedTooltip')}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.3,
+                  px: 0.75,
+                  py: 0.2,
+                  mr: 0.25,
+                  borderRadius: '6px',
+                  bgcolor: alpha(accent[100], 0.7),
+                  border: `1px solid ${alpha(accent[300], 0.5)}`,
+                  flexShrink: 0,
+                }}
+              >
+                <ReplayIcon sx={{ fontSize: 11, color: 'text.primary' }} />
+                <Typography
+                  sx={{ fontSize: '0.58rem', fontWeight: 800, color: 'text.primary' }}
+                  noWrap
+                >
+                  {card.reusedFrom ? t('reusedFromDeck', { deck: card.reusedFrom }) : t('reused')}
+                </Typography>
+              </Box>
+            </Tooltip>
+          )}
+          {onDelete && (
+            <Tooltip title={t('removeCardTooltip')}>
+              <IconButton
+                size="small"
+                aria-label={t('removeCardTooltip')}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(index);
+                }}
+                sx={{
+                  width: 24,
+                  height: 24,
+                  color: 'rgba(248,113,113,0.5)',
+                  '&:hover': { color: '#F87171', bgcolor: 'rgba(248,113,113,0.08)' },
+                }}
+              >
+                <DeleteOutlineIcon sx={{ fontSize: 14 }} />
+              </IconButton>
+            </Tooltip>
+          )}
           <IconButton size="small" sx={{ color: alpha(brand[700], 0.6) }}>
             {expanded ? (
               <ExpandLessIcon sx={{ fontSize: 18 }} />
@@ -290,160 +289,12 @@ export function CardRow({
             gap: 1.5,
           }}
         >
-          {/* Image section */}
-          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
-            <Box
-              sx={{
-                width: 80,
-                height: 80,
-                borderRadius: '10px',
-                overflow: 'hidden',
-                flexShrink: 0,
-                bgcolor: alpha(brand[300], 0.08),
-                border: `1px solid ${alpha(brand[300], 0.25)}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-              }}
-            >
-              {refreshingImage && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    inset: 0,
-                    bgcolor: alpha(brand[50], 0.8),
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1,
-                  }}
-                >
-                  <CircularProgress size={20} sx={{ color: brand[500] }} />
-                </Box>
-              )}
-              {card.imageUrl ? (
-                <Box
-                  component="img"
-                  src={card.imageUrl}
-                  alt=""
-                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              ) : (
-                <ImageSearchIcon sx={{ fontSize: 28, color: alpha(brand[300], 0.4) }} />
-              )}
-            </Box>
-
-            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-              <Typography
-                sx={{
-                  fontSize: '0.6rem',
-                  fontWeight: 800,
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                  color: brand[500],
-                }}
-              >
-                {t('imageSearchLabel')}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
-                <TextField
-                  size="small"
-                  value={imageQuery}
-                  onChange={(e) => setImageQuery(e.target.value)}
-                  placeholder={t('searchTermPlaceholder')}
-                  sx={{
-                    flexGrow: 1,
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: '8px',
-                      fontSize: '0.78rem',
-                      '& fieldset': { borderColor: alpha(brand[300], 0.35) },
-                      '&:hover fieldset': { borderColor: brand[400] },
-                      '&.Mui-focused fieldset': { borderColor: brand[500], borderWidth: '1.5px' },
-                    },
-                    '& .MuiOutlinedInput-input': { py: '6px', px: '10px' },
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.stopPropagation();
-                      handleRefreshImage();
-                    }
-                  }}
-                />
-                <Tooltip title={t('fetchFromUnsplashTooltip')}>
-                  <IconButton
-                    size="small"
-                    onClick={handleRefreshImage}
-                    disabled={imageBusy}
-                    sx={{
-                      width: 30,
-                      height: 30,
-                      border: `1.5px solid ${alpha(brand[300], 0.4)}`,
-                      borderRadius: '8px',
-                      color: brand[500],
-                      '&:hover': { bgcolor: alpha(brand[300], 0.1) },
-                    }}
-                  >
-                    {refreshingImage ? (
-                      <CircularProgress size={14} sx={{ color: brand[500] }} />
-                    ) : (
-                      <AutorenewIcon sx={{ fontSize: 16 }} />
-                    )}
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={t('uploadImageTooltip')}>
-                  <IconButton
-                    size="small"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={imageBusy}
-                    sx={{
-                      width: 30,
-                      height: 30,
-                      border: `1.5px solid ${alpha(brand[300], 0.4)}`,
-                      borderRadius: '8px',
-                      color: brand[500],
-                      '&:hover': { bgcolor: alpha(brand[300], 0.1) },
-                    }}
-                  >
-                    {uploading ? (
-                      <CircularProgress size={14} sx={{ color: brand[500] }} />
-                    ) : (
-                      <FileUploadIcon sx={{ fontSize: 16 }} />
-                    )}
-                  </IconButton>
-                </Tooltip>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  hidden
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleUploadImage(file);
-                    e.target.value = '';
-                  }}
-                />
-                {card.imageUrl && (
-                  <Tooltip title={t('removeImageTooltip')}>
-                    <IconButton
-                      size="small"
-                      onClick={handleRemoveClick}
-                      sx={{
-                        width: 30,
-                        height: 30,
-                        border: `1.5px solid ${alpha(brand[300], 0.4)}`,
-                        borderRadius: '8px',
-                        color: alpha(brand[500], 0.5),
-                        '&:hover': { bgcolor: alpha(brand[300], 0.1), color: 'error.main' },
-                      }}
-                    >
-                      <HideImageIcon sx={{ fontSize: 16 }} />
-                    </IconButton>
-                  </Tooltip>
-                )}
-              </Box>
-            </Box>
-          </Box>
+          <CardRowImage
+            word={card.word}
+            imageUrl={card.imageUrl}
+            imageQuery={card.image_query}
+            onChange={handleImageChange}
+          />
 
           {/* Card settings row */}
           <Box
@@ -617,13 +468,6 @@ export function CardRow({
           />
         </Box>
       </Collapse>
-
-      <ConfirmRemoveImageDialog
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        onConfirm={handleConfirmRemove}
-        deleting={deleting}
-      />
     </Box>
   );
 }

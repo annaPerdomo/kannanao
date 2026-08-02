@@ -30,7 +30,8 @@
       "kanji": "漢 漢字",
       "generateWithAi": "AIで作る",
       "generateCards": "カードを作成",
-      "wordsQueued": "{count, plural, other {#語が待機中}}"
+      "wordsQueued": "{count, plural, other {#語が待機中}}",
+      "inputHint": "単語・フレーズ・「曜日」のようなテーマを、いくつでも追加できます。"
     },
     "addExistingCardsDialog": {
       "title": "既存のカードを追加",
@@ -297,7 +298,27 @@
         "furiganaHintExample": "'{'漢字|かんじ'}'",
         "exampleJpFieldLabel": "例文（日本語）",
         "exampleEnFieldLabel": "例文（英語）",
-        "noMeaningPlaceholder": "意味が未設定"
+        "noMeaningPlaceholder": "意味が未設定",
+        "selectCardAria": "{word}を作り直す対象に選ぶ",
+        "reusedFromDeck": "{deck}から",
+        "reused": "再利用",
+        "reusedTooltip": "すでに保存されているカードです。設定した画像や例文がそのまま使われます"
+      },
+      "regenerate": {
+        "selectedCount": "{count, plural, =0 {作り直すカードを選んでください} other {#枚を選択中}}",
+        "selectAll": "すべて選択",
+        "clearSelection": "選択を解除",
+        "placeholder": "どう変えますか？ 例：数字は漢字で（1月ではなく一月）",
+        "regenerate": "{count, plural, =0 {作り直す} other {#枚を作り直す}}",
+        "regenerating": "作り直しています…",
+        "failed": "作り直せませんでした。もう一度お試しください。",
+        "partial": "{asked}枚中{got}枚だけ戻りました。残りはそのままです。"
+      },
+      "reuse": {
+        "banner": "{count, plural, other {#枚はすでに持っているので、保存済みのカードを使います}}",
+        "useNewInstead": "新しく作ったものを使う",
+        "bannerFresh": "{count, plural, other {#枚は新しく作った方を表示中}}",
+        "useSavedInstead": "保存済みのカードに戻す"
       }
     },
     "shareDeckDialog": {
@@ -310,13 +331,42 @@
     },
     "settingsDialog": {
       "title": "デッキの設定",
+      "cardsSection": "カード",
       "practiceSection": "練習",
       "sharingSection": "共有",
       "readingTitle": "漢字のよみかた練習",
       "readingOn": "オン — このデッキの漢字{count, plural, other {#語}}を練習できます",
       "readingOff": "オフ — 漢字の準備ができたらオンにしてください",
       "readingNoKanji": "このデッキにはまだ漢字の言葉がありません",
-      "readingAria": "このデッキの漢字のよみかた練習"
+      "readingAria": "このデッキの漢字のよみかた練習",
+      "viewModeTitle": "カードに最初に見えるもの",
+      "viewModeAll": "{count, plural, other {#枚すべてのカード}}が{mode}で始まります",
+      "viewModeMixed": "カードの表示がそろっていません — ひとつ選ぶと全部そろいます",
+      "viewModeEmpty": "カードを追加すると、表示を選べます",
+      "viewModeSaving": "すべてのカードを変更しています…",
+      "viewModeSaved": "完了 — このデッキのカードがすべて変わりました",
+      "viewModeError": "カードを変更できませんでした。もう一度お試しください。",
+      "viewModeAria": "カードに最初に見えるもの",
+      "imagesTitle": "カードの絵",
+      "imagesMissing": "{count, plural, other {#枚のカード}}にまだ絵がありません",
+      "imagesAllHavePictures": "すべてのカードに絵があります",
+      "imagesEmpty": "まずカードを追加してください",
+      "imagesChooseButton": "絵をえらぶ",
+      "imagesDialogTitle": "絵をえらぶ",
+      "imagesPickLabel": "新しい絵にしたいカードをタップしてください",
+      "imagesSelectedCount": "{count, plural, other {#枚}}を選択中",
+      "imagesSelectAll": "すべて選ぶ",
+      "imagesSelectNone": "選択を解除",
+      "imagesReplaceNote": "チェックした{count, plural, other {#枚のカード}}にはすでに絵があります。ちがう絵に入れかわります。",
+      "imagesWorking": "絵をさがしています…",
+      "imagesFindButton": "{count, plural, other {#枚の絵}}をさがす",
+      "imagesHourlyHint": "絵は無料のサービスから取得しているため、1時間に使える回数が限られています。残りは時間をおいてからどうぞ。",
+      "imagesAdded": "{count, plural, other {#枚の絵}}を追加しました。",
+      "imagesNoneFound": "この言葉に合う絵が見つかりませんでした。カードごとに自分の絵を追加できます。",
+      "imagesRanOut": "1時間に使える絵の検索回数がなくなりました。{count, plural, other {#枚の絵}}を追加しました — 1時間ほどしてから残りをお試しください。",
+      "imagesError": "絵を取得できませんでした。もう一度お試しください。",
+      "imagesErrorPartial": "{count, plural, other {#枚の絵}}を保存したところで問題が起きました。残りはもう一度お試しください。",
+      "imagesStopped": "絵の検索が途中で止まりました。{count, plural, other {#枚のカード}}はまだ調べていません — もう一度お試しください。"
     },
     "shareEmbedDialog": {
       "title": "デッキを埋め込み",
@@ -336,7 +386,7 @@
       "previewEmbed": "埋め込みをプレビュー"
     },
     "wordChipInput": {
-      "placeholder": "単語やフレーズを入力してEnter…"
+      "placeholder": "単語やテーマ（「曜日」など）を入力してEnter…"
     },
     "useDecks": {
       "notConfiguredError": "Supabaseが設定されていません"
@@ -349,7 +399,11 @@
       "addCardsButton": "カードを追加",
       "reorderBannerLabel": "ドラッグしてカードを並べ替えできます。終わったら「完了」を押してください。",
       "noCardsMemberMessage": "まだカードがありません。リーダーがもうすぐ追加してくれます！",
-      "noCardsOwnerMessage": "まだカードがありません。<link>追加して</link>始めましょう。"
+      "noCardsOwnerMessage": "まだカードがありません。<link>追加して</link>始めましょう。",
+      "pictureReviewTitle": "🖼️ 新しい絵",
+      "pictureReviewSubtitle": "{count, plural, other {#枚のカード}}に絵がつきました — 気に入らないものはもう一度さがせます",
+      "pictureReviewSave": "絵を保存",
+      "pictureReviewSaveError": "変更を保存できませんでした。もう一度お試しください。"
     },
     "decksPage": {
       "loadingDecks": "デッキを読み込み中…",

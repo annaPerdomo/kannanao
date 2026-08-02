@@ -9,11 +9,26 @@ import { requireOrganizerAccount } from '../_lib/requireOrganizerAccount';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 10 };
 
+/**
+ * Ceiling on cards returned when topics are expanded. Five broad topics could
+ * otherwise run to hundreds of cards in one response — past what the model will
+ * emit before truncating its JSON, and far past what anyone reviews in a sitting.
+ */
+const MAX_EXPANDED_CARDS = 60;
+
 const GenerateSchema = z.object({
   pendingWords: z
     .array(z.string().min(1).max(200))
     .min(1, 'No words provided')
     .max(50, 'Too many words — max 50 per request'),
+  // Off by default: Travel enrichment pairs generated cards back to the phrases
+  // it asked about by position, so it needs the strict one-card-per-item
+  // contract. Only the card-authoring UI opts in.
+  expandTopics: z.boolean().optional().default(false),
+  // A retry note from Review Cards ("use kanji numbers"). Free text, so it goes
+  // in last and is framed as a correction — the field rules above still bound
+  // the shape, and the response schema bounds it regardless.
+  instruction: z.string().trim().max(300, 'Instruction is too long').optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -31,7 +46,7 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  const { pendingWords } = parsed.data;
+  const { pendingWords, expandTopics, instruction } = parsed.data;
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -39,15 +54,31 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const prompt = `Japanese language teacher. Create exactly one card per item for: ${pendingWords.join(', ')}.
+    const scope = expandTopics
+      ? `Japanese language teacher. Make cards for: ${pendingWords.join(', ')}.
+Each item is either one word/phrase, or a topic naming a group of words.
+- A word or phrase ("猫", "ごちそうさま") gets exactly one card.
+- A topic ("days of the week", "months", "colors", "family members") gets one card per member of the group.
+- Closed groups come back complete and in conventional order: 7 days, 12 months, 4 seasons, 10 for numbers 1-10.
+- Open-ended topics ("food", "animals", "verbs") get the 12 most useful for a beginner, JLPT N5 and N4 first.
+- When an item reads as both — "family" could be the word 家族 or the group of family members — prefer the single word. A plural or a phrase like "kinds of X" means the group.
+- Return at most ${MAX_EXPANDED_CARDS} cards in total across every item.`
+      : `Japanese language teacher. Create exactly one card per item for: ${pendingWords.join(', ')}.`;
+
+    const prompt = `${scope}
+- word: the Japanese as it belongs on the card. Numbers are kanji, never Arabic numerals — 一月 not 1月, 二十日 not 20日, 七時 not 7時. An item already typed in Japanese is kept exactly as typed.
 - card_type: "word" for single vocabulary words, "phrase" for multi-word expressions or full phrases.
-- reading: kana pronunciation (empty if already kana)
+- reading: kana pronunciation (empty if already kana). Date and counter words keep their irregular readings — 一日 is ついたち, 二日 ふつか, 二十日 はつか.
 - romaji: Hepburn romaji with a SPACE between every word, e.g. "yoroshiku onegaishimasu" not "yoroshikuonegaishimasu". Punctuation keeps a space after it.
 - image_query: 2-4 word English noun phrase for Unsplash (concrete, photographic, child-friendly). Verbs→scene (食べる="child eating noodles"), abstracts→closest visual (楽しい="children laughing"). For phrases, pick the most concrete noun in the phrase.
 - example_jp: simple sentence for a young learner using the word naturally. Wrap every kanji (or kanji compound) with its hiragana reading using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです。 Each group holds exactly one reading — never split a compound's reading with extra pipes ({無関係|むかんけい} or {無|む}{関|かん}{係|けい}, never {無関係|む|かん|けい}). Pure kana words need no wrapping.
 - example_en: English translation of the example sentence.
 - jlpt_level: JLPT level this word/phrase belongs to ("N5", "N4", "N3", "N2", "N1"), or null if not in any JLPT list.
-If a word has multiple meanings or translations, include all common ones separated by ", " (e.g. "front, surface, outside" for 表). Always list the most common meaning first.`;
+If a word has multiple meanings or translations, include all common ones separated by ", " (e.g. "front, surface, outside" for 表). Always list the most common meaning first.${
+      instruction
+        ? `\nThese cards were generated once already and the teacher is asking for them again with one correction. Apply it, and where it conflicts with a rule above, the correction wins: ${instruction}`
+        : ''
+    }`;
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
@@ -111,7 +142,18 @@ If a word has multiple meanings or translations, include all common ones separat
     }
 
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]';
-    return NextResponse.json(normalizeFuriganaDeep(JSON.parse(rawText)));
+    const cards = normalizeFuriganaDeep(JSON.parse(rawText));
+    // Backstop for the prompt's own limit. Without expansion the input cap
+    // already bounds this, so only trim when the model was free to expand.
+    if (expandTopics && Array.isArray(cards) && cards.length > MAX_EXPANDED_CARDS) {
+      logger.info('Trimmed expanded generation', {
+        route: '/api/generate',
+        returned: cards.length,
+        kept: MAX_EXPANDED_CARDS,
+      });
+      return NextResponse.json(cards.slice(0, MAX_EXPANDED_CARDS));
+    }
+    return NextResponse.json(cards);
   } catch (err) {
     logger.error('Unhandled error', {
       route: '/api/generate',

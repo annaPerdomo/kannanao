@@ -3,12 +3,20 @@ import TuneIcon from '@mui/icons-material/Tune';
 import { Box, Button, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 import { ShareEmbedSection } from '@/components/ShareEmbedDialog';
 import { StyledDialog } from '@/components/StyledDialog';
+import { useDeckImages } from '@/hooks/useDeckImages';
+import type { Flashcard, MainViewMode } from '@/types/flashcard';
 
+import { CardPicturesRow } from './CardPicturesRow';
+import { CardViewModeRow } from './CardViewModeRow';
 import { ReadingPracticeRow } from './ReadingPracticeRow';
 
+export { CardPicturesDialog } from './CardPicturesDialog';
+export { CardPicturesRow } from './CardPicturesRow';
+export { CardViewModeRow } from './CardViewModeRow';
 export { ReadingPracticeRow } from './ReadingPracticeRow';
 
 interface DeckSettingsDialogProps {
@@ -22,6 +30,13 @@ interface DeckSettingsDialogProps {
   /** Cards in this deck that Reading could ask. */
   readingCardCount: number;
   onReadingChange: (enabled: boolean) => void;
+  /** The mode every card shares, or null when the deck mixes modes. */
+  cardViewMode: MainViewMode | null;
+  cards: Flashcard[];
+  onCardViewModeChange: (mode: MainViewMode) => Promise<void>;
+  onUpdateCard: (id: string, patch: Partial<Flashcard>) => Promise<Flashcard | null>;
+  /** Hands the freshly pictured cards over for a look once a fill finds some. */
+  onImagesFilled?: (filled: Flashcard[]) => void;
 }
 
 /** Everything a deck's owner can switch on or off, in one place. */
@@ -35,10 +50,24 @@ export function DeckSettingsDialog({
   readingUnlocked,
   readingCardCount,
   onReadingChange,
+  cardViewMode,
+  cards,
+  onCardViewModeChange,
+  onUpdateCard,
+  onImagesFilled,
 }: DeckSettingsDialogProps) {
   const t = useTranslations('Deck.settingsDialog');
   const tCommon = useTranslations('Common');
   const { brand } = useTheme().palette;
+  const images = useDeckImages(cards, onUpdateCard, onImagesFilled);
+
+  // The run outlives the dialog — closing it mid-fill doesn't unmount this
+  // component — so a reopen would otherwise still show the last run's alert.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) images.reset();
+  }
 
   const sectionLabel = (text: string) => (
     <Typography
@@ -72,6 +101,28 @@ export function DeckSettingsDialog({
         </Button>
       }
     >
+      <Box sx={{ mb: 3 }}>
+        {sectionLabel(t('cardsSection'))}
+        <CardViewModeRow
+          value={cardViewMode}
+          cardCount={cards.length}
+          onChange={onCardViewModeChange}
+        />
+        <CardPicturesRow
+          cards={images.pickable}
+          selectedIds={images.selectedIds}
+          selectedCount={images.selectedCount}
+          missingCount={images.missingCount}
+          filling={images.filling}
+          result={images.result}
+          error={images.error}
+          onToggle={images.toggle}
+          onSelectAll={images.selectAll}
+          onSelectNone={images.selectNone}
+          onFill={images.fetchSelectedImages}
+        />
+      </Box>
+
       <Box sx={{ mb: 3 }}>
         {sectionLabel(t('practiceSection'))}
         <ReadingPracticeRow

@@ -889,6 +889,18 @@ export function createAppTheme(scheme: ColorScheme = 'sakura', locale: Locale = 
               background: `linear-gradient(135deg, ${theme.palette.brand[700]} 0%, ${theme.palette.brand[800]} 100%)`,
               boxShadow: `0 6px 18px ${alpha(theme.palette.brand[700], 0.38)}`,
             },
+            // The root's blanket `opacity: 0.45` fades white-on-gradient into
+            // an unreadable label. Disabled here is a flat pale fill with real
+            // text on it, so the button still says what it does.
+            // text.primary, not a brand mid-tone or text.secondary: both measure
+            // near 3:1 on this pastel fill. Disabled reads from the flat, shadowless
+            // fill and the cursor — it does not need an unreadable label too.
+            '&.Mui-disabled': {
+              opacity: 1,
+              background: alpha(theme.palette.brand[300], 0.3),
+              color: theme.palette.text.primary,
+              boxShadow: 'none',
+            },
           }),
           outlined: ({ theme }) => ({
             borderColor: alpha(theme.palette.brand[300], 0.7),

@@ -45,12 +45,15 @@ export function WordChipInput({
       sx={{
         display: 'flex',
         flexWrap: 'wrap',
+        alignContent: 'flex-start',
         gap: 0.5,
-        p: '9px 11px',
+        p: '11px 12px',
         border: '1.5px solid',
         borderColor: disabled ? alpha(brand[300], 0.3) : alpha(brand[300], 0.5),
         borderRadius: '10px',
-        minHeight: 46,
+        // Deep enough to read as somewhere you write a list, not a one-word
+        // field — a whole topic per line is the shape this box is now for.
+        minHeight: 104,
         cursor: disabled ? 'default' : 'text',
         mb: 1.25,
         bgcolor: disabled ? alpha('#fff', 0.5) : '#fff',

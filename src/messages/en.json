@@ -30,7 +30,8 @@
       "kanji": "漢 Kanji",
       "generateWithAi": "Generate with AI",
       "generateCards": "Generate Cards",
-      "wordsQueued": "{count, plural, one {# word queued} other {# words queued}}"
+      "wordsQueued": "{count, plural, one {# word queued} other {# words queued}}",
+      "inputHint": "Add as many as you like — a word, a phrase, or a whole topic like \"days of the week\"."
     },
     "addExistingCardsDialog": {
       "title": "Add Existing Cards",
@@ -297,7 +298,27 @@
         "furiganaHintExample": "'{'漢字|かんじ'}'",
         "exampleJpFieldLabel": "Example (JP)",
         "exampleEnFieldLabel": "Example (EN)",
-        "noMeaningPlaceholder": "No meaning yet"
+        "noMeaningPlaceholder": "No meaning yet",
+        "selectCardAria": "Select {word} to redo",
+        "reusedFromDeck": "From {deck}",
+        "reused": "Reused",
+        "reusedTooltip": "Your saved card, with the picture and example you already set"
+      },
+      "regenerate": {
+        "selectedCount": "{count, plural, =0 {Tick any cards to redo} one {# card selected} other {# cards selected}}",
+        "selectAll": "Select all",
+        "clearSelection": "Clear",
+        "placeholder": "What should change? e.g. use kanji numbers, not 1月",
+        "regenerate": "{count, plural, =0 {Redo} other {Redo #}}",
+        "regenerating": "Redoing…",
+        "failed": "Couldn't redo those cards. Please try again.",
+        "partial": "Only {got} of {asked} cards came back — the rest were left as they were."
+      },
+      "reuse": {
+        "banner": "{count, plural, one {# card is already in your decks — reusing your saved copy} other {# cards are already in your decks — reusing your saved copies}}",
+        "useNewInstead": "Use the new ones instead",
+        "bannerFresh": "{count, plural, one {# card is showing the newly made version} other {# cards are showing the newly made versions}}",
+        "useSavedInstead": "Go back to my saved ones"
       }
     },
     "shareDeckDialog": {
@@ -310,13 +331,42 @@
     },
     "settingsDialog": {
       "title": "Deck settings",
+      "cardsSection": "Cards",
       "practiceSection": "Practice",
       "sharingSection": "Sharing",
       "readingTitle": "Kanji reading practice",
       "readingOn": "On — learners can practice {count, plural, one {# kanji word} other {# kanji words}} in this deck",
       "readingOff": "Off — turn it on when your learners are ready for kanji",
       "readingNoKanji": "This deck has no kanji words yet",
-      "readingAria": "Kanji reading practice for this deck"
+      "readingAria": "Kanji reading practice for this deck",
+      "viewModeTitle": "What every card shows first",
+      "viewModeAll": "{count, plural, one {# card starts} other {All # cards start}} with {mode}",
+      "viewModeMixed": "These cards use a mix — pick one to change them all",
+      "viewModeEmpty": "Add some cards first, then pick what they show",
+      "viewModeSaving": "Changing every card…",
+      "viewModeSaved": "Done — every card in this deck changed",
+      "viewModeError": "Those cards didn't change. Please try again.",
+      "viewModeAria": "What every card shows first",
+      "imagesTitle": "Card pictures",
+      "imagesMissing": "{count, plural, one {# card has} other {# cards have}} no picture yet",
+      "imagesAllHavePictures": "Every card has a picture",
+      "imagesEmpty": "Add some cards first",
+      "imagesChooseButton": "Choose pictures",
+      "imagesDialogTitle": "Choose pictures",
+      "imagesPickLabel": "Tap the cards you want a new picture for",
+      "imagesSelectedCount": "{count, plural, one {# card picked} other {# cards picked}}",
+      "imagesSelectAll": "Select all",
+      "imagesSelectNone": "Clear",
+      "imagesReplaceNote": "{count, plural, one {# ticked card already has a picture and will get a different one.} other {# ticked cards already have pictures and will get different ones.}}",
+      "imagesWorking": "Looking for pictures…",
+      "imagesFindButton": "Find {count, plural, one {# picture} other {# pictures}}",
+      "imagesHourlyHint": "Pictures come from a free service that only allows a few searches an hour. Come back later to finish the rest.",
+      "imagesAdded": "Added {count, plural, one {# picture} other {# pictures}}.",
+      "imagesNoneFound": "No pictures matched these words. You can add your own from any card.",
+      "imagesRanOut": "The free picture searches ran out for this hour. Added {count, plural, one {# picture} other {# pictures}} — try again in an hour for the rest.",
+      "imagesError": "The pictures didn't load. Please try again.",
+      "imagesErrorPartial": "Saved {count, plural, one {# picture} other {# pictures}}, then something went wrong. Try again for the rest.",
+      "imagesStopped": "The picture search stopped early. {count, plural, one {# card wasn't} other {# cards weren't}} looked up — try again."
     },
     "shareEmbedDialog": {
       "title": "Embed Deck",
@@ -336,7 +386,7 @@
       "previewEmbed": "Preview embed"
     },
     "wordChipInput": {
-      "placeholder": "Type words or phrases, press Enter…"
+      "placeholder": "Words or topics like \"days of the week\", press Enter…"
     },
     "useDecks": {
       "notConfiguredError": "Supabase is not configured"
@@ -349,7 +399,11 @@
       "addCardsButton": "Add Cards",
       "reorderBannerLabel": "Drag and drop cards to reorder. Click Done when finished.",
       "noCardsMemberMessage": "No cards yet — your organizer will add them soon!",
-      "noCardsOwnerMessage": "No cards yet — <link>add some</link> to get started."
+      "noCardsOwnerMessage": "No cards yet — <link>add some</link> to get started.",
+      "pictureReviewTitle": "🖼️ New pictures",
+      "pictureReviewSubtitle": "{count, plural, one {# card got a picture} other {# cards got pictures}} — try again on any you don't like",
+      "pictureReviewSave": "Save pictures",
+      "pictureReviewSaveError": "Those changes didn't save. Please try again."
     },
     "decksPage": {
       "loadingDecks": "Loading your decks…",

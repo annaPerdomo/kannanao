@@ -20,7 +20,7 @@ export function useCreateDeckFlow(onClose: () => void) {
   const t = useTranslations('Deck.createDeckDialog');
   const router = useRouter();
   const { createDeck, pinDeck, setDeckReadingPractice } = useDecks();
-  const { generating, error: generateError, generate } = useGenerateFlashcards();
+  const { generating, error: generateError, generate, regenerate } = useGenerateFlashcards();
   const review = useCardReview();
 
   const [name, setName] = useState('');
@@ -142,6 +142,11 @@ export function useCreateDeckFlow(onClose: () => void) {
     }
   };
 
+  const handleRegenerate = async (words: string[], instruction: string) => {
+    if (!createdDeckId) return [];
+    return regenerate(words, instruction, createdDeckId, mainViewMode);
+  };
+
   const handleReviewConfirm = async (confirmed: typeof review.cards) => {
     if (!createdDeckId) return;
     const deckId = createdDeckId;
@@ -190,6 +195,7 @@ export function useCreateDeckFlow(onClose: () => void) {
     review,
     // actions
     handleCreate,
+    handleRegenerate,
     handleAddExisting,
     handleImportPdf,
     handlePdfCards,
