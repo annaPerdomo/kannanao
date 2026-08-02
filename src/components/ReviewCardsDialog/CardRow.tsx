@@ -20,6 +20,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
+import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { romajiFor } from '@/lib/flashcardUtils';
 import { formatFurigana } from '@/services/api';
 import type { Flashcard, JlptLevel } from '@/types/flashcard';
@@ -217,6 +218,12 @@ export function CardRow({
           >
             {card.meaning || t('noMeaningPlaceholder')}
           </Typography>
+          {card.imageUrl && (
+            // Following the credit shouldn't also expand the row.
+            <Box role="presentation" onClick={(e) => e.stopPropagation()}>
+              <UnsplashAttribution url={card.imageUrl} variant="caption" />
+            </Box>
+          )}
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, ml: -0.5 }}>

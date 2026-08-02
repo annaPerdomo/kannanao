@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CardRow, type PendingCard } from '@/components/ReviewCardsDialog/CardRow';
@@ -6,6 +6,15 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 
 vi.mock('@/services/api', () => ({
   deleteStorageImage: vi.fn(),
+  decodeUnsplashAttribution: vi.fn((url: string) =>
+    url.includes('#unsplash:')
+      ? {
+          name: 'Hu Chen',
+          photographerUrl: 'https://unsplash.com/@huchenme',
+          photoPageUrl: 'https://unsplash.com/photos/abc',
+        }
+      : null,
+  ),
   encodeUnsplashUrl: vi.fn(),
   fetchImage: vi.fn(),
   formatFurigana: vi.fn(),
@@ -28,17 +37,21 @@ const card = (over: Partial<PendingCard> = {}): PendingCard => ({
 });
 
 function renderRow(over: Partial<PendingCard> = {}) {
-  return renderWithProviders(
-    <CardRow
-      card={card(over)}
-      originalExampleJp=""
-      index={0}
-      expanded={false}
-      onToggleExpand={vi.fn()}
-      onUpdate={vi.fn()}
-      onDelete={vi.fn()}
-    />,
-  );
+  const onToggleExpand = vi.fn();
+  return {
+    onToggleExpand,
+    ...renderWithProviders(
+      <CardRow
+        card={card(over)}
+        originalExampleJp=""
+        index={0}
+        expanded={false}
+        onToggleExpand={onToggleExpand}
+        onUpdate={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    ),
+  };
 }
 
 describe('CardRow summary', () => {
@@ -70,5 +83,32 @@ describe('CardRow summary', () => {
   it('labels a card that came back without a meaning', () => {
     renderRow({ meaning: '' });
     expect(screen.getByText('No meaning yet')).toBeInTheDocument();
+  });
+
+  // Unsplash's API guidelines want the credit wherever the photo shows, and a
+  // collapsed row shows it as a thumbnail.
+  it('credits the photographer next to the thumbnail', () => {
+    renderRow({ imageUrl: 'https://images.unsplash.com/photo-1?w=400#unsplash:name=Hu%20Chen' });
+    expect(screen.getByRole('link', { name: 'Hu Chen' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Unsplash' })).toBeInTheDocument();
+  });
+
+  it('shows no credit for an uploaded picture', () => {
+    renderRow({ imageUrl: 'https://storage.example.com/upload.png' });
+    expect(screen.queryByRole('link', { name: 'Unsplash' })).not.toBeInTheDocument();
+  });
+
+  it('does not expand the row when the credit is followed', () => {
+    const { onToggleExpand } = renderRow({
+      imageUrl: 'https://images.unsplash.com/photo-1?w=400#unsplash:name=Hu%20Chen',
+    });
+
+    fireEvent.click(screen.getByRole('link', { name: 'Hu Chen' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Unsplash' }));
+
+    expect(onToggleExpand).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByText('入居者'));
+    expect(onToggleExpand).toHaveBeenCalled();
   });
 });

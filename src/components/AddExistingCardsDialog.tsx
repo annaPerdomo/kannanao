@@ -17,6 +17,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
+import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { loadAllCards } from '@/lib/supabase';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -292,6 +293,12 @@ export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, on
                     >
                       {card.meaning}
                     </Typography>
+                  )}
+                  {card.imageUrl && (
+                    // Following the credit shouldn't also tick the row.
+                    <Box role="presentation" onClick={(e) => e.stopPropagation()}>
+                      <UnsplashAttribution url={card.imageUrl} variant="caption" />
+                    </Box>
                   )}
                 </Box>
               </Box>

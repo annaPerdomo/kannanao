@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 
 import { LoadingOverlay } from '@/components/Loading';
 import { StyledDialog } from '@/components/StyledDialog';
+import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import type { FillImagesResult } from '@/hooks/useDeckImages';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -41,7 +42,7 @@ function PictureTile({
 }) {
   const { brand } = useTheme().palette;
 
-  return (
+  const tile = (
     <ButtonBase
       role="checkbox"
       aria-checked={checked}
@@ -112,6 +113,20 @@ function PictureTile({
         </Typography>
       </Box>
     </ButtonBase>
+  );
+
+  // Outside the tile because an anchor nested in a <button> isn't clickable,
+  // and dropped entirely while filling so the links stay out of
+  // LoadingOverlay's aria-hidden subtree.
+  return (
+    <Box>
+      {tile}
+      {!disabled && card.imageUrl && (
+        <Box sx={{ px: 0.5, pt: 0.5 }}>
+          <UnsplashAttribution url={card.imageUrl} variant="caption" />
+        </Box>
+      )}
+    </Box>
   );
 }
 

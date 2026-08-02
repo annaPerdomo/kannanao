@@ -20,6 +20,7 @@ import { useEffect, useState } from 'react';
 
 import { ImageCard } from '@/components/ImageCard';
 import { Loading } from '@/components/Loading';
+import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { useInView } from '@/hooks/useInView';
 import { createAppTheme, pink, purple, sky } from '@/theme';
 
@@ -814,6 +815,14 @@ export function AiDemoSection() {
                           >
                             {card.reading} · {card.meaning}
                           </Typography>
+                          {/* Rows sit at opacity 0 until they fill — the links
+                              must not be tabbable before then. */}
+                          {reviewFilled > i && DEMO_IMAGE_CARDS[i]?.imageUrl && (
+                            <UnsplashAttribution
+                              url={DEMO_IMAGE_CARDS[i].imageUrl}
+                              variant="caption"
+                            />
+                          )}
                         </Box>
                         <Box
                           sx={{

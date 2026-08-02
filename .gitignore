@@ -67,3 +67,6 @@ reading-prompts/
 
 # local-only asset/regeneration scripts (not deployed, don't need to live on GitHub)
 scripts/
+
+# local-only Unsplash production-application materials (screenshots + capture scripts)
+unsplash-application/
