@@ -2,9 +2,9 @@
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
-import IosShareIcon from '@mui/icons-material/IosShare';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
+import TuneIcon from '@mui/icons-material/Tune';
 import {
   Box,
   Button,
@@ -29,7 +29,7 @@ interface DeckHeaderProps {
   onBack: () => void;
   onRename: (id: string, name: string, desc?: string) => Promise<void>;
   onPin: (id: string, pinned: boolean) => void;
-  onEmbedOpen: () => void;
+  onSettingsOpen: () => void;
   onEmojiChange: (id: string, emoji: string | null) => void;
   readOnly?: boolean;
 }
@@ -40,7 +40,7 @@ export function DeckHeader({
   onBack,
   onRename,
   onPin,
-  onEmbedOpen,
+  onSettingsOpen,
   onEmojiChange,
   readOnly,
 }: DeckHeaderProps) {
@@ -271,14 +271,8 @@ export function DeckHeader({
               <Button
                 variant={deck.isPublic ? 'outlined' : 'contained'}
                 size="small"
-                startIcon={
-                  deck.isPublic ? (
-                    <CheckIcon sx={{ fontSize: 15 }} />
-                  ) : (
-                    <IosShareIcon sx={{ fontSize: 15 }} />
-                  )
-                }
-                onClick={onEmbedOpen}
+                startIcon={<TuneIcon sx={{ fontSize: 15 }} />}
+                onClick={onSettingsOpen}
                 sx={{
                   borderRadius: '9px',
                   px: 2,
@@ -297,7 +291,7 @@ export function DeckHeader({
                   }),
                 }}
               >
-                {deck.isPublic ? t('shared') : t('share')}
+                {t('settings')}
               </Button>
             )}
             <Tooltip title={deck.pinned ? t('unpinFromHome') : t('pinToHome')}>

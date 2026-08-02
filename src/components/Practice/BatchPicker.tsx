@@ -13,6 +13,7 @@ const MODE_EMOJI: Record<PracticeMode, string> = {
   'kotoba-bubble': '🫧',
   quiz: '📝',
   listen: '🎧',
+  reading: '📖',
 };
 
 interface BatchPickerProps {

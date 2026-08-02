@@ -170,6 +170,15 @@ export async function dbSetDeckPublic(id: string, isPublic: boolean): Promise<vo
   if (error) throw error;
 }
 
+export async function dbSetDeckReadingPractice(id: string, enabled: boolean): Promise<void> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    throw new Error('Supabase not configured');
+  }
+  const { error } = await sb.from('decks').update({ reading_practice: enabled }).eq('id', id);
+  if (error) throw error;
+}
+
 export async function dbReorderDecks(orderedIds: string[]): Promise<void> {
   if (!isConfigured()) {
     showConfigBanner();

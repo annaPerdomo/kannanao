@@ -62,6 +62,11 @@
       "descriptionLabel": "説明（任意）",
       "pinToHome": "ホームにピン留め",
       "pinToHomeHelper": "このデッキをホームに表示します",
+      "readingToggle": "漢字のよみかた練習",
+      "readingToggleOff": "漢字の準備ができたらオンにしてください",
+      "readingToggleOn": "このデッキの漢字のよみかたを練習できます",
+      "readingToggleAuto": "漢字表示のデッキなので自動でオンになりました！",
+      "readingToggleAria": "漢字のよみかた練習",
       "addCardsOptional": "カードを追加（任意）",
       "createFailed": "デッキを作成できませんでした。もう一度お試しください。"
     },
@@ -79,18 +84,23 @@
       "renameDeckAria": "デッキ名を変更",
       "shared": "共有中",
       "share": "共有",
+      "settings": "設定",
       "unpinFromHome": "ホームのピンを外す",
       "pinToHome": "ホームにピン留め"
     },
     "practiceHero": {
-      "letsPractice": "練習しよう！",
+      "choosePractice": "練習をえらぼう",
+      "cheer0": "きみならできる！",
+      "cheer1": "レベルアップしよう！",
+      "cheer2": "カードが待ってるよ！",
+      "cheer3": "今日もがんばろう！",
       "startFlashcardStudyAria": "フラッシュカード学習を始める",
       "flashcardsTitle": "フラッシュカード",
       "flashcardsDescription": "めくって全部おぼえよう",
       "letsGo": "はじめる →",
       "startPracticeAria": "{label}の練習を始める",
       "lockedAria": "{label}（ロック中）",
-      "locked": "ロック中 🔒",
+      "locked": "ロック中",
       "play": "あそぶ →",
       "unlockHint": "カードを2枚以上追加すると練習モードが使えます。"
     },
@@ -114,6 +124,10 @@
       "listen": {
         "label": "リスニング",
         "description": "聞いて意味を選ぶ"
+      },
+      "reading": {
+        "label": "よみかた",
+        "description": "漢字の読み方をつくる"
       },
       "quiz": {
         "label": "クイズ",
@@ -294,6 +308,16 @@
       "notSharedYet": "まだ誰とも共有していません",
       "removeShareAria": "共有を解除"
     },
+    "settingsDialog": {
+      "title": "デッキの設定",
+      "practiceSection": "練習",
+      "sharingSection": "共有",
+      "readingTitle": "漢字のよみかた練習",
+      "readingOn": "オン — このデッキの漢字{count, plural, other {#語}}を練習できます",
+      "readingOff": "オフ — 漢字の準備ができたらオンにしてください",
+      "readingNoKanji": "このデッキにはまだ漢字の言葉がありません",
+      "readingAria": "このデッキの漢字のよみかた練習"
+    },
     "shareEmbedDialog": {
       "title": "デッキを埋め込み",
       "publicEmbedding": "一般公開して埋め込む",
@@ -320,7 +344,7 @@
     "deckPage": {
       "loadingCards": "カードを読み込み中…",
       "deckNotFound": "デッキが見つかりません。",
-      "cardsInDeckLabel": "デッキのカード",
+      "cardsInDeckLabel": "デッキのカード（{count}）",
       "reorderButton": "並べ替え",
       "addCardsButton": "カードを追加",
       "reorderBannerLabel": "ドラッグしてカードを並べ替えできます。終わったら「完了」を押してください。",
@@ -602,6 +626,9 @@
     "page": {
       "loadingSession": "練習を準備しています…",
       "notEnoughCards": "練習するにはカードが足りません。このデッキにカードを追加してください。",
+      "noKanjiCards": "よみかたの練習には、漢字のカードがもう少し必要です。かなだけのカードは、もう読み方が見えています！",
+      "readingLocked": "このデッキのよみかた練習は、まだ開いていません。",
+      "pickAnotherMode": "ほかの練習を選ぶ",
       "cardsBadge": "{count, plural, other {カード#枚}}",
       "modeTitles": {
         "match": "マッチ 日本語 ↔ 英語",
@@ -609,7 +636,8 @@
         "recall": "当ててみよう！",
         "kotobaBubble": "文づくり",
         "quiz": "クイズ",
-        "listen": "リスニング"
+        "listen": "リスニング",
+        "reading": "よみかた"
       }
     },
     "batchPicker": {
@@ -684,6 +712,18 @@
       "playWordAgainAria": "単語をもう一度再生",
       "seeResults": "結果を見る",
       "nextArrow": "次へ →"
+    },
+    "readingMode": {
+      "readPrompt": "なんて読む？",
+      "incorrectAnswer": "おしい！ 読み方は「{reading}」",
+      "typedLabel": "よみかた",
+      "typedPlaceholder": "かな か ローマ字で入力…",
+      "check": "チェック",
+      "switchToTyping": "入力して答える",
+      "switchToTiles": "タイルで答える",
+      "removeLastCharacter": "最後の文字を消す",
+      "placeCharacterAria": "「{character}」を入れる",
+      "seeResults": "結果を見る"
     },
     "roundTransition": {
       "allReviewed": "ぜんぶ復習した！",
@@ -902,7 +942,8 @@
         "recall": "当ててみよう",
         "kotobaBubble": "文づくり",
         "quiz": "クイズ",
-        "listen": "リスニング"
+        "listen": "リスニング",
+        "reading": "よみかた"
       },
       "goalBoth": "{mode}で{accuracy}%",
       "goalAccuracyOnly": "{accuracy}%",

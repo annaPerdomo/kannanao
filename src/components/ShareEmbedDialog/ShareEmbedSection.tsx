@@ -1,6 +1,5 @@
 'use client';
 import CheckIcon from '@mui/icons-material/Check';
-import CodeIcon from '@mui/icons-material/Code';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import {
@@ -17,30 +16,27 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
-import { StyledDialog } from '@/components/StyledDialog';
 import { dbSetDeckPublic } from '@/lib/supabase';
 
-interface ShareEmbedDialogProps {
-  open: boolean;
-  onClose: () => void;
+interface ShareEmbedSectionProps {
   deckId: string;
   deckName: string;
   isPublic: boolean;
   onPublicChange: (isPublic: boolean) => void;
 }
 
-export function ShareEmbedDialog({
-  open,
-  onClose,
+/**
+ * Public-sharing switch plus the embed snippet it unlocks. Shared so the deck
+ * settings dialog and the standalone share dialog stay identical.
+ */
+export function ShareEmbedSection({
   deckId,
   deckName,
   isPublic,
   onPublicChange,
-}: ShareEmbedDialogProps) {
+}: ShareEmbedSectionProps) {
   const t = useTranslations('Deck.shareEmbedDialog');
-  const tCommon = useTranslations('Common');
-  const { palette } = useTheme();
-  const { brand } = palette;
+  const { brand } = useTheme().palette;
 
   const [toggling, setToggling] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -71,22 +67,7 @@ export function ShareEmbedDialog({
   }, [iframeCode]);
 
   return (
-    <StyledDialog
-      open={open}
-      onClose={onClose}
-      title={t('title')}
-      subtitle={deckName}
-      icon={<CodeIcon sx={{ color: brand[600], fontSize: 20 }} />}
-      maxWidth="sm"
-      actions={
-        <Button
-          onClick={onClose}
-          sx={{ color: 'text.secondary', textTransform: 'none', fontWeight: 700 }}
-        >
-          {tCommon('done')}
-        </Button>
-      }
-    >
+    <>
       {/* Public toggle */}
       <Box
         sx={{
@@ -97,7 +78,6 @@ export function ShareEmbedDialog({
           borderRadius: 3,
           bgcolor: isPublic ? alpha(brand[100], 0.6) : alpha(brand[100], 0.3),
           border: `1.5px solid ${isPublic ? alpha(brand[300], 0.5) : alpha(brand[300], 0.3)}`,
-          mb: 2.5,
           transition: 'all 0.2s ease',
         }}
       >
@@ -117,6 +97,7 @@ export function ShareEmbedDialog({
               <Switch
                 checked={isPublic}
                 onChange={handleToggle}
+                slotProps={{ input: { 'aria-label': t('publicEmbedding') } }}
                 sx={{
                   '& .MuiSwitch-switchBase.Mui-checked': { color: brand[500] },
                   '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: brand[400] },
@@ -138,6 +119,7 @@ export function ShareEmbedDialog({
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
               color: 'text.secondary',
+              mt: 2.5,
               mb: 1,
             }}
           >
@@ -155,7 +137,7 @@ export function ShareEmbedDialog({
             <Typography
               component="pre"
               sx={{
-                fontFamily: (t) => t.fonts.mono,
+                fontFamily: (th) => th.fonts.mono,
                 fontSize: '0.72rem',
                 color: 'text.primary',
                 whiteSpace: 'pre-wrap',
@@ -170,13 +152,14 @@ export function ShareEmbedDialog({
               <IconButton
                 size="small"
                 onClick={handleCopy}
+                aria-label={t('copyToClipboard')}
                 sx={{
                   position: 'absolute',
                   top: 8,
                   right: 8,
                   bgcolor: copied ? alpha(brand[200], 0.5) : alpha(brand[100], 0.8),
                   border: `1.5px solid ${copied ? alpha(brand[400], 0.5) : alpha(brand[300], 0.4)}`,
-                  color: copied ? brand[600] : brand[600],
+                  color: brand[600],
                   '&:hover': { bgcolor: alpha(brand[100], 0.8) },
                   transition: 'all 0.2s ease',
                 }}
@@ -211,7 +194,7 @@ export function ShareEmbedDialog({
                     color: brand[500],
                     fontWeight: 800,
                     minWidth: 14,
-                    fontFamily: (t) => t.fonts.mono,
+                    fontFamily: (th) => th.fonts.mono,
                   }}
                 >
                   {i + 1}.
@@ -243,6 +226,6 @@ export function ShareEmbedDialog({
           </Box>
         </>
       )}
-    </StyledDialog>
+    </>
   );
 }

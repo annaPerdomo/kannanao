@@ -399,7 +399,7 @@ export default function SettingsPage() {
                 checked={reviewReminders}
                 onChange={(e) => void handleToggleReminders(e.target.checked)}
                 disabled={reminderSaving}
-                inputProps={{ 'aria-label': t('reminders.ariaLabel') }}
+                slotProps={{ input: { 'aria-label': t('reminders.ariaLabel') } }}
               />
             }
             label={t('reminders.ariaLabel')}

@@ -22,6 +22,7 @@ interface Deck {
   id: string;
   name: string;
   emoji?: string | null;
+  readingPractice?: boolean;
 }
 
 interface CreateAssignmentDialogProps {
@@ -65,6 +66,13 @@ export function CreateAssignmentDialog({
   const [goalMode, setGoalMode] = useState<GoalMode | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // A Reading goal on a deck that hasn't unlocked Reading could never be met.
+  const readingUnavailable: GoalMode[] = decks.find((d) => d.id === selectedDeck)?.readingPractice
+    ? []
+    : ['reading'];
+  // Drop a stale Reading goal when the organizer switches to a locked deck.
+  if (goalMode === 'reading' && readingUnavailable.length > 0) setGoalMode(null);
 
   const handleToggleMember = (id: string) => {
     setSelectedMembers((prev) => {
@@ -252,6 +260,7 @@ export function CreateAssignmentDialog({
           mode={goalMode}
           onAccuracyChange={setGoalAccuracy}
           onModeChange={setGoalMode}
+          unavailableModes={readingUnavailable}
         />
       </Box>
     </StyledDialog>

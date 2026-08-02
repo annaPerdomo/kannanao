@@ -58,6 +58,7 @@ export interface SupabaseDeckRow {
   emoji: string | null;
   pinned: boolean | null;
   is_public: boolean | null;
+  reading_practice?: boolean | null;
   position: number;
   /** Denormalized, trigger-maintained count of cards in this deck. */
   card_count: number | null;
@@ -124,6 +125,7 @@ export function dbDeckToApp(deck: SupabaseDeckRow, cardCount: number, currentUse
     emoji: deck.emoji ?? '',
     pinned: deck.pinned ?? false,
     isPublic: deck.is_public ?? false,
+    readingPractice: deck.reading_practice ?? false,
     position: deck.position ?? 0,
   };
 }

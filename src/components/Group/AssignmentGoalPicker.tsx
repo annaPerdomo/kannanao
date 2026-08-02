@@ -17,6 +17,8 @@ interface AssignmentGoalPickerProps {
   mode: GoalMode | null;
   onAccuracyChange: (accuracy: number | null) => void;
   onModeChange: (mode: GoalMode | null) => void;
+  /** Modes the chosen deck can't answer — offering them would set an impossible goal. */
+  unavailableModes?: readonly GoalMode[];
 }
 
 /**
@@ -29,6 +31,7 @@ export function AssignmentGoalPicker({
   mode,
   onAccuracyChange,
   onModeChange,
+  unavailableModes = [],
 }: AssignmentGoalPickerProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -139,7 +142,7 @@ export function AssignmentGoalPicker({
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
               {chip(mode === null, t('anyActivity'), () => onModeChange(null))}
-              {GOAL_MODES.map((m) =>
+              {GOAL_MODES.filter((m) => !unavailableModes.includes(m)).map((m) =>
                 chip(mode === m, t(`modes.${goalModeMessageKey(m)}`), () => onModeChange(m)),
               )}
             </Box>

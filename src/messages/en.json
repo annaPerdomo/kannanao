@@ -62,6 +62,11 @@
       "descriptionLabel": "Description (optional)",
       "pinToHome": "Pin to home",
       "pinToHomeHelper": "Show this deck on your home page",
+      "readingToggle": "Kanji reading practice",
+      "readingToggleOff": "Turn on when your learners are ready for kanji",
+      "readingToggleOn": "Learners can practice reading this deck's kanji",
+      "readingToggleAuto": "Turned on for you — these cards lead with kanji!",
+      "readingToggleAria": "Kanji reading practice",
       "addCardsOptional": "add cards (optional)",
       "createFailed": "Couldn't create the deck. Please try again."
     },
@@ -79,18 +84,23 @@
       "renameDeckAria": "Rename deck",
       "shared": "Shared",
       "share": "Share",
+      "settings": "Settings",
       "unpinFromHome": "Unpin from home",
       "pinToHome": "Pin to home"
     },
     "practiceHero": {
-      "letsPractice": "Let's practice!",
+      "choosePractice": "Choose a practice",
+      "cheer0": "You've got this!",
+      "cheer1": "Ready to level up?",
+      "cheer2": "Your cards are waiting!",
+      "cheer3": "Let's make today count!",
       "startFlashcardStudyAria": "Start flashcard study",
       "flashcardsTitle": "Flashcards",
       "flashcardsDescription": "Flip & learn every card",
       "letsGo": "Let's go →",
       "startPracticeAria": "Start {label} practice",
       "lockedAria": "{label} (locked)",
-      "locked": "Locked 🔒",
+      "locked": "Locked",
       "play": "Play →",
       "unlockHint": "Add at least 2 cards to unlock practice modes."
     },
@@ -114,6 +124,10 @@
       "listen": {
         "label": "Listen",
         "description": "Hear the word, pick what it means"
+      },
+      "reading": {
+        "label": "Reading",
+        "description": "See the kanji, build its reading"
       },
       "quiz": {
         "label": "Quiz",
@@ -294,6 +308,16 @@
       "notSharedYet": "Not shared with anyone yet",
       "removeShareAria": "Remove share"
     },
+    "settingsDialog": {
+      "title": "Deck settings",
+      "practiceSection": "Practice",
+      "sharingSection": "Sharing",
+      "readingTitle": "Kanji reading practice",
+      "readingOn": "On — learners can practice {count, plural, one {# kanji word} other {# kanji words}} in this deck",
+      "readingOff": "Off — turn it on when your learners are ready for kanji",
+      "readingNoKanji": "This deck has no kanji words yet",
+      "readingAria": "Kanji reading practice for this deck"
+    },
     "shareEmbedDialog": {
       "title": "Embed Deck",
       "publicEmbedding": "Public embedding",
@@ -320,7 +344,7 @@
     "deckPage": {
       "loadingCards": "Loading cards…",
       "deckNotFound": "Deck not found.",
-      "cardsInDeckLabel": "Cards in Deck",
+      "cardsInDeckLabel": "Cards in this deck ({count})",
       "reorderButton": "Reorder",
       "addCardsButton": "Add Cards",
       "reorderBannerLabel": "Drag and drop cards to reorder. Click Done when finished.",
@@ -602,6 +626,9 @@
     "page": {
       "loadingSession": "Loading your practice session…",
       "notEnoughCards": "Not enough cards to practice. Add more cards to this deck.",
+      "noKanjiCards": "This deck needs a few kanji words before you can practice reading. Cards written only in kana already show their reading!",
+      "readingLocked": "Reading practice isn't open for this deck yet.",
+      "pickAnotherMode": "Pick another way to practice",
       "cardsBadge": "{count, plural, one {# card} other {# cards}}",
       "modeTitles": {
         "match": "Match JP ↔ EN",
@@ -609,7 +636,8 @@
         "recall": "Guess It!",
         "kotobaBubble": "Sentence Builder",
         "quiz": "Quiz",
-        "listen": "Listen"
+        "listen": "Listen",
+        "reading": "Reading"
       }
     },
     "batchPicker": {
@@ -684,6 +712,18 @@
       "playWordAgainAria": "Play the word again",
       "seeResults": "See Results",
       "nextArrow": "Next →"
+    },
+    "readingMode": {
+      "readPrompt": "HOW DO YOU READ THIS?",
+      "incorrectAnswer": "Not quite — it reads {reading}",
+      "typedLabel": "Reading",
+      "typedPlaceholder": "Type it in kana or romaji…",
+      "check": "Check",
+      "switchToTyping": "Type it instead",
+      "switchToTiles": "Use tiles instead",
+      "removeLastCharacter": "Remove the last character",
+      "placeCharacterAria": "Add {character}",
+      "seeResults": "See Results"
     },
     "roundTransition": {
       "allReviewed": "All reviewed!",
@@ -902,7 +942,8 @@
         "recall": "Recall",
         "kotobaBubble": "Sentence Builder",
         "quiz": "Quiz",
-        "listen": "Listen"
+        "listen": "Listen",
+        "reading": "Reading"
       },
       "goalBoth": "{accuracy}% in {mode}",
       "goalAccuracyOnly": "{accuracy}%",

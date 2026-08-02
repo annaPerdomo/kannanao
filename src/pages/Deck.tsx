@@ -17,17 +17,20 @@ import SwapVertIcon from '@mui/icons-material/SwapVert';
 import { Box, Button, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { AddCardsModal } from '@/components/AddCards';
 import { AddExistingCardsDialog } from '@/components/AddExistingCardsDialog';
 import { BestQuizLine, DeckHeader, Label, PracticeHero } from '@/components/Deck';
+import { DeckSettingsDialog } from '@/components/DeckSettingsDialog';
 import { ImageCard } from '@/components/ImageCard';
 import { Loading } from '@/components/Loading';
 import { PdfImportModal } from '@/components/PdfImportModal';
+// Direct module import, not the barrel: the deck page needs only the pure
+// filter, not the whole Reading mode component tree.
+import { eligibleReadingCards } from '@/components/Practice/ReadingMode/eligibility';
 import { ReorderBanner } from '@/components/ReorderBanner';
 import { ReviewCardsDialog } from '@/components/ReviewCardsDialog';
-import { ShareEmbedDialog } from '@/components/ShareEmbedDialog';
 import { SortableImageCard } from '@/components/SortableImageCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCardReview } from '@/hooks/useCardReview';
@@ -59,13 +62,14 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     renameDeck,
     pinDeck,
     setDeckPublic,
+    setDeckReadingPractice,
     updateDeckEmoji,
   } = useDecks();
   const deck = decks.find((d) => d.id === deckId);
 
   const [pdfImportOpen, setPdfImportOpen] = useState(false);
   const [addCardsOpen, setAddCardsOpen] = useState(false);
-  const [embedOpen, setEmbedOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pendingMainViewMode, setPendingMainViewMode] = useState<MainViewMode>('hiragana');
   const [reordering, setReordering] = useState(false);
@@ -88,6 +92,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const { generating, error, generate } = useGenerateFlashcards();
 
   const canReorder = !isMemberAccount && cards.length > 1;
+  const readingCardCount = useMemo(() => eligibleReadingCards(cards).length, [cards]);
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
@@ -209,12 +214,17 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           onBack={onBack}
           onRename={renameDeck}
           onPin={pinDeck}
-          onEmbedOpen={() => setEmbedOpen(true)}
+          onSettingsOpen={() => setSettingsOpen(true)}
           onEmojiChange={updateDeckEmoji}
           readOnly={isMemberAccount}
         />
 
-        <PracticeHero cardCount={cards.length} onStudy={onStudy} onPractice={onPractice} />
+        <PracticeHero
+          cardCount={cards.length}
+          onStudy={onStudy}
+          onPractice={onPractice}
+          readingUnlocked={deck.readingPractice === true}
+        />
 
         {cards.length > 0 && <BestQuizLine deckId={deckId} />}
       </Box>
@@ -224,7 +234,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         <Box
           sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}
         >
-          <Label>{t('cardsInDeckLabel')}</Label>
+          <Label>{t('cardsInDeckLabel', { count: cards.length })}</Label>
           <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
             {canReorder && (
               <Button
@@ -375,13 +385,16 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         }}
       />
 
-      <ShareEmbedDialog
-        open={embedOpen}
-        onClose={() => setEmbedOpen(false)}
+      <DeckSettingsDialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
         deckId={deckId}
         deckName={deck.name}
         isPublic={deck.isPublic ?? false}
         onPublicChange={(val) => setDeckPublic(deckId, val)}
+        readingUnlocked={deck.readingPractice === true}
+        readingCardCount={readingCardCount}
+        onReadingChange={(enabled) => setDeckReadingPractice(deckId, enabled)}
       />
     </Box>
   );

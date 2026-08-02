@@ -10,6 +10,7 @@ import {
   dbRenameDeck,
   dbReorderDecks,
   dbSetDeckPublic,
+  dbSetDeckReadingPractice,
   dbUpdateDeckEmoji,
   isConfigured,
   loadDecks,
@@ -129,6 +130,18 @@ export function useDecks(enabled = true, initialDecks?: Deck[]) {
     }
   }, []);
 
+  const setDeckReadingPractice = useCallback(
+    async (id: string, enabled: boolean): Promise<void> => {
+      setDecks((ds) => ds.map((d) => (d.id === id ? { ...d, readingPractice: enabled } : d)));
+      try {
+        await dbSetDeckReadingPractice(id, enabled);
+      } catch {
+        setDecks((ds) => ds.map((d) => (d.id === id ? { ...d, readingPractice: !enabled } : d)));
+      }
+    },
+    [],
+  );
+
   const reorderDecks = useCallback(
     async (reordered: Deck[]): Promise<void> => {
       const updated = reordered.map((d, i) => ({ ...d, position: i }));
@@ -154,6 +167,7 @@ export function useDecks(enabled = true, initialDecks?: Deck[]) {
     updateDeckEmoji,
     pinDeck,
     setDeckPublic,
+    setDeckReadingPractice,
     reorderDecks,
   };
 }
