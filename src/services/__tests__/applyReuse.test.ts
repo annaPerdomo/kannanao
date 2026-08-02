@@ -49,6 +49,20 @@ describe('applyReuse', () => {
     expect(toFetch).toEqual(cards);
   });
 
+  // "Reused from this same deck" reads as nonsense, and confirming it inserts a
+  // second copy of the card alongside the one it was copied from.
+  it('should not offer a card from the deck being added to as a reuse', () => {
+    const { reused, toFetch } = applyReuse(
+      [generated('猫')],
+      match('猫', 'This Deck', { deckId: 'deck-1' }),
+      'deck-1',
+      'hiragana',
+    );
+
+    expect(reused).toEqual([null]);
+    expect(toFetch).toHaveLength(1);
+  });
+
   it('should keep the saved card and never request its image', () => {
     const { reused, toFetch } = applyReuse(
       [generated('猫'), generated('犬')],

@@ -4,12 +4,12 @@ import type { GeneratedCard } from '@/types/flashcard';
 
 vi.mock('@/services/api', () => ({
   generateFlashcards: vi.fn(),
-  fetchImage: vi.fn(),
-  triggerUnsplashDownload: vi.fn(),
+  fetchImagesBatch: vi.fn(),
   encodeUnsplashUrl: vi.fn((r: { url: string }) => `${r.url}#unsplash:name=Ansel`),
+  IMAGE_BATCH_SIZE: 25,
 }));
 
-import { encodeUnsplashUrl, fetchImage, generateFlashcards } from '@/services/api';
+import { encodeUnsplashUrl, fetchImagesBatch, generateFlashcards } from '@/services/api';
 
 import { alignGenerated, buildTravelCards, readingFromFurigana, withImages } from '../cardPipeline';
 
@@ -34,8 +34,17 @@ const image = {
   photoPageUrl: 'https://example/photo',
 };
 
+function answerWith(photo: typeof image | null) {
+  vi.mocked(fetchImagesBatch).mockImplementation(async (items) => ({
+    results: items.map(({ query }) => ({ query, result: photo })),
+    rateLimited: false,
+    stopped: false,
+    remaining: 40,
+  }));
+}
+
 beforeEach(() => {
-  vi.mocked(fetchImage).mockReset();
+  vi.mocked(fetchImagesBatch).mockReset();
   vi.mocked(generateFlashcards).mockReset();
   vi.mocked(encodeUnsplashUrl).mockClear();
 });
@@ -62,7 +71,7 @@ describe('readingFromFurigana', () => {
 
 describe('withImages', () => {
   it('maps every generated field onto the app card shape', async () => {
-    vi.mocked(fetchImage).mockResolvedValue(image);
+    answerWith(image);
 
     const [card] = await withImages([generated()], 'deck-1', 'kanji');
 
@@ -83,7 +92,7 @@ describe('withImages', () => {
   });
 
   it('still returns a card when the image lookup fails', async () => {
-    vi.mocked(fetchImage).mockRejectedValue(new Error('rate limited'));
+    vi.mocked(fetchImagesBatch).mockRejectedValue(new Error('rate limited'));
 
     const [card] = await withImages([generated()], 'deck-1', 'hiragana');
 
@@ -94,16 +103,55 @@ describe('withImages', () => {
   it('skips the image call when there is no query', async () => {
     const [card] = await withImages([generated({ image_query: '  ' })], 'deck-1', 'hiragana');
 
-    expect(fetchImage).not.toHaveBeenCalled();
+    expect(fetchImagesBatch).not.toHaveBeenCalled();
     expect(card.image_query).toBe('');
   });
 
   it('defaults a missing jlpt level to undefined rather than null', async () => {
-    vi.mocked(fetchImage).mockResolvedValue(null);
+    answerWith(null);
 
     const [card] = await withImages([generated({ jlpt_level: null })], 'deck-1', 'hiragana');
 
     expect(card.jlptLevel).toBeUndefined();
+  });
+
+  // 60 cards used to mean 60 parallel single-photo requests, which spends the
+  // images route's per-minute budget on the first few and leaves the rest bare.
+  it('asks for every photo in batches instead of one request per card', async () => {
+    answerWith(image);
+    const cards = Array.from({ length: 30 }, (_, i) => generated({ image_query: `query ${i}` }));
+
+    const built = await withImages(cards, 'deck-1', 'hiragana');
+
+    expect(fetchImagesBatch).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(fetchImagesBatch).mock.calls[0][0]).toHaveLength(25);
+    expect(vi.mocked(fetchImagesBatch).mock.calls[1][0]).toHaveLength(5);
+    expect(built.every((c) => c.imageUrl)).toBe(true);
+  });
+
+  it('spends one search on a query two cards share', async () => {
+    answerWith(image);
+    const cards = [generated(), generated({ word: '猫さん' })];
+
+    const built = await withImages(cards, 'deck-1', 'hiragana');
+
+    expect(vi.mocked(fetchImagesBatch).mock.calls[0][0]).toEqual([{ query: 'sleeping cat' }]);
+    expect(built[0].imageUrl).toBe(built[1].imageUrl);
+  });
+
+  it('stops asking once the hourly allowance is gone', async () => {
+    vi.mocked(fetchImagesBatch).mockResolvedValue({
+      results: [],
+      rateLimited: true,
+      stopped: false,
+      remaining: 0,
+    });
+    const cards = Array.from({ length: 30 }, (_, i) => generated({ image_query: `query ${i}` }));
+
+    const built = await withImages(cards, 'deck-1', 'hiragana');
+
+    expect(fetchImagesBatch).toHaveBeenCalledTimes(1);
+    expect(built).toHaveLength(30);
   });
 });
 
@@ -131,7 +179,7 @@ describe('buildTravelCards', () => {
   // shift every phrase after it onto the wrong entry.
   it('never asks /api/generate to expand topics', async () => {
     vi.mocked(generateFlashcards).mockResolvedValue([generated({ word: 'お会計お願いします' })]);
-    vi.mocked(fetchImage).mockResolvedValue(image);
+    answerWith(image);
 
     await buildTravelCards([phrase], 'deck-1', { mainViewMode: 'romaji', enrich: true });
 
@@ -151,7 +199,7 @@ describe('buildTravelCards', () => {
         jlpt_level: 'N4',
       }),
     ]);
-    vi.mocked(fetchImage).mockResolvedValue(image);
+    answerWith(image);
 
     const [card] = await buildTravelCards([phrase], 'deck-1', {
       mainViewMode: 'romaji',
@@ -202,7 +250,7 @@ describe('buildTravelCards', () => {
     });
 
     expect(generateFlashcards).not.toHaveBeenCalled();
-    expect(fetchImage).not.toHaveBeenCalled();
+    expect(fetchImagesBatch).not.toHaveBeenCalled();
     expect(card.reading).toBe('おかいけいおねがいします');
     expect(card.romaji).toBe('okaikei onegaishimasu');
   });
@@ -226,5 +274,48 @@ describe('buildTravelCards', () => {
     expect(vi.mocked(generateFlashcards).mock.calls[0][0].pendingWords).toHaveLength(50);
     expect(vi.mocked(generateFlashcards).mock.calls[1][0].pendingWords).toHaveLength(1);
     expect(cards).toHaveLength(51);
+  });
+
+  // One withImages call for the whole save, not one per phrase: each call is a
+  // batch request, and the images route allows only a few of those a minute.
+  it('looks the whole save up in one batch, not one request per phrase', async () => {
+    const phrases = Array.from({ length: 8 }, (_, i) => ({
+      japanese: `ことば${i}`,
+      romaji: `kotoba${i}`,
+      english: `word ${i}`,
+    }));
+    vi.mocked(generateFlashcards).mockImplementation(async ({ pendingWords }) =>
+      pendingWords.map((w) => generated({ word: w, image_query: `photo of ${w}` })),
+    );
+    answerWith(image);
+
+    const cards = await buildTravelCards(phrases, 'deck-1', {
+      mainViewMode: 'hiragana',
+      enrich: true,
+    });
+
+    expect(fetchImagesBatch).toHaveBeenCalledTimes(1);
+    expect(cards).toHaveLength(8);
+    expect(cards.every((c) => c.imageUrl)).toBe(true);
+  });
+
+  it('keeps the local fallback for a phrase the model skipped', async () => {
+    const phrases = [phrase, { japanese: 'ありがとう', romaji: 'arigatou', english: 'thanks' }];
+    vi.mocked(generateFlashcards).mockResolvedValue([
+      generated({ word: 'ありがとう', meaning: 'thank you' }),
+    ]);
+    answerWith(image);
+
+    const cards = await buildTravelCards(phrases, 'deck-1', {
+      mainViewMode: 'hiragana',
+      enrich: true,
+    });
+
+    // Alignment leaves a hole for the first phrase, so it keeps its local card
+    // while the second still gets the generated one — not shifted onto it.
+    expect(cards[0].imageUrl).toBeUndefined();
+    expect(cards[0].word).toBe('お会計お願いします');
+    expect(cards[1].word).toBe('ありがとう');
+    expect(cards[1].imageUrl).toContain('cat.jpg');
   });
 });
