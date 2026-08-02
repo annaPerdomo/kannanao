@@ -1,11 +1,11 @@
 'use client';
 import { Box, Button, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
-import { BatchPicker } from '@/components/Practice/BatchPicker';
+import { BatchPicker, maxBatchForMode } from '@/components/Practice/BatchPicker';
 import { FillMode } from '@/components/Practice/FillMode';
 import { KotobaBubbleMode } from '@/components/Practice/KotobaBubbleMode';
 import { KotobaBubbleSetup } from '@/components/Practice/KotobaBubbleMode/KotobaBubbleSetup';
@@ -27,14 +27,23 @@ interface PracticeProps {
   deckId: string;
   mode: PracticeMode;
   onBack: () => void;
+  /** Assignment-quest step chrome, shown under the header when a quest is running. */
+  questBanner?: React.ReactNode;
+  /** Restrict the session to these cards — a mixed practice leg, not the deck. */
+  cardIds?: string[];
 }
 
 /** Show the batch picker when the deck exceeds this many cards. */
 const BATCH_PICKER_THRESHOLD = 10;
 
-export default function Practice({ deckId, mode, onBack }: PracticeProps) {
+export default function Practice({ deckId, mode, onBack, questBanner, cardIds }: PracticeProps) {
   const t = useTranslations('Practice.page');
-  const { cards, loading } = useCards(deckId);
+  const { cards: deckCards, loading } = useCards(deckId);
+  const cards = useMemo(() => {
+    if (!cardIds) return deckCards;
+    const wanted = new Set(cardIds);
+    return deckCards.filter((c) => wanted.has(c.id));
+  }, [deckCards, cardIds]);
   // Only Reading is deck-gated, so only Reading pays for the decks query.
   const { decks, loading: decksLoading } = useDecks(mode === 'reading');
   const [batchSize, setBatchSize] = useState<number | null>(null);
@@ -108,6 +117,7 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
+        {questBanner}
         <QuizMode cards={modeCards} deckId={deckId} onExit={onBack} />
       </Box>
     );
@@ -118,27 +128,34 @@ export default function Practice({ deckId, mode, onBack }: PracticeProps) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
+        {questBanner}
         <KotobaBubbleSetup deckId={deckId} totalCards={modeCards.length} onSelect={setBatchSize} />
       </Box>
     );
   }
 
-  // Show batch picker for large decks (non-kotoba-bubble)
-  const needsPicker = modeCards.length > BATCH_PICKER_THRESHOLD;
+  // Show batch picker for large decks (non-kotoba-bubble). A mixed practice leg
+  // arrives pre-sized, and choosing is the decision that feature exists to remove.
+  const needsPicker = !cardIds && modeCards.length > BATCH_PICKER_THRESHOLD;
   if (needsPicker && batchSize === null) {
     return (
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
+        {questBanner}
         <BatchPicker totalCards={modeCards.length} mode={mode} onSelect={setBatchSize} />
       </Box>
     );
   }
 
-  const effectiveBatchSize = batchSize ?? modeCards.length;
+  // A pre-sized leg never sees the picker, so its per-mode cap is applied here
+  // too — twelve Match cards would be twenty-four tiles on screen.
+  const effectiveBatchSize = batchSize ?? Math.min(modeCards.length, maxBatchForMode(mode));
 
   return (
     <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
       <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
+
+      {questBanner}
 
       {mode === 'match' && (
         <MatchMode

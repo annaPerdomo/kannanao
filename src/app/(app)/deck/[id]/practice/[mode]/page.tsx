@@ -2,7 +2,10 @@
 import { useRouter } from 'next/navigation';
 import { use } from 'react';
 
+import { QuestFinishScreen, QuestStepBanner } from '@/components/AssignmentQuest';
 import { PRACTICE_CONFIG } from '@/components/Deck/constants';
+import { QuestHandoffProvider } from '@/contexts/QuestHandoffContext';
+import { usePracticeChain } from '@/hooks/usePracticeChain';
 import Practice from '@/pages/Practice';
 import type { PracticeMode } from '@/types/app';
 
@@ -17,11 +20,36 @@ export default function PracticePage({
 }) {
   const { id, mode } = use(params);
   const router = useRouter();
+  const valid = VALID_MODES.includes(mode as PracticeMode);
+  const chain = usePracticeChain({ deckId: id, mode: mode as PracticeMode });
 
-  if (!VALID_MODES.includes(mode as PracticeMode)) {
+  if (!valid) {
     router.replace(`/deck/${id}`);
     return null;
   }
 
-  return <Practice deckId={id} mode={mode as PracticeMode} onBack={() => router.back()} />;
+  if (chain?.phase === 'finish' && chain.state.assignmentId) {
+    return (
+      <QuestFinishScreen
+        assignmentId={chain.state.assignmentId}
+        onRetry={chain.retry}
+        onDone={chain.goHome}
+      />
+    );
+  }
+
+  return (
+    <QuestHandoffProvider value={chain?.handoff ?? null}>
+      <Practice
+        key={chain?.attempt ?? 0}
+        deckId={id}
+        mode={mode as PracticeMode}
+        onBack={chain ? chain.abandon : () => router.back()}
+        cardIds={chain?.state.cardIds ?? undefined}
+        questBanner={
+          chain ? <QuestStepBanner legs={chain.legs} currentIndex={chain.index} /> : null
+        }
+      />
+    </QuestHandoffProvider>
+  );
 }

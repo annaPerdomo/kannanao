@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import FuriganaText from '@/components/FuriganaText';
+import { useQuestHandoff } from '@/contexts/QuestHandoffContext';
 import { useShopCtx } from '@/contexts/ShopContext';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { CELEBRATION_THEMES } from '@/hooks/useShop';
@@ -61,6 +62,8 @@ export interface CelebrationScreenProps {
   /** Exit button label (defaults to the translated "Back to Deck"). */
   exitLabel?: string;
   onExit: () => void;
+  /** For the mode whose button opens more of its session instead of leaving. */
+  disableHandoff?: boolean;
 }
 
 function RenderParticles({
@@ -190,9 +193,14 @@ export function CelebrationScreen({
   chest,
   exitLabel,
   onExit,
+  disableHandoff = false,
 }: CelebrationScreenProps) {
   const tCommon = useTranslations('Practice.common');
-  const resolvedExitLabel = exitLabel ?? tCommon('backToDeck');
+  const tQuest = useTranslations('AssignmentQuest');
+  // In a quest the exit button becomes the one step forward.
+  const handoff = useQuestHandoff();
+  const activeHandoff = disableHandoff ? null : handoff;
+  const resolvedExitLabel = activeHandoff?.label ?? exitLabel ?? tCommon('backToDeck');
   const { equipped } = useShopCtx();
   const randomTheme = useMemo<CelebTheme>(
     () => ALL_THEMES[Math.floor(Math.random() * ALL_THEMES.length)],
@@ -346,7 +354,7 @@ export function CelebrationScreen({
 
         <Box sx={{ mt: 3, animation: 'fadeUp 0.5s 0.72s ease both' }}>
           <Button
-            onClick={onExit}
+            onClick={activeHandoff ? activeHandoff.onNext : onExit}
             size="large"
             sx={{
               bgcolor: cfg.btnBg,
@@ -368,6 +376,21 @@ export function CelebrationScreen({
           >
             {resolvedExitLabel}
           </Button>
+          {activeHandoff && (
+            <Box sx={{ mt: 1 }}>
+              <Button
+                onClick={activeHandoff.onStop}
+                sx={{
+                  color: cfg.subTextColor,
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  textTransform: 'none',
+                }}
+              >
+                {tQuest('stopForNow')}
+              </Button>
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>

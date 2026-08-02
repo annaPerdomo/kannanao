@@ -50,6 +50,7 @@ import {
   dbCreateDeck,
   dbCreateEventType,
   dbCreateTodo,
+  dbDeckCardCount,
   dbDeleteCard,
   dbDeleteDeck,
   dbDeleteEventType,
@@ -316,6 +317,29 @@ describe('dbSetDeckReadingPractice', () => {
   it('should throw when the update errors', async () => {
     setTable('decks', null, new Error('Reading error'));
     await expect(dbSetDeckReadingPractice('deck-1', true)).rejects.toThrow('Reading error');
+  });
+});
+
+// ─── dbDeckCardCount ──────────────────────────────────────────────────────────
+
+describe('dbDeckCardCount', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return the trigger-maintained count', async () => {
+    setTable('decks', { card_count: 12 }, null);
+    await expect(dbDeckCardCount('deck-1')).resolves.toBe(12);
+  });
+
+  it('should read a deck with no cards as zero', async () => {
+    setTable('decks', { card_count: null }, null);
+    await expect(dbDeckCardCount('deck-1')).resolves.toBe(0);
+  });
+
+  it('should return null when the deck is missing or unreadable', async () => {
+    setTable('decks', null, new Error('nope'));
+    await expect(dbDeckCardCount('deck-1')).resolves.toBeNull();
   });
 });
 
@@ -1081,6 +1105,20 @@ describe('getCardProgressForUser', () => {
     setTable('card_progress', null, { message: 'DB error' });
     const rows = await getCardProgressForUser('u1');
     expect(rows).toEqual([]);
+  });
+
+  it('should scope the read to the given cards', async () => {
+    setTable('card_progress', []);
+    await getCardProgressForUser('u1', ['card-1', 'card-2']);
+    const chain = mockFrom.mock.results[0].value as Record<string, ReturnType<typeof vi.fn>>;
+    expect(chain.in).toHaveBeenCalledWith('card_id', ['card-1', 'card-2']);
+  });
+
+  it('should not query at all for an empty card list', async () => {
+    setTable('card_progress', []);
+    const rows = await getCardProgressForUser('u1', []);
+    expect(rows).toEqual([]);
+    expect(mockFrom).not.toHaveBeenCalled();
   });
 });
 

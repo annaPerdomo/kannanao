@@ -92,6 +92,11 @@
     },
     "practiceHero": {
       "choosePractice": "Choose a practice",
+      "mixedTitle": "Practice",
+      "mixedDescription": "A mix of games, picked for you",
+      "mixedStarting": "Getting ready…",
+      "startMixedAria": "Start mixed practice",
+      "moreGames": "More games",
       "cheer0": "You've got this!",
       "cheer1": "Ready to level up?",
       "cheer2": "Your cards are waiting!",
@@ -104,7 +109,8 @@
       "lockedAria": "{label} (locked)",
       "locked": "Locked",
       "play": "Play →",
-      "unlockHint": "Add at least 2 cards to unlock practice modes."
+      "unlockHint": "Add at least 2 cards to unlock practice modes.",
+      "mixedError": "We couldn't start practice. Please try again."
     },
     "practiceModes": {
       "match": {
@@ -965,7 +971,7 @@
     "assignmentCard": {
       "unknownDeck": "Unknown Deck",
       "goalProgress": "🎯 Goal: {goal}{state, select, best { — Best so far: {accuracy}%} other {}}",
-      "study": "Study",
+      "start": "Start",
       "overdueBy": "Overdue by {days}d",
       "dueToday": "Due today",
       "dueTomorrow": "Due tomorrow",
@@ -3489,5 +3495,26 @@
       "tagline": "Japanese practice for educators and learners",
       "madeBy": "Made with 💕 by <link>Variations on a String</link>"
     }
+  },
+  "AssignmentQuest": {
+    "stepOf": "Step {current} of {total}",
+    "stepName": {
+      "warmup": "Warm up",
+      "practice": "Practice",
+      "goal": "Show what you know"
+    },
+    "nextStep": "Next: {step}",
+    "seeHowYouDid": "See how you did",
+    "checking": "Checking your goal…",
+    "completeHeading": "Assignment complete!",
+    "completeSubheading": "You hit your goal — nice work!",
+    "soCloseHeading": "So close!",
+    "bestSoFar": "Best so far: {best}% — goal {goal}%",
+    "tryOneMoreTime": "Give it one more go to reach your goal.",
+    "tryAgain": "Try again",
+    "backHome": "Back to home",
+    "checkFailed": "We couldn't check your goal just now.",
+    "checkAgain": "Check again",
+    "stopForNow": "Stop for now"
   }
 }

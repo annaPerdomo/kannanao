@@ -27,7 +27,7 @@ function assignment(overrides: Partial<Assignment> = {}): Assignment {
 
 describe('AssignmentCard', () => {
   it('shows no goal line for a plain assignment', () => {
-    renderWithProviders(<AssignmentCard assignment={assignment()} onStudy={vi.fn()} />);
+    renderWithProviders(<AssignmentCard assignment={assignment()} onStart={vi.fn()} />);
     expect(screen.queryByText(/Goal:/)).not.toBeInTheDocument();
   });
 
@@ -39,7 +39,7 @@ describe('AssignmentCard', () => {
           required_mode: 'match',
           progress_accuracy: 65,
         })}
-        onStudy={vi.fn()}
+        onStart={vi.fn()}
       />,
     );
     expect(screen.getByText('🎯 Goal: 80% in Match — Best so far: 65%')).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('AssignmentCard', () => {
 
   it('shows the goal without best-so-far before the first qualifying attempt', () => {
     renderWithProviders(
-      <AssignmentCard assignment={assignment({ required_accuracy: 70 })} onStudy={vi.fn()} />,
+      <AssignmentCard assignment={assignment({ required_accuracy: 70 })} onStart={vi.fn()} />,
     );
     expect(screen.getByText('🎯 Goal: 70%')).toBeInTheDocument();
   });
@@ -60,19 +60,20 @@ describe('AssignmentCard', () => {
           progress_accuracy: 85,
           completed_at: '2026-07-10T00:00:00Z',
         })}
-        onStudy={vi.fn()}
+        onStart={vi.fn()}
       />,
     );
     expect(screen.getByText('🎯 Goal: 80%')).toBeInTheDocument();
     expect(screen.queryByText(/Best so far/)).not.toBeInTheDocument();
-    // Completed cards have no Study button
-    expect(screen.queryByRole('button', { name: /study/i })).not.toBeInTheDocument();
+    // Completed cards have no Start button
+    expect(screen.queryByRole('button', { name: /start/i })).not.toBeInTheDocument();
   });
 
-  it('still starts studying from the Study button', () => {
-    const onStudy = vi.fn();
-    renderWithProviders(<AssignmentCard assignment={assignment()} onStudy={onStudy} />);
-    fireEvent.click(screen.getByRole('button', { name: /study/i }));
-    expect(onStudy).toHaveBeenCalledWith('d1');
+  it('hands the whole assignment to the quest launcher', () => {
+    const onStart = vi.fn();
+    const a = assignment();
+    renderWithProviders(<AssignmentCard assignment={a} onStart={onStart} />);
+    fireEvent.click(screen.getByRole('button', { name: /start/i }));
+    expect(onStart).toHaveBeenCalledWith(a);
   });
 });

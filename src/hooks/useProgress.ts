@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { invalidateApiCache } from '@/lib/apiCache';
+import { publishAssignmentComplete } from '@/lib/assignmentSignal';
 import { CHEST_XP } from '@/lib/chest';
 import { cardXp } from '@/lib/flashcardUtils';
 import { sb, upsertCardProgress } from '@/lib/supabase';
@@ -43,6 +44,12 @@ export type SessionMode =
   | 'particle-quiz'
   | 'question-quiz'
   | 'word-match';
+
+/** What `/api/group/assignments/complete` reports back for a finished session. */
+export interface AssignmentCompleteResult {
+  completed: number;
+  progressUpdated?: number;
+}
 
 export interface StudySession {
   id: string;
@@ -567,14 +574,15 @@ export function useProgress(
   );
 
   /**
-   * Call when a session ends to check for the perfect-session achievement
-   * and close out the session row.
+   * Call when a session ends to check for the perfect-session achievement and
+   * close out the session row. Resolves with what the assignment auto-complete
+   * did for this session (null when there was nothing to report).
    */
   const endSession = useCallback(
     async (
       sessionId: string,
       opts: { cardsStudied: number; cardsCorrect: number; durationSecs: number },
-    ) => {
+    ): Promise<AssignmentCompleteResult | null> => {
       const { cardsStudied, cardsCorrect, durationSecs } = opts;
       await supabase
         .from('study_sessions')
@@ -614,7 +622,11 @@ export function useProgress(
 
       await fetchAll();
 
-      // Auto-complete any pending assignment for the deck that was just studied
+      // Auto-complete any pending assignment for the deck that was just studied.
+      // Awaited (not fired and forgotten) so that anything reading the
+      // assignment afterwards — the quest's finish screen most of all — can't
+      // race the write and report a goal as missed.
+      let result: AssignmentCompleteResult | null = null;
       try {
         const { data: session } = await supabase
           .from('study_sessions')
@@ -625,7 +637,7 @@ export function useProgress(
           const { data: authData } = await supabase.auth.getSession();
           const token = authData.session?.access_token;
           if (token) {
-            fetch('/api/group/assignments/complete', {
+            const res = await fetch('/api/group/assignments/complete', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -634,16 +646,20 @@ export function useProgress(
               // sessionId lets the server evaluate mastery goals (mode +
               // accuracy) against this session's stats.
               body: JSON.stringify({ deckId: session.deck_id, sessionId }),
-            })
-              // The assignment list is cached client-side; drop it so the
-              // dashboard reflects the auto-completed assignment right away.
-              .then(() => invalidateApiCache('/api/group/assignments'))
-              .catch(() => {});
+            });
+            // The assignment list is cached client-side; drop it so the
+            // dashboard reflects the auto-completed assignment right away.
+            invalidateApiCache('/api/group/assignments');
+            result = (await res.json().catch(() => null)) as AssignmentCompleteResult | null;
           }
         }
       } catch {
         // Non-critical — don't block the session end flow
       }
+      // Published on the failure paths too — a screen waiting on this has to be
+      // released whether or not the write got through.
+      publishAssignmentComplete(result?.completed ?? 0);
+      return result;
     },
     [achievements, supabase, fetchAll, applyProgress],
   );

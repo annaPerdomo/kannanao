@@ -33,10 +33,17 @@ interface BatchOption {
   recommended?: boolean;
 }
 
+/**
+ * Cards one round may show: Match caps at 10 (20 tiles on screen gets crowded),
+ * Kotoba Bubble at 15 (sentence-based, not card-based). Exported because a
+ * pre-sized session skips this picker and still owes the cap.
+ */
+export function maxBatchForMode(mode: PracticeMode): number {
+  return mode === 'match' ? 10 : mode === 'kotoba-bubble' ? 15 : 20;
+}
+
 function getOptions(totalCards: number, mode: PracticeMode): BatchOption[] {
-  // Match mode caps at 10 (20 tiles on screen gets crowded)
-  // Kotoba Bubble caps at 15 (sentence-based, not card-based)
-  const maxBatch = mode === 'match' ? 10 : mode === 'kotoba-bubble' ? 15 : 20;
+  const maxBatch = maxBatchForMode(mode);
   const options: BatchOption[] = [];
 
   if (totalCards > 5) options.push({ size: 5, descKey: 'quickReview' });

@@ -92,6 +92,11 @@
     },
     "practiceHero": {
       "choosePractice": "練習をえらぼう",
+      "mixedTitle": "れんしゅう",
+      "mixedDescription": "いろいろなゲームをまぜてお届け",
+      "mixedStarting": "じゅんび中…",
+      "startMixedAria": "ミックス練習を始める",
+      "moreGames": "ほかのゲーム",
       "cheer0": "きみならできる！",
       "cheer1": "レベルアップしよう！",
       "cheer2": "カードが待ってるよ！",
@@ -104,7 +109,8 @@
       "lockedAria": "{label}（ロック中）",
       "locked": "ロック中",
       "play": "あそぶ →",
-      "unlockHint": "カードを2枚以上追加すると練習モードが使えます。"
+      "unlockHint": "カードを2枚以上追加すると練習モードが使えます。",
+      "mixedError": "練習をはじめられませんでした。もう一度おためしください。"
     },
     "practiceModes": {
       "match": {
@@ -965,7 +971,7 @@
     "assignmentCard": {
       "unknownDeck": "不明なデッキ",
       "goalProgress": "🎯 目標: {goal}{state, select, best { — これまでの最高: {accuracy}%} other {}}",
-      "study": "学習する",
+      "start": "はじめる",
       "overdueBy": "{days}日おくれ",
       "dueToday": "今日まで",
       "dueTomorrow": "明日まで",
@@ -3489,5 +3495,26 @@
       "tagline": "教える人と学ぶ人のための日本語練習アプリ",
       "madeBy": "💕 をこめて <link>Variations on a String</link> が制作"
     }
+  },
+  "AssignmentQuest": {
+    "stepOf": "ステップ {current} / {total}",
+    "stepName": {
+      "warmup": "ウォームアップ",
+      "practice": "れんしゅう",
+      "goal": "力をみせよう"
+    },
+    "nextStep": "次: {step}",
+    "seeHowYouDid": "けっかを見る",
+    "checking": "目標をたしかめています…",
+    "completeHeading": "課題クリア！",
+    "completeSubheading": "目標をたっせいしました。よくがんばりました！",
+    "soCloseHeading": "おしい！",
+    "bestSoFar": "これまでの最高: {best}% — 目標 {goal}%",
+    "tryOneMoreTime": "もう一度ちょうせんして目標をめざそう。",
+    "tryAgain": "もう一度",
+    "backHome": "ホームにもどる",
+    "checkFailed": "いま目標をかくにんできませんでした。",
+    "checkAgain": "もう一度かくにん",
+    "stopForNow": "ここでやめる"
   }
 }

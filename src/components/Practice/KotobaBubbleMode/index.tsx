@@ -21,6 +21,7 @@ import { stripFurigana } from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useAuth } from '@/contexts/AuthContext';
+import { useQuestHandoff } from '@/contexts/QuestHandoffContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { useCombo } from '@/hooks/useCombo';
 import { usePracticeSentences } from '@/hooks/usePracticeSentences';
@@ -58,6 +59,7 @@ function buildOptions(sentence: PracticeSentence): string[] {
 export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBubbleModeProps) {
   const t = useTranslations('Practice.kotobaBubble');
   const tCommon = useTranslations('Practice.common');
+  const tQuest = useTranslations('AssignmentQuest');
   const tBack = useTranslations('Common');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
@@ -105,6 +107,9 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
   // Session tracking. The combo meter replaces the old local streak counter —
   // one shared mechanic (chip + flat bonuses) across review and every game.
   const { startSession, recordAnswer, endSession, addBonusXp } = useProgress();
+  // This mode's celebration opens its sentence review rather than leaving, so
+  // the quest hands off from the review screen — the actual way out.
+  const handoff = useQuestHandoff();
   const combo = useCombo(addBonusXp);
   // Stable per-session pick so the completion phrase doesn't flicker on re-render.
   const praiseSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
@@ -323,7 +328,9 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
         })}
         extra={bestStreak >= 3 ? t('bestStreakRow', { count: bestStreak }) : undefined}
         mode="kotoba-bubble"
+        exitLabel={t('sentenceReview')}
         onExit={() => setShowSummary(true)}
+        disableHandoff
       />
     );
   }
@@ -418,11 +425,16 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
           </Button>
           <Button
             variant="outlined"
-            onClick={onExit}
+            onClick={handoff ? handoff.onNext : onExit}
             sx={{ borderRadius: 3, textTransform: 'none' }}
           >
-            {tCommon('backToDeck')}
+            {handoff?.label ?? tCommon('backToDeck')}
           </Button>
+          {handoff && (
+            <Button onClick={handoff.onStop} sx={{ textTransform: 'none' }}>
+              {tQuest('stopForNow')}
+            </Button>
+          )}
         </Stack>
       </Box>
     );

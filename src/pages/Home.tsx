@@ -37,6 +37,7 @@ import { useDecks } from '@/hooks/useDecks';
 import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
 import { useGroups } from '@/hooks/useGroups';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
+import { useStartAssignmentQuest } from '@/hooks/usePracticeChain';
 import type { HomeData } from '@/lib/dbMappers';
 import { resolveTimeOfDay } from '@/lib/timeOfDay';
 import type { SectionKey } from '@/types/homeSections';
@@ -313,6 +314,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
   const { groups, loading: groupsLoading, createGroup, pinGroup } = useGroups(homeSections.groups);
   const { leaderboard } = useGroupLeaderboard(undefined, homeSections.leaderboard);
   const router = useRouter();
+  const startQuest = useStartAssignmentQuest();
 
   const pendingAssignments = assignments.filter((a) => !a.completed_at);
   const [shareDeckId, setShareDeckId] = useState<string | null>(null);
@@ -550,7 +552,12 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
                   <AssignmentCard
                     key={a.id}
                     assignment={a}
-                    onStudy={(deckId) => router.push(`/deck/${deckId}`)}
+                    onStart={(assignment) =>
+                      startQuest(
+                        assignment,
+                        decks.find((d) => d.id === assignment.deck_id),
+                      )
+                    }
                   />
                 ))}
               </Stack>
