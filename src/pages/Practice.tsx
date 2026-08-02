@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
-import { BatchPicker } from '@/components/Practice/BatchPicker';
+import { BatchPicker, maxBatchForMode } from '@/components/Practice/BatchPicker';
 import { FillMode } from '@/components/Practice/FillMode';
 import { KotobaBubbleMode } from '@/components/Practice/KotobaBubbleMode';
 import { KotobaBubbleSetup } from '@/components/Practice/KotobaBubbleMode/KotobaBubbleSetup';
@@ -147,7 +147,9 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
     );
   }
 
-  const effectiveBatchSize = batchSize ?? modeCards.length;
+  // A pre-sized leg never sees the picker, so its per-mode cap is applied here
+  // too — twelve Match cards would be twenty-four tiles on screen.
+  const effectiveBatchSize = batchSize ?? Math.min(modeCards.length, maxBatchForMode(mode));
 
   return (
     <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
