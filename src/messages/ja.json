@@ -1299,7 +1299,7 @@
       "newHereSwitch": "はじめての方はこちら",
       "signInToJoinHint": "お持ちのアカウントでログインして参加します。",
       "signInAndJoinButton": "ログインして参加",
-      "leavingCurrentGroup": "今のグループと、そこで共有されているデッキからは抜けます。",
+      "joiningAnotherGroup": "今のグループはそのままで、このグループにも入ります。",
       "yourAccount": "あなたのアカウント",
       "joinErrors": {
         "invalidCode": "この招待コードは使えません。",

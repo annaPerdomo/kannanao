@@ -9,8 +9,8 @@ import { joinWithCurrentAccount } from './joinRequests';
 interface JoinConfirmProps {
   code: string;
   accountName: string;
-  /** Already learning in another group — joining this one replaces it. */
-  switchingGroups: boolean;
+  /** Already learning in another group — this one is added alongside it. */
+  alreadyInAGroup: boolean;
   onUseAnotherAccount: () => void;
 }
 
@@ -18,7 +18,7 @@ interface JoinConfirmProps {
 export function JoinConfirm({
   code,
   accountName,
-  switchingGroups,
+  alreadyInAGroup,
   onUseAnotherAccount,
 }: JoinConfirmProps) {
   const t = useTranslations('Group.joinPage');
@@ -51,9 +51,9 @@ export function JoinConfirm({
         {t('keepsYourStuff')}
       </Typography>
 
-      {switchingGroups && (
+      {alreadyInAGroup && (
         <Alert severity="info" sx={{ borderRadius: 2 }}>
-          {t('leavingCurrentGroup')}
+          {t('joiningAnotherGroup')}
         </Alert>
       )}
 

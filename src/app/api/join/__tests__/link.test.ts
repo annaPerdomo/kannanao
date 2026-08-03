@@ -33,20 +33,39 @@ function setTable(table: string, data: unknown, error: unknown = null) {
 
 const calls: { table: string; method: string; args: unknown[] }[] = [];
 
-/** Thenable query chain: every builder method returns itself, awaiting resolves. */
+/**
+ * Thenable query chain: every builder method returns itself, awaiting resolves.
+ * `eq` filters the seeded rows, because membership checks differ only by the
+ * group they ask about.
+ */
 function makeChain(table: string) {
-  const result = () => tableData[table] ?? { data: [], error: null };
+  const filters: [string, unknown][] = [];
+  const result = () => {
+    const { data, error } = tableData[table] ?? { data: [], error: null };
+    if (!Array.isArray(data)) return { data, error };
+    const rows = data.filter((row) =>
+      filters.every(([col, value]) => (row as Record<string, unknown>)[col] === value),
+    );
+    return { data: rows, error };
+  };
   const chain: Record<string, unknown> = {};
-  ['select', 'eq', 'limit', 'update', 'insert', 'upsert', 'delete'].forEach((m) => {
+  ['select', 'or', 'order', 'limit', 'update', 'insert', 'upsert', 'delete'].forEach((m) => {
     chain[m] = vi.fn((...args: unknown[]) => {
       calls.push({ table, method: m, args });
       return chain;
     });
   });
-  chain.single = vi.fn(() => {
+  chain.eq = vi.fn((...args: unknown[]) => {
+    calls.push({ table, method: 'eq', args });
+    filters.push([args[0] as string, args[1]]);
+    return chain;
+  });
+  const first = () => {
     const { data, error } = result();
     return Promise.resolve({ data: Array.isArray(data) ? (data[0] ?? null) : data, error });
-  });
+  };
+  chain.single = vi.fn(first);
+  chain.maybeSingle = vi.fn(first);
   chain.then = (resolve: (v: unknown) => unknown) => Promise.resolve(result()).then(resolve);
   return chain;
 }
@@ -73,6 +92,7 @@ function makeRequest(body: unknown = { code: 'ABC123' }) {
 
 const INVITE = {
   id: 'inv1',
+  code: 'ABC123',
   organizer_id: 'org1',
   group_id: 'g1',
   max_uses: null,
@@ -84,9 +104,16 @@ function profileUpdate() {
   return calls.find((c) => c.table === 'profiles' && c.method === 'update');
 }
 
-/** The membership the route reads back off the database, not off the auth cache. */
-function setStoredMembership(organizerId: string | null, groupId: string | null) {
-  setTable('profiles', [{ organizer_id: organizerId, group_id: groupId }]);
+/** Groups this account already learns in, as group_members rows. */
+function setStoredMemberships(rows: { organizer_id: string; group_id: string }[]) {
+  setTable(
+    'group_members',
+    rows.map((r) => ({ ...r, member_id: 'user1' })),
+  );
+}
+
+function membershipUpsert() {
+  return calls.find((c) => c.table === 'group_members' && c.method === 'upsert');
 }
 
 beforeEach(() => {
@@ -100,9 +127,10 @@ beforeEach(() => {
     group_id: null,
   });
   setTable('invite_codes', [INVITE]);
-  setStoredMembership(null, null);
+  setStoredMemberships([]);
   setTable('groups', []);
   setTable('decks', []);
+  setTable('assignments', []);
 });
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -112,7 +140,12 @@ describe('POST /api/join/link', () => {
     const res = await POST(makeRequest());
 
     expect(res.status).toBe(200);
-    await expect(res.json()).resolves.toEqual({ success: true });
+    await expect(res.json()).resolves.toMatchObject({ success: true });
+    expect(membershipUpsert()?.args[0]).toMatchObject({
+      group_id: 'g1',
+      member_id: 'user1',
+      organizer_id: 'org1',
+    });
     // account_type is billing state — joining a group must never write it.
     expect(profileUpdate()?.args[0]).toEqual({ organizer_id: 'org1', group_id: 'g1' });
   });
@@ -126,52 +159,61 @@ describe('POST /api/join/link', () => {
     expect(profileUpdate()?.args[0]).toEqual({ organizer_id: 'org1', group_id: 'g1' });
   });
 
-  it('revokes the previous organizer’s shared decks when switching groups', async () => {
-    setStoredMembership('old-org', 'old-group');
+  // Someone can take an advanced conversation group and a business Japanese
+  // group in the same term; the second code must not evict them from the first.
+  it('adds the group alongside the one the account is already in', async () => {
+    setStoredMemberships([{ organizer_id: 'old-org', group_id: 'old-group' }]);
+
+    const res = await POST(makeRequest());
+
+    expect(res.status).toBe(200);
+    expect(membershipUpsert()?.args[0]).toMatchObject({ group_id: 'g1', organizer_id: 'org1' });
+    // The old group keeps its decks: the learner is still in it.
+    expect(calls.find((c) => c.table === 'deck_shares' && c.method === 'delete')).toBeUndefined();
+    expect(calls.find((c) => c.table === 'group_members' && c.method === 'delete')).toBeUndefined();
+  });
+
+  // Assignments are one row per learner, so a group's open work is invisible to
+  // someone who joins after it was set unless they are caught up.
+  it('gives the joiner the group’s open assignments', async () => {
+    setTable('assignments', [
+      {
+        member_id: 'other',
+        group_id: 'g1',
+        deck_id: 'd1',
+        title: 'Week 1',
+        note: null,
+        due_date: '2099-01-01',
+        available_on: null,
+        required_accuracy: null,
+        required_mode: null,
+      },
+    ]);
 
     await POST(makeRequest());
 
-    const del = calls.find((c) => c.table === 'deck_shares' && c.method === 'delete');
-    expect(del).toBeDefined();
-    const eqArgs = calls
-      .filter((c) => c.table === 'deck_shares' && c.method === 'eq')
-      .map((c) => c.args);
-    expect(eqArgs).toContainEqual(['owner_id', 'old-org']);
-    expect(eqArgs).toContainEqual(['shared_with', 'user1']);
+    const insert = calls.find((c) => c.table === 'assignments' && c.method === 'insert');
+    expect(insert?.args[0]).toEqual([
+      expect.objectContaining({ member_id: 'user1', deck_id: 'd1', title: 'Week 1' }),
+    ]);
   });
 
-  it('revokes on the stored membership even when the cached profile is stale', async () => {
-    // The auth cache is per-instance and up to 60s old: a second group change
-    // within the minute can be served by an instance that still thinks the
-    // account is in no group. Trusting it would leave the old decks shared.
-    authUser.organizer_id = null;
-    setStoredMembership('old-org', 'old-group');
-
-    await POST(makeRequest());
-
-    const eqArgs = calls
-      .filter((c) => c.table === 'deck_shares' && c.method === 'eq')
-      .map((c) => c.args);
-    expect(eqArgs).toContainEqual(['owner_id', 'old-org']);
-  });
-
-  it('fails closed without burning the invite when membership cannot be read', async () => {
-    setTable('profiles', null, { message: 'boom' });
+  it('releases the invite when the membership cannot be written', async () => {
+    setTable('group_members', null, { message: 'boom' });
 
     const res = await POST(makeRequest());
 
     expect(res.status).toBe(500);
-    expect(calls.find((c) => c.table === 'invite_codes' && c.method === 'update')).toBeUndefined();
-  });
-
-  it('does not revoke anything when the account was in no group', async () => {
-    await POST(makeRequest());
-
-    expect(calls.find((c) => c.table === 'deck_shares' && c.method === 'delete')).toBeUndefined();
+    const inviteUpdates = calls.filter((c) => c.table === 'invite_codes' && c.method === 'update');
+    // Claimed, then handed straight back.
+    expect(inviteUpdates).toHaveLength(2);
   });
 
   it('shares the organizer decks it does not already share', async () => {
-    setTable('decks', [{ id: 'd1' }, { id: 'd2' }]);
+    setTable('decks', [
+      { id: 'd1', user_id: 'org1' },
+      { id: 'd2', user_id: 'org1' },
+    ]);
 
     await POST(makeRequest());
 
@@ -202,7 +244,7 @@ describe('POST /api/join/link', () => {
 
   it('is a no-op when the account is already in that group', async () => {
     authUser.account_type = 'member';
-    setStoredMembership('org1', 'g1');
+    setStoredMemberships([{ organizer_id: 'org1', group_id: 'g1' }]);
 
     const res = await POST(makeRequest());
 

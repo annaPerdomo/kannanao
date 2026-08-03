@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 
 import { getProfileForUser, getUserFromToken } from '../../_lib/authCache';
 import { rateLimit } from '../../_lib/rateLimit';
+import { memberIdsFor, membershipsOf } from '../_lib/membership';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 import { weekStart } from '../_lib/weekStart';
 
@@ -48,6 +49,7 @@ export async function GET(req: NextRequest) {
   // The group root. Without a ?groupId= this is the home leaderboard: prefer
   // the group the account learns in, fall back to its own when it isn't in one.
   const requestedGroupId = req.nextUrl.searchParams.get('groupId');
+  const memberships = await membershipsOf(profile.id);
   let organizerId: string | null;
   let groupId: string | null;
 
@@ -63,14 +65,20 @@ export async function GET(req: NextRequest) {
     // ?groupId= is caller input and the roster below follows whichever organizer
     // it resolves to, so unchecked it hands any signed-in account the names and
     // study stats of a group they have nothing to do with.
-    if (group.organizer_id !== profile.id && profile.group_id !== requestedGroupId) {
+    const inGroup = memberships.some((m) => m.group_id === requestedGroupId);
+    if (group.organizer_id !== profile.id && !inGroup) {
       return NextResponse.json({ error: 'Not part of this group.' }, { status: 403 });
     }
     organizerId = group.organizer_id;
     groupId = requestedGroupId;
   } else {
-    organizerId = profile.organizer_id ?? profile.id;
-    groupId = profile.organizer_id ? (profile.group_id ?? null) : null;
+    // No ?groupId= is the home leaderboard, which shows one board. A learner in
+    // several groups gets their primary one — the profile pointer — and falls
+    // back to any membership if that pointer is stale.
+    const primary =
+      memberships.find((m) => m.group_id === profile.group_id) ?? memberships[0] ?? null;
+    organizerId = primary?.organizer_id ?? profile.id;
+    groupId = primary?.group_id ?? null;
   }
 
   if (!organizerId) {
@@ -89,14 +97,14 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Get all group members + organizer
-  let membersQuery = sb
+  // Group roster plus the organizer, who appears on their own group's board.
+  const rosterIds = new Set(await memberIdsFor({ organizerId, groupId }));
+  rosterIds.add(organizerId);
+
+  const { data: members } = await sb
     .from('profiles')
     .select('id, username, display_name, avatar')
-    .or(`id.eq.${organizerId},organizer_id.eq.${organizerId}`);
-  if (groupId) membersQuery = membersQuery.or(`group_id.eq.${groupId},id.eq.${organizerId}`);
-
-  const { data: members } = await membersQuery;
+    .in('id', [...rosterIds]);
 
   if (!members || members.length === 0) {
     return NextResponse.json([]);

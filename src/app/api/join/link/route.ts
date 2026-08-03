@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { invalidateProfileCache } from '@/app/api/_lib/authCache';
+import { availabilityToday } from '@/lib/assignmentAvailability';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
@@ -9,12 +10,13 @@ import {
   type AuthenticatedUser,
   requireAuthenticatedUser,
 } from '../../_lib/requireAuthenticatedUser';
+import { addMembership, isMemberOfGroup } from '../../group/_lib/membership';
 import { getServiceSupabase } from '../../group/_lib/serviceSupabase';
+import { catchUpGroupAssignments } from '../_lib/catchUpAssignments';
 import {
   checkInvite,
   claimInviteUse,
   releaseInviteClaim,
-  revokeOrganizerDeckShares,
   shareOrganizerDecks,
 } from '../_lib/invite';
 
@@ -66,30 +68,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Not off the authenticated profile: that one is a 60s cache invalidated only
-  // on the instance that wrote it, so a second group change within the minute
-  // can read the pre-join state and skip the revoke below. Fail closed.
-  const { data: current, error: currentError } = await sb
-    .from('profiles')
-    .select('organizer_id, group_id')
-    .eq('id', user.id)
-    .single();
-
-  if (currentError || !current) {
-    logger.error('Failed to read current membership', {
-      route: ROUTE,
-      error: currentError?.message,
-    });
+  const targetGroupId = invite.group_id ?? null;
+  if (!targetGroupId) {
+    logger.error('Invite has no group', { route: ROUTE, inviteId: invite.id });
     return NextResponse.json(
       { error: 'Failed to join the group.', code: 'joinFailed' },
       { status: 500 },
     );
   }
 
-  const currentOrganizerId = current.organizer_id ?? null;
-  const targetGroupId = invite.group_id ?? null;
-  // Re-scanning the same code must not burn another use.
-  if (currentOrganizerId === invite.organizer_id && (current.group_id ?? null) === targetGroupId) {
+  // Re-scanning a code you have already redeemed must not burn another use.
+  if (await isMemberOfGroup(user.id, targetGroupId)) {
     return NextResponse.json({ success: true, alreadyJoined: true });
   }
 
@@ -103,15 +92,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const previousOrganizerId = currentOrganizerId;
+  // Joining adds a group, it never replaces one: the same learner can be taking
+  // an advanced conversation group and a business Japanese group in the same
+  // term, and redeeming the second code must not evict them from the first.
+  const { error: membershipError } = await addMembership(sb, {
+    memberId: user.id,
+    groupId: targetGroupId,
+    organizerId: invite.organizer_id,
+  });
 
-  const { error: updateError } = await sb
-    .from('profiles')
-    .update({ organizer_id: invite.organizer_id, group_id: targetGroupId })
-    .eq('id', user.id);
-
-  if (updateError) {
-    logger.error('Failed to link account to group', { route: ROUTE, error: updateError.message });
+  if (membershipError) {
+    logger.error('Failed to link account to group', { route: ROUTE, error: membershipError });
     await releaseInviteClaim(sb, invite);
     return NextResponse.json(
       { error: 'Failed to join the group.', code: 'joinFailed' },
@@ -119,12 +110,31 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // The profile columns are the primary-group pointer — what the UI names when
+  // it can only name one — so the newest group wins. Membership itself is the
+  // group_members row above; a failure here costs a label, not access.
+  const { error: updateError } = await sb
+    .from('profiles')
+    .update({ organizer_id: invite.organizer_id, group_id: targetGroupId })
+    .eq('id', user.id);
+
+  if (updateError) {
+    logger.warn('Failed to update primary group pointer', {
+      route: ROUTE,
+      error: updateError.message,
+    });
+  }
+
   invalidateProfileCache(user.id);
 
-  if (previousOrganizerId && previousOrganizerId !== invite.organizer_id) {
-    await revokeOrganizerDeckShares(sb, previousOrganizerId, user.id, ROUTE);
-  }
   await shareOrganizerDecks(sb, invite.organizer_id, user.id, ROUTE);
+  const caughtUp = await catchUpGroupAssignments(sb, {
+    groupId: targetGroupId,
+    organizerId: invite.organizer_id,
+    memberId: user.id,
+    today: availabilityToday(),
+    route: ROUTE,
+  });
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, assignmentsAdded: caughtUp });
 }

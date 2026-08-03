@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
+import { addMembership } from '../group/_lib/membership';
 import { getUserFromToken } from './authCache';
 
 export const FAKE_DOMAIN = 'kannanao.local';
@@ -160,6 +161,14 @@ export async function handleProfileAction(
       .eq('id', userId);
     if (profileErr) return NextResponse.json({ error: profileErr.message }, { status: 500 });
 
+    if (update.organizer_id && update.group_id) {
+      await addMembership(serviceClient, {
+        memberId: userId,
+        groupId: update.group_id as string,
+        organizerId: update.organizer_id as string,
+      });
+    }
+
     return NextResponse.json({ message: `Account type changed to ${accountType}.` });
   }
 
@@ -178,11 +187,31 @@ export async function handleProfileAction(
       return NextResponse.json({ error: 'groupId is required.' }, { status: 400 });
     }
 
+    const { data: group } = await serviceClient
+      .from('groups')
+      .select('organizer_id')
+      .eq('id', groupId)
+      .single();
+    if (!group) return NextResponse.json({ error: 'Group not found.' }, { status: 404 });
+
     const { error: profileErr } = await serviceClient
       .from('profiles')
-      .update({ group_id: groupId })
+      .update({ organizer_id: group.organizer_id, group_id: groupId })
       .eq('id', userId);
     if (profileErr) return NextResponse.json({ error: profileErr.message }, { status: 500 });
+
+    // A correction, not a join: this moves the learner between one organizer's
+    // groups rather than adding a second one, so the old row goes.
+    await serviceClient
+      .from('group_members')
+      .delete()
+      .eq('member_id', userId)
+      .eq('organizer_id', group.organizer_id);
+    await addMembership(serviceClient, {
+      memberId: userId,
+      groupId,
+      organizerId: group.organizer_id,
+    });
 
     return NextResponse.json({ message: 'Group updated.' });
   }

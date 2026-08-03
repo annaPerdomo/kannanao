@@ -23,12 +23,12 @@ beforeEach(() => {
   Object.defineProperty(window, 'location', { value: { assign }, writable: true });
 });
 
-function renderConfirm({ switchingGroups = false } = {}) {
+function renderConfirm({ alreadyInAGroup = false } = {}) {
   renderWithProviders(
     <JoinConfirm
       code="ABC123"
       accountName="Kenji"
-      switchingGroups={switchingGroups}
+      alreadyInAGroup={alreadyInAGroup}
       onUseAnotherAccount={vi.fn()}
     />,
   );
@@ -69,14 +69,14 @@ describe('JoinConfirm', () => {
   });
 
   it('warns before replacing the group the account is already in', () => {
-    renderConfirm({ switchingGroups: true });
+    renderConfirm({ alreadyInAGroup: true });
 
-    expect(screen.getByText('leavingCurrentGroup')).toBeInTheDocument();
+    expect(screen.getByText('joiningAnotherGroup')).toBeInTheDocument();
   });
 
   it('says nothing about leaving when the account is in no group', () => {
     renderConfirm();
 
-    expect(screen.queryByText('leavingCurrentGroup')).not.toBeInTheDocument();
+    expect(screen.queryByText('joiningAnotherGroup')).not.toBeInTheDocument();
   });
 });

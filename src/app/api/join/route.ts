@@ -3,10 +3,13 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { LOCALES } from '@/i18n/config';
+import { availabilityToday } from '@/lib/assignmentAvailability';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../_lib/rateLimit';
+import { addMembership } from '../group/_lib/membership';
 import { getServiceSupabase } from '../group/_lib/serviceSupabase';
+import { catchUpGroupAssignments } from './_lib/catchUpAssignments';
 import {
   checkInvite,
   claimInviteUse,
@@ -133,7 +136,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to create profile.' }, { status: 500 });
   }
 
-  // 6. Auto-share all organizer's decks with the new member
+  // 6. Record the membership and catch the joiner up on the group's open work,
+  // then share the organizer's decks so those assignments have decks to open.
+  if (invite.group_id) {
+    await addMembership(sb, {
+      memberId: userId,
+      groupId: invite.group_id,
+      organizerId: invite.organizer_id,
+    });
+    await catchUpGroupAssignments(sb, {
+      groupId: invite.group_id,
+      organizerId: invite.organizer_id,
+      memberId: userId,
+      today: availabilityToday(),
+      route: '/api/join',
+    });
+  }
+
   await shareOrganizerDecks(sb, invite.organizer_id, userId, '/api/join');
 
   // 7. Sign in the new user and return session. This must NOT run on the

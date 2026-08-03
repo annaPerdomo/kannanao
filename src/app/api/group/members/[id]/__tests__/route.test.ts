@@ -70,6 +70,7 @@ describe('GET /api/group/members/[id] — weak words', () => {
     for (const k of Object.keys(tableData)) delete tableData[k];
     requireOrganizerAccountMock.mockResolvedValue(ORGANIZER);
     setTable('profiles', { id: 'm1', username: 'kid', display_name: 'Kid' });
+    setTable('group_members', [{ member_id: 'm1', group_id: 'g1', organizer_id: 'org-1' }]);
   });
 
   it('returns 403 for a member account', async () => {
@@ -82,7 +83,8 @@ describe('GET /api/group/members/[id] — weak words', () => {
   });
 
   it("returns 404 when the member doesn't belong to this organizer", async () => {
-    // profiles lookup filters organizer_id = org; a foreign member resolves null.
+    // A learner outside this organizer's groups has no membership row.
+    setTable('group_members', []);
     setTable('profiles', null, { message: 'no rows' });
     const res = await GET(makeRequest(), { params });
     expect(res.status).toBe(404);

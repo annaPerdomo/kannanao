@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { memberIdsFor } from '../_lib/membership';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
@@ -30,14 +31,12 @@ export async function GET(req: NextRequest) {
   // Optional group filter
   const groupId = req.nextUrl.searchParams.get('groupId');
 
-  // Get all members
-  let membersQuery = sb
+  const rosterIds = await memberIdsFor({ organizerId: orgCheck.id, groupId });
+
+  const { data: members, error: membersErr } = await sb
     .from('profiles')
     .select('id, display_name, username')
-    .eq('organizer_id', orgCheck.id);
-  if (groupId) membersQuery = membersQuery.eq('group_id', groupId);
-
-  const { data: members, error: membersErr } = await membersQuery;
+    .in('id', rosterIds);
 
   if (membersErr) {
     logger.error('Failed to fetch members for feed', {

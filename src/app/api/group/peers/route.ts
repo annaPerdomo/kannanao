@@ -7,6 +7,7 @@ import {
   type AuthenticatedUser,
   requireAuthenticatedUser,
 } from '../../_lib/requireAuthenticatedUser';
+import { memberIdsFor, membershipsOf } from '../_lib/membership';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
@@ -22,32 +23,45 @@ export async function GET(req: NextRequest) {
 
   const sb = getServiceSupabase();
 
-  // Both queries run for everyone: an account can run its own group AND learn
-  // in someone else's, and should be able to message people on both sides.
-  const [ownMembersRes, groupPeersRes, organizerRes] = await Promise.all([
+  // Both sides run for everyone: an account can run its own groups AND learn in
+  // other people's, and should be able to message people on both sides. A
+  // learner in two groups gets the classmates and the organizer of each.
+  const memberships = await membershipsOf(user.id);
+  const organizerIds = [...new Set(memberships.map((m) => m.organizer_id))];
+
+  const classmateIds = new Set<string>();
+  for (const membership of memberships) {
+    for (const id of await memberIdsFor({
+      organizerId: membership.organizer_id,
+      groupId: membership.group_id,
+    })) {
+      if (id !== user.id) classmateIds.add(id);
+    }
+  }
+
+  const [ownMembersRes, peersRes, organizersRes] = await Promise.all([
     sb
       .from('profiles')
       .select('id, username, display_name, avatar')
-      .eq('organizer_id', user.id)
+      .in('id', await memberIdsFor({ organizerId: user.id }))
       .order('username'),
-    user.organizer_id
+    classmateIds.size
       ? sb
           .from('profiles')
           .select('id, username, display_name, avatar')
-          .eq('organizer_id', user.organizer_id)
-          .neq('id', user.id)
+          .in('id', [...classmateIds])
           .order('username')
       : Promise.resolve({ data: [], error: null }),
-    user.organizer_id
+    organizerIds.length
       ? sb
           .from('profiles')
           .select('id, username, display_name, avatar')
-          .eq('id', user.organizer_id)
-          .single()
-      : Promise.resolve({ data: null, error: null }),
+          .in('id', organizerIds)
+          .order('username')
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
-  for (const res of [ownMembersRes, groupPeersRes]) {
+  for (const res of [ownMembersRes, peersRes, organizersRes]) {
     if (res.error) {
       logger.error('Failed to fetch peers', {
         route: '/api/group/peers',
@@ -56,13 +70,12 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Own organizer first, then everyone else. Deduped because an account that
+  // Own organizers first, then everyone else. Deduped because an account that
   // joined a group whose organizer is also one of its own members would
   // otherwise appear twice.
   const byId = new Map<string, { role: string; [k: string]: unknown }>();
-  if (organizerRes.data)
-    byId.set(organizerRes.data.id, { ...organizerRes.data, role: 'organizer' });
-  for (const p of [...(groupPeersRes.data ?? []), ...(ownMembersRes.data ?? [])]) {
+  for (const o of organizersRes.data ?? []) byId.set(o.id, { ...o, role: 'organizer' });
+  for (const p of [...(peersRes.data ?? []), ...(ownMembersRes.data ?? [])]) {
     if (!byId.has(p.id)) byId.set(p.id, { ...p, role: 'member' });
   }
 

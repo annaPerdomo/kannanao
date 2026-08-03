@@ -21,16 +21,17 @@ function setTable(table: string, data: unknown, error: unknown = null) {
   tableData[table] = { data, error };
 }
 
-const orFilters: string[] = [];
+/** ids the roster query asked profiles for, so tests can assert who is on it. */
+const rosterIds: string[][] = [];
 
 function makeChain(table: string) {
   const result = () => tableData[table] ?? { data: [], error: null };
   const chain: Record<string, unknown> = {};
-  ['select', 'eq', 'in', 'gte'].forEach((m) => {
+  ['select', 'eq', 'gte', 'or', 'order'].forEach((m) => {
     chain[m] = vi.fn(() => chain);
   });
-  chain.or = vi.fn((filter: string) => {
-    if (table === 'profiles') orFilters.push(filter);
+  chain.in = vi.fn((_col: string, ids: string[]) => {
+    if (table === 'profiles') rosterIds.push([...ids].sort());
     return chain;
   });
   chain.single = vi.fn(() => {
@@ -58,7 +59,7 @@ function makeRequest(query = '') {
 beforeEach(() => {
   _resetStore();
   vi.clearAllMocks();
-  orFilters.length = 0;
+  rosterIds.length = 0;
   for (const k of Object.keys(tableData)) delete tableData[k];
   process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://localhost:54321';
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
@@ -70,6 +71,7 @@ beforeEach(() => {
     account_type: 'member',
   });
   setTable('groups', [{ id: 'g1', organizer_id: 'org1', show_leaderboard: true }]);
+  setTable('group_members', [{ group_id: 'g1', member_id: 'user1', organizer_id: 'org1' }]);
   setTable('profiles', [{ id: 'user1', username: 'kenji', display_name: 'Kenji', avatar: null }]);
   setTable('study_sessions', []);
   setTable('user_progress', []);
@@ -103,11 +105,13 @@ describe('GET /api/group/leaderboard', () => {
 
   it('lets an organizer read a group they run', async () => {
     getProfileForUserMock.mockResolvedValue({ id: 'org1', organizer_id: null, group_id: null });
+    setTable('group_members', [{ group_id: 'g1', member_id: 'user1', organizer_id: 'org1' }]);
 
     const res = await GET(makeRequest('?groupId=g1'));
 
     expect(res.status).toBe(200);
-    expect(orFilters[0]).toBe('id.eq.org1,organizer_id.eq.org1');
+    // The group's learners plus the organizer, who ranks on their own board.
+    expect(rosterIds[0]).toEqual(['org1', 'user1']);
   });
 
   it('lets a learner read the group they are in', async () => {
@@ -125,11 +129,12 @@ describe('GET /api/group/leaderboard', () => {
       account_type: 'member',
     });
     setTable('groups', [{ id: 'g1', organizer_id: 'org1', show_leaderboard: true }]);
+    setTable('group_members', [{ group_id: 'g2', member_id: 'user1', organizer_id: 'org2' }]);
 
     const res = await GET(makeRequest('?groupId=g1'));
 
     expect(res.status).toBe(403);
-    expect(orFilters).toEqual([]);
+    expect(rosterIds).toEqual([]);
   });
 
   it('404s an unknown groupId', async () => {

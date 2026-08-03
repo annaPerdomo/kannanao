@@ -30,15 +30,20 @@ function setTable(table: string, data: unknown, error: unknown = null) {
 
 const upsertMock = vi.fn();
 const eqCalls: { table: string; args: unknown[] }[] = [];
+const inCalls: { table: string; args: unknown[] }[] = [];
 
 function makeChain(table: string) {
   const result = () => tableData[table] ?? { data: null, error: null };
   const chain: Record<string, unknown> = {};
-  ['select', 'in', 'order', 'limit', 'or'].forEach((m) => {
+  ['select', 'order', 'limit', 'or'].forEach((m) => {
     chain[m] = vi.fn(() => chain);
   });
   chain.eq = vi.fn((...args: unknown[]) => {
     eqCalls.push({ table, args });
+    return chain;
+  });
+  chain.in = vi.fn((...args: unknown[]) => {
+    inCalls.push({ table, args });
     return chain;
   });
   chain.upsert = vi.fn((...args: unknown[]) => {
@@ -89,7 +94,7 @@ describe('POST /api/group/assignments (mastery goals)', () => {
     for (const k of Object.keys(tableData)) delete tableData[k];
     requireOrganizerAccountMock.mockResolvedValue(ORGANIZER);
     setTable('groups', { id: 'g1' });
-    setTable('profiles', [{ id: 'm1' }]);
+    setTable('group_members', [{ member_id: 'm1' }]);
     setTable('assignments', [{ id: 'a1' }]);
   });
 
@@ -141,6 +146,7 @@ describe('GET /api/group/assignments', () => {
     _resetStore();
     for (const k of Object.keys(tableData)) delete tableData[k];
     eqCalls.length = 0;
+    inCalls.length = 0;
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://localhost:54321';
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
     getUserFromTokenMock.mockResolvedValue({ id: 'user-1' });
@@ -181,25 +187,34 @@ describe('GET /api/group/assignments', () => {
     expect(res.status).toBe(500);
   });
 
-  it('scopes a learner’s own list to the organizer whose group they are in', async () => {
+  it('scopes a learner’s own list to the organizers whose groups they are in', async () => {
     getProfileForUserMock.mockResolvedValue({ account_type: 'member', organizer_id: 'org-2' });
+    setTable('group_members', [
+      { group_id: 'g1', organizer_id: 'org-2' },
+      { group_id: 'g9', organizer_id: 'org-3' },
+    ]);
     setTable('assignments', []);
 
     await GET(makeGetRequest(true, '?scope=mine'));
 
     const assignmentEqs = eqCalls.filter((c) => c.table === 'assignments').map((c) => c.args);
     expect(assignmentEqs).toContainEqual(['member_id', 'user-1']);
-    // Without this the previous organizer's assignments survive a group switch.
-    expect(assignmentEqs).toContainEqual(['organizer_id', 'org-2']);
+    // Both groups: an advanced group and a business Japanese group each set
+    // homework, and neither may hide the other. A former organizer, whose
+    // membership row is gone, drops off the list.
+    const assignmentIns = inCalls.filter((c) => c.table === 'assignments').map((c) => c.args);
+    expect(assignmentIns).toContainEqual(['organizer_id', ['org-2', 'org-3']]);
   });
 
   it('does not scope by organizer when the account is in no group', async () => {
     getProfileForUserMock.mockResolvedValue({ account_type: 'member', organizer_id: null });
+    setTable('group_members', []);
     setTable('assignments', []);
 
     await GET(makeGetRequest(true, '?scope=mine'));
 
     const assignmentEqs = eqCalls.filter((c) => c.table === 'assignments').map((c) => c.args);
     expect(assignmentEqs).toEqual([['member_id', 'user-1']]);
+    expect(inCalls.filter((c) => c.table === 'assignments')).toEqual([]);
   });
 });

@@ -7,6 +7,7 @@ import { parseSticker } from '@/lib/stickers';
 import { rateLimit } from '../_lib/rateLimit';
 import { type AuthenticatedUser, requireAuthenticatedUser } from '../_lib/requireAuthenticatedUser';
 import { sendPushToUser } from '../_lib/sendPushNotification';
+import { isMemberOfOrganizer, membershipsOf } from '../group/_lib/membership';
 import { getServiceSupabase } from '../group/_lib/serviceSupabase';
 
 const RATE_LIMIT_POST = { windowMs: 60_000, max: 20 };
@@ -88,24 +89,27 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Both roles are checked for every sender: an account can run its own group
-  // and also learn in someone else's, and either one on its own allows this.
-  if (recipientId !== sender.organizer_id) {
+  // Both roles are checked for every sender: an account can run its own groups
+  // and also learn in other people's, and either one on its own allows this.
+  const myMemberships = await membershipsOf(sender.id);
+  const myOrganizerIds = new Set(myMemberships.map((m) => m.organizer_id));
+
+  if (!myOrganizerIds.has(recipientId)) {
     const { data: recipientProfile } = await sb
       .from('profiles')
-      .select('id, organizer_id')
+      .select('id')
       .eq('id', recipientId)
       .single();
-
-    // One of my members, or a peer under the same organizer as me.
-    const isMyMember = recipientProfile?.organizer_id === sender.id;
-    const isMyGroupPeer = Boolean(
-      sender.organizer_id && recipientProfile?.organizer_id === sender.organizer_id,
-    );
 
     if (!recipientProfile) {
       return NextResponse.json({ error: 'Recipient not found.' }, { status: 404 });
     }
+
+    // One of my own learners, or a classmate in a group we both belong to.
+    const isMyMember = await isMemberOfOrganizer(recipientId, sender.id);
+    const theirGroups = new Set((await membershipsOf(recipientId)).map((m) => m.group_id));
+    const isMyGroupPeer = myMemberships.some((m) => theirGroups.has(m.group_id));
+
     if (!isMyMember && !isMyGroupPeer) {
       return NextResponse.json(
         { error: 'You can only message people in your group.' },

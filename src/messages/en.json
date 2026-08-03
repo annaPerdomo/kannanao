@@ -1299,7 +1299,7 @@
       "newHereSwitch": "I'm new — create an account",
       "signInToJoinHint": "Sign in with your account to join.",
       "signInAndJoinButton": "Sign in & Join",
-      "leavingCurrentGroup": "You'll leave the group you're in now, and the decks it shared with you.",
+      "joiningAnotherGroup": "You'll be in this group as well as the one you're already in.",
       "yourAccount": "your account",
       "joinErrors": {
         "invalidCode": "That invite code doesn't work.",

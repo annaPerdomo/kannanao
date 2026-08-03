@@ -34,10 +34,13 @@ function makeChain(table: string) {
   const result = () => tableData[table] ?? { data: null, error: null };
   const asPromise = () => Promise.resolve(result());
   const chain: Record<string, unknown> = {};
-  ['select', 'eq', 'insert'].forEach((m) => {
+  ['select', 'eq', 'limit', 'insert'].forEach((m) => {
     chain[m] = vi.fn(() => chain);
   });
   chain.single = vi.fn(() => asPromise());
+  chain.maybeSingle = vi.fn(() => asPromise());
+  chain.then = (onful: (v: unknown) => unknown, onrej?: (e: unknown) => unknown) =>
+    asPromise().then(onful, onrej);
   return chain;
 }
 
@@ -78,6 +81,8 @@ describe('POST /api/messages', () => {
     vi.clearAllMocks();
     _resetStore();
     requireAuthenticatedUserMock.mockResolvedValue(MEMBER);
+    // The sender learns in org1's group, which is who they are messaging.
+    setTable('group_members', [{ group_id: 'g1', organizer_id: 'org1', member_id: 'm1' }]);
     setTable('direct_messages', {
       id: 'd1',
       sender_id: 'm1',
