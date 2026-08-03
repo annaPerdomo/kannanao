@@ -95,15 +95,34 @@ export const COUNTER_ITEMS: CounterItem[] = [
  */
 const QUANTITY_POOL = [1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
+/**
+ * Wrong readings learners actually produce, per series and number.
+ *
+ * These are not invented: they are the two mistakes on the summer packet's own
+ * answer sheet (しまい for 4, しちまい for 7 — the し/しち readings carried over
+ * from 四月・七月) plus the same over-regularisation applied to the counters
+ * that reject a plain number (よんにん for よにん, いちつ for ひとつ).
+ *
+ * Offering the real mistake makes a round a discrimination instead of a lookup.
+ * At most one appears per round, so three of the four chips are always real
+ * readings, and a wrong tap always shows the correct one.
+ */
+export const COUNTER_MISREADINGS: Record<CounterSeries, Partial<Record<number, string>>> = {
+  tsu: { 1: 'いちつ', 2: 'につ', 3: 'さんつ', 10: 'じゅうつ' },
+  mai: { 4: 'しまい', 7: 'しちまい' },
+  nin: { 1: 'いちにん', 2: 'ににん', 4: 'よんにん' },
+};
+
 /** Reading for `count` (1–10) in this counter series. */
 export function counterReading(series: CounterSeries, count: number): string {
   return COUNTER_READINGS[series][count - 1];
 }
 
 /**
- * Four shuffled answer chips: the correct reading, two neighbours from the same
- * series (±1, ±2 — the ones a learner actually mixes up) and one same-number
- * reading from another series (さんにん vs さんまい).
+ * Four shuffled answer chips: the correct reading, the mistake a learner
+ * actually makes for this number (when there is one), one same-number reading
+ * from another series (さんにん vs さんまい), and neighbours from the same
+ * series (±1, ±2) to fill.
  */
 export function buildCounterOptions(series: CounterSeries, count: number): string[] {
   const answer = counterReading(series, count);
@@ -113,7 +132,9 @@ export function buildCounterOptions(series: CounterSeries, count: number): strin
   const otherSeries = shuffle(COUNTER_SERIES.filter((s) => s !== series));
 
   const options = new Set<string>([answer]);
-  for (const reading of neighbours.slice(0, 2)) options.add(reading);
+  const misreading = COUNTER_MISREADINGS[series][count];
+  if (misreading) options.add(misreading);
+  for (const reading of neighbours.slice(0, misreading ? 1 : 2)) options.add(reading);
   options.add(counterReading(otherSeries[0], count));
 
   // Top up if any of the picks collided, so a round always offers four chips.
