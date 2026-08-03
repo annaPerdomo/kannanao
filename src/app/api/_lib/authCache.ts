@@ -149,6 +149,16 @@ export async function getProfileForUser(
   return promise;
 }
 
+/**
+ * Drop a cached profile after the route itself changed it, so the user's next
+ * request sees the new row instead of waiting out the TTL. Only clears this
+ * instance; other warm instances still honour the 60s bound.
+ */
+export function invalidateProfileCache(userId: string): void {
+  profileById.delete(userId);
+  profileInFlight.delete(userId);
+}
+
 /** Test-only: clears all cached verifications and in-flight requests. */
 export function _resetAuthCache(): void {
   userByToken.clear();

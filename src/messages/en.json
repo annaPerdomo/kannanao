@@ -1222,7 +1222,6 @@
       "joiningWithGroup": "You're joining <bold>{organizerName}</bold>'s group \"{groupName}\"",
       "joiningNoGroup": "You're joining <bold>{organizerName}</bold>'s study group",
       "usernameLabel": "Username",
-      "checking": "Checking...",
       "usernameHelperText": "Letters, numbers, _ or - (2-30 chars)",
       "displayNameLabel": "Display name (optional)",
       "displayNameHelperText": "The name shown in the app",
@@ -1231,7 +1230,25 @@
       "hidePassword": "Hide password",
       "showPassword": "Show password",
       "confirmPasswordLabel": "Confirm password",
-      "joinButton": "Join Study Group"
+      "joinButton": "Join Study Group",
+      "signedInAs": "You're signed in as <bold>{name}</bold>",
+      "keepsYourStuff": "Your decks and progress stay with you.",
+      "joinWithThisAccount": "Join with this account",
+      "useAnotherAccount": "Use a different account",
+      "alreadyHaveAccountSwitch": "I already have an account",
+      "newHereSwitch": "I'm new — create an account",
+      "signInToJoinHint": "Sign in with your account to join.",
+      "signInAndJoinButton": "Sign in & Join",
+      "leavingCurrentGroup": "You'll leave the group you're in now, and the decks it shared with you.",
+      "yourAccount": "your account",
+      "joinErrors": {
+        "invalidCode": "That invite code doesn't work.",
+        "inviteExpired": "This invite has expired. Ask for a new one!",
+        "inviteUsedUp": "This invite has been fully used. Ask for a new one!",
+        "ownInvite": "This is your own invite — share it with someone else to add them to your group.",
+        "inviteTaken": "Someone else just used this invite. Please try again!",
+        "joinFailed": "Couldn't join the group. Please try again."
+      }
     },
     "activityFeed": {
       "noActivity": "No recent activity yet.",

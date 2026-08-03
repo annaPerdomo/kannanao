@@ -7,6 +7,12 @@ import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../_lib/rateLimit';
 import { getServiceSupabase } from '../group/_lib/serviceSupabase';
+import {
+  checkInvite,
+  claimInviteUse,
+  releaseInviteClaim,
+  shareOrganizerDecks,
+} from './_lib/invite';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 5 };
 const GET_RATE_LIMIT = { windowMs: 60_000, max: 15 };
@@ -55,54 +61,24 @@ export async function POST(req: NextRequest) {
   const sb = getServiceSupabase();
 
   // 1. Validate invite code
-  const { data: invite, error: inviteError } = await sb
-    .from('invite_codes')
-    .select('*')
-    .eq('code', code)
-    .single();
-
-  if (inviteError || !invite) {
-    return NextResponse.json({ error: 'Invalid invite code.' }, { status: 404 });
-  }
-
-  if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
+  const checked = await checkInvite(sb, code);
+  if (!checked.ok) {
     return NextResponse.json(
-      { error: 'This invite has expired. Ask for a new one!' },
-      { status: 410 },
+      { error: checked.reason, code: checked.code },
+      { status: checked.status },
     );
   }
+  const invite = checked.invite;
 
-  if (invite.max_uses !== null && invite.times_used >= invite.max_uses) {
-    return NextResponse.json(
-      { error: 'This invite has been fully used. Ask for a new one!' },
-      { status: 410 },
-    );
-  }
-
-  // 2. Claim a use of the invite BEFORE creating the account. The WHERE clause
-  // compares times_used to the value we read, so two concurrent joins can't
-  // both claim the same slot and exceed max_uses (the loser sees 0 rows).
-  const { data: claim } = await sb
-    .from('invite_codes')
-    .update({ times_used: invite.times_used + 1 })
-    .eq('id', invite.id)
-    .eq('times_used', invite.times_used)
-    .select('id');
-
-  if (!claim || claim.length === 0) {
+  // 2. Claim a use of the invite BEFORE creating the account
+  if (!(await claimInviteUse(sb, invite))) {
     return NextResponse.json(
       { error: 'This invite was just used by someone else. Please try again!' },
       { status: 409 },
     );
   }
 
-  const releaseClaim = async () => {
-    await sb
-      .from('invite_codes')
-      .update({ times_used: invite.times_used })
-      .eq('id', invite.id)
-      .eq('times_used', invite.times_used + 1);
-  };
+  const releaseClaim = () => releaseInviteClaim(sb, invite);
 
   // 3. Check username uniqueness
   const { data: existing } = await sb
@@ -152,19 +128,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 6. Auto-share all organizer's decks with the new member
-  const { data: orgDecks } = await sb.from('decks').select('id').eq('user_id', invite.organizer_id);
-
-  if (orgDecks && orgDecks.length > 0) {
-    const shares = orgDecks.map((d: { id: string }) => ({
-      deck_id: d.id,
-      owner_id: invite.organizer_id,
-      shared_with: userId,
-    }));
-    const { error: shareError } = await sb.from('deck_shares').insert(shares);
-    if (shareError) {
-      logger.warn('Failed to auto-share decks', { route: '/api/join', error: shareError.message });
-    }
-  }
+  await shareOrganizerDecks(sb, invite.organizer_id, userId, '/api/join');
 
   // 7. Sign in the new user and return session. This must NOT run on the
   // shared service-role client: signInWithPassword stores a session on the
@@ -217,29 +181,11 @@ export async function GET(req: NextRequest) {
 
   const sb = getServiceSupabase();
 
-  const { data: invite, error } = await sb
-    .from('invite_codes')
-    .select('id, organizer_id, group_id, max_uses, times_used, expires_at')
-    .eq('code', code)
-    .single();
-
-  if (error || !invite) {
-    return NextResponse.json({ valid: false, reason: 'Invalid invite code.' });
+  const checked = await checkInvite(sb, code);
+  if (!checked.ok) {
+    return NextResponse.json({ valid: false, reason: checked.reason, code: checked.code });
   }
-
-  if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
-    return NextResponse.json({
-      valid: false,
-      reason: 'This invite has expired. Ask for a new one!',
-    });
-  }
-
-  if (invite.max_uses !== null && invite.times_used >= invite.max_uses) {
-    return NextResponse.json({
-      valid: false,
-      reason: 'This invite has been fully used. Ask for a new one!',
-    });
-  }
+  const invite = checked.invite;
 
   // Fetch organizer display name and group name
   const [organizerRes, groupRes] = await Promise.all([
