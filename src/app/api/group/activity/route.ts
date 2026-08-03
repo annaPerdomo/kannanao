@@ -21,10 +21,7 @@ interface SessionRow {
   started_at: string;
 }
 
-/**
- * GET — daily study activity for one group, for the dashboard's charts.
- * Days are cut in the viewer's timezone (see activityDays). Organizer-only.
- */
+/** Organizer-only. Days are cut in the viewer's timezone — see activityDays. */
 export async function GET(req: NextRequest) {
   const limited = await rateLimit(req, RATE_LIMIT);
   if (limited) return limited;
@@ -34,7 +31,12 @@ export async function GET(req: NextRequest) {
 
   const params = req.nextUrl.searchParams;
   const groupId = params.get('groupId');
-  const days = Math.min(MAX_DAYS, Math.max(1, Number(params.get('days')) || DEFAULT_DAYS));
+  // Floored: a fractional count walks every bucket off the day boundary, and
+  // the window then stops short of today.
+  const days = Math.min(
+    MAX_DAYS,
+    Math.max(1, Math.floor(Number(params.get('days'))) || DEFAULT_DAYS),
+  );
   const rawOffset = Number(params.get('tzOffset'));
   const tzOffset = Number.isFinite(rawOffset) ? Math.max(-840, Math.min(840, rawOffset)) : 0;
 
