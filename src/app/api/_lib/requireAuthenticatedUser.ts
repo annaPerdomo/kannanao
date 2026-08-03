@@ -7,6 +7,7 @@ export interface AuthenticatedUser {
   username: string;
   account_type: string;
   organizer_id: string | null;
+  group_id: string | null;
   display_name: string | null;
 }
 

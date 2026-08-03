@@ -21,64 +21,50 @@ export async function GET(req: NextRequest) {
   const user = authCheck as AuthenticatedUser;
 
   const sb = getServiceSupabase();
-  const peers: {
-    id: string;
-    username: string;
-    display_name: string | null;
-    avatar: string | null;
-    role: string;
-  }[] = [];
 
-  if (user.account_type === 'member' && !user.organizer_id) {
-    return NextResponse.json([], { status: 200 });
-  }
-
-  if (user.account_type === 'member' && user.organizer_id) {
-    // Members see other members in same group + their organizer
-    const [membersResult, organizerResult] = await Promise.all([
-      sb
-        .from('profiles')
-        .select('id, username, display_name, avatar')
-        .eq('organizer_id', user.organizer_id)
-        .neq('id', user.id)
-        .order('username'),
-      sb
-        .from('profiles')
-        .select('id, username, display_name, avatar')
-        .eq('id', user.organizer_id)
-        .single(),
-    ]);
-
-    if (membersResult.error) {
-      logger.error('Failed to fetch peers', {
-        route: '/api/group/peers',
-        error: membersResult.error.message,
-      });
-    }
-    if (organizerResult.data) {
-      peers.push({ ...organizerResult.data, role: 'organizer' });
-    }
-    if (membersResult.data) {
-      peers.push(...membersResult.data.map((m) => ({ ...m, role: 'member' })));
-    }
-  } else {
-    // Organizers see all their members
-    const { data, error } = await sb
+  // Both queries run for everyone: an account can run its own group AND learn
+  // in someone else's, and should be able to message people on both sides.
+  const [ownMembersRes, groupPeersRes, organizerRes] = await Promise.all([
+    sb
       .from('profiles')
       .select('id, username, display_name, avatar')
       .eq('organizer_id', user.id)
-      .order('username');
+      .order('username'),
+    user.organizer_id
+      ? sb
+          .from('profiles')
+          .select('id, username, display_name, avatar')
+          .eq('organizer_id', user.organizer_id)
+          .neq('id', user.id)
+          .order('username')
+      : Promise.resolve({ data: [], error: null }),
+    user.organizer_id
+      ? sb
+          .from('profiles')
+          .select('id, username, display_name, avatar')
+          .eq('id', user.organizer_id)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
 
-    if (error) {
+  for (const res of [ownMembersRes, groupPeersRes]) {
+    if (res.error) {
       logger.error('Failed to fetch peers', {
         route: '/api/group/peers',
-        error: error.message,
+        error: res.error.message,
       });
-    }
-    if (data) {
-      peers.push(...data.map((m) => ({ ...m, role: 'member' })));
     }
   }
 
-  return NextResponse.json(peers);
+  // Own organizer first, then everyone else. Deduped because an account that
+  // joined a group whose organizer is also one of its own members would
+  // otherwise appear twice.
+  const byId = new Map<string, { role: string; [k: string]: unknown }>();
+  if (organizerRes.data)
+    byId.set(organizerRes.data.id, { ...organizerRes.data, role: 'organizer' });
+  for (const p of [...(groupPeersRes.data ?? []), ...(ownMembersRes.data ?? [])]) {
+    if (!byId.has(p.id)) byId.set(p.id, { ...p, role: 'member' });
+  }
+
+  return NextResponse.json([...byId.values()]);
 }

@@ -88,41 +88,29 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Validate sender↔recipient relationship
-  if (sender.account_type === 'member') {
-    if (!sender.organizer_id) {
-      return NextResponse.json(
-        { error: 'Member account not linked to an organizer.' },
-        { status: 403 },
-      );
-    }
-    // Members can message their organizer or other members in the same group
-    if (recipientId !== sender.organizer_id) {
-      const { data: peer } = await sb
-        .from('profiles')
-        .select('id')
-        .eq('id', recipientId)
-        .eq('organizer_id', sender.organizer_id)
-        .single();
-
-      if (!peer) {
-        return NextResponse.json(
-          { error: 'You can only message members in your group.' },
-          { status: 403 },
-        );
-      }
-    }
-  } else {
-    // Organizers can only message their own members
-    const { data: member } = await sb
+  // Both roles are checked for every sender: an account can run its own group
+  // and also learn in someone else's, and either one on its own allows this.
+  if (recipientId !== sender.organizer_id) {
+    const { data: recipientProfile } = await sb
       .from('profiles')
-      .select('id')
+      .select('id, organizer_id')
       .eq('id', recipientId)
-      .eq('organizer_id', sender.id)
       .single();
 
-    if (!member) {
+    // One of my members, or a peer under the same organizer as me.
+    const isMyMember = recipientProfile?.organizer_id === sender.id;
+    const isMyGroupPeer = Boolean(
+      sender.organizer_id && recipientProfile?.organizer_id === sender.organizer_id,
+    );
+
+    if (!recipientProfile) {
       return NextResponse.json({ error: 'Recipient not found.' }, { status: 404 });
+    }
+    if (!isMyMember && !isMyGroupPeer) {
+      return NextResponse.json(
+        { error: 'You can only message people in your group.' },
+        { status: 403 },
+      );
     }
   }
 
