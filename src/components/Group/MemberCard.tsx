@@ -37,11 +37,7 @@ interface MemberCardProps {
   onClick: (id: string) => void;
 }
 
-/**
- * One member as a row in the dashboard's Members card: identity on top, the
- * numbers underneath. Three short lines instead of one wide one, so the row
- * stays readable in a third-of-the-screen column.
- */
+/** Stacked, not one wide row: this sits in a third-of-the-screen column. */
 export function MemberCard({ member, onClick }: MemberCardProps) {
   const theme = useTheme();
   const { brand } = theme.palette;

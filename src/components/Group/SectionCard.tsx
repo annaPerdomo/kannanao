@@ -14,9 +14,8 @@ interface SectionCardProps {
 }
 
 /**
- * The one card frame every panel on the group dashboard sits in. Fixed header
- * height and equal padding are what make a row of cards line up, so panels pass
- * their controls through `action` instead of drawing their own heading.
+ * Fixed header height and equal padding are what make a row of dashboard cards
+ * line up — pass controls through `action` rather than drawing your own heading.
  */
 export function SectionCard({ title, action, footer, children }: SectionCardProps) {
   const theme = useTheme();

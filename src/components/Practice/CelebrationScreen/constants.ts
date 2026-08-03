@@ -11,7 +11,8 @@ export type PracticeMode =
   | 'kana-build'
   | 'particle-quiz'
   | 'question-quiz'
-  | 'word-match';
+  | 'word-match'
+  | 'counter-quiz';
 export type CelebTheme =
   | 'confetti'
   | 'fireworks'
@@ -162,6 +163,7 @@ export const MODE_EMOJIS: Record<PracticeMode, string[]> = {
   'particle-quiz': ['🎏', '✨', '🌟', '📝', '🎯', '⭐'],
   'question-quiz': ['❓', '✨', '🌟', '💡', '🎯', '⭐'],
   'word-match': ['🍉', '✨', '🌟', '🔗', '🎯', '⭐'],
+  'counter-quiz': ['🧮', '✨', '🌟', '🔢', '🎯', '⭐'],
 };
 
 export const THEME_CONFIGS: Record<CelebTheme, ThemeConfig> = {

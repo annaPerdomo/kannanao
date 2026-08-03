@@ -6,13 +6,11 @@ import Typography from '@mui/material/Typography';
 
 export interface StruggleBar {
   id: string;
-  /** The word itself. */
   label: string;
-  /** Reading and meaning, or whatever context fits on one muted line. */
   sublabel?: string;
   /** Share of the members who tried it who keep missing it, 0–100. */
   pct: number;
-  /** The plain sentence behind the bar — hover, focus, and screen readers. */
+  /** Surfaced on hover, focus, and to screen readers. */
   detail: string;
 }
 

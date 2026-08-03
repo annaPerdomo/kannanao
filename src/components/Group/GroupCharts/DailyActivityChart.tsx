@@ -24,9 +24,9 @@ function parseDay(iso: string): Date {
 }
 
 /**
- * Cards studied per day for the whole group. One series, so one hue and no
- * legend: the card title says what is plotted. Values live on hover and focus
- * plus a direct label on the best day — a number over every column goes unread.
+ * One series, so one hue and no legend: the card title says what is plotted.
+ * Values live on hover and focus plus a direct label on the best day — a number
+ * over every column goes unread.
  */
 export function DailyActivityChart({ days, values }: DailyActivityChartProps) {
   const theme = useTheme();

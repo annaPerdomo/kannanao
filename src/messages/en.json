@@ -670,7 +670,9 @@
       "particlesTitle": "Particle Picker — Review | Tangodachi",
       "particlesDescription": "Fill in the right Japanese particle (は・が・を・に・の…) to complete sentences.",
       "questionsTitle": "Question Quest — Review | Tangodachi",
-      "questionsDescription": "Practice Japanese question words — pick the answer that fits each question."
+      "questionsDescription": "Practice Japanese question words — pick the answer that fits each question.",
+      "countingTitle": "How Many? — Review | Tangodachi",
+      "countingDescription": "Practice Japanese counters — count the things and pick まい・つ・にん."
     }
   },
   "Practice": {
@@ -871,6 +873,10 @@
       "particlePicker": {
         "title": "Particle Picker",
         "description": "Fill in は・が・を・に・の to finish each sentence."
+      },
+      "counterGame": {
+        "title": "How Many?",
+        "description": "Count the things, then pick まい・つ・にん the right way."
       }
     },
     "kanaBuilder": {
@@ -903,6 +909,45 @@
       "celebrationSubheading": "{count, plural, one {# word} other {# words}}",
       "celebrationExtra": "{matches} matches · {misses} misses",
       "loadError": "Couldn’t load your cards: {error}"
+    },
+    "counterGame": {
+      "title": "How Many?",
+      "howTo": "Count the things you see, then tap the right way to say that number.",
+      "pickPrompt": "How do you say this number?",
+      "answerIs": "{reading} — {item}",
+      "question": {
+        "tsu": "いくつ ですか。",
+        "mai": "なんまい ですか。",
+        "nin": "なんにん ですか。"
+      },
+      "celebrationHeading": "Counting star!",
+      "celebrationSubheading": "{correct} / {total} counted right",
+      "items": {
+        "apple": "{count, plural, one {# apple} other {# apples}}",
+        "baby": "{count, plural, one {# baby} other {# babies}}",
+        "ball": "{count, plural, one {# ball} other {# balls}}",
+        "balloon": "{count, plural, one {# balloon} other {# balloons}}",
+        "boy": "{count, plural, one {# boy} other {# boys}}",
+        "bread": "{count, plural, one {# slice of bread} other {# slices of bread}}",
+        "candy": "{count, plural, one {# candy} other {# candies}}",
+        "card": "{count, plural, one {# card} other {# cards}}",
+        "cook": "{count, plural, one {# cook} other {# cooks}}",
+        "cupcake": "{count, plural, one {# cupcake} other {# cupcakes}}",
+        "disc": "{count, plural, one {# disc} other {# discs}}",
+        "doctor": "{count, plural, one {# doctor} other {# doctors}}",
+        "donut": "{count, plural, one {# donut} other {# donuts}}",
+        "egg": "{count, plural, one {# egg} other {# eggs}}",
+        "girl": "{count, plural, one {# girl} other {# girls}}",
+        "paper": "{count, plural, one {# sheet of paper} other {# sheets of paper}}",
+        "person": "{count, plural, one {# person} other {# people}}",
+        "photo": "{count, plural, one {# photo} other {# photos}}",
+        "riceBall": "{count, plural, one {# rice ball} other {# rice balls}}",
+        "shirt": "{count, plural, one {# shirt} other {# shirts}}",
+        "student": "{count, plural, one {# student} other {# students}}",
+        "teacher": "{count, plural, one {# teacher} other {# teachers}}",
+        "ticket": "{count, plural, one {# ticket} other {# tickets}}",
+        "tissue": "{count, plural, one {# tissue} other {# tissues}}"
+      }
     }
   },
   "Group": {

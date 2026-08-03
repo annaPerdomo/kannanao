@@ -1,10 +1,12 @@
 /**
- * Day bucketing for the group activity charts.
- *
  * Days are cut in the *viewer's* timezone (minutes east of UTC, as the browser
  * reports it), not the server's: an evening session in New York belongs to that
- * evening, not to tomorrow in UTC, and a chart that says otherwise looks broken
- * to the only person reading it.
+ * evening, not to tomorrow in UTC.
+ *
+ * That offset is one scalar sampled now and applied to the whole window, so on
+ * the two DST days a year the boundary hour lands on the adjacent local day.
+ * Accepted — it smears a cell, never drops one. Exactness would mean shipping an
+ * IANA zone and bucketing with Intl.DateTimeFormat.
  */
 
 /** `YYYY-MM-DD` for an instant, shifted into the viewer's timezone. */

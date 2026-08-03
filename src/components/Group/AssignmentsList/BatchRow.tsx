@@ -38,11 +38,6 @@ function formatDate(dateStr: string, locale: string): string {
   return new Date(dateStr).toLocaleDateString(locale, { month: 'short', day: 'numeric' });
 }
 
-const DUE_COLORS = {
-  orange: { bg: 'rgba(234,179,8,0.12)', border: 'rgba(234,179,8,0.4)', text: '#B45309' },
-  red: { bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.4)', text: '#DC2626' },
-};
-
 interface BatchRowProps {
   batch: AssignmentBatch;
   onEdit: () => void;
@@ -57,6 +52,7 @@ export function BatchRow({ batch, onEdit, onDelete }: BatchRowProps) {
   const isDone = batch.completed === batch.total;
   const urgency = !isDone ? dueDateColor(batch.dueDate) : null;
   const goal = useGoalLabel()(batch.sample);
+  const urgencyColor = urgency === 'red' ? theme.palette.error.main : theme.palette.warning.main;
   const deckName = batch.deckName || t('unknownDeck');
   const pct = Math.round((batch.completed / batch.total) * 100);
 
@@ -133,9 +129,9 @@ export function BatchRow({ batch, onEdit, onDelete }: BatchRowProps) {
                 fontSize: '0.66rem',
                 fontWeight: 700,
                 whiteSpace: 'nowrap',
-                bgcolor: DUE_COLORS[urgency].bg,
-                border: `1px solid ${DUE_COLORS[urgency].border}`,
-                color: DUE_COLORS[urgency].text,
+                bgcolor: alpha(urgencyColor, 0.12),
+                border: `1px solid ${alpha(urgencyColor, 0.4)}`,
+                color: urgencyColor,
               }}
             >
               {dueDateLabel(batch.dueDate, t)}

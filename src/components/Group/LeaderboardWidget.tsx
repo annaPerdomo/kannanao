@@ -7,10 +7,12 @@ import { useState } from 'react';
 
 import { UserAvatar } from '@/components/UserAvatar';
 import type { LeaderboardEntry } from '@/hooks/useGroupLeaderboard';
+import { amber, honey, neutral } from '@/theme';
 
 import { ShowMoreButton } from './ShowMoreButton';
 
-const PODIUM = ['#F2C14E', '#C9CDD4', '#D9A06B'];
+/** Gold / silver / bronze, from the theme scales so dark mode tints them too. */
+const PODIUM = [amber[400], neutral[300], honey[400]];
 
 interface LeaderboardWidgetProps {
   entries: LeaderboardEntry[];
@@ -99,7 +101,7 @@ export function LeaderboardWidget({ entries, compact, maxVisible }: LeaderboardW
         </Box>
       ))}
 
-      {!compact && maxVisible !== undefined && entries.length > maxVisible && (
+      {maxVisible !== undefined && entries.length > maxVisible && (
         <ShowMoreButton
           expanded={expanded}
           total={entries.length}

@@ -41,4 +41,12 @@ describe('Review games content data', () => {
       }
     }
   });
+
+  it.each(['と', 'で'])('drills the %s particle in at least one sentence', (particle) => {
+    const drilled = PARTICLE_SENTENCES.filter((s) =>
+      s.segments.some((seg) => typeof seg !== 'string' && seg.answers.includes(particle)),
+    );
+    expect(drilled.length).toBeGreaterThan(0);
+    expect(PARTICLE_CHOICES).toContain(particle);
+  });
 });

@@ -123,8 +123,8 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
     async (
       ids: string[],
       updates: {
-        title?: string;
-        note?: string;
+        title?: string | null;
+        note?: string | null;
         dueDate?: string | null;
         requiredAccuracy?: number | null;
         requiredMode?: string | null;

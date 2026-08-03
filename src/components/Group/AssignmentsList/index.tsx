@@ -23,7 +23,7 @@ interface AssignmentsListProps {
   /** Batch actions cover every copy of a handout; both must reject on failure. */
   onEditBatch: (
     ids: string[],
-    updates: { note?: string; dueDate?: string | null },
+    updates: { note?: string | null; dueDate?: string | null },
   ) => Promise<void>;
   onDeleteBatch: (ids: string[]) => Promise<void>;
   maxVisible?: number;

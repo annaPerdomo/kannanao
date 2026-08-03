@@ -94,6 +94,15 @@ describe('GET /api/group/activity', () => {
     expect(body.members).toEqual([]);
   });
 
+  // A fractional count would walk the buckets off the day boundary, so the
+  // window would stop short of today and lose the sessions that just happened.
+  it('floors a fractional day count so the window still ends on today', async () => {
+    setTable('profiles', []);
+    const res = await GET(request('groupId=g1&days=3.7&tzOffset=0'));
+    const body = await res.json();
+    expect(body.days).toEqual(['2026-07-31', '2026-08-01', '2026-08-02']);
+  });
+
   it('sums cards and XP per day and per member', async () => {
     setTable('profiles', [
       { id: 'm1', username: 'naomi', display_name: 'Naomi' },

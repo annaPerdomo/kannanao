@@ -1,3 +1,5 @@
+export { CounterGame } from './CounterGame';
+export * from './countersData';
 export * from './data';
 export { GameShell } from './GameShell';
 export { GameTiles } from './GameTiles';
