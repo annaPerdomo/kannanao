@@ -136,10 +136,17 @@ const GAMES: GameConfig[] = [
     gradient: 'linear-gradient(135deg, #84cc16, #65a30d)',
     href: '/review/particles',
   },
+  {
+    key: 'counterGame',
+    jpTitle: 'なんまい？なんにん？',
+    emoji: '🧮',
+    gradient: 'linear-gradient(135deg, #a855f7, #7e22ce)',
+    href: '/review/counting',
+  },
 ];
 
 /**
- * The four review-game tiles, shown under the due-cards hero on /review. Each
+ * The review-game tiles, shown under the due-cards hero on /review. Each
  * pulls words from every deck you've studied — due cards first — so a quick
  * game keeps your whole vocabulary fresh. Every answer earns XP.
  */

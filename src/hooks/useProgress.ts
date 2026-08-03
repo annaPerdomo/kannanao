@@ -43,7 +43,8 @@ export type SessionMode =
   | 'kana-build'
   | 'particle-quiz'
   | 'question-quiz'
-  | 'word-match';
+  | 'word-match'
+  | 'counter-quiz';
 
 /** What `/api/group/assignments/complete` reports back for a finished session. */
 export interface AssignmentCompleteResult {

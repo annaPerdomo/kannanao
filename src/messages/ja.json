@@ -670,7 +670,9 @@
       "particlesTitle": "助詞ピッカー — 復習 | Tangodachi",
       "particlesDescription": "正しい助詞（は・が・を・に・の…）を選んで文を完成させます。",
       "questionsTitle": "しつもんクエスト — 復習 | Tangodachi",
-      "questionsDescription": "日本語の疑問詞を練習。しつもんに合う答えを選びます。"
+      "questionsDescription": "日本語の疑問詞を練習。しつもんに合う答えを選びます。",
+      "countingTitle": "なんまい？なんにん？ — 復習 | Tangodachi",
+      "countingDescription": "日本語の助数詞を練習。ものをかぞえて まい・つ・にん の言い方をえらびます。"
     }
   },
   "Practice": {
@@ -871,6 +873,10 @@
       "particlePicker": {
         "title": "助詞ピッカー",
         "description": "は・が・を・に・の をうめて文を完成させよう。"
+      },
+      "counterGame": {
+        "title": "なんまい？なんにん？",
+        "description": "ものをかぞえて、まい・つ・にん の言い方をえらぼう。"
       }
     },
     "kanaBuilder": {
@@ -903,6 +909,45 @@
       "celebrationSubheading": "{count, plural, other {#語}}",
       "celebrationExtra": "{matches}マッチ · {misses}ミス",
       "loadError": "カードを読み込めませんでした: {error}"
+    },
+    "counterGame": {
+      "title": "なんまい？なんにん？",
+      "howTo": "ものをかぞえて、その数の言い方をタップしよう。",
+      "pickPrompt": "この数は、なんと言う？",
+      "answerIs": "{reading} — {item}",
+      "question": {
+        "tsu": "いくつ ですか。",
+        "mai": "なんまい ですか。",
+        "nin": "なんにん ですか。"
+      },
+      "celebrationHeading": "かぞえ名人！",
+      "celebrationSubheading": "{correct} / {total} 問正解",
+      "items": {
+        "apple": "りんご {count}",
+        "baby": "あかちゃん {count}",
+        "ball": "ボール {count}",
+        "balloon": "ふうせん {count}",
+        "boy": "おとこのこ {count}",
+        "bread": "パン {count}",
+        "candy": "あめ {count}",
+        "card": "カード {count}",
+        "cook": "コック {count}",
+        "cupcake": "カップケーキ {count}",
+        "disc": "ディスク {count}",
+        "doctor": "おいしゃさん {count}",
+        "donut": "ドーナツ {count}",
+        "egg": "たまご {count}",
+        "girl": "おんなのこ {count}",
+        "paper": "かみ {count}",
+        "person": "ひと {count}",
+        "photo": "しゃしん {count}",
+        "riceBall": "おにぎり {count}",
+        "shirt": "シャツ {count}",
+        "student": "がくせい {count}",
+        "teacher": "せんせい {count}",
+        "ticket": "チケット {count}",
+        "tissue": "ティッシュ {count}"
+      }
     }
   },
   "Group": {

@@ -16,6 +16,7 @@ export const MODE_LABELS: Record<SessionMode, string> = {
   'particle-quiz': 'Particle Picker',
   'question-quiz': 'Question Quest',
   'word-match': 'Word Match',
+  'counter-quiz': 'How Many?',
 };
 
 export const MODE_COLORS: Record<SessionMode, string> = {
@@ -34,6 +35,7 @@ export const MODE_COLORS: Record<SessionMode, string> = {
   'particle-quiz': '#84CC16',
   'question-quiz': '#14B8A6',
   'word-match': '#EAB308',
+  'counter-quiz': '#A855F7',
 };
 
 export function modeLabel(mode: SessionMode | null | undefined): string {
