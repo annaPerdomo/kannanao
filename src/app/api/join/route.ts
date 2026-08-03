@@ -14,8 +14,14 @@ import {
   shareOrganizerDecks,
 } from './_lib/invite';
 
-const RATE_LIMIT = { windowMs: 60_000, max: 5 };
-const GET_RATE_LIMIT = { windowMs: 60_000, max: 15 };
+/**
+ * Sized for a whole group scanning one projected QR code from a single shared
+ * IP, which is how this route is normally used. There is no account to key on
+ * here — that is the point of it — so the ceiling is the only lever, and abuse
+ * stays bounded by needing a live invite code and by its `max_uses`.
+ */
+const RATE_LIMIT = { windowMs: 60_000, max: 30 };
+const GET_RATE_LIMIT = { windowMs: 60_000, max: 60 };
 
 const FAKE_DOMAIN = 'kannanao.local';
 

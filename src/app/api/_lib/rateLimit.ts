@@ -14,10 +14,9 @@ interface RateLimitConfig {
   windowMs: number;
   max: number;
   /**
-   * Key the window on the signed-in account instead of the IP. A whole group
-   * scanning the same QR code shares one school or household egress IP, so an
-   * IP window cuts everyone off after the first few. Falls back to the IP when
-   * there is no valid token, which keeps the unauthenticated path limited.
+   * Key the window on the signed-in account, for routes a whole group hits
+   * from one shared egress IP. Falls back to the IP when there is no valid
+   * token, so the unauthenticated path stays limited.
    */
   keyBy?: 'ip' | 'user';
 }
@@ -49,9 +48,8 @@ function getClientIp(req: NextRequest): string {
 }
 
 /**
- * Who the window belongs to. The `user` lookup is the same cached call the
- * route makes to authenticate, so on an authed route it costs a cache hit
- * rather than a second round-trip.
+ * The `user` lookup is the same cached call the route makes to authenticate a
+ * line later, so it costs a cache hit rather than a second round-trip.
  */
 async function requestIdentity(req: NextRequest, keyBy: 'ip' | 'user'): Promise<string> {
   if (keyBy === 'user') {

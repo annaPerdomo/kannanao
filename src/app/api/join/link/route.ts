@@ -18,7 +18,6 @@ import {
   shareOrganizerDecks,
 } from '../_lib/invite';
 
-// Per account, not per IP: a group scanning one QR code comes from one network.
 const RATE_LIMIT = { windowMs: 60_000, max: 10, keyBy: 'user' as const };
 const ROUTE = '/api/join/link';
 
