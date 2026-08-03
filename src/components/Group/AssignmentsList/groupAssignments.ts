@@ -5,6 +5,8 @@ export interface AssignmentBatch {
   deckName: string | null;
   deckEmoji: string | null;
   dueDate: string | null;
+  /** Date the learner starts seeing it; null = already visible. */
+  availableOn: string | null;
   total: number;
   completed: number;
   ids: string[];
@@ -30,6 +32,7 @@ export function groupAssignments(assignments: Assignment[]): AssignmentBatch[] {
     const key = JSON.stringify([
       a.deck_id,
       a.due_date,
+      a.available_on,
       a.required_accuracy,
       a.required_mode,
       a.note,
@@ -46,6 +49,7 @@ export function groupAssignments(assignments: Assignment[]): AssignmentBatch[] {
         deckName: a.decks?.name ?? null,
         deckEmoji: a.decks?.emoji ?? null,
         dueDate: a.due_date,
+        availableOn: a.available_on,
         total: 1,
         completed: a.completed_at ? 1 : 0,
         ids: [a.id],

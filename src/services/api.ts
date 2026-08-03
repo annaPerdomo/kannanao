@@ -1,5 +1,6 @@
 import { sb } from '@/lib/supabase';
 import type { GeneratedCard, GeneratePayload } from '@/types/flashcard';
+import type { ApplyDeckResult, LessonPlan, LessonPlanResponse } from '@/types/lessonPlan';
 import type { DbPracticeSentence } from '@/types/practiceSentence';
 
 const BASE = '/api';
@@ -165,8 +166,16 @@ export async function triggerUnsplashDownload(downloadLocation: string): Promise
 
 /* ── Kotoba Bubble practice sentences ──────────────────────────── */
 
-export async function fetchPracticeSentences(deckId: string): Promise<DbPracticeSentence[]> {
-  const res = await fetch(`${BASE}/deck/${deckId}/practice-sentences`, {
+/** `?memberId=` selects a learner's personalised sentence set where one exists. */
+function memberQuery(memberId?: string): string {
+  return memberId ? `?memberId=${encodeURIComponent(memberId)}` : '';
+}
+
+export async function fetchPracticeSentences(
+  deckId: string,
+  memberId?: string,
+): Promise<DbPracticeSentence[]> {
+  const res = await fetch(`${BASE}/deck/${deckId}/practice-sentences${memberQuery(memberId)}`, {
     headers: await authHeaders(),
   });
   if (!res.ok) {
@@ -177,10 +186,14 @@ export async function fetchPracticeSentences(deckId: string): Promise<DbPractice
   return data.sentences as DbPracticeSentence[];
 }
 
-export async function generatePracticeSentences(deckId: string): Promise<DbPracticeSentence[]> {
+export async function generatePracticeSentences(
+  deckId: string,
+  memberId?: string,
+): Promise<DbPracticeSentence[]> {
   const res = await fetch(`${BASE}/deck/${deckId}/practice-sentences`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify(memberId ? { memberId } : {}),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -188,6 +201,30 @@ export async function generatePracticeSentences(deckId: string): Promise<DbPract
   }
   const data = await res.json();
   return data.sentences as DbPracticeSentence[];
+}
+
+export interface BatchSentenceResult {
+  deckId: string;
+  status: 'generated' | 'skipped' | 'failed';
+  count?: number;
+  error?: string;
+}
+
+export async function generatePracticeSentencesBatch(
+  deckIds: string[],
+  memberId?: string,
+): Promise<BatchSentenceResult[]> {
+  const res = await fetch(`${BASE}/group/practice-sentences/batch`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify({ deckIds, memberId }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to generate practice sentences');
+  }
+  const data = await res.json();
+  return data.results as BatchSentenceResult[];
 }
 
 export async function updatePracticeSentences(
@@ -216,8 +253,8 @@ export async function recordMeaningPeek(deckId: string, sentenceId: string): Pro
   }).catch(() => {});
 }
 
-export async function deletePracticeSentences(deckId: string): Promise<void> {
-  const res = await fetch(`${BASE}/deck/${deckId}/practice-sentences`, {
+export async function deletePracticeSentences(deckId: string, memberId?: string): Promise<void> {
+  const res = await fetch(`${BASE}/deck/${deckId}/practice-sentences${memberQuery(memberId)}`, {
     method: 'DELETE',
     headers: await authHeaders(),
   });
@@ -225,4 +262,44 @@ export async function deletePracticeSentences(deckId: string): Promise<void> {
     const body = await res.json().catch(() => ({}));
     throw new Error(body?.error ?? 'Failed to delete practice sentences');
   }
+}
+
+/* ── Lesson Builder ────────────────────────────────────────────── */
+
+export async function buildLessonPlan(payload: {
+  memberId: string;
+  goal: string;
+  weeks: number;
+  cardsPerDeck: number;
+}): Promise<LessonPlanResponse> {
+  const res = await fetch(`${BASE}/group/lesson-plan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to build the plan');
+  }
+  return res.json();
+}
+
+export async function applyLessonPlan(payload: {
+  groupId: string;
+  memberId: string;
+  plan: LessonPlan;
+  firstDueDate: string;
+  requiredAccuracy?: number | null;
+  requiredMode?: string | null;
+}): Promise<{ results: ApplyDeckResult[] }> {
+  const res = await fetch(`${BASE}/group/lesson-plan/apply`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to create the decks');
+  }
+  return res.json();
 }

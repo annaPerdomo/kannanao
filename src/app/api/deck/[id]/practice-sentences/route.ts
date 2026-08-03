@@ -1,44 +1,31 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { normalizeFurigana } from '@/lib/furigana';
 import { logger } from '@/lib/logger';
 import type { DbPracticeSentence } from '@/types/practiceSentence';
 
 import { rateLimit } from '../../../_lib/rateLimit';
 import { requireAuthenticatedUser } from '../../../_lib/requireAuthenticatedUser';
 import { requireOrganizerAccount } from '../../../_lib/requireOrganizerAccount';
+import { generateDeckSentences, selectSentences } from '../../../group/_lib/generateDeckSentences';
+import { isMemberOfOrganizer } from '../../../group/_lib/memberAccess';
 import { getServiceSupabase } from '../../../group/_lib/serviceSupabase';
+import { loadStudiedVocabulary } from '../../../group/_lib/studiedVocabulary';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 5 };
 
-interface GeminiSentence {
-  sentence_jp: string;
-  sentence_en: string;
-  target_particle: string;
-  particle_index: number;
-  distractors: string[];
-  sentence_type: 'question' | 'response' | 'statement';
-  conversation_group: number;
-  sort_order: number;
-  source_words: string[];
-}
-
 /**
  * GET — fetch existing practice sentences for a deck (any authenticated user).
+ * `?memberId=` returns that learner's personalised set, falling back to the
+ * shared set when they don't have one.
  */
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authCheck = await requireAuthenticatedUser(req);
   if (authCheck instanceof NextResponse) return authCheck;
 
   const { id: deckId } = await params;
+  const memberId = req.nextUrl.searchParams.get('memberId');
 
-  const sb = getServiceSupabase();
-  const { data, error } = await sb
-    .from('deck_practice_sentences')
-    .select('*')
-    .eq('deck_id', deckId)
-    .order('conversation_group', { ascending: true })
-    .order('sort_order', { ascending: true });
+  const { data, error } = await selectSentences(deckId, memberId || null);
 
   if (error) {
     logger.error('Failed to fetch practice sentences', {
@@ -49,12 +36,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: 'Failed to load practice sentences.' }, { status: 500 });
   }
 
-  return NextResponse.json({ sentences: data as DbPracticeSentence[] });
+  if (memberId && (!data || data.length === 0)) {
+    const { data: shared } = await selectSentences(deckId, null);
+    return NextResponse.json({ sentences: (shared ?? []) as DbPracticeSentence[] });
+  }
+
+  return NextResponse.json({ sentences: (data ?? []) as DbPracticeSentence[] });
 }
 
 /**
  * POST — generate practice sentences for a deck (organizer only).
  * If sentences already exist, returns them without regenerating.
+ *
+ * Body { memberId? }: with a learner, generates a set personalised to the words
+ * that learner has already studied and stores it under `for_member_id`.
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const limited = await rateLimit(req, RATE_LIMIT);
@@ -64,39 +59,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (orgCheck instanceof NextResponse) return orgCheck;
 
   const { id: deckId } = await params;
-  const sb = getServiceSupabase();
+  const body = await req.json().catch(() => null);
+  const memberId = (body as { memberId?: string } | null)?.memberId ?? null;
 
-  // Check for existing sentences
-  const { data: existing } = await sb
-    .from('deck_practice_sentences')
-    .select('id')
-    .eq('deck_id', deckId)
-    .limit(1);
-
-  if (existing && existing.length > 0) {
-    // Already generated — return them
-    const { data } = await sb
-      .from('deck_practice_sentences')
-      .select('*')
-      .eq('deck_id', deckId)
-      .order('conversation_group', { ascending: true })
-      .order('sort_order', { ascending: true });
-
-    return NextResponse.json({ sentences: data as DbPracticeSentence[] });
-  }
-
-  // Load deck cards
-  const { data: cards, error: cardsError } = await sb
-    .from('cards')
-    .select('id, word, reading, meaning')
-    .eq('deck_id', deckId)
-    .order('position', { ascending: true });
-
-  if (cardsError || !cards || cards.length === 0) {
-    return NextResponse.json(
-      { error: 'Deck has no cards to generate practice from.' },
-      { status: 400 },
-    );
+  if (memberId && !(await isMemberOfOrganizer(memberId, orgCheck.id))) {
+    return NextResponse.json({ error: 'Learner not found in your group.' }, { status: 403 });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -104,161 +71,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
   }
 
-  // Build a word list with IDs for mapping back
-  const wordList = cards.map((c) => ({
-    id: c.id,
-    word: c.word,
-    reading: c.reading,
-    meaning: c.meaning,
-  }));
-
-  const wordListText = wordList.map((w) => `- ${w.word} (${w.reading}) = ${w.meaning}`).join('\n');
-
-  const sentenceCount = Math.min(Math.max(cards.length * 2, 8), 20);
-
-  const prompt = `You are a Japanese language teacher creating practice material for beginning Japanese learners (roughly JLPT N5 level).
-
-Given these vocabulary words from a study deck:
-${wordListText}
-
-Generate exactly ${sentenceCount} Japanese sentences grouped into natural mini-conversations (2-3 sentences each). These will be used in a game where the learner picks the correct particle (は, が, を, に, で, へ, と, も, の, か) to complete the sentence.
-
-CRITICAL — VOCABULARY CONSTRAINT:
-Every sentence MUST contain at least one word from the deck list above, used VERBATIM (the exact Japanese word or its reading). Do NOT substitute with synonyms, related words, or specific examples. For instance, if the deck has "のみもの" (drink), you must use "のみもの" in the sentence — do NOT replace it with "ジュース", "おちゃ", or any other specific drink. The whole point is for the student to practice with the exact words they are studying. If you cannot naturally fit a deck word into a sentence, skip that sentence and make one that does use a deck word.
-
-IMPORTANT RULES:
-1. Every sentence must use at least one vocabulary word from the deck list EXACTLY as written
-2. Mix questions and responses — learners absorb grammar better through dialogue. Example conversation:
-   - Q: "What does Sakura like?" → A: "Sakura likes cats."
-3. Keep grammar simple and natural — suitable for a beginning learner (short sentences, common structures, plain or polite form consistently within a conversation)
-4. Each sentence must have ONE clearly identifiable target particle to test
-5. Wrap every kanji or kanji compound with furigana using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです. Each group holds exactly one reading — never split a compound's reading with extra pipes ({無関係|むかんけい} or {無|む}{関|かん}{係|けい}, never {無関係|む|かん|けい}).
-6. Pure hiragana/katakana words need no wrapping
-7. Provide 2-3 plausible distractor particles for each sentence (wrong but reasonable alternatives)
-8. particle_index is the character position of the target particle in the PLAIN text (after removing all {x|y} markup, counting from 0)
-9. Try to cover different particles across the set — don't repeat the same particle too many times
-10. source_words: list the EXACT vocabulary words (from the deck) that appear in each sentence — these must match the deck words verbatim
-
-Output a JSON array of objects with these exact fields:
-- sentence_jp: the full Japanese sentence with {kanji|reading} furigana markup
-- sentence_en: English translation
-- target_particle: the particle being tested (e.g. "は", "が", "を")
-- particle_index: character index of the target particle in the plain text (0-based)
-- distractors: array of 2-3 wrong particle options
-- sentence_type: "question", "response", or "statement"
-- conversation_group: integer grouping sentences into conversations (1, 2, 3, ...)
-- sort_order: order within the conversation group (1, 2, 3)
-- source_words: array of vocabulary words used from the deck`;
-
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            response_mime_type: 'application/json',
-            response_schema: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  sentence_jp: { type: 'string' },
-                  sentence_en: { type: 'string' },
-                  target_particle: { type: 'string' },
-                  particle_index: { type: 'integer' },
-                  distractors: { type: 'array', items: { type: 'string' } },
-                  sentence_type: { type: 'string', enum: ['question', 'response', 'statement'] },
-                  conversation_group: { type: 'integer' },
-                  sort_order: { type: 'integer' },
-                  source_words: { type: 'array', items: { type: 'string' } },
-                },
-                required: [
-                  'sentence_jp',
-                  'sentence_en',
-                  'target_particle',
-                  'particle_index',
-                  'distractors',
-                  'sentence_type',
-                  'conversation_group',
-                  'sort_order',
-                  'source_words',
-                ],
-              },
-            },
-          },
-        }),
-      },
-    );
+    const knownWords = memberId ? await loadStudiedVocabulary(memberId) : [];
+    const result = await generateDeckSentences({ deckId, memberId, knownWords, apiKey });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      logger.error('Gemini API error', {
-        route: 'POST /api/deck/[id]/practice-sentences',
-        status: response.status,
-        body: data,
-      });
-      return NextResponse.json(
-        { error: 'Failed to generate practice sentences.' },
-        { status: 502 },
-      );
+    if (result.status === 'failed') {
+      return NextResponse.json({ error: result.error }, { status: result.httpStatus });
     }
 
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]';
-    const generated: GeminiSentence[] = JSON.parse(rawText);
-
-    if (!Array.isArray(generated) || generated.length === 0) {
-      return NextResponse.json(
-        { error: 'AI returned no sentences. Please try again.' },
-        { status: 502 },
-      );
-    }
-
-    // Map source_words back to card IDs
-    const wordToId = new Map<string, string>();
-    for (const w of wordList) {
-      wordToId.set(w.word, w.id);
-      wordToId.set(w.reading, w.id);
-    }
-
-    const rows = generated.map((s) => ({
-      deck_id: deckId,
-      sentence_jp: normalizeFurigana(s.sentence_jp),
-      sentence_en: s.sentence_en,
-      target_particle: s.target_particle,
-      particle_index: s.particle_index,
-      distractors: s.distractors,
-      sentence_type: s.sentence_type,
-      conversation_group: s.conversation_group,
-      sort_order: s.sort_order,
-      source_card_ids: s.source_words
-        .map((w) => wordToId.get(w))
-        .filter((id): id is string => !!id),
-    }));
-
-    const { error: insertError } = await sb.from('deck_practice_sentences').insert(rows);
-
-    if (insertError) {
-      logger.error('Failed to insert practice sentences', {
-        route: 'POST /api/deck/[id]/practice-sentences',
-        deckId,
-        error: insertError.message,
-      });
-      return NextResponse.json({ error: 'Failed to save practice sentences.' }, { status: 500 });
-    }
-
-    // Re-fetch to get proper IDs and ordering
-    const { data: saved } = await sb
-      .from('deck_practice_sentences')
-      .select('*')
-      .eq('deck_id', deckId)
-      .order('conversation_group', { ascending: true })
-      .order('sort_order', { ascending: true });
-
-    return NextResponse.json({ sentences: saved as DbPracticeSentence[] });
+    return NextResponse.json({ sentences: result.sentences });
   } catch (err) {
     logger.error('Unhandled error', {
       route: 'POST /api/deck/[id]/practice-sentences',
@@ -368,8 +189,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 /**
- * DELETE — remove all practice sentences for a deck (organizer only).
- * Used when an organizer wants to regenerate after editing the deck.
+ * DELETE — remove a deck's practice sentences (organizer only), so the next
+ * POST regenerates. `?memberId=` clears only that learner's set.
  */
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const limited = await rateLimit(req, RATE_LIMIT);
@@ -379,9 +200,13 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (orgCheck instanceof NextResponse) return orgCheck;
 
   const { id: deckId } = await params;
+  const memberId = req.nextUrl.searchParams.get('memberId');
   const sb = getServiceSupabase();
 
-  const { error } = await sb.from('deck_practice_sentences').delete().eq('deck_id', deckId);
+  const del = sb.from('deck_practice_sentences').delete().eq('deck_id', deckId);
+  const { error } = await (memberId
+    ? del.eq('for_member_id', memberId)
+    : del.is('for_member_id', null));
 
   if (error) {
     logger.error('Failed to delete practice sentences', {

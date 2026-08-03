@@ -14,6 +14,7 @@ function assignment(overrides: Partial<Assignment> = {}): Assignment {
     title: null,
     note: null,
     due_date: null,
+    available_on: null,
     completed_at: null,
     created_at: '2026-07-01T00:00:00Z',
     required_accuracy: null,

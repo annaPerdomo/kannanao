@@ -1,5 +1,6 @@
 'use client';
 import AddIcon from '@mui/icons-material/Add';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -219,19 +220,34 @@ export default function GroupDashboardPage() {
             title={t('assignmentsHeading')}
             action={
               members.length > 0 && (
-                <Button
-                  size="small"
-                  startIcon={<AddIcon sx={{ fontSize: 16 }} />}
-                  onClick={() => setAssignOpen(true)}
-                  sx={{
-                    textTransform: 'none',
-                    fontWeight: 700,
-                    color: brand[700],
-                    borderRadius: theme.radii.sm,
-                  }}
-                >
-                  {t('newButton')}
-                </Button>
+                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  <Button
+                    size="small"
+                    startIcon={<AutoAwesomeIcon sx={{ fontSize: 16 }} />}
+                    onClick={() => router.push(`/group/${groupId}/build`)}
+                    sx={{
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      color: brand[700],
+                      borderRadius: theme.radii.sm,
+                    }}
+                  >
+                    {t('buildLessonButton')}
+                  </Button>
+                  <Button
+                    size="small"
+                    startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+                    onClick={() => setAssignOpen(true)}
+                    sx={{
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      color: brand[700],
+                      borderRadius: theme.radii.sm,
+                    }}
+                  >
+                    {t('newButton')}
+                  </Button>
+                </Box>
               )
             }
           >

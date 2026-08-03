@@ -34,7 +34,7 @@ const eqCalls: { table: string; args: unknown[] }[] = [];
 function makeChain(table: string) {
   const result = () => tableData[table] ?? { data: null, error: null };
   const chain: Record<string, unknown> = {};
-  ['select', 'in', 'order', 'limit'].forEach((m) => {
+  ['select', 'in', 'order', 'limit', 'or'].forEach((m) => {
     chain[m] = vi.fn(() => chain);
   });
   chain.eq = vi.fn((...args: unknown[]) => {

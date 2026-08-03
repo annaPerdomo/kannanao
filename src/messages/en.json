@@ -1073,7 +1073,8 @@
       "goalLabel": "Goal: {goal}",
       "removeTitle": "Remove assignment?",
       "removeBody": "{deck} will be removed for {count, plural, one {# member} other {all # members}}.",
-      "removeFailed": "Couldn't remove the assignment. Please try again."
+      "removeFailed": "Couldn't remove the assignment. Please try again.",
+      "startsOn": "Starts {date}"
     },
     "createAssignment": {
       "title": "Assign a Deck",
@@ -1085,7 +1086,9 @@
       "dueDateLabel": "Due Date (optional)",
       "assign": "Assign",
       "assigning": "Assigning...",
-      "failedToCreate": "Failed to create assignment"
+      "failedToCreate": "Failed to create assignment",
+      "availableOnLabel": "Starts showing on",
+      "availableOnHelp": "Leave blank to show it right away."
     },
     "editAssignment": {
       "title": "Edit Assignment",
@@ -1097,7 +1100,9 @@
       "dueDateLabel": "Due Date (optional)",
       "saving": "Saving...",
       "failedToUpdate": "Failed to update assignment",
-      "subtitleBatch": "{emoji} {deckName} · {count, plural, one {# member} other {# members}}"
+      "subtitleBatch": "{emoji} {deckName} · {count, plural, one {# member} other {# members}}",
+      "availableOnLabel": "Starts showing on",
+      "availableOnHelp": "Leave blank to show it right away."
     },
     "useAssignments": {
       "failedToLoad": "Failed to load assignments",
@@ -1250,7 +1255,8 @@
       "loadingActivity": "Loading activity...",
       "newButton": "New",
       "showAll": "Show all {count}",
-      "showLess": "Show less"
+      "showLess": "Show less",
+      "buildLessonButton": "Build a lesson"
     },
     "groupsPage": {
       "loadingGroups": "Loading groups...",
@@ -1363,6 +1369,50 @@
       "allCaughtUp": "Everyone has studied recently.",
       "emptyTitle": "No members yet",
       "emptyBody": "Use Invite to add members to this group."
+    },
+    "lessonBuilder": {
+      "title": "Build a lesson",
+      "subtitle": "Describe what you want to cover. You'll get decks, example sentences and a week-by-week schedule built on words this learner already knows.",
+      "goalLabel": "What do you want to cover?",
+      "goalPlaceholder": "e.g. Food words for ordering at a restaurant, plus counting things",
+      "learnerLabel": "Who is it for?",
+      "weeksLabel": "How many weeks?",
+      "weeksOption": "{count, plural, one {# week} other {# weeks}}",
+      "cardsPerDeckLabel": "Cards per week",
+      "cardsOption": "{count} cards",
+      "buildButton": "Build the plan",
+      "buildingMessage": "Building the plan — this takes about 10 to 30 seconds.",
+      "loadingMessage": "Loading…",
+      "reviewHeading": "{decks, plural, one {# deck} other {# decks}}, {cards, plural, one {# card} other {# cards}} — edit anything before you create them",
+      "weekHeading": "Week {week}",
+      "deckNameLabel": "Deck name",
+      "wordLabel": "Word",
+      "readingLabel": "Reading",
+      "meaningLabel": "Meaning",
+      "exampleJpLabel": "Example (Japanese)",
+      "exampleEnLabel": "Example (English)",
+      "removeCardLabel": "Remove {word}",
+      "buildsOnLabel": "builds on: {words}",
+      "retentionLine": "{reused} of {total} cards build on words this learner already knows",
+      "retryDeckButton": "Try again",
+      "retryGoal": "{goal} — redo just this week's deck: {deck}",
+      "dueDateLabel": "First deck due",
+      "dueDateHint": "Each later week is due seven days after the one before it.",
+      "applyButton": "Create decks & assign",
+      "applying": "Creating…",
+      "applyingMessage": "Creating the decks and their practice sentences — this takes a moment.",
+      "startOverButton": "Start over",
+      "successMessage": "{count, plural, one {# deck was created and assigned.} other {# decks were created and assigned.}}",
+      "deckFailed": "{name} had a problem: {reason}",
+      "backToGroupButton": "Back to the group",
+      "errorMessage": "Something went wrong. Please try again.",
+      "emptyPlanMessage": "The plan came back empty. Try describing the goal a little differently.",
+      "noLearners": "Add a learner to this group first, then come back to build a lesson.",
+      "organizerOnly": "This page is for educators only."
+    },
+    "meta": {
+      "buildTitle": "Build a lesson — Group | Tangodachi",
+      "buildDescription": "Describe what you want to cover and get decks, example sentences and a weekly schedule built on what the learner already knows."
     }
   },
   "Nav": {

@@ -10,6 +10,20 @@ import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
 
+/** YYYY-MM-DD, the shape a <input type="date"> and a Postgres `date` agree on. */
+function isDateOnly(value: unknown): value is string {
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+/**
+ * Today in UTC. `available_on` is a plain date, so the comparison is date-only:
+ * a learner west of UTC can see a new assignment a few hours early, which is the
+ * harmless direction — the alternative hides today's work until midday.
+ */
+function todayUtc(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 /** POST — create assignment(s) for one or more members */
 export async function POST(req: NextRequest) {
   const limited = await rateLimit(req, RATE_LIMIT);
@@ -23,17 +37,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
   }
 
-  const { memberIds, deckId, title, note, dueDate, groupId, requiredAccuracy, requiredMode } =
-    body as {
-      memberIds: string[];
-      deckId: string;
-      title?: string;
-      note?: string;
-      dueDate?: string;
-      groupId?: string;
-      requiredAccuracy?: number | null;
-      requiredMode?: string | null;
-    };
+  const {
+    memberIds,
+    deckId,
+    title,
+    note,
+    dueDate,
+    availableOn,
+    groupId,
+    requiredAccuracy,
+    requiredMode,
+  } = body as {
+    memberIds: string[];
+    deckId: string;
+    title?: string;
+    note?: string;
+    dueDate?: string;
+    availableOn?: string;
+    groupId?: string;
+    requiredAccuracy?: number | null;
+    requiredMode?: string | null;
+  };
 
   if (!Array.isArray(memberIds) || memberIds.length === 0 || !deckId) {
     return NextResponse.json(
@@ -57,6 +81,9 @@ export async function POST(req: NextRequest) {
   }
   if (requiredMode != null && !isGoalMode(requiredMode)) {
     return NextResponse.json({ error: 'requiredMode is not a valid goal mode.' }, { status: 400 });
+  }
+  if (availableOn != null && !isDateOnly(availableOn)) {
+    return NextResponse.json({ error: 'availableOn must be a YYYY-MM-DD date.' }, { status: 400 });
   }
   const sb = getServiceSupabase();
 
@@ -107,6 +134,7 @@ export async function POST(req: NextRequest) {
       title: title?.trim().slice(0, 200) || null,
       note: note?.trim().slice(0, 500) || null,
       due_date: dueDate || null,
+      available_on: availableOn || null,
       required_accuracy: requiredAccuracy ?? null,
       required_mode: requiredMode ?? null,
     }));
@@ -185,7 +213,12 @@ export async function GET(req: NextRequest) {
       .from('assignments')
       .select('*, decks(id, name, emoji)')
       .eq('member_id', user.id)
-      .order('created_at', { ascending: false });
+      // Scheduled for later: the organizer sees it now, the learner sees it on
+      // the day. Without this a term planned in advance lands as one pile.
+      .or(`available_on.is.null,available_on.lte.${todayUtc()}`)
+      // Soonest deadline first — what to do next, not what was created last.
+      .order('due_date', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: true });
     if (profile?.organizer_id) query = query.eq('organizer_id', profile.organizer_id);
   } else {
     query = sb

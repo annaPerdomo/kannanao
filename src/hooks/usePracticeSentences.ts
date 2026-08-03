@@ -10,7 +10,7 @@ import {
 } from '@/services/api';
 import { dbSentenceToApp, type PracticeSentence } from '@/types/practiceSentence';
 
-export function usePracticeSentences(deckId: string) {
+export function usePracticeSentences(deckId: string, memberId?: string) {
   const t = useTranslations('Practice.usePracticeSentences');
   const [sentences, setSentences] = useState<PracticeSentence[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +33,7 @@ export function usePracticeSentences(deckId: string) {
     setLoading(true);
     setError(null);
 
-    fetchPracticeSentences(deckId)
+    fetchPracticeSentences(deckId, memberId)
       .then((rows) => {
         if (!cancelled) setSentences(rows.map(dbSentenceToApp));
       })
@@ -47,13 +47,13 @@ export function usePracticeSentences(deckId: string) {
     return () => {
       cancelled = true;
     };
-  }, [deckId, t]);
+  }, [deckId, memberId, t]);
 
   const generate = useCallback(async () => {
     setGenerating(true);
     setError(null);
     try {
-      const rows = await generatePracticeSentences(deckId);
+      const rows = await generatePracticeSentences(deckId, memberId);
       if (mountedRef.current) {
         setSentences(rows.map(dbSentenceToApp));
         setJustGenerated(true);
@@ -65,14 +65,14 @@ export function usePracticeSentences(deckId: string) {
     } finally {
       if (mountedRef.current) setGenerating(false);
     }
-  }, [deckId, t]);
+  }, [deckId, memberId, t]);
 
   const regenerate = useCallback(async () => {
     setGenerating(true);
     setError(null);
     try {
-      await deletePracticeSentences(deckId);
-      const rows = await generatePracticeSentences(deckId);
+      await deletePracticeSentences(deckId, memberId);
+      const rows = await generatePracticeSentences(deckId, memberId);
       if (mountedRef.current) {
         setSentences(rows.map(dbSentenceToApp));
         setJustGenerated(true);
@@ -84,7 +84,7 @@ export function usePracticeSentences(deckId: string) {
     } finally {
       if (mountedRef.current) setGenerating(false);
     }
-  }, [deckId, t]);
+  }, [deckId, memberId, t]);
 
   const clearJustGenerated = useCallback(() => setJustGenerated(false), []);
 

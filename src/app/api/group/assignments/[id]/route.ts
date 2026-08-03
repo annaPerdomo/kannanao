@@ -9,7 +9,7 @@ import { getServiceSupabase } from '../../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
 
-/** PATCH — update assignment (edit note/due date, or mark complete) */
+/** PATCH — update assignment (edit note/start date/due date, or mark complete) */
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const limited = await rateLimit(req, RATE_LIMIT);
   if (limited) return limited;
@@ -45,6 +45,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   if ('note' in body) {
     updates.note = typeof body.note === 'string' ? body.note.trim().slice(0, 500) || null : null;
+  }
+  if ('availableOn' in body) {
+    const v = body.availableOn;
+    if (v !== null && v !== '' && !/^\d{4}-\d{2}-\d{2}$/.test(String(v))) {
+      return NextResponse.json({ error: 'Invalid availableOn.' }, { status: 400 });
+    }
+    updates.available_on = v || null;
   }
   if ('dueDate' in body) {
     const v = body.dueDate;
