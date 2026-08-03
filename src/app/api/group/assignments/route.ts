@@ -162,16 +162,32 @@ export async function GET(req: NextRequest) {
   // Optional group filter
   const groupId = req.nextUrl.searchParams.get('groupId');
 
+  /**
+   * The caller says which list it wants rather than us guessing from
+   * account_type: an account that runs a group and also learns in another has
+   * both, and they must never be mixed. No scope keeps the old role-based guess
+   * so existing callers are unaffected.
+   */
+  const requestedScope = req.nextUrl.searchParams.get('scope');
+  const scope =
+    requestedScope === 'mine' || requestedScope === 'given'
+      ? requestedScope
+      : profile?.account_type === 'member'
+        ? 'mine'
+        : 'given';
+
   let query;
-  if (profile?.account_type === 'member') {
-    // Members see their own assignments
+  if (scope === 'mine') {
+    // Scoped to the current organizer: once a learner moves groups nobody can
+    // withdraw the old assignments — the former organizer no longer sees them,
+    // the learner can't dismiss them — so unscoped they linger forever.
     query = sb
       .from('assignments')
       .select('*, decks(id, name, emoji)')
       .eq('member_id', user.id)
       .order('created_at', { ascending: false });
+    if (profile?.organizer_id) query = query.eq('organizer_id', profile.organizer_id);
   } else {
-    // Organizers see all assignments they created
     query = sb
       .from('assignments')
       .select(

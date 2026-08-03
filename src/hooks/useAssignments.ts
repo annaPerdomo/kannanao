@@ -34,9 +34,17 @@ async function authHeaders(): Promise<Record<string, string>> {
 
 const ASSIGNMENTS_URL = '/api/group/assignments';
 
-export function useAssignments(groupId?: string | null, enabled = true) {
+/**
+ * @param scope required wherever the answer matters: an account can be both an
+ * organizer and a learner in another group, so the role can't imply it.
+ */
+export function useAssignments(groupId?: string | null, enabled = true, scope?: 'mine' | 'given') {
   const t = useTranslations('Group.useAssignments');
-  const url = groupId ? `${ASSIGNMENTS_URL}?groupId=${groupId}` : ASSIGNMENTS_URL;
+  const params = new URLSearchParams();
+  if (groupId) params.set('groupId', groupId);
+  if (scope) params.set('scope', scope);
+  const query = params.toString();
+  const url = query ? `${ASSIGNMENTS_URL}?${query}` : ASSIGNMENTS_URL;
   // Seed from the cache so returning to a page paints instantly; the effect
   // below still revalidates stale data in the background.
   const [assignments, setAssignments] = useState<Assignment[]>(() => peekApiCache(url) ?? []);

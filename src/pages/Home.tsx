@@ -310,7 +310,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
     homeSections.speeches,
     initialData?.ohanashikais ?? undefined,
   );
-  const { assignments } = useAssignments(undefined, homeSections.assignments);
+  const { assignments } = useAssignments(undefined, homeSections.assignments, 'mine');
   const { groups, loading: groupsLoading, createGroup, pinGroup } = useGroups(homeSections.groups);
   const { leaderboard } = useGroupLeaderboard(undefined, homeSections.leaderboard);
   const router = useRouter();
