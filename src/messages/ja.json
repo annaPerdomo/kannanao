@@ -1073,7 +1073,8 @@
       "goalLabel": "目標: {goal}",
       "removeTitle": "課題を削除しますか？",
       "removeBody": "「{deck}」を{count, plural, other {#人全員}}から削除します。",
-      "removeFailed": "課題を削除できませんでした。もう一度お試しください。"
+      "removeFailed": "課題を削除できませんでした。もう一度お試しください。",
+      "startsOn": "{date} から"
     },
     "createAssignment": {
       "title": "課題を出す",
@@ -1085,7 +1086,9 @@
       "dueDateLabel": "しめ切り（任意）",
       "assign": "出す",
       "assigning": "送信中...",
-      "failedToCreate": "課題を出せませんでした"
+      "failedToCreate": "課題を出せませんでした",
+      "availableOnLabel": "表示を始める日",
+      "availableOnHelp": "空白のまま出すと、すぐに表示されます。"
     },
     "editAssignment": {
       "title": "課題を編集",
@@ -1097,7 +1100,9 @@
       "dueDateLabel": "しめ切り（任意）",
       "saving": "保存中...",
       "failedToUpdate": "課題を更新できませんでした",
-      "subtitleBatch": "{emoji} {deckName}・{count, plural, other {#人}}"
+      "subtitleBatch": "{emoji} {deckName}・{count, plural, other {#人}}",
+      "availableOnLabel": "表示を始める日",
+      "availableOnHelp": "空白のまま出すと、すぐに表示されます。"
     },
     "useAssignments": {
       "failedToLoad": "課題を読み込めませんでした",

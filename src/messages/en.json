@@ -1073,7 +1073,8 @@
       "goalLabel": "Goal: {goal}",
       "removeTitle": "Remove assignment?",
       "removeBody": "{deck} will be removed for {count, plural, one {# member} other {all # members}}.",
-      "removeFailed": "Couldn't remove the assignment. Please try again."
+      "removeFailed": "Couldn't remove the assignment. Please try again.",
+      "startsOn": "Starts {date}"
     },
     "createAssignment": {
       "title": "Assign a Deck",
@@ -1085,7 +1086,9 @@
       "dueDateLabel": "Due Date (optional)",
       "assign": "Assign",
       "assigning": "Assigning...",
-      "failedToCreate": "Failed to create assignment"
+      "failedToCreate": "Failed to create assignment",
+      "availableOnLabel": "Starts showing on",
+      "availableOnHelp": "Leave blank to show it right away."
     },
     "editAssignment": {
       "title": "Edit Assignment",
@@ -1097,7 +1100,9 @@
       "dueDateLabel": "Due Date (optional)",
       "saving": "Saving...",
       "failedToUpdate": "Failed to update assignment",
-      "subtitleBatch": "{emoji} {deckName} · {count, plural, one {# member} other {# members}}"
+      "subtitleBatch": "{emoji} {deckName} · {count, plural, one {# member} other {# members}}",
+      "availableOnLabel": "Starts showing on",
+      "availableOnHelp": "Leave blank to show it right away."
     },
     "useAssignments": {
       "failedToLoad": "Failed to load assignments",

@@ -21,10 +21,22 @@ const CARRIED_CAP = Math.floor(KNOWN_WORD_CAP / 2);
 
 /** Week N is due a week after week N-1. Dates are plain YYYY-MM-DD, so stay in UTC. */
 function dueDateFor(firstDueDate: string, weekIndex: number): string | null {
-  const start = Date.parse(`${firstDueDate}T00:00:00Z`);
+  return shiftDays(firstDueDate, weekIndex * DAYS_PER_WEEK);
+}
+
+/**
+ * Week N starts showing a week before it is due — i.e. when week N-1 falls due.
+ * Without this the learner opens the app to a whole term marked "assigned",
+ * which reads as a pile of homework instead of this week's work.
+ */
+function availableOnFor(firstDueDate: string, weekIndex: number): string | null {
+  return shiftDays(firstDueDate, (weekIndex - 1) * DAYS_PER_WEEK);
+}
+
+function shiftDays(date: string, days: number): string | null {
+  const start = Date.parse(`${date}T00:00:00Z`);
   if (Number.isNaN(start)) return null;
-  const due = new Date(start + weekIndex * DAYS_PER_WEEK * 24 * 60 * 60 * 1000);
-  return due.toISOString().slice(0, 10);
+  return new Date(start + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 }
 
 async function nextDeckPosition(organizerId: string): Promise<number> {
@@ -116,6 +128,7 @@ export async function POST(req: NextRequest) {
       groupId,
       memberId,
       dueDate: dueDateFor(firstDueDate, index),
+      availableOn: availableOnFor(firstDueDate, index),
       requiredAccuracy: requiredAccuracy ?? null,
       requiredMode: requiredMode ?? null,
     });
@@ -147,10 +160,11 @@ async function createDeck(args: {
   groupId: string;
   memberId: string;
   dueDate: string | null;
+  availableOn: string | null;
   requiredAccuracy: number | null;
   requiredMode: string | null;
 }): Promise<ApplyDeckResult> {
-  const { deck, index, position, organizerId, groupId, memberId, dueDate } = args;
+  const { deck, index, position, organizerId, groupId, memberId, dueDate, availableOn } = args;
   const sb = getServiceSupabase();
   const name = (deck.name ?? '').trim() || `Week ${index + 1}`;
   const { data: created, error: deckError } = await sb
@@ -214,6 +228,7 @@ async function createDeck(args: {
     title: `Week ${index + 1} — ${name}`.slice(0, 200),
     note: (deck.description ?? '').trim().slice(0, 500) || null,
     due_date: dueDate,
+    available_on: availableOn,
     required_accuracy: args.requiredAccuracy,
     required_mode: args.requiredMode,
   });

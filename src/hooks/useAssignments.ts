@@ -14,6 +14,8 @@ export interface Assignment {
   title: string | null;
   note: string | null;
   due_date: string | null;
+  /** Date this starts showing for the learner; null = right away. */
+  available_on: string | null;
   completed_at: string | null;
   created_at: string;
   /** Mastery goal: minimum session accuracy (0-100), or null for none. */
@@ -95,6 +97,7 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
       title?: string;
       note?: string;
       dueDate?: string;
+      availableOn?: string;
       requiredAccuracy?: number;
       requiredMode?: string;
     }) => {
@@ -126,6 +129,7 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
         title?: string | null;
         note?: string | null;
         dueDate?: string | null;
+        availableOn?: string | null;
         requiredAccuracy?: number | null;
         requiredMode?: string | null;
       },
@@ -136,6 +140,7 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
       if ('title' in updates) mapped.title = updates.title ?? null;
       if ('note' in updates) mapped.note = updates.note ?? null;
       if ('dueDate' in updates) mapped.due_date = updates.dueDate ?? null;
+      if ('availableOn' in updates) mapped.available_on = updates.availableOn ?? null;
       if ('requiredAccuracy' in updates)
         mapped.required_accuracy = updates.requiredAccuracy ?? null;
       if ('requiredMode' in updates) mapped.required_mode = updates.requiredMode ?? null;

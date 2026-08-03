@@ -50,7 +50,10 @@ export function BatchRow({ batch, onEdit, onDelete }: BatchRowProps) {
   const locale = useLocale();
   const { brand } = theme.palette;
   const isDone = batch.completed === batch.total;
-  const urgency = !isDone ? dueDateColor(batch.dueDate) : null;
+  // Scheduled for a future date: visible to the organizer, not yet to the learner.
+  const isScheduled =
+    !!batch.availableOn && batch.availableOn > new Date().toISOString().slice(0, 10);
+  const urgency = !isDone && !isScheduled ? dueDateColor(batch.dueDate) : null;
   const goal = useGoalLabel()(batch.sample);
   const urgencyColor = urgency === 'red' ? theme.palette.error.main : theme.palette.warning.main;
   const deckName = batch.deckName || t('unknownDeck');
@@ -111,6 +114,9 @@ export function BatchRow({ batch, onEdit, onDelete }: BatchRowProps) {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
           <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', minWidth: 0 }} noWrap>
             {[
+              // A future start date is the more useful fact: the learner cannot
+              // see this one yet, so "due in 27 days" would be misleading alone.
+              isScheduled ? t('startsOn', { date: formatDate(batch.availableOn!, locale) }) : null,
               batch.dueDate && !urgency
                 ? t('dueOn', { date: formatDate(batch.dueDate, locale) })
                 : null,

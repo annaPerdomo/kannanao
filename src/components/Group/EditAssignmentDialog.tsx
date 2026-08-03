@@ -15,7 +15,10 @@ interface EditAssignmentDialogProps {
   open: boolean;
   onClose: () => void;
   assignment: Assignment | null;
-  onSave: (id: string, updates: { note?: string | null; dueDate?: string | null }) => Promise<void>;
+  onSave: (
+    id: string,
+    updates: { note?: string | null; dueDate?: string | null; availableOn?: string | null },
+  ) => Promise<void>;
   /** How many members share this assignment — the edit applies to all of them. */
   memberCount?: number;
 }
@@ -34,6 +37,7 @@ export function EditAssignmentDialog({
 
   const [note, setNote] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [availableOn, setAvailableOn] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,6 +45,7 @@ export function EditAssignmentDialog({
     if (assignment) {
       setNote(assignment.note ?? '');
       setDueDate(assignment.due_date ?? '');
+      setAvailableOn(assignment.available_on ?? '');
       setError(null);
     }
   }, [assignment]);
@@ -55,6 +60,7 @@ export function EditAssignmentDialog({
         // a note would never reach the server.
         note: note.trim() || null,
         dueDate: dueDate || null,
+        availableOn: availableOn || null,
       });
       onClose();
     } catch (err) {
@@ -128,6 +134,17 @@ export function EditAssignmentDialog({
           multiline
           rows={2}
           slotProps={{ htmlInput: { maxLength: 500 } }}
+        />
+
+        <TextField
+          label={t('availableOnLabel')}
+          helperText={t('availableOnHelp')}
+          type="date"
+          value={availableOn}
+          onChange={(e) => setAvailableOn(e.target.value)}
+          size="small"
+          fullWidth
+          slotProps={{ inputLabel: { shrink: true } }}
         />
 
         <TextField

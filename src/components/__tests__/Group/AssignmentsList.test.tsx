@@ -17,6 +17,7 @@ function assignment(overrides: Partial<Assignment> = {}): Assignment {
     title: null,
     note: null,
     due_date: null,
+    available_on: null,
     completed_at: null,
     created_at: '2026-07-01T00:00:00Z',
     required_accuracy: null,
@@ -162,6 +163,17 @@ describe('AssignmentsList', () => {
   it('shows the plain due date when the deadline is not urgent', () => {
     render(handout(2, { due_date: iso(10) }));
     expect(screen.getByText(/^Due /)).toBeInTheDocument();
+  });
+
+  // A future start date is the organizer's cue that the learner cannot see it yet.
+  it('labels a handout that has not started for the learner', () => {
+    render(handout(2, { due_date: iso(30), available_on: iso(23) }));
+    expect(screen.getByText(/^Starts /)).toBeInTheDocument();
+  });
+
+  it('does not label a handout that has already started', () => {
+    render(handout(2, { due_date: iso(10), available_on: iso(-3) }));
+    expect(screen.queryByText(/^Starts /)).not.toBeInTheDocument();
   });
 
   // Removing a batch removes it for everyone, so it asks first.

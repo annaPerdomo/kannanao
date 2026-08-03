@@ -38,6 +38,7 @@ interface CreateAssignmentDialogProps {
     title?: string;
     note?: string;
     dueDate?: string;
+    availableOn?: string;
     requiredAccuracy?: number;
     requiredMode?: string;
   }) => Promise<void>;
@@ -62,6 +63,7 @@ export function CreateAssignmentDialog({
   const [selectedDeck, setSelectedDeck] = useState<string>('');
   const [note, setNote] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [availableOn, setAvailableOn] = useState('');
   const [goalAccuracy, setGoalAccuracy] = useState<number | null>(null);
   const [goalMode, setGoalMode] = useState<GoalMode | null>(null);
   const [saving, setSaving] = useState(false);
@@ -93,6 +95,7 @@ export function CreateAssignmentDialog({
         deckId: selectedDeck,
         note: note.trim() || undefined,
         dueDate: dueDate || undefined,
+        availableOn: availableOn || undefined,
         requiredAccuracy: goalAccuracy ?? undefined,
         requiredMode: goalMode ?? undefined,
       });
@@ -101,6 +104,7 @@ export function CreateAssignmentDialog({
       setSelectedDeck('');
       setNote('');
       setDueDate('');
+      setAvailableOn('');
       setGoalAccuracy(null);
       setGoalMode(null);
       onClose();
@@ -233,6 +237,24 @@ export function CreateAssignmentDialog({
           multiline
           rows={2}
           slotProps={{ htmlInput: { maxLength: 500 } }}
+        />
+
+        {/* Start date — blank means it shows up right away. */}
+        <TextField
+          label={t('availableOnLabel')}
+          helperText={t('availableOnHelp')}
+          type="date"
+          value={availableOn}
+          onChange={(e) => setAvailableOn(e.target.value)}
+          size="small"
+          fullWidth
+          slotProps={{ inputLabel: { shrink: true } }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 2,
+              background: alpha('#fff', 0.6),
+            },
+          }}
         />
 
         {/* Due date */}
