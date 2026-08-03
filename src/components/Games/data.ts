@@ -164,7 +164,7 @@ export const QA_ITEMS: QaItem[] = [
 
 // ── Particle Picker ──────────────────────────────────────────────────────────
 
-export const PARTICLE_CHOICES = ['は', 'が', 'を', 'に', 'の', 'か', 'も', 'へ'];
+export const PARTICLE_CHOICES = ['は', 'が', 'を', 'に', 'の', 'か', 'も', 'へ', 'と', 'で'];
 
 export interface ParticleSentence {
   english: string;
@@ -227,5 +227,29 @@ export const PARTICLE_SENTENCES: ParticleSentence[] = [
       { answers: ['を'] },
       'のみます。',
     ],
+  },
+  {
+    english: 'I go to the park with my dad.',
+    segments: ['ちち', { answers: ['と'] }, 'こうえん', { answers: ['に', 'へ'] }, 'いきます。'],
+  },
+  {
+    english: 'I eat ramen and sushi.',
+    segments: ['ラーメン', { answers: ['と'] }, 'すし', { answers: ['を'] }, 'たべます。'],
+  },
+  {
+    english: 'Taro and Jiro are friends.',
+    segments: ['たろう', { answers: ['と'] }, 'じろう', { answers: ['は'] }, 'ともだちです。'],
+  },
+  {
+    english: 'I speak English at home.',
+    segments: ['いえ', { answers: ['で'] }, 'えいご', { answers: ['を'] }, 'はなします。'],
+  },
+  {
+    english: 'I study at school.',
+    segments: ['がっこう', { answers: ['で'] }, 'べんきょう', { answers: ['を'] }, 'します。'],
+  },
+  {
+    english: 'I woke up at six o’clock.',
+    segments: ['ろくじ', { answers: ['に'] }, 'おきました。'],
   },
 ];
