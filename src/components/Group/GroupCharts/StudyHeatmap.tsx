@@ -31,7 +31,6 @@ function sum(values: number[]): number {
 }
 
 /**
- * Members × days grid of cards studied — the "is everyone keeping up?" view.
  * Magnitude on a grid, so one hue stepped light→dark with a scale legend, and
  * an empty day gets the neutral track rather than the palest tint.
  */

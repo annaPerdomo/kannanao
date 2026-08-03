@@ -14,10 +14,7 @@ import { SectionCard } from './SectionCard';
 import { ShowMoreButton } from './ShowMoreButton';
 
 const ROWS_SHOWN = 6;
-/**
- * Days without studying before a member needs a nudge. Deliberately the same
- * window as the overview's "active this week", so the two counts split one roster.
- */
+/** Must match the overview's "active this week", so the two counts split one roster. */
 export const STALE_DAYS = 7;
 
 type SortKey = 'attention' | 'active' | 'name';

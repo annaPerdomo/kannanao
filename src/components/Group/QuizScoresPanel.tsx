@@ -20,10 +20,7 @@ import { ShowMoreButton } from './ShowMoreButton';
 const GRID_COLUMNS = '1.6fr 1fr 1fr 0.7fr';
 const ROWS_SHOWN = 8;
 
-/**
- * Not-yet-taken first, then lowest best score. Exported for its own test: this
- * order is the panel's whole argument for existing at class size.
- */
+/** Not-yet-taken first, then lowest best score — the rows worth acting on lead. */
 export function rankQuizRows(rows: QuizScoreRow[]): QuizScoreRow[] {
   return [...rows].sort((a, b) => {
     if (a.attempts === 0 || b.attempts === 0) return a.attempts - b.attempts;

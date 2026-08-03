@@ -43,11 +43,7 @@ export function reteachSentence(
     : `${struggling} of ${attempts} students who tried it keep missing this word.`;
 }
 
-/**
- * "What to review again" — a deck picker plus a worst-first bar chart of the
- * words the group is struggling with. The plain sentence behind each bar stays
- * one hover away. Organizer dashboard only; data is organizer-gated server-side.
- */
+/** Organizer dashboard only; the underlying data is organizer-gated server-side. */
 export function ReteachPanel({ decks }: ReteachPanelProps) {
   const t = useTranslations('Group.reteachPanel');
   const theme = useTheme();

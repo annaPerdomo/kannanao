@@ -145,11 +145,6 @@ const GAMES: GameConfig[] = [
   },
 ];
 
-/**
- * The review-game tiles, shown under the due-cards hero on /review. Each
- * pulls words from every deck you've studied — due cards first — so a quick
- * game keeps your whole vocabulary fresh. Every answer earns XP.
- */
 export function GameTiles() {
   const t = useTranslations('Games.tiles');
   return (

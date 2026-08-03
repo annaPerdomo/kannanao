@@ -1,10 +1,8 @@
 /**
- * Content and round logic for the "How Many?" counter game.
- *
- * Japanese counts things with a counter word, and the first ten of each series
- * are where the irregulars live (ひとつ・ふたつ, ひとり・ふたり, よにん, しちにん).
- * The tables below are the source of truth for both the answer and the
- * distractors, so a round can never offer a reading that does not exist.
+ * The first ten of each counter series are where Japanese hides its irregulars
+ * (ひとつ・ふたつ, ひとり・ふたり, よにん, しちにん). The tables below are the source of
+ * truth for the answer *and* the distractors, so a round can never offer a
+ * reading that does not exist.
  */
 import { shuffle } from '@/lib/reviewGames';
 
@@ -133,7 +131,6 @@ export function buildCounterOptions(series: CounterSeries, count: number): strin
 export interface CounterRound {
   item: CounterItem;
   count: number;
-  /** The correct reading — also the one highlighted after an answer. */
   answer: string;
   /** Four shuffled chips, one of them the answer. */
   options: string[];
