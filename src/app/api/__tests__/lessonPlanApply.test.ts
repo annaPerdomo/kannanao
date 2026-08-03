@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
+import { _resetLessonBudget } from '@/app/api/group/_lib/lessonBudget';
 import type { LessonPlan } from '@/types/lessonPlan';
 
 vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
@@ -110,6 +111,7 @@ const BASE = { groupId: 'g1', memberId: 'm1', firstDueDate: '2026-08-09' };
 beforeEach(() => {
   vi.clearAllMocks();
   _resetStore();
+  _resetLessonBudget();
   process.env.GEMINI_API_KEY = 'test-gemini-key';
   reads = { groups: [], profiles: [], decks: [], cards: [], assignments: [], card_progress: [] };
   insertReturns = { decks: [], cards: [], assignments: [] };

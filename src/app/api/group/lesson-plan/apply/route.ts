@@ -7,6 +7,7 @@ import type { ApplyDeckResult, LessonPlan, PlanDeck } from '@/types/lessonPlan';
 
 import { rateLimit } from '../../../_lib/rateLimit';
 import { generateDeckSentences } from '../../_lib/generateDeckSentences';
+import { consumeLessonBudget } from '../../_lib/lessonBudget';
 import { isMemberOfOrganizer } from '../../_lib/memberAccess';
 import { requireGroupAccess } from '../../_lib/requireGroupAccess';
 import { getServiceSupabase } from '../../_lib/serviceSupabase';
@@ -98,6 +99,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Learner not found in your group.' }, { status: 403 });
   }
 
+  // Each deck costs one sentence-generation call.
+  const overBudget = consumeLessonBudget(organizerId, decks.length);
+  if (overBudget) return overBudget;
+
   const basePosition = await nextDeckPosition(organizerId);
   const results: ApplyDeckResult[] = [];
   const createdDeckIds: string[] = [];
@@ -125,6 +130,7 @@ export async function POST(req: NextRequest) {
     organizerId,
     memberId,
     deckCount: decks.length,
+    cardCount: decks.reduce((n, d) => n + (d.cards?.length ?? 0), 0),
     created: createdDeckIds.length,
     failed: results.filter((r) => r.status === 'failed').length,
   });

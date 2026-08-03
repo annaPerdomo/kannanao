@@ -7,6 +7,7 @@ import type { LessonPlan } from '@/types/lessonPlan';
 
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { consumeLessonBudget } from '../_lib/lessonBudget';
 import { isMemberOfOrganizer } from '../_lib/memberAccess';
 import { loadStudiedVocabulary } from '../_lib/studiedVocabulary';
 
@@ -115,6 +116,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
   }
 
+  const overBudget = consumeLessonBudget(orgCheck.id);
+  if (overBudget) return overBudget;
+
   try {
     const knownWords = await loadStudiedVocabulary(memberId);
 
@@ -185,6 +189,7 @@ export async function POST(req: NextRequest) {
       cardsPerDeck: cards,
       knownWordCount: knownWords.length,
       deckCount: plan.decks.length,
+      cardCount: plan.decks.reduce((n, d) => n + (d.cards?.length ?? 0), 0),
     });
 
     return NextResponse.json({

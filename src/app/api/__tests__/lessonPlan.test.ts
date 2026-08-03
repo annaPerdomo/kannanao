@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
+import { _resetLessonBudget } from '@/app/api/group/_lib/lessonBudget';
 
 vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
   requireOrganizerAccount: vi.fn().mockResolvedValue({
@@ -109,6 +110,7 @@ const VALID = { memberId: 'm1', goal: 'Food words for a restaurant', weeks: 2, c
 beforeEach(() => {
   vi.clearAllMocks();
   _resetStore();
+  _resetLessonBudget();
   process.env.GEMINI_API_KEY = 'test-gemini-key';
   queues = { profiles: [], card_progress: [], cards: [] };
   inserted.length = 0;

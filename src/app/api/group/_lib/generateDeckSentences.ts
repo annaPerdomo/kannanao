@@ -206,6 +206,15 @@ export async function generateDeckSentences(args: {
     };
   }
 
+  logger.info('Practice sentences generated', {
+    route: 'generateDeckSentences',
+    deckId,
+    memberId,
+    deckWordCount: deckWords.length,
+    knownWordCount: knownWords.length,
+    sentenceCount: rows.length,
+  });
+
   const { data: saved } = await selectSentences(deckId, memberId);
   return { status: 'generated', sentences: (saved ?? []) as DbPracticeSentence[], deckWords };
 }
