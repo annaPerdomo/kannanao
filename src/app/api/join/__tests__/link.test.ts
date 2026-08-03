@@ -21,6 +21,9 @@ vi.mock('@/app/api/_lib/requireAuthenticatedUser', () => ({
 vi.mock('@/app/api/_lib/authCache', () => ({
   invalidateProfileCache: vi.fn(),
   _resetAuthCache: vi.fn(),
+  // The rate limiter keys this route on the account, so it resolves the token
+  // too; null sends it down the IP fallback, which is what these tests want.
+  getUserFromToken: vi.fn(async () => null),
 }));
 
 const tableData: Record<string, { data: unknown; error: unknown }> = {};

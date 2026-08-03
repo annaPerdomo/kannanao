@@ -13,6 +13,13 @@ interface RateLimitEntry {
 interface RateLimitConfig {
   windowMs: number;
   max: number;
+  /**
+   * Key the window on the signed-in account instead of the IP. A whole group
+   * scanning the same QR code shares one school or household egress IP, so an
+   * IP window cuts everyone off after the first few. Falls back to the IP when
+   * there is no valid token, which keeps the unauthenticated path limited.
+   */
+  keyBy?: 'ip' | 'user';
 }
 
 const store = new Map<string, RateLimitEntry>();
@@ -42,6 +49,22 @@ function getClientIp(req: NextRequest): string {
 }
 
 /**
+ * Who the window belongs to. The `user` lookup is the same cached call the
+ * route makes to authenticate, so on an authed route it costs a cache hit
+ * rather than a second round-trip.
+ */
+async function requestIdentity(req: NextRequest, keyBy: 'ip' | 'user'): Promise<string> {
+  if (keyBy === 'user') {
+    const authHeader = req.headers.get('authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      const user = await getUserFromToken(authHeader.slice(7));
+      if (user) return `user:${user.id}`;
+    }
+  }
+  return `ip:${getClientIp(req)}`;
+}
+
+/**
  * Try to extract the admin status from a Supabase Bearer token, if present.
  * Returns true only when the token resolves to the admin email.
  * Fails open (returns false) — missing/invalid tokens are not errors here.
@@ -65,13 +88,12 @@ async function isAdminRequest(req: NextRequest): Promise<boolean> {
  */
 export async function rateLimit(
   req: NextRequest,
-  { windowMs, max }: RateLimitConfig,
+  { windowMs, max, keyBy = 'ip' }: RateLimitConfig,
 ): Promise<NextResponse | null> {
   const now = Date.now();
   cleanup(now);
 
-  const ip = getClientIp(req);
-  const key = `${ip}:${req.nextUrl.pathname}`;
+  const key = `${await requestIdentity(req, keyBy)}:${req.nextUrl.pathname}`;
   const entry = store.get(key);
 
   if (!entry || now - entry.windowStart >= windowMs) {

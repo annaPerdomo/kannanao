@@ -94,6 +94,29 @@ describe('rateLimit', () => {
     expect(await rateLimit(adminReq, config)).toBeNull();
   });
 
+  it('keyBy user gives each account its own window on a shared IP', async () => {
+    // A group scanning one QR code arrives from one school network.
+    mockGetUser.mockImplementation((token: string) => ({
+      data: { user: { id: token, email: 'learner@example.com' } },
+      error: null,
+    }));
+    const config = { windowMs: 60_000, max: 1, keyBy: 'user' as const };
+    const req = (token: string) =>
+      new NextRequest('http://localhost:3000/api/test', {
+        headers: { 'x-forwarded-for': '1.2.3.4', Authorization: `Bearer ${token}` },
+      });
+
+    expect(await rateLimit(req('kenji'), config)).toBeNull();
+    expect(await rateLimit(req('aya'), config)).toBeNull();
+    expect(await rateLimit(req('kenji'), config)).not.toBeNull();
+  });
+
+  it('keyBy user falls back to the IP without a valid token', async () => {
+    const config = { windowMs: 60_000, max: 1, keyBy: 'user' as const };
+    expect(await rateLimit(makeRequest(), config)).toBeNull();
+    expect(await rateLimit(makeRequest(), config)).not.toBeNull();
+  });
+
   it('does not bypass for non-admin authenticated users', async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { email: 'regular@example.com' } },
