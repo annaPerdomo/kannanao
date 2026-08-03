@@ -2,7 +2,6 @@
 import DownloadIcon from '@mui/icons-material/Download';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
@@ -10,7 +9,27 @@ import { useMemo, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { useQuizResults } from '@/hooks/useQuizResults';
+import type { QuizScoreRow } from '@/lib/quiz';
 import { quizResultsToCsv } from '@/lib/quiz';
+
+import { DeckPicker } from './DeckPicker';
+import { SectionCard } from './SectionCard';
+import { ShowMoreButton } from './ShowMoreButton';
+
+/** member | best | latest | tries — the score table's shared column track. */
+const GRID_COLUMNS = '1.6fr 1fr 1fr 0.7fr';
+const ROWS_SHOWN = 8;
+
+/**
+ * Not-yet-taken first, then lowest best score. Exported for its own test: this
+ * order is the panel's whole argument for existing at class size.
+ */
+export function rankQuizRows(rows: QuizScoreRow[]): QuizScoreRow[] {
+  return [...rows].sort((a, b) => {
+    if (a.attempts === 0 || b.attempts === 0) return a.attempts - b.attempts;
+    return (a.best?.accuracy ?? 0) - (b.best?.accuracy ?? 0);
+  });
+}
 
 interface DeckLite {
   id: string;
@@ -47,10 +66,19 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
   const { brand } = theme.palette;
   const t = useTranslations('Group.quizScores');
   const [selectedDeck, setSelectedDeck] = useState<string>(decks[0]?.id ?? '');
+  const [expanded, setExpanded] = useState(false);
   const { rows, loading, error } = useQuizResults(selectedDeck || null, groupId);
 
   const deck = useMemo(() => decks.find((d) => d.id === selectedDeck), [decks, selectedDeck]);
   const anyAttempts = rows.some((r) => r.attempts > 0);
+
+  const ranked = useMemo(() => rankQuizRows(rows), [rows]);
+  const taken = rows.filter((r) => r.attempts > 0);
+  const average =
+    taken.length > 0
+      ? Math.round(taken.reduce((sum, r) => sum + (r.best?.accuracy ?? 0), 0) / taken.length)
+      : 0;
+  const visible = expanded ? ranked : ranked.slice(0, ROWS_SHOWN);
 
   if (decks.length === 0) return null;
 
@@ -62,19 +90,9 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
   };
 
   return (
-    <Box sx={{ mt: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-        <Typography
-          sx={{
-            fontWeight: 800,
-            fontSize: '0.85rem',
-            color: brand[700],
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-          }}
-        >
-          {t('heading')}
-        </Typography>
+    <SectionCard
+      title={t('heading')}
+      action={
         <Button
           variant="outlined"
           size="small"
@@ -82,7 +100,7 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
           onClick={handleDownload}
           disabled={!anyAttempts}
           sx={{
-            borderRadius: 2.5,
+            borderRadius: theme.radii.sm,
             textTransform: 'none',
             fontWeight: 700,
             borderColor: alpha(brand[400], 0.5),
@@ -91,70 +109,33 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
         >
           {t('downloadCsv')}
         </Button>
-      </Box>
-
-      {/* Deck picker */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 1.5 }}>
-        {decks.map((d) => {
-          const selected = d.id === selectedDeck;
-          return (
-            <Box
-              key={d.id}
-              role="button"
-              tabIndex={0}
-              aria-pressed={selected}
-              onClick={() => setSelectedDeck(d.id)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setSelectedDeck(d.id);
-                }
-              }}
-              sx={{
-                px: 1.5,
-                py: 0.75,
-                borderRadius: 2,
-                border: `1.5px solid ${selected ? brand[500] : alpha(brand[300], 0.4)}`,
-                bgcolor: selected ? alpha(brand[100], 0.8) : 'transparent',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                '&:hover': { borderColor: brand[400] },
-              }}
-            >
-              <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: brand[800] }}>
-                {d.emoji || '📚'} {d.name}
-              </Typography>
-            </Box>
-          );
-        })}
-      </Box>
+      }
+    >
+      <DeckPicker decks={decks} value={selectedDeck} onChange={setSelectedDeck} />
 
       {error ? (
-        <Typography sx={{ color: 'error.main', fontSize: '0.8rem' }}>{error}</Typography>
+        <Typography sx={{ color: 'error.main', fontSize: '0.85rem' }}>{error}</Typography>
       ) : loading ? (
         <Loading message={t('loading')} />
       ) : (
-        <Paper
-          elevation={0}
-          sx={{
-            border: `1.5px solid ${alpha(brand[300], 0.35)}`,
-            borderRadius: 3,
-            overflow: 'hidden',
-          }}
-        >
+        <Box>
+          {rows.length > 0 && (
+            <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary', mb: 1 }}>
+              {t('summary', { taken: taken.length, total: rows.length, average })}
+            </Typography>
+          )}
+
           {/* Header row */}
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: '1.6fr 1fr 1fr 0.8fr',
-              px: 2,
-              py: 1,
-              bgcolor: alpha(brand[100], 0.5),
-              fontSize: '0.68rem',
-              fontWeight: 800,
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-              color: brand[700],
+              gridTemplateColumns: GRID_COLUMNS,
+              px: 1,
+              py: 0.75,
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              color: 'text.secondary',
+              borderBottom: `1px solid ${alpha(brand[300], 0.35)}`,
             }}
           >
             <Box>{t('colMember')}</Box>
@@ -164,33 +145,33 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
           </Box>
 
           {rows.length === 0 ? (
-            <Box sx={{ p: 3, textAlign: 'center' }}>
-              <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
+            <Box sx={{ py: 3, textAlign: 'center' }}>
+              <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
                 {t('noMembers')}
               </Typography>
             </Box>
           ) : !anyAttempts ? (
-            <Box sx={{ p: 3, textAlign: 'center' }}>
-              <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
+            <Box sx={{ py: 3, textAlign: 'center' }}>
+              <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
                 {t('noAttempts')}
               </Typography>
             </Box>
           ) : (
-            rows.map((r, i) => (
+            visible.map((r) => (
               <Box
                 key={r.memberId}
                 sx={{
                   display: 'grid',
-                  gridTemplateColumns: '1.6fr 1fr 1fr 0.8fr',
-                  px: 2,
-                  py: 1.25,
+                  gridTemplateColumns: GRID_COLUMNS,
+                  px: 1,
+                  py: 1.1,
                   alignItems: 'center',
-                  fontSize: '0.82rem',
-                  borderTop: i === 0 ? 'none' : `1px solid ${alpha(brand[300], 0.2)}`,
+                  fontSize: '0.88rem',
+                  borderBottom: `1px solid ${alpha(brand[300], 0.2)}`,
                 }}
               >
-                <Box sx={{ fontWeight: 600, color: 'text.primary', minWidth: 0 }}>{r.name}</Box>
-                <Box sx={{ textAlign: 'center', color: 'text.primary' }}>
+                <Box sx={{ fontWeight: 700, color: 'text.primary', minWidth: 0 }}>{r.name}</Box>
+                <Box sx={{ textAlign: 'center', fontWeight: 700, color: 'text.primary' }}>
                   {r.best ? `${r.best.score}/${r.best.total}` : '—'}
                 </Box>
                 <Box sx={{ textAlign: 'center', color: 'text.secondary' }}>
@@ -200,8 +181,16 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
               </Box>
             ))
           )}
-        </Paper>
+
+          {anyAttempts && ranked.length > ROWS_SHOWN && (
+            <ShowMoreButton
+              expanded={expanded}
+              total={ranked.length}
+              onClick={() => setExpanded((v) => !v)}
+            />
+          )}
+        </Box>
       )}
-    </Box>
+    </SectionCard>
   );
 }

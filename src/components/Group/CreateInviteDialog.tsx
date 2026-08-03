@@ -1,7 +1,17 @@
 'use client';
 
 import QrCode2Icon from '@mui/icons-material/QrCode2';
-import { Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField } from '@mui/material';
+import {
+  Button,
+  Divider,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -9,11 +19,17 @@ import { useState } from 'react';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { CreateInviteParams, InviteCode } from '@/hooks/useInvites';
 
+import { InviteList } from './InviteList';
+
 interface CreateInviteDialogProps {
   open: boolean;
   onClose: () => void;
   onCreated: (invite: InviteCode) => void;
   onCreate: (params: CreateInviteParams) => Promise<InviteCode>;
+  /** Pass the existing codes to make this the one place invites are managed. */
+  invites?: InviteCode[];
+  onRevoke?: (id: string) => void;
+  onShowQR?: (invite: InviteCode) => void;
 }
 
 export function CreateInviteDialog({
@@ -21,6 +37,9 @@ export function CreateInviteDialog({
   onClose,
   onCreated,
   onCreate,
+  invites,
+  onRevoke,
+  onShowQR,
 }: CreateInviteDialogProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -90,6 +109,19 @@ export function CreateInviteDialog({
       }
     >
       <Stack gap={2.5}>
+        {invites && invites.length > 0 && onRevoke && onShowQR && (
+          <Stack gap={1}>
+            <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: 'text.primary' }}>
+              {t('activeCodesHeading')}
+            </Typography>
+            <InviteList invites={invites} onRevoke={onRevoke} onShowQR={onShowQR} />
+            <Divider sx={{ mt: 1 }} />
+            <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: 'text.primary' }}>
+              {t('newCodeHeading')}
+            </Typography>
+          </Stack>
+        )}
+
         <TextField
           fullWidth
           size="small"

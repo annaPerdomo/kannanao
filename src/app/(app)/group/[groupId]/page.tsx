@@ -1,60 +1,59 @@
 'use client';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import QrCode2Icon from '@mui/icons-material/QrCode2';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import ButtonBase from '@mui/material/ButtonBase';
-import CircularProgress from '@mui/material/CircularProgress';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Switch from '@mui/material/Switch';
-import TextField from '@mui/material/TextField';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 
-import { EmojiPickerPopover } from '@/components/EmojiPickerPopover';
 import {
   ActivityFeed,
   AssignmentsList,
   CreateAssignmentDialog,
   CreateInviteDialog,
+  DailyActivityChart,
+  GroupDashboardHeader,
   GroupEncouragementForm,
   GroupOverview,
-  InviteList,
   InviteQRCode,
   LeaderboardWidget,
-  MemberCard,
+  MembersPanel,
   QuizScoresPanel,
   ReteachPanel,
+  SectionCard,
+  ShowMoreButton,
+  StudyHeatmap,
 } from '@/components/Group';
 import { Loading } from '@/components/Loading';
-import { PageHeader } from '@/components/PageHeader';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
 import { useEncouragements } from '@/hooks/useEncouragements';
 import { useGroupFeed, useGroupMembers } from '@/hooks/useGroup';
+import { useGroupActivity } from '@/hooks/useGroupActivity';
 import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
 import { useGroups } from '@/hooks/useGroups';
 import type { InviteCode } from '@/hooks/useInvites';
 import { useInvites } from '@/hooks/useInvites';
 import { LAYOUT } from '@/theme';
 
+const ASSIGNMENTS_SHOWN = 5;
+const LEADERBOARD_SHOWN = 10;
+const FEED_SHOWN = 6;
+
+/** Two weeks of columns in the daily chart; its last week fills the heatmap. */
+const ACTIVITY_DAYS = 14;
+const HEATMAP_DAYS = 7;
+
 export default function GroupDashboardPage() {
   const t = useTranslations('Group.groupPage');
-  const tc = useTranslations('Common');
+  const tc = useTranslations('Group.charts');
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
@@ -65,8 +64,13 @@ export default function GroupDashboardPage() {
   const { members, loading, error } = useGroupMembers(groupId);
   const { leaderboard, loading: lbLoading } = useGroupLeaderboard(groupId);
   const { feed, loading: feedLoading } = useGroupFeed(groupId);
+  const {
+    activity,
+    loading: activityLoading,
+    error: activityError,
+  } = useGroupActivity(groupId, ACTIVITY_DAYS);
   const { decks } = useDecks();
-  const { assignments, createAssignment, updateAssignment, deleteAssignment } = useAssignments(
+  const { assignments, createAssignment, updateAssignments, deleteAssignments } = useAssignments(
     groupId,
     true,
     'given',
@@ -75,54 +79,32 @@ export default function GroupDashboardPage() {
   const { invites, createInvite, revokeInvite } = useInvites(groupId);
   const { groups, updateGroup } = useGroups();
   const group = groups.find((g) => g.id === groupId);
+  const ownDecks = decks.filter((d) => !d.isShared);
 
   const [assignOpen, setAssignOpen] = useState(false);
   const [createInviteOpen, setCreateInviteOpen] = useState(false);
   const [qrInvite, setQrInvite] = useState<InviteCode | null>(null);
-
-  // Inline editing state (same pattern as DeckHeader)
-  const [editing, setEditing] = useState(false);
-  const [renaming, setRenaming] = useState(false);
-  const [nameVal, setNameVal] = useState('');
-  const [emojiAnchor, setEmojiAnchor] = useState<HTMLElement | null>(null);
-  const nameInputRef = useRef<HTMLInputElement>(null);
-
-  const startEdit = useCallback(() => {
-    setNameVal(group?.name ?? '');
-    setEditing(true);
-    setTimeout(() => nameInputRef.current?.focus(), 0);
-  }, [group]);
-
-  const cancelEdit = useCallback(() => setEditing(false), []);
-
-  const commitEdit = useCallback(async () => {
-    const trimmedName = nameVal.trim();
-    if (!trimmedName || trimmedName === group?.name) {
-      setEditing(false);
-      return;
-    }
-    setRenaming(true);
-    try {
-      await updateGroup(groupId, { name: trimmedName });
-    } finally {
-      setRenaming(false);
-      setEditing(false);
-    }
-  }, [nameVal, group, updateGroup, groupId]);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') void commitEdit();
-      if (e.key === 'Escape') cancelEdit();
-    },
-    [commitEdit, cancelEdit],
-  );
+  const [allFeed, setAllFeed] = useState(false);
 
   const handleSendEncouragement = useCallback(
     async (memberId: string, message: string, emoji?: string) => {
       return sendEncouragement(memberId, message, emoji);
     },
     [sendEncouragement],
+  );
+
+  const handleRename = useCallback(
+    async (name: string) => {
+      await updateGroup(groupId, { name });
+    },
+    [updateGroup, groupId],
+  );
+
+  const handleEmojiChange = useCallback(
+    (emoji: string) => {
+      void updateGroup(groupId, { emoji });
+    },
+    [updateGroup, groupId],
   );
 
   // Redirect members away
@@ -147,6 +129,14 @@ export default function GroupDashboardPage() {
     );
   }
 
+  const leaderboardVisible = group?.show_leaderboard !== false;
+  const visibleFeed = allFeed ? feed : feed.slice(0, FEED_SHOWN);
+  const activeInvites = invites.filter(
+    (i) =>
+      (!i.expires_at || new Date(i.expires_at) > new Date()) &&
+      (i.max_uses === null || i.times_used < i.max_uses),
+  );
+
   return (
     <Box
       sx={{
@@ -156,388 +146,171 @@ export default function GroupDashboardPage() {
         py: { xs: 3, sm: 5 },
       }}
     >
-      <Box sx={{ maxWidth: LAYOUT.headerMaxWidth, mx: 'auto' }}>
-        {editing ? (
-          <PageHeader onBack={() => router.push('/group')} title="" compact mb={3}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-              <TextField
-                inputRef={nameInputRef}
-                value={nameVal}
-                onChange={(e) => setNameVal(e.target.value)}
-                onKeyDown={handleKeyDown}
-                size="small"
-                autoComplete="off"
-                disabled={renaming}
-                placeholder={t('groupNamePlaceholder')}
-                sx={{
-                  flexGrow: 1,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '9px',
-                    fontSize: '1.25rem',
-                    fontWeight: 700,
-                    color: brand[800],
-                    bgcolor: alpha('#FFFFFF', 0.6),
-                    '& fieldset': { borderColor: alpha(brand[400], 0.5) },
-                    '&:hover fieldset': { borderColor: brand[400] },
-                    '&.Mui-focused fieldset': { borderColor: brand[500] },
-                  },
-                }}
-              />
-              {renaming ? (
-                <CircularProgress size={18} sx={{ color: 'primary.main', flexShrink: 0 }} />
-              ) : (
-                <>
-                  <Tooltip title={t('saveTooltip')}>
-                    <IconButton
-                      size="small"
-                      aria-label={tc('save')}
-                      onClick={commitEdit}
-                      sx={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: '8px',
-                        bgcolor: alpha('#FFFFFF', 0.6),
-                        border: `1.5px solid ${alpha(brand[400], 0.4)}`,
-                        color: brand[700],
-                        '&:hover': { bgcolor: alpha('#FFFFFF', 0.8), borderColor: brand[400] },
-                      }}
-                    >
-                      <CheckIcon sx={{ fontSize: 15 }} />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title={t('cancelTooltip')}>
-                    <IconButton
-                      size="small"
-                      aria-label={tc('cancel')}
-                      onClick={cancelEdit}
-                      sx={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: '8px',
-                        color: 'text.secondary',
-                        border: `1.5px solid ${alpha(brand[300], 0.3)}`,
-                        bgcolor: alpha('#FFFFFF', 0.4),
-                        '&:hover': { bgcolor: alpha('#FFFFFF', 0.7) },
-                      }}
-                    >
-                      <CloseIcon sx={{ fontSize: 15 }} />
-                    </IconButton>
-                  </Tooltip>
-                </>
-              )}
-            </Box>
-          </PageHeader>
-        ) : (
-          <>
-            <PageHeader
-              onBack={() => router.push('/group')}
-              title={
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                  <Tooltip title={group?.emoji ? t('changeEmoji') : t('addEmoji')}>
-                    <ButtonBase
-                      aria-label={group?.emoji ? t('changeGroupEmoji') : t('addGroupEmoji')}
-                      onClick={(e) => setEmojiAnchor(e.currentTarget)}
-                      sx={{
-                        fontSize: { xs: '1.5rem', sm: '1.75rem' },
-                        lineHeight: 1,
-                        borderRadius: '10px',
-                        p: 0.5,
-                        alignSelf: 'center',
-                        flexShrink: 0,
-                        transition: 'transform 0.15s',
-                        '&:hover': { transform: 'scale(1.15)', bgcolor: alpha('#FFFFFF', 0.5) },
-                      }}
-                    >
-                      {group?.emoji || '👥'}
-                    </ButtonBase>
-                  </Tooltip>
-                  <Box sx={{ minWidth: 0 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      <Typography
-                        variant="h4"
-                        sx={{ fontWeight: 800, color: brand[800], lineHeight: 1.1, minWidth: 0 }}
-                      >
-                        {group?.name ?? t('defaultTitle')}
-                      </Typography>
-                      <Tooltip title={t('renameGroup')}>
-                        <IconButton
-                          size="small"
-                          aria-label={t('renameGroup')}
-                          onClick={startEdit}
-                          sx={{
-                            width: 26,
-                            height: 26,
-                            borderRadius: '7px',
-                            flexShrink: 0,
-                            color: alpha(brand[700], 0.45),
-                            '&:hover': { bgcolor: alpha('#FFFFFF', 0.5), color: brand[700] },
-                          }}
-                        >
-                          <EditIcon sx={{ fontSize: 13 }} />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                    <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
-                      {t('memberCountInGroup', { count: members.length })}
-                    </Typography>
-                  </Box>
-                </Box>
-              }
-              compact
-              mb={3}
-              action={
-                <Stack direction="row" gap={1}>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<QrCode2Icon sx={{ fontSize: 16 }} />}
-                    onClick={() => setCreateInviteOpen(true)}
-                    sx={{
-                      borderRadius: 2.5,
-                      textTransform: 'none',
-                      fontWeight: 700,
-                      borderColor: alpha(brand[400], 0.5),
-                      color: brand[700],
-                    }}
-                  >
-                    {t('inviteButton')}
-                  </Button>
-                  {members.length > 0 && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<AssignmentIcon sx={{ fontSize: 16 }} />}
-                      onClick={() => setAssignOpen(true)}
-                      sx={{
-                        borderRadius: 2.5,
-                        textTransform: 'none',
-                        fontWeight: 700,
-                        borderColor: alpha(brand[400], 0.5),
-                        color: brand[700],
-                      }}
-                    >
-                      {t('assignDeckButton')}
-                    </Button>
-                  )}
-                </Stack>
-              }
-            />
+      <GroupDashboardHeader
+        group={group}
+        memberCount={members.length}
+        onBack={() => router.push('/group')}
+        onRename={handleRename}
+        onEmojiChange={handleEmojiChange}
+        onInvite={() => setCreateInviteOpen(true)}
+        onAssign={members.length > 0 ? () => setAssignOpen(true) : undefined}
+        activeInviteCount={activeInvites.length}
+      />
 
-            <EmojiPickerPopover
-              anchorEl={emojiAnchor}
-              onClose={() => setEmojiAnchor(null)}
-              onSelect={(emoji) => updateGroup(groupId, { emoji })}
-              onRemove={group?.emoji ? () => updateGroup(groupId, { emoji: '' }) : undefined}
-            />
-          </>
-        )}
-      </Box>
-
-      {/* Overview stat cards */}
       <GroupOverview members={members} />
 
-      {/* Members */}
-      <Typography
-        sx={{
-          fontWeight: 800,
-          fontSize: '0.85rem',
-          color: brand[700],
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
-          mb: 1.5,
-        }}
-      >
-        {t('membersHeading')}
-      </Typography>
-      {members.length === 0 ? (
-        <Paper
-          elevation={0}
-          sx={{
-            p: 4,
-            textAlign: 'center',
-            border: `1.5px dashed ${alpha(brand[300], 0.4)}`,
-            borderRadius: 3,
-            bgcolor: alpha(brand[50], 0.6),
-          }}
-        >
-          <Typography sx={{ fontSize: '2.5rem', mb: 1 }}>👋</Typography>
-          <Typography sx={{ fontWeight: 700, color: brand[700], mb: 0.5 }}>
-            {t('noMembersTitle')}
-          </Typography>
-          <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
-            {t('noMembersBody')}
-          </Typography>
-        </Paper>
-      ) : (
-        <Grid container spacing={1.5}>
-          {members.map((member) => (
-            <Grid size={{ xs: 12, sm: 6 }} key={member.id}>
-              <MemberCard
-                member={member}
-                onClick={(id) => router.push(`/group/${groupId}/members/${id}`)}
+      <Grid container spacing={2.5} alignItems="stretch">
+        <Grid size={{ xs: 12, lg: 8 }}>
+          <SectionCard title={tc('dailyHeading')}>
+            {activityError ? (
+              <Alert severity="error">{activityError}</Alert>
+            ) : activityLoading && !activity ? (
+              <Loading message={tc('loading')} />
+            ) : (
+              <DailyActivityChart
+                days={activity?.days ?? []}
+                values={activity?.totals.cards ?? []}
               />
-            </Grid>
-          ))}
+            )}
+          </SectionCard>
         </Grid>
-      )}
 
-      {/* Leaderboard */}
-      <Box sx={{ mt: 4 }}>
-        <Box
-          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}
-        >
-          <Typography
-            sx={{
-              fontWeight: 800,
-              fontSize: '0.85rem',
-              color: brand[700],
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-            }}
-          >
-            {t('weeklyLeaderboard')}
-          </Typography>
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={group?.show_leaderboard !== false}
-                onChange={(e) => updateGroup(groupId, { show_leaderboard: e.target.checked })}
-                sx={{
-                  '& .MuiSwitch-switchBase.Mui-checked': { color: brand[600] },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                    bgcolor: brand[400],
-                  },
-                }}
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <SectionCard title={tc('heatmapHeading')}>
+            {activityError ? (
+              <Alert severity="error">{activityError}</Alert>
+            ) : activityLoading && !activity ? (
+              <Loading message={tc('loading')} />
+            ) : (
+              <StudyHeatmap
+                days={(activity?.days ?? []).slice(-HEATMAP_DAYS)}
+                members={activity?.members ?? []}
+                offset={Math.max(0, (activity?.days.length ?? 0) - HEATMAP_DAYS)}
               />
-            }
-            label={
-              <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                {group?.show_leaderboard !== false ? t('visible') : t('hidden')}
-              </Typography>
-            }
-            labelPlacement="start"
-            sx={{ mr: 0 }}
+            )}
+          </SectionCard>
+        </Grid>
+
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <MembersPanel
+            members={members}
+            onSelect={(id) => router.push(`/group/${groupId}/members/${id}`)}
           />
-        </Box>
-        {group?.show_leaderboard !== false ? (
-          lbLoading ? (
-            <Loading message={t('loadingLeaderboard')} />
-          ) : (
-            <LeaderboardWidget entries={leaderboard} />
-          )
-        ) : (
-          <Paper
-            elevation={0}
-            sx={{
-              p: 3,
-              textAlign: 'center',
-              border: `1.5px dashed ${alpha(brand[300], 0.4)}`,
-              borderRadius: 3,
-              bgcolor: alpha(brand[50], 0.6),
-            }}
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+          <SectionCard
+            title={t('weeklyLeaderboard')}
+            action={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary' }}>
+                  {leaderboardVisible ? t('visible') : t('hidden')}
+                </Typography>
+                <Switch
+                  size="small"
+                  checked={leaderboardVisible}
+                  onChange={(e) => updateGroup(groupId, { show_leaderboard: e.target.checked })}
+                  inputProps={{ 'aria-label': t('weeklyLeaderboard') }}
+                  sx={{
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: brand[600] },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                      bgcolor: brand[400],
+                    },
+                  }}
+                />
+              </Box>
+            }
           >
-            <EmojiEventsIcon sx={{ fontSize: 32, color: alpha(brand[400], 0.5), mb: 0.5 }} />
-            <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
-              {t('leaderboardHiddenBody')}
-            </Typography>
-          </Paper>
+            {!leaderboardVisible ? (
+              <Box sx={{ py: 3, textAlign: 'center' }}>
+                <EmojiEventsIcon sx={{ fontSize: 32, color: alpha(brand[400], 0.6), mb: 0.5 }} />
+                <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
+                  {t('leaderboardHiddenBody')}
+                </Typography>
+              </Box>
+            ) : lbLoading ? (
+              <Loading message={t('loadingLeaderboard')} />
+            ) : (
+              <LeaderboardWidget entries={leaderboard} maxVisible={LEADERBOARD_SHOWN} />
+            )}
+          </SectionCard>
+        </Grid>
+
+        {members.length > 0 && ownDecks.length > 0 && (
+          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+            <QuizScoresPanel decks={ownDecks} groupId={groupId} />
+          </Grid>
         )}
-      </Box>
 
-      {/* Invite Codes */}
-      {invites.length > 0 && (
-        <Box sx={{ mt: 4 }}>
-          <Typography
-            sx={{
-              fontWeight: 800,
-              fontSize: '0.85rem',
-              color: brand[700],
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              mb: 1.5,
-            }}
+        {members.length > 0 && ownDecks.length > 0 && (
+          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+            <ReteachPanel decks={ownDecks} />
+          </Grid>
+        )}
+
+        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+          <SectionCard
+            title={t('assignmentsHeading')}
+            action={
+              members.length > 0 && (
+                <Button
+                  size="small"
+                  startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+                  onClick={() => setAssignOpen(true)}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    color: brand[700],
+                    borderRadius: theme.radii.sm,
+                  }}
+                >
+                  {t('newButton')}
+                </Button>
+              )
+            }
           >
-            {t('inviteCodesHeading')}
-          </Typography>
-          <InviteList
-            invites={invites}
-            onRevoke={revokeInvite}
-            onShowQR={(invite) => setQrInvite(invite)}
-          />
-        </Box>
-      )}
+            <AssignmentsList
+              assignments={assignments}
+              onEditBatch={updateAssignments}
+              onDeleteBatch={deleteAssignments}
+              maxVisible={ASSIGNMENTS_SHOWN}
+            />
+          </SectionCard>
+        </Grid>
 
-      {/* Group Encouragement */}
-      {members.length > 0 && (
-        <Box sx={{ mt: 4 }}>
-          <Typography
-            sx={{
-              fontWeight: 800,
-              fontSize: '0.85rem',
-              color: brand[700],
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              mb: 1.5,
-            }}
-          >
-            {t('encouragementHeading')}
-          </Typography>
-          <GroupEncouragementForm members={members} onSend={handleSendEncouragement} />
-        </Box>
-      )}
+        {members.length > 0 && (
+          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+            <SectionCard title={t('encouragementHeading')}>
+              <GroupEncouragementForm members={members} onSend={handleSendEncouragement} />
+            </SectionCard>
+          </Grid>
+        )}
 
-      {/* Assignments */}
-      <Box sx={{ mt: 4 }}>
-        <Typography
-          sx={{
-            fontWeight: 800,
-            fontSize: '0.85rem',
-            color: brand[700],
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-            mb: 1.5,
-          }}
-        >
-          {t('assignmentsHeading')}
-        </Typography>
-        <AssignmentsList
-          assignments={assignments}
-          onEdit={updateAssignment}
-          onDelete={deleteAssignment}
-        />
-      </Box>
-
-      {/* Quiz scores — graded checkpoints per member, with CSV export */}
-      {members.length > 0 && (
-        <QuizScoresPanel decks={decks.filter((d) => !d.isShared)} groupId={groupId} />
-      )}
-
-      {/* What to reteach — class-level tricky words */}
-      {members.length > 0 && <ReteachPanel decks={decks.filter((d) => !d.isShared)} />}
-
-      {/* Activity Feed */}
-      <Box sx={{ mt: 4 }}>
-        <Typography
-          sx={{
-            fontWeight: 800,
-            fontSize: '0.85rem',
-            color: brand[700],
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-            mb: 1.5,
-          }}
-        >
-          {t('recentActivityHeading')}
-        </Typography>
-        {feedLoading ? <Loading message={t('loadingActivity')} /> : <ActivityFeed items={feed} />}
-      </Box>
+        <Grid size={12}>
+          <SectionCard title={t('recentActivityHeading')}>
+            {feedLoading ? (
+              <Loading message={t('loadingActivity')} />
+            ) : (
+              <>
+                <ActivityFeed items={visibleFeed} />
+                {feed.length > FEED_SHOWN && (
+                  <ShowMoreButton
+                    expanded={allFeed}
+                    total={feed.length}
+                    onClick={() => setAllFeed((v) => !v)}
+                  />
+                )}
+              </>
+            )}
+          </SectionCard>
+        </Grid>
+      </Grid>
 
       <CreateAssignmentDialog
         open={assignOpen}
         onClose={() => setAssignOpen(false)}
         members={members}
-        decks={decks.filter((d) => !d.isShared)}
+        decks={ownDecks}
         onCreate={createAssignment}
       />
 
@@ -549,6 +322,9 @@ export default function GroupDashboardPage() {
           setCreateInviteOpen(false);
           setQrInvite(invite);
         }}
+        invites={invites}
+        onRevoke={revokeInvite}
+        onShowQR={(invite) => setQrInvite(invite)}
       />
 
       {qrInvite && (

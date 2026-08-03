@@ -1,86 +1,111 @@
 'use client';
 import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 import { UserAvatar } from '@/components/UserAvatar';
 import type { LeaderboardEntry } from '@/hooks/useGroupLeaderboard';
 
-const MEDALS = ['🥇', '🥈', '🥉'];
+import { ShowMoreButton } from './ShowMoreButton';
+
+const PODIUM = ['#F2C14E', '#C9CDD4', '#D9A06B'];
 
 interface LeaderboardWidgetProps {
   entries: LeaderboardEntry[];
   compact?: boolean;
+  maxVisible?: number;
 }
 
-export function LeaderboardWidget({ entries, compact }: LeaderboardWidgetProps) {
+export function LeaderboardWidget({ entries, compact, maxVisible }: LeaderboardWidgetProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+  const t = useTranslations('Group.leaderboard');
+  const [expanded, setExpanded] = useState(false);
 
   if (entries.length === 0) {
     return (
-      <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', fontStyle: 'italic' }}>
-        No activity this week yet.
-      </Typography>
+      <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>{t('empty')}</Typography>
     );
   }
 
+  const capped = maxVisible !== undefined && !expanded ? entries.slice(0, maxVisible) : entries;
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-      {entries.map((entry, i) => (
-        <Paper
+    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+      {capped.map((entry, i) => (
+        <Box
           key={entry.id}
-          elevation={0}
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 1.5,
-            p: compact ? 1 : 1.25,
-            border: `1px solid ${alpha(brand[300], i === 0 ? 0.5 : 0.25)}`,
-            borderRadius: 2,
-            bgcolor: i === 0 ? alpha(brand[100], 0.5) : alpha(brand[50], 0.3),
-            transition: 'all 0.15s ease',
+            gap: 1.25,
+            px: 1,
+            py: compact ? 0.75 : 1,
+            borderRadius: theme.radii.md,
+            bgcolor: i === 0 ? alpha(brand[100], 0.55) : 'transparent',
           }}
         >
-          <Typography
-            sx={{ fontSize: compact ? '1rem' : '1.2rem', width: 28, textAlign: 'center' }}
+          <Box
+            sx={{
+              width: 26,
+              height: 26,
+              flexShrink: 0,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+              color: 'text.primary',
+              bgcolor: i < 3 ? alpha(PODIUM[i], 0.55) : alpha(brand[200], 0.4),
+              border: `1.5px solid ${i < 3 ? PODIUM[i] : alpha(brand[300], 0.5)}`,
+            }}
           >
-            {i < 3 ? MEDALS[i] : `${i + 1}.`}
-          </Typography>
+            {i + 1}
+          </Box>
           <UserAvatar
             avatar={entry.avatar}
             name={entry.displayName || entry.username}
-            size={compact ? 32 : 36}
+            size={compact ? 30 : 34}
           />
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography
-              sx={{ fontWeight: 700, fontSize: compact ? '0.78rem' : '0.85rem', color: brand[800] }}
+              sx={{
+                fontWeight: 700,
+                fontSize: compact ? '0.85rem' : '0.92rem',
+                color: 'text.primary',
+              }}
               noWrap
             >
               {entry.displayName || entry.username}
             </Typography>
-            {!compact && (
-              <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
-                Lv.{entry.level}
-                {entry.streakDays > 0 ? ` · 🔥 ${entry.streakDays}d` : ''}
-              </Typography>
-            )}
+            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }} noWrap>
+              @{entry.username}
+              {!compact && entry.streakDays > 0 ? ` · 🔥 ${entry.streakDays}d` : ''}
+            </Typography>
           </Box>
-          <Box sx={{ textAlign: 'right' }}>
-            <Typography
-              sx={{ fontWeight: 800, fontSize: compact ? '0.78rem' : '0.85rem', color: brand[700] }}
-            >
-              {entry.weeklyXp.toLocaleString()} XP
+          <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
+            <Typography sx={{ fontWeight: 800, fontSize: '0.88rem', color: brand[700] }}>
+              {t('xpAmount', { xp: entry.weeklyXp.toLocaleString() })}
             </Typography>
             {!compact && (
-              <Typography sx={{ fontSize: '0.63rem', color: 'text.secondary' }}>
-                {entry.weeklyCards} cards
+              <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
+                {t('cardsCount', { count: entry.weeklyCards })}
               </Typography>
             )}
           </Box>
-        </Paper>
+        </Box>
       ))}
+
+      {!compact && maxVisible !== undefined && entries.length > maxVisible && (
+        <ShowMoreButton
+          expanded={expanded}
+          total={entries.length}
+          onClick={() => setExpanded((v) => !v)}
+        />
+      )}
     </Box>
   );
 }

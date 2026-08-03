@@ -66,9 +66,9 @@ export function InviteList({ invites, onRevoke, onShowQR }: InviteListProps) {
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 1.5,
-              p: 1.5,
-              borderRadius: 2.5,
+              gap: 1,
+              p: 1.25,
+              borderRadius: theme.radii.md,
               bgcolor: expired ? alpha(brand[100], 0.15) : alpha(brand[100], 0.3),
               opacity: expired ? 0.6 : 1,
             }}
@@ -78,9 +78,9 @@ export function InviteList({ invites, onRevoke, onShowQR }: InviteListProps) {
                 {invite.label && (
                   <Typography
                     sx={{
-                      fontSize: '0.82rem',
-                      fontWeight: 600,
-                      color: brand[700],
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      color: 'text.primary',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
@@ -93,19 +93,20 @@ export function InviteList({ invites, onRevoke, onShowQR }: InviteListProps) {
                   label={maskCode(invite.code)}
                   size="small"
                   sx={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.78rem',
                     fontFamily: 'monospace',
-                    height: 22,
-                    bgcolor: alpha(brand[200], 0.4),
-                    color: brand[700],
+                    fontWeight: 700,
+                    height: 24,
+                    bgcolor: alpha(brand[200], 0.5),
+                    color: 'text.primary',
                   }}
                 />
               </Stack>
-              <Stack direction="row" gap={1.5} sx={{ mt: 0.5 }}>
-                <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
+              <Stack direction="row" gap={1.5} sx={{ mt: 0.25 }}>
+                <Typography sx={{ fontSize: '0.76rem', color: 'text.secondary' }}>
                   {usesLabel(invite, t)}
                 </Typography>
-                <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
+                <Typography sx={{ fontSize: '0.76rem', color: 'text.secondary' }} noWrap>
                   {t('expiresPrefix', { value: formatExpiry(invite.expires_at, t) })}
                 </Typography>
               </Stack>
