@@ -1222,7 +1222,6 @@
       "joiningWithGroup": "<bold>{organizerName}</bold>さんのグループ「{groupName}」に参加します",
       "joiningNoGroup": "<bold>{organizerName}</bold>さんの学習グループに参加します",
       "usernameLabel": "ユーザー名",
-      "checking": "確認中...",
       "usernameHelperText": "英数字と _ - （2〜30文字）",
       "displayNameLabel": "表示名（任意）",
       "displayNameHelperText": "アプリに表示される名前です",
@@ -1231,7 +1230,25 @@
       "hidePassword": "パスワードを隠す",
       "showPassword": "パスワードを表示",
       "confirmPasswordLabel": "パスワード（確認）",
-      "joinButton": "学習グループに参加"
+      "joinButton": "学習グループに参加",
+      "signedInAs": "<bold>{name}</bold>としてログイン中です",
+      "keepsYourStuff": "デッキと学習の記録はそのまま残ります。",
+      "joinWithThisAccount": "このアカウントで参加",
+      "useAnotherAccount": "別のアカウントを使う",
+      "alreadyHaveAccountSwitch": "アカウントを持っています",
+      "newHereSwitch": "はじめての方はこちら",
+      "signInToJoinHint": "お持ちのアカウントでログインして参加します。",
+      "signInAndJoinButton": "ログインして参加",
+      "leavingCurrentGroup": "今のグループと、そこで共有されているデッキからは抜けます。",
+      "yourAccount": "あなたのアカウント",
+      "joinErrors": {
+        "invalidCode": "この招待コードは使えません。",
+        "inviteExpired": "この招待は期限切れです。新しい招待をもらってください。",
+        "inviteUsedUp": "この招待は使い切られています。新しい招待をもらってください。",
+        "ownInvite": "これはあなた自身の招待です。参加してほしい人に渡してください。",
+        "inviteTaken": "ちょうど他の人がこの招待を使いました。もう一度お試しください。",
+        "joinFailed": "グループに参加できませんでした。もう一度お試しください。"
+      }
     },
     "activityFeed": {
       "noActivity": "最近の活動はまだありません。",

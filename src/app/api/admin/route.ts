@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { isAdminEmail } from '@/lib/admin';
 import { logger } from '@/lib/logger';
 
+import { isGroupLearner } from '../_lib/groupRole';
 import {
   authenticateUser,
   FAKE_DOMAIN,
@@ -57,7 +58,7 @@ export async function GET(req: Request) {
   ] = await Promise.all([
     client
       .from('profiles')
-      .select('id, username, display_name, color_scheme, account_type, created_at'),
+      .select('id, username, display_name, color_scheme, account_type, organizer_id, created_at'),
     client.from('decks').select('id, user_id, name, created_at, emoji, pinned, is_public'),
     client.from('cards').select('id, deck_id, word, card_type, jlpt_level, created_at'),
     client
@@ -281,9 +282,10 @@ export async function GET(req: Request) {
     else sessionsByUser.set(s.user_id, [s]);
   }
 
-  // Member activity summary
+  // Everyone who learns in someone's group, keyed on organizer_id rather than
+  // account_type: an organizer-tier account can be a member of another group.
   const memberActivity = profiles
-    .filter((p) => p.account_type === 'member')
+    .filter(isGroupLearner)
     .map((p) => {
       const sessions = sessionsByUser.get(p.id) ?? [];
       const totalStudied = sessions.reduce((sum, s) => sum + (s.cards_studied || 0), 0);
@@ -301,6 +303,9 @@ export async function GET(req: Request) {
         userId: p.id,
         username: p.username,
         displayName: p.display_name,
+        // Their tier, so the panel can tell a free member from a paying one.
+        accountType: p.account_type ?? 'organizer',
+        organizerId: p.organizer_id,
         totalSessions: sessions.length,
         recentSessions,
         totalCardsStudied: totalStudied,

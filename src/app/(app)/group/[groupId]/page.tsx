@@ -66,8 +66,11 @@ export default function GroupDashboardPage() {
   const { leaderboard, loading: lbLoading } = useGroupLeaderboard(groupId);
   const { feed, loading: feedLoading } = useGroupFeed(groupId);
   const { decks } = useDecks();
-  const { assignments, createAssignment, updateAssignment, deleteAssignment } =
-    useAssignments(groupId);
+  const { assignments, createAssignment, updateAssignment, deleteAssignment } = useAssignments(
+    groupId,
+    true,
+    'given',
+  );
   const { sendEncouragement } = useEncouragements();
   const { invites, createInvite, revokeInvite } = useInvites(groupId);
   const { groups, updateGroup } = useGroups();

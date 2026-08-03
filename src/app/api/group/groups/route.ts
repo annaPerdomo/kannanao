@@ -62,11 +62,12 @@ export async function GET(req: NextRequest) {
 
   // Three fixed-size queries (members, progress, sessions) instead of one per
   // group, so an organizer with a dozen groups isn't a dozen round trips.
+  // Keyed on organizer_id alone: account_type is the entitlement tier, and a
+  // learner who pays for their own organizer plan is still in this group.
   const { data: memberRows } = await sb
     .from('profiles')
     .select('id, group_id, username, display_name, avatar')
     .eq('organizer_id', orgCheck.id)
-    .eq('account_type', 'member')
     .order('created_at', { ascending: true });
 
   const members = memberRows ?? [];

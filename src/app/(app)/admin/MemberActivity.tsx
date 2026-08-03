@@ -111,9 +111,29 @@ export function MemberActivity({
                 <TableRow key={m.userId} hover>
                   <TableCell sx={bodyCellSx}>
                     <Box>
-                      <Typography sx={{ fontWeight: 600, fontSize: '0.82rem' }}>
-                        {m.displayName ?? m.username}
-                      </Typography>
+                      <Stack direction="row" alignItems="center" gap={0.75}>
+                        <Typography sx={{ fontWeight: 600, fontSize: '0.82rem' }}>
+                          {m.displayName ?? m.username}
+                        </Typography>
+                        {m.accountType === 'organizer' && (
+                          <Tooltip
+                            title="Organizer tier — studies in a group and runs their own"
+                            arrow
+                          >
+                            <Chip
+                              label="organizer"
+                              size="small"
+                              sx={{
+                                fontSize: '0.62rem',
+                                height: 18,
+                                bgcolor: alpha(brand[500], 0.15),
+                                color: 'text.primary',
+                                fontWeight: 600,
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+                      </Stack>
                       {m.displayName && (
                         <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
                           @{m.username}

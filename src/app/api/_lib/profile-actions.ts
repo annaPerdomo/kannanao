@@ -132,11 +132,10 @@ export async function handleProfileAction(
       );
     }
 
+    // Entitlement only (see groupRole.ts): an organizer can still learn in
+    // someone else's group, so upgrading must not clear their membership.
     const update: Record<string, unknown> = { account_type: accountType };
-    if (accountType === 'organizer') {
-      update.organizer_id = null;
-      update.group_id = null;
-    } else {
+    if (accountType === 'member') {
       const organizerId = body.organizerId as string | undefined;
       let groupId = body.groupId as string | undefined;
       const newGroupName = ((body.newGroupName as string) ?? '').trim();

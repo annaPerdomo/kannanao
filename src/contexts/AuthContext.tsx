@@ -40,7 +40,10 @@ interface AuthContextValue {
   user: User | null;
   isAdmin: boolean;
   accountType: AccountType;
+  /** Entitlement tier only — what this account may create and spend. */
   isMemberAccount: boolean;
+  /** Learns in someone else's group. Independent of isMemberAccount. */
+  isInGroup: boolean;
   organizerId: string | null;
   groupId: string | null;
   groupShowLeaderboard: boolean;
@@ -366,6 +369,7 @@ export function AuthProvider({
       isAdmin: isAdminUser(session?.user?.email ?? undefined),
       accountType,
       isMemberAccount: accountType === 'member',
+      isInGroup: organizerId !== null,
       organizerId,
       groupId,
       groupShowLeaderboard,

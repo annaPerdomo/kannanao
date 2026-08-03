@@ -45,15 +45,37 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Profile not found.' }, { status: 404 });
   }
 
-  // Determine the organizer ID (group root)
-  const organizerId = profile.account_type === 'organizer' ? profile.id : profile.organizer_id;
+  // The group root. Without a ?groupId= this is the home leaderboard: prefer
+  // the group the account learns in, fall back to its own when it isn't in one.
+  const requestedGroupId = req.nextUrl.searchParams.get('groupId');
+  let organizerId: string | null;
+  let groupId: string | null;
+
+  if (requestedGroupId) {
+    const { data: group } = await sb
+      .from('groups')
+      .select('organizer_id')
+      .eq('id', requestedGroupId)
+      .single();
+    if (!group) {
+      return NextResponse.json({ error: 'Group not found.' }, { status: 404 });
+    }
+    // ?groupId= is caller input and the roster below follows whichever organizer
+    // it resolves to, so unchecked it hands any signed-in account the names and
+    // study stats of a group they have nothing to do with.
+    if (group.organizer_id !== profile.id && profile.group_id !== requestedGroupId) {
+      return NextResponse.json({ error: 'Not part of this group.' }, { status: 403 });
+    }
+    organizerId = group.organizer_id;
+    groupId = requestedGroupId;
+  } else {
+    organizerId = profile.organizer_id ?? profile.id;
+    groupId = profile.organizer_id ? (profile.group_id ?? null) : null;
+  }
 
   if (!organizerId) {
     return NextResponse.json({ error: 'Not part of a group.' }, { status: 400 });
   }
-
-  // Optional groupId from query (organizers), or derive from member profile
-  const groupId = req.nextUrl.searchParams.get('groupId') ?? profile.group_id ?? null;
 
   // Check if the group has the leaderboard enabled
   if (groupId) {

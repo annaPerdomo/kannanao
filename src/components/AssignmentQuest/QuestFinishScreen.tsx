@@ -27,7 +27,7 @@ interface QuestFinishScreenProps {
  */
 export function QuestFinishScreen({ assignmentId, onRetry, onDone }: QuestFinishScreenProps) {
   const t = useTranslations('AssignmentQuest');
-  const { assignments, loading, error, refetch } = useAssignments();
+  const { assignments, loading, error, refetch } = useAssignments(undefined, true, 'mine');
   const [settled, setSettled] = useState(false);
   const praiseSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
 

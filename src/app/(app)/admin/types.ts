@@ -75,6 +75,9 @@ export interface MemberActivityEntry {
   userId: string;
   username: string;
   displayName: string | null;
+  /** Entitlement tier — independent of being in a group. */
+  accountType: 'organizer' | 'member';
+  organizerId: string | null;
   totalSessions: number;
   recentSessions: number;
   totalCardsStudied: number;
