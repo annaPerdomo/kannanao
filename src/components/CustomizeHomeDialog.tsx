@@ -20,10 +20,14 @@ interface CustomizeHomeDialogProps {
 
 export function CustomizeHomeDialog({ open, onClose }: CustomizeHomeDialogProps) {
   const t = useTranslations('Home.customizeDialog');
-  const { homeSections, updateHomeSections, isMemberAccount, groupShowLeaderboard } = useAuth();
+  const { homeSections, updateHomeSections, isMemberAccount, isInGroup, groupShowLeaderboard } =
+    useAuth();
   const theme = useTheme();
   const { brand } = theme.palette;
-  const roleKeys = getSectionsForRole(isMemberAccount, groupShowLeaderboard);
+  const roleKeys = getSectionsForRole(
+    { isInGroup, canRunGroups: !isMemberAccount },
+    groupShowLeaderboard,
+  );
   const sections = ALL_SECTION_KEYS.filter((k) => roleKeys.has(k));
 
   const handleToggle = (key: SectionKey) => {

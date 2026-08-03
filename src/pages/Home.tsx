@@ -299,8 +299,13 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
     homeSections,
     updateHomeSections,
     isMemberAccount,
+    isInGroup,
     groupShowLeaderboard,
   } = useAuth();
+  const homeRole = useMemo(
+    () => ({ isInGroup, canRunGroups: !isMemberAccount }),
+    [isInGroup, isMemberAccount],
+  );
   const { decks, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, loading } = useDecks(
     homeSections.decks,
     initialData?.decks ?? undefined,
@@ -350,12 +355,12 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
 
   // ── Section order + drag ──
   const sectionOrder = useMemo(
-    () => resolveSectionOrder(homeSections, isMemberAccount, groupShowLeaderboard),
-    [homeSections, isMemberAccount, groupShowLeaderboard],
+    () => resolveSectionOrder(homeSections, homeRole, groupShowLeaderboard),
+    [homeSections, homeRole, groupShowLeaderboard],
   );
   const roleKeys = useMemo(
-    () => getSectionsForRole(isMemberAccount, groupShowLeaderboard),
-    [isMemberAccount, groupShowLeaderboard],
+    () => getSectionsForRole(homeRole, groupShowLeaderboard),
+    [homeRole, groupShowLeaderboard],
   );
   const hiddenKeys = useMemo(
     () => [...roleKeys].filter((k) => !homeSections[k]),
@@ -393,12 +398,12 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
   }, []);
 
   const gridLayout = useMemo(() => {
-    const full = resolveGridLayout(homeSections, isMemberAccount);
+    const full = resolveGridLayout(homeSections, homeRole);
     const visible = new Set(sectionOrder);
     return full
       .filter((item) => visible.has(item.i as SectionKey))
       .map((item) => ({ ...item, minW: 3, minH: 3 }));
-  }, [homeSections, isMemberAccount, sectionOrder]);
+  }, [homeSections, homeRole, sectionOrder]);
 
   const handleLayoutSave = useCallback(
     (layout: RGLLayout) => {

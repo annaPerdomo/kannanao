@@ -47,35 +47,44 @@ export const SECTION_META: Record<SectionKey, SectionMeta> = {
   speeches: { label: 'Pinned Speeches', emoji: '🎤' },
 };
 
-export function getSectionsForRole(
-  isMember: boolean,
-  groupShowLeaderboard = true,
-): Set<SectionKey> {
+/**
+ * Kept apart because they are not opposites: learning in someone's group earns
+ * the leaderboard and assignments, being entitled to run groups earns the
+ * groups section, and an account can have both.
+ */
+export interface HomeRole {
+  isInGroup: boolean;
+  canRunGroups: boolean;
+}
+
+export function getSectionsForRole(role: HomeRole, groupShowLeaderboard = true): Set<SectionKey> {
   const keys = new Set<SectionKey>(['todo', 'decks', 'speeches']);
-  if (isMember) {
+  if (role.isInGroup) {
     if (groupShowLeaderboard) keys.add('leaderboard');
     keys.add('assignments');
-  } else {
-    keys.add('groups');
   }
+  if (role.canRunGroups) keys.add('groups');
   return keys;
 }
 
 /** Default section display order */
-export function getDefaultSectionOrder(isMember: boolean): SectionKey[] {
-  if (isMember) return ['todo', 'leaderboard', 'assignments', 'decks', 'speeches'];
-  return ['todo', 'groups', 'decks', 'speeches'];
+export function getDefaultSectionOrder(role: HomeRole): SectionKey[] {
+  const order: SectionKey[] = ['todo'];
+  if (role.isInGroup) order.push('leaderboard', 'assignments');
+  if (role.canRunGroups) order.push('groups');
+  order.push('decks', 'speeches');
+  return order;
 }
 
 /** Resolve visible section order from saved preferences */
 export function resolveSectionOrder(
   sections: HomeSections,
-  isMember: boolean,
+  role: HomeRole,
   groupShowLeaderboard = true,
 ): SectionKey[] {
-  const validKeys = getSectionsForRole(isMember, groupShowLeaderboard);
+  const validKeys = getSectionsForRole(role, groupShowLeaderboard);
   const saved = sections.sectionOrder;
-  const defaults = getDefaultSectionOrder(isMember);
+  const defaults = getDefaultSectionOrder(role);
 
   if (!saved || saved.length === 0) {
     return defaults.filter((k) => validKeys.has(k) && sections[k]);
@@ -98,8 +107,11 @@ export function resolveSectionOrder(
  * Only new dashboards get these. A saved `gridLayout` always wins, so anyone who
  * has dragged their sections keeps the sizes they chose until they hit Reset layout.
  */
-export function getDefaultGridLayout(isMember: boolean): GridLayoutItem[] {
-  if (isMember) {
+export function getDefaultGridLayout(role: HomeRole): GridLayoutItem[] {
+  // The two single-role layouts are spelled out rather than generated: they are
+  // what existing dashboards that never saved a layout already render, and
+  // regenerating them would shuffle tiles for people who changed nothing.
+  if (role.isInGroup && !role.canRunGroups) {
     return [
       { i: 'todo', x: 0, y: 0, w: 6, h: 18 },
       { i: 'leaderboard', x: 6, y: 0, w: 6, h: 7 },
@@ -108,11 +120,22 @@ export function getDefaultGridLayout(isMember: boolean): GridLayoutItem[] {
       { i: 'speeches', x: 0, y: 18, w: 6, h: 5 },
     ];
   }
+  if (!role.isInGroup) {
+    return [
+      { i: 'todo', x: 0, y: 0, w: 6, h: 18 },
+      { i: 'groups', x: 6, y: 0, w: 6, h: 6 },
+      { i: 'decks', x: 6, y: 6, w: 6, h: 7 },
+      { i: 'speeches', x: 6, y: 13, w: 6, h: 5 },
+    ];
+  }
+  // Runs a group and learns in one: the learner sections first, then groups.
   return [
     { i: 'todo', x: 0, y: 0, w: 6, h: 18 },
-    { i: 'groups', x: 6, y: 0, w: 6, h: 6 },
-    { i: 'decks', x: 6, y: 6, w: 6, h: 7 },
-    { i: 'speeches', x: 6, y: 13, w: 6, h: 5 },
+    { i: 'leaderboard', x: 6, y: 0, w: 6, h: 7 },
+    { i: 'assignments', x: 6, y: 7, w: 6, h: 5 },
+    { i: 'groups', x: 6, y: 12, w: 6, h: 6 },
+    { i: 'decks', x: 6, y: 18, w: 6, h: 7 },
+    { i: 'speeches', x: 0, y: 18, w: 6, h: 5 },
   ];
 }
 
@@ -126,9 +149,9 @@ export const DEFAULT_HOME_SECTIONS: HomeSections = {
 };
 
 /** Ensure all visible section keys have a layout entry */
-export function resolveGridLayout(sections: HomeSections, isMember: boolean): GridLayoutItem[] {
+export function resolveGridLayout(sections: HomeSections, role: HomeRole): GridLayoutItem[] {
   const saved = sections.gridLayout;
-  const defaults = getDefaultGridLayout(isMember);
+  const defaults = getDefaultGridLayout(role);
 
   if (!saved || saved.length === 0) return defaults;
 
