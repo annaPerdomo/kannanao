@@ -158,19 +158,21 @@ describe('useAssignments', () => {
     expect(body.requiredMode).toBe('match');
   });
 
-  it('optimistically updates goal fields via updateAssignment', async () => {
+  it('passes goal fields through to the PATCH body', async () => {
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [ASSIGNMENT_1] });
     const { result } = renderHook(() => useAssignments());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) }); // PATCH
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [ASSIGNMENT_1] }); // refetch
 
     await act(async () => {
-      await result.current.updateAssignment('a1', { requiredAccuracy: 90, requiredMode: null });
+      await result.current.updateAssignments(['a1'], { requiredAccuracy: 90, requiredMode: null });
     });
 
-    expect(result.current.assignments[0].required_accuracy).toBe(90);
-    expect(result.current.assignments[0].required_mode).toBeNull();
+    const body = JSON.parse(mockFetch.mock.calls[1][1].body);
+    expect(body.requiredAccuracy).toBe(90);
+    expect(body.requiredMode).toBeNull();
   });
 
   it('throws when create fails', async () => {
@@ -190,32 +192,68 @@ describe('useAssignments', () => {
     ).rejects.toThrow('Deck not found');
   });
 
-  // ── updateAssignment (optimistic) ─────────────────────────────────────────
+  // ── updateAssignments (batch, optimistic) ─────────────────────────────────
 
-  it('optimistically updates and calls PATCH', async () => {
+  it('PATCHes every copy in the batch and refetches exactly once', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => [ASSIGNMENT_1],
+      json: async () => [ASSIGNMENT_1, ASSIGNMENT_2],
     });
     const { result } = renderHook(() => useAssignments());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    // PATCH succeeds
-    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) }); // PATCH a1
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) }); // PATCH a2
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [
+        { ...ASSIGNMENT_1, note: 'Updated note' },
+        { ...ASSIGNMENT_2, note: 'Updated note' },
+      ],
+    }); // refetch
 
     await act(async () => {
-      await result.current.updateAssignment('a1', { note: 'Updated note' });
+      await result.current.updateAssignments(['a1', 'a2'], { note: 'Updated note' });
     });
 
-    // Optimistic: note should be updated locally
+    const patches = mockFetch.mock.calls.filter((c) => c[1]?.method === 'PATCH');
+    expect(patches.map((c) => c[0])).toEqual([
+      '/api/group/assignments/a1',
+      '/api/group/assignments/a2',
+    ]);
+    // 1 initial GET + 2 PATCH + 1 refetch — never a refetch per copy
+    expect(mockFetch).toHaveBeenCalledTimes(4);
     expect(result.current.assignments[0].note).toBe('Updated note');
-
-    const patchCall = mockFetch.mock.calls[1];
-    expect(patchCall[0]).toBe('/api/group/assignments/a1');
-    expect(patchCall[1].method).toBe('PATCH');
   });
 
-  it('rolls back on PATCH failure', async () => {
+  it('throws on partial PATCH failure but still reconciles from the server', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [ASSIGNMENT_1, ASSIGNMENT_2],
+    });
+    const { result } = renderHook(() => useAssignments());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) }); // PATCH a1 lands
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 500 }); // PATCH a2 fails
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [{ ...ASSIGNMENT_1, note: 'New' }, ASSIGNMENT_2],
+    }); // refetch returns server truth
+
+    // Catch inside act so the rejection doesn't stop React flushing the updates
+    let err: unknown;
+    await act(async () => {
+      err = await result.current.updateAssignments(['a1', 'a2'], { note: 'New' }).catch((e) => e);
+    });
+
+    expect(err).toBeInstanceOf(Error);
+    // The one copy that failed is back to its server state, not the optimistic one
+    expect(result.current.assignments[1].note).toBeNull();
+    expect(result.current.assignments[0].note).toBe('New');
+  });
+
+  it('restores the snapshot without refetching when every PATCH fails', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => [ASSIGNMENT_1],
@@ -223,20 +261,22 @@ describe('useAssignments', () => {
     const { result } = renderHook(() => useAssignments());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    // PATCH fails
     mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
+    let err: unknown;
     await act(async () => {
-      await result.current.updateAssignment('a1', { note: 'Will fail' });
+      err = await result.current.updateAssignments(['a1'], { note: 'Will fail' }).catch((e) => e);
     });
 
-    // Rolled back to original note
+    expect(err).toBeInstanceOf(Error);
     expect(result.current.assignments[0].note).toBe('Focus on N3');
+    // 1 initial GET + 1 PATCH — an offline refetch would just fail too
+    expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 
-  // ── deleteAssignment (optimistic) ─────────────────────────────────────────
+  // ── deleteAssignments (batch, optimistic) ─────────────────────────────────
 
-  it('optimistically removes and calls DELETE', async () => {
+  it('DELETEs every copy and refetches once', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => [ASSIGNMENT_1, ASSIGNMENT_2],
@@ -245,17 +285,20 @@ describe('useAssignments', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.assignments).toHaveLength(2);
 
-    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) }); // DELETE a1
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [ASSIGNMENT_2] }); // refetch
 
     await act(async () => {
-      await result.current.deleteAssignment('a1');
+      await result.current.deleteAssignments(['a1']);
     });
 
     expect(result.current.assignments).toHaveLength(1);
     expect(result.current.assignments[0].id).toBe('a2');
+    expect(mockFetch.mock.calls[1][1].method).toBe('DELETE');
+    expect(mockFetch).toHaveBeenCalledTimes(3);
   });
 
-  it('rolls back delete on failure', async () => {
+  it('restores the list when nothing could be deleted', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => [ASSIGNMENT_1],
@@ -265,10 +308,12 @@ describe('useAssignments', () => {
 
     mockFetch.mockRejectedValueOnce(new Error('fail'));
 
+    let err: unknown;
     await act(async () => {
-      await result.current.deleteAssignment('a1');
+      err = await result.current.deleteAssignments(['a1']).catch((e) => e);
     });
 
+    expect(err).toBeInstanceOf(Error);
     expect(result.current.assignments).toHaveLength(1);
     expect(result.current.assignments[0].id).toBe('a1');
   });
