@@ -3,6 +3,7 @@ import 'server-only';
 import { cache } from 'react';
 
 import { parseLocale } from '@/i18n/config';
+import { availableNowFilter } from '@/lib/assignmentAvailability';
 import {
   dbDeckToApp,
   dbEventTypeToApp,
@@ -110,7 +111,11 @@ async function loadDecksServer(
       .order('position', { ascending: true })
       .order('created_at', { ascending: true }),
     supabase.from('decks').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-    supabase.from('assignments').select('deck_id, decks(user_id)').eq('member_id', userId),
+    supabase
+      .from('assignments')
+      .select('deck_id, decks(user_id)')
+      .eq('member_id', userId)
+      .or(availableNowFilter()),
   ]);
   if (ownResult.error) return { decks: [], totalCount: 0 };
 

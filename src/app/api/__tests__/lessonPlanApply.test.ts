@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
-import { _resetLessonBudget } from '@/app/api/group/_lib/lessonBudget';
 import type { LessonPlan } from '@/types/lessonPlan';
 
 vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
@@ -36,6 +35,8 @@ function nextInsertResult(table: string): QueryResult {
 
 vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
   getServiceSupabase: () => ({
+    // Budget is claimed by an RPC; the counter itself has its own test.
+    rpc: () => Promise.resolve({ data: 1, error: null }),
     from(table: string) {
       const afterInsert = {
         select: () => afterInsert,
@@ -95,10 +96,10 @@ function planWith(names: string[]): LessonPlan {
   };
 }
 
-/** groups lookup (requireGroupAccess) → member lookup → highest deck position. */
+/** groups lookup (requireGroupAccess) → membership check → highest deck position. */
 function seedAccess() {
   reads.groups.push({ data: { id: 'g1', organizer_id: 'org1' }, error: null });
-  reads.profiles.push({ data: { id: 'm1' }, error: null });
+  reads.group_members.push({ data: { member_id: 'm1' }, error: null });
   reads.decks.push({ data: { position: 4 }, error: null });
 }
 
@@ -111,9 +112,15 @@ const BASE = { groupId: 'g1', memberId: 'm1', firstDueDate: '2026-08-09' };
 beforeEach(() => {
   vi.clearAllMocks();
   _resetStore();
-  _resetLessonBudget();
   process.env.GEMINI_API_KEY = 'test-gemini-key';
-  reads = { groups: [], profiles: [], decks: [], cards: [], assignments: [], card_progress: [] };
+  reads = {
+    groups: [],
+    group_members: [],
+    decks: [],
+    cards: [],
+    assignments: [],
+    card_progress: [],
+  };
   insertReturns = { decks: [], cards: [], assignments: [] };
   inserted = [];
 });
@@ -176,7 +183,7 @@ describe('POST /api/group/lesson-plan/apply', () => {
 
   it('rejects a learner outside the caller’s group', async () => {
     reads.groups.push({ data: { id: 'g1', organizer_id: 'org1' }, error: null });
-    reads.profiles.push({ data: null, error: null });
+    reads.group_members.push({ data: null, error: null });
 
     const res = await POST(makeRequest({ ...BASE, plan: planWith(['Food']) }));
     expect(res.status).toBe(403);

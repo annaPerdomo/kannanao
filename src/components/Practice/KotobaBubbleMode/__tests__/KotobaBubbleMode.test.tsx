@@ -10,30 +10,43 @@ import type { PracticeSentence } from '@/types/practiceSentence';
 // Regression: the perfect-run bonus used to call `triggerXpEarned` only, which
 // animates a +50 the player never banked. It must also go through `addBonusXp`.
 
-const { startSession, recordAnswer, endSession, addBonusXp, triggerXpEarned, sentences } =
-  vi.hoisted(() => ({
-    startSession: vi.fn(),
-    recordAnswer: vi.fn(),
-    endSession: vi.fn(),
-    addBonusXp: vi.fn(),
-    triggerXpEarned: vi.fn(),
-    sentences: [] as unknown[],
-  }));
+const {
+  startSession,
+  recordAnswer,
+  endSession,
+  addBonusXp,
+  triggerXpEarned,
+  sentences,
+  usePracticeSentencesSpy,
+  auth,
+} = vi.hoisted(() => ({
+  startSession: vi.fn(),
+  recordAnswer: vi.fn(),
+  endSession: vi.fn(),
+  addBonusXp: vi.fn(),
+  triggerXpEarned: vi.fn(),
+  sentences: [] as unknown[],
+  usePracticeSentencesSpy: vi.fn(),
+  auth: { isMemberAccount: false, user: { id: 'user1' } as { id: string } | null },
+}));
 
 vi.mock('@/hooks/useProgress', () => ({
   useProgress: () => ({ startSession, recordAnswer, endSession, addBonusXp }),
 }));
 vi.mock('@/contexts/XpAnimationContext', () => ({ useXpAnimation: () => ({ triggerXpEarned }) }));
-vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ isMemberAccount: false }) }));
+vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => auth }));
 vi.mock('@/hooks/usePracticeSentences', () => ({
-  usePracticeSentences: () => ({
-    sentences,
-    loading: false,
-    generating: false,
-    error: null,
-    hasContent: sentences.length > 0,
-    generate: vi.fn(),
-  }),
+  usePracticeSentences: (deckId: string, memberId?: string) => {
+    usePracticeSentencesSpy(deckId, memberId);
+    return {
+      sentences,
+      loading: false,
+      generating: false,
+      error: null,
+      hasContent: sentences.length > 0,
+      generate: vi.fn(),
+    };
+  },
 }));
 vi.mock('@/components/SpeakButton', () => ({ SpeakButton: () => null }));
 
@@ -102,5 +115,39 @@ describe('KotobaBubbleMode perfect bonus', () => {
 
     await waitFor(() => expect(endSession).toHaveBeenCalled());
     expect(addBonusXp).not.toHaveBeenCalledWith(XP_PERFECT_BONUS);
+  });
+});
+
+// Regression: the Lesson Builder writes each learner a personalised sentence
+// set keyed on their id, but this screen used to ask for the shared set only —
+// so an applied plan's sentences were paid for and never shown to anyone.
+describe('KotobaBubbleMode sentence set', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    startSession.mockResolvedValue('sess-1');
+    sentences.length = 0;
+    sentences.push(sentence('s1'));
+  });
+
+  it('asks for the learner’s own set', () => {
+    auth.isMemberAccount = true;
+    auth.user = { id: 'naomi' };
+
+    renderWithProviders(
+      <KotobaBubbleMode cards={cards} deckId="d1" batchSize={1} onExit={() => {}} />,
+    );
+
+    expect(usePracticeSentencesSpy).toHaveBeenCalledWith('d1', 'naomi');
+  });
+
+  it('leaves an organizer on the shared set they generate and edit', () => {
+    auth.isMemberAccount = false;
+    auth.user = { id: 'org1' };
+
+    renderWithProviders(
+      <KotobaBubbleMode cards={cards} deckId="d1" batchSize={1} onExit={() => {}} />,
+    );
+
+    expect(usePracticeSentencesSpy).toHaveBeenCalledWith('d1', undefined);
   });
 });

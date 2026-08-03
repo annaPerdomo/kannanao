@@ -72,7 +72,9 @@ export function ReviewStep({
 
       {plan.decks.map((deck, i) => (
         <PlanDeckCard
-          key={`${deck.name}-${i}`}
+          // The deck name is editable, so it can't be part of the key — see
+          // the same note in PlanDeckCard.
+          key={i}
           deck={deck}
           weekNumber={i + 1}
           reuse={reuse[i]}

@@ -15,11 +15,21 @@ function makeChain(table: string) {
   const result = () => tableData[table] ?? { data: null, error: null };
   const asPromise = () => Promise.resolve(result());
   const chain: Record<string, unknown> = {};
-  ['select', 'insert', 'update', 'delete', 'eq', 'lte', 'order', 'in', 'upsert', 'limit'].forEach(
-    (m) => {
-      chain[m] = vi.fn(() => chain);
-    },
-  );
+  [
+    'select',
+    'insert',
+    'update',
+    'delete',
+    'eq',
+    'or',
+    'lte',
+    'order',
+    'in',
+    'upsert',
+    'limit',
+  ].forEach((m) => {
+    chain[m] = vi.fn(() => chain);
+  });
   chain.single = vi.fn(() => asPromise());
   chain.maybeSingle = vi.fn(() => asPromise());
   // Make the chain itself thenable so `await chain` works

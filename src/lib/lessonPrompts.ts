@@ -9,6 +9,18 @@ export interface PromptWord {
 export const MAX_SENTENCES = 20;
 const MIN_SENTENCES = 8;
 
+/**
+ * Cards one week's deck may hold. The plan route asks for a number in this
+ * range; the apply route enforces the ceiling again, because what it receives
+ * is whatever the browser posted, not what the generator returned.
+ */
+export const CARDS_MIN = 5;
+export const CARDS_MAX = 20;
+export const CARDS_DEFAULT = 12;
+
+/** Longest a plan-supplied text field may be before it is truncated. */
+export const PLAN_TEXT_MAX = 200;
+
 /** Sentences to ask for given a deck's size — two per card, clamped. */
 export function sentenceCountFor(cardCount: number): number {
   return Math.min(Math.max(cardCount * 2, MIN_SENTENCES), MAX_SENTENCES);

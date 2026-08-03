@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
-import { _resetLessonBudget } from '@/app/api/group/_lib/lessonBudget';
 
 vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
   requireOrganizerAccount: vi.fn().mockResolvedValue({
@@ -23,6 +22,8 @@ function nextResult(table: string): QueryResult {
 
 vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
   getServiceSupabase: () => ({
+    // Budget is claimed by an RPC; the counter itself has its own test.
+    rpc: () => Promise.resolve({ data: 1, error: null }),
     from(table: string) {
       const chain = {
         select: () => chain,
@@ -63,7 +64,7 @@ function makeRequest(body: unknown) {
 
 /** A learner the organizer owns, so isMemberOfOrganizer passes. */
 function memberExists() {
-  queues.profiles.push({ data: { id: 'm1' }, error: null });
+  queues.group_members.push({ data: [{ group_id: 'g1' }], error: null });
 }
 
 function mockGeminiPlan() {
@@ -110,9 +111,8 @@ const VALID = { memberId: 'm1', goal: 'Food words for a restaurant', weeks: 2, c
 beforeEach(() => {
   vi.clearAllMocks();
   _resetStore();
-  _resetLessonBudget();
   process.env.GEMINI_API_KEY = 'test-gemini-key';
-  queues = { profiles: [], card_progress: [], cards: [] };
+  queues = { group_members: [], card_progress: [], cards: [] };
   inserted.length = 0;
 });
 
@@ -138,7 +138,7 @@ describe('POST /api/group/lesson-plan', () => {
   });
 
   it('rejects a learner outside the caller’s group', async () => {
-    queues.profiles.push({ data: null, error: null });
+    queues.group_members.push({ data: [], error: null });
     const res = await POST(makeRequest(VALID));
     expect(res.status).toBe(403);
   });

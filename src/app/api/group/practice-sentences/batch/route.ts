@@ -6,7 +6,8 @@ import { logger } from '@/lib/logger';
 import { rateLimit } from '../../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../../_lib/requireOrganizerAccount';
 import { generateDeckSentences } from '../../_lib/generateDeckSentences';
-import { isMemberOfOrganizer } from '../../_lib/memberAccess';
+import { consumeLessonBudget } from '../../_lib/lessonBudget';
+import { isMemberOfOrganizer } from '../../_lib/membership';
 import { loadStudiedVocabulary } from '../../_lib/studiedVocabulary';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 3 };
@@ -56,6 +57,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
   }
 
+  // One Gemini call per deck, charged before spending. A deck that turns out to
+  // already have sentences still costs its slot — the cap errs toward under-spend.
+  const overBudget = await consumeLessonBudget(orgCheck.id, deckIds.length);
+  if (overBudget) return overBudget;
+
   const studied = memberId ? await loadStudiedVocabulary(memberId) : [];
   const carried: KnownWord[] = [];
   const results: BatchDeckResult[] = [];
@@ -70,6 +76,7 @@ export async function POST(req: NextRequest) {
         memberId: memberId ?? null,
         knownWords: pool,
         apiKey,
+        ownerId: orgCheck.id,
       });
     } catch (err) {
       logger.error('Batch sentence generation threw', {

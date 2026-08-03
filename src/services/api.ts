@@ -291,6 +291,8 @@ export async function applyLessonPlan(payload: {
   firstDueDate: string;
   requiredAccuracy?: number | null;
   requiredMode?: string | null;
+  /** Stable across retries so a resumed apply doesn't duplicate decks. */
+  planId?: string;
 }): Promise<{ results: ApplyDeckResult[] }> {
   const res = await fetch(`${BASE}/group/lesson-plan/apply`, {
     method: 'POST',

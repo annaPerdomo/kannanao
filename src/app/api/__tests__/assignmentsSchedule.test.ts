@@ -38,10 +38,10 @@ vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
         inserted.push(...rows);
         return { select: () => Promise.resolve({ data: rows, error: null }) };
       };
-      // The POST path validates members against `profiles` before inserting.
+      // The POST path validates members against `group_members` before inserting.
       chain.then = (ok: (r: unknown) => unknown) =>
         Promise.resolve({
-          data: table === 'profiles' ? [{ id: 'member1' }] : [],
+          data: table === 'group_members' ? [{ member_id: 'member1' }] : [],
           error: null,
         }).then(ok);
       return chain;

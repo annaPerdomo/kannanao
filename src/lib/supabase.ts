@@ -3,6 +3,7 @@
 import { createBrowserClient } from '@supabase/ssr';
 
 import { type Locale, parseLocale } from '@/i18n/config';
+import { availableNowFilter } from '@/lib/assignmentAvailability';
 import {
   type AccountType,
   dbCardToApp,
@@ -65,8 +66,11 @@ export async function loadDecks(userId: string): Promise<Deck[]> {
       .eq('user_id', userId)
       .order('position', { ascending: true })
       .order('created_at', { ascending: true }),
-    // Decks assigned to this user (member viewing organizer's decks)
-    sb.from('assignments').select('deck_id').eq('member_id', userId),
+    // Decks assigned to this user (member viewing organizer's decks). An
+    // assignment scheduled for a later week must not put its deck in the
+    // library early — that is the pile of homework `available_on` exists to
+    // prevent.
+    sb.from('assignments').select('deck_id').eq('member_id', userId).or(availableNowFilter()),
   ]);
 
   const { data: deckRows, error: deckError } = ownResult;

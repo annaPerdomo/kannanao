@@ -24,6 +24,8 @@ function nextResult(table: string): QueryResult {
 
 vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
   getServiceSupabase: () => ({
+    // The daily AI budget is claimed by an RPC; it has its own test.
+    rpc: () => Promise.resolve({ data: 1, error: null }),
     from(table: string) {
       const chain = {
         select: () => chain,

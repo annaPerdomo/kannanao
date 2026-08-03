@@ -1,42 +1,53 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  _resetLessonBudget,
-  consumeLessonBudget,
-  DAILY_LESSON_GENERATIONS,
-} from '@/app/api/group/_lib/lessonBudget';
+const rpc = vi.fn();
+
+vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
+  getServiceSupabase: () => ({ rpc }),
+}));
+
+import { consumeLessonBudget, DAILY_LESSON_GENERATIONS } from '@/app/api/group/_lib/lessonBudget';
 
 beforeEach(() => {
-  _resetLessonBudget();
+  rpc.mockReset();
 });
 
 describe('consumeLessonBudget', () => {
-  it('allows spending up to the daily cap', () => {
-    for (let i = 0; i < DAILY_LESSON_GENERATIONS; i++) {
-      expect(consumeLessonBudget('org1')).toBeNull();
-    }
-    expect(consumeLessonBudget('org1')?.status).toBe(429);
+  it('claims the allowance atomically, passing the cap to the database', async () => {
+    rpc.mockResolvedValue({ data: 3, error: null });
+
+    expect(await consumeLessonBudget('org1', 3)).toBeNull();
+    expect(rpc).toHaveBeenCalledWith(
+      'consume_lesson_budget',
+      expect.objectContaining({
+        p_organizer_id: 'org1',
+        p_cost: 3,
+        p_cap: DAILY_LESSON_GENERATIONS,
+      }),
+    );
   });
 
-  it('rejects a multi-deck request that would overshoot, without partially spending', () => {
-    expect(consumeLessonBudget('org1', DAILY_LESSON_GENERATIONS - 1)).toBeNull();
+  it('spends against a calendar day, not a rolling window', async () => {
+    rpc.mockResolvedValue({ data: 1, error: null });
 
-    expect(consumeLessonBudget('org1', 4)?.status).toBe(429);
-    expect(consumeLessonBudget('org1', 1)).toBeNull();
+    await consumeLessonBudget('org1');
+
+    const { p_day: day } = rpc.mock.calls[0][1];
+    expect(day).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
-  it('keeps each organizer on their own allowance', () => {
-    consumeLessonBudget('org1', DAILY_LESSON_GENERATIONS);
+  it('returns 429 when the day is spent', async () => {
+    rpc.mockResolvedValue({ data: -1, error: null });
 
-    expect(consumeLessonBudget('org1')?.status).toBe(429);
-    expect(consumeLessonBudget('org2')).toBeNull();
-  });
+    const res = await consumeLessonBudget('org1');
 
-  it('tells the caller when to come back', async () => {
-    consumeLessonBudget('org1', DAILY_LESSON_GENERATIONS);
-    const res = consumeLessonBudget('org1');
-
-    expect(Number(res?.headers.get('Retry-After'))).toBeGreaterThan(0);
+    expect(res?.status).toBe(429);
     expect((await res?.json()).error).toBeTruthy();
+  });
+
+  it('lets the request through when the counter itself is broken', async () => {
+    rpc.mockResolvedValue({ data: null, error: { message: 'connection refused' } });
+
+    expect(await consumeLessonBudget('org1')).toBeNull();
   });
 });

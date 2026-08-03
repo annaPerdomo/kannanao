@@ -21,8 +21,11 @@ interface KotobaBubbleSetupProps {
 
 export function KotobaBubbleSetup({ deckId, totalCards, onSelect }: KotobaBubbleSetupProps) {
   const t = useTranslations('Practice.kotobaBubble');
-  const { isMemberAccount } = useAuth();
+  const { isMemberAccount, user } = useAuth();
 
+  // A learner reads the set the Lesson Builder personalised for them, falling
+  // back to the shared set server-side. Organizers always work on the shared
+  // set — it is the one they can generate and edit.
   const {
     sentences,
     loading,
@@ -35,7 +38,7 @@ export function KotobaBubbleSetup({ deckId, totalCards, onSelect }: KotobaBubble
     justGenerated,
     clearJustGenerated,
     updateSentences,
-  } = usePracticeSentences(deckId);
+  } = usePracticeSentences(deckId, isMemberAccount ? (user?.id ?? undefined) : undefined);
 
   const [reviewOpen, setReviewOpen] = useState(false);
 

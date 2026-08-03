@@ -7,6 +7,12 @@ import { getServiceSupabase } from './serviceSupabase';
 const CARD_LOOKUP_CHUNK = 200;
 
 /**
+ * Progress rows to consider. rankKnownWords keeps far fewer than this; the cap
+ * exists so the query and the card lookups stay bounded for a long-time learner.
+ */
+const PROGRESS_ROW_CAP = 500;
+
+/**
  * Words this learner has actually answered correctly, ranked and capped.
  * Returns [] rather than throwing: a brand-new learner must still be able to
  * generate sentences.
@@ -15,11 +21,16 @@ export async function loadStudiedVocabulary(memberId: string): Promise<KnownWord
   try {
     const sb = getServiceSupabase();
 
+    // Ranked and capped in the DB before the card lookups: a learner two years
+    // in has thousands of rows, and this runs once per deck on the apply path.
     const { data: progress, error: progressError } = await sb
       .from('card_progress')
       .select('card_id, correct_count, last_reviewed_at')
       .eq('user_id', memberId)
-      .gt('correct_count', 0);
+      .gt('correct_count', 0)
+      .order('correct_count', { ascending: false })
+      .order('last_reviewed_at', { ascending: false })
+      .limit(PROGRESS_ROW_CAP);
 
     if (progressError) {
       logger.error('Failed to load card progress for studied vocabulary', {

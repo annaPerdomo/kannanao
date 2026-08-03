@@ -1,11 +1,13 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { availableNowFilter } from '@/lib/assignmentAvailability';
 import { isGoalMode } from '@/lib/assignmentMastery';
 import { logger } from '@/lib/logger';
 
 import { getProfileForUser, getUserFromToken } from '../../_lib/authCache';
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { memberIdsFor, membershipsOf } from '../_lib/membership';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
@@ -13,15 +15,6 @@ const RATE_LIMIT = { windowMs: 60_000, max: 20 };
 /** YYYY-MM-DD, the shape a <input type="date"> and a Postgres `date` agree on. */
 function isDateOnly(value: unknown): value is string {
   return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
-}
-
-/**
- * Today in UTC. `available_on` is a plain date, so the comparison is date-only:
- * a learner west of UTC can see a new assignment a few hours early, which is the
- * harmless direction — the alternative hides today's work until midday.
- */
-function todayUtc(): string {
-  return new Date().toISOString().slice(0, 10);
 }
 
 /** POST — create assignment(s) for one or more members */
@@ -116,14 +109,11 @@ export async function POST(req: NextRequest) {
     resolvedGroupId = firstGroup.id;
   }
 
-  // Verify all members belong to this organizer
-  const { data: validMembers } = await sb
-    .from('profiles')
-    .select('id')
-    .in('id', memberIds)
-    .eq('organizer_id', orgCheck.id);
-
-  const validIds = new Set((validMembers ?? []).map((m) => m.id));
+  // Members must be in the group the assignment names, not merely somewhere on
+  // this organizer's roster: group_id is what the row cascades on.
+  const validIds = new Set(
+    await memberIdsFor({ organizerId: orgCheck.id, groupId: resolvedGroupId }),
+  );
   const rows = memberIds
     .filter((id) => validIds.has(id))
     .map((memberId) => ({
@@ -206,20 +196,24 @@ export async function GET(req: NextRequest) {
 
   let query;
   if (scope === 'mine') {
-    // Scoped to the current organizer: once a learner moves groups nobody can
-    // withdraw the old assignments — the former organizer no longer sees them,
-    // the learner can't dismiss them — so unscoped they linger forever.
+    // Scoped to the organizers the learner currently learns under: once they
+    // leave a group nobody can withdraw the old assignments — the former
+    // organizer no longer sees them, the learner can't dismiss them — so
+    // unscoped they linger forever.
     query = sb
       .from('assignments')
       .select('*, decks(id, name, emoji)')
       .eq('member_id', user.id)
       // Scheduled for later: the organizer sees it now, the learner sees it on
       // the day. Without this a term planned in advance lands as one pile.
-      .or(`available_on.is.null,available_on.lte.${todayUtc()}`)
+      .or(availableNowFilter())
       // Soonest deadline first — what to do next, not what was created last.
       .order('due_date', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: true });
-    if (profile?.organizer_id) query = query.eq('organizer_id', profile.organizer_id);
+    // Every group the learner is in, not just the primary one: someone taking
+    // an advanced group and a business Japanese group has homework from both.
+    const organizerIds = [...new Set((await membershipsOf(user.id)).map((m) => m.organizer_id))];
+    if (organizerIds.length > 0) query = query.in('organizer_id', organizerIds);
   } else {
     query = sb
       .from('assignments')

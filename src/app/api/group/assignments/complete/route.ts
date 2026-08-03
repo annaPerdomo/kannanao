@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { availableNowFilter } from '@/lib/assignmentAvailability';
 import { evaluateMastery } from '@/lib/assignmentMastery';
 import { logger } from '@/lib/logger';
 
@@ -56,13 +57,16 @@ export async function POST(req: NextRequest) {
 
   const sb = getServiceSupabase();
 
-  // Find pending assignment(s) for this user + deck
+  // Find pending assignment(s) for this user + deck. An assignment that hasn't
+  // started yet can't be completed — otherwise studying a deck the learner
+  // reached some other way would tick off week 8 during week 1.
   const { data: pending, error: findError } = await sb
     .from('assignments')
     .select('id, required_accuracy, required_mode, progress_accuracy')
     .eq('member_id', user.id)
     .eq('deck_id', deckId)
-    .is('completed_at', null);
+    .is('completed_at', null)
+    .or(availableNowFilter());
 
   if (findError) {
     logger.error('Failed to query assignments for auto-complete', {
