@@ -15,7 +15,7 @@ interface EditAssignmentDialogProps {
   open: boolean;
   onClose: () => void;
   assignment: Assignment | null;
-  onSave: (id: string, updates: { note?: string; dueDate?: string | null }) => Promise<void>;
+  onSave: (id: string, updates: { note?: string | null; dueDate?: string | null }) => Promise<void>;
   /** How many members share this assignment — the edit applies to all of them. */
   memberCount?: number;
 }
@@ -51,7 +51,9 @@ export function EditAssignmentDialog({
     setError(null);
     try {
       await onSave(assignment.id, {
-        note: note.trim() || undefined,
+        // null, not undefined: JSON.stringify drops undefined keys, so clearing
+        // a note would never reach the server.
+        note: note.trim() || null,
         dueDate: dueDate || null,
       });
       onClose();

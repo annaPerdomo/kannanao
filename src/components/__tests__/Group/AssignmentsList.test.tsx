@@ -84,6 +84,24 @@ describe('groupAssignments', () => {
     expect(batches).toHaveLength(2);
   });
 
+  // The edit dialog seeds from one copy and writes to every id, so a note the
+  // batch doesn't share would be silently stamped onto members who never got it.
+  it('keeps handouts with different notes apart', () => {
+    const batches = groupAssignments([
+      assignment({ id: 'n1', member_id: 'm1', note: 'review chapter 2' }),
+      assignment({ id: 'n2', member_id: 'm2' }),
+    ]);
+    expect(batches).toHaveLength(2);
+  });
+
+  it('keeps handouts with different titles apart', () => {
+    const batches = groupAssignments([
+      assignment({ id: 't1', member_id: 'm1', title: 'Warm-up' }),
+      assignment({ id: 't2', member_id: 'm2' }),
+    ]);
+    expect(batches).toHaveLength(2);
+  });
+
   // A finished batch at the top would push live work below the fold.
   it('puts unfinished batches first, then the nearest deadline', () => {
     const finished = handout(1, { deck_id: 'd-done', due_date: iso(1) }).map((a) => ({
