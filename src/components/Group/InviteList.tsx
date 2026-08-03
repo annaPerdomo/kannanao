@@ -37,7 +37,8 @@ function usesLabel(invite: InviteCode, t: InviteListT): string {
   return t('usesLeft', { remaining, max: invite.max_uses });
 }
 
-function isExpired(invite: InviteCode): boolean {
+/** Expired *or* used up — either way the code no longer lets anyone in. */
+export function isExpired(invite: InviteCode): boolean {
   if (invite.expires_at && new Date(invite.expires_at) < new Date()) return true;
   if (invite.max_uses !== null && invite.times_used >= invite.max_uses) return true;
   return false;

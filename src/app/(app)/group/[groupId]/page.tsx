@@ -1,13 +1,10 @@
 'use client';
 import AddIcon from '@mui/icons-material/Add';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-import { alpha, useTheme } from '@mui/material/styles';
-import Switch from '@mui/material/Switch';
-import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -22,7 +19,8 @@ import {
   GroupEncouragementForm,
   GroupOverview,
   InviteQRCode,
-  LeaderboardWidget,
+  isExpired,
+  LeaderboardPanel,
   MembersPanel,
   QuizScoresPanel,
   ReteachPanel,
@@ -131,11 +129,7 @@ export default function GroupDashboardPage() {
 
   const leaderboardVisible = group?.show_leaderboard !== false;
   const visibleFeed = allFeed ? feed : feed.slice(0, FEED_SHOWN);
-  const activeInvites = invites.filter(
-    (i) =>
-      (!i.expires_at || new Date(i.expires_at) > new Date()) &&
-      (i.max_uses === null || i.times_used < i.max_uses),
-  );
+  const activeInvites = invites.filter((i) => !isExpired(i));
 
   return (
     <Box
@@ -199,41 +193,13 @@ export default function GroupDashboardPage() {
         </Grid>
 
         <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          <SectionCard
-            title={t('weeklyLeaderboard')}
-            action={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary' }}>
-                  {leaderboardVisible ? t('visible') : t('hidden')}
-                </Typography>
-                <Switch
-                  size="small"
-                  checked={leaderboardVisible}
-                  onChange={(e) => updateGroup(groupId, { show_leaderboard: e.target.checked })}
-                  inputProps={{ 'aria-label': t('weeklyLeaderboard') }}
-                  sx={{
-                    '& .MuiSwitch-switchBase.Mui-checked': { color: brand[600] },
-                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                      bgcolor: brand[400],
-                    },
-                  }}
-                />
-              </Box>
-            }
-          >
-            {!leaderboardVisible ? (
-              <Box sx={{ py: 3, textAlign: 'center' }}>
-                <EmojiEventsIcon sx={{ fontSize: 32, color: alpha(brand[400], 0.6), mb: 0.5 }} />
-                <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
-                  {t('leaderboardHiddenBody')}
-                </Typography>
-              </Box>
-            ) : lbLoading ? (
-              <Loading message={t('loadingLeaderboard')} />
-            ) : (
-              <LeaderboardWidget entries={leaderboard} maxVisible={LEADERBOARD_SHOWN} />
-            )}
-          </SectionCard>
+          <LeaderboardPanel
+            entries={leaderboard}
+            loading={lbLoading}
+            visible={leaderboardVisible}
+            onVisibilityChange={(show) => updateGroup(groupId, { show_leaderboard: show })}
+            maxVisible={LEADERBOARD_SHOWN}
+          />
         </Grid>
 
         {members.length > 0 && ownDecks.length > 0 && (
