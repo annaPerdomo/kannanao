@@ -1,5 +1,6 @@
 import { sb } from '@/lib/supabase';
 import type { GeneratedCard, GeneratePayload } from '@/types/flashcard';
+import type { ApplyDeckResult, LessonPlan, LessonPlanResponse } from '@/types/lessonPlan';
 import type { DbPracticeSentence } from '@/types/practiceSentence';
 
 const BASE = '/api';
@@ -261,4 +262,44 @@ export async function deletePracticeSentences(deckId: string, memberId?: string)
     const body = await res.json().catch(() => ({}));
     throw new Error(body?.error ?? 'Failed to delete practice sentences');
   }
+}
+
+/* ── Lesson Builder ────────────────────────────────────────────── */
+
+export async function buildLessonPlan(payload: {
+  memberId: string;
+  goal: string;
+  weeks: number;
+  cardsPerDeck: number;
+}): Promise<LessonPlanResponse> {
+  const res = await fetch(`${BASE}/group/lesson-plan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to build the plan');
+  }
+  return res.json();
+}
+
+export async function applyLessonPlan(payload: {
+  groupId: string;
+  memberId: string;
+  plan: LessonPlan;
+  firstDueDate: string;
+  requiredAccuracy?: number | null;
+  requiredMode?: string | null;
+}): Promise<{ results: ApplyDeckResult[] }> {
+  const res = await fetch(`${BASE}/group/lesson-plan/apply`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to create the decks');
+  }
+  return res.json();
 }

@@ -1250,7 +1250,8 @@
       "loadingActivity": "活動を読み込み中...",
       "newButton": "追加",
       "showAll": "すべて見る（{count}）",
-      "showLess": "とじる"
+      "showLess": "とじる",
+      "buildLessonButton": "レッスンをつくる"
     },
     "groupsPage": {
       "loadingGroups": "グループを読み込み中...",
@@ -1363,6 +1364,50 @@
       "allCaughtUp": "全員が最近学習しています。",
       "emptyTitle": "メンバーがまだいません",
       "emptyBody": "「招待」からこのグループにメンバーを追加しましょう。"
+    },
+    "lessonBuilder": {
+      "title": "レッスンをつくる",
+      "subtitle": "とりあげたいことを書いてください。この学習者がすでに知っていることばを土台に、デッキ・例文・週ごとの予定をつくります。",
+      "goalLabel": "なにをとりあげますか？",
+      "goalPlaceholder": "れい：レストランで注文するときの食べもののことば、ものの数えかた",
+      "learnerLabel": "だれのためのレッスンですか？",
+      "weeksLabel": "何週間ですか？",
+      "weeksOption": "{count}週間",
+      "cardsPerDeckLabel": "1週間のカード数",
+      "cardsOption": "{count}まい",
+      "buildButton": "プランをつくる",
+      "buildingMessage": "プランをつくっています — 10〜30秒ほどかかります。",
+      "loadingMessage": "よみこみ中…",
+      "reviewHeading": "デッキ{decks}こ・カード{cards}まい — つくる前に自由になおせます",
+      "weekHeading": "{week}週目",
+      "deckNameLabel": "デッキ名",
+      "wordLabel": "ことば",
+      "readingLabel": "よみ",
+      "meaningLabel": "いみ",
+      "exampleJpLabel": "例文（日本語）",
+      "exampleEnLabel": "例文（英語）",
+      "removeCardLabel": "{word}をけす",
+      "buildsOnLabel": "つかっていることば：{words}",
+      "retentionLine": "{total}まい中{reused}まいが、すでに知っていることばを使っています",
+      "retryDeckButton": "つくりなおす",
+      "retryGoal": "{goal} — この週のデッキだけつくりなおしてください：{deck}",
+      "dueDateLabel": "さいしょのデッキのしめきり",
+      "dueDateHint": "つぎの週からは、7日ずつあとになります。",
+      "applyButton": "デッキをつくってわりあてる",
+      "applying": "つくっています…",
+      "applyingMessage": "デッキと練習の文をつくっています — すこし時間がかかります。",
+      "startOverButton": "さいしょから",
+      "successMessage": "デッキを{count}こつくって、わりあてました。",
+      "deckFailed": "{name}でもんだいがありました：{reason}",
+      "backToGroupButton": "グループにもどる",
+      "errorMessage": "うまくいきませんでした。もういちどためしてください。",
+      "emptyPlanMessage": "プランが空でした。とりあげたいことを少し変えてためしてください。",
+      "noLearners": "さきにこのグループに学習者をくわえてください。",
+      "organizerOnly": "このページは先生・保護者のかた用です。"
+    },
+    "meta": {
+      "buildTitle": "レッスンをつくる — グループ | Tangodachi",
+      "buildDescription": "とりあげたいことを書くと、学習者がすでに知っていることばを土台にしたデッキ・例文・週ごとの予定ができます。"
     }
   },
   "Nav": {

@@ -35,6 +35,42 @@ RULE (level): use ONLY words from the deck list, the known list, and everyday N5
 RULE (counters): when a sentence counts things, prefer the counters the learner is drilling — ～つ, ～まい, ～にん — written as 三まい / 二つ / 五にん.
 `;
 
+/** A whole lesson plan: one deck per week, easiest first. */
+export function buildLessonPlanPrompt(args: {
+  goal: string;
+  weeks: number;
+  cardsPerDeck: number;
+  knownWords: KnownWord[];
+}): string {
+  const { goal, weeks, cardsPerDeck, knownWords } = args;
+
+  const known =
+    knownWords.length > 0
+      ? `
+KNOWN VOCABULARY — words this learner has already studied:
+${wordListText(knownWords)}
+`
+      : '';
+
+  return `You are a Japanese language teacher planning a short course for a beginning learner (roughly JLPT N5 level).
+
+What the educator wants to cover:
+"${goal}"
+${known}
+Produce exactly ${weeks} decks of exactly ${cardsPerDeck} cards each, ordered EASIEST FIRST — the first deck must be one the learner can win at on day one, and each later deck should build on the ones before it.
+
+RULES:
+1. Every card's example sentence must use N5 vocabulary and SHOULD reuse a word from the known list above or from an earlier deck in this same plan. Never force it — a bent sentence teaches nothing.
+2. Do NOT introduce N4+ words such as 得意, 苦手, 刺身, 大嫌い. If you cannot say it with N5 words, write a simpler sentence.
+3. "reading" is kana only. Leave it as an empty string when the word is already kana.
+4. "exampleJp" wraps every kanji or kanji compound with furigana using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです. Each group holds exactly one reading — never split a compound's reading with extra pipes ({無関係|むかんけい} or {無|む}{関|かん}{係|けい}, never {無関係|む|かん|けい}). Pure hiragana/katakana words need no wrapping.
+5. No romaji anywhere in a Japanese field.
+6. "mainViewMode" is how the front of the card should be shown: "hiragana", "kanji" or "romaji". Use "kanji" only when the words are written in kanji.
+7. "emoji" is a single emoji that fits the deck. "description" is one short plain sentence a non-technical adult would understand.
+8. "name" is a short deck title in the same language as the educator's request above.
+9. No duplicate words across the whole plan.`;
+}
+
 /**
  * The single home for the Kotoba Bubble sentence prompt. Routes import it;
  * prompt text never lives in two places.
