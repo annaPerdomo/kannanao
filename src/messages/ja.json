@@ -978,7 +978,7 @@
       "dueInDays": "あと{days}日"
     },
     "quizScores": {
-      "heading": "📝 クイズの成績",
+      "heading": "クイズの成績",
       "downloadCsv": "CSVをダウンロード",
       "loading": "成績を読み込み中…",
       "colMember": "メンバー",
@@ -987,7 +987,8 @@
       "colTries": "回数",
       "noMembers": "このグループにはまだメンバーがいません。",
       "noAttempts": "まだ誰もこのクイズを受けていません。",
-      "loadFailed": "クイズの成績を読み込めませんでした"
+      "loadFailed": "クイズの成績を読み込めませんでした",
+      "summary": "{total}人中{taken}人が受験・平均{average}%"
     },
     "goalPicker": {
       "addGoal": "🎯 目標を追加（任意）",
@@ -1013,8 +1014,6 @@
     "assignmentsList": {
       "noAssignmentsTitle": "課題がまだありません",
       "noAssignmentsBody": "「課題を出す」ボタンから、メンバーにデッキを出せます。",
-      "completedCount": "完了（{count}）",
-      "assignedToLabel": "対象:",
       "unknownMember": "不明",
       "unknownDeck": "不明なデッキ",
       "dueOn": "{date}まで",
@@ -1024,7 +1023,12 @@
       "overdueBy": "{days}日おくれ",
       "dueToday": "今日まで",
       "dueTomorrow": "明日まで",
-      "dueInDays": "あと{days}日"
+      "dueInDays": "あと{days}日",
+      "doneCount": "{done}/{total} 完了",
+      "goalLabel": "目標: {goal}",
+      "removeTitle": "課題を削除しますか？",
+      "removeBody": "「{deck}」を{count, plural, other {#人全員}}から削除します。",
+      "removeFailed": "課題を削除できませんでした。もう一度お試しください。"
     },
     "createAssignment": {
       "title": "課題を出す",
@@ -1047,11 +1051,16 @@
       "notePlaceholder": "3章の単語を中心に",
       "dueDateLabel": "しめ切り（任意）",
       "saving": "保存中...",
-      "failedToUpdate": "課題を更新できませんでした"
+      "failedToUpdate": "課題を更新できませんでした",
+      "subtitleBatch": "{emoji} {deckName}・{count, plural, other {#人}}"
     },
     "useAssignments": {
       "failedToLoad": "課題を読み込めませんでした",
-      "failedToCreate": "課題を出せませんでした"
+      "failedToCreate": "課題を出せませんでした",
+      "updateFailed": "変更を保存できませんでした。もう一度お試しください。",
+      "updatePartial": "{total}人中{ok}人分を保存しました。もう一度お試しください。",
+      "deleteFailed": "課題を削除できませんでした。もう一度お試しください。",
+      "deletePartial": "{total}人中{ok}人分を削除しました。もう一度お試しください。"
     },
     "createGroup": {
       "title": "グループを作成",
@@ -1079,7 +1088,9 @@
       "expires24h": "24時間",
       "expires7d": "7日",
       "expires30d": "30日",
-      "expiresNever": "なし"
+      "expiresNever": "なし",
+      "activeCodesHeading": "有効なコード",
+      "newCodeHeading": "新しいコードを作る"
     },
     "groupCard": {
       "memberCount": "{count, plural, other {メンバー#人}}",
@@ -1145,7 +1156,6 @@
       "quickKeepGoing": "その調子！",
       "quickProudOfYou": "がんばったね！",
       "quickAmazingProgress": "すごい進歩！",
-      "sendToGroupTitle": "グループ全員に応援メッセージを送る",
       "sendToMembersDescription": "{count, plural, other {メンバー#人全員にメッセージが送られます}}",
       "tapToChangeEmoji": "タップして絵文字を変更",
       "writeCustomMessage": "メッセージを書く...",
@@ -1184,19 +1194,18 @@
       "memberCountInGroup": "このグループにメンバー{count, plural, other {#人}}",
       "inviteButton": "招待",
       "assignDeckButton": "課題を出す",
-      "membersHeading": "メンバー",
-      "noMembersTitle": "メンバーがまだいません",
-      "noMembersBody": "招待コードを作って、このグループにメンバーを追加しましょう。",
-      "weeklyLeaderboard": "🏆 今週のランキング",
+      "weeklyLeaderboard": "今週のランキング",
       "visible": "表示中",
       "hidden": "非表示",
       "loadingLeaderboard": "ランキングを読み込み中...",
       "leaderboardHiddenBody": "ランキングはメンバーには表示されていません。",
-      "inviteCodesHeading": "招待コード",
-      "encouragementHeading": "💬 応援メッセージ",
+      "encouragementHeading": "応援メッセージを送る",
       "assignmentsHeading": "課題",
       "recentActivityHeading": "最近の活動",
-      "loadingActivity": "活動を読み込み中..."
+      "loadingActivity": "活動を読み込み中...",
+      "newButton": "追加",
+      "showAll": "すべて見る（{count}）",
+      "showLess": "とじる"
     },
     "groupsPage": {
       "loadingGroups": "グループを読み込み中...",
@@ -1261,21 +1270,54 @@
       "bestStreakLabel": "最高の連続記録",
       "longestStreakSub": "いちばん長い連続記録",
       "cardsStudiedLabel": "学習したカード",
-      "allTimeAcrossGroupSub": "グループ全体の累計"
+      "allTimeAcrossGroupSub": "グループ全体の累計",
+      "needNudgeLabel": "声かけが必要",
+      "needNudgeSub": "今週の学習なし"
     },
     "reteachPanel": {
-      "heading": "📖 もう一度教えたいこと",
-      "pickDeckAriaLabel": "分析するデッキを選ぶ",
-      "pickDeckPlaceholder": "デッキを選ぶ…",
+      "heading": "もう一度やりたいことば",
       "pickDeckBody": "デッキを選ぶと、クラスがまちがえやすい単語がわかります。",
       "checkingMessage": "クラスのまちがいを確認中...",
       "noTrickyWords": "にがてな単語はまだありません。このデッキはクラス全体でよくできています。",
       "allStudentsStruggling": "{attempts, plural, other {この単語は、やってみた生徒#人全員がまちがえ続けています。}}",
       "someStudentsStruggling": "やってみた生徒{attempts}人のうち{struggling}人が、この単語をまちがえ続けています。",
-      "percentRight": "正解率 {percent}%"
+      "percentRight": "正解率 {percent}%",
+      "chartCaption": "まちがえている人の割合"
     },
     "useItemAnalysis": {
       "failedToLoad": "分析を読み込めませんでした"
+    },
+    "leaderboard": {
+      "empty": "今週はまだ活動がありません。",
+      "xpAmount": "{xp} XP",
+      "cardsCount": "{count, plural, other {カード#枚}}"
+    },
+    "deckPicker": {
+      "ariaLabel": "デッキを選ぶ",
+      "placeholder": "デッキを選ぶ…"
+    },
+    "charts": {
+      "dailyHeading": "日ごとの学習カード数",
+      "dailyEmpty": "この2週間、学習の記録はまだありません。",
+      "dailyTooltip": "{date} — {count, plural, other {カード#枚}}",
+      "heatmapHeading": "今週だれが学習したか",
+      "heatmapEmpty": "メンバーがまだいません。",
+      "heatmapTooltip": "{name}・{date} — {count, plural, other {カード#枚}}",
+      "legendLess": "少ない",
+      "legendMore": "多い",
+      "loading": "グループの活動を読み込み中…",
+      "loadFailed": "グループの活動を読み込めませんでした。"
+    },
+    "membersPanel": {
+      "heading": "メンバー",
+      "sortAriaLabel": "メンバーの並べかえ",
+      "sortAttention": "声かけが必要",
+      "sortActive": "最近の学習順",
+      "sortName": "名前順",
+      "staleSummary": "{count, plural, other {#人}}が今週まだ学習していません",
+      "allCaughtUp": "全員が最近学習しています。",
+      "emptyTitle": "メンバーがまだいません",
+      "emptyBody": "「招待」からこのグループにメンバーを追加しましょう。"
     }
   },
   "Nav": {

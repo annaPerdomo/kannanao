@@ -16,6 +16,8 @@ interface EditAssignmentDialogProps {
   onClose: () => void;
   assignment: Assignment | null;
   onSave: (id: string, updates: { note?: string; dueDate?: string | null }) => Promise<void>;
+  /** How many members share this assignment — the edit applies to all of them. */
+  memberCount?: number;
 }
 
 export function EditAssignmentDialog({
@@ -23,6 +25,7 @@ export function EditAssignmentDialog({
   onClose,
   assignment,
   onSave,
+  memberCount = 1,
 }: EditAssignmentDialogProps) {
   const theme = useTheme();
   const t = useTranslations('Group.editAssignment');
@@ -69,11 +72,19 @@ export function EditAssignmentDialog({
       open={open}
       onClose={onClose}
       title={t('title')}
-      subtitle={t('subtitle', {
-        emoji: deck?.emoji || '📚',
-        deckName: deck?.name || t('deckFallback'),
-        memberName: member?.display_name || member?.username || t('memberFallback'),
-      })}
+      subtitle={
+        memberCount > 1
+          ? t('subtitleBatch', {
+              emoji: deck?.emoji || '📚',
+              deckName: deck?.name || t('deckFallback'),
+              count: memberCount,
+            })
+          : t('subtitle', {
+              emoji: deck?.emoji || '📚',
+              deckName: deck?.name || t('deckFallback'),
+              memberName: member?.display_name || member?.username || t('memberFallback'),
+            })
+      }
       maxWidth="sm"
       actions={
         <>

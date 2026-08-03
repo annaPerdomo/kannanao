@@ -539,7 +539,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
         return (
           <>
             {leaderboard.length > 1 ? (
-              <LeaderboardWidget entries={leaderboard} compact />
+              <LeaderboardWidget entries={leaderboard} compact maxVisible={5} />
             ) : (
               <Typography variant="body2" color="text.secondary">
                 {t('leaderboardSection.emptyCheckBack')}

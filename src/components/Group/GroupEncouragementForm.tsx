@@ -53,40 +53,21 @@ export function GroupEncouragementForm({ members, onSend }: GroupEncouragementFo
   if (members.length === 0) return null;
 
   return (
-    <Box
-      sx={{
-        p: 2.5,
-        border: `1.5px solid ${alpha(brand[300], 0.35)}`,
-        borderRadius: 3,
-        bgcolor: alpha(brand[50], 0.4),
-      }}
-    >
-      <Typography
-        sx={{
-          fontWeight: 800,
-          fontSize: '0.75rem',
-          color: brand[600],
-          textTransform: 'uppercase',
-          letterSpacing: '0.08em',
-          mb: 0.5,
-        }}
-      >
-        {t('sendToGroupTitle')}
-      </Typography>
-      <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary', mb: 1.5 }}>
+    <Box>
+      <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', mb: 1.5 }}>
         {t('sendToMembersDescription', { count: members.length })}
       </Typography>
 
       {/* Emoji picker */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
         <EncouragementEmojiPicker value={emoji} onChange={setEmoji} />
-        <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary' }}>
           {t('tapToChangeEmoji')}
         </Typography>
       </Box>
 
       {/* Quick messages */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1.5 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 1.5 }}>
         {QUICK_MESSAGES.map((qm) => (
           <Button
             key={qm}
@@ -95,12 +76,12 @@ export function GroupEncouragementForm({ members, onSend }: GroupEncouragementFo
             onClick={() => void handleSend(qm)}
             disabled={sending}
             sx={{
-              borderRadius: 5,
+              borderRadius: theme.radii.pill,
               textTransform: 'none',
-              fontSize: '0.68rem',
+              fontSize: '0.76rem',
               fontWeight: 600,
-              py: 0.25,
-              px: 1,
+              py: 0.35,
+              px: 1.25,
               borderColor: alpha(brand[300], 0.5),
               color: brand[700],
               '&:hover': { bgcolor: brand[50] },

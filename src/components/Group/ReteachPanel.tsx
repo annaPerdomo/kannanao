@@ -2,10 +2,6 @@
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import FormControl from '@mui/material/FormControl';
-import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Select from '@mui/material/Select';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
@@ -15,6 +11,12 @@ import { Loading } from '@/components/Loading';
 import type { Deck } from '@/types/deck';
 
 import { useItemAnalysis } from '../../hooks/useItemAnalysis';
+import { DeckPicker } from './DeckPicker';
+import { WordStruggleChart } from './GroupCharts';
+import { SectionCard } from './SectionCard';
+import { ShowMoreButton } from './ShowMoreButton';
+
+const COLLAPSED_ROWS = 5;
 
 interface ReteachPanelProps {
   /** The organizer's own decks (already filtered to non-shared). */
@@ -42,160 +44,76 @@ export function reteachSentence(
 }
 
 /**
- * "What to reteach" — a deck picker plus a worst-first list of the words the
- * class is struggling with, phrased as plain sentences (no stat tables, no
- * charts). Organizer dashboard only; data is organizer-gated server-side.
+ * "What to review again" — a deck picker plus a worst-first bar chart of the
+ * words the group is struggling with. The plain sentence behind each bar stays
+ * one hover away. Organizer dashboard only; data is organizer-gated server-side.
  */
 export function ReteachPanel({ decks }: ReteachPanelProps) {
   const t = useTranslations('Group.reteachPanel');
   const theme = useTheme();
-  const { brand, error: errorColor } = theme.palette;
+  const { brand } = theme.palette;
   const [deckId, setDeckId] = useState<string>('');
+  const [expanded, setExpanded] = useState(false);
   const { analysis, loading, error } = useItemAnalysis(deckId || null);
 
   if (decks.length === 0) return null;
 
-  // Only words at least one student is struggling with are worth reteaching.
-  const tricky = (analysis?.cards ?? []).filter((c) => c.strugglingCount > 0);
+  const tricky = (analysis?.cards ?? [])
+    .filter((c) => c.strugglingCount > 0)
+    .sort((a, b) => b.strugglingPct - a.strugglingPct);
+
+  const visible = expanded ? tricky : tricky.slice(0, COLLAPSED_ROWS);
 
   return (
-    <Box sx={{ mt: 4 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 1,
-          mb: 1.5,
-        }}
-      >
-        <Typography
-          sx={{
-            fontWeight: 800,
-            fontSize: '0.85rem',
-            color: brand[700],
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-          }}
-        >
-          {t('heading')}
-        </Typography>
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <Select
-            value={deckId}
-            onChange={(e) => setDeckId(e.target.value)}
-            displayEmpty
-            aria-label={t('pickDeckAriaLabel')}
-            sx={{
-              borderRadius: 2.5,
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              color: brand[800],
-              bgcolor: alpha('#FFFFFF', 0.6),
-              '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha(brand[400], 0.4) },
-            }}
-          >
-            <MenuItem value="" disabled>
-              {t('pickDeckPlaceholder')}
-            </MenuItem>
-            {decks.map((d) => (
-              <MenuItem key={d.id} value={d.id} sx={{ fontSize: '0.85rem' }}>
-                {d.emoji || '📚'} {d.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
+    <SectionCard title={t('heading')}>
+      <DeckPicker decks={decks} value={deckId} onChange={setDeckId} />
 
       {!deckId ? (
-        <Paper
-          elevation={0}
-          sx={{
-            p: 3,
-            textAlign: 'center',
-            border: `1.5px dashed ${alpha(brand[300], 0.4)}`,
-            borderRadius: 3,
-            bgcolor: alpha(brand[50], 0.6),
-          }}
-        >
-          <MenuBookIcon sx={{ fontSize: 32, color: alpha(brand[400], 0.5), mb: 0.5 }} />
-          <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
+        <Box sx={{ py: 2.5, textAlign: 'center' }}>
+          <MenuBookIcon sx={{ fontSize: 32, color: alpha(brand[400], 0.6), mb: 0.5 }} />
+          <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
             {t('pickDeckBody')}
           </Typography>
-        </Paper>
+        </Box>
       ) : loading ? (
         <Loading message={t('checkingMessage')} />
       ) : error ? (
         <Alert severity="error">{error}</Alert>
       ) : tricky.length === 0 ? (
-        <Paper
-          elevation={0}
-          sx={{
-            p: 3,
-            textAlign: 'center',
-            border: `1.5px dashed ${alpha(brand[300], 0.4)}`,
-            borderRadius: 3,
-            bgcolor: alpha(brand[50], 0.6),
-          }}
-        >
+        <Box sx={{ py: 2.5, textAlign: 'center' }}>
           <Typography sx={{ fontSize: '1.75rem', mb: 0.5 }}>🎉</Typography>
-          <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
             {t('noTrickyWords')}
           </Typography>
-        </Paper>
-      ) : (
-        <Box>
-          {tricky.map((c) => (
-            <Paper
-              key={c.cardId}
-              elevation={0}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 1.5,
-                p: 1.5,
-                mb: 0.75,
-                border: `1px solid ${alpha(brand[300], 0.25)}`,
-                borderRadius: 2.5,
-                bgcolor: alpha('#FFFFFF', 0.5),
-              }}
-            >
-              <Box sx={{ minWidth: 0 }}>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75 }}>
-                  <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: brand[800] }} noWrap>
-                    {c.word}
-                  </Typography>
-                  {c.reading && (
-                    <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }} noWrap>
-                      {c.reading}
-                    </Typography>
-                  )}
-                  {c.meaning && (
-                    <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }} noWrap>
-                      — {c.meaning}
-                    </Typography>
-                  )}
-                </Box>
-                <Typography sx={{ fontSize: '0.78rem', color: errorColor.main, fontWeight: 600 }}>
-                  {reteachSentence(c.strugglingCount, c.attemptCount, t)}
-                </Typography>
-              </Box>
-              <Typography
-                sx={{
-                  flexShrink: 0,
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  color: 'text.secondary',
-                }}
-              >
-                {t('percentRight', { percent: c.classAccuracy })}
-              </Typography>
-            </Paper>
-          ))}
         </Box>
+      ) : (
+        <>
+          <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', mb: 0.5 }}>
+            {t('chartCaption')}
+          </Typography>
+          <WordStruggleChart
+            words={visible.map((c) => ({
+              id: c.cardId,
+              label: c.word + (c.reading ? ` (${c.reading})` : ''),
+              sublabel: c.meaning ?? undefined,
+              pct: c.strugglingPct,
+              detail: `${reteachSentence(c.strugglingCount, c.attemptCount, t)} ${t(
+                'percentRight',
+                {
+                  percent: c.classAccuracy,
+                },
+              )}`,
+            }))}
+          />
+          {tricky.length > COLLAPSED_ROWS && (
+            <ShowMoreButton
+              expanded={expanded}
+              total={tricky.length}
+              onClick={() => setExpanded((v) => !v)}
+            />
+          )}
+        </>
       )}
-    </Box>
+    </SectionCard>
   );
 }

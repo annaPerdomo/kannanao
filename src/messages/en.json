@@ -978,7 +978,7 @@
       "dueInDays": "Due in {days}d"
     },
     "quizScores": {
-      "heading": "📝 Quiz Scores",
+      "heading": "Quiz scores",
       "downloadCsv": "Download CSV",
       "loading": "Loading quiz scores...",
       "colMember": "Member",
@@ -987,7 +987,8 @@
       "colTries": "Tries",
       "noMembers": "No members in this group yet.",
       "noAttempts": "No one has taken this quiz yet.",
-      "loadFailed": "Failed to load quiz scores"
+      "loadFailed": "Failed to load quiz scores",
+      "summary": "{taken} of {total} have taken it · average {average}%"
     },
     "goalPicker": {
       "addGoal": "🎯 Add a goal (optional)",
@@ -1013,8 +1014,6 @@
     "assignmentsList": {
       "noAssignmentsTitle": "No assignments yet",
       "noAssignmentsBody": "Use the \"Assign Deck\" button to assign decks to your members.",
-      "completedCount": "Completed ({count})",
-      "assignedToLabel": "Assigned to:",
       "unknownMember": "Unknown",
       "unknownDeck": "Unknown Deck",
       "dueOn": "Due {date}",
@@ -1024,7 +1023,12 @@
       "overdueBy": "Overdue by {days}d",
       "dueToday": "Due today",
       "dueTomorrow": "Due tomorrow",
-      "dueInDays": "Due in {days}d"
+      "dueInDays": "Due in {days}d",
+      "doneCount": "{done}/{total} done",
+      "goalLabel": "Goal: {goal}",
+      "removeTitle": "Remove assignment?",
+      "removeBody": "{deck} will be removed for {count, plural, one {# member} other {all # members}}.",
+      "removeFailed": "Couldn't remove the assignment. Please try again."
     },
     "createAssignment": {
       "title": "Assign a Deck",
@@ -1047,11 +1051,16 @@
       "notePlaceholder": "Focus on chapter 3 vocab",
       "dueDateLabel": "Due Date (optional)",
       "saving": "Saving...",
-      "failedToUpdate": "Failed to update assignment"
+      "failedToUpdate": "Failed to update assignment",
+      "subtitleBatch": "{emoji} {deckName} · {count, plural, one {# member} other {# members}}"
     },
     "useAssignments": {
       "failedToLoad": "Failed to load assignments",
-      "failedToCreate": "Failed to create assignment"
+      "failedToCreate": "Failed to create assignment",
+      "updateFailed": "Couldn't save the changes. Please try again.",
+      "updatePartial": "Saved for {ok} of {total} members — try again to finish the rest.",
+      "deleteFailed": "Couldn't remove the assignment. Please try again.",
+      "deletePartial": "Removed for {ok} of {total} members — try again to finish the rest."
     },
     "createGroup": {
       "title": "Create Group",
@@ -1079,7 +1088,9 @@
       "expires24h": "24 hours",
       "expires7d": "7 days",
       "expires30d": "30 days",
-      "expiresNever": "Never"
+      "expiresNever": "Never",
+      "activeCodesHeading": "Active codes",
+      "newCodeHeading": "Make a new code"
     },
     "groupCard": {
       "memberCount": "{count, plural, one {# member} other {# members}}",
@@ -1145,7 +1156,6 @@
       "quickKeepGoing": "Keep going!",
       "quickProudOfYou": "I'm proud of you!",
       "quickAmazingProgress": "Amazing progress!",
-      "sendToGroupTitle": "Send Encouragement to Entire Group",
       "sendToMembersDescription": "{count, plural, one {Your message will be sent to your member} other {Your message will be sent to all # members}}",
       "tapToChangeEmoji": "Tap to change emoji",
       "writeCustomMessage": "Write a custom message...",
@@ -1184,19 +1194,18 @@
       "memberCountInGroup": "{count, plural, one {# member} other {# members}} in this group",
       "inviteButton": "Invite",
       "assignDeckButton": "Assign Deck",
-      "membersHeading": "Members",
-      "noMembersTitle": "No members yet",
-      "noMembersBody": "Create an invite code to add members to this group.",
-      "weeklyLeaderboard": "🏆 Weekly Leaderboard",
+      "weeklyLeaderboard": "Weekly leaderboard",
       "visible": "Visible",
       "hidden": "Hidden",
       "loadingLeaderboard": "Loading leaderboard...",
       "leaderboardHiddenBody": "Leaderboard is hidden from members.",
-      "inviteCodesHeading": "Invite Codes",
-      "encouragementHeading": "💬 Encouragement",
+      "encouragementHeading": "Send encouragement",
       "assignmentsHeading": "Assignments",
-      "recentActivityHeading": "Recent Activity",
-      "loadingActivity": "Loading activity..."
+      "recentActivityHeading": "Recent activity",
+      "loadingActivity": "Loading activity...",
+      "newButton": "New",
+      "showAll": "Show all {count}",
+      "showLess": "Show less"
     },
     "groupsPage": {
       "loadingGroups": "Loading groups...",
@@ -1257,25 +1266,58 @@
     "overview": {
       "membersLabel": "Members",
       "activeThisWeek": "{count} active this week",
-      "totalGroupXpLabel": "Total Group XP",
-      "bestStreakLabel": "Best Streak",
+      "totalGroupXpLabel": "Total group XP",
+      "bestStreakLabel": "Best streak",
       "longestStreakSub": "Longest active streak",
-      "cardsStudiedLabel": "Cards Studied",
-      "allTimeAcrossGroupSub": "All time across group"
+      "cardsStudiedLabel": "Cards studied",
+      "allTimeAcrossGroupSub": "All time across group",
+      "needNudgeLabel": "Needs a nudge",
+      "needNudgeSub": "No study this week"
     },
     "reteachPanel": {
-      "heading": "📖 What to reteach",
-      "pickDeckAriaLabel": "Pick a deck to analyze",
-      "pickDeckPlaceholder": "Pick a deck…",
+      "heading": "What to review again",
       "pickDeckBody": "Pick a deck to see which words your class is missing.",
       "checkingMessage": "Checking what the class is missing...",
       "noTrickyWords": "No tricky words here yet — the class is doing well on this deck.",
       "allStudentsStruggling": "{attempts, plural, one {All # student who tried it keep missing this word.} other {All # students who tried it keep missing this word.}}",
       "someStudentsStruggling": "{struggling} of {attempts} students who tried it keep missing this word.",
-      "percentRight": "{percent}% right"
+      "percentRight": "{percent}% right",
+      "chartCaption": "Share of the group still missing each word"
     },
     "useItemAnalysis": {
       "failedToLoad": "Failed to load analysis"
+    },
+    "leaderboard": {
+      "empty": "No activity this week yet.",
+      "xpAmount": "{xp} XP",
+      "cardsCount": "{count, plural, one {# card} other {# cards}}"
+    },
+    "deckPicker": {
+      "ariaLabel": "Pick a deck",
+      "placeholder": "Pick a deck…"
+    },
+    "charts": {
+      "dailyHeading": "Cards studied each day",
+      "dailyEmpty": "No study sessions in the last two weeks.",
+      "dailyTooltip": "{date} — {count, plural, one {# card} other {# cards}}",
+      "heatmapHeading": "Who studied this week",
+      "heatmapEmpty": "No members yet.",
+      "heatmapTooltip": "{name} · {date} — {count, plural, one {# card} other {# cards}}",
+      "legendLess": "Less",
+      "legendMore": "More",
+      "loading": "Loading group activity…",
+      "loadFailed": "Couldn't load group activity."
+    },
+    "membersPanel": {
+      "heading": "Members",
+      "sortAriaLabel": "Sort members",
+      "sortAttention": "Needs a nudge",
+      "sortActive": "Most recent",
+      "sortName": "Name",
+      "staleSummary": "{count, plural, one {# member hasn't studied this week} other {# members haven't studied this week}}",
+      "allCaughtUp": "Everyone has studied recently.",
+      "emptyTitle": "No members yet",
+      "emptyBody": "Use Invite to add members to this group."
     }
   },
   "Nav": {

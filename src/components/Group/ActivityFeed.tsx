@@ -31,7 +31,7 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
 
   if (items.length === 0) {
     return (
-      <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', fontStyle: 'italic' }}>
+      <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
         {t('noActivity')}
       </Typography>
     );
@@ -40,11 +40,9 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
   return (
     <Box
       sx={{
-        borderLeft: `3px solid ${alpha(brand[300], 0.4)}`,
-        pl: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 1,
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+        columnGap: 3,
       }}
     >
       {items.map((item, i) => (
@@ -53,22 +51,35 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 1,
-            py: 0.5,
+            gap: 1.25,
+            py: 1,
+            borderBottom: `1px solid ${alpha(brand[300], 0.22)}`,
           }}
         >
-          <Typography sx={{ fontSize: '1rem', flexShrink: 0 }}>{item.emoji}</Typography>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{ fontSize: '0.78rem', color: brand[800] }}>
-              <Box component="span" sx={{ fontWeight: 700 }}>
-                {item.memberName}
-              </Box>{' '}
-              {item.description}
-            </Typography>
+          <Box
+            sx={{
+              width: 28,
+              height: 28,
+              flexShrink: 0,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.95rem',
+              bgcolor: alpha(brand[100], 0.7),
+            }}
+          >
+            {item.emoji}
           </Box>
+          <Typography sx={{ flex: 1, minWidth: 0, fontSize: '0.85rem', color: 'text.primary' }}>
+            <Box component="span" sx={{ fontWeight: 700 }}>
+              {item.memberName}
+            </Box>{' '}
+            {item.description}
+          </Typography>
           <Typography
             sx={{
-              fontSize: '0.63rem',
+              fontSize: '0.72rem',
               color: 'text.secondary',
               flexShrink: 0,
               whiteSpace: 'nowrap',

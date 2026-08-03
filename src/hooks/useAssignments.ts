@@ -115,9 +115,13 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
     [fetchAssignments, groupId, t],
   );
 
-  const updateAssignment = useCallback(
+  /**
+   * A batch is one handout: every id gets the edit, partial failure throws a
+   * translated error, and the list refetches exactly once — never per copy.
+   */
+  const updateAssignments = useCallback(
     async (
-      id: string,
+      ids: string[],
       updates: {
         title?: string;
         note?: string;
@@ -127,7 +131,7 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
       },
     ) => {
       const prev = assignments;
-      // Map API keys to DB column names for optimistic update
+      const idSet = new Set(ids);
       const mapped: Partial<Assignment> = {};
       if ('title' in updates) mapped.title = updates.title ?? null;
       if ('note' in updates) mapped.note = updates.note ?? null;
@@ -135,38 +139,56 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
       if ('requiredAccuracy' in updates)
         mapped.required_accuracy = updates.requiredAccuracy ?? null;
       if ('requiredMode' in updates) mapped.required_mode = updates.requiredMode ?? null;
-      setAssignments((a) => a.map((item) => (item.id === id ? { ...item, ...mapped } : item)));
-      try {
-        const res = await fetch(`/api/group/assignments/${id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-          body: JSON.stringify(updates),
-        });
-        if (!res.ok) throw new Error();
-        await fetchAssignments();
-      } catch {
+      setAssignments((a) => a.map((item) => (idSet.has(item.id) ? { ...item, ...mapped } : item)));
+      const headers = { 'Content-Type': 'application/json', ...(await authHeaders()) };
+      const results = await Promise.allSettled(
+        ids.map(async (id) => {
+          const res = await fetch(`/api/group/assignments/${id}`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify(updates),
+          });
+          if (!res.ok) throw new Error();
+        }),
+      );
+      const failed = results.filter((r) => r.status === 'rejected').length;
+      if (failed === ids.length) {
+        // Nothing landed (likely offline) — a refetch would fail too, so restore.
         setAssignments(prev);
+        throw new Error(t('updateFailed'));
       }
+      await fetchAssignments();
+      if (failed > 0)
+        throw new Error(t('updatePartial', { ok: ids.length - failed, total: ids.length }));
     },
-    [assignments, fetchAssignments],
+    [assignments, fetchAssignments, t],
   );
 
-  const deleteAssignment = useCallback(
-    async (id: string) => {
+  const deleteAssignments = useCallback(
+    async (ids: string[]) => {
       const prev = assignments;
-      invalidateApiCache(ASSIGNMENTS_URL);
-      setAssignments((a) => a.filter((item) => item.id !== id));
-      try {
-        const res = await fetch(`/api/group/assignments/${id}`, {
-          method: 'DELETE',
-          headers: await authHeaders(),
-        });
-        if (!res.ok) throw new Error();
-      } catch {
+      const idSet = new Set(ids);
+      setAssignments((a) => a.filter((item) => !idSet.has(item.id)));
+      const headers = await authHeaders();
+      const results = await Promise.allSettled(
+        ids.map(async (id) => {
+          const res = await fetch(`/api/group/assignments/${id}`, {
+            method: 'DELETE',
+            headers,
+          });
+          if (!res.ok) throw new Error();
+        }),
+      );
+      const failed = results.filter((r) => r.status === 'rejected').length;
+      if (failed === ids.length) {
         setAssignments(prev);
+        throw new Error(t('deleteFailed'));
       }
+      await fetchAssignments();
+      if (failed > 0)
+        throw new Error(t('deletePartial', { ok: ids.length - failed, total: ids.length }));
     },
-    [assignments],
+    [assignments, fetchAssignments, t],
   );
 
   return {
@@ -174,8 +196,8 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
     loading,
     error,
     createAssignment,
-    updateAssignment,
-    deleteAssignment,
+    updateAssignments,
+    deleteAssignments,
     refetch: fetchAssignments,
   };
 }
