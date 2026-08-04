@@ -31,6 +31,14 @@ function handoutKey(row: AssignmentRow): string {
   return JSON.stringify(HANDOUT_FIELDS.map((f) => row[f]));
 }
 
+/** Soonest deadline first; an open-ended handout sorts last. */
+function byDueDate(a: AssignmentRow, b: AssignmentRow): number {
+  if (a.due_date === b.due_date) return 0;
+  if (!a.due_date) return 1;
+  if (!b.due_date) return -1;
+  return a.due_date < b.due_date ? -1 : 1;
+}
+
 /**
  * Gives a learner who just joined the work the group is already doing.
  *
@@ -65,13 +73,20 @@ export async function catchUpGroupAssignments(
 
   const rows = (groupRows ?? []) as unknown as (AssignmentRow & { member_id: string })[];
   const mine = new Set(rows.filter((r) => r.member_id === memberId).map(handoutKey));
+  const myDecks = new Set(rows.filter((r) => r.member_id === memberId).map((r) => r.deck_id));
 
+  /**
+   * One row per deck, because `UNIQUE(member_id, deck_id, group_id)` allows no
+   * more. A group can hold two drifted handouts of the same deck — updateAssignments
+   * PATCHes each member's copy separately and tolerates partial failure — and
+   * inserting both fails the whole batch, leaving the joiner with nothing.
+   */
   const toCreate = new Map<string, AssignmentRow>();
-  for (const row of rows) {
+  for (const row of [...rows].sort(byDueDate)) {
     if (row.member_id === memberId) continue;
-    const key = handoutKey(row);
-    if (mine.has(key) || toCreate.has(key)) continue;
-    toCreate.set(key, row);
+    if (mine.has(handoutKey(row)) || myDecks.has(row.deck_id)) continue;
+    if (toCreate.has(row.deck_id)) continue;
+    toCreate.set(row.deck_id, row);
   }
 
   if (toCreate.size === 0) return 0;
@@ -89,7 +104,11 @@ export async function catchUpGroupAssignments(
     required_mode: row.required_mode,
   }));
 
-  const { error: insertError } = await sb.from('assignments').insert(inserts);
+  // Upsert, not insert: a join racing this one collides, and an insert would
+  // roll back every other handout in the batch.
+  const { error: insertError } = await sb
+    .from('assignments')
+    .upsert(inserts, { onConflict: 'member_id,deck_id,group_id', ignoreDuplicates: true });
 
   if (insertError) {
     logger.warn('Failed to catch new member up on group assignments', {

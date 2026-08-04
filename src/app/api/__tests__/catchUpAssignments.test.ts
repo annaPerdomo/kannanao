@@ -13,7 +13,7 @@ function fakeClient(): SupabaseClient {
   ['select', 'eq', 'or'].forEach((m) => {
     chain[m] = vi.fn(() => chain);
   });
-  chain.insert = vi.fn((rows: Record<string, unknown>[]) => {
+  chain.upsert = vi.fn((rows: Record<string, unknown>[]) => {
     inserted.push(rows);
     return Promise.resolve({ error: insertError });
   });
@@ -79,12 +79,27 @@ describe('catchUpGroupAssignments', () => {
     });
   });
 
-  it('treats two handouts of the same deck as separate when the goal differs', async () => {
-    groupRows = [handout(), handout({ required_accuracy: 90, title: 'Week 1 retake' })];
+  it('takes one handout per deck, soonest deadline first', async () => {
+    // Only one row per deck per group can exist; inserting both drifted copies
+    // fails the whole batch and leaves the joiner with nothing.
+    groupRows = [
+      handout({ due_date: '2026-08-30', title: 'Week 1 retake' }),
+      handout({ due_date: '2026-08-09' }),
+    ];
 
     const count = await catchUpGroupAssignments(fakeClient(), ARGS);
 
-    expect(count).toBe(2);
+    expect(count).toBe(1);
+    expect(inserted[0][0]).toMatchObject({ deck_id: 'd1', due_date: '2026-08-09' });
+  });
+
+  it('skips a deck the joiner already holds even under a different title', async () => {
+    groupRows = [handout(), handout({ member_id: 'newbie', title: 'Week 1 retake' })];
+
+    const count = await catchUpGroupAssignments(fakeClient(), ARGS);
+
+    expect(count).toBe(0);
+    expect(inserted).toEqual([]);
   });
 
   it('does not duplicate a handout the joiner already has', async () => {

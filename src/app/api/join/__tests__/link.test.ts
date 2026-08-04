@@ -192,10 +192,12 @@ describe('POST /api/join/link', () => {
 
     await POST(makeRequest());
 
-    const insert = calls.find((c) => c.table === 'assignments' && c.method === 'insert');
-    expect(insert?.args[0]).toEqual([
+    const write = calls.find((c) => c.table === 'assignments' && c.method === 'upsert');
+    expect(write?.args[0]).toEqual([
       expect.objectContaining({ member_id: 'user1', deck_id: 'd1', title: 'Week 1' }),
     ]);
+    // One collision must not roll back the batch and leave the joiner nothing.
+    expect(write?.args[1]).toMatchObject({ ignoreDuplicates: true });
   });
 
   it('releases the invite when the membership cannot be written', async () => {

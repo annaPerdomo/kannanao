@@ -135,7 +135,10 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await sb
     .from('assignments')
-    .upsert(rows, { onConflict: 'member_id,deck_id' })
+    // Group-scoped: the same deck assigned in another of this organizer's
+    // groups is a separate row. Keyed on member+deck alone, the second group's
+    // assignment silently repurposes the first group's.
+    .upsert(rows, { onConflict: 'member_id,deck_id,group_id' })
     .select();
 
   if (error) {

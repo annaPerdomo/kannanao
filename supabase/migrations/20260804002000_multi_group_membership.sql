@@ -34,22 +34,25 @@ comment on table public.group_members is
 -- whose group never got set (possible for accounts that pre-date the groups
 -- table) land in that organizer''s oldest group, which is where the groups
 -- migration put everyone else.
+--
+-- `organizer_id` comes from the resolved group, never from the profile: an admin
+-- group move only ever wrote `profiles.group_id`, so a profile can point at
+-- organizer B''s group while still carrying organizer A''s id. Rosters filter on
+-- both, so copying the profile''s value hides the learner from each of them.
 insert into public.group_members (group_id, member_id, organizer_id)
-select
-  coalesce(
-    p.group_id,
-    (select g.id from public.groups g where g.organizer_id = p.organizer_id
-      order by g.created_at limit 1)
-  ) as group_id,
-  p.id,
-  p.organizer_id
-from public.profiles p
-where p.organizer_id is not null
-  and coalesce(
-    p.group_id,
-    (select g.id from public.groups g where g.organizer_id = p.organizer_id
-      order by g.created_at limit 1)
-  ) is not null
+select resolved.group_id, resolved.member_id, g.organizer_id
+from (
+  select
+    p.id as member_id,
+    coalesce(
+      p.group_id,
+      (select g2.id from public.groups g2 where g2.organizer_id = p.organizer_id
+        order by g2.created_at limit 1)
+    ) as group_id
+  from public.profiles p
+  where p.organizer_id is not null
+) resolved
+join public.groups g on g.id = resolved.group_id
 on conflict (group_id, member_id) do nothing;
 
 alter table public.group_members enable row level security;
