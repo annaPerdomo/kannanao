@@ -139,11 +139,26 @@ export async function POST(req: NextRequest) {
   // 6. Record the membership and catch the joiner up on the group's open work,
   // then share the organizer's decks so those assignments have decks to open.
   if (invite.group_id) {
-    await addMembership(sb, {
+    // Every roster reads group_members, so swallowing this leaves a signed-in
+    // account that belongs to nobody — missing from the organizer's lists, with
+    // no assignments and no way to notice. Fail the join and let them re-scan.
+    const { error: membershipError } = await addMembership(sb, {
       memberId: userId,
       groupId: invite.group_id,
       organizerId: invite.organizer_id,
     });
+
+    if (membershipError) {
+      logger.error('Failed to record membership on join', {
+        route: '/api/join',
+        error: membershipError,
+      });
+      await sb.from('profiles').delete().eq('id', userId);
+      await sb.auth.admin.deleteUser(userId);
+      await releaseClaim();
+      return NextResponse.json({ error: 'Failed to join the group.' }, { status: 500 });
+    }
+
     await catchUpGroupAssignments(sb, {
       groupId: invite.group_id,
       organizerId: invite.organizer_id,

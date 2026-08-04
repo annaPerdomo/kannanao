@@ -162,11 +162,17 @@ export async function handleProfileAction(
     if (profileErr) return NextResponse.json({ error: profileErr.message }, { status: 500 });
 
     if (update.organizer_id && update.group_id) {
-      await addMembership(serviceClient, {
+      const { error: membershipErr } = await addMembership(serviceClient, {
         memberId: userId,
         groupId: update.group_id as string,
         organizerId: update.organizer_id as string,
       });
+      if (membershipErr) {
+        return NextResponse.json(
+          { error: `Account type changed, but the group membership failed: ${membershipErr}` },
+          { status: 500 },
+        );
+      }
     }
 
     return NextResponse.json({ message: `Account type changed to ${accountType}.` });
@@ -207,11 +213,19 @@ export async function handleProfileAction(
       .delete()
       .eq('member_id', userId)
       .eq('organizer_id', group.organizer_id);
-    await addMembership(serviceClient, {
+    // The delete above already ran, so a failure here leaves the learner in no
+    // group at all — it has to be reported, not swallowed.
+    const { error: membershipErr } = await addMembership(serviceClient, {
       memberId: userId,
       groupId,
       organizerId: group.organizer_id,
     });
+    if (membershipErr) {
+      return NextResponse.json(
+        { error: `Could not move the learner into that group: ${membershipErr}` },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json({ message: 'Group updated.' });
   }
