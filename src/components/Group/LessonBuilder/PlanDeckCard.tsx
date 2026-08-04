@@ -88,7 +88,9 @@ export function PlanDeckCard({
       <Stack spacing={1.5}>
         {deck.cards.map((card, i) => (
           <Box
-            key={`${card.word}-${i}`}
+            // Index, not the word: keying on a value these fields edit remounts
+            // the row on every keystroke and the input loses focus.
+            key={i}
             sx={{
               p: 1.5,
               borderRadius: theme.radii.md,

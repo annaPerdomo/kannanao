@@ -1,57 +1,72 @@
 import { NextResponse } from 'next/server';
 
+import { DEFAULT_TIME_ZONE } from '@/i18n/config';
 import { logger } from '@/lib/logger';
+import { dateStringInTimeZone } from '@/lib/reviewReminder';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+import { getServiceSupabase } from './serviceSupabase';
 
 /**
  * Gemini calls one organizer may spend on lesson building per day. Planning
  * costs 1; applying costs one per deck, because each deck gets its own
- * sentence-generation call. Plan and apply share the budget deliberately —
- * the ceiling is about money spent, not about which route spent it.
+ * sentence-generation call. The lesson and sentence routes share the one
+ * counter deliberately — the ceiling is about money spent, not about which of
+ * them spent it. The other Gemini routes (generate, furigana, pdf-extract) are
+ * not on it and are still bounded only by their own rate limits.
  */
 export const DAILY_LESSON_GENERATIONS = 30;
-
-interface BudgetEntry {
-  count: number;
-  windowStart: number;
-}
-
-const store = new Map<string, BudgetEntry>();
 
 /**
  * Spends `cost` from the organizer's daily allowance. Returns a 429 when the
  * allowance is gone and null when the request may proceed.
+ *
+ * The counter is a database row claimed by an atomic upsert, so it survives
+ * cold starts and cannot be double-spent by concurrent requests. A database
+ * error lets the request through: a cap that fails closed would take lesson
+ * building down with the counter.
  */
-export function consumeLessonBudget(organizerId: string, cost = 1): NextResponse | null {
-  const now = Date.now();
-  const entry = store.get(organizerId);
+export async function consumeLessonBudget(
+  organizerId: string,
+  cost = 1,
+): Promise<NextResponse | null> {
+  // The app's fixed zone, not the review-reminder cron's env var: retuning
+  // REMINDER_TIMEZONE must not move every organizer's allowance boundary.
+  const day = dateStringInTimeZone(new Date(), DEFAULT_TIME_ZONE);
 
-  if (!entry || now - entry.windowStart >= DAY_MS) {
-    store.set(organizerId, { count: cost, windowStart: now });
+  const { data, error } = await getServiceSupabase().rpc('consume_lesson_budget', {
+    p_organizer_id: organizerId,
+    p_day: day,
+    p_cost: cost,
+    p_cap: DAILY_LESSON_GENERATIONS,
+  });
+
+  if (error) {
+    logger.error('Lesson budget check failed', { organizerId, error: error.message });
     return null;
   }
 
-  if (entry.count + cost <= DAILY_LESSON_GENERATIONS) {
-    entry.count += cost;
-    return null;
+  const spent = typeof data === 'number' ? data : -1;
+
+  if (spent < 0) {
+    logger.info('Lesson budget exhausted', {
+      organizerId,
+      day,
+      requested: cost,
+      cap: DAILY_LESSON_GENERATIONS,
+    });
+    return NextResponse.json(
+      { error: "That's all the lesson building for today. Try again tomorrow." },
+      { status: 429 },
+    );
   }
 
-  logger.info('Lesson budget exhausted', {
+  logger.info('Lesson budget spent', {
     organizerId,
-    spent: entry.count,
-    requested: cost,
+    day,
+    cost,
+    spent,
     cap: DAILY_LESSON_GENERATIONS,
   });
 
-  const retryAfterSecs = Math.ceil((DAY_MS - (now - entry.windowStart)) / 1000);
-  return NextResponse.json(
-    { error: "That's all the lesson building for today. Try again tomorrow." },
-    { status: 429, headers: { 'Retry-After': String(retryAfterSecs) } },
-  );
-}
-
-/** Visible for testing — clears every organizer's allowance. */
-export function _resetLessonBudget() {
-  store.clear();
+  return null;
 }

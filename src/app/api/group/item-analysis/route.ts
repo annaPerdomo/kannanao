@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { memberIdsFor } from '../_lib/membership';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
@@ -51,11 +52,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Deck not found.' }, { status: 404 });
   }
 
-  // Count members in this organizer's group so the UI can say "N of M students".
-  const { count: memberCount } = await sb
-    .from('profiles')
-    .select('id', { count: 'exact', head: true })
-    .eq('organizer_id', orgCheck.id);
+  // Count members on this organizer's roster so the UI can say "N of M students".
+  const memberCount = (await memberIdsFor({ organizerId: orgCheck.id })).length;
 
   const { data, error } = await sb.rpc('group_item_analysis', {
     p_organizer_id: orgCheck.id,

@@ -1,11 +1,10 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
-
 import { getProfileForUser, getUserFromToken } from '../../_lib/authCache';
 import { rateLimit } from '../../_lib/rateLimit';
+import { buildLeaderboard } from '../_lib/leaderboard';
+import { membershipsOf } from '../_lib/membership';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
-import { weekStart } from '../_lib/weekStart';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
 
@@ -48,6 +47,7 @@ export async function GET(req: NextRequest) {
   // The group root. Without a ?groupId= this is the home leaderboard: prefer
   // the group the account learns in, fall back to its own when it isn't in one.
   const requestedGroupId = req.nextUrl.searchParams.get('groupId');
+  const memberships = await membershipsOf(profile.id);
   let organizerId: string | null;
   let groupId: string | null;
 
@@ -63,14 +63,20 @@ export async function GET(req: NextRequest) {
     // ?groupId= is caller input and the roster below follows whichever organizer
     // it resolves to, so unchecked it hands any signed-in account the names and
     // study stats of a group they have nothing to do with.
-    if (group.organizer_id !== profile.id && profile.group_id !== requestedGroupId) {
+    const inGroup = memberships.some((m) => m.group_id === requestedGroupId);
+    if (group.organizer_id !== profile.id && !inGroup) {
       return NextResponse.json({ error: 'Not part of this group.' }, { status: 403 });
     }
     organizerId = group.organizer_id;
     groupId = requestedGroupId;
   } else {
-    organizerId = profile.organizer_id ?? profile.id;
-    groupId = profile.organizer_id ? (profile.group_id ?? null) : null;
+    // No ?groupId= is the home leaderboard, which shows one board. A learner in
+    // several groups gets their primary one — the profile pointer — and falls
+    // back to any membership if that pointer is stale.
+    const primary =
+      memberships.find((m) => m.group_id === profile.group_id) ?? memberships[0] ?? null;
+    organizerId = primary?.organizer_id ?? profile.id;
+    groupId = primary?.group_id ?? null;
   }
 
   if (!organizerId) {
@@ -89,68 +95,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Get all group members + organizer
-  let membersQuery = sb
-    .from('profiles')
-    .select('id, username, display_name, avatar')
-    .or(`id.eq.${organizerId},organizer_id.eq.${organizerId}`);
-  if (groupId) membersQuery = membersQuery.or(`group_id.eq.${groupId},id.eq.${organizerId}`);
-
-  const { data: members } = await membersQuery;
-
-  if (!members || members.length === 0) {
-    return NextResponse.json([]);
-  }
-
-  const memberIds = members.map((m) => m.id);
-
-  // Monday-start week, shared with the per-group weekly XP on home (see weekStart)
-  const { data: sessions, error: sessErr } = await sb
-    .from('study_sessions')
-    .select('user_id, xp_earned, cards_studied')
-    .in('user_id', memberIds)
-    .gte('started_at', weekStart().toISOString());
-
-  if (sessErr) {
-    logger.error('Failed to fetch leaderboard sessions', {
-      route: '/api/group/leaderboard',
-      error: sessErr.message,
-    });
-  }
-
-  // Get streaks
-  const { data: progressRows } = await sb
-    .from('user_progress')
-    .select('user_id, streak_days, level')
-    .in('user_id', memberIds);
-
-  const progressMap = new Map((progressRows ?? []).map((p) => [p.user_id, p]));
-
-  // Aggregate weekly XP and cards per user
-  const weeklyStats = new Map<string, { xp: number; cards: number }>();
-  for (const s of sessions ?? []) {
-    const existing = weeklyStats.get(s.user_id) ?? { xp: 0, cards: 0 };
-    existing.xp += s.xp_earned ?? 0;
-    existing.cards += s.cards_studied ?? 0;
-    weeklyStats.set(s.user_id, existing);
-  }
-
-  const leaderboard = members
-    .map((m) => {
-      const weekly = weeklyStats.get(m.id) ?? { xp: 0, cards: 0 };
-      const prog = progressMap.get(m.id);
-      return {
-        id: m.id,
-        username: m.username,
-        displayName: m.display_name,
-        avatar: m.avatar,
-        weeklyXp: weekly.xp,
-        weeklyCards: weekly.cards,
-        streakDays: prog?.streak_days ?? 0,
-        level: prog?.level ?? 1,
-      };
-    })
-    .sort((a, b) => b.weeklyXp - a.weeklyXp);
-
-  return NextResponse.json(leaderboard);
+  return NextResponse.json(await buildLeaderboard({ organizerId, groupId }));
 }

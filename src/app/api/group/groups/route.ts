@@ -60,18 +60,33 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to load groups.' }, { status: 500 });
   }
 
-  // Three fixed-size queries (members, progress, sessions) instead of one per
-  // group, so an organizer with a dozen groups isn't a dozen round trips.
+  // Three fixed-size queries (memberships, progress, sessions) instead of one
+  // per group, so an organizer with a dozen groups isn't a dozen round trips.
   // Keyed on organizer_id alone: account_type is the entitlement tier, and a
   // learner who pays for their own organizer plan is still in this group.
-  const { data: memberRows } = await sb
-    .from('profiles')
-    .select('id, group_id, username, display_name, avatar')
+  const { data: membershipRows } = await sb
+    .from('group_members')
+    .select('group_id, member_id, profiles:member_id (username, display_name, avatar)')
     .eq('organizer_id', orgCheck.id)
-    .order('created_at', { ascending: true });
+    .order('joined_at', { ascending: true });
 
-  const members = memberRows ?? [];
-  const memberIds = members.map((m) => m.id);
+  // One row per (group, learner): someone in two of this organizer's groups is
+  // counted in each, which is what a per-group rollup should say.
+  const members = (membershipRows ?? []).map((r) => {
+    const profile = r.profiles as unknown as {
+      username: string;
+      display_name: string | null;
+      avatar: string | null;
+    } | null;
+    return {
+      id: r.member_id as string,
+      group_id: r.group_id as string,
+      username: profile?.username ?? '',
+      display_name: profile?.display_name ?? null,
+      avatar: profile?.avatar ?? null,
+    };
+  });
+  const memberIds = [...new Set(members.map((m) => m.id))];
 
   const [progressRes, sessionRes] = memberIds.length
     ? await Promise.all([

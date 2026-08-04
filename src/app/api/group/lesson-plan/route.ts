@@ -1,14 +1,14 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { normalizeFurigana } from '@/lib/furigana';
-import { buildLessonPlanPrompt } from '@/lib/lessonPrompts';
+import { buildLessonPlanPrompt, CARDS_DEFAULT, CARDS_MAX, CARDS_MIN } from '@/lib/lessonPrompts';
 import { logger } from '@/lib/logger';
 import type { LessonPlan } from '@/types/lessonPlan';
 
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
 import { consumeLessonBudget } from '../_lib/lessonBudget';
-import { isMemberOfOrganizer } from '../_lib/memberAccess';
+import { isMemberOfOrganizer } from '../_lib/membership';
 import { loadStudiedVocabulary } from '../_lib/studiedVocabulary';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 3 };
@@ -17,9 +17,6 @@ const GOAL_MIN = 3;
 const GOAL_MAX = 500;
 const WEEKS_MIN = 1;
 const WEEKS_MAX = 8;
-const CARDS_MIN = 5;
-const CARDS_MAX = 20;
-const CARDS_DEFAULT = 12;
 
 const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
@@ -116,7 +113,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
   }
 
-  const overBudget = consumeLessonBudget(orgCheck.id);
+  const overBudget = await consumeLessonBudget(orgCheck.id);
   if (overBudget) return overBudget;
 
   try {
@@ -190,6 +187,8 @@ export async function POST(req: NextRequest) {
       knownWordCount: knownWords.length,
       deckCount: plan.decks.length,
       cardCount: plan.decks.reduce((n, d) => n + (d.cards?.length ?? 0), 0),
+      promptTokens: data.usageMetadata?.promptTokenCount ?? null,
+      outputTokens: data.usageMetadata?.candidatesTokenCount ?? null,
     });
 
     return NextResponse.json({

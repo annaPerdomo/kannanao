@@ -3,6 +3,7 @@ import 'server-only';
 import { cache } from 'react';
 
 import { parseLocale } from '@/i18n/config';
+import { availableNowFilter } from '@/lib/assignmentAvailability';
 import {
   dbDeckToApp,
   dbEventTypeToApp,
@@ -59,12 +60,16 @@ async function loadProfileServer(
   const { data, error } = await supabase
     .from('profiles')
     .select(
-      'username, display_name, color_scheme, show_todo, home_sections, review_reminders, avatar, account_type, organizer_id, group_id, travel_main_view_mode, locale, groups:group_id (show_leaderboard)',
+      'username, display_name, color_scheme, show_todo, home_sections, review_reminders, avatar, account_type, organizer_id, group_id, travel_main_view_mode, locale, group_members!group_members_member_id_fkey (groups (show_leaderboard))',
     )
     .eq('id', userId)
     .single();
   if (error || !data) return null;
-  const groupRow = data.groups as unknown as { show_leaderboard: boolean } | null;
+  // Every group the account learns in, so a learner in two of them still gets
+  // the section when only one organizer hides their board.
+  const memberships = (data.group_members ?? []) as unknown as {
+    groups: { show_leaderboard: boolean } | null;
+  }[];
   return {
     username: data.username,
     displayName: data.display_name ?? null,
@@ -76,7 +81,8 @@ async function loadProfileServer(
     accountType: data.account_type ?? 'organizer',
     organizerId: data.organizer_id ?? null,
     groupId: data.group_id ?? null,
-    groupShowLeaderboard: groupRow?.show_leaderboard ?? true,
+    groupShowLeaderboard:
+      memberships.length === 0 || memberships.some((m) => m.groups?.show_leaderboard !== false),
     travelMainViewMode: data.travel_main_view_mode ?? null,
     locale: parseLocale(data.locale),
   };
@@ -110,7 +116,11 @@ async function loadDecksServer(
       .order('position', { ascending: true })
       .order('created_at', { ascending: true }),
     supabase.from('decks').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-    supabase.from('assignments').select('deck_id, decks(user_id)').eq('member_id', userId),
+    supabase
+      .from('assignments')
+      .select('deck_id, decks(user_id)')
+      .eq('member_id', userId)
+      .or(availableNowFilter()),
   ]);
   if (ownResult.error) return { decks: [], totalCount: 0 };
 

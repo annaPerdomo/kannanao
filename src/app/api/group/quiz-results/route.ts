@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { memberIdsFor } from '../_lib/membership';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
@@ -39,12 +40,11 @@ export async function GET(req: NextRequest) {
   const sb = getServiceSupabase();
 
   // Members of this organizer (optionally scoped to one group).
-  let memberQuery = sb
+  const rosterIds = await memberIdsFor({ organizerId: orgCheck.id, groupId });
+  const { data: members, error: membersErr } = await sb
     .from('profiles')
     .select('id, username, display_name')
-    .eq('organizer_id', orgCheck.id);
-  if (groupId) memberQuery = memberQuery.eq('group_id', groupId);
-  const { data: members, error: membersErr } = await memberQuery;
+    .in('id', rosterIds);
 
   if (membersErr) {
     logger.error('Failed to fetch members for quiz results', {

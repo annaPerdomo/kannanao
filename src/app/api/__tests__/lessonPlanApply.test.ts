@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
-import { _resetLessonBudget } from '@/app/api/group/_lib/lessonBudget';
 import type { LessonPlan } from '@/types/lessonPlan';
 
 vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
@@ -13,11 +12,16 @@ vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
   }),
 }));
 
-// Sentence generation is covered by practiceSentencesBatch.test.ts.
-vi.mock('@/app/api/group/_lib/generateDeckSentences', () => ({
-  generateDeckSentences: vi
+// Sentence generation itself is covered by generateDeckSentences.test.ts; here
+// what matters is whether it runs and which set it is asked to write.
+const { generateDeckSentencesMock } = vi.hoisted(() => ({
+  generateDeckSentencesMock: vi
     .fn()
     .mockResolvedValue({ status: 'generated', sentences: [], deckWords: [] }),
+}));
+
+vi.mock('@/app/api/group/_lib/generateDeckSentences', () => ({
+  generateDeckSentences: (...args: unknown[]) => generateDeckSentencesMock(...args),
 }));
 
 type QueryResult = { data?: unknown; error?: { message: string } | null };
@@ -36,6 +40,8 @@ function nextInsertResult(table: string): QueryResult {
 
 vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
   getServiceSupabase: () => ({
+    // Budget is claimed by an RPC; the counter itself has its own test.
+    rpc: () => Promise.resolve({ data: 1, error: null }),
     from(table: string) {
       const afterInsert = {
         select: () => afterInsert,
@@ -53,6 +59,10 @@ vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
         single: () => Promise.resolve(nextRead(table)),
         maybeSingle: () => Promise.resolve(nextRead(table)),
         insert: (rows: Record<string, unknown> | Record<string, unknown>[]) => {
+          inserted.push({ table, rows: Array.isArray(rows) ? rows : [rows] });
+          return afterInsert;
+        },
+        upsert: (rows: Record<string, unknown> | Record<string, unknown>[]) => {
           inserted.push({ table, rows: Array.isArray(rows) ? rows : [rows] });
           return afterInsert;
         },
@@ -95,10 +105,10 @@ function planWith(names: string[]): LessonPlan {
   };
 }
 
-/** groups lookup (requireGroupAccess) → member lookup → highest deck position. */
+/** groups lookup (requireGroupAccess) → membership check → highest deck position. */
 function seedAccess() {
   reads.groups.push({ data: { id: 'g1', organizer_id: 'org1' }, error: null });
-  reads.profiles.push({ data: { id: 'm1' }, error: null });
+  reads.group_members.push({ data: { member_id: 'm1' }, error: null });
   reads.decks.push({ data: { position: 4 }, error: null });
 }
 
@@ -111,9 +121,15 @@ const BASE = { groupId: 'g1', memberId: 'm1', firstDueDate: '2026-08-09' };
 beforeEach(() => {
   vi.clearAllMocks();
   _resetStore();
-  _resetLessonBudget();
   process.env.GEMINI_API_KEY = 'test-gemini-key';
-  reads = { groups: [], profiles: [], decks: [], cards: [], assignments: [], card_progress: [] };
+  reads = {
+    groups: [],
+    group_members: [],
+    decks: [],
+    cards: [],
+    assignments: [],
+    card_progress: [],
+  };
   insertReturns = { decks: [], cards: [], assignments: [] };
   inserted = [];
 });
@@ -160,6 +176,37 @@ describe('POST /api/group/lesson-plan/apply', () => {
     expect(assignments[0].title).toContain('Week 1');
   });
 
+  it('resumes a part-finished plan by name, not by position', async () => {
+    // Run 1 created Food and Counting but died on Kana in between. Matched by
+    // array position, Counting's deck would be reported as Kana.
+    reads.decks.push({
+      data: [
+        { id: 'd1', name: 'Food', card_count: 1 },
+        { id: 'd3', name: 'Counting', card_count: 1 },
+      ],
+      error: null,
+    });
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd2' } });
+
+    const res = await POST(
+      makeRequest({
+        ...BASE,
+        planId: '11111111-2222-3333-4444-555555555555',
+        withSentences: false,
+        plan: planWith(['Food', 'Kana', 'Counting']),
+      }),
+    );
+
+    const { results } = await res.json();
+    expect(results.map((r: { name: string }) => r.name)).toEqual(['Food', 'Kana', 'Counting']);
+    expect(rowsFor('decks').map((d) => d.name)).toEqual(['Kana']);
+    // Every week is re-assigned: a deck that survived run 1 may have lost its
+    // assignment.
+    expect(rowsFor('assignments').map((a) => a.deck_id)).toEqual(['d1', 'd2', 'd3']);
+    expect(results[2].assigned).toBe(true);
+  });
+
   it('reports a deck whose cards failed and still creates the rest', async () => {
     seedAccess();
     insertReturns.decks.push({ data: { id: 'd1' } }, { data: { id: 'd2' } });
@@ -176,9 +223,45 @@ describe('POST /api/group/lesson-plan/apply', () => {
 
   it('rejects a learner outside the caller’s group', async () => {
     reads.groups.push({ data: { id: 'g1', organizer_id: 'org1' }, error: null });
-    reads.profiles.push({ data: null, error: null });
+    reads.group_members.push({ data: null, error: null });
 
     const res = await POST(makeRequest({ ...BASE, plan: planWith(['Food']) }));
     expect(res.status).toBe(403);
+  });
+
+  // The deck is shared with everyone the organizer assigns it to, so a set
+  // keyed to one learner would leave every other learner on that deck with an
+  // empty Kotoba Bubble and no way to fill it.
+  it('writes the deck’s shared sentence set, not one learner’s', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+
+    await POST(makeRequest({ ...BASE, plan: planWith(['Food']) }));
+
+    expect(generateDeckSentencesMock).toHaveBeenCalledWith(
+      expect.objectContaining({ deckId: 'd1', memberId: null, ownerId: 'org1' }),
+    );
+  });
+
+  it('makes sentences by default — a deck without them cannot open Kotoba Bubble', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+
+    await POST(makeRequest({ ...BASE, plan: planWith(['Food']) }));
+
+    expect(generateDeckSentencesMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('spends nothing on sentences when the organizer opts out', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+
+    const res = await POST(
+      makeRequest({ ...BASE, plan: planWith(['Food']), withSentences: false }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(generateDeckSentencesMock).not.toHaveBeenCalled();
+    await expect(res.json()).resolves.toMatchObject({ sentenceResults: [] });
   });
 });

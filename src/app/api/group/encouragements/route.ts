@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
 import { sendPushToUser } from '../../_lib/sendPushNotification';
+import { isMemberOfOrganizer } from '../_lib/membership';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
@@ -34,15 +35,7 @@ export async function POST(req: NextRequest) {
 
   const sb = getServiceSupabase();
 
-  // Verify member belongs to organizer
-  const { data: member } = await sb
-    .from('profiles')
-    .select('id')
-    .eq('id', memberId)
-    .eq('organizer_id', orgCheck.id)
-    .single();
-
-  if (!member) {
+  if (!(await isMemberOfOrganizer(memberId, orgCheck.id))) {
     return NextResponse.json({ error: 'Member not found.' }, { status: 404 });
   }
 

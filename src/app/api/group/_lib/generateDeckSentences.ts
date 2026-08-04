@@ -82,9 +82,27 @@ export async function generateDeckSentences(args: {
   memberId: string | null;
   knownWords: KnownWord[];
   apiKey: string;
+  /** Deck must belong to this organizer — the service client bypasses RLS. */
+  ownerId: string;
 }): Promise<GenerateOutcome> {
-  const { deckId, memberId, knownWords, apiKey } = args;
+  const { deckId, memberId, knownWords, apiKey, ownerId } = args;
   const sb = getServiceSupabase();
+
+  const { data: deck } = await sb
+    .from('decks')
+    .select('id')
+    .eq('id', deckId)
+    .eq('user_id', ownerId)
+    .maybeSingle();
+
+  if (!deck) {
+    return {
+      status: 'failed',
+      error: 'Deck not found.',
+      httpStatus: 404,
+      deckWords: [],
+    };
+  }
 
   const { data: cards, error: cardsError } = await sb
     .from('cards')
@@ -174,21 +192,36 @@ export async function generateDeckSentences(args: {
     if (c.reading) wordToId.set(c.reading, c.id);
   }
 
-  const rows = generated.map((s) => ({
-    deck_id: deckId,
-    for_member_id: memberId,
-    sentence_jp: normalizeFurigana(s.sentence_jp),
-    sentence_en: s.sentence_en,
-    target_particle: s.target_particle,
-    particle_index: s.particle_index,
-    distractors: s.distractors,
-    sentence_type: s.sentence_type,
-    conversation_group: s.conversation_group,
-    sort_order: s.sort_order,
-    source_card_ids: (s.source_words ?? [])
-      .map((w) => wordToId.get(w))
-      .filter((id): id is string => !!id),
-  }));
+  // (deck, learner, conversation_group, sort_order) is unique in the DB, and
+  // both group and order come straight from the model — one repeated pair would
+  // reject the whole insert after the call is already paid for. Renumber within
+  // each conversation instead, keeping the model's intended sequence.
+  const ordered = [...generated].sort(
+    (a, b) =>
+      (a.conversation_group ?? 0) - (b.conversation_group ?? 0) || a.sort_order - b.sort_order,
+  );
+  const nextOrder = new Map<number, number>();
+
+  const rows = ordered.map((s) => {
+    const group = s.conversation_group ?? 0;
+    const order = nextOrder.get(group) ?? 0;
+    nextOrder.set(group, order + 1);
+    return {
+      deck_id: deckId,
+      for_member_id: memberId,
+      sentence_jp: normalizeFurigana(s.sentence_jp),
+      sentence_en: s.sentence_en,
+      target_particle: s.target_particle,
+      particle_index: s.particle_index,
+      distractors: s.distractors,
+      sentence_type: s.sentence_type,
+      conversation_group: group,
+      sort_order: order,
+      source_card_ids: (s.source_words ?? [])
+        .map((w) => wordToId.get(w))
+        .filter((id): id is string => !!id),
+    };
+  });
 
   const { error: insertError } = await sb.from('deck_practice_sentences').insert(rows);
 
@@ -213,6 +246,8 @@ export async function generateDeckSentences(args: {
     deckWordCount: deckWords.length,
     knownWordCount: knownWords.length,
     sentenceCount: rows.length,
+    promptTokens: data.usageMetadata?.promptTokenCount ?? null,
+    outputTokens: data.usageMetadata?.candidatesTokenCount ?? null,
   });
 
   const { data: saved } = await selectSentences(deckId, memberId);

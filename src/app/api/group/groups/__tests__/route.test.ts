@@ -53,6 +53,15 @@ const GROUPS = [
   { id: 'g2', organizer_id: 'org1', name: 'Sakura Squad', pinned: false },
 ];
 
+/** One group_members row with its joined profile, the shape the route selects. */
+function member(id: string, groupId: string, username: string, displayName: string | null) {
+  return {
+    member_id: id,
+    group_id: groupId,
+    profiles: { username, display_name: displayName, avatar: null },
+  };
+}
+
 beforeEach(() => {
   _resetStore();
   for (const key of Object.keys(tableData)) delete tableData[key];
@@ -63,10 +72,10 @@ beforeEach(() => {
 
 describe('GET /api/group/groups', () => {
   it('rolls members, cards, weekly XP and today’s activity up per group', async () => {
-    setTable('profiles', [
-      { id: 'm1', group_id: 'g1', username: 'daisy', display_name: 'Daisy' },
-      { id: 'm2', group_id: 'g1', username: 'naomi', display_name: null },
-      { id: 'm3', group_id: 'g2', username: 'sora', display_name: 'Sora' },
+    setTable('group_members', [
+      member('m1', 'g1', 'daisy', 'Daisy'),
+      member('m2', 'g1', 'naomi', null),
+      member('m3', 'g2', 'sora', 'Sora'),
     ]);
     setTable('user_progress', [
       { user_id: 'm1', total_cards_studied: 500, last_study_date: '2026-07-26' },
@@ -105,7 +114,7 @@ describe('GET /api/group/groups', () => {
   });
 
   it('zeroes every stat for a group with no members', async () => {
-    setTable('profiles', [{ id: 'm1', group_id: 'g1', username: 'daisy', display_name: 'Daisy' }]);
+    setTable('group_members', [member('m1', 'g1', 'daisy', 'Daisy')]);
     setTable('user_progress', []);
     setTable('study_sessions', []);
 
@@ -122,33 +131,26 @@ describe('GET /api/group/groups', () => {
     });
   });
 
-  // A member the organizer has not put in a group yet must not inflate any
-  // group's counts — group_id is the only thing that assigns them.
-  it('ignores members who are not in a group', async () => {
-    setTable('profiles', [
-      { id: 'm1', group_id: null, username: 'unassigned', display_name: null },
-      { id: 'm2', group_id: 'g1', username: 'daisy', display_name: 'Daisy' },
+  // A learner taking two of this organizer's groups is on both rosters, and
+  // each group's rollup should say so.
+  it('counts a learner in two groups once per group', async () => {
+    setTable('group_members', [
+      member('m1', 'g1', 'daisy', 'Daisy'),
+      member('m1', 'g2', 'daisy', 'Daisy'),
     ]);
-    setTable('user_progress', [
-      { user_id: 'm1', total_cards_studied: 999, last_study_date: '2026-07-26' },
-      { user_id: 'm2', total_cards_studied: 10, last_study_date: null },
-    ]);
+    setTable('user_progress', [{ user_id: 'm1', total_cards_studied: 10, last_study_date: null }]);
 
     const res = await GET(makeRequest());
     const body = await res.json();
 
     expect(body[0]).toMatchObject({ id: 'g1', memberCount: 1, cardsStudied: 10, activeCount: 0 });
+    expect(body[1]).toMatchObject({ id: 'g2', memberCount: 1, cardsStudied: 10 });
   });
 
   it('caps the avatar stack at four faces', async () => {
     setTable(
-      'profiles',
-      Array.from({ length: 6 }, (_, i) => ({
-        id: `m${i}`,
-        group_id: 'g1',
-        username: `member${i}`,
-        display_name: null,
-      })),
+      'group_members',
+      Array.from({ length: 6 }, (_, i) => member(`m${i}`, 'g1', `member${i}`, null)),
     );
 
     const res = await GET(makeRequest());

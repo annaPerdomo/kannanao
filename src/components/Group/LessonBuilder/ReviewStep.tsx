@@ -1,6 +1,8 @@
 'use client';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -24,11 +26,13 @@ interface ReviewStepProps {
   mode: GoalMode | null;
   applying: boolean;
   retryingIndex: number | null;
+  withSentences: boolean;
   onDeckChange: (index: number, deck: PlanDeck) => void;
   onRetryDeck: (index: number) => void;
   onDueDateChange: (date: string) => void;
   onAccuracyChange: (accuracy: number | null) => void;
   onModeChange: (mode: GoalMode | null) => void;
+  onWithSentencesChange: (value: boolean) => void;
   onApply: () => void;
   onStartOver: () => void;
 }
@@ -41,11 +45,13 @@ export function ReviewStep({
   mode,
   applying,
   retryingIndex,
+  withSentences,
   onDeckChange,
   onRetryDeck,
   onDueDateChange,
   onAccuracyChange,
   onModeChange,
+  onWithSentencesChange,
   onApply,
   onStartOver,
 }: ReviewStepProps) {
@@ -72,7 +78,9 @@ export function ReviewStep({
 
       {plan.decks.map((deck, i) => (
         <PlanDeckCard
-          key={`${deck.name}-${i}`}
+          // The deck name is editable, so it can't be part of the key — see
+          // the same note in PlanDeckCard.
+          key={i}
           deck={deck}
           weekNumber={i + 1}
           reuse={reuse[i]}
@@ -111,6 +119,21 @@ export function ReviewStep({
             onAccuracyChange={onAccuracyChange}
             onModeChange={onModeChange}
           />
+
+          <Box>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={withSentences}
+                  onChange={(e) => onWithSentencesChange(e.target.checked)}
+                />
+              }
+              label={t('sentencesToggleLabel')}
+            />
+            <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', ml: 4 }}>
+              {t('sentencesToggleHint')}
+            </Typography>
+          </Box>
 
           <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
             <Button

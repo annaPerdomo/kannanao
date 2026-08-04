@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { memberIdsFor } from '../_lib/membership';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
@@ -21,15 +22,15 @@ export async function GET(req: NextRequest) {
   // Optional group filter
   const groupId = req.nextUrl.searchParams.get('groupId');
 
-  // Fetch member profiles
-  let query = sb
+  // Roster comes from group_members: a learner can be in more than one of this
+  // organizer's groups, and the profile columns only name one of them.
+  const rosterIds = await memberIdsFor({ organizerId: orgCheck.id, groupId });
+
+  const { data: members, error: membersErr } = await sb
     .from('profiles')
     .select('id, username, display_name, avatar, created_at')
-    .eq('organizer_id', orgCheck.id)
+    .in('id', rosterIds)
     .order('created_at', { ascending: true });
-  if (groupId) query = query.eq('group_id', groupId);
-
-  const { data: members, error: membersErr } = await query;
 
   if (membersErr) {
     logger.error('Failed to fetch members', {

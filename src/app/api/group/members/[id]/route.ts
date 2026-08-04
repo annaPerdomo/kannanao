@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../../_lib/requireOrganizerAccount';
+import { isMemberOfOrganizer } from '../../_lib/membership';
 import { getServiceSupabase } from '../../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
@@ -19,12 +20,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id: memberId } = await params;
   const sb = getServiceSupabase();
 
-  // Verify this member belongs to the organizer
+  if (!(await isMemberOfOrganizer(memberId, orgCheck.id))) {
+    return NextResponse.json({ error: 'Member not found.' }, { status: 404 });
+  }
+
   const { data: member, error: memberErr } = await sb
     .from('profiles')
     .select('id, username, display_name')
     .eq('id', memberId)
-    .eq('organizer_id', orgCheck.id)
     .single();
 
   if (memberErr || !member) {

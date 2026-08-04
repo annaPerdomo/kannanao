@@ -34,7 +34,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProgressCtx } from '@/contexts/ProgressContext';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
-import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
+import { useGroupLeaderboards } from '@/hooks/useGroupLeaderboards';
 import { useGroups } from '@/hooks/useGroups';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { useStartAssignmentQuest } from '@/hooks/usePracticeChain';
@@ -317,7 +317,12 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
   );
   const { assignments } = useAssignments(undefined, homeSections.assignments, 'mine');
   const { groups, loading: groupsLoading, createGroup, pinGroup } = useGroups(homeSections.groups);
-  const { leaderboard } = useGroupLeaderboard(undefined, homeSections.leaderboard);
+  // One board per group: an account can be in several, and pooling them would
+  // rank classmates who never meet against each other. Gated on `isInGroup`
+  // because the preference defaults to on for everyone while getSectionsForRole
+  // renders the section only for a learner — ungated, organizers pay for boards
+  // nothing displays.
+  const { boards } = useGroupLeaderboards(homeSections.leaderboard && isInGroup);
   const router = useRouter();
   const startQuest = useStartAssignmentQuest();
 
@@ -536,16 +541,36 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
         );
 
       case 'leaderboard':
+        if (boards.length === 0) {
+          return (
+            <Typography variant="body2" color="text.secondary">
+              {t('leaderboardSection.emptyCheckBack')}
+            </Typography>
+          );
+        }
+        // One group needs no label — it is the only board there is. Two or more
+        // get their group's name, or the ranking is unreadable.
         return (
-          <>
-            {leaderboard.length > 1 ? (
-              <LeaderboardWidget entries={leaderboard} compact maxVisible={5} />
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                {t('leaderboardSection.emptyCheckBack')}
-              </Typography>
-            )}
-          </>
+          <Stack spacing={boards.length > 1 ? 2 : 0}>
+            {boards.map((board) => (
+              <Box key={board.groupId}>
+                {boards.length > 1 && (
+                  <Typography
+                    sx={{
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      color: 'text.secondary',
+                      mb: 0.75,
+                    }}
+                  >
+                    {board.groupEmoji ? `${board.groupEmoji} ` : ''}
+                    {board.groupName}
+                  </Typography>
+                )}
+                <LeaderboardWidget entries={board.entries} compact maxVisible={5} />
+              </Box>
+            ))}
+          </Stack>
         );
 
       case 'assignments':

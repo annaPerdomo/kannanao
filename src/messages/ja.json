@@ -1299,7 +1299,7 @@
       "newHereSwitch": "はじめての方はこちら",
       "signInToJoinHint": "お持ちのアカウントでログインして参加します。",
       "signInAndJoinButton": "ログインして参加",
-      "leavingCurrentGroup": "今のグループと、そこで共有されているデッキからは抜けます。",
+      "joiningAnotherGroup": "今のグループはそのままで、このグループにも入ります。",
       "yourAccount": "あなたのアカウント",
       "joinErrors": {
         "invalidCode": "この招待コードは使えません。",
@@ -1408,7 +1408,9 @@
       "errorMessage": "うまくいきませんでした。もういちどためしてください。",
       "emptyPlanMessage": "プランが空でした。とりあげたいことを少し変えてためしてください。",
       "noLearners": "さきにこのグループに学習者をくわえてください。",
-      "organizerOnly": "このページは先生・保護者のかた用です。"
+      "organizerOnly": "このページは先生・保護者のかた用です。",
+      "sentencesToggleLabel": "ことばバブルの練習文もつくる",
+      "sentencesToggleHint": "デッキごとに1セット。この学習者がもう知っていることばをつかってつくります。デッキをわたす人みんながつかえます。"
     },
     "meta": {
       "buildTitle": "レッスンをつくる — グループ | Tangodachi",

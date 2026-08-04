@@ -63,10 +63,14 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
   const tBack = useTranslations('Common');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
-  const { isMemberAccount } = useAuth();
+  const { isMemberAccount, user } = useAuth();
 
-  const { sentences, loading, generating, error, hasContent, generate } =
-    usePracticeSentences(deckId);
+  // Learners get their personalised set (the server falls back to the shared
+  // one); organizers see the shared set they generate and edit.
+  const { sentences, loading, generating, error, hasContent, generate } = usePracticeSentences(
+    deckId,
+    isMemberAccount ? (user?.id ?? undefined) : undefined,
+  );
 
   // Determine furigana display based on first card's mainViewMode
   const showFurigana = useMemo(() => cards[0]?.mainViewMode !== 'kanji', [cards]);

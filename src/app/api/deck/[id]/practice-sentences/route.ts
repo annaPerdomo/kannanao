@@ -7,7 +7,8 @@ import { rateLimit } from '../../../_lib/rateLimit';
 import { requireAuthenticatedUser } from '../../../_lib/requireAuthenticatedUser';
 import { requireOrganizerAccount } from '../../../_lib/requireOrganizerAccount';
 import { generateDeckSentences, selectSentences } from '../../../group/_lib/generateDeckSentences';
-import { isMemberOfOrganizer } from '../../../group/_lib/memberAccess';
+import { consumeLessonBudget } from '../../../group/_lib/lessonBudget';
+import { isMemberOfOrganizer } from '../../../group/_lib/membership';
 import { getServiceSupabase } from '../../../group/_lib/serviceSupabase';
 import { loadStudiedVocabulary } from '../../../group/_lib/studiedVocabulary';
 
@@ -23,9 +24,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (authCheck instanceof NextResponse) return authCheck;
 
   const { id: deckId } = await params;
-  const memberId = req.nextUrl.searchParams.get('memberId');
+  const requested = req.nextUrl.searchParams.get('memberId');
 
-  const { data, error } = await selectSentences(deckId, memberId || null);
+  // A personalised set is derived from that learner's card_progress, so it
+  // reveals which words they know. Only they and their organizer may read it.
+  if (
+    requested &&
+    requested !== authCheck.id &&
+    !(await isMemberOfOrganizer(requested, authCheck.id))
+  ) {
+    return NextResponse.json({ error: 'Learner not found in your group.' }, { status: 403 });
+  }
+  const memberId = requested || null;
+
+  const { data, error } = await selectSentences(deckId, memberId);
 
   if (error) {
     logger.error('Failed to fetch practice sentences', {
@@ -71,9 +83,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
   }
 
+  const overBudget = await consumeLessonBudget(orgCheck.id);
+  if (overBudget) return overBudget;
+
   try {
     const knownWords = memberId ? await loadStudiedVocabulary(memberId) : [];
-    const result = await generateDeckSentences({ deckId, memberId, knownWords, apiKey });
+    const result = await generateDeckSentences({
+      deckId,
+      memberId,
+      knownWords,
+      apiKey,
+      ownerId: orgCheck.id,
+    });
 
     if (result.status === 'failed') {
       return NextResponse.json({ error: result.error }, { status: result.httpStatus });
@@ -155,13 +176,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       }
     }
 
-    // Return updated list
-    const { data } = await sb
-      .from('deck_practice_sentences')
-      .select('*')
-      .eq('deck_id', deckId)
-      .order('conversation_group', { ascending: true })
-      .order('sort_order', { ascending: true });
+    // Return the set the caller was editing, not every learner's rows.
+    const { data } = await selectSentences(
+      deckId,
+      req.nextUrl.searchParams.get('memberId') || null,
+    );
 
     return NextResponse.json({ sentences: data as DbPracticeSentence[] });
   }

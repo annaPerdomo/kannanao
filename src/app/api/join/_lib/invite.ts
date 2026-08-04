@@ -100,25 +100,3 @@ export async function shareOrganizerDecks(
     logger.warn('Failed to auto-share decks', { route, error: error.message });
   }
 }
-
-/**
- * Drop the decks a previous organizer auto-shared when a learner moves to
- * another group. Without this the departing learner keeps read access to their
- * old organizer's whole library, and the organizer gets no signal to revoke it.
- */
-export async function revokeOrganizerDeckShares(
-  sb: SupabaseClient,
-  organizerId: string,
-  memberId: string,
-  route: string,
-): Promise<void> {
-  const { error } = await sb
-    .from('deck_shares')
-    .delete()
-    .eq('owner_id', organizerId)
-    .eq('shared_with', memberId);
-
-  if (error) {
-    logger.warn('Failed to revoke previous organizer deck shares', { route, error: error.message });
-  }
-}

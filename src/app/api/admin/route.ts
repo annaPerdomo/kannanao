@@ -11,6 +11,7 @@ import {
   getSupabaseConfig,
   handleProfileAction,
 } from '../_lib/profile-actions';
+import { addMembership } from '../group/_lib/membership';
 
 async function authenticateAdmin(req: Request) {
   const auth = await authenticateUser(req);
@@ -637,6 +638,25 @@ export async function POST(req: Request) {
     logger.error('Admin: failed to create profile', { error: profileErr.message });
     await sc.auth.admin.deleteUser(userId);
     return NextResponse.json({ error: 'Failed to create profile.' }, { status: 500 });
+  }
+
+  // The profile columns are only the primary-group pointer; group_members is
+  // what every roster reads.
+  if (accountType === 'member' && organizerId && resolvedGroupId) {
+    const { error: membershipErr } = await addMembership(sc, {
+      memberId: userId,
+      groupId: resolvedGroupId,
+      organizerId,
+    });
+    if (membershipErr) {
+      logger.error('Admin: failed to record membership', { error: membershipErr });
+      await sc.from('profiles').delete().eq('id', userId);
+      await sc.auth.admin.deleteUser(userId);
+      return NextResponse.json(
+        { error: 'Failed to add the learner to that group.' },
+        { status: 500 },
+      );
+    }
   }
 
   // Auto-share organizer's decks with new member

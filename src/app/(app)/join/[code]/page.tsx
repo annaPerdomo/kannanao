@@ -136,7 +136,7 @@ export default function JoinPage() {
         <JoinConfirm
           code={code}
           accountName={displayName || user.email?.split('@')[0] || t('yourAccount')}
-          switchingGroups={organizerId !== null}
+          alreadyInAGroup={organizerId !== null}
           onUseAnotherAccount={handleUseAnotherAccount}
         />
       ) : mode === 'signIn' ? (

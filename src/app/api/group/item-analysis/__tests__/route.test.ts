@@ -89,7 +89,13 @@ describe('GET /api/group/item-analysis', () => {
 
   it('returns ranked cards with struggling percentages on success', async () => {
     setTable('decks', { id: 'deck-1', name: 'JLPT N5', emoji: '📗' });
-    setTable('profiles', null, null, 4); // 4 members in the group
+    // Four learners on the roster, so "N of M students" has an M.
+    setTable('group_members', [
+      { member_id: 'm1' },
+      { member_id: 'm2' },
+      { member_id: 'm3' },
+      { member_id: 'm4' },
+    ]);
     rpcMock.mockResolvedValue({
       data: [
         {
