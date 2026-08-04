@@ -50,11 +50,14 @@ function shiftDays(date: string, days: number): string | null {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+interface ExistingDeck {
+  id: string;
+  name: string;
+  card_count: number | null;
+}
+
 /** Decks an earlier run of this plan already created, in creation order. */
-async function decksForPlan(
-  organizerId: string,
-  planId: string,
-): Promise<{ id: string; name: string; card_count: number | null }[]> {
+async function decksForPlan(organizerId: string, planId: string): Promise<ExistingDeck[]> {
   const { data } = await getServiceSupabase()
     .from('decks')
     .select('id, name, card_count')
@@ -62,7 +65,32 @@ async function decksForPlan(
     .eq('lesson_plan_id', planId)
     .order('position', { ascending: true });
 
-  return (data ?? []) as { id: string; name: string; card_count: number | null }[];
+  return (data ?? []) as ExistingDeck[];
+}
+
+function deckNameFor(deck: PlanDeck, index: number): string {
+  return ((deck.name ?? '').trim() || `Week ${index + 1}`).slice(0, 200);
+}
+
+/**
+ * Matches decks a failed run left behind to the plan entries that produced
+ * them, by name.
+ *
+ * Not by position: the apply loop does not stop at the first failure, so a run
+ * that created week 1, failed on week 2 and created week 3 leaves two decks
+ * whose order says nothing about which weeks they are — matched by index,
+ * week 3 would be reported as week 2 and a duplicate of week 3 created under
+ * it. Names may legally repeat within a plan, so each is consumed once.
+ */
+function matchExistingDecks(decks: PlanDeck[], existing: ExistingDeck[]): (ExistingDeck | null)[] {
+  const byName = new Map<string, ExistingDeck[]>();
+  for (const deck of existing) {
+    const queue = byName.get(deck.name) ?? [];
+    queue.push(deck);
+    byName.set(deck.name, queue);
+  }
+
+  return decks.map((deck, index) => byName.get(deckNameFor(deck, index))?.shift() ?? null);
 }
 
 async function nextDeckPosition(organizerId: string): Promise<number> {
@@ -161,15 +189,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Learner not found in this group.' }, { status: 403 });
   }
 
-  // Decks this plan already created, from a run that died part way. They are
-  // created in plan order, so the first N plan decks are the ones that landed.
   const alreadyCreated = planId ? await decksForPlan(organizerId, planId) : [];
+  const resumed = matchExistingDecks(decks, alreadyCreated);
 
   // Each deck still to create costs one sentence-generation call. A retry that
   // only has sentences left to fill in still costs a slot, never zero.
   const overBudget = await consumeLessonBudget(
     organizerId,
-    Math.max(1, decks.length - alreadyCreated.length),
+    Math.max(1, decks.length - resumed.filter(Boolean).length),
   );
   if (overBudget) return overBudget;
 
@@ -178,14 +205,30 @@ export async function POST(req: NextRequest) {
   const deckIdsInOrder: string[] = [];
 
   for (const [index, deck] of decks.entries()) {
-    const existing = alreadyCreated[index];
+    const existing = resumed[index];
     if (existing) {
+      // A run reports 'created' even when only the assignment failed, so this
+      // is written again rather than assumed.
+      const assignError = await assignDeck({
+        deckId: existing.id,
+        name: existing.name,
+        index,
+        organizerId,
+        groupId,
+        memberId,
+        description: deck.description,
+        dueDate: dueDateFor(firstDueDate, index),
+        availableOn: availableOnFor(firstDueDate, index),
+        requiredAccuracy: requiredAccuracy ?? null,
+        requiredMode: requiredMode ?? null,
+      });
       results.push({
         name: existing.name,
         deckId: existing.id,
         status: 'created',
         cardCount: existing.card_count ?? 0,
-        assigned: true,
+        assigned: !assignError,
+        error: assignError ? 'The deck was created but could not be assigned.' : undefined,
       });
       deckIdsInOrder.push(existing.id);
       continue;
@@ -222,8 +265,8 @@ export async function POST(req: NextRequest) {
     planId: planId ?? null,
     deckCount: decks.length,
     cardCount: decks.reduce((n, d) => n + (d.cards?.length ?? 0), 0),
-    resumed: alreadyCreated.length,
-    created: deckIdsInOrder.length - alreadyCreated.length,
+    resumed: resumed.filter(Boolean).length,
+    created: deckIdsInOrder.length - resumed.filter(Boolean).length,
     failed: results.filter((r) => r.status === 'failed').length,
   });
 
@@ -247,12 +290,12 @@ async function createDeck(args: {
   const { deck, index, position, organizerId, groupId, memberId, planId, dueDate, availableOn } =
     args;
   const sb = getServiceSupabase();
-  const name = (deck.name ?? '').trim() || `Week ${index + 1}`;
+  const name = deckNameFor(deck, index);
   const { data: created, error: deckError } = await sb
     .from('decks')
     .insert({
       user_id: organizerId,
-      name: name.slice(0, 200),
+      name,
       description: (deck.description ?? '').trim().slice(0, 500) || null,
       emoji: deck.emoji || null,
       position,
@@ -304,26 +347,19 @@ async function createDeck(args: {
     }
   }
 
-  const { error: assignError } = await sb.from('assignments').insert({
-    organizer_id: organizerId,
-    group_id: groupId,
-    member_id: memberId,
-    deck_id: deckId,
-    title: `Week ${index + 1} — ${name}`.slice(0, 200),
-    note: (deck.description ?? '').trim().slice(0, 500) || null,
-    due_date: dueDate,
-    available_on: availableOn,
-    required_accuracy: args.requiredAccuracy,
-    required_mode: args.requiredMode,
+  const assignError = await assignDeck({
+    deckId,
+    name,
+    index,
+    organizerId,
+    groupId,
+    memberId,
+    description: deck.description,
+    dueDate,
+    availableOn,
+    requiredAccuracy: args.requiredAccuracy,
+    requiredMode: args.requiredMode,
   });
-
-  if (assignError) {
-    logger.error('Failed to assign lesson deck', {
-      route: 'POST /api/group/lesson-plan/apply',
-      deckId,
-      error: assignError.message,
-    });
-  }
 
   return {
     name,
@@ -333,6 +369,48 @@ async function createDeck(args: {
     assigned: !assignError,
     error: assignError ? 'The deck was created but could not be assigned.' : undefined,
   };
+}
+
+async function assignDeck(args: {
+  deckId: string;
+  name: string;
+  index: number;
+  organizerId: string;
+  groupId: string;
+  memberId: string;
+  description?: string;
+  dueDate: string | null;
+  availableOn: string | null;
+  requiredAccuracy: number | null;
+  requiredMode: string | null;
+}): Promise<string | null> {
+  const { error } = await getServiceSupabase()
+    .from('assignments')
+    .upsert(
+      {
+        organizer_id: args.organizerId,
+        group_id: args.groupId,
+        member_id: args.memberId,
+        deck_id: args.deckId,
+        title: `Week ${args.index + 1} — ${args.name}`.slice(0, 200),
+        note: (args.description ?? '').trim().slice(0, 500) || null,
+        due_date: args.dueDate,
+        available_on: args.availableOn,
+        required_accuracy: args.requiredAccuracy,
+        required_mode: args.requiredMode,
+      },
+      { onConflict: 'member_id,deck_id,group_id' },
+    );
+
+  if (error) {
+    logger.error('Failed to assign lesson deck', {
+      route: 'POST /api/group/lesson-plan/apply',
+      deckId: args.deckId,
+      error: error.message,
+    });
+  }
+
+  return error?.message ?? null;
 }
 
 /**

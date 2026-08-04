@@ -62,6 +62,10 @@ vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
           inserted.push({ table, rows: Array.isArray(rows) ? rows : [rows] });
           return afterInsert;
         },
+        upsert: (rows: Record<string, unknown> | Record<string, unknown>[]) => {
+          inserted.push({ table, rows: Array.isArray(rows) ? rows : [rows] });
+          return afterInsert;
+        },
         then: (ok: (r: QueryResult) => unknown, err?: (e: unknown) => unknown) =>
           Promise.resolve(nextRead(table)).then(ok, err),
       };
@@ -170,6 +174,37 @@ describe('POST /api/group/lesson-plan/apply', () => {
     });
     expect(assignments[1]).toMatchObject({ deck_id: 'd2', due_date: '2026-08-16' });
     expect(assignments[0].title).toContain('Week 1');
+  });
+
+  it('resumes a part-finished plan by name, not by position', async () => {
+    // Run 1 created Food and Counting but died on Kana in between. Matched by
+    // array position, Counting's deck would be reported as Kana.
+    reads.decks.push({
+      data: [
+        { id: 'd1', name: 'Food', card_count: 1 },
+        { id: 'd3', name: 'Counting', card_count: 1 },
+      ],
+      error: null,
+    });
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd2' } });
+
+    const res = await POST(
+      makeRequest({
+        ...BASE,
+        planId: '11111111-2222-3333-4444-555555555555',
+        withSentences: false,
+        plan: planWith(['Food', 'Kana', 'Counting']),
+      }),
+    );
+
+    const { results } = await res.json();
+    expect(results.map((r: { name: string }) => r.name)).toEqual(['Food', 'Kana', 'Counting']);
+    expect(rowsFor('decks').map((d) => d.name)).toEqual(['Kana']);
+    // Every week is re-assigned: a deck that survived run 1 may have lost its
+    // assignment.
+    expect(rowsFor('assignments').map((a) => a.deck_id)).toEqual(['d1', 'd2', 'd3']);
+    expect(results[2].assigned).toBe(true);
   });
 
   it('reports a deck whose cards failed and still creates the rest', async () => {
