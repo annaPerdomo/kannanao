@@ -21,7 +21,7 @@ function setTable(table: string, data: unknown, error: unknown = null) {
 function makeChain(table: string) {
   const result = () => tableData[table] ?? { data: null, error: null };
   const chain: Record<string, unknown> = {};
-  ['select', 'eq', 'in', 'order'].forEach((m) => {
+  ['select', 'eq', 'in', 'order', 'limit'].forEach((m) => {
     chain[m] = vi.fn(() => chain);
   });
   chain.then = (onfulfilled: (v: unknown) => unknown, onrejected?: (e: unknown) => unknown) =>

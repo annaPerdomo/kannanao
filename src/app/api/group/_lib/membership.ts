@@ -17,6 +17,9 @@ export interface Membership {
   organizer_id: string;
 }
 
+/** Far above any real roster; a ceiling, not a page size. */
+const ROSTER_LIMIT = 2000;
+
 /** Every group this learner is in. */
 export async function membershipsOf(memberId: string): Promise<Membership[]> {
   const { data } = await getServiceSupabase()
@@ -64,7 +67,10 @@ export async function memberIdsFor(args: {
     .from('group_members')
     .select('member_id')
     .eq('organizer_id', args.organizerId)
-    .order('joined_at', { ascending: true });
+    .order('joined_at', { ascending: true })
+    // Explicit, because PostgREST's default max-rows would otherwise truncate a
+    // large roster silently — half a group missing from every list with no error.
+    .limit(ROSTER_LIMIT);
 
   if (args.groupId) query = query.eq('group_id', args.groupId);
 
@@ -92,16 +98,4 @@ export async function addMembership(
   );
 
   return { error: error?.message ?? null };
-}
-
-/** Removes a learner from one group, leaving their other groups alone. */
-export async function removeMembership(
-  sb: SupabaseClient,
-  args: { memberId: string; groupId: string },
-): Promise<void> {
-  await sb
-    .from('group_members')
-    .delete()
-    .eq('member_id', args.memberId)
-    .eq('group_id', args.groupId);
 }

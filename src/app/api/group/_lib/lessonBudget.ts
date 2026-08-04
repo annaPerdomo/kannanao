@@ -1,15 +1,18 @@
 import { NextResponse } from 'next/server';
 
+import { DEFAULT_TIME_ZONE } from '@/i18n/config';
 import { logger } from '@/lib/logger';
 import { dateStringInTimeZone } from '@/lib/reviewReminder';
 
 import { getServiceSupabase } from './serviceSupabase';
 
 /**
- * Gemini calls one organizer may spend on AI generation per day. Planning costs
- * 1; applying costs one per deck, because each deck gets its own
- * sentence-generation call. Every AI spender shares the budget deliberately —
- * the ceiling is about money spent, not about which route spent it.
+ * Gemini calls one organizer may spend on lesson building per day. Planning
+ * costs 1; applying costs one per deck, because each deck gets its own
+ * sentence-generation call. The lesson and sentence routes share the one
+ * counter deliberately — the ceiling is about money spent, not about which of
+ * them spent it. The other Gemini routes (generate, furigana, pdf-extract) are
+ * not on it and are still bounded only by their own rate limits.
  */
 export const DAILY_LESSON_GENERATIONS = 30;
 
@@ -26,7 +29,9 @@ export async function consumeLessonBudget(
   organizerId: string,
   cost = 1,
 ): Promise<NextResponse | null> {
-  const day = dateStringInTimeZone(new Date());
+  // The app's fixed zone, not the review-reminder cron's env var: retuning
+  // REMINDER_TIMEZONE must not move every organizer's allowance boundary.
+  const day = dateStringInTimeZone(new Date(), DEFAULT_TIME_ZONE);
 
   const { data, error } = await getServiceSupabase().rpc('consume_lesson_budget', {
     p_organizer_id: organizerId,
