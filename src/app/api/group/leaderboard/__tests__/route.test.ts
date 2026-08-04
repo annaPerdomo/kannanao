@@ -27,7 +27,7 @@ const rosterIds: string[][] = [];
 function makeChain(table: string) {
   const result = () => tableData[table] ?? { data: [], error: null };
   const chain: Record<string, unknown> = {};
-  ['select', 'eq', 'gte', 'or', 'order'].forEach((m) => {
+  ['select', 'eq', 'gte', 'or', 'order', 'limit'].forEach((m) => {
     chain[m] = vi.fn(() => chain);
   });
   chain.in = vi.fn((_col: string, ids: string[]) => {
@@ -86,6 +86,10 @@ describe('GET /api/group/leaderboard', () => {
   });
 
   it('ranks the caller’s own group by weekly XP', async () => {
+    setTable('group_members', [
+      { group_id: 'g1', member_id: 'user1', organizer_id: 'org1' },
+      { group_id: 'g1', member_id: 'user2', organizer_id: 'org1' },
+    ]);
     setTable('profiles', [
       { id: 'user1', username: 'kenji', display_name: 'Kenji', avatar: null },
       { id: 'user2', username: 'aya', display_name: 'Aya', avatar: null },

@@ -31,6 +31,7 @@ async function authHeaders(): Promise<Record<string, string>> {
 export function useGroupLeaderboards(enabled = true) {
   const [boards, setBoards] = useState<GroupBoard[]>(() => peekApiCache(URL) ?? []);
   const [loading, setLoading] = useState(enabled && peekApiCache(URL) === undefined);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -46,9 +47,14 @@ export function useGroupLeaderboards(enabled = true) {
     (async () => {
       try {
         const data = await fetchJsonCached<GroupBoard[]>(URL, authHeaders);
-        if (!cancelled) setBoards(data);
-      } catch {
-        // A missing leaderboard is not worth an error state on the dashboard.
+        if (cancelled) return;
+        setBoards(data);
+        setError(null);
+      } catch (err) {
+        // Returned but not rendered: the dashboard shows "check back" rather
+        // than an error box for a board that failed to load.
+        if (!cancelled)
+          setError(err instanceof Error ? err.message : 'Failed to load leaderboards');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -58,5 +64,5 @@ export function useGroupLeaderboards(enabled = true) {
     };
   }, [user, enabled]);
 
-  return { boards, loading };
+  return { boards, loading, error };
 }

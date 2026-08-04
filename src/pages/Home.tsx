@@ -318,8 +318,11 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
   const { assignments } = useAssignments(undefined, homeSections.assignments, 'mine');
   const { groups, loading: groupsLoading, createGroup, pinGroup } = useGroups(homeSections.groups);
   // One board per group: an account can be in several, and pooling them would
-  // rank classmates who never meet against each other.
-  const { boards } = useGroupLeaderboards(homeSections.leaderboard);
+  // rank classmates who never meet against each other. Gated on `isInGroup`
+  // because the preference defaults to on for everyone while getSectionsForRole
+  // renders the section only for a learner — ungated, organizers pay for boards
+  // nothing displays.
+  const { boards } = useGroupLeaderboards(homeSections.leaderboard && isInGroup);
   const router = useRouter();
   const startQuest = useStartAssignmentQuest();
 

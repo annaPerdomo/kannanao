@@ -3,9 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
 
-const { requireAuthenticatedUserMock, buildLeaderboardMock } = vi.hoisted(() => ({
+const { requireAuthenticatedUserMock, buildLeaderboardsMock } = vi.hoisted(() => ({
   requireAuthenticatedUserMock: vi.fn(),
-  buildLeaderboardMock: vi.fn(),
+  buildLeaderboardsMock: vi.fn(),
 }));
 
 vi.mock('@/app/api/_lib/requireAuthenticatedUser', () => ({
@@ -15,7 +15,7 @@ vi.mock('@/app/api/_lib/requireAuthenticatedUser', () => ({
 // The ranking maths has its own coverage via the single-board route; what
 // matters here is which boards get built and for whom.
 vi.mock('@/app/api/group/_lib/leaderboard', () => ({
-  buildLeaderboard: (...args: unknown[]) => buildLeaderboardMock(...args),
+  buildLeaderboards: (...args: unknown[]) => buildLeaderboardsMock(...args),
 }));
 
 const tableData: Record<string, unknown[]> = {};
@@ -77,7 +77,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   for (const k of Object.keys(tableData)) delete tableData[k];
   requireAuthenticatedUserMock.mockResolvedValue({ id: 'kenji', account_type: 'member' });
-  buildLeaderboardMock.mockResolvedValue(twoEntries);
+  buildLeaderboardsMock.mockImplementation((specs: unknown[]) => specs.map(() => twoEntries));
   setTable('groups', [ADVANCED, BUSINESS]);
   setTable('group_members', []);
 });
@@ -99,15 +99,12 @@ describe('GET /api/group/leaderboards', () => {
       'Advanced Conversation',
       'Business Japanese',
     ]);
-    // Each board is built against the organizer who runs that group.
-    expect(buildLeaderboardMock).toHaveBeenCalledWith({
-      organizerId: 'org1',
-      groupId: 'advanced',
-    });
-    expect(buildLeaderboardMock).toHaveBeenCalledWith({
-      organizerId: 'org2',
-      groupId: 'business',
-    });
+    // Each board is built against the organizer who runs that group, in one call.
+    expect(buildLeaderboardsMock).toHaveBeenCalledTimes(1);
+    expect(buildLeaderboardsMock.mock.calls[0][0]).toEqual([
+      { organizerId: 'org1', groupId: 'advanced' },
+      { organizerId: 'org2', groupId: 'business' },
+    ]);
   });
 
   it('names the group so two boards can be told apart', async () => {
@@ -136,7 +133,7 @@ describe('GET /api/group/leaderboards', () => {
 
   it('drops a board of one — there is nobody to compare against', async () => {
     setTable('group_members', [{ group_id: 'advanced', organizer_id: 'org1', member_id: 'kenji' }]);
-    buildLeaderboardMock.mockResolvedValue([{ id: 'kenji' }]);
+    buildLeaderboardsMock.mockResolvedValue([[{ id: 'kenji' }]]);
 
     const body = await (await GET(makeRequest())).json();
 
@@ -160,6 +157,6 @@ describe('GET /api/group/leaderboards', () => {
     const res = await GET(makeRequest());
 
     await expect(res.json()).resolves.toEqual([]);
-    expect(buildLeaderboardMock).not.toHaveBeenCalled();
+    expect(buildLeaderboardsMock).not.toHaveBeenCalled();
   });
 });

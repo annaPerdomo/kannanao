@@ -7,7 +7,7 @@ import {
   type AuthenticatedUser,
   requireAuthenticatedUser,
 } from '../../_lib/requireAuthenticatedUser';
-import { buildLeaderboard, type LeaderboardEntry } from '../_lib/leaderboard';
+import { buildLeaderboards, type LeaderboardEntry } from '../_lib/leaderboard';
 import { membershipsOf } from '../_lib/membership';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 
@@ -64,24 +64,28 @@ export async function GET(req: NextRequest) {
 
   if (organizerByGroup.size === 0) return NextResponse.json([]);
 
-  const { data: groups } = await sb
-    .from('groups')
-    .select('id, name, emoji, show_leaderboard')
-    .in('id', [...organizerByGroup.keys()]);
+  // Own groups already arrived above; only the ones learned in still need names.
+  const own = new Map((ownGroupsRes.data ?? []).map((g) => [g.id as string, g]));
+  const missing = [...organizerByGroup.keys()].filter((id) => !own.has(id));
+  const { data: joined } = missing.length
+    ? await sb.from('groups').select('id, name, emoji, show_leaderboard').in('id', missing)
+    : { data: [] };
 
-  const visible = (groups ?? []).filter((g) => g.show_leaderboard !== false);
+  const visible = [...(joined ?? []), ...own.values()].filter((g) => g.show_leaderboard !== false);
 
-  const boards = await Promise.all(
-    visible.map(async (g) => ({
+  const rankings = await buildLeaderboards(
+    visible.map((g) => ({
+      organizerId: organizerByGroup.get(g.id as string)!,
       groupId: g.id as string,
-      groupName: (g.name as string) ?? '',
-      groupEmoji: (g.emoji as string | null) ?? null,
-      entries: await buildLeaderboard({
-        organizerId: organizerByGroup.get(g.id as string)!,
-        groupId: g.id as string,
-      }),
     })),
   );
+
+  const boards = visible.map((g, i) => ({
+    groupId: g.id as string,
+    groupName: (g.name as string) ?? '',
+    groupEmoji: (g.emoji as string | null) ?? null,
+    entries: rankings[i] ?? [],
+  }));
 
   // A board of one is the learner looking at themselves — nothing to compare.
   return NextResponse.json(boards.filter((b) => b.entries.length > 1));
