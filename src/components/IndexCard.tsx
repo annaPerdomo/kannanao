@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useCardBorder } from '@/contexts/CardBorderContext';
-import { romajiFor } from '@/lib/flashcardUtils';
+import { romajiFor, titleFontSize } from '@/lib/flashcardUtils';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
 
 interface IndexCardProps {
@@ -52,6 +52,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
     : isRomaji && (card.reading || card.romaji)
       ? romajiFor(card)
       : card.reading || card.word;
+  const isPhrase = card.cardType === 'phrase';
 
   return (
     <Box
@@ -122,11 +123,12 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
             <Typography
               sx={{
                 fontFamily: (t) => t.fonts.jp,
-                fontSize: '3rem',
+                fontSize: isPhrase ? '3rem' : titleFontSize(frontMainText, 3, 1.3),
                 fontWeight: 700,
                 color: '#111',
                 lineHeight: 1.1,
                 textAlign: 'center',
+                whiteSpace: isPhrase ? undefined : 'nowrap',
               }}
             >
               {frontMainText}

@@ -12,7 +12,12 @@ import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
-import { buildMeaningChoices, cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
+import {
+  buildMeaningChoices,
+  cardXp,
+  getFlashcardDisplayText,
+  titleFontSize,
+} from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
 import { CelebrationScreen, pickPraise } from './CelebrationScreen';
@@ -301,10 +306,14 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
             <Typography
               sx={{
                 fontFamily: (t) => t.fonts.jp,
-                fontSize: '2.2rem',
+                fontSize:
+                  card.cardType === 'phrase'
+                    ? '2.2rem'
+                    : titleFontSize(display.titleText, 2.2, 1.1),
                 fontWeight: 700,
                 color: 'text.primary',
                 mb: 0.5,
+                whiteSpace: card.cardType === 'phrase' ? undefined : 'nowrap',
               }}
             >
               {display.titleText}

@@ -65,9 +65,11 @@ export interface FlipStudyProps {
 // Exit animation duration — card slides out before the next one slides in.
 const SLIDE_DURATION_MS = 260;
 
-// Portrait trading-card dimensions (2.5 : 3.5 ratio)
+// Portrait trading-card dimensions (2.5 : 3.5 ratio); min() caps width on narrow viewports to avoid horizontal scroll.
 const CARD_W = 320;
 const CARD_H = 452;
+const CARD_ASPECT_RATIO = `${CARD_W} / ${CARD_H}`;
+const CARD_WIDTH_CSS = `min(${CARD_W}px, 100%)`;
 
 // ── Sparkle stars that float up on each new card ──────────────────────────────
 const SPARKLE_ITEMS = [
@@ -340,14 +342,14 @@ export default function FlipStudy({
           justifyContent: 'center',
           perspective: '1000px',
           position: 'relative',
+          minWidth: 0,
         }}
       >
         <Box
           key={index}
           sx={{
-            width: CARD_W,
-            height: CARD_H,
-            flexShrink: 0,
+            width: CARD_WIDTH_CSS,
+            aspectRatio: CARD_ASPECT_RATIO,
             position: 'relative',
             transformOrigin: 'top center',
             '@keyframes dealIn': {
@@ -388,9 +390,7 @@ export default function FlipStudy({
                 }),
           }}
         >
-          {card && (
-            <Flashcard card={card} width={CARD_W} height={CARD_H} onFlipChange={setFlipped} />
-          )}
+          {card && <Flashcard card={card} width="100%" height="100%" onFlipChange={setFlipped} />}
 
           {xpPop && (
             <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show key={xpPop.key} />

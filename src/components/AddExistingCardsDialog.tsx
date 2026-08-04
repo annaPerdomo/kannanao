@@ -260,13 +260,17 @@ export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, on
                 />
                 <CardThumbnail card={card} />
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, minWidth: 0 }}>
                     <Typography
                       sx={{
                         fontFamily: (t) => t.fonts.display,
                         fontSize: '1rem',
                         lineHeight: 1.3,
                         color: 'text.primary',
+                        minWidth: 0,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                       }}
                     >
                       {card.word}
@@ -274,7 +278,7 @@ export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, on
                     {card.reading && (
                       <Typography
                         variant="caption"
-                        sx={{ color: 'text.secondary', fontSize: '0.75rem' }}
+                        sx={{ color: 'text.secondary', fontSize: '0.75rem', flexShrink: 0 }}
                       >
                         {card.reading}
                       </Typography>

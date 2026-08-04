@@ -13,7 +13,7 @@ import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import { speechNeedsGesture, useJapaneseVoice, useSpeech } from '@/hooks/useSpeech';
-import { buildMeaningChoices, cardXp } from '@/lib/flashcardUtils';
+import { buildMeaningChoices, cardXp, titleFontSize } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
 import { CelebrationScreen, pickPraise } from './CelebrationScreen';
@@ -306,6 +306,7 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
           bgcolor: surfaces.input,
           boxShadow: `0 8px 24px ${alpha(brand[300], 0.12)}`,
           transition: 'border-color 0.25s',
+          overflow: 'hidden',
         }}
       >
         <IconButton
@@ -338,9 +339,11 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
             <Typography
               sx={{
                 fontFamily: (t) => t.fonts.jp,
-                fontSize: '2.2rem',
+                fontSize:
+                  card.cardType === 'phrase' ? '2.2rem' : titleFontSize(card.word, 2.2, 1.1),
                 fontWeight: 700,
                 color: 'text.primary',
+                whiteSpace: card.cardType === 'phrase' ? undefined : 'nowrap',
               }}
             >
               {card.word}

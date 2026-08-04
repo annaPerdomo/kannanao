@@ -9,7 +9,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ComboChip } from '@/components/ComboChip';
 import { SpeakButton } from '@/components/SpeakButton';
-import { buildMeaningChoices, cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
+import {
+  buildMeaningChoices,
+  cardXp,
+  getFlashcardDisplayText,
+  titleFontSize,
+} from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
 import type { QuestGrade } from './types';
@@ -152,15 +157,18 @@ export function BossRound({
           borderRadius: 3,
           border: `2px solid ${alpha(brand[300], 0.4)}`,
           bgcolor: surfaces.input,
+          overflow: 'hidden',
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
           <Typography
             sx={{
               fontFamily: (t) => t.fonts.jp,
-              fontSize: '2.1rem',
+              fontSize:
+                card.cardType === 'phrase' ? '2.1rem' : titleFontSize(display.titleText, 2.1, 1.1),
               fontWeight: 700,
               color: 'text.primary',
+              whiteSpace: card.cardType === 'phrase' ? undefined : 'nowrap',
             }}
           >
             {display.titleText}
