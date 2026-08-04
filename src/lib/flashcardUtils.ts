@@ -50,7 +50,9 @@ export function buildMeaningChoices(correct: Flashcard, pool: Flashcard[]): stri
 export function titleFontSize(text: string, baseRem: number, minRem: number): string {
   const len = text.length;
   let scale = 1;
-  if (len > 8) scale = 0.55;
+  if (len > 12) scale = 0.4;
+  else if (len > 10) scale = 0.48;
+  else if (len > 8) scale = 0.55;
   else if (len > 6) scale = 0.65;
   else if (len > 4) scale = 0.8;
   const size = Math.round(Math.max(minRem, baseRem * scale) * 100) / 100;

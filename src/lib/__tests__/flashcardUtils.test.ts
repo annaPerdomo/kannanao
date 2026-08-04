@@ -164,8 +164,13 @@ describe('titleFontSize', () => {
   });
 
   it('should never go below the minimum size', () => {
-    expect(titleFontSize('a'.repeat(30), 3, 1.3)).toBe('1.65rem');
+    expect(titleFontSize('a'.repeat(30), 3, 1.3)).toBe('1.3rem');
     expect(titleFontSize('a'.repeat(30), 3, 2)).toBe('2rem');
+  });
+
+  it('should shrink more aggressively for very long words than medium ones', () => {
+    expect(titleFontSize('a'.repeat(11), 3, 1)).toBe('1.44rem');
+    expect(titleFontSize('a'.repeat(13), 3, 1)).toBe('1.2rem');
   });
 });
 

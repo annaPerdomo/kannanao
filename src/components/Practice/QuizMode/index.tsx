@@ -18,7 +18,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useProgress } from '@/hooks/useProgress';
 import { useQuizFlow } from '@/hooks/useQuizFlow';
-import { buildMeaningChoices, getFlashcardDisplayText } from '@/lib/flashcardUtils';
+import { buildMeaningChoices, getFlashcardDisplayText, titleFontSize } from '@/lib/flashcardUtils';
 import { checkTypedAnswer, quizAccuracy } from '@/lib/quiz';
 import { insertQuizResult } from '@/lib/supabase';
 import type { Flashcard } from '@/types/flashcard';
@@ -183,9 +183,13 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
                 <Typography
                   sx={{
                     fontFamily: (t) => t.fonts.jp,
-                    fontSize: '2.2rem',
+                    fontSize:
+                      card.cardType === 'phrase'
+                        ? '2.2rem'
+                        : titleFontSize(display.titleText, 2.2, 1.1),
                     fontWeight: 700,
                     color: 'text.primary',
+                    whiteSpace: card.cardType === 'phrase' ? undefined : 'nowrap',
                   }}
                 >
                   {display.titleText}

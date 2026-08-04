@@ -12,7 +12,7 @@ import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { useCardBorder } from '@/contexts/CardBorderContext';
-import { cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
+import { cardXp, getFlashcardDisplayText, titleFontSize } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
 interface ImageCardProps {
@@ -205,11 +205,12 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Typography
                     sx={{
-                      fontSize: '0.85rem',
+                      fontSize: isPhrase ? '0.85rem' : titleFontSize(titleText, 0.85, 0.6),
                       fontWeight: 900,
                       color: '#111',
                       lineHeight: 1.15,
                       letterSpacing: '-0.01em',
+                      whiteSpace: isPhrase ? undefined : 'nowrap',
                     }}
                   >
                     {titleText}
@@ -264,11 +265,16 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                 <Typography
                   sx={{
                     fontFamily: isRomaji ? undefined : (t) => t.fonts.jp,
-                    fontSize: isRomaji ? '1.1rem' : '1.6rem',
+                    fontSize: isPhrase
+                      ? isRomaji
+                        ? '1.1rem'
+                        : '1.6rem'
+                      : titleFontSize(titleText, isRomaji ? 1.1 : 1.6, isRomaji ? 0.65 : 0.8),
                     fontWeight: 900,
                     color: '#111',
                     lineHeight: 1.15,
                     textAlign: 'center',
+                    whiteSpace: isPhrase ? undefined : 'nowrap',
                   }}
                 >
                   {titleText}
