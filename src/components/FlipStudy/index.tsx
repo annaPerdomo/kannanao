@@ -65,8 +65,7 @@ export interface FlipStudyProps {
 // Exit animation duration — card slides out before the next one slides in.
 const SLIDE_DURATION_MS = 260;
 
-// Portrait trading-card dimensions (2.5 : 3.5 ratio). Capped with `min()` so the
-// card shrinks to fit narrow viewports instead of forcing horizontal scroll.
+// Portrait trading-card dimensions (2.5 : 3.5 ratio); min() caps width on narrow viewports to avoid horizontal scroll.
 const CARD_W = 320;
 const CARD_H = 452;
 const CARD_ASPECT_RATIO = `${CARD_W} / ${CARD_H}`;
