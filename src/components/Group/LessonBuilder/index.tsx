@@ -45,6 +45,10 @@ export function LessonBuilder({ groupId }: LessonBuilderProps) {
   const [dueDate, setDueDate] = useState(() => nextSunday());
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [mode, setMode] = useState<GoalMode | null>(null);
+  // On by default: a deck without practice sentences is a deck Kotoba Bubble
+  // can't open, and the organizer is right here to say no if they'd rather not
+  // spend the calls.
+  const [withSentences, setWithSentences] = useState(true);
   const [retryingIndex, setRetryingIndex] = useState<number | null>(null);
   const [retryError, setRetryError] = useState<string | null>(null);
 
@@ -170,11 +174,13 @@ export function LessonBuilder({ groupId }: LessonBuilderProps) {
           mode={mode}
           applying={applying}
           retryingIndex={retryingIndex}
+          withSentences={withSentences}
           onDeckChange={handleDeckChange}
           onRetryDeck={handleRetryDeck}
           onDueDateChange={setDueDate}
           onAccuracyChange={setAccuracy}
           onModeChange={setMode}
+          onWithSentencesChange={setWithSentences}
           onApply={() =>
             apply({
               groupId,
@@ -182,6 +188,7 @@ export function LessonBuilder({ groupId }: LessonBuilderProps) {
               firstDueDate: dueDate,
               requiredAccuracy: accuracy,
               requiredMode: mode,
+              withSentences,
             })
           }
           onStartOver={reset}

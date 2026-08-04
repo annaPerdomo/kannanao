@@ -293,6 +293,8 @@ export async function applyLessonPlan(payload: {
   requiredMode?: string | null;
   /** Stable across retries so a resumed apply doesn't duplicate decks. */
   planId?: string;
+  /** Also make each deck's Kotoba Bubble sentences — one Gemini call per deck. */
+  withSentences?: boolean;
 }): Promise<{ results: ApplyDeckResult[] }> {
   const res = await fetch(`${BASE}/group/lesson-plan/apply`, {
     method: 'POST',

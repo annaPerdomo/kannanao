@@ -12,11 +12,16 @@ vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
   }),
 }));
 
-// Sentence generation is covered by practiceSentencesBatch.test.ts.
-vi.mock('@/app/api/group/_lib/generateDeckSentences', () => ({
-  generateDeckSentences: vi
+// Sentence generation itself is covered by generateDeckSentences.test.ts; here
+// what matters is whether it runs and which set it is asked to write.
+const { generateDeckSentencesMock } = vi.hoisted(() => ({
+  generateDeckSentencesMock: vi
     .fn()
     .mockResolvedValue({ status: 'generated', sentences: [], deckWords: [] }),
+}));
+
+vi.mock('@/app/api/group/_lib/generateDeckSentences', () => ({
+  generateDeckSentences: (...args: unknown[]) => generateDeckSentencesMock(...args),
 }));
 
 type QueryResult = { data?: unknown; error?: { message: string } | null };
@@ -187,5 +192,41 @@ describe('POST /api/group/lesson-plan/apply', () => {
 
     const res = await POST(makeRequest({ ...BASE, plan: planWith(['Food']) }));
     expect(res.status).toBe(403);
+  });
+
+  // The deck is shared with everyone the organizer assigns it to, so a set
+  // keyed to one learner would leave every other learner on that deck with an
+  // empty Kotoba Bubble and no way to fill it.
+  it('writes the deck’s shared sentence set, not one learner’s', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+
+    await POST(makeRequest({ ...BASE, plan: planWith(['Food']) }));
+
+    expect(generateDeckSentencesMock).toHaveBeenCalledWith(
+      expect.objectContaining({ deckId: 'd1', memberId: null, ownerId: 'org1' }),
+    );
+  });
+
+  it('makes sentences by default — a deck without them cannot open Kotoba Bubble', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+
+    await POST(makeRequest({ ...BASE, plan: planWith(['Food']) }));
+
+    expect(generateDeckSentencesMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('spends nothing on sentences when the organizer opts out', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+
+    const res = await POST(
+      makeRequest({ ...BASE, plan: planWith(['Food']), withSentences: false }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(generateDeckSentencesMock).not.toHaveBeenCalled();
+    await expect(res.json()).resolves.toMatchObject({ sentenceResults: [] });
   });
 });

@@ -20,6 +20,7 @@ export interface ApplyPlanArgs {
   firstDueDate: string;
   requiredAccuracy?: number | null;
   requiredMode?: string | null;
+  withSentences?: boolean;
 }
 
 export function useLessonPlan() {

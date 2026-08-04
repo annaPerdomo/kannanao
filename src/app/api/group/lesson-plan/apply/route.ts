@@ -90,8 +90,16 @@ export async function POST(req: NextRequest) {
   if (limited) return limited;
 
   const body = await req.json().catch(() => null);
-  const { groupId, memberId, plan, firstDueDate, requiredAccuracy, requiredMode, planId } = (body ??
-    {}) as {
+  const {
+    groupId,
+    memberId,
+    plan,
+    firstDueDate,
+    requiredAccuracy,
+    requiredMode,
+    planId,
+    withSentences = true,
+  } = (body ?? {}) as {
     groupId?: string;
     memberId?: string;
     plan?: LessonPlan;
@@ -99,6 +107,8 @@ export async function POST(req: NextRequest) {
     requiredAccuracy?: number | null;
     requiredMode?: string | null;
     planId?: string;
+    /** Kotoba Bubble sentences alongside the decks — one Gemini call each. */
+    withSentences?: boolean;
   };
 
   if (!groupId || !memberId) {
@@ -201,7 +211,9 @@ export async function POST(req: NextRequest) {
   // Decks carried over from a failed run are included: generateDeckSentences
   // returns early when a set already exists, so this fills the gaps without
   // paying for the ones that finished.
-  const sentenceResults = await generateSentencesInOrder(deckIdsInOrder, memberId, organizerId);
+  const sentenceResults = withSentences
+    ? await generateSentencesInOrder(deckIdsInOrder, memberId, organizerId)
+    : [];
 
   logger.info('Lesson plan applied', {
     route: 'POST /api/group/lesson-plan/apply',
@@ -323,7 +335,17 @@ async function createDeck(args: {
   };
 }
 
-/** Decks in plan order, each one's words feeding the next one's prompt. */
+/**
+ * Decks in plan order, each one's words feeding the next one's prompt.
+ *
+ * The sentences are stored as the deck's *shared* set, not under the learner
+ * the plan was built for. The deck itself is shared with everyone the organizer
+ * assigns it to, so a set keyed to one learner leaves every other learner on
+ * that deck looking at an empty screen with no way to fill it. They are still
+ * written from that learner's studied vocabulary — that costs nothing extra and
+ * the whole group is working through the same decks — so nothing is lost by
+ * keeping one set per deck instead of one per learner.
+ */
 async function generateSentencesInOrder(
   deckIds: string[],
   memberId: string,
@@ -342,7 +364,7 @@ async function generateSentencesInOrder(
     try {
       const outcome = await generateDeckSentences({
         deckId,
-        memberId,
+        memberId: null,
         knownWords: [...carried, ...studied].slice(0, KNOWN_WORD_CAP),
         apiKey,
         ownerId: organizerId,

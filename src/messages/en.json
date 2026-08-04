@@ -1408,7 +1408,9 @@
       "errorMessage": "Something went wrong. Please try again.",
       "emptyPlanMessage": "The plan came back empty. Try describing the goal a little differently.",
       "noLearners": "Add a learner to this group first, then come back to build a lesson.",
-      "organizerOnly": "This page is for educators only."
+      "organizerOnly": "This page is for educators only.",
+      "sentencesToggleLabel": "Also make Kotoba Bubble practice sentences",
+      "sentencesToggleHint": "One set of sentences per deck, built from words this learner already knows. Everyone you assign the deck to gets them."
     },
     "meta": {
       "buildTitle": "Build a lesson — Group | Tangodachi",
