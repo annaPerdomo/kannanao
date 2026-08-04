@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
+import { availableNowFilter } from '@/lib/assignmentAvailability';
 
 vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
   requireOrganizerAccount: vi.fn().mockResolvedValue({
@@ -103,8 +104,10 @@ describe('GET /api/group/assignments — the learner list', () => {
     await GET(getRequest('mine'));
     const filter = applied.find((c) => c.method === 'or');
     expect(filter).toBeDefined();
-    const today = new Date().toISOString().slice(0, 10);
-    expect(filter?.args[0]).toBe(`available_on.is.null,available_on.lte.${today}`);
+    // Not UTC: the deck library computes the same boundary in the browser, and
+    // the two sides disagreeing shows a deck whose assignment says it is not
+    // due to start yet.
+    expect(filter?.args[0]).toBe(availableNowFilter());
   });
 
   it('orders by soonest deadline, not by newest', async () => {
