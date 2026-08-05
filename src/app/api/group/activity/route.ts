@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { aggregateModeBreakdown } from '@/components/Stats/constants';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
@@ -18,7 +19,9 @@ const MAX_SESSIONS = 5000;
 interface SessionRow {
   user_id: string;
   cards_studied: number | null;
+  cards_correct: number | null;
   xp_earned: number | null;
+  practice_mode: string | null;
   started_at: string;
 }
 
@@ -65,6 +68,7 @@ export async function GET(req: NextRequest) {
       days: dayList,
       totals: { cards: dayList.map(() => 0), xp: dayList.map(() => 0) },
       members: [],
+      modeBreakdown: [],
     });
   }
 
@@ -73,7 +77,7 @@ export async function GET(req: NextRequest) {
   const since = new Date(Date.now() - days * 86_400_000);
   const { data: sessions, error: sessErr } = await sb
     .from('study_sessions')
-    .select('user_id, cards_studied, xp_earned, started_at')
+    .select('user_id, cards_studied, cards_correct, xp_earned, practice_mode, started_at')
     .in(
       'user_id',
       members.map((m) => m.id),
@@ -124,5 +128,6 @@ export async function GET(req: NextRequest) {
       name: m.display_name || m.username,
       daily: perMember.get(m.id) ?? zeros(),
     })),
+    modeBreakdown: aggregateModeBreakdown(sessions ?? []),
   });
 }

@@ -10,7 +10,7 @@ export { EditAssignmentDialog } from './EditAssignmentDialog';
 export { EncouragementEmojiPicker } from './EncouragementEmojiPicker';
 export { EncouragementForm } from './EncouragementForm';
 export { GroupCard } from './GroupCard';
-export { DailyActivityChart, StudyHeatmap } from './GroupCharts';
+export { DailyActivityChart, GroupModeBreakdown, StudyHeatmap } from './GroupCharts';
 export { GroupDashboardHeader } from './GroupDashboardHeader';
 export { GroupEncouragementForm } from './GroupEncouragementForm';
 export { GroupOverview } from './GroupOverview';

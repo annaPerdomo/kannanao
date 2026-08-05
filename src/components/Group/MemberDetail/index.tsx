@@ -22,6 +22,7 @@ import { LAYOUT } from '@/theme';
 import { EncouragementForm } from '../EncouragementForm';
 import { AssignmentsSection } from './AssignmentsSection';
 import { useMemberFormatters } from './helpers';
+import { MasteryBreakdown } from './MasteryBreakdown';
 import { PracticeModeBreakdown } from './PracticeModeBreakdown';
 import { RecentSessionsSection } from './RecentSessionsSection';
 import { TrickyWords } from './TrickyWords';
@@ -51,6 +52,7 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
     practiceModeStats,
     assignments,
     weakWords,
+    totalMastery,
   } = detail;
   const { current, needed } = xpProgressInLevel(progress.totalXp);
   const pct = Math.round((current / needed) * 100);
@@ -137,6 +139,8 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
       {/* Practice Mode Breakdown */}
       <PracticeModeBreakdown stats={practiceModeStats} />
 
+      <MasteryBreakdown mastery={totalMastery} />
+
       {/* Tricky words — the member's most-missed cards */}
       <TrickyWords weakWords={weakWords ?? []} />
 
@@ -182,6 +186,25 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
                     <span>{t('cardsStudiedCount', { count: dp.cardsStudied })}</span>
                     <span>{t('accuracyPercent', { accuracy: dp.accuracy })}</span>
                     <span>{formatDate(dp.lastStudied)}</span>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 1.25,
+                      mt: 0.5,
+                      fontSize: '0.68rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    <Box component="span" sx={{ color: theme.palette.grey[600] }}>
+                      {t('masteryNewCount', { count: dp.mastery.new })}
+                    </Box>
+                    <Box component="span" sx={{ color: theme.palette.warning.dark }}>
+                      {t('masteryLearningCount', { count: dp.mastery.learning })}
+                    </Box>
+                    <Box component="span" sx={{ color: theme.palette.success.dark }}>
+                      {t('masteryStrongCount', { count: dp.mastery.strong })}
+                    </Box>
                   </Box>
                 </Paper>
               </Grid>

@@ -48,11 +48,13 @@ import { EmbedAnalytics } from './EmbedAnalytics';
 import { KotobaBubbleAnalytics } from './KotobaBubbleAnalytics';
 import { ManageAccountDialog } from './ManageAccountDialog';
 import { MemberActivity } from './MemberActivity';
+import { MemberModeBreakdown } from './MemberModeBreakdown';
 import { TravelAnalytics } from './TravelAnalytics';
 import type {
   EmbedAnalyticsData,
   KotobaBubbleAnalyticsData,
   MemberActivityEntry,
+  MemberModeBreakdownEntry,
   TravelAnalyticsData,
 } from './types';
 
@@ -102,6 +104,7 @@ interface AdminData {
   waitlist: WaitlistEntry[];
   embedAnalytics: EmbedAnalyticsData;
   memberActivity: MemberActivityEntry[];
+  memberModeBreakdown: MemberModeBreakdownEntry[];
   travelAnalytics: TravelAnalyticsData;
   kotobaBubbleAnalytics: KotobaBubbleAnalyticsData;
   groups: GroupInfo[];
@@ -615,6 +618,9 @@ export default function AdminPage() {
       {data.memberActivity.length > 0 && (
         <>
           <Divider sx={{ mb: 4, mt: 2 }} />
+          <Box sx={{ mb: 4 }}>
+            <MemberModeBreakdown modes={data.memberModeBreakdown} />
+          </Box>
           <MemberActivity
             members={data.memberActivity}
             tablePaperSx={tablePaperSx}

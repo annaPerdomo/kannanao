@@ -975,6 +975,9 @@
       "deckProgress": "デッキの進み具合",
       "cardsStudiedCount": "{count}枚を学習",
       "accuracyPercent": "正解率 {accuracy}%",
+      "masteryNewCount": "新規{count}枚",
+      "masteryLearningCount": "学習中{count}枚",
+      "masteryStrongCount": "定着{count}枚",
       "achievements": "実績",
       "assignmentsHeading": "課題",
       "assignmentsCompleted": "{completed}/{total} 完了",
@@ -995,6 +998,12 @@
       "accuracyLabel": "正解率",
       "xpLabel": "XP",
       "timeLabel": "時間"
+    },
+    "masteryBreakdown": {
+      "heading": "カードの定着度",
+      "new": "新規",
+      "learning": "学習中",
+      "strong": "定着"
     },
     "recentSessions": {
       "heading": "最近の学習",
@@ -1323,6 +1332,8 @@
       "longestStreakSub": "いちばん長い連続記録",
       "cardsStudiedLabel": "学習したカード",
       "allTimeAcrossGroupSub": "グループ全体の累計",
+      "cardsMasteredLabel": "定着したカード",
+      "cardsMasteredSub": "学習中 {count}枚",
       "needNudgeLabel": "声かけが必要",
       "needNudgeSub": "今週の学習なし"
     },
@@ -1358,7 +1369,10 @@
       "legendLess": "少ない",
       "legendMore": "多い",
       "loading": "グループの活動を読み込み中…",
-      "loadFailed": "グループの活動を読み込めませんでした。"
+      "loadFailed": "グループの活動を読み込めませんでした。",
+      "modeHeading": "この期間の練習モード",
+      "modeEmpty": "この期間、練習の記録はまだありません。",
+      "modeCardsCount": "{count, plural, other {カード#枚}}"
     },
     "membersPanel": {
       "heading": "メンバー",

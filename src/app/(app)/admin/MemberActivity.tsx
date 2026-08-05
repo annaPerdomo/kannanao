@@ -94,6 +94,14 @@ export function MemberActivity({
               <TableCell sx={headerCellSx} align="center">
                 Total Time
               </TableCell>
+              <TableCell sx={headerCellSx} align="center">
+                <Tooltip
+                  title="Cards answered enough times, spaced out enough, to count as learned"
+                  arrow
+                >
+                  <span>Mastered</span>
+                </Tooltip>
+              </TableCell>
               <TableCell sx={headerCellSx}>Last Active</TableCell>
             </TableRow>
           </TableHead>
@@ -195,6 +203,25 @@ export function MemberActivity({
                   </TableCell>
                   <TableCell sx={bodyCellSx} align="center">
                     {formatMins(m.totalDurationMins)}
+                  </TableCell>
+                  <TableCell sx={bodyCellSx} align="center">
+                    {m.masteryStrong + m.masteryLearning > 0 ? (
+                      <Tooltip title={`${m.masteryLearning} still learning`} arrow>
+                        <Chip
+                          label={m.masteryStrong}
+                          size="small"
+                          sx={{
+                            fontSize: '0.7rem',
+                            height: 22,
+                            bgcolor: alpha(theme.palette.success.main, 0.15),
+                            color: theme.palette.success.dark,
+                            fontWeight: 600,
+                          }}
+                        />
+                      </Tooltip>
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
                   <TableCell sx={bodyCellSx}>
                     <Stack direction="row" alignItems="center" gap={0.75}>

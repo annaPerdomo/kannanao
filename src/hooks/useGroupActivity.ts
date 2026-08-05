@@ -12,11 +12,21 @@ export interface GroupActivityMember {
   daily: number[];
 }
 
+export interface GroupActivityModeStat {
+  mode: string;
+  sessions: number;
+  cardsStudied: number;
+  cardsCorrect: number;
+  accuracy: number;
+}
+
 export interface GroupActivity {
   /** ISO dates, oldest → newest. */
   days: string[];
   totals: { cards: number[]; xp: number[] };
   members: GroupActivityMember[];
+  /** Cards-studied descending, over the same window as `days`. */
+  modeBreakdown: GroupActivityModeStat[];
 }
 
 async function authHeaders(): Promise<Record<string, string>> {

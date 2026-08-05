@@ -120,3 +120,42 @@ describe('GET /api/group/members/[id] — weak words', () => {
     expect(body.weakWords).toEqual([]);
   });
 });
+
+describe('GET /api/group/members/[id] — mastery breakdown', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    _resetStore();
+    for (const k of Object.keys(tableData)) delete tableData[k];
+    requireOrganizerAccountMock.mockResolvedValue(ORGANIZER);
+    setTable('profiles', { id: 'm1', username: 'kid', display_name: 'Kid' });
+    setTable('group_members', [{ member_id: 'm1', group_id: 'g1', organizer_id: 'org-1' }]);
+    setTable('deck_shares', [{ deck_id: 'd1', decks: { id: 'd1', name: 'Deck', emoji: '📚' } }]);
+    setTable('cards', [
+      { id: 'c1', deck_id: 'd1' },
+      { id: 'c2', deck_id: 'd1' },
+      { id: 'c3', deck_id: 'd1' },
+    ]);
+  });
+
+  it('tiers a deck-shared card with no row as new, spaced-out as strong, and shaky as learning', async () => {
+    // c3 has no card_progress row at all — never answered in this deck.
+    setTable('card_progress', [
+      { card_id: 'c1', correct_count: 5, wrong_count: 0, interval_days: 5, ease: 2.5 },
+      { card_id: 'c2', correct_count: 1, wrong_count: 1, interval_days: 1, ease: 2.3 },
+    ]);
+
+    const res = await GET(makeRequest(), { params });
+    const body = await res.json();
+
+    expect(body.totalMastery).toEqual({ new: 1, learning: 1, strong: 1 });
+    expect(body.deckProgress).toHaveLength(1);
+    expect(body.deckProgress[0].mastery).toEqual({ new: 1, learning: 1, strong: 1 });
+  });
+
+  it('counts every card new when the member has no progress rows at all', async () => {
+    setTable('card_progress', []);
+    const res = await GET(makeRequest(), { params });
+    const body = await res.json();
+    expect(body.totalMastery).toEqual({ new: 3, learning: 0, strong: 0 });
+  });
+});

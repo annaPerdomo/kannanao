@@ -136,4 +136,34 @@ describe('GET /api/group/activity', () => {
     expect(body.totals.cards).toEqual([0, 0, 0]);
     expect(body.members[0].daily).toEqual([0, 0, 0]);
   });
+
+  it('tallies sessions by practice mode, cards-studied descending', async () => {
+    setTable('profiles', [{ id: 'm1', username: 'naomi', display_name: 'Naomi' }]);
+    setTable('study_sessions', [
+      {
+        user_id: 'm1',
+        cards_studied: 10,
+        cards_correct: 8,
+        xp_earned: 30,
+        practice_mode: 'quiz',
+        started_at: '2026-08-01T09:00:00Z',
+      },
+      {
+        user_id: 'm1',
+        cards_studied: 20,
+        cards_correct: 20,
+        xp_earned: 40,
+        practice_mode: null,
+        started_at: '2026-08-01T18:00:00Z',
+      },
+    ]);
+
+    const res = await GET(request('groupId=g1&days=3&tzOffset=0'));
+    const body = await res.json();
+
+    expect(body.modeBreakdown).toEqual([
+      { mode: 'study', sessions: 1, cardsStudied: 20, cardsCorrect: 20, accuracy: 100 },
+      { mode: 'quiz', sessions: 1, cardsStudied: 10, cardsCorrect: 8, accuracy: 80 },
+    ]);
+  });
 });

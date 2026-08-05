@@ -18,6 +18,7 @@ import {
   DailyActivityChart,
   GroupDashboardHeader,
   GroupEncouragementForm,
+  GroupModeBreakdown,
   GroupOverview,
   InviteQRCode,
   isExpired,
@@ -191,6 +192,18 @@ export default function GroupDashboardPage() {
                 members={activity?.members ?? []}
                 offset={Math.max(0, (activity?.days.length ?? 0) - HEATMAP_DAYS)}
               />
+            )}
+          </SectionCard>
+        </Grid>
+
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <SectionCard title={tc('modeHeading')}>
+            {activityError ? (
+              <Alert severity="error">{activityError}</Alert>
+            ) : activityLoading && !activity ? (
+              <Loading message={tc('loading')} />
+            ) : (
+              <GroupModeBreakdown modes={activity?.modeBreakdown ?? []} />
             )}
           </SectionCard>
         </Grid>

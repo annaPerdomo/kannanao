@@ -84,4 +84,15 @@ export interface MemberActivityEntry {
   accuracy: number | null;
   totalDurationMins: number;
   lastActiveAt: string | null;
+  /** Answered-at-least-once split by SRS tier; no "new" bucket — that needs a deck's full card list. */
+  masteryLearning: number;
+  masteryStrong: number;
+}
+
+export interface MemberModeBreakdownEntry {
+  mode: string;
+  sessions: number;
+  cardsStudied: number;
+  cardsCorrect: number;
+  accuracy: number;
 }

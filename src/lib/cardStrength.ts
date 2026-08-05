@@ -7,6 +7,9 @@ import type { CardProgress } from './supabase';
 
 export type CardStrength = 'new' | 'learning' | 'strong';
 
+/** Narrower than CardProgress so callers (lean stats `select`s) don't need the full row. */
+type StrengthInput = Pick<CardProgress, 'intervalDays' | 'ease'>;
+
 /**
  * A wrong answer resets the interval to 0 (see `nextSchedule`), so an interval
  * this long already means "answered right on separate days".
@@ -15,7 +18,7 @@ export const STRONG_MIN_INTERVAL_DAYS = 3;
 /** Ease starts at 2.5 and drops 0.2 per miss: this is "at most two misses". */
 export const STRONG_MIN_EASE = 2.0;
 
-export function cardStrength(progress: CardProgress | undefined): CardStrength {
+export function cardStrength(progress: StrengthInput | undefined): CardStrength {
   if (!progress) return 'new';
   return progress.intervalDays >= STRONG_MIN_INTERVAL_DAYS && progress.ease >= STRONG_MIN_EASE
     ? 'strong'
@@ -29,9 +32,34 @@ export interface StrengthCounts {
 }
 
 /** Progress rows span every deck, so a card of this deck with no row is new. */
-export function countStrengths(cardIds: string[], progress: CardProgress[]): StrengthCounts {
+export function countStrengths(
+  cardIds: string[],
+  progress: (Pick<CardProgress, 'cardId'> & StrengthInput)[],
+): StrengthCounts {
   const byCard = new Map(progress.map((row) => [row.cardId, row]));
   const counts: StrengthCounts = { new: 0, learning: 0, strong: 0 };
   for (const id of cardIds) counts[cardStrength(byCard.get(id))]++;
   return counts;
+}
+
+export interface MasteryTotals {
+  learning: number;
+  strong: number;
+}
+
+/**
+ * Mastery split for an aggregate view (group roster, admin table) that has no
+ * single deck to bound "new" against — a row only exists once a card's been
+ * touched, so every row here is already learning-or-strong.
+ */
+export function aggregateMasteryByUser(
+  rows: (StrengthInput & { userId: string })[],
+): Map<string, MasteryTotals> {
+  const byUser = new Map<string, MasteryTotals>();
+  for (const row of rows) {
+    const bucket = byUser.get(row.userId) ?? { learning: 0, strong: 0 };
+    bucket[cardStrength(row) === 'strong' ? 'strong' : 'learning'] += 1;
+    byUser.set(row.userId, bucket);
+  }
+  return byUser;
 }
