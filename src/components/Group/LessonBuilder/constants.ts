@@ -8,6 +8,8 @@ export const GOAL_MAX_LENGTH = 500;
 export const DOCUMENT_ACCEPTED_TYPES = ['application/pdf', 'text/plain'] as const;
 export const DOCUMENT_ACCEPT_ATTR = '.pdf,.txt,application/pdf,text/plain';
 export const DOCUMENT_MAX_BYTES = 8 * 1024 * 1024;
+/** No cap on how many files an organizer can attach — only on their combined size. */
+export const DOCUMENT_MAX_TOTAL_BYTES = 20 * 1024 * 1024;
 
 /** Assignments land on a Sunday by default — the natural end of a study week. */
 export function nextSunday(from = new Date()): string {

@@ -17,7 +17,7 @@ export interface BuildPlanArgs {
   goal: string;
   weeks: number;
   cardsPerDeck: number;
-  document?: LessonDocument | null;
+  documents?: LessonDocument[];
 }
 
 export interface ApplyPlanArgs {
@@ -50,11 +50,10 @@ export function useLessonPlan() {
       setError(null);
       setResults(null);
       try {
-        const { document, ...rest } = args;
+        const { documents, ...rest } = args;
         const data = await buildLessonPlan({
           ...rest,
-          documentBase64: document?.base64,
-          documentMimeType: document?.mimeType,
+          documents: documents?.map((d) => ({ base64: d.base64, mimeType: d.mimeType })),
         });
         setPlan(data.plan);
         setPlanId(uuidv4());

@@ -80,10 +80,22 @@ describe('buildLessonPlanPrompt', () => {
       weeks: 2,
       cardsPerDeck: 10,
       knownWords: [],
-      hasDocument: true,
+      documentCount: 1,
     });
 
     expect(prompt).toContain('reference document is attached');
+  });
+
+  it('pluralizes the language when multiple documents are attached', () => {
+    const prompt = buildLessonPlanPrompt({
+      goal: 'Food words',
+      weeks: 2,
+      cardsPerDeck: 10,
+      knownWords: [],
+      documentCount: 3,
+    });
+
+    expect(prompt).toContain('3 reference documents are attached');
   });
 });
 

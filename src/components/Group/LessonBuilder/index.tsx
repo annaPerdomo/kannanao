@@ -42,7 +42,7 @@ export function LessonBuilder({ groupId }: LessonBuilderProps) {
   const [memberId, setMemberId] = useState('');
   const [weeks, setWeeks] = useState<number>(DEFAULT_WEEKS);
   const [cardsPerDeck, setCardsPerDeck] = useState<number>(DEFAULT_CARDS_PER_DECK);
-  const [referenceDocument, setReferenceDocument] = useState<LessonDocument | null>(null);
+  const [referenceDocuments, setReferenceDocuments] = useState<LessonDocument[]>([]);
   const [dueDate, setDueDate] = useState(() => nextSunday());
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [mode, setMode] = useState<GoalMode | null>(null);
@@ -75,8 +75,7 @@ export function LessonBuilder({ groupId }: LessonBuilderProps) {
           goal: t('retryGoal', { goal, deck: deck.name }),
           weeks: 1,
           cardsPerDeck: deck.cards?.length || cardsPerDeck,
-          documentBase64: referenceDocument?.base64,
-          documentMimeType: referenceDocument?.mimeType,
+          documents: referenceDocuments.map((d) => ({ base64: d.base64, mimeType: d.mimeType })),
         });
         const replacement = data.plan.decks[0];
         if (replacement) {
@@ -92,7 +91,7 @@ export function LessonBuilder({ groupId }: LessonBuilderProps) {
         setRetryingIndex(null);
       }
     },
-    [plan, memberId, goal, cardsPerDeck, referenceDocument, setPlan, t],
+    [plan, memberId, goal, cardsPerDeck, referenceDocuments, setPlan, t],
   );
 
   if (authLoading || membersLoading) return <Loading message={t('loadingMessage')} />;
@@ -158,14 +157,14 @@ export function LessonBuilder({ groupId }: LessonBuilderProps) {
               memberId={memberId}
               weeks={weeks}
               cardsPerDeck={cardsPerDeck}
-              document={referenceDocument}
+              documents={referenceDocuments}
               onGoalChange={setGoal}
               onMemberChange={setMemberId}
               onWeeksChange={setWeeks}
               onCardsPerDeckChange={setCardsPerDeck}
-              onDocumentChange={setReferenceDocument}
+              onDocumentsChange={setReferenceDocuments}
               onSubmit={() =>
-                build({ memberId, goal, weeks, cardsPerDeck, document: referenceDocument })
+                build({ memberId, goal, weeks, cardsPerDeck, documents: referenceDocuments })
               }
             />
           )}
