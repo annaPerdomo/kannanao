@@ -4,13 +4,15 @@ import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined';
 import { Box, Button, Chip, Grid, LinearProgress, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
-import { usePracticeQueue } from '@/hooks/usePracticeQueue';
+import { REVIEW_MIX, usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import { cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
 import { shuffle } from '@/lib/reviewGames';
@@ -52,10 +54,61 @@ function isWideGlyph(ch: string): boolean {
 /** Roughly 14 latin characters, or 7 kanji. */
 const JP_TILE_SHRINK_WIDTH = 14;
 
-function jpLabelFontSize(label: string): string {
-  const width = [...label].reduce((w, ch) => w + (isWideGlyph(ch) ? 2 : 1), 0);
-  return width > JP_TILE_SHRINK_WIDTH ? '0.9rem' : '1.1rem';
+function glyphWidth(label: string): number {
+  return [...label].reduce((w, ch) => w + (isWideGlyph(ch) ? 2 : 1), 0);
 }
+
+/**
+ * A tile's height is fixed, so the type steps down as the label grows rather
+ * than spilling past the border. The phone board is a third of the row wide and
+ * steps sooner: にゅうきょしゃ needs four lines at the desktop size, two here.
+ */
+export function jpLabelFontSize(label: string) {
+  const width = glyphWidth(label);
+  return {
+    xs: width > 10 ? '0.8rem' : width > 6 ? '0.95rem' : '1.1rem',
+    sm: width > JP_TILE_SHRINK_WIDTH ? '0.9rem' : '1.1rem',
+  };
+}
+
+/** Same for the English side, which carries the long comma-separated glosses. */
+export function enLabelFontSize(label: string) {
+  const len = label.length;
+  return {
+    xs: len > 34 ? '0.62rem' : len > 26 ? '0.7rem' : len > 16 ? '0.75rem' : '0.85rem',
+    sm: '0.8rem',
+  };
+}
+
+/**
+ * Scrolling to find the other half of a pair is not a memory game, so a phone
+ * board is the whole screen and nothing below it: three columns over four rows,
+ * with the rows sized from the height actually left over. A batch simply plays
+ * as several quick rounds. From sm up the full batch fits, on fixed-height tiles.
+ */
+export const PHONE_BOARD_ROWS = 4;
+export const PHONE_COLS = 3;
+/**
+ * Under 360px a third of a row clipped the long comma-separated glosses
+ * ("burnable garbage, combustible waste"), which is worse than scrolling.
+ */
+export const NARROW_COLS = 2;
+
+/**
+ * The queue mixes REVIEW_MIX mastered cards into every round after the first, so
+ * a round sized to fill the board exactly would overflow it from round two on.
+ */
+function pairsForBoard(cols: number): number {
+  return (PHONE_BOARD_ROWS * cols) / 2 - REVIEW_MIX;
+}
+export const PHONE_PAIRS_PER_ROUND = pairsForBoard(PHONE_COLS);
+export const NARROW_PAIRS_PER_ROUND = pairsForBoard(NARROW_COLS);
+const TILE_GAP_PX = 12; // Grid spacing={1.5}
+/** Everything above and below the board: app bars, page padding, header, status row, quit row. */
+const PHONE_BOARD_CHROME_PX = BOTTOM_NAV_HEIGHT + 296;
+const PHONE_TILE_MIN_PX = 64;
+/** Past this a tile is just a big empty box, so tall phones keep the slack instead. */
+const PHONE_TILE_MAX_PX = 120;
 
 function formatTime(secs: number): string {
   const m = Math.floor(secs / 60);
@@ -77,7 +130,22 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
 
-  const queue = usePracticeQueue(cards, batchSize);
+  // noSsr: the mode only mounts after the client-side card fetch, so there is
+  // no server render to disagree with, and the first render has to know the
+  // real width — the queue takes its batch from it exactly once.
+  const isPhone = useMediaQuery(theme.breakpoints.down('sm'), { noSsr: true });
+  const isNarrow = useMediaQuery('(max-width:359.95px)', { noSsr: true });
+  const cols = isNarrow ? NARROW_COLS : PHONE_COLS;
+  // Frozen on mount. The queue re-slices its batch list when this changes but
+  // keeps `batchIndex` and the dealt round in state, so rotating the phone
+  // mid-game would leave the index past the end of the new list and jump to the
+  // finish screen with cards undealt. Only the size is fixed, not the layout.
+  const [pairsPerRound] = useState(() =>
+    isPhone
+      ? Math.min(batchSize, isNarrow ? NARROW_PAIRS_PER_ROUND : PHONE_PAIRS_PER_ROUND)
+      : batchSize,
+  );
+  const queue = usePracticeQueue(cards, pairsPerRound);
 
   // Per-round matching state
   const [selected, setSelected] = useState<Tile | null>(null);
@@ -89,6 +157,12 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
   const [totalTime, setTotalTime] = useState(0);
 
   const { triggerReaction } = useBuddyReaction();
+
+  // From the tiles actually dealt, so a short final round still fills the board.
+  const phoneRows = Math.max(1, Math.ceil((queue.currentCards.length * 2) / cols));
+  const phoneTileHeight = `clamp(${PHONE_TILE_MIN_PX}px, calc((100dvh - ${
+    PHONE_BOARD_CHROME_PX + (phoneRows - 1) * TILE_GAP_PX
+  }px - env(safe-area-inset-bottom)) / ${phoneRows}), ${PHONE_TILE_MAX_PX}px)`;
 
   const { startSession, recordAnswer, endSession } = useProgress();
   // Stable per-session pick so the completion phrase doesn't flicker on re-render.
@@ -283,7 +357,14 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: { xs: 1, sm: 2 },
+        }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           {queue.totalBatches > 1 && (
             <Chip
@@ -318,7 +399,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
         variant="determinate"
         value={overallProgress * 100}
         sx={{
-          mb: 3,
+          mb: { xs: 2, sm: 3 },
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[300], 0.12),
@@ -332,16 +413,18 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
           const isSelected = selected?.id === tile.id;
           const isWrong = wrong === tile.id || (!!wrong && selected?.id === tile.id);
           return (
-            <Grid size={{ xs: 6, sm: 4, md: 3 }} key={tile.id}>
+            <Grid size={{ xs: 12 / cols, sm: 4, md: 3 }} key={tile.id}>
               <Box
                 onClick={() => !isMatched && handleSelect(tile)}
                 sx={{
-                  p: 2,
+                  p: { xs: 1, sm: 2 },
                   border: '2px solid',
                   borderRadius: 3,
+                  overflow: 'hidden',
                   textAlign: 'center',
                   cursor: isMatched ? 'default' : 'pointer',
-                  minHeight: 72,
+                  minHeight: { xs: 0, sm: 72 },
+                  height: { xs: phoneTileHeight, sm: 'auto' },
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -385,7 +468,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                         fontSize: jpLabelFontSize(tile.label),
                         color: 'text.primary',
                         minWidth: 0,
-                        overflowWrap: 'anywhere',
+                        overflowWrap: 'break-word',
                       }}
                     >
                       {tile.label}
@@ -396,10 +479,10 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                   <Typography
                     sx={{
                       fontFamily: '"DM Mono", monospace',
-                      fontSize: '0.8rem',
+                      fontSize: enLabelFontSize(tile.label),
                       color: 'text.primary',
                       minWidth: 0,
-                      overflowWrap: 'anywhere',
+                      overflowWrap: 'break-word',
                     }}
                   >
                     {tile.label}
@@ -411,7 +494,8 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
         })}
       </Grid>
 
-      <Box sx={{ mt: 3, textAlign: 'right' }}>
+      {/* Left on a phone: the floating buddy parks in the right-hand corner. */}
+      <Box sx={{ mt: { xs: 1, sm: 2 }, textAlign: { xs: 'left', sm: 'right' } }}>
         <Button size="small" color="inherit" onClick={handleExit} sx={{ opacity: 0.5 }}>
           {tCommon('quitAndSave')}
         </Button>
