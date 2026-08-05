@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import type { KnownWord } from '@/lib/knownWords';
-import { buildSentencePrompt, MAX_SENTENCES, sentenceCountFor } from '@/lib/lessonPrompts';
+import {
+  buildLessonPlanPrompt,
+  buildSentencePrompt,
+  MAX_SENTENCES,
+  sentenceCountFor,
+} from '@/lib/lessonPrompts';
 
 const DECK_WORDS = [
   { word: 'ねこ', reading: 'ねこ', meaning: 'cat' },
@@ -54,6 +59,31 @@ describe('buildSentencePrompt', () => {
     expect(prompt).toContain('{kanji|reading}');
     expect(prompt).toContain('particle_index');
     expect(prompt).toContain('source_words');
+  });
+});
+
+describe('buildLessonPlanPrompt', () => {
+  it('says nothing about a reference document by default', () => {
+    const prompt = buildLessonPlanPrompt({
+      goal: 'Food words',
+      weeks: 2,
+      cardsPerDeck: 10,
+      knownWords: [],
+    });
+
+    expect(prompt).not.toContain('reference document');
+  });
+
+  it('tells the model to prefer the attached document when one is present', () => {
+    const prompt = buildLessonPlanPrompt({
+      goal: 'Food words',
+      weeks: 2,
+      cardsPerDeck: 10,
+      knownWords: [],
+      hasDocument: true,
+    });
+
+    expect(prompt).toContain('reference document is attached');
   });
 });
 

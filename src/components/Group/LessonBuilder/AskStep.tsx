@@ -7,8 +7,10 @@ import TextField from '@mui/material/TextField';
 import { useTranslations } from 'next-intl';
 
 import type { GroupMember } from '@/hooks/useGroup';
+import type { LessonDocument } from '@/types/lessonPlan';
 
 import { CARDS_PER_DECK_CHOICES, GOAL_MAX_LENGTH, WEEK_CHOICES } from './constants';
+import { DocumentUpload } from './DocumentUpload';
 
 interface AskStepProps {
   members: GroupMember[];
@@ -16,10 +18,12 @@ interface AskStepProps {
   memberId: string;
   weeks: number;
   cardsPerDeck: number;
+  document: LessonDocument | null;
   onGoalChange: (goal: string) => void;
   onMemberChange: (memberId: string) => void;
   onWeeksChange: (weeks: number) => void;
   onCardsPerDeckChange: (cards: number) => void;
+  onDocumentChange: (document: LessonDocument | null) => void;
   onSubmit: () => void;
 }
 
@@ -29,10 +33,12 @@ export function AskStep({
   memberId,
   weeks,
   cardsPerDeck,
+  document,
   onGoalChange,
   onMemberChange,
   onWeeksChange,
   onCardsPerDeckChange,
+  onDocumentChange,
   onSubmit,
 }: AskStepProps) {
   const t = useTranslations('Group.lessonBuilder');
@@ -49,6 +55,8 @@ export function AskStep({
         minRows={3}
         fullWidth
       />
+
+      <DocumentUpload document={document} onChange={onDocumentChange} />
 
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' } }}>
         <TextField

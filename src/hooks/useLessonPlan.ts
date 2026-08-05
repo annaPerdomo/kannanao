@@ -5,13 +5,19 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { invalidateApiCache } from '@/lib/apiCache';
 import { applyLessonPlan, buildLessonPlan } from '@/services/api';
-import type { ApplyDeckResult, LessonPlan, PlanKnownWord } from '@/types/lessonPlan';
+import type {
+  ApplyDeckResult,
+  LessonDocument,
+  LessonPlan,
+  PlanKnownWord,
+} from '@/types/lessonPlan';
 
 export interface BuildPlanArgs {
   memberId: string;
   goal: string;
   weeks: number;
   cardsPerDeck: number;
+  document?: LessonDocument | null;
 }
 
 export interface ApplyPlanArgs {
@@ -44,7 +50,12 @@ export function useLessonPlan() {
       setError(null);
       setResults(null);
       try {
-        const data = await buildLessonPlan(args);
+        const { document, ...rest } = args;
+        const data = await buildLessonPlan({
+          ...rest,
+          documentBase64: document?.base64,
+          documentMimeType: document?.mimeType,
+        });
         setPlan(data.plan);
         setPlanId(uuidv4());
         setKnownWords(data.knownWords ?? []);

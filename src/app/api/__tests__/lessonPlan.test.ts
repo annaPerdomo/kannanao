@@ -2,6 +2,9 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
+import { DOCUMENT_MAX_BYTES } from '@/components/Group/LessonBuilder/constants';
+
+const DOCUMENT_MAX_BASE64_CHARS = Math.ceil(DOCUMENT_MAX_BYTES / 3) * 4;
 
 vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
   requireOrganizerAccount: vi.fn().mockResolvedValue({
@@ -180,5 +183,46 @@ describe('POST /api/group/lesson-plan', () => {
 
     const res = await POST(makeRequest(VALID));
     expect(res.status).toBe(502);
+  });
+
+  it('rejects a document mime type that is not a PDF or plain text file', async () => {
+    memberExists();
+    const res = await POST(
+      makeRequest({ ...VALID, documentBase64: 'YWJj', documentMimeType: 'image/png' }),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a document over the size cap', async () => {
+    memberExists();
+    const res = await POST(
+      makeRequest({
+        ...VALID,
+        documentBase64: 'a'.repeat(DOCUMENT_MAX_BASE64_CHARS + 1),
+        documentMimeType: 'application/pdf',
+      }),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('sends the document to Gemini as inline data alongside the prompt', async () => {
+    memberExists();
+    mockGeminiPlan();
+
+    const res = await POST(
+      makeRequest({
+        ...VALID,
+        documentBase64: 'YWJj',
+        documentMimeType: 'application/pdf',
+      }),
+    );
+    expect(res.status).toBe(200);
+
+    const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+    const parts = requestBody.contents[0].parts;
+    expect(parts[0]).toEqual({
+      inline_data: { mime_type: 'application/pdf', data: 'YWJj' },
+    });
+    expect(parts[1].text).toContain('reference document is attached');
   });
 });

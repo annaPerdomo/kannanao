@@ -53,8 +53,9 @@ export function buildLessonPlanPrompt(args: {
   weeks: number;
   cardsPerDeck: number;
   knownWords: KnownWord[];
+  hasDocument?: boolean;
 }): string {
-  const { goal, weeks, cardsPerDeck, knownWords } = args;
+  const { goal, weeks, cardsPerDeck, knownWords, hasDocument } = args;
 
   const known =
     knownWords.length > 0
@@ -64,11 +65,17 @@ ${wordListText(knownWords)}
 `
       : '';
 
+  const document = hasDocument
+    ? `
+A reference document is attached (a vocabulary list, syllabus, or textbook excerpt). Treat it as the source of truth for this plan: prefer the words, phrases and topic order it contains over inventing your own, and follow its sequencing if it implies one. Still obey the level and vocabulary rules below — skip anything in the document that is above N5.
+`
+    : '';
+
   return `You are a Japanese language teacher planning a short course for a beginning learner (roughly JLPT N5 level).
 
 What the educator wants to cover:
 "${goal}"
-${known}
+${known}${document}
 Produce exactly ${weeks} decks of exactly ${cardsPerDeck} cards each, ordered EASIEST FIRST — the first deck must be one the learner can win at on day one, and each later deck should build on the ones before it.
 
 RULES:
