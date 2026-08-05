@@ -485,7 +485,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
         variant="determinate"
         value={progress}
         sx={{
-          mb: 3,
+          mb: { xs: 2, sm: 3 },
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[100], 0.5),

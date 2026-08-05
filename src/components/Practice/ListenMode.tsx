@@ -256,7 +256,14 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
     <Box sx={{ position: 'relative' }}>
       {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: { xs: 1, sm: 2 },
+        }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           {queue.totalBatches > 1 && (
             <Chip
@@ -282,7 +289,7 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
         variant="determinate"
         value={(index / queue.currentCards.length) * 100}
         sx={{
-          mb: 3,
+          mb: { xs: 2, sm: 3 },
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[300], 0.12),
@@ -300,8 +307,8 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
               : 'error.main'
             : alpha(brand[300], 0.45),
           borderRadius: 3,
-          p: 3,
-          mb: 3,
+          p: { xs: 2, sm: 3 },
+          mb: { xs: 2, sm: 3 },
           textAlign: 'center',
           bgcolor: surfaces.input,
           boxShadow: `0 8px 24px ${alpha(brand[300], 0.12)}`,
@@ -313,9 +320,9 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
           onClick={play}
           aria-label={selected ? t('playWordAgainAria') : t('playWordAria')}
           sx={{
-            width: 104,
-            height: 104,
-            mb: 1.5,
+            width: { xs: 84, sm: 104 },
+            height: { xs: 84, sm: 104 },
+            mb: { xs: 1, sm: 1.5 },
             color: 'primary.contrastText',
             background: `linear-gradient(135deg, ${brand[400]}, ${brand[600]})`,
             boxShadow: `0 10px 26px ${alpha(brand[500], 0.35)}`,
@@ -328,9 +335,9 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
           }}
         >
           {speaking ? (
-            <VolumeUpIcon sx={{ fontSize: '3rem' }} />
+            <VolumeUpIcon sx={{ fontSize: { xs: '2.4rem', sm: '3rem' } }} />
           ) : (
-            <HeadphonesIcon sx={{ fontSize: '3rem' }} />
+            <HeadphonesIcon sx={{ fontSize: { xs: '2.4rem', sm: '3rem' } }} />
           )}
         </IconButton>
 
@@ -400,7 +407,8 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
         </Box>
       )}
 
-      <Box sx={{ mt: 2, textAlign: 'right' }}>
+      {/* Left on a phone: the floating buddy parks in the right-hand corner. */}
+      <Box sx={{ mt: { xs: 1, sm: 2 }, textAlign: { xs: 'left', sm: 'right' } }}>
         <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
           {tCommon('quitAndSave')}
         </Button>

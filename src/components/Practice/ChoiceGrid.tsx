@@ -25,7 +25,7 @@ export function ChoiceGrid({ choices, correct, selected, onSelect }: ChoiceGridP
   const { brand, surfaces } = theme.palette;
 
   return (
-    <Grid container spacing={1.5} sx={{ mb: 2 }}>
+    <Grid container spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: { xs: 1, sm: 2 } }}>
       {choices.map((choice, i) => {
         const isThisCorrect = choice === correct;
         const isThisSelected = selected === choice;
@@ -68,7 +68,10 @@ export function ChoiceGrid({ choices, correct, selected, onSelect }: ChoiceGridP
                 }
               }}
               sx={{
-                p: 2,
+                // Four of these stack in one column on a phone: tight enough
+                // that the last option clears the fold, never below a
+                // comfortable tap target.
+                p: { xs: 1.5, sm: 2 },
                 border: '2px solid',
                 borderRadius: 2,
                 cursor: selected ? 'default' : 'pointer',
@@ -77,7 +80,7 @@ export function ChoiceGrid({ choices, correct, selected, onSelect }: ChoiceGridP
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1.5,
-                minHeight: 64,
+                minHeight: { xs: 52, sm: 64 },
                 transition: 'all 0.2s',
                 transform: selected && isThisCorrect ? 'scale(1.02)' : 'scale(1)',
                 '&:hover': !selected

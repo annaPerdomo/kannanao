@@ -216,7 +216,14 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
     <Box sx={{ position: 'relative' }}>
       {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: { xs: 1, sm: 2 },
+        }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           {queue.totalBatches > 1 && (
             <Chip
@@ -242,7 +249,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
         variant="determinate"
         value={(index / queue.currentCards.length) * 100}
         sx={{
-          mb: 3,
+          mb: { xs: 2, sm: 3 },
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[300], 0.12),
@@ -262,7 +269,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
             : alpha(brand[300], 0.45),
           borderRadius: 3,
           overflow: 'hidden',
-          mb: 3,
+          mb: { xs: 2, sm: 3 },
           boxShadow: `0 8px 24px ${alpha(brand[300], 0.12)}`,
           transition: 'border-color 0.25s',
         }}
@@ -393,7 +400,8 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
         ) : null}
       </Stack>
 
-      <Box sx={{ mt: 3, textAlign: 'right' }}>
+      {/* Left on a phone: the floating buddy parks in the right-hand corner. */}
+      <Box sx={{ mt: { xs: 1, sm: 2 }, textAlign: { xs: 'left', sm: 'right' } }}>
         <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
           {tCommon('quitAndSave')}
         </Button>

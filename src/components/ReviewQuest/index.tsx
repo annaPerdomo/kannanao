@@ -191,7 +191,14 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
   if (cards.length === 0) return null;
   if (!ready) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
+      <Box
+        sx={{
+          maxWidth: LAYOUT.narrowMaxWidth,
+          mx: 'auto',
+          px: LAYOUT.pagePx,
+          py: { xs: 3, sm: 6 },
+        }}
+      >
         <Loading message={t('settingUpQuest')} />
       </Box>
     );
@@ -238,7 +245,9 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
   // ── Boss intro interstitial ────────────────────────────────────────────────
   if (showBossIntro && node?.type === 'boss') {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+      <Box
+        sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
+      >
         <QuestInterstitial
           emoji="⚔️"
           title={t('bossRoundTitle')}

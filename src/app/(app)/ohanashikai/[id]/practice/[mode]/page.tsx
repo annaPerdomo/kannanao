@@ -44,14 +44,16 @@ export default function OhanashikaiPracticePage({
 
   if (loading) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+      <Box
+        sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
+      >
         <Loading message={t('loadingSession')} />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+    <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}>
       <PageHeader
         title={practiceMode === 'readthrough' ? t('readThroughTitle') : t('lineRecallTitle')}
         onBack={() => router.push(backUrl)}

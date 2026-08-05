@@ -37,7 +37,14 @@ export default function GroupListPage() {
 
   if (loading || authLoading) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
+      <Box
+        sx={{
+          maxWidth: LAYOUT.contentMaxWidth,
+          mx: 'auto',
+          px: LAYOUT.pagePx,
+          py: { xs: 3, sm: 6 },
+        }}
+      >
         <Loading message={t('loadingGroups')} />
       </Box>
     );
@@ -45,7 +52,9 @@ export default function GroupListPage() {
 
   if (error) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+      <Box
+        sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
+      >
         <Alert severity="error">{error}</Alert>
       </Box>
     );
