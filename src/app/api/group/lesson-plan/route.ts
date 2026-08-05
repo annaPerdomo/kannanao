@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { DOCUMENT_MAX_BYTES } from '@/components/Group/LessonBuilder/constants';
 import { normalizeFurigana } from '@/lib/furigana';
 import { buildLessonPlanPrompt, CARDS_DEFAULT, CARDS_MAX, CARDS_MIN } from '@/lib/lessonPrompts';
 import { logger } from '@/lib/logger';
@@ -17,6 +18,9 @@ const GOAL_MIN = 3;
 const GOAL_MAX = 500;
 const WEEKS_MIN = 1;
 const WEEKS_MAX = 8;
+
+const DOCUMENT_MIME_TYPES = new Set(['application/pdf', 'text/plain']);
+const DOCUMENT_MAX_BASE64_CHARS = Math.ceil(DOCUMENT_MAX_BYTES / 3) * 4;
 
 const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
@@ -74,11 +78,14 @@ export async function POST(req: NextRequest) {
   if (orgCheck instanceof NextResponse) return orgCheck;
 
   const body = await req.json().catch(() => null);
-  const { memberId, goal, weeks, cardsPerDeck } = (body ?? {}) as {
+  const { memberId, goal, weeks, cardsPerDeck, documentBase64, documentMimeType } = (body ??
+    {}) as {
     memberId?: string;
     goal?: string;
     weeks?: number;
     cardsPerDeck?: number;
+    documentBase64?: string;
+    documentMimeType?: string;
   };
 
   const trimmedGoal = typeof goal === 'string' ? goal.trim() : '';
@@ -107,6 +114,17 @@ export async function POST(req: NextRequest) {
   if (!(await isMemberOfOrganizer(memberId, orgCheck.id))) {
     return NextResponse.json({ error: 'Learner not found in your group.' }, { status: 403 });
   }
+  if (documentBase64 !== undefined) {
+    if (!documentMimeType || !DOCUMENT_MIME_TYPES.has(documentMimeType)) {
+      return NextResponse.json(
+        { error: 'documentMimeType must be a PDF or plain text file.' },
+        { status: 400 },
+      );
+    }
+    if (typeof documentBase64 !== 'string' || documentBase64.length > DOCUMENT_MAX_BASE64_CHARS) {
+      return NextResponse.json({ error: 'Reference document is too large.' }, { status: 400 });
+    }
+  }
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -118,25 +136,27 @@ export async function POST(req: NextRequest) {
 
   try {
     const knownWords = await loadStudiedVocabulary(memberId);
+    const hasDocument = documentBase64 !== undefined;
+
+    const parts: Array<Record<string, unknown>> = [];
+    if (hasDocument) {
+      parts.push({ inline_data: { mime_type: documentMimeType, data: documentBase64 } });
+    }
+    parts.push({
+      text: buildLessonPlanPrompt({
+        goal: trimmedGoal,
+        weeks: weeks as number,
+        cardsPerDeck: cards,
+        knownWords,
+        hasDocument,
+      }),
+    });
 
     const response = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: buildLessonPlanPrompt({
-                  goal: trimmedGoal,
-                  weeks: weeks as number,
-                  cardsPerDeck: cards,
-                  knownWords,
-                }),
-              },
-            ],
-          },
-        ],
+        contents: [{ parts }],
         generationConfig: {
           response_mime_type: 'application/json',
           response_schema: PLAN_RESPONSE_SCHEMA,
@@ -185,6 +205,7 @@ export async function POST(req: NextRequest) {
       weeks,
       cardsPerDeck: cards,
       knownWordCount: knownWords.length,
+      hasDocument,
       deckCount: plan.decks.length,
       cardCount: plan.decks.reduce((n, d) => n + (d.cards?.length ?? 0), 0),
       promptTokens: data.usageMetadata?.promptTokenCount ?? null,

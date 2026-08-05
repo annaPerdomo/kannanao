@@ -96,6 +96,37 @@ describe('LessonBuilder', () => {
     expect(screen.getByRole('button', { name: /build the plan/i })).toBeEnabled();
   });
 
+  it('attaches a document and sends it along when building the plan', async () => {
+    setup();
+    fireEvent.change(screen.getByLabelText(/what do you want to cover/i), {
+      target: { value: 'Food words' },
+    });
+    fireEvent.mouseDown(screen.getByLabelText(/who is it for/i));
+    fireEvent.click(await screen.findByText('Naomi'));
+
+    const file = new File(['word,reading,meaning'], 'vocab.txt', { type: 'text/plain' });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [file] } });
+    await screen.findByText('vocab.txt');
+
+    fireEvent.click(screen.getByRole('button', { name: /build the plan/i }));
+    await waitFor(() => expect(buildLessonPlanMock).toHaveBeenCalled());
+
+    const payload = buildLessonPlanMock.mock.calls[0][0];
+    expect(payload.documentMimeType).toBe('text/plain');
+    expect(typeof payload.documentBase64).toBe('string');
+    expect(payload.documentBase64.length).toBeGreaterThan(0);
+  });
+
+  it('rejects a file type outside PDF/plain text', async () => {
+    setup();
+    const file = new File(['x'], 'photo.png', { type: 'image/png' });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [file] } });
+
+    expect(await screen.findByText(/plain text file/i)).toBeInTheDocument();
+  });
+
   it('lists the plan decks and cards after a plan comes back', async () => {
     await reachReviewStep();
 

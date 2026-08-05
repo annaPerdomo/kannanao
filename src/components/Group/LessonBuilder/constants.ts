@@ -5,6 +5,10 @@ export const DEFAULT_WEEKS = 4;
 export const DEFAULT_CARDS_PER_DECK = 12;
 export const GOAL_MAX_LENGTH = 500;
 
+export const DOCUMENT_ACCEPTED_TYPES = ['application/pdf', 'text/plain'] as const;
+export const DOCUMENT_ACCEPT_ATTR = '.pdf,.txt,application/pdf,text/plain';
+export const DOCUMENT_MAX_BYTES = 8 * 1024 * 1024;
+
 /** Assignments land on a Sunday by default — the natural end of a study week. */
 export function nextSunday(from = new Date()): string {
   const date = new Date(from);

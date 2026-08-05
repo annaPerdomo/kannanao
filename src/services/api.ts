@@ -271,6 +271,8 @@ export async function buildLessonPlan(payload: {
   goal: string;
   weeks: number;
   cardsPerDeck: number;
+  documentBase64?: string;
+  documentMimeType?: string;
 }): Promise<LessonPlanResponse> {
   const res = await fetch(`${BASE}/group/lesson-plan`, {
     method: 'POST',

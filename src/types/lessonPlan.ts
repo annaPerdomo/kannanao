@@ -25,6 +25,14 @@ export interface PlanKnownWord {
   reading: string;
 }
 
+/** A reference file (vocab list, syllabus, textbook page) the organizer attaches for extra context. */
+export interface LessonDocument {
+  name: string;
+  mimeType: string;
+  /** Base64 content, no data: URL prefix. */
+  base64: string;
+}
+
 export interface LessonPlanResponse {
   plan: LessonPlan;
   knownWords: PlanKnownWord[];
