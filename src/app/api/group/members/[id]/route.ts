@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { countStrengths } from '@/lib/cardStrength';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../../_lib/rateLimit';
@@ -102,6 +103,31 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   // Compute per-deck progress from sessions
   const sessions = sessionsRes.data ?? [];
   const deckShares = deckSharesRes.data ?? [];
+
+  // Mastery needs each shared deck's full card list, not just cards this
+  // member has answered — else a never-seen card is invisible instead of "new".
+  const deckIds = deckShares.map((ds) => ds.deck_id);
+  const [cardsRes, cardProgressRes] =
+    deckIds.length > 0
+      ? await Promise.all([
+          sb.from('cards').select('id, deck_id').in('deck_id', deckIds),
+          sb.from('card_progress').select('card_id, interval_days, ease').eq('user_id', memberId),
+        ])
+      : [{ data: [] }, { data: [] }];
+
+  const cardsByDeck = new Map<string, string[]>();
+  for (const c of (cardsRes.data ?? []) as { id: string; deck_id: string }[]) {
+    const list = cardsByDeck.get(c.deck_id) ?? [];
+    list.push(c.id);
+    cardsByDeck.set(c.deck_id, list);
+  }
+  const cardProgress = (
+    (cardProgressRes.data ?? []) as {
+      card_id: string;
+      interval_days: number;
+      ease: number;
+    }[]
+  ).map((row) => ({ cardId: row.card_id, intervalDays: row.interval_days, ease: row.ease }));
 
   // Aggregate sessions by deck + speech practice
   const deckStats = new Map<
@@ -208,8 +234,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       cardsCorrect: stats?.correct ?? 0,
       accuracy: stats && stats.studied > 0 ? Math.round((stats.correct / stats.studied) * 100) : 0,
       lastStudied: stats?.lastStudied ?? null,
+      mastery: countStrengths(cardsByDeck.get(ds.deck_id) ?? [], cardProgress),
     };
   });
+
+  const totalMastery = countStrengths(Array.from(cardsByDeck.values()).flat(), cardProgress);
 
   // Aggregate per-practice-mode stats from ALL sessions, grouped by source (deck vs speech)
   type ModeAgg = {
@@ -358,5 +387,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     practiceModeStats,
     assignments,
     weakWords,
+    totalMastery,
   });
 }

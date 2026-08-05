@@ -19,6 +19,15 @@ export interface GroupMember {
   totalCorrect: number;
   totalSessions: number;
   lastActive: string | null;
+  /** Answered-at-least-once split by SRS tier; no "new" bucket — that needs a deck's full card list. */
+  masteryLearning: number;
+  masteryStrong: number;
+}
+
+export interface MasteryCounts {
+  new: number;
+  learning: number;
+  strong: number;
 }
 
 export interface MemberSession {
@@ -53,7 +62,9 @@ export interface MemberDetail {
     cardsCorrect: number;
     accuracy: number;
     lastStudied: string | null;
+    mastery: MasteryCounts;
   }[];
+  totalMastery: MasteryCounts;
   speechProgress: {
     totalSessions: number;
     totalLines: number;

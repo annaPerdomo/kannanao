@@ -975,6 +975,9 @@
       "deckProgress": "Deck Progress",
       "cardsStudiedCount": "{count} studied",
       "accuracyPercent": "{accuracy}% accuracy",
+      "masteryNewCount": "{count} new",
+      "masteryLearningCount": "{count} learning",
+      "masteryStrongCount": "{count} strong",
       "achievements": "Achievements",
       "assignmentsHeading": "Assignments",
       "assignmentsCompleted": "{completed}/{total} completed",
@@ -995,6 +998,12 @@
       "accuracyLabel": "accuracy",
       "xpLabel": "XP",
       "timeLabel": "time"
+    },
+    "masteryBreakdown": {
+      "heading": "Card Mastery",
+      "new": "New",
+      "learning": "Learning",
+      "strong": "Strong"
     },
     "recentSessions": {
       "heading": "Recent Sessions",
@@ -1323,6 +1332,8 @@
       "longestStreakSub": "Longest active streak",
       "cardsStudiedLabel": "Cards studied",
       "allTimeAcrossGroupSub": "All time across group",
+      "cardsMasteredLabel": "Cards mastered",
+      "cardsMasteredSub": "{count} still learning",
       "needNudgeLabel": "Needs a nudge",
       "needNudgeSub": "No study this week"
     },
@@ -1358,7 +1369,10 @@
       "legendLess": "Less",
       "legendMore": "More",
       "loading": "Loading group activity…",
-      "loadFailed": "Couldn't load group activity."
+      "loadFailed": "Couldn't load group activity.",
+      "modeHeading": "Practice modes this window",
+      "modeEmpty": "No practice sessions in this window.",
+      "modeCardsCount": "{count, plural, one {# card} other {# cards}}"
     },
     "membersPanel": {
       "heading": "Members",

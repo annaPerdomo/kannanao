@@ -57,3 +57,40 @@ export function toLocalDateStr(date: Date): string {
 export function sessionLocalDate(started_at: string): string {
   return toLocalDateStr(new Date(started_at));
 }
+
+export interface ModeBreakdownEntry {
+  mode: string;
+  sessions: number;
+  cardsStudied: number;
+  cardsCorrect: number;
+  accuracy: number;
+}
+
+/** Shared by the group and admin dashboards so "what are people actually
+ * practicing" reads the same way everywhere it's asked. */
+export function aggregateModeBreakdown(
+  sessions: {
+    practice_mode?: string | null;
+    cards_studied?: number | null;
+    cards_correct?: number | null;
+  }[],
+): ModeBreakdownEntry[] {
+  const totals = new Map<string, { sessions: number; cards: number; correct: number }>();
+  for (const s of sessions) {
+    const mode = s.practice_mode || 'study';
+    const bucket = totals.get(mode) ?? { sessions: 0, cards: 0, correct: 0 };
+    bucket.sessions += 1;
+    bucket.cards += s.cards_studied ?? 0;
+    bucket.correct += s.cards_correct ?? 0;
+    totals.set(mode, bucket);
+  }
+  return Array.from(totals.entries())
+    .map(([mode, v]) => ({
+      mode,
+      sessions: v.sessions,
+      cardsStudied: v.cards,
+      cardsCorrect: v.correct,
+      accuracy: v.cards > 0 ? Math.round((v.correct / v.cards) * 100) : 0,
+    }))
+    .sort((a, b) => b.cardsStudied - a.cardsStudied);
+}

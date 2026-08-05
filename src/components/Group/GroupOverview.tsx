@@ -4,6 +4,7 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import SchoolIcon from '@mui/icons-material/School';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
@@ -29,6 +30,8 @@ export function GroupOverview({ members }: GroupOverviewProps) {
   const longestStreak = Math.max(0, ...members.map((m) => m.streakDays));
   const weeklyCards = members.reduce((sum, m) => sum + m.totalCardsStudied, 0);
   const needNudge = members.filter((m) => daysSinceActive(m.lastActive, now) >= STALE_DAYS).length;
+  const cardsMastered = members.reduce((sum, m) => sum + m.masteryStrong, 0);
+  const cardsLearning = members.reduce((sum, m) => sum + m.masteryLearning, 0);
 
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
@@ -54,6 +57,12 @@ export function GroupOverview({ members }: GroupOverviewProps) {
         label={t('cardsStudiedLabel')}
         value={weeklyCards.toLocaleString()}
         sub={t('allTimeAcrossGroupSub')}
+      />
+      <StatCard
+        icon={<WorkspacePremiumIcon sx={{ fontSize: 18 }} />}
+        label={t('cardsMasteredLabel')}
+        value={cardsMastered.toLocaleString()}
+        sub={t('cardsMasteredSub', { count: cardsLearning })}
       />
       <StatCard
         icon={<NotificationsActiveIcon sx={{ fontSize: 18 }} />}

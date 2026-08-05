@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { aggregateMasteryByUser } from '@/lib/cardStrength';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
@@ -51,17 +52,28 @@ export async function GET(req: NextRequest) {
   // pulling their entire study_sessions history just to find the latest one.
   // The members UI only buckets activity by day (today / <3d / inactive), so
   // day granularity is sufficient.
-  const { data: progressRows } = await sb
-    .from('user_progress')
-    .select(
-      'user_id, total_xp, level, streak_days, total_cards_studied, total_correct, total_sessions, last_study_date',
-    )
-    .in('user_id', memberIds);
+  const [{ data: progressRows }, { data: cardProgressRows }] = await Promise.all([
+    sb
+      .from('user_progress')
+      .select(
+        'user_id, total_xp, level, streak_days, total_cards_studied, total_correct, total_sessions, last_study_date',
+      )
+      .in('user_id', memberIds),
+    sb.from('card_progress').select('user_id, interval_days, ease').in('user_id', memberIds),
+  ]);
 
   const progressMap = new Map((progressRows ?? []).map((p) => [p.user_id, p]));
+  const masteryByUser = aggregateMasteryByUser(
+    (cardProgressRows ?? []).map((r) => ({
+      userId: r.user_id,
+      intervalDays: r.interval_days,
+      ease: r.ease,
+    })),
+  );
 
   const result = members.map((m) => {
     const prog = progressMap.get(m.id);
+    const mastery = masteryByUser.get(m.id);
     return {
       id: m.id,
       username: m.username,
@@ -75,6 +87,8 @@ export async function GET(req: NextRequest) {
       totalCorrect: prog?.total_correct ?? 0,
       totalSessions: prog?.total_sessions ?? 0,
       lastActive: prog?.last_study_date ?? null,
+      masteryLearning: mastery?.learning ?? 0,
+      masteryStrong: mastery?.strong ?? 0,
     };
   });
 

@@ -22,6 +22,8 @@ function member(name: string, lastActive: string | null): GroupMember {
     totalCorrect: 80,
     totalSessions: 10,
     lastActive,
+    masteryLearning: 0,
+    masteryStrong: 0,
   };
 }
 

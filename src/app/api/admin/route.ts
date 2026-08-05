@@ -1,7 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
+import { aggregateModeBreakdown } from '@/components/Stats/constants';
 import { isAdminEmail } from '@/lib/admin';
+import { aggregateMasteryByUser } from '@/lib/cardStrength';
 import { logger } from '@/lib/logger';
 
 import { isGroupLearner } from '../_lib/groupRole';
@@ -285,8 +287,32 @@ export async function GET(req: Request) {
 
   // Everyone who learns in someone's group, keyed on organizer_id rather than
   // account_type: an organizer-tier account can be a member of another group.
-  const memberActivity = profiles
-    .filter(isGroupLearner)
+  const groupLearners = profiles.filter(isGroupLearner);
+  const groupLearnerIds = groupLearners.map((p) => p.id);
+  const groupLearnerIdSet = new Set(groupLearnerIds);
+
+  // Card mastery is fetched scoped to just this population (not a full-table
+  // scan) — same reasoning as the 90-day cutoff on study_sessions above.
+  const { data: cardProgressRows } =
+    groupLearnerIds.length > 0
+      ? await client
+          .from('card_progress')
+          .select('user_id, interval_days, ease')
+          .in('user_id', groupLearnerIds)
+      : { data: [] };
+  const masteryByUser = aggregateMasteryByUser(
+    (cardProgressRows ?? []).map((r) => ({
+      userId: r.user_id,
+      intervalDays: r.interval_days,
+      ease: r.ease,
+    })),
+  );
+
+  const memberModeBreakdown = aggregateModeBreakdown(
+    studySessions.filter((s) => groupLearnerIdSet.has(s.user_id)),
+  );
+
+  const memberActivity = groupLearners
     .map((p) => {
       const sessions = sessionsByUser.get(p.id) ?? [];
       const totalStudied = sessions.reduce((sum, s) => sum + (s.cards_studied || 0), 0);
@@ -299,6 +325,7 @@ export async function GET(req: Request) {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       const recentSessions = sessions.filter((s) => new Date(s.started_at) >= sevenDaysAgo).length;
+      const mastery = masteryByUser.get(p.id);
 
       return {
         userId: p.id,
@@ -313,6 +340,8 @@ export async function GET(req: Request) {
         accuracy: totalStudied > 0 ? Math.round((totalCorrect / totalStudied) * 100) : null,
         totalDurationMins: Math.round(totalDuration / 60),
         lastActiveAt: lastSession,
+        masteryLearning: mastery?.learning ?? 0,
+        masteryStrong: mastery?.strong ?? 0,
       };
     })
     .sort((a, b) => (b.lastActiveAt ?? '').localeCompare(a.lastActiveAt ?? ''));
@@ -528,6 +557,7 @@ export async function GET(req: Request) {
     waitlist,
     embedAnalytics,
     memberActivity,
+    memberModeBreakdown,
     travelAnalytics,
     kotobaBubbleAnalytics,
     groups,
