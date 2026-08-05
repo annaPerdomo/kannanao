@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { DOCUMENT_MAX_BYTES } from '@/components/Group/LessonBuilder/constants';
+import {
+  DOCUMENT_MAX_BYTES,
+  DOCUMENT_MAX_TOTAL_BYTES,
+} from '@/components/Group/LessonBuilder/constants';
 import { normalizeFurigana } from '@/lib/furigana';
 import { buildLessonPlanPrompt, CARDS_DEFAULT, CARDS_MAX, CARDS_MIN } from '@/lib/lessonPrompts';
 import { logger } from '@/lib/logger';
@@ -21,6 +24,12 @@ const WEEKS_MAX = 8;
 
 const DOCUMENT_MIME_TYPES = new Set(['application/pdf', 'text/plain']);
 const DOCUMENT_MAX_BASE64_CHARS = Math.ceil(DOCUMENT_MAX_BYTES / 3) * 4;
+const DOCUMENT_MAX_TOTAL_BASE64_CHARS = Math.ceil(DOCUMENT_MAX_TOTAL_BYTES / 3) * 4;
+
+interface LessonDocumentInput {
+  base64: string;
+  mimeType: string;
+}
 
 const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
@@ -78,14 +87,12 @@ export async function POST(req: NextRequest) {
   if (orgCheck instanceof NextResponse) return orgCheck;
 
   const body = await req.json().catch(() => null);
-  const { memberId, goal, weeks, cardsPerDeck, documentBase64, documentMimeType } = (body ??
-    {}) as {
+  const { memberId, goal, weeks, cardsPerDeck, documents } = (body ?? {}) as {
     memberId?: string;
     goal?: string;
     weeks?: number;
     cardsPerDeck?: number;
-    documentBase64?: string;
-    documentMimeType?: string;
+    documents?: LessonDocumentInput[];
   };
 
   const trimmedGoal = typeof goal === 'string' ? goal.trim() : '';
@@ -114,15 +121,33 @@ export async function POST(req: NextRequest) {
   if (!(await isMemberOfOrganizer(memberId, orgCheck.id))) {
     return NextResponse.json({ error: 'Learner not found in your group.' }, { status: 403 });
   }
-  if (documentBase64 !== undefined) {
-    if (!documentMimeType || !DOCUMENT_MIME_TYPES.has(documentMimeType)) {
+  if (documents !== undefined) {
+    if (!Array.isArray(documents)) {
+      return NextResponse.json({ error: 'documents must be an array.' }, { status: 400 });
+    }
+    let totalBase64Chars = 0;
+    for (const doc of documents) {
+      if (
+        typeof doc !== 'object' ||
+        doc === null ||
+        !doc.mimeType ||
+        !DOCUMENT_MIME_TYPES.has(doc.mimeType)
+      ) {
+        return NextResponse.json(
+          { error: 'Each document must be a PDF or plain text file.' },
+          { status: 400 },
+        );
+      }
+      if (typeof doc.base64 !== 'string' || doc.base64.length > DOCUMENT_MAX_BASE64_CHARS) {
+        return NextResponse.json({ error: 'A reference document is too large.' }, { status: 400 });
+      }
+      totalBase64Chars += doc.base64.length;
+    }
+    if (totalBase64Chars > DOCUMENT_MAX_TOTAL_BASE64_CHARS) {
       return NextResponse.json(
-        { error: 'documentMimeType must be a PDF or plain text file.' },
+        { error: 'Combined reference documents are too large.' },
         { status: 400 },
       );
-    }
-    if (typeof documentBase64 !== 'string' || documentBase64.length > DOCUMENT_MAX_BASE64_CHARS) {
-      return NextResponse.json({ error: 'Reference document is too large.' }, { status: 400 });
     }
   }
 
@@ -136,11 +161,11 @@ export async function POST(req: NextRequest) {
 
   try {
     const knownWords = await loadStudiedVocabulary(memberId);
-    const hasDocument = documentBase64 !== undefined;
+    const documentCount = documents?.length ?? 0;
 
     const parts: Array<Record<string, unknown>> = [];
-    if (hasDocument) {
-      parts.push({ inline_data: { mime_type: documentMimeType, data: documentBase64 } });
+    for (const doc of documents ?? []) {
+      parts.push({ inline_data: { mime_type: doc.mimeType, data: doc.base64 } });
     }
     parts.push({
       text: buildLessonPlanPrompt({
@@ -148,7 +173,7 @@ export async function POST(req: NextRequest) {
         weeks: weeks as number,
         cardsPerDeck: cards,
         knownWords,
-        hasDocument,
+        documentCount,
       }),
     });
 
@@ -205,7 +230,7 @@ export async function POST(req: NextRequest) {
       weeks,
       cardsPerDeck: cards,
       knownWordCount: knownWords.length,
-      hasDocument,
+      documentCount,
       deckCount: plan.decks.length,
       cardCount: plan.decks.reduce((n, d) => n + (d.cards?.length ?? 0), 0),
       promptTokens: data.usageMetadata?.promptTokenCount ?? null,

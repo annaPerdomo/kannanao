@@ -18,12 +18,12 @@ interface AskStepProps {
   memberId: string;
   weeks: number;
   cardsPerDeck: number;
-  document: LessonDocument | null;
+  documents: LessonDocument[];
   onGoalChange: (goal: string) => void;
   onMemberChange: (memberId: string) => void;
   onWeeksChange: (weeks: number) => void;
   onCardsPerDeckChange: (cards: number) => void;
-  onDocumentChange: (document: LessonDocument | null) => void;
+  onDocumentsChange: (documents: LessonDocument[]) => void;
   onSubmit: () => void;
 }
 
@@ -33,12 +33,12 @@ export function AskStep({
   memberId,
   weeks,
   cardsPerDeck,
-  document,
+  documents,
   onGoalChange,
   onMemberChange,
   onWeeksChange,
   onCardsPerDeckChange,
-  onDocumentChange,
+  onDocumentsChange,
   onSubmit,
 }: AskStepProps) {
   const t = useTranslations('Group.lessonBuilder');
@@ -56,7 +56,7 @@ export function AskStep({
         fullWidth
       />
 
-      <DocumentUpload document={document} onChange={onDocumentChange} />
+      <DocumentUpload documents={documents} onChange={onDocumentsChange} />
 
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' } }}>
         <TextField

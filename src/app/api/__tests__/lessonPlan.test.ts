@@ -188,32 +188,59 @@ describe('POST /api/group/lesson-plan', () => {
   it('rejects a document mime type that is not a PDF or plain text file', async () => {
     memberExists();
     const res = await POST(
-      makeRequest({ ...VALID, documentBase64: 'YWJj', documentMimeType: 'image/png' }),
+      makeRequest({ ...VALID, documents: [{ base64: 'YWJj', mimeType: 'image/png' }] }),
     );
     expect(res.status).toBe(400);
   });
 
-  it('rejects a document over the size cap', async () => {
+  it('rejects a malformed document entry instead of crashing', async () => {
+    memberExists();
+    const res = await POST(makeRequest({ ...VALID, documents: [null] }));
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a document over the per-file size cap', async () => {
     memberExists();
     const res = await POST(
       makeRequest({
         ...VALID,
-        documentBase64: 'a'.repeat(DOCUMENT_MAX_BASE64_CHARS + 1),
-        documentMimeType: 'application/pdf',
+        documents: [
+          { base64: 'a'.repeat(DOCUMENT_MAX_BASE64_CHARS + 1), mimeType: 'application/pdf' },
+        ],
       }),
     );
     expect(res.status).toBe(400);
   });
 
-  it('sends the document to Gemini as inline data alongside the prompt', async () => {
+  it('rejects documents whose combined size is over the total cap', async () => {
+    memberExists();
+    const atPerFileCap = 'a'.repeat(DOCUMENT_MAX_BASE64_CHARS);
+    const res = await POST(
+      makeRequest({
+        ...VALID,
+        documents: [
+          { base64: atPerFileCap, mimeType: 'application/pdf' },
+          { base64: atPerFileCap, mimeType: 'application/pdf' },
+          { base64: atPerFileCap, mimeType: 'application/pdf' },
+        ],
+      }),
+    );
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe('Combined reference documents are too large.');
+  });
+
+  it('sends each document to Gemini as its own inline data part alongside the prompt', async () => {
     memberExists();
     mockGeminiPlan();
 
     const res = await POST(
       makeRequest({
         ...VALID,
-        documentBase64: 'YWJj',
-        documentMimeType: 'application/pdf',
+        documents: [
+          { base64: 'YWJj', mimeType: 'application/pdf' },
+          { base64: 'ZGVm', mimeType: 'text/plain' },
+        ],
       }),
     );
     expect(res.status).toBe(200);
@@ -223,6 +250,9 @@ describe('POST /api/group/lesson-plan', () => {
     expect(parts[0]).toEqual({
       inline_data: { mime_type: 'application/pdf', data: 'YWJj' },
     });
-    expect(parts[1].text).toContain('reference document is attached');
+    expect(parts[1]).toEqual({
+      inline_data: { mime_type: 'text/plain', data: 'ZGVm' },
+    });
+    expect(parts[2].text).toContain('2 reference documents are attached');
   });
 });
