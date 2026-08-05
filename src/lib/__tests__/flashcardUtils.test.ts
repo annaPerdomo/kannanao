@@ -2,9 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildMeaningChoices,
+  cardScaledPx,
+  cardScaledRem,
   cardXp,
   getFlashcardDisplayText,
+  oneLineFontSize,
   romajiFor,
+  textWidthEm,
   titleFontSize,
 } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
@@ -228,5 +232,73 @@ describe('buildMeaningChoices', () => {
     const choices = buildMeaningChoices(correct, pool);
     expect(choices).toEqual(expect.arrayContaining(['cat', 'dog']));
     expect(choices).toHaveLength(2);
+  });
+});
+
+// ─── card-relative sizing ──────────────────────────────────────────────────────
+
+/** Resolves the CSS the helpers emit for a card of `cardPx`, in px. */
+function resolve(css: string, cardPx: number): number {
+  const args = css.slice('min('.length, -1).split(', ');
+  return Math.min(
+    ...args.map((a) => {
+      const cqw = a.match(/([\d.]+)cqw/);
+      if (a.startsWith('calc(')) {
+        const [space, em] = a.slice('calc('.length, -1).split(' / ');
+        return ((parseFloat(space) / 100) * cardPx) / parseFloat(em);
+      }
+      return cqw ? (parseFloat(cqw[1]) / 100) * cardPx : parseFloat(a);
+    }),
+  );
+}
+
+describe('cardScaledPx', () => {
+  it('holds the designed size once the card is full width', () => {
+    expect(resolve(cardScaledPx(24), 305)).toBeCloseTo(24, 1);
+    expect(resolve(cardScaledPx(24), 500)).toBeCloseTo(24, 1);
+  });
+
+  it('shrinks in proportion on a card the study screen had to make smaller', () => {
+    expect(resolve(cardScaledPx(24), 152.5)).toBeCloseTo(12, 1);
+  });
+
+  it('converts a rem size the caller already computed', () => {
+    expect(cardScaledRem('1.5rem')).toBe(cardScaledPx(24));
+  });
+});
+
+describe('textWidthEm', () => {
+  it('counts kana and kanji as one em each', () => {
+    expect(textWidthEm('ホームワーク')).toBe(6);
+    expect(textWidthEm('図書館')).toBe(3);
+  });
+
+  it('counts latin as roughly half an em', () => {
+    expect(textWidthEm('neko')).toBeCloseTo(2.2, 2);
+  });
+});
+
+describe('oneLineFontSize', () => {
+  // 305px is the inner width of a card drawn at the reference 320px.
+  const fitsOneLine = (text: string, maxPx: number, reserved: number, cardPx = 305) =>
+    textWidthEm(text) * resolve(oneLineFontSize(text, maxPx, reserved), cardPx) <=
+    ((100 - reserved) / 100) * cardPx;
+
+  it('keeps the designed size for a word that already fits', () => {
+    expect(resolve(oneLineFontSize('ねこ', 48, 27), 305)).toBe(48);
+  });
+
+  it('fits the word titleFontSize used to wrap', () => {
+    // ホームワーク at titleFontSize(3, 1.3) was 38.4px: six em = 230px, in 223px.
+    expect(resolve(oneLineFontSize('ホームワーク', 48, 27), 305)).toBeLessThan(38.4);
+    expect(fitsOneLine('ホームワーク', 48, 27)).toBe(true);
+  });
+
+  it('fits every length on one line, at any card size', () => {
+    for (const text of ['は', 'ねこ', 'ホームワーク', 'にゅうきょしゃ', 'バスケットボール']) {
+      for (const cardPx of [305, 240, 180, 150]) {
+        expect(fitsOneLine(text, 48, 27, cardPx)).toBe(true);
+      }
+    }
   });
 });

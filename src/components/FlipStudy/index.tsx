@@ -10,6 +10,8 @@ import { ComboChip } from '@/components/ComboChip';
 import { Flashcard } from '@/components/Flashcard';
 import FuriganaText from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
+import { NAVBAR_HEIGHT } from '@/components/NavBar';
+import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
 import { PageHeader } from '@/components/PageHeader';
 import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
 import { XpEarnedPop } from '@/components/Practice/XpEarnedPop';
@@ -70,6 +72,17 @@ const CARD_W = 320;
 const CARD_H = 452;
 const CARD_ASPECT_RATIO = `${CARD_W} / ${CARD_H}`;
 const CARD_WIDTH_CSS = `min(${CARD_W}px, 100%)`;
+
+/**
+ * Everything on a phone that is not the card: the app's own bars, this screen's
+ * page padding, header, progress row, grading buttons and browse row. The card
+ * takes what is left, so grading never sits below the fold — keep in step with
+ * the layout below.
+ */
+const PHONE_CHROME_PX = NAVBAR_HEIGHT.xs + BOTTOM_NAV_HEIGHT + 272;
+const PHONE_CHROME_WITH_QUEST_PX = PHONE_CHROME_PX + 64;
+/** Below this the card is unreadable, so the page scrolls instead of shrinking further. */
+const MIN_CARD_W = 180;
 
 // ── Sparkle stars that float up on each new card ──────────────────────────────
 const SPARKLE_ITEMS = [
@@ -256,7 +269,14 @@ export default function FlipStudy({
 
   if (loading) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
+      <Box
+        sx={{
+          maxWidth: LAYOUT.narrowMaxWidth,
+          mx: 'auto',
+          px: LAYOUT.pagePx,
+          py: { xs: 3, sm: 6 },
+        }}
+      >
         <Loading message={loadingMessage ?? tCommon('loading')} />
       </Box>
     );
@@ -284,13 +304,23 @@ export default function FlipStudy({
     );
   }
 
+  // A browser without `dvh` fails the whole value and falls back to the
+  // sm-and-up width, which is the desktop card.
+  const phoneChrome = questMap ? PHONE_CHROME_WITH_QUEST_PX : PHONE_CHROME_PX;
+  const cardWidthSx = {
+    width: CARD_WIDTH_CSS,
+    [theme.breakpoints.down('sm')]: {
+      width: `max(${MIN_CARD_W}px, min(${CARD_W}px, 100%, calc((100dvh - ${phoneChrome}px - env(safe-area-inset-bottom)) * ${CARD_W / CARD_H})))`,
+    },
+  };
+
   return (
     <Box
       sx={{
         maxWidth: LAYOUT.narrowMaxWidth,
         mx: 'auto',
         px: LAYOUT.pagePx,
-        py: 4,
+        py: { xs: 2, sm: 4 },
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -307,7 +337,7 @@ export default function FlipStudy({
       {questMap}
 
       {/* Progress bar */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: { xs: 2, sm: 3 } }}>
         <LinearProgress
           variant="determinate"
           value={((index + 1) / cards.length) * 100}
@@ -348,7 +378,7 @@ export default function FlipStudy({
         <Box
           key={index}
           sx={{
-            width: CARD_WIDTH_CSS,
+            ...cardWidthSx,
             aspectRatio: CARD_ASPECT_RATIO,
             position: 'relative',
             transformOrigin: 'top center',
@@ -424,7 +454,7 @@ export default function FlipStudy({
             display: 'flex',
             justifyContent: 'center',
             gap: 2,
-            mt: 3,
+            mt: { xs: 2, sm: 3 },
           }}
         >
           {/* Both use the contained variant's white label. "Still learning"
@@ -508,7 +538,7 @@ export default function FlipStudy({
           alignItems: 'center',
           justifyContent: 'center',
           gap: 4,
-          mt: 3,
+          mt: { xs: 2, sm: 3 },
         }}
       >
         <IconButton
