@@ -70,7 +70,8 @@
       "readingToggleAuto": "漢字表示のデッキなので自動でオンになりました！",
       "readingToggleAria": "漢字のよみかた練習",
       "addCardsOptional": "カードを追加（任意）",
-      "createFailed": "デッキを作成できませんでした。もう一度お試しください。"
+      "createFailed": "デッキを作成できませんでした。もう一度お試しください。",
+      "nameRequired": "先にデッキ名を入力してください"
     },
     "deckHeader": {
       "saveTooltip": "保存（Enter）",
@@ -1375,6 +1376,12 @@
       "subtitle": "とりあげたいことを書いてください。この学習者がすでに知っていることばを土台に、デッキ・例文・週ごとの予定をつくります。",
       "goalLabel": "なにをとりあげますか？",
       "goalPlaceholder": "れい：レストランで注文するときの食べもののことば、ものの数えかた",
+      "attachDocumentButton": "資料をつける",
+      "attachDocumentHint": "にんい：単語リストや学習内容がわかる資料（PDFか.txt、8MBまで）をつけると、プランの参考にします。",
+      "documentReading": "よみこみ中…",
+      "documentTypeError": "PDFかテキストファイルをアップロードしてください。",
+      "documentSizeError": "ファイルは8MB以下にしてください。",
+      "documentReadError": "ファイルをよみこめませんでした。もういちどためしてください。",
       "learnerLabel": "だれのためのレッスンですか？",
       "weeksLabel": "何週間ですか？",
       "weeksOption": "{count}週間",

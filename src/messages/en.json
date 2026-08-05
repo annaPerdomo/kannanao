@@ -70,7 +70,8 @@
       "readingToggleAuto": "Turned on for you — these cards lead with kanji!",
       "readingToggleAria": "Kanji reading practice",
       "addCardsOptional": "add cards (optional)",
-      "createFailed": "Couldn't create the deck. Please try again."
+      "createFailed": "Couldn't create the deck. Please try again.",
+      "nameRequired": "Enter a deck name first"
     },
     "deckHeader": {
       "saveTooltip": "Save (Enter)",
@@ -1375,6 +1376,12 @@
       "subtitle": "Describe what you want to cover. You'll get decks, example sentences and a week-by-week schedule built on words this learner already knows.",
       "goalLabel": "What do you want to cover?",
       "goalPlaceholder": "e.g. Food words for ordering at a restaurant, plus counting things",
+      "attachDocumentButton": "Attach a document",
+      "attachDocumentHint": "Optional — a vocabulary list or syllabus (PDF or .txt, max 8 MB) for the plan to follow.",
+      "documentReading": "Reading…",
+      "documentTypeError": "Please upload a PDF or a plain text file.",
+      "documentSizeError": "File must be under 8 MB.",
+      "documentReadError": "Couldn't read that file. Please try again.",
       "learnerLabel": "Who is it for?",
       "weeksLabel": "How many weeks?",
       "weeksOption": "{count, plural, one {# week} other {# weeks}}",

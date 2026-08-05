@@ -79,7 +79,11 @@ export function useCreateDeckFlow(onClose: () => void) {
 
   /** Create the deck the "add cards" doors need before they can open. */
   const startDeck = async (): Promise<string | null> => {
-    if (!name.trim() || busy) return null;
+    if (busy) return null;
+    if (!name.trim()) {
+      setFlowError(t('nameRequired'));
+      return null;
+    }
     setCreating(true);
     setFlowError(null);
     try {
