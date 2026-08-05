@@ -62,6 +62,10 @@ export function StyledDialog({
             boxShadow: `0 20px 60px ${alpha(brand[500], 0.14)}, 0 4px 16px ${alpha(brand[300], 0.2)}`,
             borderRadius: (theme) => theme.radii.lg,
             overflow: 'hidden',
+            // MUI's default 32px gutter costs a phone a sixth of its width.
+            m: { xs: 2, sm: 4 },
+            width: { xs: 'calc(100% - 32px)', sm: 'calc(100% - 64px)' },
+            maxHeight: { xs: 'calc(100% - 32px)', sm: 'calc(100% - 64px)' },
             ...((paperSx ?? {}) as Record<string, unknown>),
           },
         },
@@ -71,7 +75,7 @@ export function StyledDialog({
         sx={{
           background: `linear-gradient(135deg, ${alpha(brand[100], 0.5)} 0%, ${alpha(accent[100], 0.5)} 100%)`,
           borderBottom: `1.5px solid ${alpha(brand[300], 0.25)}`,
-          px: 3,
+          px: { xs: 2, sm: 3 },
           pt: 2.5,
           pb: 2,
           position: 'relative',
@@ -96,7 +100,8 @@ export function StyledDialog({
           <CloseIcon sx={{ fontSize: 15 }} />
         </IconButton>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {/* pr clears the absolutely-positioned close button. */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pr: 4 }}>
           {icon}
           <Typography
             id={titleId}
@@ -127,7 +132,7 @@ export function StyledDialog({
 
       <DialogContent
         sx={{
-          px: 2.5,
+          px: { xs: 2, sm: 2.5 },
           pt: 2.5,
           pb: actions ? 1 : 2.5,
           ...((contentSx ?? {}) as Record<string, unknown>),
@@ -137,7 +142,15 @@ export function StyledDialog({
       </DialogContent>
 
       {actions && (
-        <Box sx={{ display: 'flex', justifyContent: actionsJustify, px: 3, pb: 2.5, pt: 0.5 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: actionsJustify,
+            px: { xs: 2, sm: 3 },
+            pb: 2.5,
+            pt: 0.5,
+          }}
+        >
           {actions}
         </Box>
       )}
