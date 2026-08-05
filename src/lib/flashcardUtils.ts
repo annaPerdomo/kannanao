@@ -59,6 +59,43 @@ export function titleFontSize(text: string, baseRem: number, minRem: number): st
   return `${size}rem`;
 }
 
+/** Inner width of a card drawn at the reference 320px — what the design was drawn against. */
+const CARD_REF_W = 305;
+
+/**
+ * A size that shrinks with the card rather than the viewport — Study sizes the
+ * card from whatever height a phone has left, and a fixed px scale ran the
+ * answer off the bottom edge there. Depends on the inner card declaring
+ * `container-type: inline-size`; min() pins the design size at full width.
+ */
+export const cardScaledPx = (px: number) =>
+  `min(${px}px, ${((px / CARD_REF_W) * 100).toFixed(2)}cqw)`;
+
+/** Same, for a size the caller already computed in rem (16px root). */
+export const cardScaledRem = (rem: string) => cardScaledPx(parseFloat(rem) * 16);
+
+/** Kana, kanji and the full-width forms — one em per glyph. */
+const FULL_WIDTH = /[\u3000-\u303f\u3040-\u30ff\u3400-\u9fff\uff00-\uff60\uffe0-\uffe6]/;
+
+/** Width of `text` in em: full-width glyphs at 1em, latin at roughly 0.55em. */
+export function textWidthEm(text: string): number {
+  return [...text].reduce((w, ch) => w + (FULL_WIDTH.test(ch) ? 1 : 0.55), 0);
+}
+
+/**
+ * Type size that holds a vocabulary word on one line. `titleFontSize` steps by
+ * character count alone, so ホームワーク came out a few pixels too wide and broke
+ * across two lines; dividing the space the card gives the word by the word's own
+ * width in em cannot. 1.06 is headroom for faces that set wider than nominal.
+ *
+ * `reservedCqw` is the share of the card the word does not get: side padding,
+ * plus the speak button where one sits beside it.
+ */
+export function oneLineFontSize(text: string, maxPx: number, reservedCqw: number): string {
+  const em = Math.max(1, textWidthEm(text)) * 1.06;
+  return `min(${maxPx}px, calc(${(100 - reservedCqw).toFixed(1)}cqw / ${em.toFixed(2)}))`;
+}
+
 /**
  * Romaji for the front of a card.
  *

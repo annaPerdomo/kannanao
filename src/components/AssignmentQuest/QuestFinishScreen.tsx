@@ -67,7 +67,14 @@ export function QuestFinishScreen({ assignmentId, onRetry, onDone }: QuestFinish
 
   if (!settled && !completed) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
+      <Box
+        sx={{
+          maxWidth: LAYOUT.narrowMaxWidth,
+          mx: 'auto',
+          px: LAYOUT.pagePx,
+          py: { xs: 3, sm: 6 },
+        }}
+      >
         <Loading message={t('checking')} />
       </Box>
     );
@@ -90,7 +97,14 @@ export function QuestFinishScreen({ assignmentId, onRetry, onDone }: QuestFinish
   // through to "so close" hands the learner a verdict nobody reached.
   if (error) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
+      <Box
+        sx={{
+          maxWidth: LAYOUT.narrowMaxWidth,
+          mx: 'auto',
+          px: LAYOUT.pagePx,
+          py: { xs: 3, sm: 6 },
+        }}
+      >
         <Alert severity="error" sx={{ mb: 3 }}>
           {t('checkFailed')}
         </Alert>

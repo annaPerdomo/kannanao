@@ -107,6 +107,9 @@ export function PageHeader({
                 sx={{
                   fontWeight: 800,
                   lineHeight: 1.1,
+                  fontSize: compact
+                    ? { xs: '1.3rem', sm: '1.5rem' }
+                    : { xs: '1.65rem', sm: '2.125rem' },
                   ...(gradientTitle
                     ? {
                         background: `linear-gradient(90deg, ${brand[700]} 0%, ${accent[500]} 100%)`,
@@ -157,7 +160,7 @@ export function PageHeader({
         <Box
           sx={{
             height: '1.5px',
-            mt: '22px',
+            mt: { xs: '14px', sm: '22px' },
             background: `linear-gradient(90deg, transparent 0%, ${brand[400]} 10%, ${accent[400]} 90%, transparent 100%)`,
           }}
         />

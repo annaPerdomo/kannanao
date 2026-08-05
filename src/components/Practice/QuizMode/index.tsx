@@ -151,7 +151,7 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
         variant="determinate"
         value={(quiz.index / quiz.total) * 100}
         sx={{
-          mb: 3,
+          mb: { xs: 2, sm: 3 },
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[300], 0.12),
@@ -174,7 +174,7 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
           transition: 'border-color 0.25s',
         }}
       >
-        <Box sx={{ p: 3, textAlign: 'center', bgcolor: surfaces.input }}>
+        <Box sx={{ p: { xs: 2, sm: 3 }, textAlign: 'center', bgcolor: surfaces.input }}>
           {type === 'choice' ? (
             <>
               <Box
@@ -371,7 +371,8 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
         </Box>
       )}
 
-      <Box sx={{ mt: 2, textAlign: 'right' }}>
+      {/* Left on a phone: the floating buddy parks in the right-hand corner. */}
+      <Box sx={{ mt: { xs: 1, sm: 2 }, textAlign: { xs: 'left', sm: 'right' } }}>
         <Button size="small" onClick={onExit} sx={{ color: 'text.secondary' }}>
           {t('quit')}
         </Button>

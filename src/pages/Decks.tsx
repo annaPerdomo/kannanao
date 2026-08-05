@@ -87,7 +87,14 @@ export default function Decks() {
 
   if (loading) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
+      <Box
+        sx={{
+          maxWidth: LAYOUT.contentMaxWidth,
+          mx: 'auto',
+          px: LAYOUT.pagePx,
+          py: { xs: 3, sm: 6 },
+        }}
+      >
         <Loading message={t('loadingDecks')} />
       </Box>
     );

@@ -106,7 +106,14 @@ export default function ReviewTodayPage() {
 
   if (error) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
+      <Box
+        sx={{
+          maxWidth: LAYOUT.narrowMaxWidth,
+          mx: 'auto',
+          px: LAYOUT.pagePx,
+          py: { xs: 3, sm: 6 },
+        }}
+      >
         <Alert
           severity="error"
           sx={{ borderRadius: 3 }}
@@ -124,7 +131,14 @@ export default function ReviewTodayPage() {
 
   if (cards === null) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 6 }}>
+      <Box
+        sx={{
+          maxWidth: LAYOUT.narrowMaxWidth,
+          mx: 'auto',
+          px: LAYOUT.pagePx,
+          py: { xs: 3, sm: 6 },
+        }}
+      >
         <Loading message={t('findingReviews')} />
       </Box>
     );

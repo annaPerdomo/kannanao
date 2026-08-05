@@ -67,17 +67,10 @@ export function WeekStrip({
           // Cells sit on a shared baseline so today's extra height shows as a
           // tab standing up out of the row, not as a taller box among equals.
           alignItems: 'end',
-          gap: 1,
+          // The seventh cell only fits on a phone at this gutter; any wider and
+          // the week scrolls sideways, hiding the weekend behind a swipe.
+          gap: { xs: 0.5, sm: 1 },
           mb: 0.75,
-          // Seven cells don't fit a phone at a legible size, so below sm the row
-          // scrolls instead of squeezing.
-          '@media (max-width:600px)': {
-            display: 'flex',
-            overflowX: 'auto',
-            pb: 0.5,
-            scrollbarWidth: 'none',
-            '&::-webkit-scrollbar': { display: 'none' },
-          },
         }}
       >
         {weekDates.map((date, i) => {
@@ -128,7 +121,7 @@ export function WeekStrip({
                   : isSelected
                     ? `0 8px 18px -8px ${alpha(tabColor, 0.75)}`
                     : 'none',
-                '@media (max-width:600px)': { minWidth: 62, flexShrink: 0 },
+                minWidth: 0,
                 '&:hover': {
                   background: isSelected ? tabColor : alpha(tabColor, isToday ? 0.75 : 0.62),
                   transform: 'translateY(-1px)',

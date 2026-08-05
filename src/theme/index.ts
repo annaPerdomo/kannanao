@@ -197,6 +197,8 @@ export const LAYOUT = {
   headerMaxWidth: 1100,
   narrowMaxWidth: 900,
   pagePx: { xs: 2, sm: 4, lg: 6 } as const,
+  /** Vertical page padding. A phone cannot spare the desktop 32px above the fold. */
+  pagePy: { xs: 3, sm: 4 } as const,
 } as const;
 
 /**

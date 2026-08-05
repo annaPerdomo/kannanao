@@ -9,7 +9,14 @@ import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { useCardBorder } from '@/contexts/CardBorderContext';
-import { cardXp, getFlashcardDisplayText, titleFontSize } from '@/lib/flashcardUtils';
+import {
+  cardScaledPx as cq,
+  cardScaledRem as cqRem,
+  cardXp,
+  getFlashcardDisplayText,
+  oneLineFontSize,
+  titleFontSize,
+} from '@/lib/flashcardUtils';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
 
 interface FlashcardProps {
@@ -67,6 +74,7 @@ export function Flashcard({
   }, []);
 
   const { titleText, subtitleText, speakText } = getFlashcardDisplayText(card);
+  const isPhrase = card.cardType === 'phrase';
   const isKanji = card.mainViewMode === 'kanji';
   const isRomaji = card.mainViewMode === 'romaji';
   const typeGradient = isKanji
@@ -101,6 +109,7 @@ export function Flashcard({
     bgcolor: brand[50],
     borderRadius: '15px',
     overflow: 'hidden',
+    containerType: 'inline-size' as const,
     border: '2.5px solid rgba(255,255,255,0.92)',
     display: 'flex',
     flexDirection: 'column' as const,
@@ -152,8 +161,8 @@ export function Flashcard({
               {/* Top bar */}
               <Box
                 sx={{
-                  px: { xs: 2, sm: 2.5 },
-                  py: { xs: 0.9, sm: 1.1 },
+                  px: { xs: cq(16), sm: cq(20) },
+                  py: { xs: cq(7), sm: cq(9) },
                   background: typeGradient,
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -163,7 +172,7 @@ export function Flashcard({
               >
                 <Typography
                   sx={{
-                    fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                    fontSize: { xs: cq(10.4), sm: cq(12) },
                     fontWeight: 900,
                     color: 'white',
                     textTransform: 'uppercase',
@@ -175,13 +184,13 @@ export function Flashcard({
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
                   <Typography
-                    sx={{ fontSize: '0.55rem', fontWeight: 700, color: 'rgba(255,255,255,0.82)' }}
+                    sx={{ fontSize: cq(8.8), fontWeight: 700, color: 'rgba(255,255,255,0.82)' }}
                   >
                     {t('xp')}
                   </Typography>
                   <Typography
                     sx={{
-                      fontSize: { xs: '0.78rem', sm: '0.88rem' },
+                      fontSize: { xs: cq(12.5), sm: cq(14) },
                       fontWeight: 900,
                       color: 'white',
                       textShadow: '0 1px 3px rgba(0,0,0,0.3)',
@@ -211,7 +220,7 @@ export function Flashcard({
                       <Skeleton
                         variant="rectangular"
                         width="100%"
-                        height={175}
+                        height={cq(175)}
                         sx={{ bgcolor: alpha(brand[300], 0.1), position: 'absolute', inset: 0 }}
                       />
                     )}
@@ -224,7 +233,7 @@ export function Flashcard({
                       onError={() => setImgLoaded(true)}
                       sx={{
                         width: '100%',
-                        height: 175,
+                        height: cq(175),
                         objectFit: 'cover',
                         display: imgLoaded ? 'block' : 'none',
                       }}
@@ -235,9 +244,9 @@ export function Flashcard({
                   {/* Card name */}
                   <Box
                     sx={{
-                      px: { xs: 2, sm: 2.5 },
-                      pt: { xs: 1.25, sm: 1.5 },
-                      pb: 1,
+                      px: { xs: cq(16), sm: cq(20) },
+                      pt: { xs: cq(10), sm: cq(12) },
+                      pb: cq(8),
                       borderBottom: `2.5px solid ${typeAccent}`,
                       flexShrink: 0,
                     }}
@@ -246,7 +255,7 @@ export function Flashcard({
                       <Typography
                         sx={{
                           fontFamily: (t) => t.fonts.mono,
-                          fontSize: '0.65rem',
+                          fontSize: cq(10.4),
                           color: '#888',
                           letterSpacing: '0.08em',
                           mb: 0.25,
@@ -260,7 +269,10 @@ export function Flashcard({
                       <Typography
                         sx={{
                           fontFamily: (t) => t.fonts.jp,
-                          fontSize: titleFontSize(titleText, 2.2, 1.1),
+                          fontSize: isPhrase
+                            ? cqRem(titleFontSize(titleText, 2.2, 1.1))
+                            : oneLineFontSize(titleText, 35.2, 24),
+                          whiteSpace: isPhrase ? 'normal' : 'nowrap',
                           fontWeight: 700,
                           color: '#111',
                           lineHeight: 1.05,
@@ -284,7 +296,7 @@ export function Flashcard({
                   >
                     <Typography
                       sx={{
-                        fontSize: '0.63rem',
+                        fontSize: cq(10),
                         color: alpha(brand[500], 0.55),
                         letterSpacing: '0.15em',
                         textTransform: 'uppercase',
@@ -304,7 +316,7 @@ export function Flashcard({
                       flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      px: 3,
+                      px: cq(24),
                       borderBottom: `2.5px solid ${typeAccent}`,
                     }}
                   >
@@ -312,7 +324,7 @@ export function Flashcard({
                       <Typography
                         sx={{
                           fontFamily: (t) => t.fonts.mono,
-                          fontSize: '0.7rem',
+                          fontSize: cq(11.2),
                           color: '#888',
                           letterSpacing: '0.08em',
                           mb: 0.5,
@@ -325,7 +337,10 @@ export function Flashcard({
                       <Typography
                         sx={{
                           fontFamily: (t) => t.fonts.jp,
-                          fontSize: titleFontSize(titleText, 3, 1.3),
+                          fontSize: isPhrase
+                            ? cqRem(titleFontSize(titleText, 3, 1.3))
+                            : oneLineFontSize(titleText, 48, 27),
+                          whiteSpace: isPhrase ? 'normal' : 'nowrap',
                           fontWeight: 700,
                           color: '#111',
                           lineHeight: 1.1,
@@ -349,7 +364,7 @@ export function Flashcard({
                   >
                     <Typography
                       sx={{
-                        fontSize: '0.63rem',
+                        fontSize: cq(10),
                         color: alpha(brand[500], 0.55),
                         letterSpacing: '0.15em',
                         textTransform: 'uppercase',
@@ -364,7 +379,7 @@ export function Flashcard({
               {/* Footer */}
               <Box
                 sx={{
-                  px: { xs: 2, sm: 2.5 },
+                  px: { xs: cq(16), sm: cq(20) },
                   pb: { xs: 1, sm: 1.25 },
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -375,7 +390,7 @@ export function Flashcard({
                 {card.jlptLevel && (
                   <Typography
                     sx={{
-                      fontSize: '0.52rem',
+                      fontSize: cq(8.3),
                       color: alpha(brand[600], 0.7),
                       fontFamily: (t) => t.fonts.mono,
                       letterSpacing: '0.06em',
@@ -386,7 +401,7 @@ export function Flashcard({
                 )}
                 <Typography
                   sx={{
-                    fontSize: '0.52rem',
+                    fontSize: cq(8.3),
                     color: alpha(brand[500], 0.5),
                     fontFamily: (t) => t.fonts.mono,
                   }}
@@ -400,18 +415,35 @@ export function Flashcard({
           {/* ── BACK ── */}
           <Box sx={{ ...frameBox, transform: 'rotateY(180deg)' }}>
             <Box sx={innerCard}>
+              {/* Corner glow. Inside the clipped card, not in the scrolling
+                  content below: hanging 40px past that content box makes it
+                  pannable, which on touch swallows the page's own scroll. */}
+              <Box
+                aria-hidden
+                sx={{
+                  position: 'absolute',
+                  bottom: -40,
+                  right: -40,
+                  width: 160,
+                  height: 160,
+                  borderRadius: '50%',
+                  background: `radial-gradient(circle, ${alpha(brand[300], 0.14)} 0%, transparent 70%)`,
+                  filter: 'blur(24px)',
+                  pointerEvents: 'none',
+                }}
+              />
               {/* Top bar */}
               <Box
                 sx={{
-                  px: { xs: 2, sm: 2.5 },
-                  py: { xs: 0.9, sm: 1.1 },
+                  px: { xs: cq(16), sm: cq(20) },
+                  py: { xs: cq(7), sm: cq(9) },
                   background: `linear-gradient(135deg, ${brand[400]} 0%, ${accent[400]} 100%)`,
                   flexShrink: 0,
                 }}
               >
                 <Typography
                   sx={{
-                    fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                    fontSize: { xs: cq(10.4), sm: cq(12) },
                     fontWeight: 900,
                     color: 'white',
                     textTransform: 'uppercase',
@@ -427,35 +459,23 @@ export function Flashcard({
               <Box
                 sx={{
                   flex: 1,
-                  px: { xs: 2, sm: 2.5 },
-                  py: { xs: 1.5, sm: 2 },
+                  px: { xs: cq(16), sm: cq(20) },
+                  py: { xs: cq(12), sm: cq(16) },
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: { xs: 1.5, sm: 2 },
-                  overflow: 'auto',
+                  gap: { xs: cq(12), sm: cq(16) },
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                  overscrollBehavior: 'contain',
                   position: 'relative',
                 }}
               >
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    bottom: -40,
-                    right: -40,
-                    width: 160,
-                    height: 160,
-                    borderRadius: '50%',
-                    background: `radial-gradient(circle, ${alpha(brand[300], 0.14)} 0%, transparent 70%)`,
-                    filter: 'blur(24px)',
-                    pointerEvents: 'none',
-                  }}
-                />
-
                 {card.mainViewMode !== 'kanji' && (
                   <Box>
                     <Typography
                       sx={{
                         fontFamily: (t) => t.fonts.mono,
-                        fontSize: '0.62rem',
+                        fontSize: cq(9.9),
                         color: brand[500],
                         letterSpacing: '0.14em',
                         fontWeight: 700,
@@ -468,10 +488,16 @@ export function Flashcard({
                     <Typography
                       sx={{
                         fontFamily: (t) => t.fonts.jp,
-                        fontSize: {
-                          xs: titleFontSize(card.word, 1.8, 0.95),
-                          sm: titleFontSize(card.word, 2.1, 1.1),
-                        },
+                        fontSize: isPhrase
+                          ? {
+                              xs: cqRem(titleFontSize(card.word, 1.8, 0.95)),
+                              sm: cqRem(titleFontSize(card.word, 2.1, 1.1)),
+                            }
+                          : {
+                              xs: oneLineFontSize(card.word, 28.8, 14),
+                              sm: oneLineFontSize(card.word, 33.6, 14),
+                            },
+                        whiteSpace: isPhrase ? 'normal' : 'nowrap',
                         fontWeight: 700,
                         color: '#111',
                         lineHeight: 1.2,
@@ -486,7 +512,7 @@ export function Flashcard({
                   <Typography
                     sx={{
                       fontFamily: (t) => t.fonts.mono,
-                      fontSize: '0.62rem',
+                      fontSize: cq(9.9),
                       color: brand[500],
                       letterSpacing: '0.14em',
                       fontWeight: 700,
@@ -499,7 +525,7 @@ export function Flashcard({
                   <Typography
                     sx={{
                       fontFamily: (t) => t.fonts.jp,
-                      fontSize: { xs: '1.5rem', sm: '1.9rem' },
+                      fontSize: { xs: cq(24), sm: cq(30.4) },
                       fontWeight: 700,
                       color: '#111',
                       fontStyle: 'italic',
@@ -513,14 +539,14 @@ export function Flashcard({
                 <Box
                   sx={{
                     borderTop: `2px solid ${alpha(brand[300], 0.22)}`,
-                    pt: { xs: 1.25, sm: 1.75 },
+                    pt: { xs: cq(10), sm: cq(14) },
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.75 }}>
                     <Typography
                       sx={{
                         fontFamily: (t) => t.fonts.mono,
-                        fontSize: '0.62rem',
+                        fontSize: cq(9.9),
                         color: brand[500],
                         letterSpacing: '0.14em',
                         fontWeight: 700,
@@ -535,7 +561,7 @@ export function Flashcard({
                     component="div"
                     sx={{
                       fontFamily: (t) => t.fonts.jp,
-                      fontSize: { xs: '0.95rem', sm: '1.05rem' },
+                      fontSize: { xs: cq(15.2), sm: cq(16.8) },
                       color: '#111',
                       lineHeight: 1.8,
                     }}
@@ -547,7 +573,7 @@ export function Flashcard({
                   </Typography>
                   <Typography
                     sx={{
-                      fontSize: { xs: '0.82rem', sm: '0.9rem' },
+                      fontSize: { xs: cq(13.1), sm: cq(14.4) },
                       color: alpha('#000', 0.5),
                       mt: 0.75,
                       fontStyle: 'italic',
@@ -562,7 +588,7 @@ export function Flashcard({
               {/* Footer */}
               <Box
                 sx={{
-                  px: { xs: 2, sm: 2.5 },
+                  px: { xs: cq(16), sm: cq(20) },
                   pb: { xs: 1, sm: 1.25 },
                   borderTop: `1px solid ${alpha(brand[300], 0.25)}`,
                   pt: 0.75,
@@ -574,7 +600,7 @@ export function Flashcard({
                 {card.jlptLevel && (
                   <Typography
                     sx={{
-                      fontSize: '0.52rem',
+                      fontSize: cq(8.3),
                       color: alpha(brand[600], 0.7),
                       fontFamily: (t) => t.fonts.mono,
                       letterSpacing: '0.06em',
@@ -585,7 +611,7 @@ export function Flashcard({
                 )}
                 <Typography
                   sx={{
-                    fontSize: '0.52rem',
+                    fontSize: cq(8.3),
                     color: alpha(brand[500], 0.5),
                     fontFamily: (t) => t.fonts.mono,
                   }}

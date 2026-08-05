@@ -194,7 +194,14 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
     <Box sx={{ position: 'relative' }}>
       {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: { xs: 1, sm: 2 },
+        }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           {queue.totalBatches > 1 && (
             <Chip
@@ -220,7 +227,7 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
         variant="determinate"
         value={(index / queue.currentCards.length) * 100}
         sx={{
-          mb: 3,
+          mb: { xs: 2, sm: 3 },
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[300], 0.12),
@@ -263,7 +270,8 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
         </Box>
       )}
 
-      <Box sx={{ mt: 3, textAlign: 'right' }}>
+      {/* Left on a phone: the floating buddy parks in the right-hand corner. */}
+      <Box sx={{ mt: { xs: 1, sm: 2 }, textAlign: { xs: 'left', sm: 'right' } }}>
         <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
           {tCommon('quitAndSave')}
         </Button>

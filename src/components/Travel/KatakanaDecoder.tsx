@@ -166,7 +166,7 @@ export function KatakanaDecoder() {
   }, []);
 
   return (
-    <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+    <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}>
       <Stack spacing={3}>
         {/* Header */}
         <PageHeader

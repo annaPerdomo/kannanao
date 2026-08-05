@@ -14,7 +14,9 @@ function shuffle<T>(arr: T[]): T[] {
 export type QueuePhase = 'playing' | 'roundEnd' | 'allDone';
 
 const MAX_RETRIES = 3;
-const REVIEW_MIX = 2;
+/** Mastered cards mixed into every round after the first: a round runs this much
+ * bigger than the batch asked for, which callers sizing a board must budget for. */
+export const REVIEW_MIX = 2;
 
 /**
  * Manages card batching with retry logic for practice modes.

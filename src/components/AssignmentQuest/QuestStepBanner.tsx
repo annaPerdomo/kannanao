@@ -32,10 +32,10 @@ export function QuestStepBanner({ legs, currentIndex }: QuestStepBannerProps) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 1.5,
-        mb: 3,
+        gap: { xs: 1, sm: 1.5 },
+        mb: { xs: 2, sm: 3 },
         px: 2,
-        py: 1,
+        py: { xs: 0.75, sm: 1 },
         borderRadius: theme.radii.md,
         bgcolor: alpha(brand[100], 0.55),
         border: `1px solid ${alpha(brand[300], 0.45)}`,
@@ -50,13 +50,13 @@ export function QuestStepBanner({ legs, currentIndex }: QuestStepBannerProps) {
               // Index, not step: a mixed session has several practice legs.
               key={i}
               sx={{
-                width: 28,
-                height: 28,
+                width: { xs: 24, sm: 28 },
+                height: { xs: 24, sm: 28 },
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '0.95rem',
+                fontSize: { xs: '0.85rem', sm: '0.95rem' },
                 border: active ? `2px solid ${accent[500]}` : `2px solid ${alpha(brand[300], 0.5)}`,
                 bgcolor: done
                   ? alpha(theme.palette.success.main, 0.15)
@@ -75,7 +75,9 @@ export function QuestStepBanner({ legs, currentIndex }: QuestStepBannerProps) {
         })}
       </Box>
 
-      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: 'text.primary' }}>
+      <Typography
+        sx={{ fontSize: { xs: '0.78rem', sm: '0.85rem' }, fontWeight: 700, color: 'text.primary' }}
+      >
         {t('stepOf', { current: currentIndex + 1, total: legs.length })}
         {current ? ` · ${t(`stepName.${current.step}`)}` : ''}
       </Typography>

@@ -71,7 +71,9 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
 
   if (loading || decksLoading) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+      <Box
+        sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
+      >
         <Loading message={t('loadingSession')} />
       </Box>
     );
@@ -84,7 +86,9 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
   // Locked and too-few-cards get the same message, so neither is a dead end.
   if (readingLocked || (mode === 'reading' && modeCards.length < MIN_READING_CARDS)) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+      <Box
+        sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
+      >
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography sx={{ fontSize: '3rem', mb: 1 }} aria-hidden>
@@ -103,7 +107,9 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
 
   if (modeCards.length < 2) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+      <Box
+        sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
+      >
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography color="text.secondary">{t('notEnoughCards')}</Typography>
@@ -115,7 +121,9 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
   // Quiz asks a fixed set of up to 10 questions and caps itself — no batch picker.
   if (mode === 'quiz') {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+      <Box
+        sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
+      >
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
         {questBanner}
         <QuizMode cards={modeCards} deckId={deckId} onExit={onBack} />
@@ -126,7 +134,9 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
   // Kotoba Bubble always shows its own setup page (handles generation + batch picking)
   if (mode === 'kotoba-bubble' && batchSize === null) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+      <Box
+        sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
+      >
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
         {questBanner}
         <KotobaBubbleSetup deckId={deckId} totalCards={modeCards.length} onSelect={setBatchSize} />
@@ -139,7 +149,9 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
   const needsPicker = !cardIds && modeCards.length > BATCH_PICKER_THRESHOLD;
   if (needsPicker && batchSize === null) {
     return (
-      <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+      <Box
+        sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
+      >
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
         {questBanner}
         <BatchPicker totalCards={modeCards.length} mode={mode} onSelect={setBatchSize} />
@@ -152,7 +164,7 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
   const effectiveBatchSize = batchSize ?? Math.min(modeCards.length, maxBatchForMode(mode));
 
   return (
-    <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: 4 }}>
+    <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}>
       <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
 
       {questBanner}
