@@ -473,7 +473,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                     >
                       {tile.label}
                     </Typography>
-                    <SpeakButton text={tile.speak} iconSize="0.9rem" />
+                    <SpeakButton text={tile.speak} iconSize="0.9rem" hitSlop={4} />
                   </Box>
                 ) : (
                   <Typography

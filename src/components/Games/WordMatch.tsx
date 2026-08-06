@@ -203,7 +203,7 @@ function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit, questMap }:
                     <Typography sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.05rem' }}>
                       {tile.label}
                     </Typography>
-                    {tile.speak && <SpeakButton text={tile.speak} iconSize="0.9rem" />}
+                    {tile.speak && <SpeakButton text={tile.speak} iconSize="0.9rem" hitSlop={4} />}
                   </Box>
                 ) : (
                   <Typography sx={{ fontSize: '0.85rem' }}>{tile.label}</Typography>
