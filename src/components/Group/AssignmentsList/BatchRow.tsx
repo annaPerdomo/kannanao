@@ -9,10 +9,9 @@ import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { dueDateLabel } from '../dueDate';
 import { useGoalLabel } from '../useGoalLabel';
 import type { AssignmentBatch } from './groupAssignments';
-
-type Translator = ReturnType<typeof useTranslations>;
 
 /** Only deadlines worth reacting to get a badge; the rest just show their date. */
 function dueDateColor(dueDate: string | null): 'orange' | 'red' | null {
@@ -22,16 +21,6 @@ function dueDateColor(dueDate: string | null): 'orange' | 'red' | null {
   if (days < 0) return 'red';
   if (days < 3) return 'orange';
   return null;
-}
-
-function dueDateLabel(dueDate: string | null, t: Translator): string {
-  if (!dueDate) return '';
-  const diff = new Date(dueDate).getTime() - Date.now();
-  const days = Math.ceil(diff / (24 * 60 * 60 * 1000));
-  if (days < 0) return t('overdueBy', { days: Math.abs(days) });
-  if (days === 0) return t('dueToday');
-  if (days === 1) return t('dueTomorrow');
-  return t('dueInDays', { days });
 }
 
 function formatDate(dateStr: string, locale: string): string {

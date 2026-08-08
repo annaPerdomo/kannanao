@@ -10,9 +10,8 @@ import { useTranslations } from 'next-intl';
 
 import type { Assignment } from '@/hooks/useAssignments';
 
+import { dueDateLabel } from './dueDate';
 import { useGoalLabel } from './useGoalLabel';
-
-type Translator = ReturnType<typeof useTranslations>;
 
 function dueDateColor(dueDate: string | null): 'green' | 'orange' | 'red' | null {
   if (!dueDate) return null;
@@ -21,16 +20,6 @@ function dueDateColor(dueDate: string | null): 'green' | 'orange' | 'red' | null
   if (days < 0) return 'red';
   if (days < 3) return 'orange';
   return 'green';
-}
-
-function dueDateLabel(dueDate: string | null, t: Translator): string {
-  if (!dueDate) return '';
-  const diff = new Date(dueDate).getTime() - Date.now();
-  const days = Math.ceil(diff / (24 * 60 * 60 * 1000));
-  if (days < 0) return t('overdueBy', { days: Math.abs(days) });
-  if (days === 0) return t('dueToday');
-  if (days === 1) return t('dueTomorrow');
-  return t('dueInDays', { days });
 }
 
 const DUE_COLORS = {
