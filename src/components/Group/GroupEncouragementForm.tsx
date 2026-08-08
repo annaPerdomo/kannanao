@@ -11,6 +11,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { EncouragementEmojiPicker } from './EncouragementEmojiPicker';
+import { useQuickSend } from './useQuickSend';
 
 interface GroupEncouragementFormProps {
   members: { id: string; username: string }[];
@@ -29,25 +30,20 @@ export function GroupEncouragementForm({ members, onSend }: GroupEncouragementFo
   ];
   const [message, setMessage] = useState('');
   const [emoji, setEmoji] = useState('⭐');
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { sending, sent, send } = useQuickSend(onSend);
 
   const handleSend = async (text?: string) => {
     const msg = text ?? message.trim();
     if (!msg || members.length === 0) return;
-    setSending(true);
     setError(null);
-    try {
-      await Promise.all(members.map((m) => onSend(m.id, msg, emoji)));
-      setMessage('');
-      setSent(true);
-      setTimeout(() => setSent(false), 3000);
-    } catch {
-      setError(t('failedToSendToSome'));
-    } finally {
-      setSending(false);
-    }
+    const ok = await send(
+      members.map((m) => m.id),
+      msg,
+      emoji,
+    );
+    if (ok) setMessage('');
+    else setError(t('failedToSendToSome'));
   };
 
   if (members.length === 0) return null;
