@@ -27,7 +27,7 @@ export interface LessonSetForm {
   withSentences: boolean;
 }
 
-/** Default first due date — a study week ends on Sunday. */
+/** A study week ends on Sunday. */
 export function nextSunday(from = new Date()): string {
   const date = new Date(from);
   const daysAhead = (7 - date.getDay()) % 7 || 7;

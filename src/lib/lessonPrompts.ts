@@ -37,7 +37,6 @@ export function dominantLevel(values: unknown[]): JlptLevel | undefined {
   return best;
 }
 
-/** Free-text guidance about the sentences ("casual speech", "business settings", …). */
 export const STYLE_NOTES_MAX = 300;
 
 const LEVEL_AUDIENCE: Record<JlptLevel, string> = {
