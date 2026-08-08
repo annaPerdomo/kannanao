@@ -17,6 +17,7 @@ import {
   isExpired,
   isGroupDashboardTab,
   LearnersTab,
+  NeedsAttention,
   OverviewTab,
   TabBar,
   WordsTab,
@@ -55,11 +56,14 @@ export default function GroupDashboardPage() {
     error: activityError,
   } = useGroupActivity(groupId, ACTIVITY_DAYS);
   const { decks } = useDecks();
-  const { assignments, createAssignment, updateAssignments, deleteAssignments } = useAssignments(
-    groupId,
-    true,
-    'given',
-  );
+  const {
+    assignments,
+    loading: assignmentsLoading,
+    error: assignmentsError,
+    createAssignment,
+    updateAssignments,
+    deleteAssignments,
+  } = useAssignments(groupId, true, 'given');
   const { sendEncouragement } = useEncouragements();
   const { invites, createInvite, revokeInvite } = useInvites(groupId);
   const { groups, updateGroup } = useGroups();
@@ -168,6 +172,20 @@ export default function GroupDashboardPage() {
         onOpenMaterials={() => router.push(`/materials?group=${groupId}`)}
         activeInviteCount={activeInvites.length}
       />
+
+      <Box sx={{ mb: { xs: 2.5, sm: 3 } }}>
+        <NeedsAttention
+          groupId={groupId}
+          members={members}
+          assignments={assignments}
+          assignmentsLoading={assignmentsLoading}
+          assignmentsError={assignmentsError}
+          onSelectMember={(id) => router.push(`/group/${groupId}/members/${id}`)}
+          onViewAssignments={() => handleTabChange('assignments')}
+          onViewLearners={() => handleTabChange('learners')}
+          onSendEncouragement={handleSendEncouragement}
+        />
+      </Box>
 
       <GroupOverview members={members} />
 

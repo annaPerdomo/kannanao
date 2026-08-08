@@ -10,7 +10,7 @@ import { UserAvatar } from '@/components/UserAvatar';
 import type { GroupMember } from '@/hooks/useGroup';
 import { xpProgressInLevel } from '@/hooks/useProgress';
 
-function timeAgo(dateStr: string | null, t: ReturnType<typeof useTranslations>): string {
+export function timeAgo(dateStr: string | null, t: ReturnType<typeof useTranslations>): string {
   if (!dateStr) return t('never');
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60_000);
