@@ -48,6 +48,10 @@ function byDueDate(a: AssignmentRow, b: AssignmentRow): number {
  * hand — the group's work existed, just not for them. This copies each of the
  * group's still-open handouts once, skipping any the learner already has.
  *
+ * A group set up before anyone joined has no handouts to copy — its schedule
+ * lives in `planned_assignments`. Those templates are the weakest source: a
+ * live handout for the same deck wins, since real work drifts from the plan.
+ *
  * Deliberately not copied: handouts whose deadline has already passed. Landing
  * in a new group with a stack of things that are late reads as failure on day
  * one, and the organizer can always re-assign one if it still matters.
@@ -71,7 +75,22 @@ export async function catchUpGroupAssignments(
     return 0;
   }
 
+  const { data: plannedRows, error: plannedError } = await sb
+    .from('planned_assignments')
+    .select(HANDOUT_FIELDS.join(', '))
+    .eq('group_id', groupId)
+    .or(`due_date.is.null,due_date.gte.${today}`);
+
+  if (plannedError) {
+    // Real handouts can still be copied; only the plan-ahead schedule is lost.
+    logger.warn('Failed to read planned schedule for catch-up', {
+      route,
+      error: plannedError.message,
+    });
+  }
+
   const rows = (groupRows ?? []) as unknown as (AssignmentRow & { member_id: string })[];
+  const templates = [...((plannedRows ?? []) as unknown as AssignmentRow[])].sort(byDueDate);
   const mine = new Set(rows.filter((r) => r.member_id === memberId).map(handoutKey));
   const myDecks = new Set(rows.filter((r) => r.member_id === memberId).map((r) => r.deck_id));
 
@@ -87,6 +106,11 @@ export async function catchUpGroupAssignments(
     if (mine.has(handoutKey(row)) || myDecks.has(row.deck_id)) continue;
     if (toCreate.has(row.deck_id)) continue;
     toCreate.set(row.deck_id, row);
+  }
+  for (const template of templates) {
+    if (mine.has(handoutKey(template)) || myDecks.has(template.deck_id)) continue;
+    if (toCreate.has(template.deck_id)) continue;
+    toCreate.set(template.deck_id, template);
   }
 
   if (toCreate.size === 0) return 0;

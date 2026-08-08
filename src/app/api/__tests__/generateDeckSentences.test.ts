@@ -39,7 +39,6 @@ import { generateDeckSentences } from '@/app/api/group/_lib/generateDeckSentence
 
 const ARGS = {
   deckId: 'd1',
-  memberId: null,
   knownWords: [],
   apiKey: 'key',
   ownerId: 'org1',
@@ -49,15 +48,26 @@ function ownDeck() {
   queues.decks.push({ data: { id: 'd1' }, error: null });
 }
 
-function withCards() {
-  queues.cards.push({
-    data: [{ id: 'c1', word: 'ねこ', reading: 'ねこ', meaning: 'cat' }],
-    error: null,
-  });
+function withCards(
+  cards: Record<string, unknown>[] = [{ id: 'c1', word: 'ねこ', reading: 'ねこ', meaning: 'cat' }],
+) {
+  queues.cards.push({ data: cards, error: null });
   // No existing set, then the post-insert re-fetch.
   queues.deck_practice_sentences.push({ data: [], error: null });
   queues.deck_practice_sentences.push({ data: [{ id: 's1' }], error: null });
 }
+
+function sentPrompt(): string {
+  return JSON.parse(mockFetch.mock.calls[0][1].body).contents[0].parts[0].text;
+}
+
+const card = (word: string, jlpt_level: string) => ({
+  id: word,
+  word,
+  reading: word,
+  meaning: word,
+  jlpt_level,
+});
 
 function geminiReturns(sentences: Record<string, unknown>[]) {
   mockFetch.mockResolvedValueOnce({
@@ -119,6 +129,30 @@ describe('generateDeckSentences', () => {
       [1, 1],
       [2, 0],
     ]);
+  });
+
+  it('does not let one hard word pitch a beginner deck above N5', async () => {
+    // This path runs for every deck in the app: the standalone "generate
+    // sentences" button passes no level, so one 刺身 must not rewrite the set.
+    ownDeck();
+    withCards([card('ねこ', 'N5'), card('いぬ', 'N5'), card('刺身', 'N2')]);
+    geminiReturns([sentence({})]);
+
+    await generateDeckSentences(ARGS);
+
+    expect(sentPrompt()).toContain('beginning learner');
+    expect(sentPrompt()).not.toContain('JLPT N2');
+  });
+
+  it('pitches a deck that really is hard at its own level', async () => {
+    ownDeck();
+    withCards([card('概念', 'N2'), card('傾向', 'N2'), card('本', 'N5')]);
+    geminiReturns([sentence({})]);
+
+    await generateDeckSentences(ARGS);
+
+    expect(sentPrompt()).toContain('upper-intermediate learner');
+    expect(sentPrompt()).not.toContain('RULE (counters)');
   });
 
   it('keeps the model’s intended order within a conversation', async () => {

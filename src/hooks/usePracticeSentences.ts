@@ -49,11 +49,13 @@ export function usePracticeSentences(deckId: string, memberId?: string) {
     };
   }, [deckId, memberId, t]);
 
+  // Generate and regenerate always write the deck's shared set; `memberId` only
+  // scopes the read above, so a legacy personalised set still displays.
   const generate = useCallback(async () => {
     setGenerating(true);
     setError(null);
     try {
-      const rows = await generatePracticeSentences(deckId, memberId);
+      const rows = await generatePracticeSentences(deckId);
       if (mountedRef.current) {
         setSentences(rows.map(dbSentenceToApp));
         setJustGenerated(true);
@@ -65,14 +67,14 @@ export function usePracticeSentences(deckId: string, memberId?: string) {
     } finally {
       if (mountedRef.current) setGenerating(false);
     }
-  }, [deckId, memberId, t]);
+  }, [deckId, t]);
 
   const regenerate = useCallback(async () => {
     setGenerating(true);
     setError(null);
     try {
-      await deletePracticeSentences(deckId, memberId);
-      const rows = await generatePracticeSentences(deckId, memberId);
+      await deletePracticeSentences(deckId);
+      const rows = await generatePracticeSentences(deckId);
       if (mountedRef.current) {
         setSentences(rows.map(dbSentenceToApp));
         setJustGenerated(true);
@@ -84,7 +86,7 @@ export function usePracticeSentences(deckId: string, memberId?: string) {
     } finally {
       if (mountedRef.current) setGenerating(false);
     }
-  }, [deckId, memberId, t]);
+  }, [deckId, t]);
 
   const clearJustGenerated = useCallback(() => setJustGenerated(false), []);
 

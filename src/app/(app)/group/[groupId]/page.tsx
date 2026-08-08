@@ -246,7 +246,7 @@ export default function GroupDashboardPage() {
                   <Button
                     size="small"
                     startIcon={<AutoAwesomeIcon sx={{ fontSize: 16 }} />}
-                    onClick={() => router.push(`/group/${groupId}/build`)}
+                    onClick={() => router.push(`/materials?group=${groupId}`)}
                     sx={{
                       textTransform: 'none',
                       fontWeight: 700,

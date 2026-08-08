@@ -19,7 +19,6 @@ export { InviteList, isExpired } from './InviteList';
 export { InviteQRCode } from './InviteQRCode';
 export { LeaderboardPanel } from './LeaderboardPanel';
 export { LeaderboardWidget } from './LeaderboardWidget';
-export { LessonBuilder } from './LessonBuilder';
 export { MemberCard } from './MemberCard';
 export { MemberDetail } from './MemberDetail';
 export { MembersPanel } from './MembersPanel';

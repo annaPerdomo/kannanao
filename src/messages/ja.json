@@ -1386,8 +1386,6 @@
       "emptyBody": "「招待」からこのグループにメンバーを追加しましょう。"
     },
     "lessonBuilder": {
-      "title": "レッスンをつくる",
-      "subtitle": "とりあげたいことを書いてください。この学習者がすでに知っていることばを土台に、デッキ・例文・週ごとの予定をつくります。",
       "goalLabel": "なにをとりあげますか？",
       "goalPlaceholder": "れい：レストランで注文するときの食べもののことば、ものの数えかた",
       "attachDocumentButton": "資料をつける",
@@ -1398,7 +1396,6 @@
       "documentSizeError": "ファイルは1つ8MB以下にしてください。",
       "documentTotalSizeError": "資料の合計は20MB以下にしてください。",
       "documentReadError": "ファイルをよみこめませんでした。もういちどためしてください。",
-      "learnerLabel": "だれのためのレッスンですか？",
       "weeksLabel": "何週間ですか？",
       "weeksOption": "{count}週間",
       "cardsPerDeckLabel": "1週間のカード数",
@@ -1416,28 +1413,81 @@
       "exampleEnLabel": "例文（英語）",
       "removeCardLabel": "{word}をけす",
       "buildsOnLabel": "つかっていることば：{words}",
-      "retentionLine": "{total}まい中{reused}まいが、すでに知っていることばを使っています",
+      "retentionLine": "{total}まい中{reused}まいが、前の週のことばを使っています",
       "retryDeckButton": "つくりなおす",
       "retryGoal": "{goal} — この週のデッキだけつくりなおしてください：{deck}",
       "dueDateLabel": "さいしょのデッキのしめきり",
       "dueDateHint": "つぎの週からは、7日ずつあとになります。",
       "applyButton": "デッキをつくってわりあてる",
+      "groupWideNotice": "このデッキと予定は、グループのみんなにわたされます。あとから入った学習者にもとどきます。",
       "applying": "つくっています…",
       "applyingMessage": "デッキと練習の文をつくっています — すこし時間がかかります。",
       "startOverButton": "さいしょから",
-      "successMessage": "デッキを{count}こつくって、わりあてました。",
+      "successMessage": "デッキを{count}こつくって、グループのみんなにわりあてました。",
       "deckFailed": "{name}でもんだいがありました：{reason}",
       "backToGroupButton": "グループにもどる",
       "errorMessage": "うまくいきませんでした。もういちどためしてください。",
       "emptyPlanMessage": "プランが空でした。とりあげたいことを少し変えてためしてください。",
-      "noLearners": "さきにこのグループに学習者をくわえてください。",
-      "organizerOnly": "このページは先生・保護者のかた用です。",
       "sentencesToggleLabel": "ことばバブルの練習文もつくる",
-      "sentencesToggleHint": "デッキごとに1セット。この学習者がもう知っていることばをつかってつくります。デッキをわたす人みんながつかえます。"
-    },
+      "sentencesToggleHint": "デッキごとに1セット。グループのみんなが同じ文で練習するので、チェックもかんたんです。"
+    }
+  },
+  "Materials": {
     "meta": {
-      "buildTitle": "レッスンをつくる — グループ | Tangodachi",
-      "buildDescription": "とりあげたいことを書くと、学習者がすでに知っていることばを土台にしたデッキ・例文・週ごとの予定ができます。"
+      "title": "教材づくり | Tangodachi",
+      "description": "レッスンセットもデッキ1つも、数秒で。デッキ・例文・週ごとの予定を、ちょうどいいレベルでつくれます。"
+    },
+    "title": "教材づくり",
+    "subtitle": "レッスンセットも、デッキ1つだけでも、数秒でつくれます。",
+    "loadingMessage": "よみこみ中…",
+    "tabs": {
+      "lessonSet": "レッスンセット",
+      "deck": "デッキだけ"
+    },
+    "step1Title": "なにをつくりますか？",
+    "step1Subtitle": "目標やトピック、おぼえたいことばを書いてください。資料をつけてもOKです。",
+    "step2Title": "プランをきめる",
+    "step2Subtitle": "きほんの設定です。あとからいつでも変えられます。",
+    "step3Title": "つくる教材をえらぶ",
+    "step3Subtitle": "毎週つくるものをえらんでください。",
+    "groupLabel": "どのグループ？",
+    "levelLabel": "日本語レベル",
+    "levels": {
+      "N5": "N5 — 入門",
+      "N4": "N4 — 初級",
+      "N3": "N3 — 中級",
+      "N2": "N2 — 中上級",
+      "N1": "N1 — 上級"
+    },
+    "advancedToggle": "こまかい設定",
+    "styleNotesLabel": "例文についての希望はありますか？",
+    "styleNotesPlaceholder": "れい：友だち同士のカジュアルな会話、会社でつかうていねいな文 など",
+    "styleNotesHint": "にんい — 例文のスタイルやトピック、むずかしさを指定できます。",
+    "vocabularyDecksLabel": "単語デッキ",
+    "vocabularyDecksHint": "週ごとに1つ、すぐ学習とわりあてができます。",
+    "suggestions": {
+      "dailyLifeLabel": "毎日のせいかつ",
+      "dailyLifeGoal": "毎日のせいかつ — おきる、食べる、学校、でかけることば",
+      "travelLabel": "日本のたび",
+      "travelGoal": "日本での移動 — 駅、道あんない、きっぷ、こまったときのことば",
+      "foodCultureLabel": "食べものと文化",
+      "foodCultureGoal": "食べもののことばとレストランでの注文、食文化とマナー",
+      "seasonsLabel": "季節と行事",
+      "seasonsGoal": "四季と天気のことば、一年の行事やおまつり"
+    },
+    "noGroups": "さきにグループをつくってください。そのあとでレッスンセットをつくれます。学習者はいつでも入れます。",
+    "createGroupButton": "グループへ",
+    "deckPanel": {
+      "title": "デッキをつくる",
+      "subtitle": "すきなトピックや単語リストから、デッキを1つつくれます。",
+      "aiRow": "AIで生成",
+      "aiHint": "トピックを書くと、カードが自動でできあがります。",
+      "pdfRow": "PDFからとりこむ",
+      "pdfHint": "資料から単語をぬきだします。",
+      "copyRow": "もっているカードをコピー",
+      "copyHint": "ほかのデッキのカードをつかいまわせます。",
+      "createButton": "デッキをつくる",
+      "seeDecksButton": "デッキ一覧へ"
     }
   },
   "Nav": {
@@ -1448,6 +1498,7 @@
     "items": {
       "home": "ホーム",
       "decks": "デッキ",
+      "materials": "教材",
       "groups": "グループ",
       "speech": "スピーチ",
       "travel": "トラベル",

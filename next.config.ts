@@ -136,6 +136,7 @@ const pwaConfig = withPWA({
   // Study-buddy art (~920 KB across 81 files) is excluded on the same grounds.
   // Login backgrounds (~350 KB) and the landing's hero artwork (~210 KB) only
   // matter to signed-out visitors, who by definition haven't installed the PWA.
+  // Materials Builder art (~200 KB) is organizer-only decoration.
   publicExcludes: [
     '!noprecache/**/*',
     '!stickers/**/*',
@@ -143,6 +144,7 @@ const pwaConfig = withPWA({
     '!buddies/**/*',
     '!login/**/*',
     '!landing/**/*',
+    '!materials/**/*',
   ],
   workboxOptions: {
     disableDevLogs: true,

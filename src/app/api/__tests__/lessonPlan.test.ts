@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
-import { DOCUMENT_MAX_BYTES } from '@/components/Group/LessonBuilder/constants';
+import { DOCUMENT_MAX_BYTES } from '@/components/MaterialsBuilder/constants';
 
 const DOCUMENT_MAX_BASE64_CHARS = Math.ceil(DOCUMENT_MAX_BYTES / 3) * 4;
 
@@ -65,11 +65,6 @@ function makeRequest(body: unknown) {
   });
 }
 
-/** A learner the organizer owns, so isMemberOfOrganizer passes. */
-function memberExists() {
-  queues.group_members.push({ data: [{ group_id: 'g1' }], error: null });
-}
-
 function mockGeminiPlan() {
   mockFetch.mockResolvedValueOnce({
     ok: true,
@@ -109,7 +104,7 @@ function mockGeminiPlan() {
   });
 }
 
-const VALID = { memberId: 'm1', goal: 'Food words for a restaurant', weeks: 2, cardsPerDeck: 10 };
+const VALID = { goal: 'Food words for a restaurant', weeks: 2, cardsPerDeck: 10 };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -140,14 +135,31 @@ describe('POST /api/group/lesson-plan', () => {
     expect((await POST(makeRequest({ ...VALID, cardsPerDeck: 1 }))).status).toBe(400);
   });
 
-  it('rejects a learner outside the caller’s group', async () => {
-    queues.group_members.push({ data: [], error: null });
-    const res = await POST(makeRequest(VALID));
-    expect(res.status).toBe(403);
+  it('rejects an unknown JLPT level', async () => {
+    const res = await POST(makeRequest({ ...VALID, level: 'N6' }));
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects style notes over the length cap', async () => {
+    const res = await POST(makeRequest({ ...VALID, styleNotes: 'x'.repeat(301) }));
+    expect(res.status).toBe(400);
+  });
+
+  it('pitches the prompt at the requested level and includes the style notes', async () => {
+    mockGeminiPlan();
+
+    const res = await POST(
+      makeRequest({ ...VALID, level: 'N2', styleNotes: 'Business settings, polite form' }),
+    );
+    expect(res.status).toBe(200);
+
+    const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+    const prompt = requestBody.contents[0].parts[0].text;
+    expect(prompt).toContain('upper-intermediate learner');
+    expect(prompt).toContain('Business settings, polite form');
   });
 
   it('returns the plan and writes nothing', async () => {
-    memberExists();
     mockGeminiPlan();
 
     const res = await POST(makeRequest(VALID));
@@ -160,7 +172,6 @@ describe('POST /api/group/lesson-plan', () => {
   });
 
   it('reports a Gemini failure as 502', async () => {
-    memberExists();
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 429,
@@ -172,7 +183,6 @@ describe('POST /api/group/lesson-plan', () => {
   });
 
   it('reports an empty plan rather than returning it', async () => {
-    memberExists();
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -186,7 +196,6 @@ describe('POST /api/group/lesson-plan', () => {
   });
 
   it('rejects a document mime type that is not a PDF or plain text file', async () => {
-    memberExists();
     const res = await POST(
       makeRequest({ ...VALID, documents: [{ base64: 'YWJj', mimeType: 'image/png' }] }),
     );
@@ -194,13 +203,11 @@ describe('POST /api/group/lesson-plan', () => {
   });
 
   it('rejects a malformed document entry instead of crashing', async () => {
-    memberExists();
     const res = await POST(makeRequest({ ...VALID, documents: [null] }));
     expect(res.status).toBe(400);
   });
 
   it('rejects a document over the per-file size cap', async () => {
-    memberExists();
     const res = await POST(
       makeRequest({
         ...VALID,
@@ -213,7 +220,6 @@ describe('POST /api/group/lesson-plan', () => {
   });
 
   it('rejects documents whose combined size is over the total cap', async () => {
-    memberExists();
     const atPerFileCap = 'a'.repeat(DOCUMENT_MAX_BASE64_CHARS);
     const res = await POST(
       makeRequest({
@@ -231,7 +237,6 @@ describe('POST /api/group/lesson-plan', () => {
   });
 
   it('sends each document to Gemini as its own inline data part alongside the prompt', async () => {
-    memberExists();
     mockGeminiPlan();
 
     const res = await POST(

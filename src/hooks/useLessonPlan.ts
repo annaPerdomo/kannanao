@@ -5,28 +5,26 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { invalidateApiCache } from '@/lib/apiCache';
 import { applyLessonPlan, buildLessonPlan } from '@/services/api';
-import type {
-  ApplyDeckResult,
-  LessonDocument,
-  LessonPlan,
-  PlanKnownWord,
-} from '@/types/lessonPlan';
+import type { ApplyDeckResult, LessonDocument, LessonPlan } from '@/types/lessonPlan';
 
 export interface BuildPlanArgs {
-  memberId: string;
   goal: string;
   weeks: number;
   cardsPerDeck: number;
   documents?: LessonDocument[];
+  level?: string;
+  styleNotes?: string;
 }
 
 export interface ApplyPlanArgs {
+  /** Decks are assigned to everyone in this group; later joiners are caught up. */
   groupId: string;
-  memberId: string;
   firstDueDate: string;
   requiredAccuracy?: number | null;
   requiredMode?: string | null;
   withSentences?: boolean;
+  level?: string;
+  styleNotes?: string;
 }
 
 export function useLessonPlan() {
@@ -38,7 +36,6 @@ export function useLessonPlan() {
    * making a second copy of everything that already landed.
    */
   const [planId, setPlanId] = useState<string | null>(null);
-  const [knownWords, setKnownWords] = useState<PlanKnownWord[]>([]);
   const [results, setResults] = useState<ApplyDeckResult[] | null>(null);
   const [building, setBuilding] = useState(false);
   const [applying, setApplying] = useState(false);
@@ -57,7 +54,6 @@ export function useLessonPlan() {
         });
         setPlan(data.plan);
         setPlanId(uuidv4());
-        setKnownWords(data.knownWords ?? []);
       } catch (err) {
         setError(err instanceof Error ? err.message : t('errorMessage'));
         setPlan(null);
@@ -89,10 +85,9 @@ export function useLessonPlan() {
   const reset = useCallback(() => {
     setPlan(null);
     setPlanId(null);
-    setKnownWords([]);
     setResults(null);
     setError(null);
   }, []);
 
-  return { plan, setPlan, knownWords, results, building, applying, error, build, apply, reset };
+  return { plan, setPlan, results, building, applying, error, build, apply, reset };
 }

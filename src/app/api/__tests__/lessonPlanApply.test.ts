@@ -105,10 +105,10 @@ function planWith(names: string[]): LessonPlan {
   };
 }
 
-/** groups lookup (requireGroupAccess) → membership check → highest deck position. */
-function seedAccess() {
+/** groups lookup (requireGroupAccess) → group roster → highest deck position. */
+function seedAccess(memberIds: string[] = ['m1']) {
   reads.groups.push({ data: { id: 'g1', organizer_id: 'org1' }, error: null });
-  reads.group_members.push({ data: { member_id: 'm1' }, error: null });
+  reads.group_members.push({ data: memberIds.map((id) => ({ member_id: id })), error: null });
   reads.decks.push({ data: { position: 4 }, error: null });
 }
 
@@ -116,7 +116,7 @@ function rowsFor(table: string) {
   return inserted.filter((i) => i.table === table).flatMap((i) => i.rows);
 }
 
-const BASE = { groupId: 'g1', memberId: 'm1', firstDueDate: '2026-08-09' };
+const BASE = { groupId: 'g1', firstDueDate: '2026-08-09' };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -221,12 +221,51 @@ describe('POST /api/group/lesson-plan/apply', () => {
     expect(results[1]).toMatchObject({ name: 'Counting', status: 'created' });
   });
 
-  it('rejects a learner outside the caller’s group', async () => {
-    reads.groups.push({ data: { id: 'g1', organizer_id: 'org1' }, error: null });
-    reads.group_members.push({ data: null, error: null });
+  it('assigns every deck to every current member of the group', async () => {
+    seedAccess(['m1', 'm2']);
+    insertReturns.decks.push({ data: { id: 'd1' } }, { data: { id: 'd2' } });
+
+    const res = await POST(makeRequest({ ...BASE, plan: planWith(['Food', 'Counting']) }));
+    expect(res.status).toBe(200);
+
+    const assignments = rowsFor('assignments');
+    expect(assignments).toHaveLength(4);
+    expect(assignments.map((a) => `${a.member_id}:${a.deck_id}`).sort()).toEqual([
+      'm1:d1',
+      'm1:d2',
+      'm2:d1',
+      'm2:d2',
+    ]);
+  });
+
+  it('an empty group still gets decks and templates, just no assignments', async () => {
+    seedAccess([]);
+    insertReturns.decks.push({ data: { id: 'd1' } });
 
     const res = await POST(makeRequest({ ...BASE, plan: planWith(['Food']) }));
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(200);
+
+    const { results } = await res.json();
+    expect(results[0]).toMatchObject({ status: 'created' });
+    expect(rowsFor('assignments')).toHaveLength(0);
+    expect(rowsFor('planned_assignments')).toHaveLength(1);
+  });
+
+  it('always saves the weekly schedule as templates for late joiners', async () => {
+    seedAccess(['m1']);
+    insertReturns.decks.push({ data: { id: 'd1' } }, { data: { id: 'd2' } });
+
+    await POST(makeRequest({ ...BASE, plan: planWith(['Food', 'Counting']) }));
+
+    const templates = rowsFor('planned_assignments');
+    expect(templates[0]).toMatchObject({
+      organizer_id: 'org1',
+      group_id: 'g1',
+      deck_id: 'd1',
+      due_date: '2026-08-09',
+    });
+    expect(templates[1]).toMatchObject({ deck_id: 'd2', due_date: '2026-08-16' });
+    expect(templates[0].title).toContain('Week 1');
   });
 
   // The deck is shared with everyone the organizer assigns it to, so a set
@@ -239,7 +278,7 @@ describe('POST /api/group/lesson-plan/apply', () => {
     await POST(makeRequest({ ...BASE, plan: planWith(['Food']) }));
 
     expect(generateDeckSentencesMock).toHaveBeenCalledWith(
-      expect.objectContaining({ deckId: 'd1', memberId: null, ownerId: 'org1' }),
+      expect.objectContaining({ deckId: 'd1', ownerId: 'org1' }),
     );
   });
 

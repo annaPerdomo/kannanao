@@ -3,17 +3,23 @@ import { type NextRequest, NextResponse } from 'next/server';
 import {
   DOCUMENT_MAX_BYTES,
   DOCUMENT_MAX_TOTAL_BYTES,
-} from '@/components/Group/LessonBuilder/constants';
+} from '@/components/MaterialsBuilder/constants';
 import { normalizeFurigana } from '@/lib/furigana';
-import { buildLessonPlanPrompt, CARDS_DEFAULT, CARDS_MAX, CARDS_MIN } from '@/lib/lessonPrompts';
+import {
+  buildLessonPlanPrompt,
+  CARDS_DEFAULT,
+  CARDS_MAX,
+  CARDS_MIN,
+  DEFAULT_LEVEL,
+  isJlptLevel,
+  STYLE_NOTES_MAX,
+} from '@/lib/lessonPrompts';
 import { logger } from '@/lib/logger';
 import type { LessonPlan } from '@/types/lessonPlan';
 
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
 import { consumeLessonBudget } from '../_lib/lessonBudget';
-import { isMemberOfOrganizer } from '../_lib/membership';
-import { loadStudiedVocabulary } from '../_lib/studiedVocabulary';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 3 };
 
@@ -74,7 +80,7 @@ const PLAN_RESPONSE_SCHEMA = {
 };
 
 /**
- * POST — draft a multi-week lesson plan for one learner.
+ * POST — draft a multi-week lesson plan for a group.
  *
  * Writes nothing: a plan the organizer rejects must cost tokens and nothing else.
  * `/api/group/lesson-plan/apply` is what turns an approved plan into decks.
@@ -87,12 +93,13 @@ export async function POST(req: NextRequest) {
   if (orgCheck instanceof NextResponse) return orgCheck;
 
   const body = await req.json().catch(() => null);
-  const { memberId, goal, weeks, cardsPerDeck, documents } = (body ?? {}) as {
-    memberId?: string;
+  const { goal, weeks, cardsPerDeck, documents, level, styleNotes } = (body ?? {}) as {
     goal?: string;
     weeks?: number;
     cardsPerDeck?: number;
     documents?: LessonDocumentInput[];
+    level?: string;
+    styleNotes?: string;
   };
 
   const trimmedGoal = typeof goal === 'string' ? goal.trim() : '';
@@ -115,11 +122,22 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  if (!memberId) {
-    return NextResponse.json({ error: 'memberId is required.' }, { status: 400 });
+  if (level !== undefined && !isJlptLevel(level)) {
+    return NextResponse.json(
+      { error: 'level must be one of N5, N4, N3, N2, N1.' },
+      { status: 400 },
+    );
   }
-  if (!(await isMemberOfOrganizer(memberId, orgCheck.id))) {
-    return NextResponse.json({ error: 'Learner not found in your group.' }, { status: 403 });
+  if (styleNotes !== undefined && typeof styleNotes !== 'string') {
+    return NextResponse.json({ error: 'styleNotes must be a string.' }, { status: 400 });
+  }
+  const jlptLevel = isJlptLevel(level) ? level : DEFAULT_LEVEL;
+  const trimmedStyleNotes = (styleNotes ?? '').trim();
+  if (trimmedStyleNotes.length > STYLE_NOTES_MAX) {
+    return NextResponse.json(
+      { error: `styleNotes must be at most ${STYLE_NOTES_MAX} characters.` },
+      { status: 400 },
+    );
   }
   if (documents !== undefined) {
     if (!Array.isArray(documents)) {
@@ -160,7 +178,6 @@ export async function POST(req: NextRequest) {
   if (overBudget) return overBudget;
 
   try {
-    const knownWords = await loadStudiedVocabulary(memberId);
     const documentCount = documents?.length ?? 0;
 
     const parts: Array<Record<string, unknown>> = [];
@@ -172,8 +189,11 @@ export async function POST(req: NextRequest) {
         goal: trimmedGoal,
         weeks: weeks as number,
         cardsPerDeck: cards,
-        knownWords,
+        // Group-wide materials: no one learner's studied vocabulary seeds a plan.
+        knownWords: [],
         documentCount,
+        level: jlptLevel,
+        styleNotes: trimmedStyleNotes || undefined,
       }),
     });
 
@@ -226,10 +246,10 @@ export async function POST(req: NextRequest) {
     logger.info('Lesson plan generated', {
       route: 'POST /api/group/lesson-plan',
       organizerId: orgCheck.id,
-      memberId,
       weeks,
       cardsPerDeck: cards,
-      knownWordCount: knownWords.length,
+      level: jlptLevel,
+      styleNoteChars: trimmedStyleNotes.length,
       documentCount,
       deckCount: plan.decks.length,
       cardCount: plan.decks.reduce((n, d) => n + (d.cards?.length ?? 0), 0),
@@ -237,10 +257,7 @@ export async function POST(req: NextRequest) {
       outputTokens: data.usageMetadata?.candidatesTokenCount ?? null,
     });
 
-    return NextResponse.json({
-      plan,
-      knownWords: knownWords.map((w) => ({ word: w.word, reading: w.reading })),
-    });
+    return NextResponse.json({ plan });
   } catch (err) {
     logger.error('Unhandled error', {
       route: 'POST /api/group/lesson-plan',

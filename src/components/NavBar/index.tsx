@@ -155,6 +155,13 @@ export function NavBar() {
                 alignItems: 'center',
                 gap: { sm: 0.25, md: 0.75 },
                 mx: 'auto',
+                // Where the full row doesn't fit (organizer accounts on tablets)
+                // the strip pans within itself rather than pushing the toolbar
+                // past the viewport edge.
+                minWidth: 0,
+                overflowX: 'auto',
+                scrollbarWidth: 'none',
+                '&::-webkit-scrollbar': { display: 'none' },
               }}
             >
               {NAV_ITEMS.map(({ key, href, icon: Icon, exact, organizerOnly }) => {
@@ -167,7 +174,7 @@ export function NavBar() {
                     size="small"
                     startIcon={<Icon />}
                     aria-current={active ? 'page' : undefined}
-                    sx={active ? navBtnActive : navBtn}
+                    sx={{ ...(active ? navBtnActive : navBtn), flexShrink: 0 }}
                   >
                     <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                       {tItems(key)}

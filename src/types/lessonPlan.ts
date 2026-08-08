@@ -19,12 +19,6 @@ export interface LessonPlan {
   decks: PlanDeck[];
 }
 
-/** Words the learner already owns, sent alongside a plan so the UI can show reuse. */
-export interface PlanKnownWord {
-  word: string;
-  reading: string;
-}
-
 /** A reference file (vocab list, syllabus, textbook page) the organizer attaches for extra context. */
 export interface LessonDocument {
   name: string;
@@ -35,7 +29,6 @@ export interface LessonDocument {
 
 export interface LessonPlanResponse {
   plan: LessonPlan;
-  knownWords: PlanKnownWord[];
 }
 
 export interface ApplyDeckResult {

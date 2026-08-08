@@ -1,6 +1,12 @@
 import { normalizeFurigana } from '@/lib/furigana';
 import { excludeDeckWords, type KnownWord } from '@/lib/knownWords';
-import { buildSentencePrompt, type PromptWord, sentenceCountFor } from '@/lib/lessonPrompts';
+import {
+  buildSentencePrompt,
+  dominantLevel,
+  type JlptLevel,
+  type PromptWord,
+  sentenceCountFor,
+} from '@/lib/lessonPrompts';
 import { logger } from '@/lib/logger';
 import type { DbPracticeSentence } from '@/types/practiceSentence';
 
@@ -73,19 +79,22 @@ export type GenerateOutcome =
   | { status: 'failed'; error: string; httpStatus: number; deckWords: PromptWord[] };
 
 /**
- * Generates and stores one deck's Kotoba Bubble sentences. Shared by the
- * per-deck route and the batch endpoint so prompt handling never diverges.
- * Returns the deck's words so a batch caller can feed them forward.
+ * Generates and stores one deck's Kotoba Bubble sentences — always the shared
+ * set (`for_member_id: null`); per-learner sets are read-only legacy, since one
+ * Gemini call per deck is what the budget and the organizer's QA can carry.
+ * Returns the deck's words so a plan-order caller can feed them forward.
  */
 export async function generateDeckSentences(args: {
   deckId: string;
-  memberId: string | null;
   knownWords: KnownWord[];
   apiKey: string;
   /** Deck must belong to this organizer — the service client bypasses RLS. */
   ownerId: string;
+  /** Pitch of the sentences. Defaults to the JLPT level most of the deck's cards carry. */
+  level?: JlptLevel;
+  styleNotes?: string;
 }): Promise<GenerateOutcome> {
-  const { deckId, memberId, knownWords, apiKey, ownerId } = args;
+  const { deckId, knownWords, apiKey, ownerId } = args;
   const sb = getServiceSupabase();
 
   const { data: deck } = await sb
@@ -106,7 +115,7 @@ export async function generateDeckSentences(args: {
 
   const { data: cards, error: cardsError } = await sb
     .from('cards')
-    .select('id, word, reading, meaning')
+    .select('id, word, reading, meaning, jlpt_level')
     .eq('deck_id', deckId)
     .order('position', { ascending: true });
 
@@ -125,15 +134,19 @@ export async function generateDeckSentences(args: {
     meaning: c.meaning ?? '',
   }));
 
-  const existingQuery = sb.from('deck_practice_sentences').select('id').eq('deck_id', deckId);
-  const { data: existing } = await (
-    memberId ? existingQuery.eq('for_member_id', memberId) : existingQuery.is('for_member_id', null)
-  ).limit(1);
+  const { data: existing } = await sb
+    .from('deck_practice_sentences')
+    .select('id')
+    .eq('deck_id', deckId)
+    .is('for_member_id', null)
+    .limit(1);
 
   if (existing && existing.length > 0) {
-    const { data } = await selectSentences(deckId, memberId);
+    const { data } = await selectSentences(deckId, null);
     return { status: 'skipped', sentences: (data ?? []) as DbPracticeSentence[], deckWords };
   }
+
+  const level = args.level ?? dominantLevel(cards.map((c) => c.jlpt_level));
 
   const prompt = buildSentencePrompt({
     deckWords,
@@ -143,6 +156,8 @@ export async function generateDeckSentences(args: {
       deckWords.flatMap((w) => [w.word, w.reading]),
     ),
     sentenceCount: sentenceCountFor(cards.length),
+    level,
+    styleNotes: args.styleNotes,
   });
 
   const response = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
@@ -208,7 +223,7 @@ export async function generateDeckSentences(args: {
     nextOrder.set(group, order + 1);
     return {
       deck_id: deckId,
-      for_member_id: memberId,
+      for_member_id: null,
       sentence_jp: normalizeFurigana(s.sentence_jp),
       sentence_en: s.sentence_en,
       target_particle: s.target_particle,
@@ -242,14 +257,14 @@ export async function generateDeckSentences(args: {
   logger.info('Practice sentences generated', {
     route: 'generateDeckSentences',
     deckId,
-    memberId,
     deckWordCount: deckWords.length,
     knownWordCount: knownWords.length,
+    level: level ?? 'N5',
     sentenceCount: rows.length,
     promptTokens: data.usageMetadata?.promptTokenCount ?? null,
     outputTokens: data.usageMetadata?.candidatesTokenCount ?? null,
   });
 
-  const { data: saved } = await selectSentences(deckId, memberId);
+  const { data: saved } = await selectSentences(deckId, null);
   return { status: 'generated', sentences: (saved ?? []) as DbPracticeSentence[], deckWords };
 }

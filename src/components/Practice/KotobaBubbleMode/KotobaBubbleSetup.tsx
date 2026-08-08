@@ -23,9 +23,8 @@ export function KotobaBubbleSetup({ deckId, totalCards, onSelect }: KotobaBubble
   const t = useTranslations('Practice.kotobaBubble');
   const { isMemberAccount, user } = useAuth();
 
-  // A learner reads the set the Lesson Builder personalised for them, falling
-  // back to the shared set server-side. Organizers always work on the shared
-  // set — it is the one they can generate and edit.
+  // A learner's id is passed only so a legacy personalised set still renders;
+  // the server falls back to the shared set, which is all that is written now.
   const {
     sentences,
     loading,

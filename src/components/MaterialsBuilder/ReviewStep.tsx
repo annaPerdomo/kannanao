@@ -1,8 +1,6 @@
 'use client';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -11,47 +9,41 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
+import { AssignmentGoalPicker } from '@/components/Group/AssignmentGoalPicker';
 import type { GoalMode } from '@/lib/assignmentMastery';
 import { planReuse } from '@/lib/lessonReuse';
-import type { LessonPlan, PlanDeck, PlanKnownWord } from '@/types/lessonPlan';
+import type { LessonPlan, PlanDeck } from '@/types/lessonPlan';
 
-import { AssignmentGoalPicker } from '../AssignmentGoalPicker';
 import { PlanDeckCard } from './PlanDeckCard';
 
 interface ReviewStepProps {
   plan: LessonPlan;
-  knownWords: PlanKnownWord[];
   dueDate: string;
   accuracy: number | null;
   mode: GoalMode | null;
   applying: boolean;
   retryingIndex: number | null;
-  withSentences: boolean;
   onDeckChange: (index: number, deck: PlanDeck) => void;
   onRetryDeck: (index: number) => void;
   onDueDateChange: (date: string) => void;
   onAccuracyChange: (accuracy: number | null) => void;
   onModeChange: (mode: GoalMode | null) => void;
-  onWithSentencesChange: (value: boolean) => void;
   onApply: () => void;
   onStartOver: () => void;
 }
 
 export function ReviewStep({
   plan,
-  knownWords,
   dueDate,
   accuracy,
   mode,
   applying,
   retryingIndex,
-  withSentences,
   onDeckChange,
   onRetryDeck,
   onDueDateChange,
   onAccuracyChange,
   onModeChange,
-  onWithSentencesChange,
   onApply,
   onStartOver,
 }: ReviewStepProps) {
@@ -59,14 +51,8 @@ export function ReviewStep({
   const theme = useTheme();
   const { brand } = theme.palette;
 
-  const reuse = useMemo(
-    () =>
-      planReuse(
-        plan.decks,
-        knownWords.map((w) => w.word),
-      ),
-    [plan.decks, knownWords],
-  );
+  // No outside vocabulary: reuse is measured within the plan, week 2 against week 1.
+  const reuse = useMemo(() => planReuse(plan.decks, []), [plan.decks]);
 
   const cardTotal = plan.decks.reduce((sum, d) => sum + (d.cards?.length ?? 0), 0);
 
@@ -78,8 +64,7 @@ export function ReviewStep({
 
       {plan.decks.map((deck, i) => (
         <PlanDeckCard
-          // The deck name is editable, so it can't be part of the key — see
-          // the same note in PlanDeckCard.
+          // Keyed by index: the deck name is editable (see PlanDeckCard).
           key={i}
           deck={deck}
           weekNumber={i + 1}
@@ -120,20 +105,9 @@ export function ReviewStep({
             onModeChange={onModeChange}
           />
 
-          <Box>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={withSentences}
-                  onChange={(e) => onWithSentencesChange(e.target.checked)}
-                />
-              }
-              label={t('sentencesToggleLabel')}
-            />
-            <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', ml: 4 }}>
-              {t('sentencesToggleHint')}
-            </Typography>
-          </Box>
+          <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
+            {t('groupWideNotice')}
+          </Typography>
 
           <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
             <Button

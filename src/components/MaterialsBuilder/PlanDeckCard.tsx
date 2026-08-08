@@ -81,9 +81,11 @@ export function PlanDeckCard({
         </Button>
       </Stack>
 
-      <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', mb: 1.5 }}>
-        {t('retentionLine', { reused: reuse.reused, total: reuse.total })}
-      </Typography>
+      {weekNumber > 1 && (
+        <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', mb: 1.5 }}>
+          {t('retentionLine', { reused: reuse.reused, total: reuse.total })}
+        </Typography>
+      )}
 
       <Stack spacing={1.5}>
         {deck.cards.map((card, i) => (
