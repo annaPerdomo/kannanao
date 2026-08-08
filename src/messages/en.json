@@ -1043,7 +1043,8 @@
       "noMembers": "No members in this group yet.",
       "noAttempts": "No one has taken this quiz yet.",
       "loadFailed": "Failed to load quiz scores",
-      "summary": "{taken} of {total} have taken it · average {average}%"
+      "summary": "{taken} of {total} have taken it · average {average}%",
+      "noDecksBody": "Make a deck in the Materials Builder to see quiz scores here."
     },
     "goalPicker": {
       "addGoal": "🎯 Add a goal (optional)",
@@ -1252,7 +1253,6 @@
       "renameGroup": "Rename group",
       "defaultTitle": "Group Dashboard",
       "memberCountInGroup": "{count, plural, one {# member} other {# members}} in this group",
-      "inviteButton": "Invite",
       "assignDeckButton": "Assign Deck",
       "weeklyLeaderboard": "Weekly leaderboard",
       "visible": "Visible",
@@ -1263,10 +1263,20 @@
       "assignmentsHeading": "Assignments",
       "recentActivityHeading": "Recent activity",
       "loadingActivity": "Loading activity...",
-      "newButton": "New",
       "showAll": "Show all {count}",
       "showLess": "Show less",
-      "buildLessonButton": "Build a lesson"
+      "quickActionsLabel": "Quick actions",
+      "inviteLearnersTitle": "Invite learners",
+      "inviteLearnersSubtitle": "Share link or QR",
+      "materialsBuilderTitle": "Open Materials Builder",
+      "materialsBuilderSubtitle": "Create decks, lessons, and assignments"
+    },
+    "dashboardTabs": {
+      "overview": "Overview",
+      "learners": "Learners",
+      "assignments": "Assignments",
+      "words": "Words",
+      "activity": "Activity"
     },
     "groupsPage": {
       "loadingGroups": "Loading groups...",
@@ -1345,7 +1355,8 @@
       "allStudentsStruggling": "{attempts, plural, one {All # student who tried it keep missing this word.} other {All # students who tried it keep missing this word.}}",
       "someStudentsStruggling": "{struggling} of {attempts} students who tried it keep missing this word.",
       "percentRight": "{percent}% right",
-      "chartCaption": "Share of the group still missing each word"
+      "chartCaption": "Share of the group still missing each word",
+      "noDecksBody": "Make a deck in the Materials Builder to see tricky words here."
     },
     "useItemAnalysis": {
       "failedToLoad": "Failed to load analysis"

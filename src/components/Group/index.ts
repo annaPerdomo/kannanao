@@ -5,6 +5,17 @@ export { AssignmentsList } from './AssignmentsList';
 export { CreateAssignmentDialog } from './CreateAssignmentDialog';
 export { CreateGroupDialog } from './CreateGroupDialog';
 export { CreateInviteDialog } from './CreateInviteDialog';
+export {
+  ActivityTab,
+  AssignmentsTab,
+  GROUP_DASHBOARD_TABS,
+  type GroupDashboardTab,
+  isGroupDashboardTab,
+  LearnersTab,
+  OverviewTab,
+  TabBar,
+  WordsTab,
+} from './DashboardTabs';
 export { DeckPicker } from './DeckPicker';
 export { EditAssignmentDialog } from './EditAssignmentDialog';
 export { EncouragementEmojiPicker } from './EncouragementEmojiPicker';

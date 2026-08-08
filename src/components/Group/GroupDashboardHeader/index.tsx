@@ -1,11 +1,10 @@
 'use client';
-import AssignmentIcon from '@mui/icons-material/Assignment';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
-import QrCode2Icon from '@mui/icons-material/QrCode2';
+import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
@@ -21,6 +20,8 @@ import { EmojiPickerPopover } from '@/components/EmojiPickerPopover';
 import { PageHeader } from '@/components/PageHeader';
 import type { Group } from '@/hooks/useGroups';
 
+import { QuickActionCard } from './QuickActionCard';
+
 interface GroupDashboardHeaderProps {
   group: Group | undefined;
   memberCount: number;
@@ -28,8 +29,8 @@ interface GroupDashboardHeaderProps {
   onRename: (name: string) => Promise<void>;
   onEmojiChange: (emoji: string) => void;
   onInvite: () => void;
-  onAssign?: () => void;
-  /** Codes still open — shown on the button so the dashboard needn't list them. */
+  onOpenMaterials: () => void;
+  /** Codes still open — shown on the invite card so the dashboard needn't list them. */
   activeInviteCount?: number;
 }
 
@@ -40,7 +41,7 @@ export function GroupDashboardHeader({
   onRename,
   onEmojiChange,
   onInvite,
-  onAssign,
+  onOpenMaterials,
   activeInviteCount = 0,
 }: GroupDashboardHeaderProps) {
   const t = useTranslations('Group.groupPage');
@@ -218,54 +219,37 @@ export function GroupDashboardHeader({
           </Box>
         }
         action={
-          <Stack direction="row" gap={1}>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<QrCode2Icon sx={{ fontSize: 16 }} />}
-              onClick={onInvite}
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.25}
+            alignItems={{ xs: 'stretch', sm: 'center' }}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
+            <Typography
+              variant="overline"
               sx={{
-                borderRadius: theme.radii.sm,
-                textTransform: 'none',
+                display: { xs: 'none', sm: 'block' },
+                color: 'text.secondary',
                 fontWeight: 700,
-                borderColor: alpha(brand[400], 0.5),
-                color: brand[700],
+                letterSpacing: '0.06em',
+                mr: 0.5,
               }}
             >
-              {t('inviteButton')}
-              {activeInviteCount > 0 && (
-                <Box
-                  component="span"
-                  sx={{
-                    ml: 0.75,
-                    px: 0.75,
-                    borderRadius: theme.radii.pill,
-                    bgcolor: alpha(brand[200], 0.7),
-                    fontSize: '0.72rem',
-                    fontWeight: 800,
-                  }}
-                >
-                  {activeInviteCount}
-                </Box>
-              )}
-            </Button>
-            {onAssign && (
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<AssignmentIcon sx={{ fontSize: 16 }} />}
-                onClick={onAssign}
-                sx={{
-                  borderRadius: theme.radii.sm,
-                  textTransform: 'none',
-                  fontWeight: 700,
-                  borderColor: alpha(brand[400], 0.5),
-                  color: brand[700],
-                }}
-              >
-                {t('assignDeckButton')}
-              </Button>
-            )}
+              {t('quickActionsLabel')}
+            </Typography>
+            <QuickActionCard
+              icon={<PersonAddAlt1Icon sx={{ fontSize: 18 }} />}
+              title={t('inviteLearnersTitle')}
+              subtitle={t('inviteLearnersSubtitle')}
+              onClick={onInvite}
+              badge={activeInviteCount}
+            />
+            <QuickActionCard
+              icon={<AutoStoriesIcon sx={{ fontSize: 18 }} />}
+              title={t('materialsBuilderTitle')}
+              subtitle={t('materialsBuilderSubtitle')}
+              onClick={onOpenMaterials}
+            />
           </Stack>
         }
       />

@@ -2,6 +2,7 @@
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
@@ -52,7 +53,27 @@ export function ReteachPanel({ decks }: ReteachPanelProps) {
   const [expanded, setExpanded] = useState(false);
   const { analysis, loading, error } = useItemAnalysis(deckId || null);
 
-  if (decks.length === 0) return null;
+  if (decks.length === 0) {
+    return (
+      <SectionCard title={t('heading')}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            textAlign: 'center',
+            border: `1.5px dashed ${alpha(brand[300], 0.4)}`,
+            borderRadius: theme.radii.md,
+            bgcolor: alpha(brand[50], 0.6),
+          }}
+        >
+          <Typography sx={{ fontSize: '1.5rem', mb: 0.5 }}>📚</Typography>
+          <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
+            {t('noDecksBody')}
+          </Typography>
+        </Paper>
+      </SectionCard>
+    );
+  }
 
   const tricky = (analysis?.cards ?? [])
     .filter((c) => c.strugglingCount > 0)

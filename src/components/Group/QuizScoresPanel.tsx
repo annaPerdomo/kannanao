@@ -2,6 +2,7 @@
 import DownloadIcon from '@mui/icons-material/Download';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
@@ -77,7 +78,27 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
       : 0;
   const visible = expanded ? ranked : ranked.slice(0, ROWS_SHOWN);
 
-  if (decks.length === 0) return null;
+  if (decks.length === 0) {
+    return (
+      <SectionCard title={t('heading')}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            textAlign: 'center',
+            border: `1.5px dashed ${alpha(brand[300], 0.4)}`,
+            borderRadius: theme.radii.md,
+            bgcolor: alpha(brand[50], 0.6),
+          }}
+        >
+          <Typography sx={{ fontSize: '1.5rem', mb: 0.5 }}>📊</Typography>
+          <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
+            {t('noDecksBody')}
+          </Typography>
+        </Paper>
+      </SectionCard>
+    );
+  }
 
   const handleDownload = () => {
     if (!deck) return;

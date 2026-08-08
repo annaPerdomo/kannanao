@@ -44,9 +44,9 @@ describe('ReteachPanel', () => {
     useItemAnalysisMock.mockReturnValue({ analysis: null, loading: false, error: null });
   });
 
-  it('renders nothing when the organizer has no decks', () => {
-    const { container } = renderWithProviders(<ReteachPanel decks={[]} />);
-    expect(container).toBeEmptyDOMElement();
+  it('shows a friendly empty state when the organizer has no decks', () => {
+    renderWithProviders(<ReteachPanel decks={[]} />);
+    expect(screen.getByText(/make a deck in the materials builder/i)).toBeInTheDocument();
   });
 
   it('prompts to pick a deck and stays idle before a deck is chosen', () => {
