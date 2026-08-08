@@ -110,6 +110,46 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   return NextResponse.json(data);
 }
 
+/**
+ * Retires the plan-ahead template once no live assignment for the deck remains.
+ * Assignments are one row per learner, so removing one copy must not clear it —
+ * but a handout the organizer fully deleted would otherwise keep reappearing for
+ * later joiners via catchUpGroupAssignments, with no UI to stop it.
+ * Best-effort: this must never fail the delete the caller asked for.
+ */
+async function dropOrphanedTemplate(
+  sb: ReturnType<typeof getServiceSupabase>,
+  args: { organizerId: string; groupId: string; deckId: string; route: string },
+) {
+  const { organizerId, groupId, deckId, route } = args;
+
+  const { count, error } = await sb
+    .from('assignments')
+    .select('id', { count: 'exact', head: true })
+    .eq('group_id', groupId)
+    .eq('deck_id', deckId);
+
+  if (error || count === null || count > 0) {
+    if (error)
+      logger.warn('Could not check for remaining assignments', { route, error: error.message });
+    return;
+  }
+
+  const { error: deleteError } = await sb
+    .from('planned_assignments')
+    .delete()
+    .eq('organizer_id', organizerId)
+    .eq('group_id', groupId)
+    .eq('deck_id', deckId);
+
+  if (deleteError) {
+    logger.warn('Failed to remove planned assignment template', {
+      route,
+      error: deleteError.message,
+    });
+  }
+}
+
 /** DELETE — remove assignment */
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const limited = await rateLimit(req, RATE_LIMIT);
@@ -121,11 +161,13 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const { id } = await params;
   const sb = getServiceSupabase();
 
-  const { error } = await sb
+  const { data: deleted, error } = await sb
     .from('assignments')
     .delete()
     .eq('id', id)
-    .eq('organizer_id', orgCheck.id);
+    .eq('organizer_id', orgCheck.id)
+    .select('group_id, deck_id')
+    .maybeSingle();
 
   if (error) {
     logger.error('Failed to delete assignment', {
@@ -133,6 +175,15 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       error: error.message,
     });
     return NextResponse.json({ error: 'Failed to delete assignment.' }, { status: 500 });
+  }
+
+  if (deleted?.group_id) {
+    await dropOrphanedTemplate(sb, {
+      organizerId: orgCheck.id,
+      groupId: deleted.group_id,
+      deckId: deleted.deck_id,
+      route: `/api/group/assignments/${id}`,
+    });
   }
 
   return NextResponse.json({ success: true });
