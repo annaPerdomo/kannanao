@@ -455,7 +455,6 @@ async function savePlannedSchedule(args: {
   }
 }
 
-/** One upsert covering every current member — the whole group gets each deck. */
 async function assignDeck(args: {
   deckId: string;
   name: string;
