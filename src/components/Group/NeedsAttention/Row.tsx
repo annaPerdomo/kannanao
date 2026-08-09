@@ -2,6 +2,7 @@
 import EventBusyOutlinedIcon from '@mui/icons-material/EventBusyOutlined';
 import PersonOffOutlinedIcon from '@mui/icons-material/PersonOffOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
+import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
@@ -20,6 +21,7 @@ interface RowActionsProps {
   onSendNudge: (memberId: string, name: string) => void;
   onViewAssignments: () => void;
   onViewLearners: () => void;
+  onViewWords: () => void;
 }
 
 function RowActions({
@@ -28,6 +30,7 @@ function RowActions({
   onSendNudge,
   onViewAssignments,
   onViewLearners,
+  onViewWords,
 }: RowActionsProps) {
   const t = useTranslations('Group.needsAttention');
 
@@ -63,6 +66,19 @@ function RowActions({
         sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.78rem', borderRadius: 2 }}
       >
         {t('viewLearnerAction', { name: item.name })}
+      </Button>
+    );
+  }
+
+  if (item.kind === 'wordsForgotten') {
+    return (
+      <Button
+        size="small"
+        variant="outlined"
+        onClick={onViewWords}
+        sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.78rem', borderRadius: 2 }}
+      >
+        {t('reviewWordsAction')}
       </Button>
     );
   }
@@ -139,6 +155,16 @@ function useRowText(item: AttentionItem): { headline: string; subline: string } 
     };
   }
 
+  if (item.kind === 'wordsForgotten') {
+    return {
+      headline: t('wordsForgottenHeadline', { count: item.count }),
+      subline: t('wordsForgottenSubline', {
+        words: item.preview.join(t('wordSeparator')),
+        count: item.learnersAffected,
+      }),
+    };
+  }
+
   const deck = item.deckName;
   let headline: string;
   switch (dueBucket(item.daysUntilDue)) {
@@ -170,6 +196,7 @@ const ROW_ICONS: Record<AttentionItem['kind'], typeof PersonOffOutlinedIcon> = {
   assignmentDue: EventBusyOutlinedIcon,
   reviewBacklog: ScheduleOutlinedIcon,
   reviewBacklogCollapsed: ScheduleOutlinedIcon,
+  wordsForgotten: TranslateOutlinedIcon,
 };
 
 const SEVERITY_TOKEN: Record<AttentionSeverity, 'error' | 'warning' | 'info'> = {
@@ -184,6 +211,7 @@ interface NeedsAttentionRowProps {
   onSendNudge: (memberId: string, name: string) => void;
   onViewAssignments: () => void;
   onViewLearners: () => void;
+  onViewWords: () => void;
 }
 
 export function NeedsAttentionRow({
@@ -192,6 +220,7 @@ export function NeedsAttentionRow({
   onSendNudge,
   onViewAssignments,
   onViewLearners,
+  onViewWords,
 }: NeedsAttentionRowProps) {
   const theme = useTheme();
   const { headline, subline } = useRowText(item);
@@ -245,6 +274,7 @@ export function NeedsAttentionRow({
           onSendNudge={onSendNudge}
           onViewAssignments={onViewAssignments}
           onViewLearners={onViewLearners}
+          onViewWords={onViewWords}
         />
       </Stack>
     </Box>

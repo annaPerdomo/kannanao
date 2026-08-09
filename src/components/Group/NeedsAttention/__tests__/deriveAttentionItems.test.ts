@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Assignment } from '@/hooks/useAssignments';
+import type { DifficultWord } from '@/hooks/useDifficultWords';
 import type { GroupMember } from '@/hooks/useGroup';
 
 import { deriveAttentionItems } from '../deriveAttentionItems';
@@ -60,7 +61,7 @@ function assignment(overrides: Partial<Assignment> = {}): Assignment {
 
 describe('deriveAttentionItems', () => {
   it('returns nothing for an empty group', () => {
-    expect(deriveAttentionItems([], [], NOW)).toEqual([]);
+    expect(deriveAttentionItems([], [], [], NOW)).toEqual([]);
   });
 
   it('flags members inactive 7+ days, stalest first, and excludes recent ones', () => {
@@ -73,7 +74,7 @@ describe('deriveAttentionItems', () => {
       lastActive: daysAgo(7),
     });
 
-    const items = deriveAttentionItems([stale, stalest, active, exactlyAtThreshold], [], NOW);
+    const items = deriveAttentionItems([stale, stalest, active, exactlyAtThreshold], [], [], NOW);
 
     expect(items.map((i) => (i as InactiveLearnerItem).memberId)).toEqual([
       'stalest',
@@ -85,7 +86,7 @@ describe('deriveAttentionItems', () => {
 
   it('rounds down to whole days since last active', () => {
     const m = member({ id: 'm', displayName: 'M', lastActive: daysAgo(10.7) });
-    const [item] = deriveAttentionItems([m], [], NOW);
+    const [item] = deriveAttentionItems([m], [], [], NOW);
     expect((item as InactiveLearnerItem).days).toBe(10);
   });
 
@@ -96,7 +97,7 @@ describe('deriveAttentionItems', () => {
       lastActive: null,
       createdAt: daysAgo(30),
     });
-    const items = deriveAttentionItems([m], [], NOW);
+    const items = deriveAttentionItems([m], [], [], NOW);
     expect(items).toHaveLength(1);
     expect(items[0].kind).toBe('inactiveLearner');
     // A stray Infinity here would render as "hasn't studied in ∞ days".
@@ -106,14 +107,14 @@ describe('deriveAttentionItems', () => {
   it('leaves a learner who joined this week alone until they have had time to start', () => {
     const justJoined = member({ id: 'new', lastActive: null, createdAt: daysAgo(1) });
     const settledIn = member({ id: 'old', lastActive: null, createdAt: daysAgo(8) });
-    const items = deriveAttentionItems([justJoined, settledIn], [], NOW);
+    const items = deriveAttentionItems([justJoined, settledIn], [], [], NOW);
     expect(items.map((i) => (i as InactiveLearnerItem).memberId)).toEqual(['old']);
   });
 
   it('ranks never-studied learners by how long they have been in the group', () => {
     const recent = member({ id: 'recent', lastActive: null, createdAt: daysAgo(8) });
     const ancient = member({ id: 'ancient', lastActive: null, createdAt: daysAgo(60) });
-    const items = deriveAttentionItems([recent, ancient], [], NOW);
+    const items = deriveAttentionItems([recent, ancient], [], [], NOW);
     expect(items.map((i) => (i as InactiveLearnerItem).memberId)).toEqual(['ancient', 'recent']);
   });
 
@@ -124,7 +125,7 @@ describe('deriveAttentionItems', () => {
       member({ id: 'c', lastActive: daysAgo(10) }),
       member({ id: 'd', lastActive: daysAgo(11) }),
     ];
-    const items = deriveAttentionItems(members, [], NOW);
+    const items = deriveAttentionItems(members, [], [], NOW);
     expect(items).toEqual([{ kind: 'inactiveLearnersCollapsed', severity: 'error', count: 4 }]);
   });
 
@@ -134,7 +135,7 @@ describe('deriveAttentionItems', () => {
       member({ id: 'b', lastActive: daysAgo(9) }),
       member({ id: 'c', lastActive: daysAgo(10) }),
     ];
-    const items = deriveAttentionItems(members, [], NOW);
+    const items = deriveAttentionItems(members, [], [], NOW);
     expect(items).toHaveLength(3);
     expect(items.every((i) => i.kind === 'inactiveLearner')).toBe(true);
   });
@@ -144,7 +145,7 @@ describe('deriveAttentionItems', () => {
       assignment({ id: 'a1', member_id: 'm1', due_date: daysAgo(2), completed_at: null }),
       assignment({ id: 'a2', member_id: 'm2', due_date: daysAgo(2), completed_at: daysAgo(1) }),
     ];
-    const [item] = deriveAttentionItems([], assignments, NOW);
+    const [item] = deriveAttentionItems([], assignments, [], NOW);
     expect(item.kind).toBe('assignmentDue');
     const due = item as AssignmentDueItem;
     expect(due.severity).toBe('error');
@@ -155,7 +156,7 @@ describe('deriveAttentionItems', () => {
 
   it('flags a batch due within 3 days as warning severity', () => {
     const assignments = [assignment({ due_date: daysFromNow(2), completed_at: null })];
-    const [item] = deriveAttentionItems([], assignments, NOW) as [AssignmentDueItem];
+    const [item] = deriveAttentionItems([], assignments, [], NOW) as [AssignmentDueItem];
     expect(item.severity).toBe('warning');
     expect(item.daysUntilDue).toBe(2);
   });
@@ -166,7 +167,7 @@ describe('deriveAttentionItems', () => {
     const finishedGroup = [
       assignment({ id: 'f1', member_id: 'm1', due_date: daysAgo(1), completed_at: daysAgo(1) }),
     ];
-    const items = deriveAttentionItems([], [tooFarOut, noDueDate, ...finishedGroup], NOW);
+    const items = deriveAttentionItems([], [tooFarOut, noDueDate, ...finishedGroup], [], NOW);
     expect(items).toEqual([]);
   });
 
@@ -191,7 +192,7 @@ describe('deriveAttentionItems', () => {
         profiles: { display_name: 'Far Learner', username: 'farr' },
       }),
     ];
-    const [item] = deriveAttentionItems([], assignments, NOW) as [AssignmentDueItem];
+    const [item] = deriveAttentionItems([], assignments, [], NOW) as [AssignmentDueItem];
     expect(item.close).toEqual({ name: 'Close Learner', progress: 75, goal: 80 });
   });
 
@@ -204,7 +205,7 @@ describe('deriveAttentionItems', () => {
         completed_at: null,
       }),
     ];
-    const [item] = deriveAttentionItems([], assignments, NOW) as [AssignmentDueItem];
+    const [item] = deriveAttentionItems([], assignments, [], NOW) as [AssignmentDueItem];
     expect(item.close).toBeNull();
   });
 
@@ -223,7 +224,7 @@ describe('deriveAttentionItems', () => {
       reviewsOverdue3d: 19,
     });
 
-    const items = deriveAttentionItems([behind, justUnder], [], NOW);
+    const items = deriveAttentionItems([behind, justUnder], [], [], NOW);
 
     expect(items).toHaveLength(1);
     expect(items[0]).toEqual({
@@ -243,7 +244,7 @@ describe('deriveAttentionItems', () => {
       reviewsWaiting: 40,
       reviewsOverdue3d: 0,
     });
-    expect(deriveAttentionItems([justStudied], [], NOW)).toEqual([]);
+    expect(deriveAttentionItems([justStudied], [], [], NOW)).toEqual([]);
   });
 
   it('never flags a backlog whose count failed to load', () => {
@@ -253,7 +254,7 @@ describe('deriveAttentionItems', () => {
       reviewsWaiting: null,
       reviewsOverdue3d: null,
     });
-    expect(deriveAttentionItems([unknown], [], NOW)).toEqual([]);
+    expect(deriveAttentionItems([unknown], [], [], NOW)).toEqual([]);
   });
 
   it('ranks backlog rows biggest-first', () => {
@@ -269,7 +270,7 @@ describe('deriveAttentionItems', () => {
       reviewsWaiting: 90,
       reviewsOverdue3d: 40,
     });
-    const items = deriveAttentionItems([small, huge], [], NOW);
+    const items = deriveAttentionItems([small, huge], [], [], NOW);
     expect(items.map((i) => (i as ReviewBacklogItem).memberId)).toEqual(['huge', 'small']);
   });
 
@@ -277,7 +278,7 @@ describe('deriveAttentionItems', () => {
     const members = ['a', 'b', 'c', 'd'].map((id) =>
       member({ id, lastActive: daysAgo(1), reviewsWaiting: 30, reviewsOverdue3d: 5 }),
     );
-    const items = deriveAttentionItems(members, [], NOW);
+    const items = deriveAttentionItems(members, [], [], NOW);
     expect(items).toEqual([{ kind: 'reviewBacklogCollapsed', severity: 'info', count: 4 }]);
   });
 
@@ -288,7 +289,7 @@ describe('deriveAttentionItems', () => {
       reviewsWaiting: 40,
       reviewsOverdue3d: 40,
     });
-    const items = deriveAttentionItems([stale], [], NOW);
+    const items = deriveAttentionItems([stale], [], [], NOW);
 
     expect(items).toHaveLength(1);
     expect(items[0].kind).toBe('inactiveLearner');
@@ -306,7 +307,7 @@ describe('deriveAttentionItems', () => {
         reviewsOverdue3d: 50,
       }),
     );
-    const items = deriveAttentionItems(members, [], NOW);
+    const items = deriveAttentionItems(members, [], [], NOW);
     expect(items).toEqual([{ kind: 'inactiveLearnersCollapsed', severity: 'error', count: 4 }]);
   });
 
@@ -346,6 +347,7 @@ describe('deriveAttentionItems', () => {
     const items = deriveAttentionItems(
       [inactive, backlogged],
       [overdueA, overdueB, soonA, soonB],
+      [],
       NOW,
     );
 
@@ -372,9 +374,70 @@ describe('deriveAttentionItems', () => {
       member({ id: `b${i}`, lastActive: daysAgo(1), reviewsWaiting: 30, reviewsOverdue3d: 5 }),
     );
 
-    const items = deriveAttentionItems(behind, [dueSoon], NOW);
+    const items = deriveAttentionItems(behind, [dueSoon], [], NOW);
 
     expect(items[0].kind).toBe('assignmentDue');
     expect(items).toHaveLength(2);
+  });
+});
+
+describe('deriveAttentionItems — words being forgotten', () => {
+  let cardId = 0;
+  function word(overrides: Partial<DifficultWord> = {}): DifficultWord {
+    cardId += 1;
+    return {
+      cardId: `card-${cardId}`,
+      deckId: 'deck-1',
+      deckName: 'Kanji Basics',
+      deckEmoji: '📘',
+      word: `語${cardId}`,
+      reading: null,
+      meaning: null,
+      reason: 'forgotten',
+      learnersAffected: 1,
+      learnerCount: 4,
+      attemptCount: 10,
+      classAccuracy: 50,
+      ...overrides,
+    };
+  }
+
+  it('stays quiet below three forgotten words', () => {
+    const words = [word(), word(), word({ reason: 'shaky' })];
+    expect(deriveAttentionItems([], [], words, NOW)).toEqual([]);
+  });
+
+  it('raises one warning row naming the first three words', () => {
+    const words = [
+      word({ word: '覚える', learnersAffected: 3 }),
+      word({ word: '忘れる', learnersAffected: 5 }),
+      word({ word: '練習', learnersAffected: 2 }),
+      word({ word: '難しい', learnersAffected: 1 }),
+      word({ word: '簡単', reason: 'missed', learnersAffected: 9 }),
+    ];
+
+    expect(deriveAttentionItems([], [], words, NOW)).toEqual([
+      {
+        kind: 'wordsForgotten',
+        severity: 'warning',
+        count: 4,
+        preview: ['覚える', '忘れる', '練習'],
+        // The worst single word, not the sum: the same learner forgets several.
+        learnersAffected: 5,
+      },
+    ]);
+  });
+
+  it('sorts after due-soon assignments and before review backlogs', () => {
+    const soon = assignment({ id: 'soon', due_date: daysFromNow(1), completed_at: null });
+    const backlogged = member({
+      lastActive: daysAgo(1),
+      reviewsWaiting: 40,
+      reviewsOverdue3d: 10,
+    });
+    const words = [word(), word(), word()];
+
+    const items = deriveAttentionItems([backlogged], [soon], words, NOW);
+    expect(items.map((i) => i.kind)).toEqual(['assignmentDue', 'wordsForgotten', 'reviewBacklog']);
   });
 });

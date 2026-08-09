@@ -56,10 +56,22 @@ export interface ReviewBacklogCollapsedItem {
   count: number;
 }
 
+/** Words the group had learned and has started missing again. */
+export interface WordsForgottenItem {
+  kind: 'wordsForgotten';
+  severity: 'warning';
+  count: number;
+  /** Up to WORDS_PREVIEW_COUNT of them, for the sub-line. */
+  preview: string[];
+  /** Most affected by any one of these words — a floor on the distinct learners. */
+  learnersAffected: number;
+}
+
 /** A new rule kind means a member here plus a matching case in Row.tsx. */
 export type AttentionItem =
   | InactiveLearnerItem
   | InactiveLearnersCollapsedItem
   | AssignmentDueItem
   | ReviewBacklogItem
-  | ReviewBacklogCollapsedItem;
+  | ReviewBacklogCollapsedItem
+  | WordsForgottenItem;

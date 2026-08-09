@@ -16,6 +16,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import type { Assignment } from '@/hooks/useAssignments';
+import type { DifficultWord } from '@/hooks/useDifficultWords';
 import type { GroupMember } from '@/hooks/useGroup';
 
 import { SectionCard } from '../SectionCard';
@@ -35,9 +36,14 @@ interface NeedsAttentionProps {
   /** Required: without them the panel claims "all caught up" off a list that never arrived. */
   assignmentsLoading?: boolean;
   assignmentsError?: string | null;
+  /** Group-wide difficult words; only the forgotten ones produce a row. */
+  words?: DifficultWord[];
+  /** Same reason as `assignmentsLoading` — words resolve last of the three. */
+  wordsLoading?: boolean;
   onSelectMember: (memberId: string) => void;
   onViewAssignments: () => void;
   onViewLearners: () => void;
+  onViewWords: () => void;
   onSendEncouragement: (memberId: string, message: string, emoji?: string) => Promise<unknown>;
 }
 
@@ -46,6 +52,7 @@ function rowKey(item: AttentionItem): string {
   if (item.kind === 'inactiveLearnersCollapsed') return 'inactive-collapsed';
   if (item.kind === 'reviewBacklog') return `backlog-${item.memberId}`;
   if (item.kind === 'reviewBacklogCollapsed') return 'backlog-collapsed';
+  if (item.kind === 'wordsForgotten') return 'words-forgotten';
   return `assignment-${item.batchKey}`;
 }
 
@@ -55,9 +62,12 @@ export function NeedsAttention({
   assignments,
   assignmentsLoading = false,
   assignmentsError = null,
+  words,
+  wordsLoading = false,
   onSelectMember,
   onViewAssignments,
   onViewLearners,
+  onViewWords,
   onSendEncouragement,
 }: NeedsAttentionProps) {
   const theme = useTheme();
@@ -84,7 +94,10 @@ export function NeedsAttention({
     saveCollapsed(groupId, next);
   }, [collapsed, groupId]);
 
-  const items = useMemo(() => deriveAttentionItems(members, assignments), [members, assignments]);
+  const items = useMemo(
+    () => deriveAttentionItems(members, assignments, words),
+    [members, assignments, words],
+  );
   const visible = showAll ? items : items.slice(0, MAX_VISIBLE_ROWS);
   const hasMore = items.length > MAX_VISIBLE_ROWS;
 
@@ -161,10 +174,11 @@ export function NeedsAttention({
                   }
                   onViewAssignments={onViewAssignments}
                   onViewLearners={onViewLearners}
+                  onViewWords={onViewWords}
                 />
               ))}
             </Stack>
-          ) : assignmentsLoading ? (
+          ) : assignmentsLoading || wordsLoading ? (
             <Loading message={t('loadingMessage')} />
           ) : (
             !assignmentsError && (

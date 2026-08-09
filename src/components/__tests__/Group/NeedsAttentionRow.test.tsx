@@ -13,6 +13,7 @@ function renderRow(item: AttentionItem) {
       onSendNudge={vi.fn()}
       onViewAssignments={vi.fn()}
       onViewLearners={vi.fn()}
+      onViewWords={vi.fn()}
     />,
   );
 }

@@ -1480,7 +1480,11 @@
       "nudgeDialogTitle": "{name}さんに声をかける",
       "nudgeDefaultMessage": "元気にしてる？また一緒に練習しよう 💪",
       "nudgeSent": "声かけを送りました！",
-      "lastNudgedAt": "最終声かけ：{date}"
+      "lastNudgedAt": "最終声かけ：{date}",
+      "wordsForgottenHeadline": "{count, plural, other {#語}}をわすれかけています",
+      "wordsForgottenSubline": "{words} · {count, plural, other {#人}}がつまずいています",
+      "wordSeparator": "、",
+      "reviewWordsAction": "単語を見る"
     },
     "lessonBuilder": {
       "goalLabel": "なにをとりあげますか？",

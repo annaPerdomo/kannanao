@@ -1480,7 +1480,11 @@
       "nudgeDialogTitle": "Send a nudge to {name}",
       "nudgeDefaultMessage": "Miss you! Come back and practice today 💪",
       "nudgeSent": "Nudge sent!",
-      "lastNudgedAt": "Last nudged {date}"
+      "lastNudgedAt": "Last nudged {date}",
+      "wordsForgottenHeadline": "{count, plural, one {# word is being forgotten} other {# words are being forgotten}}",
+      "wordsForgottenSubline": "{words} · {count, plural, one {# learner affected} other {# learners affected}}",
+      "wordSeparator": ", ",
+      "reviewWordsAction": "Review words"
     },
     "lessonBuilder": {
       "goalLabel": "What do you want to cover?",

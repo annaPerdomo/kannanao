@@ -26,6 +26,7 @@ import { Loading } from '@/components/Loading';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
+import { useDifficultWords } from '@/hooks/useDifficultWords';
 import { useEncouragements } from '@/hooks/useEncouragements';
 import { useGroupFeed, useGroupMembers } from '@/hooks/useGroup';
 import { useGroupActivity } from '@/hooks/useGroupActivity';
@@ -64,6 +65,9 @@ export default function GroupDashboardPage() {
     updateAssignments,
     deleteAssignments,
   } = useAssignments(groupId, true, 'given');
+  // All decks, matching the Words tab's default filter — the api cache serves
+  // both from one request.
+  const { data: difficultWords, loading: difficultWordsLoading } = useDifficultWords(groupId);
   const { sendEncouragement } = useEncouragements();
   const { invites, createInvite, revokeInvite } = useInvites(groupId);
   const { groups, updateGroup } = useGroups();
@@ -180,9 +184,12 @@ export default function GroupDashboardPage() {
           assignments={assignments}
           assignmentsLoading={assignmentsLoading}
           assignmentsError={assignmentsError}
+          words={difficultWords?.words}
+          wordsLoading={difficultWordsLoading}
           onSelectMember={(id) => router.push(`/group/${groupId}/members/${id}`)}
           onViewAssignments={() => handleTabChange('assignments')}
           onViewLearners={() => handleTabChange('learners')}
+          onViewWords={() => handleTabChange('words')}
           onSendEncouragement={handleSendEncouragement}
         />
       </Box>

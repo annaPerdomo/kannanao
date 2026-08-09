@@ -8,5 +8,9 @@ export const DUE_SOON_DAYS = 3;
 export const CLOSE_ACCURACY_MARGIN = 10;
 /** Rows shown before the panel collapses behind "View all". */
 export const MAX_VISIBLE_ROWS = 4;
+/** Fewer forgotten words than this is normal churn, not a pattern to reteach. */
+export const MIN_FORGOTTEN_WORDS = 3;
+/** Words named in the forgotten row's sub-line before it gets unreadable. */
+export const WORDS_PREVIEW_COUNT = 3;
 
 export const MS_PER_DAY = 86_400_000;

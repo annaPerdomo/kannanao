@@ -1,4 +1,5 @@
 import type { Assignment } from '@/hooks/useAssignments';
+import type { DifficultWord } from '@/hooks/useDifficultWords';
 import type { GroupMember } from '@/hooks/useGroup';
 
 import { groupAssignments } from '../AssignmentsList/groupAssignments';
@@ -10,9 +11,11 @@ import {
   DUE_SOON_DAYS,
   MAX_BACKLOG_ROWS,
   MAX_INACTIVE_ROWS,
+  MIN_FORGOTTEN_WORDS,
   MS_PER_DAY,
+  WORDS_PREVIEW_COUNT,
 } from './constants';
-import type { AssignmentDueItem, AttentionItem, CloseToGoal } from './types';
+import type { AssignmentDueItem, AttentionItem, CloseToGoal, WordsForgottenItem } from './types';
 
 /** The unfinished member closest to (but not yet at) the batch's accuracy goal. */
 function findCloseMember(batchAssignments: Assignment[]): CloseToGoal | null {
@@ -34,14 +37,33 @@ function findCloseMember(batchAssignments: Assignment[]): CloseToGoal | null {
 }
 
 /**
+ * One row for the whole group, not one per word: a teacher reteaches a set.
+ * `learnersAffected` is the worst single word rather than a sum — the same
+ * learner forgets several, so a sum can exceed the group's size.
+ */
+function forgottenWordsItem(words: DifficultWord[]): WordsForgottenItem | null {
+  const forgotten = words.filter((w) => w.reason === 'forgotten');
+  if (forgotten.length < MIN_FORGOTTEN_WORDS) return null;
+
+  return {
+    kind: 'wordsForgotten',
+    severity: 'warning',
+    count: forgotten.length,
+    preview: forgotten.slice(0, WORDS_PREVIEW_COUNT).map((w) => w.word),
+    learnersAffected: Math.max(...forgotten.map((w) => w.learnersAffected)),
+  };
+}
+
+/**
  * Sort order is the contract: overdue assignments, then inactive learners
- * (stalest first), then due-soon assignments, then review backlogs. Backlogs
- * rank last as the only `info` rule — ahead of the warnings they push a deck
- * due tomorrow off the visible panel.
+ * (stalest first), then due-soon assignments and forgotten words, then review
+ * backlogs. Backlogs rank last as the only `info` rule — ahead of the warnings
+ * they push a deck due tomorrow off the visible panel.
  */
 export function deriveAttentionItems(
   members: GroupMember[],
   assignments: Assignment[],
+  words: DifficultWord[] = [],
   now = Date.now(),
 ): AttentionItem[] {
   const inactive = members
@@ -122,5 +144,13 @@ export function deriveAttentionItems(
   overdueItems.sort((a, b) => a.daysUntilDue - b.daysUntilDue);
   dueSoonItems.sort((a, b) => a.daysUntilDue - b.daysUntilDue);
 
-  return [...overdueItems, ...inactiveItems, ...dueSoonItems, ...backlogItems];
+  const forgotten = forgottenWordsItem(words);
+
+  return [
+    ...overdueItems,
+    ...inactiveItems,
+    ...dueSoonItems,
+    ...(forgotten ? [forgotten] : []),
+    ...backlogItems,
+  ];
 }
