@@ -96,7 +96,7 @@ describe('deriveAttentionItems', () => {
     const items = deriveAttentionItems([m], [], NOW);
     expect(items).toHaveLength(1);
     expect(items[0].kind).toBe('inactiveLearner');
-    // Infinity here renders as "hasn't studied in ∞ days".
+    // A stray Infinity here would render as "hasn't studied in ∞ days".
     expect((items[0] as InactiveLearnerItem).days).toBeNull();
   });
 

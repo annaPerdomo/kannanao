@@ -24,11 +24,7 @@ interface DesktopTableProps {
   onSelect: (id: string) => void;
 }
 
-/**
- * The proper table for `sm` and up; xs gets `MobileList` instead. Wrapped in a
- * `TableContainer` that scrolls horizontally rather than overflowing its box
- * if it's ever placed somewhere narrower than its natural width.
- */
+/** The proper table for `sm` and up; xs gets `MobileList` instead. */
 export function DesktopTable({ members, sortKey, direction, onSort, onSelect }: DesktopTableProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
