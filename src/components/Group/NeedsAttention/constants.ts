@@ -1,5 +1,7 @@
 /** Above this many inactive learners, the rows collapse into one summary row. */
 export const MAX_INACTIVE_ROWS = 3;
+/** Same, for review backlogs — an uncapped info list would bury the warnings. */
+export const MAX_BACKLOG_ROWS = 3;
 /** Assignments due within this many days surface as "due soon" (warning). */
 export const DUE_SOON_DAYS = 3;
 /** A learner's best accuracy within this many points of the goal counts as "close". */

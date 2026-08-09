@@ -4,7 +4,7 @@ import type { Assignment } from '@/hooks/useAssignments';
 import type { GroupMember } from '@/hooks/useGroup';
 
 import { deriveAttentionItems } from '../deriveAttentionItems';
-import type { AssignmentDueItem, InactiveLearnerItem } from '../types';
+import type { AssignmentDueItem, InactiveLearnerItem, ReviewBacklogItem } from '../types';
 
 const NOW = Date.UTC(2026, 7, 8, 12, 0, 0);
 const DAY = 86_400_000;
@@ -29,6 +29,8 @@ function member(overrides: Partial<GroupMember> = {}): GroupMember {
     lastNudgedAt: null,
     masteryLearning: 0,
     masteryStrong: 0,
+    reviewsWaiting: 0,
+    reviewsOverdue3d: 0,
     ...overrides,
   };
 }
@@ -206,7 +208,109 @@ describe('deriveAttentionItems', () => {
     expect(item.close).toBeNull();
   });
 
-  it('sorts overdue assignments, then inactive learners, then due-soon assignments', () => {
+  it('flags an active learner once their backlog reaches 20 reviews', () => {
+    const behind = member({
+      id: 'behind',
+      displayName: 'Behind',
+      lastActive: daysAgo(1),
+      reviewsWaiting: 34,
+      reviewsOverdue3d: 12,
+    });
+    const justUnder = member({
+      id: 'under',
+      lastActive: daysAgo(1),
+      reviewsWaiting: 19,
+      reviewsOverdue3d: 19,
+    });
+
+    const items = deriveAttentionItems([behind, justUnder], [], NOW);
+
+    expect(items).toHaveLength(1);
+    expect(items[0]).toEqual({
+      kind: 'reviewBacklog',
+      severity: 'info',
+      memberId: 'behind',
+      name: 'Behind',
+      reviewsWaiting: 34,
+      reviewsOverdue3d: 12,
+    });
+  });
+
+  it('stays quiet about a big backlog that is all freshly due', () => {
+    const justStudied = member({
+      id: 'fresh',
+      lastActive: daysAgo(0),
+      reviewsWaiting: 40,
+      reviewsOverdue3d: 0,
+    });
+    expect(deriveAttentionItems([justStudied], [], NOW)).toEqual([]);
+  });
+
+  it('never flags a backlog whose count failed to load', () => {
+    const unknown = member({
+      id: 'unknown',
+      lastActive: daysAgo(1),
+      reviewsWaiting: null,
+      reviewsOverdue3d: null,
+    });
+    expect(deriveAttentionItems([unknown], [], NOW)).toEqual([]);
+  });
+
+  it('ranks backlog rows biggest-first', () => {
+    const small = member({
+      id: 'small',
+      lastActive: daysAgo(1),
+      reviewsWaiting: 21,
+      reviewsOverdue3d: 1,
+    });
+    const huge = member({
+      id: 'huge',
+      lastActive: daysAgo(1),
+      reviewsWaiting: 90,
+      reviewsOverdue3d: 40,
+    });
+    const items = deriveAttentionItems([small, huge], [], NOW);
+    expect(items.map((i) => (i as ReviewBacklogItem).memberId)).toEqual(['huge', 'small']);
+  });
+
+  it('collapses more than 3 backlog rows into one summary row', () => {
+    const members = ['a', 'b', 'c', 'd'].map((id) =>
+      member({ id, lastActive: daysAgo(1), reviewsWaiting: 30, reviewsOverdue3d: 5 }),
+    );
+    const items = deriveAttentionItems(members, [], NOW);
+    expect(items).toEqual([{ kind: 'reviewBacklogCollapsed', severity: 'info', count: 4 }]);
+  });
+
+  it('folds the backlog into an inactive learner instead of adding a second row', () => {
+    const stale = member({
+      id: 'stale',
+      lastActive: daysAgo(10),
+      reviewsWaiting: 40,
+      reviewsOverdue3d: 40,
+    });
+    const items = deriveAttentionItems([stale], [], NOW);
+
+    expect(items).toHaveLength(1);
+    expect(items[0].kind).toBe('inactiveLearner');
+    expect((items[0] as InactiveLearnerItem).reviewsWaiting).toBe(40);
+  });
+
+  // The collapsed summary already speaks for those learners, so a backlog row
+  // would name someone the panel has deliberately stopped listing individually.
+  it('stays silent about the backlog of learners hidden behind the collapsed row', () => {
+    const members = [8, 9, 10, 11].map((days, i) =>
+      member({
+        id: `m${i}`,
+        lastActive: daysAgo(days),
+        reviewsWaiting: 50,
+        reviewsOverdue3d: 50,
+      }),
+    );
+    const items = deriveAttentionItems(members, [], NOW);
+    expect(items).toEqual([{ kind: 'inactiveLearnersCollapsed', severity: 'error', count: 4 }]);
+  });
+
+  it('sorts overdue assignments, then inactive learners, then due-soon assignments, then backlogs', () => {
     const overdueA = assignment({
       id: 'overdue-a',
       member_id: 'oa',
@@ -232,8 +336,18 @@ describe('deriveAttentionItems', () => {
       completed_at: null,
     });
     const inactive = member({ id: 'stale', lastActive: daysAgo(8) });
+    const backlogged = member({
+      id: 'piled-up',
+      lastActive: daysAgo(1),
+      reviewsWaiting: 25,
+      reviewsOverdue3d: 5,
+    });
 
-    const items = deriveAttentionItems([inactive], [overdueA, overdueB, soonA, soonB], NOW);
+    const items = deriveAttentionItems(
+      [inactive, backlogged],
+      [overdueA, overdueB, soonA, soonB],
+      NOW,
+    );
 
     expect(items.map((i) => i.kind)).toEqual([
       'assignmentDue',
@@ -241,11 +355,26 @@ describe('deriveAttentionItems', () => {
       'inactiveLearner',
       'assignmentDue',
       'assignmentDue',
+      'reviewBacklog',
     ]);
     // Most overdue first, then soonest-due first.
     expect((items[0] as AssignmentDueItem).daysUntilDue).toBe(-5);
     expect((items[1] as AssignmentDueItem).daysUntilDue).toBe(-1);
     expect((items[3] as AssignmentDueItem).daysUntilDue).toBe(0);
     expect((items[4] as AssignmentDueItem).daysUntilDue).toBe(2);
+  });
+
+  // Regression: an uncapped info list ahead of the warnings pushed the deck row
+  // past MAX_VISIBLE_ROWS and behind "View all".
+  it('keeps a due-soon assignment visible when many learners are behind', () => {
+    const dueSoon = assignment({ id: 'soon', due_date: daysFromNow(1), completed_at: null });
+    const behind = Array.from({ length: 10 }, (_, i) =>
+      member({ id: `b${i}`, lastActive: daysAgo(1), reviewsWaiting: 30, reviewsOverdue3d: 5 }),
+    );
+
+    const items = deriveAttentionItems(behind, [dueSoon], NOW);
+
+    expect(items[0].kind).toBe('assignmentDue');
+    expect(items).toHaveLength(2);
   });
 });

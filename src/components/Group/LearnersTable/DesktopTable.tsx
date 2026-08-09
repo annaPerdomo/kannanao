@@ -33,7 +33,7 @@ export function DesktopTable({ members, sortKey, direction, onSort, onSelect }: 
 
   return (
     <TableContainer sx={{ display: { xs: 'none', sm: 'block' }, overflowX: 'auto' }}>
-      <Table size="small" sx={{ minWidth: 480 }}>
+      <Table size="small" sx={{ minWidth: 580 }}>
         <TableHead>
           <TableRow>
             <TableCell sx={{ fontWeight: 700, color: 'text.secondary', border: 0 }}>

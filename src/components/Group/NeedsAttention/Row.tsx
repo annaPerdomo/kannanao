@@ -1,6 +1,7 @@
 'use client';
 import EventBusyOutlinedIcon from '@mui/icons-material/EventBusyOutlined';
 import PersonOffOutlinedIcon from '@mui/icons-material/PersonOffOutlined';
+import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
@@ -10,6 +11,7 @@ import { useTranslations } from 'next-intl';
 
 import { dueBucket } from '../dueDate';
 import { timeAgo } from '../MemberCard';
+import { hasReviewBacklog } from '../reviewBacklog';
 import type { AttentionItem, AttentionSeverity } from './types';
 
 interface RowActionsProps {
@@ -52,7 +54,20 @@ function RowActions({
     );
   }
 
-  if (item.kind === 'inactiveLearnersCollapsed') {
+  if (item.kind === 'reviewBacklog') {
+    return (
+      <Button
+        size="small"
+        variant="outlined"
+        onClick={() => onSelectMember(item.memberId)}
+        sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.78rem', borderRadius: 2 }}
+      >
+        {t('viewLearnerAction', { name: item.name })}
+      </Button>
+    );
+  }
+
+  if (item.kind === 'inactiveLearnersCollapsed' || item.kind === 'reviewBacklogCollapsed') {
     return (
       <Button
         size="small"
@@ -82,21 +97,44 @@ function useRowText(item: AttentionItem): { headline: string; subline: string } 
   const tMemberCard = useTranslations('Group.memberCard');
 
   if (item.kind === 'inactiveLearner') {
+    // Same predicate as the standalone row this suffix stands in for, so the
+    // panel never names a backlog it wouldn't have flagged on its own.
+    const backlog = hasReviewBacklog(item)
+      ? ` · ${t('reviewBacklogSuffix', { count: item.reviewsWaiting ?? 0 })}`
+      : '';
     if (item.days === null) {
       return {
         headline: t('neverStudiedHeadline', { name: item.name }),
-        subline: t('neverStudiedSubline'),
+        subline: t('neverStudiedSubline') + backlog,
       };
     }
     return {
       headline: t('inactiveLearnerHeadline', { name: item.name, days: item.days }),
-      subline: t('inactiveLearnerSubline', { relative: timeAgo(item.lastActive, tMemberCard) }),
+      subline:
+        t('inactiveLearnerSubline', { relative: timeAgo(item.lastActive, tMemberCard) }) + backlog,
+    };
+  }
+
+  if (item.kind === 'reviewBacklog') {
+    return {
+      headline: t('reviewBacklogHeadline', { name: item.name, count: item.reviewsWaiting }),
+      subline:
+        item.reviewsOverdue3d > 0
+          ? t('reviewBacklogSubline', { count: item.reviewsOverdue3d })
+          : '',
     };
   }
 
   if (item.kind === 'inactiveLearnersCollapsed') {
     return {
       headline: t('inactiveLearnersCollapsedHeadline', { count: item.count }),
+      subline: '',
+    };
+  }
+
+  if (item.kind === 'reviewBacklogCollapsed') {
+    return {
+      headline: t('reviewBacklogCollapsedHeadline', { count: item.count }),
       subline: '',
     };
   }
@@ -130,6 +168,8 @@ const ROW_ICONS: Record<AttentionItem['kind'], typeof PersonOffOutlinedIcon> = {
   inactiveLearner: PersonOffOutlinedIcon,
   inactiveLearnersCollapsed: PersonOffOutlinedIcon,
   assignmentDue: EventBusyOutlinedIcon,
+  reviewBacklog: ScheduleOutlinedIcon,
+  reviewBacklogCollapsed: ScheduleOutlinedIcon,
 };
 
 const SEVERITY_TOKEN: Record<AttentionSeverity, 'error' | 'warning' | 'info'> = {

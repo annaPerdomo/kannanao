@@ -33,9 +33,12 @@ function makeChain(table: string) {
 }
 
 const fromMock = vi.fn((table: string) => makeChain(table));
+const rpcMock = vi.fn<() => Promise<{ data: unknown[] | null; error: { message: string } | null }>>(
+  () => Promise.resolve({ data: [], error: null }),
+);
 
 vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
-  getServiceSupabase: () => ({ from: fromMock }),
+  getServiceSupabase: () => ({ from: fromMock, rpc: rpcMock }),
 }));
 
 import { GET } from '@/app/api/group/members/[id]/route';
@@ -157,5 +160,48 @@ describe('GET /api/group/members/[id] — mastery breakdown', () => {
     const res = await GET(makeRequest(), { params });
     const body = await res.json();
     expect(body.totalMastery).toEqual({ new: 3, learning: 0, strong: 0 });
+  });
+});
+
+describe('GET /api/group/members/[id] — review backlog', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    _resetStore();
+    for (const k of Object.keys(tableData)) delete tableData[k];
+    requireOrganizerAccountMock.mockResolvedValue(ORGANIZER);
+    rpcMock.mockResolvedValue({ data: [], error: null });
+    setTable('profiles', { id: 'm1', username: 'kid', display_name: 'Kid' });
+    setTable('group_members', [{ member_id: 'm1', group_id: 'g1', organizer_id: 'org-1' }]);
+  });
+
+  it('returns the backlog counts for this member', async () => {
+    rpcMock.mockResolvedValue({
+      data: [{ user_id: 'm1', due_count: 18, overdue_3d_count: 4 }],
+      error: null,
+    });
+
+    const res = await GET(makeRequest(), { params });
+    const body = await res.json();
+
+    expect(rpcMock).toHaveBeenCalledWith('group_review_backlog', { p_user_ids: ['m1'] });
+    expect(body).toMatchObject({ reviewsWaiting: 18, reviewsOverdue3d: 4 });
+  });
+
+  it('reports zero for a member with nothing due', async () => {
+    const res = await GET(makeRequest(), { params });
+    const body = await res.json();
+    expect(body).toMatchObject({ reviewsWaiting: 0, reviewsOverdue3d: 0 });
+  });
+
+  // Null, not 0, so the detail view can drop the card instead of claiming
+  // the member is caught up.
+  it('reports null when the backlog query fails', async () => {
+    rpcMock.mockResolvedValue({ data: null, error: { message: 'boom' } });
+
+    const res = await GET(makeRequest(), { params });
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body).toMatchObject({ reviewsWaiting: null, reviewsOverdue3d: null });
   });
 });

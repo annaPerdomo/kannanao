@@ -27,6 +27,8 @@ function member(overrides: Partial<GroupMember> = {}): GroupMember {
     lastNudgedAt: null,
     masteryLearning: 0,
     masteryStrong: 0,
+    reviewsWaiting: 0,
+    reviewsOverdue3d: 0,
     ...overrides,
   };
 }
@@ -85,6 +87,7 @@ describe('sortLearners', () => {
       streakDays: 2,
       totalCardsStudied: 10,
       totalCorrect: 5,
+      reviewsWaiting: 7,
     }),
     member({
       displayName: 'Never',
@@ -92,6 +95,7 @@ describe('sortLearners', () => {
       streakDays: 0,
       totalCardsStudied: 0,
       totalCorrect: 0,
+      reviewsWaiting: 0,
     }),
     member({
       displayName: 'Stale',
@@ -99,6 +103,7 @@ describe('sortLearners', () => {
       streakDays: 9,
       totalCardsStudied: 100,
       totalCorrect: 90,
+      reviewsWaiting: 42,
     }),
   ];
 
@@ -120,6 +125,19 @@ describe('sortLearners', () => {
   it('sorts by cards studied', () => {
     const sorted = sortLearners(members, 'cards', 'asc', NOW);
     expect(sorted.map((m) => m.displayName)).toEqual(['Never', 'Recent', 'Stale']);
+  });
+
+  it('sorts by reviews waiting', () => {
+    expect(sortLearners(members, 'reviews', 'desc', NOW).map((m) => m.displayName)).toEqual([
+      'Stale',
+      'Recent',
+      'Never',
+    ]);
+    expect(sortLearners(members, 'reviews', 'asc', NOW).map((m) => m.displayName)).toEqual([
+      'Never',
+      'Recent',
+      'Stale',
+    ]);
   });
 
   it('sorts by accuracy, treating no-data as lowest', () => {

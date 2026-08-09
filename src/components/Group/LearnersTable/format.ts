@@ -31,6 +31,16 @@ export function cardsStudiedLabel(member: Pick<GroupMember, 'totalCardsStudied'>
   return t('cardsStudiedCompact', { count: member.totalCardsStudied });
 }
 
+/**
+ * Zero prints as "0": the dash is reserved for a count that failed to load, and
+ * a column where both read alike would sell an outage as "everyone is caught up".
+ */
+export function reviewsWaitingLabel(member: Pick<GroupMember, 'reviewsWaiting'>, t: T): string {
+  return member.reviewsWaiting === null
+    ? t('reviewsWaitingUnknown')
+    : member.reviewsWaiting.toLocaleString();
+}
+
 export function accuracyCompactLabel(
   member: Pick<GroupMember, 'totalCorrect' | 'totalCardsStudied'>,
   t: T,

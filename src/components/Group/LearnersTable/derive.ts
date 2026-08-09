@@ -2,7 +2,7 @@ import type { GroupMember } from '@/hooks/useGroup';
 
 import { daysSinceActive, STALE_DAYS } from '../memberActivity';
 
-export type SortKey = 'status' | 'streak' | 'cards' | 'accuracy';
+export type SortKey = 'status' | 'streak' | 'cards' | 'reviews' | 'accuracy';
 export type SortDirection = 'asc' | 'desc';
 
 export const DEFAULT_SORT_KEY: SortKey = 'status';
@@ -44,6 +44,7 @@ function sortRank(member: GroupMember, key: SortKey, now: number): number {
   if (key === 'status') return daysSinceActive(member.lastActive, now);
   if (key === 'streak') return member.streakDays;
   if (key === 'cards') return member.totalCardsStudied;
+  if (key === 'reviews') return member.reviewsWaiting ?? -1;
   return accuracyFraction(member) ?? -1;
 }
 

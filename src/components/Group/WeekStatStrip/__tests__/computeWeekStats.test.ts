@@ -28,6 +28,8 @@ function member(overrides: Partial<GroupMember> = {}): GroupMember {
     lastNudgedAt: null,
     masteryLearning: 0,
     masteryStrong: 0,
+    reviewsWaiting: 0,
+    reviewsOverdue3d: 0,
     ...overrides,
   };
 }

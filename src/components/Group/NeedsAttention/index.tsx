@@ -44,6 +44,8 @@ interface NeedsAttentionProps {
 function rowKey(item: AttentionItem): string {
   if (item.kind === 'inactiveLearner') return `inactive-${item.memberId}`;
   if (item.kind === 'inactiveLearnersCollapsed') return 'inactive-collapsed';
+  if (item.kind === 'reviewBacklog') return `backlog-${item.memberId}`;
+  if (item.kind === 'reviewBacklogCollapsed') return 'backlog-collapsed';
   return `assignment-${item.batchKey}`;
 }
 

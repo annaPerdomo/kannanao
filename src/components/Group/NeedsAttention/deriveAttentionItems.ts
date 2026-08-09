@@ -4,7 +4,14 @@ import type { GroupMember } from '@/hooks/useGroup';
 import { groupAssignments } from '../AssignmentsList/groupAssignments';
 import { daysUntilDue } from '../dueDate';
 import { daysSinceActive, STALE_DAYS } from '../memberActivity';
-import { CLOSE_ACCURACY_MARGIN, DUE_SOON_DAYS, MAX_INACTIVE_ROWS, MS_PER_DAY } from './constants';
+import { hasReviewBacklog } from '../reviewBacklog';
+import {
+  CLOSE_ACCURACY_MARGIN,
+  DUE_SOON_DAYS,
+  MAX_BACKLOG_ROWS,
+  MAX_INACTIVE_ROWS,
+  MS_PER_DAY,
+} from './constants';
 import type { AssignmentDueItem, AttentionItem, CloseToGoal } from './types';
 
 /** The unfinished member closest to (but not yet at) the batch's accuracy goal. */
@@ -28,7 +35,9 @@ function findCloseMember(batchAssignments: Assignment[]): CloseToGoal | null {
 
 /**
  * Sort order is the contract: overdue assignments, then inactive learners
- * (stalest first), then due-soon assignments.
+ * (stalest first), then due-soon assignments, then review backlogs. Backlogs
+ * rank last as the only `info` rule — ahead of the warnings they push a deck
+ * due tomorrow off the visible panel.
  */
 export function deriveAttentionItems(
   members: GroupMember[],
@@ -58,6 +67,28 @@ export function deriveAttentionItems(
           name: member.displayName || member.username,
           days: neverStudied ? null : Math.floor(days),
           lastActive: member.lastActive,
+          reviewsWaiting: member.reviewsWaiting,
+          reviewsOverdue3d: member.reviewsOverdue3d,
+        }));
+
+  // No second row about someone the inactive rule already named, collapsed
+  // summary included. Their backlog rides that row's sub-line instead.
+  const inactiveIds = new Set(inactive.map(({ member }) => member.id));
+
+  const backlogged = members
+    .filter((m) => !inactiveIds.has(m.id) && hasReviewBacklog(m))
+    .sort((a, b) => (b.reviewsWaiting ?? 0) - (a.reviewsWaiting ?? 0));
+
+  const backlogItems: AttentionItem[] =
+    backlogged.length > MAX_BACKLOG_ROWS
+      ? [{ kind: 'reviewBacklogCollapsed', severity: 'info', count: backlogged.length }]
+      : backlogged.map((member) => ({
+          kind: 'reviewBacklog',
+          severity: 'info',
+          memberId: member.id,
+          name: member.displayName || member.username,
+          reviewsWaiting: member.reviewsWaiting ?? 0,
+          reviewsOverdue3d: member.reviewsOverdue3d ?? 0,
         }));
 
   const overdueItems: AssignmentDueItem[] = [];
@@ -91,5 +122,5 @@ export function deriveAttentionItems(
   overdueItems.sort((a, b) => a.daysUntilDue - b.daysUntilDue);
   dueSoonItems.sort((a, b) => a.daysUntilDue - b.daysUntilDue);
 
-  return [...overdueItems, ...inactiveItems, ...dueSoonItems];
+  return [...overdueItems, ...inactiveItems, ...dueSoonItems, ...backlogItems];
 }

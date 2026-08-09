@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 
 import type { GroupMember } from '@/hooks/useGroup';
 
+import { REVIEW_BACKLOG_THRESHOLD } from '../reviewBacklog';
 import { accuracyFraction, accuracyTone } from './derive';
 import { accuracyCompactLabel, cardsStudiedLabel, streakLabel } from './format';
 import { LearnerIdentity } from './LearnerIdentity';
@@ -58,6 +59,21 @@ export function MobileList({ members, onSelect }: MobileListProps) {
               <Box component="span" sx={{ color: accuracyColor, fontWeight: 700 }}>
                 {accuracyCompactLabel(member, t)}
               </Box>
+              {/* Dropped at zero and when unknown: with no column header, a
+                  dash on this line just reads as missing data. */}
+              {member.reviewsWaiting !== null && member.reviewsWaiting > 0 && (
+                <>
+                  {' · '}
+                  <Box
+                    component="span"
+                    sx={{
+                      fontWeight: member.reviewsWaiting >= REVIEW_BACKLOG_THRESHOLD ? 700 : 400,
+                    }}
+                  >
+                    {t('reviewsWaitingCompact', { count: member.reviewsWaiting })}
+                  </Box>
+                </>
+              )}
             </Typography>
           </Box>
         );
