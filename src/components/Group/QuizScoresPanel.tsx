@@ -14,9 +14,9 @@ import type { QuizScoreRow } from '@/lib/quiz';
 import { quizResultsToCsv } from '@/lib/quiz';
 
 import { DeckPicker } from './DeckPicker';
-import { timeAgo } from './MemberCard';
 import { SectionCard } from './SectionCard';
 import { ShowMoreButton } from './ShowMoreButton';
+import { timeAgo } from './timeAgo';
 
 /** member | best | latest | tries — the score table's shared column track. */
 const GRID_COLUMNS = '1.6fr 1fr 1fr 0.7fr';
@@ -64,7 +64,7 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
   const t = useTranslations('Group.quizScores');
-  const tMemberCard = useTranslations('Group.memberCard');
+  const tTime = useTranslations('Group.timeAgo');
   const [selectedDeck, setSelectedDeck] = useState<string>(decks[0]?.id ?? '');
   const [expanded, setExpanded] = useState(false);
   const { rows, loading, error } = useQuizResults(selectedDeck || null, groupId);
@@ -198,7 +198,7 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
                   {r.latest ? `${r.latest.score}/${r.latest.total}` : '—'}
                   {r.latest && (
                     <Typography sx={{ fontSize: '0.68rem', color: 'text.secondary', mt: 0.15 }}>
-                      {t('lastTaken', { date: timeAgo(r.latest.takenAt, tMemberCard) })}
+                      {t('lastTaken', { date: timeAgo(r.latest.takenAt, tTime) })}
                     </Typography>
                   )}
                 </Box>

@@ -952,16 +952,13 @@
     }
   },
   "Group": {
-    "memberCard": {
+    "timeAgo": {
       "never": "Never",
       "justNow": "Just now",
       "minutesAgo": "{mins}m ago",
       "hoursAgo": "{hours}h ago",
       "yesterday": "Yesterday",
-      "daysAgo": "{days}d ago",
-      "level": "Level {level}",
-      "xpProgress": "{current}/{needed} XP",
-      "cardsStudied": "{count, plural, one {# card studied} other {# cards studied}}"
+      "daysAgo": "{days}d ago"
     },
     "memberDetail": {
       "loadingMemberDetails": "Loading member details...",

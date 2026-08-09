@@ -9,7 +9,7 @@ import { useState } from 'react';
 
 import type { Assignment } from '@/hooks/useAssignments';
 
-import { timeAgo } from '../MemberCard';
+import { timeAgo } from '../timeAgo';
 import { groupBatchMembers, isNearGoal } from './batchMemberGrouping';
 import { NudgeButton } from './NudgeButton';
 
@@ -31,7 +31,7 @@ export function BatchMemberList({
   const theme = useTheme();
   const { brand } = theme.palette;
   const t = useTranslations('Group.assignmentsList');
-  const tMemberCard = useTranslations('Group.memberCard');
+  const tTime = useTranslations('Group.timeAgo');
   const rows = groupBatchMembers(members);
   const nudgeMessage = t('nudgeDefaultMessage', { deck: deckName });
   // Overlays the server's last_nudged_at, which won't refresh until the next fetch.
@@ -55,7 +55,7 @@ export function BatchMemberList({
         const subline =
           row.status === 'done'
             ? [
-                t('finishedOn', { date: timeAgo(row.completedAt, tMemberCard) }),
+                t('finishedOn', { date: timeAgo(row.completedAt, tTime) }),
                 row.progressAccuracy != null ? `${row.progressAccuracy}%` : null,
               ]
                 .filter(Boolean)
@@ -134,7 +134,7 @@ export function BatchMemberList({
                   <Typography
                     sx={{ fontSize: '0.62rem', color: 'text.secondary', whiteSpace: 'nowrap' }}
                   >
-                    {t('lastNudged', { date: timeAgo(lastNudgedAt, tMemberCard) })}
+                    {t('lastNudged', { date: timeAgo(lastNudgedAt, tTime) })}
                   </Typography>
                 )}
               </Box>

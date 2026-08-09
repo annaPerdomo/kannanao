@@ -160,7 +160,7 @@ All group routes follow: rate limit check → auth check → service supabase.
 
 ### Group components (`src/components/Group/`)
 
-GroupOverview, MemberCard, MemberDetail, LeaderboardWidget, ActivityFeed, CreateAssignmentDialog, AssignmentCard, CreateInviteDialog, InviteQRCode, InviteList, EncouragementForm, EncouragementInbox — all barrel-exported from `index.ts`.
+GroupOverview, MemberDetail, LeaderboardWidget, ActivityFeed, CreateAssignmentDialog, AssignmentCard, CreateInviteDialog, InviteQRCode, InviteList, EncouragementForm, EncouragementInbox — all barrel-exported from `index.ts`.
 
 ### Group pages
 

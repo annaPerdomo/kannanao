@@ -11,8 +11,8 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
 import { dueBucket } from '../dueDate';
-import { timeAgo } from '../MemberCard';
 import { hasReviewBacklog } from '../reviewBacklog';
+import { timeAgo } from '../timeAgo';
 import type { AttentionItem, AttentionSeverity } from './types';
 
 interface RowActionsProps {
@@ -110,7 +110,7 @@ function RowActions({
 
 function useRowText(item: AttentionItem): { headline: string; subline: string } {
   const t = useTranslations('Group.needsAttention');
-  const tMemberCard = useTranslations('Group.memberCard');
+  const tTime = useTranslations('Group.timeAgo');
 
   if (item.kind === 'inactiveLearner') {
     // Same predicate as the standalone row this suffix stands in for, so the
@@ -126,8 +126,7 @@ function useRowText(item: AttentionItem): { headline: string; subline: string } 
     }
     return {
       headline: t('inactiveLearnerHeadline', { name: item.name, days: item.days }),
-      subline:
-        t('inactiveLearnerSubline', { relative: timeAgo(item.lastActive, tMemberCard) }) + backlog,
+      subline: t('inactiveLearnerSubline', { relative: timeAgo(item.lastActive, tTime) }) + backlog,
     };
   }
 

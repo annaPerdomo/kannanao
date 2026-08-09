@@ -32,7 +32,6 @@ export { LeaderboardPanel } from './LeaderboardPanel';
 export { LeaderboardWidget } from './LeaderboardWidget';
 export { LearnersTable } from './LearnersTable';
 export { daysSinceActive, STALE_DAYS } from './memberActivity';
-export { MemberCard } from './MemberCard';
 export { MemberDetail } from './MemberDetail';
 export { MessageBubble, TypingBubble } from './MessageThread';
 export { NeedsAttention } from './NeedsAttention';

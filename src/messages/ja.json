@@ -952,16 +952,13 @@
     }
   },
   "Group": {
-    "memberCard": {
+    "timeAgo": {
       "never": "まだなし",
       "justNow": "たった今",
       "minutesAgo": "{mins}分前",
       "hoursAgo": "{hours}時間前",
       "yesterday": "きのう",
-      "daysAgo": "{days}日前",
-      "level": "レベル {level}",
-      "xpProgress": "{current}/{needed} XP",
-      "cardsStudied": "{count, plural, other {カード#枚を学習}}"
+      "daysAgo": "{days}日前"
     },
     "memberDetail": {
       "loadingMemberDetails": "メンバーの詳細を読み込み中...",
