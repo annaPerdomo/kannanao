@@ -39,23 +39,16 @@ export function AssignmentsTab({
 }: AssignmentsTabProps) {
   const t = useTranslations('Group.groupPage');
   const theme = useTheme();
-  const { brand } = theme.palette;
 
   return (
     <Stack spacing={2.5}>
       {canAssign && (
         <Box>
           <Button
-            variant="outlined"
+            variant="contained"
             startIcon={<AddIcon sx={{ fontSize: 18 }} />}
             onClick={onAssign}
-            sx={{
-              borderRadius: theme.radii.sm,
-              textTransform: 'none',
-              fontWeight: 700,
-              borderColor: brand[400],
-              color: brand[700],
-            }}
+            sx={{ borderRadius: theme.radii.sm, textTransform: 'none', fontWeight: 700 }}
           >
             {t('assignDeckButton')}
           </Button>
