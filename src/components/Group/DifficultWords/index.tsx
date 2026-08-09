@@ -80,6 +80,7 @@ export function DifficultWords({ groupId }: DifficultWordsProps) {
               setExpanded(false);
             }}
             size="small"
+            displayEmpty
             aria-label={t('deckFilterAriaLabel')}
             sx={{
               minWidth: { sm: 200 },

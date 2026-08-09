@@ -231,41 +231,47 @@ export function NeedsAttentionRow({
       sx={{
         display: 'flex',
         flexDirection: { xs: 'column', sm: 'row' },
-        alignItems: { xs: 'flex-start', sm: 'center' },
-        gap: 1.5,
+        alignItems: { sm: 'center' },
+        gap: { xs: 1.25, sm: 1.5 },
         py: 1.25,
       }}
     >
-      <Box
-        sx={{
-          width: 38,
-          height: 38,
-          flexShrink: 0,
-          borderRadius: theme.radii.sm,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: alpha(severityColor, 0.15),
-        }}
-      >
-        <Icon aria-hidden sx={{ fontSize: 19, color: severityColor }} />
-      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0 }}>
+        <Box
+          sx={{
+            width: 38,
+            height: 38,
+            flexShrink: 0,
+            borderRadius: theme.radii.sm,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: alpha(severityColor, 0.15),
+          }}
+        >
+          <Icon aria-hidden sx={{ fontSize: 19, color: severityColor }} />
+        </Box>
 
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: 'text.primary' }}>
-          {headline}
-        </Typography>
-        {subline && (
-          <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', mt: 0.25 }}>
-            {subline}
+        <Box sx={{ minWidth: 0 }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: 'text.primary' }}>
+            {headline}
           </Typography>
-        )}
+          {subline && (
+            <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', mt: 0.25 }}>
+              {subline}
+            </Typography>
+          )}
+        </Box>
       </Box>
 
       <Stack
-        direction={{ xs: 'column', sm: 'row' }}
+        direction="row"
         spacing={1}
-        sx={{ flexShrink: 0, width: { xs: '100%', sm: 'auto' } }}
+        sx={{
+          flexShrink: 0,
+          width: { xs: '100%', sm: 'auto' },
+          '& > .MuiButton-root': { flex: { xs: 1, sm: 'initial' } },
+        }}
       >
         <RowActions
           item={item}

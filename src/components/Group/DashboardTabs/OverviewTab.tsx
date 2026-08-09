@@ -69,10 +69,19 @@ export function OverviewTab({
 
   const studySecsThisWeek = sumLastDays(activity?.totals.durationSecs ?? []);
 
+  // At xs the column wrappers dissolve (`display: contents`) so the `order`
+  // values interleave both columns into one stack; at lg the leaderboard
+  // backfills the chart column so neither side ends short.
   return (
     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2.5 }}>
       <Box
-        sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, flex: { lg: 2 }, minWidth: 0 }}
+        sx={{
+          display: { xs: 'contents', lg: 'flex' },
+          flexDirection: 'column',
+          gap: 2.5,
+          flex: { lg: 2 },
+          minWidth: 0,
+        }}
       >
         <SectionCard
           title={tc('dailyHeading')}
@@ -105,10 +114,27 @@ export function OverviewTab({
             />
           )}
         </SectionCard>
+
+        <Box sx={{ order: { xs: 5, lg: 0 } }}>
+          <LeaderboardPanel
+            entries={leaderboard}
+            loading={leaderboardLoading}
+            visible={leaderboardVisible}
+            onVisibilityChange={onLeaderboardVisibilityChange}
+            maxVisible={SIDEBAR_PREVIEW_SHOWN}
+            compact
+          />
+        </Box>
       </Box>
 
       <Box
-        sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, flex: { lg: 1 }, minWidth: 0 }}
+        sx={{
+          display: { xs: 'contents', lg: 'flex' },
+          flexDirection: 'column',
+          gap: 2.5,
+          flex: { lg: 1 },
+          minWidth: 0,
+        }}
       >
         <SectionCard title={t('assignmentsHeading')}>
           <AssignmentsList
@@ -121,45 +147,34 @@ export function OverviewTab({
           />
         </SectionCard>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 2.5 }}>
-          <SectionCard title={t('recentActivityHeading')}>
-            {feedLoading ? (
-              <Loading message={t('loadingActivity')} />
-            ) : (
-              <>
-                <ActivityFeed items={feed.slice(0, SIDEBAR_PREVIEW_SHOWN)} compact />
-                {feed.length > SIDEBAR_PREVIEW_SHOWN && (
-                  <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${alpha(brand[300], 0.3)}` }}>
-                    <Button
-                      fullWidth
-                      size="small"
-                      variant="text"
-                      onClick={() => onNavigateTab('activity')}
-                      sx={{
-                        textTransform: 'none',
-                        fontWeight: 700,
-                        fontSize: '0.8rem',
-                        color: brand[700],
-                        borderRadius: theme.radii.sm,
-                      }}
-                    >
-                      {t('viewAllActivity')} →
-                    </Button>
-                  </Box>
-                )}
-              </>
-            )}
-          </SectionCard>
-
-          <LeaderboardPanel
-            entries={leaderboard}
-            loading={leaderboardLoading}
-            visible={leaderboardVisible}
-            onVisibilityChange={onLeaderboardVisibilityChange}
-            maxVisible={SIDEBAR_PREVIEW_SHOWN}
-            compact
-          />
-        </Box>
+        <SectionCard title={t('recentActivityHeading')}>
+          {feedLoading ? (
+            <Loading message={t('loadingActivity')} />
+          ) : (
+            <>
+              <ActivityFeed items={feed.slice(0, SIDEBAR_PREVIEW_SHOWN)} compact />
+              {feed.length > SIDEBAR_PREVIEW_SHOWN && (
+                <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${alpha(brand[300], 0.3)}` }}>
+                  <Button
+                    fullWidth
+                    size="small"
+                    variant="text"
+                    onClick={() => onNavigateTab('activity')}
+                    sx={{
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      fontSize: '0.8rem',
+                      color: brand[700],
+                      borderRadius: theme.radii.sm,
+                    }}
+                  >
+                    {t('viewAllActivity')} →
+                  </Button>
+                </Box>
+              )}
+            </>
+          )}
+        </SectionCard>
       </Box>
     </Box>
   );

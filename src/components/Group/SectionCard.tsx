@@ -27,7 +27,6 @@ export function SectionCard({ title, icon, action, footer, children }: SectionCa
     <Paper
       elevation={0}
       sx={{
-        height: '100%',
         display: 'flex',
         flexDirection: 'column',
         p: { xs: 2, sm: 2.5 },
