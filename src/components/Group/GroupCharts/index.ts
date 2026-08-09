@@ -3,4 +3,3 @@ export { DailyActivityChart } from './DailyActivityChart';
 export { type ActivityRangeDays, DailyRangeSelect } from './DailyRangeSelect';
 export { GroupModeBreakdown } from './GroupModeBreakdown';
 export { StudyHeatmap } from './StudyHeatmap';
-export { WordStruggleChart } from './WordStruggleChart';

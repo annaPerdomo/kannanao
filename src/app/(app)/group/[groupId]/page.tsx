@@ -230,7 +230,7 @@ export default function GroupDashboardPage() {
         />
       )}
 
-      {tab === 'words' && <WordsTab ownDecks={ownDecks} />}
+      {tab === 'words' && <WordsTab groupId={groupId} />}
 
       {tab === 'activity' && (
         <ActivityTab

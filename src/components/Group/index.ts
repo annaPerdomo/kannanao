@@ -17,6 +17,7 @@ export {
   WordsTab,
 } from './DashboardTabs';
 export { DeckPicker } from './DeckPicker';
+export { DifficultWords } from './DifficultWords';
 export { EditAssignmentDialog } from './EditAssignmentDialog';
 export { EncouragementEmojiPicker } from './EncouragementEmojiPicker';
 export { EncouragementForm } from './EncouragementForm';
@@ -36,7 +37,6 @@ export { MemberDetail } from './MemberDetail';
 export { MessageBubble, TypingBubble } from './MessageThread';
 export { NeedsAttention } from './NeedsAttention';
 export { QuizScoresPanel } from './QuizScoresPanel';
-export { ReteachPanel } from './ReteachPanel';
 export { SectionCard } from './SectionCard';
 export { ShowMoreButton } from './ShowMoreButton';
 export { WeekStatStrip } from './WeekStatStrip';

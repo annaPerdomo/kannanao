@@ -1,11 +1,9 @@
-import type { Deck } from '@/types/deck';
-
-import { ReteachPanel } from '../ReteachPanel';
+import { DifficultWords } from '../DifficultWords';
 
 interface WordsTabProps {
-  ownDecks: Deck[];
+  groupId: string;
 }
 
-export function WordsTab({ ownDecks }: WordsTabProps) {
-  return <ReteachPanel decks={ownDecks} />;
+export function WordsTab({ groupId }: WordsTabProps) {
+  return <DifficultWords groupId={groupId} />;
 }

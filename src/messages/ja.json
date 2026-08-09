@@ -1366,19 +1366,30 @@
       "mastered": "定着 {count}枚",
       "groupXp": "グループXP {xp}"
     },
-    "reteachPanel": {
-      "heading": "もう一度やりたいことば",
-      "pickDeckBody": "デッキを選ぶと、クラスがまちがえやすい単語がわかります。",
-      "checkingMessage": "クラスのまちがいを確認中...",
-      "noTrickyWords": "にがてな単語はまだありません。このデッキはクラス全体でよくできています。",
-      "allStudentsStruggling": "{attempts, plural, other {この単語は、やってみた生徒#人全員がまちがえ続けています。}}",
-      "someStudentsStruggling": "やってみた生徒{attempts}人のうち{struggling}人が、この単語をまちがえ続けています。",
+    "difficultWords": {
+      "heading": "にがてな単語",
+      "allDecks": "すべてのデッキ",
+      "deckFilterAriaLabel": "デッキでしぼりこむ",
+      "contextLine": "{count, plural, other {このグループの#人の学習から}}",
+      "loadingMessage": "にがてな単語をさがしています…",
+      "noDecksBody": "このグループにデッキを出すと、ここににがてな単語が表示されます。",
+      "noTrickyWords": "いまはにがてな単語はありません 🎉 — もう少し学習が進んだらまた見てみてください。",
+      "learnersAffected": "{total, plural, other {#人}}中{affected}人がつまずいています",
       "percentRight": "正解率 {percent}%",
-      "chartCaption": "まちがえている人の割合",
-      "noDecksBody": "教材ビルダーでデッキをつくると、ここににがてな単語が表示されます。"
+      "attempts": "{count, plural, other {これまでにグループ全体で#回解答}}",
+      "reason": {
+        "forgotten": "わすれかけ",
+        "missed": "いつもまちがえる",
+        "shaky": "おぼえたて"
+      },
+      "detail": {
+        "forgotten": "やってみた{total, plural, other {#人}}のうち{affected}人が、一度おぼえたあとにまたまちがえました。",
+        "missed": "やってみた{total, plural, other {#人}}のうち{affected}人が、この単語をまちがえ続けています。",
+        "shaky": "やってみた{total, plural, other {#人}}のうち{affected}人が、この単語をまだおぼえきれていません。"
+      }
     },
-    "useItemAnalysis": {
-      "failedToLoad": "分析を読み込めませんでした"
+    "useDifficultWords": {
+      "failedToLoad": "にがてな単語を読み込めませんでした"
     },
     "leaderboard": {
       "empty": "今週はまだ活動がありません。",

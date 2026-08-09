@@ -1366,19 +1366,30 @@
       "mastered": "{count} mastered",
       "groupXp": "{xp} group XP"
     },
-    "reteachPanel": {
-      "heading": "What to review again",
-      "pickDeckBody": "Pick a deck to see which words your class is missing.",
-      "checkingMessage": "Checking what the class is missing...",
-      "noTrickyWords": "No tricky words here yet — the class is doing well on this deck.",
-      "allStudentsStruggling": "{attempts, plural, one {All # student who tried it keep missing this word.} other {All # students who tried it keep missing this word.}}",
-      "someStudentsStruggling": "{struggling} of {attempts} students who tried it keep missing this word.",
+    "difficultWords": {
+      "heading": "Tricky words",
+      "allDecks": "All decks",
+      "deckFilterAriaLabel": "Filter tricky words by deck",
+      "contextLine": "{count, plural, one {Across # learner in this group} other {Across # learners in this group}}",
+      "loadingMessage": "Looking for tricky words…",
+      "noDecksBody": "Assign a deck to this group to see tricky words here.",
+      "noTrickyWords": "No tricky words right now 🎉 — check back after the group has studied more.",
+      "learnersAffected": "{affected} of {total, plural, one {# learner} other {# learners}} affected",
       "percentRight": "{percent}% right",
-      "chartCaption": "Share of the group still missing each word",
-      "noDecksBody": "Make a deck in the Materials Builder to see tricky words here."
+      "attempts": "{count, plural, one {# answer from the group so far} other {# answers from the group so far}}",
+      "reason": {
+        "forgotten": "Being forgotten",
+        "missed": "Keeps getting missed",
+        "shaky": "New & shaky"
+      },
+      "detail": {
+        "forgotten": "{affected} of {total, plural, one {# learner} other {# learners}} who tried it had learned this word, then missed it again.",
+        "missed": "{affected} of {total, plural, one {# learner} other {# learners}} who tried it keep missing this word.",
+        "shaky": "{affected} of {total, plural, one {# learner} other {# learners}} who tried it are still shaky on this word."
+      }
     },
-    "useItemAnalysis": {
-      "failedToLoad": "Failed to load analysis"
+    "useDifficultWords": {
+      "failedToLoad": "Failed to load tricky words"
     },
     "leaderboard": {
       "empty": "No activity this week yet.",
