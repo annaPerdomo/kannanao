@@ -1044,7 +1044,8 @@
       "noAttempts": "No one has taken this quiz yet.",
       "loadFailed": "Failed to load quiz scores",
       "summary": "{taken} of {total} have taken it · average {average}%",
-      "noDecksBody": "Make a deck in the Materials Builder to see quiz scores here."
+      "noDecksBody": "Make a deck in the Materials Builder to see quiz scores here.",
+      "lastTaken": "Last taken {date}"
     },
     "goalPicker": {
       "addGoal": "🎯 Add a goal (optional)",

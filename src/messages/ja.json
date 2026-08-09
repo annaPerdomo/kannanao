@@ -1044,7 +1044,8 @@
       "noAttempts": "まだ誰もこのクイズを受けていません。",
       "loadFailed": "クイズの成績を読み込めませんでした",
       "summary": "{total}人中{taken}人が受験・平均{average}%",
-      "noDecksBody": "教材ビルダーでデッキをつくると、ここにクイズの成績が表示されます。"
+      "noDecksBody": "教材ビルダーでデッキをつくると、ここにクイズの成績が表示されます。",
+      "lastTaken": "最終受験：{date}"
     },
     "goalPicker": {
       "addGoal": "🎯 目標を追加（任意）",
