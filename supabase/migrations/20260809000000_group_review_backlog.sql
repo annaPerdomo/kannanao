@@ -39,6 +39,7 @@ $$;
 -- must not be callable by a signed-in client. Only the group routes'
 -- service-role key may run it, and they pass an id list they have already
 -- verified is their own roster.
+-- Superseded by 20260809010000 (SECURITY INVOKER); left as production ran it.
 REVOKE EXECUTE ON FUNCTION group_review_backlog(uuid[]) FROM public;
 REVOKE EXECUTE ON FUNCTION group_review_backlog(uuid[]) FROM anon;
 REVOKE EXECUTE ON FUNCTION group_review_backlog(uuid[]) FROM authenticated;
