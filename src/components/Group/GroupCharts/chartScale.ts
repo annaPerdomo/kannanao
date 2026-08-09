@@ -43,3 +43,34 @@ export function heatLevel(value: number, thresholds: [number, number, number]): 
   if (value <= q3) return 3;
   return 4;
 }
+
+/** Percent correct per day, or `null` on a zero-card day — a day nobody studied has no accuracy. */
+export function dailyAccuracy(cards: number[], correct: number[]): Array<number | null> {
+  return cards.map((c, i) => (c > 0 ? Math.round(((correct[i] ?? 0) / c) * 100) : null));
+}
+
+export interface LinePoint {
+  /** Percent across the plot width (0-100), for an SVG viewBox 0 0 100 100. */
+  x: number;
+  /** Percent down from the top (100 - value), so higher accuracy sits higher. */
+  y: number;
+}
+
+/**
+ * Contiguous runs of plottable points, split wherever a day has no accuracy —
+ * a null day breaks the line rather than interpolating across it.
+ */
+export function lineSegments(values: Array<number | null>): LinePoint[][] {
+  const segments: LinePoint[][] = [];
+  let current: LinePoint[] = [];
+  values.forEach((value, i) => {
+    if (value === null) {
+      if (current.length) segments.push(current);
+      current = [];
+      return;
+    }
+    current.push({ x: ((i + 0.5) / values.length) * 100, y: 100 - value });
+  });
+  if (current.length) segments.push(current);
+  return segments;
+}

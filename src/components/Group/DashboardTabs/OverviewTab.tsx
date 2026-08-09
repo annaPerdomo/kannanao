@@ -4,7 +4,9 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
+import { sumLastDays } from '@/components/Group/activityWeek';
 import { Loading } from '@/components/Loading';
 import type { Assignment } from '@/hooks/useAssignments';
 import type { FeedItem } from '@/hooks/useGroup';
@@ -13,13 +15,17 @@ import type { LeaderboardEntry } from '@/hooks/useGroupLeaderboard';
 
 import { ActivityFeed } from '../ActivityFeed';
 import { AssignmentsList } from '../AssignmentsList';
-import { DailyActivityChart, StudyHeatmap } from '../GroupCharts';
+import {
+  type ActivityRangeDays,
+  DailyActivityChart,
+  DailyRangeSelect,
+  StudyHeatmap,
+} from '../GroupCharts';
 import { LeaderboardPanel } from '../LeaderboardPanel';
 import { SectionCard } from '../SectionCard';
 import type { GroupDashboardTab } from './constants';
 
 const SIDEBAR_PREVIEW_SHOWN = 3;
-const HEATMAP_DAYS = 7;
 
 interface OverviewTabProps {
   activity: GroupActivity | null;
@@ -59,19 +65,29 @@ export function OverviewTab({
   const { brand } = theme.palette;
   const t = useTranslations('Group.groupPage');
   const tc = useTranslations('Group.charts');
+  const [rangeDays, setRangeDays] = useState<ActivityRangeDays>(14);
+
+  const studySecsThisWeek = sumLastDays(activity?.totals.durationSecs ?? []);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2.5 }}>
       <Box
         sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, flex: { lg: 2 }, minWidth: 0 }}
       >
-        <SectionCard title={tc('dailyHeading')}>
+        <SectionCard
+          title={tc('dailyHeading')}
+          action={<DailyRangeSelect value={rangeDays} onChange={setRangeDays} />}
+        >
           {activityError ? (
             <Alert severity="error">{activityError}</Alert>
           ) : activityLoading && !activity ? (
             <Loading message={tc('loading')} />
           ) : (
-            <DailyActivityChart days={activity?.days ?? []} values={activity?.totals.cards ?? []} />
+            <DailyActivityChart
+              days={activity?.days ?? []}
+              values={activity?.totals.cards ?? []}
+              correct={activity?.totals.correct ?? []}
+            />
           )}
         </SectionCard>
 
@@ -82,9 +98,10 @@ export function OverviewTab({
             <Loading message={tc('loading')} />
           ) : (
             <StudyHeatmap
-              days={(activity?.days ?? []).slice(-HEATMAP_DAYS)}
+              days={activity?.days ?? []}
               members={activity?.members ?? []}
-              offset={Math.max(0, (activity?.days.length ?? 0) - HEATMAP_DAYS)}
+              offset={0}
+              studySecsThisWeek={studySecsThisWeek}
             />
           )}
         </SectionCard>

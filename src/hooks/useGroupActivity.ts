@@ -23,7 +23,7 @@ export interface GroupActivityModeStat {
 export interface GroupActivity {
   /** ISO dates, oldest → newest. */
   days: string[];
-  totals: { cards: number[]; xp: number[] };
+  totals: { cards: number[]; xp: number[]; correct: number[]; durationSecs: number[] };
   members: GroupActivityMember[];
   /** Cards-studied descending, over the same window as `days`. */
   modeBreakdown: GroupActivityModeStat[];

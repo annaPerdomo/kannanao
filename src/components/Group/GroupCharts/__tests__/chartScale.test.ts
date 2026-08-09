@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { axisCeiling, heatLevel, heatThresholds } from '../chartScale';
+import { axisCeiling, dailyAccuracy, heatLevel, heatThresholds, lineSegments } from '../chartScale';
 
 describe('axisCeiling', () => {
   it('rounds up to a clean tick', () => {
@@ -58,5 +58,45 @@ describe('heatLevel', () => {
 
   it('uses one mid step when every studied day is equal', () => {
     expect(heatLevel(10, [10, 10, 10])).toBe(3);
+  });
+});
+
+describe('dailyAccuracy', () => {
+  it('divides correct by cards per day', () => {
+    expect(dailyAccuracy([10, 4], [8, 1])).toEqual([80, 25]);
+  });
+
+  it('is null on a zero-card day, avoiding a divide-by-zero', () => {
+    expect(dailyAccuracy([0, 5], [0, 5])).toEqual([null, 100]);
+  });
+
+  it('rounds to the nearest whole percent', () => {
+    expect(dailyAccuracy([3], [1])).toEqual([33]);
+  });
+});
+
+describe('lineSegments', () => {
+  it('spaces points evenly across the width and flips y so higher is up', () => {
+    expect(lineSegments([100, 0])).toEqual([
+      [
+        { x: 25, y: 0 },
+        { x: 75, y: 100 },
+      ],
+    ]);
+  });
+
+  it('breaks the line into separate segments across a null (zero-card) day', () => {
+    const segments = lineSegments([80, null, 60]);
+    expect(segments).toHaveLength(2);
+    expect(segments[0]).toHaveLength(1);
+    expect(segments[0][0].x).toBeCloseTo(50 / 3);
+    expect(segments[0][0].y).toBe(20);
+    expect(segments[1]).toHaveLength(1);
+    expect(segments[1][0].x).toBeCloseTo(250 / 3);
+    expect(segments[1][0].y).toBe(40);
+  });
+
+  it('is empty when every day is null', () => {
+    expect(lineSegments([null, null])).toEqual([]);
   });
 });

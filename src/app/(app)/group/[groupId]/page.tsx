@@ -12,7 +12,6 @@ import {
   CreateInviteDialog,
   GroupDashboardHeader,
   type GroupDashboardTab,
-  GroupOverview,
   InviteQRCode,
   isExpired,
   isGroupDashboardTab,
@@ -20,6 +19,7 @@ import {
   NeedsAttention,
   OverviewTab,
   TabBar,
+  WeekStatStrip,
   WordsTab,
 } from '@/components/Group';
 import { Loading } from '@/components/Loading';
@@ -187,7 +187,7 @@ export default function GroupDashboardPage() {
         />
       </Box>
 
-      <GroupOverview members={members} />
+      <WeekStatStrip members={members} activity={activity} />
 
       <TabBar value={tab} onChange={handleTabChange} />
 

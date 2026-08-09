@@ -21,6 +21,7 @@ interface SessionRow {
   cards_studied: number | null;
   cards_correct: number | null;
   xp_earned: number | null;
+  duration_secs: number | null;
   practice_mode: string | null;
   started_at: string;
 }
@@ -66,7 +67,12 @@ export async function GET(req: NextRequest) {
   if (!members || members.length === 0) {
     return NextResponse.json({
       days: dayList,
-      totals: { cards: dayList.map(() => 0), xp: dayList.map(() => 0) },
+      totals: {
+        cards: dayList.map(() => 0),
+        xp: dayList.map(() => 0),
+        correct: dayList.map(() => 0),
+        durationSecs: dayList.map(() => 0),
+      },
       members: [],
       modeBreakdown: [],
     });
@@ -77,7 +83,9 @@ export async function GET(req: NextRequest) {
   const since = new Date(Date.now() - days * 86_400_000);
   const { data: sessions, error: sessErr } = await sb
     .from('study_sessions')
-    .select('user_id, cards_studied, cards_correct, xp_earned, practice_mode, started_at')
+    .select(
+      'user_id, cards_studied, cards_correct, xp_earned, duration_secs, practice_mode, started_at',
+    )
     .in(
       'user_id',
       members.map((m) => m.id),
@@ -109,6 +117,8 @@ export async function GET(req: NextRequest) {
   const perMember = new Map(members.map((m) => [m.id, zeros()]));
   const totalCards = zeros();
   const totalXp = zeros();
+  const totalCorrect = zeros();
+  const totalDurationSecs = zeros();
 
   for (const s of (sessions ?? []) as SessionRow[]) {
     const i = dayIndex.get(localDay(new Date(s.started_at), tzOffset));
@@ -116,13 +126,20 @@ export async function GET(req: NextRequest) {
     const cards = s.cards_studied ?? 0;
     totalCards[i] += cards;
     totalXp[i] += s.xp_earned ?? 0;
+    totalCorrect[i] += s.cards_correct ?? 0;
+    totalDurationSecs[i] += s.duration_secs ?? 0;
     const row = perMember.get(s.user_id);
     if (row) row[i] += cards;
   }
 
   return NextResponse.json({
     days: dayList,
-    totals: { cards: totalCards, xp: totalXp },
+    totals: {
+      cards: totalCards,
+      xp: totalXp,
+      correct: totalCorrect,
+      durationSecs: totalDurationSecs,
+    },
     members: members.map((m) => ({
       id: m.id,
       name: m.display_name || m.username,
