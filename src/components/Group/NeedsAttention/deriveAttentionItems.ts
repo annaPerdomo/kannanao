@@ -3,7 +3,7 @@ import type { GroupMember } from '@/hooks/useGroup';
 
 import { groupAssignments } from '../AssignmentsList/groupAssignments';
 import { daysUntilDue } from '../dueDate';
-import { daysSinceActive, STALE_DAYS } from '../MembersPanel';
+import { daysSinceActive, STALE_DAYS } from '../memberActivity';
 import { CLOSE_ACCURACY_MARGIN, DUE_SOON_DAYS, MAX_INACTIVE_ROWS, MS_PER_DAY } from './constants';
 import type { AssignmentDueItem, AttentionItem, CloseToGoal } from './types';
 

@@ -12,7 +12,7 @@ import { useTranslations } from 'next-intl';
 import { StatCard } from '@/components/Stats/StatCard';
 import type { GroupMember } from '@/hooks/useGroup';
 
-import { daysSinceActive, STALE_DAYS } from './MembersPanel';
+import { daysSinceActive, STALE_DAYS } from './memberActivity';
 
 interface GroupOverviewProps {
   members: GroupMember[];

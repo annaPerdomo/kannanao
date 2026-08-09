@@ -10,6 +10,8 @@ import { UserAvatar } from '@/components/UserAvatar';
 import type { GroupMember } from '@/hooks/useGroup';
 import { xpProgressInLevel } from '@/hooks/useProgress';
 
+import { recencyDotColor } from './memberActivity';
+
 export function timeAgo(dateStr: string | null, t: ReturnType<typeof useTranslations>): string {
   if (!dateStr) return t('never');
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -21,15 +23,6 @@ export function timeAgo(dateStr: string | null, t: ReturnType<typeof useTranslat
   const days = Math.floor(hours / 24);
   if (days === 1) return t('yesterday');
   return t('daysAgo', { days });
-}
-
-function statusColor(lastActive: string | null): string {
-  if (!lastActive) return '#9CA3AF';
-  const diff = Date.now() - new Date(lastActive).getTime();
-  const days = diff / (24 * 60 * 60 * 1000);
-  if (days < 1) return '#22C55E'; // green — studied today
-  if (days < 3) return '#EAB308'; // yellow — recent
-  return '#9CA3AF'; // gray — inactive
 }
 
 interface MemberCardProps {
@@ -44,7 +37,7 @@ export function MemberCard({ member, onClick }: MemberCardProps) {
   const t = useTranslations('Group.memberCard');
   const { current, needed } = xpProgressInLevel(member.totalXp);
   const pct = Math.round((current / needed) * 100);
-  const status = statusColor(member.lastActive);
+  const status = recencyDotColor(member.lastActive);
   const name = member.displayName || member.username;
 
   return (
