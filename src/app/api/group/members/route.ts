@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
   const { data: members, error: membersErr } = await sb
     .from('profiles')
-    .select('id, username, display_name, avatar, created_at')
+    .select('id, username, display_name, avatar, created_at, last_nudged_at')
     .in('id', rosterIds)
     .order('created_at', { ascending: true });
 
@@ -87,6 +87,7 @@ export async function GET(req: NextRequest) {
       totalCorrect: prog?.total_correct ?? 0,
       totalSessions: prog?.total_sessions ?? 0,
       lastActive: prog?.last_study_date ?? null,
+      lastNudgedAt: m.last_nudged_at ?? null,
       masteryLearning: mastery?.learning ?? 0,
       masteryStrong: mastery?.strong ?? 0,
     };

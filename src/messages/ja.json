@@ -1086,7 +1086,19 @@
       "removeBody": "「{deck}」を{count, plural, other {#人全員}}から削除します。",
       "removeFailed": "課題を削除できませんでした。もう一度お試しください。",
       "startsOn": "{date} から",
-      "viewAllAssignments": "すべての課題を見る"
+      "viewAllAssignments": "すべての課題を見る",
+      "expandMembersAria": "{deckName}の進捗を表示",
+      "collapseMembersAria": "{deckName}の進捗を非表示",
+      "finishedOn": "{date}に完了",
+      "bestSoFar": "自己ベスト {accuracy}%",
+      "memberGoalChip": "目標{goal}%",
+      "notStartedLabel": "まだ挑戦していません",
+      "nudgeAction": "声かけ",
+      "nudgeAria": "{name}さんに声をかける",
+      "nudgeSentShort": "送信済み",
+      "nudgeFailed": "送信できませんでした。もう一度お試しください。",
+      "nudgeDefaultMessage": "「{deck}」を忘れずに終わらせよう！💪",
+      "lastNudged": "最終声かけ：{date}"
     },
     "createAssignment": {
       "title": "課題を出す",
@@ -1435,7 +1447,8 @@
       "showLessAction": "とじる",
       "nudgeDialogTitle": "{name}さんに声をかける",
       "nudgeDefaultMessage": "元気にしてる？また一緒に練習しよう 💪",
-      "nudgeSent": "声かけを送りました！"
+      "nudgeSent": "声かけを送りました！",
+      "lastNudgedAt": "最終声かけ：{date}"
     },
     "lessonBuilder": {
       "goalLabel": "なにをとりあげますか？",

@@ -25,7 +25,11 @@ export interface Assignment {
   /** Best qualifying-session accuracy so far (student feedback). */
   progress_accuracy: number | null;
   decks?: { id: string; name: string; emoji: string | null } | null;
-  profiles?: { display_name: string | null; username: string } | null;
+  profiles?: {
+    display_name: string | null;
+    username: string;
+    last_nudged_at?: string | null;
+  } | null;
 }
 
 async function authHeaders(): Promise<Record<string, string>> {

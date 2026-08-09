@@ -24,6 +24,7 @@ function member(overrides: Partial<GroupMember> = {}): GroupMember {
     totalCorrect: 0,
     totalSessions: 0,
     lastActive: null,
+    lastNudgedAt: null,
     masteryLearning: 0,
     masteryStrong: 0,
     ...overrides,

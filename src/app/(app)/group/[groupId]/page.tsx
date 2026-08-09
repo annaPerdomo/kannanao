@@ -226,6 +226,7 @@ export default function GroupDashboardPage() {
           onAssign={() => setAssignOpen(true)}
           ownDecks={ownDecks}
           groupId={groupId}
+          onSendEncouragement={handleSendEncouragement}
         />
       )}
 

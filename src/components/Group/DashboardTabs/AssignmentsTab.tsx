@@ -24,6 +24,7 @@ interface AssignmentsTabProps {
   onAssign: () => void;
   ownDecks: Deck[];
   groupId: string;
+  onSendEncouragement: (memberId: string, message: string, emoji?: string) => Promise<unknown>;
 }
 
 export function AssignmentsTab({
@@ -34,6 +35,7 @@ export function AssignmentsTab({
   onAssign,
   ownDecks,
   groupId,
+  onSendEncouragement,
 }: AssignmentsTabProps) {
   const t = useTranslations('Group.groupPage');
   const theme = useTheme();
@@ -65,6 +67,7 @@ export function AssignmentsTab({
           assignments={assignments}
           onEditBatch={onEditAssignments}
           onDeleteBatch={onDeleteAssignments}
+          onSendEncouragement={onSendEncouragement}
         />
       </SectionCard>
 

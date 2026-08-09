@@ -19,6 +19,7 @@ export interface GroupMember {
   totalCorrect: number;
   totalSessions: number;
   lastActive: string | null;
+  lastNudgedAt: string | null;
   /** Answered-at-least-once split by SRS tier; no "new" bucket — that needs a deck's full card list. */
   masteryLearning: number;
   masteryStrong: number;

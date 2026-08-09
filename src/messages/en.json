@@ -1086,7 +1086,19 @@
       "removeBody": "{deck} will be removed for {count, plural, one {# member} other {all # members}}.",
       "removeFailed": "Couldn't remove the assignment. Please try again.",
       "startsOn": "Starts {date}",
-      "viewAllAssignments": "View all assignments"
+      "viewAllAssignments": "View all assignments",
+      "expandMembersAria": "Show who's done with {deckName}",
+      "collapseMembersAria": "Hide who's done with {deckName}",
+      "finishedOn": "finished {date}",
+      "bestSoFar": "best so far {accuracy}%",
+      "memberGoalChip": "{goal}% goal",
+      "notStartedLabel": "hasn't started",
+      "nudgeAction": "Nudge",
+      "nudgeAria": "Send a nudge to {name}",
+      "nudgeSentShort": "Sent",
+      "nudgeFailed": "Couldn't send. Please try again.",
+      "nudgeDefaultMessage": "Don't forget to finish {deck}! 💪",
+      "lastNudged": "Last nudged {date}"
     },
     "createAssignment": {
       "title": "Assign a Deck",
@@ -1435,7 +1447,8 @@
       "showLessAction": "Show less",
       "nudgeDialogTitle": "Send a nudge to {name}",
       "nudgeDefaultMessage": "Miss you! Come back and practice today 💪",
-      "nudgeSent": "Nudge sent!"
+      "nudgeSent": "Nudge sent!",
+      "lastNudgedAt": "Last nudged {date}"
     },
     "lessonBuilder": {
       "goalLabel": "What do you want to cover?",

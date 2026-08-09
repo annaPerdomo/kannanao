@@ -29,6 +29,7 @@ interface AssignmentsListProps {
   maxVisible?: number;
   variant?: 'default' | 'preview';
   onViewAll?: () => void;
+  onSendEncouragement?: (memberId: string, message: string, emoji?: string) => Promise<unknown>;
 }
 
 export function AssignmentsList({
@@ -38,6 +39,7 @@ export function AssignmentsList({
   maxVisible,
   variant = 'default',
   onViewAll,
+  onSendEncouragement,
 }: AssignmentsListProps) {
   const theme = useTheme();
   const t = useTranslations('Group.assignmentsList');
@@ -111,6 +113,7 @@ export function AssignmentsList({
               setDeleteError(null);
             }}
             preview={isPreview}
+            onSendEncouragement={onSendEncouragement}
           />
         ))}
       </Box>

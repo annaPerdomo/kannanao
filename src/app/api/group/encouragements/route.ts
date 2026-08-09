@@ -61,6 +61,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to send encouragement.' }, { status: 500 });
   }
 
+  // Best-effort: the nudge already went through, so a stamp failure shouldn't fail the request.
+  const { error: stampError } = await sb
+    .from('profiles')
+    .update({ last_nudged_at: new Date().toISOString() })
+    .eq('id', memberId);
+  if (stampError) {
+    logger.error('Failed to stamp last_nudged_at', {
+      route: '/api/group/encouragements',
+      error: stampError.message,
+    });
+  }
+
   // Fire push notification after the response — after() keeps the serverless
   // function alive until the push completes (a floating promise gets frozen).
   const senderName = orgCheck.display_name || orgCheck.username;

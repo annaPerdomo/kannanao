@@ -66,7 +66,11 @@ export function NeedsAttention({
   // and re-applies it when the organizer switches groups on this instance.
   const [collapsed, setCollapsed] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const [nudgeTarget, setNudgeTarget] = useState<{ id: string; name: string } | null>(null);
+  const [nudgeTarget, setNudgeTarget] = useState<{
+    id: string;
+    name: string;
+    lastNudgedAt: string | null;
+  } | null>(null);
 
   useEffect(() => {
     setCollapsed(loadCollapsed(groupId));
@@ -146,7 +150,13 @@ export function NeedsAttention({
                   key={rowKey(item)}
                   item={item}
                   onSelectMember={onSelectMember}
-                  onSendNudge={(id, name) => setNudgeTarget({ id, name })}
+                  onSendNudge={(id, name) =>
+                    setNudgeTarget({
+                      id,
+                      name,
+                      lastNudgedAt: members.find((m) => m.id === id)?.lastNudgedAt ?? null,
+                    })
+                  }
                   onViewAssignments={onViewAssignments}
                   onViewLearners={onViewLearners}
                 />

@@ -221,7 +221,7 @@ export async function GET(req: NextRequest) {
     query = sb
       .from('assignments')
       .select(
-        '*, decks(id, name, emoji), profiles!assignments_member_id_fkey(display_name, username)',
+        '*, decks(id, name, emoji), profiles!assignments_member_id_fkey(display_name, username, last_nudged_at)',
       )
       .eq('organizer_id', user.id)
       .order('created_at', { ascending: false });

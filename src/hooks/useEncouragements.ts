@@ -2,6 +2,7 @@
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
+import { invalidateApiCache } from '@/lib/apiCache';
 import { sb } from '@/lib/supabase';
 
 async function authHeaders(): Promise<Record<string, string>> {
@@ -24,6 +25,9 @@ export function useEncouragements() {
         const json = await res.json().catch(() => null);
         throw new Error(json?.error ?? t('sendFailed'));
       }
+      // Sending a nudge stamps last_nudged_at, which both of these responses embed.
+      invalidateApiCache('/api/group/members');
+      invalidateApiCache('/api/group/assignments');
       return res.json();
     },
     [t],

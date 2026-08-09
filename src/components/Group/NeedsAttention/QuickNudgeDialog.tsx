@@ -4,17 +4,20 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
 
 import { EncouragementEmojiPicker } from '../EncouragementEmojiPicker';
+import { timeAgo } from '../MemberCard';
 import { useQuickSend } from '../useQuickSend';
 
 interface QuickNudgeTarget {
   id: string;
   name: string;
+  lastNudgedAt: string | null;
 }
 
 interface QuickNudgeDialogProps {
@@ -30,6 +33,7 @@ export function QuickNudgeDialog({ open, target, onClose, onSend }: QuickNudgeDi
   const t = useTranslations('Group.needsAttention');
   const tForm = useTranslations('Group.groupEncouragementForm');
   const tc = useTranslations('Common');
+  const tMemberCard = useTranslations('Group.memberCard');
   const [message, setMessage] = useState('');
   const [emoji, setEmoji] = useState(DEFAULT_EMOJI);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +85,12 @@ export function QuickNudgeDialog({ open, target, onClose, onSend }: QuickNudgeDi
         </>
       }
     >
+      {target.lastNudgedAt && (
+        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1 }}>
+          {t('lastNudgedAt', { date: timeAgo(target.lastNudgedAt, tMemberCard) })}
+        </Typography>
+      )}
+
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
         <EncouragementEmojiPicker value={emoji} onChange={setEmoji} />
       </Box>
