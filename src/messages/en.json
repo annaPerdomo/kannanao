@@ -1388,6 +1388,9 @@
         "shaky": "{affected} of {total, plural, one {# learner} other {# learners}} who tried it are still shaky on this word."
       }
     },
+    "useDeckReadiness": {
+      "failedToLoad": "Failed to load deck progress"
+    },
     "useDifficultWords": {
       "failedToLoad": "Failed to load tricky words"
     },

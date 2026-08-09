@@ -1388,6 +1388,9 @@
         "shaky": "やってみた{total, plural, other {#人}}のうち{affected}人が、この単語をまだおぼえきれていません。"
       }
     },
+    "useDeckReadiness": {
+      "failedToLoad": "デッキの進み具合を読み込めませんでした"
+    },
     "useDifficultWords": {
       "failedToLoad": "にがてな単語を読み込めませんでした"
     },
