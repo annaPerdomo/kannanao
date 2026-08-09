@@ -1,8 +1,9 @@
 'use client';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import type { Assignment } from '@/hooks/useAssignments';
@@ -15,11 +16,9 @@ import { AssignmentsList } from '../AssignmentsList';
 import { DailyActivityChart, StudyHeatmap } from '../GroupCharts';
 import { LeaderboardPanel } from '../LeaderboardPanel';
 import { SectionCard } from '../SectionCard';
-import { ShowMoreButton } from '../ShowMoreButton';
+import type { GroupDashboardTab } from './constants';
 
-const ASSIGNMENTS_SHOWN = 5;
-const LEADERBOARD_SHOWN = 10;
-const FEED_SHOWN = 6;
+const SIDEBAR_PREVIEW_SHOWN = 3;
 const HEATMAP_DAYS = 7;
 
 interface OverviewTabProps {
@@ -38,6 +37,7 @@ interface OverviewTabProps {
   leaderboardLoading: boolean;
   leaderboardVisible: boolean;
   onLeaderboardVisibilityChange: (visible: boolean) => void;
+  onNavigateTab: (tab: GroupDashboardTab) => void;
 }
 
 export function OverviewTab({
@@ -53,12 +53,12 @@ export function OverviewTab({
   leaderboardLoading,
   leaderboardVisible,
   onLeaderboardVisibilityChange,
+  onNavigateTab,
 }: OverviewTabProps) {
+  const theme = useTheme();
+  const { brand } = theme.palette;
   const t = useTranslations('Group.groupPage');
   const tc = useTranslations('Group.charts');
-  const [allFeed, setAllFeed] = useState(false);
-
-  const visibleFeed = allFeed ? feed : feed.slice(0, FEED_SHOWN);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2.5 }}>
@@ -98,34 +98,51 @@ export function OverviewTab({
             assignments={assignments}
             onEditBatch={onEditAssignments}
             onDeleteBatch={onDeleteAssignments}
-            maxVisible={ASSIGNMENTS_SHOWN}
+            maxVisible={SIDEBAR_PREVIEW_SHOWN}
+            variant="preview"
+            onViewAll={() => onNavigateTab('assignments')}
           />
         </SectionCard>
 
-        <SectionCard title={t('recentActivityHeading')}>
-          {feedLoading ? (
-            <Loading message={t('loadingActivity')} />
-          ) : (
-            <>
-              <ActivityFeed items={visibleFeed} />
-              {feed.length > FEED_SHOWN && (
-                <ShowMoreButton
-                  expanded={allFeed}
-                  total={feed.length}
-                  onClick={() => setAllFeed((v) => !v)}
-                />
-              )}
-            </>
-          )}
-        </SectionCard>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 2.5 }}>
+          <SectionCard title={t('recentActivityHeading')}>
+            {feedLoading ? (
+              <Loading message={t('loadingActivity')} />
+            ) : (
+              <>
+                <ActivityFeed items={feed.slice(0, SIDEBAR_PREVIEW_SHOWN)} compact />
+                {feed.length > SIDEBAR_PREVIEW_SHOWN && (
+                  <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${alpha(brand[300], 0.3)}` }}>
+                    <Button
+                      fullWidth
+                      size="small"
+                      variant="text"
+                      onClick={() => onNavigateTab('activity')}
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        fontSize: '0.8rem',
+                        color: brand[700],
+                        borderRadius: theme.radii.sm,
+                      }}
+                    >
+                      {t('viewAllActivity')} →
+                    </Button>
+                  </Box>
+                )}
+              </>
+            )}
+          </SectionCard>
 
-        <LeaderboardPanel
-          entries={leaderboard}
-          loading={leaderboardLoading}
-          visible={leaderboardVisible}
-          onVisibilityChange={onLeaderboardVisibilityChange}
-          maxVisible={LEADERBOARD_SHOWN}
-        />
+          <LeaderboardPanel
+            entries={leaderboard}
+            loading={leaderboardLoading}
+            visible={leaderboardVisible}
+            onVisibilityChange={onLeaderboardVisibilityChange}
+            maxVisible={SIDEBAR_PREVIEW_SHOWN}
+            compact
+          />
+        </Box>
       </Box>
     </Box>
   );

@@ -18,6 +18,7 @@ interface LeaderboardPanelProps {
   visible: boolean;
   onVisibilityChange: (visible: boolean) => void;
   maxVisible?: number;
+  compact?: boolean;
 }
 
 export function LeaderboardPanel({
@@ -26,6 +27,7 @@ export function LeaderboardPanel({
   visible,
   onVisibilityChange,
   maxVisible,
+  compact,
 }: LeaderboardPanelProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -62,7 +64,7 @@ export function LeaderboardPanel({
       ) : loading ? (
         <Loading message={t('loadingLeaderboard')} />
       ) : (
-        <LeaderboardWidget entries={entries} maxVisible={maxVisible} />
+        <LeaderboardWidget entries={entries} maxVisible={maxVisible} compact={compact} />
       )}
     </SectionCard>
   );

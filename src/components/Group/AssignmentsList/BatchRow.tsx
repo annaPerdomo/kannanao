@@ -1,4 +1,5 @@
 'use client';
+import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditIcon from '@mui/icons-material/EditOutlined';
 import Box from '@mui/material/Box';
@@ -31,9 +32,11 @@ interface BatchRowProps {
   batch: AssignmentBatch;
   onEdit: () => void;
   onDelete: () => void;
+  /** Sidebar preview: medallion icon, no edit/delete, right-aligned due chip. */
+  preview?: boolean;
 }
 
-export function BatchRow({ batch, onEdit, onDelete }: BatchRowProps) {
+export function BatchRow({ batch, onEdit, onDelete, preview }: BatchRowProps) {
   const theme = useTheme();
   const t = useTranslations('Group.assignmentsList');
   const locale = useLocale();
@@ -47,6 +50,86 @@ export function BatchRow({ batch, onEdit, onDelete }: BatchRowProps) {
   const urgencyColor = urgency === 'red' ? theme.palette.error.main : theme.palette.warning.main;
   const deckName = batch.deckName || t('unknownDeck');
   const pct = Math.round((batch.completed / batch.total) * 100);
+  const emoji = isDone ? '✅' : batch.deckEmoji || '📚';
+
+  if (preview) {
+    return (
+      <Paper
+        elevation={0}
+        sx={{
+          p: 1.25,
+          border: `1px solid ${alpha(brand[300], isDone ? 0.2 : 0.35)}`,
+          borderRadius: theme.radii.md,
+          bgcolor: alpha(brand[50], isDone ? 0.25 : 0.5),
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 1.25,
+        }}
+      >
+        <Box
+          sx={{
+            width: 36,
+            height: 36,
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.15rem',
+            borderRadius: theme.radii.sm,
+            bgcolor: alpha(brand[200], 0.55),
+          }}
+        >
+          {emoji}
+        </Box>
+
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: 'text.primary' }}>
+            {deckName}
+          </Typography>
+          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+            {t('doneCount', { done: batch.completed, total: batch.total })}
+          </Typography>
+
+          <LinearProgress
+            variant="determinate"
+            value={pct}
+            aria-label={deckName}
+            sx={{
+              my: 0.6,
+              height: 7,
+              borderRadius: 4,
+              bgcolor: alpha(brand[200], 0.55),
+              '& .MuiLinearProgress-bar': { borderRadius: 4, bgcolor: brand[400] },
+            }}
+          />
+
+          {batch.dueDate && !isScheduled && (
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.4,
+                  px: 0.75,
+                  py: 0.15,
+                  borderRadius: theme.radii.sm,
+                  fontSize: '0.66rem',
+                  fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                  bgcolor: urgency ? alpha(urgencyColor, 0.12) : alpha(brand[200], 0.4),
+                  border: `1px solid ${urgency ? alpha(urgencyColor, 0.4) : alpha(brand[300], 0.5)}`,
+                  color: urgency ? urgencyColor : 'text.secondary',
+                }}
+              >
+                <CalendarTodayOutlinedIcon sx={{ fontSize: 11 }} />
+                {dueDateLabel(batch.dueDate, t)}
+              </Box>
+            </Box>
+          )}
+        </Box>
+      </Paper>
+    );
+  }
 
   return (
     <Paper
@@ -61,9 +144,7 @@ export function BatchRow({ batch, onEdit, onDelete }: BatchRowProps) {
         gap: 1.25,
       }}
     >
-      <Typography sx={{ fontSize: '1.1rem', flexShrink: 0 }}>
-        {isDone ? '✅' : batch.deckEmoji || '📚'}
-      </Typography>
+      <Typography sx={{ fontSize: '1.1rem', flexShrink: 0 }}>{emoji}</Typography>
 
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>

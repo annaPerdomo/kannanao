@@ -1085,7 +1085,8 @@
       "removeTitle": "課題を削除しますか？",
       "removeBody": "「{deck}」を{count, plural, other {#人全員}}から削除します。",
       "removeFailed": "課題を削除できませんでした。もう一度お試しください。",
-      "startsOn": "{date} から"
+      "startsOn": "{date} から",
+      "viewAllAssignments": "すべての課題を見る"
     },
     "createAssignment": {
       "title": "課題を出す",
@@ -1263,6 +1264,7 @@
       "assignmentsHeading": "課題",
       "recentActivityHeading": "最近の活動",
       "loadingActivity": "活動を読み込み中...",
+      "viewAllActivity": "すべての活動を見る",
       "showAll": "すべて見る（{count}）",
       "showLess": "とじる",
       "quickActionsLabel": "クイックアクション",

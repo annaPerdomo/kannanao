@@ -19,15 +19,88 @@ function timeAgo(dateStr: string, locale: string, justNowLabel: string): string 
   return rtf.format(-days, 'day');
 }
 
-interface ActivityFeedProps {
-  items: FeedItem[];
+interface FeedRowProps {
+  item: FeedItem;
+  time: string;
+  /** Compact rows stack the timestamp under the text; the full feed keeps it inline. */
+  compact?: boolean;
 }
 
-export function ActivityFeed({ items }: ActivityFeedProps) {
-  const t = useTranslations('Group.activityFeed');
-  const locale = useLocale();
+function FeedRow({ item, time, compact }: FeedRowProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+
+  const avatar = (
+    <Box
+      sx={{
+        width: 28,
+        height: 28,
+        flexShrink: 0,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '0.95rem',
+        bgcolor: alpha(brand[100], 0.7),
+      }}
+    >
+      {item.emoji}
+    </Box>
+  );
+
+  const text = (
+    <Typography component="span" sx={{ fontWeight: 700 }}>
+      {item.memberName}
+    </Typography>
+  );
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: compact ? 'flex-start' : 'center',
+        gap: 1.25,
+        py: 1,
+        borderBottom: `1px solid ${alpha(brand[300], 0.22)}`,
+      }}
+    >
+      {avatar}
+      {compact ? (
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography sx={{ fontSize: '0.85rem', color: 'text.primary' }}>
+            {text} {item.description}
+          </Typography>
+          <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>{time}</Typography>
+        </Box>
+      ) : (
+        <>
+          <Typography sx={{ flex: 1, minWidth: 0, fontSize: '0.85rem', color: 'text.primary' }}>
+            {text} {item.description}
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: '0.72rem',
+              color: 'text.secondary',
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {time}
+          </Typography>
+        </>
+      )}
+    </Box>
+  );
+}
+
+interface ActivityFeedProps {
+  items: FeedItem[];
+  compact?: boolean;
+}
+
+export function ActivityFeed({ items, compact }: ActivityFeedProps) {
+  const t = useTranslations('Group.activityFeed');
+  const locale = useLocale();
 
   if (items.length === 0) {
     return (
@@ -41,53 +114,17 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+        gridTemplateColumns: compact ? '1fr' : { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
         columnGap: 3,
       }}
     >
       {items.map((item, i) => (
-        <Box
+        <FeedRow
           key={`${item.memberId}-${item.timestamp}-${i}`}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.25,
-            py: 1,
-            borderBottom: `1px solid ${alpha(brand[300], 0.22)}`,
-          }}
-        >
-          <Box
-            sx={{
-              width: 28,
-              height: 28,
-              flexShrink: 0,
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '0.95rem',
-              bgcolor: alpha(brand[100], 0.7),
-            }}
-          >
-            {item.emoji}
-          </Box>
-          <Typography sx={{ flex: 1, minWidth: 0, fontSize: '0.85rem', color: 'text.primary' }}>
-            <Box component="span" sx={{ fontWeight: 700 }}>
-              {item.memberName}
-            </Box>{' '}
-            {item.description}
-          </Typography>
-          <Typography
-            sx={{
-              fontSize: '0.72rem',
-              color: 'text.secondary',
-              flexShrink: 0,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {timeAgo(item.timestamp, locale, t('justNow'))}
-          </Typography>
-        </Box>
+          item={item}
+          time={timeAgo(item.timestamp, locale, t('justNow'))}
+          compact={compact}
+        />
       ))}
     </Box>
   );

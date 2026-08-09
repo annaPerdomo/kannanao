@@ -1085,7 +1085,8 @@
       "removeTitle": "Remove assignment?",
       "removeBody": "{deck} will be removed for {count, plural, one {# member} other {all # members}}.",
       "removeFailed": "Couldn't remove the assignment. Please try again.",
-      "startsOn": "Starts {date}"
+      "startsOn": "Starts {date}",
+      "viewAllAssignments": "View all assignments"
     },
     "createAssignment": {
       "title": "Assign a Deck",
@@ -1263,6 +1264,7 @@
       "assignmentsHeading": "Assignments",
       "recentActivityHeading": "Recent activity",
       "loadingActivity": "Loading activity...",
+      "viewAllActivity": "View all activity",
       "showAll": "Show all {count}",
       "showLess": "Show less",
       "quickActionsLabel": "Quick actions",

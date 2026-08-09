@@ -27,6 +27,8 @@ interface AssignmentsListProps {
   ) => Promise<void>;
   onDeleteBatch: (ids: string[]) => Promise<void>;
   maxVisible?: number;
+  variant?: 'default' | 'preview';
+  onViewAll?: () => void;
 }
 
 export function AssignmentsList({
@@ -34,6 +36,8 @@ export function AssignmentsList({
   onEditBatch,
   onDeleteBatch,
   maxVisible,
+  variant = 'default',
+  onViewAll,
 }: AssignmentsListProps) {
   const theme = useTheme();
   const t = useTranslations('Group.assignmentsList');
@@ -48,6 +52,8 @@ export function AssignmentsList({
   const batches = groupAssignments(assignments);
   const collapsed = maxVisible !== undefined && !expanded && batches.length > maxVisible;
   const visible = collapsed ? batches.slice(0, maxVisible) : batches;
+
+  const isPreview = variant === 'preview';
 
   const closeRemoveDialog = () => {
     if (deleting) return;
@@ -104,16 +110,38 @@ export function AssignmentsList({
               setRemoving(batch);
               setDeleteError(null);
             }}
+            preview={isPreview}
           />
         ))}
       </Box>
 
-      {maxVisible !== undefined && batches.length > maxVisible && (
-        <ShowMoreButton
-          expanded={expanded}
-          total={batches.length}
-          onClick={() => setExpanded((v) => !v)}
-        />
+      {isPreview && onViewAll && maxVisible !== undefined && batches.length > maxVisible ? (
+        <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${alpha(brand[300], 0.3)}` }}>
+          <Button
+            fullWidth
+            size="small"
+            variant="text"
+            onClick={onViewAll}
+            sx={{
+              textTransform: 'none',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              color: brand[700],
+              borderRadius: theme.radii.sm,
+            }}
+          >
+            {t('viewAllAssignments')} →
+          </Button>
+        </Box>
+      ) : (
+        maxVisible !== undefined &&
+        batches.length > maxVisible && (
+          <ShowMoreButton
+            expanded={expanded}
+            total={batches.length}
+            onClick={() => setExpanded((v) => !v)}
+          />
+        )
       )}
 
       <EditAssignmentDialog

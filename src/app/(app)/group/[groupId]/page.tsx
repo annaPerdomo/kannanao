@@ -205,6 +205,7 @@ export default function GroupDashboardPage() {
           leaderboardLoading={lbLoading}
           leaderboardVisible={leaderboardVisible}
           onLeaderboardVisibilityChange={handleLeaderboardVisibilityChange}
+          onNavigateTab={handleTabChange}
         />
       )}
 
