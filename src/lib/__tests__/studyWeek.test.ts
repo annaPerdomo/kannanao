@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { isReturningAfterBreak, studyDaysThisWeek, weekStartLocal } from '@/lib/studyWeek';
+import {
+  isReturningAfterBreak,
+  studyDaySet,
+  studyDaysThisWeek,
+  weekStartLocal,
+} from '@/lib/studyWeek';
 
 // 2026-08-03 is a Monday.
 function session(date: Date, cardsStudied = 10) {
@@ -68,6 +73,20 @@ describe('studyDaysThisWeek', () => {
       session(new Date(2026, 7, 4, 9, 0)),
     ];
     expect(studyDaysThisWeek(sessions, now)).toBe(1);
+  });
+});
+
+describe('studyDaySet', () => {
+  it('returns the exact days the count is built from', () => {
+    const now = new Date(2026, 7, 6, 18, 0);
+    const sessions = [session(new Date(2026, 7, 3, 9, 0)), session(new Date(2026, 7, 6, 9, 0))];
+    expect([...studyDaySet(sessions, now)].sort()).toEqual(['2026-08-03', '2026-08-06']);
+  });
+
+  it('drops a session dated after now', () => {
+    const now = new Date(2026, 7, 5, 12, 0);
+    const sessions = [session(new Date(2026, 7, 5, 9, 0)), session(new Date(2026, 7, 7, 9, 0))];
+    expect([...studyDaySet(sessions, now)]).toEqual(['2026-08-05']);
   });
 });
 
