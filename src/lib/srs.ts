@@ -54,8 +54,3 @@ export function nextSchedule(
     nextReviewAt: new Date(now.getTime() + nextInterval * DAY_MS),
   };
 }
-
-/** Whether this answer knocks a learned card back to the start. */
-export function isLapse(intervalDays: number, correct: boolean): boolean {
-  return !correct && intervalDays >= LAPSE_INTERVAL_DAYS;
-}

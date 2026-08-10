@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  isLapse,
-  LAPSE_INTERVAL_DAYS,
   MAX_EASE,
   MAX_INTERVAL_DAYS,
   MIN_EASE,
@@ -92,21 +90,5 @@ describe('nextSchedule — in-session wrong-then-correct (usePracticeQueue retry
     );
     expect(afterRetry.intervalDays).toBe(1);
     expect(afterRetry.ease).toBeCloseTo(2.35, 5); // 2.3 after the miss, +0.05
-  });
-});
-
-describe('isLapse', () => {
-  it('is a lapse only when a card held a week or more is missed', () => {
-    expect(isLapse(LAPSE_INTERVAL_DAYS, false)).toBe(true);
-    expect(isLapse(30, false)).toBe(true);
-  });
-
-  it('is not a lapse while the card is still being learned', () => {
-    expect(isLapse(LAPSE_INTERVAL_DAYS - 1, false)).toBe(false);
-    expect(isLapse(0, false)).toBe(false);
-  });
-
-  it('is never a lapse on a correct answer', () => {
-    expect(isLapse(30, true)).toBe(false);
   });
 });
