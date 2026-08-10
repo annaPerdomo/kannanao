@@ -221,6 +221,22 @@ describe('useProgress session tracking', () => {
     expect(seen).toEqual([7]);
   });
 
+  // The buddy's session heart is paid off this signal, so a write that throws
+  // mid-endSession must not swallow it.
+  it('publishes the session-end signal even when a write throws', async () => {
+    const { result } = renderProgress();
+    const seen: number[] = [];
+    const unsubscribe = onSessionEnd((signal) => seen.push(signal.cardsStudied));
+    sbMock.auth.getUser.mockRejectedValueOnce(new Error('offline'));
+
+    await act(async () => {
+      await expect(result.current.endSession('s1', PERFECT_RUN)).rejects.toThrow('offline');
+    });
+    unsubscribe();
+
+    expect(seen).toEqual([5]);
+  });
+
   it('does not award the perfect bonus for an imperfect session', async () => {
     const { result } = renderProgress();
 
