@@ -10,17 +10,12 @@ export interface SessionEndSignal {
   at: number;
 }
 
-let last: SessionEndSignal | null = null;
 const listeners = new Set<(signal: SessionEndSignal) => void>();
 
 /** Called on every terminal path of `endSession`, including the failures. */
 export function publishSessionEnd(cardsStudied: number): void {
-  last = { cardsStudied, at: Date.now() };
-  for (const fn of listeners) fn(last);
-}
-
-export function peekSessionEnd(): SessionEndSignal | null {
-  return last;
+  const signal = { cardsStudied, at: Date.now() };
+  for (const fn of listeners) fn(signal);
 }
 
 export function onSessionEnd(fn: (signal: SessionEndSignal) => void): () => void {

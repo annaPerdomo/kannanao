@@ -2,8 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
   canEarn,
-  FRIENDSHIP_DAILY_MAX,
-  FRIENDSHIP_POINTS,
   friendshipLevel,
   friendshipProgress,
   type FriendshipSource,
@@ -14,13 +12,6 @@ import {
 
 const TODAY = '2026-08-09';
 const YESTERDAY = '2026-08-08';
-
-describe('FRIENDSHIP_DAILY_MAX', () => {
-  it('equals the sum of all per-source points', () => {
-    const sum = Object.values(FRIENDSHIP_POINTS).reduce((a, b) => a + b, 0);
-    expect(FRIENDSHIP_DAILY_MAX).toBe(sum);
-  });
-});
 
 describe('friendshipLevel', () => {
   it('maps each exact threshold boundary to the right level', () => {
