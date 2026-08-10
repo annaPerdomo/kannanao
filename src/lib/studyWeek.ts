@@ -27,14 +27,19 @@ export function studyDaysThisWeek(
   sessions: Array<{ started_at: string; cards_studied: number }>,
   now: Date = new Date(),
 ): number {
-  const weekStart = weekStartLocal(now);
+  // Compare local DATES, not timestamps: started_at is server time, and a
+  // client clock behind the server would drop a just-finished session as
+  // "future".
+  const firstDay = localDateString(weekStartLocal(now));
+  const lastDay = localDateString(now);
   const days = new Set<string>();
   for (const session of sessions) {
     if (session.cards_studied <= 0) continue;
     const started = new Date(session.started_at);
     if (Number.isNaN(started.getTime())) continue;
-    if (started < weekStart || started > now) continue;
-    days.add(localDateString(started));
+    const day = localDateString(started);
+    if (day < firstDay || day > lastDay) continue;
+    days.add(day);
   }
   return days.size;
 }

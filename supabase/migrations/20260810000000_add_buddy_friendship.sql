@@ -76,6 +76,16 @@ BEGIN
   IF p_points < 1 OR p_points > 5 THEN
     RETURN jsonb_build_object('status', 'invalid_points');
   END IF;
+  -- A NULL p_today would make the cap check below never match (NULL = NULL
+  -- is not true), turning the source infinitely re-earnable.
+  IF p_today IS NULL OR p_buddy_key IS NULL OR p_buddy_key = '' THEN
+    RETURN jsonb_build_object('status', 'invalid_args');
+  END IF;
+
+  -- Serialize per (user, source): the cap check is check-then-write, so two
+  -- in-flight calls (double-tap, two tabs) would both pass and pay twice.
+  PERFORM pg_advisory_xact_lock(
+    hashtextextended(v_user::text || ':' || p_source, 0));
 
   -- Cross-row daily cap: refuse if ANY of this user's buddies already got
   -- paid from this source today (see header — anti-farming rule).
