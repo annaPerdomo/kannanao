@@ -494,14 +494,6 @@
     }
   },
   "Review": {
-    "reviewTile": {
-      "review": "復習",
-      "ariaReviewDue": "復習 — 今日は{count}枚",
-      "ariaReviewCaughtUp": "復習 — すべて完了",
-      "wordsWaiting": "{count, plural, other {#語が待っています ⚔️}}",
-      "allCaughtUp": "すべて完了 — 今日の復習はありません",
-      "cardsDueToday": "{count, plural, other {今日の#枚を復習}}"
-    },
     "hubPage": {
       "title": "復習",
       "subtitle": "今日のことばを練習してゲームであそぼう",
