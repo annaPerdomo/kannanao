@@ -276,7 +276,7 @@ describe('useAssignments', () => {
 
   // ── deleteAssignments (batch, optimistic) ─────────────────────────────────
 
-  it('DELETEs every copy and refetches once', async () => {
+  it('DELETEs every copy in one request and refetches once', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => [ASSIGNMENT_1, ASSIGNMENT_2],
@@ -285,16 +285,17 @@ describe('useAssignments', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.assignments).toHaveLength(2);
 
-    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) }); // DELETE a1
-    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [ASSIGNMENT_2] }); // refetch
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) }); // DELETE
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] }); // refetch
 
     await act(async () => {
-      await result.current.deleteAssignments(['a1']);
+      await result.current.deleteAssignments(['a1', 'a2']);
     });
 
-    expect(result.current.assignments).toHaveLength(1);
-    expect(result.current.assignments[0].id).toBe('a2');
+    expect(result.current.assignments).toHaveLength(0);
+    expect(mockFetch.mock.calls[1][0]).toBe('/api/group/assignments');
     expect(mockFetch.mock.calls[1][1].method).toBe('DELETE');
+    expect(JSON.parse(mockFetch.mock.calls[1][1].body)).toEqual({ ids: ['a1', 'a2'] });
     expect(mockFetch).toHaveBeenCalledTimes(3);
   });
 

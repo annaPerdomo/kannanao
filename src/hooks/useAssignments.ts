@@ -173,29 +173,28 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
     [assignments, fetchAssignments, t],
   );
 
+  /**
+   * One request for the whole handout, never one per copy: parallel per-id
+   * deletes each still see their siblings, so the server would never retire the
+   * plan-ahead template of a deck the organizer just removed.
+   */
   const deleteAssignments = useCallback(
     async (ids: string[]) => {
       const prev = assignments;
       const idSet = new Set(ids);
       setAssignments((a) => a.filter((item) => !idSet.has(item.id)));
-      const headers = await authHeaders();
-      const results = await Promise.allSettled(
-        ids.map(async (id) => {
-          const res = await fetch(`/api/group/assignments/${id}`, {
-            method: 'DELETE',
-            headers,
-          });
-          if (!res.ok) throw new Error();
-        }),
-      );
-      const failed = results.filter((r) => r.status === 'rejected').length;
-      if (failed === ids.length) {
+      try {
+        const res = await fetch(ASSIGNMENTS_URL, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+          body: JSON.stringify({ ids }),
+        });
+        if (!res.ok) throw new Error();
+      } catch {
         setAssignments(prev);
         throw new Error(t('deleteFailed'));
       }
       await fetchAssignments();
-      if (failed > 0)
-        throw new Error(t('deletePartial', { ok: ids.length - failed, total: ids.length }));
     },
     [assignments, fetchAssignments, t],
   );

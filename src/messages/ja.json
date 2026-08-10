@@ -1132,8 +1132,7 @@
       "failedToCreate": "課題を出せませんでした",
       "updateFailed": "変更を保存できませんでした。もう一度お試しください。",
       "updatePartial": "{total}人中{ok}人分を保存しました。もう一度お試しください。",
-      "deleteFailed": "課題を削除できませんでした。もう一度お試しください。",
-      "deletePartial": "{total}人中{ok}人分を削除しました。もう一度お試しください。"
+      "deleteFailed": "課題を削除できませんでした。もう一度お試しください。"
     },
     "createGroup": {
       "title": "グループを作成",

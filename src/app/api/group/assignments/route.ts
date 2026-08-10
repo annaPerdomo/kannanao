@@ -7,10 +7,14 @@ import { logger } from '@/lib/logger';
 import { getProfileForUser, getUserFromToken } from '../../_lib/authCache';
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { type DeckHandout, dropOrphanedTemplates } from '../_lib/dropOrphanedTemplates';
 import { memberIdsFor, membershipsOf } from '../_lib/membership';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
+
+/** A handout is one row per learner, so this is really a cap on group size. */
+const MAX_DELETE_IDS = 500;
 
 /** YYYY-MM-DD, the shape a <input type="date"> and a Postgres `date` agree on. */
 function isDateOnly(value: unknown): value is string {
@@ -150,6 +154,64 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json(data, { status: 201 });
+}
+
+/**
+ * DELETE — remove assignments by id. Batch rather than per-id so the template
+ * cleanup below can't race sibling deletes.
+ */
+export async function DELETE(req: NextRequest) {
+  const limited = await rateLimit(req, RATE_LIMIT);
+  if (limited) return limited;
+
+  const orgCheck = await requireOrganizerAccount(req);
+  if (orgCheck instanceof NextResponse) return orgCheck;
+
+  const body = await req.json().catch(() => null);
+  const ids = (body as { ids?: unknown } | null)?.ids;
+  if (!Array.isArray(ids) || ids.length === 0 || ids.some((id) => typeof id !== 'string')) {
+    return NextResponse.json({ error: 'ids must be a non-empty array.' }, { status: 400 });
+  }
+  if (ids.length > MAX_DELETE_IDS) {
+    return NextResponse.json(
+      { error: `At most ${MAX_DELETE_IDS} assignments can be removed at once.` },
+      { status: 400 },
+    );
+  }
+
+  const sb = getServiceSupabase();
+
+  const { data: deleted, error } = await sb
+    .from('assignments')
+    .delete()
+    .in('id', ids)
+    .eq('organizer_id', orgCheck.id)
+    .select('group_id, deck_id');
+
+  if (error) {
+    logger.error('Failed to delete assignments', {
+      route: '/api/group/assignments',
+      error: error.message,
+    });
+    return NextResponse.json({ error: 'Failed to delete assignments.' }, { status: 500 });
+  }
+
+  const handouts = new Map<string, DeckHandout>();
+  for (const row of deleted ?? []) {
+    if (row.group_id && row.deck_id) {
+      handouts.set(`${row.group_id}:${row.deck_id}`, {
+        groupId: row.group_id,
+        deckId: row.deck_id,
+      });
+    }
+  }
+  await dropOrphanedTemplates(sb, {
+    organizerId: orgCheck.id,
+    handouts: [...handouts.values()],
+    route: '/api/group/assignments',
+  });
+
+  return NextResponse.json({ success: true, deleted: deleted?.length ?? 0 });
 }
 
 /** GET — list assignments. Organizers see all their assignments; members see their own. */

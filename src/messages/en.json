@@ -1132,8 +1132,7 @@
       "failedToCreate": "Failed to create assignment",
       "updateFailed": "Couldn't save the changes. Please try again.",
       "updatePartial": "Saved for {ok} of {total} members — try again to finish the rest.",
-      "deleteFailed": "Couldn't remove the assignment. Please try again.",
-      "deletePartial": "Removed for {ok} of {total} members — try again to finish the rest."
+      "deleteFailed": "Couldn't remove the assignment. Please try again."
     },
     "createGroup": {
       "title": "Create Group",
