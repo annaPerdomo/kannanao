@@ -67,7 +67,11 @@ export default function GroupDashboardPage() {
   } = useAssignments(groupId, true, 'given');
   // All decks, matching the Words tab's default filter — the api cache serves
   // both from one request.
-  const { data: difficultWords, loading: difficultWordsLoading } = useDifficultWords(groupId);
+  const {
+    data: difficultWords,
+    loading: difficultWordsLoading,
+    error: difficultWordsError,
+  } = useDifficultWords(groupId);
   const { sendEncouragement } = useEncouragements();
   const { invites, createInvite, revokeInvite } = useInvites(groupId);
   const { groups, updateGroup } = useGroups();
@@ -94,6 +98,10 @@ export default function GroupDashboardPage() {
     },
     [router, groupId, searchParams],
   );
+
+  const handleOpenMaterials = useCallback(() => {
+    router.push(`/materials?group=${groupId}`);
+  }, [router, groupId]);
 
   const handleSendEncouragement = useCallback(
     async (memberId: string, message: string, emoji?: string) => {
@@ -173,7 +181,7 @@ export default function GroupDashboardPage() {
         onRename={handleRename}
         onEmojiChange={handleEmojiChange}
         onInvite={() => setCreateInviteOpen(true)}
-        onOpenMaterials={() => router.push(`/materials?group=${groupId}`)}
+        onOpenMaterials={handleOpenMaterials}
         activeInviteCount={activeInvites.length}
       />
 
@@ -200,25 +208,26 @@ export default function GroupDashboardPage() {
 
       {tab === 'overview' && (
         <OverviewTab
+          groupId={groupId}
+          members={members}
           activity={activity}
           activityLoading={activityLoading}
           activityError={activityError}
-          assignments={assignments}
-          onEditAssignments={updateAssignments}
-          onDeleteAssignments={deleteAssignments}
-          feed={feed}
-          feedLoading={feedLoading}
-          leaderboard={leaderboard}
-          leaderboardLoading={lbLoading}
-          leaderboardVisible={leaderboardVisible}
-          onLeaderboardVisibilityChange={handleLeaderboardVisibilityChange}
+          words={difficultWords?.words}
+          wordsLoading={difficultWordsLoading}
+          wordsError={difficultWordsError}
           onNavigateTab={handleTabChange}
+          onOpenMaterials={handleOpenMaterials}
         />
       )}
 
       {tab === 'learners' && (
         <LearnersTab
           members={members}
+          leaderboard={leaderboard}
+          leaderboardLoading={lbLoading}
+          leaderboardVisible={leaderboardVisible}
+          onLeaderboardVisibilityChange={handleLeaderboardVisibilityChange}
           onSelectMember={(id) => router.push(`/group/${groupId}/members/${id}`)}
           onSendEncouragement={handleSendEncouragement}
         />
