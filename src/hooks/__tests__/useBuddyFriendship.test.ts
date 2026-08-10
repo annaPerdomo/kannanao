@@ -1,5 +1,13 @@
-import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Pinned off UTC: in a UTC runner the local and UTC dates agree, so a
+// local-vs-UTC stamping bug would be invisible.
+const ORIGINAL_TZ = process.env.TZ;
+process.env.TZ = 'Asia/Tokyo';
+afterAll(() => {
+  process.env.TZ = ORIGINAL_TZ;
+});
 
 // ─── Mock setup ───────────────────────────────────────────────────────────────
 
@@ -40,9 +48,9 @@ vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
-const mockEquipped = vi.fn();
+const mockShop = vi.fn();
 vi.mock('@/contexts/ShopContext', () => ({
-  useShopCtx: () => ({ equipped: mockEquipped() }),
+  useShopCtx: () => mockShop(),
 }));
 
 import { useBuddyFriendship } from '@/hooks/useBuddyFriendship';
@@ -72,7 +80,9 @@ function todayLocal() {
 
 async function renderLoaded() {
   const hook = renderHook(() => useBuddyFriendship());
-  await waitFor(() => expect(hook.result.current.loading).toBe(false));
+  await act(async () => {
+    await hook.result.current.ensureLoaded();
+  });
   return hook;
 }
 
@@ -82,14 +92,20 @@ describe('useBuddyFriendship', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({ user: { id: 'u1' } });
-    mockEquipped.mockReturnValue({ study_buddy: 'buddy_bunny' });
+    mockShop.mockReturnValue({ equipped: { study_buddy: 'buddy_bunny' }, loading: false });
     mockRpc.mockResolvedValue({ data: { status: 'ok', points: 11 }, error: null });
     setTable('buddy_friendship', [row()]);
   });
 
-  // ── initial load ────────────────────────────────────────────────────────────
+  // ── loading ─────────────────────────────────────────────────────────────────
 
-  describe('initial load', () => {
+  describe('loading', () => {
+    it('should not query on mount — this provider is app-wide and renders nothing', () => {
+      renderHook(() => useBuddyFriendship());
+
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
     it('should key friendships by buddy_key and map to camelCase', async () => {
       setTable('buddy_friendship', [
         row({ buddy_key: 'buddy_tango', points: 3, last_pet_date: '2026-08-09' }),
@@ -103,10 +119,29 @@ describe('useBuddyFriendship', () => {
       ]);
       expect(result.current.friendships.buddy_tango.lastPetDate).toBe('2026-08-09');
       expect(result.current.equipped?.points).toBe(10);
+      expect(result.current.loading).toBe(false);
+    });
+
+    it('should load once however many callers ask', async () => {
+      const { result } = await renderLoaded();
+      await act(async () => {
+        await result.current.ensureLoaded();
+      });
+
+      expect(mockFrom).toHaveBeenCalledTimes(1);
+    });
+
+    it('should refetch on demand', async () => {
+      const { result } = await renderLoaded();
+      await act(async () => {
+        await result.current.refetch();
+      });
+
+      expect(mockFrom).toHaveBeenCalledTimes(2);
     });
 
     it('should fall back to the default buddy when nothing is equipped', async () => {
-      mockEquipped.mockReturnValue({});
+      mockShop.mockReturnValue({ equipped: {}, loading: false });
       setTable('buddy_friendship', [row({ buddy_key: 'buddy_tango', points: 7 })]);
       const { result } = await renderLoaded();
 
@@ -118,21 +153,29 @@ describe('useBuddyFriendship', () => {
       const { result } = await renderLoaded();
 
       expect(result.current.error).toBe('boom');
+      expect(result.current.loading).toBe(false);
     });
 
-    it('should resolve empty for a signed-out visitor', async () => {
+    it('should stay inert for a signed-out visitor', async () => {
       mockUseAuth.mockReturnValue({ user: null });
       const { result } = await renderLoaded();
 
+      let award: unknown = 'unset';
+      await act(async () => {
+        award = await result.current.awardFriendship('pet');
+      });
+
       expect(result.current.friendships).toEqual({});
+      expect(award).toBeNull();
       expect(mockFrom).not.toHaveBeenCalled();
+      expect(mockRpc).not.toHaveBeenCalled();
     });
   });
 
   // ── awarding ────────────────────────────────────────────────────────────────
 
   describe('awardFriendship', () => {
-    it('should call the RPC with the source points and a local today', async () => {
+    it('should call the RPC with the source points and reconcile from its total', async () => {
       mockRpc.mockResolvedValue({ data: { status: 'ok', points: 13 }, error: null });
       const { result } = await renderLoaded();
 
@@ -145,23 +188,27 @@ describe('useBuddyFriendship', () => {
         p_buddy_key: 'buddy_bunny',
         p_source: 'adventure',
         p_points: 3,
-        p_today: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+        p_today: todayLocal(),
       });
       expect(award).toEqual({ awarded: 3, points: 13, leveledUp: false, newLevel: 1 });
-      // The RPC's total wins over the optimistic 10 + 3.
       expect(result.current.equipped?.points).toBe(13);
     });
 
     it('should stamp p_today with the LOCAL date, not the UTC one', async () => {
-      // Late evening local is already tomorrow in UTC for any positive offset,
-      // and the RPC's cap check compares against the learner's day.
-      const { result } = await renderLoaded();
+      // 22:00 UTC is already the 10th in Tokyo, so a toISOString() stamp lands
+      // on the wrong day for the RPC's cap check.
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      vi.setSystemTime(new Date('2026-08-09T22:00:00Z'));
+      try {
+        const { result } = await renderLoaded();
+        await act(async () => {
+          await result.current.petBuddy();
+        });
 
-      await act(async () => {
-        await result.current.petBuddy();
-      });
-
-      expect(mockRpc.mock.calls[0][1].p_today).toBe(todayLocal());
+        expect(mockRpc.mock.calls[0][1].p_today).toBe('2026-08-10');
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('should create a local row for a buddy that has none yet', async () => {
@@ -178,7 +225,7 @@ describe('useBuddyFriendship', () => {
         points: 1,
         lastAdventureDate: null,
         lastSessionDate: null,
-        lastPetDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+        lastPetDate: todayLocal(),
       });
     });
 
@@ -195,6 +242,22 @@ describe('useBuddyFriendship', () => {
       expect(result.current.equipped?.points).toBe(10);
       expect(result.current.equipped?.lastAdventureDate).toBeNull();
       expect(result.current.error).toBe('network down');
+    });
+
+    it("should restore the buddy's own stamp on rollback, not another buddy's", async () => {
+      setTable('buddy_friendship', [
+        row(),
+        row({ buddy_key: 'buddy_tango', last_pet_date: '2026-08-01' }),
+      ]);
+      mockRpc.mockResolvedValue({ data: null, error: { message: 'nope' } });
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        await result.current.petBuddy();
+      });
+
+      // The merged '2026-08-01' belongs to buddy_tango, not to this row.
+      expect(result.current.equipped?.lastPetDate).toBeNull();
     });
 
     it('should drop the created row entirely when the first award fails', async () => {
@@ -252,7 +315,114 @@ describe('useBuddyFriendship', () => {
       await act(async () => {
         await result.current.petBuddy();
       });
+
       expect(mockRpc).not.toHaveBeenCalled();
+    });
+
+    it('should not let a future-dated stamp mask a row that already paid today', async () => {
+      // A clock-rolled row sorts newer than today, so taking the newest stamp
+      // would fire an RPC guaranteed to come back capped.
+      setTable('buddy_friendship', [
+        row({ last_pet_date: todayLocal() }),
+        row({ buddy_key: 'buddy_tango', last_pet_date: '2099-01-01' }),
+      ]);
+      const { result } = await renderLoaded();
+
+      expect(result.current.canPetToday).toBe(false);
+      await act(async () => {
+        await result.current.petBuddy();
+      });
+
+      expect(mockRpc).not.toHaveBeenCalled();
+    });
+
+    it('should not award while the shop is still resolving the equipped buddy', async () => {
+      mockShop.mockReturnValue({ equipped: {}, loading: true });
+      const { result } = await renderLoaded();
+
+      let award: unknown = 'unset';
+      await act(async () => {
+        award = await result.current.petBuddy();
+      });
+
+      expect(award).toBeNull();
+      expect(mockRpc).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── concurrent awards ───────────────────────────────────────────────────────
+
+  describe('concurrent awards', () => {
+    /** Hands back a resolver per source so the two RPCs can settle out of order. */
+    function deferRpc() {
+      const resolvers: Record<string, (value: unknown) => void> = {};
+      mockRpc.mockImplementation(
+        (_fn: string, args: { p_source: string }) =>
+          new Promise((resolve) => {
+            resolvers[args.p_source] = resolve;
+          }),
+      );
+      return resolvers;
+    }
+
+    it('should not lose the other award when one of them rolls back', async () => {
+      // The quest-end path: endSession publishes the session signal, then
+      // finishQuest awards the adventure while that RPC is still open.
+      const resolvers = deferRpc();
+      const { result } = await renderLoaded();
+
+      let session!: Promise<unknown>;
+      let adventure!: Promise<unknown>;
+      await act(async () => {
+        session = result.current.awardFriendship('session');
+      });
+      await act(async () => {
+        adventure = result.current.awardFriendship('adventure');
+      });
+      expect(result.current.equipped?.points).toBe(14);
+
+      await act(async () => {
+        resolvers.session({ data: { status: 'ok', points: 11 }, error: null });
+        await session;
+      });
+      await act(async () => {
+        resolvers.adventure({ data: { status: 'capped' }, error: null });
+        await adventure;
+      });
+
+      // 10 + 1 confirmed, 3 taken back — not 8, which is what assigning the
+      // session's absolute total would have left behind.
+      expect(result.current.equipped?.points).toBe(11);
+      expect(result.current.equipped?.lastSessionDate).toBe(todayLocal());
+      expect(result.current.equipped?.lastAdventureDate).toBeNull();
+    });
+
+    it('should detect a level-up the other award had optimistically hidden', async () => {
+      setTable('buddy_friendship', [row({ points: 14 })]);
+      const resolvers = deferRpc();
+      const { result } = await renderLoaded();
+
+      let session!: Promise<unknown>;
+      let adventure!: Promise<unknown>;
+      await act(async () => {
+        session = result.current.awardFriendship('session');
+      });
+      await act(async () => {
+        adventure = result.current.awardFriendship('adventure');
+      });
+
+      await act(async () => {
+        resolvers.session({ data: { status: 'capped' }, error: null });
+        await session;
+      });
+      await act(async () => {
+        resolvers.adventure({ data: { status: 'ok', points: 17 }, error: null });
+        await adventure;
+      });
+
+      // 14 → 17 crosses. A baseline read off local state would have seen the
+      // session's unconfirmed 15 and called it level 2 already.
+      expect(result.current.levelUpEvent).toEqual({ buddyKey: 'buddy_bunny', level: 2 });
     });
   });
 
@@ -299,11 +469,9 @@ describe('useBuddyFriendship', () => {
         publishSessionEnd(5);
       });
 
-      await waitFor(() =>
-        expect(mockRpc).toHaveBeenCalledWith(
-          'award_friendship',
-          expect.objectContaining({ p_source: 'session', p_points: 1 }),
-        ),
+      expect(mockRpc).toHaveBeenCalledWith(
+        'award_friendship',
+        expect.objectContaining({ p_source: 'session', p_points: 1 }),
       );
     });
 

@@ -77,22 +77,30 @@ function emptyFriendship(buddyKey: string): BuddyFriendship {
   };
 }
 
+/** A row a rollback emptied back out — indistinguishable from having no row. */
+function isBlank(row: BuddyFriendship): boolean {
+  return row.points <= 0 && !row.lastAdventureDate && !row.lastSessionDate && !row.lastPetDate;
+}
+
 /**
- * The newest stamp per source across every buddy row. The daily cap is per
- * USER, not per buddy (the RPC enforces the same cross-row rule), so switching
- * buddies mid-day must not hand a source a second payout.
+ * One stamp per source across every buddy row: the daily cap is per USER, not
+ * per buddy, so switching buddies mid-day must not re-pay a source. `today`
+ * beats a newer stamp because the RPC's check is "does ANY row equal today" —
+ * a future-dated row (clock skew) would otherwise read as spent.
  */
-function mergeStamps(friendships: Record<string, BuddyFriendship>): Stamps {
+function mergeStamps(friendships: Record<string, BuddyFriendship>, today: string): Stamps {
   const rows = Object.values(friendships);
-  const newest = (field: keyof BuddyFriendship) =>
-    rows.reduce<string | null>((max, row) => {
+  const merge = (field: keyof BuddyFriendship) => {
+    if (rows.some((row) => row[field] === today)) return today;
+    return rows.reduce<string | null>((max, row) => {
       const value = row[field];
       return typeof value === 'string' && (!max || value > max) ? value : max;
     }, null);
+  };
   return {
-    adventure: newest('lastAdventureDate'),
-    session: newest('lastSessionDate'),
-    pet: newest('lastPetDate'),
+    adventure: merge('lastAdventureDate'),
+    session: merge('lastSessionDate'),
+    pet: merge('lastPetDate'),
   };
 }
 
@@ -100,24 +108,20 @@ function mergeStamps(friendships: Record<string, BuddyFriendship>): Stamps {
 
 export function useBuddyFriendship() {
   const { user } = useAuth();
-  const { equipped: shopEquipped } = useShopCtx();
+  const { equipped: shopEquipped, loading: shopLoading } = useShopCtx();
   const buddyKey = resolveBuddyKey(shopEquipped['study_buddy']);
 
   const [friendships, setFriendships] = useState<Record<string, BuddyFriendship>>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [levelUpEvent, setLevelUpEvent] = useState<FriendshipLevelUp | null>(null);
 
-  const fetchFriendships = useCallback(async () => {
-    if (!user) {
-      setFriendships({});
-      setLoading(false);
-      return;
-    }
+  const fetchFriendships = useCallback(async (userId: string) => {
+    setLoading(true);
     const { data, error: err } = await sb
       .from('buddy_friendship')
       .select('*')
-      .eq('user_id', user.id);
+      .eq('user_id', userId);
     if (err) {
       setError(err.message);
       setLoading(false);
@@ -130,17 +134,39 @@ export function useBuddyFriendship() {
     setFriendships(next);
     setError(null);
     setLoading(false);
-  }, [user]);
+  }, []);
+
+  /**
+   * Deliberately not fetched on mount — this provider is app-wide and the RPC's
+   * cap is authoritative, so the local stamps only save a doomed call. Awarding
+   * loads them; a screen that renders hearts calls this itself.
+   */
+  const loadRef = useRef<{ userId: string; promise: Promise<void> } | null>(null);
+  const ensureLoaded = useCallback(() => {
+    if (!user) return Promise.resolve();
+    if (loadRef.current?.userId !== user.id) {
+      loadRef.current = { userId: user.id, promise: fetchFriendships(user.id) };
+    }
+    return loadRef.current.promise;
+  }, [user, fetchFriendships]);
+
+  const refetch = useCallback(() => {
+    if (!user) return Promise.resolve();
+    loadRef.current = { userId: user.id, promise: fetchFriendships(user.id) };
+    return loadRef.current.promise;
+  }, [user, fetchFriendships]);
 
   useEffect(() => {
-    fetchFriendships();
-  }, [fetchFriendships]);
+    if (user) return;
+    loadRef.current = null;
+    setFriendships({});
+  }, [user]);
 
-  const stamps = useMemo(() => mergeStamps(friendships), [friendships]);
+  const today = localDateString(new Date());
+  const stamps = useMemo(() => mergeStamps(friendships, today), [friendships, today]);
 
-  // Mirrored into refs so an award reads the values as of the tap rather than
-  // as of the last render — two pets in the same frame would otherwise both
-  // pass the local gate and fire the RPC twice.
+  // Read at tap time, not last-render time: two pets in one frame would
+  // otherwise both pass the local gate and fire the RPC twice.
   const friendshipsRef = useRef(friendships);
   friendshipsRef.current = friendships;
   const stampsRef = useRef(stamps);
@@ -148,41 +174,49 @@ export function useBuddyFriendship() {
 
   const awardFriendship = useCallback(
     async (source: FriendshipSource): Promise<FriendshipAward | null> => {
-      if (!user) return null;
-      const today = localDateString(new Date());
-      if (!canEarn(source, stampsRef.current, today)) return null;
+      // Until the shop resolves, resolveBuddyKey answers with the default
+      // buddy — and the per-day cap means hearts paid to the wrong buddy can't
+      // be moved to the right one today.
+      if (!user || shopLoading) return null;
+      await ensureLoaded();
+
+      const awardedOn = localDateString(new Date());
+      if (!canEarn(source, stampsRef.current, awardedOn)) return null;
 
       const points = FRIENDSHIP_POINTS[source];
       const existing = friendshipsRef.current[buddyKey];
       const before = existing ?? emptyFriendship(buddyKey);
       const previousStamp = stampsRef.current[source];
+      // The row's own stamp, not the merged one: restoring the merged value
+      // would claim this buddy was petted on another buddy's day.
+      const previousRowStamp = (existing?.[SOURCE_FIELD[source]] as string | null) ?? null;
 
-      stampsRef.current = { ...stampsRef.current, [source]: today };
+      stampsRef.current = { ...stampsRef.current, [source]: awardedOn };
       setFriendships((current) => ({
         ...current,
         [buddyKey]: {
           ...(current[buddyKey] ?? before),
           points: (current[buddyKey] ?? before).points + points,
-          [SOURCE_FIELD[source]]: today,
+          [SOURCE_FIELD[source]]: awardedOn,
         },
       }));
 
-      // Subtract rather than restore the snapshot: the adventure and session
-      // awards can both be in flight at the end of a quest, and putting back a
-      // row captured before the other one landed would eat its hearts.
+      // Every write below is a DELTA, never an absolute. The adventure and
+      // session awards are both in flight at the end of a quest, and either one
+      // assigning its own total would erase the other's optimistic points.
       const rollback = () => {
         stampsRef.current = { ...stampsRef.current, [source]: previousStamp };
         setFriendships((current) => {
           const row = current[buddyKey];
           if (!row) return current;
           const next = { ...current };
-          if (!existing && row.points <= points) delete next[buddyKey];
-          else
-            next[buddyKey] = {
-              ...row,
-              points: row.points - points,
-              [SOURCE_FIELD[source]]: previousStamp,
-            };
+          const restored = {
+            ...row,
+            points: row.points - points,
+            [SOURCE_FIELD[source]]: previousRowStamp,
+          };
+          if (isBlank(restored)) delete next[buddyKey];
+          else next[buddyKey] = restored;
           return next;
         });
       };
@@ -192,27 +226,32 @@ export function useBuddyFriendship() {
           p_buddy_key: buddyKey,
           p_source: source,
           p_points: points,
-          p_today: today,
+          p_today: awardedOn,
         });
         if (rpcErr) throw rpcErr;
 
         const result = data as { status?: string; points?: number } | null;
         if (result?.status !== 'ok') {
           // 'capped' is the expected loser of a race (two tabs, a double tap
-          // the local gate didn't see): the day was already paid, so take the
-          // hearts back without bothering the learner about it.
+          // the local gate missed) — take the hearts back, say nothing.
           rollback();
           return null;
         }
 
         const total = typeof result.points === 'number' ? result.points : before.points + points;
-        setFriendships((current) => ({
-          ...current,
-          [buddyKey]: { ...(current[buddyKey] ?? before), points: total },
-        }));
+        const drift = total - (before.points + points);
+        if (drift !== 0) {
+          setFriendships((current) => {
+            const row = current[buddyKey];
+            if (!row) return current;
+            return { ...current, [buddyKey]: { ...row, points: row.points + drift } };
+          });
+        }
 
+        // Levels come off the RPC's total, not local state: a concurrent
+        // award's unconfirmed points in `before` would hide a real crossing.
         const newLevel = friendshipLevel(total);
-        const leveledUp = newLevel > friendshipLevel(before.points);
+        const leveledUp = newLevel > friendshipLevel(total - points);
         if (leveledUp) setLevelUpEvent({ buddyKey, level: newLevel });
         setError(null);
         return { awarded: points, points: total, leveledUp, newLevel };
@@ -226,13 +265,12 @@ export function useBuddyFriendship() {
         return null;
       }
     },
-    [buddyKey, user],
+    [buddyKey, ensureLoaded, shopLoading, user],
   );
 
   const petBuddy = useCallback(() => awardFriendship('pet'), [awardFriendship]);
 
-  // The signal fires from whichever practice mode just ended, so keep the
-  // subscription itself stable and read the current award fn through a ref.
+  // Subscribe once — awardFriendship's identity changes on every award.
   const awardRef = useRef(awardFriendship);
   awardRef.current = awardFriendship;
   useEffect(
@@ -246,7 +284,7 @@ export function useBuddyFriendship() {
   const clearLevelUpEvent = useCallback(() => setLevelUpEvent(null), []);
 
   const equipped = buddyKey in friendships ? friendships[buddyKey] : null;
-  const canPetToday = canEarn('pet', stamps, localDateString(new Date()));
+  const canPetToday = canEarn('pet', stamps, today);
 
   return {
     friendships,
@@ -258,6 +296,7 @@ export function useBuddyFriendship() {
     canPetToday,
     levelUpEvent,
     clearLevelUpEvent,
-    refetch: fetchFriendships,
+    ensureLoaded,
+    refetch,
   };
 }

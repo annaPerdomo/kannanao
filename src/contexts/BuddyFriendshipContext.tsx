@@ -16,6 +16,7 @@ const BuddyFriendshipCtx = createContext<BuddyFriendshipContextValue>({
   canPetToday: false,
   levelUpEvent: null,
   clearLevelUpEvent: () => {},
+  ensureLoaded: async () => {},
   refetch: async () => {},
 });
 
