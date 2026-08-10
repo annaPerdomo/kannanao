@@ -1719,7 +1719,20 @@
       "toggleAriaLabel": "Toggle {label}"
     },
     "buddy": {
-      "defaultPhrase": "Let's study!"
+      "defaultPhrase": "Let's study!",
+      "friendship": {
+        "levelNames": {
+          "1": "New Friend",
+          "2": "Buddy",
+          "3": "Good Friend",
+          "4": "Best Friend",
+          "5": "Kindred Spirits"
+        },
+        "heartsAria": "{count, plural, one {# friendship heart} other {# friendship hearts}}",
+        "petBonus": "+1 ❤️",
+        "meterAria": "Friendship: {levelName}, {current} of {needed} hearts",
+        "meterAriaMax": "Friendship: {levelName}"
+      }
     },
     "heroDate": {
       "today": "Today"
@@ -3379,7 +3392,8 @@
     },
     "buddyPreview": {
       "close": "Close",
-      "avatarPerk": "Pick any of these faces as your profile picture"
+      "avatarPerk": "Pick any of these faces as your profile picture",
+      "friendshipLabel": "Friendship"
     }
   },
   "Landing": {

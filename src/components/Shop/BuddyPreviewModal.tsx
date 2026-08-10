@@ -7,8 +7,12 @@ import DialogActions from '@mui/material/DialogActions';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
 
+import { FriendshipMeter } from '@/components/FriendshipMeter';
 import { UserAvatar } from '@/components/UserAvatar';
+import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
+import { useShopCtx } from '@/contexts/ShopContext';
 import {
   BUDDY_ART,
   BUDDY_FACE_COUNT,
@@ -36,6 +40,15 @@ export function BuddyPreviewModal({
   const tBuddies = useTranslations('Shop.buddies');
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
+  const { ownsItem } = useShopCtx();
+  const { friendships, ensureLoaded } = useBuddyFriendshipCtx();
+  const owned = !!item && ownsItem(item.key);
+
+  // Friendship rows are lazy — load them only when an owned buddy's row will
+  // actually render.
+  useEffect(() => {
+    if (open && owned) void ensureLoaded();
+  }, [open, owned, ensureLoaded]);
 
   if (!item || !BUDDY_ART[item.key]) return null;
 
@@ -131,6 +144,26 @@ export function BuddyPreviewModal({
           {tItems(`${item.key}.description`)}
         </Typography>
       </Box>
+
+      {/* Owned buddies only: no teasing locked mechanics in the shop */}
+      {owned && (
+        <Box
+          sx={{
+            px: 3,
+            py: 2,
+            borderTop: `1px solid ${alpha(brand[300], 0.3)}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+          }}
+        >
+          <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: brand[700] }}>
+            {t('buddyPreview.friendshipLabel')}
+          </Typography>
+          <FriendshipMeter points={friendships[item.key]?.points ?? 0} size="small" />
+        </Box>
+      )}
 
       {/* The other half of the purchase: every face is a profile picture */}
       <Box

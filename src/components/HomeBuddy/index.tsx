@@ -2,16 +2,19 @@
 
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
+import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
 import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { BUDDY_ART, buddyFaceSrc, FALLBACK_REACTIONS, randomFaceVariant } from '@/lib/buddies';
 
-import { bounce, idleFloat, pulseGlow, tapWiggle, wobble } from './animations';
+import { bounce, heartPop, idleFloat, pulseGlow, tapWiggle, wobble } from './animations';
 import { BuddyBubble } from './BuddyBubble';
 import { BuddyParticles } from './BuddyParticles';
+import { FriendshipHearts } from './FriendshipHearts';
 
 // SSR renders face 1 and the effect swaps in the random one before paint, so
 // the randomness never reaches hydration.
@@ -42,7 +45,14 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
   const { reactionEvent } = useBuddyReaction();
+  const { petBuddy, canPetToday, ensureLoaded } = useBuddyFriendshipCtx();
   const accent = BUDDY_ART[buddyKey]?.accent ?? brand[300];
+
+  // Friendship rows are lazy-loaded by design; the widget renders the hearts
+  // total, so it is the screen responsible for loading them.
+  useEffect(() => {
+    void ensureLoaded();
+  }, [ensureLoaded]);
 
   const [faceVariant, setFaceVariant] = useState(1);
   useIsomorphicLayoutEffect(() => {
@@ -64,9 +74,11 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const [sparkles, setSparkles] = useState(false);
   const [tapped, setTapped] = useState(false);
   const [tapHearts, setTapHearts] = useState(false);
+  const [petBonus, setPetBonus] = useState(false);
   const phraseIndex = useRef(0);
 
   // Dragging
+  const [isDragging, setIsDragging] = useState(false);
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const dragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
@@ -115,6 +127,7 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     dragging.current = true;
+    setIsDragging(true);
     const el = e.currentTarget as HTMLElement;
     const rect = el.getBoundingClientRect();
     dragOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
@@ -137,6 +150,7 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
       const moved =
         Math.abs(e.clientX - lastPos.current.x) + Math.abs(e.clientY - lastPos.current.y);
       dragging.current = false;
+      setIsDragging(false);
       if (moved < 8) {
         setTapped(true);
         setTapHearts(true);
@@ -145,9 +159,20 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
         setShowBubble(true);
         setTimeout(() => setTapped(false), 500);
         setTimeout(() => setTapHearts(false), 600);
+        // First pet of the day pays a heart; later taps stay a plain (still
+        // fun) burst — no call spam, no "limit" messaging.
+        if (canPetToday) {
+          petBuddy()
+            .then((award) => {
+              if (!award) return;
+              setPetBonus(true);
+              setTimeout(() => setPetBonus(false), 900);
+            })
+            .catch(() => {});
+        }
       }
     },
-    [phrases],
+    [phrases, canPetToday, petBuddy],
   );
 
   const positionStyle = pos
@@ -188,6 +213,26 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
 
       <Box sx={{ position: 'relative' }}>
         <BuddyParticles sparkles={sparkles} tapHearts={tapHearts} />
+        <FriendshipHearts isDragging={isDragging} />
+
+        {petBonus && (
+          <Typography
+            sx={{
+              position: 'absolute',
+              top: '10%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              fontSize: '0.85rem',
+              fontWeight: 800,
+              whiteSpace: 'nowrap',
+              animation: `${heartPop} 0.9s ease-out forwards`,
+              pointerEvents: 'none',
+              zIndex: 1,
+            }}
+          >
+            {t('friendship.petBonus')}
+          </Typography>
+        )}
 
         <Box
           sx={{

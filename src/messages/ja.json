@@ -1719,7 +1719,20 @@
       "toggleAriaLabel": "{label}の表示を切り替え"
     },
     "buddy": {
-      "defaultPhrase": "勉強しよう！"
+      "defaultPhrase": "勉強しよう！",
+      "friendship": {
+        "levelNames": {
+          "1": "しりあい",
+          "2": "ともだち",
+          "3": "なかよし",
+          "4": "しんゆう",
+          "5": "こころのとも"
+        },
+        "heartsAria": "なかよしハート{count}こ",
+        "petBonus": "+1 ❤️",
+        "meterAria": "なかよし度：{levelName}、ハート{current}／{needed}",
+        "meterAriaMax": "なかよし度：{levelName}"
+      }
     },
     "heroDate": {
       "today": "今日"
@@ -3379,7 +3392,8 @@
     },
     "buddyPreview": {
       "close": "とじる",
-      "avatarPerk": "すきな顔をプロフィール画像にできるよ"
+      "avatarPerk": "すきな顔をプロフィール画像にできるよ",
+      "friendshipLabel": "なかよし度"
     }
   },
   "Landing": {

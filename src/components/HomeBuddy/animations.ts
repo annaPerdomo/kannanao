@@ -47,6 +47,12 @@ export const sparkleFloat = keyframes`
   100% { transform: scale(1) translateY(-20px); opacity: 0; }
 `;
 
+export const chipPop = keyframes`
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+`;
+
 export const pulseGlow = keyframes`
   0%, 100% { box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
   50% { box-shadow: 0 6px 28px rgba(0,0,0,0.12), 0 0 20px rgba(244,114,182,0.15); }
