@@ -59,9 +59,9 @@ export interface CelebrationScreenProps {
   mode: PracticeMode;
   /** When set, a tappable daily chest appears above the exit button. */
   chest?: CelebrationChest;
-  /** Hearts the buddy earned from this clear. Accepted but not yet rendered —
-   *  the visible chip lands with the buddy friendship UI. */
-  hearts?: number;
+  /** Friendship hearts earned on this clear. Wired but not yet rendered — the
+   *  visible chip lands with the buddy friendship UI. */
+  heartsEarned?: number;
   /** Exit button label (defaults to the translated "Back to Deck"). */
   exitLabel?: string;
   onExit: () => void;

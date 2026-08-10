@@ -127,8 +127,10 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
           fromReview: true,
         }),
       );
-      // An emptied due queue is the day's adventure. Not awaited, and swallowed
-      // on failure — hearts must never hold up or break the celebration.
+      // An emptied due queue is the day's adventure. Never awaited — hearts
+      // must not hold up or break the celebration. A failed count skips the
+      // award for good (endedRef blocks a retry), which beats paying out for a
+      // queue we can't confirm is empty.
       if (dueCount === 0) {
         void awardFriendship('adventure')
           .then((award) => setHeartsEarned(award?.awarded ?? 0))
@@ -225,7 +227,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
         subheading={t('clearedReview')}
         mode="study"
         exitLabel={t('backToReview')}
-        hearts={heartsEarned}
+        heartsEarned={heartsEarned}
         chest={
           chestEligible
             ? {
