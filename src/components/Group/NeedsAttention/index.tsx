@@ -41,6 +41,7 @@ interface NeedsAttentionProps {
   words?: DifficultWord[];
   /** Same reason as `assignmentsLoading` — words resolve last of the three. */
   wordsLoading?: boolean;
+  wordsError?: string | null;
   onSelectMember: (memberId: string) => void;
   onViewAssignments: () => void;
   onViewLearners: () => void;
@@ -65,6 +66,7 @@ export function NeedsAttention({
   assignmentsError = null,
   words,
   wordsLoading = false,
+  wordsError = null,
   onSelectMember,
   onViewAssignments,
   onViewLearners,
@@ -160,10 +162,19 @@ export function NeedsAttention({
         }
       >
         <Collapse in={!collapsed} id={BODY_ID}>
-          {assignmentsError && (
-            <Alert severity="error" sx={{ mb: items.length ? 1.5 : 0, fontSize: '0.8rem' }}>
-              {assignmentsError}
-            </Alert>
+          {(assignmentsError || wordsError) && (
+            <Stack spacing={1} sx={{ mb: items.length ? 1.5 : 0 }}>
+              {assignmentsError && (
+                <Alert severity="error" sx={{ fontSize: '0.8rem' }}>
+                  {assignmentsError}
+                </Alert>
+              )}
+              {wordsError && (
+                <Alert severity="error" sx={{ fontSize: '0.8rem' }}>
+                  {wordsError}
+                </Alert>
+              )}
+            </Stack>
           )}
 
           {items.length > 0 ? (
@@ -189,7 +200,8 @@ export function NeedsAttention({
           ) : assignmentsLoading || wordsLoading ? (
             <Loading message={t('loadingMessage')} />
           ) : (
-            !assignmentsError && (
+            !assignmentsError &&
+            !wordsError && (
               <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', py: 1 }}>
                 {t('allCaughtUp')}
               </Typography>

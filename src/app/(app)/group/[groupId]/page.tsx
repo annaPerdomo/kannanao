@@ -194,6 +194,7 @@ export default function GroupDashboardPage() {
           assignmentsError={assignmentsError}
           words={difficultWords?.words}
           wordsLoading={difficultWordsLoading}
+          wordsError={difficultWordsError}
           onSelectMember={(id) => router.push(`/group/${groupId}/members/${id}`)}
           onViewAssignments={() => handleTabChange('assignments')}
           onViewLearners={() => handleTabChange('learners')}
