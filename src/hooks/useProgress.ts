@@ -8,6 +8,7 @@ import { invalidateApiCache } from '@/lib/apiCache';
 import { publishAssignmentComplete } from '@/lib/assignmentSignal';
 import { CHEST_XP } from '@/lib/chest';
 import { cardXp } from '@/lib/flashcardUtils';
+import { publishSessionEnd } from '@/lib/sessionSignal';
 import { sb, upsertCardProgress } from '@/lib/supabase';
 import type { JlptLevel } from '@/types/flashcard';
 
@@ -660,6 +661,7 @@ export function useProgress(
       // Published on the failure paths too — a screen waiting on this has to be
       // released whether or not the write got through.
       publishAssignmentComplete(result?.completed ?? 0);
+      publishSessionEnd(cardsStudied);
       return result;
     },
     [achievements, supabase, fetchAll, applyProgress],
