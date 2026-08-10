@@ -3,8 +3,14 @@ import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useLocale, useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 import type { FeedItem } from '@/hooks/useGroup';
+
+import { ShowMoreButton } from './ShowMoreButton';
+
+/** Five rows per column at md and up — the card the feed sits in stays a screenful. */
+const COLLAPSED_ROWS = 10;
 
 /** Short relative time ("5m ago", "yesterday") using the viewer's locale. */
 function timeAgo(dateStr: string, locale: string, justNowLabel: string): string {
@@ -22,11 +28,15 @@ function timeAgo(dateStr: string, locale: string, justNowLabel: string): string 
 interface FeedRowProps {
   item: FeedItem;
   time: string;
+  /** Foot of a column at md and up — where the rule would hang under nothing. */
+  lastInColumn: boolean;
+  lastInList: boolean;
 }
 
-function FeedRow({ item, time }: FeedRowProps) {
+function FeedRow({ item, time, lastInColumn, lastInList }: FeedRowProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
+  const rule = `1px solid ${alpha(brand[300], 0.22)}`;
 
   const avatar = (
     <Box
@@ -59,7 +69,10 @@ function FeedRow({ item, time }: FeedRowProps) {
         alignItems: 'center',
         gap: 1.25,
         py: 1,
-        borderBottom: `1px solid ${alpha(brand[300], 0.22)}`,
+        borderBottom: {
+          xs: lastInList ? 'none' : rule,
+          md: lastInColumn || lastInList ? 'none' : rule,
+        },
       }}
     >
       {avatar}
@@ -84,9 +97,15 @@ interface ActivityFeedProps {
   items: FeedItem[];
 }
 
+/**
+ * The feed arrives newest-first and is read down a column, so the grid fills
+ * column-wise (newspaper order): the default row-wise fill would scatter the
+ * sequence left-to-right and make every other item look out of order.
+ */
 export function ActivityFeed({ items }: ActivityFeedProps) {
   const t = useTranslations('Group.activityFeed');
   const locale = useLocale();
+  const [expanded, setExpanded] = useState(false);
 
   if (items.length === 0) {
     return (
@@ -96,21 +115,37 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
     );
   }
 
+  const visible = expanded ? items : items.slice(0, COLLAPSED_ROWS);
+  const perColumn = Math.ceil(visible.length / 2);
+
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
-        columnGap: 3,
-      }}
-    >
-      {items.map((item, i) => (
-        <FeedRow
-          key={`${item.memberId}-${item.timestamp}-${i}`}
-          item={item}
-          time={timeAgo(item.timestamp, locale, t('justNow'))}
+    <Box>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+          gridTemplateRows: { md: `repeat(${perColumn}, auto)` },
+          gridAutoFlow: { md: 'column' },
+          columnGap: 4,
+        }}
+      >
+        {visible.map((item, i) => (
+          <FeedRow
+            key={`${item.memberId}-${item.timestamp}-${i}`}
+            item={item}
+            time={timeAgo(item.timestamp, locale, t('justNow'))}
+            lastInColumn={i === perColumn - 1}
+            lastInList={i === visible.length - 1}
+          />
+        ))}
+      </Box>
+      {items.length > COLLAPSED_ROWS && (
+        <ShowMoreButton
+          expanded={expanded}
+          total={items.length}
+          onClick={() => setExpanded((v) => !v)}
         />
-      ))}
+      )}
     </Box>
   );
 }
