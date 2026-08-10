@@ -12,7 +12,6 @@ import { StyledDialog } from '@/components/StyledDialog';
 import type { Assignment } from '@/hooks/useAssignments';
 
 import { EditAssignmentDialog } from '../EditAssignmentDialog';
-import { ShowMoreButton } from '../ShowMoreButton';
 import { BatchRow } from './BatchRow';
 import { type AssignmentBatch, groupAssignments } from './groupAssignments';
 
@@ -26,9 +25,6 @@ interface AssignmentsListProps {
     updates: { note?: string | null; dueDate?: string | null; availableOn?: string | null },
   ) => Promise<void>;
   onDeleteBatch: (ids: string[]) => Promise<void>;
-  maxVisible?: number;
-  variant?: 'default' | 'preview';
-  onViewAll?: () => void;
   onSendEncouragement?: (memberId: string, message: string, emoji?: string) => Promise<unknown>;
 }
 
@@ -36,9 +32,6 @@ export function AssignmentsList({
   assignments,
   onEditBatch,
   onDeleteBatch,
-  maxVisible,
-  variant = 'default',
-  onViewAll,
   onSendEncouragement,
 }: AssignmentsListProps) {
   const theme = useTheme();
@@ -49,13 +42,8 @@ export function AssignmentsList({
   const [removing, setRemoving] = useState<AssignmentBatch | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState(false);
 
   const batches = groupAssignments(assignments);
-  const collapsed = maxVisible !== undefined && !expanded && batches.length > maxVisible;
-  const visible = collapsed ? batches.slice(0, maxVisible) : batches;
-
-  const isPreview = variant === 'preview';
 
   const closeRemoveDialog = () => {
     if (deleting) return;
@@ -103,7 +91,7 @@ export function AssignmentsList({
   return (
     <>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-        {visible.map((batch) => (
+        {batches.map((batch) => (
           <BatchRow
             key={batch.key}
             batch={batch}
@@ -112,40 +100,10 @@ export function AssignmentsList({
               setRemoving(batch);
               setDeleteError(null);
             }}
-            preview={isPreview}
             onSendEncouragement={onSendEncouragement}
           />
         ))}
       </Box>
-
-      {isPreview && onViewAll && maxVisible !== undefined && batches.length > maxVisible ? (
-        <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${alpha(brand[300], 0.3)}` }}>
-          <Button
-            fullWidth
-            size="small"
-            variant="text"
-            onClick={onViewAll}
-            sx={{
-              textTransform: 'none',
-              fontWeight: 700,
-              fontSize: '0.8rem',
-              color: brand[700],
-              borderRadius: theme.radii.sm,
-            }}
-          >
-            {t('viewAllAssignments')} →
-          </Button>
-        </Box>
-      ) : (
-        maxVisible !== undefined &&
-        batches.length > maxVisible && (
-          <ShowMoreButton
-            expanded={expanded}
-            total={batches.length}
-            onClick={() => setExpanded((v) => !v)}
-          />
-        )
-      )}
 
       <EditAssignmentDialog
         open={editing !== null}

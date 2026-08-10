@@ -36,17 +36,12 @@ function handout(count: number, overrides: Partial<Assignment> = {}): Assignment
   );
 }
 
-function render(
-  assignments: Assignment[],
-  maxVisible?: number,
-  onDeleteBatch = vi.fn().mockResolvedValue(undefined),
-) {
+function render(assignments: Assignment[], onDeleteBatch = vi.fn().mockResolvedValue(undefined)) {
   renderWithProviders(
     <AssignmentsList
       assignments={assignments}
       onEditBatch={vi.fn().mockResolvedValue(undefined)}
       onDeleteBatch={onDeleteBatch}
-      maxVisible={maxVisible}
     />,
   );
   return onDeleteBatch;
@@ -140,19 +135,16 @@ describe('AssignmentsList', () => {
     expect(screen.getByText('1/4 done')).toBeInTheDocument();
   });
 
-  it('collapses to the cap by batch, not by member', () => {
-    render(
-      [
-        ...handout(10),
-        ...handout(10, { deck_id: 'd2' }).map((a) => ({
-          ...a,
-          decks: { id: 'd2', name: 'Verbs', emoji: '📘' },
-        })),
-      ],
-      1,
-    );
-    expect(screen.getByRole('button', { name: 'Show all 2' })).toBeInTheDocument();
-    expect(screen.queryByText('Verbs')).not.toBeInTheDocument();
+  it('renders one row per handout, not one per member', () => {
+    render([
+      ...handout(10),
+      ...handout(10, { deck_id: 'd2' }).map((a) => ({
+        ...a,
+        decks: { id: 'd2', name: 'Verbs', emoji: '📘' },
+      })),
+    ]);
+    expect(screen.getAllByText('Animals')).toHaveLength(1);
+    expect(screen.getAllByText('Verbs')).toHaveLength(1);
   });
 
   it('badges an overdue handout instead of repeating its date', () => {
@@ -193,7 +185,7 @@ describe('AssignmentsList', () => {
 
   it('keeps the confirm dialog open and shows the error when removal fails', async () => {
     const onDeleteBatch = vi.fn().mockRejectedValue(new Error('Removed for 1 of 3 members'));
-    render(handout(3), undefined, onDeleteBatch);
+    render(handout(3), onDeleteBatch);
     fireEvent.click(screen.getByRole('button', { name: /Remove assignment/i }));
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
 

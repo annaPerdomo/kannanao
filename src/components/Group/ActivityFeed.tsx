@@ -22,11 +22,9 @@ function timeAgo(dateStr: string, locale: string, justNowLabel: string): string 
 interface FeedRowProps {
   item: FeedItem;
   time: string;
-  /** Compact rows stack the timestamp under the text; the full feed keeps it inline. */
-  compact?: boolean;
 }
 
-function FeedRow({ item, time, compact }: FeedRowProps) {
+function FeedRow({ item, time }: FeedRowProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
 
@@ -58,47 +56,35 @@ function FeedRow({ item, time, compact }: FeedRowProps) {
     <Box
       sx={{
         display: 'flex',
-        alignItems: compact ? 'flex-start' : 'center',
+        alignItems: 'center',
         gap: 1.25,
         py: 1,
         borderBottom: `1px solid ${alpha(brand[300], 0.22)}`,
       }}
     >
       {avatar}
-      {compact ? (
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: '0.85rem', color: 'text.primary' }}>
-            {text} {item.description}
-          </Typography>
-          <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>{time}</Typography>
-        </Box>
-      ) : (
-        <>
-          <Typography sx={{ flex: 1, minWidth: 0, fontSize: '0.85rem', color: 'text.primary' }}>
-            {text} {item.description}
-          </Typography>
-          <Typography
-            sx={{
-              fontSize: '0.72rem',
-              color: 'text.secondary',
-              flexShrink: 0,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {time}
-          </Typography>
-        </>
-      )}
+      <Typography sx={{ flex: 1, minWidth: 0, fontSize: '0.85rem', color: 'text.primary' }}>
+        {text} {item.description}
+      </Typography>
+      <Typography
+        sx={{
+          fontSize: '0.72rem',
+          color: 'text.secondary',
+          flexShrink: 0,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {time}
+      </Typography>
     </Box>
   );
 }
 
 interface ActivityFeedProps {
   items: FeedItem[];
-  compact?: boolean;
 }
 
-export function ActivityFeed({ items, compact }: ActivityFeedProps) {
+export function ActivityFeed({ items }: ActivityFeedProps) {
   const t = useTranslations('Group.activityFeed');
   const locale = useLocale();
 
@@ -114,7 +100,7 @@ export function ActivityFeed({ items, compact }: ActivityFeedProps) {
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: compact ? '1fr' : { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+        gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
         columnGap: 3,
       }}
     >
@@ -123,7 +109,6 @@ export function ActivityFeed({ items, compact }: ActivityFeedProps) {
           key={`${item.memberId}-${item.timestamp}-${i}`}
           item={item}
           time={timeAgo(item.timestamp, locale, t('justNow'))}
-          compact={compact}
         />
       ))}
     </Box>
