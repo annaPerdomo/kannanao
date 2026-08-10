@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { act } from 'react';
+import { act, useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BuddyFriendshipProvider, useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
@@ -7,11 +7,28 @@ import { BuddyFriendshipProvider, useBuddyFriendshipCtx } from '@/contexts/Buddy
 const clearLevelUpEvent = vi.fn();
 let levelUpEvent: { buddyKey: string; level: number } | null = null;
 let pathname = '/';
+let user: { id: string } | null = { id: 'user-1' };
 
 vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
 
+vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user }) }));
+
+// Holds the event in real state so clearing it actually re-renders the
+// provider — the effect that opens the dialog keys off that.
 vi.mock('@/hooks/useBuddyFriendship', () => ({
-  useBuddyFriendship: () => ({ friendships: {}, levelUpEvent, clearLevelUpEvent }),
+  useBuddyFriendship: () => {
+    const [event, setEvent] = useState(() => levelUpEvent);
+    return {
+      friendships: {},
+      // The real hook drops a held event on sign-out; mirrored so the provider
+      // is tested against what it actually receives.
+      levelUpEvent: user ? event : null,
+      clearLevelUpEvent: () => {
+        clearLevelUpEvent();
+        setEvent(null);
+      },
+    };
+  },
 }));
 
 function Probe() {
@@ -40,6 +57,7 @@ describe('BuddyFriendshipProvider story dialog', () => {
     clearLevelUpEvent.mockClear();
     levelUpEvent = null;
     pathname = '/';
+    user = { id: 'user-1' };
   });
 
   it('asks for the celebration as soon as a level-up lands outside a session', () => {
@@ -83,5 +101,41 @@ describe('BuddyFriendshipProvider story dialog', () => {
     act(() => screen.getByText('close').click());
     expect(request()).toBe('none');
     expect(clearLevelUpEvent).not.toHaveBeenCalled();
+  });
+
+  // Swapping a dialog's content out from under the reader is worse than making
+  // the celebration wait its turn.
+  it('should leave an open browse alone when a held level-up is released', () => {
+    levelUpEvent = { buddyKey: 'buddy_tango', level: 3 };
+    pathname = '/deck/abc/practice';
+    const { rerender } = renderProvider();
+    act(() => screen.getByText('open').click());
+    expect(request()).toContain('browse');
+
+    pathname = '/decks';
+    rerender(
+      <BuddyFriendshipProvider>
+        <Probe />
+      </BuddyFriendshipProvider>,
+    );
+    expect(request()).toContain('browse');
+
+    // …and it gets its turn the moment the browse is closed.
+    act(() => screen.getByText('close').click());
+    expect(request()).toContain('levelUp');
+  });
+
+  it('should drop an open dialog on sign-out rather than show it to the next user', () => {
+    levelUpEvent = { buddyKey: 'buddy_tango', level: 3 };
+    const { rerender } = renderProvider();
+    expect(request()).toContain('levelUp');
+
+    user = null;
+    rerender(
+      <BuddyFriendshipProvider>
+        <Probe />
+      </BuddyFriendshipProvider>,
+    );
+    expect(request()).toBe('none');
   });
 });

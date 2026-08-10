@@ -175,6 +175,10 @@ export function useBuddyFriendship() {
     loadRef.current = null;
     setFriendships({});
     setLoadState('idle');
+    // A level-up is held until the user leaves a session route, so an unconsumed
+    // one would otherwise pop for whoever signs in next on this tab.
+    setLevelUpEvent(null);
+    setError(null);
   }, [user]);
 
   const today = localDateString(new Date());

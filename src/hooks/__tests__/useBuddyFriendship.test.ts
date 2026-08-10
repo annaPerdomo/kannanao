@@ -534,6 +534,27 @@ describe('useBuddyFriendship', () => {
 
       expect(result.current.levelUpEvent).toBeNull();
     });
+
+    // A level-up is held until the reader leaves a session route, so an
+    // unconsumed one outlives the sign-out unless it is dropped here.
+    it('should drop a held event on sign-out rather than keep it for the next user', async () => {
+      setTable('buddy_friendship', [row({ points: 14 })]);
+      mockRpc.mockResolvedValue({ data: { status: 'ok', points: 17 }, error: null });
+      const { result, rerender } = await renderLoaded();
+
+      await act(async () => {
+        await result.current.awardFriendship('adventure');
+      });
+      expect(result.current.levelUpEvent).not.toBeNull();
+
+      mockUseAuth.mockReturnValue({ user: null });
+      await act(async () => {
+        rerender();
+      });
+
+      expect(result.current.levelUpEvent).toBeNull();
+      expect(result.current.error).toBeNull();
+    });
   });
 
   // ── session signal ──────────────────────────────────────────────────────────
