@@ -712,7 +712,8 @@
       "openChestAria": "デイリーチェストを開ける",
       "chestReward": "+{xp} XP！",
       "goldenChestTap": "ゴールドチェスト — タップして開けよう！",
-      "dailyChestTap": "デイリーチェスト — タップして開けよう！"
+      "dailyChestTap": "デイリーチェスト — タップして開けよう！",
+      "heartsEarned": "なかよしハート +{count}"
     },
     "fillMode": {
       "fillPrompt": "あなをうめよう",

@@ -712,7 +712,8 @@
       "openChestAria": "Open your daily chest",
       "chestReward": "+{xp} XP!",
       "goldenChestTap": "Golden chest — tap to open!",
-      "dailyChestTap": "Daily chest — tap to open!"
+      "dailyChestTap": "Daily chest — tap to open!",
+      "heartsEarned": "+{count} ❤️ friendship"
     },
     "fillMode": {
       "fillPrompt": "FILL IN THE BLANK",
