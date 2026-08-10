@@ -1731,10 +1731,15 @@
           "4": "Best Friend",
           "5": "Kindred Spirits"
         },
-        "heartsAria": "{count, plural, one {# friendship heart} other {# friendship hearts}}",
         "petBonus": "+1 ❤️",
         "meterAria": "Friendship: {levelName}, {current} of {needed} hearts",
-        "meterAriaMax": "Friendship: {levelName}"
+        "meterAriaMax": "Friendship: {levelName}",
+        "levelUpTitle": "You and {name} are now {level}!",
+        "storiesTitle": "{name}'s Stories",
+        "lockedStory": "Reach {level} to hear more.",
+        "continueHint": "Tap to continue",
+        "close": "Close",
+        "storiesAria": "Read {name}'s stories, {count, plural, one {# heart} other {# hearts}}"
       }
     },
     "heroDate": {
@@ -2956,7 +2961,39 @@
           "がんばろう! We've got this!",
           "Your streak makes me wag!",
           "Let's learn something new! ✨"
-        ]
+        ],
+        "friendship": {
+          "l2": {
+            "story": [
+              "I carry one word around all day, like a stick.",
+              "Today it was arigatou. I dropped it the second you got home."
+            ],
+            "phrases": ["You're back! I saved you a seat."]
+          },
+          "l3": {
+            "story": [
+              "My favorite word is ohayou — it sounds like the sun getting up.",
+              "I bark it at the mail carrier every morning. He never says it back."
+            ],
+            "phrases": ["I found a new word while you were out!"]
+          },
+          "l4": {
+            "story": [
+              "I've never told anyone this.",
+              "The first word I ever learned was your name.",
+              "I practiced a whole week before I said it out loud."
+            ],
+            "phrases": ["I told the mail carrier about you. He was very impressed."]
+          },
+          "l5": {
+            "story": [
+              "Some dogs chase balls. I chased words.",
+              "One of them turned out to be you.",
+              "Whatever we learn next — I'm glad it's with you."
+            ],
+            "phrases": ["Best study buddy in the world. That's you, by the way."]
+          }
+        }
       },
       "buddy_bunny": {
         "correct": [
@@ -3000,7 +3037,38 @@
           "Ready to learn together?",
           "Every card makes you smarter!",
           "がんばろう! Let's go!"
-        ]
+        ],
+        "friendship": {
+          "l2": {
+            "story": [
+              "When you study late, I sit by the window.",
+              "The tsuki keeps me company until you're done."
+            ],
+            "phrases": ["You're back! I saved you the warm spot."]
+          },
+          "l3": {
+            "story": [
+              "My favorite night is when the moon is a thin little hook.",
+              "I hop higher on those nights. I almost reached it once."
+            ],
+            "phrases": ["The moon was out. I told it about you."]
+          },
+          "l4": {
+            "story": [
+              "I've never told anyone — I used to think I came from up there.",
+              "Now I'd rather be down here, on the corner of your desk."
+            ],
+            "phrases": ["Studying with you beats hopping. And I love hopping."]
+          },
+          "l5": {
+            "story": [
+              "The moon comes back every night whether anyone waits for it or not.",
+              "I come back for you. That's a different thing.",
+              "I'm glad it's you."
+            ],
+            "phrases": ["Wherever you go, I'll hop after you."]
+          }
+        }
       },
       "buddy_penguin": {
         "correct": [
@@ -3172,7 +3240,38 @@
           "Follow my tail to the flashcards~",
           "Outfox the tricky words!",
           "Let's hunt for new words! ✨"
-        ]
+        ],
+        "friendship": {
+          "l2": {
+            "story": [
+              "I sat at the shrine gate all afternoon, guarding it.",
+              "Also it's the sunniest step. Both things are true, kon."
+            ],
+            "phrases": ["You're back. I kept the gate warm."]
+          },
+          "l3": {
+            "story": [
+              "Someone left inari-zushi at the gate — sweet fried tofu, my favorite.",
+              "I ate two and left one. Very noble of me, kon kon."
+            ],
+            "phrases": ["I saved you a piece of inari. Study first!"]
+          },
+          "l4": {
+            "story": [
+              "Here's something I don't tell people.",
+              "Foxes are supposed to be tricky. I'd rather be useful to you."
+            ],
+            "phrases": ["Kon kon! Let's be clever together."]
+          },
+          "l5": {
+            "story": [
+              "A lot of people have walked past my gate.",
+              "You're the one I followed home. Kon kon.",
+              "Glad it was you."
+            ],
+            "phrases": ["Wherever you're headed, I'm coming too."]
+          }
+        }
       },
       "buddy_lucky_cat": {
         "correct": [
@@ -3260,7 +3359,37 @@
           "日本語 time, meow!",
           "I'll cheer you on, nya~",
           "Tap a deck to start! ✨"
-        ]
+        ],
+        "friendship": {
+          "l2": {
+            "story": [
+              "I napped on your notebook again, nya.",
+              "It was warm and it smelled like you. That's two good reasons."
+            ],
+            "phrases": ["You're back. I kept your chair warm, nya."]
+          },
+          "l3": {
+            "story": [
+              "I chased a tama down the stairs once — a little glass ball, blue on the inside.",
+              "It lives under the couch now. I visit it."
+            ],
+            "phrases": ["My ball can wait. Study first, nya."]
+          },
+          "l4": {
+            "story": [
+              "Nobody knows this: I'm actually a terrible hunter.",
+              "I just like it when you cheer for me anyway."
+            ],
+            "phrases": ["I'll nap right here. You do the smart part."]
+          },
+          "l5": {
+            "story": [
+              "Cats pick their person. It usually takes us ages.",
+              "I picked fast. I'm glad it's you, nya."
+            ],
+            "phrases": ["My favorite person just showed up, nya~"]
+          }
+        }
       },
       "buddy_kappa": {
         "correct": [
@@ -3348,7 +3477,37 @@
           "Drum roll… pick a deck! 🥁",
           "Lucky learners study daily!",
           "Let's poko-poko practice!"
-        ]
+        ],
+        "friendship": {
+          "l2": {
+            "story": [
+              "This morning I put a leaf on my head and turned into a teapot.",
+              "Then I sneezed. Poof. Just Ponta again."
+            ],
+            "phrases": ["You're back! Leaf on my head, ready to go."]
+          },
+          "l3": {
+            "story": [
+              "My best trick is turning into your desk lamp.",
+              "You studied a whole hour under me and never noticed. Best day ever."
+            ],
+            "phrases": ["I was a teapot for a while. I'm over it now."]
+          },
+          "l4": {
+            "story": [
+              "Okay, never told anyone: my belly-drum isn't actually very good.",
+              "Ponpoko, ponpoko — mostly it's just me being loud."
+            ],
+            "phrases": ["Ponpoko! Drum's all warmed up for you."]
+          },
+          "l5": {
+            "story": [
+              "Tanuki fool people for fun. I never once fooled you.",
+              "Never wanted to. I'm glad it's you, pon."
+            ],
+            "phrases": ["No tricks today. Just us."]
+          }
+        }
       },
       "buddy_red_panda": {
         "correct": [
