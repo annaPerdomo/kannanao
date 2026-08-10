@@ -10,6 +10,8 @@ import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
 import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
 import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { BUDDY_ART, buddyFaceSrc, FALLBACK_REACTIONS, randomFaceVariant } from '@/lib/buddies';
+import { blendHomePhrases } from '@/lib/buddyPhrases';
+import { friendshipLevel } from '@/lib/friendship';
 
 import { bounce, heartPop, idleFloat, pulseGlow, tapWiggle, wobble } from './animations';
 import { BuddyBubble } from './BuddyBubble';
@@ -45,8 +47,7 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
   const { reactionEvent } = useBuddyReaction();
-  const { petBuddy, canPetToday, ensureLoaded, levelUpEvent, clearLevelUpEvent } =
-    useBuddyFriendshipCtx();
+  const { petBuddy, canPetToday, ensureLoaded, levelUpEvent, equipped } = useBuddyFriendshipCtx();
   const accent = BUDDY_ART[buddyKey]?.accent ?? brand[300];
 
   // Friendship rows are lazy-loaded by design; the widget renders the hearts
@@ -59,15 +60,19 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   useIsomorphicLayoutEffect(() => {
     setFaceVariant(randomFaceVariant());
   }, [buddyKey]);
+  const level = friendshipLevel(equipped?.points ?? 0);
   const phrases = useMemo(() => {
+    let base = [t('defaultPhrase')];
+    let friendshipCopy: unknown = null;
     try {
       const raw = tBuddies.raw(`${buddyKey}.homePhrases`);
-      if (isNonEmptyStringArray(raw)) return raw;
+      if (isNonEmptyStringArray(raw)) base = raw;
+      friendshipCopy = tBuddies.raw(`${buddyKey}.friendship`);
     } catch {
-      // missing translation key for this buddyKey — fall back below
+      // missing key — the guards keep whatever resolved before the throw
     }
-    return [t('defaultPhrase')];
-  }, [buddyKey, t, tBuddies]);
+    return blendHomePhrases(base, friendshipCopy, level);
+  }, [buddyKey, level, t, tBuddies]);
 
   const [bubbleText, setBubbleText] = useState('');
   /** Outranks the ambient phrase, which would otherwise rotate over it. */
@@ -87,15 +92,22 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const dragOffset = useRef({ x: 0, y: 0 });
   const lastPos = useRef({ x: 0, y: 0 });
 
+  // Keyed on the pool's contents, not its identity: a re-render that rebuilds
+  // an identical array would otherwise snap the rotation back to phrase one.
+  const phrasesRef = useRef(phrases);
+  phrasesRef.current = phrases;
+  const phrasePool = phrases.join('␟');
   useEffect(() => {
-    setBubbleText(phrases[0]);
+    phraseIndex.current = 0;
+    setBubbleText(phrasesRef.current[0]);
     const interval = setInterval(() => {
-      phraseIndex.current = (phraseIndex.current + 1) % phrases.length;
-      setBubbleText(phrases[phraseIndex.current]);
+      const pool = phrasesRef.current;
+      phraseIndex.current = (phraseIndex.current + 1) % pool.length;
+      setBubbleText(pool[phraseIndex.current]);
       setShowBubble(true);
     }, 8000);
     return () => clearInterval(interval);
-  }, [phrases]);
+  }, [phrasePool]);
 
   // React to correct/wrong answers reported by whatever practice screen is
   // active. Keyed on reactionEvent.key (not just .reaction) so firing the
@@ -128,8 +140,14 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reactionEvent?.key]);
 
+  // The story dialog consumes the event, not this — it may be held for a while
+  // if the level-up landed mid-session. Only the announcement clears here.
   useEffect(() => {
-    if (!levelUpEvent) return;
+    if (!levelUpEvent) {
+      setAnnouncement(null);
+      setSparkles(false);
+      return;
+    }
     setAnnouncement(
       t('friendship.levelUp', { levelName: t(`friendship.levelNames.${levelUpEvent.level}`) }),
     );
@@ -138,7 +156,6 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     const timer = setTimeout(() => {
       setAnnouncement(null);
       setSparkles(false);
-      clearLevelUpEvent();
     }, 3000);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -237,13 +254,9 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
         userSelect: 'none',
         '&:active': { cursor: 'grabbing' },
       }}
-      role="button"
-      tabIndex={0}
-      aria-label={t('petAria')}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onKeyDown={handleKeyDown}
     >
       {showBubble && (
         <BuddyBubble text={announcement ?? bubbleText} reaction={reaction} accent={accent} />
@@ -251,7 +264,7 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
 
       <Box sx={{ position: 'relative' }}>
         <BuddyParticles sparkles={sparkles} tapHearts={tapHearts} />
-        <FriendshipHearts isDragging={isDragging} />
+        <FriendshipHearts isDragging={isDragging} buddyKey={buddyKey} />
 
         {petBonus && (
           <Typography
@@ -272,7 +285,13 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
           </Typography>
         )}
 
+        {/* The pet button is the face, not the whole widget: role="button" makes
+            its children presentational, which would hide the hearts chip. */}
         <Box
+          role="button"
+          tabIndex={0}
+          aria-label={t('petAria')}
+          onKeyDown={handleKeyDown}
           sx={{
             width: { xs: 56, sm: 64 },
             height: { xs: 56, sm: 64 },

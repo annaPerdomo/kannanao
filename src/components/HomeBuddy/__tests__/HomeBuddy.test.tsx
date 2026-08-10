@@ -4,11 +4,16 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { HomeBuddy } from '@/components/HomeBuddy';
 import { renderWithProviders as render } from '@/test/renderWithProviders';
 
+let buddyCopy: Record<string, unknown> = {};
+
 vi.mock('next-intl', () => ({
   useTranslations: () => {
-    const t = (key: string) => key;
-    t.raw = () => {
-      throw new Error('missing');
+    const t = (key: string, params?: Record<string, unknown>) =>
+      params ? `${key}|${Object.values(params).join(',')}` : key;
+    t.raw = (key: string) => {
+      const field = key.split('.').slice(1).join('.');
+      if (field in buddyCopy) return buddyCopy[field];
+      throw new Error(`missing: ${key}`);
     };
     return t;
   },
@@ -23,6 +28,7 @@ vi.mock('@/contexts/BuddyReactionContext', () => ({
 const petBuddy = vi.fn(async () => ({ awarded: 1, points: 13, leveledUp: false, newLevel: 1 }));
 const ensureLoaded = vi.fn(async () => {});
 const clearLevelUpEvent = vi.fn();
+const openStories = vi.fn();
 let canPetToday = true;
 let points = 12;
 let loadState = 'loaded';
@@ -38,6 +44,7 @@ vi.mock('@/contexts/BuddyFriendshipContext', () => ({
     ensureLoaded,
     levelUpEvent,
     clearLevelUpEvent,
+    openStories,
   }),
 }));
 
@@ -54,10 +61,12 @@ describe('HomeBuddy', () => {
   beforeEach(() => {
     petBuddy.mockClear();
     clearLevelUpEvent.mockClear();
+    openStories.mockClear();
     canPetToday = true;
     points = 12;
     loadState = 'loaded';
     levelUpEvent = null;
+    buddyCopy = {};
   });
 
   it('shows the friendship hearts total', () => {
@@ -100,15 +109,56 @@ describe('HomeBuddy', () => {
     await waitFor(() => expect(petBuddy).toHaveBeenCalledTimes(1));
   });
 
-  it('announces a level-up and clears the event once it has been said', async () => {
+  it('announces a level-up, and leaves the event for the story dialog to consume', () => {
     vi.useFakeTimers();
     levelUpEvent = { buddyKey: 'tango', level: 2 };
     render(<HomeBuddy buddyKey="tango" />);
-    expect(screen.getByText('friendship.levelUp')).toBeInTheDocument();
+    expect(screen.getByText('friendship.levelUp|friendship.levelNames.2')).toBeInTheDocument();
 
     act(() => vi.advanceTimersByTime(3000));
-    expect(clearLevelUpEvent).toHaveBeenCalled();
+    expect(screen.queryByText('friendship.levelUp|friendship.levelNames.2')).toBeNull();
+    // Clearing it here would drop a celebration that is being held until the
+    // user leaves their session.
+    expect(clearLevelUpEvent).not.toHaveBeenCalled();
     vi.useRealTimers();
+  });
+
+  it('opens the buddy stories from the hearts chip without also petting', () => {
+    render(<HomeBuddy buddyKey="tango" />);
+    const chip = screen.getByRole('button', { name: 'storiesAria|tango.name,12' });
+
+    tap(chip);
+    fireEvent.click(chip);
+    expect(openStories).toHaveBeenCalledWith('tango');
+    expect(petBuddy).not.toHaveBeenCalled();
+    // Nested inside the pet button the chip would be presentational, and the
+    // only way into the stories would be gone for screen readers.
+    expect(screen.getByRole('button', { name: 'petAria' })).not.toContainElement(chip);
+  });
+
+  it('blends the phrases a friendship level unlocked into the rotation', () => {
+    buddyCopy = {
+      homePhrases: ['home one'],
+      friendship: { l2: { phrases: ['level two idle'] } },
+    };
+    points = 15;
+    const { container } = render(<HomeBuddy buddyKey="tango" />);
+    expect(screen.getByText('home one')).toBeInTheDocument();
+
+    tap(container.firstChild as Element);
+    expect(screen.getByText('level two idle')).toBeInTheDocument();
+  });
+
+  it('keeps the base pool for a buddy still at the starting level', () => {
+    buddyCopy = {
+      homePhrases: ['home one'],
+      friendship: { l2: { phrases: ['level two idle'] } },
+    };
+    const { container } = render(<HomeBuddy buddyKey="tango" />);
+
+    tap(container.firstChild as Element);
+    expect(screen.getByText('home one')).toBeInTheDocument();
+    expect(screen.queryByText('level two idle')).toBeNull();
   });
 
   it('re-keys the hearts chip when the total increases so it pops', () => {
