@@ -103,6 +103,18 @@ describe('HomeBuddy', () => {
     expect(petBuddy).not.toHaveBeenCalled();
   });
 
+  // The hearts chip stops pointerdown but not pointerup; without a matching
+  // down, lastPos is stale and the release would spend the day's pet.
+  it('ignores a pointerup with no pointerdown behind it', () => {
+    const { container } = render(<HomeBuddy buddyKey="tango" />);
+    fireEvent.pointerUp(container.firstChild as Element, {
+      clientX: 100,
+      clientY: 100,
+      pointerId: 1,
+    });
+    expect(petBuddy).not.toHaveBeenCalled();
+  });
+
   it('pets the buddy from the keyboard', async () => {
     render(<HomeBuddy buddyKey="tango" />);
     fireEvent.keyDown(screen.getByRole('button', { name: 'petAria' }), { key: 'Enter' });

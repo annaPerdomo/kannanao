@@ -121,6 +121,15 @@ describe('TodayAdventureCard', () => {
       await screen.findByText('Adventure complete!');
     });
 
+    // Crediting the equipped buddy would name one whose total never moved.
+    it("should credit the buddy that actually earned the day's hearts", async () => {
+      shopState.mockReturnValue({ equipped: { study_buddy: 'buddy_tanuki' } });
+      friendshipState.mockReturnValue(friendship({ buddy_bunny: TODAY }));
+      renderWithProviders(<TodayAdventureCard />);
+      expect(await screen.findByText('+3 ❤️ with Tsuki')).toBeInTheDocument();
+      expect(screen.queryByText(/Ponta/)).toBeNull();
+    });
+
     // Pre-friendship users have no row at all, so the daily chest stands in.
     it('should fall back to the daily chest when no friendship row exists yet', async () => {
       progressState.mockReturnValue(progress({ last_chest_date: TODAY }));

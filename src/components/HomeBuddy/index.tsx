@@ -50,8 +50,6 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const { petBuddy, canPetToday, ensureLoaded, levelUpEvent, equipped } = useBuddyFriendshipCtx();
   const accent = BUDDY_ART[buddyKey]?.accent ?? brand[300];
 
-  // Friendship rows are lazy-loaded by design; the widget renders the hearts
-  // total, so it is the screen responsible for loading them.
   useEffect(() => {
     void ensureLoaded();
   }, [ensureLoaded]);
@@ -204,6 +202,10 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
 
   const handlePointerUp = useCallback(
     (e: React.PointerEvent) => {
+      // No matching pointerdown (the hearts chip swallowed it, a second pointer,
+      // a lost capture) means lastPos is stale, and a tap it wrongly reads as
+      // one would spend the day's pet award.
+      if (!dragging.current) return;
       const moved =
         Math.abs(e.clientX - lastPos.current.x) + Math.abs(e.clientY - lastPos.current.y);
       dragging.current = false;

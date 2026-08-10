@@ -82,9 +82,14 @@ export function TodayAdventureCard() {
   // only opens on a cleared queue — stands in, over-reporting slightly until
   // they earn their first heart.
   const hasFriendship = friendshipLoad === 'loaded' && Object.keys(friendships).length > 0;
-  const completedToday = hasFriendship
-    ? Object.values(friendships).some((f) => f.lastAdventureDate === today)
-    : progress?.last_chest_date === today;
+  const adventuredRow = hasFriendship
+    ? Object.values(friendships).find((f) => f.lastAdventureDate === today)
+    : undefined;
+  const completedToday = hasFriendship ? !!adventuredRow : progress?.last_chest_date === today;
+
+  // The hearts went to whoever was equipped at adventure time. Naming today's
+  // buddy would credit one whose total never moved.
+  const creditedKey = adventuredRow ? resolveBuddyKey(adventuredRow.buddyKey) : buddyKey;
 
   // A failed count is not a count of zero — "no reviews waiting" off a network
   // error would be a lie. Completed doesn't read the count, so it still renders.
@@ -123,8 +128,8 @@ export function TodayAdventureCard() {
     >
       {state === 'completed' && (
         <CompletedState
-          buddyName={buddyName}
-          faceSrc={buddyFaceSrc(buddyKey, FACE_CELEBRATE)}
+          buddyName={tItems(`${creditedKey}.name`)}
+          faceSrc={buddyFaceSrc(creditedKey, FACE_CELEBRATE)}
           // The chest fallback proves a cleared queue, not a paid heart.
           hearts={hasFriendship ? FRIENDSHIP_POINTS.adventure : 0}
         />

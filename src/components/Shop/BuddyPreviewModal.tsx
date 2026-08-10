@@ -41,11 +41,9 @@ export function BuddyPreviewModal({
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
   const { ownsItem } = useShopCtx();
-  const { friendships, ensureLoaded } = useBuddyFriendshipCtx();
+  const { friendships, loadState, ensureLoaded } = useBuddyFriendshipCtx();
   const owned = !!item && ownsItem(item.key);
 
-  // Friendship rows are lazy — load them only when an owned buddy's row will
-  // actually render.
   useEffect(() => {
     if (open && owned) void ensureLoaded();
   }, [open, owned, ensureLoaded]);
@@ -145,8 +143,10 @@ export function BuddyPreviewModal({
         </Typography>
       </Box>
 
-      {/* Owned buddies only: no teasing locked mechanics in the shop */}
-      {owned && (
+      {/* Owned buddies only: no teasing locked mechanics in the shop. Held
+          until the rows land — a meter that starts at "New Friend, 0/15" and
+          snaps to the real level reads as lost progress. */}
+      {owned && loadState === 'loaded' && (
         <Box
           sx={{
             px: 3,
