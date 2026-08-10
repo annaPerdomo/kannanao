@@ -25,11 +25,13 @@ interface QuickNudgeDialogProps {
   target: QuickNudgeTarget | null;
   onClose: () => void;
   onSend: (memberId: string, message: string, emoji?: string) => Promise<unknown>;
+  /** Fires after a successful send; the parent closes the dialog and confirms with a toast. */
+  onSent: (emoji: string) => void;
 }
 
 const DEFAULT_EMOJI = '💪';
 
-export function QuickNudgeDialog({ open, target, onClose, onSend }: QuickNudgeDialogProps) {
+export function QuickNudgeDialog({ open, target, onClose, onSend, onSent }: QuickNudgeDialogProps) {
   const t = useTranslations('Group.needsAttention');
   const tForm = useTranslations('Group.groupEncouragementForm');
   const tc = useTranslations('Common');
@@ -37,18 +39,16 @@ export function QuickNudgeDialog({ open, target, onClose, onSend }: QuickNudgeDi
   const [message, setMessage] = useState('');
   const [emoji, setEmoji] = useState(DEFAULT_EMOJI);
   const [error, setError] = useState<string | null>(null);
-  const { sending, sent, send, reset } = useQuickSend(onSend);
+  const { sending, send } = useQuickSend(onSend);
 
-  // One instance serves every learner: without the reset, nudging a second
-  // learner within the confirmation window shows them the first one's tick.
+  // One instance serves every learner, so each open starts from a clean slate.
   useEffect(() => {
     if (open) {
       setMessage(t('nudgeDefaultMessage'));
       setEmoji(DEFAULT_EMOJI);
       setError(null);
-      reset();
     }
-  }, [open, t, reset]);
+  }, [open, t]);
 
   if (!target) return null;
 
@@ -57,7 +57,8 @@ export function QuickNudgeDialog({ open, target, onClose, onSend }: QuickNudgeDi
     if (!msg) return;
     setError(null);
     const ok = await send([target.id], msg, emoji);
-    if (!ok) setError(tForm('failedToSendToSome'));
+    if (ok) onSent(emoji);
+    else setError(tForm('failedToSendToSome'));
   };
 
   return (
@@ -106,11 +107,6 @@ export function QuickNudgeDialog({ open, target, onClose, onSend }: QuickNudgeDi
         slotProps={{ htmlInput: { maxLength: 200 } }}
       />
 
-      {sent && (
-        <Alert severity="success" sx={{ mt: 1.5, py: 0, fontSize: '0.75rem' }}>
-          {emoji} {t('nudgeSent')}
-        </Alert>
-      )}
       {error && (
         <Alert severity="error" sx={{ mt: 1.5, py: 0, fontSize: '0.75rem' }}>
           {error}

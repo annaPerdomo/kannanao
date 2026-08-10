@@ -8,6 +8,7 @@ import Button from '@mui/material/Button';
 import Collapse from '@mui/material/Collapse';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
+import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
@@ -83,6 +84,12 @@ export function NeedsAttention({
     name: string;
     lastNudgedAt: string | null;
   } | null>(null);
+  const [sentEmoji, setSentEmoji] = useState<string | null>(null);
+
+  const handleNudgeSent = useCallback((emoji: string) => {
+    setNudgeTarget(null);
+    setSentEmoji(emoji);
+  }, []);
 
   useEffect(() => {
     setCollapsed(loadCollapsed(groupId));
@@ -104,10 +111,11 @@ export function NeedsAttention({
   return (
     <>
       <SectionCard
+        compact={collapsed}
         icon={
           <NotificationsActiveOutlinedIcon
             aria-hidden
-            sx={{ fontSize: '1.15rem', color: brand[600] }}
+            sx={{ fontSize: collapsed ? '1rem' : '1.15rem', color: brand[600] }}
           />
         }
         title={
@@ -122,7 +130,7 @@ export function NeedsAttention({
             aria-label={collapsed ? t('showPanelAction') : t('hidePanelAction')}
             aria-expanded={!collapsed}
             aria-controls={BODY_ID}
-            sx={{ color: brand[700] }}
+            sx={{ color: brand[700], p: collapsed ? 0.25 : undefined }}
           >
             {collapsed ? (
               <ExpandMoreIcon sx={{ fontSize: 20 }} />
@@ -195,7 +203,19 @@ export function NeedsAttention({
         target={nudgeTarget}
         onClose={() => setNudgeTarget(null)}
         onSend={onSendEncouragement}
+        onSent={handleNudgeSent}
       />
+
+      <Snackbar
+        open={!!sentEmoji}
+        autoHideDuration={3000}
+        onClose={() => setSentEmoji(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" variant="filled" sx={{ fontSize: '0.85rem' }}>
+          {sentEmoji} {t('nudgeSent')}
+        </Alert>
+      </Snackbar>
     </>
   );
 }
