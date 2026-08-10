@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cardXp } from '@/lib/flashcardUtils';
+import { onSessionEnd } from '@/lib/sessionSignal';
 
 import { type Achievement, useProgress, type UserProgress, XP_PERFECT_BONUS } from '../useProgress';
 
@@ -201,6 +202,23 @@ describe('useProgress session tracking', () => {
 
     const write = updates.filter((u) => u.table === 'user_progress').at(-1);
     expect(write?.payload.total_xp).toBe(100 + XP_PERFECT_BONUS);
+  });
+
+  it('publishes the session-end signal with the cards studied', async () => {
+    const { result } = renderProgress();
+    const seen: number[] = [];
+    const unsubscribe = onSessionEnd((signal) => seen.push(signal.cardsStudied));
+
+    await act(async () => {
+      await result.current.endSession('s1', {
+        cardsStudied: 7,
+        cardsCorrect: 4,
+        durationSecs: 60,
+      });
+    });
+    unsubscribe();
+
+    expect(seen).toEqual([7]);
   });
 
   it('does not award the perfect bonus for an imperfect session', async () => {
