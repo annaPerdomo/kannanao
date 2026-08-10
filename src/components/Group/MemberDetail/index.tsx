@@ -1,6 +1,7 @@
 'use client';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import SchoolIcon from '@mui/icons-material/School';
 import TargetIcon from '@mui/icons-material/TrackChanges';
 import Box from '@mui/material/Box';
@@ -53,6 +54,8 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
     assignments,
     weakWords,
     totalMastery,
+    reviewsWaiting,
+    reviewsOverdue3d,
   } = detail;
   const { current, needed } = xpProgressInLevel(progress.totalXp);
   const pct = Math.round((current / needed) * 100);
@@ -134,6 +137,15 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
           label={t('sessionsLabel')}
           value={progress.totalSessions}
         />
+        {/* Hidden, not zeroed: a "0" from a query that never ran reads as "caught up". */}
+        {reviewsWaiting !== null && (
+          <StatCard
+            icon={<ScheduleOutlinedIcon sx={{ fontSize: 18 }} />}
+            label={t('reviewsWaitingLabel')}
+            value={reviewsWaiting.toLocaleString()}
+            sub={reviewsOverdue3d ? t('reviewsOverdueSub', { count: reviewsOverdue3d }) : undefined}
+          />
+        )}
       </Box>
 
       {/* Practice Mode Breakdown */}

@@ -186,14 +186,11 @@ export async function fetchPracticeSentences(
   return data.sentences as DbPracticeSentence[];
 }
 
-export async function generatePracticeSentences(
-  deckId: string,
-  memberId?: string,
-): Promise<DbPracticeSentence[]> {
+export async function generatePracticeSentences(deckId: string): Promise<DbPracticeSentence[]> {
   const res = await fetch(`${BASE}/deck/${deckId}/practice-sentences`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-    body: JSON.stringify(memberId ? { memberId } : {}),
+    body: JSON.stringify({}),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -201,30 +198,6 @@ export async function generatePracticeSentences(
   }
   const data = await res.json();
   return data.sentences as DbPracticeSentence[];
-}
-
-export interface BatchSentenceResult {
-  deckId: string;
-  status: 'generated' | 'skipped' | 'failed';
-  count?: number;
-  error?: string;
-}
-
-export async function generatePracticeSentencesBatch(
-  deckIds: string[],
-  memberId?: string,
-): Promise<BatchSentenceResult[]> {
-  const res = await fetch(`${BASE}/group/practice-sentences/batch`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-    body: JSON.stringify({ deckIds, memberId }),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body?.error ?? 'Failed to generate practice sentences');
-  }
-  const data = await res.json();
-  return data.results as BatchSentenceResult[];
 }
 
 export async function updatePracticeSentences(
@@ -267,11 +240,13 @@ export async function deletePracticeSentences(deckId: string, memberId?: string)
 /* ── Lesson Builder ────────────────────────────────────────────── */
 
 export async function buildLessonPlan(payload: {
-  memberId: string;
   goal: string;
   weeks: number;
   cardsPerDeck: number;
   documents?: Array<{ base64: string; mimeType: string }>;
+  /** JLPT level to pitch the plan at — defaults to N5 server-side. */
+  level?: string;
+  styleNotes?: string;
 }): Promise<LessonPlanResponse> {
   const res = await fetch(`${BASE}/group/lesson-plan`, {
     method: 'POST',
@@ -287,7 +262,6 @@ export async function buildLessonPlan(payload: {
 
 export async function applyLessonPlan(payload: {
   groupId: string;
-  memberId: string;
   plan: LessonPlan;
   firstDueDate: string;
   requiredAccuracy?: number | null;
@@ -296,6 +270,9 @@ export async function applyLessonPlan(payload: {
   planId?: string;
   /** Also make each deck's Kotoba Bubble sentences — one Gemini call per deck. */
   withSentences?: boolean;
+  /** Pitch of the practice sentences — same value the plan was built with. */
+  level?: string;
+  styleNotes?: string;
 }): Promise<{ results: ApplyDeckResult[] }> {
   const res = await fetch(`${BASE}/group/lesson-plan/apply`, {
     method: 'POST',

@@ -952,16 +952,13 @@
     }
   },
   "Group": {
-    "memberCard": {
+    "timeAgo": {
       "never": "Never",
       "justNow": "Just now",
       "minutesAgo": "{mins}m ago",
       "hoursAgo": "{hours}h ago",
       "yesterday": "Yesterday",
-      "daysAgo": "{days}d ago",
-      "level": "Level {level}",
-      "xpProgress": "{current}/{needed} XP",
-      "cardsStudied": "{count, plural, one {# card studied} other {# cards studied}}"
+      "daysAgo": "{days}d ago"
     },
     "memberDetail": {
       "loadingMemberDetails": "Loading member details...",
@@ -972,6 +969,8 @@
       "accuracyLabel": "Accuracy",
       "streakLabel": "Streak",
       "sessionsLabel": "Sessions",
+      "reviewsWaitingLabel": "Reviews waiting",
+      "reviewsOverdueSub": "{count, plural, one {# is more than 3 days overdue} other {# are more than 3 days overdue}}",
       "deckProgress": "Deck Progress",
       "cardsStudiedCount": "{count} studied",
       "accuracyPercent": "{accuracy}% accuracy",
@@ -1043,7 +1042,9 @@
       "noMembers": "No members in this group yet.",
       "noAttempts": "No one has taken this quiz yet.",
       "loadFailed": "Failed to load quiz scores",
-      "summary": "{taken} of {total} have taken it · average {average}%"
+      "summary": "{taken} of {total} have taken it · average {average}%",
+      "noDecksBody": "Make a deck in the Materials Builder to see quiz scores here.",
+      "lastTaken": "Last taken {date}"
     },
     "goalPicker": {
       "addGoal": "🎯 Add a goal (optional)",
@@ -1084,7 +1085,19 @@
       "removeTitle": "Remove assignment?",
       "removeBody": "{deck} will be removed for {count, plural, one {# member} other {all # members}}.",
       "removeFailed": "Couldn't remove the assignment. Please try again.",
-      "startsOn": "Starts {date}"
+      "startsOn": "Starts {date}",
+      "expandMembersAria": "Show who's done with {deckName}",
+      "collapseMembersAria": "Hide who's done with {deckName}",
+      "finishedOn": "finished {date}",
+      "bestSoFar": "best so far {accuracy}%",
+      "memberGoalChip": "{goal}% goal",
+      "notStartedLabel": "hasn't started",
+      "nudgeAction": "Nudge",
+      "nudgeAria": "Send a nudge to {name}",
+      "nudgeSentShort": "Sent",
+      "nudgeFailed": "Couldn't send. Please try again.",
+      "nudgeDefaultMessage": "Don't forget to finish {deck}! 💪",
+      "lastNudged": "Last nudged {date}"
     },
     "createAssignment": {
       "title": "Assign a Deck",
@@ -1119,8 +1132,7 @@
       "failedToCreate": "Failed to create assignment",
       "updateFailed": "Couldn't save the changes. Please try again.",
       "updatePartial": "Saved for {ok} of {total} members — try again to finish the rest.",
-      "deleteFailed": "Couldn't remove the assignment. Please try again.",
-      "deletePartial": "Removed for {ok} of {total} members — try again to finish the rest."
+      "deleteFailed": "Couldn't remove the assignment. Please try again."
     },
     "createGroup": {
       "title": "Create Group",
@@ -1252,7 +1264,6 @@
       "renameGroup": "Rename group",
       "defaultTitle": "Group Dashboard",
       "memberCountInGroup": "{count, plural, one {# member} other {# members}} in this group",
-      "inviteButton": "Invite",
       "assignDeckButton": "Assign Deck",
       "weeklyLeaderboard": "Weekly leaderboard",
       "visible": "Visible",
@@ -1263,10 +1274,20 @@
       "assignmentsHeading": "Assignments",
       "recentActivityHeading": "Recent activity",
       "loadingActivity": "Loading activity...",
-      "newButton": "New",
       "showAll": "Show all {count}",
       "showLess": "Show less",
-      "buildLessonButton": "Build a lesson"
+      "quickActionsLabel": "Quick actions",
+      "inviteLearnersTitle": "Invite learners",
+      "inviteLearnersSubtitle": "Share link or QR",
+      "materialsBuilderTitle": "Open Materials Builder",
+      "materialsBuilderSubtitle": "Create decks, lessons, and assignments"
+    },
+    "dashboardTabs": {
+      "overview": "Overview",
+      "learners": "Learners",
+      "assignments": "Assignments",
+      "words": "Words",
+      "activity": "Activity"
     },
     "groupsPage": {
       "loadingGroups": "Loading groups...",
@@ -1324,31 +1345,49 @@
       "noActivity": "No recent activity yet.",
       "justNow": "Just now"
     },
-    "overview": {
-      "membersLabel": "Members",
-      "activeThisWeek": "{count} active this week",
-      "totalGroupXpLabel": "Total group XP",
-      "bestStreakLabel": "Best streak",
-      "longestStreakSub": "Longest active streak",
-      "cardsStudiedLabel": "Cards studied",
-      "allTimeAcrossGroupSub": "All time across group",
-      "cardsMasteredLabel": "Cards mastered",
-      "cardsMasteredSub": "{count} still learning",
-      "needNudgeLabel": "Needs a nudge",
-      "needNudgeSub": "No study this week"
+    "weekStatStrip": {
+      "heading": "This week",
+      "learners": "{count, plural, one {# learner} other {# learners}}",
+      "active": "{count} active",
+      "cards": "{count, plural, one {# card} other {# cards}}",
+      "accuracy": "{pct}% accuracy",
+      "accuracyEmpty": "Accuracy: —",
+      "accuracyTrendAriaUp": "Up {pct} percentage points from last week",
+      "accuracyTrendAriaDown": "Down {pct} percentage points from last week",
+      "studied": "{time} studied",
+      "duration": "{h}h {m}m",
+      "bestStreak": "Best streak: {name} · {days, plural, one {# day} other {# days}}",
+      "bestStreakEmpty": "Best streak: —",
+      "mastered": "{count} mastered",
+      "groupXp": "{xp} group XP"
     },
-    "reteachPanel": {
-      "heading": "What to review again",
-      "pickDeckBody": "Pick a deck to see which words your class is missing.",
-      "checkingMessage": "Checking what the class is missing...",
-      "noTrickyWords": "No tricky words here yet — the class is doing well on this deck.",
-      "allStudentsStruggling": "{attempts, plural, one {All # student who tried it keep missing this word.} other {All # students who tried it keep missing this word.}}",
-      "someStudentsStruggling": "{struggling} of {attempts} students who tried it keep missing this word.",
+    "difficultWords": {
+      "heading": "Tricky words",
+      "allDecks": "All decks",
+      "deckFilterAriaLabel": "Filter tricky words by deck",
+      "contextLine": "{count, plural, one {Across # learner in this group} other {Across # learners in this group}}",
+      "loadingMessage": "Looking for tricky words…",
+      "noDecksBody": "Assign a deck to this group to see tricky words here.",
+      "noTrickyWords": "No tricky words right now 🎉 — check back after the group has studied more.",
+      "learnersAffected": "{affected} of {total, plural, one {# learner} other {# learners}} affected",
       "percentRight": "{percent}% right",
-      "chartCaption": "Share of the group still missing each word"
+      "attempts": "{count, plural, one {# answer from the group so far} other {# answers from the group so far}}",
+      "reason": {
+        "forgotten": "Being forgotten",
+        "missed": "Keeps getting missed",
+        "shaky": "New & shaky"
+      },
+      "detail": {
+        "forgotten": "{affected} of {total, plural, one {# learner} other {# learners}} who tried it had learned this word, then missed it again.",
+        "missed": "{affected} of {total, plural, one {# learner} other {# learners}} who tried it keep missing this word.",
+        "shaky": "{affected} of {total, plural, one {# learner} other {# learners}} who tried it are still shaky on this word."
+      }
     },
-    "useItemAnalysis": {
-      "failedToLoad": "Failed to load analysis"
+    "useDeckReadiness": {
+      "failedToLoad": "Failed to load deck progress"
+    },
+    "useDifficultWords": {
+      "failedToLoad": "Failed to load tricky words"
     },
     "leaderboard": {
       "empty": "No activity this week yet.",
@@ -1360,34 +1399,95 @@
       "placeholder": "Pick a deck…"
     },
     "charts": {
-      "dailyHeading": "Cards studied each day",
+      "dailyHeading": "Group progress",
       "dailyEmpty": "No study sessions in the last two weeks.",
       "dailyTooltip": "{date} — {count, plural, one {# card} other {# cards}}",
-      "heatmapHeading": "Who studied this week",
+      "dailyTooltipWithAccuracy": "{date} — {count, plural, one {# card} other {# cards}}, {pct}% accuracy",
+      "legendCards": "Cards studied",
+      "legendAccuracy": "Accuracy",
+      "rangeLabel": "Date range",
+      "rangeLast14Days": "Last 14 days",
+      "heatmapHeading": "Study consistency",
       "heatmapEmpty": "No members yet.",
       "heatmapTooltip": "{name} · {date} — {count, plural, one {# card} other {# cards}}",
-      "legendLess": "Less",
-      "legendMore": "More",
+      "legendNoStudy": "No study",
+      "legendLight": "Light",
+      "legendMedium": "Medium",
+      "legendHeavy": "Heavy",
+      "duration": "{h}h {m}m",
+      "timeStudiedThisWeek": "Time studied this week",
       "loading": "Loading group activity…",
       "loadFailed": "Couldn't load group activity.",
       "modeHeading": "Practice modes this window",
       "modeEmpty": "No practice sessions in this window.",
-      "modeCardsCount": "{count, plural, one {# card} other {# cards}}"
+      "modeCardsCount": "{count, plural, one {# card} other {# cards}}",
+      "modeShare": "{pct}% of cards",
+      "modeTooltip": "{label} — {count, plural, one {# card} other {# cards}} in {sessions, plural, one {# session} other {# sessions}}",
+      "modeTooltipWithAccuracy": "{label} — {count, plural, one {# card} other {# cards}} in {sessions, plural, one {# session} other {# sessions}}, {pct}% accuracy"
     },
-    "membersPanel": {
-      "heading": "Members",
-      "sortAriaLabel": "Sort members",
-      "sortAttention": "Needs a nudge",
-      "sortActive": "Most recent",
-      "sortName": "Name",
+    "learnersTable": {
+      "heading": "Learners",
+      "colLearner": "Learner",
+      "colStatus": "Status",
+      "colStreak": "Streak",
+      "colCards": "Cards",
+      "colReviewsWaiting": "Reviews waiting",
+      "colAccuracy": "Accuracy",
+      "activeToday": "Active today",
+      "activeDaysAgo": "Active {days, plural, one {# day} other {# days}} ago",
+      "inactiveDays": "Inactive {days, plural, one {# day} other {# days}}",
+      "neverStarted": "Hasn't started",
+      "streakValue": "{count, plural, one {# day} other {# days}}",
+      "noStreak": "—",
+      "noAccuracy": "—",
+      "reviewsWaitingUnknown": "—",
+      "accuracyValue": "{pct}%",
+      "cardsStudiedCompact": "{count, plural, one {# card studied} other {# cards studied}}",
+      "accuracyCompact": "{pct}% accuracy",
+      "reviewsWaitingCompact": "{count, plural, one {# review waiting} other {# reviews waiting}}",
       "staleSummary": "{count, plural, one {# member hasn't studied this week} other {# members haven't studied this week}}",
       "allCaughtUp": "Everyone has studied recently.",
       "emptyTitle": "No members yet",
       "emptyBody": "Use Invite to add members to this group."
     },
+    "needsAttention": {
+      "heading": "Needs attention",
+      "headingWithCount": "Needs attention · {count}",
+      "hidePanelAction": "Hide needs attention",
+      "showPanelAction": "Show needs attention",
+      "allCaughtUp": "All caught up — nobody needs a nudge right now 🎉",
+      "loadingMessage": "Checking on your group…",
+      "inactiveLearnerHeadline": "{name} hasn't studied in {days, plural, one {# day} other {# days}}",
+      "inactiveLearnerSubline": "Last active {relative}",
+      "neverStudiedHeadline": "{name} hasn't started studying yet",
+      "neverStudiedSubline": "Joined the group but hasn't opened a deck",
+      "inactiveLearnersCollapsedHeadline": "{count, plural, one {# learner hasn't studied this week} other {# learners haven't studied this week}}",
+      "reviewBacklogHeadline": "{name} has {count, plural, one {# review} other {# reviews}} waiting",
+      "reviewBacklogSubline": "{count, plural, one {# is more than 3 days overdue} other {# are more than 3 days overdue}}",
+      "reviewBacklogSuffix": "{count, plural, one {# review waiting} other {# reviews waiting}}",
+      "reviewBacklogCollapsedHeadline": "{count, plural, one {# learner has reviews piling up} other {# learners have reviews piling up}}",
+      "viewLearnerAction": "View {name}",
+      "sendNudgeAction": "Send nudge",
+      "viewLearnersAction": "View learners",
+      "assignmentOverdueHeadline": "{deck} is {days, plural, one {# day overdue} other {# days overdue}}",
+      "assignmentDueTodayHeadline": "{deck} is due today",
+      "assignmentDueTomorrowHeadline": "{deck} is due tomorrow",
+      "assignmentDueInDaysHeadline": "{deck} is due in {days, plural, one {# day} other {# days}}",
+      "assignmentDoneSubline": "{done} of {total, plural, one {# learner} other {# learners}} finished",
+      "assignmentCloseSuffix": "{name} is close at {progress}% / {goal}% goal",
+      "viewAssignmentAction": "View assignment",
+      "viewAllCount": "{count, plural, one {View # thing needing attention →} other {View all # things needing attention →}}",
+      "showLessAction": "Show less",
+      "nudgeDialogTitle": "Send a nudge to {name}",
+      "nudgeDefaultMessage": "Miss you! Come back and practice today 💪",
+      "nudgeSent": "Nudge sent!",
+      "lastNudgedAt": "Last nudged {date}",
+      "wordsForgottenHeadline": "{count, plural, one {# word is being forgotten} other {# words are being forgotten}}",
+      "wordsForgottenSubline": "{words} · {count, plural, one {# learner affected} other {# learners affected}}",
+      "wordSeparator": ", ",
+      "reviewWordsAction": "Review words"
+    },
     "lessonBuilder": {
-      "title": "Build a lesson",
-      "subtitle": "Describe what you want to cover. You'll get decks, example sentences and a week-by-week schedule built on words this learner already knows.",
       "goalLabel": "What do you want to cover?",
       "goalPlaceholder": "e.g. Food words for ordering at a restaurant, plus counting things",
       "attachDocumentButton": "Attach files",
@@ -1398,7 +1498,6 @@
       "documentSizeError": "Each file must be under 8 MB.",
       "documentTotalSizeError": "Attached files must total under 20 MB.",
       "documentReadError": "Couldn't read that file. Please try again.",
-      "learnerLabel": "Who is it for?",
       "weeksLabel": "How many weeks?",
       "weeksOption": "{count, plural, one {# week} other {# weeks}}",
       "cardsPerDeckLabel": "Cards per week",
@@ -1416,28 +1515,109 @@
       "exampleEnLabel": "Example (English)",
       "removeCardLabel": "Remove {word}",
       "buildsOnLabel": "builds on: {words}",
-      "retentionLine": "{reused} of {total} cards build on words this learner already knows",
+      "retentionLine": "{reused} of {total} cards build on words from earlier weeks",
       "retryDeckButton": "Try again",
       "retryGoal": "{goal} — redo just this week's deck: {deck}",
       "dueDateLabel": "First deck due",
       "dueDateHint": "Each later week is due seven days after the one before it.",
       "applyButton": "Create decks & assign",
+      "groupWideNotice": "Everyone in the group gets these decks and this schedule — including anyone who joins later.",
       "applying": "Creating…",
       "applyingMessage": "Creating the decks and their practice sentences — this takes a moment.",
       "startOverButton": "Start over",
-      "successMessage": "{count, plural, one {# deck was created and assigned.} other {# decks were created and assigned.}}",
+      "successMessage": "{count, plural, one {# deck was created and assigned to everyone in the group.} other {# decks were created and assigned to everyone in the group.}}",
       "deckFailed": "{name} had a problem: {reason}",
       "backToGroupButton": "Back to the group",
       "errorMessage": "Something went wrong. Please try again.",
       "emptyPlanMessage": "The plan came back empty. Try describing the goal a little differently.",
-      "noLearners": "Add a learner to this group first, then come back to build a lesson.",
-      "organizerOnly": "This page is for educators only.",
       "sentencesToggleLabel": "Also make Kotoba Bubble practice sentences",
-      "sentencesToggleHint": "One set of sentences per deck, built from words this learner already knows. Everyone you assign the deck to gets them."
+      "sentencesToggleHint": "One set of sentences per deck — everyone in the group practices the same set, so it's easy to check over."
     },
+    "deckReadiness": {
+      "heading": "Deck readiness",
+      "loading": "Loading deck progress…",
+      "empty": "Assign a deck to this group to see how ready it is.",
+      "legendStrong": "Strong",
+      "legendLearning": "Learning",
+      "legendUnseen": "Not started",
+      "strongPct": "{pct}% strong",
+      "level": {
+        "notStarted": "Nobody has started yet",
+        "ready": "Ready to move on",
+        "gettingThere": "Getting there",
+        "needsLesson": "Needs another lesson"
+      },
+      "struggling": "{count, plural, one {# learner is finding this hard} other {# learners are finding this hard}}",
+      "strugglingWithNames": "{count, plural, one {# learner is finding this hard} other {# learners are finding this hard}}: {names}",
+      "rowAriaLabel": "{deck} — {strong}% strong, {learning}% learning, {unseen}% not started. {verdict}. See learners."
+    },
+    "reteachNext": {
+      "heading": "What to reteach next",
+      "seeAllWords": "See all tricky words",
+      "buildLesson": "Build a review lesson"
+    },
+    "practiceStrength": {
+      "heading": "Where practice is weak",
+      "accuracy": "{pct}% right",
+      "lowSample": "Not enough practice yet"
+    }
+  },
+  "Materials": {
     "meta": {
-      "buildTitle": "Build a lesson — Group | Tangodachi",
-      "buildDescription": "Describe what you want to cover and get decks, example sentences and a weekly schedule built on what the learner already knows."
+      "title": "Materials Builder | Tangodachi",
+      "description": "Create complete lesson sets or single decks in seconds — decks, example sentences and a weekly schedule, pitched at the right level."
+    },
+    "title": "Materials Builder",
+    "subtitle": "Create complete lesson sets or single decks in seconds.",
+    "loadingMessage": "Loading…",
+    "tabs": {
+      "lessonSet": "Lesson set",
+      "deck": "Single deck"
+    },
+    "step1Title": "What do you want to create?",
+    "step1Subtitle": "Describe your goals, topics or vocabulary — or attach files for the plan to follow.",
+    "step2Title": "Set the plan",
+    "step2Subtitle": "Fine-tune the essentials. You can adjust any time.",
+    "step3Title": "Choose materials",
+    "step3Subtitle": "Pick what gets made for every week.",
+    "groupLabel": "Which group?",
+    "levelLabel": "Japanese level",
+    "levels": {
+      "N5": "N5 — Beginner",
+      "N4": "N4 — Upper beginner",
+      "N3": "N3 — Intermediate",
+      "N2": "N2 — Upper intermediate",
+      "N1": "N1 — Advanced"
+    },
+    "advancedToggle": "Advanced options",
+    "styleNotesLabel": "What should the example sentences be like?",
+    "styleNotesPlaceholder": "e.g. Casual speech between friends, or polite sentences set in an office",
+    "styleNotesHint": "Optional — guide the style, topics or difficulty of the generated sentences.",
+    "vocabularyDecksLabel": "Vocabulary decks",
+    "vocabularyDecksHint": "One deck per week, ready to study and assign.",
+    "suggestions": {
+      "dailyLifeLabel": "Daily life",
+      "dailyLifeGoal": "Everyday routines — waking up, meals, school and getting around",
+      "travelLabel": "Travel in Japan",
+      "travelGoal": "Getting around Japan — stations, directions, tickets and asking for help",
+      "foodCultureLabel": "Food & culture",
+      "foodCultureGoal": "Food words and ordering at a restaurant, plus food culture and manners",
+      "seasonsLabel": "Seasons & events",
+      "seasonsGoal": "The four seasons, weather words and yearly events and festivals"
+    },
+    "noGroups": "Create a group first — then come back to build a lesson set. Learners can join any time.",
+    "createGroupButton": "Go to Groups",
+    "deckPanel": {
+      "title": "Create a deck",
+      "subtitle": "Build a single deck for any topic or vocabulary list.",
+      "aiRow": "Generate with AI",
+      "aiHint": "Describe a topic and get finished cards.",
+      "pdfRow": "Import from PDF",
+      "pdfHint": "Pull vocabulary out of a document.",
+      "copyRow": "Copy existing cards",
+      "copyHint": "Reuse cards from your other decks.",
+      "createButton": "Create a deck",
+      "seeDecksButton": "See your decks"
     }
   },
   "Nav": {
@@ -1448,6 +1628,7 @@
     "items": {
       "home": "Home",
       "decks": "Decks",
+      "materials": "Materials",
       "groups": "Groups",
       "speech": "Speech",
       "travel": "Travel",

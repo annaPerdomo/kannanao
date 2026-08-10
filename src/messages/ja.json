@@ -952,16 +952,13 @@
     }
   },
   "Group": {
-    "memberCard": {
+    "timeAgo": {
       "never": "まだなし",
       "justNow": "たった今",
       "minutesAgo": "{mins}分前",
       "hoursAgo": "{hours}時間前",
       "yesterday": "きのう",
-      "daysAgo": "{days}日前",
-      "level": "レベル {level}",
-      "xpProgress": "{current}/{needed} XP",
-      "cardsStudied": "{count, plural, other {カード#枚を学習}}"
+      "daysAgo": "{days}日前"
     },
     "memberDetail": {
       "loadingMemberDetails": "メンバーの詳細を読み込み中...",
@@ -972,6 +969,8 @@
       "accuracyLabel": "正解率",
       "streakLabel": "連続記録",
       "sessionsLabel": "学習回数",
+      "reviewsWaitingLabel": "復習まち",
+      "reviewsOverdueSub": "{count, plural, other {#枚}}は3日以上まっています",
       "deckProgress": "デッキの進み具合",
       "cardsStudiedCount": "{count}枚を学習",
       "accuracyPercent": "正解率 {accuracy}%",
@@ -1043,7 +1042,9 @@
       "noMembers": "このグループにはまだメンバーがいません。",
       "noAttempts": "まだ誰もこのクイズを受けていません。",
       "loadFailed": "クイズの成績を読み込めませんでした",
-      "summary": "{total}人中{taken}人が受験・平均{average}%"
+      "summary": "{total}人中{taken}人が受験・平均{average}%",
+      "noDecksBody": "教材ビルダーでデッキをつくると、ここにクイズの成績が表示されます。",
+      "lastTaken": "最終受験：{date}"
     },
     "goalPicker": {
       "addGoal": "🎯 目標を追加（任意）",
@@ -1084,7 +1085,19 @@
       "removeTitle": "課題を削除しますか？",
       "removeBody": "「{deck}」を{count, plural, other {#人全員}}から削除します。",
       "removeFailed": "課題を削除できませんでした。もう一度お試しください。",
-      "startsOn": "{date} から"
+      "startsOn": "{date} から",
+      "expandMembersAria": "{deckName}の進捗を表示",
+      "collapseMembersAria": "{deckName}の進捗を非表示",
+      "finishedOn": "{date}に完了",
+      "bestSoFar": "自己ベスト {accuracy}%",
+      "memberGoalChip": "目標{goal}%",
+      "notStartedLabel": "まだ挑戦していません",
+      "nudgeAction": "声かけ",
+      "nudgeAria": "{name}さんに声をかける",
+      "nudgeSentShort": "送信済み",
+      "nudgeFailed": "送信できませんでした。もう一度お試しください。",
+      "nudgeDefaultMessage": "「{deck}」を忘れずに終わらせよう！💪",
+      "lastNudged": "最終声かけ：{date}"
     },
     "createAssignment": {
       "title": "課題を出す",
@@ -1119,8 +1132,7 @@
       "failedToCreate": "課題を出せませんでした",
       "updateFailed": "変更を保存できませんでした。もう一度お試しください。",
       "updatePartial": "{total}人中{ok}人分を保存しました。もう一度お試しください。",
-      "deleteFailed": "課題を削除できませんでした。もう一度お試しください。",
-      "deletePartial": "{total}人中{ok}人分を削除しました。もう一度お試しください。"
+      "deleteFailed": "課題を削除できませんでした。もう一度お試しください。"
     },
     "createGroup": {
       "title": "グループを作成",
@@ -1252,7 +1264,6 @@
       "renameGroup": "グループ名を変更",
       "defaultTitle": "グループのダッシュボード",
       "memberCountInGroup": "このグループにメンバー{count, plural, other {#人}}",
-      "inviteButton": "招待",
       "assignDeckButton": "課題を出す",
       "weeklyLeaderboard": "今週のランキング",
       "visible": "表示中",
@@ -1263,10 +1274,20 @@
       "assignmentsHeading": "課題",
       "recentActivityHeading": "最近の活動",
       "loadingActivity": "活動を読み込み中...",
-      "newButton": "追加",
       "showAll": "すべて見る（{count}）",
       "showLess": "とじる",
-      "buildLessonButton": "レッスンをつくる"
+      "quickActionsLabel": "クイックアクション",
+      "inviteLearnersTitle": "学習者を招待",
+      "inviteLearnersSubtitle": "リンクまたはQRコードで共有",
+      "materialsBuilderTitle": "教材ビルダーを開く",
+      "materialsBuilderSubtitle": "デッキ・レッスン・課題をつくる"
+    },
+    "dashboardTabs": {
+      "overview": "概要",
+      "learners": "学習者",
+      "assignments": "課題",
+      "words": "単語",
+      "activity": "活動"
     },
     "groupsPage": {
       "loadingGroups": "グループを読み込み中...",
@@ -1324,31 +1345,49 @@
       "noActivity": "最近の活動はまだありません。",
       "justNow": "たった今"
     },
-    "overview": {
-      "membersLabel": "メンバー",
-      "activeThisWeek": "今週 {count}人が活動",
-      "totalGroupXpLabel": "グループの合計XP",
-      "bestStreakLabel": "最高の連続記録",
-      "longestStreakSub": "いちばん長い連続記録",
-      "cardsStudiedLabel": "学習したカード",
-      "allTimeAcrossGroupSub": "グループ全体の累計",
-      "cardsMasteredLabel": "定着したカード",
-      "cardsMasteredSub": "学習中 {count}枚",
-      "needNudgeLabel": "声かけが必要",
-      "needNudgeSub": "今週の学習なし"
+    "weekStatStrip": {
+      "heading": "今週",
+      "learners": "{count, plural, other {学習者#人}}",
+      "active": "アクティブ {count}人",
+      "cards": "{count, plural, other {カード#枚}}",
+      "accuracy": "正答率 {pct}%",
+      "accuracyEmpty": "正答率 —",
+      "accuracyTrendAriaUp": "先週より{pct}ポイント上昇",
+      "accuracyTrendAriaDown": "先週より{pct}ポイント低下",
+      "studied": "学習時間 {time}",
+      "duration": "{h}時間{m}分",
+      "bestStreak": "最高連続記録：{name}・{days, plural, other {#日}}",
+      "bestStreakEmpty": "最高連続記録：—",
+      "mastered": "定着 {count}枚",
+      "groupXp": "グループXP {xp}"
     },
-    "reteachPanel": {
-      "heading": "もう一度やりたいことば",
-      "pickDeckBody": "デッキを選ぶと、クラスがまちがえやすい単語がわかります。",
-      "checkingMessage": "クラスのまちがいを確認中...",
-      "noTrickyWords": "にがてな単語はまだありません。このデッキはクラス全体でよくできています。",
-      "allStudentsStruggling": "{attempts, plural, other {この単語は、やってみた生徒#人全員がまちがえ続けています。}}",
-      "someStudentsStruggling": "やってみた生徒{attempts}人のうち{struggling}人が、この単語をまちがえ続けています。",
+    "difficultWords": {
+      "heading": "にがてな単語",
+      "allDecks": "すべてのデッキ",
+      "deckFilterAriaLabel": "デッキでしぼりこむ",
+      "contextLine": "{count, plural, other {このグループの#人の学習から}}",
+      "loadingMessage": "にがてな単語をさがしています…",
+      "noDecksBody": "このグループにデッキを出すと、ここににがてな単語が表示されます。",
+      "noTrickyWords": "いまはにがてな単語はありません 🎉 — もう少し学習が進んだらまた見てみてください。",
+      "learnersAffected": "{total, plural, other {#人}}中{affected}人がつまずいています",
       "percentRight": "正解率 {percent}%",
-      "chartCaption": "まちがえている人の割合"
+      "attempts": "{count, plural, other {これまでにグループ全体で#回解答}}",
+      "reason": {
+        "forgotten": "わすれかけ",
+        "missed": "いつもまちがえる",
+        "shaky": "おぼえたて"
+      },
+      "detail": {
+        "forgotten": "やってみた{total, plural, other {#人}}のうち{affected}人が、一度おぼえたあとにまたまちがえました。",
+        "missed": "やってみた{total, plural, other {#人}}のうち{affected}人が、この単語をまちがえ続けています。",
+        "shaky": "やってみた{total, plural, other {#人}}のうち{affected}人が、この単語をまだおぼえきれていません。"
+      }
     },
-    "useItemAnalysis": {
-      "failedToLoad": "分析を読み込めませんでした"
+    "useDeckReadiness": {
+      "failedToLoad": "デッキの進み具合を読み込めませんでした"
+    },
+    "useDifficultWords": {
+      "failedToLoad": "にがてな単語を読み込めませんでした"
     },
     "leaderboard": {
       "empty": "今週はまだ活動がありません。",
@@ -1360,34 +1399,95 @@
       "placeholder": "デッキを選ぶ…"
     },
     "charts": {
-      "dailyHeading": "日ごとの学習カード数",
+      "dailyHeading": "グループの学習状況",
       "dailyEmpty": "この2週間、学習の記録はまだありません。",
       "dailyTooltip": "{date} — {count, plural, other {カード#枚}}",
-      "heatmapHeading": "今週だれが学習したか",
+      "dailyTooltipWithAccuracy": "{date} — {count, plural, other {カード#枚}}・正答率{pct}%",
+      "legendCards": "学習したカード",
+      "legendAccuracy": "正答率",
+      "rangeLabel": "期間",
+      "rangeLast14Days": "過去14日間",
+      "heatmapHeading": "学習の継続状況",
       "heatmapEmpty": "メンバーがまだいません。",
       "heatmapTooltip": "{name}・{date} — {count, plural, other {カード#枚}}",
-      "legendLess": "少ない",
-      "legendMore": "多い",
+      "legendNoStudy": "学習なし",
+      "legendLight": "少なめ",
+      "legendMedium": "ふつう",
+      "legendHeavy": "多め",
+      "duration": "{h}時間{m}分",
+      "timeStudiedThisWeek": "今週の学習時間",
       "loading": "グループの活動を読み込み中…",
       "loadFailed": "グループの活動を読み込めませんでした。",
       "modeHeading": "この期間の練習モード",
       "modeEmpty": "この期間、練習の記録はまだありません。",
-      "modeCardsCount": "{count, plural, other {カード#枚}}"
+      "modeCardsCount": "{count, plural, other {カード#枚}}",
+      "modeShare": "全体の{pct}%",
+      "modeTooltip": "{label} — {sessions, plural, other {#セッション}}でカード{count}枚",
+      "modeTooltipWithAccuracy": "{label} — {sessions, plural, other {#セッション}}でカード{count}枚・正答率{pct}%"
     },
-    "membersPanel": {
-      "heading": "メンバー",
-      "sortAriaLabel": "メンバーの並べかえ",
-      "sortAttention": "声かけが必要",
-      "sortActive": "最近の学習順",
-      "sortName": "名前順",
+    "learnersTable": {
+      "heading": "学習者",
+      "colLearner": "学習者",
+      "colStatus": "状況",
+      "colStreak": "連続記録",
+      "colCards": "カード数",
+      "colReviewsWaiting": "復習まち",
+      "colAccuracy": "正答率",
+      "activeToday": "今日学習しました",
+      "activeDaysAgo": "{days, plural, other {#日}}前に学習",
+      "inactiveDays": "{days, plural, other {#日間}}未学習",
+      "neverStarted": "まだ学習していません",
+      "streakValue": "{count, plural, other {#日}}",
+      "noStreak": "—",
+      "noAccuracy": "—",
+      "reviewsWaitingUnknown": "—",
+      "accuracyValue": "{pct}%",
+      "cardsStudiedCompact": "{count, plural, other {カード#枚を学習}}",
+      "accuracyCompact": "正解率 {pct}%",
+      "reviewsWaitingCompact": "{count, plural, other {復習まち#枚}}",
       "staleSummary": "{count, plural, other {#人}}が今週まだ学習していません",
       "allCaughtUp": "全員が最近学習しています。",
       "emptyTitle": "メンバーがまだいません",
       "emptyBody": "「招待」からこのグループにメンバーを追加しましょう。"
     },
+    "needsAttention": {
+      "heading": "対応が必要なこと",
+      "headingWithCount": "対応が必要なこと・{count}件",
+      "hidePanelAction": "「対応が必要なこと」をとじる",
+      "showPanelAction": "「対応が必要なこと」をひらく",
+      "allCaughtUp": "みんな順調です — 今は声かけの必要はありません 🎉",
+      "loadingMessage": "グループのようすを確認しています…",
+      "inactiveLearnerHeadline": "{name}さんは{days, plural, other {#日間}}学習していません",
+      "inactiveLearnerSubline": "最終学習：{relative}",
+      "neverStudiedHeadline": "{name}さんはまだ学習をはじめていません",
+      "neverStudiedSubline": "グループには参加していますが、まだデッキをひらいていません",
+      "inactiveLearnersCollapsedHeadline": "{count, plural, other {#人}}が今週まだ学習していません",
+      "reviewBacklogHeadline": "{name}さんは{count, plural, other {#枚}}の復習がたまっています",
+      "reviewBacklogSubline": "{count, plural, other {#枚}}は3日以上まっています",
+      "reviewBacklogSuffix": "{count, plural, other {復習まち#枚}}",
+      "reviewBacklogCollapsedHeadline": "{count, plural, other {#人}}の復習がたまっています",
+      "viewLearnerAction": "{name}さんを見る",
+      "sendNudgeAction": "声をかける",
+      "viewLearnersAction": "メンバーを見る",
+      "assignmentOverdueHeadline": "{deck}は{days, plural, other {#日}}期限を過ぎています",
+      "assignmentDueTodayHeadline": "{deck}は今日が期限です",
+      "assignmentDueTomorrowHeadline": "{deck}は明日が期限です",
+      "assignmentDueInDaysHeadline": "{deck}はあと{days, plural, other {#日}}で期限です",
+      "assignmentDoneSubline": "{total, plural, other {#人}}中{done}人が完了",
+      "assignmentCloseSuffix": "{name}さんはあと少し（{progress}% / 目標{goal}%）",
+      "viewAssignmentAction": "課題を見る",
+      "viewAllCount": "{count, plural, other {対応が必要な#件をすべて見る →}}",
+      "showLessAction": "とじる",
+      "nudgeDialogTitle": "{name}さんに声をかける",
+      "nudgeDefaultMessage": "元気にしてる？また一緒に練習しよう 💪",
+      "nudgeSent": "声かけを送りました！",
+      "lastNudgedAt": "最終声かけ：{date}",
+      "wordsForgottenHeadline": "{count, plural, other {#語}}をわすれかけています",
+      "wordsForgottenSubline": "{words} · {count, plural, other {#人}}がつまずいています",
+      "wordSeparator": "、",
+      "reviewWordsAction": "単語を見る"
+    },
     "lessonBuilder": {
-      "title": "レッスンをつくる",
-      "subtitle": "とりあげたいことを書いてください。この学習者がすでに知っていることばを土台に、デッキ・例文・週ごとの予定をつくります。",
       "goalLabel": "なにをとりあげますか？",
       "goalPlaceholder": "れい：レストランで注文するときの食べもののことば、ものの数えかた",
       "attachDocumentButton": "資料をつける",
@@ -1398,7 +1498,6 @@
       "documentSizeError": "ファイルは1つ8MB以下にしてください。",
       "documentTotalSizeError": "資料の合計は20MB以下にしてください。",
       "documentReadError": "ファイルをよみこめませんでした。もういちどためしてください。",
-      "learnerLabel": "だれのためのレッスンですか？",
       "weeksLabel": "何週間ですか？",
       "weeksOption": "{count}週間",
       "cardsPerDeckLabel": "1週間のカード数",
@@ -1416,28 +1515,109 @@
       "exampleEnLabel": "例文（英語）",
       "removeCardLabel": "{word}をけす",
       "buildsOnLabel": "つかっていることば：{words}",
-      "retentionLine": "{total}まい中{reused}まいが、すでに知っていることばを使っています",
+      "retentionLine": "{total}まい中{reused}まいが、前の週のことばを使っています",
       "retryDeckButton": "つくりなおす",
       "retryGoal": "{goal} — この週のデッキだけつくりなおしてください：{deck}",
       "dueDateLabel": "さいしょのデッキのしめきり",
       "dueDateHint": "つぎの週からは、7日ずつあとになります。",
       "applyButton": "デッキをつくってわりあてる",
+      "groupWideNotice": "このデッキと予定は、グループのみんなにわたされます。あとから入った学習者にもとどきます。",
       "applying": "つくっています…",
       "applyingMessage": "デッキと練習の文をつくっています — すこし時間がかかります。",
       "startOverButton": "さいしょから",
-      "successMessage": "デッキを{count}こつくって、わりあてました。",
+      "successMessage": "デッキを{count}こつくって、グループのみんなにわりあてました。",
       "deckFailed": "{name}でもんだいがありました：{reason}",
       "backToGroupButton": "グループにもどる",
       "errorMessage": "うまくいきませんでした。もういちどためしてください。",
       "emptyPlanMessage": "プランが空でした。とりあげたいことを少し変えてためしてください。",
-      "noLearners": "さきにこのグループに学習者をくわえてください。",
-      "organizerOnly": "このページは先生・保護者のかた用です。",
       "sentencesToggleLabel": "ことばバブルの練習文もつくる",
-      "sentencesToggleHint": "デッキごとに1セット。この学習者がもう知っていることばをつかってつくります。デッキをわたす人みんながつかえます。"
+      "sentencesToggleHint": "デッキごとに1セット。グループのみんなが同じ文で練習するので、チェックもかんたんです。"
     },
+    "deckReadiness": {
+      "heading": "デッキの仕上がり",
+      "loading": "デッキの進み具合を読み込み中…",
+      "empty": "このグループにデッキを出すと、仕上がりがここに表示されます。",
+      "legendStrong": "ばっちり",
+      "legendLearning": "おぼえかけ",
+      "legendUnseen": "まだ",
+      "strongPct": "ばっちり{pct}%",
+      "level": {
+        "notStarted": "まだだれも始めていません",
+        "ready": "つぎに進んで大丈夫",
+        "gettingThere": "あと少し",
+        "needsLesson": "もう一回おさらいが必要"
+      },
+      "struggling": "{count, plural, other {#人}}がここでつまずいています",
+      "strugglingWithNames": "{count, plural, other {#人}}がここでつまずいています：{names}",
+      "rowAriaLabel": "{deck} — ばっちり{strong}%、おぼえかけ{learning}%、まだ{unseen}%。{verdict}。学習者を見る。"
+    },
+    "reteachNext": {
+      "heading": "つぎにおさらいする単語",
+      "seeAllWords": "にがてな単語をすべて見る",
+      "buildLesson": "おさらいレッスンをつくる"
+    },
+    "practiceStrength": {
+      "heading": "にがてな練習モード",
+      "accuracy": "正解率 {pct}%",
+      "lowSample": "まだ練習が足りません"
+    }
+  },
+  "Materials": {
     "meta": {
-      "buildTitle": "レッスンをつくる — グループ | Tangodachi",
-      "buildDescription": "とりあげたいことを書くと、学習者がすでに知っていることばを土台にしたデッキ・例文・週ごとの予定ができます。"
+      "title": "教材づくり | Tangodachi",
+      "description": "レッスンセットもデッキ1つも、数秒で。デッキ・例文・週ごとの予定を、ちょうどいいレベルでつくれます。"
+    },
+    "title": "教材づくり",
+    "subtitle": "レッスンセットも、デッキ1つだけでも、数秒でつくれます。",
+    "loadingMessage": "よみこみ中…",
+    "tabs": {
+      "lessonSet": "レッスンセット",
+      "deck": "デッキだけ"
+    },
+    "step1Title": "なにをつくりますか？",
+    "step1Subtitle": "目標やトピック、おぼえたいことばを書いてください。資料をつけてもOKです。",
+    "step2Title": "プランをきめる",
+    "step2Subtitle": "きほんの設定です。あとからいつでも変えられます。",
+    "step3Title": "つくる教材をえらぶ",
+    "step3Subtitle": "毎週つくるものをえらんでください。",
+    "groupLabel": "どのグループ？",
+    "levelLabel": "日本語レベル",
+    "levels": {
+      "N5": "N5 — 入門",
+      "N4": "N4 — 初級",
+      "N3": "N3 — 中級",
+      "N2": "N2 — 中上級",
+      "N1": "N1 — 上級"
+    },
+    "advancedToggle": "こまかい設定",
+    "styleNotesLabel": "例文についての希望はありますか？",
+    "styleNotesPlaceholder": "れい：友だち同士のカジュアルな会話、会社でつかうていねいな文 など",
+    "styleNotesHint": "にんい — 例文のスタイルやトピック、むずかしさを指定できます。",
+    "vocabularyDecksLabel": "単語デッキ",
+    "vocabularyDecksHint": "週ごとに1つ、すぐ学習とわりあてができます。",
+    "suggestions": {
+      "dailyLifeLabel": "毎日のせいかつ",
+      "dailyLifeGoal": "毎日のせいかつ — おきる、食べる、学校、でかけることば",
+      "travelLabel": "日本のたび",
+      "travelGoal": "日本での移動 — 駅、道あんない、きっぷ、こまったときのことば",
+      "foodCultureLabel": "食べものと文化",
+      "foodCultureGoal": "食べもののことばとレストランでの注文、食文化とマナー",
+      "seasonsLabel": "季節と行事",
+      "seasonsGoal": "四季と天気のことば、一年の行事やおまつり"
+    },
+    "noGroups": "さきにグループをつくってください。そのあとでレッスンセットをつくれます。学習者はいつでも入れます。",
+    "createGroupButton": "グループへ",
+    "deckPanel": {
+      "title": "デッキをつくる",
+      "subtitle": "すきなトピックや単語リストから、デッキを1つつくれます。",
+      "aiRow": "AIで生成",
+      "aiHint": "トピックを書くと、カードが自動でできあがります。",
+      "pdfRow": "PDFからとりこむ",
+      "pdfHint": "資料から単語をぬきだします。",
+      "copyRow": "もっているカードをコピー",
+      "copyHint": "ほかのデッキのカードをつかいまわせます。",
+      "createButton": "デッキをつくる",
+      "seeDecksButton": "デッキ一覧へ"
     }
   },
   "Nav": {
@@ -1448,6 +1628,7 @@
     "items": {
       "home": "ホーム",
       "decks": "デッキ",
+      "materials": "教材",
       "groups": "グループ",
       "speech": "スピーチ",
       "travel": "トラベル",

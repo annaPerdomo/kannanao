@@ -89,7 +89,7 @@ src/
 │   ├── group/       # Organizer group dashboard page
 │   └── join/        # Public invite join page
 ├── components/      # React components (each folder ≤300 lines per file)
-│   └── Group/       # GroupOverview, MemberCard, MemberDetail, LeaderboardWidget, etc.
+│   └── Group/       # GroupOverview, MemberDetail, LeaderboardWidget, etc.
 ├── contexts/        # Auth (with account roles), XP animation, card border, theme providers
 ├── hooks/           # Data-fetching hooks with optimistic updates
 ├── lib/             # Supabase client, DB adapters, logger, utilities

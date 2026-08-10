@@ -19,9 +19,16 @@ export interface GroupMember {
   totalCorrect: number;
   totalSessions: number;
   lastActive: string | null;
+  lastNudgedAt: string | null;
   /** Answered-at-least-once split by SRS tier; no "new" bucket — that needs a deck's full card list. */
   masteryLearning: number;
   masteryStrong: number;
+  /**
+   * Cards whose SRS review date has passed, and the subset overdue by 3+ days.
+   * `null` when the count failed to load — never render that as 0.
+   */
+  reviewsWaiting: number | null;
+  reviewsOverdue3d: number | null;
 }
 
 export interface MasteryCounts {
@@ -122,6 +129,8 @@ export interface MemberDetail {
     wrongRate: number;
     lastReviewedAt: string | null;
   }[];
+  reviewsWaiting: number | null;
+  reviewsOverdue3d: number | null;
 }
 
 export interface FeedItem {

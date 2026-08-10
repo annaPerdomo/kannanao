@@ -200,6 +200,63 @@ describe('POST /api/join/link', () => {
     expect(write?.args[1]).toMatchObject({ ignoreDuplicates: true });
   });
 
+  it('gives the joiner the planned schedule when the group has no live assignments', async () => {
+    setTable('planned_assignments', [
+      {
+        group_id: 'g1',
+        deck_id: 'd1',
+        title: 'Week 1 — Food',
+        note: null,
+        due_date: '2099-01-01',
+        available_on: null,
+        required_accuracy: null,
+        required_mode: null,
+      },
+    ]);
+
+    await POST(makeRequest());
+
+    const write = calls.find((c) => c.table === 'assignments' && c.method === 'upsert');
+    expect(write?.args[0]).toEqual([
+      expect.objectContaining({ member_id: 'user1', deck_id: 'd1', title: 'Week 1 — Food' }),
+    ]);
+  });
+
+  it('prefers the group’s live handout over the planned one for the same deck', async () => {
+    setTable('assignments', [
+      {
+        member_id: 'other',
+        group_id: 'g1',
+        deck_id: 'd1',
+        title: 'Week 1 (moved)',
+        note: null,
+        due_date: '2099-02-01',
+        available_on: null,
+        required_accuracy: null,
+        required_mode: null,
+      },
+    ]);
+    setTable('planned_assignments', [
+      {
+        group_id: 'g1',
+        deck_id: 'd1',
+        title: 'Week 1 — Food',
+        note: null,
+        due_date: '2099-01-01',
+        available_on: null,
+        required_accuracy: null,
+        required_mode: null,
+      },
+    ]);
+
+    await POST(makeRequest());
+
+    const write = calls.find((c) => c.table === 'assignments' && c.method === 'upsert');
+    expect(write?.args[0]).toEqual([
+      expect.objectContaining({ member_id: 'user1', deck_id: 'd1', title: 'Week 1 (moved)' }),
+    ]);
+  });
+
   it('releases the invite when the membership cannot be written', async () => {
     setTable('group_members', null, { message: 'boom' });
 

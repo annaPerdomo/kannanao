@@ -1,18 +1,11 @@
-import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
 
-import { LessonBuilder } from '@/components/Group/LessonBuilder';
-
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('Group.meta');
-  return { title: t('buildTitle'), description: t('buildDescription') };
-}
-
-export default async function LessonBuilderPage({
+/** The lesson builder moved to the Materials Builder; old links keep working. */
+export default async function LegacyLessonBuilderPage({
   params,
 }: {
   params: Promise<{ groupId: string }>;
 }) {
   const { groupId } = await params;
-  return <LessonBuilder groupId={groupId} />;
+  redirect(`/materials?group=${groupId}`);
 }

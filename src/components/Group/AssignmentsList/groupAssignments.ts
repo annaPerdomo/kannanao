@@ -12,6 +12,8 @@ export interface AssignmentBatch {
   ids: string[];
   /** One member's copy, for the goal label and the edit dialog's current values. */
   sample: Assignment;
+  /** Every member's copy in this batch, for the per-member expansion. */
+  members: Assignment[];
 }
 
 /**
@@ -42,6 +44,7 @@ export function groupAssignments(assignments: Assignment[]): AssignmentBatch[] {
     if (batch) {
       batch.total += 1;
       batch.ids.push(a.id);
+      batch.members.push(a);
       if (a.completed_at) batch.completed += 1;
     } else {
       batches.set(key, {
@@ -54,6 +57,7 @@ export function groupAssignments(assignments: Assignment[]): AssignmentBatch[] {
         completed: a.completed_at ? 1 : 0,
         ids: [a.id],
         sample: a,
+        members: [a],
       });
     }
   }

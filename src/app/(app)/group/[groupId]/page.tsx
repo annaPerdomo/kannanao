@@ -1,39 +1,32 @@
 'use client';
-import AddIcon from '@mui/icons-material/Add';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
-import { useTheme } from '@mui/material/styles';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import {
-  ActivityFeed,
-  AssignmentsList,
+  ActivityTab,
+  AssignmentsTab,
   CreateAssignmentDialog,
   CreateInviteDialog,
-  DailyActivityChart,
   GroupDashboardHeader,
-  GroupEncouragementForm,
-  GroupModeBreakdown,
-  GroupOverview,
+  type GroupDashboardTab,
   InviteQRCode,
   isExpired,
-  LeaderboardPanel,
-  MembersPanel,
-  QuizScoresPanel,
-  ReteachPanel,
-  SectionCard,
-  ShowMoreButton,
-  StudyHeatmap,
+  isGroupDashboardTab,
+  LearnersTab,
+  NeedsAttention,
+  OverviewTab,
+  TabBar,
+  WeekStatStrip,
+  WordsTab,
 } from '@/components/Group';
 import { Loading } from '@/components/Loading';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
+import { useDifficultWords } from '@/hooks/useDifficultWords';
 import { useEncouragements } from '@/hooks/useEncouragements';
 import { useGroupFeed, useGroupMembers } from '@/hooks/useGroup';
 import { useGroupActivity } from '@/hooks/useGroupActivity';
@@ -43,21 +36,15 @@ import type { InviteCode } from '@/hooks/useInvites';
 import { useInvites } from '@/hooks/useInvites';
 import { LAYOUT } from '@/theme';
 
-const ASSIGNMENTS_SHOWN = 5;
-const LEADERBOARD_SHOWN = 10;
-const FEED_SHOWN = 6;
-
 /** Two weeks of columns in the daily chart; its last week fills the heatmap. */
 const ACTIVITY_DAYS = 14;
-const HEATMAP_DAYS = 7;
+const DEFAULT_TAB: GroupDashboardTab = 'overview';
 
 export default function GroupDashboardPage() {
   const t = useTranslations('Group.groupPage');
-  const tc = useTranslations('Group.charts');
-  const theme = useTheme();
-  const { brand } = theme.palette;
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
+  const searchParams = useSearchParams();
   const groupId = params?.groupId ?? '';
   const { isMemberAccount, displayName, user, loading: authLoading } = useAuth();
 
@@ -70,11 +57,21 @@ export default function GroupDashboardPage() {
     error: activityError,
   } = useGroupActivity(groupId, ACTIVITY_DAYS);
   const { decks } = useDecks();
-  const { assignments, createAssignment, updateAssignments, deleteAssignments } = useAssignments(
-    groupId,
-    true,
-    'given',
-  );
+  const {
+    assignments,
+    loading: assignmentsLoading,
+    error: assignmentsError,
+    createAssignment,
+    updateAssignments,
+    deleteAssignments,
+  } = useAssignments(groupId, true, 'given');
+  // All decks, matching the Words tab's default filter — the api cache serves
+  // both from one request.
+  const {
+    data: difficultWords,
+    loading: difficultWordsLoading,
+    error: difficultWordsError,
+  } = useDifficultWords(groupId);
   const { sendEncouragement } = useEncouragements();
   const { invites, createInvite, revokeInvite } = useInvites(groupId);
   const { groups, updateGroup } = useGroups();
@@ -84,7 +81,27 @@ export default function GroupDashboardPage() {
   const [assignOpen, setAssignOpen] = useState(false);
   const [createInviteOpen, setCreateInviteOpen] = useState(false);
   const [qrInvite, setQrInvite] = useState<InviteCode | null>(null);
-  const [allFeed, setAllFeed] = useState(false);
+
+  const tabParam = searchParams?.get('tab') ?? null;
+  const tab: GroupDashboardTab = isGroupDashboardTab(tabParam) ? tabParam : DEFAULT_TAB;
+
+  const handleTabChange = useCallback(
+    (next: GroupDashboardTab) => {
+      const query = new URLSearchParams(searchParams?.toString());
+      if (next === DEFAULT_TAB) {
+        query.delete('tab');
+      } else {
+        query.set('tab', next);
+      }
+      const qs = query.toString();
+      router.replace(`/group/${groupId}${qs ? `?${qs}` : ''}`, { scroll: false });
+    },
+    [router, groupId, searchParams],
+  );
+
+  const handleOpenMaterials = useCallback(() => {
+    router.push(`/materials?group=${groupId}`);
+  }, [router, groupId]);
 
   const handleSendEncouragement = useCallback(
     async (memberId: string, message: string, emoji?: string) => {
@@ -107,13 +124,20 @@ export default function GroupDashboardPage() {
     [updateGroup, groupId],
   );
 
-  // Redirect members away
-  if (!authLoading && isMemberAccount) {
-    router.push('/');
-    return null;
-  }
+  const handleLeaderboardVisibilityChange = useCallback(
+    (visible: boolean) => {
+      void updateGroup(groupId, { show_leaderboard: visible });
+    },
+    [updateGroup, groupId],
+  );
 
-  if (loading || authLoading) {
+  useEffect(() => {
+    if (!authLoading && isMemberAccount) {
+      router.push('/');
+    }
+  }, [authLoading, isMemberAccount, router]);
+
+  if (loading || authLoading || isMemberAccount) {
     return (
       <Box
         sx={{
@@ -139,7 +163,6 @@ export default function GroupDashboardPage() {
   }
 
   const leaderboardVisible = group?.show_leaderboard !== false;
-  const visibleFeed = allFeed ? feed : feed.slice(0, FEED_SHOWN);
   const activeInvites = invites.filter((i) => !isExpired(i));
 
   return (
@@ -158,157 +181,83 @@ export default function GroupDashboardPage() {
         onRename={handleRename}
         onEmojiChange={handleEmojiChange}
         onInvite={() => setCreateInviteOpen(true)}
-        onAssign={members.length > 0 ? () => setAssignOpen(true) : undefined}
+        onOpenMaterials={handleOpenMaterials}
         activeInviteCount={activeInvites.length}
       />
 
-      <GroupOverview members={members} />
+      <Box sx={{ mb: { xs: 2.5, sm: 3 } }}>
+        <NeedsAttention
+          groupId={groupId}
+          members={members}
+          assignments={assignments}
+          assignmentsLoading={assignmentsLoading}
+          assignmentsError={assignmentsError}
+          words={difficultWords?.words}
+          wordsLoading={difficultWordsLoading}
+          wordsError={difficultWordsError}
+          onSelectMember={(id) => router.push(`/group/${groupId}/members/${id}`)}
+          onViewAssignments={() => handleTabChange('assignments')}
+          onViewLearners={() => handleTabChange('learners')}
+          onViewWords={() => handleTabChange('words')}
+          onSendEncouragement={handleSendEncouragement}
+        />
+      </Box>
 
-      <Grid container spacing={2.5} alignItems="stretch">
-        <Grid size={{ xs: 12, lg: 8 }}>
-          <SectionCard title={tc('dailyHeading')}>
-            {activityError ? (
-              <Alert severity="error">{activityError}</Alert>
-            ) : activityLoading && !activity ? (
-              <Loading message={tc('loading')} />
-            ) : (
-              <DailyActivityChart
-                days={activity?.days ?? []}
-                values={activity?.totals.cards ?? []}
-              />
-            )}
-          </SectionCard>
-        </Grid>
+      <WeekStatStrip members={members} activity={activity} />
 
-        <Grid size={{ xs: 12, lg: 4 }}>
-          <SectionCard title={tc('heatmapHeading')}>
-            {activityError ? (
-              <Alert severity="error">{activityError}</Alert>
-            ) : activityLoading && !activity ? (
-              <Loading message={tc('loading')} />
-            ) : (
-              <StudyHeatmap
-                days={(activity?.days ?? []).slice(-HEATMAP_DAYS)}
-                members={activity?.members ?? []}
-                offset={Math.max(0, (activity?.days.length ?? 0) - HEATMAP_DAYS)}
-              />
-            )}
-          </SectionCard>
-        </Grid>
+      <TabBar value={tab} onChange={handleTabChange} />
 
-        <Grid size={{ xs: 12, lg: 4 }}>
-          <SectionCard title={tc('modeHeading')}>
-            {activityError ? (
-              <Alert severity="error">{activityError}</Alert>
-            ) : activityLoading && !activity ? (
-              <Loading message={tc('loading')} />
-            ) : (
-              <GroupModeBreakdown modes={activity?.modeBreakdown ?? []} />
-            )}
-          </SectionCard>
-        </Grid>
+      {tab === 'overview' && (
+        <OverviewTab
+          groupId={groupId}
+          members={members}
+          activity={activity}
+          activityLoading={activityLoading}
+          activityError={activityError}
+          words={difficultWords?.words}
+          wordsLoading={difficultWordsLoading}
+          wordsError={difficultWordsError}
+          onNavigateTab={handleTabChange}
+          onOpenMaterials={handleOpenMaterials}
+        />
+      )}
 
-        <Grid size={{ xs: 12, lg: 4 }}>
-          <MembersPanel
-            members={members}
-            onSelect={(id) => router.push(`/group/${groupId}/members/${id}`)}
-          />
-        </Grid>
+      {tab === 'learners' && (
+        <LearnersTab
+          members={members}
+          leaderboard={leaderboard}
+          leaderboardLoading={lbLoading}
+          leaderboardVisible={leaderboardVisible}
+          onLeaderboardVisibilityChange={handleLeaderboardVisibilityChange}
+          onSelectMember={(id) => router.push(`/group/${groupId}/members/${id}`)}
+          onSendEncouragement={handleSendEncouragement}
+        />
+      )}
 
-        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          <LeaderboardPanel
-            entries={leaderboard}
-            loading={lbLoading}
-            visible={leaderboardVisible}
-            onVisibilityChange={(show) => updateGroup(groupId, { show_leaderboard: show })}
-            maxVisible={LEADERBOARD_SHOWN}
-          />
-        </Grid>
+      {tab === 'assignments' && (
+        <AssignmentsTab
+          assignments={assignments}
+          onEditAssignments={updateAssignments}
+          onDeleteAssignments={deleteAssignments}
+          canAssign={members.length > 0}
+          onAssign={() => setAssignOpen(true)}
+          ownDecks={ownDecks}
+          groupId={groupId}
+          onSendEncouragement={handleSendEncouragement}
+        />
+      )}
 
-        {members.length > 0 && ownDecks.length > 0 && (
-          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-            <QuizScoresPanel decks={ownDecks} groupId={groupId} />
-          </Grid>
-        )}
+      {tab === 'words' && <WordsTab groupId={groupId} />}
 
-        {members.length > 0 && ownDecks.length > 0 && (
-          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-            <ReteachPanel decks={ownDecks} />
-          </Grid>
-        )}
-
-        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          <SectionCard
-            title={t('assignmentsHeading')}
-            action={
-              members.length > 0 && (
-                <Box sx={{ display: 'flex', gap: 0.5 }}>
-                  <Button
-                    size="small"
-                    startIcon={<AutoAwesomeIcon sx={{ fontSize: 16 }} />}
-                    onClick={() => router.push(`/group/${groupId}/build`)}
-                    sx={{
-                      textTransform: 'none',
-                      fontWeight: 700,
-                      color: brand[700],
-                      borderRadius: theme.radii.sm,
-                    }}
-                  >
-                    {t('buildLessonButton')}
-                  </Button>
-                  <Button
-                    size="small"
-                    startIcon={<AddIcon sx={{ fontSize: 16 }} />}
-                    onClick={() => setAssignOpen(true)}
-                    sx={{
-                      textTransform: 'none',
-                      fontWeight: 700,
-                      color: brand[700],
-                      borderRadius: theme.radii.sm,
-                    }}
-                  >
-                    {t('newButton')}
-                  </Button>
-                </Box>
-              )
-            }
-          >
-            <AssignmentsList
-              assignments={assignments}
-              onEditBatch={updateAssignments}
-              onDeleteBatch={deleteAssignments}
-              maxVisible={ASSIGNMENTS_SHOWN}
-            />
-          </SectionCard>
-        </Grid>
-
-        {members.length > 0 && (
-          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-            <SectionCard title={t('encouragementHeading')}>
-              <GroupEncouragementForm members={members} onSend={handleSendEncouragement} />
-            </SectionCard>
-          </Grid>
-        )}
-
-        <Grid size={12}>
-          <SectionCard title={t('recentActivityHeading')}>
-            {feedLoading ? (
-              <Loading message={t('loadingActivity')} />
-            ) : (
-              <>
-                <ActivityFeed items={visibleFeed} />
-                {feed.length > FEED_SHOWN && (
-                  <ShowMoreButton
-                    expanded={allFeed}
-                    total={feed.length}
-                    onClick={() => setAllFeed((v) => !v)}
-                  />
-                )}
-              </>
-            )}
-          </SectionCard>
-        </Grid>
-      </Grid>
+      {tab === 'activity' && (
+        <ActivityTab
+          feed={feed}
+          feedLoading={feedLoading}
+          activity={activity}
+          activityLoading={activityLoading}
+          activityError={activityError}
+        />
+      )}
 
       <CreateAssignmentDialog
         open={assignOpen}

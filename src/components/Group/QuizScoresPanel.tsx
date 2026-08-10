@@ -2,6 +2,7 @@
 import DownloadIcon from '@mui/icons-material/Download';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
@@ -15,6 +16,7 @@ import { quizResultsToCsv } from '@/lib/quiz';
 import { DeckPicker } from './DeckPicker';
 import { SectionCard } from './SectionCard';
 import { ShowMoreButton } from './ShowMoreButton';
+import { timeAgo } from './timeAgo';
 
 /** member | best | latest | tries — the score table's shared column track. */
 const GRID_COLUMNS = '1.6fr 1fr 1fr 0.7fr';
@@ -62,6 +64,7 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
   const t = useTranslations('Group.quizScores');
+  const tTime = useTranslations('Group.timeAgo');
   const [selectedDeck, setSelectedDeck] = useState<string>(decks[0]?.id ?? '');
   const [expanded, setExpanded] = useState(false);
   const { rows, loading, error } = useQuizResults(selectedDeck || null, groupId);
@@ -77,7 +80,27 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
       : 0;
   const visible = expanded ? ranked : ranked.slice(0, ROWS_SHOWN);
 
-  if (decks.length === 0) return null;
+  if (decks.length === 0) {
+    return (
+      <SectionCard title={t('heading')}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            textAlign: 'center',
+            border: `1.5px dashed ${alpha(brand[300], 0.4)}`,
+            borderRadius: theme.radii.md,
+            bgcolor: alpha(brand[50], 0.6),
+          }}
+        >
+          <Typography sx={{ fontSize: '1.5rem', mb: 0.5 }}>📊</Typography>
+          <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
+            {t('noDecksBody')}
+          </Typography>
+        </Paper>
+      </SectionCard>
+    );
+  }
 
   const handleDownload = () => {
     if (!deck) return;
@@ -173,6 +196,11 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
                 </Box>
                 <Box sx={{ textAlign: 'center', color: 'text.secondary' }}>
                   {r.latest ? `${r.latest.score}/${r.latest.total}` : '—'}
+                  {r.latest && (
+                    <Typography sx={{ fontSize: '0.68rem', color: 'text.secondary', mt: 0.15 }}>
+                      {t('lastTaken', { date: timeAgo(r.latest.takenAt, tTime) })}
+                    </Typography>
+                  )}
                 </Box>
                 <Box sx={{ textAlign: 'center', color: 'text.secondary' }}>{r.attempts || '—'}</Box>
               </Box>

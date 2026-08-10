@@ -125,6 +125,42 @@ describe('GET /api/group/activity', () => {
     ]);
   });
 
+  it('sums correct answers and study duration per day', async () => {
+    setTable('profiles', [{ id: 'm1', username: 'naomi', display_name: 'Naomi' }]);
+    setTable('study_sessions', [
+      {
+        user_id: 'm1',
+        cards_studied: 10,
+        cards_correct: 8,
+        xp_earned: 30,
+        duration_secs: 120,
+        started_at: '2026-08-01T09:00:00Z',
+      },
+      {
+        user_id: 'm1',
+        cards_studied: 5,
+        cards_correct: 5,
+        xp_earned: 15,
+        duration_secs: 60,
+        started_at: '2026-08-01T18:00:00Z',
+      },
+      {
+        user_id: 'm1',
+        cards_studied: 7,
+        cards_correct: 4,
+        xp_earned: 20,
+        duration_secs: 90,
+        started_at: '2026-08-02T08:00:00Z',
+      },
+    ]);
+
+    const res = await GET(request('groupId=g1&days=3&tzOffset=0'));
+    const body = await res.json();
+
+    expect(body.totals.correct).toEqual([0, 13, 4]);
+    expect(body.totals.durationSecs).toEqual([0, 180, 90]);
+  });
+
   it('drops sessions that fall outside the window', async () => {
     setTable('profiles', [{ id: 'm1', username: 'naomi', display_name: 'Naomi' }]);
     setTable('study_sessions', [

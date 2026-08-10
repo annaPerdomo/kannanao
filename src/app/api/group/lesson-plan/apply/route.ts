@@ -2,17 +2,21 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { isGoalMode } from '@/lib/assignmentMastery';
 import { KNOWN_WORD_CAP, type KnownWord } from '@/lib/knownWords';
-import { CARDS_MAX, PLAN_TEXT_MAX } from '@/lib/lessonPrompts';
+import {
+  CARDS_MAX,
+  isJlptLevel,
+  type JlptLevel,
+  PLAN_TEXT_MAX,
+  STYLE_NOTES_MAX,
+} from '@/lib/lessonPrompts';
 import { logger } from '@/lib/logger';
 import type { ApplyDeckResult, LessonPlan, PlanDeck } from '@/types/lessonPlan';
 
 import { rateLimit } from '../../../_lib/rateLimit';
 import { generateDeckSentences } from '../../_lib/generateDeckSentences';
 import { consumeLessonBudget } from '../../_lib/lessonBudget';
-import { isMemberOfGroup } from '../../_lib/membership';
 import { requireGroupAccess } from '../../_lib/requireGroupAccess';
 import { getServiceSupabase } from '../../_lib/serviceSupabase';
-import { loadStudiedVocabulary } from '../../_lib/studiedVocabulary';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 3 };
 const MAX_DECKS = 8;
@@ -120,16 +124,16 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const {
     groupId,
-    memberId,
     plan,
     firstDueDate,
     requiredAccuracy,
     requiredMode,
     planId,
     withSentences = true,
+    level,
+    styleNotes,
   } = (body ?? {}) as {
     groupId?: string;
-    memberId?: string;
     plan?: LessonPlan;
     firstDueDate?: string;
     requiredAccuracy?: number | null;
@@ -137,10 +141,12 @@ export async function POST(req: NextRequest) {
     planId?: string;
     /** Kotoba Bubble sentences alongside the decks — one Gemini call each. */
     withSentences?: boolean;
+    level?: string;
+    styleNotes?: string;
   };
 
-  if (!groupId || !memberId) {
-    return NextResponse.json({ error: 'groupId and memberId are required.' }, { status: 400 });
+  if (!groupId) {
+    return NextResponse.json({ error: 'groupId is required.' }, { status: 400 });
   }
 
   const access = await requireGroupAccess(req, groupId);
@@ -175,6 +181,16 @@ export async function POST(req: NextRequest) {
   if (planId != null && !UUID_RE.test(planId)) {
     return NextResponse.json({ error: 'planId must be a UUID.' }, { status: 400 });
   }
+  if (level !== undefined && !isJlptLevel(level)) {
+    return NextResponse.json(
+      { error: 'level must be one of N5, N4, N3, N2, N1.' },
+      { status: 400 },
+    );
+  }
+  if (styleNotes !== undefined && typeof styleNotes !== 'string') {
+    return NextResponse.json({ error: 'styleNotes must be a string.' }, { status: 400 });
+  }
+  const trimmedStyleNotes = (styleNotes ?? '').trim().slice(0, STYLE_NOTES_MAX);
   const oversized = decks.find((d) => (d.cards?.length ?? 0) > CARDS_MAX);
   if (oversized) {
     return NextResponse.json(
@@ -182,12 +198,22 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  // In *this* group, not merely somewhere on the organizer's roster: the
-  // assignment carries group_id and cascades when that group is deleted, so a
-  // mismatched pair would quietly take the learner's work with it.
-  if (!(await isMemberOfGroup(memberId, groupId))) {
-    return NextResponse.json({ error: 'Learner not found in this group.' }, { status: 403 });
+  // The organizer never appears in group_members, so "everyone but the
+  // organizer" is automatic. Late joiners come in via the schedule saved below.
+  const { data: memberRows, error: membersError } = await getServiceSupabase()
+    .from('group_members')
+    .select('member_id')
+    .eq('group_id', groupId);
+
+  if (membersError) {
+    logger.error('Failed to load group members for apply', {
+      route: 'POST /api/group/lesson-plan/apply',
+      groupId,
+      error: membersError.message,
+    });
+    return NextResponse.json({ error: 'Could not load the group roster.' }, { status: 500 });
   }
+  const memberIds = (memberRows ?? []).map((r) => r.member_id as string);
 
   const alreadyCreated = planId ? await decksForPlan(organizerId, planId) : [];
   const resumed = matchExistingDecks(decks, alreadyCreated);
@@ -215,7 +241,7 @@ export async function POST(req: NextRequest) {
         index,
         organizerId,
         groupId,
-        memberId,
+        memberIds,
         description: deck.description,
         dueDate: dueDateFor(firstDueDate, index),
         availableOn: availableOnFor(firstDueDate, index),
@@ -227,7 +253,7 @@ export async function POST(req: NextRequest) {
         deckId: existing.id,
         status: 'created',
         cardCount: existing.card_count ?? 0,
-        assigned: !assignError,
+        assigned: memberIds.length > 0 ? !assignError : undefined,
         error: assignError ? 'The deck was created but could not be assigned.' : undefined,
       });
       deckIdsInOrder.push(existing.id);
@@ -240,7 +266,7 @@ export async function POST(req: NextRequest) {
       position: basePosition + index,
       organizerId,
       groupId,
-      memberId,
+      memberIds,
       planId: planId ?? null,
       dueDate: dueDateFor(firstDueDate, index),
       availableOn: availableOnFor(firstDueDate, index),
@@ -251,17 +277,30 @@ export async function POST(req: NextRequest) {
     if (result.status === 'created' && result.deckId) deckIdsInOrder.push(result.deckId);
   }
 
+  await savePlannedSchedule({
+    organizerId,
+    groupId,
+    firstDueDate,
+    requiredAccuracy: requiredAccuracy ?? null,
+    requiredMode: requiredMode ?? null,
+    decks,
+    results,
+  });
+
   // Decks carried over from a failed run are included: generateDeckSentences
   // returns early when a set already exists, so this fills the gaps without
   // paying for the ones that finished.
   const sentenceResults = withSentences
-    ? await generateSentencesInOrder(deckIdsInOrder, memberId, organizerId)
+    ? await generateSentencesInOrder(deckIdsInOrder, organizerId, {
+        level: isJlptLevel(level) ? level : undefined,
+        styleNotes: trimmedStyleNotes || undefined,
+      })
     : [];
 
   logger.info('Lesson plan applied', {
     route: 'POST /api/group/lesson-plan/apply',
     organizerId,
-    memberId,
+    memberCount: memberIds.length,
     planId: planId ?? null,
     deckCount: decks.length,
     cardCount: decks.reduce((n, d) => n + (d.cards?.length ?? 0), 0),
@@ -280,14 +319,14 @@ async function createDeck(args: {
   position: number;
   organizerId: string;
   groupId: string;
-  memberId: string;
+  memberIds: string[];
   planId: string | null;
   dueDate: string | null;
   availableOn: string | null;
   requiredAccuracy: number | null;
   requiredMode: string | null;
 }): Promise<ApplyDeckResult> {
-  const { deck, index, position, organizerId, groupId, memberId, planId, dueDate, availableOn } =
+  const { deck, index, position, organizerId, groupId, memberIds, planId, dueDate, availableOn } =
     args;
   const sb = getServiceSupabase();
   const name = deckNameFor(deck, index);
@@ -353,7 +392,7 @@ async function createDeck(args: {
     index,
     organizerId,
     groupId,
-    memberId,
+    memberIds,
     description: deck.description,
     dueDate,
     availableOn,
@@ -366,9 +405,54 @@ async function createDeck(args: {
     deckId,
     status: 'created',
     cardCount: cardRows.length,
-    assigned: !assignError,
+    assigned: memberIds.length > 0 ? !assignError : undefined,
     error: assignError ? 'The deck was created but could not be assigned.' : undefined,
   };
+}
+
+/**
+ * The weekly schedule, as one member-less template per deck. Joining the group
+ * turns each still-open template into a real assignment (catchUpGroupAssignments),
+ * so late joiners get the same term. Logged on failure, never thrown — the decks
+ * themselves already exist.
+ */
+async function savePlannedSchedule(args: {
+  organizerId: string;
+  groupId: string;
+  firstDueDate: string | null;
+  requiredAccuracy: number | null;
+  requiredMode: string | null;
+  decks: PlanDeck[];
+  results: ApplyDeckResult[];
+}): Promise<void> {
+  const rows = args.results
+    .map((result, index) => ({ result, deck: args.decks[index], index }))
+    .filter(({ result }) => result.status === 'created' && result.deckId)
+    .map(({ result, deck, index }) => ({
+      organizer_id: args.organizerId,
+      group_id: args.groupId,
+      deck_id: result.deckId as string,
+      title: `Week ${index + 1} — ${result.name}`.slice(0, 200),
+      note: (deck?.description ?? '').trim().slice(0, 500) || null,
+      due_date: args.firstDueDate ? dueDateFor(args.firstDueDate, index) : null,
+      available_on: args.firstDueDate ? availableOnFor(args.firstDueDate, index) : null,
+      required_accuracy: args.requiredAccuracy,
+      required_mode: args.requiredMode,
+    }));
+
+  if (rows.length === 0) return;
+
+  const { error } = await getServiceSupabase()
+    .from('planned_assignments')
+    .upsert(rows, { onConflict: 'group_id,deck_id' });
+
+  if (error) {
+    logger.error('Failed to save planned schedule', {
+      route: 'POST /api/group/lesson-plan/apply',
+      groupId: args.groupId,
+      error: error.message,
+    });
+  }
 }
 
 async function assignDeck(args: {
@@ -377,35 +461,37 @@ async function assignDeck(args: {
   index: number;
   organizerId: string;
   groupId: string;
-  memberId: string;
+  memberIds: string[];
   description?: string;
   dueDate: string | null;
   availableOn: string | null;
   requiredAccuracy: number | null;
   requiredMode: string | null;
 }): Promise<string | null> {
+  if (args.memberIds.length === 0) return null;
+
+  const rows = args.memberIds.map((memberId) => ({
+    organizer_id: args.organizerId,
+    group_id: args.groupId,
+    member_id: memberId,
+    deck_id: args.deckId,
+    title: `Week ${args.index + 1} — ${args.name}`.slice(0, 200),
+    note: (args.description ?? '').trim().slice(0, 500) || null,
+    due_date: args.dueDate,
+    available_on: args.availableOn,
+    required_accuracy: args.requiredAccuracy,
+    required_mode: args.requiredMode,
+  }));
+
   const { error } = await getServiceSupabase()
     .from('assignments')
-    .upsert(
-      {
-        organizer_id: args.organizerId,
-        group_id: args.groupId,
-        member_id: args.memberId,
-        deck_id: args.deckId,
-        title: `Week ${args.index + 1} — ${args.name}`.slice(0, 200),
-        note: (args.description ?? '').trim().slice(0, 500) || null,
-        due_date: args.dueDate,
-        available_on: args.availableOn,
-        required_accuracy: args.requiredAccuracy,
-        required_mode: args.requiredMode,
-      },
-      { onConflict: 'member_id,deck_id,group_id' },
-    );
+    .upsert(rows, { onConflict: 'member_id,deck_id,group_id' });
 
   if (error) {
     logger.error('Failed to assign lesson deck', {
       route: 'POST /api/group/lesson-plan/apply',
       deckId: args.deckId,
+      memberCount: args.memberIds.length,
       error: error.message,
     });
   }
@@ -414,27 +500,19 @@ async function assignDeck(args: {
 }
 
 /**
- * Decks in plan order, each one's words feeding the next one's prompt.
- *
- * The sentences are stored as the deck's *shared* set, not under the learner
- * the plan was built for. The deck itself is shared with everyone the organizer
- * assigns it to, so a set keyed to one learner leaves every other learner on
- * that deck looking at an empty screen with no way to fill it. They are still
- * written from that learner's studied vocabulary — that costs nothing extra and
- * the whole group is working through the same decks — so nothing is lost by
- * keeping one set per deck instead of one per learner.
+ * Decks in plan order, each one's words feeding the next one's prompt, so week
+ * 2's sentences can build on week 1's.
  */
 async function generateSentencesInOrder(
   deckIds: string[],
-  memberId: string,
   organizerId: string,
+  pitch: { level?: JlptLevel; styleNotes?: string } = {},
 ): Promise<{ deckId: string; status: string; error?: string }[]> {
   if (deckIds.length === 0) return [];
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return deckIds.map((deckId) => ({ deckId, status: 'failed', error: 'No API key.' }));
 
-  const studied = await loadStudiedVocabulary(memberId);
   const carried: KnownWord[] = [];
   const out: { deckId: string; status: string; error?: string }[] = [];
 
@@ -442,10 +520,11 @@ async function generateSentencesInOrder(
     try {
       const outcome = await generateDeckSentences({
         deckId,
-        memberId: null,
-        knownWords: [...carried, ...studied].slice(0, KNOWN_WORD_CAP),
+        knownWords: [...carried].slice(0, KNOWN_WORD_CAP),
         apiKey,
         ownerId: organizerId,
+        level: pitch.level,
+        styleNotes: pitch.styleNotes,
       });
 
       out.push(

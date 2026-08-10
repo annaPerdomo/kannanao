@@ -13,6 +13,12 @@ export const MAX_EASE = 2.8;
 export const MAX_INTERVAL_DAYS = 60;
 /** A missed card comes back this soon — same session, minutes later. */
 export const WRONG_REVIEW_DELAY_MIN = 10;
+/**
+ * A card held this long counts as learned, so missing it is forgetting rather
+ * than still learning. Lapses are actually stamped by `increment_card_progress`
+ * (migration 20260809020000) — changing this means editing that SQL literal too.
+ */
+export const LAPSE_INTERVAL_DAYS = 7;
 
 const DAY_MS = 86_400_000;
 

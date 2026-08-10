@@ -109,31 +109,3 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   return NextResponse.json(data);
 }
-
-/** DELETE — remove assignment */
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const limited = await rateLimit(req, RATE_LIMIT);
-  if (limited) return limited;
-
-  const orgCheck = await requireOrganizerAccount(req);
-  if (orgCheck instanceof NextResponse) return orgCheck;
-
-  const { id } = await params;
-  const sb = getServiceSupabase();
-
-  const { error } = await sb
-    .from('assignments')
-    .delete()
-    .eq('id', id)
-    .eq('organizer_id', orgCheck.id);
-
-  if (error) {
-    logger.error('Failed to delete assignment', {
-      route: `/api/group/assignments/${id}`,
-      error: error.message,
-    });
-    return NextResponse.json({ error: 'Failed to delete assignment.' }, { status: 500 });
-  }
-
-  return NextResponse.json({ success: true });
-}

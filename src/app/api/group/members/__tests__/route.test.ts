@@ -33,8 +33,10 @@ function makeChain(table: string) {
   return chain;
 }
 
+const rpcMock = vi.fn();
+
 vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
-  getServiceSupabase: () => ({ from: (table: string) => makeChain(table) }),
+  getServiceSupabase: () => ({ from: (table: string) => makeChain(table), rpc: rpcMock }),
 }));
 
 import { GET } from '@/app/api/group/members/route';
@@ -55,6 +57,7 @@ describe('GET /api/group/members — mastery totals', () => {
     _resetStore();
     for (const key of Object.keys(tableData)) delete tableData[key];
     requireOrganizerAccountMock.mockResolvedValue(ORGANIZER);
+    rpcMock.mockResolvedValue({ data: [], error: null });
     setTable('profiles', [
       {
         id: 'm1',
@@ -102,5 +105,77 @@ describe('GET /api/group/members — mastery totals', () => {
       expect(m.masteryLearning).toBe(0);
       expect(m.masteryStrong).toBe(0);
     }
+  });
+});
+
+describe('GET /api/group/members — review backlog', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    _resetStore();
+    for (const key of Object.keys(tableData)) delete tableData[key];
+    requireOrganizerAccountMock.mockResolvedValue(ORGANIZER);
+    rpcMock.mockResolvedValue({ data: [], error: null });
+    setTable('profiles', [
+      {
+        id: 'm1',
+        username: 'naomi',
+        display_name: 'Naomi',
+        avatar: null,
+        created_at: '2026-01-01',
+      },
+      { id: 'm2', username: 'taro', display_name: null, avatar: null, created_at: '2026-01-02' },
+    ]);
+    setTable('user_progress', []);
+    setTable('card_progress', []);
+  });
+
+  it('merges the backlog counts onto the matching member', async () => {
+    rpcMock.mockResolvedValue({
+      data: [{ user_id: 'm1', due_count: 34, overdue_3d_count: 12 }],
+      error: null,
+    });
+
+    const res = await GET(request());
+    const body = await res.json();
+
+    expect(rpcMock).toHaveBeenCalledWith('group_review_backlog', { p_user_ids: ['m1', 'm2'] });
+    expect(body.find((m: { id: string }) => m.id === 'm1')).toMatchObject({
+      reviewsWaiting: 34,
+      reviewsOverdue3d: 12,
+    });
+  });
+
+  // The function returns no row at all for a learner with nothing due, so the
+  // zero has to come from the route rather than from the query.
+  it('defaults a member with no card_progress rows to zero', async () => {
+    rpcMock.mockResolvedValue({
+      data: [{ user_id: 'm1', due_count: 5, overdue_3d_count: 0 }],
+      error: null,
+    });
+
+    const res = await GET(request());
+    const body = await res.json();
+
+    expect(body.find((m: { id: string }) => m.id === 'm2')).toMatchObject({
+      reviewsWaiting: 0,
+      reviewsOverdue3d: 0,
+    });
+  });
+
+  // A zeroed column renders as "everyone is caught up" off a query that never ran.
+  it('reports an unknown backlog as null when the query fails', async () => {
+    rpcMock.mockResolvedValue({ data: null, error: { message: 'boom' } });
+
+    const res = await GET(request());
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body).toHaveLength(2);
+    expect(
+      body.every(
+        (m: { reviewsWaiting: number | null; reviewsOverdue3d: number | null }) =>
+          m.reviewsWaiting === null && m.reviewsOverdue3d === null,
+      ),
+    ).toBe(true);
   });
 });

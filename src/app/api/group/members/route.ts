@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
 import { memberIdsFor } from '../_lib/membership';
+import { backlogOf, reviewBacklogFor } from '../_lib/reviewBacklog';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
 
   const { data: members, error: membersErr } = await sb
     .from('profiles')
-    .select('id, username, display_name, avatar, created_at')
+    .select('id, username, display_name, avatar, created_at, last_nudged_at')
     .in('id', rosterIds)
     .order('created_at', { ascending: true });
 
@@ -52,7 +53,7 @@ export async function GET(req: NextRequest) {
   // pulling their entire study_sessions history just to find the latest one.
   // The members UI only buckets activity by day (today / <3d / inactive), so
   // day granularity is sufficient.
-  const [{ data: progressRows }, { data: cardProgressRows }] = await Promise.all([
+  const [{ data: progressRows }, { data: cardProgressRows }, backlog] = await Promise.all([
     sb
       .from('user_progress')
       .select(
@@ -60,6 +61,7 @@ export async function GET(req: NextRequest) {
       )
       .in('user_id', memberIds),
     sb.from('card_progress').select('user_id, interval_days, ease').in('user_id', memberIds),
+    reviewBacklogFor(memberIds, '/api/group/members'),
   ]);
 
   const progressMap = new Map((progressRows ?? []).map((p) => [p.user_id, p]));
@@ -74,6 +76,7 @@ export async function GET(req: NextRequest) {
   const result = members.map((m) => {
     const prog = progressMap.get(m.id);
     const mastery = masteryByUser.get(m.id);
+    const { reviewsWaiting, reviewsOverdue3d } = backlogOf(backlog, m.id);
     return {
       id: m.id,
       username: m.username,
@@ -87,8 +90,11 @@ export async function GET(req: NextRequest) {
       totalCorrect: prog?.total_correct ?? 0,
       totalSessions: prog?.total_sessions ?? 0,
       lastActive: prog?.last_study_date ?? null,
+      lastNudgedAt: m.last_nudged_at ?? null,
       masteryLearning: mastery?.learning ?? 0,
       masteryStrong: mastery?.strong ?? 0,
+      reviewsWaiting,
+      reviewsOverdue3d,
     };
   });
 

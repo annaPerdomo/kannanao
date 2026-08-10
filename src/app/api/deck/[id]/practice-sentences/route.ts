@@ -10,7 +10,6 @@ import { generateDeckSentences, selectSentences } from '../../../group/_lib/gene
 import { consumeLessonBudget } from '../../../group/_lib/lessonBudget';
 import { isMemberOfOrganizer } from '../../../group/_lib/membership';
 import { getServiceSupabase } from '../../../group/_lib/serviceSupabase';
-import { loadStudiedVocabulary } from '../../../group/_lib/studiedVocabulary';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 5 };
 
@@ -57,11 +56,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 /**
- * POST — generate practice sentences for a deck (organizer only).
+ * POST — generate a deck's shared practice sentences (organizer only).
  * If sentences already exist, returns them without regenerating.
- *
- * Body { memberId? }: with a learner, generates a set personalised to the words
- * that learner has already studied and stores it under `for_member_id`.
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const limited = await rateLimit(req, RATE_LIMIT);
@@ -71,12 +67,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (orgCheck instanceof NextResponse) return orgCheck;
 
   const { id: deckId } = await params;
-  const body = await req.json().catch(() => null);
-  const memberId = (body as { memberId?: string } | null)?.memberId ?? null;
-
-  if (memberId && !(await isMemberOfOrganizer(memberId, orgCheck.id))) {
-    return NextResponse.json({ error: 'Learner not found in your group.' }, { status: 403 });
-  }
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -87,11 +77,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (overBudget) return overBudget;
 
   try {
-    const knownWords = memberId ? await loadStudiedVocabulary(memberId) : [];
     const result = await generateDeckSentences({
       deckId,
-      memberId,
-      knownWords,
+      knownWords: [],
       apiKey,
       ownerId: orgCheck.id,
     });

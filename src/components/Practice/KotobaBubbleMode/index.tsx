@@ -65,8 +65,8 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
   const { brand, accent } = theme.palette;
   const { isMemberAccount, user } = useAuth();
 
-  // Learners get their personalised set (the server falls back to the shared
-  // one); organizers see the shared set they generate and edit.
+  // A learner's id is passed only so a legacy personalised set still renders;
+  // the server falls back to the shared set, which is all that is written now.
   const { sentences, loading, generating, error, hasContent, generate } = usePracticeSentences(
     deckId,
     isMemberAccount ? (user?.id ?? undefined) : undefined,
