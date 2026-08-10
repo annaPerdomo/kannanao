@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { axisCeiling, dailyAccuracy, heatLevel, heatThresholds, lineSegments } from '../chartScale';
+import {
+  axisCeiling,
+  dailyAccuracy,
+  DOT_LABEL_GAP,
+  heatLevel,
+  heatThresholds,
+  labelPlacement,
+  lineSegments,
+  PLOT_FILL,
+  PLOT_HEIGHT,
+} from '../chartScale';
 
 describe('axisCeiling', () => {
   it('rounds up to a clean tick', () => {
@@ -98,5 +108,58 @@ describe('lineSegments', () => {
 
   it('is empty when every day is null', () => {
     expect(lineSegments([null, null])).toEqual([]);
+  });
+});
+
+describe('labelPlacement', () => {
+  const LABEL_HEIGHT = 16;
+  const px = (pct: number) => (pct / 100) * PLOT_FILL * PLOT_HEIGHT;
+
+  /** Where each label ends up, as [bottom, top] px above the plot floor. */
+  function spans(barPct: number, accuracyPct: number) {
+    const { barLabelBottom, accuracyBelow } = labelPlacement(barPct, accuracyPct);
+    const dot = px(accuracyPct);
+    const accuracy = accuracyBelow ? dot - DOT_LABEL_GAP - LABEL_HEIGHT : dot + DOT_LABEL_GAP;
+    return {
+      bar: [barLabelBottom, barLabelBottom + LABEL_HEIGHT],
+      accuracy: [accuracy, accuracy + LABEL_HEIGHT],
+    };
+  }
+
+  it('sits the value label just above its bar when no accuracy label shares the column', () => {
+    expect(labelPlacement(50, null)).toEqual({
+      barLabelBottom: px(50) + 4,
+      accuracyBelow: false,
+    });
+  });
+
+  // Hovering the busiest day used to draw the count on top of the percentage.
+  it('separates the two labels on a tall bar with a high accuracy', () => {
+    const { bar, accuracy } = spans(90, 92);
+    expect(labelPlacement(90, 92).accuracyBelow).toBe(true);
+    expect(accuracy[1]).toBeLessThanOrEqual(bar[0]);
+  });
+
+  it('leaves both labels above their marks when the marks are already far apart', () => {
+    expect(labelPlacement(90, 20).accuracyBelow).toBe(false);
+    expect(labelPlacement(90, 20).barLabelBottom).toBeCloseTo(px(90) + 4);
+  });
+
+  it('lifts the value label instead when the dot sits too low to hang a label under', () => {
+    const { bar, accuracy } = spans(2, 5);
+    expect(labelPlacement(2, 5).accuracyBelow).toBe(false);
+    expect(bar[0]).toBeGreaterThanOrEqual(accuracy[1]);
+  });
+
+  it('never overlaps the two labels, or pushes the value label out of the plot', () => {
+    for (let barPct = 1; barPct <= 100; barPct++) {
+      for (let accuracyPct = 0; accuracyPct <= 100; accuracyPct++) {
+        const { bar, accuracy } = spans(barPct, accuracyPct);
+        const overlaps = bar[0] < accuracy[1] && accuracy[0] < bar[1];
+        expect({ barPct, accuracyPct, overlaps }).toEqual({ barPct, accuracyPct, overlaps: false });
+        expect(accuracy[0]).toBeGreaterThanOrEqual(0);
+        expect(bar[1]).toBeLessThanOrEqual(PLOT_HEIGHT);
+      }
+    }
   });
 });

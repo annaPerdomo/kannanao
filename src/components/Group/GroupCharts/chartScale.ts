@@ -1,3 +1,16 @@
+/** Height of the daily activity plot, in px. Fixed, so label maths can work in px. */
+export const PLOT_HEIGHT = 208;
+/**
+ * Share of the plot the axes actually use. The top 12% stays empty so the
+ * direct labels on a full-height bar or a 100% dot have somewhere to sit.
+ */
+export const PLOT_FILL = 0.88;
+
+/** Distance down from the top of the plot, in %, for a 0-100 position on either axis. */
+export function axisY(pct: number): number {
+  return 100 - pct * PLOT_FILL;
+}
+
 /**
  * Round a series maximum up to a clean axis ceiling (10, 20, 50, 100, 250 …) so
  * the ticks read as round numbers instead of "37" and "74". The axis labels the
@@ -73,4 +86,48 @@ export function lineSegments(values: Array<number | null>): LinePoint[][] {
   });
   if (current.length) segments.push(current);
   return segments;
+}
+
+/** One line of 0.7rem text. */
+const LABEL_HEIGHT = 16;
+const BAR_LABEL_GAP = 4;
+/** Clearance between an accuracy dot's centre and its label, on either side. */
+export const DOT_LABEL_GAP = 9;
+
+export interface LabelPlacement {
+  /** Px from the plot floor to the bottom of the bar's value label. */
+  barLabelBottom: number;
+  /** Hang the accuracy label under its dot instead of above it. */
+  accuracyBelow: boolean;
+}
+
+/**
+ * Keeps a column's two direct labels — the bar's count and the accuracy dot's
+ * percent — off each other. Both are centred on the column, so only vertical
+ * space separates them, and two axes sharing pixels can put a bar top and a dot
+ * within a few px of each other at any pair of values.
+ *
+ * Above the mark is the default. On a collision the accuracy label drops under
+ * its dot; when the dot sits too low for that, the value label lifts over the
+ * accuracy label instead — a low dot leaves room above, so that branch can never
+ * push a label out of the plot.
+ *
+ * @param barPct     bar height as 0-100 of the count axis
+ * @param accuracyPct the accuracy label's value, or null when another column owns it
+ */
+export function labelPlacement(barPct: number, accuracyPct: number | null): LabelPlacement {
+  const px = (pct: number) => (pct / 100) * PLOT_FILL * PLOT_HEIGHT;
+  const barLabel = px(barPct) + BAR_LABEL_GAP;
+  if (accuracyPct === null) return { barLabelBottom: barLabel, accuracyBelow: false };
+
+  const dot = px(accuracyPct);
+  const accuracyLabel = dot + DOT_LABEL_GAP;
+  const overlaps =
+    barLabel < accuracyLabel + LABEL_HEIGHT && accuracyLabel < barLabel + LABEL_HEIGHT;
+  if (!overlaps) return { barLabelBottom: barLabel, accuracyBelow: false };
+
+  if (dot - DOT_LABEL_GAP - LABEL_HEIGHT >= 0) {
+    return { barLabelBottom: barLabel, accuracyBelow: true };
+  }
+  return { barLabelBottom: accuracyLabel + LABEL_HEIGHT + 2, accuracyBelow: false };
 }
