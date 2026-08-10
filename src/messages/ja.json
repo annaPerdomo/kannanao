@@ -1531,6 +1531,34 @@
       "emptyPlanMessage": "プランが空でした。とりあげたいことを少し変えてためしてください。",
       "sentencesToggleLabel": "ことばバブルの練習文もつくる",
       "sentencesToggleHint": "デッキごとに1セット。グループのみんなが同じ文で練習するので、チェックもかんたんです。"
+    },
+    "deckReadiness": {
+      "heading": "デッキの仕上がり",
+      "loading": "デッキの進み具合を読み込み中…",
+      "empty": "このグループにデッキを出すと、仕上がりがここに表示されます。",
+      "legendStrong": "ばっちり",
+      "legendLearning": "おぼえかけ",
+      "legendUnseen": "まだ",
+      "strongPct": "ばっちり{pct}%",
+      "level": {
+        "notStarted": "まだだれも始めていません",
+        "ready": "つぎに進んで大丈夫",
+        "gettingThere": "あと少し",
+        "needsLesson": "もう一回おさらいが必要"
+      },
+      "struggling": "{count, plural, other {#人}}がここでつまずいています",
+      "strugglingWithNames": "{count, plural, other {#人}}がここでつまずいています：{names}",
+      "rowAriaLabel": "{deck} — ばっちり{strong}%、おぼえかけ{learning}%、まだ{unseen}%。{verdict}。学習者を見る。"
+    },
+    "reteachNext": {
+      "heading": "つぎにおさらいする単語",
+      "seeAllWords": "にがてな単語をすべて見る",
+      "buildLesson": "おさらいレッスンをつくる"
+    },
+    "practiceStrength": {
+      "heading": "にがてな練習モード",
+      "accuracy": "正解率 {pct}%",
+      "lowSample": "まだ練習が足りません"
     }
   },
   "Materials": {

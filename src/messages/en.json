@@ -1531,6 +1531,34 @@
       "emptyPlanMessage": "The plan came back empty. Try describing the goal a little differently.",
       "sentencesToggleLabel": "Also make Kotoba Bubble practice sentences",
       "sentencesToggleHint": "One set of sentences per deck — everyone in the group practices the same set, so it's easy to check over."
+    },
+    "deckReadiness": {
+      "heading": "Deck readiness",
+      "loading": "Loading deck progress…",
+      "empty": "Assign a deck to this group to see how ready it is.",
+      "legendStrong": "Strong",
+      "legendLearning": "Learning",
+      "legendUnseen": "Not started",
+      "strongPct": "{pct}% strong",
+      "level": {
+        "notStarted": "Nobody has started yet",
+        "ready": "Ready to move on",
+        "gettingThere": "Getting there",
+        "needsLesson": "Needs another lesson"
+      },
+      "struggling": "{count, plural, one {# learner is finding this hard} other {# learners are finding this hard}}",
+      "strugglingWithNames": "{count, plural, one {# learner is finding this hard} other {# learners are finding this hard}}: {names}",
+      "rowAriaLabel": "{deck} — {strong}% strong, {learning}% learning, {unseen}% not started. {verdict}. See learners."
+    },
+    "reteachNext": {
+      "heading": "What to reteach next",
+      "seeAllWords": "See all tricky words",
+      "buildLesson": "Build a review lesson"
+    },
+    "practiceStrength": {
+      "heading": "Where practice is weak",
+      "accuracy": "{pct}% right",
+      "lowSample": "Not enough practice yet"
     }
   },
   "Materials": {
