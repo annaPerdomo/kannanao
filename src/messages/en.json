@@ -1721,7 +1721,9 @@
     },
     "buddy": {
       "defaultPhrase": "Let's study!",
+      "petAria": "Pet your buddy",
       "friendship": {
+        "levelUp": "We're {levelName} now! 🎉",
         "levelNames": {
           "1": "New Friend",
           "2": "Buddy",

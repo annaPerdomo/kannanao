@@ -45,7 +45,8 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
   const { reactionEvent } = useBuddyReaction();
-  const { petBuddy, canPetToday, ensureLoaded } = useBuddyFriendshipCtx();
+  const { petBuddy, canPetToday, ensureLoaded, levelUpEvent, clearLevelUpEvent } =
+    useBuddyFriendshipCtx();
   const accent = BUDDY_ART[buddyKey]?.accent ?? brand[300];
 
   // Friendship rows are lazy-loaded by design; the widget renders the hearts
@@ -69,6 +70,8 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   }, [buddyKey, t, tBuddies]);
 
   const [bubbleText, setBubbleText] = useState('');
+  /** Outranks the ambient phrase, which would otherwise rotate over it. */
+  const [announcement, setAnnouncement] = useState<string | null>(null);
   const [showBubble, setShowBubble] = useState(true);
   const [reaction, setReaction] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [sparkles, setSparkles] = useState(false);
@@ -125,6 +128,22 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reactionEvent?.key]);
 
+  useEffect(() => {
+    if (!levelUpEvent) return;
+    setAnnouncement(
+      t('friendship.levelUp', { levelName: t(`friendship.levelNames.${levelUpEvent.level}`) }),
+    );
+    setShowBubble(true);
+    setSparkles(true);
+    const timer = setTimeout(() => {
+      setAnnouncement(null);
+      setSparkles(false);
+      clearLevelUpEvent();
+    }, 3000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [levelUpEvent]);
+
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     dragging.current = true;
     setIsDragging(true);
@@ -145,34 +164,47 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     });
   }, []);
 
+  const handleTap = useCallback(() => {
+    setTapped(true);
+    setTapHearts(true);
+    phraseIndex.current = (phraseIndex.current + 1) % phrases.length;
+    setBubbleText(phrases[phraseIndex.current]);
+    setShowBubble(true);
+    setTimeout(() => setTapped(false), 500);
+    setTimeout(() => setTapHearts(false), 600);
+    // First pet of the day pays a heart; later taps stay a plain (still
+    // fun) burst — no call spam, no "limit" messaging.
+    if (canPetToday) {
+      petBuddy()
+        .then((award) => {
+          if (!award) return;
+          setPetBonus(true);
+          setTimeout(() => setPetBonus(false), 900);
+        })
+        .catch(() => {});
+    }
+  }, [phrases, canPetToday, petBuddy]);
+
   const handlePointerUp = useCallback(
     (e: React.PointerEvent) => {
       const moved =
         Math.abs(e.clientX - lastPos.current.x) + Math.abs(e.clientY - lastPos.current.y);
       dragging.current = false;
       setIsDragging(false);
-      if (moved < 8) {
-        setTapped(true);
-        setTapHearts(true);
-        phraseIndex.current = (phraseIndex.current + 1) % phrases.length;
-        setBubbleText(phrases[phraseIndex.current]);
-        setShowBubble(true);
-        setTimeout(() => setTapped(false), 500);
-        setTimeout(() => setTapHearts(false), 600);
-        // First pet of the day pays a heart; later taps stay a plain (still
-        // fun) burst — no call spam, no "limit" messaging.
-        if (canPetToday) {
-          petBuddy()
-            .then((award) => {
-              if (!award) return;
-              setPetBonus(true);
-              setTimeout(() => setPetBonus(false), 900);
-            })
-            .catch(() => {});
-        }
-      }
+      if (moved < 8) handleTap();
     },
-    [phrases, canPetToday, petBuddy],
+    [handleTap],
+  );
+
+  // The daily pet pays a heart, so a pointer-only tap would cap keyboard and
+  // switch users a heart below everyone else.
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      handleTap();
+    },
+    [handleTap],
   );
 
   const positionStyle = pos
@@ -205,11 +237,17 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
         userSelect: 'none',
         '&:active': { cursor: 'grabbing' },
       }}
+      role="button"
+      tabIndex={0}
+      aria-label={t('petAria')}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onKeyDown={handleKeyDown}
     >
-      {showBubble && <BuddyBubble text={bubbleText} reaction={reaction} accent={accent} />}
+      {showBubble && (
+        <BuddyBubble text={announcement ?? bubbleText} reaction={reaction} accent={accent} />
+      )}
 
       <Box sx={{ position: 'relative' }}>
         <BuddyParticles sparkles={sparkles} tapHearts={tapHearts} />

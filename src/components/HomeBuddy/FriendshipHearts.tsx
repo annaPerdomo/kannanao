@@ -24,7 +24,11 @@ export function FriendshipHearts({ isDragging }: FriendshipHeartsProps) {
   const t = useTranslations('Home.buddy.friendship');
   const theme = useTheme();
   const { brand } = theme.palette;
-  const { equipped } = useBuddyFriendshipCtx();
+  const { equipped, loadState } = useBuddyFriendshipCtx();
+
+  // Nothing, not 0, until the rows land: a chip that pops from 0 to the real
+  // total on every page load reads as "I lost my hearts".
+  if (loadState !== 'loaded') return null;
   const points = equipped?.points ?? 0;
 
   return (

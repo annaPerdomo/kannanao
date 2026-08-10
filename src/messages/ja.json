@@ -1721,7 +1721,9 @@
     },
     "buddy": {
       "defaultPhrase": "勉強しよう！",
+      "petAria": "バディをなでる",
       "friendship": {
+        "levelUp": "{levelName}になったよ！🎉",
         "levelNames": {
           "1": "しりあい",
           "2": "ともだち",
