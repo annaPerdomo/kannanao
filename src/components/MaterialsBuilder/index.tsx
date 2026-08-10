@@ -13,7 +13,7 @@ import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { useAuth } from '@/contexts/AuthContext';
@@ -46,12 +46,14 @@ export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
   const [tab, setTab] = useState<BuilderTab>('lessonSet');
   const [groupId, setGroupId] = useState(initialGroupId ?? '');
 
-  if (!authLoading && isMemberAccount) {
-    router.push('/');
-    return null;
-  }
+  useEffect(() => {
+    if (!authLoading && isMemberAccount) {
+      router.push('/');
+    }
+  }, [authLoading, isMemberAccount, router]);
 
-  if (authLoading || groupsLoading) {
+  // Members hold the loader until the redirect lands, never the builder.
+  if (authLoading || isMemberAccount || groupsLoading) {
     return <Loading message={t('loadingMessage')} />;
   }
 
