@@ -1,30 +1,23 @@
--- Buddy friendship: per-buddy hearts earned from meaningful daily practice.
+-- Buddy friendship: per-buddy hearts earned from daily practice.
 --
--- Until now the equipped buddy was pure cosmetics — user_purchases /
--- user_equipped carry no per-buddy state at all. This table gives each
--- (user, buddy) pair a hearts total plus three once-per-LOCAL-day stamps,
--- one per earning source ('adventure', 'session', 'pet'). The stamps are
--- date columns holding local YYYY-MM-DD values produced client-side by
--- localDateString() (src/lib/chest.ts) — the same convention as the streak
--- and the daily chest. The server runs in UTC and cannot know the user's
--- local day, so award_friendship takes p_today from the client.
+-- Each (user, buddy) row holds a hearts total plus three once-per-LOCAL-day
+-- stamps, one per earning source ('adventure', 'session', 'pet'). Stamps
+-- are local YYYY-MM-DD values produced client-side by localDateString()
+-- (src/lib/chest.ts — streak/chest convention): the server runs in UTC and
+-- cannot know the user's local day, so award_friendship takes p_today from
+-- the client.
 --
--- The daily-cap check is deliberately CROSS-ROW: a source pays out at most
--- once per day per USER, not per buddy. If any of the user's rows already
--- carries today's stamp for a source, the award is refused — otherwise
--- switching the equipped buddy mid-day would let each source pay out once
--- per buddy, and friendship would be farmable by cycling the closet.
+-- The daily-cap check is deliberately CROSS-ROW: a source pays at most once
+-- per day per USER, not per buddy — otherwise switching the equipped buddy
+-- mid-day would let each source pay once per buddy.
 --
--- RLS is own-rows-only for SELECT / INSERT / UPDATE. There is deliberately
--- NO delete policy: friendship, once earned, is never lost — buddies don't
--- forget you, and nothing in the app ever needs to remove a row.
+-- Deliberately NO delete policy: nothing in the app ever removes a row.
 --
--- award_friendship is SECURITY INVOKER (the default) on purpose: it runs as
--- the calling user, so the RLS policies above keep applying inside the
--- function. Like purchase_item, it is an atomicity boundary, not a security
--- one — p_points and p_today come from the client, so a clock-rolled device
--- can re-earn a day. Accepted: the whole XP economy is already
--- client-trusted, and hearts buy nothing.
+-- award_friendship is SECURITY INVOKER on purpose so the RLS policies keep
+-- applying inside it. Like purchase_item, it is an atomicity boundary, not
+-- a security one — p_points and p_today come from the client, so a
+-- clock-rolled device can re-earn a day. Accepted: the whole XP economy is
+-- already client-trusted, and hearts buy nothing.
 
 CREATE TABLE buddy_friendship (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -87,8 +80,8 @@ BEGIN
   PERFORM pg_advisory_xact_lock(
     hashtextextended(v_user::text || ':' || p_source, 0));
 
-  -- Cross-row daily cap: refuse if ANY of this user's buddies already got
-  -- paid from this source today (see header — anti-farming rule).
+  -- Cross-row daily cap (see header): refuse if ANY of the user's buddies
+  -- already got paid from this source today.
   IF EXISTS (
     SELECT 1
       FROM buddy_friendship

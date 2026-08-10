@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { isReturningAfterBreak, studyDaysThisWeek, weekStartLocal } from '@/lib/studyWeek';
 
-// 2026-08-03 is a Monday; all dates are constructed explicitly so the tests
-// never depend on the runner's wall clock.
+// 2026-08-03 is a Monday.
 function session(date: Date, cardsStudied = 10) {
   return { started_at: date.toISOString(), cards_studied: cardsStudied };
 }

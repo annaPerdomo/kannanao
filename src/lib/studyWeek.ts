@@ -1,7 +1,7 @@
 /**
- * Weekly study-days math — pure, derived entirely from the recentSessions
- * rows ProgressContext already loads, so it needs no schema change. All
- * date bucketing uses localDateString (streak/chest convention).
+ * Weekly study-days math, computed from the recentSessions rows
+ * ProgressContext already loads. All date bucketing uses localDateString
+ * (streak/chest convention).
  */
 
 import { localDateString } from './chest';
@@ -13,15 +13,14 @@ import { localDateString } from './chest';
  */
 export function weekStartLocal(now: Date): Date {
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const day = start.getDay(); // 0 = Sunday
-  const daysSinceMonday = (day + 6) % 7;
+  const daysSinceMonday = (start.getDay() + 6) % 7;
   start.setDate(start.getDate() - daysSinceMonday);
   return start;
 }
 
 /**
- * Count of unique local dates with real study (cards_studied > 0) from
- * this week's Monday through now. Rows with unparseable dates are skipped.
+ * Unique local dates with real study (cards_studied > 0) from this week's
+ * Monday through now. Rows with unparseable dates are skipped.
  */
 export function studyDaysThisWeek(
   sessions: Array<{ started_at: string; cards_studied: number }>,

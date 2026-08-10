@@ -1,19 +1,15 @@
 /**
- * Buddy friendship — pure hearts/level math, side-effect-free for unit
- * testing. The equipped buddy earns hearts from meaningful daily practice
- * and levels up; state lives in the buddy_friendship table and all writes
- * go through the award_friendship RPC. Every date here is a local
- * YYYY-MM-DD string (streak/chest convention, see localDateString).
+ * Buddy friendship hearts/level math. State lives in buddy_friendship and
+ * all writes go through the award_friendship RPC. Every date here is a
+ * local YYYY-MM-DD string (streak/chest convention, see localDateString).
  */
 
 export type FriendshipSource = 'adventure' | 'session' | 'pet';
 
 /**
- * Hearts per earning source, each capped at once per LOCAL day (the RPC
- * enforces the cap across ALL of the user's buddies, so switching the
- * equipped buddy mid-day can't double-pay a source). Adventure is the
- * anchor activity, so it pays 3; finishing a meaningful study session and
- * petting the buddy pay 1 each.
+ * Hearts per source, each capped at once per LOCAL day across ALL of the
+ * user's buddies (the RPC enforces this, so buddy-switching can't
+ * double-pay a source). Adventure is the anchor activity, hence 3.
  */
 export const FRIENDSHIP_POINTS: Record<FriendshipSource, number> = {
   adventure: 3,
@@ -21,13 +17,12 @@ export const FRIENDSHIP_POINTS: Record<FriendshipSource, number> = {
   pet: 1,
 };
 
-/** Most hearts one buddy can earn per day — 3+1+1 by construction. */
 export const FRIENDSHIP_DAILY_MAX = 5;
 
 /**
- * Cumulative hearts required to REACH level index+1. At the max daily pace
- * of 5 hearts that lands the level-ups at roughly day 3, 8, 16, and 28 —
- * quick early wins, then a friendship that takes a real month to max.
+ * Cumulative hearts required to REACH level index+1. At the max pace of
+ * 5/day the level-ups land near days 3, 8, 16, 28 — quick early wins, then
+ * a real month to max.
  */
 export const LEVEL_THRESHOLDS = [0, 15, 40, 80, 140];
 
@@ -48,8 +43,7 @@ export function friendshipLevel(points: number): number {
 
 /**
  * Progress within the current level: `current` hearts earned into it,
- * `needed` the level's full width. Returns null at max level (no bar to
- * fill — the UI shows a full heart instead).
+ * `needed` the level's full width. Null at max level.
  */
 export function friendshipProgress(points: number): { current: number; needed: number } | null {
   const level = friendshipLevel(points);
@@ -61,9 +55,9 @@ export function friendshipProgress(points: number): { current: number; needed: n
 }
 
 /**
- * Whether a source can still pay out today, given the user's stamp dates
- * (local YYYY-MM-DD strings from buddy_friendship, already merged across
- * rows by the caller). Null/missing stamps mean the source never paid.
+ * Whether a source can still pay out today. lastDates are local YYYY-MM-DD
+ * stamps already merged across the user's rows by the caller; null/missing
+ * means the source never paid.
  */
 export function canEarn(
   source: FriendshipSource,
@@ -78,9 +72,8 @@ export function canEarn(
 }
 
 /**
- * A session only bonds with the buddy when at least 5 cards were studied —
- * enough that opening a deck and immediately quitting doesn't count, small
- * enough that any real practice run clears it.
+ * 5+ cards: opening a deck and immediately quitting doesn't bond; any real
+ * practice run does.
  */
 export function isMeaningfulSession(cardsStudied: number): boolean {
   return cardsStudied >= 5;
