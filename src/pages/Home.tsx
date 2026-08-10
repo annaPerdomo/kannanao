@@ -740,7 +740,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
             )
           }
         >
-          {/* The home entry point to cross-deck review, in both its forms. */}
+          {/* The single home entry point to cross-deck review. */}
           <TodayAdventureCard />
         </GreetingHero>
       </Box>

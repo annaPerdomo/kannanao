@@ -14,8 +14,6 @@ interface FriendshipMeterProps {
   size?: 'small' | 'medium';
 }
 
-/** Level name + hearts progress for one buddy. Shared by the buddy widget's
- * surfaces and the Shop preview. */
 export function FriendshipMeter({ points, size = 'medium' }: FriendshipMeterProps) {
   const t = useTranslations('Home.buddy.friendship');
   const theme = useTheme();

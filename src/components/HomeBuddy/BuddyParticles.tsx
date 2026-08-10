@@ -9,7 +9,6 @@ interface BuddyParticlesProps {
   tapHearts: boolean;
 }
 
-/** Sparkle burst on a correct answer, heart burst on a tap. */
 export function BuddyParticles({ sparkles, tapHearts }: BuddyParticlesProps) {
   return (
     <>
