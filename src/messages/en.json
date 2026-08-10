@@ -712,7 +712,8 @@
       "openChestAria": "Open your daily chest",
       "chestReward": "+{xp} XP!",
       "goldenChestTap": "Golden chest — tap to open!",
-      "dailyChestTap": "Daily chest — tap to open!"
+      "dailyChestTap": "Daily chest — tap to open!",
+      "heartsEarned": "+{count} ❤️ friendship"
     },
     "fillMode": {
       "fillPrompt": "FILL IN THE BLANK",
@@ -1719,7 +1720,22 @@
       "toggleAriaLabel": "Toggle {label}"
     },
     "buddy": {
-      "defaultPhrase": "Let's study!"
+      "defaultPhrase": "Let's study!",
+      "petAria": "Pet your buddy",
+      "friendship": {
+        "levelUp": "We're {levelName} now! 🎉",
+        "levelNames": {
+          "1": "New Friend",
+          "2": "Buddy",
+          "3": "Good Friend",
+          "4": "Best Friend",
+          "5": "Kindred Spirits"
+        },
+        "heartsAria": "{count, plural, one {# friendship heart} other {# friendship hearts}}",
+        "petBonus": "+1 ❤️",
+        "meterAria": "Friendship: {levelName}, {current} of {needed} hearts",
+        "meterAriaMax": "Friendship: {levelName}"
+      }
     },
     "heroDate": {
       "today": "Today"
@@ -3379,7 +3395,8 @@
     },
     "buddyPreview": {
       "close": "Close",
-      "avatarPerk": "Pick any of these faces as your profile picture"
+      "avatarPerk": "Pick any of these faces as your profile picture",
+      "friendshipLabel": "Friendship"
     }
   },
   "Landing": {

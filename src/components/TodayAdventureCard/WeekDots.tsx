@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
 import { localDateString } from '@/lib/chest';
-import { studyDaysThisWeek, weekStartLocal } from '@/lib/studyWeek';
+import { studyDaySet, weekStartLocal } from '@/lib/studyWeek';
 
 interface WeekDotsProps {
   sessions: Array<{ started_at: string; cards_studied: number }>;
@@ -15,27 +15,22 @@ interface WeekDotsProps {
 }
 
 /**
- * Seven dots, Monday→Sunday. A day fills on real study by the same rule
- * studyDaysThisWeek counts by — the two must not drift apart.
+ * Seven dots, Monday→Sunday. Dots and caption both read studyDaySet, so a
+ * future-dated session can't fill a dot the count refuses to count.
  */
 export function WeekDots({ sessions, today }: WeekDotsProps) {
   const t = useTranslations('Home.adventure');
 
-  const monday = weekStartLocal(new Date());
+  const now = new Date();
+  const monday = weekStartLocal(now);
   const days = Array.from({ length: 7 }, (_, i) => {
     const day = new Date(monday);
     day.setDate(monday.getDate() + i);
     return localDateString(day);
   });
 
-  const studied = new Set(
-    sessions
-      .filter((s) => s.cards_studied > 0)
-      .map((s) => new Date(s.started_at))
-      .filter((d) => !Number.isNaN(d.getTime()))
-      .map(localDateString),
-  );
-  const count = studyDaysThisWeek(sessions);
+  const studied = studyDaySet(sessions, now);
+  const count = studied.size;
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>

@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TodayAdventureCard } from '@/components/TodayAdventureCard';
 import { minutesFor } from '@/components/TodayAdventureCard/AdventureStates';
@@ -49,17 +49,21 @@ const progress = (
 });
 
 /** Rows keyed by buddy, the shape the card reads the per-user cap out of. */
-const friendship = (rows: Record<string, string | null> = {}) => ({
+const friendship = (
+  rows: Record<string, string | null> = {},
+  loadState: 'idle' | 'loading' | 'loaded' | 'error' = 'loaded',
+) => ({
   friendships: Object.fromEntries(
     Object.entries(rows).map(([buddyKey, lastAdventureDate]) => [
       buddyKey,
       { buddyKey, lastAdventureDate },
     ]),
   ),
+  loadState,
   ensureLoaded: vi.fn().mockResolvedValue(undefined),
 });
 
-/** Waits out the friendship ensureLoaded() promise the card gates its render on. */
+/** Waits out the friendship load the card gates its render on. */
 const settled = () => waitFor(() => expect(document.querySelector('.MuiSkeleton-root')).toBeNull());
 
 describe('TodayAdventureCard', () => {
@@ -75,6 +79,21 @@ describe('TodayAdventureCard', () => {
     dueState.mockReturnValue(due({ loading: true }));
     const { container } = renderWithProviders(<TodayAdventureCard />);
     expect(container.querySelector('.MuiSkeleton-root')).toBeInTheDocument();
+  });
+
+  // An unfetched map looks exactly like "no row yet", which hands the day to
+  // the chest fallback on a false negative.
+  it('should hold the skeleton until the friendship rows have actually loaded', () => {
+    friendshipState.mockReturnValue(friendship({}, 'loading'));
+    const { container } = renderWithProviders(<TodayAdventureCard />);
+    expect(container.querySelector('.MuiSkeleton-root')).toBeInTheDocument();
+  });
+
+  it('should release the skeleton when the friendship load fails', async () => {
+    progressState.mockReturnValue(progress({ last_chest_date: TODAY }));
+    friendshipState.mockReturnValue(friendship({}, 'error'));
+    renderWithProviders(<TodayAdventureCard />);
+    await screen.findByText('Adventure complete!');
   });
 
   // 0-due and "we don't know" are different states; the calm copy would be a lie.
@@ -199,6 +218,19 @@ describe('TodayAdventureCard', () => {
   });
 
   describe('week dots', () => {
+    // The fixtures below place sessions on Monday AND Tuesday, which is the
+    // future when the suite runs on a Monday — so pin "now" to Wednesday of
+    // the current week. shouldAdvanceTime keeps waitFor/settled() working.
+    beforeEach(() => {
+      const wednesday = new Date();
+      wednesday.setDate(wednesday.getDate() - ((wednesday.getDay() + 6) % 7) + 2);
+      vi.useFakeTimers({ now: wednesday, shouldAdvanceTime: true });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('should count the distinct study days this week', async () => {
       // Monday and Tuesday of the current week, so the fixture never straddles
       // a week boundary the way "N days ago" would.

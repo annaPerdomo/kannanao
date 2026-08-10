@@ -20,12 +20,13 @@ export function weekStartLocal(now: Date): Date {
 
 /**
  * Unique local dates with real study (cards_studied > 0) from this week's
- * Monday through now. Rows with unparseable dates are skipped.
+ * Monday through now. Rows with unparseable dates are skipped. The week dots
+ * fill from this same set, so the dots and the count can never disagree.
  */
-export function studyDaysThisWeek(
+export function studyDaySet(
   sessions: Array<{ started_at: string; cards_studied: number }>,
   now: Date = new Date(),
-): number {
+): Set<string> {
   // Compare local DATES, not timestamps: started_at is server time, and a
   // client clock behind the server would drop a just-finished session as
   // "future".
@@ -40,7 +41,14 @@ export function studyDaysThisWeek(
     if (day < firstDay || day > lastDay) continue;
     days.add(day);
   }
-  return days.size;
+  return days;
+}
+
+export function studyDaysThisWeek(
+  sessions: Array<{ started_at: string; cards_studied: number }>,
+  now: Date = new Date(),
+): number {
+  return studyDaySet(sessions, now).size;
 }
 
 /**
