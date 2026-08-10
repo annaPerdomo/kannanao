@@ -1655,6 +1655,22 @@
       "afternoon": "こんにちは、<n>{name}さん！</n>",
       "evening": "こんばんは、<n>{name}さん！</n>"
     },
+    "adventure": {
+      "title": "Today's Adventure",
+      "missionHelp": "Help {name}!",
+      "reviewsCount": "{count, plural, one {# review} other {# reviews}}",
+      "minutesEstimate": "~{min} min",
+      "start": "Start",
+      "completedTitle": "Adventure complete!",
+      "completedHearts": "+{count} ❤️ with {name}",
+      "nothingDueTitle": "No reviews waiting today.",
+      "nothingDueBody": "Nice work — everything is fresh. Want to keep playing?",
+      "playGame": "Play a game",
+      "practiceDeck": "Practice a deck",
+      "welcomeBack": "Welcome back! {name} saved your place.",
+      "daysThisWeek": "{count, plural, one {# study day} other {# study days}} this week",
+      "weekDotsAria": "Study days this week, Monday to Sunday"
+    },
     "welcomeBanner": {
       "openShopAriaLabel": "Open shop",
       "xpProgressLabel": "XP Progress",

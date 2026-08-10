@@ -28,7 +28,7 @@ import { DECK_TILE_MIN_HEIGHT } from '@/components/DeckCard/DeckTile';
 import { AssignmentCard, GroupRow, LeaderboardWidget } from '@/components/Group';
 import { GreetingHero, SpeechRow, XpProgressCard } from '@/components/Home';
 import { LoadingOverlay } from '@/components/Loading';
-import { ReviewTile } from '@/components/ReviewTile';
+import { TodayAdventureCard } from '@/components/TodayAdventureCard';
 import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProgressCtx } from '@/contexts/ProgressContext';
@@ -740,8 +740,8 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
             )
           }
         >
-          {/* The single home entry point to Smart Review — cross-deck due cards. */}
-          <ReviewTile onDark compact />
+          {/* The home entry point to cross-deck review, in both its forms. */}
+          <TodayAdventureCard />
         </GreetingHero>
       </Box>
 

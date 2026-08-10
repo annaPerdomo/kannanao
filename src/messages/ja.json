@@ -1655,6 +1655,22 @@
       "afternoon": "こんにちは、<n>{name}さん！</n>",
       "evening": "こんばんは、<n>{name}さん！</n>"
     },
+    "adventure": {
+      "title": "今日のぼうけん",
+      "missionHelp": "{name}をてつだおう！",
+      "reviewsCount": "{count, plural, other {#問}}",
+      "minutesEstimate": "約{min}分",
+      "start": "はじめる",
+      "completedTitle": "ぼうけんクリア！",
+      "completedHearts": "{name}となかよし +{count} ❤️",
+      "nothingDueTitle": "今日の復習はありません。",
+      "nothingDueBody": "よくできました！ほかのこともやってみる？",
+      "playGame": "ゲームであそぶ",
+      "practiceDeck": "デッキで練習",
+      "welcomeBack": "おかえりなさい！{name}がつづきを待っていたよ。",
+      "daysThisWeek": "{count, plural, other {今週は#日}}勉強したよ",
+      "weekDotsAria": "今週の勉強した日、月曜日から日曜日"
+    },
     "welcomeBanner": {
       "openShopAriaLabel": "ショップを開く",
       "xpProgressLabel": "XPの進み具合",
