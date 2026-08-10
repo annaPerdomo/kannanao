@@ -6,7 +6,7 @@ import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
 import { useProgressCtx } from '@/contexts/ProgressContext';
@@ -41,26 +41,21 @@ export function TodayAdventureCard() {
 
   const { dueCount, loading: dueLoading, error: dueError } = useDueCount();
   const { progress, recentSessions, loading: progressLoading } = useProgressCtx();
-  const { friendships, ensureLoaded } = useBuddyFriendshipCtx();
+  const { friendships, loadState: friendshipLoad, ensureLoaded } = useBuddyFriendshipCtx();
   const { equipped: shopEquipped } = useShopCtx();
 
   // The provider doesn't fetch friendships on mount, and an unloaded `friendships`
   // is indistinguishable from "no row yet" — hold the skeleton rather than fall
-  // through to the chest fallback on a false negative. A rejection releases the
-  // gate anyway: ensureLoaded caches its promise, so it would never resolve.
-  const [friendshipReady, setFriendshipReady] = useState(false);
+  // through to the chest fallback on a false negative.
   useEffect(() => {
-    let cancelled = false;
-    const release = () => {
-      if (!cancelled) setFriendshipReady(true);
-    };
-    ensureLoaded().then(release, release);
-    return () => {
-      cancelled = true;
-    };
+    void ensureLoaded();
   }, [ensureLoaded]);
 
-  if (dueLoading || progressLoading || !friendshipReady) {
+  // 'error' releases the gate too — the chest fallback below beats a skeleton
+  // that never resolves.
+  const friendshipSettled = friendshipLoad === 'loaded' || friendshipLoad === 'error';
+
+  if (dueLoading || progressLoading || !friendshipSettled) {
     return (
       <Skeleton
         variant="rounded"
@@ -86,7 +81,7 @@ export function TodayAdventureCard() {
   // before the friendship feature have no row at all, so the daily chest — which
   // only opens on a cleared queue — stands in, over-reporting slightly until
   // they earn their first heart.
-  const hasFriendship = Object.keys(friendships).length > 0;
+  const hasFriendship = friendshipLoad === 'loaded' && Object.keys(friendships).length > 0;
   const completedToday = hasFriendship
     ? Object.values(friendships).some((f) => f.lastAdventureDate === today)
     : progress?.last_chest_date === today;

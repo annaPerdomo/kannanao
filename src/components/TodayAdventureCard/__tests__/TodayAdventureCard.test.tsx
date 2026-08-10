@@ -49,17 +49,21 @@ const progress = (
 });
 
 /** Rows keyed by buddy, the shape the card reads the per-user cap out of. */
-const friendship = (rows: Record<string, string | null> = {}) => ({
+const friendship = (
+  rows: Record<string, string | null> = {},
+  loadState: 'idle' | 'loading' | 'loaded' | 'error' = 'loaded',
+) => ({
   friendships: Object.fromEntries(
     Object.entries(rows).map(([buddyKey, lastAdventureDate]) => [
       buddyKey,
       { buddyKey, lastAdventureDate },
     ]),
   ),
+  loadState,
   ensureLoaded: vi.fn().mockResolvedValue(undefined),
 });
 
-/** Waits out the friendship ensureLoaded() promise the card gates its render on. */
+/** Waits out the friendship load the card gates its render on. */
 const settled = () => waitFor(() => expect(document.querySelector('.MuiSkeleton-root')).toBeNull());
 
 describe('TodayAdventureCard', () => {
@@ -75,6 +79,21 @@ describe('TodayAdventureCard', () => {
     dueState.mockReturnValue(due({ loading: true }));
     const { container } = renderWithProviders(<TodayAdventureCard />);
     expect(container.querySelector('.MuiSkeleton-root')).toBeInTheDocument();
+  });
+
+  // An unfetched map looks exactly like "no row yet", which hands the day to
+  // the chest fallback on a false negative.
+  it('should hold the skeleton until the friendship rows have actually loaded', () => {
+    friendshipState.mockReturnValue(friendship({}, 'loading'));
+    const { container } = renderWithProviders(<TodayAdventureCard />);
+    expect(container.querySelector('.MuiSkeleton-root')).toBeInTheDocument();
+  });
+
+  it('should release the skeleton when the friendship load fails', async () => {
+    progressState.mockReturnValue(progress({ last_chest_date: TODAY }));
+    friendshipState.mockReturnValue(friendship({}, 'error'));
+    renderWithProviders(<TodayAdventureCard />);
+    await screen.findByText('Adventure complete!');
   });
 
   // 0-due and "we don't know" are different states; the calm copy would be a lie.
