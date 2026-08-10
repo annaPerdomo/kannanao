@@ -1,7 +1,6 @@
 import type { GroupActivityModeStat } from '@/hooks/useGroupActivity';
 
-/** Under this many cards in the window an accuracy figure is noise, not a signal. */
-export const MIN_MODE_CARDS = 10;
+import { MIN_MODE_CARDS } from '../modeSample';
 
 export interface PracticeModeStrength {
   mode: string;

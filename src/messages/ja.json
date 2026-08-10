@@ -1420,7 +1420,10 @@
       "loadFailed": "グループの活動を読み込めませんでした。",
       "modeHeading": "この期間の練習モード",
       "modeEmpty": "この期間、練習の記録はまだありません。",
-      "modeCardsCount": "{count, plural, other {カード#枚}}"
+      "modeCardsCount": "{count, plural, other {カード#枚}}",
+      "modeShare": "全体の{pct}%",
+      "modeTooltip": "{label} — {sessions, plural, other {#セッション}}でカード{count}枚",
+      "modeTooltipWithAccuracy": "{label} — {sessions, plural, other {#セッション}}でカード{count}枚・正答率{pct}%"
     },
     "learnersTable": {
       "heading": "学習者",

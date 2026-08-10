@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { MIN_MODE_CARDS, rankPracticeModes } from '@/components/Group/PracticeStrength/ranking';
+import { MIN_MODE_CARDS } from '@/components/Group/modeSample';
+import { rankPracticeModes } from '@/components/Group/PracticeStrength/ranking';
 import type { GroupActivityModeStat } from '@/hooks/useGroupActivity';
 
 function mode(name: string, cardsStudied: number, accuracy: number): GroupActivityModeStat {

@@ -1420,7 +1420,10 @@
       "loadFailed": "Couldn't load group activity.",
       "modeHeading": "Practice modes this window",
       "modeEmpty": "No practice sessions in this window.",
-      "modeCardsCount": "{count, plural, one {# card} other {# cards}}"
+      "modeCardsCount": "{count, plural, one {# card} other {# cards}}",
+      "modeShare": "{pct}% of cards",
+      "modeTooltip": "{label} — {count, plural, one {# card} other {# cards}} in {sessions, plural, one {# session} other {# sessions}}",
+      "modeTooltipWithAccuracy": "{label} — {count, plural, one {# card} other {# cards}} in {sessions, plural, one {# session} other {# sessions}}, {pct}% accuracy"
     },
     "learnersTable": {
       "heading": "Learners",
