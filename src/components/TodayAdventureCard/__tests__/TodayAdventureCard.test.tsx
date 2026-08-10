@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TodayAdventureCard } from '@/components/TodayAdventureCard';
 import { minutesFor } from '@/components/TodayAdventureCard/AdventureStates';
@@ -199,6 +199,19 @@ describe('TodayAdventureCard', () => {
   });
 
   describe('week dots', () => {
+    // The fixtures below place sessions on Monday AND Tuesday, which is the
+    // future when the suite runs on a Monday — so pin "now" to Wednesday of
+    // the current week. shouldAdvanceTime keeps waitFor/settled() working.
+    beforeEach(() => {
+      const wednesday = new Date();
+      wednesday.setDate(wednesday.getDate() - ((wednesday.getDay() + 6) % 7) + 2);
+      vi.useFakeTimers({ now: wednesday, shouldAdvanceTime: true });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('should count the distinct study days this week', async () => {
       // Monday and Tuesday of the current week, so the fixture never straddles
       // a week boundary the way "N days ago" would.
