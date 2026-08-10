@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cardXp } from '@/lib/flashcardUtils';
+import { onSessionEnd } from '@/lib/sessionSignal';
 
 import { type Achievement, useProgress, type UserProgress, XP_PERFECT_BONUS } from '../useProgress';
 
@@ -201,6 +202,39 @@ describe('useProgress session tracking', () => {
 
     const write = updates.filter((u) => u.table === 'user_progress').at(-1);
     expect(write?.payload.total_xp).toBe(100 + XP_PERFECT_BONUS);
+  });
+
+  it('publishes the session-end signal with the cards studied', async () => {
+    const { result } = renderProgress();
+    const seen: number[] = [];
+    const unsubscribe = onSessionEnd((signal) => seen.push(signal.cardsStudied));
+
+    await act(async () => {
+      await result.current.endSession('s1', {
+        cardsStudied: 7,
+        cardsCorrect: 4,
+        durationSecs: 60,
+      });
+    });
+    unsubscribe();
+
+    expect(seen).toEqual([7]);
+  });
+
+  // The buddy's session heart is paid off this signal, so a write that throws
+  // mid-endSession must not swallow it.
+  it('publishes the session-end signal even when a write throws', async () => {
+    const { result } = renderProgress();
+    const seen: number[] = [];
+    const unsubscribe = onSessionEnd((signal) => seen.push(signal.cardsStudied));
+    sbMock.auth.getUser.mockRejectedValueOnce(new Error('offline'));
+
+    await act(async () => {
+      await expect(result.current.endSession('s1', PERFECT_RUN)).rejects.toThrow('offline');
+    });
+    unsubscribe();
+
+    expect(seen).toEqual([5]);
   });
 
   it('does not award the perfect bonus for an imperfect session', async () => {

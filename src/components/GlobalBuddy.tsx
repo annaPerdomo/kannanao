@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useShopCtx } from '@/contexts/ShopContext';
 import { resolveBuddyKey } from '@/lib/buddies';
 
+import { BuddyStoryDialog } from './BuddyStoryDialog';
 import { HomeBuddy } from './HomeBuddy';
 
 // There is exactly one buddy in the app — practice/study screens don't
@@ -26,5 +27,10 @@ export function GlobalBuddy() {
   if (loading) return null;
   if (HIDE_ON_ROUTES.some((r) => pathname?.includes(r))) return null;
 
-  return <HomeBuddy buddyKey={resolveBuddyKey(equipped['study_buddy'])} />;
+  return (
+    <>
+      <HomeBuddy buddyKey={resolveBuddyKey(equipped['study_buddy'])} />
+      <BuddyStoryDialog />
+    </>
+  );
 }

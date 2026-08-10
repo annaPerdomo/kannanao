@@ -8,6 +8,7 @@ import { invalidateApiCache } from '@/lib/apiCache';
 import { publishAssignmentComplete } from '@/lib/assignmentSignal';
 import { CHEST_XP } from '@/lib/chest';
 import { cardXp } from '@/lib/flashcardUtils';
+import { publishSessionEnd } from '@/lib/sessionSignal';
 import { sb, upsertCardProgress } from '@/lib/supabase';
 import type { JlptLevel } from '@/types/flashcard';
 
@@ -585,81 +586,87 @@ export function useProgress(
       opts: { cardsStudied: number; cardsCorrect: number; durationSecs: number },
     ): Promise<AssignmentCompleteResult | null> => {
       const { cardsStudied, cardsCorrect, durationSecs } = opts;
-      await supabase
-        .from('study_sessions')
-        .update({ ended_at: new Date().toISOString(), duration_secs: durationSecs })
-        .eq('id', sessionId);
-
-      if (cardsStudied >= 5 && cardsCorrect === cardsStudied) {
-        // Every perfect session pays, not just the first. Level is recomputed
-        // so it can't drift out of sync with total_xp.
-        const base = progressRef.current;
-        if (base) {
-          const newXp = base.total_xp + XP_PERFECT_BONUS;
-          const newLevel = levelFromXp(newXp);
-          applyProgress({ ...base, total_xp: newXp, level: newLevel });
-          await supabase
-            .from('user_progress')
-            .update({ total_xp: newXp, level: newLevel })
-            .eq('id', base.id);
-        }
-
-        if (!achievements.find((a) => a.achievement_key === 'perfect_session')) {
-          const {
-            data: { user },
-          } = await supabase.auth.getUser();
-          await supabase
-            .from('user_achievements')
-            .upsert([{ user_id: user?.id, achievement_key: 'perfect_session' }], {
-              onConflict: 'user_id,achievement_key',
-            });
-
-          setNewlyUnlocked((prev) => {
-            const def = ACHIEVEMENTS.find((a) => a.key === 'perfect_session');
-            return def ? [...prev, def] : prev;
-          });
-        }
-      }
-
-      await fetchAll();
-
-      // Auto-complete any pending assignment for the deck that was just studied.
-      // Awaited (not fired and forgotten) so that anything reading the
-      // assignment afterwards — the quest's finish screen most of all — can't
-      // race the write and report a goal as missed.
+      // Declared out here so the finally below can still report what landed if
+      // one of the writes throws.
       let result: AssignmentCompleteResult | null = null;
       try {
-        const { data: session } = await supabase
+        await supabase
           .from('study_sessions')
-          .select('deck_id')
-          .eq('id', sessionId)
-          .single();
-        if (session?.deck_id) {
-          const { data: authData } = await supabase.auth.getSession();
-          const token = authData.session?.access_token;
-          if (token) {
-            const res = await fetch('/api/group/assignments/complete', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-              },
-              // sessionId lets the server evaluate mastery goals (mode +
-              // accuracy) against this session's stats.
-              body: JSON.stringify({ deckId: session.deck_id, sessionId }),
+          .update({ ended_at: new Date().toISOString(), duration_secs: durationSecs })
+          .eq('id', sessionId);
+
+        if (cardsStudied >= 5 && cardsCorrect === cardsStudied) {
+          // Every perfect session pays, not just the first. Level is recomputed
+          // so it can't drift out of sync with total_xp.
+          const base = progressRef.current;
+          if (base) {
+            const newXp = base.total_xp + XP_PERFECT_BONUS;
+            const newLevel = levelFromXp(newXp);
+            applyProgress({ ...base, total_xp: newXp, level: newLevel });
+            await supabase
+              .from('user_progress')
+              .update({ total_xp: newXp, level: newLevel })
+              .eq('id', base.id);
+          }
+
+          if (!achievements.find((a) => a.achievement_key === 'perfect_session')) {
+            const {
+              data: { user },
+            } = await supabase.auth.getUser();
+            await supabase
+              .from('user_achievements')
+              .upsert([{ user_id: user?.id, achievement_key: 'perfect_session' }], {
+                onConflict: 'user_id,achievement_key',
+              });
+
+            setNewlyUnlocked((prev) => {
+              const def = ACHIEVEMENTS.find((a) => a.key === 'perfect_session');
+              return def ? [...prev, def] : prev;
             });
-            // The assignment list is cached client-side; drop it so the
-            // dashboard reflects the auto-completed assignment right away.
-            invalidateApiCache('/api/group/assignments');
-            result = (await res.json().catch(() => null)) as AssignmentCompleteResult | null;
           }
         }
-      } catch {
-        // Non-critical — don't block the session end flow
+
+        await fetchAll();
+
+        // Auto-complete any pending assignment for the deck that was just studied.
+        // Awaited (not fired and forgotten) so that anything reading the
+        // assignment afterwards — the quest's finish screen most of all — can't
+        // race the write and report a goal as missed.
+        try {
+          const { data: session } = await supabase
+            .from('study_sessions')
+            .select('deck_id')
+            .eq('id', sessionId)
+            .single();
+          if (session?.deck_id) {
+            const { data: authData } = await supabase.auth.getSession();
+            const token = authData.session?.access_token;
+            if (token) {
+              const res = await fetch('/api/group/assignments/complete', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+                // sessionId lets the server evaluate mastery goals (mode +
+                // accuracy) against this session's stats.
+                body: JSON.stringify({ deckId: session.deck_id, sessionId }),
+              });
+              // The assignment list is cached client-side; drop it so the
+              // dashboard reflects the auto-completed assignment right away.
+              invalidateApiCache('/api/group/assignments');
+              result = (await res.json().catch(() => null)) as AssignmentCompleteResult | null;
+            }
+          }
+        } catch {
+          // Non-critical — don't block the session end flow
+        }
+      } finally {
+        // Published on every terminal path, thrown or not — a screen waiting on
+        // this has to be released, and the session heart is paid off it.
+        publishAssignmentComplete(result?.completed ?? 0);
+        publishSessionEnd(cardsStudied);
       }
-      // Published on the failure paths too — a screen waiting on this has to be
-      // released whether or not the write got through.
-      publishAssignmentComplete(result?.completed ?? 0);
       return result;
     },
     [achievements, supabase, fetchAll, applyProgress],

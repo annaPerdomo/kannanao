@@ -9,6 +9,7 @@ import { cardsToMatchWords, WordMatchEmbedded } from '@/components/Games';
 import { Loading } from '@/components/Loading';
 import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { useCombo } from '@/hooks/useCombo';
 import { useProgress } from '@/hooks/useProgress';
@@ -44,6 +45,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
   const { startSession, recordAnswer, endSession, addBonusXp, openDailyChest, progress } =
     useProgress();
   const { triggerXpEarned } = useXpAnimation();
+  const { awardFriendship } = useBuddyFriendshipCtx();
 
   // Every answer/bonus write is tracked here and awaited in finishQuest:
   // endSession re-reads progress from the DB (an in-flight bonus write would be
@@ -79,6 +81,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
   const [done, setDone] = useState(false);
   const [chestEligible, setChestEligible] = useState(false);
   const [perfect, setPerfect] = useState(false);
+  const [heartsEarned, setHeartsEarned] = useState(0);
 
   // Open the one review session on mount. startSession is identity-stable, so
   // this fires exactly once even as progress updates.
@@ -124,12 +127,21 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
           fromReview: true,
         }),
       );
+      // An emptied due queue is the day's adventure. Never awaited — hearts
+      // must not hold up or break the celebration. A failed count skips the
+      // award for good (endedRef blocks a retry), which beats paying out for a
+      // queue we can't confirm is empty.
+      if (dueCount === 0) {
+        void awardFriendship('adventure')
+          .then((award) => setHeartsEarned(award?.awarded ?? 0))
+          .catch(() => {});
+      }
     } catch {
       setChestEligible(false);
     }
 
     setDone(true);
-  }, [endSession, user]);
+  }, [endSession, user, awardFriendship]);
 
   // Cards already SRS-advanced by a correct answer this quest. The Boss Round
   // deliberately re-tests the last Word Match cards, and without this a card
@@ -215,6 +227,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
         subheading={t('clearedReview')}
         mode="study"
         exitLabel={t('backToReview')}
+        heartsEarned={heartsEarned}
         chest={
           chestEligible
             ? {

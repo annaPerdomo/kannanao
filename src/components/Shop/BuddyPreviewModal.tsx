@@ -7,8 +7,12 @@ import DialogActions from '@mui/material/DialogActions';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
 
+import { FriendshipMeter } from '@/components/FriendshipMeter';
 import { UserAvatar } from '@/components/UserAvatar';
+import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
+import { useShopCtx } from '@/contexts/ShopContext';
 import {
   BUDDY_ART,
   BUDDY_FACE_COUNT,
@@ -36,6 +40,13 @@ export function BuddyPreviewModal({
   const tBuddies = useTranslations('Shop.buddies');
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
+  const { ownsItem } = useShopCtx();
+  const { friendships, loadState, ensureLoaded } = useBuddyFriendshipCtx();
+  const owned = !!item && ownsItem(item.key);
+
+  useEffect(() => {
+    if (open && owned) void ensureLoaded();
+  }, [open, owned, ensureLoaded]);
 
   if (!item || !BUDDY_ART[item.key]) return null;
 
@@ -131,6 +142,28 @@ export function BuddyPreviewModal({
           {tItems(`${item.key}.description`)}
         </Typography>
       </Box>
+
+      {/* Owned buddies only: no teasing locked mechanics in the shop. Held
+          until the rows land — a meter that starts at "New Friend, 0/15" and
+          snaps to the real level reads as lost progress. */}
+      {owned && loadState === 'loaded' && (
+        <Box
+          sx={{
+            px: 3,
+            py: 2,
+            borderTop: `1px solid ${alpha(brand[300], 0.3)}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+          }}
+        >
+          <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: brand[700] }}>
+            {t('buddyPreview.friendshipLabel')}
+          </Typography>
+          <FriendshipMeter points={friendships[item.key]?.points ?? 0} size="small" />
+        </Box>
+      )}
 
       {/* The other half of the purchase: every face is a profile picture */}
       <Box

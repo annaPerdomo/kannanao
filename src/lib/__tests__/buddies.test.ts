@@ -132,7 +132,7 @@ describe('catalog consistency', () => {
     ['ja', ja],
   ] as const)('has %s name, description, and phrase sets for every buddy', (_lang, messages) => {
     const items = messages.Shop.items as Record<string, { name?: string; description?: string }>;
-    const phrases = messages.Shop.buddies as Record<string, Record<string, string[]>>;
+    const phrases = messages.Shop.buddies as Record<string, Record<string, unknown>>;
     for (const item of buddyItems) {
       expect(items[item.key]?.name, `items.${item.key}.name`).toBeTruthy();
       expect(items[item.key]?.description, `items.${item.key}.description`).toBeTruthy();
@@ -142,4 +142,37 @@ describe('catalog consistency', () => {
       }
     }
   });
+
+  // The other buddies ship without friendship copy on purpose (the readers
+  // guard for it); a half-authored level on these five is a bug.
+  const STORY_BUDDIES = [
+    'buddy_tango',
+    'buddy_bunny',
+    'buddy_pink_cat',
+    'buddy_tanuki',
+    'buddy_fox',
+  ];
+
+  it.each([
+    ['en', en],
+    ['ja', ja],
+  ] as const)(
+    'has a %s story and phrase for every level the five buddies unlock',
+    (_l, messages) => {
+      const buddies = messages.Shop.buddies as Record<string, Record<string, unknown>>;
+      for (const key of STORY_BUDDIES) {
+        const friendship = buddies[key]?.friendship as Record<string, Record<string, unknown>>;
+        expect(friendship, `buddies.${key}.friendship`).toBeTruthy();
+        for (const level of ['l2', 'l3', 'l4', 'l5']) {
+          for (const field of ['story', 'phrases']) {
+            const lines = friendship?.[level]?.[field];
+            expect(
+              Array.isArray(lines) && lines.length > 0,
+              `buddies.${key}.friendship.${level}.${field}`,
+            ).toBe(true);
+          }
+        }
+      }
+    },
+  );
 });

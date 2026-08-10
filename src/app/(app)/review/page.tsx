@@ -81,8 +81,8 @@ function CaughtUpHero() {
 /**
  * Review — the single cross-deck practice home. Reads top-to-bottom as: what's
  * due today → one big start button (the flip-review flow at /review/today) →
- * fun games that practice the same due cards first. The home ReviewTile links
- * here; no SRS jargon ever surfaces.
+ * fun games that practice the same due cards first. The home hero's adventure
+ * card links here; no SRS jargon ever surfaces.
  */
 export default function ReviewHubPage() {
   const t = useTranslations('Review.hubPage');

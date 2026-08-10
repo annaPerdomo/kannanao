@@ -59,6 +59,8 @@ export interface CelebrationScreenProps {
   mode: PracticeMode;
   /** When set, a tappable daily chest appears above the exit button. */
   chest?: CelebrationChest;
+  /** Friendship hearts earned on this clear. Hidden at 0. */
+  heartsEarned?: number;
   /** Exit button label (defaults to the translated "Back to Deck"). */
   exitLabel?: string;
   onExit: () => void;
@@ -191,11 +193,13 @@ export function CelebrationScreen({
   extra,
   mode,
   chest,
+  heartsEarned = 0,
   exitLabel,
   onExit,
   disableHandoff = false,
 }: CelebrationScreenProps) {
   const tCommon = useTranslations('Practice.common');
+  const tCeleb = useTranslations('Practice.celebration');
   const tQuest = useTranslations('AssignmentQuest');
   // In a quest the exit button becomes the one step forward.
   const handoff = useQuestHandoff();
@@ -349,6 +353,20 @@ export function CelebrationScreen({
             </Box>
           ))}
         </Box>
+
+        {heartsEarned > 0 && (
+          <Typography
+            sx={{
+              mt: 2,
+              fontSize: '1.05rem',
+              fontWeight: 800,
+              color: cfg.textColor,
+              animation: 'fadeUp 0.5s 0.64s ease both',
+            }}
+          >
+            {tCeleb('heartsEarned', { count: heartsEarned })}
+          </Typography>
+        )}
 
         {chest && <ChestReward chest={chest} textColor={cfg.textColor} />}
 

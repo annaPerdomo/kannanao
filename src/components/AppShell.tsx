@@ -2,6 +2,7 @@
 import Box from '@mui/material/Box';
 import { usePathname } from 'next/navigation';
 
+import { BuddyFriendshipProvider } from '@/contexts/BuddyFriendshipContext';
 import { BuddyReactionProvider } from '@/contexts/BuddyReactionContext';
 import { DirectMessagesProvider } from '@/contexts/DirectMessagesContext';
 import { ProgressProvider } from '@/contexts/ProgressContext';
@@ -41,27 +42,29 @@ export function AppShell({
     <XpAnimationProvider>
       <ProgressProvider initialProgress={initialProgress}>
         <DirectMessagesProvider initialUnreadCount={initialUnreadCount}>
-          <BuddyReactionProvider>
-            {!isLogin && <NavBar />}
-            <Box
-              component="main"
-              id="main-content"
-              sx={{
-                flex: 1,
-                pb:
-                  isFullHeight || isLogin
-                    ? 0
-                    : { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom))`, sm: 0 },
-                ...(isFullHeight && { overflow: 'hidden' }),
-              }}
-            >
-              <AuthGuard>{children}</AuthGuard>
-            </Box>
-            {!isFullHeight && showFooter && !isLogin && <Footer />}
-            {!isLogin && <BottomNav />}
-            {!isLogin && <GlobalBuddy />}
-            <PushAutoResubscribe />
-          </BuddyReactionProvider>
+          <BuddyFriendshipProvider>
+            <BuddyReactionProvider>
+              {!isLogin && <NavBar />}
+              <Box
+                component="main"
+                id="main-content"
+                sx={{
+                  flex: 1,
+                  pb:
+                    isFullHeight || isLogin
+                      ? 0
+                      : { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom))`, sm: 0 },
+                  ...(isFullHeight && { overflow: 'hidden' }),
+                }}
+              >
+                <AuthGuard>{children}</AuthGuard>
+              </Box>
+              {!isFullHeight && showFooter && !isLogin && <Footer />}
+              {!isLogin && <BottomNav />}
+              {!isLogin && <GlobalBuddy />}
+              <PushAutoResubscribe />
+            </BuddyReactionProvider>
+          </BuddyFriendshipProvider>
         </DirectMessagesProvider>
       </ProgressProvider>
     </XpAnimationProvider>
