@@ -91,7 +91,11 @@ export function WeekStatStrip({ members, activity }: WeekStatStripProps) {
         </StatPill>
 
         <StatPill>
-          <Typography sx={pillText}>{t('accuracy', { pct: stats.accuracyPct ?? '—' })}</Typography>
+          <Typography sx={pillText}>
+            {stats.accuracyPct === null
+              ? t('accuracyEmpty')
+              : t('accuracy', { pct: stats.accuracyPct })}
+          </Typography>
           {stats.accuracyDeltaPct !== null && stats.accuracyDeltaPct !== 0 && (
             <Box
               sx={{

@@ -1351,6 +1351,7 @@
       "active": "アクティブ {count}人",
       "cards": "{count, plural, other {カード#枚}}",
       "accuracy": "正答率 {pct}%",
+      "accuracyEmpty": "正答率 —",
       "accuracyTrendAriaUp": "先週より{pct}ポイント上昇",
       "accuracyTrendAriaDown": "先週より{pct}ポイント低下",
       "studied": "学習時間 {time}",

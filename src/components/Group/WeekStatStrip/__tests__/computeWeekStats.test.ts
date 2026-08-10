@@ -133,6 +133,12 @@ describe('computeWeekStats', () => {
     expect(stats.bestStreak).toEqual({ name: 'Naomi', days: 9 });
   });
 
+  it('reports no best streak when nobody in the group has one', () => {
+    const members = [member({ streakDays: 0 }), member({ streakDays: 0 })];
+    const stats = computeWeekStats(members, null, NOW);
+    expect(stats.bestStreak).toBeNull();
+  });
+
   it('sums mastered cards and group XP across all members', () => {
     const members = [
       member({ masteryStrong: 4, totalXp: 100 }),

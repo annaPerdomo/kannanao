@@ -13,6 +13,7 @@ export interface WeekStats {
   /** This week's accuracy minus last week's, in points — `null` when last week has no data. */
   accuracyDeltaPct: number | null;
   studySecs: number;
+  /** Longest live streak, or `null` when nobody in the group has one. */
   bestStreak: { name: string; days: number } | null;
   masteredCount: number;
   groupXp: number;
@@ -58,12 +59,15 @@ export function computeWeekStats(
     accuracyPct,
     accuracyDeltaPct,
     studySecs: sumLastDays(durationSeries, WEEK_DAYS),
-    bestStreak: bestStreakMember
-      ? {
-          name: bestStreakMember.displayName || bestStreakMember.username,
-          days: bestStreakMember.streakDays,
-        }
-      : null,
+    // A group where nobody has studied still has a "best" member — naming them
+    // with 0 days reads as a stat rather than the absence of one.
+    bestStreak:
+      bestStreakMember && bestStreakMember.streakDays > 0
+        ? {
+            name: bestStreakMember.displayName || bestStreakMember.username,
+            days: bestStreakMember.streakDays,
+          }
+        : null,
     masteredCount: members.reduce((sum, m) => sum + m.masteryStrong, 0),
     groupXp: members.reduce((sum, m) => sum + m.totalXp, 0),
   };

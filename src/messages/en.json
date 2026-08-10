@@ -1351,6 +1351,7 @@
       "active": "{count} active",
       "cards": "{count, plural, one {# card} other {# cards}}",
       "accuracy": "{pct}% accuracy",
+      "accuracyEmpty": "Accuracy: —",
       "accuracyTrendAriaUp": "Up {pct} percentage points from last week",
       "accuracyTrendAriaDown": "Down {pct} percentage points from last week",
       "studied": "{time} studied",
