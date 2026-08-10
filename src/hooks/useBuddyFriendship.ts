@@ -41,6 +41,12 @@ export interface FriendshipLevelUp {
   level: number;
 }
 
+/**
+ * 'idle' until someone calls ensureLoaded. Consumers need "not fetched yet"
+ * and "fetched, no rows" to be distinguishable — 0 ❤️ for the former is a lie.
+ */
+export type FriendshipLoadState = 'idle' | 'loading' | 'loaded' | 'error';
+
 interface DbBuddyFriendship {
   buddy_key: string;
   points: number | null;
@@ -112,19 +118,23 @@ export function useBuddyFriendship() {
   const buddyKey = resolveBuddyKey(shopEquipped['study_buddy']);
 
   const [friendships, setFriendships] = useState<Record<string, BuddyFriendship>>({});
-  const [loading, setLoading] = useState(false);
+  const [loadState, setLoadState] = useState<FriendshipLoadState>('idle');
   const [error, setError] = useState<string | null>(null);
   const [levelUpEvent, setLevelUpEvent] = useState<FriendshipLevelUp | null>(null);
 
+  const loadRef = useRef<{ userId: string; promise: Promise<void> } | null>(null);
+
   const fetchFriendships = useCallback(async (userId: string) => {
-    setLoading(true);
+    setLoadState('loading');
     const { data, error: err } = await sb
       .from('buddy_friendship')
       .select('*')
       .eq('user_id', userId);
     if (err) {
       setError(err.message);
-      setLoading(false);
+      setLoadState('error');
+      // ensureLoaded caches its promise, so a kept one would never retry.
+      loadRef.current = null;
       return;
     }
     const next: Record<string, BuddyFriendship> = {};
@@ -133,7 +143,7 @@ export function useBuddyFriendship() {
     });
     setFriendships(next);
     setError(null);
-    setLoading(false);
+    setLoadState('loaded');
   }, []);
 
   /**
@@ -141,9 +151,13 @@ export function useBuddyFriendship() {
    * cap is authoritative, so the local stamps only save a doomed call. Awarding
    * loads them; a screen that renders hearts calls this itself.
    */
-  const loadRef = useRef<{ userId: string; promise: Promise<void> } | null>(null);
   const ensureLoaded = useCallback(() => {
-    if (!user) return Promise.resolve();
+    // Consumers gate their render on this settling, so a signed-out visitor
+    // left at 'idle' would hold a skeleton forever.
+    if (!user) {
+      setLoadState('loaded');
+      return Promise.resolve();
+    }
     if (loadRef.current?.userId !== user.id) {
       loadRef.current = { userId: user.id, promise: fetchFriendships(user.id) };
     }
@@ -160,6 +174,7 @@ export function useBuddyFriendship() {
     if (user) return;
     loadRef.current = null;
     setFriendships({});
+    setLoadState('idle');
   }, [user]);
 
   const today = localDateString(new Date());
@@ -171,6 +186,13 @@ export function useBuddyFriendship() {
   friendshipsRef.current = friendships;
   const stampsRef = useRef(stamps);
   stampsRef.current = stamps;
+
+  // Optimistic hearts still awaiting their RPC, per buddy. A settling award
+  // rebases onto the server's total plus whatever the OTHER open awards added
+  // — baselining off local state folds in their unconfirmed points and leaves
+  // the total wrong until a full reload.
+  const inFlightRef = useRef(new Map<string, Map<number, number>>());
+  const awardIdRef = useRef(0);
 
   const awardFriendship = useCallback(
     async (source: FriendshipSource): Promise<FriendshipAward | null> => {
@@ -191,6 +213,19 @@ export function useBuddyFriendship() {
       // would claim this buddy was petted on another buddy's day.
       const previousRowStamp = (existing?.[SOURCE_FIELD[source]] as string | null) ?? null;
 
+      const awardId = ++awardIdRef.current;
+      const open = inFlightRef.current.get(buddyKey) ?? new Map<number, number>();
+      inFlightRef.current.set(buddyKey, open);
+      open.set(awardId, points);
+      /** Closes this award out and reports the hearts the others still hold. */
+      const settle = () => {
+        open.delete(awardId);
+        if (open.size === 0) inFlightRef.current.delete(buddyKey);
+        let pending = 0;
+        for (const value of open.values()) pending += value;
+        return pending;
+      };
+
       stampsRef.current = { ...stampsRef.current, [source]: awardedOn };
       setFriendships((current) => ({
         ...current,
@@ -201,10 +236,8 @@ export function useBuddyFriendship() {
         },
       }));
 
-      // Every write below is a DELTA, never an absolute. The adventure and
-      // session awards are both in flight at the end of a quest, and either one
-      // assigning its own total would erase the other's optimistic points.
       const rollback = () => {
+        settle();
         stampsRef.current = { ...stampsRef.current, [source]: previousStamp };
         setFriendships((current) => {
           const row = current[buddyKey];
@@ -238,15 +271,16 @@ export function useBuddyFriendship() {
           return null;
         }
 
-        const total = typeof result.points === 'number' ? result.points : before.points + points;
-        const drift = total - (before.points + points);
-        if (drift !== 0) {
+        const serverTotal = typeof result.points === 'number' ? result.points : null;
+        const pending = settle();
+        if (serverTotal !== null) {
           setFriendships((current) => {
             const row = current[buddyKey];
             if (!row) return current;
-            return { ...current, [buddyKey]: { ...row, points: row.points + drift } };
+            return { ...current, [buddyKey]: { ...row, points: serverTotal + pending } };
           });
         }
+        const total = serverTotal ?? before.points + points;
 
         // Levels come off the RPC's total, not local state: a concurrent
         // award's unconfirmed points in `before` would hide a real crossing.
@@ -289,7 +323,8 @@ export function useBuddyFriendship() {
   return {
     friendships,
     equipped,
-    loading,
+    loadState,
+    loading: loadState === 'loading',
     error,
     awardFriendship,
     petBuddy,

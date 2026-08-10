@@ -154,6 +154,26 @@ describe('useBuddyFriendship', () => {
 
       expect(result.current.error).toBe('boom');
       expect(result.current.loading).toBe(false);
+      expect(result.current.loadState).toBe('error');
+    });
+
+    it('should retry after a failed load rather than cache the failure', async () => {
+      setTable('buddy_friendship', null, { message: 'boom' });
+      const { result } = await renderLoaded();
+
+      setTable('buddy_friendship', [row({ points: 4 })]);
+      await act(async () => {
+        await result.current.ensureLoaded();
+      });
+
+      expect(result.current.loadState).toBe('loaded');
+      expect(result.current.equipped?.points).toBe(4);
+    });
+
+    it('should report an unfetched provider as idle, not loaded with no rows', () => {
+      const { result } = renderHook(() => useBuddyFriendship());
+
+      expect(result.current.loadState).toBe('idle');
     });
 
     it('should stay inert for a signed-out visitor', async () => {
@@ -395,6 +415,63 @@ describe('useBuddyFriendship', () => {
       expect(result.current.equipped?.points).toBe(11);
       expect(result.current.equipped?.lastSessionDate).toBe(todayLocal());
       expect(result.current.equipped?.lastAdventureDate).toBeNull();
+    });
+
+    // The mirror of the case above — the ordering that happens whenever the
+    // due-count read beats the session RPC home.
+    it('should not double-count when the awards settle in the other order', async () => {
+      const resolvers = deferRpc();
+      const { result } = await renderLoaded();
+
+      let session!: Promise<unknown>;
+      let adventure!: Promise<unknown>;
+      await act(async () => {
+        session = result.current.awardFriendship('session');
+      });
+      await act(async () => {
+        adventure = result.current.awardFriendship('adventure');
+      });
+
+      await act(async () => {
+        resolvers.adventure({ data: { status: 'ok', points: 13 }, error: null });
+        await adventure;
+      });
+      // 13 confirmed by the server, plus the session's 1 still in flight.
+      expect(result.current.equipped?.points).toBe(14);
+
+      await act(async () => {
+        resolvers.session({ data: { status: 'ok', points: 14 }, error: null });
+        await session;
+      });
+
+      expect(result.current.equipped?.points).toBe(14);
+    });
+
+    it('should take back only the capped award when it settles last', async () => {
+      const resolvers = deferRpc();
+      const { result } = await renderLoaded();
+
+      let session!: Promise<unknown>;
+      let adventure!: Promise<unknown>;
+      await act(async () => {
+        session = result.current.awardFriendship('session');
+      });
+      await act(async () => {
+        adventure = result.current.awardFriendship('adventure');
+      });
+
+      await act(async () => {
+        resolvers.adventure({ data: { status: 'ok', points: 13 }, error: null });
+        await adventure;
+      });
+      await act(async () => {
+        resolvers.session({ data: { status: 'capped' }, error: null });
+        await session;
+      });
+
+      // 10 + the adventure's 3. Rebasing off local state would have left 12.
+      expect(result.current.equipped?.points).toBe(13);
+      expect(result.current.equipped?.lastSessionDate).toBeNull();
     });
 
     it('should detect a level-up the other award had optimistically hidden', async () => {
