@@ -7,14 +7,18 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { toHoursMinutes } from '@/components/Group/activityWeek';
+import { SakuraIcon } from '@/components/SakuraIcon';
 import type { GroupActivityMember } from '@/hooks/useGroupActivity';
 
 import { ShowMoreButton } from '../ShowMoreButton';
 import { heatLevel, heatThresholds } from './chartScale';
 
 const ROWS_SHOWN = 10;
-const CELL = 22;
-const GAP = 3;
+/** Cells stretch to fill the card and stop growing at MAX so a 7-day window
+ * does not turn into a row of tiles; below MIN the grid scrolls instead. */
+const CELL_MIN = 22;
+const CELL_MAX = 34;
+const GAP = 4;
 /** Fixed rather than flexible: at 14 columns a `1fr` name column gets squeezed
  * to nothing on narrow screens, so the grid scrolls horizontally instead. */
 const NAME_COL = 96;
@@ -92,9 +96,7 @@ export function StudyHeatmap({ days, members, offset, studySecsThisWeek }: Study
         minWidth: { lg: 160 },
       }}
     >
-      <Typography sx={{ fontSize: '2rem', lineHeight: 1 }} aria-hidden>
-        🌱
-      </Typography>
+      <SakuraIcon aria-hidden sx={{ fontSize: '1.9rem', color: brand[400] }} />
       <Typography
         sx={{ fontSize: '1.5rem', fontWeight: 800, color: 'text.primary', lineHeight: 1.1 }}
       >
@@ -117,8 +119,8 @@ export function StudyHeatmap({ days, members, offset, studySecsThisWeek }: Study
     );
   }
 
-  const columns = `${NAME_COL}px repeat(${days.length}, ${CELL}px)`;
-  const gridMinWidth = NAME_COL + days.length * (CELL + GAP);
+  const columns = `${NAME_COL}px repeat(${days.length}, minmax(${CELL_MIN}px, 1fr))`;
+  const gridMinWidth = NAME_COL + days.length * (CELL_MIN + GAP);
 
   return (
     <Box
@@ -152,7 +154,7 @@ export function StudyHeatmap({ days, members, offset, studySecsThisWeek }: Study
                   gridTemplateColumns: columns,
                   gap: `${GAP}px`,
                   alignItems: 'center',
-                  mb: '3px',
+                  mb: `${GAP}px`,
                 }}
               >
                 <Typography sx={{ fontSize: '0.82rem', color: 'text.primary', pr: 1 }} noWrap>
@@ -170,8 +172,10 @@ export function StudyHeatmap({ days, members, offset, studySecsThisWeek }: Study
                         tabIndex={0}
                         aria-label={label}
                         sx={{
-                          width: CELL,
-                          height: CELL,
+                          width: '100%',
+                          maxWidth: CELL_MAX,
+                          aspectRatio: '1 / 1',
+                          mx: 'auto',
                           borderRadius: '6px',
                           bgcolor: RAMP[heatLevel(value, thresholds)],
                           transition: 'transform 0.12s ease',

@@ -1,6 +1,8 @@
 'use client';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
@@ -48,6 +50,7 @@ export function OverviewTab({
   onNavigateTab,
   onOpenMaterials,
 }: OverviewTabProps) {
+  const theme = useTheme();
   const tc = useTranslations('Group.charts');
   const [rangeDays, setRangeDays] = useState<ActivityRangeDays>(14);
 
@@ -91,7 +94,15 @@ export function OverviewTab({
         </Box>
 
         <Box sx={{ order: 4 }}>
-          <SectionCard title={tc('heatmapHeading')}>
+          <SectionCard
+            icon={
+              <CalendarMonthOutlinedIcon
+                aria-hidden
+                sx={{ fontSize: '1.15rem', color: theme.palette.brand[600] }}
+              />
+            }
+            title={tc('heatmapHeading')}
+          >
             {activityError ? (
               <Alert severity="error">{activityError}</Alert>
             ) : activityLoading && !activity ? (
