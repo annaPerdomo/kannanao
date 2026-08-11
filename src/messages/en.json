@@ -457,7 +457,7 @@
       "previousCardAria": "Previous card",
       "nextCardAria": "Next card",
       "howDidYouDo": "HOW DID YOU DO?",
-      "tapCardToFlip": "TAP CARD TO FLIP",
+      "tapCardToCheck": "TAP CARD TO CHECK",
       "finishSession": "Finish Session ✨",
       "nextRound": "Next round →",
       "completionSubheading": "{count, plural, one {You studied all # card!} other {You studied all # cards!}}"

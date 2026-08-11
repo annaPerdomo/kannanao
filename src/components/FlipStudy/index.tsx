@@ -74,10 +74,9 @@ const CARD_ASPECT_RATIO = `${CARD_W} / ${CARD_H}`;
 const CARD_MIN_H = 280;
 
 /**
- * Height reserved for the self-grading row whether or not the card is flipped.
- * Growing the layout at flip time would resize the card underneath it mid-read.
- * Sized for the taller of the two buttons: "Got it" carries furigana, and the
- * ruby annotation adds a line above the Japanese label.
+ * Floor for the self-grading row, sized for the taller of the two buttons:
+ * "Got it" carries furigana, and the ruby annotation adds a line above the
+ * Japanese label.
  */
 const GRADE_ROW_PX = 74;
 
@@ -126,8 +125,7 @@ export default function FlipStudy({
   const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(
     null,
   );
-  // True once the current card has been flipped to its answer — gates the
-  // self-grading buttons so they only appear after the student has seen it.
+  // Only drives the prompt under the card; grading is available either way.
   const [flipped, setFlipped] = useState(false);
 
   // ── Session tracking ──────────────────────────────────────────────────────
@@ -462,10 +460,9 @@ export default function FlipStudy({
         </Box>
 
         <Box sx={{ [LANDSCAPE_FIT]: { gridColumn: 2, gridRow: 3 } }}>
-          {/* Self-grading, revealed once the card is flipped. The row keeps its
-            height while hidden so the card never resizes at flip time;
-            `visibility` (not a conditional render) also keeps the buttons out
-            of the tab order until then. */}
+          {/* Deliberately not gated on `flipped`: knowing a word without turning
+            it over is the whole point, and requiring a flip to say so trained
+            students to flip every card. */}
           <Box
             sx={{
               display: 'flex',
@@ -473,9 +470,7 @@ export default function FlipStudy({
               gap: 2,
               mt: { xs: 1.5, sm: 2 },
               minHeight: `${GRADE_ROW_PX}px`,
-              visibility: flipped && !navigating ? 'visible' : 'hidden',
             }}
-            aria-hidden={!flipped || navigating}
           >
             {/* Both use the contained variant's white label. "Still learning"
               keeps the stock brand 600→700 background; "Got it" swaps its
@@ -487,6 +482,7 @@ export default function FlipStudy({
             <Button
               variant="contained"
               onClick={() => handleGrade(false)}
+              disabled={navigating}
               sx={{ flex: 1, maxWidth: 200, py: 1.25, borderRadius: 3 }}
             >
               <Box
@@ -516,6 +512,7 @@ export default function FlipStudy({
             <Button
               variant="contained"
               onClick={() => handleGrade(true)}
+              disabled={navigating}
               sx={{
                 flex: 1,
                 maxWidth: 200,
@@ -578,7 +575,7 @@ export default function FlipStudy({
             </IconButton>
 
             <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: '0.08em' }}>
-              {flipped ? t('howDidYouDo') : t('tapCardToFlip')}
+              {flipped ? t('howDidYouDo') : t('tapCardToCheck')}
             </Typography>
 
             <IconButton
