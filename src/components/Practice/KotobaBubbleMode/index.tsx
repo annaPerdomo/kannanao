@@ -457,7 +457,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
-        minHeight: { xs: 'calc(100vh - 260px)', sm: 'calc(100vh - 280px)' },
+        flex: 1,
       }}
     >
       <XpEarnedPop
@@ -485,7 +485,8 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
         variant="determinate"
         value={progress}
         sx={{
-          mb: { xs: 2, sm: 3 },
+          mb: { xs: 1.5, sm: 2 },
+          flexShrink: 0,
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[100], 0.5),
@@ -496,7 +497,8 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
         }}
       />
 
-      {/* Sentence card — fills available space */}
+      {/* Sentence card — fills the available space, never less than the sentence
+          needs, so a long one scrolls instead of printing over the buttons. */}
       <Paper
         elevation={0}
         sx={{
@@ -509,8 +511,8 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
           border: `1px solid ${alpha(brand[200], 0.5)}`,
           bgcolor: alpha('#fff', 0.5),
           px: { xs: 2, sm: 4 },
-          py: { xs: 3, sm: 4 },
-          mb: 3,
+          py: { xs: 2, sm: 3 },
+          mb: 2,
         }}
       >
         {/* Conversation group label */}
@@ -599,7 +601,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
         direction="row"
         spacing={{ xs: 2, sm: 3 }}
         justifyContent="center"
-        sx={{ mb: 3, flexWrap: 'wrap', gap: { xs: 2, sm: 3 } }}
+        sx={{ mb: 2, flexShrink: 0, flexWrap: 'wrap', gap: { xs: 2, sm: 3 } }}
       >
         {options.map((particle, i) => {
           let state: 'idle' | 'correct' | 'wrong' = 'idle';
@@ -622,7 +624,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
 
       {/* Next button after answering */}
       {isCorrect !== null && (
-        <Box sx={{ textAlign: 'center', mb: 2 }}>
+        <Box sx={{ textAlign: 'center', mb: 1, flexShrink: 0 }}>
           <Button
             variant="contained"
             onClick={handleNext}

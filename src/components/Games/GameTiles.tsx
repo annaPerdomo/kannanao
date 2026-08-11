@@ -1,6 +1,6 @@
 'use client';
 
-import { alpha, Box, Stack, Typography } from '@mui/material';
+import { alpha, Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -44,6 +44,7 @@ function GameCard({ title, jpTitle, description, emoji, gradient, href }: GameCa
       }}
       sx={{
         cursor: 'pointer',
+        height: '100%',
         borderRadius: '16px',
         bgcolor: 'background.paper',
         border: `1px solid ${alpha(brand[300], 0.2)}`,
@@ -82,8 +83,17 @@ function GameCard({ title, jpTitle, description, emoji, gradient, href }: GameCa
         {emoji}
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-          <Typography sx={{ fontWeight: 700, fontSize: '0.92rem', color: 'text.primary' }}>
+        {/* Too narrow for both names side by side drops the Japanese to its own
+            line, rather than breaking either mid-word. */}
+        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
+          <Typography
+            sx={{
+              fontWeight: 700,
+              fontSize: '0.92rem',
+              color: 'text.primary',
+              whiteSpace: 'nowrap',
+            }}
+          >
             {title}
           </Typography>
           <Typography
@@ -91,6 +101,7 @@ function GameCard({ title, jpTitle, description, emoji, gradient, href }: GameCa
               fontFamily: (t) => t.fonts.jp,
               fontSize: '0.75rem',
               color: 'text.secondary',
+              whiteSpace: 'nowrap',
             }}
           >
             {jpTitle}
@@ -148,7 +159,17 @@ const GAMES: GameConfig[] = [
 export function GameTiles() {
   const t = useTranslations('Games.tiles');
   return (
-    <Stack spacing={1.5}>
+    // auto-fit, not a breakpoint: the list is full-width on a phone and a side
+    // column on a sideways tablet, so tiles per row follows the space it got.
+    // Titles truncate below 280px; the inner min() keeps that floor from
+    // overflowing a narrower container.
+    <Box
+      sx={{
+        display: 'grid',
+        gap: 1.5,
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
+      }}
+    >
       {GAMES.map((game) => (
         <GameCard
           key={game.href}
@@ -160,6 +181,6 @@ export function GameTiles() {
           href={game.href}
         />
       ))}
-    </Stack>
+    </Box>
   );
 }

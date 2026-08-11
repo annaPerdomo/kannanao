@@ -234,7 +234,14 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
   const answeredWrong = !!selected && !answeredCorrectly;
 
   return (
-    <Box sx={{ position: 'relative' }}>
+    <Box
+      sx={{
+        position: 'relative',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
       {/* Header */}
       <Box
@@ -242,7 +249,8 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          mb: { xs: 1, sm: 2 },
+          mb: { xs: 1, sm: 1.5 },
+          flexShrink: 0,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -270,7 +278,8 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
         variant="determinate"
         value={(index / queue.currentCards.length) * 100}
         sx={{
-          mb: { xs: 2, sm: 3 },
+          mb: { xs: 1.5, sm: 2 },
+          flexShrink: 0,
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[300], 0.12),
@@ -278,10 +287,17 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
         }}
       />
 
-      {/* Word card */}
+      {/* Word card — takes the height the choices below don't need, so the
+          answer image can appear without pushing anything off screen. Grow-only
+          (`1 0 auto`): it clips its overflow, so shrinking would cut off the
+          word rather than scroll the page. */}
       <Box
         sx={{
           position: 'relative',
+          flex: '1 0 auto',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
           border: '2px solid',
           borderColor: selected
             ? answeredCorrectly
@@ -290,33 +306,45 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
             : alpha(brand[300], 0.45),
           borderRadius: 3,
           overflow: 'hidden',
-          mb: { xs: 2, sm: 3 },
+          mb: { xs: 1.5, sm: 2 },
           boxShadow: `0 8px 24px ${alpha(brand[300], 0.12)}`,
           transition: 'border-color 0.25s',
         }}
       >
         {/* Image and example sentence would give the meaning away, so they only
-            appear after answering, as feedback that reinforces the word. */}
+            appear after answering, as feedback that reinforces the word. The
+            image fills what the card has left, down to a floor below which it
+            reads as a smear rather than a picture. */}
         {selected && card.imageUrl && imageReady && (
-          <Box sx={{ position: 'relative' }}>
+          <Box sx={{ position: 'relative', flex: 1, minHeight: { xs: 120, sm: 160 } }}>
             <Box
               component="img"
               src={card.imageUrl}
               alt={card.word}
-              sx={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }}
+              sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
             <UnsplashAttribution url={card.imageUrl} />
           </Box>
         )}
-        <Box sx={{ p: { xs: 2, sm: 3 }, textAlign: 'center', bgcolor: surfaces.input }}>
+        <Box
+          sx={{
+            flexShrink: 0,
+            p: { xs: 1.5, sm: 2 },
+            textAlign: 'center',
+            bgcolor: surfaces.input,
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
             <Typography
               sx={{
                 fontFamily: (t) => t.fonts.jp,
                 fontSize:
                   card.cardType === 'phrase'
-                    ? '2.2rem'
-                    : titleFontSize(display.titleText, 2.2, 1.1),
+                    ? { xs: '2.2rem', sm: '3rem' }
+                    : {
+                        xs: titleFontSize(display.titleText, 2.2, 1.1),
+                        sm: titleFontSize(display.titleText, 3.2, 1.4),
+                      },
                 fontWeight: 700,
                 color: 'text.primary',
                 mb: 0.5,
@@ -375,30 +403,32 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
       </Box>
 
       {/* Answer choices */}
-      <ChoiceGrid
-        choices={choices}
-        correct={card.meaning}
-        selected={selected}
-        onSelect={handleSelect}
-      />
+      <Box sx={{ flexShrink: 0 }}>
+        <ChoiceGrid
+          choices={choices}
+          correct={card.meaning}
+          selected={selected}
+          onSelect={handleSelect}
+        />
+      </Box>
 
       {(answeredWrong || holdForReplay) && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1, flexShrink: 0 }}>
           <Button variant="contained" onClick={next} size="large">
             {index + 1 >= queue.currentCards.length ? t('seeResults') : t('nextArrow')}
           </Button>
         </Box>
       )}
       {answeredCorrectly && !holdForReplay && (
-        <Box sx={{ textAlign: 'center', mb: 2 }}>
+        <Box sx={{ textAlign: 'center', mb: 1, flexShrink: 0 }}>
           <Typography variant="body2" color="success.main" sx={{ fontStyle: 'italic' }}>
             {tCommon('correctMovingOn')}
           </Typography>
         </Box>
       )}
 
-      {/* Left on a phone: the floating buddy parks in the right-hand corner. */}
-      <Box sx={{ mt: { xs: 1, sm: 2 }, textAlign: { xs: 'left', sm: 'right' } }}>
+      {/* Left, not right: the floating buddy parks over the bottom-right corner. */}
+      <Box sx={{ mt: { xs: 0.5, sm: 1 }, flexShrink: 0, textAlign: 'left' }}>
         <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
           {tCommon('quitAndSave')}
         </Button>

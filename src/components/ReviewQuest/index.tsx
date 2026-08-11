@@ -272,8 +272,10 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
     );
   }
 
+  // Each node brings its own <PracticeStage>/<GameShell> container; a wrapper
+  // here would stack page padding on top of theirs and cost the fold that much.
   return (
-    <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, pt: 3 }}>
+    <>
       {node?.type === 'warmup' && (
         <FlipStudy
           cards={plan.warmup}
@@ -309,6 +311,6 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
           questMap={questMap}
         />
       )}
-    </Box>
+    </>
   );
 }

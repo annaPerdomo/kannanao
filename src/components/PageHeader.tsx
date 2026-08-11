@@ -25,8 +25,8 @@ interface PageHeaderProps {
   endContent?: React.ReactNode;
   /** Use gradient text for the title */
   gradientTitle?: boolean;
-  /** Bottom margin override (default 4 = 32px) */
-  mb?: number;
+  /** Bottom margin override (default 4 = 32px). */
+  mb?: number | Partial<Record<'xs' | 'sm' | 'md' | 'lg', number>>;
   /** Compact mode for in-page section headers */
   compact?: boolean;
 }

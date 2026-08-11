@@ -1,14 +1,13 @@
 'use client';
 import CheckIcon from '@mui/icons-material/Check';
 import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined';
-import { Box, Button, Chip, Grid, LinearProgress, Typography } from '@mui/material';
+import { Box, Button, Chip, LinearProgress, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
@@ -103,12 +102,11 @@ function pairsForBoard(cols: number): number {
 }
 export const PHONE_PAIRS_PER_ROUND = pairsForBoard(PHONE_COLS);
 export const NARROW_PAIRS_PER_ROUND = pairsForBoard(NARROW_COLS);
-const TILE_GAP_PX = 12; // Grid spacing={1.5}
-/** Everything above and below the board: app bars, page padding, header, status row, quit row. */
-const PHONE_BOARD_CHROME_PX = BOTTOM_NAV_HEIGHT + 296;
-const PHONE_TILE_MIN_PX = 64;
-/** Past this a tile is just a big empty box, so tall phones keep the slack instead. */
-const PHONE_TILE_MAX_PX = 120;
+const TILE_GAP_PX = 12;
+/** Below this a tile stops being a comfortable tap target. */
+const TILE_MIN_PX = 64;
+/** Past this a tile is just a big empty box, so tall screens keep the slack. */
+const TILE_MAX_PX = 120;
 
 function formatTime(secs: number): string {
   const m = Math.floor(secs / 60);
@@ -158,11 +156,13 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
 
   const { triggerReaction } = useBuddyReaction();
 
-  // From the tiles actually dealt, so a short final round still fills the board.
-  const phoneRows = Math.max(1, Math.ceil((queue.currentCards.length * 2) / cols));
-  const phoneTileHeight = `clamp(${PHONE_TILE_MIN_PX}px, calc((100dvh - ${
-    PHONE_BOARD_CHROME_PX + (phoneRows - 1) * TILE_GAP_PX
-  }px - env(safe-area-inset-bottom)) / ${phoneRows}), ${PHONE_TILE_MAX_PX}px)`;
+  // Rows come from the tiles actually dealt (a short final round still fills
+  // the board), per breakpoint since the column count changes.
+  const tileCount = queue.currentCards.length * 2;
+  const boardMaxHeight = (columns: number) => {
+    const rows = Math.max(1, Math.ceil(tileCount / columns));
+    return `${rows * TILE_MAX_PX + (rows - 1) * TILE_GAP_PX}px`;
+  };
 
   const { startSession, recordAnswer, endSession } = useProgress();
   // Stable per-session pick so the completion phrase doesn't flicker on re-render.
@@ -356,13 +356,14 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
       : matched.size / queue.currentCards.length;
 
   return (
-    <Box>
+    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       <Box
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          mb: { xs: 1, sm: 2 },
+          mb: { xs: 1, sm: 1.5 },
+          flexShrink: 0,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -399,7 +400,8 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
         variant="determinate"
         value={overallProgress * 100}
         sx={{
-          mb: { xs: 2, sm: 3 },
+          mb: { xs: 1.5, sm: 2 },
+          flexShrink: 0,
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[300], 0.12),
@@ -407,61 +409,111 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
         }}
       />
 
-      <Grid container spacing={1.5}>
+      {/* No `minHeight: 0`: a round with more rows than the viewport can hold
+          (a full-deck batch) must push the stage taller and scroll the page,
+          not spill tiles over the quit button. */}
+      <Box
+        sx={{
+          flex: 1,
+          alignSelf: 'center',
+          width: '100%',
+          display: 'grid',
+          gap: `${TILE_GAP_PX}px`,
+          gridTemplateColumns: {
+            xs: `repeat(${cols}, minmax(0, 1fr))`,
+            sm: 'repeat(3, minmax(0, 1fr))',
+            md: 'repeat(4, minmax(0, 1fr))',
+          },
+          // `auto` min, not the tap-target floor: a long English gloss has to be
+          // able to push its row taller than the height the board was dealt.
+          gridAutoRows: 'minmax(auto, 1fr)',
+          maxHeight: {
+            xs: boardMaxHeight(cols),
+            sm: boardMaxHeight(3),
+            md: boardMaxHeight(4),
+          },
+        }}
+      >
         {tiles.map((tile) => {
           const isMatched = matched.has(tile.cardId);
           const isSelected = selected?.id === tile.id;
           const isWrong = wrong === tile.id || (!!wrong && selected?.id === tile.id);
           return (
-            <Grid size={{ xs: 12 / cols, sm: 4, md: 3 }} key={tile.id}>
+            <Box
+              key={tile.id}
+              sx={{
+                position: 'relative',
+                p: { xs: 1, sm: 1.5 },
+                border: '2px solid',
+                borderRadius: 3,
+                textAlign: 'center',
+                minWidth: 0,
+                minHeight: `${TILE_MIN_PX}px`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.15s',
+                borderColor: isMatched
+                  ? 'success.main'
+                  : isWrong
+                    ? 'error.main'
+                    : isSelected
+                      ? 'primary.main'
+                      : alpha(brand[200], 0.7),
+                bgcolor: isMatched
+                  ? alpha(theme.palette.success.main, 0.1)
+                  : isWrong
+                    ? alpha(theme.palette.error.main, 0.08)
+                    : isSelected
+                      ? alpha(brand[300], 0.16)
+                      : surfaces.input,
+                opacity: isMatched ? 0.75 : 1,
+                transform: isSelected ? 'scale(1.04)' : 'scale(1)',
+                '&:hover': !isMatched
+                  ? { borderColor: brand[500], bgcolor: alpha(brand[300], 0.2) }
+                  : {},
+              }}
+            >
+              {/* The tile's button sits under the content rather than wrapping
+                  it: nesting the read-aloud button inside would swallow its own
+                  click and Enter/Space. */}
               <Box
-                onClick={() => !isMatched && handleSelect(tile)}
+                component="button"
+                type="button"
+                aria-label={tile.label}
+                aria-pressed={isSelected}
+                disabled={isMatched}
+                onClick={() => handleSelect(tile)}
                 sx={{
-                  p: { xs: 1, sm: 2 },
-                  border: '2px solid',
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  textAlign: 'center',
+                  position: 'absolute',
+                  inset: 0,
+                  p: 0,
+                  border: 0,
+                  background: 'none',
+                  borderRadius: 'inherit',
                   cursor: isMatched ? 'default' : 'pointer',
-                  minHeight: { xs: 0, sm: 72 },
-                  height: { xs: phoneTileHeight, sm: 'auto' },
+                  '&:focus-visible': {
+                    outline: `2px solid ${brand[600]}`,
+                    outlineOffset: '-4px',
+                  },
+                }}
+              />
+              <Box
+                sx={{
+                  position: 'relative',
+                  pointerEvents: 'none',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  transition: 'all 0.15s',
-                  borderColor: isMatched
-                    ? 'success.main'
-                    : isWrong
-                      ? 'error.main'
-                      : isSelected
-                        ? 'primary.main'
-                        : alpha(brand[200], 0.7),
-                  bgcolor: isMatched
-                    ? alpha(theme.palette.success.main, 0.1)
-                    : isWrong
-                      ? alpha(theme.palette.error.main, 0.08)
-                      : isSelected
-                        ? alpha(brand[300], 0.16)
-                        : surfaces.input,
-                  opacity: isMatched ? 0.75 : 1,
-                  transform: isSelected ? 'scale(1.04)' : 'scale(1)',
-                  '&:hover': !isMatched
-                    ? { borderColor: brand[500], bgcolor: alpha(brand[300], 0.2) }
-                    : {},
+                  gap: 0.5,
+                  minWidth: 0,
+                  maxWidth: '100%',
                 }}
               >
                 {isMatched ? (
                   <CheckIcon sx={{ fontSize: '1.2rem', color: 'success.main' }} />
                 ) : tile.side === 'jp' ? (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      minWidth: 0,
-                      maxWidth: '100%',
-                    }}
-                  >
+                  <>
                     <Typography
                       sx={{
                         fontFamily: '"Noto Serif JP", serif',
@@ -473,8 +525,13 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                     >
                       {tile.label}
                     </Typography>
-                    <SpeakButton text={tile.speak} iconSize="0.9rem" hitSlop={4} />
-                  </Box>
+                    <SpeakButton
+                      text={tile.speak}
+                      iconSize="0.9rem"
+                      hitSlop={4}
+                      sx={{ pointerEvents: 'auto' }}
+                    />
+                  </>
                 ) : (
                   <Typography
                     sx={{
@@ -489,13 +546,13 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                   </Typography>
                 )}
               </Box>
-            </Grid>
+            </Box>
           );
         })}
-      </Grid>
+      </Box>
 
-      {/* Left on a phone: the floating buddy parks in the right-hand corner. */}
-      <Box sx={{ mt: { xs: 1, sm: 2 }, textAlign: { xs: 'left', sm: 'right' } }}>
+      {/* Left, not right: the floating buddy parks over the bottom-right corner. */}
+      <Box sx={{ mt: { xs: 1, sm: 1.5 }, flexShrink: 0, textAlign: 'left' }}>
         <Button size="small" color="inherit" onClick={handleExit} sx={{ opacity: 0.5 }}>
           {tCommon('quitAndSave')}
         </Button>

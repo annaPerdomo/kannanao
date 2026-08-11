@@ -18,6 +18,7 @@ import {
   ReadingMode,
 } from '@/components/Practice/ReadingMode';
 import { RecallMode } from '@/components/Practice/RecallMode';
+import { PracticeStage } from '@/components/PracticeStage';
 import { useCards } from '@/hooks/useCards';
 import { useDecks } from '@/hooks/useDecks';
 import { LAYOUT } from '@/theme';
@@ -121,13 +122,11 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
   // Quiz asks a fixed set of up to 10 questions and caps itself — no batch picker.
   if (mode === 'quiz') {
     return (
-      <Box
-        sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
-      >
-        <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
+      <PracticeStage>
+        <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={2} />
         {questBanner}
         <QuizMode cards={modeCards} deckId={deckId} onExit={onBack} />
-      </Box>
+      </PracticeStage>
     );
   }
 
@@ -164,8 +163,8 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
   const effectiveBatchSize = batchSize ?? Math.min(modeCards.length, maxBatchForMode(mode));
 
   return (
-    <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}>
-      <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
+    <PracticeStage>
+      <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={2} />
 
       {questBanner}
 
@@ -217,6 +216,6 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
           onExit={onBack}
         />
       )}
-    </Box>
+    </PracticeStage>
   );
 }

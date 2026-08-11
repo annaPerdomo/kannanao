@@ -253,7 +253,14 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
   const answeredWrong = !!selected && !answeredCorrectly;
 
   return (
-    <Box sx={{ position: 'relative' }}>
+    <Box
+      sx={{
+        position: 'relative',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
 
       <Box
@@ -261,7 +268,8 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          mb: { xs: 1, sm: 2 },
+          mb: { xs: 1, sm: 1.5 },
+          flexShrink: 0,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -289,7 +297,8 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
         variant="determinate"
         value={(index / queue.currentCards.length) * 100}
         sx={{
-          mb: { xs: 2, sm: 3 },
+          mb: { xs: 1.5, sm: 2 },
+          flexShrink: 0,
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[300], 0.12),
@@ -297,9 +306,16 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
         }}
       />
 
-      {/* Sound card — the Japanese stays hidden until the question is answered */}
+      {/* Sound card — the Japanese stays hidden until the question is answered.
+          Takes the slack so revealing it never pushes the choices off screen.
+          Grow-only (`1 0 auto`): it clips its overflow, so shrinking would hide
+          the play button rather than scroll. */}
       <Box
         sx={{
+          flex: '1 0 auto',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
           border: '2px solid',
           borderColor: selected
             ? answeredCorrectly
@@ -307,8 +323,8 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
               : 'error.main'
             : alpha(brand[300], 0.45),
           borderRadius: 3,
-          p: { xs: 2, sm: 3 },
-          mb: { xs: 2, sm: 3 },
+          p: { xs: 1.5, sm: 2 },
+          mb: { xs: 1.5, sm: 2 },
           textAlign: 'center',
           bgcolor: surfaces.input,
           boxShadow: `0 8px 24px ${alpha(brand[300], 0.12)}`,
@@ -323,6 +339,8 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
             width: { xs: 84, sm: 104 },
             height: { xs: 84, sm: 104 },
             mb: { xs: 1, sm: 1.5 },
+            flexShrink: 0,
+            alignSelf: 'center',
             color: 'primary.contrastText',
             background: `linear-gradient(135deg, ${brand[400]}, ${brand[600]})`,
             boxShadow: `0 10px 26px ${alpha(brand[500], 0.35)}`,
@@ -347,7 +365,12 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
               sx={{
                 fontFamily: (t) => t.fonts.jp,
                 fontSize:
-                  card.cardType === 'phrase' ? '2.2rem' : titleFontSize(card.word, 2.2, 1.1),
+                  card.cardType === 'phrase'
+                    ? { xs: '2.2rem', sm: '3rem' }
+                    : {
+                        xs: titleFontSize(card.word, 2.2, 1.1),
+                        sm: titleFontSize(card.word, 3.2, 1.4),
+                      },
                 fontWeight: 700,
                 color: 'text.primary',
                 whiteSpace: card.cardType === 'phrase' ? undefined : 'nowrap',
@@ -385,30 +408,32 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
         </Box>
       </Box>
 
-      <ChoiceGrid
-        choices={choices}
-        correct={card.meaning}
-        selected={selected}
-        onSelect={handleSelect}
-      />
+      <Box sx={{ flexShrink: 0 }}>
+        <ChoiceGrid
+          choices={choices}
+          correct={card.meaning}
+          selected={selected}
+          onSelect={handleSelect}
+        />
+      </Box>
 
       {answeredWrong && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1, flexShrink: 0 }}>
           <Button variant="contained" onClick={next} size="large">
             {index + 1 >= queue.currentCards.length ? t('seeResults') : t('nextArrow')}
           </Button>
         </Box>
       )}
       {answeredCorrectly && (
-        <Box sx={{ textAlign: 'center', mb: 2 }}>
+        <Box sx={{ textAlign: 'center', mb: 1, flexShrink: 0 }}>
           <Typography variant="body2" color="success.main" sx={{ fontStyle: 'italic' }}>
             {tCommon('correctMovingOn')}
           </Typography>
         </Box>
       )}
 
-      {/* Left on a phone: the floating buddy parks in the right-hand corner. */}
-      <Box sx={{ mt: { xs: 1, sm: 2 }, textAlign: { xs: 'left', sm: 'right' } }}>
+      {/* Left, not right: the floating buddy parks over the bottom-right corner. */}
+      <Box sx={{ mt: { xs: 0.5, sm: 1 }, flexShrink: 0, textAlign: 'left' }}>
         <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
           {tCommon('quitAndSave')}
         </Button>

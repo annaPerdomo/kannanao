@@ -72,6 +72,11 @@ const CARDS: Flashcard[] = [
   makeCard('c4', 'とり', 'bird'),
 ];
 
+/** The tile's label lives on the button that covers it, not on the text node. */
+function tile(label: string) {
+  return screen.getByRole('button', { name: label });
+}
+
 describe('MatchMode', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -141,7 +146,7 @@ describe('MatchMode', () => {
       expect(screen.getByText('ねこ')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText('ねこ'));
+    fireEvent.click(tile('ねこ'));
   });
 
   it('should allow clicking a word tile without errors', async () => {
@@ -154,7 +159,7 @@ describe('MatchMode', () => {
       expect(screen.getByText('cat')).toBeInTheDocument();
     });
 
-    expect(() => fireEvent.click(screen.getByText('ねこ'))).not.toThrow();
+    expect(() => fireEvent.click(tile('ねこ'))).not.toThrow();
   });
 
   it('should call startSession on mount', async () => {
@@ -179,8 +184,8 @@ describe('MatchMode', () => {
     });
 
     // Click the JP word tile then the matching EN tile
-    fireEvent.click(screen.getByText('ねこ'));
-    fireEvent.click(screen.getByText('cat'));
+    fireEvent.click(tile('ねこ'));
+    fireEvent.click(tile('cat'));
 
     await waitFor(() => {
       expect(mockRecordAnswer).toHaveBeenCalledWith('session-1', true, undefined, 'c1');
@@ -198,8 +203,8 @@ describe('MatchMode', () => {
     });
 
     // Click JP tile for 'cat' but EN tile for 'dog' — wrong pair
-    fireEvent.click(screen.getByText('ねこ'));
-    fireEvent.click(screen.getByText('dog'));
+    fireEvent.click(tile('ねこ'));
+    fireEvent.click(tile('dog'));
 
     // Give a moment for any async processing
     await new Promise((r) => setTimeout(r, 50));

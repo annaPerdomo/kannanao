@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { ComboChip } from '@/components/ComboChip';
 import { PageHeader } from '@/components/PageHeader';
-import { LAYOUT } from '@/theme';
+import { PracticeStage } from '@/components/PracticeStage';
 
 interface GameShellProps {
   title: string;
@@ -41,15 +41,13 @@ export function GameShell({
   const t = useTranslations('Games.shell');
 
   return (
-    <Box
-      sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: { xs: 3, sm: 4 } }}
-    >
+    <PracticeStage>
       {/* howTo is the subtitle: plain-words so the first screen is
           self-explanatory to a kid. Back = quit-and-save (same as the footer
           button), so leaving mid-game never loses progress. */}
       <PageHeader
         compact
-        mb={2}
+        mb={{ xs: 1.5, sm: 2 }}
         onBack={onQuit}
         icon={
           <Box component="span" aria-hidden sx={{ fontSize: { xs: '1.4rem', sm: '1.6rem' } }}>
@@ -72,7 +70,8 @@ export function GameShell({
         variant="determinate"
         value={(current / total) * 100}
         sx={{
-          mb: 3,
+          mb: 2,
+          flexShrink: 0,
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[300], 0.12),
@@ -81,17 +80,29 @@ export function GameShell({
       />
 
       {/* The board stays narrower than the page frame on purpose: game tiles
-          are tap targets and matching pairs shouldn't drift a full 900px
-          apart on desktop. */}
-      <Box sx={{ maxWidth: 600, mx: 'auto' }}>
+          are tap targets and matching pairs shouldn't drift a full 900px apart
+          on desktop. No `minHeight: 0` — a board needing more rows than the
+          viewport has must push the stage taller, not spill over the quit row. */}
+      <Box
+        sx={{
+          flex: 1,
+          width: '100%',
+          maxWidth: 600,
+          mx: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+        }}
+      >
         {children}
-
-        <Box sx={{ mt: 3, textAlign: 'right' }}>
-          <Button size="small" color="inherit" onClick={onQuit} sx={{ opacity: 0.5 }}>
-            {t('quitAndSave')}
-          </Button>
-        </Box>
       </Box>
-    </Box>
+
+      {/* Left, not right: the floating buddy parks over the bottom-right corner. */}
+      <Box sx={{ mt: 1.5, textAlign: 'left', flexShrink: 0 }}>
+        <Button size="small" color="inherit" onClick={onQuit} sx={{ opacity: 0.5 }}>
+          {t('quitAndSave')}
+        </Button>
+      </Box>
+    </PracticeStage>
   );
 }

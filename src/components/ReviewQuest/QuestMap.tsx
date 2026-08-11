@@ -33,7 +33,8 @@ export function QuestMap({ nodes, currentIndex, chestAvailable }: QuestMapProps)
         alignItems: 'flex-start',
         justifyContent: 'center',
         gap: 0.5,
-        mb: 3,
+        mb: { xs: 1.5, sm: 2 },
+        flexShrink: 0,
         // Setting only overflowX forces the computed overflowY to 'auto' too
         // (CSS overflow-x/y coupling), which clips the active node's
         // scale(1.08) growth at the top edge — pt gives it room to breathe.
@@ -92,7 +93,7 @@ export function QuestMap({ nodes, currentIndex, chestAvailable }: QuestMapProps)
             {/* Connector to the next node / chest */}
             <Box
               sx={{
-                width: 18,
+                width: 12,
                 height: 2,
                 mt: '22px',
                 borderRadius: 2,

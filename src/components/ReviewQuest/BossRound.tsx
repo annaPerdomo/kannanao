@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ComboChip } from '@/components/ComboChip';
+import { PracticeStage } from '@/components/PracticeStage';
 import { SpeakButton } from '@/components/SpeakButton';
 import {
   buildMeaningChoices,
@@ -100,14 +101,15 @@ export function BossRound({
   const display = getFlashcardDisplayText(card);
 
   return (
-    <Box>
+    <PracticeStage>
       {/* Darker "Boss Round" header treatment, from theme tokens. */}
       <Box
         sx={{
           borderRadius: 3,
           px: 3,
-          py: 2,
-          mb: 2.5,
+          py: 1.5,
+          mb: 2,
+          flexShrink: 0,
           color: '#fff',
           display: 'flex',
           alignItems: 'center',
@@ -137,7 +139,8 @@ export function BossRound({
         variant="determinate"
         value={(index / cards.length) * 100}
         sx={{
-          mb: 3,
+          mb: 2,
+          flexShrink: 0,
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[300], 0.14),
@@ -148,12 +151,18 @@ export function BossRound({
         }}
       />
 
-      {/* Prompt word */}
+      {/* Prompt word — takes the slack so the choices below never leave the
+          fold. Grow-only (`1 0 auto`): it clips its overflow, so shrinking
+          would cut the word in half instead of scrolling. */}
       <Box
         sx={{
+          flex: '1 0 auto',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
           textAlign: 'center',
           p: 3,
-          mb: 3,
+          mb: 2,
           borderRadius: 3,
           border: `2px solid ${alpha(brand[300], 0.4)}`,
           bgcolor: surfaces.input,
@@ -165,7 +174,12 @@ export function BossRound({
             sx={{
               fontFamily: (t) => t.fonts.jp,
               fontSize:
-                card.cardType === 'phrase' ? '2.1rem' : titleFontSize(display.titleText, 2.1, 1.1),
+                card.cardType === 'phrase'
+                  ? { xs: '2.1rem', sm: '3rem' }
+                  : {
+                      xs: titleFontSize(display.titleText, 2.1, 1.1),
+                      sm: titleFontSize(display.titleText, 3.2, 1.4),
+                    },
               fontWeight: 700,
               color: 'text.primary',
               whiteSpace: card.cardType === 'phrase' ? undefined : 'nowrap',
@@ -188,7 +202,7 @@ export function BossRound({
         </Typography>
       </Box>
 
-      <Grid container spacing={1.5}>
+      <Grid container spacing={1.5} sx={{ flexShrink: 0 }}>
         {choices.map((choice, i) => {
           const isCorrect = choice === card.meaning;
           const isSelected = selected === choice;
@@ -260,6 +274,6 @@ export function BossRound({
           );
         })}
       </Grid>
-    </Box>
+    </PracticeStage>
   );
 }

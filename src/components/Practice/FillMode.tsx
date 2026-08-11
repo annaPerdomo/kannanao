@@ -213,7 +213,14 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
 
   // ── Fill card ──────────────────────────────────────────────────────────────
   return (
-    <Box sx={{ position: 'relative' }}>
+    <Box
+      sx={{
+        position: 'relative',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
       {/* Header */}
       <Box
@@ -221,7 +228,8 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          mb: { xs: 1, sm: 2 },
+          mb: { xs: 1, sm: 1.5 },
+          flexShrink: 0,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -249,7 +257,8 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
         variant="determinate"
         value={(index / queue.currentCards.length) * 100}
         sx={{
-          mb: { xs: 2, sm: 3 },
+          mb: { xs: 1.5, sm: 2 },
+          flexShrink: 0,
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[300], 0.12),
@@ -257,10 +266,15 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
         }}
       />
 
-      {/* Card */}
+      {/* Card — takes the slack so the answer box below stays on screen.
+          Grow-only (`1 0 auto`): it clips its overflow, so shrinking would cut
+          off the sentence instead of scrolling. */}
       <Box
         sx={{
           position: 'relative',
+          flex: '1 0 auto',
+          display: 'flex',
+          flexDirection: 'column',
           border: '2px solid',
           borderColor: result
             ? result === 'correct'
@@ -269,28 +283,27 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
             : alpha(brand[300], 0.45),
           borderRadius: 3,
           overflow: 'hidden',
-          mb: { xs: 2, sm: 3 },
+          mb: { xs: 1.5, sm: 2 },
           boxShadow: `0 8px 24px ${alpha(brand[300], 0.12)}`,
           transition: 'border-color 0.25s',
         }}
       >
-        {/* Card image */}
         {card.imageUrl && (
-          <Box sx={{ position: 'relative' }}>
+          <Box sx={{ position: 'relative', flex: 1, minHeight: { xs: 100, sm: 140 } }}>
             <Box
               component="img"
               src={card.imageUrl}
               alt={card.word}
-              sx={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }}
+              sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
             <UnsplashAttribution url={card.imageUrl} />
           </Box>
         )}
 
-        <Box sx={{ p: 3, bgcolor: surfaces.input }}>
+        <Box sx={{ flexShrink: 0, p: { xs: 2, sm: 2.5 }, bgcolor: surfaces.input }}>
           <Typography
             variant="caption"
-            sx={{ color: 'primary.main', letterSpacing: '0.12em', display: 'block', mb: 2 }}
+            sx={{ color: 'primary.main', letterSpacing: '0.12em', display: 'block', mb: 1 }}
           >
             {t('fillPrompt')}
           </Typography>
@@ -335,7 +348,8 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
       {result && (
         <Box
           sx={{
-            p: 2,
+            p: 1.5,
+            flexShrink: 0,
             borderRadius: 2,
             border: '1px solid',
             borderColor: result === 'correct' ? 'success.main' : 'error.main',
@@ -370,7 +384,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
       )}
 
       {/* Input row */}
-      <Stack direction="row" spacing={1.5} alignItems="flex-end">
+      <Stack direction="row" spacing={1.5} alignItems="flex-end" sx={{ flexShrink: 0 }}>
         <TextField
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -400,8 +414,8 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
         ) : null}
       </Stack>
 
-      {/* Left on a phone: the floating buddy parks in the right-hand corner. */}
-      <Box sx={{ mt: { xs: 1, sm: 2 }, textAlign: { xs: 'left', sm: 'right' } }}>
+      {/* Left, not right: the floating buddy parks over the bottom-right corner. */}
+      <Box sx={{ mt: { xs: 0.5, sm: 1 }, flexShrink: 0, textAlign: 'left' }}>
         <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
           {tCommon('quitAndSave')}
         </Button>

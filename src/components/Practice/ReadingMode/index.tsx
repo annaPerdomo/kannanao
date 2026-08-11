@@ -191,7 +191,14 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
   if (!card) return null;
 
   return (
-    <Box sx={{ position: 'relative' }}>
+    <Box
+      sx={{
+        position: 'relative',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       {xpPop && <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show />}
 
       <Box
@@ -199,7 +206,8 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          mb: { xs: 1, sm: 2 },
+          mb: { xs: 1, sm: 1.5 },
+          flexShrink: 0,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -227,7 +235,8 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
         variant="determinate"
         value={(index / queue.currentCards.length) * 100}
         sx={{
-          mb: { xs: 2, sm: 3 },
+          mb: { xs: 1.5, sm: 2 },
+          flexShrink: 0,
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[300], 0.12),
@@ -235,21 +244,34 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
         }}
       />
 
-      <ReadingPrompt card={card} result={result} />
+      {/* The prompt takes the slack so the tiles and buttons stay on screen —
+          but never less than its own height, or it prints over the tiles. */}
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+        }}
+      >
+        <ReadingPrompt card={card} result={result} />
+      </Box>
 
       {/* Answer area — tiles by default, typing for anyone who prefers it */}
-      {inputMode === 'tiles' ? (
-        <TileAnswer
-          key={`${queue.roundKey}-${index}`}
-          target={card.reading}
-          locked={!!result}
-          onSubmit={submit}
-        />
-      ) : (
-        <TypedAnswer key={`${queue.roundKey}-${index}`} locked={!!result} onSubmit={submit} />
-      )}
+      <Box sx={{ flexShrink: 0 }}>
+        {inputMode === 'tiles' ? (
+          <TileAnswer
+            key={`${queue.roundKey}-${index}`}
+            target={card.reading}
+            locked={!!result}
+            onSubmit={submit}
+          />
+        ) : (
+          <TypedAnswer key={`${queue.roundKey}-${index}`} locked={!!result} onSubmit={submit} />
+        )}
+      </Box>
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2.5 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1.5, flexShrink: 0 }}>
         <Button
           size="small"
           onClick={toggleInput}
@@ -263,15 +285,15 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
       </Box>
 
       {result === 'wrong' && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1.5, flexShrink: 0 }}>
           <Button variant="contained" onClick={next} size="large">
             {index + 1 >= queue.currentCards.length ? t('seeResults') : tCommon('next')}
           </Button>
         </Box>
       )}
 
-      {/* Left on a phone: the floating buddy parks in the right-hand corner. */}
-      <Box sx={{ mt: { xs: 1, sm: 2 }, textAlign: { xs: 'left', sm: 'right' } }}>
+      {/* Left, not right: the floating buddy parks over the bottom-right corner. */}
+      <Box sx={{ mt: { xs: 0.5, sm: 1 }, flexShrink: 0, textAlign: 'left' }}>
         <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
           {tCommon('quitAndSave')}
         </Button>
