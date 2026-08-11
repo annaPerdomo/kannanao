@@ -156,8 +156,8 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
 
   const { triggerReaction } = useBuddyReaction();
 
-  // Rows are counted from the tiles actually dealt (a short final round still
-  // fills the board) and per breakpoint, since the column count changes.
+  // Rows come from the tiles actually dealt (a short final round still fills
+  // the board), per breakpoint since the column count changes.
   const tileCount = queue.currentCards.length * 2;
   const boardMaxHeight = (columns: number) => {
     const rows = Math.max(1, Math.ceil(tileCount / columns));
@@ -424,7 +424,9 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
             sm: 'repeat(3, minmax(0, 1fr))',
             md: 'repeat(4, minmax(0, 1fr))',
           },
-          gridAutoRows: `minmax(${TILE_MIN_PX}px, 1fr)`,
+          // `auto` min, not the tap-target floor: a long English gloss has to be
+          // able to push its row taller than the height the board was dealt.
+          gridAutoRows: 'minmax(auto, 1fr)',
           maxHeight: {
             xs: boardMaxHeight(cols),
             sm: boardMaxHeight(3),
@@ -439,25 +441,14 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
           return (
             <Box
               key={tile.id}
-              role="button"
-              tabIndex={isMatched ? -1 : 0}
-              aria-label={tile.label}
-              aria-pressed={isSelected}
-              onClick={() => !isMatched && handleSelect(tile)}
-              onKeyDown={(e) => {
-                if (!isMatched && (e.key === 'Enter' || e.key === ' ')) {
-                  e.preventDefault();
-                  handleSelect(tile);
-                }
-              }}
               sx={{
+                position: 'relative',
                 p: { xs: 1, sm: 1.5 },
                 border: '2px solid',
                 borderRadius: 3,
-                overflow: 'hidden',
                 textAlign: 'center',
-                cursor: isMatched ? 'default' : 'pointer',
                 minWidth: 0,
+                minHeight: `${TILE_MIN_PX}px`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -483,22 +474,69 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                   : {},
               }}
             >
-              {isMatched ? (
-                <CheckIcon sx={{ fontSize: '1.2rem', color: 'success.main' }} />
-              ) : tile.side === 'jp' ? (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.5,
-                    minWidth: 0,
-                    maxWidth: '100%',
-                  }}
-                >
+              {/* The tile's button sits under the content rather than wrapping
+                  it: nesting the read-aloud button inside would swallow its own
+                  click and Enter/Space. */}
+              <Box
+                component="button"
+                type="button"
+                aria-label={tile.label}
+                aria-pressed={isSelected}
+                disabled={isMatched}
+                onClick={() => handleSelect(tile)}
+                sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  p: 0,
+                  border: 0,
+                  background: 'none',
+                  borderRadius: 'inherit',
+                  cursor: isMatched ? 'default' : 'pointer',
+                  '&:focus-visible': {
+                    outline: `2px solid ${brand[600]}`,
+                    outlineOffset: '-4px',
+                  },
+                }}
+              />
+              <Box
+                sx={{
+                  position: 'relative',
+                  pointerEvents: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 0.5,
+                  minWidth: 0,
+                  maxWidth: '100%',
+                }}
+              >
+                {isMatched ? (
+                  <CheckIcon sx={{ fontSize: '1.2rem', color: 'success.main' }} />
+                ) : tile.side === 'jp' ? (
+                  <>
+                    <Typography
+                      sx={{
+                        fontFamily: '"Noto Serif JP", serif',
+                        fontSize: jpLabelFontSize(tile.label),
+                        color: 'text.primary',
+                        minWidth: 0,
+                        overflowWrap: 'break-word',
+                      }}
+                    >
+                      {tile.label}
+                    </Typography>
+                    <SpeakButton
+                      text={tile.speak}
+                      iconSize="0.9rem"
+                      hitSlop={4}
+                      sx={{ pointerEvents: 'auto' }}
+                    />
+                  </>
+                ) : (
                   <Typography
                     sx={{
-                      fontFamily: '"Noto Serif JP", serif',
-                      fontSize: jpLabelFontSize(tile.label),
+                      fontFamily: '"DM Mono", monospace',
+                      fontSize: enLabelFontSize(tile.label),
                       color: 'text.primary',
                       minWidth: 0,
                       overflowWrap: 'break-word',
@@ -506,28 +544,14 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                   >
                     {tile.label}
                   </Typography>
-                  <SpeakButton text={tile.speak} iconSize="0.9rem" hitSlop={4} />
-                </Box>
-              ) : (
-                <Typography
-                  sx={{
-                    fontFamily: '"DM Mono", monospace',
-                    fontSize: enLabelFontSize(tile.label),
-                    color: 'text.primary',
-                    minWidth: 0,
-                    overflowWrap: 'break-word',
-                  }}
-                >
-                  {tile.label}
-                </Typography>
-              )}
+                )}
+              </Box>
             </Box>
           );
         })}
       </Box>
 
-      {/* Left, not right: the floating buddy parks in the bottom-right corner
-          of the viewport, over the button. */}
+      {/* Left, not right: the floating buddy parks over the bottom-right corner. */}
       <Box sx={{ mt: { xs: 1, sm: 1.5 }, flexShrink: 0, textAlign: 'left' }}>
         <Button size="small" color="inherit" onClick={handleExit} sx={{ opacity: 0.5 }}>
           {tCommon('quitAndSave')}
