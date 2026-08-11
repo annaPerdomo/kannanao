@@ -314,7 +314,9 @@ export default function FlipStudy({
 
       {/* Under LANDSCAPE_FIT the status and buttons move into a rail beside the
           card: stacked, they leave the card unreadably short or push grading
-          under the fold. */}
+          under the fold. Capping the card column at the card's own width keeps
+          the pair together instead of drifting to opposite edges of a wide
+          screen; the 1fr rows around the rail centre it against the card. */}
       <Box
         sx={{
           flex: 1,
@@ -322,12 +324,14 @@ export default function FlipStudy({
           gridTemplateColumns: '1fr',
           gridTemplateRows: `auto minmax(${CARD_MIN_H}px, 1fr) auto`,
           [LANDSCAPE_FIT]: {
-            gridTemplateColumns: 'minmax(0, 1fr) minmax(260px, 340px)',
-            columnGap: 3,
+            gridTemplateColumns: `minmax(0, ${CARD_W}px) minmax(240px, 320px)`,
+            gridTemplateRows: 'minmax(0, 1fr) auto auto minmax(0, 1fr)',
+            justifyContent: 'center',
+            columnGap: 4,
           },
         }}
       >
-        <Box sx={{ [LANDSCAPE_FIT]: { gridColumn: 2, gridRow: 1 } }}>
+        <Box sx={{ [LANDSCAPE_FIT]: { gridColumn: 2, gridRow: 2 } }}>
           {questMap}
 
           <Box
@@ -457,7 +461,7 @@ export default function FlipStudy({
           </Box>
         </Box>
 
-        <Box sx={{ [LANDSCAPE_FIT]: { gridColumn: 2, gridRow: '2 / -1', alignSelf: 'center' } }}>
+        <Box sx={{ [LANDSCAPE_FIT]: { gridColumn: 2, gridRow: 3 } }}>
           {/* Self-grading, revealed once the card is flipped. The row keeps its
             height while hidden so the card never resizes at flip time;
             `visibility` (not a conditional render) also keeps the buttons out
