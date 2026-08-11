@@ -141,9 +141,17 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
   const display = getFlashcardDisplayText(card);
 
   return (
-    <Box sx={{ position: 'relative' }}>
+    <Box sx={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
       {/* Status row — the page-level PageHeader already names the mode */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          mb: 1.5,
+          flexShrink: 0,
+        }}
+      >
         <Chip label={t('progressChip', { current: quiz.index + 1, total: quiz.total })} />
       </Box>
 
@@ -151,7 +159,8 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
         variant="determinate"
         value={(quiz.index / quiz.total) * 100}
         sx={{
-          mb: { xs: 2, sm: 3 },
+          mb: { xs: 1.5, sm: 2 },
+          flexShrink: 0,
           height: 8,
           borderRadius: 4,
           bgcolor: alpha(brand[300], 0.12),
@@ -159,9 +168,15 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
         }}
       />
 
-      {/* Prompt card */}
+      {/* Prompt card — takes the slack so the answers stay on screen. Grow-only
+          (`1 0 auto`) because it clips its overflow: shrinking it on a short
+          phone would cut the prompt in half instead of scrolling the page. */}
       <Box
         sx={{
+          flex: '1 0 auto',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
           border: '2px solid',
           borderColor: answered
             ? answered.correct
@@ -170,11 +185,11 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
             : alpha(brand[300], 0.45),
           borderRadius: 3,
           overflow: 'hidden',
-          mb: 3,
+          mb: 2,
           transition: 'border-color 0.25s',
         }}
       >
-        <Box sx={{ p: { xs: 2, sm: 3 }, textAlign: 'center', bgcolor: surfaces.input }}>
+        <Box sx={{ p: { xs: 1.5, sm: 2 }, textAlign: 'center', bgcolor: surfaces.input }}>
           {type === 'choice' ? (
             <>
               <Box
@@ -221,7 +236,7 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
 
       {/* Multiple-choice answers */}
       {type === 'choice' && (
-        <Grid container spacing={1.5} sx={{ mb: 2 }}>
+        <Grid container spacing={1.5} sx={{ mb: 1.5, flexShrink: 0 }}>
           {choices.map((choice, i) => {
             const isCorrect = choice === card.meaning;
             const isSelected = selected === choice;
@@ -302,7 +317,7 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
 
       {/* Typed answer */}
       {type === 'typed' && (
-        <Stack direction="row" spacing={1.5} alignItems="flex-end" sx={{ mb: 2 }}>
+        <Stack direction="row" spacing={1.5} alignItems="flex-end" sx={{ mb: 1.5, flexShrink: 0 }}>
           <TextField
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -334,14 +349,15 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
       {answered && (
         <Box
           sx={{
-            p: 2,
+            p: 1.5,
+            flexShrink: 0,
             borderRadius: 2,
             border: '1px solid',
             borderColor: answered.correct ? 'success.main' : 'error.main',
             bgcolor: answered.correct
               ? alpha(theme.palette.success.main, 0.1)
               : alpha(theme.palette.error.main, 0.08),
-            mb: 2,
+            mb: 1.5,
             display: 'flex',
             alignItems: 'center',
             gap: 1.5,
@@ -372,7 +388,7 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
       )}
 
       {/* Left on a phone: the floating buddy parks in the right-hand corner. */}
-      <Box sx={{ mt: { xs: 1, sm: 2 }, textAlign: { xs: 'left', sm: 'right' } }}>
+      <Box sx={{ mt: { xs: 0.5, sm: 1 }, flexShrink: 0, textAlign: { xs: 'left', sm: 'right' } }}>
         <Button size="small" onClick={onExit} sx={{ color: 'text.secondary' }}>
           {t('quit')}
         </Button>

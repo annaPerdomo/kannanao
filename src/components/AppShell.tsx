@@ -16,6 +16,13 @@ import { NavBar } from './NavBar';
 import { BOTTOM_NAV_HEIGHT, BottomNav } from './NavBar/BottomNav';
 import { PushAutoResubscribe } from './PushAutoResubscribe';
 
+/**
+ * Surfaces that run one exercise and size themselves to the viewport
+ * (<PracticeStage>). A footer under them is the difference between the answer
+ * buttons being on screen and having to scroll to reach them.
+ */
+const FOCUS_ROUTE = /^\/(review\/.+|deck\/[^/]+\/(study|practice))/;
+
 export function AppShell({
   children,
   initialProgress,
@@ -35,6 +42,7 @@ export function AppShell({
   // The login page is a full-bleed brand scene with its own floating language
   // toggle; app chrome would double the branding and crop the artwork.
   const isLogin = pathname === '/login';
+  const isFocus = !!pathname && FOCUS_ROUTE.test(pathname);
 
   if (isEmbed) return <>{children}</>;
 
@@ -59,7 +67,7 @@ export function AppShell({
               >
                 <AuthGuard>{children}</AuthGuard>
               </Box>
-              {!isFullHeight && showFooter && !isLogin && <Footer />}
+              {!isFullHeight && !isFocus && showFooter && !isLogin && <Footer />}
               {!isLogin && <BottomNav />}
               {!isLogin && <GlobalBuddy />}
               <PushAutoResubscribe />

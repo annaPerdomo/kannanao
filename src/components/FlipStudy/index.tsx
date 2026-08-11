@@ -10,11 +10,10 @@ import { ComboChip } from '@/components/ComboChip';
 import { Flashcard } from '@/components/Flashcard';
 import FuriganaText from '@/components/FuriganaText';
 import { Loading } from '@/components/Loading';
-import { NAVBAR_HEIGHT } from '@/components/NavBar';
-import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
 import { PageHeader } from '@/components/PageHeader';
 import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
 import { XpEarnedPop } from '@/components/Practice/XpEarnedPop';
+import { LANDSCAPE_FIT, PracticeStage } from '@/components/PracticeStage';
 import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { useCombo } from '@/hooks/useCombo';
@@ -67,22 +66,18 @@ export interface FlipStudyProps {
 // Exit animation duration — card slides out before the next one slides in.
 const SLIDE_DURATION_MS = 260;
 
-// Portrait trading-card dimensions (2.5 : 3.5 ratio); min() caps width on narrow viewports to avoid horizontal scroll.
+// Portrait trading-card dimensions (2.5 : 3.5 ratio).
 const CARD_W = 320;
 const CARD_H = 452;
 const CARD_ASPECT_RATIO = `${CARD_W} / ${CARD_H}`;
-const CARD_WIDTH_CSS = `min(${CARD_W}px, 100%)`;
+/** Below this the card is too small to read; the page scrolls instead. */
+const CARD_MIN_H = 280;
 
 /**
- * Everything on a phone that is not the card: the app's own bars, this screen's
- * page padding, header, progress row, grading buttons and browse row. The card
- * takes what is left, so grading never sits below the fold — keep in step with
- * the layout below.
+ * Height reserved for the self-grading row whether or not the card is flipped.
+ * Growing the layout at flip time would resize the card underneath it mid-read.
  */
-const PHONE_CHROME_PX = NAVBAR_HEIGHT.xs + BOTTOM_NAV_HEIGHT + 272;
-const PHONE_CHROME_WITH_QUEST_PX = PHONE_CHROME_PX + 64;
-/** Below this the card is unreadable, so the page scrolls instead of shrinking further. */
-const MIN_CARD_W = 180;
+const GRADE_ROW_PX = 62;
 
 // ── Sparkle stars that float up on each new card ──────────────────────────────
 const SPARKLE_ITEMS = [
@@ -304,289 +299,312 @@ export default function FlipStudy({
     );
   }
 
-  // A browser without `dvh` fails the whole value and falls back to the
-  // sm-and-up width, which is the desktop card.
-  const phoneChrome = questMap ? PHONE_CHROME_WITH_QUEST_PX : PHONE_CHROME_PX;
-  const cardWidthSx = {
-    width: CARD_WIDTH_CSS,
-    [theme.breakpoints.down('sm')]: {
-      width: `max(${MIN_CARD_W}px, min(${CARD_W}px, 100%, calc((100dvh - ${phoneChrome}px - env(safe-area-inset-bottom)) * ${CARD_W / CARD_H})))`,
-    },
-  };
-
   return (
-    <Box
-      sx={{
-        maxWidth: LAYOUT.narrowMaxWidth,
-        mx: 'auto',
-        px: LAYOUT.pagePx,
-        py: { xs: 2, sm: 4 },
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
+    <PracticeStage>
       {/* Header — same container as Practice page */}
       <PageHeader
         title={title}
         onBack={handleBack}
         badge={badge ?? t('cardsBadge', { count: cards.length })}
         compact
-        mb={3}
+        mb={{ xs: 1.5, sm: 2 }}
       />
 
-      {questMap}
-
-      {/* Progress bar */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: { xs: 2, sm: 3 } }}>
-        <LinearProgress
-          variant="determinate"
-          value={((index + 1) / cards.length) * 100}
-          sx={{
-            flexGrow: 1,
-            height: 6,
-            borderRadius: 99,
-            bgcolor: alpha(brand[300], 0.18),
-            '& .MuiLinearProgress-bar': {
-              borderRadius: 99,
-              background: `linear-gradient(90deg, ${brand[200]} 0%, ${brand[400]} 50%, ${accent[300]} 100%)`,
-            },
-          }}
-        />
-        <ComboChip count={comboCount} />
-        <Chip
-          label={t('progressLabel', { current: index + 1, total: cards.length })}
-          size="small"
-          sx={{
-            bgcolor: alpha(brand[300], 0.18),
-            color: brand[700],
-            fontWeight: 600,
-            border: `1px solid ${alpha(brand[300], 0.4)}`,
-          }}
-        />
-      </Box>
-
-      {/* Card — dealer-deal animation: new card flips in from above like tossed onto a pile */}
+      {/* On a wide-but-short screen (a tablet held sideways) the status and the
+          buttons move into a rail beside the card — the only arrangement that
+          leaves the card a readable height without pushing grading under the
+          fold. */}
       <Box
         sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          perspective: '1000px',
-          position: 'relative',
-          minWidth: 0,
+          flex: 1,
+          display: 'grid',
+          gridTemplateColumns: '1fr',
+          gridTemplateRows: `auto minmax(${CARD_MIN_H}px, 1fr) auto`,
+          [LANDSCAPE_FIT]: {
+            gridTemplateColumns: 'minmax(0, 1fr) minmax(260px, 340px)',
+            columnGap: 3,
+          },
         }}
       >
-        <Box
-          key={index}
-          sx={{
-            ...cardWidthSx,
-            aspectRatio: CARD_ASPECT_RATIO,
-            position: 'relative',
-            transformOrigin: 'top center',
-            '@keyframes dealIn': {
-              '0%': {
-                transform: 'translateY(-90px) rotateX(-42deg) rotateZ(4deg) scale(0.82)',
-                opacity: 0,
-              },
-              '55%': { opacity: 1 },
-              '100%': {
-                transform: 'translateY(0) rotateX(0deg) rotateZ(0deg) scale(1)',
-                opacity: 1,
-              },
-            },
-            '@keyframes dealInBack': {
-              '0%': {
-                transform: 'translateY(-90px) rotateX(-42deg) rotateZ(-4deg) scale(0.82)',
-                opacity: 0,
-              },
-              '55%': { opacity: 1 },
-              '100%': {
-                transform: 'translateY(0) rotateX(0deg) rotateZ(0deg) scale(1)',
-                opacity: 1,
-              },
-            },
-            '@keyframes sparkleUp': {
-              from: { transform: 'translateY(0) scale(1)', opacity: 0.9 },
-              to: { transform: 'translateY(-64px) scale(0)', opacity: 0 },
-            },
-            ...(navigating
-              ? {
-                  transform: 'translateY(28px) rotateX(12deg) scale(0.91)',
-                  opacity: 0,
-                  transition: `transform ${SLIDE_DURATION_MS}ms ease-in, opacity ${SLIDE_DURATION_MS}ms ease-in`,
-                  pointerEvents: 'none',
-                }
-              : {
-                  animation: `${navDir === 1 ? 'dealIn' : 'dealInBack'} 0.48s cubic-bezier(0.22, 1, 0.36, 1)`,
-                }),
-          }}
-        >
-          {card && <Flashcard card={card} width="100%" height="100%" onFlipChange={setFlipped} />}
+        <Box sx={{ [LANDSCAPE_FIT]: { gridColumn: 2, gridRow: 1 } }}>
+          {questMap}
 
-          {xpPop && (
-            <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show key={xpPop.key} />
-          )}
-
-          {/* Sparkle burst — float up from bottom of card on each new card */}
-          {!navigating &&
-            SPARKLE_ITEMS.map((s, i) => (
-              <Box
-                key={i}
-                sx={{
-                  position: 'absolute',
-                  bottom: 16,
-                  left: `${s.left}%`,
-                  fontSize: '1rem',
-                  pointerEvents: 'none',
-                  animation: `sparkleUp 0.72s ${s.delay}s ease-out both`,
-                }}
-              >
-                {s.emoji}
-              </Box>
-            ))}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              mb: { xs: 1.5, sm: 2 },
+              [LANDSCAPE_FIT]: { mb: 0 },
+            }}
+          >
+            <LinearProgress
+              variant="determinate"
+              value={((index + 1) / cards.length) * 100}
+              sx={{
+                flexGrow: 1,
+                height: 6,
+                borderRadius: 99,
+                bgcolor: alpha(brand[300], 0.18),
+                '& .MuiLinearProgress-bar': {
+                  borderRadius: 99,
+                  background: `linear-gradient(90deg, ${brand[200]} 0%, ${brand[400]} 50%, ${accent[300]} 100%)`,
+                },
+              }}
+            />
+            <ComboChip count={comboCount} />
+            <Chip
+              label={t('progressLabel', { current: index + 1, total: cards.length })}
+              size="small"
+              sx={{
+                bgcolor: alpha(brand[300], 0.18),
+                color: brand[700],
+                fontWeight: 600,
+                border: `1px solid ${alpha(brand[300], 0.4)}`,
+              }}
+            />
+          </Box>
         </Box>
-      </Box>
 
-      {/* Self-grading — two big friendly buttons, shown once the card is flipped
-          to its answer. Tapping either records the card and moves on. */}
-      {flipped && !navigating && (
+        {/* Card — dealer-deal animation: new card flips in from above like
+            tossed onto a pile. Takes the leftover height; its width follows
+            from the card ratio. */}
         <Box
           sx={{
+            minHeight: 0,
             display: 'flex',
+            alignItems: 'center',
             justifyContent: 'center',
-            gap: 2,
-            mt: { xs: 2, sm: 3 },
+            perspective: '1000px',
+            position: 'relative',
+            minWidth: 0,
+            [LANDSCAPE_FIT]: { gridColumn: 1, gridRow: '1 / -1' },
           }}
         >
-          {/* Both use the contained variant's white label. "Still learning"
+          <Box
+            key={index}
+            sx={{
+              height: '100%',
+              width: 'auto',
+              // Both caps matter: maxHeight stops a tall slot from stretching
+              // the card past its ratio, maxWidth stops a narrow screen from
+              // pushing it off the sides.
+              maxHeight: `${CARD_H}px`,
+              maxWidth: `min(${CARD_W}px, 100%)`,
+              aspectRatio: CARD_ASPECT_RATIO,
+              position: 'relative',
+              transformOrigin: 'top center',
+              '@keyframes dealIn': {
+                '0%': {
+                  transform: 'translateY(-90px) rotateX(-42deg) rotateZ(4deg) scale(0.82)',
+                  opacity: 0,
+                },
+                '55%': { opacity: 1 },
+                '100%': {
+                  transform: 'translateY(0) rotateX(0deg) rotateZ(0deg) scale(1)',
+                  opacity: 1,
+                },
+              },
+              '@keyframes dealInBack': {
+                '0%': {
+                  transform: 'translateY(-90px) rotateX(-42deg) rotateZ(-4deg) scale(0.82)',
+                  opacity: 0,
+                },
+                '55%': { opacity: 1 },
+                '100%': {
+                  transform: 'translateY(0) rotateX(0deg) rotateZ(0deg) scale(1)',
+                  opacity: 1,
+                },
+              },
+              '@keyframes sparkleUp': {
+                from: { transform: 'translateY(0) scale(1)', opacity: 0.9 },
+                to: { transform: 'translateY(-64px) scale(0)', opacity: 0 },
+              },
+              ...(navigating
+                ? {
+                    transform: 'translateY(28px) rotateX(12deg) scale(0.91)',
+                    opacity: 0,
+                    transition: `transform ${SLIDE_DURATION_MS}ms ease-in, opacity ${SLIDE_DURATION_MS}ms ease-in`,
+                    pointerEvents: 'none',
+                  }
+                : {
+                    animation: `${navDir === 1 ? 'dealIn' : 'dealInBack'} 0.48s cubic-bezier(0.22, 1, 0.36, 1)`,
+                  }),
+            }}
+          >
+            {card && <Flashcard card={card} width="100%" height="100%" onFlipChange={setFlipped} />}
+
+            {xpPop && (
+              <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show key={xpPop.key} />
+            )}
+
+            {/* Sparkle burst — float up from bottom of card on each new card */}
+            {!navigating &&
+              SPARKLE_ITEMS.map((s, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    position: 'absolute',
+                    bottom: 16,
+                    left: `${s.left}%`,
+                    fontSize: '1rem',
+                    pointerEvents: 'none',
+                    animation: `sparkleUp 0.72s ${s.delay}s ease-out both`,
+                  }}
+                >
+                  {s.emoji}
+                </Box>
+              ))}
+          </Box>
+        </Box>
+
+        <Box sx={{ [LANDSCAPE_FIT]: { gridColumn: 2, gridRow: '2 / -1', alignSelf: 'center' } }}>
+          {/* Self-grading — two big friendly buttons, revealed once the card is
+            flipped to its answer. The row keeps its height while hidden so the
+            card never resizes at flip time; `visibility` (not a conditional
+            render) also keeps the buttons out of the tab order until then. */}
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 2,
+              mt: { xs: 1.5, sm: 2 },
+              minHeight: `${GRADE_ROW_PX}px`,
+              visibility: flipped && !navigating ? 'visible' : 'hidden',
+            }}
+            aria-hidden={!flipped || navigating}
+          >
+            {/* Both use the contained variant's white label. "Still learning"
               keeps the stock brand 600→700 background; "Got it" swaps its
               background for the app's signature brand→accent sweep (see the
               card banners), at the darker 600/700 stops so white stays AA in
               every palette. NOTE: the variant background is a background-IMAGE —
               replace it with `background`, never `bgcolor` (which silently
               paints underneath it). */}
-          <Button
-            variant="contained"
-            onClick={() => handleGrade(false)}
-            sx={{ flex: 1, maxWidth: 200, py: 1.25, borderRadius: 3 }}
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 0.25,
-                lineHeight: 1.2,
-              }}
+            <Button
+              variant="contained"
+              onClick={() => handleGrade(false)}
+              sx={{ flex: 1, maxWidth: 200, py: 1.25, borderRadius: 3 }}
             >
               <Box
-                component="span"
-                sx={{ fontFamily: (theme) => theme.fonts.jp, fontSize: '1.15rem', fontWeight: 700 }}
-              >
-                {t('stillLearningJp')}
-              </Box>
-              <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
-                {t('stillLearning')}
-              </Box>
-            </Box>
-          </Button>
-          <Button
-            variant="contained"
-            onClick={() => handleGrade(true)}
-            sx={{
-              flex: 1,
-              maxWidth: 200,
-              py: 1.25,
-              borderRadius: 3,
-              background: `linear-gradient(135deg, ${brand[600]} 0%, ${accent[600]} 100%)`,
-              '&:hover': {
-                background: `linear-gradient(135deg, ${brand[700]} 0%, ${accent[700]} 100%)`,
-              },
-            }}
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 0.25,
-                lineHeight: 1.2,
-              }}
-            >
-              <Box
-                component="span"
                 sx={{
-                  fontFamily: (theme) => theme.fonts.jp,
-                  fontSize: '1.15rem',
-                  fontWeight: 700,
-                  '& rt': { fontSize: '0.6em', opacity: 0.9, fontWeight: 600 },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 0.25,
+                  lineHeight: 1.2,
                 }}
               >
-                <FuriganaText text={t('gotItJp')} showFurigana />
+                <Box
+                  component="span"
+                  sx={{
+                    fontFamily: (theme) => theme.fonts.jp,
+                    fontSize: '1.15rem',
+                    fontWeight: 700,
+                  }}
+                >
+                  {t('stillLearningJp')}
+                </Box>
+                <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
+                  {t('stillLearning')}
+                </Box>
               </Box>
-              <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
-                {t('gotIt')}
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => handleGrade(true)}
+              sx={{
+                flex: 1,
+                maxWidth: 200,
+                py: 1.25,
+                borderRadius: 3,
+                background: `linear-gradient(135deg, ${brand[600]} 0%, ${accent[600]} 100%)`,
+                '&:hover': {
+                  background: `linear-gradient(135deg, ${brand[700]} 0%, ${accent[700]} 100%)`,
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 0.25,
+                  lineHeight: 1.2,
+                }}
+              >
+                <Box
+                  component="span"
+                  sx={{
+                    fontFamily: (theme) => theme.fonts.jp,
+                    fontSize: '1.15rem',
+                    fontWeight: 700,
+                    '& rt': { fontSize: '0.6em', opacity: 0.9, fontWeight: 600 },
+                  }}
+                >
+                  <FuriganaText text={t('gotItJp')} showFurigana />
+                </Box>
+                <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
+                  {t('gotIt')}
+                </Box>
               </Box>
+            </Button>
+          </Box>
+
+          {/* Navigation — browse between cards without grading */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4,
+              mt: { xs: 1, sm: 1.5 },
+            }}
+          >
+            <IconButton
+              onClick={() => navigate(-1)}
+              disabled={index === 0 || navigating}
+              aria-label={t('previousCardAria')}
+              sx={{
+                border: `1px solid ${alpha(brand[300], 0.45)}`,
+                bgcolor: brand[50],
+                '&:not(:disabled):hover': { borderColor: brand[500] },
+              }}
+            >
+              <ArrowBackIcon />
+            </IconButton>
+
+            <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: '0.08em' }}>
+              {flipped ? t('howDidYouDo') : t('tapCardToFlip')}
+            </Typography>
+
+            <IconButton
+              onClick={() => navigate(1)}
+              disabled={index === cards.length - 1 || navigating}
+              aria-label={t('nextCardAria')}
+              sx={{
+                border: `1px solid ${alpha(brand[300], 0.45)}`,
+                bgcolor: brand[50],
+                '&:not(:disabled):hover': { borderColor: brand[500] },
+              }}
+            >
+              <ArrowForwardIcon />
+            </IconButton>
+          </Box>
+
+          {index === cards.length - 1 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1.5 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => (embedded ? controller?.onComplete() : setShowCelebration(true))}
+              >
+                {embedded ? t('nextRound') : t('finishSession')}
+              </Button>
             </Box>
-          </Button>
+          )}
         </Box>
-      )}
-
-      {/* Navigation — browse between cards without grading */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 4,
-          mt: { xs: 2, sm: 3 },
-        }}
-      >
-        <IconButton
-          onClick={() => navigate(-1)}
-          disabled={index === 0 || navigating}
-          aria-label={t('previousCardAria')}
-          sx={{
-            border: `1px solid ${alpha(brand[300], 0.45)}`,
-            bgcolor: brand[50],
-            '&:not(:disabled):hover': { borderColor: brand[500] },
-          }}
-        >
-          <ArrowBackIcon />
-        </IconButton>
-
-        <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: '0.08em' }}>
-          {flipped ? t('howDidYouDo') : t('tapCardToFlip')}
-        </Typography>
-
-        <IconButton
-          onClick={() => navigate(1)}
-          disabled={index === cards.length - 1 || navigating}
-          aria-label={t('nextCardAria')}
-          sx={{
-            border: `1px solid ${alpha(brand[300], 0.45)}`,
-            bgcolor: brand[50],
-            '&:not(:disabled):hover': { borderColor: brand[500] },
-          }}
-        >
-          <ArrowForwardIcon />
-        </IconButton>
       </Box>
-
-      {index === cards.length - 1 && !embedded && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-          <Button variant="outlined" onClick={() => setShowCelebration(true)}>
-            {t('finishSession')}
-          </Button>
-        </Box>
-      )}
-
-      {index === cards.length - 1 && embedded && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-          <Button variant="outlined" onClick={() => controller?.onComplete()}>
-            {t('nextRound')}
-          </Button>
-        </Box>
-      )}
 
       {!embedded &&
         showCelebration &&
@@ -605,6 +623,6 @@ export default function FlipStudy({
             />
           );
         })()}
-    </Box>
+    </PracticeStage>
   );
 }
