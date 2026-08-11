@@ -5,7 +5,6 @@ import {
   AppBar,
   Badge,
   Box,
-  Button,
   IconButton,
   Snackbar,
   Toolbar,
@@ -16,7 +15,7 @@ import { alpha } from '@mui/material/styles';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
@@ -26,6 +25,7 @@ import { LAYOUT } from '@/theme';
 import { NAV_ITEMS } from './constants';
 import { EditNameDialog } from './EditNameDialog';
 import { LanguageMenu } from './LanguageMenu';
+import { NavLinks } from './NavLinks';
 import { UserMenu } from './UserMenu';
 import { XpDisplay } from './XpDisplay';
 
@@ -44,7 +44,6 @@ export const NAVBAR_HEIGHT = {
 
 export function NavBar() {
   const t = useTranslations('Nav');
-  const tItems = useTranslations('Nav.items');
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
 
@@ -83,13 +82,13 @@ export function NavBar() {
     borderRadius: theme.radii.pill,
     // Base (xs) values matter even though nav links hide below sm: UserMenu
     // reuses this sx for the sign-in and avatar buttons, which render on phones.
-    px: { xs: 1.5, md: 2 },
+    px: 1.5,
     py: { xs: 0.5, md: 0.8 },
     minWidth: 0,
     whiteSpace: 'nowrap' as const,
     transition: 'background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease',
     '&:hover': { bgcolor: alpha(brand[300], 0.22), transform: 'translateY(-1px)' },
-    '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5, md: 0.75 } },
+    '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
     // Same selector MUI uses for start-icon sizing, so the sx (injected later) wins.
     '& .MuiButton-startIcon > *:nth-of-type(1)': { fontSize: { xs: '1rem', md: '1.2rem' } },
   };
@@ -104,8 +103,16 @@ export function NavBar() {
     '&:hover': { bgcolor: alpha(brand[300], 0.32), transform: 'none' },
   };
 
-  const isActive = (href: string, exact?: boolean) =>
-    exact ? pathname === href : (pathname?.startsWith(href) ?? false);
+  const isActive = useCallback(
+    (href: string, exact?: boolean) =>
+      exact ? pathname === href : (pathname?.startsWith(href) ?? false),
+    [pathname],
+  );
+
+  const navItems = useMemo(
+    () => NAV_ITEMS.filter((item) => !item.organizerOnly || !isMemberAccount),
+    [isMemberAccount],
+  );
 
   return (
     <>
@@ -127,7 +134,7 @@ export function NavBar() {
             mx: 'auto',
             px: LAYOUT.pagePx,
             minHeight: NAVBAR_TOOLBAR_HEIGHT,
-            gap: { xs: 1.5, md: 2.5 },
+            gap: { xs: 1.5, md: 2 },
           }}
         >
           {/* Brand lockup: mascot + wordmark + たんごだち (see public/brand/logo-lockup.png) */}
@@ -149,40 +156,12 @@ export function NavBar() {
 
           {/* Nav links — centered group, active page marked with a flat brand tint */}
           {user && (
-            <Box
-              sx={{
-                display: { xs: 'none', sm: 'flex' },
-                alignItems: 'center',
-                gap: { sm: 0.25, md: 0.75 },
-                mx: 'auto',
-                // Where the full row doesn't fit (organizer accounts on tablets)
-                // the strip pans within itself rather than pushing the toolbar
-                // past the viewport edge.
-                minWidth: 0,
-                overflowX: 'auto',
-                scrollbarWidth: 'none',
-                '&::-webkit-scrollbar': { display: 'none' },
-              }}
-            >
-              {NAV_ITEMS.map(({ key, href, icon: Icon, exact, organizerOnly }) => {
-                if (organizerOnly && isMemberAccount) return null;
-                const active = isActive(href, exact);
-                return (
-                  <Button
-                    key={key}
-                    onClick={() => router.push(href)}
-                    size="small"
-                    startIcon={<Icon />}
-                    aria-current={active ? 'page' : undefined}
-                    sx={{ ...(active ? navBtnActive : navBtn), flexShrink: 0 }}
-                  >
-                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                      {tItems(key)}
-                    </Box>
-                  </Button>
-                );
-              })}
-            </Box>
+            <NavLinks
+              items={navItems}
+              navBtnSx={navBtn}
+              navBtnActiveSx={navBtnActive}
+              isActive={isActive}
+            />
           )}
 
           {/* Spacer when nav links are hidden (unauthenticated or mobile) */}
