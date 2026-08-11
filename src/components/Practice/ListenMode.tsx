@@ -308,8 +308,8 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
 
       {/* Sound card — the Japanese stays hidden until the question is answered.
           Takes the slack so revealing it never pushes the choices off screen.
-          Grow-only (`1 0 auto`) because it clips its overflow: shrinking it on
-          a short phone would hide the play button rather than scroll. */}
+          Grow-only (`1 0 auto`): it clips its overflow, so shrinking would hide
+          the play button rather than scroll. */}
       <Box
         sx={{
           flex: '1 0 auto',
@@ -432,9 +432,8 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
         </Box>
       )}
 
-      {/* Left, not right: the floating buddy parks in the bottom-right corner
-          of the viewport, over the button. */}
-      <Box sx={{ flexShrink: 0, textAlign: 'left' }}>
+      {/* Left, not right: the floating buddy parks over the bottom-right corner. */}
+      <Box sx={{ mt: { xs: 0.5, sm: 1 }, flexShrink: 0, textAlign: 'left' }}>
         <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
           {tCommon('quitAndSave')}
         </Button>

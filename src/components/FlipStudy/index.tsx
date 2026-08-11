@@ -76,8 +76,10 @@ const CARD_MIN_H = 280;
 /**
  * Height reserved for the self-grading row whether or not the card is flipped.
  * Growing the layout at flip time would resize the card underneath it mid-read.
+ * Sized for the taller of the two buttons: "Got it" carries furigana, and the
+ * ruby annotation adds a line above the Japanese label.
  */
-const GRADE_ROW_PX = 62;
+const GRADE_ROW_PX = 74;
 
 // ── Sparkle stars that float up on each new card ──────────────────────────────
 const SPARKLE_ITEMS = [
@@ -310,10 +312,9 @@ export default function FlipStudy({
         mb={{ xs: 1.5, sm: 2 }}
       />
 
-      {/* On a wide-but-short screen (a tablet held sideways) the status and the
-          buttons move into a rail beside the card — the only arrangement that
-          leaves the card a readable height without pushing grading under the
-          fold. */}
+      {/* Under LANDSCAPE_FIT the status and buttons move into a rail beside the
+          card: stacked, they leave the card unreadably short or push grading
+          under the fold. */}
       <Box
         sx={{
           flex: 1,
@@ -366,9 +367,7 @@ export default function FlipStudy({
           </Box>
         </Box>
 
-        {/* Card — dealer-deal animation: new card flips in from above like
-            tossed onto a pile. Takes the leftover height; its width follows
-            from the card ratio. */}
+        {/* Card — takes the leftover height; its width follows from the ratio. */}
         <Box
           sx={{
             minHeight: 0,
@@ -386,9 +385,9 @@ export default function FlipStudy({
             sx={{
               height: '100%',
               width: 'auto',
-              // Both caps matter: maxHeight stops a tall slot from stretching
-              // the card past its ratio, maxWidth stops a narrow screen from
-              // pushing it off the sides.
+              // Both caps matter: maxHeight stops a tall slot stretching the
+              // card past its ratio, maxWidth stops a narrow one pushing it
+              // off the sides.
               maxHeight: `${CARD_H}px`,
               maxWidth: `min(${CARD_W}px, 100%)`,
               aspectRatio: CARD_ASPECT_RATIO,
@@ -459,10 +458,10 @@ export default function FlipStudy({
         </Box>
 
         <Box sx={{ [LANDSCAPE_FIT]: { gridColumn: 2, gridRow: '2 / -1', alignSelf: 'center' } }}>
-          {/* Self-grading — two big friendly buttons, revealed once the card is
-            flipped to its answer. The row keeps its height while hidden so the
-            card never resizes at flip time; `visibility` (not a conditional
-            render) also keeps the buttons out of the tab order until then. */}
+          {/* Self-grading, revealed once the card is flipped. The row keeps its
+            height while hidden so the card never resizes at flip time;
+            `visibility` (not a conditional render) also keeps the buttons out
+            of the tab order until then. */}
           <Box
             sx={{
               display: 'flex',

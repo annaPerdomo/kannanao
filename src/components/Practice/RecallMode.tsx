@@ -288,9 +288,9 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
       />
 
       {/* Word card — takes the height the choices below don't need, so the
-          answer image can appear without pushing anything off the screen.
-          Grow-only (`1 0 auto`) because it clips its overflow: shrinking it on
-          a short phone would cut off the word rather than scroll the page. */}
+          answer image can appear without pushing anything off screen. Grow-only
+          (`1 0 auto`): it clips its overflow, so shrinking would cut off the
+          word rather than scroll the page. */}
       <Box
         sx={{
           position: 'relative',
@@ -427,9 +427,8 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
         </Box>
       )}
 
-      {/* Left, not right: the floating buddy parks in the bottom-right corner
-          of the viewport, over the button. */}
-      <Box sx={{ flexShrink: 0, textAlign: 'left' }}>
+      {/* Left, not right: the floating buddy parks over the bottom-right corner. */}
+      <Box sx={{ mt: { xs: 0.5, sm: 1 }, flexShrink: 0, textAlign: 'left' }}>
         <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
           {tCommon('quitAndSave')}
         </Button>

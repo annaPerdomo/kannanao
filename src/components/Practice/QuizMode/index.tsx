@@ -169,8 +169,8 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
       />
 
       {/* Prompt card — takes the slack so the answers stay on screen. Grow-only
-          (`1 0 auto`) because it clips its overflow: shrinking it on a short
-          phone would cut the prompt in half instead of scrolling the page. */}
+          (`1 0 auto`): it clips its overflow, so shrinking would cut the prompt
+          in half instead of scrolling the page. */}
       <Box
         sx={{
           flex: '1 0 auto',
@@ -387,8 +387,8 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
         </Box>
       )}
 
-      {/* Left on a phone: the floating buddy parks in the right-hand corner. */}
-      <Box sx={{ mt: { xs: 0.5, sm: 1 }, flexShrink: 0, textAlign: { xs: 'left', sm: 'right' } }}>
+      {/* Left, not right: the floating buddy parks over the bottom-right corner. */}
+      <Box sx={{ mt: { xs: 0.5, sm: 1 }, flexShrink: 0, textAlign: 'left' }}>
         <Button size="small" onClick={onExit} sx={{ color: 'text.secondary' }}>
           {t('quit')}
         </Button>
