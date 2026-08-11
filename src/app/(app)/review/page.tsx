@@ -1,5 +1,5 @@
 'use client';
-import { Alert, Box, Button, Typography } from '@mui/material';
+import { Alert, Box, Button, Grid, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -92,10 +92,12 @@ export default function ReviewHubPage() {
   return (
     <Box
       sx={{
-        maxWidth: LAYOUT.narrowMaxWidth,
+        // Wider than the app's narrow column so that on a tablet held sideways
+        // the hero and the games sit side by side rather than stack past the fold.
+        maxWidth: { xs: LAYOUT.narrowMaxWidth, md: LAYOUT.headerMaxWidth },
         mx: 'auto',
         px: LAYOUT.pagePx,
-        py: { xs: 3, sm: 5 },
+        py: { xs: 3, sm: 4 },
       }}
     >
       <PageHeader
@@ -107,25 +109,34 @@ export default function ReviewHubPage() {
         title={t('title')}
         subtitle={t('subtitle')}
         onBack={() => router.push('/')}
-        mb={3}
+        mb={{ xs: 2, sm: 3 }}
       />
 
-      {loading ? (
-        <Loading />
-      ) : error ? (
-        <Alert severity="error" sx={{ borderRadius: 3 }}>
-          {t('loadError')}
-        </Alert>
-      ) : dueCount > 0 ? (
-        <DueHero count={dueCount} onStart={() => router.push('/review/today')} />
-      ) : (
-        <CaughtUpHero />
-      )}
+      <Grid container spacing={{ xs: 3, md: 4 }} alignItems="flex-start">
+        <Grid size={{ xs: 12, md: 4 }}>
+          {loading ? (
+            <Loading />
+          ) : error ? (
+            <Alert severity="error" sx={{ borderRadius: 3 }}>
+              {t('loadError')}
+            </Alert>
+          ) : dueCount > 0 ? (
+            <DueHero count={dueCount} onStart={() => router.push('/review/today')} />
+          ) : (
+            <CaughtUpHero />
+          )}
+        </Grid>
 
-      <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', mt: 5, mb: 2 }}>
-        {t('funWaysToPractice')}
-      </Typography>
-      <GameTiles />
+        <Grid size={{ xs: 12, md: 8 }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 800, color: 'text.primary', mt: { xs: 1, md: 0 }, mb: 2 }}
+          >
+            {t('funWaysToPractice')}
+          </Typography>
+          <GameTiles />
+        </Grid>
+      </Grid>
     </Box>
   );
 }
