@@ -21,9 +21,8 @@ describe('PracticeStage', () => {
     expect(screen.getByText('question')).toBeInTheDocument();
   });
 
-  // As a fixed `height` the stage charged any shortfall to whichever child was
-  // flexible, collapsing it to nothing and painting its contents over the rows
-  // above and below instead of letting the page scroll.
+  // A fixed `height` collapsed whichever child was flexible and painted its
+  // contents over the rows around it.
   it('claims the viewport as a floor, never as a fixed height', () => {
     renderWithProviders(
       <PracticeStage>

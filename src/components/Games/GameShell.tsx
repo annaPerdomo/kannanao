@@ -97,8 +97,7 @@ export function GameShell({
         {children}
       </Box>
 
-      {/* Left, not right: the floating buddy parks in the bottom-right corner
-          of the viewport, over the button. */}
+      {/* Left, not right: the floating buddy parks over the bottom-right corner. */}
       <Box sx={{ mt: 1.5, textAlign: 'left', flexShrink: 0 }}>
         <Button size="small" color="inherit" onClick={onQuit} sx={{ opacity: 0.5 }}>
           {t('quitAndSave')}

@@ -152,8 +152,8 @@ export function BossRound({
       />
 
       {/* Prompt word — takes the slack so the choices below never leave the
-          fold. Grow-only (`1 0 auto`) because it clips its overflow: shrinking
-          it on a short phone would cut the word in half instead of scrolling. */}
+          fold. Grow-only (`1 0 auto`): it clips its overflow, so shrinking
+          would cut the word in half instead of scrolling. */}
       <Box
         sx={{
           flex: '1 0 auto',

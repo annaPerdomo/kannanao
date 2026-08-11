@@ -497,9 +497,8 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
         }}
       />
 
-      {/* Sentence card — fills available space, never less than the sentence
-          needs, so a long one scrolls the page instead of printing over the
-          particle buttons. */}
+      {/* Sentence card — fills the available space, never less than the sentence
+          needs, so a long one scrolls instead of printing over the buttons. */}
       <Paper
         elevation={0}
         sx={{

@@ -244,9 +244,8 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
         }}
       />
 
-      {/* The prompt takes the slack so the tiles and buttons under it stay on
-          screen — but never less than its own height, or it would print over
-          the tiles on a short phone. */}
+      {/* The prompt takes the slack so the tiles and buttons stay on screen —
+          but never less than its own height, or it prints over the tiles. */}
       <Box
         sx={{
           flex: 1,
@@ -293,8 +292,7 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
         </Box>
       )}
 
-      {/* Left, not right: the floating buddy parks in the bottom-right corner
-          of the viewport, over the button. */}
+      {/* Left, not right: the floating buddy parks over the bottom-right corner. */}
       <Box sx={{ mt: { xs: 0.5, sm: 1 }, flexShrink: 0, textAlign: 'left' }}>
         <Button size="small" onClick={handleExit} sx={{ color: 'text.secondary' }}>
           {tCommon('quitAndSave')}

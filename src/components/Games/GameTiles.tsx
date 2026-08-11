@@ -83,8 +83,8 @@ function GameCard({ title, jpTitle, description, emoji, gradient, href }: GameCa
         {emoji}
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        {/* Both names stay whole: when the tile is too narrow for them side by
-            side the Japanese drops to its own line rather than breaking mid-word. */}
+        {/* Too narrow for both names side by side drops the Japanese to its own
+            line, rather than breaking either mid-word. */}
         <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
           <Typography
             sx={{
@@ -159,10 +159,10 @@ const GAMES: GameConfig[] = [
 export function GameTiles() {
   const t = useTranslations('Games.tiles');
   return (
-    // auto-fit, not a breakpoint: this list sits full-width on a phone and in a
-    // side column on a tablet held sideways, so tiles per row has to follow the
-    // space the list actually got. Below 280px the titles truncate; the inner
-    // min() keeps that floor from overflowing a narrower container.
+    // auto-fit, not a breakpoint: the list is full-width on a phone and a side
+    // column on a sideways tablet, so tiles per row follows the space it got.
+    // Titles truncate below 280px; the inner min() keeps that floor from
+    // overflowing a narrower container.
     <Box
       sx={{
         display: 'grid',

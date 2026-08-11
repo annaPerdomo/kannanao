@@ -23,9 +23,9 @@ const CHROME = {
 const MIN_STAGE_PX = 460;
 
 /**
- * A floor, never a ceiling. As a fixed `height` the stage charged any shortfall
+ * A floor, never a ceiling. As a fixed `height` the stage charged the shortfall
  * to whichever child was flexible, collapsing it to nothing and painting its
- * contents over the rows above and below instead of scrolling.
+ * contents over the rows around it instead of scrolling.
  */
 const stageMinHeightSx = {
   minHeight: {
@@ -53,9 +53,8 @@ export interface PracticeStageProps {
 /**
  * The frame every focused practice surface sits in: at least as tall as the
  * viewport has left, and a flex column so the board takes the slack while the
- * header and the buttons under it keep their size. A tablet in landscape — wide
- * but only ~700px of usable height — shows the whole exercise without scrolling
- * to reach the answers.
+ * header and the buttons under it keep their size — a sideways tablet (~700px
+ * of usable height) shows the whole exercise without scrolling to the answers.
  *
  * Children that absorb the leftover height set `flex: 1`, and must NOT set
  * `minHeight: 0` — that is what lets a child collapse under its own content.

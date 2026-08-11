@@ -92,8 +92,8 @@ export default function ReviewHubPage() {
   return (
     <Box
       sx={{
-        // Wider than the app's narrow column so that on a tablet held sideways
-        // the hero and the games sit side by side rather than stack past the fold.
+        // Wider than the narrow column: on a sideways tablet the hero and the
+        // games sit side by side instead of stacking past the fold.
         maxWidth: { xs: LAYOUT.narrowMaxWidth, md: LAYOUT.headerMaxWidth },
         mx: 'auto',
         px: LAYOUT.pagePx,
