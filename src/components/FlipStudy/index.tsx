@@ -395,9 +395,8 @@ export default function FlipStudy({
           </Box>
         </Box>
 
-        {/* Card row — the card takes the leftover height (width follows from
-            the ratio); the slot between the arrows keeps the 100% its width
-            cap measures against. */}
+        {/* The slot between the arrows is the 100% the card's maxWidth cap
+            measures against. */}
         <Box
           sx={{
             minHeight: 0,
