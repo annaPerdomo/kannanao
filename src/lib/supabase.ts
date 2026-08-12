@@ -377,7 +377,8 @@ export async function getAccessibleDeckIds(userId: string): Promise<string[]> {
 /**
  * Every card in the decks this user can study (own + assigned). Used for the
  * review-game top-up pool and the "add existing cards" picker. Pass `deckIds`
- * when the caller already fetched them to avoid a duplicate lookup.
+ * when the caller already fetched them to avoid a duplicate lookup. Propagates
+ * the access-lookup throw so callers can tell an outage from "no cards".
  */
 export async function loadAccessibleCards(
   userId: string,
@@ -388,12 +389,7 @@ export async function loadAccessibleCards(
     return [];
   }
 
-  let ids: string[];
-  try {
-    ids = deckIds ?? (await getAccessibleDeckIds(userId));
-  } catch {
-    return [];
-  }
+  const ids = deckIds ?? (await getAccessibleDeckIds(userId));
   if (ids.length === 0) return [];
 
   const { data, error } = await sb

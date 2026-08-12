@@ -47,6 +47,7 @@
       "selectedCount": "{count}枚を選択中",
       "cardCount": "{count, plural, other {カード#枚}}",
       "emptyNoCards": "ほかのデッキにカードがありません",
+      "loadError": "カードを読み込めませんでした。もう一度お試しください。",
       "emptyNoMatch": "検索に一致するカードがありません"
     },
     "confirmRemoveImageDialog": {

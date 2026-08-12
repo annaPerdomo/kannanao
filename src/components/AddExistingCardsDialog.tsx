@@ -3,6 +3,7 @@
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import SearchIcon from '@mui/icons-material/Search';
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
@@ -76,17 +77,21 @@ export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, on
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     setLoading(true);
+    setLoadError(false);
     setSelected(new Set());
     setSearch('');
-    loadAccessibleCards(userId).then((cards) => {
-      setAllCards(cards.filter((c) => c.deckId !== targetDeckId));
-      setLoading(false);
-    });
+    loadAccessibleCards(userId)
+      .then((cards) => {
+        setAllCards(cards.filter((c) => c.deckId !== targetDeckId));
+      })
+      .catch(() => setLoadError(true))
+      .finally(() => setLoading(false));
   }, [open, targetDeckId, userId]);
 
   const filtered = useMemo(() => {
@@ -210,6 +215,8 @@ export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, on
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress size={28} sx={{ color: brand[700] }} />
         </Box>
+      ) : loadError ? (
+        <Alert severity="error">{t('loadError')}</Alert>
       ) : filtered.length === 0 ? (
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
           {allCards.length === 0 ? t('emptyNoCards') : t('emptyNoMatch')}

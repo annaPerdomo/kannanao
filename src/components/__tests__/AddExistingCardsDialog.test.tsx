@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { AddExistingCardsDialog } from '@/components/AddExistingCardsDialog';
+import { loadAccessibleCards } from '@/lib/supabase';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -63,5 +64,14 @@ describe('AddExistingCardsDialog', () => {
 
     fireEvent.click(screen.getByText('桜'));
     await waitFor(() => expect(checkbox).toBeChecked());
+  });
+
+  it('shows an error instead of an empty picker when the load fails', async () => {
+    vi.mocked(loadAccessibleCards).mockRejectedValueOnce(new Error('access lookup failed'));
+    renderDialog();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      "Couldn't load your cards. Please try again.",
+    );
+    expect(screen.queryByText('No cards in other decks yet')).not.toBeInTheDocument();
   });
 });

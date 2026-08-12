@@ -47,6 +47,7 @@
       "selectedCount": "{count} selected",
       "cardCount": "{count, plural, one {# card} other {# cards}}",
       "emptyNoCards": "No cards in other decks yet",
+      "loadError": "Couldn't load your cards. Please try again.",
       "emptyNoMatch": "No cards match your search"
     },
     "confirmRemoveImageDialog": {

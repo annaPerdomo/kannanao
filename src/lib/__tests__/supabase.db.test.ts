@@ -495,6 +495,12 @@ describe('loadAccessibleCards', () => {
     const cards = await loadAccessibleCards('u1');
     expect(cards).toEqual([]);
   });
+
+  it('should propagate an access-lookup error rather than claim no cards', async () => {
+    setTable('decks', null, { message: 'DB error' });
+    setTable('assignments', []);
+    await expect(loadAccessibleCards('u1')).rejects.toThrow('DB error');
+  });
 });
 
 // ─── dbInsertCards ────────────────────────────────────────────────────────────
