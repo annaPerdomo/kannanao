@@ -73,6 +73,17 @@ export function Flashcard({
     setHovered(false);
   }, []);
 
+  const toggleFlip = useCallback(() => setFlipped((f) => !f), []);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      toggleFlip();
+    },
+    [toggleFlip],
+  );
+
   const { titleText, subtitleText, speakText } = getFlashcardDisplayText(card);
   const isPhrase = card.cardType === 'phrase';
   const isKanji = card.mainViewMode === 'kanji';
@@ -120,7 +131,11 @@ export function Flashcard({
     <Box
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      onClick={() => setFlipped((f) => !f)}
+      onClick={toggleFlip}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={flipped ? t('flipBackAria') : t('flipAria')}
       sx={{
         width,
         height,
@@ -128,6 +143,11 @@ export function Flashcard({
         perspective: '1200px',
         userSelect: 'none',
         flexShrink: 0,
+        borderRadius: theme.radii.md,
+        '&:focus-visible': {
+          outline: `3px solid ${accent[500]}`,
+          outlineOffset: '3px',
+        },
       }}
     >
       {/* Tilt wrapper — applies 3-D tilt from mouse position */}

@@ -153,6 +153,34 @@ describe('Flashcard', () => {
       renderWithProviders(<Flashcard card={makeCard()} />);
       expect(screen.getByText('tap to flip back')).toBeInTheDocument();
     });
+
+    it.each(['Enter', ' '])('should flip on %s so the card is keyboard-operable', (key) => {
+      const onFlipChange = vi.fn();
+      renderWithProviders(<Flashcard card={makeCard()} onFlipChange={onFlipChange} />);
+
+      fireEvent.keyDown(screen.getByRole('button', { name: /Flip the card/ }), { key });
+
+      expect(onFlipChange).toHaveBeenLastCalledWith(true);
+    });
+
+    it('should ignore other keys', () => {
+      const onFlipChange = vi.fn();
+      renderWithProviders(<Flashcard card={makeCard()} onFlipChange={onFlipChange} />);
+
+      fireEvent.keyDown(screen.getByRole('button', { name: /Flip the card/ }), { key: 'a' });
+
+      expect(onFlipChange).toHaveBeenLastCalledWith(false);
+    });
+
+    it('should describe the way back once flipped', () => {
+      renderWithProviders(<Flashcard card={makeCard()} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Flip the card to see the answer' }));
+
+      expect(
+        screen.getByRole('button', { name: 'Flip the card back to the word' }),
+      ).toBeInTheDocument();
+    });
   });
 
   describe('card without reading', () => {

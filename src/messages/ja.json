@@ -444,6 +444,8 @@
       "meaningLabel": "★ 意味",
       "exampleLabel": "★ 例文",
       "tapToFlipBack": "タップしてもどる",
+      "flipAria": "カードをめくってこたえを見る",
+      "flipBackAria": "カードをもどしてことばを見る",
       "jlptLabel": "JLPT {level}"
     },
     "flipStudy": {
