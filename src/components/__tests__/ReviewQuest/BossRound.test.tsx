@@ -1,6 +1,7 @@
 import { fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('@/hooks/useFuriganaMask', () => ({ useFuriganaMask: () => () => false }));
 vi.mock('@/components/SpeakButton', () => ({ SpeakButton: () => null }));
 
 import { BossRound } from '@/components/ReviewQuest/BossRound';

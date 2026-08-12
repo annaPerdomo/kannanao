@@ -10,6 +10,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ComboChip } from '@/components/ComboChip';
 import { PracticeStage } from '@/components/PracticeStage';
 import { SpeakButton } from '@/components/SpeakButton';
+import TitleFurigana from '@/components/TitleFurigana';
+import { useFuriganaMask } from '@/hooks/useFuriganaMask';
 import {
   buildMeaningChoices,
   cardXp,
@@ -56,6 +58,7 @@ export function BossRound({
   const theme = useTheme();
   const { brand, accent, surfaces } = theme.palette;
   const t = useTranslations('Review.bossRound');
+  const isFuriganaMasked = useFuriganaMask(cards);
 
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -185,11 +188,15 @@ export function BossRound({
               whiteSpace: card.cardType === 'phrase' ? undefined : 'nowrap',
             }}
           >
-            {display.titleText}
+            {display.titleFurigana ? (
+              <TitleFurigana markup={display.titleFurigana} masked={isFuriganaMasked(card.id)} />
+            ) : (
+              display.titleText
+            )}
           </Typography>
           <SpeakButton text={card.word} iconSize="1.3rem" />
         </Box>
-        {display.subtitleText && (
+        {display.subtitleText && !display.titleFurigana && (
           <Typography variant="body2" color="text.secondary">
             {display.subtitleText}
           </Typography>

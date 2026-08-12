@@ -41,9 +41,11 @@ vi.mock('@/components/UnsplashAttribution', () => ({
   UnsplashAttribution: () => null,
 }));
 
+vi.mock('@/hooks/useFuriganaMask', () => ({ useFuriganaMask: () => () => false }));
 vi.mock('@/components/FuriganaText', () => ({
   default: ({ text }: { text: string }) => <span>{text}</span>,
   stripFurigana: (t: string) => t,
+  titleRubySx: {},
 }));
 
 vi.mock('@/components/SpeakButton', () => ({

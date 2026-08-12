@@ -7,8 +7,15 @@ import type { Flashcard as FlashcardType } from '@/types/flashcard';
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
 vi.mock('@/components/FuriganaText', () => ({
-  default: ({ text }: { text: string }) => <span data-testid="furigana">{text}</span>,
+  // Base text and readings in separate nodes, like the real ruby markup.
+  default: ({ text }: { text: string }) => (
+    <span data-testid="furigana">
+      {text.replace(/\{([^|}]+)\|([^}]+)\}/g, '$1')}
+      <span>{[...text.matchAll(/\{[^|}]+\|([^}]+)\}/g)].map((m) => m[1]).join('')}</span>
+    </span>
+  ),
   stripFurigana: (t: string) => t.replace(/\{[^|]+\|([^}]+)\}/g, '$1'),
+  titleRubySx: {},
 }));
 
 vi.mock('@/components/SpeakButton', () => ({
@@ -48,9 +55,10 @@ function makeCard(overrides: Partial<FlashcardType> = {}): FlashcardType {
 describe('Flashcard', () => {
   describe('hiragana mode (front face)', () => {
     it('should display the reading as the title in hiragana mode', () => {
+      // The example sentence's furigana also carries ねこ, hence getAllByText.
       const card = makeCard({ mainViewMode: 'hiragana', reading: 'ねこ' });
       renderWithProviders(<Flashcard card={card} />);
-      expect(screen.getByText('ねこ')).toBeInTheDocument();
+      expect(screen.getAllByText('ねこ').length).toBeGreaterThanOrEqual(1);
     });
 
     it('should show the かな mode label in hiragana mode', () => {
@@ -74,10 +82,10 @@ describe('Flashcard', () => {
       expect(screen.getAllByText('猫').length).toBeGreaterThanOrEqual(1);
     });
 
-    it('should show the reading as subtitle in kanji mode', () => {
+    it('should show the reading as furigana in kanji mode', () => {
       const card = makeCard({ mainViewMode: 'kanji', word: '猫', reading: 'ねこ' });
       renderWithProviders(<Flashcard card={card} />);
-      expect(screen.getByText('ねこ')).toBeInTheDocument();
+      expect(screen.getAllByText('ねこ').length).toBeGreaterThanOrEqual(1);
     });
 
     it('should show the 漢字 mode label in kanji mode', () => {

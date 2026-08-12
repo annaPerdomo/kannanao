@@ -7,8 +7,15 @@ import type { Flashcard as FlashcardType } from '@/types/flashcard';
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
 vi.mock('@/components/FuriganaText', () => ({
-  default: ({ text }: { text: string }) => <span data-testid="furigana">{text}</span>,
+  // Base text and readings in separate nodes, like the real ruby markup.
+  default: ({ text }: { text: string }) => (
+    <span data-testid="furigana">
+      {text.replace(/\{([^|}]+)\|([^}]+)\}/g, '$1')}
+      <span>{[...text.matchAll(/\{[^|}]+\|([^}]+)\}/g)].map((m) => m[1]).join('')}</span>
+    </span>
+  ),
   stripFurigana: (t: string) => t.replace(/\{[^|]+\|([^}]+)\}/g, '$1'),
+  titleRubySx: {},
 }));
 
 vi.mock('@/components/SpeakButton', () => ({ SpeakButton: () => null }));

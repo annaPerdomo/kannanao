@@ -14,6 +14,11 @@ interface FuriganaTextProps {
 // button, the Kotoba highlighter — understands the same markup shapes.
 export { stripFurigana } from '@/lib/furigana';
 
+/** rt scaled for large card titles — the default 0.75em reads as a second word there. */
+export const titleRubySx = {
+  '& rt': { fontSize: '0.42em', fontWeight: 600, lineHeight: 1.1 },
+} as const;
+
 export default function FuriganaText({ text, showFurigana, sx }: FuriganaTextProps) {
   const segments = parseFurigana(text);
   return (

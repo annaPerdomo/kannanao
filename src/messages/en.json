@@ -17,7 +17,9 @@
       "ariaLabel": "Choose a language",
       "saved": "Language saved!",
       "saveError": "Couldn't save your language. Please try again."
-    }
+    },
+    "showReading": "Show reading",
+    "hideReading": "Hide reading"
   },
   "Deck": {
     "addCardsModal": {

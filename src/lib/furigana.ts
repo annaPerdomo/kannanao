@@ -47,6 +47,52 @@ export function parseFurigana(text: string): FuriganaSegment[] {
   return segments;
 }
 
+/** Han characters plus the marks that ride inside a kanji run (々〆ヶ〇). */
+const KANJI_CHARS = '㐀-鿿豈-﫿々〆〇ヶ';
+
+const KANJI_CHAR = new RegExp(`[${KANJI_CHARS}]`);
+
+/** Safe to share: String#match with /g ignores and resets `lastIndex`. */
+const KANJI_RUN_SPLIT = new RegExp(`[${KANJI_CHARS}]+|[^${KANJI_CHARS}]+`, 'g');
+
+const isKanjiRun = (run: string) => KANJI_CHAR.test(run[0]);
+
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** Katakana folded to hiragana so a word's ゴム matches a reading's ごむ. */
+const toHiragana = (s: string) =>
+  s.replace(/[ァ-ヶ]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+
+/**
+ * Builds `{漢字|かんじ}` markup for a word stored without any, by lining its
+ * kanji runs up against the whole-word kana reading: the word's own kana act
+ * as anchors and whatever reading sits between them belongs to the kanji run
+ * there (`貸す` + `かす` → `{貸|か}す`).
+ *
+ * Returns null when there is nothing to annotate (no kanji, no reading) or
+ * when the reading doesn't line up with the word's kana — callers keep their
+ * existing plain-text display in that case.
+ */
+export function furiganaFromReading(word: string, reading: string): string | null {
+  const kana = toHiragana(reading.trim());
+  if (!kana || !word) return null;
+
+  const runs = word.match(KANJI_RUN_SPLIT);
+  if (!runs || !runs.some(isKanjiRun)) return null;
+
+  // Kanji runs never touch (they'd merge), so every capture is bounded by a
+  // literal kana anchor or the string edge; lazy groups + anchors backtrack to
+  // the one full-string split.
+  const pattern = runs
+    .map((run) => (isKanjiRun(run) ? '(.+?)' : escapeRegExp(toHiragana(run))))
+    .join('');
+  const match = kana.match(new RegExp(`^${pattern}$`));
+  if (!match) return null;
+
+  let group = 1;
+  return runs.map((run) => (isKanjiRun(run) ? `{${run}|${match[group++]}}` : run)).join('');
+}
+
 /** Strips the markup, leaving the text as written — kanji included. */
 export function stripFurigana(text: string): string {
   return text.replace(furiganaGroupRegex(), '$1');

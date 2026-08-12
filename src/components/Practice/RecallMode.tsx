@@ -7,9 +7,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
+import TitleFurigana from '@/components/TitleFurigana';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import { useFuriganaMask } from '@/hooks/useFuriganaMask';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import {
@@ -38,6 +40,7 @@ const AUTO_ADVANCE_MS = 1800;
 export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps) {
   const t = useTranslations('Practice.recallMode');
   const tCommon = useTranslations('Practice.common');
+  const isFuriganaMasked = useFuriganaMask(cards);
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
 
@@ -351,7 +354,11 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
                 whiteSpace: card.cardType === 'phrase' ? undefined : 'nowrap',
               }}
             >
-              {display.titleText}
+              {display.titleFurigana ? (
+                <TitleFurigana markup={display.titleFurigana} masked={isFuriganaMasked(card.id)} />
+              ) : (
+                display.titleText
+              )}
             </Typography>
             <SpeakButton
               text={card.word}
@@ -360,7 +367,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
               sx={{ mb: 0.5 }}
             />
           </Box>
-          {display.subtitleText && (
+          {display.subtitleText && !display.titleFurigana && (
             <Typography variant="body1" color="text.secondary">
               {display.subtitleText}
             </Typography>

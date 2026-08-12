@@ -302,3 +302,20 @@ describe('oneLineFontSize', () => {
     }
   });
 });
+
+describe('getFlashcardDisplayText — titleFurigana', () => {
+  it('provides aligned ruby markup in kanji mode', () => {
+    const card = makeCard({ mainViewMode: 'kanji', word: '貸す', reading: 'かす' });
+    expect(getFlashcardDisplayText(card).titleFurigana).toBe('{貸|か}す');
+  });
+
+  it('stays undefined when the reading cannot be aligned', () => {
+    const card = makeCard({ mainViewMode: 'kanji', word: '貸す', reading: 'かし' });
+    expect(getFlashcardDisplayText(card).titleFurigana).toBeUndefined();
+  });
+
+  it('stays undefined outside kanji mode', () => {
+    const card = makeCard({ mainViewMode: 'hiragana', word: '貸す', reading: 'かす' });
+    expect(getFlashcardDisplayText(card).titleFurigana).toBeUndefined();
+  });
+});

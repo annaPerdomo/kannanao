@@ -17,7 +17,9 @@
       "ariaLabel": "言語を選ぶ",
       "saved": "言語を保存しました！",
       "saveError": "言語を保存できませんでした。もう一度お試しください。"
-    }
+    },
+    "showReading": "よみがなを見る",
+    "hideReading": "よみがなをかくす"
   },
   "Deck": {
     "addCardsModal": {
