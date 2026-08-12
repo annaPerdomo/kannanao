@@ -76,10 +76,13 @@ export function QuestInterstitial({
         sx={
           dark
             ? {
-                bgcolor: '#fff',
+                // The contained variant's gradient is a background-IMAGE — only
+                // the `background` shorthand replaces it; `bgcolor` paints
+                // underneath and leaves brand-on-brand text.
+                background: '#fff',
                 color: brand[800],
                 fontWeight: 800,
-                '&:hover': { bgcolor: alpha('#fff', 0.9) },
+                '&:hover': { background: alpha('#fff', 0.9) },
               }
             : { fontWeight: 800 }
         }
