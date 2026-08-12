@@ -1,5 +1,6 @@
 import { toRomaji } from 'wanakana';
 
+import { furiganaFromReading } from '@/lib/furigana';
 import { shuffle } from '@/lib/reviewGames';
 import type { Flashcard, JlptLevel } from '@/types/flashcard';
 
@@ -113,10 +114,25 @@ export function romajiFor(card: Pick<Flashcard, 'romaji' | 'reading'>): string {
     .trim();
 }
 
+/**
+ * What TTS should speak for a card's word: the curated kana reading when there
+ * is one. Browser voices guess at raw card text and get mixed-script words
+ * wrong (月よう日 → つきようび); the kana reading is unambiguous.
+ */
+export function speakTextFor(card: Pick<Flashcard, 'word' | 'reading'>): string {
+  return card.reading?.trim() || card.word;
+}
+
 export interface FlashcardDisplayText {
   titleText: string;
   subtitleText?: string;
-  /** Text to pass to TTS — always the Japanese text when available. */
+  /**
+   * Kanji mode only: the title as `{漢字|かんじ}` markup, when the reading
+   * aligns to the word's kanji. Surfaces big enough for ruby render this and
+   * hide `subtitleText`; everything else keeps the plain reading caption.
+   */
+  titleFurigana?: string;
+  /** Text to pass to TTS — the kana reading when available, never romaji. */
   speakText: string;
 }
 
@@ -126,10 +142,14 @@ export function getFlashcardDisplayText(card: Flashcard): FlashcardDisplayText {
 
   let titleText: string;
   let subtitleText: string | undefined;
+  let titleFurigana: string | undefined;
 
   if (card.mainViewMode === 'kanji') {
     titleText = card.word;
     subtitleText = hasReading ? card.reading : undefined;
+    titleFurigana = hasReading
+      ? (furiganaFromReading(card.word, card.reading) ?? undefined)
+      : undefined;
   } else if (card.mainViewMode === 'romaji') {
     titleText = hasRomaji ? romajiFor(card) : card.word;
     subtitleText = card.word;
@@ -139,12 +159,12 @@ export function getFlashcardDisplayText(card: Flashcard): FlashcardDisplayText {
     subtitleText = undefined;
   }
 
-  // TTS should always speak the Japanese text (card.word), not romaji
-  const speakText = card.word;
+  const speakText = speakTextFor(card);
 
   return {
     titleText,
     subtitleText,
+    titleFurigana,
     speakText,
   };
 }

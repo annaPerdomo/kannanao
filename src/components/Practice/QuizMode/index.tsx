@@ -18,7 +18,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useProgress } from '@/hooks/useProgress';
 import { useQuizFlow } from '@/hooks/useQuizFlow';
-import { buildMeaningChoices, getFlashcardDisplayText, titleFontSize } from '@/lib/flashcardUtils';
+import {
+  buildMeaningChoices,
+  getFlashcardDisplayText,
+  speakTextFor,
+  titleFontSize,
+} from '@/lib/flashcardUtils';
 import { checkTypedAnswer, quizAccuracy } from '@/lib/quiz';
 import { insertQuizResult } from '@/lib/supabase';
 import type { Flashcard } from '@/types/flashcard';
@@ -209,7 +214,7 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
                 >
                   {display.titleText}
                 </Typography>
-                <SpeakButton text={card.word} iconSize="1.4rem" />
+                <SpeakButton text={speakTextFor(card)} iconSize="1.4rem" />
               </Box>
               <Typography
                 variant="caption"

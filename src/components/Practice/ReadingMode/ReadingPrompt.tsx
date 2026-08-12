@@ -6,6 +6,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 
 import { SpeakButton } from '@/components/SpeakButton';
+import { speakTextFor } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
 interface ReadingPromptProps {
@@ -68,7 +69,7 @@ export function ReadingPrompt({ card, result }: ReadingPromptProps) {
               >
                 {card.reading}
               </Typography>
-              <SpeakButton text={card.word} iconSize="1.1rem" />
+              <SpeakButton text={speakTextFor(card)} iconSize="1.1rem" />
             </Box>
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
               {card.meaning}

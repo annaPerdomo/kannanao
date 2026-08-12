@@ -77,6 +77,8 @@ const CARDS: Flashcard[] = [
 ];
 
 const WORDS = CARDS.map((c) => c.word);
+// The mode speaks the curated kana reading, not the raw word.
+const SPOKEN = CARDS.map((c) => c.reading);
 
 function renderMode(onExit = vi.fn()) {
   renderWithProviders(<ListenMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={onExit} />);
@@ -86,7 +88,7 @@ function renderMode(onExit = vi.fn()) {
 /** The card the queue happens to have shuffled to the front. */
 function currentCard(): Flashcard {
   const spokenWord = mockSpeak.mock.calls[0]?.[0];
-  const card = CARDS.find((c) => c.word === spokenWord);
+  const card = CARDS.find((c) => c.reading === spokenWord);
   if (!card) throw new Error('no word was spoken — cannot resolve the current card');
   return card;
 }
@@ -140,7 +142,7 @@ describe('ListenMode', () => {
     it('should auto-play the word where the platform allows it', async () => {
       renderMode();
       await waitFor(() => expect(mockSpeak).toHaveBeenCalledTimes(1));
-      expect(WORDS).toContain(mockSpeak.mock.calls[0][0]);
+      expect(SPOKEN).toContain(mockSpeak.mock.calls[0][0]);
     });
 
     it('should wait for a tap before speaking when the platform requires a gesture', async () => {
@@ -151,7 +153,7 @@ describe('ListenMode', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /^play the word$/i }));
       await waitFor(() => expect(mockSpeak).toHaveBeenCalledTimes(1));
-      expect(WORDS).toContain(mockSpeak.mock.calls[0][0]);
+      expect(SPOKEN).toContain(mockSpeak.mock.calls[0][0]);
     });
 
     it('should replay the same word from the replay button', async () => {

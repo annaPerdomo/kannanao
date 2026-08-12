@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  furiganaFromReading,
   furiganaToKana,
   normalizeFurigana,
   normalizeFuriganaDeep,
@@ -94,5 +95,44 @@ describe('normalizeFuriganaDeep', () => {
   it('leaves non-Japanese payloads untouched', () => {
     const reply = { lines: ['hello', ''], ok: true, n: 3, nested: [[{ a: 'b' }]] };
     expect(normalizeFuriganaDeep(reply)).toEqual(reply);
+  });
+});
+
+describe('furiganaFromReading', () => {
+  it('anchors the reading to a single kanji before okurigana', () => {
+    expect(furiganaFromReading('貸す', 'かす')).toBe('{貸|か}す');
+  });
+
+  it('annotates an all-kanji compound as one run', () => {
+    expect(furiganaFromReading('勉強', 'べんきょう')).toBe('{勉強|べんきょう}');
+  });
+
+  it('splits around interior okurigana', () => {
+    expect(furiganaFromReading('入り口', 'いりぐち')).toBe('{入|い}り{口|ぐち}');
+    expect(furiganaFromReading('引っ越す', 'ひっこす')).toBe('{引|ひ}っ{越|こ}す');
+  });
+
+  it('backtracks when the okurigana kana also ends the kanji reading', () => {
+    expect(furiganaFromReading('可愛い', 'かわいい')).toBe('{可愛|かわい}い');
+  });
+
+  it('matches katakana in the word against its hiragana reading', () => {
+    expect(furiganaFromReading('消しゴム', 'けしごむ')).toBe('{消|け}しゴム');
+  });
+
+  it('aligns each kanji run of a phrase', () => {
+    expect(furiganaFromReading('何時ですか', 'なんじですか')).toBe('{何時|なんじ}ですか');
+  });
+
+  it('returns null when there is nothing to annotate', () => {
+    expect(furiganaFromReading('すし', 'すし')).toBeNull();
+    expect(furiganaFromReading('貸す', '')).toBeNull();
+    expect(furiganaFromReading('', 'かす')).toBeNull();
+  });
+
+  it('returns null when the reading does not line up with the word', () => {
+    // Missing okurigana anchor and romaji — the two shapes bad rows actually take.
+    expect(furiganaFromReading('貸す', 'かし')).toBeNull();
+    expect(furiganaFromReading('貸す', 'kasu')).toBeNull();
   });
 });

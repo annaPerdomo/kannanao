@@ -8,6 +8,7 @@ import {
   getFlashcardDisplayText,
   oneLineFontSize,
   romajiFor,
+  speakTextFor,
   textWidthEm,
   titleFontSize,
 } from '@/lib/flashcardUtils';
@@ -102,6 +103,26 @@ describe('getFlashcardDisplayText', () => {
     const card = makeCard({ mainViewMode: 'hiragana', word: 'hello', reading: '   ' });
     const { titleText } = getFlashcardDisplayText(card);
     expect(titleText).toBe('hello');
+  });
+});
+
+// ─── speakTextFor ──────────────────────────────────────────────────────────────
+
+describe('speakTextFor', () => {
+  it('prefers the kana reading so TTS never guesses at mixed script', () => {
+    expect(speakTextFor(makeCard({ word: '月よう日', reading: 'げつようび' }))).toBe('げつようび');
+  });
+
+  it('falls back to the word when there is no reading', () => {
+    expect(speakTextFor(makeCard({ word: 'りんご', reading: '' }))).toBe('りんご');
+    expect(speakTextFor(makeCard({ word: 'りんご', reading: '   ' }))).toBe('りんご');
+  });
+
+  it('is what getFlashcardDisplayText exposes as speakText in every view mode', () => {
+    for (const mainViewMode of ['kanji', 'hiragana', 'romaji'] as const) {
+      const card = makeCard({ mainViewMode, word: '月よう日', reading: 'げつようび' });
+      expect(getFlashcardDisplayText(card).speakText).toBe('げつようび');
+    }
   });
 });
 
@@ -300,5 +321,22 @@ describe('oneLineFontSize', () => {
         expect(fitsOneLine(text, 48, 27, cardPx)).toBe(true);
       }
     }
+  });
+});
+
+describe('getFlashcardDisplayText — titleFurigana', () => {
+  it('provides aligned ruby markup in kanji mode', () => {
+    const card = makeCard({ mainViewMode: 'kanji', word: '貸す', reading: 'かす' });
+    expect(getFlashcardDisplayText(card).titleFurigana).toBe('{貸|か}す');
+  });
+
+  it('stays undefined when the reading cannot be aligned', () => {
+    const card = makeCard({ mainViewMode: 'kanji', word: '貸す', reading: 'かし' });
+    expect(getFlashcardDisplayText(card).titleFurigana).toBeUndefined();
+  });
+
+  it('stays undefined outside kanji mode', () => {
+    const card = makeCard({ mainViewMode: 'hiragana', word: '貸す', reading: 'かす' });
+    expect(getFlashcardDisplayText(card).titleFurigana).toBeUndefined();
   });
 });

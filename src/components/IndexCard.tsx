@@ -4,10 +4,10 @@ import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 
-import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import FuriganaText, { furiganaToKana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useCardBorder } from '@/contexts/CardBorderContext';
-import { romajiFor, titleFontSize } from '@/lib/flashcardUtils';
+import { romajiFor, speakTextFor, titleFontSize } from '@/lib/flashcardUtils';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
 
 interface IndexCardProps {
@@ -113,7 +113,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
             ) : (
               <Box />
             )}
-            <SpeakButton text={card.word} />
+            <SpeakButton text={speakTextFor(card)} />
           </Box>
 
           {/* Word — large, centered */}
@@ -298,7 +298,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
                 >
                   Example
                 </Typography>
-                <SpeakButton text={stripFurigana(card.example_jp)} />
+                <SpeakButton text={furiganaToKana(card.example_jp)} />
               </Box>
               <Typography
                 component="div"

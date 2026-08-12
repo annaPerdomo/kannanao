@@ -7,8 +7,16 @@ import type { Flashcard as FlashcardType } from '@/types/flashcard';
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
 vi.mock('@/components/FuriganaText', () => ({
-  default: ({ text }: { text: string }) => <span data-testid="furigana">{text}</span>,
+  // Base text and readings in separate nodes, like the real ruby markup.
+  default: ({ text }: { text: string }) => (
+    <span data-testid="furigana">
+      {text.replace(/\{([^|}]+)\|([^}]+)\}/g, '$1')}
+      <span>{[...text.matchAll(/\{[^|}]+\|([^}]+)\}/g)].map((m) => m[1]).join('')}</span>
+    </span>
+  ),
   stripFurigana: (t: string) => t.replace(/\{[^|]+\|([^}]+)\}/g, '$1'),
+  furiganaToKana: (t: string) => t.replace(/\{[^|]+\|([^}]+)\}/g, '$1'),
+  titleRubySx: {},
 }));
 
 vi.mock('@/components/SpeakButton', () => ({
@@ -48,9 +56,10 @@ function makeCard(overrides: Partial<FlashcardType> = {}): FlashcardType {
 describe('Flashcard', () => {
   describe('hiragana mode (front face)', () => {
     it('should display the reading as the title in hiragana mode', () => {
+      // The example sentence's furigana also carries ねこ, hence getAllByText.
       const card = makeCard({ mainViewMode: 'hiragana', reading: 'ねこ' });
       renderWithProviders(<Flashcard card={card} />);
-      expect(screen.getByText('ねこ')).toBeInTheDocument();
+      expect(screen.getAllByText('ねこ').length).toBeGreaterThanOrEqual(1);
     });
 
     it('should show the かな mode label in hiragana mode', () => {
@@ -74,10 +83,10 @@ describe('Flashcard', () => {
       expect(screen.getAllByText('猫').length).toBeGreaterThanOrEqual(1);
     });
 
-    it('should show the reading as subtitle in kanji mode', () => {
+    it('should show the reading as furigana in kanji mode', () => {
       const card = makeCard({ mainViewMode: 'kanji', word: '猫', reading: 'ねこ' });
       renderWithProviders(<Flashcard card={card} />);
-      expect(screen.getByText('ねこ')).toBeInTheDocument();
+      expect(screen.getAllByText('ねこ').length).toBeGreaterThanOrEqual(1);
     });
 
     it('should show the 漢字 mode label in kanji mode', () => {
@@ -152,6 +161,34 @@ describe('Flashcard', () => {
     it('should show "tap to flip back" hint on the back face', () => {
       renderWithProviders(<Flashcard card={makeCard()} />);
       expect(screen.getByText('tap to flip back')).toBeInTheDocument();
+    });
+
+    it.each(['Enter', ' '])('should flip on %s so the card is keyboard-operable', (key) => {
+      const onFlipChange = vi.fn();
+      renderWithProviders(<Flashcard card={makeCard()} onFlipChange={onFlipChange} />);
+
+      fireEvent.keyDown(screen.getByRole('button', { name: /Flip the card/ }), { key });
+
+      expect(onFlipChange).toHaveBeenLastCalledWith(true);
+    });
+
+    it('should ignore other keys', () => {
+      const onFlipChange = vi.fn();
+      renderWithProviders(<Flashcard card={makeCard()} onFlipChange={onFlipChange} />);
+
+      fireEvent.keyDown(screen.getByRole('button', { name: /Flip the card/ }), { key: 'a' });
+
+      expect(onFlipChange).toHaveBeenLastCalledWith(false);
+    });
+
+    it('should describe the way back once flipped', () => {
+      renderWithProviders(<Flashcard card={makeCard()} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Flip the card to see the answer' }));
+
+      expect(
+        screen.getByRole('button', { name: 'Flip the card back to the word' }),
+      ).toBeInTheDocument();
     });
   });
 

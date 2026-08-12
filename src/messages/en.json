@@ -17,7 +17,9 @@
       "ariaLabel": "Choose a language",
       "saved": "Language saved!",
       "saveError": "Couldn't save your language. Please try again."
-    }
+    },
+    "showReading": "Show reading",
+    "hideReading": "Hide reading"
   },
   "Deck": {
     "addCardsModal": {
@@ -45,6 +47,7 @@
       "selectedCount": "{count} selected",
       "cardCount": "{count, plural, one {# card} other {# cards}}",
       "emptyNoCards": "No cards in other decks yet",
+      "loadError": "Couldn't load your cards. Please try again.",
       "emptyNoMatch": "No cards match your search"
     },
     "confirmRemoveImageDialog": {
@@ -444,6 +447,8 @@
       "meaningLabel": "★ Meaning",
       "exampleLabel": "★ Example",
       "tapToFlipBack": "tap to flip back",
+      "flipAria": "Flip the card to see the answer",
+      "flipBackAria": "Flip the card back to the word",
       "jlptLabel": "JLPT {level}"
     },
     "flipStudy": {
@@ -456,8 +461,6 @@
       "gotIt": "Got it",
       "previousCardAria": "Previous card",
       "nextCardAria": "Next card",
-      "howDidYouDo": "HOW DID YOU DO?",
-      "tapCardToCheck": "TAP CARD TO CHECK",
       "finishSession": "Finish Session ✨",
       "nextRound": "Next round →",
       "completionSubheading": "{count, plural, one {You studied all # card!} other {You studied all # cards!}}"

@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { EditCardDialog } from '@/components/EditCardDialog';
-import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import FuriganaText, { furiganaToKana, titleRubySx } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { useCardBorder } from '@/contexts/CardBorderContext';
@@ -42,7 +42,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
     setLocalCard(card);
   }
 
-  const { titleText, subtitleText, speakText } = getFlashcardDisplayText(localCard);
+  const { titleText, subtitleText, titleFurigana, speakText } = getFlashcardDisplayText(localCard);
   const handleSave = (updated: Flashcard) => {
     setLocalCard(updated);
     onUpdate?.(updated.id, updated);
@@ -248,7 +248,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                 borderBottom: `2px solid ${typeAccent}`,
               }}
             >
-              {subtitleText && !isRomaji && (
+              {subtitleText && !isRomaji && !titleFurigana && (
                 <Typography
                   sx={{
                     fontSize: '0.6rem',
@@ -272,12 +272,16 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                       : titleFontSize(titleText, isRomaji ? 1.1 : 1.6, isRomaji ? 0.65 : 0.8),
                     fontWeight: 900,
                     color: '#111',
-                    lineHeight: 1.15,
+                    lineHeight: titleFurigana ? 1.45 : 1.15,
                     textAlign: 'center',
                     whiteSpace: isPhrase ? undefined : 'nowrap',
                   }}
                 >
-                  {titleText}
+                  {titleFurigana ? (
+                    <FuriganaText text={titleFurigana} showFurigana sx={titleRubySx} />
+                  ) : (
+                    titleText
+                  )}
                 </Typography>
                 <SpeakButton text={speakText} iconSize="0.85rem" />
               </Box>
@@ -354,7 +358,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                   >
                     {t('sampleSentenceLabel')}
                   </Typography>
-                  <SpeakButton text={stripFurigana(localCard.example_jp)} iconSize="0.75rem" />
+                  <SpeakButton text={furiganaToKana(localCard.example_jp)} iconSize="0.75rem" />
                 </Box>
                 <Typography
                   component="div"

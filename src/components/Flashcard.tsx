@@ -5,8 +5,9 @@ import { alpha } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import FuriganaText, { furiganaToKana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
+import TitleFurigana from '@/components/TitleFurigana';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { useCardBorder } from '@/contexts/CardBorderContext';
 import {
@@ -26,6 +27,8 @@ interface FlashcardProps {
   /** Notified whenever the flip state changes (and on card reset). Used by flip
    *  mode to reveal its self-grading buttons only after the answer is shown. */
   onFlipChange?: (flipped: boolean) => void;
+  /** Mastery gate: hide the title furigana behind a tap (strong cards only). */
+  maskFurigana?: boolean;
 }
 
 export function Flashcard({
@@ -33,6 +36,7 @@ export function Flashcard({
   width: widthProp,
   height: heightProp,
   onFlipChange,
+  maskFurigana = false,
 }: FlashcardProps) {
   const t = useTranslations('Study.flashcard');
   const width = widthProp ?? (card.imageUrl ? '100%' : 420);
@@ -73,7 +77,23 @@ export function Flashcard({
     setHovered(false);
   }, []);
 
-  const { titleText, subtitleText, speakText } = getFlashcardDisplayText(card);
+  const toggleFlip = useCallback(() => setFlipped((f) => !f), []);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      toggleFlip();
+    },
+    [toggleFlip],
+  );
+
+  const { titleText, subtitleText, titleFurigana, speakText } = getFlashcardDisplayText(card);
+  const titleContent = titleFurigana ? (
+    <TitleFurigana markup={titleFurigana} masked={maskFurigana} />
+  ) : (
+    titleText
+  );
   const isPhrase = card.cardType === 'phrase';
   const isKanji = card.mainViewMode === 'kanji';
   const isRomaji = card.mainViewMode === 'romaji';
@@ -120,7 +140,11 @@ export function Flashcard({
     <Box
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      onClick={() => setFlipped((f) => !f)}
+      onClick={toggleFlip}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={flipped ? t('flipBackAria') : t('flipAria')}
       sx={{
         width,
         height,
@@ -128,6 +152,11 @@ export function Flashcard({
         perspective: '1200px',
         userSelect: 'none',
         flexShrink: 0,
+        borderRadius: theme.radii.md,
+        '&:focus-visible': {
+          outline: `3px solid ${accent[500]}`,
+          outlineOffset: '3px',
+        },
       }}
     >
       {/* Tilt wrapper — applies 3-D tilt from mouse position */}
@@ -251,7 +280,7 @@ export function Flashcard({
                       flexShrink: 0,
                     }}
                   >
-                    {subtitleText && (
+                    {subtitleText && !titleFurigana && (
                       <Typography
                         sx={{
                           fontFamily: (t) => t.fonts.mono,
@@ -275,10 +304,10 @@ export function Flashcard({
                           whiteSpace: isPhrase ? 'normal' : 'nowrap',
                           fontWeight: 700,
                           color: '#111',
-                          lineHeight: 1.05,
+                          lineHeight: titleFurigana ? 1.45 : 1.05,
                         }}
                       >
-                        {titleText}
+                        {titleContent}
                       </Typography>
                       <SpeakButton text={speakText} sx={{ alignSelf: 'flex-end', mb: 0.5 }} />
                     </Box>
@@ -320,7 +349,7 @@ export function Flashcard({
                       borderBottom: `2.5px solid ${typeAccent}`,
                     }}
                   >
-                    {subtitleText && (
+                    {subtitleText && !titleFurigana && (
                       <Typography
                         sx={{
                           fontFamily: (t) => t.fonts.mono,
@@ -343,11 +372,11 @@ export function Flashcard({
                           whiteSpace: isPhrase ? 'normal' : 'nowrap',
                           fontWeight: 700,
                           color: '#111',
-                          lineHeight: 1.1,
+                          lineHeight: titleFurigana ? 1.45 : 1.1,
                           textAlign: 'center',
                         }}
                       >
-                        {titleText}
+                        {titleContent}
                       </Typography>
                       <SpeakButton text={speakText} sx={{ alignSelf: 'flex-end', mb: 0.5 }} />
                     </Box>
@@ -555,7 +584,7 @@ export function Flashcard({
                     >
                       {t('exampleLabel')}
                     </Typography>
-                    <SpeakButton text={stripFurigana(card.example_jp)} iconSize="0.85rem" />
+                    <SpeakButton text={furiganaToKana(card.example_jp)} iconSize="0.85rem" />
                   </Box>
                   <Typography
                     component="div"

@@ -39,6 +39,7 @@ vi.mock('@/contexts/BuddyReactionContext', () => ({
 vi.mock('@/components/FuriganaText', () => ({
   default: ({ text }: { text: string }) => <span>{text}</span>,
   stripFurigana: (t: string) => t,
+  furiganaToKana: (t: string) => t,
 }));
 
 vi.mock('@/components/SpeakButton', () => ({

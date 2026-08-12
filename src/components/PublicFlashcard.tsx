@@ -5,9 +5,9 @@ import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 
-import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import FuriganaText, { furiganaToKana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
-import { romajiFor } from '@/lib/flashcardUtils';
+import { romajiFor, speakTextFor } from '@/lib/flashcardUtils';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
 
 interface PublicFlashcardProps {
@@ -130,7 +130,7 @@ export function PublicFlashcard({ card, width = '100%', height = 300 }: PublicFl
                 <Box />
               )}
               <SpeakButton
-                text={frontMainText}
+                text={speakTextFor(card)}
                 sx={{ color: 'rgba(255,255,255,0.75)', '&:hover': { color: 'white' } }}
               />
             </Box>
@@ -330,7 +330,7 @@ export function PublicFlashcard({ card, width = '100%', height = 300 }: PublicFl
                   >
                     ★ Example
                   </Typography>
-                  <SpeakButton text={stripFurigana(card.example_jp)} iconSize="0.85rem" />
+                  <SpeakButton text={furiganaToKana(card.example_jp)} iconSize="0.85rem" />
                 </Box>
                 <Typography
                   component="div"

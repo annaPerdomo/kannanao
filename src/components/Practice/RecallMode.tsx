@@ -5,11 +5,13 @@ import { alpha } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import FuriganaText, { furiganaToKana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
+import TitleFurigana from '@/components/TitleFurigana';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
+import { useFuriganaMask } from '@/hooks/useFuriganaMask';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import {
@@ -38,6 +40,7 @@ const AUTO_ADVANCE_MS = 1800;
 export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps) {
   const t = useTranslations('Practice.recallMode');
   const tCommon = useTranslations('Practice.common');
+  const isFuriganaMasked = useFuriganaMask(cards);
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
 
@@ -351,16 +354,20 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
                 whiteSpace: card.cardType === 'phrase' ? undefined : 'nowrap',
               }}
             >
-              {display.titleText}
+              {display.titleFurigana ? (
+                <TitleFurigana markup={display.titleFurigana} masked={isFuriganaMasked(card.id)} />
+              ) : (
+                display.titleText
+              )}
             </Typography>
             <SpeakButton
-              text={card.word}
+              text={display.speakText}
               iconSize="1.4rem"
               onSpeak={selected ? holdCard : undefined}
               sx={{ mb: 0.5 }}
             />
           </Box>
-          {display.subtitleText && (
+          {display.subtitleText && !display.titleFurigana && (
             <Typography variant="body1" color="text.secondary">
               {display.subtitleText}
             </Typography>
@@ -385,7 +392,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
                 }}
               />
               <SpeakButton
-                text={stripFurigana(card.example_jp)}
+                text={furiganaToKana(card.example_jp)}
                 iconSize="1.1rem"
                 onSpeak={holdCard}
               />

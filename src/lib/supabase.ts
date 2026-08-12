@@ -350,24 +350,56 @@ export async function dbUpdateCard(
   return dbCardToApp(data);
 }
 
-// ─── ADD THESE TWO FUNCTIONS TO THE BOTTOM OF /lib/supabase.ts ───────────────
+/**
+ * Deck ids this user may study from: their own decks plus assigned decks that
+ * are available now — the same access model as `loadDecks`. The cards table is
+ * broadly readable (members must read organizer decks), so every cross-deck
+ * card read MUST scope itself through this; an unscoped select leaks other
+ * groups' material. Throws on error so callers never mistake an outage for
+ * "no access".
+ */
+export async function getAccessibleDeckIds(userId: string): Promise<string[]> {
+  if (!isConfigured()) return [];
+  const [ownResult, assignedResult] = await Promise.all([
+    sb.from('decks').select('id').eq('user_id', userId),
+    sb.from('assignments').select('deck_id').eq('member_id', userId).or(availableNowFilter()),
+  ]);
+  const error = ownResult.error ?? assignedResult.error;
+  if (error) {
+    console.error('Error loading accessible deck ids', error);
+    throw new Error(error.message);
+  }
+  const ids = new Set<string>((ownResult.data ?? []).map((d) => d.id as string));
+  for (const row of assignedResult.data ?? []) ids.add(row.deck_id as string);
+  return [...ids];
+}
 
 /**
- * Load every card across all decks (used by the "add existing cards" picker).
+ * Every card in the decks this user can study (own + assigned). Used for the
+ * review-game top-up pool and the "add existing cards" picker. Pass `deckIds`
+ * when the caller already fetched them to avoid a duplicate lookup. Propagates
+ * the access-lookup throw so callers can tell an outage from "no cards".
  */
-export async function loadAllCards(): Promise<Flashcard[]> {
+export async function loadAccessibleCards(
+  userId: string,
+  deckIds?: string[],
+): Promise<Flashcard[]> {
   if (!isConfigured()) {
     showConfigBanner();
     return [];
   }
 
+  const ids = deckIds ?? (await getAccessibleDeckIds(userId));
+  if (ids.length === 0) return [];
+
   const { data, error } = await sb
     .from('cards')
     .select('*')
+    .in('deck_id', ids)
     .order('created_at', { ascending: true });
 
   if (error) {
-    console.error('Error loading all cards', error);
+    console.error('Error loading accessible cards', error);
     return [];
   }
 
@@ -380,8 +412,8 @@ export interface ExistingCardMatch {
 }
 
 /**
- * Find cards the user already owns for any of `words`. RLS scopes this to the
- * requester, so no user id is needed — the same arrangement loadAllCards uses.
+ * Find cards the user already owns for any of `words`, scoped to their
+ * accessible decks (the cards table itself is broadly readable).
  * Returns at most one match per word: the oldest, which is the one most likely
  * to carry hand-picked artwork and a corrected example sentence.
  */
@@ -389,9 +421,25 @@ export async function dbFindCardsByWords(words: string[]): Promise<Map<string, E
   const matches = new Map<string, ExistingCardMatch>();
   if (!isConfigured() || words.length === 0) return matches;
 
+  // getSession, not getUser: the cached session already carries our own id,
+  // without getUser's auth-server round-trip on every generate call.
+  const {
+    data: { session },
+  } = await sb.auth.getSession();
+  if (!session?.user) return matches;
+
+  let deckIds: string[];
+  try {
+    deckIds = await getAccessibleDeckIds(session.user.id);
+  } catch {
+    return matches;
+  }
+  if (deckIds.length === 0) return matches;
+
   const { data, error } = await sb
     .from('cards')
     .select('*, decks(name)')
+    .in('deck_id', deckIds)
     .in('word', [...new Set(words)])
     .order('created_at', { ascending: true });
 
@@ -1095,21 +1143,30 @@ export async function getCardProgressForUser(
  * Cross-deck due cards for Smart Review: cards whose scheduled review time has
  * arrived, ordered soonest-first, capped. Joins card_progress → cards, so cards
  * the student has NEVER graded (no progress row) are excluded by construction —
- * reviews never flood day one. RLS scopes progress rows to the user.
+ * reviews never flood day one. The inner join is filtered to the user's
+ * accessible decks, so stray progress rows (revoked assignments, or writes from
+ * before the pool was scoped) never resurface foreign words.
  *
  * THROWS on a query error (as does getDueCount): swallowing it into [] made
  * every caller render "all caught up! 🎉" during an outage — the one thing a
  * review surface must never claim falsely.
  */
-export async function getDueCards(userId: string, limit = 20): Promise<Flashcard[]> {
+export async function getDueCards(
+  userId: string,
+  limit = 20,
+  deckIds?: string[],
+): Promise<Flashcard[]> {
   if (!isConfigured()) {
     showConfigBanner();
     return [];
   }
+  const ids = deckIds ?? (await getAccessibleDeckIds(userId));
+  if (ids.length === 0) return [];
   const { data, error } = await sb
     .from('card_progress')
-    .select('cards(*)')
+    .select('cards!inner(*)')
     .eq('user_id', userId)
+    .in('cards.deck_id', ids)
     .lte('next_review_at', new Date().toISOString())
     .order('next_review_at', { ascending: true })
     .limit(limit);
@@ -1126,10 +1183,13 @@ export async function getDueCards(userId: string, limit = 20): Promise<Flashcard
 /** How many cards are due for review right now (for the home "N due" tile). */
 export async function getDueCount(userId: string): Promise<number> {
   if (!isConfigured()) return 0;
+  const ids = await getAccessibleDeckIds(userId);
+  if (ids.length === 0) return 0;
   const { count, error } = await sb
     .from('card_progress')
-    .select('card_id', { count: 'exact', head: true })
+    .select('card_id, cards!inner(deck_id)', { count: 'exact', head: true })
     .eq('user_id', userId)
+    .in('cards.deck_id', ids)
     .lte('next_review_at', new Date().toISOString());
   if (error) {
     console.error('Error loading due count', error);

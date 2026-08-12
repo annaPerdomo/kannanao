@@ -1,7 +1,15 @@
 'use client';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { Box, Button, Chip, IconButton, LinearProgress, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Chip,
+  IconButton,
+  LinearProgress,
+  Typography,
+  useMediaQuery,
+} from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -13,10 +21,11 @@ import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
 import { XpEarnedPop } from '@/components/Practice/XpEarnedPop';
-import { LANDSCAPE_FIT, PracticeStage } from '@/components/PracticeStage';
+import { PracticeStage } from '@/components/PracticeStage';
 import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { useCombo } from '@/hooks/useCombo';
+import { useFuriganaMask } from '@/hooks/useFuriganaMask';
 import { type SessionMode, useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import type { ComboStepResult } from '@/lib/combo';
 import { cardXp } from '@/lib/flashcardUtils';
@@ -114,8 +123,12 @@ export default function FlipStudy({
   const tCommon = useTranslations('Common');
   const theme = useTheme();
   const { brand, accent } = theme.palette;
+  // Phones keep the arrows under the card: flanking them there costs the card
+  // ~90px of width, which shrinks it more than the freed bottom row gives back.
+  const arrowsBelow = useMediaQuery(theme.breakpoints.down('sm'));
   const { triggerXpEarned } = useXpAnimation();
   const { triggerReaction } = useBuddyReaction();
+  const isFuriganaMasked = useFuriganaMask(cards);
   const embedded = !!controller;
   const [index, setIndex] = useState(0);
   const [navigating, setNavigating] = useState(false);
@@ -125,8 +138,12 @@ export default function FlipStudy({
   const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(
     null,
   );
-  // Only drives the prompt under the card; grading is available either way.
-  const [flipped, setFlipped] = useState(false);
+  // A one-way latch: flipping back doesn't re-hide grading. navigate() clears it
+  // so the next card starts locked again.
+  const [revealed, setRevealed] = useState(false);
+  const handleFlipChange = useCallback((flipped: boolean) => {
+    if (flipped) setRevealed(true);
+  }, []);
 
   // ── Session tracking ──────────────────────────────────────────────────────
   // Standalone flip (deck Study) owns its own session + combo. When embedded in
@@ -208,6 +225,7 @@ export default function FlipStudy({
       setTimeout(() => {
         setIndex(nextIndex);
         setNavigating(false);
+        setRevealed(false);
       }, SLIDE_DURATION_MS);
     },
     [navigating, index, cards.length],
@@ -262,6 +280,23 @@ export default function FlipStudy({
     ],
   );
 
+  // One pair only, wherever it renders — a hidden duplicate pair would still be
+  // in the accessibility tree under the same labels.
+  const navButton = (direction: 1 | -1) => (
+    <IconButton
+      onClick={() => navigate(direction)}
+      disabled={(direction === -1 ? index === 0 : index === cards.length - 1) || navigating}
+      aria-label={direction === -1 ? t('previousCardAria') : t('nextCardAria')}
+      sx={{
+        border: `1px solid ${alpha(brand[300], 0.45)}`,
+        bgcolor: brand[50],
+        '&:not(:disabled):hover': { borderColor: brand[500] },
+      }}
+    >
+      {direction === -1 ? <ArrowBackIcon /> : <ArrowForwardIcon />}
+    </IconButton>
+  );
+
   if (loading) {
     return (
       <Box
@@ -310,26 +345,18 @@ export default function FlipStudy({
         mb={{ xs: 1.5, sm: 2 }}
       />
 
-      {/* Under LANDSCAPE_FIT the status and buttons move into a rail beside the
-          card: stacked, they leave the card unreadably short or push grading
-          under the fold. Capping the card column at the card's own width keeps
-          the pair together instead of drifting to opposite edges of a wide
-          screen; the 1fr rows around the rail centre it against the card. */}
+      {/* One column on every screen: with the arrows flanking the card from sm
+          up, status + card + grading stack inside ~630px — short landscape
+          viewports need no side rail. */}
       <Box
         sx={{
           flex: 1,
           display: 'grid',
           gridTemplateColumns: '1fr',
           gridTemplateRows: `auto minmax(${CARD_MIN_H}px, 1fr) auto`,
-          [LANDSCAPE_FIT]: {
-            gridTemplateColumns: `minmax(0, ${CARD_W}px) minmax(240px, 320px)`,
-            gridTemplateRows: 'minmax(0, 1fr) auto auto minmax(0, 1fr)',
-            justifyContent: 'center',
-            columnGap: 4,
-          },
         }}
       >
-        <Box sx={{ [LANDSCAPE_FIT]: { gridColumn: 2, gridRow: 2 } }}>
+        <Box>
           {questMap}
 
           <Box
@@ -338,7 +365,6 @@ export default function FlipStudy({
               alignItems: 'center',
               gap: 2,
               mb: { xs: 1.5, sm: 2 },
-              [LANDSCAPE_FIT]: { mb: 0 },
             }}
           >
             <LinearProgress
@@ -369,100 +395,122 @@ export default function FlipStudy({
           </Box>
         </Box>
 
-        {/* Card — takes the leftover height; its width follows from the ratio. */}
+        {/* The slot between the arrows is the 100% the card's maxWidth cap
+            measures against. */}
         <Box
           sx={{
             minHeight: 0,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            perspective: '1000px',
-            position: 'relative',
-            minWidth: 0,
-            [LANDSCAPE_FIT]: { gridColumn: 1, gridRow: '1 / -1' },
+            gap: { sm: 3, md: 5 },
           }}
         >
+          {!arrowsBelow && navButton(-1)}
           <Box
-            key={index}
             sx={{
-              height: '100%',
-              width: 'auto',
-              // Both caps matter: maxHeight stops a tall slot stretching the
-              // card past its ratio, maxWidth stops a narrow one pushing it
-              // off the sides.
-              maxHeight: `${CARD_H}px`,
-              maxWidth: `min(${CARD_W}px, 100%)`,
-              aspectRatio: CARD_ASPECT_RATIO,
+              alignSelf: 'stretch',
+              minHeight: 0,
+              minWidth: 0,
+              flex: '0 1 auto',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              perspective: '1000px',
               position: 'relative',
-              transformOrigin: 'top center',
-              '@keyframes dealIn': {
-                '0%': {
-                  transform: 'translateY(-90px) rotateX(-42deg) rotateZ(4deg) scale(0.82)',
-                  opacity: 0,
-                },
-                '55%': { opacity: 1 },
-                '100%': {
-                  transform: 'translateY(0) rotateX(0deg) rotateZ(0deg) scale(1)',
-                  opacity: 1,
-                },
-              },
-              '@keyframes dealInBack': {
-                '0%': {
-                  transform: 'translateY(-90px) rotateX(-42deg) rotateZ(-4deg) scale(0.82)',
-                  opacity: 0,
-                },
-                '55%': { opacity: 1 },
-                '100%': {
-                  transform: 'translateY(0) rotateX(0deg) rotateZ(0deg) scale(1)',
-                  opacity: 1,
-                },
-              },
-              '@keyframes sparkleUp': {
-                from: { transform: 'translateY(0) scale(1)', opacity: 0.9 },
-                to: { transform: 'translateY(-64px) scale(0)', opacity: 0 },
-              },
-              ...(navigating
-                ? {
-                    transform: 'translateY(28px) rotateX(12deg) scale(0.91)',
-                    opacity: 0,
-                    transition: `transform ${SLIDE_DURATION_MS}ms ease-in, opacity ${SLIDE_DURATION_MS}ms ease-in`,
-                    pointerEvents: 'none',
-                  }
-                : {
-                    animation: `${navDir === 1 ? 'dealIn' : 'dealInBack'} 0.48s cubic-bezier(0.22, 1, 0.36, 1)`,
-                  }),
             }}
           >
-            {card && <Flashcard card={card} width="100%" height="100%" onFlipChange={setFlipped} />}
+            <Box
+              key={index}
+              sx={{
+                height: '100%',
+                width: 'auto',
+                // Both caps matter: maxHeight stops a tall slot stretching the
+                // card past its ratio, maxWidth stops a narrow one pushing it
+                // off the sides.
+                maxHeight: `${CARD_H}px`,
+                maxWidth: `min(${CARD_W}px, 100%)`,
+                aspectRatio: CARD_ASPECT_RATIO,
+                position: 'relative',
+                transformOrigin: 'top center',
+                '@keyframes dealIn': {
+                  '0%': {
+                    transform: 'translateY(-90px) rotateX(-42deg) rotateZ(4deg) scale(0.82)',
+                    opacity: 0,
+                  },
+                  '55%': { opacity: 1 },
+                  '100%': {
+                    transform: 'translateY(0) rotateX(0deg) rotateZ(0deg) scale(1)',
+                    opacity: 1,
+                  },
+                },
+                '@keyframes dealInBack': {
+                  '0%': {
+                    transform: 'translateY(-90px) rotateX(-42deg) rotateZ(-4deg) scale(0.82)',
+                    opacity: 0,
+                  },
+                  '55%': { opacity: 1 },
+                  '100%': {
+                    transform: 'translateY(0) rotateX(0deg) rotateZ(0deg) scale(1)',
+                    opacity: 1,
+                  },
+                },
+                '@keyframes sparkleUp': {
+                  from: { transform: 'translateY(0) scale(1)', opacity: 0.9 },
+                  to: { transform: 'translateY(-64px) scale(0)', opacity: 0 },
+                },
+                ...(navigating
+                  ? {
+                      transform: 'translateY(28px) rotateX(12deg) scale(0.91)',
+                      opacity: 0,
+                      transition: `transform ${SLIDE_DURATION_MS}ms ease-in, opacity ${SLIDE_DURATION_MS}ms ease-in`,
+                      pointerEvents: 'none',
+                    }
+                  : {
+                      animation: `${navDir === 1 ? 'dealIn' : 'dealInBack'} 0.48s cubic-bezier(0.22, 1, 0.36, 1)`,
+                    }),
+              }}
+            >
+              {card && (
+                <Flashcard
+                  card={card}
+                  width="100%"
+                  height="100%"
+                  onFlipChange={handleFlipChange}
+                  maskFurigana={isFuriganaMasked(card.id)}
+                />
+              )}
 
-            {xpPop && (
-              <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show key={xpPop.key} />
-            )}
+              {xpPop && (
+                <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show key={xpPop.key} />
+              )}
 
-            {/* Sparkle burst — float up from bottom of card on each new card */}
-            {!navigating &&
-              SPARKLE_ITEMS.map((s, i) => (
-                <Box
-                  key={i}
-                  sx={{
-                    position: 'absolute',
-                    bottom: 16,
-                    left: `${s.left}%`,
-                    fontSize: '1rem',
-                    pointerEvents: 'none',
-                    animation: `sparkleUp 0.72s ${s.delay}s ease-out both`,
-                  }}
-                >
-                  {s.emoji}
-                </Box>
-              ))}
+              {/* Sparkle burst — float up from bottom of card on each new card */}
+              {!navigating &&
+                SPARKLE_ITEMS.map((s, i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      position: 'absolute',
+                      bottom: 16,
+                      left: `${s.left}%`,
+                      fontSize: '1rem',
+                      pointerEvents: 'none',
+                      animation: `sparkleUp 0.72s ${s.delay}s ease-out both`,
+                    }}
+                  >
+                    {s.emoji}
+                  </Box>
+                ))}
+            </Box>
           </Box>
+          {!arrowsBelow && navButton(1)}
         </Box>
 
-        <Box sx={{ [LANDSCAPE_FIT]: { gridColumn: 2, gridRow: 3 } }}>
-          {/* Deliberately not gated on `flipped`: knowing a word without turning
-            it over is the whole point, and requiring a flip to say so trained
-            students to flip every card. */}
+        <Box>
+          {/* Gated on the reveal: "Got it" only means something once the answer is
+            on screen. The row holds its height while empty so the card doesn't
+            jump when the buttons arrive. */}
           <Box
             sx={{
               display: 'flex',
@@ -472,125 +520,103 @@ export default function FlipStudy({
               minHeight: `${GRADE_ROW_PX}px`,
             }}
           >
-            {/* Both use the contained variant's white label. "Still learning"
-              keeps the stock brand 600→700 background; "Got it" swaps its
-              background for the app's signature brand→accent sweep (see the
-              card banners), at the darker 600/700 stops so white stays AA in
-              every palette. NOTE: the variant background is a background-IMAGE —
-              replace it with `background`, never `bgcolor` (which silently
-              paints underneath it). */}
-            <Button
-              variant="contained"
-              onClick={() => handleGrade(false)}
-              disabled={navigating}
-              sx={{ flex: 1, maxWidth: 200, py: 1.25, borderRadius: 3 }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 0.25,
-                  lineHeight: 1.2,
-                }}
-              >
-                <Box
-                  component="span"
+            {revealed && (
+              <>
+                {/* Both use the contained variant's white label. "Still learning"
+                  keeps the stock brand 600→700 background; "Got it" swaps its
+                  background for the app's signature brand→accent sweep (see the
+                  card banners), at the darker 600/700 stops so white stays AA in
+                  every palette. NOTE: the variant background is a background-IMAGE —
+                  replace it with `background`, never `bgcolor` (which silently
+                  paints underneath it). */}
+                <Button
+                  variant="contained"
+                  onClick={() => handleGrade(false)}
+                  disabled={navigating}
+                  sx={{ flex: 1, maxWidth: 200, py: 1.25, borderRadius: 3 }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 0.25,
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    <Box
+                      component="span"
+                      sx={{
+                        fontFamily: (theme) => theme.fonts.jp,
+                        fontSize: '1.15rem',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {t('stillLearningJp')}
+                    </Box>
+                    <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
+                      {t('stillLearning')}
+                    </Box>
+                  </Box>
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => handleGrade(true)}
+                  disabled={navigating}
                   sx={{
-                    fontFamily: (theme) => theme.fonts.jp,
-                    fontSize: '1.15rem',
-                    fontWeight: 700,
+                    flex: 1,
+                    maxWidth: 200,
+                    py: 1.25,
+                    borderRadius: 3,
+                    background: `linear-gradient(135deg, ${brand[600]} 0%, ${accent[600]} 100%)`,
+                    '&:hover': {
+                      background: `linear-gradient(135deg, ${brand[700]} 0%, ${accent[700]} 100%)`,
+                    },
                   }}
                 >
-                  {t('stillLearningJp')}
-                </Box>
-                <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
-                  {t('stillLearning')}
-                </Box>
-              </Box>
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => handleGrade(true)}
-              disabled={navigating}
-              sx={{
-                flex: 1,
-                maxWidth: 200,
-                py: 1.25,
-                borderRadius: 3,
-                background: `linear-gradient(135deg, ${brand[600]} 0%, ${accent[600]} 100%)`,
-                '&:hover': {
-                  background: `linear-gradient(135deg, ${brand[700]} 0%, ${accent[700]} 100%)`,
-                },
-              }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 0.25,
-                  lineHeight: 1.2,
-                }}
-              >
-                <Box
-                  component="span"
-                  sx={{
-                    fontFamily: (theme) => theme.fonts.jp,
-                    fontSize: '1.15rem',
-                    fontWeight: 700,
-                    '& rt': { fontSize: '0.6em', opacity: 0.9, fontWeight: 600 },
-                  }}
-                >
-                  <FuriganaText text={t('gotItJp')} showFurigana />
-                </Box>
-                <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
-                  {t('gotIt')}
-                </Box>
-              </Box>
-            </Button>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 0.25,
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    <Box
+                      component="span"
+                      sx={{
+                        fontFamily: (theme) => theme.fonts.jp,
+                        fontSize: '1.15rem',
+                        fontWeight: 700,
+                        '& rt': { fontSize: '0.6em', opacity: 0.9, fontWeight: 600 },
+                      }}
+                    >
+                      <FuriganaText text={t('gotItJp')} showFurigana />
+                    </Box>
+                    <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
+                      {t('gotIt')}
+                    </Box>
+                  </Box>
+                </Button>
+              </>
+            )}
           </Box>
 
-          {/* Navigation — browse between cards without grading */}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 4,
-              mt: { xs: 1, sm: 1.5 },
-            }}
-          >
-            <IconButton
-              onClick={() => navigate(-1)}
-              disabled={index === 0 || navigating}
-              aria-label={t('previousCardAria')}
+          {arrowsBelow && (
+            <Box
               sx={{
-                border: `1px solid ${alpha(brand[300], 0.45)}`,
-                bgcolor: brand[50],
-                '&:not(:disabled):hover': { borderColor: brand[500] },
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 4,
+                mt: 1,
               }}
             >
-              <ArrowBackIcon />
-            </IconButton>
-
-            <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: '0.08em' }}>
-              {flipped ? t('howDidYouDo') : t('tapCardToCheck')}
-            </Typography>
-
-            <IconButton
-              onClick={() => navigate(1)}
-              disabled={index === cards.length - 1 || navigating}
-              aria-label={t('nextCardAria')}
-              sx={{
-                border: `1px solid ${alpha(brand[300], 0.45)}`,
-                bgcolor: brand[50],
-                '&:not(:disabled):hover': { borderColor: brand[500] },
-              }}
-            >
-              <ArrowForwardIcon />
-            </IconButton>
-          </Box>
+              {navButton(-1)}
+              {navButton(1)}
+            </Box>
+          )}
 
           {index === cards.length - 1 && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1.5 }}>

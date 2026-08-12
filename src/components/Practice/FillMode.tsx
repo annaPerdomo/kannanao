@@ -7,14 +7,14 @@ import { useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import FuriganaText, { furiganaToKana, stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
-import { cardXp } from '@/lib/flashcardUtils';
+import { cardXp, speakTextFor } from '@/lib/flashcardUtils';
 import { hiraganaToKatakana } from '@/lib/reviewGames';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -328,7 +328,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
             </Typography>
             {result && (
               <SpeakButton
-                text={stripFurigana(card.example_jp)}
+                text={furiganaToKana(card.example_jp)}
                 iconSize="1.2rem"
                 sx={{ mt: 0.5, flexShrink: 0 }}
               />
@@ -379,7 +379,7 @@ export function FillMode({ cards, deckId, batchSize, onExit }: FillModeProps) {
                 ? t('incorrectAnswerWithReading', { word: card.word, reading: card.reading })
                 : t('incorrectAnswer', { word: card.word })}
           </Typography>
-          <SpeakButton text={card.word} iconSize="1.1rem" />
+          <SpeakButton text={speakTextFor(card)} iconSize="1.1rem" />
         </Box>
       )}
 

@@ -158,6 +158,14 @@ describe('TodayAdventureCard', () => {
       expect(screen.getByText(/6 reviews · ~2 min/)).toBeInTheDocument();
     });
 
+    it('should keep a route to the games hub after the adventure is done', async () => {
+      friendshipState.mockReturnValue(friendship({ buddy_bunny: TODAY }));
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText('Adventure complete!');
+      fireEvent.click(screen.getByRole('button', { name: 'Play a game' }));
+      expect(push).toHaveBeenCalledWith('/review');
+    });
+
     it('should stay calm and offer two side doors when nothing is due', async () => {
       dueState.mockReturnValue(due({ dueCount: 0 }));
       renderWithProviders(<TodayAdventureCard />);

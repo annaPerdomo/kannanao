@@ -70,21 +70,32 @@ const linkSx = {
   px: 0.5,
 };
 
-export function CompletedState({ buddyName, faceSrc, hearts }: StateProps & { hearts: number }) {
+export function CompletedState({
+  buddyName,
+  faceSrc,
+  hearts,
+  onPlayGame,
+}: StateProps & { hearts: number; onPlayGame: () => void }) {
   const t = useTranslations('Home.adventure');
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-      <BuddyFace src={faceSrc} />
-      <Box sx={{ minWidth: 0 }}>
-        <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#fff', lineHeight: 1.25 }}>
-          {t('completedTitle')}
-        </Typography>
-        {hearts > 0 && (
-          <Typography variant="body2" sx={{ fontWeight: 600, color: alpha('#fff', 0.9) }}>
-            {t('completedHearts', { count: hearts, name: buddyName })}
+    <Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <BuddyFace src={faceSrc} />
+        <Box sx={{ minWidth: 0 }}>
+          <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#fff', lineHeight: 1.25 }}>
+            {t('completedTitle')}
           </Typography>
-        )}
+          {hearts > 0 && (
+            <Typography variant="body2" sx={{ fontWeight: 600, color: alpha('#fff', 0.9) }}>
+              {t('completedHearts', { count: hearts, name: buddyName })}
+            </Typography>
+          )}
+        </Box>
       </Box>
+      {/* Home's only route to /review once the adventure is done. */}
+      <Button size="small" variant="text" onClick={onPlayGame} sx={linkSx}>
+        {t('playGame')}
+      </Button>
     </Box>
   );
 }
