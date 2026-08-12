@@ -132,6 +132,7 @@ export function TodayAdventureCard() {
           faceSrc={buddyFaceSrc(creditedKey, FACE_CELEBRATE)}
           // The chest fallback proves a cleared queue, not a paid heart.
           hearts={hasFriendship ? FRIENDSHIP_POINTS.adventure : 0}
+          onPlayGame={playGame}
         />
       )}
       {state === 'due' && (
