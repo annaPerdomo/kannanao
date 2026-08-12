@@ -8,7 +8,6 @@ import FuriganaText, { titleRubySx } from '@/components/FuriganaText';
 interface TitleFuriganaProps {
   /** `{漢字|かんじ}` markup for the card title. */
   markup: string;
-  /** Mastery gate: hides the reading (space kept) until the learner taps the word. */
   masked?: boolean;
 }
 
