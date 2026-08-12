@@ -18,7 +18,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
-import { loadAllCards } from '@/lib/supabase';
+import { loadAccessibleCards } from '@/lib/supabase';
 import type { Flashcard } from '@/types/flashcard';
 
 interface Props {
@@ -83,7 +83,7 @@ export function AddExistingCardsDialog({ open, onClose, targetDeckId, userId, on
     setLoading(true);
     setSelected(new Set());
     setSearch('');
-    loadAllCards().then((cards) => {
+    loadAccessibleCards(userId).then((cards) => {
       setAllCards(cards.filter((c) => c.deckId !== targetDeckId));
       setLoading(false);
     });

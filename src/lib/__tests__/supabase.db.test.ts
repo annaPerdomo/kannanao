@@ -77,12 +77,13 @@ import {
   dbUpdateEventType,
   dbUpdateTodo,
   fetchPeerIdentity,
+  getAccessibleDeckIds,
   getBestQuizForDeck,
   getCardProgressForUser,
   getDueCards,
   getDueCount,
   insertQuizResult,
-  loadAllCards,
+  loadAccessibleCards,
   loadCards,
   loadDecks,
   loadEventTypes,
@@ -433,22 +434,65 @@ describe('loadCards', () => {
   });
 });
 
-// ─── loadAllCards ─────────────────────────────────────────────────────────────
+// ─── getAccessibleDeckIds ─────────────────────────────────────────────────────
 
-describe('loadAllCards', () => {
+describe('getAccessibleDeckIds', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    for (const k of Object.keys(tableData)) delete tableData[k];
   });
 
-  it('should return all cards across decks', async () => {
+  it('should merge own deck ids with assigned deck ids, deduped', async () => {
+    setTable('decks', [{ id: 'deck-1' }, { id: 'deck-2' }]);
+    setTable('assignments', [{ deck_id: 'deck-2' }, { deck_id: 'deck-3' }]);
+    const ids = await getAccessibleDeckIds('u1');
+    expect(ids.sort()).toEqual(['deck-1', 'deck-2', 'deck-3']);
+  });
+
+  it('should return empty when the user owns nothing and has no assignments', async () => {
+    setTable('decks', []);
+    setTable('assignments', []);
+    const ids = await getAccessibleDeckIds('u1');
+    expect(ids).toEqual([]);
+  });
+
+  it('should throw on a query error rather than silently claim no access', async () => {
+    setTable('decks', null, { message: 'DB error' });
+    setTable('assignments', []);
+    await expect(getAccessibleDeckIds('u1')).rejects.toThrow('DB error');
+  });
+});
+
+// ─── loadAccessibleCards ──────────────────────────────────────────────────────
+
+describe('loadAccessibleCards', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    for (const k of Object.keys(tableData)) delete tableData[k];
+  });
+
+  it('should return cards from accessible decks', async () => {
+    setTable('decks', [{ id: 'deck-1' }, { id: 'deck-2' }]);
+    setTable('assignments', []);
     setTable('cards', [makeCardRow(), makeCardRow({ id: 'card-2', deck_id: 'deck-2' })]);
-    const cards = await loadAllCards();
+    const cards = await loadAccessibleCards('u1');
     expect(cards).toHaveLength(2);
   });
 
+  it('should not query cards at all when no decks are accessible', async () => {
+    setTable('decks', []);
+    setTable('assignments', []);
+    setTable('cards', [makeCardRow()]);
+    const cards = await loadAccessibleCards('u1');
+    expect(cards).toEqual([]);
+    expect(mockFrom).not.toHaveBeenCalledWith('cards');
+  });
+
   it('should return empty array on error', async () => {
+    setTable('decks', [{ id: 'deck-1' }]);
+    setTable('assignments', []);
     setTable('cards', null, { message: 'Error' });
-    const cards = await loadAllCards();
+    const cards = await loadAccessibleCards('u1');
     expect(cards).toEqual([]);
   });
 });
@@ -1137,6 +1181,9 @@ describe('getCardProgressForUser', () => {
 describe('getDueCards', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    for (const k of Object.keys(tableData)) delete tableData[k];
+    setTable('decks', [{ id: 'deck-1' }]);
+    setTable('assignments', []);
   });
 
   it('should map the joined card rows to app cards', async () => {
@@ -1145,6 +1192,21 @@ describe('getDueCards', () => {
     expect(cards).toHaveLength(2);
     expect(cards[0].word).toBe('猫');
     expect(cards[0].meaning).toBe('cat');
+  });
+
+  it('should accept precomputed deck ids and skip the access lookup', async () => {
+    setTable('card_progress', [{ cards: makeCardRow() }]);
+    const cards = await getDueCards('u1', 20, ['deck-1']);
+    expect(cards).toHaveLength(1);
+    expect(mockFrom).not.toHaveBeenCalledWith('decks');
+  });
+
+  it('should return empty without querying progress when no decks are accessible', async () => {
+    setTable('decks', []);
+    setTable('card_progress', [{ cards: makeCardRow() }]);
+    const cards = await getDueCards('u1');
+    expect(cards).toEqual([]);
+    expect(mockFrom).not.toHaveBeenCalledWith('card_progress');
   });
 
   it('should drop rows whose joined card is null', async () => {
@@ -1164,12 +1226,23 @@ describe('getDueCards', () => {
 describe('getDueCount', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    for (const k of Object.keys(tableData)) delete tableData[k];
+    setTable('decks', [{ id: 'deck-1' }]);
+    setTable('assignments', []);
   });
 
   it('should return the exact head count', async () => {
     setTable('card_progress', null, null, 7);
     const count = await getDueCount('u1');
     expect(count).toBe(7);
+  });
+
+  it('should return 0 without querying progress when no decks are accessible', async () => {
+    setTable('decks', []);
+    setTable('card_progress', null, null, 7);
+    const count = await getDueCount('u1');
+    expect(count).toBe(0);
+    expect(mockFrom).not.toHaveBeenCalledWith('card_progress');
   });
 
   it('should return 0 when the count is missing', async () => {

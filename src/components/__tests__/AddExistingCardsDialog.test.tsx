@@ -20,7 +20,7 @@ const CARD: Flashcard = {
   position: 0,
 };
 
-vi.mock('@/lib/supabase', () => ({ loadAllCards: vi.fn(async () => [CARD]) }));
+vi.mock('@/lib/supabase', () => ({ loadAccessibleCards: vi.fn(async () => [CARD]) }));
 
 vi.mock('@/services/api', () => ({
   decodeUnsplashAttribution: vi.fn((url: string) =>

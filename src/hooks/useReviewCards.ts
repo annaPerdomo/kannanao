@@ -4,12 +4,17 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { getDueCards, isConfigured, loadAllCards } from '@/lib/supabase';
+import {
+  getAccessibleDeckIds,
+  getDueCards,
+  isConfigured,
+  loadAccessibleCards,
+} from '@/lib/supabase';
 import type { Flashcard } from '@/types/flashcard';
 
 /**
  * Cards a review game draws from: the account's due cards (SRS, soonest-first)
- * plus their whole cross-deck collection for top-up. The game picks due-first
+ * plus their accessible cross-deck collection (own + assigned decks) for top-up. The game picks due-first
  * from these (see `gameWords.orderDueFirst`) so playing a game advances the same
  * review schedule as flip review. Returns the standard data/loading/error shape;
  * empty arrays keep free play working for accounts with nothing due or no cards.
@@ -34,8 +39,13 @@ export function useReviewCards(): {
     }
     let cancelled = false;
     // Pull a generous due window so a big backlog can fill a whole session from
-    // due cards alone before any top-up is needed.
-    Promise.all([getDueCards(user.id, 100), loadAllCards()])
+    // due cards alone before any top-up is needed. Both reads are scoped to the
+    // user's accessible decks (fetched once, shared) so games never surface
+    // other groups' material.
+    getAccessibleDeckIds(user.id)
+      .then((deckIds) =>
+        Promise.all([getDueCards(user.id, 100, deckIds), loadAccessibleCards(user.id, deckIds)]),
+      )
       .then(([due, all]) => {
         if (cancelled) return;
         setDueCards(due);
