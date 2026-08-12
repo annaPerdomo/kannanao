@@ -458,8 +458,6 @@
       "gotIt": "かんぺき",
       "previousCardAria": "前のカード",
       "nextCardAria": "次のカード",
-      "howDidYouDo": "どうだった？",
-      "tapCardToCheck": "カードをタップしてこたえを見る",
       "finishSession": "おわる ✨",
       "nextRound": "次のラウンド →",
       "completionSubheading": "{count, plural, other {カード#枚ぜんぶ学習しました！}}"

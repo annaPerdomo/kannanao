@@ -125,8 +125,12 @@ export default function FlipStudy({
   const [xpPop, setXpPop] = useState<{ amount: number; correct: boolean; key: number } | null>(
     null,
   );
-  // Only drives the prompt under the card; grading is available either way.
-  const [flipped, setFlipped] = useState(false);
+  // A one-way latch: flipping back doesn't re-hide grading. navigate() clears it
+  // so the next card starts locked again.
+  const [revealed, setRevealed] = useState(false);
+  const handleFlipChange = useCallback((flipped: boolean) => {
+    if (flipped) setRevealed(true);
+  }, []);
 
   // ── Session tracking ──────────────────────────────────────────────────────
   // Standalone flip (deck Study) owns its own session + combo. When embedded in
@@ -208,6 +212,7 @@ export default function FlipStudy({
       setTimeout(() => {
         setIndex(nextIndex);
         setNavigating(false);
+        setRevealed(false);
       }, SLIDE_DURATION_MS);
     },
     [navigating, index, cards.length],
@@ -433,7 +438,9 @@ export default function FlipStudy({
                   }),
             }}
           >
-            {card && <Flashcard card={card} width="100%" height="100%" onFlipChange={setFlipped} />}
+            {card && (
+              <Flashcard card={card} width="100%" height="100%" onFlipChange={handleFlipChange} />
+            )}
 
             {xpPop && (
               <XpEarnedPop amount={xpPop.amount} correct={xpPop.correct} show key={xpPop.key} />
@@ -460,9 +467,9 @@ export default function FlipStudy({
         </Box>
 
         <Box sx={{ [LANDSCAPE_FIT]: { gridColumn: 2, gridRow: 3 } }}>
-          {/* Deliberately not gated on `flipped`: knowing a word without turning
-            it over is the whole point, and requiring a flip to say so trained
-            students to flip every card. */}
+          {/* Gated on the reveal: "Got it" only means something once the answer is
+            on screen. The row holds its height while empty so the card doesn't
+            jump when the buttons arrive. */}
           <Box
             sx={{
               display: 'flex',
@@ -472,83 +479,87 @@ export default function FlipStudy({
               minHeight: `${GRADE_ROW_PX}px`,
             }}
           >
-            {/* Both use the contained variant's white label. "Still learning"
-              keeps the stock brand 600→700 background; "Got it" swaps its
-              background for the app's signature brand→accent sweep (see the
-              card banners), at the darker 600/700 stops so white stays AA in
-              every palette. NOTE: the variant background is a background-IMAGE —
-              replace it with `background`, never `bgcolor` (which silently
-              paints underneath it). */}
-            <Button
-              variant="contained"
-              onClick={() => handleGrade(false)}
-              disabled={navigating}
-              sx={{ flex: 1, maxWidth: 200, py: 1.25, borderRadius: 3 }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 0.25,
-                  lineHeight: 1.2,
-                }}
-              >
-                <Box
-                  component="span"
+            {revealed && (
+              <>
+                {/* Both use the contained variant's white label. "Still learning"
+                  keeps the stock brand 600→700 background; "Got it" swaps its
+                  background for the app's signature brand→accent sweep (see the
+                  card banners), at the darker 600/700 stops so white stays AA in
+                  every palette. NOTE: the variant background is a background-IMAGE —
+                  replace it with `background`, never `bgcolor` (which silently
+                  paints underneath it). */}
+                <Button
+                  variant="contained"
+                  onClick={() => handleGrade(false)}
+                  disabled={navigating}
+                  sx={{ flex: 1, maxWidth: 200, py: 1.25, borderRadius: 3 }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 0.25,
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    <Box
+                      component="span"
+                      sx={{
+                        fontFamily: (theme) => theme.fonts.jp,
+                        fontSize: '1.15rem',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {t('stillLearningJp')}
+                    </Box>
+                    <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
+                      {t('stillLearning')}
+                    </Box>
+                  </Box>
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => handleGrade(true)}
+                  disabled={navigating}
                   sx={{
-                    fontFamily: (theme) => theme.fonts.jp,
-                    fontSize: '1.15rem',
-                    fontWeight: 700,
+                    flex: 1,
+                    maxWidth: 200,
+                    py: 1.25,
+                    borderRadius: 3,
+                    background: `linear-gradient(135deg, ${brand[600]} 0%, ${accent[600]} 100%)`,
+                    '&:hover': {
+                      background: `linear-gradient(135deg, ${brand[700]} 0%, ${accent[700]} 100%)`,
+                    },
                   }}
                 >
-                  {t('stillLearningJp')}
-                </Box>
-                <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
-                  {t('stillLearning')}
-                </Box>
-              </Box>
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => handleGrade(true)}
-              disabled={navigating}
-              sx={{
-                flex: 1,
-                maxWidth: 200,
-                py: 1.25,
-                borderRadius: 3,
-                background: `linear-gradient(135deg, ${brand[600]} 0%, ${accent[600]} 100%)`,
-                '&:hover': {
-                  background: `linear-gradient(135deg, ${brand[700]} 0%, ${accent[700]} 100%)`,
-                },
-              }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 0.25,
-                  lineHeight: 1.2,
-                }}
-              >
-                <Box
-                  component="span"
-                  sx={{
-                    fontFamily: (theme) => theme.fonts.jp,
-                    fontSize: '1.15rem',
-                    fontWeight: 700,
-                    '& rt': { fontSize: '0.6em', opacity: 0.9, fontWeight: 600 },
-                  }}
-                >
-                  <FuriganaText text={t('gotItJp')} showFurigana />
-                </Box>
-                <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
-                  {t('gotIt')}
-                </Box>
-              </Box>
-            </Button>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 0.25,
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    <Box
+                      component="span"
+                      sx={{
+                        fontFamily: (theme) => theme.fonts.jp,
+                        fontSize: '1.15rem',
+                        fontWeight: 700,
+                        '& rt': { fontSize: '0.6em', opacity: 0.9, fontWeight: 600 },
+                      }}
+                    >
+                      <FuriganaText text={t('gotItJp')} showFurigana />
+                    </Box>
+                    <Box component="span" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
+                      {t('gotIt')}
+                    </Box>
+                  </Box>
+                </Button>
+              </>
+            )}
           </Box>
 
           {/* Navigation — browse between cards without grading */}
@@ -573,10 +584,6 @@ export default function FlipStudy({
             >
               <ArrowBackIcon />
             </IconButton>
-
-            <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: '0.08em' }}>
-              {flipped ? t('howDidYouDo') : t('tapCardToCheck')}
-            </Typography>
 
             <IconButton
               onClick={() => navigate(1)}
