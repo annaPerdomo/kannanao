@@ -38,13 +38,6 @@ const stageMinHeightSx = {
 /** Every pixel here comes off the board, so short viewports spend less of it. */
 const STAGE_PY = { xs: 1.5, sm: 2, md: 3 } as const;
 
-/**
- * Wide, but short — a tablet held sideways, or a laptop. Stacking a prompt on
- * top of the buttons that answer it spends height these screens don't have
- * while leaving most of the width empty, so fitted layouts turn sideways here.
- */
-export const LANDSCAPE_FIT = '@media (min-width: 760px) and (max-height: 900px)';
-
 export interface PracticeStageProps {
   children: React.ReactNode;
   sx?: SxProps<Theme>;

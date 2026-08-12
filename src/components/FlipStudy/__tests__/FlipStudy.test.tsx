@@ -7,6 +7,7 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 import type { Flashcard as FlashcardType } from '@/types/flashcard';
 
 // A stand-in whose click reports a flip, the gate the grading row opens on.
+vi.mock('@/hooks/useFuriganaMask', () => ({ useFuriganaMask: () => () => false }));
 vi.mock('@/components/Flashcard', () => ({
   Flashcard: ({
     card,
