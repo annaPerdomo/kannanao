@@ -421,14 +421,16 @@ export async function dbFindCardsByWords(words: string[]): Promise<Map<string, E
   const matches = new Map<string, ExistingCardMatch>();
   if (!isConfigured() || words.length === 0) return matches;
 
+  // getSession, not getUser: the cached session already carries our own id,
+  // without getUser's auth-server round-trip on every generate call.
   const {
-    data: { user },
-  } = await sb.auth.getUser();
-  if (!user) return matches;
+    data: { session },
+  } = await sb.auth.getSession();
+  if (!session?.user) return matches;
 
   let deckIds: string[];
   try {
-    deckIds = await getAccessibleDeckIds(user.id);
+    deckIds = await getAccessibleDeckIds(session.user.id);
   } catch {
     return matches;
   }
