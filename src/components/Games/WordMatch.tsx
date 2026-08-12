@@ -154,17 +154,8 @@ function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit, questMap }:
           return (
             <Grid size={{ xs: 6, sm: 4 }} key={tile.id}>
               <Box
-                role="button"
-                tabIndex={isMatched ? -1 : 0}
-                aria-disabled={isMatched || undefined}
-                onClick={() => handleSelect(tile)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleSelect(tile);
-                  }
-                }}
                 sx={{
+                  position: 'relative',
                   p: 1.5,
                   minHeight: 68,
                   display: 'flex',
@@ -173,7 +164,6 @@ function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit, questMap }:
                   borderRadius: 3,
                   border: '2px solid',
                   textAlign: 'center',
-                  cursor: isMatched ? 'default' : 'pointer',
                   transition: 'all 0.15s',
                   borderColor: isMatched
                     ? 'success.main'
@@ -191,23 +181,86 @@ function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit, questMap }:
                         : surfaces.input,
                   opacity: isMatched ? 0.75 : 1,
                   transform: isSelected ? 'scale(1.04)' : 'scale(1)',
-                  '&:hover': !isMatched
-                    ? { borderColor: brand[500], bgcolor: alpha(brand[300], 0.2) }
-                    : {},
+                  // A touch device has no hover to leave: iPad Safari would keep
+                  // the last-tapped tile lit as if it were still selected.
+                  '@media (hover: hover)': {
+                    '&:hover': !isMatched
+                      ? { borderColor: brand[500], bgcolor: alpha(brand[300], 0.2) }
+                      : {},
+                  },
                 }}
               >
-                {isMatched ? (
-                  <CheckIcon sx={{ fontSize: '1.2rem', color: 'success.main' }} />
-                ) : tile.side === 'jp' ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Typography sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.05rem' }}>
+                {/* A real <button>, not a role="button" div: Safari spends the
+                    first tap on the div's hover state, so every match took two
+                    taps. It sits under the content, not around it, so the
+                    read-aloud button keeps its own click. */}
+                <Box
+                  component="button"
+                  type="button"
+                  aria-label={tile.label}
+                  aria-pressed={isSelected}
+                  // aria-disabled, not disabled: the browser blurs a focused
+                  // button as it disables, dropping keyboard focus to the top
+                  // of the page on every match.
+                  aria-disabled={isMatched || undefined}
+                  tabIndex={isMatched ? -1 : 0}
+                  onClick={() => handleSelect(tile)}
+                  sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    p: 0,
+                    border: 0,
+                    background: 'none',
+                    borderRadius: 'inherit',
+                    cursor: isMatched ? 'default' : 'pointer',
+                    '&:focus-visible': {
+                      outline: `2px solid ${brand[600]}`,
+                      outlineOffset: '-4px',
+                    },
+                  }}
+                />
+                <Box
+                  sx={{
+                    position: 'relative',
+                    pointerEvents: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 0.5,
+                    minWidth: 0,
+                    maxWidth: '100%',
+                  }}
+                >
+                  {isMatched ? (
+                    <CheckIcon sx={{ fontSize: '1.2rem', color: 'success.main' }} />
+                  ) : tile.side === 'jp' ? (
+                    <>
+                      {/* The label is already the button's accessible name —
+                          leaving it exposed reads every tile out twice. */}
+                      <Typography
+                        aria-hidden
+                        sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.05rem' }}
+                      >
+                        {tile.label}
+                      </Typography>
+                      {tile.speak && (
+                        <SpeakButton
+                          text={tile.speak}
+                          iconSize="0.9rem"
+                          hitSlop={4}
+                          sx={{
+                            pointerEvents: 'auto',
+                            '&.Mui-disabled': { pointerEvents: 'auto' },
+                          }}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <Typography aria-hidden sx={{ fontSize: '0.85rem' }}>
                       {tile.label}
                     </Typography>
-                    {tile.speak && <SpeakButton text={tile.speak} iconSize="0.9rem" hitSlop={4} />}
-                  </Box>
-                ) : (
-                  <Typography sx={{ fontSize: '0.85rem' }}>{tile.label}</Typography>
-                )}
+                  )}
+                </Box>
               </Box>
             </Grid>
           );

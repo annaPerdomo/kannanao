@@ -469,9 +469,13 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                       : surfaces.input,
                 opacity: isMatched ? 0.75 : 1,
                 transform: isSelected ? 'scale(1.04)' : 'scale(1)',
-                '&:hover': !isMatched
-                  ? { borderColor: brand[500], bgcolor: alpha(brand[300], 0.2) }
-                  : {},
+                // A touch device has no hover to leave: iPad Safari would keep
+                // the last-tapped tile lit as if it were still selected.
+                '@media (hover: hover)': {
+                  '&:hover': !isMatched
+                    ? { borderColor: brand[500], bgcolor: alpha(brand[300], 0.2) }
+                    : {},
+                },
               }}
             >
               {/* The tile's button sits under the content rather than wrapping
@@ -482,7 +486,11 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                 type="button"
                 aria-label={tile.label}
                 aria-pressed={isSelected}
-                disabled={isMatched}
+                // aria-disabled, not disabled: the browser blurs a focused
+                // button as it disables, dropping keyboard focus to the top
+                // of the page on every match.
+                aria-disabled={isMatched || undefined}
+                tabIndex={isMatched ? -1 : 0}
                 onClick={() => handleSelect(tile)}
                 sx={{
                   position: 'absolute',
@@ -514,7 +522,10 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                   <CheckIcon sx={{ fontSize: '1.2rem', color: 'success.main' }} />
                 ) : tile.side === 'jp' ? (
                   <>
+                    {/* The label is already the button's accessible name —
+                        leaving it exposed reads every tile out twice. */}
                     <Typography
+                      aria-hidden
                       sx={{
                         fontFamily: '"Noto Serif JP", serif',
                         fontSize: jpLabelFontSize(tile.label),
@@ -529,11 +540,12 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                       text={tile.speak}
                       iconSize="0.9rem"
                       hitSlop={4}
-                      sx={{ pointerEvents: 'auto' }}
+                      sx={{ pointerEvents: 'auto', '&.Mui-disabled': { pointerEvents: 'auto' } }}
                     />
                   </>
                 ) : (
                   <Typography
+                    aria-hidden
                     sx={{
                       fontFamily: '"DM Mono", monospace',
                       fontSize: enLabelFontSize(tile.label),
