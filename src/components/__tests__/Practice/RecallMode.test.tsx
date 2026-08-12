@@ -45,12 +45,13 @@ vi.mock('@/hooks/useFuriganaMask', () => ({ useFuriganaMask: () => () => false }
 vi.mock('@/components/FuriganaText', () => ({
   default: ({ text }: { text: string }) => <span>{text}</span>,
   stripFurigana: (t: string) => t,
+  furiganaToKana: (t: string) => t,
   titleRubySx: {},
 }));
 
 vi.mock('@/components/SpeakButton', () => ({
-  SpeakButton: ({ onSpeak }: { onSpeak?: () => void }) => (
-    <button type="button" aria-label="read aloud" onClick={onSpeak} />
+  SpeakButton: ({ text, onSpeak }: { text: string; onSpeak?: () => void }) => (
+    <button type="button" aria-label="read aloud" data-speak-text={text} onClick={onSpeak} />
   ),
 }));
 
@@ -162,6 +163,16 @@ describe('RecallMode', () => {
       await waitFor(() => {
         expect(screen.getByText('WHAT DOES THIS MEAN?')).toBeInTheDocument();
       });
+    });
+
+    it('should speak the curated reading for the word, not the raw word', async () => {
+      renderWithProviders(
+        <RecallMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
+      );
+      await waitFor(() => expect(screen.getByLabelText('read aloud')).toBeInTheDocument());
+
+      const card = currentCard(CARDS);
+      expect(screen.getByLabelText('read aloud')).toHaveAttribute('data-speak-text', card.reading);
     });
 
     it('should include all card meanings as answer choices (with 4 cards)', async () => {

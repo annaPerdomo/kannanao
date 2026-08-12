@@ -15,6 +15,7 @@ vi.mock('@/components/FuriganaText', () => ({
     </span>
   ),
   stripFurigana: (t: string) => t.replace(/\{[^|]+\|([^}]+)\}/g, '$1'),
+  furiganaToKana: (t: string) => t.replace(/\{[^|]+\|([^}]+)\}/g, '$1'),
   titleRubySx: {},
 }));
 

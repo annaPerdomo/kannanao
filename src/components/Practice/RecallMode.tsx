@@ -5,7 +5,7 @@ import { alpha } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import FuriganaText, { furiganaToKana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 import TitleFurigana from '@/components/TitleFurigana';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
@@ -361,7 +361,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
               )}
             </Typography>
             <SpeakButton
-              text={card.word}
+              text={display.speakText}
               iconSize="1.4rem"
               onSpeak={selected ? holdCard : undefined}
               sx={{ mb: 0.5 }}
@@ -392,7 +392,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
                 }}
               />
               <SpeakButton
-                text={stripFurigana(card.example_jp)}
+                text={furiganaToKana(card.example_jp)}
                 iconSize="1.1rem"
                 onSpeak={holdCard}
               />

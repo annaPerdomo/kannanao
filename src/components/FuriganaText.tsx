@@ -12,7 +12,7 @@ interface FuriganaTextProps {
 
 // Parsing lives in `@/lib/furigana` so every reader — this component, the speak
 // button, the Kotoba highlighter — understands the same markup shapes.
-export { stripFurigana } from '@/lib/furigana';
+export { furiganaToKana, stripFurigana } from '@/lib/furigana';
 
 /** rt scaled for large card titles — the default 0.75em reads as a second word there. */
 export const titleRubySx = {

@@ -13,7 +13,7 @@ import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import { speechNeedsGesture, useJapaneseVoice, useSpeech } from '@/hooks/useSpeech';
-import { buildMeaningChoices, cardXp, titleFontSize } from '@/lib/flashcardUtils';
+import { buildMeaningChoices, cardXp, speakTextFor, titleFontSize } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
 import { CelebrationScreen, pickPraise } from './CelebrationScreen';
@@ -101,7 +101,7 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
     if (!card) return;
     playedForRef.current = card.id;
     setUnlocked(true);
-    speak(card.word);
+    speak(speakTextFor(card));
   }, [card, speak]);
 
   // Auto-play each new question once speech is unlocked
@@ -109,7 +109,7 @@ export function ListenMode({ cards, deckId, batchSize, onExit }: ListenModeProps
     if (!card || voiceStatus !== 'ready' || !unlocked) return;
     if (playedForRef.current === card.id) return;
     playedForRef.current = card.id;
-    speak(card.word);
+    speak(speakTextFor(card));
     // Replays go through play(); this only fires when the question changes.
   }, [card?.id, queue.roundKey, voiceStatus, unlocked]); // eslint-disable-line react-hooks/exhaustive-deps
 

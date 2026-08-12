@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { EditCardDialog } from '@/components/EditCardDialog';
-import FuriganaText, { stripFurigana, titleRubySx } from '@/components/FuriganaText';
+import FuriganaText, { furiganaToKana, titleRubySx } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { useCardBorder } from '@/contexts/CardBorderContext';
@@ -358,7 +358,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                   >
                     {t('sampleSentenceLabel')}
                   </Typography>
-                  <SpeakButton text={stripFurigana(localCard.example_jp)} iconSize="0.75rem" />
+                  <SpeakButton text={furiganaToKana(localCard.example_jp)} iconSize="0.75rem" />
                 </Box>
                 <Typography
                   component="div"

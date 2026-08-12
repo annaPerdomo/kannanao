@@ -114,6 +114,15 @@ export function romajiFor(card: Pick<Flashcard, 'romaji' | 'reading'>): string {
     .trim();
 }
 
+/**
+ * What TTS should speak for a card's word: the curated kana reading when there
+ * is one. Browser voices guess at raw card text and get mixed-script words
+ * wrong (月よう日 → つきようび); the kana reading is unambiguous.
+ */
+export function speakTextFor(card: Pick<Flashcard, 'word' | 'reading'>): string {
+  return card.reading?.trim() || card.word;
+}
+
 export interface FlashcardDisplayText {
   titleText: string;
   subtitleText?: string;
@@ -123,7 +132,7 @@ export interface FlashcardDisplayText {
    * hide `subtitleText`; everything else keeps the plain reading caption.
    */
   titleFurigana?: string;
-  /** Text to pass to TTS — always the Japanese text when available. */
+  /** Text to pass to TTS — the kana reading when available, never romaji. */
   speakText: string;
 }
 
@@ -150,8 +159,7 @@ export function getFlashcardDisplayText(card: Flashcard): FlashcardDisplayText {
     subtitleText = undefined;
   }
 
-  // TTS should always speak the Japanese text (card.word), not romaji
-  const speakText = card.word;
+  const speakText = speakTextFor(card);
 
   return {
     titleText,

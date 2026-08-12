@@ -5,7 +5,7 @@ import { alpha } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
+import FuriganaText, { furiganaToKana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 import TitleFurigana from '@/components/TitleFurigana';
 import { UnsplashAttribution } from '@/components/UnsplashAttribution';
@@ -584,7 +584,7 @@ export function Flashcard({
                     >
                       {t('exampleLabel')}
                     </Typography>
-                    <SpeakButton text={stripFurigana(card.example_jp)} iconSize="0.85rem" />
+                    <SpeakButton text={furiganaToKana(card.example_jp)} iconSize="0.85rem" />
                   </Box>
                   <Typography
                     component="div"

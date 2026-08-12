@@ -16,6 +16,7 @@ import {
   buildMeaningChoices,
   cardXp,
   getFlashcardDisplayText,
+  speakTextFor,
   titleFontSize,
 } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
@@ -194,7 +195,7 @@ export function BossRound({
               display.titleText
             )}
           </Typography>
-          <SpeakButton text={card.word} iconSize="1.3rem" />
+          <SpeakButton text={speakTextFor(card)} iconSize="1.3rem" />
         </Box>
         {display.subtitleText && !display.titleFurigana && (
           <Typography variant="body2" color="text.secondary">
