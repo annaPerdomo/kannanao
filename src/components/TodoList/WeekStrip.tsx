@@ -125,9 +125,6 @@ export function WeekStrip({
                 cursor: 'pointer',
                 overflow: 'hidden',
                 transition: 'background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
-                // No ring on today, selected or not: the gradient, the height and
-                // the lift already make it the loudest tab in the strip, and an
-                // outline on top of all three only reads as a second border.
                 boxShadow: isToday
                   ? `0 10px 22px -8px ${alpha(brand[600], 0.55)}`
                   : isSelected
