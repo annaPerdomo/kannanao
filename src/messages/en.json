@@ -1739,11 +1739,49 @@
         "meterAria": "Friendship: {levelName}, {current} of {needed} hearts",
         "meterAriaMax": "Friendship: {levelName}",
         "levelUpTitle": "You and {name} are now {level}!",
-        "storiesTitle": "{name}'s Stories",
-        "lockedStory": "Reach {level} to hear more.",
+        "friendshipTitle": "You & {name}",
+        "levelTone": {
+          "1": "You and {name} are just getting to know each other.",
+          "2": "{name} is getting comfortable around you.",
+          "3": "{name} starts watching the door before you get here.",
+          "4": "{name} saves the best part of the day for you.",
+          "5": "You and {name} understand each other without words."
+        },
+        "milestone": {
+          "memory": "{count, plural, one {# more heart} other {# more hearts}} until {name} has something to tell you.",
+          "fact": "{count, plural, one {# more heart} other {# more hearts}} and you'll learn something new about {name}.",
+          "level": "{count, plural, one {# more heart} other {# more hearts}} until you and {name} are {levelName}.",
+          "max": "You've heard every story {name} has. Nobody knows {name} better."
+        },
+        "today": {
+          "heading": "Grow closer to {name} today",
+          "footer": "{earned} of {total} hearts today",
+          "done": "Done",
+          "adventure": {
+            "title": "Finish today's adventure",
+            "cta": "Start"
+          },
+          "session": {
+            "title": "Study together",
+            "cta": "Pick a deck"
+          },
+          "pet": {
+            "title": "Say hi to {name}",
+            "cta": "Say hi"
+          }
+        },
+        "about": {
+          "heading": "Things you've learned about {name}"
+        },
+        "memories": {
+          "heading": "Memories",
+          "locked": "Unlocks at {levelName}",
+          "lockedTitle": "???"
+        },
         "continueHint": "Tap to continue",
         "close": "Close",
-        "storiesAria": "Read {name}'s stories, {count, plural, one {# heart} other {# hearts}}"
+        "chipAria": "You and {name}: {levelName}, {count, plural, one {# heart} other {# hearts}}. {next} more until something new.",
+        "chipAriaMax": "You and {name}: {levelName}, {count, plural, one {# heart} other {# hearts}}."
       }
     },
     "heroDate": {

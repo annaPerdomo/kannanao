@@ -10,29 +10,29 @@ import { FriendshipMeter } from '@/components/FriendshipMeter';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { BuddyStoryRequest } from '@/contexts/BuddyFriendshipContext';
 import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
-import { BUDDY_ART, buddyShopSrc } from '@/lib/buddies';
 import { storyLines } from '@/lib/buddyPhrases';
 import { friendshipLevel } from '@/lib/friendship';
+import { unlockedFacts } from '@/lib/friendshipMilestones';
 
-import { StoryList } from './StoryList';
+import { AboutBuddy } from './AboutBuddy';
+import { BuddyArt } from './BuddyArt';
+import { FriendshipDailyGoals } from './FriendshipDailyGoals';
+import { FriendshipHeader } from './FriendshipHeader';
+import { MemoryList } from './MemoryList';
+import { NextMilestoneCallout } from './NextMilestoneCallout';
 import { StoryReveal } from './StoryReveal';
 
-const TITLE_ID = 'buddy-story-title';
+const TITLE_ID = 'buddy-friendship-title';
 
-/**
- * Level-up celebration and re-readable story list. Mounted once next to the
- * global buddy; opened from the hearts chip or by a released level-up.
- */
-export function BuddyStoryDialog() {
+export function BuddyFriendshipDialog() {
   const t = useTranslations('Home.buddy.friendship');
   const tItems = useTranslations('Shop.items');
   const tBuddies = useTranslations('Shop.buddies');
   const { brand } = useTheme().palette;
   const { storyRequest, closeStories, friendships } = useBuddyFriendshipCtx();
 
-  // The request is cleared the moment the dialog starts closing, so the body
-  // renders from the last one — otherwise it flickers to an empty level-1
-  // state for the length of the exit transition.
+  // Rendering straight off storyRequest flickers to an empty level-1 body for
+  // the whole exit transition — it is cleared the moment closing starts.
   const lastRequest = useRef<BuddyStoryRequest | null>(null);
   useEffect(() => {
     if (storyRequest) lastRequest.current = storyRequest;
@@ -54,11 +54,8 @@ export function BuddyStoryDialog() {
   }
 
   const isLevelUp = shown?.mode === 'levelUp';
-  // The celebration is about the level just crossed; browsing is about where
-  // the buddy stands now, which a heart earned since then may have moved.
   const level = shown?.mode === 'levelUp' ? shown.level : friendshipLevel(points);
   const lines = isLevelUp ? storyLines(copy, level) : [];
-  const art = BUDDY_ART[buddyKey];
 
   return (
     <StyledDialog
@@ -68,7 +65,7 @@ export function BuddyStoryDialog() {
       title={
         isLevelUp
           ? t('levelUpTitle', { name, level: t(`levelNames.${level}`) })
-          : t('storiesTitle', { name })
+          : t('friendshipTitle', { name })
       }
       actions={
         <Button onClick={closeStories} variant="contained" size="small">
@@ -81,32 +78,26 @@ export function BuddyStoryDialog() {
         key={`${shown?.mode}-${buddyKey}-${level}`}
         sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.75 }}
       >
-        {art && (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              width: '100%',
-              py: 1,
-              borderRadius: 3,
-              background: `radial-gradient(ellipse at 50% 100%, ${alpha(art.accent, 0.22)} 0%, ${alpha(art.bg, 0.6)} 70%)`,
-            }}
-          >
-            <Box
-              component="img"
-              src={buddyShopSrc(buddyKey)}
-              alt=""
-              sx={{ width: isLevelUp ? 132 : 92, height: 'auto', objectFit: 'contain' }}
-            />
-          </Box>
-        )}
-
-        <FriendshipMeter points={points} />
-
-        {(isLevelUp ? lines.length > 0 : true) && (
-          <Box sx={{ width: '100%', borderTop: `1px solid ${alpha(brand[300], 0.35)}`, pt: 1.75 }}>
-            {isLevelUp ? <StoryReveal lines={lines} /> : <StoryList copy={copy} level={level} />}
-          </Box>
+        {isLevelUp ? (
+          <>
+            <BuddyArt buddyKey={buddyKey} size={132} />
+            <FriendshipMeter points={points} />
+            {lines.length > 0 && (
+              <Box
+                sx={{ width: '100%', borderTop: `1px solid ${alpha(brand[300], 0.35)}`, pt: 1.75 }}
+              >
+                <StoryReveal lines={lines} />
+              </Box>
+            )}
+          </>
+        ) : (
+          <>
+            <FriendshipHeader buddyKey={buddyKey} name={name} points={points} />
+            <NextMilestoneCallout copy={copy} name={name} points={points} />
+            <FriendshipDailyGoals name={name} onLeave={closeStories} />
+            <AboutBuddy name={name} facts={unlockedFacts(copy, points)} />
+            <MemoryList copy={copy} level={level} />
+          </>
         )}
       </Box>
     </StyledDialog>

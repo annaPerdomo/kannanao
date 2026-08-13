@@ -1739,11 +1739,49 @@
         "meterAria": "なかよし度：{levelName}、ハート{current}／{needed}",
         "meterAriaMax": "なかよし度：{levelName}",
         "levelUpTitle": "{name}と「{level}」になったよ！",
-        "storiesTitle": "{name}のおはなし",
-        "lockedStory": "「{level}」になると、もっとおはなしがきけるよ。",
+        "friendshipTitle": "あなたと{name}",
+        "levelTone": {
+          "1": "{name}とは、まだ知りあったばかり。",
+          "2": "{name}は、あなたのそばに少しずつなれてきたみたい。",
+          "3": "{name}は、あなたが来る前からドアの方を見ている。",
+          "4": "{name}は、一日でいちばんの話をあなたにとっておく。",
+          "5": "{name}とは、ことばがなくても通じあえる。"
+        },
+        "milestone": {
+          "memory": "あとハート{count, plural, other {#こ}}で、{name}が話したいことがあるみたい。",
+          "fact": "あとハート{count, plural, other {#こ}}で、{name}の新しいことがわかるよ。",
+          "level": "あとハート{count, plural, other {#こ}}で、{name}と「{levelName}」になれるよ。",
+          "max": "{name}のおはなしは、ぜんぶ聞いたね。だれよりも{name}のことを知っているよ。"
+        },
+        "today": {
+          "heading": "今日、{name}ともっとなかよくなろう",
+          "footer": "今日のハート {earned}／{total}",
+          "done": "できた",
+          "adventure": {
+            "title": "今日のぼうけんをクリアする",
+            "cta": "はじめる"
+          },
+          "session": {
+            "title": "いっしょに勉強する",
+            "cta": "デッキを選ぶ"
+          },
+          "pet": {
+            "title": "{name}にあいさつする",
+            "cta": "あいさつ"
+          }
+        },
+        "about": {
+          "heading": "{name}について知ったこと"
+        },
+        "memories": {
+          "heading": "おもいで",
+          "locked": "「{levelName}」になるとひらくよ",
+          "lockedTitle": "???"
+        },
         "continueHint": "タップでつづき",
         "close": "とじる",
-        "storiesAria": "{name}のおはなしを読む、ハート{count}こ"
+        "chipAria": "あなたと{name}：{levelName}、ハート{count, plural, other {#こ}}。あとハート{next}こで新しいことがあるよ。",
+        "chipAriaMax": "あなたと{name}：{levelName}、ハート{count, plural, other {#こ}}。"
       }
     },
     "heroDate": {

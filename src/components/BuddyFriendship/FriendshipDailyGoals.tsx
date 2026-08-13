@@ -1,0 +1,136 @@
+'use client';
+
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import { alpha, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+
+import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
+import { FRIENDSHIP_POINTS, type FriendshipSource } from '@/lib/friendship';
+
+/** Adventure must land where TodayAdventureCard's own CTA does; nothing enforces it. */
+const GOAL_ROUTES: Partial<Record<FriendshipSource, string>> = {
+  adventure: '/review/today',
+  session: '/decks',
+};
+
+const HEARTS_PER_DAY = Object.values(FRIENDSHIP_POINTS).reduce((total, n) => total + n, 0);
+
+function Hearts({ count }: { count: number }) {
+  const { brand } = useTheme().palette;
+  return (
+    <Box sx={{ display: 'flex', flexShrink: 0 }} aria-hidden>
+      {Array.from({ length: count }, (_, i) => (
+        <FavoriteIcon key={i} sx={{ fontSize: 14, color: brand[400], ml: i ? -0.35 : 0 }} />
+      ))}
+    </Box>
+  );
+}
+
+interface GoalRowProps {
+  title: string;
+  cta: string;
+  points: number;
+  done: boolean;
+  dominant: boolean;
+  onAct: () => void;
+}
+
+function GoalRow({ title, cta, points, done, dominant, onAct }: GoalRowProps) {
+  const t = useTranslations('Home.buddy.friendship');
+  const { brand } = useTheme().palette;
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        px: 1.5,
+        py: dominant ? 1.25 : 0.9,
+        borderRadius: 3,
+        bgcolor: done ? alpha(brand[100], 0.45) : alpha('#fff', 0.92),
+        border: `1.5px solid ${alpha(brand[300], done ? 0.35 : 0.5)}`,
+        opacity: done ? 0.85 : 1,
+      }}
+    >
+      <Hearts count={points} />
+      <Typography
+        sx={{
+          flexGrow: 1,
+          minWidth: 0,
+          fontSize: dominant ? '0.9rem' : '0.82rem',
+          fontWeight: dominant ? 800 : 600,
+          color: 'text.primary',
+        }}
+      >
+        {title}
+      </Typography>
+      {done ? (
+        <CheckCircleRoundedIcon
+          titleAccess={t('today.done')}
+          sx={{ fontSize: 20, color: brand[400], flexShrink: 0 }}
+        />
+      ) : (
+        <Button
+          size="small"
+          variant={dominant ? 'contained' : 'text'}
+          onClick={onAct}
+          sx={{ flexShrink: 0, fontWeight: 800, whiteSpace: 'nowrap' }}
+        >
+          {cta}
+        </Button>
+      )}
+    </Box>
+  );
+}
+
+interface FriendshipDailyGoalsProps {
+  name: string;
+  onLeave: () => void;
+}
+
+export function FriendshipDailyGoals({ name, onLeave }: FriendshipDailyGoalsProps) {
+  const t = useTranslations('Home.buddy.friendship');
+  const { brand } = useTheme().palette;
+  const router = useRouter();
+  const { todayGoals, heartsToday, petBuddy } = useBuddyFriendshipCtx();
+
+  const act = (source: FriendshipSource) => () => {
+    if (source === 'pet') {
+      void petBuddy();
+      return;
+    }
+    const href = GOAL_ROUTES[source];
+    if (href) router.push(href);
+    onLeave();
+  };
+
+  return (
+    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+      <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: brand[700] }}>
+        {t('today.heading', { name })}
+      </Typography>
+
+      {todayGoals.map((goal) => (
+        <GoalRow
+          key={goal.source}
+          title={t(`today.${goal.source}.title`, { name })}
+          cta={t(`today.${goal.source}.cta`, { name })}
+          points={goal.points}
+          done={goal.done}
+          dominant={goal.source === 'adventure'}
+          onAct={act(goal.source)}
+        />
+      ))}
+
+      <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary', alignSelf: 'flex-end' }}>
+        {t('today.footer', { earned: heartsToday, total: HEARTS_PER_DAY })}
+      </Typography>
+    </Box>
+  );
+}

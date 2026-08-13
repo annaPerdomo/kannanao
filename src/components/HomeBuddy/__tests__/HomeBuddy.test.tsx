@@ -88,6 +88,14 @@ describe('HomeBuddy', () => {
     expect(screen.getByText('12')).toBeInTheDocument();
   });
 
+  it('drops the "until something new" promise from the chip at max friendship', () => {
+    points = 140;
+    render(<HomeBuddy buddyKey="tango" />);
+    expect(
+      screen.getByRole('button', { name: 'chipAriaMax|tango.name,levelNames.5,140' }),
+    ).toBeInTheDocument();
+  });
+
   it('shows no hearts chip at all until the rows have loaded', () => {
     loadState = 'loading';
     render(<HomeBuddy buddyKey="tango" />);
@@ -221,7 +229,8 @@ describe('HomeBuddy', () => {
 
   it('opens the buddy stories from the hearts chip without also petting', () => {
     render(<HomeBuddy buddyKey="tango" />);
-    const chip = screen.getByRole('button', { name: 'storiesAria|tango.name,12' });
+    // 12 hearts: still a New Friend, 3 short of the next milestone at 15.
+    const chip = screen.getByRole('button', { name: 'chipAria|tango.name,levelNames.1,12,3' });
 
     tap(chip);
     fireEvent.click(chip);

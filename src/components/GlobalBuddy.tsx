@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useShopCtx } from '@/contexts/ShopContext';
 import { resolveBuddyKey } from '@/lib/buddies';
 
-import { BuddyStoryDialog } from './BuddyStoryDialog';
+import { BuddyFriendshipDialog } from './BuddyFriendship';
 import { HomeBuddy } from './HomeBuddy';
 
 // There is exactly one buddy in the app — practice/study screens don't
@@ -30,7 +30,7 @@ export function GlobalBuddy() {
   return (
     <>
       <HomeBuddy buddyKey={resolveBuddyKey(equipped['study_buddy'])} />
-      <BuddyStoryDialog />
+      <BuddyFriendshipDialog />
     </>
   );
 }
