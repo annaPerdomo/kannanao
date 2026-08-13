@@ -84,10 +84,8 @@ export function WeekStrip({
           const dayEntries = entries.filter((entry) => isEntryOnDate(entry, date));
           const allDone = dayTodos.length > 0 && dayCompleted === dayTodos.length;
           const tabColor = TAB_COLORS[i % TAB_COLORS.length];
-          // Today is the one tab that can't be left to the week palette: half of
-          // those colours are yellows and limes, too light to carry legible type
-          // either way. Every other tab keeps its week colour, with the
-          // foreground chosen per colour rather than assumed to be white.
+          // Today can't take a week colour: half of TAB_COLORS are yellows and
+          // limes, too light to carry legible type in either direction.
           const tabBg = isToday ? TODAY_BG : isSelected ? tabColor : alpha(tabColor, 0.45);
           const solid = isToday || isSelected;
           const solidText = isToday ? '#fff' : theme.palette.getContrastText(tabColor);

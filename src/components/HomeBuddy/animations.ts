@@ -53,8 +53,8 @@ export const chipPop = keyframes`
   100% { transform: scale(1); }
 `;
 
-// Fades a pre-painted glow layer instead of animating box-shadow, which
-// repainted the blur on every frame of every page for as long as the app was open.
+// Fades a pre-painted layer: animating box-shadow instead repaints the blur on
+// every frame, on every page, for as long as the app is open.
 export const glowPulse = keyframes`
   0%, 100% { opacity: 0; }
   50% { opacity: 1; }

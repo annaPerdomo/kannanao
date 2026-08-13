@@ -3,8 +3,8 @@ const STORAGE_KEY = 'kannanao:buddy-position';
 export const EDGE_MARGIN = 8;
 
 /**
- * Anchored bottom-left, not top-left: the widget grows upward when its speech
- * bubble appears, so a top anchor would shove the face down every 8 seconds.
+ * Anchored bottom, not top: the widget grows upward when its speech bubble
+ * appears, so a top anchor would shove the face down every 8 seconds.
  */
 export interface BuddyPosition {
   left: number;
@@ -16,7 +16,6 @@ export interface Size {
   height: number;
 }
 
-/** How much of each viewport edge is out of bounds for a dropped buddy. */
 export interface Insets {
   top: number;
   right: number;
@@ -32,13 +31,8 @@ export const DEFAULT_INSETS: Insets = {
 };
 
 /**
- * The app chrome a dropped buddy must not land on. It outranks both bars
- * (`zIndex` 1200 vs the appBar's 1100) and takes pointer events, so parked over
- * the bottom nav it swallows taps on a nav tab — and the spot is persisted.
- *
- * Measured rather than derived from the breakpoint constants: the rect is 0
- * where a bar is `display: none`, and already includes the
- * `env(safe-area-inset-bottom)` padding no constant can know.
+ * Measured, not derived from BOTTOM_NAV_HEIGHT: the rect is 0 where a bar is
+ * `display: none`, and includes the `env(safe-area-inset-bottom)` no constant knows.
  */
 export function measureChromeInsets(): Insets {
   const height = (selector: string) =>
@@ -54,7 +48,6 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
-/** A buddy dropped in the corner of a landscape iPad is off-canvas in portrait. */
 export function clampPosition(
   pos: BuddyPosition,
   size: Size,

@@ -116,9 +116,8 @@ export function TodayAdventureCard() {
         display: 'flex',
         flexDirection: 'column',
         gap: 1,
-        // Shrink-wrapped from sm up, where the card sits on the artwork: a box
-        // stretched to the column's cap covers the mascot with nothing. On a
-        // phone the copy is on its own gradient, so full width reads as intended.
+        // Shrink-wrapped from sm up, where the card sits on the hero artwork:
+        // stretched to the column's cap it covers the mascot with nothing.
         width: { xs: '100%', sm: 'fit-content' },
         maxWidth: '100%',
         p: { xs: 1.75, sm: 1.75 },

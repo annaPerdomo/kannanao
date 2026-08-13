@@ -124,8 +124,7 @@ describe('HomeBuddy', () => {
     fireEvent.pointerMove(el, { clientX: 180, clientY: 160, pointerId: 1 });
     fireEvent.pointerUp(el, { clientX: 180, clientY: 160, pointerId: 1 });
 
-    // jsdom measures the widget at 0×0 in the top-left, so the drop is the bare
-    // pointer delta: 80px right, 60px down off a 768px-tall viewport.
+    // jsdom measures the widget at 0×0, so the drop is the bare pointer delta.
     expect(JSON.parse(localStorage.getItem('kannanao:buddy-position') ?? 'null')).toEqual({
       left: 80,
       bottom: 708,
@@ -153,7 +152,6 @@ describe('HomeBuddy', () => {
 
     expect(el.style.transform).toBe('');
     expect(localStorage.getItem('kannanao:buddy-position')).toBeNull();
-    // Still stuck in drag mode, the buddy would be mute and unpettable forever.
     tap(el);
     await waitFor(() => expect(petBuddy).toHaveBeenCalledTimes(1));
   });
@@ -163,7 +161,6 @@ describe('HomeBuddy', () => {
     const el = container.firstChild as Element;
     fireEvent.pointerDown(el, { clientX: 100, clientY: 100, pointerId: 1 });
     fireEvent.pointerMove(el, { clientX: 180, clientY: 160, pointerId: 1 });
-    // Finger two: re-measuring origin here would commit the drop a drag-length off.
     fireEvent.pointerDown(el, { clientX: 400, clientY: 400, pointerId: 2 });
     fireEvent.pointerMove(el, { clientX: 500, clientY: 500, pointerId: 2 });
     fireEvent.pointerUp(el, { clientX: 180, clientY: 160, pointerId: 1 });
@@ -178,7 +175,6 @@ describe('HomeBuddy', () => {
     const { container } = render(<HomeBuddy buddyKey="tango" />);
     const el = container.firstChild as Element;
     fireEvent.pointerDown(el, { clientX: 100, clientY: 100, pointerId: 1 });
-    // A press wobbles a pixel or two; blanking the bubble there made every pet blink.
     fireEvent.pointerMove(el, { clientX: 102, clientY: 101, pointerId: 1 });
     expect(screen.getByText('defaultPhrase')).toBeVisible();
 
@@ -190,7 +186,6 @@ describe('HomeBuddy', () => {
     localStorage.setItem('kannanao:buddy-position', JSON.stringify({ left: 5000, bottom: 5000 }));
     const { container } = render(<HomeBuddy buddyKey="tango" />);
     const style = getComputedStyle(container.firstChild as Element);
-    // jsdom measures the widget at 0×0, so the far corner of a 1024×768 viewport.
     expect(style.left).toBe('1016px');
     expect(style.bottom).toBe('760px');
   });

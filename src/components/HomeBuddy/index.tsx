@@ -29,10 +29,8 @@ function pickRandom(items: string | string[]): string {
 }
 
 /**
- * Bottom-right is an empty corner on a desktop, but on a touch device it lands
- * on the phone bottom bar and the grading buttons a practice screen pins to the
- * viewport, so coarse pointers get bottom-left. Keyed on the pointer and not a
- * breakpoint: a landscape iPad is 1024px wide and passes any width test.
+ * Coarse pointers get bottom-left, where the pinned grading buttons aren't.
+ * Keyed on the pointer, not a breakpoint: a landscape iPad is 1024px wide.
  */
 const DEFAULT_ANCHOR = {
   bottom: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom) + 8px)`, sm: 28 },
@@ -248,7 +246,6 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
           text={announcement ?? bubbleText}
           reaction={reaction}
           accent={accent}
-          // Its backdrop blur is the most expensive thing on screen to move.
           hidden={isDragging}
         />
       )}

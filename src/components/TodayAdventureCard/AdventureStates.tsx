@@ -89,9 +89,7 @@ export function CompletedState({
             {t('completedHearts', { count: hearts, name: buddyName })}
           </Typography>
         )}
-        {/* Home's only route to /review once the adventure is done. Inside the
-            text column and pulled back by its own padding, so it hangs off the
-            same left edge as the two lines above it. */}
+        {/* Home's only route to /review once the adventure is done. */}
         <Button size="small" variant="text" onClick={onPlayGame} sx={{ ...linkSx, ml: -0.5 }}>
           {t('playGame')}
         </Button>
@@ -138,8 +136,7 @@ export function DueState({
           {t('start')}
         </Button>
       </Box>
-      {/* The only route to the games hub from home while cards are due. On its
-          own line — the hero caps this column at ~40% width. */}
+      {/* The only route to the games hub from home while cards are due. */}
       <Button size="small" variant="text" onClick={handle(onPlayGame)} sx={linkSx}>
         {t('playGame')}
       </Button>
