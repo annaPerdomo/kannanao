@@ -59,8 +59,11 @@ export function TodayAdventureCard() {
     return (
       <Skeleton
         variant="rounded"
-        height={112}
-        sx={{ borderRadius: (theme) => theme.radii.md, bgcolor: alpha('#fff', 0.18) }}
+        sx={{
+          maxWidth: { sm: 340 },
+          borderRadius: (theme) => theme.radii.md,
+          bgcolor: alpha('#fff', 0.18),
+        }}
       />
     );
   }
@@ -112,8 +115,13 @@ export function TodayAdventureCard() {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 1.25,
-        p: { xs: 1.75, sm: 2 },
+        gap: 1,
+        // Shrink-wrapped from sm up, where the card sits on the artwork: a box
+        // stretched to the column's cap covers the mascot with nothing. On a
+        // phone the copy is on its own gradient, so full width reads as intended.
+        width: { xs: '100%', sm: 'fit-content' },
+        maxWidth: '100%',
+        p: { xs: 1.75, sm: 1.75 },
         borderRadius: (theme) => theme.radii.md,
         // Sits on the hero artwork — a pale surface would vanish into the banner.
         bgcolor: alpha('#fff', 0.16),

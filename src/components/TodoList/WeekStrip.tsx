@@ -41,7 +41,7 @@ export function WeekStrip({
   entries,
 }: WeekStripProps) {
   const theme = useTheme();
-  const { brand, rainbow } = theme.palette;
+  const { brand, accent, rainbow } = theme.palette;
   const locale = useLocale();
   const t = useTranslations('Todo.weekStrip');
   const todayStr = todayISO();
@@ -57,6 +57,8 @@ export function WeekStrip({
     rainbow[500],
     rainbow[600],
   ];
+
+  const TODAY_BG = `linear-gradient(135deg, ${brand[600]}, ${accent[600]})`;
 
   return (
     <Box>
@@ -82,6 +84,13 @@ export function WeekStrip({
           const dayEntries = entries.filter((entry) => isEntryOnDate(entry, date));
           const allDone = dayTodos.length > 0 && dayCompleted === dayTodos.length;
           const tabColor = TAB_COLORS[i % TAB_COLORS.length];
+          // Today is the one tab that can't be left to the week palette: half of
+          // those colours are yellows and limes, too light to carry legible type
+          // either way. Every other tab keeps its week colour, with the
+          // foreground chosen per colour rather than assumed to be white.
+          const tabBg = isToday ? TODAY_BG : isSelected ? tabColor : alpha(tabColor, 0.45);
+          const solid = isToday || isSelected;
+          const solidText = isToday ? '#fff' : theme.palette.getContrastText(tabColor);
           const marker = allDone ? '💖' : dayEntries.length > 0 ? dayEntries[0].emoji : null;
 
           return (
@@ -111,19 +120,26 @@ export function WeekStrip({
                 height: isToday ? { xs: 76, sm: 80 } : { xs: 62, sm: 66 },
                 border: 'none',
                 borderRadius: '10px',
-                background: isSelected ? tabColor : alpha(tabColor, isToday ? 0.6 : 0.45),
-                color: isSelected ? '#fff' : 'text.primary',
+                background: tabBg,
+                color: solid ? solidText : 'text.primary',
                 cursor: 'pointer',
                 overflow: 'hidden',
                 transition: 'background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
+                // No ring on today, selected or not: the gradient, the height and
+                // the lift already make it the loudest tab in the strip, and an
+                // outline on top of all three only reads as a second border.
                 boxShadow: isToday
-                  ? `0 10px 22px -8px ${alpha(tabColor, 0.8)}`
+                  ? `0 10px 22px -8px ${alpha(brand[600], 0.55)}`
                   : isSelected
                     ? `0 8px 18px -8px ${alpha(tabColor, 0.75)}`
                     : 'none',
                 minWidth: 0,
                 '&:hover': {
-                  background: isSelected ? tabColor : alpha(tabColor, isToday ? 0.75 : 0.62),
+                  background: isToday
+                    ? `linear-gradient(135deg, ${brand[500]}, ${accent[500]})`
+                    : isSelected
+                      ? tabColor
+                      : alpha(tabColor, 0.62),
                   transform: 'translateY(-1px)',
                 },
               }}
@@ -156,9 +172,7 @@ export function WeekStrip({
                   fontSize: { xs: '0.85rem', sm: '0.95rem' },
                   fontWeight: 700,
                   lineHeight: 1,
-                  // Today keeps its own accent when it isn't the selected day —
-                  // otherwise nothing in a flat strip says which day it is.
-                  color: isSelected ? '#fff' : isToday ? brand[700] : 'text.primary',
+                  color: solid ? solidText : 'text.primary',
                 }}
               >
                 {date.getDate()}

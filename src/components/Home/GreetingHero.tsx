@@ -227,11 +227,8 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
               // is a percentage too, so they stay in step as the crop tightens.
               background: `linear-gradient(90deg, rgba(${SCRIM},0.86) 0%, rgba(${SCRIM},0.84) 30%, rgba(${SCRIM},0.6) 46%, rgba(${SCRIM},0.16) 60%, rgba(${SCRIM},0) 74%)`,
             },
-            // Once nothing is cropped the copy stops growing with the page, so
-            // the scrim stops in pixels too — otherwise a 1600px banner drags
-            // the shadow out over the mascot it is supposed to clear.
             [UNCROPPED_FROM]: {
-              background: `linear-gradient(90deg, rgba(${SCRIM},0.86) 0px, rgba(${SCRIM},0.84) 380px, rgba(${SCRIM},0.5) 560px, rgba(${SCRIM},0.12) 740px, rgba(${SCRIM},0) 900px)`,
+              background: `linear-gradient(90deg, rgba(${SCRIM},0.86) 0px, rgba(${SCRIM},0.8) 340px, rgba(${SCRIM},0.5) 520px, rgba(${SCRIM},0.14) 680px, rgba(${SCRIM},0) 800px)`,
             },
           }}
         />
@@ -242,20 +239,12 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
           sx={{
             position: 'relative',
             width: '100%',
-            // Capped short of the mascot: this is also the column the scrim is
-            // dense across, so copy must not run past it. A percentage while the
-            // banner crops, then a fixed width — past ~1340px the extra room
-            // belongs to the illustration, not to a wider line of text.
-            maxWidth: { xs: '100%', sm: '48%', md: '44%' },
-            [UNCROPPED_FROM]: { maxWidth: 540 },
+            maxWidth: { xs: '100%', sm: '56%', md: '50%' },
+            [UNCROPPED_FROM]: { maxWidth: 620 },
             px: { xs: 2.5, sm: 4 },
             py: { xs: 3, sm: 3.5 },
-            // The phone composition puts the copy under the picture rather than
-            // on it, so it needs its own ground. Plum rather than a brand
-            // gradient: it has to sit under sunrise gold, midday blue and dusk
-            // violet in turn without arguing with any of them.
             background: `linear-gradient(135deg, rgba(${SCRIM},1) 0%, rgba(56, 20, 66, 1) 100%)`,
-            [overlay]: { background: 'none' },
+            [overlay]: { background: 'none', width: 'fit-content' },
           }}
         >
           {/* lang="ja" because the greeting is Japanese in every locale — Tango
@@ -268,24 +257,20 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
             sx={{
               fontWeight: 800,
               lineHeight: 1.25,
-              // Stepped down on phones: at the stock h4 size a two-word name
-              // takes the greeting to three lines on a 320px screen.
               fontSize: { xs: '1.6rem', sm: '1.9rem', md: '2.125rem' },
-              // Japanese would otherwise break between any two kana. Together
-              // with the caller's nowrap run this leaves the 、as the only
-              // break point, which is where a reader would break it too.
+              // Japanese would otherwise break between any two kana
               wordBreak: 'keep-all',
               color: '#fff',
               textShadow: `0 2px 16px rgba(${SCRIM},0.6), 0 1px 3px rgba(${SCRIM},0.5)`,
             }}
           >
             {greeting}
-            {/* Non-breaking space, so a narrow column wraps the greeting rather
-                than orphaning the emoji on a line of its own. */}
             {banner && <span aria-hidden>{` ${banner.emoji}`}</span>}
           </Typography>
 
-          {children && <Box sx={{ mt: { xs: 2, sm: 2.5 } }}>{children}</Box>}
+          {children && (
+            <Box sx={{ mt: { xs: 2, sm: 2.5 }, maxWidth: { xs: '100%', sm: 460 } }}>{children}</Box>
+          )}
         </Box>
       </Box>
 

@@ -78,24 +78,24 @@ export function CompletedState({
 }: StateProps & { hearts: number; onPlayGame: () => void }) {
   const t = useTranslations('Home.adventure');
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <BuddyFace src={faceSrc} />
-        <Box sx={{ minWidth: 0 }}>
-          <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#fff', lineHeight: 1.25 }}>
-            {t('completedTitle')}
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <BuddyFace src={faceSrc} />
+      <Box sx={{ minWidth: 0 }}>
+        <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#fff', lineHeight: 1.25 }}>
+          {t('completedTitle')}
+        </Typography>
+        {hearts > 0 && (
+          <Typography variant="body2" sx={{ fontWeight: 600, color: alpha('#fff', 0.9) }}>
+            {t('completedHearts', { count: hearts, name: buddyName })}
           </Typography>
-          {hearts > 0 && (
-            <Typography variant="body2" sx={{ fontWeight: 600, color: alpha('#fff', 0.9) }}>
-              {t('completedHearts', { count: hearts, name: buddyName })}
-            </Typography>
-          )}
-        </Box>
+        )}
+        {/* Home's only route to /review once the adventure is done. Inside the
+            text column and pulled back by its own padding, so it hangs off the
+            same left edge as the two lines above it. */}
+        <Button size="small" variant="text" onClick={onPlayGame} sx={{ ...linkSx, ml: -0.5 }}>
+          {t('playGame')}
+        </Button>
       </Box>
-      {/* Home's only route to /review once the adventure is done. */}
-      <Button size="small" variant="text" onClick={onPlayGame} sx={linkSx}>
-        {t('playGame')}
-      </Button>
     </Box>
   );
 }
@@ -139,7 +139,7 @@ export function DueState({
         </Button>
       </Box>
       {/* The only route to the games hub from home while cards are due. On its
-          own line — the hero caps this column at ~44% width. */}
+          own line — the hero caps this column at ~40% width. */}
       <Button size="small" variant="text" onClick={handle(onPlayGame)} sx={linkSx}>
         {t('playGame')}
       </Button>
