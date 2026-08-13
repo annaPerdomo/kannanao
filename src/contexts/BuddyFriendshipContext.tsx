@@ -34,6 +34,8 @@ const BuddyFriendshipCtx = createContext<BuddyFriendshipContextValue>({
   awardFriendship: async () => null,
   petBuddy: async () => null,
   canPetToday: false,
+  todayGoals: [],
+  heartsToday: 0,
   levelUpEvent: null,
   clearLevelUpEvent: () => {},
   ensureLoaded: async () => {},

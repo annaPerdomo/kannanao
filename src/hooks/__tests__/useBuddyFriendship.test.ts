@@ -503,6 +503,46 @@ describe('useBuddyFriendship', () => {
     });
   });
 
+  // ── today's goals ───────────────────────────────────────────────────────────
+
+  describe('todayGoals', () => {
+    it('should offer all three sources undone on a fresh day', async () => {
+      const { result } = await renderLoaded();
+
+      expect(result.current.todayGoals.map((goal) => goal.source)).toEqual([
+        'adventure',
+        'session',
+        'pet',
+      ]);
+      expect(result.current.todayGoals.some((goal) => goal.done)).toBe(false);
+      expect(result.current.heartsToday).toBe(0);
+    });
+
+    it('should count another buddy row — the daily cap is per user', async () => {
+      setTable('buddy_friendship', [
+        row(),
+        row({ buddy_key: 'buddy_tango', last_adventure_date: todayLocal() }),
+      ]);
+      const { result } = await renderLoaded();
+
+      expect(result.current.todayGoals.find((goal) => goal.source === 'adventure')?.done).toBe(
+        true,
+      );
+      expect(result.current.heartsToday).toBe(3);
+    });
+
+    it('should close the pet goal as soon as a pet lands', async () => {
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        await result.current.petBuddy();
+      });
+
+      expect(result.current.todayGoals.find((goal) => goal.source === 'pet')?.done).toBe(true);
+      expect(result.current.heartsToday).toBe(1);
+    });
+  });
+
   // ── level-ups ───────────────────────────────────────────────────────────────
 
   describe('levelUpEvent', () => {

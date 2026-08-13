@@ -11,7 +11,9 @@ import {
   FRIENDSHIP_POINTS,
   friendshipLevel,
   type FriendshipSource,
+  heartsEarnedToday,
   isMeaningfulSession,
+  todayOpportunities,
 } from '@/lib/friendship';
 import { logger } from '@/lib/logger';
 import { onSessionEnd } from '@/lib/sessionSignal';
@@ -323,6 +325,8 @@ export function useBuddyFriendship() {
 
   const equipped = buddyKey in friendships ? friendships[buddyKey] : null;
   const canPetToday = canEarn('pet', stamps, today);
+  const todayGoals = useMemo(() => todayOpportunities(stamps, today), [stamps, today]);
+  const heartsToday = useMemo(() => heartsEarnedToday(stamps, today), [stamps, today]);
 
   return {
     friendships,
@@ -333,6 +337,8 @@ export function useBuddyFriendship() {
     awardFriendship,
     petBuddy,
     canPetToday,
+    todayGoals,
+    heartsToday,
     levelUpEvent,
     clearLevelUpEvent,
     ensureLoaded,

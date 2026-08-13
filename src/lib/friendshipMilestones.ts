@@ -3,7 +3,7 @@
  * (5 ❤️/day, per-source daily caps) stays the only source of truth.
  */
 
-import { buddyFacts } from './buddyPhrases';
+import { buddyFacts, storyLines } from './buddyPhrases';
 import { clampPoints, LEVEL_THRESHOLDS } from './friendship';
 
 export type MilestoneKind = 'fact' | 'memory';
@@ -51,4 +51,29 @@ export function unlockedFactCount(points: number): number {
 
 export function unlockedFacts(copy: unknown, points: number): string[] {
   return buddyFacts(copy).slice(0, unlockedFactCount(points)).filter(Boolean);
+}
+
+export interface PromisedMilestone {
+  milestone: Milestone;
+  heartsAway: number;
+  /** False when no copy is written behind it and only the level crossing is real. */
+  authored: boolean;
+}
+
+export function nextPromisedMilestone(copy: unknown, points: number): PromisedMilestone | null {
+  const earned = clampPoints(points);
+  const ahead = allMilestones().filter((milestone) => milestone.atPoints > earned);
+  const facts = buddyFacts(copy);
+
+  const found =
+    ahead.find((milestone) =>
+      milestone.kind === 'fact'
+        ? !!facts[milestone.factIndex ?? -1]
+        : storyLines(copy, milestone.level ?? 0).length > 0,
+    ) ?? null;
+  const fallback = ahead.find((milestone) => milestone.kind === 'memory') ?? null;
+  const milestone = found ?? fallback;
+
+  if (!milestone) return null;
+  return { milestone, heartsAway: milestone.atPoints - earned, authored: !!found };
 }

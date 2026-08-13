@@ -12,9 +12,11 @@ import { friendshipLevel, friendshipProgress } from '@/lib/friendship';
 interface FriendshipMeterProps {
   points: number;
   size?: 'small' | 'medium';
+  /** Marks along the track, as 0..1 fractions of the current level's width. */
+  ticks?: number[];
 }
 
-export function FriendshipMeter({ points, size = 'medium' }: FriendshipMeterProps) {
+export function FriendshipMeter({ points, size = 'medium', ticks }: FriendshipMeterProps) {
   const t = useTranslations('Home.buddy.friendship');
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -53,17 +55,35 @@ export function FriendshipMeter({ points, size = 'medium' }: FriendshipMeterProp
           </Typography>
         )}
       </Box>
-      <LinearProgress
-        variant="determinate"
-        value={progress ? Math.min(100, (progress.current / progress.needed) * 100) : 100}
-        aria-hidden
-        sx={{
-          height: compact ? 5 : 7,
-          borderRadius: 99,
-          bgcolor: alpha(brand[300], 0.25),
-          '& .MuiLinearProgress-bar': { bgcolor: brand[400], borderRadius: 99 },
-        }}
-      />
+      <Box sx={{ position: 'relative' }}>
+        <LinearProgress
+          variant="determinate"
+          value={progress ? Math.min(100, (progress.current / progress.needed) * 100) : 100}
+          aria-hidden
+          sx={{
+            height: compact ? 5 : 7,
+            borderRadius: 99,
+            bgcolor: alpha(brand[300], 0.25),
+            '& .MuiLinearProgress-bar': { bgcolor: brand[400], borderRadius: 99 },
+          }}
+        />
+        {ticks?.map((fraction) => (
+          <Box
+            key={fraction}
+            aria-hidden
+            sx={{
+              position: 'absolute',
+              top: 1,
+              bottom: 1,
+              left: `${Math.min(100, Math.max(0, fraction * 100))}%`,
+              transform: 'translateX(-50%)',
+              width: 2,
+              borderRadius: 99,
+              bgcolor: alpha(brand[700], 0.35),
+            }}
+          />
+        ))}
+      </Box>
     </Box>
   );
 }

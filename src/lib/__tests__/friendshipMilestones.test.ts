@@ -6,6 +6,7 @@ import {
   heartsToNext,
   MINOR_MILESTONES,
   nextMilestone,
+  nextPromisedMilestone,
   unlockedFactCount,
   unlockedFacts,
 } from '@/lib/friendshipMilestones';
@@ -151,6 +152,60 @@ describe('unlockedFacts', () => {
     const gapped = { facts: ['one', '', 'three'] };
     expect(unlockedFacts(gapped, 10)).toEqual(['one']);
     expect(unlockedFacts(gapped, 25)).toEqual(['one', 'three']);
+  });
+});
+
+describe('nextPromisedMilestone', () => {
+  const copy = {
+    l2: { story: ['a memory'] },
+    facts: ['fact one', '', 'fact three'],
+  };
+
+  it('promises the nearest fact that is actually written', () => {
+    expect(nextPromisedMilestone(copy, 0)).toEqual({
+      milestone: { atPoints: 5, kind: 'fact', factIndex: 0 },
+      heartsAway: 5,
+      authored: true,
+    });
+  });
+
+  it('skips a fact milestone with an empty slot behind it', () => {
+    // The fact at 10 is blank, so 15's authored memory is the real next thing.
+    const promised = nextPromisedMilestone(copy, 6);
+    expect(promised?.milestone.atPoints).toBe(15);
+    expect(promised?.heartsAway).toBe(9);
+    expect(promised?.authored).toBe(true);
+  });
+
+  it('falls back to the next level crossing when nothing ahead is authored', () => {
+    const promised = nextPromisedMilestone(copy, 26);
+    expect(promised).toEqual({
+      milestone: { atPoints: 40, kind: 'memory', level: 3 },
+      heartsAway: 14,
+      authored: false,
+    });
+  });
+
+  it('still offers the level crossings to a buddy with no copy at all', () => {
+    expect(nextPromisedMilestone(null, 0)?.milestone).toEqual({
+      atPoints: 15,
+      kind: 'memory',
+      level: 2,
+    });
+    expect(nextPromisedMilestone(undefined, 0)?.authored).toBe(false);
+  });
+
+  it('has nothing left to promise at max hearts', () => {
+    expect(nextPromisedMilestone(copy, MAX_POINTS)).toBeNull();
+    expect(nextPromisedMilestone(copy, 999)).toBeNull();
+  });
+
+  it('never promises fewer hearts than the raw countdown', () => {
+    // Undershooting would put a payout before the thing it pays out for.
+    for (let points = 0; points < MAX_POINTS; points++) {
+      const promised = nextPromisedMilestone(copy, points);
+      expect(promised?.heartsAway).toBeGreaterThanOrEqual(heartsToNext(points) ?? 0);
+    }
   });
 });
 
