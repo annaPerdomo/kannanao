@@ -2,16 +2,34 @@ import { describe, expect, it } from 'vitest';
 
 import {
   canEarn,
+  clampPoints,
   friendshipLevel,
   friendshipProgress,
   type FriendshipSource,
+  heartsEarnedToday,
   isMeaningfulSession,
   LEVEL_THRESHOLDS,
   MAX_FRIENDSHIP_LEVEL,
+  reachableToday,
+  todayOpportunities,
 } from '@/lib/friendship';
 
 const TODAY = '2026-08-09';
 const YESTERDAY = '2026-08-08';
+
+describe('clampPoints', () => {
+  it('passes real point totals through untouched', () => {
+    expect(clampPoints(0)).toBe(0);
+    expect(clampPoints(37)).toBe(37);
+  });
+
+  it('reads anything a corrupt row could hold as zero', () => {
+    expect(clampPoints(-1)).toBe(0);
+    expect(clampPoints(NaN)).toBe(0);
+    expect(clampPoints(-Infinity)).toBe(0);
+    expect(clampPoints(Infinity)).toBe(0);
+  });
+});
 
 describe('friendshipLevel', () => {
   it('maps each exact threshold boundary to the right level', () => {
@@ -85,6 +103,72 @@ describe('canEarn', () => {
     expect(canEarn('adventure', stamps, TODAY)).toBe(false);
     expect(canEarn('session', stamps, TODAY)).toBe(true);
     expect(canEarn('pet', stamps, TODAY)).toBe(true);
+  });
+});
+
+describe('todayOpportunities', () => {
+  it('always lists all three sources with adventure first', () => {
+    expect(todayOpportunities({}, TODAY)).toEqual([
+      { source: 'adventure', points: 3, done: false },
+      { source: 'session', points: 1, done: false },
+      { source: 'pet', points: 1, done: false },
+    ]);
+  });
+
+  it('still lists a source that is already done today', () => {
+    const done = todayOpportunities({ adventure: TODAY, session: TODAY, pet: TODAY }, TODAY);
+    expect(done.map((o) => o.source)).toEqual(['adventure', 'session', 'pet']);
+    expect(done.every((o) => o.done)).toBe(true);
+  });
+
+  it('marks only the sources paid out today', () => {
+    const partial = todayOpportunities({ adventure: TODAY, session: YESTERDAY, pet: null }, TODAY);
+    expect(partial.map((o) => o.done)).toEqual([true, false, false]);
+  });
+
+  it('treats yesterday stamps as a fresh day', () => {
+    const stale = { adventure: YESTERDAY, session: YESTERDAY, pet: YESTERDAY };
+    expect(todayOpportunities(stale, TODAY).some((o) => o.done)).toBe(false);
+  });
+});
+
+describe('heartsEarnedToday', () => {
+  it('is 0 before anything is earned', () => {
+    expect(heartsEarnedToday({}, TODAY)).toBe(0);
+    expect(heartsEarnedToday({ adventure: YESTERDAY, session: null }, TODAY)).toBe(0);
+  });
+
+  it('weights each source by its payout', () => {
+    expect(heartsEarnedToday({ adventure: TODAY }, TODAY)).toBe(3);
+    expect(heartsEarnedToday({ session: TODAY }, TODAY)).toBe(1);
+    expect(heartsEarnedToday({ session: TODAY, pet: TODAY }, TODAY)).toBe(2);
+  });
+
+  it('tops out at the daily cap of 5', () => {
+    expect(heartsEarnedToday({ adventure: TODAY, session: TODAY, pet: TODAY }, TODAY)).toBe(5);
+  });
+});
+
+describe('reachableToday', () => {
+  it('accepts anything within the full 5 hearts on an untouched day', () => {
+    expect(reachableToday(5, {}, TODAY)).toBe(true);
+    expect(reachableToday(6, {}, TODAY)).toBe(false);
+  });
+
+  it('shrinks as sources are spent', () => {
+    const afterAdventure = { adventure: TODAY };
+    expect(reachableToday(2, afterAdventure, TODAY)).toBe(true);
+    expect(reachableToday(3, afterAdventure, TODAY)).toBe(false);
+  });
+
+  it('is false for any gap once the day is fully earned', () => {
+    const spent = { adventure: TODAY, session: TODAY, pet: TODAY };
+    expect(reachableToday(1, spent, TODAY)).toBe(false);
+    expect(reachableToday(0, spent, TODAY)).toBe(true);
+  });
+
+  it('ignores stamps from yesterday', () => {
+    expect(reachableToday(5, { adventure: YESTERDAY, session: YESTERDAY }, TODAY)).toBe(true);
   });
 });
 

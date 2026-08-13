@@ -1,12 +1,27 @@
 import { describe, expect, it } from 'vitest';
 
-import { blendHomePhrases, storyLines, unlockedStories } from '@/lib/buddyPhrases';
+import {
+  awardLine,
+  blendHomePhrases,
+  buddyFacts,
+  memoryTeaser,
+  memoryTitle,
+  storyLines,
+  unlockedStories,
+} from '@/lib/buddyPhrases';
 
 const COPY = {
-  l2: { story: ['two a', 'two b'], phrases: ['level two line'] },
+  l2: {
+    title: 'two title',
+    teaser: 'two teaser',
+    story: ['two a', 'two b'],
+    phrases: ['level two line'],
+  },
   l3: { story: ['three a'], phrases: ['level three line'] },
   l4: { story: ['four a'], phrases: ['level four line'] },
   l5: { story: ['five a'], phrases: ['level five line'] },
+  facts: ['fact one', 'fact two'],
+  awards: { adventure: 'adventure line', session: 'session line', pet: 'pet line' },
 };
 
 const BASE = ['base one', 'base two'];
@@ -66,6 +81,70 @@ describe('storyLines', () => {
   it('returns nothing for a level with no story written', () => {
     expect(storyLines(COPY, 1)).toEqual([]);
     expect(storyLines({ l2: { story: 'nope' } }, 2)).toEqual([]);
+  });
+});
+
+describe('memoryTitle / memoryTeaser', () => {
+  it('reads the authored title and teaser for a level', () => {
+    expect(memoryTitle(COPY, 2)).toBe('two title');
+    expect(memoryTeaser(COPY, 2)).toBe('two teaser');
+  });
+
+  it('is null for a level whose copy has a story but no title yet', () => {
+    expect(memoryTitle(COPY, 3)).toBeNull();
+    expect(memoryTeaser(COPY, 3)).toBeNull();
+  });
+
+  it('is null for a buddy with no friendship copy at all', () => {
+    expect(memoryTitle(undefined, 2)).toBeNull();
+    expect(memoryTitle(null, 2)).toBeNull();
+    expect(memoryTeaser('not an object', 2)).toBeNull();
+  });
+
+  it('rejects blank and non-string values instead of rendering them', () => {
+    const malformed = { l2: { title: '   ', teaser: 42 }, l3: 'not an object' };
+    expect(memoryTitle(malformed, 2)).toBeNull();
+    expect(memoryTeaser(malformed, 2)).toBeNull();
+    expect(memoryTitle(malformed, 3)).toBeNull();
+  });
+});
+
+describe('buddyFacts', () => {
+  it('lists the authored facts in order', () => {
+    expect(buddyFacts(COPY)).toEqual(['fact one', 'fact two']);
+  });
+
+  it('is empty when facts are missing or garbage', () => {
+    expect(buddyFacts({ l2: { story: ['told'] } })).toEqual([]);
+    expect(buddyFacts({ facts: 'a single string' })).toEqual([]);
+    expect(buddyFacts(undefined)).toEqual([]);
+    expect(buddyFacts('not an object')).toEqual([]);
+  });
+
+  it('holds an unauthored slot in place so later facts keep their milestone', () => {
+    expect(buddyFacts({ facts: [42, null, '  ', 'kept'] })).toEqual(['', '', '', 'kept']);
+    expect(buddyFacts({ facts: ['first', '', 'third'] })).toEqual(['first', '', 'third']);
+  });
+
+  it('drops trailing blanks so length still means "how many were written"', () => {
+    expect(buddyFacts({ facts: ['first', '', '', ''] })).toEqual(['first']);
+    expect(buddyFacts({ facts: ['', ''] })).toEqual([]);
+  });
+});
+
+describe('awardLine', () => {
+  it('reads the line for each source', () => {
+    expect(awardLine(COPY, 'adventure')).toBe('adventure line');
+    expect(awardLine(COPY, 'session')).toBe('session line');
+    expect(awardLine(COPY, 'pet')).toBe('pet line');
+  });
+
+  it('is null when awards are missing or half-authored', () => {
+    expect(awardLine({ awards: { adventure: 'only this one' } }, 'pet')).toBeNull();
+    expect(awardLine({ awards: { pet: '  ' } }, 'pet')).toBeNull();
+    expect(awardLine({ awards: 'not an object' }, 'pet')).toBeNull();
+    expect(awardLine({ l2: { story: ['told'] } }, 'adventure')).toBeNull();
+    expect(awardLine(null, 'adventure')).toBeNull();
   });
 });
 

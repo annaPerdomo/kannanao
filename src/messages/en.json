@@ -2968,6 +2968,8 @@
         ],
         "friendship": {
           "l2": {
+            "title": "The Word He Carried",
+            "teaser": "What Tango has been carrying around all day.",
             "story": [
               "I carry one word around all day, like a stick.",
               "Today it was arigatou. I dropped it the second you got home."
@@ -2975,6 +2977,8 @@
             "phrases": ["You're back! I saved you a seat."]
           },
           "l3": {
+            "title": "The Mail Carrier",
+            "teaser": "Why Tango says good morning to the same person every day.",
             "story": [
               "My favorite word is ohayou — it sounds like the sun getting up.",
               "I bark it at the mail carrier every morning. He never says it back."
@@ -2982,6 +2986,8 @@
             "phrases": ["I found a new word while you were out!"]
           },
           "l4": {
+            "title": "His First Word",
+            "teaser": "Something Tango practiced in secret for a whole week.",
             "story": [
               "I've never told anyone this.",
               "The first word I ever learned was your name.",
@@ -2990,12 +2996,29 @@
             "phrases": ["I told the mail carrier about you. He was very impressed."]
           },
           "l5": {
+            "title": "The One He Chased",
+            "teaser": "A dog who chases words finally catches one.",
             "story": [
               "Some dogs chase balls. I chased words.",
               "One of them turned out to be you.",
               "Whatever we learn next — I'm glad it's with you."
             ],
             "phrases": ["Best study buddy in the world. That's you, by the way."]
+          },
+          "facts": [
+            "Likes rainy study days. The window gets nice and quiet.",
+            "Sleeps with his bandana on, just in case.",
+            "Can carry three flashcards at once. Four is showing off.",
+            "Counts to ten in Japanese when he can't fall asleep.",
+            "His favorite sound in the world is a page turning.",
+            "Buries his best words in the yard so nobody takes them.",
+            "Thinks ame is the greatest word — it means rain AND candy.",
+            "Starts waiting by the door about ten minutes before you get home."
+          ],
+          "awards": {
+            "adventure": "Adventure done! Tango did three laps around the room.",
+            "session": "Nice practice. Tango is extremely proud of you.",
+            "pet": "~leans into your hand~"
           }
         }
       },
