@@ -119,6 +119,8 @@ export function NavBar() {
       <AppBar
         position="sticky"
         elevation={0}
+        // Read by useBuddyDrag, which keeps the buddy from parking on the bar.
+        data-app-chrome="top"
         sx={{
           bgcolor: surfaces.glass,
           backdropFilter: 'blur(16px)',

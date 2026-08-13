@@ -48,6 +48,18 @@ vi.mock('@/contexts/BuddyFriendshipContext', () => ({
   }),
 }));
 
+function setViewport(width: number, height: number) {
+  Object.defineProperty(window, 'innerWidth', { value: width, configurable: true });
+  Object.defineProperty(window, 'innerHeight', { value: height, configurable: true });
+}
+
+function resizeTo(width: number, height: number) {
+  setViewport(width, height);
+  act(() => {
+    window.dispatchEvent(new Event('resize'));
+  });
+}
+
 function tap(el: Element) {
   fireEvent.pointerDown(el, { clientX: 100, clientY: 100, pointerId: 1 });
   fireEvent.pointerUp(el, { clientX: 100, clientY: 100, pointerId: 1 });
@@ -67,6 +79,8 @@ describe('HomeBuddy', () => {
     loadState = 'loaded';
     levelUpEvent = null;
     buddyCopy = {};
+    localStorage.clear();
+    setViewport(1024, 768);
   });
 
   it('shows the friendship hearts total', () => {
@@ -103,8 +117,23 @@ describe('HomeBuddy', () => {
     expect(petBuddy).not.toHaveBeenCalled();
   });
 
+  it('remembers where the buddy was dropped', () => {
+    const { container } = render(<HomeBuddy buddyKey="tango" />);
+    const el = container.firstChild as Element;
+    fireEvent.pointerDown(el, { clientX: 100, clientY: 100, pointerId: 1 });
+    fireEvent.pointerMove(el, { clientX: 180, clientY: 160, pointerId: 1 });
+    fireEvent.pointerUp(el, { clientX: 180, clientY: 160, pointerId: 1 });
+
+    // jsdom measures the widget at 0×0 in the top-left, so the drop is the bare
+    // pointer delta: 80px right, 60px down off a 768px-tall viewport.
+    expect(JSON.parse(localStorage.getItem('kannanao:buddy-position') ?? 'null')).toEqual({
+      left: 80,
+      bottom: 708,
+    });
+  });
+
   // The hearts chip stops pointerdown but not pointerup; without a matching
-  // down, lastPos is stale and the release would spend the day's pet.
+  // down, origin is stale and the release would spend the day's pet.
   it('ignores a pointerup with no pointerdown behind it', () => {
     const { container } = render(<HomeBuddy buddyKey="tango" />);
     fireEvent.pointerUp(container.firstChild as Element, {
@@ -113,6 +142,66 @@ describe('HomeBuddy', () => {
       pointerId: 1,
     });
     expect(petBuddy).not.toHaveBeenCalled();
+  });
+
+  it('drops the drag when the system cancels the touch, and frees the next grab', async () => {
+    const { container } = render(<HomeBuddy buddyKey="tango" />);
+    const el = container.firstChild as HTMLElement;
+    fireEvent.pointerDown(el, { clientX: 100, clientY: 100, pointerId: 1 });
+    fireEvent.pointerMove(el, { clientX: 180, clientY: 160, pointerId: 1 });
+    fireEvent.pointerCancel(el, { clientX: 180, clientY: 160, pointerId: 1 });
+
+    expect(el.style.transform).toBe('');
+    expect(localStorage.getItem('kannanao:buddy-position')).toBeNull();
+    // Still stuck in drag mode, the buddy would be mute and unpettable forever.
+    tap(el);
+    await waitFor(() => expect(petBuddy).toHaveBeenCalledTimes(1));
+  });
+
+  it('ignores a second finger landing mid-drag', () => {
+    const { container } = render(<HomeBuddy buddyKey="tango" />);
+    const el = container.firstChild as Element;
+    fireEvent.pointerDown(el, { clientX: 100, clientY: 100, pointerId: 1 });
+    fireEvent.pointerMove(el, { clientX: 180, clientY: 160, pointerId: 1 });
+    // Finger two: re-measuring origin here would commit the drop a drag-length off.
+    fireEvent.pointerDown(el, { clientX: 400, clientY: 400, pointerId: 2 });
+    fireEvent.pointerMove(el, { clientX: 500, clientY: 500, pointerId: 2 });
+    fireEvent.pointerUp(el, { clientX: 180, clientY: 160, pointerId: 1 });
+
+    expect(JSON.parse(localStorage.getItem('kannanao:buddy-position') ?? 'null')).toEqual({
+      left: 80,
+      bottom: 708,
+    });
+  });
+
+  it('keeps the bubble up through a pet, entering drag mode only on real travel', () => {
+    const { container } = render(<HomeBuddy buddyKey="tango" />);
+    const el = container.firstChild as Element;
+    fireEvent.pointerDown(el, { clientX: 100, clientY: 100, pointerId: 1 });
+    // A press wobbles a pixel or two; blanking the bubble there made every pet blink.
+    fireEvent.pointerMove(el, { clientX: 102, clientY: 101, pointerId: 1 });
+    expect(screen.getByText('defaultPhrase')).toBeVisible();
+
+    fireEvent.pointerMove(el, { clientX: 180, clientY: 160, pointerId: 1 });
+    expect(screen.getByText('defaultPhrase')).not.toBeVisible();
+  });
+
+  it('restores the stored spot on mount, pulled back inside the viewport', () => {
+    localStorage.setItem('kannanao:buddy-position', JSON.stringify({ left: 5000, bottom: 5000 }));
+    const { container } = render(<HomeBuddy buddyKey="tango" />);
+    const style = getComputedStyle(container.firstChild as Element);
+    // jsdom measures the widget at 0×0, so the far corner of a 1024×768 viewport.
+    expect(style.left).toBe('1016px');
+    expect(style.bottom).toBe('760px');
+  });
+
+  it('re-clamps after the iPad is rotated', () => {
+    localStorage.setItem('kannanao:buddy-position', JSON.stringify({ left: 900, bottom: 700 }));
+    const { container } = render(<HomeBuddy buddyKey="tango" />);
+    expect(getComputedStyle(container.firstChild as Element).left).toBe('900px');
+
+    resizeTo(768, 1024);
+    expect(getComputedStyle(container.firstChild as Element).left).toBe('760px');
   });
 
   it('pets the buddy from the keyboard', async () => {

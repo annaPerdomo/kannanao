@@ -53,7 +53,9 @@ export const chipPop = keyframes`
   100% { transform: scale(1); }
 `;
 
-export const pulseGlow = keyframes`
-  0%, 100% { box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
-  50% { box-shadow: 0 6px 28px rgba(0,0,0,0.12), 0 0 20px rgba(244,114,182,0.15); }
+// Fades a pre-painted glow layer instead of animating box-shadow, which
+// repainted the blur on every frame of every page for as long as the app was open.
+export const glowPulse = keyframes`
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
 `;

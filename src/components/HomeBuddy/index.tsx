@@ -13,10 +13,11 @@ import { BUDDY_ART, buddyFaceSrc, FALLBACK_REACTIONS, randomFaceVariant } from '
 import { blendHomePhrases } from '@/lib/buddyPhrases';
 import { friendshipLevel } from '@/lib/friendship';
 
-import { bounce, heartPop, idleFloat, pulseGlow, tapWiggle, wobble } from './animations';
+import { bounce, glowPulse, heartPop, idleFloat, tapWiggle, wobble } from './animations';
 import { BuddyBubble } from './BuddyBubble';
 import { BuddyParticles } from './BuddyParticles';
 import { FriendshipHearts } from './FriendshipHearts';
+import { useBuddyDrag } from './useBuddyDrag';
 
 // SSR renders face 1 and the effect swaps in the random one before paint, so
 // the randomness never reaches hydration.
@@ -26,6 +27,18 @@ function pickRandom(items: string | string[]): string {
   if (typeof items === 'string') return items;
   return items[Math.floor(Math.random() * items.length)];
 }
+
+/**
+ * Bottom-right is an empty corner on a desktop, but on a touch device it lands
+ * on the phone bottom bar and the grading buttons a practice screen pins to the
+ * viewport, so coarse pointers get bottom-left. Keyed on the pointer and not a
+ * breakpoint: a landscape iPad is 1024px wide and passes any width test.
+ */
+const DEFAULT_ANCHOR = {
+  bottom: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom) + 8px)`, sm: 28 },
+  right: { xs: 12, sm: 24 },
+  '@media (pointer: coarse)': { left: 12, right: 'auto' },
+} as const;
 
 function isNonEmptyStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.length > 0 && value.every((v) => typeof v === 'string');
@@ -82,13 +95,6 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const [tapHearts, setTapHearts] = useState(false);
   const [petBonus, setPetBonus] = useState(false);
   const phraseIndex = useRef(0);
-
-  // Dragging
-  const [isDragging, setIsDragging] = useState(false);
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
-  const dragging = useRef(false);
-  const dragOffset = useRef({ x: 0, y: 0 });
-  const lastPos = useRef({ x: 0, y: 0 });
 
   // Keyed on the pool's contents, not its identity: a re-render that rebuilds
   // an identical array would otherwise snap the rotation back to phrase one.
@@ -159,26 +165,6 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [levelUpEvent]);
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    dragging.current = true;
-    setIsDragging(true);
-    const el = e.currentTarget as HTMLElement;
-    const rect = el.getBoundingClientRect();
-    dragOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    lastPos.current = { x: e.clientX, y: e.clientY };
-    el.setPointerCapture(e.pointerId);
-  }, []);
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!dragging.current) return;
-    const x = e.clientX - dragOffset.current.x;
-    const y = e.clientY - dragOffset.current.y;
-    setPos({
-      x: Math.max(0, Math.min(x, window.innerWidth - 80)),
-      y: Math.max(0, Math.min(y, window.innerHeight - 80)),
-    });
-  }, []);
-
   const handleTap = useCallback(() => {
     setTapped(true);
     setTapHearts(true);
@@ -200,20 +186,15 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     }
   }, [phrases, canPetToday, petBuddy]);
 
-  const handlePointerUp = useCallback(
-    (e: React.PointerEvent) => {
-      // No matching pointerdown (the hearts chip swallowed it, a second pointer,
-      // a lost capture) means lastPos is stale, and a tap it wrongly reads as
-      // one would spend the day's pet award.
-      if (!dragging.current) return;
-      const moved =
-        Math.abs(e.clientX - lastPos.current.x) + Math.abs(e.clientY - lastPos.current.y);
-      dragging.current = false;
-      setIsDragging(false);
-      if (moved < 8) handleTap();
-    },
-    [handleTap],
-  );
+  const {
+    rootRef,
+    pos,
+    isDragging,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    handlePointerCancel,
+  } = useBuddyDrag(handleTap);
 
   // The daily pet pays a heart, so a pointer-only tap would cap keyboard and
   // switch users a heart below everyone else.
@@ -227,11 +208,8 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   );
 
   const positionStyle = pos
-    ? { left: pos.x, top: pos.y, bottom: 'auto', right: 'auto' }
-    : {
-        bottom: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom) + 8px)`, sm: 28 },
-        right: { xs: 12, sm: 24 },
-      };
+    ? { left: pos.left, bottom: pos.bottom, top: 'auto', right: 'auto' }
+    : DEFAULT_ANCHOR;
 
   const emojiAnimation = tapped
     ? `${tapWiggle} 0.5s ease-in-out`
@@ -239,10 +217,11 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
       ? `${bounce} 0.7s ease-in-out`
       : reaction === 'wrong'
         ? `${wobble} 0.5s ease-in-out`
-        : `${idleFloat} 3s ease-in-out infinite, ${pulseGlow} 3s ease-in-out infinite`;
+        : `${idleFloat} 3s ease-in-out infinite`;
 
   return (
     <Box
+      ref={rootRef}
       sx={{
         position: 'fixed',
         ...positionStyle,
@@ -254,14 +233,24 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
         cursor: 'grab',
         touchAction: 'none',
         userSelect: 'none',
+        // A permanent layer costs memory on every page, and Safari repaints it.
+        willChange: isDragging ? 'transform' : 'auto',
         '&:active': { cursor: 'grabbing' },
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      onLostPointerCapture={handlePointerCancel}
     >
       {showBubble && (
-        <BuddyBubble text={announcement ?? bubbleText} reaction={reaction} accent={accent} />
+        <BuddyBubble
+          text={announcement ?? bubbleText}
+          reaction={reaction}
+          accent={accent}
+          // Its backdrop blur is the most expensive thing on screen to move.
+          hidden={isDragging}
+        />
       )}
 
       <Box sx={{ position: 'relative' }}>
@@ -295,17 +284,28 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
           aria-label={t('petAria')}
           onKeyDown={handleKeyDown}
           sx={{
-            width: { xs: 56, sm: 64 },
-            height: { xs: 56, sm: 64 },
+            position: 'relative',
+            width: { xs: 48, sm: 64 },
+            height: { xs: 48, sm: 64 },
             borderRadius: '50%',
             bgcolor: alpha('#fff', 0.92),
             border: `2.5px solid ${alpha(accent, 0.5)}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            animation: emojiAnimation,
+            animation: isDragging ? 'none' : emojiAnimation,
             boxShadow: `0 6px 20px ${alpha(accent, 0.2)}`,
             transition: 'box-shadow 0.2s',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              inset: -2,
+              borderRadius: '50%',
+              boxShadow: `0 6px 28px ${alpha(accent, 0.28)}, 0 0 20px ${alpha(brand[300], 0.35)}`,
+              opacity: 0,
+              animation: isDragging ? 'none' : `${glowPulse} 3s ease-in-out infinite`,
+              pointerEvents: 'none',
+            },
           }}
         >
           <Box
@@ -314,8 +314,8 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
             alt=""
             draggable={false}
             sx={{
-              width: { xs: 46, sm: 52 },
-              height: { xs: 46, sm: 52 },
+              width: { xs: 40, sm: 52 },
+              height: { xs: 40, sm: 52 },
               objectFit: 'contain',
               pointerEvents: 'none',
             }}
