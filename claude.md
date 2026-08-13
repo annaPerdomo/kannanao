@@ -198,6 +198,8 @@ Every component that fetches or mutates data must:
 
 Keep functions < 50 lines. Check `src/types/` for existing types before creating new ones.
 
+**Comments**: default to none. Write one only for a fact that can't be recovered from the repo — a Supabase RPC's behavior, a browser/iOS quirk, a spec clause, a gitignored script, an intentional no-op, or a regression fence naming the specific wrong change someone would make. Two lines, ~25 words: lead with the consequence, drop the debugging story and the measurements. Explaining what the code does, why a decision was made when nothing would tempt anyone to undo it, or a JSDoc that restates the name and signature — all cut. JSDoc on internal exports only when it adds units, ranges, ownership, side effects, or which variant an optional field belongs to. Run `/trim-comments` before opening a PR.
+
 ## Key Libraries
 
 `@supabase/supabase-js` (database) | `uuid` (ID generation) | `@mui/material` + `@mui/icons-material` (UI)
