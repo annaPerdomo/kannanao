@@ -102,9 +102,15 @@ export function DueState({
   buddyName,
   faceSrc,
   dueCount,
+  friendshipLine,
   onStart,
   onPlayGame,
-}: StateProps & { dueCount: number; onStart: () => void; onPlayGame: () => void }) {
+}: StateProps & {
+  dueCount: number;
+  friendshipLine?: string | null;
+  onStart: () => void;
+  onPlayGame: () => void;
+}) {
   const t = useTranslations('Home.adventure');
   // The card body carries its own onClick, so every button here must stop the
   // click from reaching it.
@@ -122,8 +128,12 @@ export function DueState({
             {t('missionHelp', { name: buddyName })}
           </Typography>
           <Typography variant="body2" sx={{ fontWeight: 600, color: alpha('#fff', 0.9) }}>
-            {t('reviewsCount', { count: dueCount })} ·{' '}
-            {t('minutesEstimate', { min: minutesFor(dueCount) })}
+            {friendshipLine ?? (
+              <>
+                {t('reviewsCount', { count: dueCount })} ·{' '}
+                {t('minutesEstimate', { min: minutesFor(dueCount) })}
+              </>
+            )}
           </Typography>
         </Box>
         {/* Stock contained variant — the theme paints it with a background-image

@@ -52,6 +52,8 @@ const progress = (
 const friendship = (
   rows: Record<string, string | null> = {},
   loadState: 'idle' | 'loading' | 'loaded' | 'error' = 'loaded',
+  equipped: { points: number } | null = null,
+  goalsDone: Array<'adventure' | 'session' | 'pet'> = [],
 ) => ({
   friendships: Object.fromEntries(
     Object.entries(rows).map(([buddyKey, lastAdventureDate]) => [
@@ -59,6 +61,12 @@ const friendship = (
       { buddyKey, lastAdventureDate },
     ]),
   ),
+  equipped,
+  todayGoals: (['adventure', 'session', 'pet'] as const).map((source) => ({
+    source,
+    points: source === 'adventure' ? 3 : 1,
+    done: goalsDone.includes(source),
+  })),
   loadState,
   ensureLoaded: vi.fn().mockResolvedValue(undefined),
 });
@@ -174,6 +182,49 @@ describe('TodayAdventureCard', () => {
       expect(push).toHaveBeenCalledWith('/review');
       fireEvent.click(screen.getByRole('button', { name: 'Practice a deck' }));
       expect(push).toHaveBeenCalledWith('/decks');
+    });
+  });
+
+  describe('near-milestone hook', () => {
+    it('should trade the count line for the promise when a memory is two hearts away', async () => {
+      friendshipState.mockReturnValue(friendship({}, 'loaded', { points: 13 }));
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText('So close! Tsuki has something to tell you.');
+      expect(screen.queryByText(/6 reviews/)).toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+      expect(push).toHaveBeenCalledWith('/review/today');
+    });
+
+    it('should name the reward when the next milestone is a fact', async () => {
+      shopState.mockReturnValue({ equipped: { study_buddy: 'buddy_tango' } });
+      friendshipState.mockReturnValue(friendship({}, 'loaded', { points: 3 }));
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText("2 more hearts and you'll learn something new about Tango.");
+    });
+
+    // Four or five hearts away still lands today while every source is unspent.
+    it('should speak up for a milestone that is still reachable today', async () => {
+      friendshipState.mockReturnValue(friendship({}, 'loaded', { points: 10 }));
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText('So close! Tsuki has something to tell you.');
+    });
+
+    it('should go quiet once the day no longer holds enough hearts to get there', async () => {
+      friendshipState.mockReturnValue(friendship({}, 'loaded', { points: 10 }, ['session', 'pet']));
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText(/6 reviews · ~2 min/);
+    });
+
+    it('should keep the count line when the next milestone is far off', async () => {
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText(/6 reviews · ~2 min/);
+      expect(screen.queryByText(/So close/)).toBeNull();
+    });
+
+    it('should promise nothing when the friendship rows never loaded', async () => {
+      friendshipState.mockReturnValue(friendship({}, 'error', { points: 13 }));
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText(/6 reviews · ~2 min/);
     });
   });
 

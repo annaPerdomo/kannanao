@@ -1787,6 +1787,10 @@
           "session": "+{count} ❤️ {name} is glad you kept practicing.",
           "pet": "+{count} ❤️ {name} was happy to see you.",
           "heartsEarned": "{count, plural, one {# heart} other {# hearts}} earned."
+        },
+        "nearMilestone": {
+          "memory": "So close! {name} has something to tell you.",
+          "fact": "{count, plural, one {# more heart} other {# more hearts}} and you'll learn something new about {name}."
         }
       }
     },

@@ -1787,6 +1787,10 @@
           "session": "+{count} ❤️ {name}は、練習を続けるあなたを見てうれしそう。",
           "pet": "+{count} ❤️ {name}は、あなたに会えてうれしかったみたい。",
           "heartsEarned": "ハート{count, plural, other {#こ}}ゲット。"
+        },
+        "nearMilestone": {
+          "memory": "もうすぐだね！{name}が話したいことがあるみたい。",
+          "fact": "あとハート{count, plural, other {#こ}}で、{name}の新しいことがわかるよ。"
         }
       }
     },

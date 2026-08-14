@@ -18,6 +18,7 @@ import { FRIENDSHIP_POINTS } from '@/lib/friendship';
 import { isReturningAfterBreak } from '@/lib/studyWeek';
 
 import { CompletedState, DueState, NothingDueState } from './AdventureStates';
+import { nearMilestoneHook } from './nearMilestone';
 import { WeekDots } from './WeekDots';
 
 /** Fixed, not randomFaceVariant() — the hero re-renders and the face would flip. */
@@ -38,10 +39,18 @@ export function TodayAdventureCard() {
   const router = useRouter();
   const t = useTranslations('Home.adventure');
   const tItems = useTranslations('Shop.items');
+  const tFriendship = useTranslations('Home.buddy.friendship');
+  const tBuddies = useTranslations('Shop.buddies');
 
   const { dueCount, loading: dueLoading, error: dueError } = useDueCount();
   const { progress, recentSessions, loading: progressLoading } = useProgressCtx();
-  const { friendships, loadState: friendshipLoad, ensureLoaded } = useBuddyFriendshipCtx();
+  const {
+    friendships,
+    equipped,
+    todayGoals,
+    loadState: friendshipLoad,
+    ensureLoaded,
+  } = useBuddyFriendshipCtx();
   const { equipped: shopEquipped } = useShopCtx();
 
   // The provider doesn't fetch friendships on mount, and an unloaded `friendships`
@@ -103,6 +112,24 @@ export function TodayAdventureCard() {
     state !== 'completed' &&
     isReturningAfterBreak(progress?.last_study_date ?? null, today, yesterday);
 
+  let friendshipCopy: unknown = null;
+  try {
+    friendshipCopy = tBuddies.raw(`${buddyKey}.friendship`);
+  } catch {
+    // buddy with no friendship copy — nearMilestoneHook then stays quiet
+  }
+  // Only when the rows really landed: 'error' leaves points at a fabricated 0,
+  // which would promise the first milestone to someone who passed it long ago.
+  const near =
+    friendshipLoad === 'loaded'
+      ? nearMilestoneHook(friendshipCopy, equipped?.points ?? 0, todayGoals ?? [], today)
+      : null;
+  const friendshipLine = near
+    ? near.kind === 'memory'
+      ? tFriendship('nearMilestone.memory', { name: buddyName })
+      : tFriendship('nearMilestone.fact', { count: near.heartsAway, name: buddyName })
+    : null;
+
   const start = () => router.push('/review/today');
   const playGame = () => router.push('/review');
   // Pointer convenience only, no role/tabIndex: a focusable button nested in a
@@ -147,6 +174,7 @@ export function TodayAdventureCard() {
           buddyName={buddyName}
           faceSrc={buddyFaceSrc(buddyKey, FACE_DEFAULT)}
           dueCount={dueCount}
+          friendshipLine={friendshipLine}
           onStart={start}
           onPlayGame={playGame}
         />
