@@ -1,23 +1,29 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
+
+const QUERY = '(prefers-reduced-motion: reduce)';
+
+function subscribe(onChange: () => void) {
+  if (typeof window === 'undefined' || !window.matchMedia) return () => {};
+  const mq = window.matchMedia(QUERY);
+  mq.addEventListener('change', onChange);
+  return () => mq.removeEventListener('change', onChange);
+}
+
+function getSnapshot(): boolean {
+  return typeof window !== 'undefined' && !!window.matchMedia?.(QUERY).matches;
+}
+
+function getServerSnapshot(): boolean {
+  return false;
+}
 
 /**
- * True when the user has asked the OS to reduce motion. New celebratory
- * animations (combo chip pop, chest shake) gate on this so they stay calm for
- * anyone who prefers it. SSR-safe: starts false, then syncs on mount.
+ * True when the OS asks for reduced motion; false through SSR and hydration.
+ * Not useState + effect: that reported false for one render after every mount,
+ * so gated animations played a frame and LevelUpMeter seeded its phase wrong.
  */
 export function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-
-  return reduced;
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
