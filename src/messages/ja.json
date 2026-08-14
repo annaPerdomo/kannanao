@@ -1791,6 +1791,26 @@
         "nearMilestone": {
           "memory": "もうすぐだね！{name}が話したいことがあるみたい。",
           "fact": "あとハート{count, plural, other {#こ}}で、{name}の新しいことがわかるよ。"
+        },
+        "celebration": {
+          "unlocksHeading": "ひらいたもの",
+          "unlockMemory": "新しいおもいで：{title}",
+          "unlockMemoryUntitled": "新しいおもいでが聞けるよ",
+          "unlockPhrases": "{name}が言えることが{count, plural, other {#こ}}ふえたよ",
+          "grew": "なかよし度が上がった！",
+          "levelChange": "{name} → 「{levelName}」",
+          "memoryIntro": "{name}が話したいことがあるみたい。",
+          "saved": "おもいでノートにくわわったよ。",
+          "savedNoMemory": "{name}と、前よりもっとなかよしになったね。",
+          "seeMemories": "おもいでを見る",
+          "backHome": "ホームにもどる",
+          "stageAria": {
+            "meter": "なかよしメーターがハートでいっぱいになるところ。",
+            "title": "{name}となかよし度が上がったよ。",
+            "unlocks": "このレベルでひらいたもの。",
+            "memory": "{name}の新しいおもいで。",
+            "done": "おもいでをほぞんしたよ。つぎにどこへ行くかえらんでね。"
+          }
         }
       }
     },

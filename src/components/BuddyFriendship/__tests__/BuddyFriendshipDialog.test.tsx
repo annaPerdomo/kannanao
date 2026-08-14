@@ -41,7 +41,12 @@ vi.mock('next-intl', () => ({
 const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
+vi.mock('@/components/BuddyFriendship/LevelUpMeter', () => ({ LevelUpMeter: () => null }));
+vi.mock('@/components/BuddyFriendship/CelebrationBurst', () => ({ CelebrationBurst: () => null }));
+
 const closeStories = vi.fn();
+const openStories = vi.fn();
+const clearLevelUpEvent = vi.fn();
 const petBuddy = vi.fn();
 let storyRequest: BuddyStoryRequest | null = null;
 type Row = { buddyKey: string; points: number };
@@ -54,12 +59,18 @@ vi.mock('@/contexts/BuddyFriendshipContext', () => ({
   useBuddyFriendshipCtx: () => ({
     storyRequest,
     closeStories,
+    openStories,
+    clearLevelUpEvent,
     friendships,
     todayGoals,
     heartsToday,
     petBuddy,
   }),
 }));
+
+function tapContinue() {
+  fireEvent.click(screen.getByRole('button', { name: 'continueHint' }));
+}
 
 function row(buddyKey: string, points: number): Row {
   return { buddyKey, points };
@@ -76,6 +87,8 @@ function goals(done: Partial<Record<string, boolean>> = {}): Goal[] {
 describe('BuddyFriendshipDialog', () => {
   beforeEach(() => {
     closeStories.mockClear();
+    openStories.mockClear();
+    clearLevelUpEvent.mockClear();
     push.mockClear();
     petBuddy.mockClear();
     storyRequest = null;
@@ -97,21 +110,65 @@ describe('BuddyFriendshipDialog', () => {
     expect(screen.getByRole('dialog')).toHaveAttribute('aria-labelledby', title.id);
   });
 
-  it('reveals the level-up story one line at a time', () => {
+  it('opens on the meter, holding the story back until the ceremony reaches it', () => {
     storyRequest = { mode: 'levelUp', buddyKey: 'buddy_tango', level: 2 };
     render(<BuddyFriendshipDialog />);
 
+    expect(screen.getByRole('group')).toHaveAttribute(
+      'aria-label',
+      'celebration.stageAria.meter|buddy_tango.name',
+    );
+    expect(screen.queryByText('tango line one')).toBeNull();
+  });
+
+  it('walks the ceremony from the meter to the memory, one tap per stage', () => {
+    storyRequest = { mode: 'levelUp', buddyKey: 'buddy_tango', level: 2 };
+    render(<BuddyFriendshipDialog />);
+
+    tapContinue();
+    expect(screen.getByText('celebration.grew')).toBeInTheDocument();
+    expect(
+      screen.getByText('celebration.levelChange|buddy_tango.name,levelNames.2'),
+    ).toBeInTheDocument();
+
+    tapContinue();
+    expect(screen.getByText('celebration.unlocksHeading')).toBeInTheDocument();
+    expect(screen.getByText('celebration.unlockMemory|A Rainy Afternoon')).toBeInTheDocument();
+    expect(screen.getByText('celebration.unlockPhrases|1,buddy_tango.name')).toBeInTheDocument();
+
+    tapContinue();
+    expect(screen.getByText('celebration.memoryIntro|buddy_tango.name')).toBeInTheDocument();
     expect(screen.getByText('tango line one')).toBeInTheDocument();
     expect(screen.queryByText('tango line two')).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: 'continueHint' }));
+    tapContinue();
     expect(screen.getByText('tango line two')).toBeInTheDocument();
+    expect(screen.queryByText('celebration.saved')).toBeNull();
+
+    tapContinue();
+    expect(screen.getByText('celebration.saved')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'continueHint' })).toBeNull();
+  });
+
+  it('advances from the keyboard without a pointer', () => {
+    storyRequest = { mode: 'levelUp', buddyKey: 'buddy_tango', level: 2 };
+    render(<BuddyFriendshipDialog />);
+
+    const sequence = screen.getByRole('group');
+    fireEvent.keyDown(sequence, { key: 'Enter' });
+    expect(screen.getByText('celebration.grew')).toBeInTheDocument();
+
+    fireEvent.keyDown(sequence, { key: ' ' });
+    expect(screen.getByText('celebration.unlocksHeading')).toBeInTheDocument();
   });
 
   it('keeps the story outside the continue control, where a reader can hear it', () => {
     storyRequest = { mode: 'levelUp', buddyKey: 'buddy_tango', level: 2 };
     render(<BuddyFriendshipDialog />);
+
+    tapContinue();
+    tapContinue();
+    tapContinue();
 
     const advance = screen.getByRole('button', { name: 'continueHint' });
     // A real <button> so Enter and Space work without a handler of our own.
@@ -119,25 +176,73 @@ describe('BuddyFriendshipDialog', () => {
     expect(within(advance).queryByText('tango line one')).toBeNull();
   });
 
-  it('hands the close back to the context, which is what consumes the event', () => {
+  it('leaves the ending to the sequence rather than a standing Close', () => {
     storyRequest = { mode: 'levelUp', buddyKey: 'buddy_tango', level: 2 };
     render(<BuddyFriendshipDialog />);
 
-    // The header's × and the footer button both close it.
     const closers = screen.getAllByRole('button', { name: 'close' });
-    expect(closers).toHaveLength(2);
-    closers.forEach((button) => fireEvent.click(button));
-    expect(closeStories).toHaveBeenCalledTimes(2);
+    expect(closers).toHaveLength(1);
+    fireEvent.click(closers[0]);
+    expect(closeStories).toHaveBeenCalledTimes(1);
   });
 
-  it('skips the story area entirely when a level-up has no copy to show', () => {
+  it('consumes the event before browsing, so the celebration cannot re-pop', () => {
+    storyRequest = { mode: 'levelUp', buddyKey: 'buddy_tango', level: 2 };
+    render(<BuddyFriendshipDialog />);
+
+    for (let i = 0; i < 5; i++) tapContinue();
+
+    fireEvent.click(screen.getByRole('button', { name: 'celebration.seeMemories' }));
+    expect(clearLevelUpEvent).toHaveBeenCalledTimes(1);
+    expect(openStories).toHaveBeenCalledWith('buddy_tango');
+    expect(clearLevelUpEvent.mock.invocationCallOrder[0]).toBeLessThan(
+      openStories.mock.invocationCallOrder[0],
+    );
+  });
+
+  it('goes home on the secondary way out, which is what consumes the event', () => {
+    storyRequest = { mode: 'levelUp', buddyKey: 'buddy_tango', level: 2 };
+    render(<BuddyFriendshipDialog />);
+
+    for (let i = 0; i < 5; i++) tapContinue();
+
+    fireEvent.click(screen.getByRole('button', { name: 'celebration.backHome' }));
+    expect(closeStories).toHaveBeenCalledTimes(1);
+    expect(openStories).not.toHaveBeenCalled();
+  });
+
+  it('celebrates the level it was handed, even after more hearts landed', () => {
+    // Level 5 by points, but the event crossed level 2: that is what is celebrated.
+    friendships = { buddy_tango: row('buddy_tango', 140) };
+    storyRequest = { mode: 'levelUp', buddyKey: 'buddy_tango', level: 2 };
+    render(<BuddyFriendshipDialog />);
+
+    tapContinue();
+    expect(
+      screen.getByText('celebration.levelChange|buddy_tango.name,levelNames.2'),
+    ).toBeInTheDocument();
+
+    tapContinue();
+    tapContinue();
+    expect(screen.getByText('tango line one')).toBeInTheDocument();
+    expect(screen.queryByText('tango level three')).toBeNull();
+  });
+
+  it('skips the unlocks and the memory when a level-up has no copy to show', () => {
     friendships = { buddy_fox: row('buddy_fox', 15) };
     storyRequest = { mode: 'levelUp', buddyKey: 'buddy_fox', level: 2 };
     render(<BuddyFriendshipDialog />);
 
     expect(screen.getByText('levelUpTitle|buddy_fox.name,levelNames.2')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'continueHint' })).toBeNull();
-    expect(screen.queryByText(/^memories\.locked/)).toBeNull();
+
+    tapContinue();
+    expect(screen.getByText('celebration.grew')).toBeInTheDocument();
+
+    tapContinue();
+    expect(screen.getByText('celebration.savedNoMemory|buddy_fox.name')).toBeInTheDocument();
+    expect(screen.queryByText('celebration.unlocksHeading')).toBeNull();
+    expect(screen.queryByText('celebration.memoryIntro|buddy_fox.name')).toBeNull();
+    expect(screen.queryByText('celebration.saved')).toBeNull();
   });
 
   it('opens on the friendship, not the story list', () => {

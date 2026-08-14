@@ -30,6 +30,17 @@ describe('FriendshipMeter', () => {
     expect(screen.getByRole('img')).toHaveAttribute('aria-label', 'meterAriaMax|levelNames.5');
   });
 
+  it('shows the celebration override instead of what the points imply', () => {
+    render(<FriendshipMeter points={40} display={{ level: 2, value: 100 }} />);
+    expect(screen.getByText('levelNames.2')).toBeInTheDocument();
+    expect(screen.queryByText(/\//)).not.toBeInTheDocument();
+    expect(screen.queryByRole('img')).toBeNull();
+    expect(screen.getByRole('progressbar', { hidden: true })).toHaveAttribute(
+      'aria-valuenow',
+      '100',
+    );
+  });
+
   it('hides the numeric progress in the small size', () => {
     render(<FriendshipMeter points={20} size="small" />);
     expect(screen.queryByText('5 / 25')).not.toBeInTheDocument();

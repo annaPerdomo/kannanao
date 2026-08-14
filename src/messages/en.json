@@ -1791,6 +1791,26 @@
         "nearMilestone": {
           "memory": "So close! {name} has something to tell you.",
           "fact": "{count, plural, one {# more heart} other {# more hearts}} and you'll learn something new about {name}."
+        },
+        "celebration": {
+          "unlocksHeading": "What this brought",
+          "unlockMemory": "A new memory: {title}",
+          "unlockMemoryUntitled": "A new memory to hear",
+          "unlockPhrases": "{count, plural, one {# new thing} other {# new things}} {name} can say",
+          "grew": "Your friendship grew!",
+          "levelChange": "{name} → {levelName}",
+          "memoryIntro": "{name} wants to tell you something.",
+          "saved": "Memory added to your scrapbook.",
+          "savedNoMemory": "You and {name} are closer than ever.",
+          "seeMemories": "See our memories",
+          "backHome": "Back home",
+          "stageAria": {
+            "meter": "Your hearts filling the friendship meter.",
+            "title": "You and {name} reached a new level.",
+            "unlocks": "What this level brought.",
+            "memory": "A new memory from {name}.",
+            "done": "Memory saved. Choose where to go next."
+          }
         }
       }
     },

@@ -14,26 +14,36 @@ interface FriendshipMeterProps {
   size?: 'small' | 'medium';
   /** Marks along the track, as 0..1 fractions of the current level's width. */
   ticks?: number[];
+  /** Overrides `points` so the celebration can show the old level completing — a state no point total has. `value` is a 0..100 percentage. */
+  display?: { level: number; value: number };
 }
 
-export function FriendshipMeter({ points, size = 'medium', ticks }: FriendshipMeterProps) {
+export function FriendshipMeter({ points, size = 'medium', ticks, display }: FriendshipMeterProps) {
   const t = useTranslations('Home.buddy.friendship');
   const theme = useTheme();
   const { brand } = theme.palette;
 
-  const level = friendshipLevel(points);
-  const progress = friendshipProgress(points);
+  const level = display?.level ?? friendshipLevel(points);
+  const progress = display ? null : friendshipProgress(points);
   const levelName = t(`levelNames.${level}`);
   const ariaLabel = progress
     ? t('meterAria', { levelName, current: progress.current, needed: progress.needed })
     : t('meterAriaMax', { levelName });
+  const value = display
+    ? Math.min(100, Math.max(0, display.value))
+    : progress
+      ? Math.min(100, (progress.current / progress.needed) * 100)
+      : 100;
 
   const compact = size === 'small';
 
   return (
     <Box
-      role="img"
-      aria-label={ariaLabel}
+      // Unlabelled while overridden: every label for that fill would be a lie.
+      // The celebration announces the stage instead.
+      role={display ? undefined : 'img'}
+      aria-hidden={display ? true : undefined}
+      aria-label={display ? undefined : ariaLabel}
       sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: compact ? 140 : 180 }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
@@ -58,7 +68,7 @@ export function FriendshipMeter({ points, size = 'medium', ticks }: FriendshipMe
       <Box sx={{ position: 'relative' }}>
         <LinearProgress
           variant="determinate"
-          value={progress ? Math.min(100, (progress.current / progress.needed) * 100) : 100}
+          value={value}
           aria-hidden
           sx={{
             height: compact ? 5 : 7,

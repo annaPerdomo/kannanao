@@ -2,25 +2,21 @@
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
-import { FriendshipMeter } from '@/components/FriendshipMeter';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { BuddyStoryRequest } from '@/contexts/BuddyFriendshipContext';
 import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
-import { storyLines } from '@/lib/buddyPhrases';
 import { friendshipLevel } from '@/lib/friendship';
 import { unlockedFacts } from '@/lib/friendshipMilestones';
 
 import { AboutBuddy } from './AboutBuddy';
-import { BuddyArt } from './BuddyArt';
 import { FriendshipDailyGoals } from './FriendshipDailyGoals';
 import { FriendshipHeader } from './FriendshipHeader';
+import { LevelUpSequence } from './LevelUpSequence';
 import { MemoryList } from './MemoryList';
 import { NextMilestoneCallout } from './NextMilestoneCallout';
-import { StoryReveal } from './StoryReveal';
 
 const TITLE_ID = 'buddy-friendship-title';
 
@@ -28,8 +24,8 @@ export function BuddyFriendshipDialog() {
   const t = useTranslations('Home.buddy.friendship');
   const tItems = useTranslations('Shop.items');
   const tBuddies = useTranslations('Shop.buddies');
-  const { brand } = useTheme().palette;
-  const { storyRequest, closeStories, friendships } = useBuddyFriendshipCtx();
+  const { storyRequest, closeStories, openStories, clearLevelUpEvent, friendships } =
+    useBuddyFriendshipCtx();
 
   // Rendering straight off storyRequest flickers to an empty level-1 body for
   // the whole exit transition — it is cleared the moment closing starts.
@@ -55,7 +51,13 @@ export function BuddyFriendshipDialog() {
 
   const isLevelUp = shown?.mode === 'levelUp';
   const level = shown?.mode === 'levelUp' ? shown.level : friendshipLevel(points);
-  const lines = isLevelUp ? storyLines(copy, level) : [];
+
+  // Switching to browse leaves closeStories with nothing to consume, so the
+  // event is dropped here or the celebration pops again on the next route change.
+  const browseMemories = useCallback(() => {
+    clearLevelUpEvent();
+    openStories(buddyKey);
+  }, [clearLevelUpEvent, openStories, buddyKey]);
 
   return (
     <StyledDialog
@@ -68,9 +70,12 @@ export function BuddyFriendshipDialog() {
           : t('friendshipTitle', { name })
       }
       actions={
-        <Button onClick={closeStories} variant="contained" size="small">
-          {t('close')}
-        </Button>
+        // The celebration supplies its own buttons on its last stage.
+        isLevelUp ? undefined : (
+          <Button onClick={closeStories} variant="contained" size="small">
+            {t('close')}
+          </Button>
+        )
       }
       actionsJustify="center"
     >
@@ -79,17 +84,14 @@ export function BuddyFriendshipDialog() {
         sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.75 }}
       >
         {isLevelUp ? (
-          <>
-            <BuddyArt buddyKey={buddyKey} size={132} />
-            <FriendshipMeter points={points} />
-            {lines.length > 0 && (
-              <Box
-                sx={{ width: '100%', borderTop: `1px solid ${alpha(brand[300], 0.35)}`, pt: 1.75 }}
-              >
-                <StoryReveal lines={lines} />
-              </Box>
-            )}
-          </>
+          <LevelUpSequence
+            buddyKey={buddyKey}
+            name={name}
+            copy={copy}
+            level={level}
+            onBrowse={browseMemories}
+            onClose={closeStories}
+          />
         ) : (
           <>
             <FriendshipHeader buddyKey={buddyKey} name={name} points={points} />

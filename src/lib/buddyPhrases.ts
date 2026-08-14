@@ -45,6 +45,10 @@ export function unlockedStories(copy: unknown, level: number): BuddyStory[] {
   return stories;
 }
 
+export function phraseLines(copy: unknown, level: number): string[] {
+  return stringLines(levelCopy(copy, level)?.phrases);
+}
+
 export function memoryTitle(copy: unknown, level: number): string | null {
   return nonEmptyString(levelCopy(copy, level)?.title);
 }
@@ -81,7 +85,7 @@ export function blendHomePhrases(basePhrases: string[], copy: unknown, level: nu
   const pool = stringLines(basePhrases);
   const reached = Math.min(level, MAX_FRIENDSHIP_LEVEL);
   for (let l = FIRST_STORY_LEVEL; l <= reached; l++) {
-    pool.push(...stringLines(levelCopy(copy, l)?.phrases));
+    pool.push(...phraseLines(copy, l));
   }
   return [...new Set(pool)];
 }

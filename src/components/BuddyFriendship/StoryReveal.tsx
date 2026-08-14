@@ -3,21 +3,26 @@
 import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { StoryBubble } from './StoryBubble';
 
 interface StoryRevealProps {
   lines: string[];
+  onDone?: () => void;
 }
 
 /** The level-up story, revealed one line per tap. */
-export function StoryReveal({ lines }: StoryRevealProps) {
+export function StoryReveal({ lines, onDone }: StoryRevealProps) {
   const t = useTranslations('Home.buddy.friendship');
   const [shown, setShown] = useState(1);
   const more = shown < lines.length;
 
   const advance = useCallback(() => setShown((n) => Math.min(n + 1, lines.length)), [lines.length]);
+
+  useEffect(() => {
+    if (!more) onDone?.();
+  }, [more, onDone]);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%' }}>
