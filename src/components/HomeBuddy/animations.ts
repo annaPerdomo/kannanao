@@ -53,6 +53,26 @@ export const chipPop = keyframes`
   100% { transform: scale(1); }
 `;
 
+export const heartLand = keyframes`
+  0% { transform: translateY(-46px) scale(0.6); opacity: 0; }
+  25% { opacity: 1; }
+  70% { transform: translateY(-8px) scale(1.25); opacity: 1; }
+  100% { transform: translateY(0) scale(0.5); opacity: 0; }
+`;
+
+export const awardLineIn = keyframes`
+  0% { transform: translateY(8px) scale(0.92); opacity: 0; }
+  12% { transform: translateY(0) scale(1); opacity: 1; }
+  82% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-6px) scale(1); opacity: 0; }
+`;
+
+export const awardFade = keyframes`
+  0% { opacity: 0; }
+  12%, 82% { opacity: 1; }
+  100% { opacity: 0; }
+`;
+
 // Fades a pre-painted layer: animating box-shadow instead repaints the blur on
 // every frame, on every page, for as long as the app is open.
 export const glowPulse = keyframes`

@@ -19,6 +19,8 @@ import { BuddyParticles } from './BuddyParticles';
 import { FriendshipHearts } from './FriendshipHearts';
 import { useBuddyDrag } from './useBuddyDrag';
 
+export { FriendshipAwardToast } from './FriendshipAwardToast';
+
 // SSR renders face 1 and the effect swaps in the random one before paint, so
 // the randomness never reaches hydration.
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
@@ -220,6 +222,8 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   return (
     <Box
       ref={rootRef}
+      // FriendshipAwardToast querySelectors this rect to anchor its hearts.
+      data-home-buddy
       sx={{
         position: 'fixed',
         ...positionStyle,

@@ -43,6 +43,12 @@ export interface FriendshipLevelUp {
   level: number;
 }
 
+export interface FriendshipAwardEvent {
+  buddyKey: string;
+  source: FriendshipSource;
+  awarded: number;
+}
+
 /**
  * 'idle' until someone calls ensureLoaded. Consumers need "not fetched yet"
  * and "fetched, no rows" to be distinguishable — 0 ❤️ for the former is a lie.
@@ -123,6 +129,7 @@ export function useBuddyFriendship() {
   const [loadState, setLoadState] = useState<FriendshipLoadState>('idle');
   const [error, setError] = useState<string | null>(null);
   const [levelUpEvent, setLevelUpEvent] = useState<FriendshipLevelUp | null>(null);
+  const [awardEvent, setAwardEvent] = useState<FriendshipAwardEvent | null>(null);
 
   const loadRef = useRef<{ userId: string; promise: Promise<void> } | null>(null);
 
@@ -180,6 +187,7 @@ export function useBuddyFriendship() {
     // A level-up is held until the user leaves a session route, so an unconsumed
     // one would otherwise pop for whoever signs in next on this tab.
     setLevelUpEvent(null);
+    setAwardEvent(null);
     setError(null);
   }, [user]);
 
@@ -293,6 +301,7 @@ export function useBuddyFriendship() {
         const newLevel = friendshipLevel(total);
         const leveledUp = newLevel > friendshipLevel(total - points);
         if (leveledUp) setLevelUpEvent({ buddyKey, level: newLevel });
+        setAwardEvent({ buddyKey, source, awarded: points });
         setError(null);
         return { awarded: points, points: total, leveledUp, newLevel };
       } catch (err) {
@@ -322,6 +331,7 @@ export function useBuddyFriendship() {
   );
 
   const clearLevelUpEvent = useCallback(() => setLevelUpEvent(null), []);
+  const clearAwardEvent = useCallback(() => setAwardEvent(null), []);
 
   const equipped = buddyKey in friendships ? friendships[buddyKey] : null;
   const canPetToday = canEarn('pet', stamps, today);
@@ -341,6 +351,8 @@ export function useBuddyFriendship() {
     heartsToday,
     levelUpEvent,
     clearLevelUpEvent,
+    awardEvent,
+    clearAwardEvent,
     ensureLoaded,
     refetch,
   };

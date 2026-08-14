@@ -597,6 +597,66 @@ describe('useBuddyFriendship', () => {
     });
   });
 
+  // ── award events ────────────────────────────────────────────────────────────
+
+  describe('awardEvent', () => {
+    it('should report a server-confirmed award, and clear on demand', async () => {
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        await result.current.awardFriendship('adventure');
+      });
+
+      expect(result.current.awardEvent).toEqual({
+        buddyKey: 'buddy_bunny',
+        source: 'adventure',
+        awarded: 3,
+      });
+
+      act(() => result.current.clearAwardEvent());
+      expect(result.current.awardEvent).toBeNull();
+    });
+
+    // The event may only ever fire on hearts the user actually keeps.
+    it('should stay quiet when the RPC reports capped', async () => {
+      mockRpc.mockResolvedValue({ data: { status: 'capped' }, error: null });
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        await result.current.awardFriendship('adventure');
+      });
+
+      expect(result.current.awardEvent).toBeNull();
+    });
+
+    it('should stay quiet when the award rolls back on an error', async () => {
+      mockRpc.mockResolvedValue({ data: null, error: { message: 'network down' } });
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        await result.current.awardFriendship('adventure');
+      });
+
+      expect(result.current.awardEvent).toBeNull();
+    });
+
+    it('should drop an unconsumed event on sign-out', async () => {
+      const { result, rerender } = await renderLoaded();
+
+      await act(async () => {
+        await result.current.petBuddy();
+      });
+      expect(result.current.awardEvent).not.toBeNull();
+
+      mockUseAuth.mockReturnValue({ user: null });
+      await act(async () => {
+        rerender();
+      });
+
+      expect(result.current.awardEvent).toBeNull();
+    });
+  });
+
   // ── session signal ──────────────────────────────────────────────────────────
 
   describe('session end signal', () => {

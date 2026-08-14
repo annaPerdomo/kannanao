@@ -1781,7 +1781,13 @@
         "continueHint": "Tap to continue",
         "close": "Close",
         "chipAria": "You and {name}: {levelName}, {count, plural, one {# heart} other {# hearts}}. {next} more until something new.",
-        "chipAriaMax": "You and {name}: {levelName}, {count, plural, one {# heart} other {# hearts}}."
+        "chipAriaMax": "You and {name}: {levelName}, {count, plural, one {# heart} other {# hearts}}.",
+        "award": {
+          "adventure": "+{count} ❤️ {name} loved studying with you today!",
+          "session": "+{count} ❤️ {name} is glad you kept practicing.",
+          "pet": "+{count} ❤️ {name} was happy to see you.",
+          "heartsEarned": "{count, plural, one {# heart} other {# hearts}} earned."
+        }
       }
     },
     "heroDate": {

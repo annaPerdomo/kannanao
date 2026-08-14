@@ -7,7 +7,7 @@ import { useShopCtx } from '@/contexts/ShopContext';
 import { resolveBuddyKey } from '@/lib/buddies';
 
 import { BuddyFriendshipDialog } from './BuddyFriendship';
-import { HomeBuddy } from './HomeBuddy';
+import { FriendshipAwardToast, HomeBuddy } from './HomeBuddy';
 
 // There is exactly one buddy in the app — practice/study screens don't
 // render their own, they react through BuddyReactionContext instead — so
@@ -30,6 +30,7 @@ export function GlobalBuddy() {
   return (
     <>
       <HomeBuddy buddyKey={resolveBuddyKey(equipped['study_buddy'])} />
+      <FriendshipAwardToast />
       <BuddyFriendshipDialog />
     </>
   );

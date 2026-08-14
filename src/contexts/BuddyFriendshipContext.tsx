@@ -38,6 +38,8 @@ const BuddyFriendshipCtx = createContext<BuddyFriendshipContextValue>({
   heartsToday: 0,
   levelUpEvent: null,
   clearLevelUpEvent: () => {},
+  awardEvent: null,
+  clearAwardEvent: () => {},
   ensureLoaded: async () => {},
   refetch: async () => {},
   storyRequest: null,

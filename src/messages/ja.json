@@ -1781,7 +1781,13 @@
         "continueHint": "タップでつづき",
         "close": "とじる",
         "chipAria": "あなたと{name}：{levelName}、ハート{count, plural, other {#こ}}。あとハート{next}こで新しいことがあるよ。",
-        "chipAriaMax": "あなたと{name}：{levelName}、ハート{count, plural, other {#こ}}。"
+        "chipAriaMax": "あなたと{name}：{levelName}、ハート{count, plural, other {#こ}}。",
+        "award": {
+          "adventure": "+{count} ❤️ {name}は今日いっしょに勉強できてうれしそう！",
+          "session": "+{count} ❤️ {name}は、練習を続けるあなたを見てうれしそう。",
+          "pet": "+{count} ❤️ {name}は、あなたに会えてうれしかったみたい。",
+          "heartsEarned": "ハート{count, plural, other {#こ}}ゲット。"
+        }
       }
     },
     "heroDate": {
