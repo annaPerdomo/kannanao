@@ -76,8 +76,13 @@ export const LANDING_NAMESPACES = [
 
 type LandingNamespace = (typeof LANDING_NAMESPACES)[number];
 
-export type LandingMessages = Omit<Pick<Messages, LandingNamespace>, 'Landing'> & {
+type LandingBuddies = {
+  [K in keyof Messages['Shop']['buddies']]: Omit<Messages['Shop']['buddies'][K], 'friendship'>;
+};
+
+export type LandingMessages = Omit<Pick<Messages, LandingNamespace>, 'Landing' | 'Shop'> & {
   Landing: Omit<Messages['Landing'], 'seo'>;
+  Shop: Omit<Messages['Shop'], 'buddies'> & { buddies: LandingBuddies };
 };
 
 export function landingMessagesFor(locale: Locale): LandingMessages {
@@ -93,7 +98,19 @@ export function landingMessagesFor(locale: Locale): LandingMessages {
   // ~4KB twice: once in the <script type="application/ld+json"> it renders
   // into, once in the provider's messages.
   const { seo: _seo, ...landing } = picked.Landing;
-  return { ...picked, Landing: landing };
+
+  // Nothing on the landing renders friendship copy — GlobalBuddy gates the buddy
+  // tree on `session`, seeded null here — and HomeBuddy reads it via a guarded raw().
+  const buddies = Object.fromEntries(
+    Object.entries(picked.Shop.buddies as Record<string, Record<string, unknown>>).map(
+      ([key, buddy]) => {
+        const { friendship: _friendship, ...rest } = buddy;
+        return [key, rest];
+      },
+    ),
+  ) as LandingBuddies;
+
+  return { ...picked, Landing: landing, Shop: { ...picked.Shop, buddies } };
 }
 
 /**
