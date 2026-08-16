@@ -68,6 +68,9 @@ export function TodayAdventureCard() {
     return (
       <Skeleton
         variant="rounded"
+        // A rounded Skeleton with no height and no children collapses to ~18px,
+        // and the hero jumps when the card lands.
+        height={300}
         sx={{
           maxWidth: { sm: 340 },
           borderRadius: (theme) => theme.radii.md,

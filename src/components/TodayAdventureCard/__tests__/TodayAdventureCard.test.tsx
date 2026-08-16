@@ -86,7 +86,9 @@ describe('TodayAdventureCard', () => {
   it('should hold the space with a skeleton until the counts land', () => {
     dueState.mockReturnValue(due({ loading: true }));
     const { container } = renderWithProviders(<TodayAdventureCard />);
-    expect(container.querySelector('.MuiSkeleton-root')).toBeInTheDocument();
+    const skeleton = container.querySelector<HTMLElement>('.MuiSkeleton-root');
+    expect(skeleton).toBeInTheDocument();
+    expect(parseInt(skeleton!.style.height, 10)).toBeGreaterThan(100);
   });
 
   // An unfetched map looks exactly like "no row yet", which hands the day to
