@@ -32,29 +32,29 @@ describe('FriendshipAwardToast', () => {
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
+  // Momo has no authored copy, so these cover the chrome fallback. If she ever
+  // gets lines, repoint them at whichever buddy is still unauthored.
   it('should celebrate an award once and consume the event', () => {
-    awardEvent = { buddyKey: 'buddy_bunny', source: 'session', awarded: 1 };
+    awardEvent = { buddyKey: 'buddy_axolotl', source: 'session', awarded: 1 };
     render(<FriendshipAwardToast />);
 
-    expect(screen.getByRole('status')).toHaveTextContent(
-      '+1 ❤️ Tsuki is glad you kept practicing.',
-    );
+    expect(screen.getByRole('status')).toHaveTextContent('+1 ❤️ Momo is glad you kept practicing.');
     expect(clearAwardEvent).toHaveBeenCalledTimes(1);
   });
 
   it('should pick the copy for the source that paid', () => {
-    awardEvent = { buddyKey: 'buddy_bunny', source: 'pet', awarded: 1 };
+    awardEvent = { buddyKey: 'buddy_axolotl', source: 'pet', awarded: 1 };
     render(<FriendshipAwardToast />);
 
-    expect(screen.getByRole('status')).toHaveTextContent('+1 ❤️ Tsuki was happy to see you.');
+    expect(screen.getByRole('status')).toHaveTextContent('+1 ❤️ Momo was happy to see you.');
   });
 
   it('should send one heart per point on the adventure award', () => {
-    awardEvent = { buddyKey: 'buddy_bunny', source: 'adventure', awarded: 3 };
+    awardEvent = { buddyKey: 'buddy_axolotl', source: 'adventure', awarded: 3 };
     const { container } = render(<FriendshipAwardToast />);
 
     expect(screen.getByRole('status')).toHaveTextContent(
-      '+3 ❤️ Tsuki loved studying with you today!',
+      '+3 ❤️ Momo loved studying with you today!',
     );
     expect(container.querySelectorAll('[data-award-hearts] > *')).toHaveLength(3);
   });
@@ -65,6 +65,16 @@ describe('FriendshipAwardToast', () => {
 
     expect(container).toHaveTextContent('~leans into your hand~');
     expect(screen.getByRole('status')).toHaveTextContent('1 heart earned. ~leans into your hand~');
+  });
+
+  it('should send one heart per point on an authored adventure line', () => {
+    awardEvent = { buddyKey: 'buddy_bunny', source: 'adventure', awarded: 3 };
+    const { container } = render(<FriendshipAwardToast />);
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '3 hearts earned. Tsuki hopped so high she surprised herself.',
+    );
+    expect(container.querySelectorAll('[data-award-hearts] > *')).toHaveLength(3);
   });
 
   it('should suppress itself while the friendship dialog is open, without stranding the event', () => {
@@ -92,7 +102,7 @@ describe('FriendshipAwardToast', () => {
     render(<FriendshipAwardToast />);
 
     expect(screen.getByRole('status')).toHaveTextContent(
-      '+3 ❤️ Tsuki loved studying with you today!',
+      '3 hearts earned. Tsuki hopped so high she surprised herself.',
     );
   });
 });

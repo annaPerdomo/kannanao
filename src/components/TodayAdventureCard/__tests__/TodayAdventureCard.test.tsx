@@ -161,6 +161,7 @@ describe('TodayAdventureCard', () => {
     });
 
     it('should invite the reader on the day’s mission when cards are due', async () => {
+      friendshipState.mockReturnValue(friendship({}, 'loaded', { points: 15 }));
       renderWithProviders(<TodayAdventureCard />);
       await screen.findByText("Today's Adventure");
       expect(screen.getByText(/6 reviews · ~2 min/)).toBeInTheDocument();
@@ -216,6 +217,7 @@ describe('TodayAdventureCard', () => {
     });
 
     it('should keep the count line when the next milestone is far off', async () => {
+      friendshipState.mockReturnValue(friendship({}, 'loaded', { points: 15 }));
       renderWithProviders(<TodayAdventureCard />);
       await screen.findByText(/6 reviews · ~2 min/);
       expect(screen.queryByText(/So close/)).toBeNull();
