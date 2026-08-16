@@ -14,7 +14,7 @@ interface FriendshipMeterProps {
   size?: 'small' | 'medium';
   /** Marks along the track, as 0..1 fractions of the current level's width. */
   ticks?: number[];
-  /** Overrides `points` so the celebration can show the old level completing — a state no point total has. `value` is a 0..100 percentage. */
+  /** Overrides `points` to show the old level completing — a state no point total has. `value` is 0..100. */
   display?: { level: number; value: number };
 }
 
@@ -39,8 +39,7 @@ export function FriendshipMeter({ points, size = 'medium', ticks, display }: Fri
 
   return (
     <Box
-      // Unlabelled while overridden: every label for that fill would be a lie.
-      // The celebration announces the stage instead.
+      // Unlabelled while overridden: the celebration announces the stage instead.
       role={display ? undefined : 'img'}
       aria-hidden={display ? true : undefined}
       aria-label={display ? undefined : ariaLabel}

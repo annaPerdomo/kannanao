@@ -89,7 +89,6 @@ export function CompletedState({
             {t('completedHearts', { count: hearts, name: buddyName })}
           </Typography>
         )}
-        {/* Home's only route to /review once the adventure is done. */}
         <Button size="small" variant="text" onClick={onPlayGame} sx={{ ...linkSx, ml: -0.5 }}>
           {t('playGame')}
         </Button>

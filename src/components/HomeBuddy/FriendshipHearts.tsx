@@ -55,8 +55,8 @@ export function FriendshipHearts({ isDragging, buddyKey }: FriendshipHeartsProps
   } catch {
     // buddy without friendship copy — the level crossing is still a real target
   }
-  // Not heartsToNext: that counts fact slots this buddy has no fact for, and
-  // the dialog behind this chip would then contradict the count.
+  // Not heartsToNext: it counts fact slots this buddy has no fact for, and the
+  // dialog behind this chip would contradict the count.
   const promised = nextPromisedMilestone(copy, points);
 
   return (

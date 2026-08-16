@@ -139,8 +139,6 @@ describe('HomeBuddy', () => {
     });
   });
 
-  // The hearts chip stops pointerdown but not pointerup; without a matching
-  // down, origin is stale and the release would spend the day's pet.
   it('ignores a pointerup with no pointerdown behind it', () => {
     const { container } = render(<HomeBuddy buddyKey="tango" />);
     fireEvent.pointerUp(container.firstChild as Element, {
@@ -229,7 +227,6 @@ describe('HomeBuddy', () => {
 
   it('opens the buddy stories from the hearts chip without also petting', () => {
     render(<HomeBuddy buddyKey="tango" />);
-    // 12 hearts: still a New Friend, 3 short of the next milestone at 15.
     const chip = screen.getByRole('button', { name: 'chipAria|tango.name,levelNames.1,12,3' });
 
     tap(chip);

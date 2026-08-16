@@ -32,8 +32,8 @@ describe('FriendshipAwardToast', () => {
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
-  // Momo has no authored copy, so these cover the chrome fallback. If she ever
-  // gets lines, repoint them at whichever buddy is still unauthored.
+  // Momo has no authored copy in messages/*.json. If she ever gets lines,
+  // repoint these at whichever buddy is still unauthored.
   it('should celebrate an award once and consume the event', () => {
     awardEvent = { buddyKey: 'buddy_axolotl', source: 'session', awarded: 1 };
     render(<FriendshipAwardToast />);

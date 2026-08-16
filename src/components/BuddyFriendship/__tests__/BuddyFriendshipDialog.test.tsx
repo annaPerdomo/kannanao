@@ -171,7 +171,6 @@ describe('BuddyFriendshipDialog', () => {
     tapContinue();
 
     const advance = screen.getByRole('button', { name: 'continueHint' });
-    // A real <button> so Enter and Space work without a handler of our own.
     expect(advance.tagName).toBe('BUTTON');
     expect(within(advance).queryByText('tango line one')).toBeNull();
   });
@@ -212,7 +211,6 @@ describe('BuddyFriendshipDialog', () => {
   });
 
   it('celebrates the level it was handed, even after more hearts landed', () => {
-    // Level 5 by points, but the event crossed level 2: that is what is celebrated.
     friendships = { buddy_tango: row('buddy_tango', 140) };
     storyRequest = { mode: 'levelUp', buddyKey: 'buddy_tango', level: 2 };
     render(<BuddyFriendshipDialog />);
@@ -257,7 +255,6 @@ describe('BuddyFriendshipDialog', () => {
   });
 
   it('promises the next authored fact when one is waiting', () => {
-    // 3 hearts: the fact milestone at 5 has copy behind it.
     friendships = { buddy_tango: row('buddy_tango', 3) };
     storyRequest = { mode: 'browse', buddyKey: 'buddy_tango' };
     render(<BuddyFriendshipDialog />);
@@ -266,8 +263,6 @@ describe('BuddyFriendshipDialog', () => {
   });
 
   it('skips ahead of fact milestones this buddy has no copy for', () => {
-    // 20 hearts: only two facts are written, so the promise is the level-3
-    // memory at 40 rather than the empty fact slot at 25.
     storyRequest = { mode: 'browse', buddyKey: 'buddy_tango' };
     render(<BuddyFriendshipDialog />);
 
@@ -388,7 +383,6 @@ describe('BuddyFriendshipDialog', () => {
   });
 
   it('drops the memories section when there is nothing left to scrapbook', () => {
-    // Max level, no authored memories: nothing unlocked and nothing locked.
     friendships = { buddy_fox: row('buddy_fox', 140) };
     storyRequest = { mode: 'browse', buddyKey: 'buddy_fox' };
     render(<BuddyFriendshipDialog />);

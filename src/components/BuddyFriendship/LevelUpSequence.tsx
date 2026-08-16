@@ -70,14 +70,13 @@ export function LevelUpSequence({
   const onStoryDone = useCallback(() => setStoryDone(true), []);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  // Refocused every stage: the continue hint unmounts on the transitions it
-  // triggers, which would drop focus to <body> mid-celebration.
+  // The continue hint unmounts on the transitions it triggers, dropping focus
+  // to <body> mid-celebration.
   useEffect(() => {
     containerRef.current?.focus();
   }, [stage]);
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    // Keys that reached us from the continue hint already advanced it once.
     if (event.target !== event.currentTarget) return;
     if (!canAdvance || (event.key !== 'Enter' && event.key !== ' ')) return;
     event.preventDefault();
@@ -86,8 +85,8 @@ export function LevelUpSequence({
 
   return (
     <Box
-      // Not role="button": that would flatten the whole celebration to its own
-      // label for a screen reader. The continue hint below is the real control.
+      // Not role="button": that flattens the whole celebration to one label for
+      // a screen reader. The continue hint below is the real control.
       role="group"
       ref={containerRef}
       tabIndex={0}

@@ -57,10 +57,7 @@ export function memoryTeaser(copy: unknown, level: number): string | null {
   return nonEmptyString(levelCopy(copy, level)?.teaser);
 }
 
-/**
- * Index matches MINOR_MILESTONES, so an unauthored entry holds its place as ''
- * rather than shifting every later fact onto the wrong milestone.
- */
+/** Index-aligned to MINOR_MILESTONES: an unauthored entry holds its place as '' rather than shifting later facts. */
 export function buddyFacts(copy: unknown): string[] {
   if (!copy || typeof copy !== 'object') return [];
   const value = (copy as Record<string, unknown>).facts;

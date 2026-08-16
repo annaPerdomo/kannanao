@@ -85,7 +85,7 @@ export function WeekStrip({
           const allDone = dayTodos.length > 0 && dayCompleted === dayTodos.length;
           const tabColor = TAB_COLORS[i % TAB_COLORS.length];
           // Today can't take a week colour: half of TAB_COLORS are yellows and
-          // limes, too light to carry legible type in either direction.
+          // limes, too light to carry legible type.
           const tabBg = isToday ? TODAY_BG : isSelected ? tabColor : alpha(tabColor, 0.45);
           const solid = isToday || isSelected;
           const solidText = isToday ? '#fff' : theme.palette.getContrastText(tabColor);

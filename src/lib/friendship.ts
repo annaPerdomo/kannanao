@@ -88,10 +88,7 @@ export function todayOpportunities(lastDates: FriendshipDates, today: string): T
   }));
 }
 
-/**
- * Hearts already paid out today across ALL of the user's buddies, 0..5 — the
- * RPC caps per user, so label this "today", never "today with {buddy}".
- */
+/** 0..5, across ALL the user's buddies: the RPC caps per user, so never label this "today with {buddy}". */
 export function heartsEarnedToday(lastDates: FriendshipDates, today: string): number {
   return todayOpportunities(lastDates, today)
     .filter((opportunity) => opportunity.done)

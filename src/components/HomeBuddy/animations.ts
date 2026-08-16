@@ -73,8 +73,8 @@ export const awardFade = keyframes`
   100% { opacity: 0; }
 `;
 
-// Fades a pre-painted layer: animating box-shadow instead repaints the blur on
-// every frame, on every page, for as long as the app is open.
+// Fades a pre-painted layer: animating box-shadow instead repaints the blur
+// every frame, on every page.
 export const glowPulse = keyframes`
   0%, 100% { opacity: 0; }
   50% { opacity: 1; }

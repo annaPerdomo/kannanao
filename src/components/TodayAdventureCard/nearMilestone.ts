@@ -24,8 +24,8 @@ function datesFromGoals(goals: TodayOpportunity[], today: string): FriendshipDat
 }
 
 /**
- * nextPromisedMilestone, not heartsToNext: that counts fact slots this buddy has
- * no fact written for, and the card would promise something that never arrives.
+ * Uses nextPromisedMilestone, not heartsToNext: the latter counts fact slots this
+ * buddy has no fact written for, so the card would promise something that never arrives.
  */
 export function nearMilestoneHook(
   copy: unknown,
@@ -34,8 +34,6 @@ export function nearMilestoneHook(
   today: string,
 ): NearMilestoneHook | null {
   const promised = nextPromisedMilestone(copy, points);
-  // Its unauthored fallback is a bare level crossing — the dialog opens with no
-  // story to reveal, so the six buddies without friendship copy get no promise.
   if (!promised || !promised.authored) return null;
 
   const { heartsAway } = promised;

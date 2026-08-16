@@ -2,10 +2,7 @@ const STORAGE_KEY = 'kannanao:buddy-position';
 
 export const EDGE_MARGIN = 8;
 
-/**
- * Anchored bottom, not top: the widget grows upward when its speech bubble
- * appears, so a top anchor would shove the face down every 8 seconds.
- */
+/** Anchored bottom: the widget grows upward when its bubble appears, so a top anchor shoves the face down. */
 export interface BuddyPosition {
   left: number;
   bottom: number;
@@ -32,7 +29,7 @@ export const DEFAULT_INSETS: Insets = {
 
 /**
  * Measured, not derived from BOTTOM_NAV_HEIGHT: the rect is 0 where a bar is
- * `display: none`, and includes the `env(safe-area-inset-bottom)` no constant knows.
+ * `display: none`, and it includes `env(safe-area-inset-bottom)`.
  */
 export function measureChromeInsets(): Insets {
   const height = (selector: string) =>

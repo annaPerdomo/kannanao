@@ -617,7 +617,6 @@ describe('useBuddyFriendship', () => {
       expect(result.current.awardEvent).toBeNull();
     });
 
-    // The event may only ever fire on hearts the user actually keeps.
     it('should stay quiet when the RPC reports capped', async () => {
       mockRpc.mockResolvedValue({ data: { status: 'capped' }, error: null });
       const { result } = await renderLoaded();

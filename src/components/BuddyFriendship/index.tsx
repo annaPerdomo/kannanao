@@ -27,8 +27,8 @@ export function BuddyFriendshipDialog() {
   const { storyRequest, closeStories, openStories, clearLevelUpEvent, friendships } =
     useBuddyFriendshipCtx();
 
-  // Rendering straight off storyRequest flickers to an empty level-1 body for
-  // the whole exit transition — it is cleared the moment closing starts.
+  // storyRequest is cleared the moment closing starts, so rendering off it
+  // flickers to an empty level-1 body for the whole exit transition.
   const lastRequest = useRef<BuddyStoryRequest | null>(null);
   useEffect(() => {
     if (storyRequest) lastRequest.current = storyRequest;
@@ -52,8 +52,8 @@ export function BuddyFriendshipDialog() {
   const isLevelUp = shown?.mode === 'levelUp';
   const level = shown?.mode === 'levelUp' ? shown.level : friendshipLevel(points);
 
-  // Switching to browse leaves closeStories with nothing to consume, so the
-  // event is dropped here or the celebration pops again on the next route change.
+  // Switching to browse leaves closeStories nothing to consume; without this
+  // drop the celebration pops again on the next route change.
   const browseMemories = useCallback(() => {
     clearLevelUpEvent();
     openStories(buddyKey);
@@ -70,7 +70,6 @@ export function BuddyFriendshipDialog() {
           : t('friendshipTitle', { name })
       }
       actions={
-        // The celebration supplies its own buttons on its last stage.
         isLevelUp ? undefined : (
           <Button onClick={closeStories} variant="contained" size="small">
             {t('close')}

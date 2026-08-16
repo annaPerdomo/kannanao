@@ -20,9 +20,8 @@ function getServerSnapshot(): boolean {
 }
 
 /**
- * True when the OS asks for reduced motion; false through SSR and hydration.
- * Not useState + effect: that reported false for one render after every mount,
- * so gated animations played a frame and LevelUpMeter seeded its phase wrong.
+ * False through SSR and hydration. Not useState + effect: that reported false for
+ * one render after every mount, so gated animations played a frame anyway.
  */
 export function useReducedMotion(): boolean {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);

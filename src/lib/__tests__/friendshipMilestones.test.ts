@@ -170,7 +170,6 @@ describe('nextPromisedMilestone', () => {
   });
 
   it('skips a fact milestone with an empty slot behind it', () => {
-    // The fact at 10 is blank, so 15's authored memory is the real next thing.
     const promised = nextPromisedMilestone(copy, 6);
     expect(promised?.milestone.atPoints).toBe(15);
     expect(promised?.heartsAway).toBe(9);
@@ -201,7 +200,6 @@ describe('nextPromisedMilestone', () => {
   });
 
   it('never promises fewer hearts than the raw countdown', () => {
-    // Undershooting would put a payout before the thing it pays out for.
     for (let points = 0; points < MAX_POINTS; points++) {
       const promised = nextPromisedMilestone(copy, points);
       expect(promised?.heartsAway).toBeGreaterThanOrEqual(heartsToNext(points) ?? 0);

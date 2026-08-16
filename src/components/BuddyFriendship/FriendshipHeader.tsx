@@ -17,7 +17,6 @@ interface FriendshipHeaderProps {
   points: number;
 }
 
-/** Milestones inside the current level, as 0..1 fractions of the meter's track. */
 function levelTicks(points: number): number[] {
   const progress = friendshipProgress(points);
   if (!progress) return [];

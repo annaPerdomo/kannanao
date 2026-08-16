@@ -99,8 +99,8 @@ export function landingMessagesFor(locale: Locale): LandingMessages {
   // into, once in the provider's messages.
   const { seo: _seo, ...landing } = picked.Landing;
 
-  // Nothing on the landing renders friendship copy — GlobalBuddy gates the buddy
-  // tree on `session`, seeded null here — and HomeBuddy reads it via a guarded raw().
+  // Nothing on the landing renders friendship copy: GlobalBuddy gates the buddy
+  // tree on `session`, and HomeBuddy reads it through a guarded raw().
   const buddies = Object.fromEntries(
     Object.entries(picked.Shop.buddies as Record<string, Record<string, unknown>>).map(
       ([key, buddy]) => {

@@ -205,7 +205,6 @@ describe('TodayAdventureCard', () => {
       await screen.findByText("2 more hearts and you'll learn something new about Tango.");
     });
 
-    // Four or five hearts away still lands today while every source is unspent.
     it('should speak up for a milestone that is still reachable today', async () => {
       friendshipState.mockReturnValue(friendship({}, 'loaded', { points: 10 }));
       renderWithProviders(<TodayAdventureCard />);

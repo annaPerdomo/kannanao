@@ -36,8 +36,6 @@ describe('nearMilestoneHook', () => {
     expect(nearMilestoneHook({ facts: [] }, 13, nothingEarnedYet, TODAY)).toBeNull();
   });
 
-  // Milestones sit 5 hearts apart, so skipping an unwritten fact slot always
-  // pushes the next real one past today's reach.
   it('should skip a fact slot this buddy never had written', () => {
     const sparse = { facts: ['Loves bread'], l2: { story: ['A rainy afternoon.'] } };
     expect(nearMilestoneHook(sparse, 8, nothingEarnedYet, TODAY)).toBeNull();

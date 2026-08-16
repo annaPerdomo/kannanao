@@ -38,10 +38,7 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), Math.max(min, max));
 }
 
-/**
- * Measured at award time rather than tracked: the buddy is draggable, and a
- * subscription would re-render this on every frame of every drag.
- */
+/** Measured at award time, not tracked: a subscription would re-render this on every drag frame. */
 function anchorFromBuddy(): Anchor {
   const rect = document.querySelector('[data-home-buddy]')?.getBoundingClientRect();
   const width = window.innerWidth || 0;
@@ -50,7 +47,6 @@ function anchorFromBuddy(): Anchor {
   const centre = measured ? measured.left + measured.width / 2 : width / 2;
   return {
     faceX: centre,
-    // The face sits at the widget's bottom and the speech bubble grows off its top.
     faceY: measured ? measured.bottom - 28 : height - 120,
     lineX: clamp(centre, LINE_HALF_WIDTH, width - LINE_HALF_WIDTH),
     lineY: measured ? Math.max(measured.top - 8, PILL_MIN_Y) : height - 180,
@@ -69,7 +65,7 @@ export function FriendshipAwardToast() {
   const [shown, setShown] = useState<ShownAward | null>(null);
   const nextKey = useRef(0);
 
-  // storyRequest lands a render late — the provider opens the dialog from a
+  // storyRequest lands a render late: the provider opens the dialog from a
   // parent effect, which runs after this one, so the toast would flash first.
   const celebrating = !!storyRequest || !!(levelUpEvent && !isSessionRoute(pathname));
 
@@ -98,8 +94,7 @@ export function FriendshipAwardToast() {
     }
     const authored = awardLine(copy, shown.source);
     line = authored ?? t(`award.${shown.source}`, { name, count: shown.awarded });
-    // Authored lines never mention hearts and the flying ones are aria-hidden,
-    // so nothing else announces that the award happened.
+    // Authored lines never mention hearts and the flying ones are aria-hidden.
     announcement = authored
       ? `${t('award.heartsEarned', { count: shown.awarded })} ${authored}`
       : line;

@@ -21,10 +21,7 @@ function viewport() {
   return { width: clientWidth || window.innerWidth, height: clientHeight || window.innerHeight };
 }
 
-/**
- * Moves by `translate3d` inside one rAF, touching state only at grab and drop:
- * a `setState` per `pointermove` re-rendered the whole widget on every frame.
- */
+/** Moves by `translate3d` in one rAF: a `setState` per `pointermove` re-rendered the widget every frame. */
 export function useBuddyDrag(onTap: () => void) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [pos, setPos] = useState<BuddyPosition | null>(null);
@@ -33,7 +30,6 @@ export function useBuddyDrag(onTap: () => void) {
   const dragging = useRef(false);
   const activePointer = useRef<number | null>(null);
   const pastSlop = useRef(false);
-  /** Measured once at grab, so the move handler never reads layout mid-drag. */
   const origin = useRef({
     pointerX: 0,
     pointerY: 0,
@@ -92,8 +88,8 @@ export function useBuddyDrag(onTap: () => void) {
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     const el = rootRef.current;
-    // A second finger would re-measure origin off the already-transformed rect
-    // and commit the drop a drag-length off.
+    // A second finger re-measures origin off the already-transformed rect and
+    // commits the drop a drag-length off.
     if (!el || dragging.current) return;
     const rect = el.getBoundingClientRect();
     const { width, height } = viewport();
@@ -120,8 +116,8 @@ export function useBuddyDrag(onTap: () => void) {
     const o = origin.current;
     const rawX = e.clientX - o.pointerX;
     const rawY = e.clientY - o.pointerY;
-    // Drag mode blanks the bubble and stops the float; entering it at grab
-    // instead of past the slop made every pet blink.
+    // Drag mode blanks the bubble, so entering it at grab rather than past the
+    // slop makes every pet blink.
     if (!pastSlop.current) {
       if (Math.abs(rawX) + Math.abs(rawY) < TAP_SLOP_PX) return;
       pastSlop.current = true;
@@ -141,8 +137,8 @@ export function useBuddyDrag(onTap: () => void) {
 
   const handlePointerUp = useCallback(
     (e: React.PointerEvent) => {
-      // No matching pointerdown (the hearts chip swallowed it, a lost capture)
-      // means origin is stale, and a tap read off it would spend the day's pet.
+      // No matching pointerdown (the hearts chip swallows it) leaves origin
+      // stale, and a tap read off it spends the day's pet.
       if (!dragging.current || e.pointerId !== activePointer.current) return;
       const o = origin.current;
       const { x, y } = delta.current;
@@ -162,8 +158,8 @@ export function useBuddyDrag(onTap: () => void) {
     [endGesture],
   );
 
-  // A system gesture (iOS edge swipe, notification pull) cancels the touch and
-  // no pointerup arrives, leaving the buddy stuck in drag mode. Nothing commits.
+  // An iOS system gesture (edge swipe, notification pull) cancels the touch and
+  // no pointerup arrives, stranding the buddy in drag mode.
   const handlePointerCancel = useCallback(
     (e: React.PointerEvent) => {
       if (!dragging.current || e.pointerId !== activePointer.current) return;
