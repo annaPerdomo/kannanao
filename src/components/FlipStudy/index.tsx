@@ -27,6 +27,7 @@ import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { useCombo } from '@/hooks/useCombo';
 import { useFuriganaMask } from '@/hooks/useFuriganaMask';
 import { type SessionMode, useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
+import { sampleBuddyWords } from '@/lib/buddyWords';
 import type { ComboStepResult } from '@/lib/combo';
 import { cardXp } from '@/lib/flashcardUtils';
 import { LAYOUT } from '@/theme';
@@ -193,8 +194,9 @@ export default function FlipStudy({
       cardsStudied: gradedRef.current.size,
       cardsCorrect: correctRef.current,
       durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+      sampleWords: sampleBuddyWords([...gradedRef.current].map((i) => cards[i])),
     });
-  }, [embedded, endSession, sessionId]);
+  }, [cards, embedded, endSession, sessionId]);
 
   // The session closes when the finish screen appears, not when its button is
   // tapped: in a quest that button hands off to the next leg instead of

@@ -10,7 +10,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { awardLine } from '@/lib/buddyPhrases';
+import { awardLine, awardWordLine, fillWordSlot } from '@/lib/buddyPhrases';
+import type { BuddyWord } from '@/lib/buddyWords';
 import { type FriendshipSource } from '@/lib/friendship';
 import { isSessionRoute } from '@/lib/sessionRoutes';
 
@@ -26,6 +27,7 @@ interface ShownAward {
   buddyKey: string;
   source: FriendshipSource;
   awarded: number;
+  words: BuddyWord[];
   faceX: number;
   faceY: number;
   lineX: number;
@@ -92,7 +94,9 @@ export function FriendshipAwardToast() {
     } catch {
       // buddy without authored award lines — the chrome copy below stands in
     }
-    const authored = awardLine(copy, shown.source);
+    const template = awardWordLine(copy, shown.source);
+    const authored =
+      (template && fillWordSlot(template, shown.words[0])) ?? awardLine(copy, shown.source);
     line = authored ?? t(`award.${shown.source}`, { name, count: shown.awarded });
     // Authored lines never mention hearts and the flying ones are aria-hidden.
     announcement = authored

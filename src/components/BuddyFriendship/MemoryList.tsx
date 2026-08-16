@@ -6,9 +6,16 @@ import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
-import { FIRST_STORY_LEVEL, memoryTeaser, memoryTitle, unlockedStories } from '@/lib/buddyPhrases';
+import {
+  FIRST_STORY_LEVEL,
+  memoryTeaser,
+  memoryTitle,
+  memoryWord,
+  unlockedStories,
+} from '@/lib/buddyPhrases';
 import { MAX_FRIENDSHIP_LEVEL } from '@/lib/friendship';
 
+import { MemoryWordChip } from './MemoryWordChip';
 import { StoryBubble } from './StoryBubble';
 
 interface MemoryListProps {
@@ -43,16 +50,20 @@ export function MemoryList({ copy, level }: MemoryListProps) {
         {t('memories.heading')}
       </Typography>
 
-      {stories.map((story) => (
-        <Box key={story.level} sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-          <Typography sx={{ fontSize: '0.85rem', fontWeight: 800, color: brand[800] }}>
-            {memoryTitle(copy, story.level) ?? t(`levelNames.${story.level}`)}
-          </Typography>
-          {story.lines.map((line, i) => (
-            <StoryBubble key={i} text={line} animate={false} />
-          ))}
-        </Box>
-      ))}
+      {stories.map((story) => {
+        const word = memoryWord(copy, story.level);
+        return (
+          <Box key={story.level} sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+            <Typography sx={{ fontSize: '0.85rem', fontWeight: 800, color: brand[800] }}>
+              {memoryTitle(copy, story.level) ?? t(`levelNames.${story.level}`)}
+            </Typography>
+            {story.lines.map((line, i) => (
+              <StoryBubble key={i} text={line} animate={false} />
+            ))}
+            {word && <MemoryWordChip word={word} />}
+          </Box>
+        );
+      })}
 
       {locked.map((lockedLevel) => {
         const title = memoryTitle(copy, lockedLevel);

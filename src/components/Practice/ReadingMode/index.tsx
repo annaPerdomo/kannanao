@@ -10,6 +10,7 @@ import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
+import { sampleBuddyWords } from '@/lib/buddyWords';
 import { cardXp } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -139,6 +140,7 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
         cardsStudied: totalAnsweredRef.current,
         cardsCorrect: correctCountRef.current,
         durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+        sampleWords: sampleBuddyWords(queue.studiedCards()),
       });
     }
     onExit();
@@ -150,6 +152,7 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
         cardsStudied: totalAnsweredRef.current,
         cardsCorrect: correctCountRef.current,
         durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+        sampleWords: sampleBuddyWords(queue.studiedCards()),
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

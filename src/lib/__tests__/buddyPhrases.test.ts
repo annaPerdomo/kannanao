@@ -2,15 +2,22 @@ import { describe, expect, it } from 'vitest';
 
 import {
   awardLine,
+  awardWordLine,
   blendHomePhrases,
   buddyFacts,
+  fillWordSlot,
   greetingLines,
   memoryTeaser,
   memoryTitle,
+  memoryWord,
   reactionLines,
   storyLines,
   unlockedStories,
 } from '@/lib/buddyPhrases';
+import type { BuddyWord } from '@/lib/buddyWords';
+
+const NEKO: BuddyWord = { word: '猫', reading: 'ねこ' };
+const INU: BuddyWord = { word: '犬', reading: 'いぬ' };
 
 const COPY = {
   l2: {
@@ -72,6 +79,77 @@ describe('blendHomePhrases', () => {
 
   it('sanitises the base pool too', () => {
     expect(blendHomePhrases(['ok', '', ' '] as string[], COPY, 1)).toEqual(['ok']);
+  });
+
+  describe('word slots', () => {
+    const copy = {
+      l2: { phrases: ['carrying {word} around'] },
+      l3: { phrases: ['plain line', 'still thinking about {word}'] },
+    };
+
+    it('fills a slot from the words the learner just studied', () => {
+      expect(blendHomePhrases([], copy, 2, [NEKO])).toEqual(['carrying ねこ around']);
+    });
+
+    it('gives each slot line its own word', () => {
+      expect(blendHomePhrases([], copy, 3, [NEKO, INU])).toEqual([
+        'carrying ねこ around',
+        'plain line',
+        'still thinking about いぬ',
+      ]);
+    });
+
+    it('reuses the pool when there are more slots than words', () => {
+      expect(blendHomePhrases([], copy, 3, [NEKO])).toEqual([
+        'carrying ねこ around',
+        'plain line',
+        'still thinking about ねこ',
+      ]);
+    });
+
+    it('drops a slot line rather than rendering the hole', () => {
+      expect(blendHomePhrases(['base'], copy, 3)).toEqual(['base', 'plain line']);
+      expect(blendHomePhrases(['base'], copy, 3, [])).toEqual(['base', 'plain line']);
+    });
+
+    it('fills a slot in the base rotation too', () => {
+      expect(blendHomePhrases(['a day with {word}'], null, 1, [INU])).toEqual(['a day with いぬ']);
+    });
+  });
+});
+
+describe('fillWordSlot', () => {
+  it('replaces every slot in the line', () => {
+    expect(fillWordSlot('{word}, {word}!', NEKO)).toBe('ねこ, ねこ!');
+  });
+
+  it('is null with no word to drop in', () => {
+    expect(fillWordSlot('about {word}', undefined)).toBeNull();
+    expect(fillWordSlot('about {word}', null)).toBeNull();
+  });
+});
+
+describe('memoryWord', () => {
+  const copy = {
+    l2: { word: { jp: 'お弁当', reading: 'おべんとう', en: 'lunchbox' } },
+    l3: { word: { jp: 'ねこ' } },
+    l4: { word: { reading: 'なし', en: 'nothing' } },
+    l5: { word: 'not an object' },
+  };
+
+  it('reads the authored word', () => {
+    expect(memoryWord(copy, 2)).toEqual({ jp: 'お弁当', reading: 'おべんとう', en: 'lunchbox' });
+  });
+
+  it('fills in the optional halves so a chip can render either way', () => {
+    expect(memoryWord(copy, 3)).toEqual({ jp: 'ねこ', reading: '', en: '' });
+  });
+
+  it('is null without a Japanese word, or on malformed copy', () => {
+    expect(memoryWord(copy, 4)).toBeNull();
+    expect(memoryWord(copy, 5)).toBeNull();
+    expect(memoryWord({ l2: { story: ['told'] } }, 2)).toBeNull();
+    expect(memoryWord(null, 2)).toBeNull();
   });
 });
 
@@ -147,6 +225,19 @@ describe('awardLine', () => {
     expect(awardLine({ awards: 'not an object' }, 'pet')).toBeNull();
     expect(awardLine({ l2: { story: ['told'] } }, 'adventure')).toBeNull();
     expect(awardLine(null, 'adventure')).toBeNull();
+  });
+});
+
+describe('awardWordLine', () => {
+  const copy = { awards: { session: 'plain', sessionWord: 'about {word}' } };
+
+  it('reads the slot variant of a source that has one', () => {
+    expect(awardWordLine(copy, 'session')).toBe('about {word}');
+  });
+
+  it('is null for a source with only a plain line', () => {
+    expect(awardWordLine(copy, 'adventure')).toBeNull();
+    expect(awardWordLine(null, 'session')).toBeNull();
   });
 });
 

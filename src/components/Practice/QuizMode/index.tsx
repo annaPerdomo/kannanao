@@ -18,6 +18,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useProgress } from '@/hooks/useProgress';
 import { useQuizFlow } from '@/hooks/useQuizFlow';
+import { sampleBuddyWords } from '@/lib/buddyWords';
 import {
   buildMeaningChoices,
   getFlashcardDisplayText,
@@ -118,6 +119,7 @@ export function QuizMode({ cards, deckId, count, onExit }: QuizModeProps) {
         cardsStudied: quiz.total,
         cardsCorrect: quiz.score,
         durationSecs,
+        sampleWords: sampleBuddyWords(quiz.questions.slice(0, quiz.index).map((q) => q.card)),
       });
       await insertQuizResult({
         deckId,

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { invalidateApiCache } from '@/lib/apiCache';
 import { publishAssignmentComplete } from '@/lib/assignmentSignal';
+import type { BuddyWord } from '@/lib/buddyWords';
 import { CHEST_XP } from '@/lib/chest';
 import { cardXp } from '@/lib/flashcardUtils';
 import { publishSessionEnd } from '@/lib/sessionSignal';
@@ -583,9 +584,14 @@ export function useProgress(
   const endSession = useCallback(
     async (
       sessionId: string,
-      opts: { cardsStudied: number; cardsCorrect: number; durationSecs: number },
+      opts: {
+        cardsStudied: number;
+        cardsCorrect: number;
+        durationSecs: number;
+        sampleWords?: BuddyWord[];
+      },
     ): Promise<AssignmentCompleteResult | null> => {
-      const { cardsStudied, cardsCorrect, durationSecs } = opts;
+      const { cardsStudied, cardsCorrect, durationSecs, sampleWords } = opts;
       // Declared out here so the finally below can still report what landed if
       // one of the writes throws.
       let result: AssignmentCompleteResult | null = null;
@@ -665,7 +671,7 @@ export function useProgress(
         // Published on every terminal path, thrown or not — a screen waiting on
         // this has to be released, and the session heart is paid off it.
         publishAssignmentComplete(result?.completed ?? 0);
-        publishSessionEnd(cardsStudied);
+        publishSessionEnd(cardsStudied, sampleWords);
       }
       return result;
     },

@@ -116,6 +116,13 @@ export function usePracticeQueue(cards: Flashcard[], batchSize: number) {
     setPhase('playing');
   }, [currentCards, retryCount, batchIndex, batches, allCards]);
 
+  // Read at call time, not render time: the last answer of a round lands in the
+  // ref, and the session that ends on it must still see that card.
+  const studiedCards = useCallback(
+    () => allCards.filter((c) => firstAttempts.current.has(c.id)),
+    [allCards],
+  );
+
   const willRetry = lastRoundWrong > 0 && retryCount < MAX_RETRIES;
 
   // First-attempt stats computed once when practice completes
@@ -138,6 +145,7 @@ export function usePracticeQueue(cards: Flashcard[], batchSize: number) {
     reportResult,
     finishRound,
     nextRound,
+    studiedCards,
     totalCards: allCards.length,
     firstAttemptCorrect,
   };

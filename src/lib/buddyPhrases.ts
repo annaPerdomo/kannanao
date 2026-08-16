@@ -5,6 +5,7 @@
  */
 
 import type { GreetingKind } from './buddyGreetings';
+import { type BuddyWord, buddyWordText } from './buddyWords';
 import { type FriendshipSource, MAX_FRIENDSHIP_LEVEL } from './friendship';
 
 /** Lowest level that unlocks a story — level 1 is where everyone starts. */
@@ -85,22 +86,84 @@ export function reactionLines(copy: unknown, moment: BuddyReactionMoment): strin
   return sectionLines(copy, 'reactions', moment);
 }
 
-export function awardLine(copy: unknown, source: FriendshipSource): string | null {
+function awards(copy: unknown): Record<string, unknown> | null {
   if (!copy || typeof copy !== 'object') return null;
-  const awards = (copy as Record<string, unknown>).awards;
-  if (!awards || typeof awards !== 'object') return null;
-  return nonEmptyString((awards as Record<string, unknown>)[source]);
+  const entry = (copy as Record<string, unknown>).awards;
+  return entry && typeof entry === 'object' ? (entry as Record<string, unknown>) : null;
+}
+
+export function awardLine(copy: unknown, source: FriendshipSource): string | null {
+  return nonEmptyString(awards(copy)?.[source]);
+}
+
+export function awardWordLine(copy: unknown, source: FriendshipSource): string | null {
+  return nonEmptyString(awards(copy)?.[`${source}Word`]);
+}
+
+export const WORD_SLOT = '{word}';
+
+export function hasWordSlot(text: string): boolean {
+  return text.includes(WORD_SLOT);
+}
+
+export function fillWordSlot(text: string, word: BuddyWord | undefined | null): string | null {
+  if (!word) return null;
+  return text.split(WORD_SLOT).join(buddyWordText(word));
+}
+
+export interface BuddyMemoryWord {
+  jp: string;
+  reading: string;
+  en: string;
+}
+
+export function memoryWord(copy: unknown, level: number): BuddyMemoryWord | null {
+  const entry = levelCopy(copy, level)?.word;
+  if (!entry || typeof entry !== 'object') return null;
+  const { jp, reading, en } = entry as Record<string, unknown>;
+  const word = nonEmptyString(jp);
+  if (!word) return null;
+  return {
+    jp: word,
+    reading: nonEmptyString(reading) ?? '',
+    en: nonEmptyString(en) ?? '',
+  };
 }
 
 /**
- * Base rotation plus the idle lines every reached level unlocked. Deduped, so a
- * line repeated across levels doesn't come up twice as often.
+ * `{word}` slots left unfilled, so the pool stays stable while only the learner's
+ * words change — HomeBuddy keys its rotation on that.
  */
-export function blendHomePhrases(basePhrases: string[], copy: unknown, level: number): string[] {
+export function homePhraseTemplates(basePhrases: string[], copy: unknown, level: number): string[] {
   const pool = stringLines(basePhrases);
   const reached = Math.min(level, MAX_FRIENDSHIP_LEVEL);
   for (let l = FIRST_STORY_LEVEL; l <= reached; l++) {
     pool.push(...phraseLines(copy, l));
   }
-  return [...new Set(pool)];
+  return pool;
+}
+
+export function fillHomePhrases(templates: string[], words: BuddyWord[] = []): string[] {
+  const filled: string[] = [];
+  let slot = 0;
+  for (const phrase of templates) {
+    if (!hasWordSlot(phrase)) {
+      filled.push(phrase);
+      continue;
+    }
+    if (!words.length) continue;
+    const line = fillWordSlot(phrase, words[slot % words.length]);
+    slot += 1;
+    if (line) filled.push(line);
+  }
+  return [...new Set(filled)];
+}
+
+export function blendHomePhrases(
+  basePhrases: string[],
+  copy: unknown,
+  level: number,
+  words: BuddyWord[] = [],
+): string[] {
+  return fillHomePhrases(homePhraseTemplates(basePhrases, copy, level), words);
 }

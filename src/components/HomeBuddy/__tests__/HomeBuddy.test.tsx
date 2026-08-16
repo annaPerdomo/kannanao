@@ -37,6 +37,7 @@ let loadState = 'loaded';
 let levelUpEvent: { buddyKey: string; level: number } | null = null;
 let stamps: Record<string, string | null> = {};
 let todayGoals: { source: string; points: number; done: boolean }[] = [];
+let recentWords: { word: string; reading?: string }[] = [];
 
 vi.mock('@/contexts/BuddyFriendshipContext', () => ({
   useBuddyFriendshipCtx: () => ({
@@ -51,6 +52,7 @@ vi.mock('@/contexts/BuddyFriendshipContext', () => ({
     levelUpEvent,
     clearLevelUpEvent,
     openStories,
+    recentWords,
   }),
 }));
 
@@ -87,6 +89,7 @@ describe('HomeBuddy', () => {
     reactionEvent = null;
     stamps = {};
     todayGoals = [];
+    recentWords = [];
     buddyCopy = {};
     localStorage.clear();
     setViewport(1024, 768);
@@ -258,6 +261,51 @@ describe('HomeBuddy', () => {
 
     tap(container.firstChild as Element);
     expect(screen.getByText('level two idle')).toBeInTheDocument();
+  });
+
+  it('drops a word-slot phrase in the buddy’s own words once a session has left one', () => {
+    buddyCopy = {
+      homePhrases: ['home one'],
+      friendship: { l2: { phrases: ['still thinking about {word}'] } },
+    };
+    points = 15;
+    recentWords = [{ word: '犬', reading: 'いぬ' }];
+    const { container } = render(<HomeBuddy buddyKey="tango" />);
+
+    tap(container.firstChild as Element);
+    expect(screen.getByText('still thinking about いぬ')).toBeInTheDocument();
+  });
+
+  // A refilled pool must not read as a new one and reset the rotation.
+  it('keeps the session-end line up when that session’s words reach the rotation', async () => {
+    const { publishSessionEnd } = await import('@/lib/sessionSignal');
+    todayGoals = [{ source: 'session', points: 1, done: true }];
+    buddyCopy = {
+      homePhrases: ['home one'],
+      friendship: { l2: { phrases: ['still thinking about {word}'] } },
+      'reactions.sessionComplete': ['Good session!'],
+    };
+    points = 15;
+    const { rerender } = render(<HomeBuddy buddyKey="tango" />);
+    act(() => publishSessionEnd(10));
+    expect(screen.getByText('Good session!')).toBeInTheDocument();
+
+    recentWords = [{ word: '犬', reading: 'いぬ' }];
+    rerender(<HomeBuddy buddyKey="tango" />);
+    expect(screen.getByText('Good session!')).toBeInTheDocument();
+  });
+
+  it('leaves the slot phrase out entirely before there are any words', () => {
+    buddyCopy = {
+      homePhrases: ['home one'],
+      friendship: { l2: { phrases: ['still thinking about {word}'] } },
+    };
+    points = 15;
+    const { container } = render(<HomeBuddy buddyKey="tango" />);
+
+    tap(container.firstChild as Element);
+    expect(screen.getByText('home one')).toBeInTheDocument();
+    expect(screen.queryByText(/still thinking about/)).toBeNull();
   });
 
   it('keeps the base pool for a buddy still at the starting level', () => {

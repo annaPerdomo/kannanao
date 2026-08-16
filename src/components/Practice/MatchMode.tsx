@@ -13,6 +13,7 @@ import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { REVIEW_MIX, usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
+import { sampleBuddyWords } from '@/lib/buddyWords';
 import { cardXp, getFlashcardDisplayText } from '@/lib/flashcardUtils';
 import { shuffle } from '@/lib/reviewGames';
 import type { Flashcard } from '@/types/flashcard';
@@ -242,6 +243,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
         cardsStudied: totalAnsweredRef.current,
         cardsCorrect: correctCountRef.current,
         durationSecs: totalTime,
+        sampleWords: sampleBuddyWords(queue.studiedCards()),
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -310,6 +312,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
         cardsStudied: totalAnsweredRef.current,
         cardsCorrect: correctCountRef.current,
         durationSecs: totalTime + elapsed,
+        sampleWords: sampleBuddyWords(queue.studiedCards()),
       });
     }
     onExit();

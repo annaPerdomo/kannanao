@@ -611,6 +611,7 @@ describe('useBuddyFriendship', () => {
         buddyKey: 'buddy_bunny',
         source: 'adventure',
         awarded: 3,
+        words: [],
       });
 
       act(() => result.current.clearAwardEvent());
@@ -691,6 +692,80 @@ describe('useBuddyFriendship', () => {
       });
 
       expect(mockRpc).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── recent words ────────────────────────────────────────────────────────────
+
+  describe('recent words', () => {
+    const INU = { word: '犬', reading: 'いぬ' };
+    const NEKO = { word: '猫', reading: 'ねこ' };
+
+    beforeEach(() => {
+      localStorage.clear();
+    });
+
+    it('should start with whatever this account studied before', async () => {
+      localStorage.setItem('kannanao:buddy-words:u1', JSON.stringify([INU]));
+
+      const { result } = await renderLoaded();
+
+      expect(result.current.recentWords).toEqual([INU]);
+    });
+
+    it('should keep the words a finished session carried', async () => {
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        publishSessionEnd(5, [INU, NEKO]);
+      });
+
+      expect(result.current.recentWords).toEqual([INU, NEKO]);
+    });
+
+    it('should keep words from a session too short to earn a heart', async () => {
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        publishSessionEnd(2, [INU]);
+      });
+
+      expect(result.current.recentWords).toEqual([INU]);
+      expect(mockRpc).not.toHaveBeenCalled();
+    });
+
+    it('should hand the award event only the words the paying session carried', async () => {
+      localStorage.setItem('kannanao:buddy-words:u1', JSON.stringify([NEKO]));
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        publishSessionEnd(5, [INU]);
+      });
+
+      expect(result.current.awardEvent?.words).toEqual([INU]);
+    });
+
+    it('should leave the award event wordless when the session had no cards', async () => {
+      localStorage.setItem('kannanao:buddy-words:u1', JSON.stringify([NEKO]));
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        publishSessionEnd(5);
+      });
+
+      expect(result.current.awardEvent?.words).toEqual([]);
+    });
+
+    it('should not hand one account the words of the last one signed in', async () => {
+      localStorage.setItem('kannanao:buddy-words:u1', JSON.stringify([INU]));
+      const { result, rerender } = await renderLoaded();
+
+      mockUseAuth.mockReturnValue({ user: { id: 'u2' } });
+      await act(async () => {
+        rerender();
+      });
+
+      expect(result.current.recentWords).toEqual([]);
     });
   });
 });

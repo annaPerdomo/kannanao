@@ -63,6 +63,7 @@ describe('QuizMode finalization', () => {
       cardsStudied: 10,
       cardsCorrect: 8,
       durationSecs: expect.any(Number),
+      sampleWords: expect.any(Array),
     });
   });
 

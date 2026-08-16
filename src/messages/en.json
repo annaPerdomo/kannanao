@@ -1776,7 +1776,8 @@
         "memories": {
           "heading": "Memories",
           "locked": "Unlocks at {levelName}",
-          "lockedTitle": "???"
+          "lockedTitle": "???",
+          "word": "Word from this memory"
         },
         "continueHint": "Tap to continue",
         "close": "Close",
@@ -3072,7 +3073,12 @@
               "I carry one word around all day, like a stick.",
               "Today it was arigatou. I dropped it the second you got home."
             ],
-            "phrases": ["You're back! I saved you a seat."]
+            "phrases": ["You're back! I saved you a seat."],
+            "word": {
+              "jp": "ありがとう",
+              "reading": "ありがとう",
+              "en": "thank you"
+            }
           },
           "l3": {
             "title": "The Mail Carrier",
@@ -3081,7 +3087,15 @@
               "My favorite word is ohayou — it sounds like the sun getting up.",
               "I bark it at the mail carrier every morning. He never says it back."
             ],
-            "phrases": ["I found a new word while you were out!"]
+            "phrases": [
+              "I found a new word while you were out!",
+              "I've been carrying {word} around all day. Haven't dropped it once."
+            ],
+            "word": {
+              "jp": "おはよう",
+              "reading": "おはよう",
+              "en": "good morning"
+            }
           },
           "l4": {
             "title": "His First Word",
@@ -3091,7 +3105,15 @@
               "The first word I ever learned was your name.",
               "I practiced a whole week before I said it out loud."
             ],
-            "phrases": ["I told the mail carrier about you. He was very impressed."]
+            "phrases": [
+              "I told the mail carrier about you. He was very impressed.",
+              "I said {word} to the mail carrier. He still didn't say anything back."
+            ],
+            "word": {
+              "jp": "名前",
+              "reading": "なまえ",
+              "en": "name"
+            }
           },
           "l5": {
             "title": "The One He Chased",
@@ -3101,7 +3123,12 @@
               "One of them turned out to be you.",
               "Whatever we learn next — I'm glad it's with you."
             ],
-            "phrases": ["Best study buddy in the world. That's you, by the way."]
+            "phrases": ["Best study buddy in the world. That's you, by the way."],
+            "word": {
+              "jp": "言葉",
+              "reading": "ことば",
+              "en": "word"
+            }
           },
           "facts": [
             "Likes rainy study days. The window gets nice and quiet.",
@@ -3116,7 +3143,8 @@
           "awards": {
             "adventure": "Adventure done! Tango did three laps around the room.",
             "session": "Nice practice. Tango is extremely proud of you.",
-            "pet": "~leans into your hand~"
+            "pet": "~leans into your hand~",
+            "sessionWord": "{word}… that one's ours now."
           }
         }
       },
@@ -3171,7 +3199,12 @@
               "When you study late, I sit by the window.",
               "The tsuki keeps me company until you're done."
             ],
-            "phrases": ["You're back! I saved you the warm spot."]
+            "phrases": ["You're back! I saved you the warm spot."],
+            "word": {
+              "jp": "月",
+              "reading": "つき",
+              "en": "moon"
+            }
           },
           "l3": {
             "title": "The Thin Little Hook",
@@ -3180,7 +3213,15 @@
               "My favorite night is when the moon is a thin little hook.",
               "I hop higher on those nights. I almost reached it once."
             ],
-            "phrases": ["The moon was out. I told it about you."]
+            "phrases": [
+              "The moon was out. I told it about you.",
+              "I told the moon about {word}. It already knew, but it let me finish."
+            ],
+            "word": {
+              "jp": "夜",
+              "reading": "よる",
+              "en": "night"
+            }
           },
           "l4": {
             "title": "Where She Came From",
@@ -3189,7 +3230,15 @@
               "I've never told anyone — I used to think I came from up there.",
               "Now I'd rather be down here, on the corner of your desk."
             ],
-            "phrases": ["Studying with you beats hopping. And I love hopping."]
+            "phrases": [
+              "Studying with you beats hopping. And I love hopping.",
+              "Say {word} once more? I want to keep it on the desk with us."
+            ],
+            "word": {
+              "jp": "机",
+              "reading": "つくえ",
+              "en": "desk"
+            }
           },
           "l5": {
             "title": "Why She Comes Back",
@@ -3199,7 +3248,12 @@
               "I come back for you. That's a different thing.",
               "I'm glad it's you."
             ],
-            "phrases": ["Wherever you go, I'll hop after you."]
+            "phrases": ["Wherever you go, I'll hop after you."],
+            "word": {
+              "jp": "毎晩",
+              "reading": "まいばん",
+              "en": "every night"
+            }
           },
           "facts": [
             "Carrots first, then studying. That's the rule.",
@@ -3214,7 +3268,8 @@
           "awards": {
             "adventure": "Tsuki hopped so high she surprised herself.",
             "session": "Lovely. Her ears stayed up the whole time.",
-            "pet": "~melts into a puddle of rabbit~"
+            "pet": "~melts into a puddle of rabbit~",
+            "sessionWord": "{word}. I'm keeping that one by the window."
           }
         }
       },
@@ -3269,7 +3324,12 @@
               "Every morning I slide to your desk instead of walking.",
               "It isn't faster. It's just the correct way to arrive."
             ],
-            "phrases": ["Slid over the second I heard you."]
+            "phrases": ["Slid over the second I heard you."],
+            "word": {
+              "jp": "毎朝",
+              "reading": "まいあさ",
+              "en": "every morning"
+            }
           },
           "l3": {
             "title": "Most of an Ocean",
@@ -3279,7 +3339,15 @@
               "I slid most of an ocean to get here. Mostly on my stomach.",
               "The scarf came the whole way with me."
             ],
-            "phrases": ["My scarf is from home. It travels well."]
+            "phrases": [
+              "My scarf is from home. It travels well.",
+              "{word} travelled with me all day. Like the scarf."
+            ],
+            "word": {
+              "jp": "海",
+              "reading": "うみ",
+              "en": "ocean"
+            }
           },
           "l4": {
             "title": "The Halfway Point",
@@ -3289,7 +3357,15 @@
               "Halfway here I stopped, and thought about turning back.",
               "Then I thought about somebody waiting, and kept sliding."
             ],
-            "phrases": ["Whatever's next, I'm sliding there too."]
+            "phrases": [
+              "Whatever's next, I'm sliding there too.",
+              "I practiced {word} halfway across the room. Sliding helps."
+            ],
+            "word": {
+              "jp": "半分",
+              "reading": "はんぶん",
+              "en": "half"
+            }
           },
           "l5": {
             "title": "The Snowflake He Carried",
@@ -3299,7 +3375,12 @@
               "I was saving it for whoever I found at the end.",
               "I'm glad it's you."
             ],
-            "phrases": ["The snowflake's still here. So am I."]
+            "phrases": ["The snowflake's still here. So am I."],
+            "word": {
+              "jp": "雪",
+              "reading": "ゆき",
+              "en": "snow"
+            }
           },
           "facts": [
             "Waddles everywhere. Slides anywhere with a slope.",
@@ -3314,7 +3395,8 @@
           "awards": {
             "adventure": "Adventure cleared. Shiro slid a victory lap.",
             "session": "Good work. Shiro huddled close the whole time.",
-            "pet": "~leans in, scarf and all~"
+            "pet": "~leans in, scarf and all~",
+            "sessionWord": "{word}. Filed carefully, under the scarf."
           }
         }
       },
@@ -3369,7 +3451,12 @@
               "Every morning I roll over three times before I get up.",
               "It isn't for anything. It's just how a day starts~"
             ],
-            "phrases": ["Rolled over three times. Ready now~"]
+            "phrases": ["Rolled over three times. Ready now~"],
+            "word": {
+              "jp": "三つ",
+              "reading": "みっつ",
+              "en": "three"
+            }
           },
           "l3": {
             "title": "The Best Leaf",
@@ -3378,7 +3465,15 @@
               "I sort the bamboo leaves and keep the best one back.",
               "Today's best one is yours. It's extremely green~"
             ],
-            "phrases": ["Saved you the best leaf. No hurry~"]
+            "phrases": [
+              "Saved you the best leaf. No hurry~",
+              "I put {word} next to the best leaf~"
+            ],
+            "word": {
+              "jp": "葉っぱ",
+              "reading": "はっぱ",
+              "en": "leaf"
+            }
           },
           "l4": {
             "title": "A Hard Word",
@@ -3388,7 +3483,15 @@
               "When I got here I thought I was too slow to be anyone's study buddy.",
               "Then you took your time over a hard word. Oh, I thought. That's my speed."
             ],
-            "phrases": ["Slow road today. I'm on it too~"]
+            "phrases": [
+              "Slow road today. I'm on it too~",
+              "{word} took me all morning. Slow road. Got there~"
+            ],
+            "word": {
+              "jp": "ゆっくり",
+              "reading": "ゆっくり",
+              "en": "slowly"
+            }
           },
           "l5": {
             "title": "Bamboo at Night",
@@ -3398,7 +3501,12 @@
               "I like to watch anyway. I like watching you.",
               "No rush, ever. I'm glad it's you~"
             ],
-            "phrases": ["Bamboo grew a bit. So did you~"]
+            "phrases": ["Bamboo grew a bit. So did you~"],
+            "word": {
+              "jp": "竹",
+              "reading": "たけ",
+              "en": "bamboo"
+            }
           },
           "facts": [
             "Eats the leaves first, the stalk after. Never the other way~",
@@ -3413,7 +3521,8 @@
           "awards": {
             "adventure": "All done~ Goro rolled over about it.",
             "session": "Good pace. Goro never once hurried you.",
-            "pet": "~goes completely limp, delighted~"
+            "pet": "~goes completely limp, delighted~",
+            "sessionWord": "{word}~ we'll take that one slowly, together."
           }
         }
       },
@@ -3468,7 +3577,12 @@
               "Before I float, I put my book on my chest.",
               "Then I can read and drift at once. Best system in the river."
             ],
-            "phrases": ["You're back! Book's still on my tummy."]
+            "phrases": ["You're back! Book's still on my tummy."],
+            "word": {
+              "jp": "本",
+              "reading": "ほん",
+              "en": "book"
+            }
           },
           "l3": {
             "title": "The Stone He Kept",
@@ -3477,7 +3591,15 @@
               "I've had the same stone since I was small.",
               "It opens any shell first try. I don't use any other one."
             ],
-            "phrases": ["Stone is ready. Shells later, words first~"]
+            "phrases": [
+              "Stone is ready. Shells later, words first~",
+              "I cracked {word} open like a shell. First try, too."
+            ],
+            "word": {
+              "jp": "石",
+              "reading": "いし",
+              "en": "stone"
+            }
           },
           "l4": {
             "title": "So Nobody Drifts",
@@ -3487,7 +3609,15 @@
               "Otters drift apart in the night unless we hold on to something.",
               "Lately I hold the corner of your notebook."
             ],
-            "phrases": ["Holding your page. Take your time~"]
+            "phrases": [
+              "Holding your page. Take your time~",
+              "Holding {word} with both paws. The river isn't getting it."
+            ],
+            "word": {
+              "jp": "手",
+              "reading": "て",
+              "en": "hand"
+            }
           },
           "l5": {
             "title": "The One He Held On To",
@@ -3497,7 +3627,12 @@
               "I decided you're the one thing I don't let go of.",
               "I'm glad it's you."
             ],
-            "phrases": ["Whatever the river does, I'm holding on."]
+            "phrases": ["Whatever the river does, I'm holding on."],
+            "word": {
+              "jp": "川",
+              "reading": "かわ",
+              "en": "river"
+            }
           },
           "facts": [
             "Reads belly-up. Insists it's the correct posture.",
@@ -3512,7 +3647,8 @@
           "awards": {
             "adventure": "Adventure done. Rakko clapped both paws.",
             "session": "Nice and steady. He never let go.",
-            "pet": "~holds your finger, just for a second~"
+            "pet": "~holds your finger, just for a second~",
+            "sessionWord": "{word}. Not letting go of that one."
           }
         }
       },
@@ -3563,7 +3699,12 @@
               "I sat at the shrine gate all afternoon, guarding it.",
               "Also it's the sunniest step. Both things are true, kon."
             ],
-            "phrases": ["You're back. I kept the gate warm."]
+            "phrases": ["You're back. I kept the gate warm."],
+            "word": {
+              "jp": "お日さま",
+              "reading": "おひさま",
+              "en": "the sun"
+            }
           },
           "l3": {
             "title": "The Piece He Left",
@@ -3572,7 +3713,15 @@
               "Someone left inari-zushi at the gate — sweet fried tofu, my favorite.",
               "I ate two and left one. Very noble of me, kon kon."
             ],
-            "phrases": ["I saved you a piece of inari. Study first!"]
+            "phrases": [
+              "I saved you a piece of inari. Study first!",
+              "{word}. I said it at the gate all afternoon, kon."
+            ],
+            "word": {
+              "jp": "お寿司",
+              "reading": "おすし",
+              "en": "sushi"
+            }
           },
           "l4": {
             "title": "A Useful Fox",
@@ -3581,7 +3730,15 @@
               "Here's something I don't tell people.",
               "Foxes are supposed to be tricky. I'd rather be useful to you."
             ],
-            "phrases": ["Kon kon! Let's be clever together."]
+            "phrases": [
+              "Kon kon! Let's be clever together.",
+              "A clever fox knows {word}. You know it too. Clever, kon kon."
+            ],
+            "word": {
+              "jp": "一緒",
+              "reading": "いっしょ",
+              "en": "together"
+            }
           },
           "l5": {
             "title": "The One He Followed",
@@ -3591,7 +3748,12 @@
               "You're the one I followed home. Kon kon.",
               "Glad it was you."
             ],
-            "phrases": ["Wherever you're headed, I'm coming too."]
+            "phrases": ["Wherever you're headed, I'm coming too."],
+            "word": {
+              "jp": "家",
+              "reading": "いえ",
+              "en": "home"
+            }
           },
           "facts": [
             "Sweet fried tofu beats every other food. It isn't close.",
@@ -3606,7 +3768,8 @@
           "awards": {
             "adventure": "The whole path, cleared. Kon kon!",
             "session": "Clever fox, clever friend. Well done.",
-            "pet": "~tail thumps twice, very dignified~"
+            "pet": "~tail thumps twice, very dignified~",
+            "sessionWord": "{word}, kon. Filed under words worth keeping."
           }
         }
       },
@@ -3661,7 +3824,12 @@
               "Every morning I polish my bell until it rings properly.",
               "A dull bell brings dull luck. I don't do dull luck, nya."
             ],
-            "phrases": ["Bell's polished. Luck is open for business, nya."]
+            "phrases": ["Bell's polished. Luck is open for business, nya."],
+            "word": {
+              "jp": "鈴",
+              "reading": "すず",
+              "en": "bell"
+            }
           },
           "l3": {
             "title": "Arranged in Advance",
@@ -3670,7 +3838,15 @@
               "My real talent is arranging the luck before it arrives.",
               "That good thing that happened last week? Arranged. You're welcome."
             ],
-            "phrases": ["That good thing yesterday? You're welcome."]
+            "phrases": [
+              "That good thing yesterday? You're welcome.",
+              "{word} turning up today? Arranged. You're welcome, nya."
+            ],
+            "word": {
+              "jp": "運",
+              "reading": "うん",
+              "en": "luck"
+            }
           },
           "l4": {
             "title": "Waving and Hoping",
@@ -3679,7 +3855,15 @@
               "Nobody knows this. Some days I'm not sure I arrange anything at all.",
               "Some days I just wave, and hope, and take the credit afterwards."
             ],
-            "phrases": ["Waving extra hard today. Don't ask why."]
+            "phrases": [
+              "Waving extra hard today. Don't ask why.",
+              "I waved so {word} would stick. Waving is most of the job."
+            ],
+            "word": {
+              "jp": "時々",
+              "reading": "ときどき",
+              "en": "sometimes"
+            }
           },
           "l5": {
             "title": "The Cat Who Turned Her Head",
@@ -3689,7 +3873,12 @@
               "You looked at me. Only me. So I turned my head.",
               "Lucky, that. I'm glad it's you."
             ],
-            "phrases": ["Out of everyone, you came back. Ring ring~"]
+            "phrases": ["Out of everyone, you came back. Ring ring~"],
+            "word": {
+              "jp": "百",
+              "reading": "ひゃく",
+              "en": "a hundred"
+            }
           },
           "facts": [
             "Polishes her bell twice a day. Three times before a quiz.",
@@ -3704,7 +3893,8 @@
           "awards": {
             "adventure": "I arranged that luck myself, nya.",
             "session": "Well earned. Suzu takes some credit anyway.",
-            "pet": "~bell rings all by itself~"
+            "pet": "~bell rings all by itself~",
+            "sessionWord": "{word}. Ring ring — that's what a good one sounds like."
           }
         }
       },
@@ -3759,7 +3949,12 @@
               "I napped on your notebook again, nya.",
               "It was warm and it smelled like you. That's two good reasons."
             ],
-            "phrases": ["You're back. I kept your chair warm, nya."]
+            "phrases": ["You're back. I kept your chair warm, nya."],
+            "word": {
+              "jp": "昼寝",
+              "reading": "ひるね",
+              "en": "nap"
+            }
           },
           "l3": {
             "title": "The Ball Under the Couch",
@@ -3768,7 +3963,15 @@
               "I chased a tama down the stairs once — a little glass ball, blue on the inside.",
               "It lives under the couch now. I visit it."
             ],
-            "phrases": ["My ball can wait. Study first, nya."]
+            "phrases": [
+              "My ball can wait. Study first, nya.",
+              "{word} rolled under the couch with my ball. I'll get both later, nya."
+            ],
+            "word": {
+              "jp": "玉",
+              "reading": "たま",
+              "en": "ball"
+            }
           },
           "l4": {
             "title": "A Terrible Hunter",
@@ -3777,7 +3980,15 @@
               "Nobody knows this: I'm actually a terrible hunter.",
               "I just like it when you cheer for me anyway."
             ],
-            "phrases": ["I'll nap right here. You do the smart part."]
+            "phrases": [
+              "I'll nap right here. You do the smart part.",
+              "You learned {word}. I napped. Great team, nya."
+            ],
+            "word": {
+              "jp": "下手",
+              "reading": "へた",
+              "en": "bad at something"
+            }
           },
           "l5": {
             "title": "How Cats Pick",
@@ -3786,7 +3997,12 @@
               "Cats pick their person. It usually takes us ages.",
               "I picked fast. I'm glad it's you, nya."
             ],
-            "phrases": ["My favorite person just showed up, nya~"]
+            "phrases": ["My favorite person just showed up, nya~"],
+            "word": {
+              "jp": "猫",
+              "reading": "ねこ",
+              "en": "cat"
+            }
           },
           "facts": [
             "Sleeps eighteen hours. Studies in the other six, nya.",
@@ -3801,7 +4017,8 @@
           "awards": {
             "adventure": "All done, nya. Tama stretched enormously.",
             "session": "Good studying. Tama supervised from here.",
-            "pet": "~a purr you can feel through the desk~"
+            "pet": "~a purr you can feel through the desk~",
+            "sessionWord": "{word}, nya. I'll sleep on that one."
           }
         }
       },
@@ -3856,7 +4073,12 @@
               "Every morning I check the water in my plate is level.",
               "If it spills I go quiet all day. Today it is fine. Today I can talk."
             ],
-            "phrases": ["Plate's level today. I can stay out, kyu."]
+            "phrases": ["Plate's level today. I can stay out, kyu."],
+            "word": {
+              "jp": "水",
+              "reading": "みず",
+              "en": "water"
+            }
           },
           "l3": {
             "title": "The Big Rock",
@@ -3865,7 +4087,15 @@
               "When nobody is watching I jump off the big rock.",
               "It soaks the whole bank. I'm very good at it, kyu."
             ],
-            "phrases": ["…I did a big jump. Please don't tell anyone."]
+            "phrases": [
+              "…I did a big jump. Please don't tell anyone.",
+              "I shouted {word} off the big rock. Very loud, kyu."
+            ],
+            "word": {
+              "jp": "大きい",
+              "reading": "おおきい",
+              "en": "big"
+            }
           },
           "l4": {
             "title": "The Hiding Place",
@@ -3874,7 +4104,15 @@
               "I've never told anyone. I used to hide whenever somebody came to the river.",
               "I still want to, a little. I just don't, when it's you."
             ],
-            "phrases": ["I didn't hide. That one was for you."]
+            "phrases": [
+              "I didn't hide. That one was for you.",
+              "{word} didn't make me hide. Not even a little."
+            ],
+            "word": {
+              "jp": "大丈夫",
+              "reading": "だいじょうぶ",
+              "en": "it's okay"
+            }
           },
           "l5": {
             "title": "All the Way Out",
@@ -3884,7 +4122,12 @@
               "I came all the way out. On purpose. For one person.",
               "I'm glad it's you."
             ],
-            "phrases": ["Came all the way out. Worth it, kero~"]
+            "phrases": ["Came all the way out. Worth it, kero~"],
+            "word": {
+              "jp": "外",
+              "reading": "そと",
+              "en": "outside"
+            }
           },
           "facts": [
             "One cucumber for one correct answer. The rate never changes.",
@@ -3899,7 +4142,8 @@
           "awards": {
             "adventure": "You did it. Sara cheered — quietly, inside.",
             "session": "Good work. Have a cucumber, kyu.",
-            "pet": "~ducks under, then peeks straight back up~"
+            "pet": "~ducks under, then peeks straight back up~",
+            "sessionWord": "{word}, kyu. My plate didn't even wobble."
           }
         }
       },
@@ -3954,7 +4198,12 @@
               "This morning I put a leaf on my head and turned into a teapot.",
               "Then I sneezed. Poof. Just Ponta again."
             ],
-            "phrases": ["You're back! Leaf on my head, ready to go."]
+            "phrases": ["You're back! Leaf on my head, ready to go."],
+            "word": {
+              "jp": "お茶",
+              "reading": "おちゃ",
+              "en": "tea"
+            }
           },
           "l3": {
             "title": "The Desk Lamp",
@@ -3963,7 +4212,15 @@
               "My best trick is turning into your desk lamp.",
               "You studied a whole hour under me and never noticed. Best day ever."
             ],
-            "phrases": ["I was a teapot for a while. I'm over it now."]
+            "phrases": [
+              "I was a teapot for a while. I'm over it now.",
+              "I tried turning into {word}. Turns out you can't turn into a word, pon."
+            ],
+            "word": {
+              "jp": "電気",
+              "reading": "でんき",
+              "en": "light"
+            }
           },
           "l4": {
             "title": "About the Drum",
@@ -3972,7 +4229,15 @@
               "Okay, never told anyone: my belly-drum isn't actually very good.",
               "Ponpoko, ponpoko — mostly it's just me being loud."
             ],
-            "phrases": ["Ponpoko! Drum's all warmed up for you."]
+            "phrases": [
+              "Ponpoko! Drum's all warmed up for you.",
+              "Ponpoko! That drum roll was for {word}."
+            ],
+            "word": {
+              "jp": "お腹",
+              "reading": "おなか",
+              "en": "belly"
+            }
           },
           "l5": {
             "title": "No Tricks",
@@ -3981,7 +4246,12 @@
               "Tanuki fool people for fun. I never once fooled you.",
               "Never wanted to. I'm glad it's you, pon."
             ],
-            "phrases": ["No tricks today. Just us."]
+            "phrases": ["No tricks today. Just us."],
+            "word": {
+              "jp": "本当",
+              "reading": "ほんとう",
+              "en": "really"
+            }
           },
           "facts": [
             "Sleeps with the leaf on his head, just in case.",
@@ -3996,7 +4266,8 @@
           "awards": {
             "adventure": "Pom poko! Ponta drummed the whole way.",
             "session": "Nice one. No magic involved, pon.",
-            "pet": "~drums his belly under your hand~"
+            "pet": "~drums his belly under your hand~",
+            "sessionWord": "{word}! Worth a drum roll, pon."
           }
         }
       },
@@ -4049,7 +4320,12 @@
               "Every word you learn goes into the notebook that evening.",
               "Date, meaning, and whether you smiled. I keep good records."
             ],
-            "phrases": ["Noted. Carry on~"]
+            "phrases": ["Noted. Carry on~"],
+            "word": {
+              "jp": "夕方",
+              "reading": "ゆうがた",
+              "en": "evening"
+            }
           },
           "l3": {
             "title": "A Leaf a Page",
@@ -4058,7 +4334,15 @@
               "I press one maple leaf for every page I finish.",
               "The notebook won't shut anymore. That's how you know it's working."
             ],
-            "phrases": ["That page earned a leaf. ✏️"]
+            "phrases": [
+              "That page earned a leaf. ✏️",
+              "{word} — noted, dated, and pressed with a leaf."
+            ],
+            "word": {
+              "jp": "秋",
+              "reading": "あき",
+              "en": "autumn"
+            }
           },
           "l4": {
             "title": "The First Page",
@@ -4067,7 +4351,15 @@
               "I've never shown anyone the first page.",
               "It isn't a word at all. It's the day you started, in my very best handwriting."
             ],
-            "phrases": ["Page one is still my favorite."]
+            "phrases": [
+              "Page one is still my favorite.",
+              "{word} is on today's page, right under where you smiled."
+            ],
+            "word": {
+              "jp": "最初",
+              "reading": "さいしょ",
+              "en": "the first"
+            }
           },
           "l5": {
             "title": "The Whole Notebook",
@@ -4077,7 +4369,12 @@
               "I keep ours in a notebook. Every page has you on it somewhere.",
               "I'm glad it's you."
             ],
-            "phrases": ["Every page has you on it, you know."]
+            "phrases": ["Every page has you on it, you know."],
+            "word": {
+              "jp": "全部",
+              "reading": "ぜんぶ",
+              "en": "all of it"
+            }
           },
           "facts": [
             "Writes in pencil so mistakes can simply leave.",
@@ -4092,7 +4389,8 @@
           "awards": {
             "adventure": "Noted, underlined, and starred. Well done.",
             "session": "Straight into the notebook. Good work.",
-            "pet": "~ears flatten, glasses go crooked~"
+            "pet": "~ears flatten, glasses go crooked~",
+            "sessionWord": "{word} — written down. Nothing gets lost here."
           }
         }
       }

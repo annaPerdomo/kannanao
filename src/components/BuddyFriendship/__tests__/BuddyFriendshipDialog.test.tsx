@@ -12,6 +12,7 @@ const FRIENDSHIP_COPY: Record<string, unknown> = {
       teaser: 'tango teaser two',
       story: ['tango line one', 'tango line two'],
       phrases: ['tango idle two'],
+      word: { jp: 'ねこ', reading: 'ねこ', en: 'cat' },
     },
     l3: {
       title: 'The Mail Carrier',
@@ -359,6 +360,24 @@ describe('BuddyFriendshipDialog', () => {
     expect(screen.getByText('tango teaser three')).toBeInTheDocument();
     expect(screen.queryByText('tango level three')).toBeNull();
     expect(screen.getByText('memories.locked|levelNames.3')).toBeInTheDocument();
+  });
+
+  it('hands the learner the word an unlocked memory teaches', () => {
+    storyRequest = { mode: 'browse', buddyKey: 'buddy_tango' };
+    render(<BuddyFriendshipDialog />);
+
+    expect(screen.getByText('memories.word')).toBeInTheDocument();
+    expect(screen.getByText('ねこ')).toBeInTheDocument();
+    expect(screen.getByText('cat')).toBeInTheDocument();
+  });
+
+  it('leaves out the word chip on a memory with none written', () => {
+    friendships = { buddy_tango: row('buddy_tango', 40) };
+    storyRequest = { mode: 'browse', buddyKey: 'buddy_tango' };
+    render(<BuddyFriendshipDialog />);
+
+    expect(screen.getByText('tango level three')).toBeInTheDocument();
+    expect(screen.getAllByText('memories.word')).toHaveLength(1);
   });
 
   it('browses off the buddy’s live hearts, not the level it was opened with', () => {

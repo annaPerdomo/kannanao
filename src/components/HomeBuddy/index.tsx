@@ -10,7 +10,7 @@ import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
 import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
 import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { BUDDY_ART, buddyFaceSrc, FALLBACK_REACTIONS, randomFaceVariant } from '@/lib/buddies';
-import { blendHomePhrases } from '@/lib/buddyPhrases';
+import { fillHomePhrases, homePhraseTemplates } from '@/lib/buddyPhrases';
 import { friendshipLevel } from '@/lib/friendship';
 
 import { bounce, glowPulse, heartPop, idleFloat, tapWiggle, wobble } from './animations';
@@ -52,7 +52,8 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
   const { reactionEvent } = useBuddyReaction();
-  const { petBuddy, canPetToday, ensureLoaded, levelUpEvent, equipped } = useBuddyFriendshipCtx();
+  const { petBuddy, canPetToday, ensureLoaded, levelUpEvent, equipped, recentWords } =
+    useBuddyFriendshipCtx();
   const accent = BUDDY_ART[buddyKey]?.accent ?? brand[300];
 
   useEffect(() => {
@@ -64,7 +65,7 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     setFaceVariant(randomFaceVariant());
   }, [buddyKey]);
   const level = friendshipLevel(equipped?.points ?? 0);
-  const phrases = useMemo(() => {
+  const phraseTemplates = useMemo(() => {
     let base = [t('defaultPhrase')];
     let friendshipCopy: unknown = null;
     try {
@@ -74,8 +75,12 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     } catch {
       // missing key — the guards keep whatever resolved before the throw
     }
-    return blendHomePhrases(base, friendshipCopy, level);
+    return homePhraseTemplates(base, friendshipCopy, level);
   }, [buddyKey, level, t, tBuddies]);
+  const phrases = useMemo(
+    () => fillHomePhrases(phraseTemplates, recentWords),
+    [phraseTemplates, recentWords],
+  );
 
   const [bubbleText, setBubbleText] = useState('');
   /** Outranks the ambient phrase, which would otherwise rotate over it. */
@@ -89,11 +94,11 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const phraseIndex = useRef(0);
   const reactionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Keyed on the pool's contents, not its identity: a re-render that rebuilds
-  // an identical array would otherwise snap the rotation back to phrase one.
+  // Keyed on the UNFILLED templates: identity resets the rotation on any rebuild,
+  // and filled text changes at session end — blanking that session's own line.
   const phrasesRef = useRef(phrases);
   phrasesRef.current = phrases;
-  const phrasePool = phrases.join('␟');
+  const phrasePool = phraseTemplates.join('␟');
   useEffect(() => {
     phraseIndex.current = 0;
     setBubbleText(phrasesRef.current[0]);

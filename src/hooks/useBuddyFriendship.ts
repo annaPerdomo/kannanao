@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useShopCtx } from '@/contexts/ShopContext';
 import { resolveBuddyKey } from '@/lib/buddies';
+import { type BuddyWord, recentWords as loadRecentWords, rememberWords } from '@/lib/buddyWords';
 import { localDateString } from '@/lib/chest';
 import {
   canEarn,
@@ -47,6 +48,8 @@ export interface FriendshipAwardEvent {
   buddyKey: string;
   source: FriendshipSource;
   awarded: number;
+  /** Words from the session that paid, not the rolling window — empty for pet/adventure. */
+  words: BuddyWord[];
 }
 
 /**
@@ -130,6 +133,8 @@ export function useBuddyFriendship() {
   const [error, setError] = useState<string | null>(null);
   const [levelUpEvent, setLevelUpEvent] = useState<FriendshipLevelUp | null>(null);
   const [awardEvent, setAwardEvent] = useState<FriendshipAwardEvent | null>(null);
+  // Read in an effect, never at init: the server render has no localStorage.
+  const [recentWords, setRecentWords] = useState<BuddyWord[]>([]);
 
   const loadRef = useRef<{ userId: string; promise: Promise<void> } | null>(null);
 
@@ -180,6 +185,10 @@ export function useBuddyFriendship() {
   }, [user, fetchFriendships]);
 
   useEffect(() => {
+    setRecentWords(loadRecentWords(user?.id));
+  }, [user?.id]);
+
+  useEffect(() => {
     if (user) return;
     loadRef.current = null;
     setFriendships({});
@@ -209,7 +218,7 @@ export function useBuddyFriendship() {
   const awardIdRef = useRef(0);
 
   const awardFriendship = useCallback(
-    async (source: FriendshipSource): Promise<FriendshipAward | null> => {
+    async (source: FriendshipSource, words: BuddyWord[] = []): Promise<FriendshipAward | null> => {
       // Until the shop resolves, resolveBuddyKey answers with the default
       // buddy — and the per-day cap means hearts paid to the wrong buddy can't
       // be moved to the right one today.
@@ -301,7 +310,7 @@ export function useBuddyFriendship() {
         const newLevel = friendshipLevel(total);
         const leveledUp = newLevel > friendshipLevel(total - points);
         if (leveledUp) setLevelUpEvent({ buddyKey, level: newLevel });
-        setAwardEvent({ buddyKey, source, awarded: points });
+        setAwardEvent({ buddyKey, source, awarded: points, words });
         setError(null);
         return { awarded: points, points: total, leveledUp, newLevel };
       } catch (err) {
@@ -322,10 +331,19 @@ export function useBuddyFriendship() {
   // Subscribe once — awardFriendship's identity changes on every award.
   const awardRef = useRef(awardFriendship);
   awardRef.current = awardFriendship;
+  const userIdRef = useRef(user?.id);
+  userIdRef.current = user?.id;
   useEffect(
     () =>
       onSessionEnd((signal) => {
-        if (isMeaningfulSession(signal.cardsStudied)) void awardRef.current('session');
+        // Outside the meaningful-session gate on purpose: a sitting too short
+        // to pay a heart still taught words.
+        if (signal.sampleWords.length) {
+          setRecentWords(rememberWords(userIdRef.current, signal.sampleWords));
+        }
+        if (isMeaningfulSession(signal.cardsStudied)) {
+          void awardRef.current('session', signal.sampleWords);
+        }
       }),
     [],
   );
@@ -354,6 +372,7 @@ export function useBuddyFriendship() {
     clearLevelUpEvent,
     awardEvent,
     clearAwardEvent,
+    recentWords,
     ensureLoaded,
     refetch,
   };
