@@ -1792,6 +1792,36 @@
           "memory": "So close! {name} has something to tell you.",
           "fact": "{count, plural, one {# more heart} other {# more hearts}} and you'll learn something new about {name}."
         },
+        "greetings": {
+          "backAfterBreak": [
+            "You're back! I saved your spot. ✨",
+            "There you are! Let's pick up right where we left off."
+          ],
+          "allDone": [
+            "We did everything today — see you tomorrow! ✨",
+            "All of today's hearts are here. You were great today!"
+          ],
+          "nearMilestone": [
+            "One more heart and something new happens…!",
+            "We're one heart away from something special!"
+          ],
+          "adventureNotDone": [
+            "Today's adventure is waiting for us!",
+            "Ready for today's adventure? I am!"
+          ]
+        },
+        "reactions": {
+          "comeback": [
+            "You got it this time! ✨",
+            "That tricky one? Beaten!",
+            "See? It stuck with you!"
+          ],
+          "sessionComplete": [
+            "That was fun! Same time tomorrow?",
+            "Nice work today. I like studying with you!",
+            "We make a good team!"
+          ]
+        },
         "celebration": {
           "unlocksHeading": "What this brought",
           "unlockMemory": "A new memory: {title}",

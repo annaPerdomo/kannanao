@@ -4,6 +4,7 @@
  * and a missing or half-authored level must degrade rather than throw in render.
  */
 
+import type { GreetingKind } from './buddyGreetings';
 import { type FriendshipSource, MAX_FRIENDSHIP_LEVEL } from './friendship';
 
 /** Lowest level that unlocks a story — level 1 is where everyone starts. */
@@ -65,6 +66,23 @@ export function buddyFacts(copy: unknown): string[] {
   const facts = value.map((line) => (typeof line === 'string' && line.trim() !== '' ? line : ''));
   while (facts.length && !facts[facts.length - 1]) facts.pop();
   return facts;
+}
+
+export type BuddyReactionMoment = 'comeback' | 'sessionComplete';
+
+function sectionLines(copy: unknown, section: string, key: string): string[] {
+  if (!copy || typeof copy !== 'object') return [];
+  const entry = (copy as Record<string, unknown>)[section];
+  if (!entry || typeof entry !== 'object') return [];
+  return stringLines((entry as Record<string, unknown>)[key]);
+}
+
+export function greetingLines(copy: unknown, kind: GreetingKind): string[] {
+  return sectionLines(copy, 'greetings', kind);
+}
+
+export function reactionLines(copy: unknown, moment: BuddyReactionMoment): string[] {
+  return sectionLines(copy, 'reactions', moment);
 }
 
 export function awardLine(copy: unknown, source: FriendshipSource): string | null {

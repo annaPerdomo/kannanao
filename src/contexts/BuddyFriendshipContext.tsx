@@ -28,6 +28,7 @@ type BuddyFriendshipContextValue = ReturnType<typeof useBuddyFriendship> & {
 const BuddyFriendshipCtx = createContext<BuddyFriendshipContextValue>({
   friendships: {},
   equipped: null,
+  stamps: { adventure: null, session: null, pet: null },
   loadState: 'idle',
   loading: false,
   error: null,

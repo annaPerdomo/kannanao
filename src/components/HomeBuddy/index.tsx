@@ -18,17 +18,13 @@ import { BuddyBubble } from './BuddyBubble';
 import { BuddyParticles } from './BuddyParticles';
 import { FriendshipHearts } from './FriendshipHearts';
 import { useBuddyDrag } from './useBuddyDrag';
+import { isNonEmptyStringArray, pickRandom, useBuddyMoments } from './useBuddyMoments';
 
 export { FriendshipAwardToast } from './FriendshipAwardToast';
 
 // SSR renders face 1 and the effect swaps in the random one before paint, so
 // the randomness never reaches hydration.
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
-function pickRandom(items: string | string[]): string {
-  if (typeof items === 'string') return items;
-  return items[Math.floor(Math.random() * items.length)];
-}
 
 /**
  * Coarse pointers get bottom-left, where the pinned grading buttons aren't.
@@ -39,10 +35,6 @@ const DEFAULT_ANCHOR = {
   right: { xs: 12, sm: 24 },
   '@media (pointer: coarse)': { left: 12, right: 'auto' },
 } as const;
-
-function isNonEmptyStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.length > 0 && value.every((v) => typeof v === 'string');
-}
 
 interface HomeBuddyProps {
   buddyKey: string;
@@ -95,6 +87,7 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const [tapHearts, setTapHearts] = useState(false);
   const [petBonus, setPetBonus] = useState(false);
   const phraseIndex = useRef(0);
+  const reactionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Keyed on the pool's contents, not its identity: a re-render that rebuilds
   // an identical array would otherwise snap the rotation back to phrase one.
@@ -113,33 +106,59 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     return () => clearInterval(interval);
   }, [phrasePool]);
 
+  // Registered after the rotation effect: a same-commit phrase-pool rebuild
+  // would otherwise overwrite the day's greeting with phrase one.
+  const showMomentLine = useCallback((text: string, sparkle: boolean) => {
+    // The last answer's hide timer is still armed when a session ends fast, and
+    // would blank this line a fraction of a second after it appears.
+    if (reactionTimerRef.current) clearTimeout(reactionTimerRef.current);
+    reactionTimerRef.current = null;
+    setReaction('idle');
+    setBubbleText(text);
+    setShowBubble(true);
+    if (!sparkle) return;
+    setSparkles(true);
+    setTimeout(() => setSparkles(false), 800);
+  }, []);
+  const { reactionLine } = useBuddyMoments({ buddyKey, showLine: showMomentLine });
+
   // React to correct/wrong answers reported by whatever practice screen is
   // active. Keyed on reactionEvent.key (not just .reaction) so firing the
   // same reaction twice in a row still re-triggers the bubble/animation.
   useEffect(() => {
     if (!reactionEvent) return;
 
-    let lines: string | string[] = FALLBACK_REACTIONS[reactionEvent.reaction];
-    try {
-      const raw = tBuddies.raw(`${buddyKey}.${reactionEvent.reaction}`);
-      if (isNonEmptyStringArray(raw)) lines = raw;
-    } catch {
-      // missing translation key — keep the English fallback above
+    const { reaction: fired } = reactionEvent;
+    const isComeback = fired === 'comeback';
+    const visual = fired === 'comeback' ? 'correct' : fired;
+    let lines: string | string[] = FALLBACK_REACTIONS[visual];
+    if (isComeback) {
+      const line = reactionLine('comeback');
+      if (line) lines = line;
+    } else {
+      try {
+        const raw = tBuddies.raw(`${buddyKey}.${reactionEvent.reaction}`);
+        if (isNonEmptyStringArray(raw)) lines = raw;
+      } catch {
+        // missing translation key — keep the English fallback above
+      }
     }
 
-    setReaction(reactionEvent.reaction);
+    setReaction(visual);
     setBubbleText(pickRandom(lines));
     setShowBubble(true);
-    setSparkles(reactionEvent.reaction === 'correct');
+    setSparkles(visual === 'correct');
 
     const reactionTimer = setTimeout(() => {
       setReaction('idle');
       setShowBubble(false);
     }, 2500);
+    reactionTimerRef.current = reactionTimer;
     const sparkleTimer = setTimeout(() => setSparkles(false), 800);
     return () => {
       clearTimeout(reactionTimer);
       clearTimeout(sparkleTimer);
+      reactionTimerRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reactionEvent?.key]);

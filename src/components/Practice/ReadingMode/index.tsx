@@ -110,7 +110,7 @@ export function ReadingMode({ cards, deckId, batchSize, onExit }: ReadingModePro
     setXpPop({ amount: xpAmount, correct, key: Date.now() });
     setTimeout(() => setXpPop(null), 1300);
     triggerXpEarned(xpAmount);
-    triggerReaction(correct ? 'correct' : 'wrong');
+    triggerReaction(correct ? 'correct' : 'wrong', card.id);
 
     if (correct) {
       setRoundScore((s) => s + 1);

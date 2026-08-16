@@ -4,8 +4,10 @@ import {
   awardLine,
   blendHomePhrases,
   buddyFacts,
+  greetingLines,
   memoryTeaser,
   memoryTitle,
+  reactionLines,
   storyLines,
   unlockedStories,
 } from '@/lib/buddyPhrases';
@@ -167,5 +169,26 @@ describe('unlockedStories', () => {
 
   it('lists nothing for a buddy with no friendship copy at all', () => {
     expect(unlockedStories(null, 5)).toEqual([]);
+  });
+});
+
+describe('greetingLines / reactionLines', () => {
+  const copy = {
+    greetings: { backAfterBreak: ['welcome line', '', 42], allDone: 'not an array' },
+    reactions: { comeback: ['comeback line'] },
+  };
+
+  it('reads the lines for an authored kind, dropping blanks and non-strings', () => {
+    expect(greetingLines(copy, 'backAfterBreak')).toEqual(['welcome line']);
+    expect(reactionLines(copy, 'comeback')).toEqual(['comeback line']);
+  });
+
+  it('degrades to [] on missing or malformed copy', () => {
+    expect(greetingLines(copy, 'allDone')).toEqual([]);
+    expect(greetingLines(copy, 'adventureNotDone')).toEqual([]);
+    expect(greetingLines({ greetings: 'nope' }, 'allDone')).toEqual([]);
+    expect(greetingLines(null, 'allDone')).toEqual([]);
+    expect(reactionLines({}, 'sessionComplete')).toEqual([]);
+    expect(reactionLines(undefined, 'comeback')).toEqual([]);
   });
 });

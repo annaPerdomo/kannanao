@@ -21,8 +21,10 @@ vi.mock('next-intl', () => ({
 
 vi.mock('@/components/NavBar/BottomNav', () => ({ BOTTOM_NAV_HEIGHT: 56 }));
 
+let reactionEvent: { key: number; reaction: string } | null = null;
+
 vi.mock('@/contexts/BuddyReactionContext', () => ({
-  useBuddyReaction: () => ({ reactionEvent: null }),
+  useBuddyReaction: () => ({ reactionEvent, triggerReaction: vi.fn() }),
 }));
 
 const petBuddy = vi.fn(async () => ({ awarded: 1, points: 13, leveledUp: false, newLevel: 1 }));
@@ -33,11 +35,15 @@ let canPetToday = true;
 let points = 12;
 let loadState = 'loaded';
 let levelUpEvent: { buddyKey: string; level: number } | null = null;
+let stamps: Record<string, string | null> = {};
+let todayGoals: { source: string; points: number; done: boolean }[] = [];
 
 vi.mock('@/contexts/BuddyFriendshipContext', () => ({
   useBuddyFriendshipCtx: () => ({
     equipped: { buddyKey: 'tango', points },
     friendships: {},
+    stamps,
+    todayGoals,
     loadState,
     petBuddy,
     canPetToday,
@@ -78,6 +84,9 @@ describe('HomeBuddy', () => {
     points = 12;
     loadState = 'loaded';
     levelUpEvent = null;
+    reactionEvent = null;
+    stamps = {};
+    todayGoals = [];
     buddyCopy = {};
     localStorage.clear();
     setViewport(1024, 768);
@@ -261,6 +270,72 @@ describe('HomeBuddy', () => {
     tap(container.firstChild as Element);
     expect(screen.getByText('home one')).toBeInTheDocument();
     expect(screen.queryByText('level two idle')).toBeNull();
+  });
+
+  it('opens the day with a state-picked greeting instead of phrase one', () => {
+    buddyCopy = { 'greetings.adventureNotDone': ['Adventure time!'] };
+    render(<HomeBuddy buddyKey="tango" />);
+    expect(screen.getByText('Adventure time!')).toBeInTheDocument();
+    expect(screen.queryByText('defaultPhrase')).toBeNull();
+  });
+
+  it('prefers the buddy’s own greeting copy over the chrome fallback', () => {
+    buddyCopy = {
+      friendship: { greetings: { adventureNotDone: ['Tango special'] } },
+      'greetings.adventureNotDone': ['generic'],
+    };
+    render(<HomeBuddy buddyKey="tango" />);
+    expect(screen.getByText('Tango special')).toBeInTheDocument();
+  });
+
+  it('greets only once per day', async () => {
+    const { localDateString } = await import('@/lib/chest');
+    localStorage.setItem('kannanao:buddy-greeting-date', localDateString(new Date()));
+    buddyCopy = { 'greetings.adventureNotDone': ['Adventure time!'] };
+    render(<HomeBuddy buddyKey="tango" />);
+    expect(screen.queryByText('Adventure time!')).toBeNull();
+    expect(screen.getByText('defaultPhrase')).toBeInTheDocument();
+  });
+
+  it('says a warm word when a session ends after the daily heart is already paid', async () => {
+    const { publishSessionEnd } = await import('@/lib/sessionSignal');
+    todayGoals = [{ source: 'session', points: 1, done: true }];
+    buddyCopy = { 'reactions.sessionComplete': ['Good session!'] };
+    render(<HomeBuddy buddyKey="tango" />);
+    act(() => publishSessionEnd(10));
+    expect(screen.getByText('Good session!')).toBeInTheDocument();
+  });
+
+  it('keeps the session-end line up past the last answer’s hide timer', async () => {
+    const { publishSessionEnd } = await import('@/lib/sessionSignal');
+    vi.useFakeTimers();
+    todayGoals = [{ source: 'session', points: 1, done: true }];
+    buddyCopy = { 'reactions.sessionComplete': ['Good session!'] };
+    reactionEvent = { key: 7, reaction: 'correct' };
+    render(<HomeBuddy buddyKey="tango" />);
+
+    act(() => vi.advanceTimersByTime(2000));
+    act(() => publishSessionEnd(10));
+    act(() => vi.advanceTimersByTime(1000));
+
+    expect(screen.getByText('Good session!')).toBeVisible();
+    vi.useRealTimers();
+  });
+
+  it('stays quiet on session end when the award toast will speak instead', async () => {
+    const { publishSessionEnd } = await import('@/lib/sessionSignal');
+    todayGoals = [{ source: 'session', points: 1, done: false }];
+    buddyCopy = { 'reactions.sessionComplete': ['Good session!'] };
+    render(<HomeBuddy buddyKey="tango" />);
+    act(() => publishSessionEnd(10));
+    expect(screen.queryByText('Good session!')).toBeNull();
+  });
+
+  it('speaks friendship copy for a comeback reaction', () => {
+    buddyCopy = { 'reactions.comeback': ['Comeback line!'] };
+    reactionEvent = { key: 1, reaction: 'comeback' };
+    render(<HomeBuddy buddyKey="tango" />);
+    expect(screen.getByText('Comeback line!')).toBeInTheDocument();
   });
 
   it('re-keys the hearts chip when the total increases so it pops', () => {

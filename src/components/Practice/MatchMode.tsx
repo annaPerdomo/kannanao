@@ -154,7 +154,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
   // Totals across all rounds
   const [totalTime, setTotalTime] = useState(0);
 
-  const { triggerReaction } = useBuddyReaction();
+  const { triggerReaction, markMissed } = useBuddyReaction();
 
   // Rows come from the tiles actually dealt (a short final round still fills
   // the board), per breakpoint since the column count changes.
@@ -263,7 +263,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
 
     if (selected.cardId === tile.cardId && selected.side !== tile.side) {
       // Correct match
-      triggerReaction('correct');
+      triggerReaction('correct', tile.cardId);
       setMatched((prev) => new Set([...prev, tile.cardId]));
       correctCountRef.current += 1;
       totalAnsweredRef.current += 1;
@@ -279,7 +279,8 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
       }
     } else {
       // Wrong match — mark both cards as struggled
-      triggerReaction('wrong');
+      triggerReaction('wrong', tile.cardId);
+      markMissed(selected.cardId);
       setWrong(tile.id);
       totalAnsweredRef.current += 1;
       queue.reportResult(selected.cardId, false);

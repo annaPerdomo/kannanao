@@ -341,6 +341,7 @@ export function useBuddyFriendship() {
   return {
     friendships,
     equipped,
+    stamps,
     loadState,
     loading: loadState === 'loading',
     error,
