@@ -80,7 +80,16 @@ type LandingBuddies = {
   [K in keyof Messages['Shop']['buddies']]: Omit<Messages['Shop']['buddies'][K], 'friendship'>;
 };
 
-export type LandingMessages = Omit<Pick<Messages, LandingNamespace>, 'Landing' | 'Shop'> & {
+type HomeBuddyMessages = Messages['Home']['buddy'];
+type LandingHomeBuddy = Omit<HomeBuddyMessages, 'friendship'> & {
+  friendship: Omit<HomeBuddyMessages['friendship'], 'greetings' | 'reactions'>;
+};
+
+export type LandingMessages = Omit<
+  Pick<Messages, LandingNamespace>,
+  'Home' | 'Landing' | 'Shop'
+> & {
+  Home: Omit<Messages['Home'], 'buddy'> & { buddy: LandingHomeBuddy };
   Landing: Omit<Messages['Landing'], 'seo'>;
   Shop: Omit<Messages['Shop'], 'buddies'> & { buddies: LandingBuddies };
 };
@@ -110,7 +119,19 @@ export function landingMessagesFor(locale: Locale): LandingMessages {
     ),
   ) as LandingBuddies;
 
-  return { ...picked, Landing: landing, Shop: { ...picked.Shop, buddies } };
+  const {
+    greetings: _greetings,
+    reactions: _reactions,
+    ...friendship
+  } = picked.Home.buddy.friendship;
+  const home = { ...picked.Home, buddy: { ...picked.Home.buddy, friendship } };
+
+  return {
+    ...picked,
+    Home: home,
+    Landing: landing,
+    Shop: { ...picked.Shop, buddies },
+  };
 }
 
 /**

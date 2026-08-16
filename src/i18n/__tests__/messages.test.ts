@@ -53,6 +53,14 @@ describe('landingMessagesFor', () => {
     expect(landingMessagesFor('en').Landing.hero.signInButton).toBe('Sign in');
   });
 
+  it('leaves the session-gated buddy copy out of the client payload', () => {
+    const landing = landingMessagesFor('en');
+    expect(landing.Home.buddy.friendship).not.toHaveProperty('greetings');
+    expect(landing.Home.buddy.friendship).not.toHaveProperty('reactions');
+    expect(landing.Shop.buddies.buddy_tango).not.toHaveProperty('friendship');
+    expect(landing.Home.buddy.friendship.petBonus).toBe('+1 ❤️');
+  });
+
   it('is a fraction of the full message payload', () => {
     const full = JSON.stringify(messagesFor('en')).length;
     expect(JSON.stringify(landingMessagesFor('en')).length).toBeLessThan(full * 0.6);
