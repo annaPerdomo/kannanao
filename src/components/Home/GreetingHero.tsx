@@ -58,15 +58,15 @@ const CROP_FOCUS_X = 35;
  * quite wide, so below `UNCROPPED_FROM` the height is a flat floor and the
  * band's sides crop to fill it (`CROP_FOCUS_X` keeps the mascot in frame while they
  * do). At and above it the band's own aspect finally clears the copy, so the
- * banner takes that aspect exactly and the whole illustration is on screen.
+ * banner takes that aspect and the whole illustration is on screen.
  *
  * `UNCROPPED_FROM` is where `width / WIDE_ASPECT` first exceeds the widest floor
  * — pick a smaller number and the hero visibly *shrinks* as the window grows.
  *
- * The two must never both apply to the same box: `aspect-ratio` transfers a
+ * The two must never both apply to the same box: a ratio transfers a
  * `min-height` into an equivalent `min-width` (CSS Sizing 4), which at this
  * ratio is a 1140px floor on the banner's *width* — it would burst straight out
- * of a phone-sized viewport. Hence `minHeight: 0` alongside the aspect.
+ * of a phone-sized viewport. Hence `minHeight: 0` in the uncropped regime.
  */
 const WIDE_MIN_HEIGHT = { sm: 232, md: 240 };
 const UNCROPPED_FROM = '@media (min-width:1240px)';
@@ -167,7 +167,20 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
           // copy, the band's own aspect once it isn't.
           [overlay]: { minHeight: WIDE_MIN_HEIGHT.sm, justifyContent: 'center' },
           [breakpoints.up('md')]: { minHeight: WIDE_MIN_HEIGHT.md },
-          [UNCROPPED_FROM]: { minHeight: 0, aspectRatio: String(WIDE_ASPECT) },
+          // Grid floor, not `aspect-ratio`: a row grows with its content, but a
+          // locked ratio clipped the CTA card behind `overflow: hidden`.
+          [UNCROPPED_FROM]: {
+            minHeight: 0,
+            display: 'grid',
+            alignContent: 'center',
+            justifyItems: 'start',
+            '&::before': {
+              content: '""',
+              gridArea: '1 / 1',
+              width: '100%',
+              paddingTop: `${(100 / WIDE_ASPECT).toFixed(3)}%`,
+            },
+          },
           overflow: 'hidden',
           borderRadius: radii.md,
           background: `linear-gradient(135deg, ${brand[600]} 0%, ${accent[700]} 100%)`,
@@ -227,11 +240,8 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
               // is a percentage too, so they stay in step as the crop tightens.
               background: `linear-gradient(90deg, rgba(${SCRIM},0.86) 0%, rgba(${SCRIM},0.84) 30%, rgba(${SCRIM},0.6) 46%, rgba(${SCRIM},0.16) 60%, rgba(${SCRIM},0) 74%)`,
             },
-            // Once nothing is cropped the copy stops growing with the page, so
-            // the scrim stops in pixels too — otherwise a 1600px banner drags
-            // the shadow out over the mascot it is supposed to clear.
             [UNCROPPED_FROM]: {
-              background: `linear-gradient(90deg, rgba(${SCRIM},0.86) 0px, rgba(${SCRIM},0.84) 380px, rgba(${SCRIM},0.5) 560px, rgba(${SCRIM},0.12) 740px, rgba(${SCRIM},0) 900px)`,
+              background: `linear-gradient(90deg, rgba(${SCRIM},0.86) 0px, rgba(${SCRIM},0.8) 340px, rgba(${SCRIM},0.5) 520px, rgba(${SCRIM},0.14) 680px, rgba(${SCRIM},0) 800px)`,
             },
           }}
         />
@@ -242,20 +252,12 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
           sx={{
             position: 'relative',
             width: '100%',
-            // Capped short of the mascot: this is also the column the scrim is
-            // dense across, so copy must not run past it. A percentage while the
-            // banner crops, then a fixed width — past ~1340px the extra room
-            // belongs to the illustration, not to a wider line of text.
-            maxWidth: { xs: '100%', sm: '48%', md: '44%' },
-            [UNCROPPED_FROM]: { maxWidth: 540 },
+            maxWidth: { xs: '100%', sm: '56%', md: '50%' },
+            [UNCROPPED_FROM]: { maxWidth: 620, gridArea: '1 / 1' },
             px: { xs: 2.5, sm: 4 },
             py: { xs: 3, sm: 3.5 },
-            // The phone composition puts the copy under the picture rather than
-            // on it, so it needs its own ground. Plum rather than a brand
-            // gradient: it has to sit under sunrise gold, midday blue and dusk
-            // violet in turn without arguing with any of them.
             background: `linear-gradient(135deg, rgba(${SCRIM},1) 0%, rgba(56, 20, 66, 1) 100%)`,
-            [overlay]: { background: 'none' },
+            [overlay]: { background: 'none', width: 'fit-content' },
           }}
         >
           {/* lang="ja" because the greeting is Japanese in every locale — Tango
@@ -268,24 +270,20 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
             sx={{
               fontWeight: 800,
               lineHeight: 1.25,
-              // Stepped down on phones: at the stock h4 size a two-word name
-              // takes the greeting to three lines on a 320px screen.
               fontSize: { xs: '1.6rem', sm: '1.9rem', md: '2.125rem' },
-              // Japanese would otherwise break between any two kana. Together
-              // with the caller's nowrap run this leaves the 、as the only
-              // break point, which is where a reader would break it too.
+              // Japanese would otherwise break between any two kana
               wordBreak: 'keep-all',
               color: '#fff',
               textShadow: `0 2px 16px rgba(${SCRIM},0.6), 0 1px 3px rgba(${SCRIM},0.5)`,
             }}
           >
             {greeting}
-            {/* Non-breaking space, so a narrow column wraps the greeting rather
-                than orphaning the emoji on a line of its own. */}
             {banner && <span aria-hidden>{` ${banner.emoji}`}</span>}
           </Typography>
 
-          {children && <Box sx={{ mt: { xs: 2, sm: 2.5 } }}>{children}</Box>}
+          {children && (
+            <Box sx={{ mt: { xs: 2, sm: 2.5 }, maxWidth: { xs: '100%', sm: 460 } }}>{children}</Box>
+          )}
         </Box>
       </Box>
 

@@ -12,26 +12,37 @@ import { friendshipLevel, friendshipProgress } from '@/lib/friendship';
 interface FriendshipMeterProps {
   points: number;
   size?: 'small' | 'medium';
+  /** Marks along the track, as 0..1 fractions of the current level's width. */
+  ticks?: number[];
+  /** Overrides `points` to show the old level completing — a state no point total has. `value` is 0..100. */
+  display?: { level: number; value: number };
 }
 
-export function FriendshipMeter({ points, size = 'medium' }: FriendshipMeterProps) {
+export function FriendshipMeter({ points, size = 'medium', ticks, display }: FriendshipMeterProps) {
   const t = useTranslations('Home.buddy.friendship');
   const theme = useTheme();
   const { brand } = theme.palette;
 
-  const level = friendshipLevel(points);
-  const progress = friendshipProgress(points);
+  const level = display?.level ?? friendshipLevel(points);
+  const progress = display ? null : friendshipProgress(points);
   const levelName = t(`levelNames.${level}`);
   const ariaLabel = progress
     ? t('meterAria', { levelName, current: progress.current, needed: progress.needed })
     : t('meterAriaMax', { levelName });
+  const value = display
+    ? Math.min(100, Math.max(0, display.value))
+    : progress
+      ? Math.min(100, (progress.current / progress.needed) * 100)
+      : 100;
 
   const compact = size === 'small';
 
   return (
     <Box
-      role="img"
-      aria-label={ariaLabel}
+      // Unlabelled while overridden: the celebration announces the stage instead.
+      role={display ? undefined : 'img'}
+      aria-hidden={display ? true : undefined}
+      aria-label={display ? undefined : ariaLabel}
       sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: compact ? 140 : 180 }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
@@ -53,17 +64,35 @@ export function FriendshipMeter({ points, size = 'medium' }: FriendshipMeterProp
           </Typography>
         )}
       </Box>
-      <LinearProgress
-        variant="determinate"
-        value={progress ? Math.min(100, (progress.current / progress.needed) * 100) : 100}
-        aria-hidden
-        sx={{
-          height: compact ? 5 : 7,
-          borderRadius: 99,
-          bgcolor: alpha(brand[300], 0.25),
-          '& .MuiLinearProgress-bar': { bgcolor: brand[400], borderRadius: 99 },
-        }}
-      />
+      <Box sx={{ position: 'relative' }}>
+        <LinearProgress
+          variant="determinate"
+          value={value}
+          aria-hidden
+          sx={{
+            height: compact ? 5 : 7,
+            borderRadius: 99,
+            bgcolor: alpha(brand[300], 0.25),
+            '& .MuiLinearProgress-bar': { bgcolor: brand[400], borderRadius: 99 },
+          }}
+        />
+        {ticks?.map((fraction) => (
+          <Box
+            key={fraction}
+            aria-hidden
+            sx={{
+              position: 'absolute',
+              top: 1,
+              bottom: 1,
+              left: `${Math.min(100, Math.max(0, fraction * 100))}%`,
+              transform: 'translateX(-50%)',
+              width: 2,
+              borderRadius: 99,
+              bgcolor: alpha(brand[700], 0.35),
+            }}
+          />
+        ))}
+      </Box>
     </Box>
   );
 }

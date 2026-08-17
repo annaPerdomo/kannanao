@@ -53,6 +53,17 @@ vi.mock('@/contexts/ShopContext', () => ({
   useShopCtx: () => mockShop(),
 }));
 
+// The buddy_state RPCs are covered in lib/__tests__/buddyState.test.ts; here
+// they are stubbed so award_friendship stays the only call mockRpc sees.
+const mockFetchRecentWords = vi.fn(async (_userId: string): Promise<unknown[]> => []);
+const mockPersistBuddyWords = vi.fn(async (words: unknown[]): Promise<unknown[] | null> => words);
+const mockClaimBuddyGreeting = vi.fn(async (_today: string) => true);
+vi.mock('@/lib/buddyState', () => ({
+  fetchRecentWords: (userId: string) => mockFetchRecentWords(userId),
+  persistBuddyWords: (words: unknown[]) => mockPersistBuddyWords(words),
+  claimBuddyGreeting: (today: string) => mockClaimBuddyGreeting(today),
+}));
+
 import { useBuddyFriendship } from '@/hooks/useBuddyFriendship';
 import { publishSessionEnd } from '@/lib/sessionSignal';
 
@@ -94,6 +105,9 @@ describe('useBuddyFriendship', () => {
     mockUseAuth.mockReturnValue({ user: { id: 'u1' } });
     mockShop.mockReturnValue({ equipped: { study_buddy: 'buddy_bunny' }, loading: false });
     mockRpc.mockResolvedValue({ data: { status: 'ok', points: 11 }, error: null });
+    mockFetchRecentWords.mockResolvedValue([]);
+    mockPersistBuddyWords.mockImplementation(async (words) => words);
+    mockClaimBuddyGreeting.mockResolvedValue(true);
     setTable('buddy_friendship', [row()]);
   });
 
@@ -503,6 +517,44 @@ describe('useBuddyFriendship', () => {
     });
   });
 
+  describe('todayGoals', () => {
+    it('should offer all three sources undone on a fresh day', async () => {
+      const { result } = await renderLoaded();
+
+      expect(result.current.todayGoals.map((goal) => goal.source)).toEqual([
+        'adventure',
+        'session',
+        'pet',
+      ]);
+      expect(result.current.todayGoals.some((goal) => goal.done)).toBe(false);
+      expect(result.current.heartsToday).toBe(0);
+    });
+
+    it('should count another buddy row — the daily cap is per user', async () => {
+      setTable('buddy_friendship', [
+        row(),
+        row({ buddy_key: 'buddy_tango', last_adventure_date: todayLocal() }),
+      ]);
+      const { result } = await renderLoaded();
+
+      expect(result.current.todayGoals.find((goal) => goal.source === 'adventure')?.done).toBe(
+        true,
+      );
+      expect(result.current.heartsToday).toBe(3);
+    });
+
+    it('should close the pet goal as soon as a pet lands', async () => {
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        await result.current.petBuddy();
+      });
+
+      expect(result.current.todayGoals.find((goal) => goal.source === 'pet')?.done).toBe(true);
+      expect(result.current.heartsToday).toBe(1);
+    });
+  });
+
   // ── level-ups ───────────────────────────────────────────────────────────────
 
   describe('levelUpEvent', () => {
@@ -557,6 +609,64 @@ describe('useBuddyFriendship', () => {
     });
   });
 
+  describe('awardEvent', () => {
+    it('should report a server-confirmed award, and clear on demand', async () => {
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        await result.current.awardFriendship('adventure');
+      });
+
+      expect(result.current.awardEvent).toEqual({
+        buddyKey: 'buddy_bunny',
+        source: 'adventure',
+        awarded: 3,
+        words: [],
+      });
+
+      act(() => result.current.clearAwardEvent());
+      expect(result.current.awardEvent).toBeNull();
+    });
+
+    it('should stay quiet when the RPC reports capped', async () => {
+      mockRpc.mockResolvedValue({ data: { status: 'capped' }, error: null });
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        await result.current.awardFriendship('adventure');
+      });
+
+      expect(result.current.awardEvent).toBeNull();
+    });
+
+    it('should stay quiet when the award rolls back on an error', async () => {
+      mockRpc.mockResolvedValue({ data: null, error: { message: 'network down' } });
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        await result.current.awardFriendship('adventure');
+      });
+
+      expect(result.current.awardEvent).toBeNull();
+    });
+
+    it('should drop an unconsumed event on sign-out', async () => {
+      const { result, rerender } = await renderLoaded();
+
+      await act(async () => {
+        await result.current.petBuddy();
+      });
+      expect(result.current.awardEvent).not.toBeNull();
+
+      mockUseAuth.mockReturnValue({ user: null });
+      await act(async () => {
+        rerender();
+      });
+
+      expect(result.current.awardEvent).toBeNull();
+    });
+  });
+
   // ── session signal ──────────────────────────────────────────────────────────
 
   describe('session end signal', () => {
@@ -592,6 +702,111 @@ describe('useBuddyFriendship', () => {
       });
 
       expect(mockRpc).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('recent words', () => {
+    const INU = { word: '犬', reading: 'いぬ' };
+    const NEKO = { word: '猫', reading: 'ねこ' };
+
+    it('should start with whatever this account studied before', async () => {
+      mockFetchRecentWords.mockResolvedValue([INU]);
+
+      const { result } = await renderLoaded();
+
+      expect(result.current.recentWords).toEqual([INU]);
+      expect(mockFetchRecentWords).toHaveBeenCalledWith('u1');
+    });
+
+    it('should keep the words a finished session carried', async () => {
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        publishSessionEnd(5, [INU, NEKO]);
+      });
+
+      expect(result.current.recentWords).toEqual([INU, NEKO]);
+      expect(mockPersistBuddyWords).toHaveBeenCalledWith([INU, NEKO]);
+    });
+
+    it('should keep words from a session too short to earn a heart', async () => {
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        publishSessionEnd(2, [INU]);
+      });
+
+      expect(result.current.recentWords).toEqual([INU]);
+      expect(mockRpc).not.toHaveBeenCalled();
+    });
+
+    it('should show the words a failed save could not keep', async () => {
+      mockFetchRecentWords.mockResolvedValue([NEKO]);
+      mockPersistBuddyWords.mockResolvedValue(null);
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        publishSessionEnd(2, [INU]);
+      });
+
+      expect(result.current.recentWords).toEqual([INU, NEKO]);
+    });
+
+    it('should take the server’s merge over the local guess', async () => {
+      mockPersistBuddyWords.mockResolvedValue([NEKO, INU]);
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        publishSessionEnd(2, [INU]);
+      });
+
+      expect(result.current.recentWords).toEqual([NEKO, INU]);
+    });
+
+    it('should save nothing for a signed-out visitor', async () => {
+      mockUseAuth.mockReturnValue({ user: null });
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        publishSessionEnd(2, [INU]);
+      });
+
+      expect(mockPersistBuddyWords).not.toHaveBeenCalled();
+      expect(result.current.recentWords).toEqual([]);
+    });
+
+    it('should hand the award event only the words the paying session carried', async () => {
+      mockFetchRecentWords.mockResolvedValue([NEKO]);
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        publishSessionEnd(5, [INU]);
+      });
+
+      expect(result.current.awardEvent?.words).toEqual([INU]);
+    });
+
+    it('should leave the award event wordless when the session had no cards', async () => {
+      mockFetchRecentWords.mockResolvedValue([NEKO]);
+      const { result } = await renderLoaded();
+
+      await act(async () => {
+        publishSessionEnd(5);
+      });
+
+      expect(result.current.awardEvent?.words).toEqual([]);
+    });
+
+    it('should not hand one account the words of the last one signed in', async () => {
+      mockFetchRecentWords.mockResolvedValue([INU]);
+      const { result, rerender } = await renderLoaded();
+
+      mockUseAuth.mockReturnValue({ user: { id: 'u2' } });
+      await act(async () => {
+        rerender();
+      });
+
+      expect(result.current.recentWords).toEqual([]);
     });
   });
 });

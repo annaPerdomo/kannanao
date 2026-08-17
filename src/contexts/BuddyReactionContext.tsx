@@ -1,7 +1,10 @@
 'use client';
-import { createContext, useCallback, useContext, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
-export type BuddyReaction = 'correct' | 'wrong' | 'idle';
+import { onSessionEnd } from '@/lib/sessionSignal';
+
+export type BuddyReaction = 'correct' | 'wrong' | 'idle' | 'comeback';
 
 interface BuddyReactionEvent {
   key: number;
@@ -10,12 +13,14 @@ interface BuddyReactionEvent {
 
 interface BuddyReactionContextValue {
   reactionEvent: BuddyReactionEvent | null;
-  triggerReaction: (reaction: BuddyReaction) => void;
+  triggerReaction: (reaction: BuddyReaction, cardId?: string) => void;
+  markMissed: (cardId: string) => void;
 }
 
 const BuddyReactionContext = createContext<BuddyReactionContextValue>({
   reactionEvent: null,
   triggerReaction: () => {},
+  markMissed: () => {},
 });
 
 let nextKey = 0;
@@ -29,13 +34,42 @@ let nextKey = 0;
  */
 export function BuddyReactionProvider({ children }: { children: React.ReactNode }) {
   const [reactionEvent, setReactionEvent] = useState<BuddyReactionEvent | null>(null);
+  const missedCardsRef = useRef(new Set<string>());
+  const pathname = usePathname();
 
-  const triggerReaction = useCallback((reaction: BuddyReaction) => {
-    setReactionEvent({ key: ++nextKey, reaction });
+  const markMissed = useCallback((cardId: string) => {
+    missedCardsRef.current.add(cardId);
   }, []);
 
+  // A 'correct' on a card missed earlier upgrades to a single 'comeback' — the
+  // delete, not a has(), is what caps it at once per card.
+  const triggerReaction = useCallback((reaction: BuddyReaction, cardId?: string) => {
+    let emitted = reaction;
+    if (cardId) {
+      if (reaction === 'wrong') missedCardsRef.current.add(cardId);
+      else if (reaction === 'correct' && missedCardsRef.current.delete(cardId))
+        emitted = 'comeback';
+    }
+    setReactionEvent({ key: ++nextKey, reaction: emitted });
+  }, []);
+
+  useEffect(
+    () =>
+      onSessionEnd(() => {
+        missedCardsRef.current.clear();
+      }),
+    [],
+  );
+
+  // Modes publish their end signal only inside `if (sessionId)`, so a run whose
+  // startSession failed would hand its misses to the next one as a "comeback".
+  // Every practice mode owns a route, so leaving one ends the run either way.
+  useEffect(() => {
+    missedCardsRef.current.clear();
+  }, [pathname]);
+
   return (
-    <BuddyReactionContext.Provider value={{ reactionEvent, triggerReaction }}>
+    <BuddyReactionContext.Provider value={{ reactionEvent, triggerReaction, markMissed }}>
       {children}
     </BuddyReactionContext.Provider>
   );

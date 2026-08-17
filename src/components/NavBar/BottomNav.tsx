@@ -30,6 +30,8 @@ export function BottomNav() {
     <Paper
       component="nav"
       aria-label={t('mainNavigationAriaLabel')}
+      // Read by useBuddyDrag, which keeps the buddy from parking on the bar.
+      data-app-chrome="bottom"
       sx={{
         display: { xs: 'block', sm: 'none' },
         position: 'fixed',

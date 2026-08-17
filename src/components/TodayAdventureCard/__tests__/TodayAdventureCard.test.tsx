@@ -52,6 +52,8 @@ const progress = (
 const friendship = (
   rows: Record<string, string | null> = {},
   loadState: 'idle' | 'loading' | 'loaded' | 'error' = 'loaded',
+  equipped: { points: number } | null = null,
+  goalsDone: Array<'adventure' | 'session' | 'pet'> = [],
 ) => ({
   friendships: Object.fromEntries(
     Object.entries(rows).map(([buddyKey, lastAdventureDate]) => [
@@ -59,6 +61,12 @@ const friendship = (
       { buddyKey, lastAdventureDate },
     ]),
   ),
+  equipped,
+  todayGoals: (['adventure', 'session', 'pet'] as const).map((source) => ({
+    source,
+    points: source === 'adventure' ? 3 : 1,
+    done: goalsDone.includes(source),
+  })),
   loadState,
   ensureLoaded: vi.fn().mockResolvedValue(undefined),
 });
@@ -75,10 +83,16 @@ describe('TodayAdventureCard', () => {
     shopState.mockReturnValue({ equipped: { study_buddy: 'buddy_bunny' } });
   });
 
+  // Row for row, not one guessed height: the placeholder measured 173px against
+  // a 198px card in a browser, and the hero it sits in has no spare room.
   it('should hold the space with a skeleton until the counts land', () => {
     dueState.mockReturnValue(due({ loading: true }));
     const { container } = renderWithProviders(<TodayAdventureCard />);
-    expect(container.querySelector('.MuiSkeleton-root')).toBeInTheDocument();
+    const heights = [...container.querySelectorAll<HTMLElement>('.MuiSkeleton-root')].map((el) =>
+      parseInt(el.style.height, 10),
+    );
+
+    expect(heights).toEqual([52, 20, 20, 22, 20, 36, 39, 14]);
   });
 
   // An unfetched map looks exactly like "no row yet", which hands the day to
@@ -153,6 +167,7 @@ describe('TodayAdventureCard', () => {
     });
 
     it('should invite the reader on the day’s mission when cards are due', async () => {
+      friendshipState.mockReturnValue(friendship({}, 'loaded', { points: 15 }));
       renderWithProviders(<TodayAdventureCard />);
       await screen.findByText("Today's Adventure");
       expect(screen.getByText(/6 reviews · ~2 min/)).toBeInTheDocument();
@@ -174,6 +189,52 @@ describe('TodayAdventureCard', () => {
       expect(push).toHaveBeenCalledWith('/review');
       fireEvent.click(screen.getByRole('button', { name: 'Practice a deck' }));
       expect(push).toHaveBeenCalledWith('/decks');
+    });
+  });
+
+  describe('near-milestone hook', () => {
+    // The promise takes the section label's line, never the count's: how much
+    // work is waiting is the one thing this card exists to answer.
+    it('should promise the memory without giving up the count', async () => {
+      friendshipState.mockReturnValue(friendship({}, 'loaded', { points: 13 }));
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText('So close! Tsuki has something to tell you.');
+      expect(screen.getByText(/6 reviews/)).toBeInTheDocument();
+      expect(screen.queryByText("Today's Adventure")).toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+      expect(push).toHaveBeenCalledWith('/review/today');
+    });
+
+    it('should name the reward when the next milestone is a fact', async () => {
+      shopState.mockReturnValue({ equipped: { study_buddy: 'buddy_tango' } });
+      friendshipState.mockReturnValue(friendship({}, 'loaded', { points: 3 }));
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText("2 more hearts and you'll learn something new about Tango.");
+    });
+
+    it('should speak up for a milestone that is still reachable today', async () => {
+      friendshipState.mockReturnValue(friendship({}, 'loaded', { points: 10 }));
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText('So close! Tsuki has something to tell you.');
+    });
+
+    it('should go quiet once the day no longer holds enough hearts to get there', async () => {
+      friendshipState.mockReturnValue(friendship({}, 'loaded', { points: 10 }, ['session', 'pet']));
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText(/6 reviews · ~2 min/);
+    });
+
+    it('should keep the count line when the next milestone is far off', async () => {
+      friendshipState.mockReturnValue(friendship({}, 'loaded', { points: 15 }));
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText(/6 reviews · ~2 min/);
+      expect(screen.queryByText(/So close/)).toBeNull();
+    });
+
+    it('should promise nothing when the friendship rows never loaded', async () => {
+      friendshipState.mockReturnValue(friendship({}, 'error', { points: 13 }));
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText(/6 reviews · ~2 min/);
     });
   });
 

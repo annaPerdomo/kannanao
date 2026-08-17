@@ -5,16 +5,21 @@
  * for it sits in AppShell, an unrelated tree. Module-level (like
  * assignmentSignal) so no practice mode has to know the subscriber exists.
  */
+
+import type { BuddyWord } from './buddyWords';
+
 export interface SessionEndSignal {
   cardsStudied: number;
+  /** A few words from this session's cards; empty for modes with no cards. */
+  sampleWords: BuddyWord[];
   at: number;
 }
 
 const listeners = new Set<(signal: SessionEndSignal) => void>();
 
 /** Called on every terminal path of `endSession`, including the failures. */
-export function publishSessionEnd(cardsStudied: number): void {
-  const signal = { cardsStudied, at: Date.now() };
+export function publishSessionEnd(cardsStudied: number, sampleWords: BuddyWord[] = []): void {
+  const signal = { cardsStudied, sampleWords, at: Date.now() };
   for (const fn of listeners) fn(signal);
 }
 

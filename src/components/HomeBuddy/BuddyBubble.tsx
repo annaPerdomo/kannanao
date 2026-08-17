@@ -10,9 +10,11 @@ interface BuddyBubbleProps {
   text: string;
   reaction: 'idle' | 'correct' | 'wrong';
   accent: string;
+  /** Painted out but still measured, so the buddy below it doesn't shift. */
+  hidden?: boolean;
 }
 
-export function BuddyBubble({ text, reaction, accent }: BuddyBubbleProps) {
+export function BuddyBubble({ text, reaction, accent, hidden = false }: BuddyBubbleProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
 
@@ -38,8 +40,9 @@ export function BuddyBubble({ text, reaction, accent }: BuddyBubbleProps) {
       key={text}
       sx={{
         position: 'relative',
+        visibility: hidden ? 'hidden' : 'visible',
         bgcolor: bubbleColor,
-        backdropFilter: 'blur(8px)',
+        backdropFilter: hidden ? 'none' : 'blur(8px)',
         border: `1.5px solid ${bubbleBorder}`,
         borderRadius: 2.5,
         px: 1.5,

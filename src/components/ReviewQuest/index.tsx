@@ -14,6 +14,7 @@ import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { useCombo } from '@/hooks/useCombo';
 import { useProgress } from '@/hooks/useProgress';
 import { XP_PER_WRONG } from '@/hooks/useProgress';
+import { sampleBuddyWords } from '@/lib/buddyWords';
 import { CHEST_XP, chestVariant, isChestEligible, localDateString } from '@/lib/chest';
 import { cardXp } from '@/lib/flashcardUtils';
 import { planQuest } from '@/lib/quest';
@@ -70,6 +71,8 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
   const answeredRef = useRef(0);
   const correctRef = useRef(0);
   const endedRef = useRef(false);
+  // The quest plans only a slice of `cards`, so the full list names unseen words.
+  const gradedIdsRef = useRef<Set<string>>(new Set());
   // Snapshot last_chest_date every render so finishQuest reads the pre-open value
   // without a stale closure.
   const lastChestDateRef = useRef<string | null>(null);
@@ -110,6 +113,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
         cardsStudied: studied,
         cardsCorrect: correct,
         durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
+        sampleWords: sampleBuddyWords(cards.filter((c) => gradedIdsRef.current.has(c.id))),
       });
     }
     setPerfect(studied >= 5 && correct === studied);
@@ -141,7 +145,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
     }
 
     setDone(true);
-  }, [endSession, user, awardFriendship]);
+  }, [cards, endSession, user, awardFriendship]);
 
   // Cards already SRS-advanced by a correct answer this quest. The Boss Round
   // deliberately re-tests the last Word Match cards, and without this a card
@@ -153,6 +157,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
   const grade = useCallback<QuestGrade>(
     (correct, jlpt, cardId) => {
       answeredRef.current += 1;
+      if (cardId) gradedIdsRef.current.add(cardId);
       if (correct) correctRef.current += 1;
       triggerXpEarned(correct ? cardXp(jlpt) : XP_PER_WRONG);
       if (sessionIdRef.current) {

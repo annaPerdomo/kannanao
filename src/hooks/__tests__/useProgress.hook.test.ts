@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cardXp } from '@/lib/flashcardUtils';
-import { onSessionEnd } from '@/lib/sessionSignal';
+import { onSessionEnd, type SessionEndSignal } from '@/lib/sessionSignal';
 
 import { type Achievement, useProgress, type UserProgress, XP_PERFECT_BONUS } from '../useProgress';
 
@@ -219,6 +219,21 @@ describe('useProgress session tracking', () => {
     unsubscribe();
 
     expect(seen).toEqual([7]);
+  });
+
+  it('carries the session words to the buddy, and an empty list from a mode with none', async () => {
+    const { result } = renderProgress();
+    const seen: SessionEndSignal['sampleWords'][] = [];
+    const unsubscribe = onSessionEnd((signal) => seen.push(signal.sampleWords));
+    const sampleWords = [{ word: '犬', reading: 'いぬ', meaning: 'dog' }];
+
+    await act(async () => {
+      await result.current.endSession('s1', { ...PERFECT_RUN, sampleWords });
+      await result.current.endSession('s2', PERFECT_RUN);
+    });
+    unsubscribe();
+
+    expect(seen).toEqual([sampleWords, []]);
   });
 
   // The buddy's session heart is paid off this signal, so a write that throws

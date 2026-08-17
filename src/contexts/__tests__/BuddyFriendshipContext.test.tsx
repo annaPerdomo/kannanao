@@ -5,7 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BuddyFriendshipProvider, useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
 
 const clearLevelUpEvent = vi.fn();
+const clearAwardEvent = vi.fn();
 let levelUpEvent: { buddyKey: string; level: number } | null = null;
+let awardEvent: { buddyKey: string; source: string; awarded: number } | null = null;
 let pathname = '/';
 let user: { id: string } | null = { id: 'user-1' };
 
@@ -20,6 +22,8 @@ vi.mock('@/hooks/useBuddyFriendship', () => ({
     const [event, setEvent] = useState(() => levelUpEvent);
     return {
       friendships: {},
+      awardEvent,
+      clearAwardEvent,
       // The real hook drops a held event on sign-out; mirrored so the provider
       // is tested against what it actually receives.
       levelUpEvent: user ? event : null,
@@ -32,10 +36,11 @@ vi.mock('@/hooks/useBuddyFriendship', () => ({
 }));
 
 function Probe() {
-  const { storyRequest, openStories, closeStories } = useBuddyFriendshipCtx();
+  const { storyRequest, openStories, closeStories, awardEvent: award } = useBuddyFriendshipCtx();
   return (
     <>
       <span data-testid="request">{storyRequest ? JSON.stringify(storyRequest) : 'none'}</span>
+      <span data-testid="award">{award ? JSON.stringify(award) : 'none'}</span>
       <button onClick={() => openStories('buddy_fox')}>open</button>
       <button onClick={closeStories}>close</button>
     </>
@@ -55,7 +60,9 @@ const request = () => screen.getByTestId('request').textContent;
 describe('BuddyFriendshipProvider story dialog', () => {
   beforeEach(() => {
     clearLevelUpEvent.mockClear();
+    clearAwardEvent.mockClear();
     levelUpEvent = null;
+    awardEvent = null;
     pathname = '/';
     user = { id: 'user-1' };
   });
@@ -123,6 +130,12 @@ describe('BuddyFriendshipProvider story dialog', () => {
     // …and it gets its turn the moment the browse is closed.
     act(() => screen.getByText('close').click());
     expect(request()).toContain('levelUp');
+  });
+
+  it('hands the award event to consumers', () => {
+    awardEvent = { buddyKey: 'buddy_fox', source: 'pet', awarded: 1 };
+    renderProvider();
+    expect(screen.getByTestId('award').textContent).toBe(JSON.stringify(awardEvent));
   });
 
   it('should drop an open dialog on sign-out rather than show it to the next user', () => {

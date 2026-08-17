@@ -10,26 +10,31 @@ import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
 import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
 import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { BUDDY_ART, buddyFaceSrc, FALLBACK_REACTIONS, randomFaceVariant } from '@/lib/buddies';
-import { blendHomePhrases } from '@/lib/buddyPhrases';
+import { fillHomePhrases, homePhraseTemplates } from '@/lib/buddyPhrases';
 import { friendshipLevel } from '@/lib/friendship';
 
-import { bounce, heartPop, idleFloat, pulseGlow, tapWiggle, wobble } from './animations';
+import { bounce, glowPulse, heartPop, idleFloat, tapWiggle, wobble } from './animations';
 import { BuddyBubble } from './BuddyBubble';
 import { BuddyParticles } from './BuddyParticles';
 import { FriendshipHearts } from './FriendshipHearts';
+import { useBuddyDrag } from './useBuddyDrag';
+import { isNonEmptyStringArray, pickRandom, useBuddyMoments } from './useBuddyMoments';
+
+export { FriendshipAwardToast } from './FriendshipAwardToast';
 
 // SSR renders face 1 and the effect swaps in the random one before paint, so
 // the randomness never reaches hydration.
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
-function pickRandom(items: string | string[]): string {
-  if (typeof items === 'string') return items;
-  return items[Math.floor(Math.random() * items.length)];
-}
-
-function isNonEmptyStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.length > 0 && value.every((v) => typeof v === 'string');
-}
+/**
+ * Coarse pointers get bottom-left, where the pinned grading buttons aren't.
+ * Keyed on the pointer, not a breakpoint: a landscape iPad is 1024px wide.
+ */
+const DEFAULT_ANCHOR = {
+  bottom: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom) + 8px)`, sm: 28 },
+  right: { xs: 12, sm: 24 },
+  '@media (pointer: coarse)': { left: 12, right: 'auto' },
+} as const;
 
 interface HomeBuddyProps {
   buddyKey: string;
@@ -47,7 +52,8 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
   const { reactionEvent } = useBuddyReaction();
-  const { petBuddy, canPetToday, ensureLoaded, levelUpEvent, equipped } = useBuddyFriendshipCtx();
+  const { petBuddy, canPetToday, ensureLoaded, levelUpEvent, equipped, recentWords } =
+    useBuddyFriendshipCtx();
   const accent = BUDDY_ART[buddyKey]?.accent ?? brand[300];
 
   useEffect(() => {
@@ -59,7 +65,7 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     setFaceVariant(randomFaceVariant());
   }, [buddyKey]);
   const level = friendshipLevel(equipped?.points ?? 0);
-  const phrases = useMemo(() => {
+  const phraseTemplates = useMemo(() => {
     let base = [t('defaultPhrase')];
     let friendshipCopy: unknown = null;
     try {
@@ -69,8 +75,12 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     } catch {
       // missing key — the guards keep whatever resolved before the throw
     }
-    return blendHomePhrases(base, friendshipCopy, level);
+    return homePhraseTemplates(base, friendshipCopy, level);
   }, [buddyKey, level, t, tBuddies]);
+  const phrases = useMemo(
+    () => fillHomePhrases(phraseTemplates, recentWords),
+    [phraseTemplates, recentWords],
+  );
 
   const [bubbleText, setBubbleText] = useState('');
   /** Outranks the ambient phrase, which would otherwise rotate over it. */
@@ -82,19 +92,13 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   const [tapHearts, setTapHearts] = useState(false);
   const [petBonus, setPetBonus] = useState(false);
   const phraseIndex = useRef(0);
+  const reactionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Dragging
-  const [isDragging, setIsDragging] = useState(false);
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
-  const dragging = useRef(false);
-  const dragOffset = useRef({ x: 0, y: 0 });
-  const lastPos = useRef({ x: 0, y: 0 });
-
-  // Keyed on the pool's contents, not its identity: a re-render that rebuilds
-  // an identical array would otherwise snap the rotation back to phrase one.
+  // Keyed on the UNFILLED templates: identity resets the rotation on any rebuild,
+  // and filled text changes at session end — blanking that session's own line.
   const phrasesRef = useRef(phrases);
   phrasesRef.current = phrases;
-  const phrasePool = phrases.join('␟');
+  const phrasePool = phraseTemplates.join('␟');
   useEffect(() => {
     phraseIndex.current = 0;
     setBubbleText(phrasesRef.current[0]);
@@ -107,33 +111,59 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     return () => clearInterval(interval);
   }, [phrasePool]);
 
+  // Registered after the rotation effect: a same-commit phrase-pool rebuild
+  // would otherwise overwrite the day's greeting with phrase one.
+  const showMomentLine = useCallback((text: string, sparkle: boolean) => {
+    // The last answer's hide timer is still armed when a session ends fast, and
+    // would blank this line a fraction of a second after it appears.
+    if (reactionTimerRef.current) clearTimeout(reactionTimerRef.current);
+    reactionTimerRef.current = null;
+    setReaction('idle');
+    setBubbleText(text);
+    setShowBubble(true);
+    if (!sparkle) return;
+    setSparkles(true);
+    setTimeout(() => setSparkles(false), 800);
+  }, []);
+  const { reactionLine } = useBuddyMoments({ buddyKey, showLine: showMomentLine });
+
   // React to correct/wrong answers reported by whatever practice screen is
   // active. Keyed on reactionEvent.key (not just .reaction) so firing the
   // same reaction twice in a row still re-triggers the bubble/animation.
   useEffect(() => {
     if (!reactionEvent) return;
 
-    let lines: string | string[] = FALLBACK_REACTIONS[reactionEvent.reaction];
-    try {
-      const raw = tBuddies.raw(`${buddyKey}.${reactionEvent.reaction}`);
-      if (isNonEmptyStringArray(raw)) lines = raw;
-    } catch {
-      // missing translation key — keep the English fallback above
+    const { reaction: fired } = reactionEvent;
+    const isComeback = fired === 'comeback';
+    const visual = fired === 'comeback' ? 'correct' : fired;
+    let lines: string | string[] = FALLBACK_REACTIONS[visual];
+    if (isComeback) {
+      const line = reactionLine('comeback');
+      if (line) lines = line;
+    } else {
+      try {
+        const raw = tBuddies.raw(`${buddyKey}.${reactionEvent.reaction}`);
+        if (isNonEmptyStringArray(raw)) lines = raw;
+      } catch {
+        // missing translation key — keep the English fallback above
+      }
     }
 
-    setReaction(reactionEvent.reaction);
+    setReaction(visual);
     setBubbleText(pickRandom(lines));
     setShowBubble(true);
-    setSparkles(reactionEvent.reaction === 'correct');
+    setSparkles(visual === 'correct');
 
     const reactionTimer = setTimeout(() => {
       setReaction('idle');
       setShowBubble(false);
     }, 2500);
+    reactionTimerRef.current = reactionTimer;
     const sparkleTimer = setTimeout(() => setSparkles(false), 800);
     return () => {
       clearTimeout(reactionTimer);
       clearTimeout(sparkleTimer);
+      reactionTimerRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reactionEvent?.key]);
@@ -159,26 +189,6 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [levelUpEvent]);
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    dragging.current = true;
-    setIsDragging(true);
-    const el = e.currentTarget as HTMLElement;
-    const rect = el.getBoundingClientRect();
-    dragOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    lastPos.current = { x: e.clientX, y: e.clientY };
-    el.setPointerCapture(e.pointerId);
-  }, []);
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!dragging.current) return;
-    const x = e.clientX - dragOffset.current.x;
-    const y = e.clientY - dragOffset.current.y;
-    setPos({
-      x: Math.max(0, Math.min(x, window.innerWidth - 80)),
-      y: Math.max(0, Math.min(y, window.innerHeight - 80)),
-    });
-  }, []);
-
   const handleTap = useCallback(() => {
     setTapped(true);
     setTapHearts(true);
@@ -200,20 +210,15 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
     }
   }, [phrases, canPetToday, petBuddy]);
 
-  const handlePointerUp = useCallback(
-    (e: React.PointerEvent) => {
-      // No matching pointerdown (the hearts chip swallowed it, a second pointer,
-      // a lost capture) means lastPos is stale, and a tap it wrongly reads as
-      // one would spend the day's pet award.
-      if (!dragging.current) return;
-      const moved =
-        Math.abs(e.clientX - lastPos.current.x) + Math.abs(e.clientY - lastPos.current.y);
-      dragging.current = false;
-      setIsDragging(false);
-      if (moved < 8) handleTap();
-    },
-    [handleTap],
-  );
+  const {
+    rootRef,
+    pos,
+    isDragging,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    handlePointerCancel,
+  } = useBuddyDrag(handleTap);
 
   // The daily pet pays a heart, so a pointer-only tap would cap keyboard and
   // switch users a heart below everyone else.
@@ -227,11 +232,8 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
   );
 
   const positionStyle = pos
-    ? { left: pos.x, top: pos.y, bottom: 'auto', right: 'auto' }
-    : {
-        bottom: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom) + 8px)`, sm: 28 },
-        right: { xs: 12, sm: 24 },
-      };
+    ? { left: pos.left, bottom: pos.bottom, top: 'auto', right: 'auto' }
+    : DEFAULT_ANCHOR;
 
   const emojiAnimation = tapped
     ? `${tapWiggle} 0.5s ease-in-out`
@@ -239,10 +241,13 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
       ? `${bounce} 0.7s ease-in-out`
       : reaction === 'wrong'
         ? `${wobble} 0.5s ease-in-out`
-        : `${idleFloat} 3s ease-in-out infinite, ${pulseGlow} 3s ease-in-out infinite`;
+        : `${idleFloat} 3s ease-in-out infinite`;
 
   return (
     <Box
+      ref={rootRef}
+      // FriendshipAwardToast querySelectors this rect to anchor its hearts.
+      data-home-buddy
       sx={{
         position: 'fixed',
         ...positionStyle,
@@ -254,14 +259,23 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
         cursor: 'grab',
         touchAction: 'none',
         userSelect: 'none',
+        // A permanent layer costs memory on every page, and Safari repaints it.
+        willChange: isDragging ? 'transform' : 'auto',
         '&:active': { cursor: 'grabbing' },
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      onLostPointerCapture={handlePointerCancel}
     >
       {showBubble && (
-        <BuddyBubble text={announcement ?? bubbleText} reaction={reaction} accent={accent} />
+        <BuddyBubble
+          text={announcement ?? bubbleText}
+          reaction={reaction}
+          accent={accent}
+          hidden={isDragging}
+        />
       )}
 
       <Box sx={{ position: 'relative' }}>
@@ -295,17 +309,28 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
           aria-label={t('petAria')}
           onKeyDown={handleKeyDown}
           sx={{
-            width: { xs: 56, sm: 64 },
-            height: { xs: 56, sm: 64 },
+            position: 'relative',
+            width: { xs: 48, sm: 64 },
+            height: { xs: 48, sm: 64 },
             borderRadius: '50%',
             bgcolor: alpha('#fff', 0.92),
             border: `2.5px solid ${alpha(accent, 0.5)}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            animation: emojiAnimation,
+            animation: isDragging ? 'none' : emojiAnimation,
             boxShadow: `0 6px 20px ${alpha(accent, 0.2)}`,
             transition: 'box-shadow 0.2s',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              inset: -2,
+              borderRadius: '50%',
+              boxShadow: `0 6px 28px ${alpha(accent, 0.28)}, 0 0 20px ${alpha(brand[300], 0.35)}`,
+              opacity: 0,
+              animation: isDragging ? 'none' : `${glowPulse} 3s ease-in-out infinite`,
+              pointerEvents: 'none',
+            },
           }}
         >
           <Box
@@ -314,8 +339,8 @@ export function HomeBuddy({ buddyKey }: HomeBuddyProps) {
             alt=""
             draggable={false}
             sx={{
-              width: { xs: 46, sm: 52 },
-              height: { xs: 46, sm: 52 },
+              width: { xs: 40, sm: 52 },
+              height: { xs: 40, sm: 52 },
               objectFit: 'contain',
               pointerEvents: 'none',
             }}

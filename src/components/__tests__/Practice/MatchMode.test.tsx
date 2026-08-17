@@ -32,8 +32,10 @@ vi.mock('@/contexts/XpAnimationContext', () => ({
   useXpAnimation: () => ({ pendingXp: [], triggerXpEarned: vi.fn(), dismissXpEvent: vi.fn() }),
 }));
 
+const buddy = vi.hoisted(() => ({ triggerReaction: vi.fn(), markMissed: vi.fn() }));
+
 vi.mock('@/contexts/BuddyReactionContext', () => ({
-  useBuddyReaction: () => ({ reactionEvent: null, triggerReaction: vi.fn() }),
+  useBuddyReaction: () => ({ reactionEvent: null, ...buddy }),
 }));
 
 vi.mock('@/components/FuriganaText', () => ({
@@ -213,5 +215,24 @@ describe('MatchMode', () => {
     // recordAnswer should not have been called for a wrong pair (or called with false)
     const correctCalls = mockRecordAnswer.mock.calls.filter((args) => args[1] === true);
     expect(correctCalls).toHaveLength(0);
+  });
+
+  it('should make both halves of a wrong match eligible for a comeback', async () => {
+    buddy.triggerReaction.mockClear();
+    buddy.markMissed.mockClear();
+    renderWithProviders(
+      <MatchMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('ねこ')).toBeInTheDocument();
+      expect(screen.getByText('dog')).toBeInTheDocument();
+    });
+
+    fireEvent.click(tile('ねこ'));
+    fireEvent.click(tile('dog'));
+
+    await waitFor(() => expect(buddy.triggerReaction).toHaveBeenCalledWith('wrong', 'c2'));
+    expect(buddy.markMissed).toHaveBeenCalledWith('c1');
   });
 });

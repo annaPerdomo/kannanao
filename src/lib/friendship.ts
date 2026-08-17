@@ -26,12 +26,16 @@ export const LEVEL_THRESHOLDS = [0, 15, 40, 80, 140];
 
 export const MAX_FRIENDSHIP_LEVEL = 5;
 
+export function clampPoints(points: number): number {
+  return !Number.isFinite(points) || points < 0 ? 0 : points;
+}
+
 /** Friendship level (1..MAX_FRIENDSHIP_LEVEL). Negative/garbage points clamp to 1. */
 export function friendshipLevel(points: number): number {
-  if (!Number.isFinite(points) || points < 0) return 1;
+  const earned = clampPoints(points);
   let level = 1;
   for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
-    if (points >= LEVEL_THRESHOLDS[i]) {
+    if (earned >= LEVEL_THRESHOLDS[i]) {
       level = i + 1;
       break;
     }
@@ -48,25 +52,58 @@ export function friendshipProgress(points: number): { current: number; needed: n
   if (level >= MAX_FRIENDSHIP_LEVEL) return null;
   const floor = LEVEL_THRESHOLDS[level - 1];
   const ceiling = LEVEL_THRESHOLDS[level];
-  const safePoints = !Number.isFinite(points) || points < 0 ? 0 : points;
-  return { current: safePoints - floor, needed: ceiling - floor };
+  return { current: clampPoints(points) - floor, needed: ceiling - floor };
 }
 
 /**
- * Whether a source can still pay out today. lastDates are local YYYY-MM-DD
- * stamps already merged across the user's rows by the caller; null/missing
- * means the source never paid.
+ * Local YYYY-MM-DD stamps per source, already merged across the user's rows by
+ * the caller; null/missing means the source never paid.
  */
+export interface FriendshipDates {
+  adventure?: string | null;
+  session?: string | null;
+  pet?: string | null;
+}
+
 export function canEarn(
   source: FriendshipSource,
-  lastDates: {
-    adventure?: string | null;
-    session?: string | null;
-    pet?: string | null;
-  },
+  lastDates: FriendshipDates,
   today: string,
 ): boolean {
   return lastDates[source] !== today;
+}
+
+export interface TodayOpportunity {
+  source: FriendshipSource;
+  points: number;
+  done: boolean;
+}
+
+export function todayOpportunities(lastDates: FriendshipDates, today: string): TodayOpportunity[] {
+  const sources: FriendshipSource[] = ['adventure', 'session', 'pet'];
+  return sources.map((source) => ({
+    source,
+    points: FRIENDSHIP_POINTS[source],
+    done: !canEarn(source, lastDates, today),
+  }));
+}
+
+/** 0..5, across ALL the user's buddies: the RPC caps per user, so never label this "today with {buddy}". */
+export function heartsEarnedToday(lastDates: FriendshipDates, today: string): number {
+  return todayOpportunities(lastDates, today)
+    .filter((opportunity) => opportunity.done)
+    .reduce((total, opportunity) => total + opportunity.points, 0);
+}
+
+export function reachableToday(
+  heartsAway: number,
+  lastDates: FriendshipDates,
+  today: string,
+): boolean {
+  const remaining = todayOpportunities(lastDates, today)
+    .filter((opportunity) => !opportunity.done)
+    .reduce((total, opportunity) => total + opportunity.points, 0);
+  return heartsAway <= remaining;
 }
 
 /**
