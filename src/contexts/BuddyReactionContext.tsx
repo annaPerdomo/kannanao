@@ -1,4 +1,5 @@
 'use client';
+import { usePathname } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import { onSessionEnd } from '@/lib/sessionSignal';
@@ -34,6 +35,7 @@ let nextKey = 0;
 export function BuddyReactionProvider({ children }: { children: React.ReactNode }) {
   const [reactionEvent, setReactionEvent] = useState<BuddyReactionEvent | null>(null);
   const missedCardsRef = useRef(new Set<string>());
+  const pathname = usePathname();
 
   const markMissed = useCallback((cardId: string) => {
     missedCardsRef.current.add(cardId);
@@ -58,6 +60,13 @@ export function BuddyReactionProvider({ children }: { children: React.ReactNode 
       }),
     [],
   );
+
+  // Modes publish their end signal only inside `if (sessionId)`, so a run whose
+  // startSession failed would hand its misses to the next one as a "comeback".
+  // Every practice mode owns a route, so leaving one ends the run either way.
+  useEffect(() => {
+    missedCardsRef.current.clear();
+  }, [pathname]);
 
   return (
     <BuddyReactionContext.Provider value={{ reactionEvent, triggerReaction, markMissed }}>

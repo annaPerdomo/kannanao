@@ -1,9 +1,16 @@
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BuddyReactionProvider, useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { publishSessionEnd } from '@/lib/sessionSignal';
+
+let pathname = '/review/today';
+vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
+
+beforeEach(() => {
+  pathname = '/review/today';
+});
 
 const wrapper = ({ children }: { children: ReactNode }) => (
   <BuddyReactionProvider>{children}</BuddyReactionProvider>
@@ -65,6 +72,18 @@ describe('BuddyReactionContext', () => {
     const { result } = setup();
     act(() => result.current.triggerReaction('wrong', 'c1'));
     act(() => publishSessionEnd(10));
+    act(() => result.current.triggerReaction('correct', 'c1'));
+    expect(result.current.reactionEvent?.reaction).toBe('correct');
+  });
+
+  // A run whose startSession failed never publishes an end signal at all.
+  it('forgets misses when the learner leaves the practice route', () => {
+    const { result, rerender } = setup();
+    act(() => result.current.triggerReaction('wrong', 'c1'));
+
+    pathname = '/decks';
+    rerender();
+
     act(() => result.current.triggerReaction('correct', 'c1'));
     expect(result.current.reactionEvent?.reaction).toBe('correct');
   });
