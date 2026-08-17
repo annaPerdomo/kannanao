@@ -3,10 +3,11 @@ import { describe, expect, it } from 'vitest';
 import {
   awardLine,
   awardWordLine,
-  blendHomePhrases,
   buddyFacts,
+  fillHomePhrases,
   fillWordSlot,
   greetingLines,
+  homePhraseTemplates,
   memoryTeaser,
   memoryTitle,
   memoryWord,
@@ -15,6 +16,16 @@ import {
   unlockedStories,
 } from '@/lib/buddyPhrases';
 import type { BuddyWord } from '@/lib/buddyWords';
+
+/** HomeBuddy's two-step: templates built once, slots filled per word window. */
+function blendHomePhrases(
+  basePhrases: string[],
+  copy: unknown,
+  level: number,
+  words: BuddyWord[] = [],
+): string[] {
+  return fillHomePhrases(homePhraseTemplates(basePhrases, copy, level), words);
+}
 
 const NEKO: BuddyWord = { word: '猫', reading: 'ねこ' };
 const INU: BuddyWord = { word: '犬', reading: 'いぬ' };

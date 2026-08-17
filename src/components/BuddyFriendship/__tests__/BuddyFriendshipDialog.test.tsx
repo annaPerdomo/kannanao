@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BuddyFriendshipDialog } from '@/components/BuddyFriendship';
@@ -48,7 +48,9 @@ vi.mock('@/components/BuddyFriendship/CelebrationBurst', () => ({ CelebrationBur
 const closeStories = vi.fn();
 const openStories = vi.fn();
 const clearLevelUpEvent = vi.fn();
-const petBuddy = vi.fn();
+const petBuddy = vi.fn(async () => null);
+const clearError = vi.fn();
+let error: string | null = null;
 let storyRequest: BuddyStoryRequest | null = null;
 type Row = { buddyKey: string; points: number };
 type Goal = { source: string; points: number; done: boolean };
@@ -66,6 +68,8 @@ vi.mock('@/contexts/BuddyFriendshipContext', () => ({
     todayGoals,
     heartsToday,
     petBuddy,
+    error,
+    clearError,
   }),
 }));
 
@@ -92,6 +96,8 @@ describe('BuddyFriendshipDialog', () => {
     clearLevelUpEvent.mockClear();
     push.mockClear();
     petBuddy.mockClear();
+    clearError.mockClear();
+    error = null;
     storyRequest = null;
     friendships = { buddy_tango: row('buddy_tango', 20) };
     todayGoals = goals();
@@ -330,6 +336,38 @@ describe('BuddyFriendshipDialog', () => {
     expect(petBuddy).toHaveBeenCalledTimes(1);
     expect(push).not.toHaveBeenCalled();
     expect(closeStories).not.toHaveBeenCalled();
+  });
+
+  it('holds the pet button shut until the heart lands', async () => {
+    storyRequest = { mode: 'browse', buddyKey: 'buddy_tango' };
+    let settle: () => void = () => {};
+    petBuddy.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          settle = () => resolve(null);
+        }),
+    );
+    render(<BuddyFriendshipDialog />);
+    const pet = screen.getByRole('button', { name: 'today.pet.cta|buddy_tango.name' });
+
+    fireEvent.click(pet);
+    expect(pet).toBeDisabled();
+
+    await act(async () => settle());
+    expect(pet).toBeEnabled();
+    fireEvent.click(pet);
+    expect(petBuddy).toHaveBeenCalledTimes(2);
+  });
+
+  it('says so when the heart could not be saved, and not before', () => {
+    storyRequest = { mode: 'browse', buddyKey: 'buddy_tango' };
+    render(<BuddyFriendshipDialog />);
+    expect(screen.queryByText('today.error')).toBeNull();
+    expect(clearError).toHaveBeenCalled();
+
+    error = 'network down';
+    render(<BuddyFriendshipDialog />);
+    expect(screen.getAllByText('today.error').length).toBeGreaterThan(0);
   });
 
   it('shows only the facts the hearts have unlocked', () => {

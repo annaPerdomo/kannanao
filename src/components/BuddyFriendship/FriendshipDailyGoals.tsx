@@ -2,12 +2,15 @@
 
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 
 import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
 import { FRIENDSHIP_POINTS, type FriendshipSource } from '@/lib/friendship';
@@ -37,10 +40,11 @@ interface GoalRowProps {
   points: number;
   done: boolean;
   dominant: boolean;
+  busy: boolean;
   onAct: () => void;
 }
 
-function GoalRow({ title, cta, points, done, dominant, onAct }: GoalRowProps) {
+function GoalRow({ title, cta, points, done, dominant, busy, onAct }: GoalRowProps) {
   const t = useTranslations('Home.buddy.friendship');
   const { brand } = useTheme().palette;
 
@@ -80,6 +84,8 @@ function GoalRow({ title, cta, points, done, dominant, onAct }: GoalRowProps) {
           size="small"
           variant={dominant ? 'contained' : 'text'}
           onClick={onAct}
+          disabled={busy}
+          startIcon={busy ? <CircularProgress size={14} color="inherit" /> : undefined}
           sx={{ flexShrink: 0, fontWeight: 800, whiteSpace: 'nowrap' }}
         >
           {cta}
@@ -98,11 +104,18 @@ export function FriendshipDailyGoals({ name, onLeave }: FriendshipDailyGoalsProp
   const t = useTranslations('Home.buddy.friendship');
   const { brand } = useTheme().palette;
   const router = useRouter();
-  const { todayGoals, heartsToday, petBuddy } = useBuddyFriendshipCtx();
+  const { todayGoals, heartsToday, petBuddy, error, clearError } = useBuddyFriendshipCtx();
+  const [petting, setPetting] = useState(false);
+
+  // The context's error outlives the write that set it — a session award that
+  // failed an hour ago must not greet whoever opens this dialog next.
+  useEffect(() => clearError(), [clearError]);
 
   const act = (source: FriendshipSource) => () => {
     if (source === 'pet') {
-      void petBuddy();
+      if (petting) return;
+      setPetting(true);
+      void petBuddy().finally(() => setPetting(false));
       return;
     }
     const href = GOAL_ROUTES[source];
@@ -124,9 +137,16 @@ export function FriendshipDailyGoals({ name, onLeave }: FriendshipDailyGoalsProp
           points={goal.points}
           done={goal.done}
           dominant={goal.source === 'adventure'}
+          busy={petting && goal.source === 'pet'}
           onAct={act(goal.source)}
         />
       ))}
+
+      {error && (
+        <Alert severity="error" sx={{ py: 0, fontSize: '0.78rem' }}>
+          {t('today.error')}
+        </Alert>
+      )}
 
       <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary', alignSelf: 'flex-end' }}>
         {t('today.footer', { earned: heartsToday, total: HEARTS_PER_DAY })}

@@ -15,7 +15,6 @@ import {
 import type { Locale } from '@/i18n/config';
 import { isAdminUser } from '@/lib/admin';
 import { invalidateApiCache } from '@/lib/apiCache';
-import { clearWords } from '@/lib/buddyWords';
 import type { InitialAuth } from '@/lib/dbMappers';
 import type { AccountType } from '@/lib/supabase';
 import {
@@ -359,12 +358,9 @@ export function AuthProvider({
   }, []);
 
   const signOut = useCallback(async () => {
-    // localStorage outlives the auth session; on a shared device the next
-    // account would inherit this learner's words.
-    clearWords(session?.user?.id);
     // Scope 'local' signs out only this device.
     await sb.auth.signOut({ scope: 'local' });
-  }, [session?.user?.id]);
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({

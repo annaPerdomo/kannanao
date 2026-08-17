@@ -6,25 +6,43 @@ export interface BuddyWord {
 export const RECENT_WORD_CAP = 10;
 export const SAMPLE_SIZE = 3;
 
-/** Per user: signing out of one account must not hand its words to the next. */
-const STORAGE_PREFIX = 'kannanao:buddy-words:';
+/** Mirrors remember_buddy_words: an over-long entry is truncated, not dropped. */
+export const MAX_WORD_LENGTH = 64;
 
 interface WordSource {
   word?: string | null;
   reading?: string | null;
 }
 
-function toBuddyWord(value: unknown): BuddyWord | null {
+function clip(value: string): string {
+  return value.slice(0, MAX_WORD_LENGTH);
+}
+
+export function toBuddyWord(value: unknown): BuddyWord | null {
   if (!value || typeof value !== 'object') return null;
   const { word, reading } = value as WordSource;
   if (typeof word !== 'string' || word.trim() === '') return null;
-  const cleaned: BuddyWord = { word: word.trim() };
-  if (typeof reading === 'string' && reading.trim() !== '') cleaned.reading = reading.trim();
+  const cleaned: BuddyWord = { word: clip(word.trim()) };
+  if (typeof reading === 'string' && reading.trim() !== '') cleaned.reading = clip(reading.trim());
   return cleaned;
 }
 
 export function buddyWordText(word: BuddyWord): string {
   return word.reading?.trim() || word.word;
+}
+
+/** Parses a `recent_words` column, dropping anything that isn't a usable word. */
+export function normalizeWords(value: unknown): BuddyWord[] {
+  if (!Array.isArray(value)) return [];
+  const words: BuddyWord[] = [];
+  const seen = new Set<string>();
+  for (const entry of value) {
+    const word = toBuddyWord(entry);
+    if (!word || seen.has(word.word)) continue;
+    seen.add(word.word);
+    words.push(word);
+  }
+  return words.slice(0, RECENT_WORD_CAP);
 }
 
 export function sampleBuddyWords(cards: readonly unknown[], limit = SAMPLE_SIZE): BuddyWord[] {
@@ -43,73 +61,29 @@ export function sampleBuddyWords(cards: readonly unknown[], limit = SAMPLE_SIZE)
   return pool.slice(0, Math.max(0, limit));
 }
 
-function storageKey(userId: string | null | undefined): string | null {
-  return userId ? STORAGE_PREFIX + userId : null;
-}
-
-/** Newest first — callers name `[0]` as the most recent word. */
-export function recentWords(userId: string | null | undefined): BuddyWord[] {
-  const key = storageKey(userId);
-  if (!key || typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return [];
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    const words: BuddyWord[] = [];
-    const seen = new Set<string>();
-    for (const entry of parsed) {
-      const word = toBuddyWord(entry);
-      if (!word || seen.has(word.word)) continue;
-      seen.add(word.word);
-      words.push(word);
-    }
-    return words.slice(0, RECENT_WORD_CAP);
-  } catch {
-    return [];
-  }
-}
-
-export function rememberWords(
-  userId: string | null | undefined,
-  words: readonly unknown[],
+/**
+ * Newest first, de-duplicated by word, capped — the optimistic twin of the
+ * remember_buddy_words RPC. Both must agree, or the window visibly reshuffles
+ * when the server's answer replaces the local guess.
+ */
+export function mergeWords(
+  incoming: readonly unknown[],
+  existing: readonly BuddyWord[],
 ): BuddyWord[] {
-  const key = storageKey(userId);
-  if (!key) return [];
-
-  const incoming: BuddyWord[] = [];
-  for (const entry of words) {
-    const word = toBuddyWord(entry);
-    if (word) incoming.push(word);
-  }
-  const existing = recentWords(userId);
-  if (!incoming.length) return existing;
-
   const merged: BuddyWord[] = [];
-  const seen = new Set<string>();
-  for (const word of [...incoming, ...existing]) {
-    if (seen.has(word.word)) continue;
-    seen.add(word.word);
+  const byWord = new Map<string, BuddyWord>();
+  for (const entry of [...incoming, ...existing]) {
+    const word = toBuddyWord(entry);
+    if (!word) continue;
+    const kept = byWord.get(word.word);
+    if (kept) {
+      // Newest position wins, but the reading survives: the same word can
+      // arrive from a deck that never filled one in.
+      if (!kept.reading && word.reading) kept.reading = word.reading;
+      continue;
+    }
+    byWord.set(word.word, word);
     merged.push(word);
   }
-  const next = merged.slice(0, RECENT_WORD_CAP);
-
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem(key, JSON.stringify(next));
-    } catch {
-      // Storage can be blocked (Safari private mode); the words just won't stick.
-    }
-  }
-  return next;
-}
-
-export function clearWords(userId: string | null | undefined): void {
-  const key = storageKey(userId);
-  if (!key || typeof window === 'undefined') return;
-  try {
-    localStorage.removeItem(key);
-  } catch {
-    // Storage can be blocked; nothing to clean up then.
-  }
+  return merged.slice(0, RECENT_WORD_CAP);
 }

@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
+import { useAuth } from '@/contexts/AuthContext';
 import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
 import { type GreetingKind, selectGreeting } from '@/lib/buddyGreetings';
 import { type BuddyReactionMoment, greetingLines, reactionLines } from '@/lib/buddyPhrases';
@@ -11,8 +12,6 @@ import { localDateString } from '@/lib/chest';
 import { isMeaningfulSession } from '@/lib/friendship';
 import { isSessionRoute } from '@/lib/sessionRoutes';
 import { onSessionEnd } from '@/lib/sessionSignal';
-
-const GREETING_KEY = 'kannanao:buddy-greeting-date';
 
 export function pickRandom(items: string | string[]): string {
   if (typeof items === 'string') return items;
@@ -32,7 +31,8 @@ export function useBuddyMoments({ buddyKey, showLine }: UseBuddyMomentsParams) {
   const t = useTranslations('Home.buddy');
   const tBuddies = useTranslations('Shop.buddies');
   const pathname = usePathname();
-  const { equipped, stamps, loadState, todayGoals } = useBuddyFriendshipCtx();
+  const { user } = useAuth();
+  const { equipped, stamps, loadState, todayGoals, claimGreeting } = useBuddyFriendshipCtx();
 
   const friendshipCopy = useMemo(() => {
     try {
@@ -72,18 +72,38 @@ export function useBuddyMoments({ buddyKey, showLine }: UseBuddyMomentsParams) {
     [friendshipCopy, chromeLines],
   );
 
-  // Stamped even when there is nothing to say: otherwise a state change later
+  /**
+   * The day's claim, held so a re-run reuses the answer instead of asking
+   * again: the RPC hands "you got it" to exactly one caller, so a second claim
+   * would return false and silently eat the greeting (StrictMode's double
+   * effect does exactly this).
+   */
+  const claimRef = useRef<{ scope: string; promise: Promise<boolean> } | null>(null);
+  /** The claim resolves once but the effect re-runs on every stamp change. */
+  const shownRef = useRef<string | null>(null);
+
+  // Claimed even when there is nothing to say: otherwise a state change later
   // the same day would pop the day's first greeting mid-day.
   useEffect(() => {
-    if (loadState !== 'loaded' || isSessionRoute(pathname)) return;
+    if (loadState !== 'loaded' || !user || isSessionRoute(pathname)) return;
     const today = localDateString(new Date());
-    if (localStorage.getItem(GREETING_KEY) === today) return;
-    const kind = selectGreeting(equipped?.points ?? 0, stamps ?? {}, today);
-    localStorage.setItem(GREETING_KEY, today);
-    if (!kind) return;
-    const line = greetingLine(kind);
-    if (line) showLine(line, false);
-  }, [loadState, pathname, equipped, stamps, greetingLine, showLine]);
+    const scope = `${user.id}:${today}`;
+    if (claimRef.current?.scope !== scope) {
+      claimRef.current = { scope, promise: claimGreeting(today) };
+    }
+    let cancelled = false;
+    void claimRef.current.promise.then((claimed) => {
+      if (!claimed || cancelled || shownRef.current === scope) return;
+      shownRef.current = scope;
+      const kind = selectGreeting(equipped?.points ?? 0, stamps ?? {}, today);
+      if (!kind) return;
+      const line = greetingLine(kind);
+      if (line) showLine(line, false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [loadState, pathname, user, equipped, stamps, claimGreeting, greetingLine, showLine]);
 
   // The award toast speaks for the first meaningful session of the day (it pays
   // the heart); this covers only the later ones, so nothing is said twice.

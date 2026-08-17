@@ -1757,6 +1757,7 @@
           "heading": "Grow closer to {name} today",
           "footer": "{earned} of {total} hearts today",
           "done": "Done",
+          "error": "That didn't save. Check your connection and try again.",
           "adventure": {
             "title": "Finish today's adventure",
             "cta": "Start"

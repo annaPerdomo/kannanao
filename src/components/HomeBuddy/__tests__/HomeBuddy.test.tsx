@@ -21,6 +21,10 @@ vi.mock('next-intl', () => ({
 
 vi.mock('@/components/NavBar/BottomNav', () => ({ BOTTOM_NAV_HEIGHT: 56 }));
 
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({ user: { id: 'user-1' } }),
+}));
+
 let reactionEvent: { key: number; reaction: string } | null = null;
 
 vi.mock('@/contexts/BuddyReactionContext', () => ({
@@ -38,6 +42,9 @@ let levelUpEvent: { buddyKey: string; level: number } | null = null;
 let stamps: Record<string, string | null> = {};
 let todayGoals: { source: string; points: number; done: boolean }[] = [];
 let recentWords: { word: string; reading?: string }[] = [];
+/** What claim_buddy_greeting answers — false once the day is already claimed. */
+let greetingUnclaimed = true;
+const claimGreeting = vi.fn(async () => greetingUnclaimed);
 
 vi.mock('@/contexts/BuddyFriendshipContext', () => ({
   useBuddyFriendshipCtx: () => ({
@@ -53,6 +60,7 @@ vi.mock('@/contexts/BuddyFriendshipContext', () => ({
     clearLevelUpEvent,
     openStories,
     recentWords,
+    claimGreeting,
   }),
 }));
 
@@ -90,6 +98,8 @@ describe('HomeBuddy', () => {
     stamps = {};
     todayGoals = [];
     recentWords = [];
+    greetingUnclaimed = true;
+    claimGreeting.mockClear();
     buddyCopy = {};
     localStorage.clear();
     setViewport(1024, 768);
@@ -320,29 +330,40 @@ describe('HomeBuddy', () => {
     expect(screen.queryByText('level two idle')).toBeNull();
   });
 
-  it('opens the day with a state-picked greeting instead of phrase one', () => {
+  it('opens the day with a state-picked greeting instead of phrase one', async () => {
     buddyCopy = { 'greetings.adventureNotDone': ['Adventure time!'] };
     render(<HomeBuddy buddyKey="tango" />);
-    expect(screen.getByText('Adventure time!')).toBeInTheDocument();
+    expect(await screen.findByText('Adventure time!')).toBeInTheDocument();
     expect(screen.queryByText('defaultPhrase')).toBeNull();
   });
 
-  it('prefers the buddy’s own greeting copy over the chrome fallback', () => {
+  it('prefers the buddy’s own greeting copy over the chrome fallback', async () => {
     buddyCopy = {
       friendship: { greetings: { adventureNotDone: ['Tango special'] } },
       'greetings.adventureNotDone': ['generic'],
     };
     render(<HomeBuddy buddyKey="tango" />);
-    expect(screen.getByText('Tango special')).toBeInTheDocument();
+    expect(await screen.findByText('Tango special')).toBeInTheDocument();
   });
 
-  it('greets only once per day', async () => {
-    const { localDateString } = await import('@/lib/chest');
-    localStorage.setItem('kannanao:buddy-greeting-date', localDateString(new Date()));
+  it('stays quiet when another device already took the day’s greeting', async () => {
+    greetingUnclaimed = false;
     buddyCopy = { 'greetings.adventureNotDone': ['Adventure time!'] };
     render(<HomeBuddy buddyKey="tango" />);
+    await waitFor(() => expect(claimGreeting).toHaveBeenCalled());
     expect(screen.queryByText('Adventure time!')).toBeNull();
     expect(screen.getByText('defaultPhrase')).toBeInTheDocument();
+  });
+
+  it('claims the day once, however often the friendship state changes', async () => {
+    buddyCopy = { 'greetings.adventureNotDone': ['Adventure time!'] };
+    const { rerender } = render(<HomeBuddy buddyKey="tango" />);
+    await screen.findByText('Adventure time!');
+
+    stamps = { pet: '2020-01-01' };
+    rerender(<HomeBuddy buddyKey="tango" />);
+
+    expect(claimGreeting).toHaveBeenCalledTimes(1);
   });
 
   it('says a warm word when a session ends after the daily heart is already paid', async () => {

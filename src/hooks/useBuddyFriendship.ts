@@ -5,7 +5,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useShopCtx } from '@/contexts/ShopContext';
 import { resolveBuddyKey } from '@/lib/buddies';
-import { type BuddyWord, recentWords as loadRecentWords, rememberWords } from '@/lib/buddyWords';
+import { claimBuddyGreeting, fetchRecentWords, persistBuddyWords } from '@/lib/buddyState';
+import { type BuddyWord, mergeWords } from '@/lib/buddyWords';
 import { localDateString } from '@/lib/chest';
 import {
   canEarn,
@@ -133,17 +134,24 @@ export function useBuddyFriendship() {
   const [error, setError] = useState<string | null>(null);
   const [levelUpEvent, setLevelUpEvent] = useState<FriendshipLevelUp | null>(null);
   const [awardEvent, setAwardEvent] = useState<FriendshipAwardEvent | null>(null);
-  // Read in an effect, never at init: the server render has no localStorage.
   const [recentWords, setRecentWords] = useState<BuddyWord[]>([]);
 
   const loadRef = useRef<{ userId: string; promise: Promise<void> } | null>(null);
+  const userIdRef = useRef(user?.id);
+  userIdRef.current = user?.id;
 
+  // Words ride along with the hearts: both are this buddy's memory, both are
+  // wanted by the first screen that asks for either, and fetchRecentWords
+  // swallows its own failure so it can never fail the hearts.
   const fetchFriendships = useCallback(async (userId: string) => {
     setLoadState('loading');
-    const { data, error: err } = await sb
-      .from('buddy_friendship')
-      .select('*')
-      .eq('user_id', userId);
+    const [{ data, error: err }, words] = await Promise.all([
+      sb.from('buddy_friendship').select('*').eq('user_id', userId),
+      fetchRecentWords(userId),
+    ]);
+    // Whoever signed in while this was in flight must not be shown the account
+    // that left — hearts and words both.
+    if (userIdRef.current !== userId) return;
     if (err) {
       setError(err.message);
       setLoadState('error');
@@ -156,6 +164,7 @@ export function useBuddyFriendship() {
       next[row.buddy_key] = dbFriendshipToApp(row);
     });
     setFriendships(next);
+    setRecentWords(words);
     setError(null);
     setLoadState('loaded');
   }, []);
@@ -184,8 +193,10 @@ export function useBuddyFriendship() {
     return loadRef.current.promise;
   }, [user, fetchFriendships]);
 
+  // Any change of account, not just sign-out: the previous learner's words are
+  // on screen until the new fetch lands.
   useEffect(() => {
-    setRecentWords(loadRecentWords(user?.id));
+    setRecentWords([]);
   }, [user?.id]);
 
   useEffect(() => {
@@ -249,6 +260,9 @@ export function useBuddyFriendship() {
         return pending;
       };
 
+      // Cleared up front, not only on success: surfaces read this to report the
+      // attempt in front of them, and a stale message would answer for it.
+      setError(null);
       stampsRef.current = { ...stampsRef.current, [source]: awardedOn };
       setFriendships((current) => ({
         ...current,
@@ -331,15 +345,24 @@ export function useBuddyFriendship() {
   // Subscribe once — awardFriendship's identity changes on every award.
   const awardRef = useRef(awardFriendship);
   awardRef.current = awardFriendship;
-  const userIdRef = useRef(user?.id);
-  userIdRef.current = user?.id;
+  // Serialised: two sessions ending close together both merge server-side, but
+  // out-of-order replies would leave the window showing the older merge.
+  const wordWriteRef = useRef<Promise<unknown>>(Promise.resolve());
+
   useEffect(
     () =>
       onSessionEnd((signal) => {
         // Outside the meaningful-session gate on purpose: a sitting too short
         // to pay a heart still taught words.
-        if (signal.sampleWords.length) {
-          setRecentWords(rememberWords(userIdRef.current, signal.sampleWords));
+        if (signal.sampleWords.length && userIdRef.current) {
+          // Shown before the RPC answers, and kept if it never does — the words
+          // really were studied, they just won't outlive the tab.
+          setRecentWords((current) => mergeWords(signal.sampleWords, current));
+          wordWriteRef.current = wordWriteRef.current
+            .then(() => persistBuddyWords(signal.sampleWords))
+            .then((saved) => {
+              if (saved) setRecentWords(saved);
+            });
         }
         if (isMeaningfulSession(signal.cardsStudied)) {
           void awardRef.current('session', signal.sampleWords);
@@ -348,8 +371,15 @@ export function useBuddyFriendship() {
     [],
   );
 
+  /** True only for the caller that took today's greeting — see buddyState.ts. */
+  const claimGreeting = useCallback(
+    (today: string) => (user ? claimBuddyGreeting(today) : Promise.resolve(false)),
+    [user],
+  );
+
   const clearLevelUpEvent = useCallback(() => setLevelUpEvent(null), []);
   const clearAwardEvent = useCallback(() => setAwardEvent(null), []);
+  const clearError = useCallback(() => setError(null), []);
 
   const equipped = buddyKey in friendships ? friendships[buddyKey] : null;
   const canPetToday = canEarn('pet', stamps, today);
@@ -363,6 +393,7 @@ export function useBuddyFriendship() {
     loadState,
     loading: loadState === 'loading',
     error,
+    clearError,
     awardFriendship,
     petBuddy,
     canPetToday,
@@ -373,6 +404,7 @@ export function useBuddyFriendship() {
     awardEvent,
     clearAwardEvent,
     recentWords,
+    claimGreeting,
     ensureLoaded,
     refetch,
   };

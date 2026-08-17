@@ -158,12 +158,3 @@ export function fillHomePhrases(templates: string[], words: BuddyWord[] = []): s
   }
   return [...new Set(filled)];
 }
-
-export function blendHomePhrases(
-  basePhrases: string[],
-  copy: unknown,
-  level: number,
-  words: BuddyWord[] = [],
-): string[] {
-  return fillHomePhrases(homePhraseTemplates(basePhrases, copy, level), words);
-}
