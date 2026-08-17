@@ -1,7 +1,6 @@
 'use client';
 
 import Box from '@mui/material/Box';
-import Skeleton from '@mui/material/Skeleton';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
@@ -17,8 +16,10 @@ import { localDateString } from '@/lib/chest';
 import { FRIENDSHIP_POINTS } from '@/lib/friendship';
 import { isReturningAfterBreak } from '@/lib/studyWeek';
 
+import { AdventureSkeleton } from './AdventureSkeleton';
 import { CompletedState, DueState, NothingDueState } from './AdventureStates';
 import { nearMilestoneHook } from './nearMilestone';
+import { cardShellSx } from './styles';
 import { WeekDots } from './WeekDots';
 
 /** Fixed, not randomFaceVariant() — the hero re-renders and the face would flip. */
@@ -64,21 +65,7 @@ export function TodayAdventureCard() {
   // that never resolves.
   const friendshipSettled = friendshipLoad === 'loaded' || friendshipLoad === 'error';
 
-  if (dueLoading || progressLoading || !friendshipSettled) {
-    return (
-      <Skeleton
-        variant="rounded"
-        // A rounded Skeleton with no height and no children collapses to ~18px,
-        // and the hero jumps when the card lands.
-        height={300}
-        sx={{
-          maxWidth: { sm: 340 },
-          borderRadius: (theme) => theme.radii.md,
-          bgcolor: alpha('#fff', 0.18),
-        }}
-      />
-    );
-  }
+  if (dueLoading || progressLoading || !friendshipSettled) return <AdventureSkeleton />;
 
   // Local dates during render are safe only because the gate above holds until
   // client data lands — the server never reaches a date-dependent branch.
@@ -143,17 +130,7 @@ export function TodayAdventureCard() {
     <Box
       onClick={clickable ? start : undefined}
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 1,
-        width: { xs: '100%', sm: 'fit-content' },
-        maxWidth: '100%',
-        p: { xs: 1.75, sm: 1.75 },
-        borderRadius: (theme) => theme.radii.md,
-        // Sits on the hero artwork — a pale surface would vanish into the banner.
-        bgcolor: alpha('#fff', 0.16),
-        border: `1.5px solid ${alpha('#fff', 0.3)}`,
-        backdropFilter: 'blur(4px)',
+        ...cardShellSx,
         cursor: clickable ? 'pointer' : 'default',
         transition: 'transform 0.15s ease, background-color 0.15s ease',
         ...(clickable && {

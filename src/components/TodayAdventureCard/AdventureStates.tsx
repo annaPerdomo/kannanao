@@ -6,6 +6,8 @@ import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
+import { FACE_SIZE } from './styles';
+
 /** Round on purpose: the "~N min" promise says "this is short", not a real ETA. */
 const SECONDS_PER_CARD = 20;
 
@@ -18,8 +20,8 @@ function BuddyFace({ src }: { src: string }) {
   return (
     <Box
       sx={{
-        width: 52,
-        height: 52,
+        width: FACE_SIZE,
+        height: FACE_SIZE,
         flexShrink: 0,
         borderRadius: '50%',
         bgcolor: alpha('#fff', 0.92),
@@ -40,16 +42,27 @@ function BuddyFace({ src }: { src: string }) {
   );
 }
 
-function Eyebrow({ children }: { children: React.ReactNode }) {
+/**
+ * One line, either the section label or the milestone tease — never both. The
+ * card sits in the hero, which has room for one text block and no more.
+ */
+function Eyebrow({ children, label }: { children: React.ReactNode; label: boolean }) {
   return (
     <Typography
       variant="caption"
       sx={{
-        display: 'block',
         fontWeight: 800,
-        letterSpacing: '0.06em',
-        textTransform: 'uppercase',
-        color: alpha('#fff', 0.75),
+        color: alpha('#fff', label ? 0.75 : 0.92),
+        ...(label
+          ? { display: 'block', letterSpacing: '0.06em', textTransform: 'uppercase' }
+          : // Two lines at most: a tease is a sentence, and the card is not a
+            // paragraph. Clamped rather than wrapped free.
+            {
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }),
       }}
     >
       {children}
@@ -121,18 +134,18 @@ export function DueState({
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
         <BuddyFace src={faceSrc} />
-        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-          <Eyebrow>{t('title')}</Eyebrow>
+        {/* flexBasis 0, not auto: a long tease's max-content would otherwise be
+            the line's hypothetical width and shove Start onto a row of its own. */}
+        <Box sx={{ minWidth: 0, flexGrow: 1, flexBasis: 0 }}>
+          {/* The tease replaces the label, not the count: "how much work" is the
+              one thing this card exists to answer. */}
+          <Eyebrow label={!friendshipLine}>{friendshipLine ?? t('title')}</Eyebrow>
           <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#fff', lineHeight: 1.25 }}>
             {t('missionHelp', { name: buddyName })}
           </Typography>
           <Typography variant="body2" sx={{ fontWeight: 600, color: alpha('#fff', 0.9) }}>
-            {friendshipLine ?? (
-              <>
-                {t('reviewsCount', { count: dueCount })} ·{' '}
-                {t('minutesEstimate', { min: minutesFor(dueCount) })}
-              </>
-            )}
+            {t('reviewsCount', { count: dueCount })} ·{' '}
+            {t('minutesEstimate', { min: minutesFor(dueCount) })}
           </Typography>
         </Box>
         {/* Stock contained variant — the theme paints it with a background-image

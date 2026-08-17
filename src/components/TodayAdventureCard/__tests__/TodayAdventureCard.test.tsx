@@ -83,12 +83,16 @@ describe('TodayAdventureCard', () => {
     shopState.mockReturnValue({ equipped: { study_buddy: 'buddy_bunny' } });
   });
 
+  // Row for row, not one guessed height: the placeholder measured 173px against
+  // a 198px card in a browser, and the hero it sits in has no spare room.
   it('should hold the space with a skeleton until the counts land', () => {
     dueState.mockReturnValue(due({ loading: true }));
     const { container } = renderWithProviders(<TodayAdventureCard />);
-    const skeleton = container.querySelector<HTMLElement>('.MuiSkeleton-root');
-    expect(skeleton).toBeInTheDocument();
-    expect(parseInt(skeleton!.style.height, 10)).toBeGreaterThan(100);
+    const heights = [...container.querySelectorAll<HTMLElement>('.MuiSkeleton-root')].map((el) =>
+      parseInt(el.style.height, 10),
+    );
+
+    expect(heights).toEqual([52, 20, 20, 22, 20, 36, 39, 14]);
   });
 
   // An unfetched map looks exactly like "no row yet", which hands the day to
@@ -189,11 +193,14 @@ describe('TodayAdventureCard', () => {
   });
 
   describe('near-milestone hook', () => {
-    it('should trade the count line for the promise when a memory is two hearts away', async () => {
+    // The promise takes the section label's line, never the count's: how much
+    // work is waiting is the one thing this card exists to answer.
+    it('should promise the memory without giving up the count', async () => {
       friendshipState.mockReturnValue(friendship({}, 'loaded', { points: 13 }));
       renderWithProviders(<TodayAdventureCard />);
       await screen.findByText('So close! Tsuki has something to tell you.');
-      expect(screen.queryByText(/6 reviews/)).toBeNull();
+      expect(screen.getByText(/6 reviews/)).toBeInTheDocument();
+      expect(screen.queryByText("Today's Adventure")).toBeNull();
       fireEvent.click(screen.getByRole('button', { name: 'Start' }));
       expect(push).toHaveBeenCalledWith('/review/today');
     });
