@@ -12,7 +12,6 @@ interface StoryRevealProps {
   onDone?: () => void;
 }
 
-/** The level-up story, revealed one line per tap. */
 export function StoryReveal({ lines, onDone }: StoryRevealProps) {
   const t = useTranslations('Home.buddy.friendship');
   const [shown, setShown] = useState(1);

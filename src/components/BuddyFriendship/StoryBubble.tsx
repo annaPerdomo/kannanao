@@ -10,7 +10,6 @@ import { lineFadeIn, stageFade } from './animations';
 
 interface StoryBubbleProps {
   text: string;
-  /** Skips the fade for lines that were already on screen. */
   animate?: boolean;
 }
 
