@@ -58,15 +58,15 @@ const CROP_FOCUS_X = 35;
  * quite wide, so below `UNCROPPED_FROM` the height is a flat floor and the
  * band's sides crop to fill it (`CROP_FOCUS_X` keeps the mascot in frame while they
  * do). At and above it the band's own aspect finally clears the copy, so the
- * banner takes that aspect exactly and the whole illustration is on screen.
+ * banner takes that aspect and the whole illustration is on screen.
  *
  * `UNCROPPED_FROM` is where `width / WIDE_ASPECT` first exceeds the widest floor
  * — pick a smaller number and the hero visibly *shrinks* as the window grows.
  *
- * The two must never both apply to the same box: `aspect-ratio` transfers a
+ * The two must never both apply to the same box: a ratio transfers a
  * `min-height` into an equivalent `min-width` (CSS Sizing 4), which at this
  * ratio is a 1140px floor on the banner's *width* — it would burst straight out
- * of a phone-sized viewport. Hence `minHeight: 0` alongside the aspect.
+ * of a phone-sized viewport. Hence `minHeight: 0` in the uncropped regime.
  */
 const WIDE_MIN_HEIGHT = { sm: 232, md: 240 };
 const UNCROPPED_FROM = '@media (min-width:1240px)';
@@ -167,7 +167,20 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
           // copy, the band's own aspect once it isn't.
           [overlay]: { minHeight: WIDE_MIN_HEIGHT.sm, justifyContent: 'center' },
           [breakpoints.up('md')]: { minHeight: WIDE_MIN_HEIGHT.md },
-          [UNCROPPED_FROM]: { minHeight: 0, aspectRatio: String(WIDE_ASPECT) },
+          // Grid floor, not `aspect-ratio`: a row grows with its content, but a
+          // locked ratio clipped the CTA card behind `overflow: hidden`.
+          [UNCROPPED_FROM]: {
+            minHeight: 0,
+            display: 'grid',
+            alignContent: 'center',
+            justifyItems: 'start',
+            '&::before': {
+              content: '""',
+              gridArea: '1 / 1',
+              width: '100%',
+              paddingTop: `${(100 / WIDE_ASPECT).toFixed(3)}%`,
+            },
+          },
           overflow: 'hidden',
           borderRadius: radii.md,
           background: `linear-gradient(135deg, ${brand[600]} 0%, ${accent[700]} 100%)`,
@@ -240,7 +253,7 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
             position: 'relative',
             width: '100%',
             maxWidth: { xs: '100%', sm: '56%', md: '50%' },
-            [UNCROPPED_FROM]: { maxWidth: 620 },
+            [UNCROPPED_FROM]: { maxWidth: 620, gridArea: '1 / 1' },
             px: { xs: 2.5, sm: 4 },
             py: { xs: 3, sm: 3.5 },
             background: `linear-gradient(135deg, rgba(${SCRIM},1) 0%, rgba(56, 20, 66, 1) 100%)`,
