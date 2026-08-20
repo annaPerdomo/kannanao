@@ -83,8 +83,7 @@ describe('TodayAdventureCard', () => {
     shopState.mockReturnValue({ equipped: { study_buddy: 'buddy_bunny' } });
   });
 
-  // Row for row, not one guessed height: the placeholder measured 173px against
-  // a 198px card in a browser, and the hero it sits in has no spare room.
+  // Row for row, not one guessed height — the hero clips an over-tall placeholder.
   it('should hold the space with a skeleton until the counts land', () => {
     dueState.mockReturnValue(due({ loading: true }));
     const { container } = renderWithProviders(<TodayAdventureCard />);
@@ -92,7 +91,7 @@ describe('TodayAdventureCard', () => {
       parseInt(el.style.height, 10),
     );
 
-    expect(heights).toEqual([52, 20, 20, 22, 20, 36, 39, 14]);
+    expect(heights).toEqual([16, 16, 52, 22, 20, 36, 39, 14]);
   });
 
   // An unfetched map looks exactly like "no row yet", which hands the day to

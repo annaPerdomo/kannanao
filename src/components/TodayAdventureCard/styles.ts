@@ -3,12 +3,11 @@ import { alpha, type SxProps, type Theme } from '@mui/material/styles';
 export const FACE_SIZE = 52;
 
 /**
- * Measured off the rendered card in a browser, not derived from the font sizes
- * — the Start button wraps to its own line at the hero's copy width, and the
- * text block is three lines tall before it does.
+ * Measured off the rendered card in a browser, not derived from the theme's font
+ * sizes. Except `eyebrow`, which is Eyebrow's own 0.72rem × 1.4.
  */
 export const LINE_HEIGHTS = {
-  eyebrow: 20,
+  eyebrow: 16,
   title: 22,
   body: 20,
   button: 36,
