@@ -172,6 +172,9 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
           [UNCROPPED_FROM]: {
             minHeight: 0,
             display: 'grid',
+            // An implicit auto track would be sized by the copy, then centred by
+            // justifyContent — and it starves ::before's percentage height.
+            gridTemplateColumns: 'minmax(0, 1fr)',
             alignContent: 'center',
             justifyItems: 'start',
             '&::before': {
