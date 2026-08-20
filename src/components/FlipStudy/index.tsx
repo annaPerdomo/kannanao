@@ -397,8 +397,6 @@ export default function FlipStudy({
           </Box>
         </Box>
 
-        {/* The slot between the arrows is the 100% the card's maxWidth cap
-            measures against. */}
         <Box
           sx={{
             minHeight: 0,
@@ -414,7 +412,9 @@ export default function FlipStudy({
               alignSelf: 'stretch',
               minHeight: 0,
               minWidth: 0,
-              flex: '0 1 auto',
+              flex: '1 1 0',
+              maxWidth: `${CARD_W}px`,
+              containerType: 'size',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -425,13 +425,19 @@ export default function FlipStudy({
             <Box
               key={index}
               sx={{
+                // The slot above must stay definite-width: a content-sized
+                // ancestor collapses this card to 0 in WebKit (iOS sliver bug).
                 height: '100%',
                 width: 'auto',
-                // Both caps matter: maxHeight stops a tall slot stretching the
-                // card past its ratio, maxWidth stops a narrow one pushing it
-                // off the sides.
                 maxHeight: `${CARD_H}px`,
                 maxWidth: `min(${CARD_W}px, 100%)`,
+                // The caps above are the pre-container-query fallback; without
+                // them the card covers the grading buttons on Safari < 16.
+                '@supports (width: 1cqw)': {
+                  height: 'auto',
+                  maxHeight: 'none',
+                  width: `min(${CARD_W}px, 100cqw, calc(100cqh * ${CARD_W} / ${CARD_H}))`,
+                },
                 aspectRatio: CARD_ASPECT_RATIO,
                 position: 'relative',
                 transformOrigin: 'top center',
