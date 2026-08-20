@@ -19,7 +19,7 @@ import { isReturningAfterBreak } from '@/lib/studyWeek';
 import { AdventureSkeleton } from './AdventureSkeleton';
 import { CompletedState, DueState, NothingDueState } from './AdventureStates';
 import { nearMilestoneHook } from './nearMilestone';
-import { cardShellSx } from './styles';
+import { cardHoverBgSx, cardShellSx } from './styles';
 import { WeekDots } from './WeekDots';
 
 /** Fixed, not randomFaceVariant() — the hero re-renders and the face would flip. */
@@ -134,7 +134,7 @@ export function TodayAdventureCard() {
         cursor: clickable ? 'pointer' : 'default',
         transition: 'transform 0.15s ease, background-color 0.15s ease',
         ...(clickable && {
-          '&:hover': { transform: 'translateY(-2px)', bgcolor: alpha('#fff', 0.22) },
+          '&:hover': { transform: 'translateY(-2px)', bgcolor: cardHoverBgSx },
         }),
       }}
     >

@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 
 import { resolveTimeOfDay, type TimeOfDay } from '@/lib/timeOfDay';
+import { HERO_SCRIM } from '@/theme/scrim';
 
 import { HeroDateChip } from './HeroDateChip';
 
@@ -94,15 +95,6 @@ const HERO_MAX_WIDTH = 1280;
  */
 const OVERLAY_MEDIA = '(min-width:600px)';
 const OVERLAY_FROM = 'sm';
-
-/**
- * Deep plum, held outside the theme on purpose. The three banners are painted
- * illustrations with their own light — sunrise gold, midday blue, dusk violet —
- * and the scrim's job is to be the shadow they all cast, whichever of the ten
- * colour schemes the user is running. A brand-tinted scrim would fight the art
- * in at least half of them.
- */
-const SCRIM = '72, 26, 84';
 
 /**
  * Width the aside (the XP card) is allowed to float over the banner at.
@@ -226,11 +218,9 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
           </Box>
         )}
 
-        {/* Scrim, for the overlay composition only. Dense across the copy's
-            column — the sunrise banner puts the sun itself right where the
-            greeting starts, and white type has to clear 3:1 against it — then
-            falling away before the mascot so the artwork isn't muddied. The
-            phone composition needs none of this: its copy is on the gradient. */}
+        {/* Overlay composition only, and sized for the greeting's large bold
+            white (3:1). The CTA card's small text needs 4.5:1 and gets it from
+            its own surface, not from here — see cardShellSx. */}
         <Box
           aria-hidden
           sx={{
@@ -241,10 +231,10 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
               inset: 0,
               // Percentage stops while the band is cropped: the copy's column
               // is a percentage too, so they stay in step as the crop tightens.
-              background: `linear-gradient(90deg, rgba(${SCRIM},0.86) 0%, rgba(${SCRIM},0.84) 30%, rgba(${SCRIM},0.6) 46%, rgba(${SCRIM},0.16) 60%, rgba(${SCRIM},0) 74%)`,
+              background: `linear-gradient(90deg, rgba(${HERO_SCRIM},0.74) 0%, rgba(${HERO_SCRIM},0.7) 30%, rgba(${HERO_SCRIM},0.6) 46%, rgba(${HERO_SCRIM},0.16) 60%, rgba(${HERO_SCRIM},0) 74%)`,
             },
             [UNCROPPED_FROM]: {
-              background: `linear-gradient(90deg, rgba(${SCRIM},0.86) 0px, rgba(${SCRIM},0.8) 340px, rgba(${SCRIM},0.5) 520px, rgba(${SCRIM},0.14) 680px, rgba(${SCRIM},0) 800px)`,
+              background: `linear-gradient(90deg, rgba(${HERO_SCRIM},0.74) 0px, rgba(${HERO_SCRIM},0.66) 340px, rgba(${HERO_SCRIM},0.5) 520px, rgba(${HERO_SCRIM},0.14) 680px, rgba(${HERO_SCRIM},0) 800px)`,
             },
           }}
         />
@@ -259,7 +249,7 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
             [UNCROPPED_FROM]: { maxWidth: 620, gridArea: '1 / 1' },
             px: { xs: 2.5, sm: 4 },
             py: { xs: 3, sm: 3.5 },
-            background: `linear-gradient(135deg, rgba(${SCRIM},1) 0%, rgba(56, 20, 66, 1) 100%)`,
+            background: `linear-gradient(135deg, rgba(${HERO_SCRIM},1) 0%, rgba(56, 20, 66, 1) 100%)`,
             [overlay]: { background: 'none', width: 'fit-content' },
           }}
         >
@@ -277,7 +267,7 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
               // Japanese would otherwise break between any two kana
               wordBreak: 'keep-all',
               color: '#fff',
-              textShadow: `0 2px 16px rgba(${SCRIM},0.6), 0 1px 3px rgba(${SCRIM},0.5)`,
+              textShadow: `0 2px 16px rgba(${HERO_SCRIM},0.6), 0 1px 3px rgba(${HERO_SCRIM},0.5)`,
             }}
           >
             {greeting}
