@@ -50,19 +50,13 @@ function Eyebrow({ children, label }: { children: React.ReactNode; label: boolea
   return (
     <Typography
       variant="caption"
+      component="p"
       sx={{
+        display: 'block',
         fontWeight: 800,
+        lineHeight: 1.4,
         color: alpha('#fff', label ? 0.75 : 0.92),
-        ...(label
-          ? { display: 'block', letterSpacing: '0.06em', textTransform: 'uppercase' }
-          : // Two lines at most: a tease is a sentence, and the card is not a
-            // paragraph. Clamped rather than wrapped free.
-            {
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }),
+        ...(label ? { letterSpacing: '0.06em', textTransform: 'uppercase' } : { mb: 0.5 }),
       }}
     >
       {children}
@@ -132,14 +126,12 @@ export function DueState({
   };
   return (
     <Box>
+      <Eyebrow label={!friendshipLine}>{friendshipLine ?? t('title')}</Eyebrow>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
         <BuddyFace src={faceSrc} />
-        {/* flexBasis 0, not auto: a long tease's max-content would otherwise be
-            the line's hypothetical width and shove Start onto a row of its own. */}
+        {/* flexBasis 0, not auto: max-content would be the title's
+            hypothetical width and shove Start onto a row of its own. */}
         <Box sx={{ minWidth: 0, flexGrow: 1, flexBasis: 0 }}>
-          {/* The tease replaces the label, not the count: "how much work" is the
-              one thing this card exists to answer. */}
-          <Eyebrow label={!friendshipLine}>{friendshipLine ?? t('title')}</Eyebrow>
           <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#fff', lineHeight: 1.25 }}>
             {t('missionHelp', { name: buddyName })}
           </Typography>
