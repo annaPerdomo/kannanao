@@ -45,12 +45,10 @@ describe('classification table', () => {
   });
 
   it('does not call a plain programming TypeError offline', () => {
-    // "undefined is not a function" is a bug, and telling a learner to check
-    // their wifi would send them chasing the wrong thing.
     expect(toDataError(new TypeError('x.map is not a function')).kind).toBe('unknown');
   });
 
-  it.each([502, 503, 504])('maps HTTP %i to upstream', (status) => {
+  it.each([500, 502, 503, 504, 599])('maps HTTP %i to upstream', (status) => {
     expect(toDataError(new Error('gateway'), { status }).kind).toBe('upstream');
   });
 
@@ -63,7 +61,7 @@ describe('classification table', () => {
     expect(toDataError(new Error('nope'), { status }).kind).toBe('auth');
   });
 
-  it('maps HTTP 404 to notFound', () => {
+  it('maps a bare HTTP 404 to notFound', () => {
     expect(toDataError(new Error('missing'), { status: 404 }).kind).toBe('notFound');
   });
 
@@ -75,27 +73,99 @@ describe('classification table', () => {
     expect(err.code).toBe('PGRST116');
   });
 
+  it('maps a schema-cache miss to upstream rather than to an absence', () => {
+    for (const code of ['PGRST205', 'PGRST202']) {
+      const err = toDataError(postgrestError(code, 'Could not find it in the schema cache'), {
+        status: 404,
+      });
+      expect(err.kind).toBe('upstream');
+      expect(err.code).toBe(code);
+      expect(isRetryable(err)).toBe(true);
+    }
+  });
+
+  it('does not call a 404 an absence when the backend sent a code with it', () => {
+    expect(toDataError({ message: 'nope', code: 'PGRST100' }, { status: 404 }).kind).toBe(
+      'unknown',
+    );
+  });
+
   it('leaves any other PostgrestError unknown but keeps its code', () => {
-    const err = toDataError(postgrestError('PGRST205', 'Could not find the table'));
+    const err = toDataError(postgrestError('23505', 'duplicate key value violates a constraint'));
     expect(err.kind).toBe('unknown');
-    expect(err.code).toBe('PGRST205');
-    expect(err.message).toBe('Could not find the table');
+    expect(err.code).toBe('23505');
+    expect(err.message).toBe('duplicate key value violates a constraint');
   });
 
   it('leaves anything else unknown', () => {
     expect(toDataError(new Error('boom')).kind).toBe('unknown');
     expect(toDataError({ nope: true }).kind).toBe('unknown');
-    expect(toDataError(new Error('server error'), { status: 500 }).kind).toBe('unknown');
+    expect(toDataError(new Error('bad request'), { status: 400 }).kind).toBe('unknown');
+  });
+});
+
+describe('shapes supabase-js actually produces', () => {
+  // postgrest-js does not throw when fetch rejects: it resolves with the
+  // TypeError flattened into a plain object and `status: 0`.
+  const fetchRejected = {
+    message: 'TypeError: Failed to fetch',
+    details: 'TypeError: Failed to fetch\n\nCaused by: Error: getaddrinfo ENOTFOUND',
+    hint: '',
+    code: '',
+  };
+
+  const aborted = {
+    message: 'AbortError: The user aborted a request.',
+    details: 'AbortError: The user aborted a request.',
+    hint: 'Request was aborted (timeout or manual cancellation)',
+    code: '',
+  };
+
+  it('still calls a rejected fetch offline once the TypeError has been flattened away', () => {
+    expect(toDataError(fetchRejected).kind).toBe('offline');
+  });
+
+  it('ignores the status: 0 sentinel instead of reading it as an answer from a server', () => {
+    const err = toDataError(fetchRejected, { status: 0 });
+    expect(err.status).toBeUndefined();
+    expect(err.kind).toBe('offline');
+    expect(isRetryable(err)).toBe(true);
+  });
+
+  it('calls an aborted or timed-out request upstream, so it stays retryable', () => {
+    for (const input of [aborted, { ...aborted, message: 'TimeoutError: signal timed out' }]) {
+      const err = toDataError(input, { status: 0 });
+      expect(err.kind).toBe('upstream');
+      expect(isRetryable(err)).toBe(true);
+    }
+  });
+
+  it('classifies a raw abort or timeout that carries no status at all', () => {
+    for (const name of ['AbortError', 'TimeoutError']) {
+      const err = new Error('The operation was aborted.');
+      err.name = name;
+      expect(toDataError(err).kind).toBe('upstream');
+    }
+    expect(toDataError({ message: 'cancelled', code: 'ABORT_ERR' }).kind).toBe('upstream');
+  });
+
+  it('reads a non-JSON gateway body handed back as a bare message', () => {
+    // An unparseable 503 body arrives as `{ message: <body> }`, status separate.
+    expect(toDataError({ message: ENVOY_BODY }, { status: 503 }).kind).toBe('upstream');
   });
 });
 
 describe('classification order', () => {
   it('reads the body before the status line', () => {
-    // A 500 carrying the Envoy body is still an upstream failure. Reverse this
-    // and a gateway that swaps its status code goes back to looking like a bug.
-    expect(toDataError(new Error(ENVOY_BODY), { status: 500 }).kind).toBe('upstream');
+    expect(toDataError(new Error(ENVOY_BODY), { status: 400 }).kind).toBe('upstream');
     expect(toDataError(new Error(ENVOY_BODY), { status: 404 }).kind).toBe('upstream');
     expect(toDataError(new Error(ENVOY_BODY), { status: 401 }).kind).toBe('upstream');
+  });
+
+  it('reads the gateway prose out of the cause of a wrapper error', () => {
+    const err = toDataError(new Error('load decks failed', { cause: new Error(ENVOY_BODY) }));
+    expect(err.kind).toBe('upstream');
+    expect(err.message).toBe('load decks failed');
   });
 
   it('matches the Envoy prose case-insensitively and not the bare errno', () => {
@@ -105,6 +175,10 @@ describe('classification order', () => {
 
   it('prefers an explicit ctx status over one carried on the error', () => {
     expect(toDataError({ message: 'x', status: 404 }, { status: 503 }).kind).toBe('upstream');
+  });
+
+  it('falls back to the status on the error when ctx carries a non-status', () => {
+    expect(toDataError({ message: 'x', status: 503 }, { status: 0 }).kind).toBe('upstream');
   });
 
   it('does not report offline when a server actually answered', () => {
@@ -160,6 +234,21 @@ describe('toDataError is total', () => {
     expect((err.cause as { hint: null }).hint).toBeNull();
   });
 
+  it('leaves cause non-enumerable, so logging a circular failure does not throw', () => {
+    const err = toDataError(circular);
+    expect(err.cause).toBe(circular);
+    expect(() => JSON.stringify(err)).not.toThrow();
+    expect(JSON.parse(JSON.stringify(err))).not.toHaveProperty('cause');
+  });
+
+  it('does not serialise the raw upstream object into a log line', () => {
+    const err = toDataError({
+      message: 'duplicate key value violates a constraint',
+      details: 'Key (email)=(kid@example.com) already exists.',
+    });
+    expect(JSON.stringify(err)).not.toContain('kid@example.com');
+  });
+
   it('returns an existing DataError untouched so nested catches do not re-wrap', () => {
     const original = new DataError('upstream', ENVOY_BODY, { status: 503 });
     expect(toDataError(original)).toBe(original);
@@ -183,6 +272,7 @@ describe('status and code extraction', () => {
   it('ignores a status field that is not an HTTP status', () => {
     expect(toDataError({ message: 'x', status: 'active' }).status).toBeUndefined();
     expect(toDataError({ message: 'x', status: 42 }).status).toBeUndefined();
+    expect(toDataError({ message: 'x' }, { status: 0 }).status).toBeUndefined();
   });
 
   it('ignores a non-string or blank code', () => {
@@ -234,6 +324,15 @@ describe('dataErrorFromResponse', () => {
     expect(err.message).toBe('<html>502 Bad Gateway</html>');
   });
 
+  it('maps a 500 from one of our own API routes to upstream', async () => {
+    // Our routes catch a dead database and answer 500; the gateway's 503 never
+    // reaches the client.
+    const res = new Response(JSON.stringify({ error: 'Failed to load decks' }), { status: 500 });
+    const err = await dataErrorFromResponse(res);
+    expect(err.kind).toBe('upstream');
+    expect(err.message).toBe('Failed to load decks');
+  });
+
   it('pulls message and code out of a JSON error envelope', async () => {
     const res = new Response(JSON.stringify(postgrestError('PGRST116', 'no rows')), {
       status: 406,
@@ -245,10 +344,10 @@ describe('dataErrorFromResponse', () => {
     expect(err.message).toBe('no rows');
   });
 
-  it('keeps the raw body when a JSON envelope carries no recognisable message', async () => {
+  it('keeps the raw body, and the kind, when a 404 envelope carries only a code', async () => {
     const res = new Response('{"code":"PGRST202"}', { status: 404 });
     const err = await dataErrorFromResponse(res);
-    expect(err.kind).toBe('notFound');
+    expect(err.kind).toBe('upstream');
     expect(err.code).toBe('PGRST202');
     expect(err.message).toBe('{"code":"PGRST202"}');
   });
@@ -260,12 +359,30 @@ describe('dataErrorFromResponse', () => {
     expect(err.message).toBe('{"message":"gateway t');
   });
 
+  it('leaves the body readable for the caller', async () => {
+    const res = new Response('{"error":"nope"}', { status: 500 });
+    await dataErrorFromResponse(res);
+    expect(res.bodyUsed).toBe(false);
+    await expect(res.json()).resolves.toEqual({ error: 'nope' });
+  });
+
+  it('caps a runaway body instead of holding megabytes of proxy HTML', async () => {
+    const huge = `<html>${'x'.repeat(3_000_000)}</html>`;
+    const err = await dataErrorFromResponse(new Response(huge, { status: 502 }));
+    expect(err.kind).toBe('upstream');
+    expect(err.message.length).toBeLessThanOrEqual(2048);
+  });
+
   it('survives an empty body and an unreadable body', async () => {
     const empty = await dataErrorFromResponse(new Response('', { status: 404 }));
     expect(empty.kind).toBe('notFound');
     expect(empty.message).toBe('Data request failed (notFound, HTTP 404)');
 
-    const unreadable = { status: 503, text: () => Promise.reject(new Error('already consumed')) };
+    const unreadable = {
+      status: 503,
+      clone: () => unreadable,
+      text: () => Promise.reject(new Error('already consumed')),
+    };
     const err = await dataErrorFromResponse(unreadable as unknown as Response);
     expect(err.kind).toBe('upstream');
   });
@@ -278,6 +395,14 @@ describe('isRetryable', () => {
     expect(isRetryable(new DataError('auth', 'x'))).toBe(false);
     expect(isRetryable(new DataError('notFound', 'x'))).toBe(false);
     expect(isRetryable(new DataError('unknown', 'x'))).toBe(false);
+  });
+
+  it('retries a throttle or a request timeout without calling either an outage', () => {
+    const limited = toDataError(new Error('Too Many Requests'), { status: 429 });
+    expect(limited.kind).toBe('unknown');
+    expect(isRetryable(limited)).toBe(true);
+    expect(isRetryable(toDataError(new Error('timeout'), { status: 408 }))).toBe(true);
+    expect(isRetryable(toDataError(new Error('bad'), { status: 400 }))).toBe(false);
   });
 });
 

@@ -1,18 +1,12 @@
 /**
- * On 2026-08-26 PostgREST was down for six hours while Auth stayed healthy, so
- * every read failed with a 503 and the app rendered "no decks yet" instead of an
- * outage. `kind` is what makes those two cases distinguishable inside a catch.
- *
- * Keep this dependency-free: both the client data path and the API routes import
- * it, and reaching for `supabase.ts` or `apiCache.ts` would create a cycle.
+ * The 2026-08-26 outage had PostgREST down while Auth stayed healthy, so every
+ * read failed and the app rendered "no decks yet". `kind` separates those two.
+ * Keep this a leaf: the client data path and the API routes both import it.
  */
 
-export type DataErrorKind =
-  | 'offline' // request never reached a server (fetch rejected, DNS, airplane mode)
-  | 'upstream' // server reached but broken: 502/503/504, gateway connect failure
-  | 'auth' // 401/403, expired or rejected session
-  | 'notFound' // 404, or a single-row query that found nothing
-  | 'unknown'; // anything unclassified — never silently treated as empty
+import { errorMessage } from './errorMessage';
+
+export type DataErrorKind = 'offline' | 'upstream' | 'auth' | 'notFound' | 'unknown';
 
 interface DataErrorOptions {
   status?: number;
@@ -24,52 +18,63 @@ export class DataError extends Error {
   readonly kind: DataErrorKind;
   readonly status?: number;
   readonly code?: string;
-  readonly cause?: unknown;
+  // declare, not a field: a real field is enumerable, and JSON.stringify would
+  // then walk into the raw upstream object.
+  declare readonly cause?: unknown;
 
   constructor(kind: DataErrorKind, message: string, options: DataErrorOptions = {}) {
-    super(message);
+    super(message, { cause: options.cause });
     this.name = 'DataError';
     this.kind = kind;
     this.status = options.status;
     this.code = options.code;
-    this.cause = options.cause;
   }
 }
 
-/**
- * The gateway's connect-failure body, captured live during the outage. Matching
- * the prose, not the trailing `111` — that is an errno, not a stable string.
- */
+// Envoy's connect-failure body, captured during the outage. The trailing `111`
+// is an errno, not a stable string — match the prose, not the number.
 const UPSTREAM_BODY = /upstream connect error|delayed connect error/i;
 
 const OFFLINE_MESSAGE =
   /failed to fetch|fetch failed|networkerror|network request failed|load failed|connection refused|err_(internet_disconnected|network_changed|connection_refused|name_not_resolved)/i;
 
+/** supabase-js flattens a rejected fetch to `{ message: "<ErrorName>: <message>" }`. */
+const FLATTENED_NAME = /^\s*(TypeError|FetchError)\s*:/i;
+const FLATTENED_ABORT = /^\s*(AbortError|TimeoutError)\s*:/i;
+const ABORT_HINT = /request was aborted/i;
+
 /** PostgREST's "no rows returned" from a `.single()` query — an absence, not an outage. */
 const NO_ROWS_CODE = 'PGRST116';
 
-const UPSTREAM_STATUSES = new Set([502, 503, 504]);
+// A reachable PostgREST answers 404 PGRST205 for a table and PGRST202 for a
+// function when its schema cache is stale. The server is up: not an absence.
+const SCHEMA_CACHE_CODES = new Set(['PGRST202', 'PGRST205']);
+
 const AUTH_STATUSES = new Set([401, 403]);
+
+const RETRY_STATUSES = new Set([408, 429]);
+
+const MAX_BODY_CHARS = 2048;
 
 export function isDataError(err: unknown): err is DataError {
   return err instanceof DataError;
 }
 
 export function isRetryable(err: DataError): boolean {
-  return err.kind === 'offline' || err.kind === 'upstream';
+  if (err.kind === 'offline' || err.kind === 'upstream') return true;
+  return err.status !== undefined && RETRY_STATUSES.has(err.status);
 }
 
-/**
- * Total: every input yields a `DataError` and this never throws, because it is
- * called from `catch` blocks where the thrown shape is genuinely unknown.
- */
+/** Never throws: it runs inside catch blocks, where the thrown shape is unknown. */
 export function toDataError(err: unknown, ctx?: { status?: number }): DataError {
   if (isDataError(err)) return err;
 
-  const status = ctx?.status ?? statusOf(err);
+  // httpStatus, not `??` alone: supabase-js reports a rejected fetch as
+  // `status: 0`, which would otherwise read as a real answer from a server.
+  const status = httpStatus(ctx?.status) ?? statusOf(err);
   const code = codeOf(err);
   const text = describe(err);
-  const kind = classify({ err, status, code, text });
+  const kind = classify({ err, status, code, text: withCause(err, text) });
 
   return new DataError(kind, text.trim() || defaultMessage(kind, status), {
     status,
@@ -78,15 +83,13 @@ export function toDataError(err: unknown, ctx?: { status?: number }): DataError 
   });
 }
 
-/**
- * Classify a failed `Response`, reading its body first. The outage answered with
- * `content-type: text/plain`, so a `.json()` parse failure on a 503 must still
- * come back as `upstream` rather than `unknown`.
- */
+// The outage answered 503 with `content-type: text/plain`, so a body that will
+// not parse as JSON still has to classify.
 export async function dataErrorFromResponse(res: Response): Promise<DataError> {
   let body = '';
   try {
-    body = await res.text();
+    // clone: the caller still holds this Response and may still need its body.
+    body = (await res.clone().text()).slice(0, MAX_BODY_CHARS);
   } catch {
     body = '';
   }
@@ -113,17 +116,24 @@ interface Signals {
   text: string;
 }
 
-function classify({ err, status, code, text }: Signals): DataErrorKind {
-  // Body before status: the gateway returned the Envoy connect-failure body under
-  // more than one status, and the body is the more reliable signal of the two.
+function classify(signals: Signals): DataErrorKind {
+  const { err, status, code, text } = signals;
+
+  // Body before status: the gateway sent the Envoy body under more than one
+  // status code, so the body is the more reliable of the two signals.
   if (UPSTREAM_BODY.test(text)) return 'upstream';
 
   if (code === NO_ROWS_CODE) return 'notFound';
+  if (code !== undefined && SCHEMA_CACHE_CODES.has(code)) return 'upstream';
+
+  if (isAborted(signals)) return 'upstream';
 
   if (status !== undefined) {
-    if (UPSTREAM_STATUSES.has(status)) return 'upstream';
+    if (status >= 500) return 'upstream';
     if (AUTH_STATUSES.has(status)) return 'auth';
-    if (status === 404) return 'notFound';
+    // A code alongside a 404 is the backend rejecting the request; only a bare
+    // 404 is an absence. Collapsing this is what renders "no decks yet".
+    if (status === 404) return code === undefined ? 'notFound' : 'unknown';
     return 'unknown';
   }
 
@@ -132,11 +142,20 @@ function classify({ err, status, code, text }: Signals): DataErrorKind {
   return 'unknown';
 }
 
-// A bare TypeError is not enough to claim offline: "x.map is not a function" is
-// a bug, and telling a learner to check their wifi sends them chasing that.
 function isOffline(err: unknown, text: string): boolean {
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return true;
-  return err instanceof TypeError && OFFLINE_MESSAGE.test(text);
+  if (!OFFLINE_MESSAGE.test(text)) return false;
+  return err instanceof TypeError || FLATTENED_NAME.test(text);
+}
+
+function isAborted({ err, code, text }: Signals): boolean {
+  if (code === 'ABORT_ERR') return true;
+
+  const rec = asRecord(err);
+  if (rec?.name === 'AbortError' || rec?.name === 'TimeoutError') return true;
+  if (typeof rec?.hint === 'string' && ABORT_HINT.test(rec.hint)) return true;
+
+  return FLATTENED_ABORT.test(text);
 }
 
 function statusOf(err: unknown): number | undefined {
@@ -162,20 +181,30 @@ function codeOf(err: unknown): string | undefined {
   return typeof code === 'string' && code.trim() ? code.trim() : undefined;
 }
 
-/** Never stringifies the input — it may be circular, and this must not throw. */
+/** Never JSON.stringifies the input: it may be circular and this must not throw. */
 function describe(err: unknown): string {
-  if (typeof err === 'string') return err;
-  if (err === null) return 'null';
-  if (err === undefined) return 'undefined';
   if (isResponse(err))
     return err.statusText ? `HTTP ${err.status} ${err.statusText}` : `HTTP ${err.status}`;
-  if (err instanceof Error) return err.message || err.name;
+  if (err === null) return 'null';
+  if (err === undefined) return 'undefined';
+  if (typeof err === 'string') return err;
 
   const rec = asRecord(err);
-  if (rec)
-    return firstString(rec, ['message', 'details', 'error', 'error_description', 'hint']) ?? '';
+  if (rec) {
+    const text = errorMessage(rec, '') || firstString(rec, ['error', 'error_description', 'hint']);
+    if (text) return text;
+    return err instanceof Error ? err.name : '';
+  }
 
   return String(err);
+}
+
+function withCause(err: unknown, text: string): string {
+  const cause = asRecord(err)?.cause;
+  if (cause === undefined || cause === null) return text;
+
+  const nested = describe(cause);
+  return nested && nested !== text ? `${text}\n${nested}` : text;
 }
 
 function defaultMessage(kind: DataErrorKind, status?: number): string {
