@@ -23,7 +23,6 @@ beforeEach(() => _resetApiCache());
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
-// The 2026-08-26 gateway body: text/plain, no JSON envelope.
 const ENVOY_BODY = 'upstream connect error or disconnect/reset before headers.';
 
 const READINESS = {
@@ -109,8 +108,7 @@ describe('useDeckReadiness', () => {
       vi.setSystemTime(Date.now() + 31_000);
       mockFetch.mockResolvedValueOnce(new Response(ENVOY_BODY, { status: 503 }));
       const { result } = renderHook(() => useDeckReadiness('group-1'));
-      // Not `loading`: the cached paint clears that before the revalidation
-      // that turns out to fail has even reached the network.
+      // Not `loading`: the cached paint clears that before the fetch starts.
       await waitFor(() => expect(result.current.stale).toBe(true));
 
       expect(result.current.data?.decks).toHaveLength(1);

@@ -16,29 +16,23 @@ import { dataErrorFromResponse, toDataError } from './dataError';
  *   instantly while `fetchJsonCached` revalidates over the network
  * - miss: normal fetch
  *
- * A failed revalidation falls back to the cached value rather than throwing —
- * that is what kept parts of the app usable through the 2026-08-26 outage.
- * `peekApiCacheMeta` is how a caller tells that fallback from a live read.
- *
  * Mutations must call `invalidateApiCache(prefix)` so the next read refetches.
  * The cache is per-page-load module state — a full reload starts empty.
  */
 
 const FRESH_MS = 30_000;
 const MAX_AGE_MS = 10 * 60_000;
-// A stale hit hides the outage that produced it, so bound how many it may hide:
-// past this many consecutive failed revalidations the caller gets the error.
+// A stale hit hides the outage that produced it; past this many, the caller gets the error.
 const MAX_STALE_SERVES = 3;
 
 interface Entry {
   data: unknown;
   fetchedAt: number;
-  /** Failed revalidations since `fetchedAt`; 0 while the value is live. */
   failures: number;
 }
 
 export interface ApiCacheMeta {
-  /** Epoch ms of the fetch that produced the value — its age, for "older data" hints. */
+  /** Epoch ms of the fetch that produced the value. */
   fetchedAt: number;
   /** The value came from the fallback path: the most recent fetch failed. */
   stale: boolean;
@@ -47,7 +41,6 @@ export interface ApiCacheMeta {
 const cache = new Map<string, Entry>();
 const inFlight = new Map<string, Promise<unknown>>();
 
-/** The entry for `key`, evicting it first if it aged past `MAX_AGE_MS`. */
 function liveEntry(key: string): Entry | undefined {
   const entry = cache.get(key);
   if (!entry) return undefined;
@@ -64,11 +57,7 @@ export function peekApiCache<T>(key: string): T | undefined {
   return entry ? (entry.data as T) : undefined;
 }
 
-/**
- * Freshness of the cached value for `key`, so a caller can say it is showing
- * older data. Read it after `fetchJsonCached` resolves: a resolved promise with
- * `stale: true` is the fallback path, not a live response.
- */
+/** Read after `fetchJsonCached` resolves: `stale: true` is the fallback path, not a live read. */
 export function peekApiCacheMeta(key: string): ApiCacheMeta | undefined {
   const entry = liveEntry(key);
   return entry ? { fetchedAt: entry.fetchedAt, stale: entry.failures > 0 } : undefined;
@@ -77,8 +66,7 @@ export function peekApiCacheMeta(key: string): ApiCacheMeta | undefined {
 /**
  * GET `url` as JSON, deduplicating concurrent calls and serving fresh cache
  * hits without a network round-trip. Pass `freshMs: 0` to force revalidation.
- * On a failed fetch, falls back to any cached value before rejecting with a
- * `DataError`.
+ * A failed fetch falls back to any cached value before rejecting with a `DataError`.
  */
 export async function fetchJsonCached<T>(
   url: string,
