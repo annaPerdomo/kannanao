@@ -44,9 +44,18 @@ pnpm db:backup:size      # what is in the bucket, without downloading
 
 Run `pnpm db:backup` before any migration you are not sure about. It takes seconds.
 
-Requirements: `brew install postgresql@17 age`, and `SUPABASE_DB_PASSWORD` in `.env`
-(Supabase dashboard → Project Settings → Database → Database password). `pg_dump` 16 will refuse
-to dump a Postgres 17 server, which is why the pinned version matters.
+### First-time setup
+
+```bash
+brew install postgresql@17 age
+bash ops/backup/setup-credentials.sh
+```
+
+The helper asks for the database password once (Supabase dashboard → Project Settings → Database),
+proves it connects, then writes it to `.env` _and_ sets the Actions secret on the backup repo. It
+writes nothing if the password does not work.
+
+`pg_dump` 16 refuses to dump a Postgres 17 server, which is why the pinned version matters.
 
 The connection goes through the **session-mode pooler on port 5432**, not `db.<ref>.supabase.co`
 (IPv6-only on Free) and not port 6543 (transaction mode, which `pg_dump` cannot use).
