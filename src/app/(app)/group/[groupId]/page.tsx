@@ -152,7 +152,8 @@ export default function GroupDashboardPage() {
     );
   }
 
-  if (error) {
+  // Not bare `error`: apiCache still holds the last good roster through an outage.
+  if (error && members.length === 0) {
     return (
       <Box
         sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
@@ -184,6 +185,12 @@ export default function GroupDashboardPage() {
         onOpenMaterials={handleOpenMaterials}
         activeInviteCount={activeInvites.length}
       />
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {errorMessage}
+        </Alert>
+      )}
 
       <Box sx={{ mb: { xs: 2.5, sm: 3 } }}>
         <NeedsAttention

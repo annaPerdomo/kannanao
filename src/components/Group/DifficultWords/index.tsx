@@ -107,9 +107,15 @@ export function DifficultWords({ groupId }: DifficultWordsProps) {
         </Stack>
       )}
 
+      {error && words.length > 0 && (
+        <Alert severity="error" sx={{ mb: 1.5 }}>
+          {errorMessage}
+        </Alert>
+      )}
+
       {loading ? (
         <Loading message={t('loadingMessage')} />
-      ) : error ? (
+      ) : error && words.length === 0 ? (
         <Alert severity="error">{errorMessage}</Alert>
       ) : decks.length === 0 ? (
         <EmptyState emoji="📚" body={t('noDecksBody')} />

@@ -103,4 +103,16 @@ describe('DifficultWords', () => {
     renderWithProviders(<DifficultWords groupId="group-1" />);
     expect(screen.getByText('Nope')).toBeInTheDocument();
   });
+
+  it('keeps the cached words on screen when a refresh fails', () => {
+    useDifficultWordsMock.mockReturnValue({
+      data: { learnerCount: 8, decks: DECKS, words: [word()] },
+      loading: false,
+      error: new DataError('upstream', 'HTTP 503'),
+      errorMessage: 'Nope',
+    });
+    renderWithProviders(<DifficultWords groupId="group-1" />);
+    expect(screen.getByText('Nope')).toBeInTheDocument();
+    expect(screen.getByText('覚える')).toBeInTheDocument();
+  });
 });

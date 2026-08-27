@@ -67,9 +67,15 @@ export function DeckReadinessPanel({ groupId, members, onViewLearners }: DeckRea
       }
       title={t('heading')}
     >
+      {error && decks.length > 0 && (
+        <Alert severity="error" sx={{ mb: 1.5 }}>
+          {errorMessage}
+        </Alert>
+      )}
+
       {loading ? (
         <Loading message={t('loading')} />
-      ) : error ? (
+      ) : error && decks.length === 0 ? (
         <Alert severity="error">{errorMessage}</Alert>
       ) : decks.length === 0 ? (
         <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>{t('empty')}</Typography>

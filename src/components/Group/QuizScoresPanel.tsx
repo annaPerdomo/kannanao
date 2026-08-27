@@ -133,7 +133,13 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
     >
       <DeckPicker decks={decks} value={selectedDeck} onChange={setSelectedDeck} />
 
-      {error ? (
+      {error && rows.length > 0 && (
+        <Typography sx={{ color: 'error.main', fontSize: '0.85rem', mb: 1 }}>
+          {errorMessage}
+        </Typography>
+      )}
+
+      {error && rows.length === 0 ? (
         <Typography sx={{ color: 'error.main', fontSize: '0.85rem' }}>{errorMessage}</Typography>
       ) : loading ? (
         <Loading message={t('loading')} />

@@ -139,6 +139,15 @@ describe('DeckReadinessPanel', () => {
     renderWithProviders(<DeckReadinessPanel groupId="g1" members={[]} onViewLearners={vi.fn()} />);
     expect(screen.getByText('Failed to load deck progress')).toBeInTheDocument();
   });
+
+  it('keeps the cached rows on screen when a refresh fails', () => {
+    readinessState.data = { decks: [deck({ strong: 18, learning: 1, unseen: 1 })] };
+    readinessState.error = new DataError('upstream', 'HTTP 503');
+    readinessState.errorMessage = 'Failed to load deck progress';
+    renderWithProviders(<DeckReadinessPanel groupId="g1" members={[]} onViewLearners={vi.fn()} />);
+    expect(screen.getByText('Failed to load deck progress')).toBeInTheDocument();
+    expect(screen.getByText('90% strong')).toBeInTheDocument();
+  });
 });
 
 describe('PracticeStrength', () => {

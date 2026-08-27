@@ -50,7 +50,8 @@ export default function GroupListPage() {
     );
   }
 
-  if (error) {
+  // Not bare `error`: apiCache still holds the last good list through an outage.
+  if (error && groups.length === 0) {
     return (
       <Box
         sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
@@ -94,6 +95,12 @@ export default function GroupListPage() {
           }
         />
       </Box>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {errorMessage}
+        </Alert>
+      )}
 
       {groups.length === 0 ? (
         <Paper
