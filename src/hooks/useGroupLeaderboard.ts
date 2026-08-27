@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,6 +33,7 @@ export function useGroupLeaderboard(groupId?: string | null, enabled = true) {
   const [error, setError] = useState<DataError | null>(null);
   const [stale, setStale] = useState(() => peekApiCacheMeta(url)?.stale ?? false);
   const { user } = useAuth();
+  const t = useTranslations('Group.leaderboard');
 
   useEffect(() => {
     if (!enabled || !user) {
@@ -65,5 +67,5 @@ export function useGroupLeaderboard(groupId?: string | null, enabled = true) {
     };
   }, [user, url, enabled]);
 
-  return { leaderboard, loading, error, stale };
+  return { leaderboard, loading, error, errorMessage: error ? t('loadFailed') : null, stale };
 }

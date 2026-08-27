@@ -86,6 +86,8 @@ describe('useGroupLeaderboards', () => {
 
     expect(result.current.boards).toEqual([]);
     expect(result.current.error?.message).toBe('network');
+    // Renderable next to the DataError: an object in JSX blanks the dashboard.
+    expect(typeof result.current.errorMessage).toBe('string');
   });
 
   it('seeds from the cache so a second mount paints immediately', async () => {

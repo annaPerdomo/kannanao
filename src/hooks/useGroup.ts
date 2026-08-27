@@ -255,6 +255,7 @@ export function useGroupFeed(groupId?: string | null) {
   const [error, setError] = useState<DataError | null>(null);
   const [stale, setStale] = useState(() => peekApiCacheMeta(url)?.stale ?? false);
   const { user } = useAuth();
+  const t = useTranslations('Group.useGroup');
 
   useEffect(() => {
     if (!user) {
@@ -289,7 +290,7 @@ export function useGroupFeed(groupId?: string | null) {
     };
   }, [user, url]);
 
-  return { feed, loading, error, stale };
+  return { feed, loading, error, errorMessage: error ? t('failedToLoadFeed') : null, stale };
 }
 
 export function useMemberSessions(memberId: string | null) {

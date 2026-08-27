@@ -1016,7 +1016,8 @@
     },
     "useGroup": {
       "failedToLoadMembers": "メンバーを読み込めませんでした",
-      "failedToLoadDetails": "詳細を読み込めませんでした"
+      "failedToLoadDetails": "詳細を読み込めませんでした",
+      "failedToLoadFeed": "アクティビティを読み込めませんでした"
     },
     "assignmentCard": {
       "unknownDeck": "不明なデッキ",
@@ -1388,7 +1389,8 @@
     "leaderboard": {
       "empty": "今週はまだ活動がありません。",
       "xpAmount": "{xp} XP",
-      "cardsCount": "{count, plural, other {カード#枚}}"
+      "cardsCount": "{count, plural, other {カード#枚}}",
+      "loadFailed": "ランキングを読み込めませんでした"
     },
     "deckPicker": {
       "ariaLabel": "デッキを選ぶ",

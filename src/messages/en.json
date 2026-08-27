@@ -1016,7 +1016,8 @@
     },
     "useGroup": {
       "failedToLoadMembers": "Failed to load members",
-      "failedToLoadDetails": "Failed to load details"
+      "failedToLoadDetails": "Failed to load details",
+      "failedToLoadFeed": "Failed to load activity"
     },
     "assignmentCard": {
       "unknownDeck": "Unknown Deck",
@@ -1388,7 +1389,8 @@
     "leaderboard": {
       "empty": "No activity this week yet.",
       "xpAmount": "{xp} XP",
-      "cardsCount": "{count, plural, one {# card} other {# cards}}"
+      "cardsCount": "{count, plural, one {# card} other {# cards}}",
+      "loadFailed": "Failed to load the leaderboard"
     },
     "deckPicker": {
       "ariaLabel": "Pick a deck",
