@@ -20,6 +20,14 @@ vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
 vi.mock('@/app/api/_lib/authCache', () => ({
   getUserFromToken: (...args: unknown[]) => getUserFromTokenMock(...args),
   getProfileForUser: (...args: unknown[]) => getProfileForUserMock(...args),
+  getUserFromTokenResult: async (...args: unknown[]) => ({
+    value: await getUserFromTokenMock(...args),
+    error: null,
+  }),
+  getProfileForUserResult: async (...args: unknown[]) => ({
+    value: await getProfileForUserMock(...args),
+    error: null,
+  }),
   _resetAuthCache: vi.fn(),
 }));
 

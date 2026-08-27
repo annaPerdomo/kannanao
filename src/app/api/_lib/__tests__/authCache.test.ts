@@ -18,7 +18,13 @@ vi.mock('@supabase/supabase-js', () => ({
   }),
 }));
 
-import { _resetAuthCache, getProfileForUser, getUserFromToken } from '../authCache';
+import {
+  _resetAuthCache,
+  getProfileForUser,
+  getProfileForUserResult,
+  getUserFromToken,
+  getUserFromTokenResult,
+} from '../authCache';
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
@@ -93,6 +99,43 @@ describe('authCache', () => {
       expect(await getProfileForUser('u1', 'token-1')).toBeNull();
       expect(await getProfileForUser('u1', 'token-1')).toBeNull();
       expect(mockSelectSingle).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('AuthLookup', () => {
+    it('reports an absent profile row as absent, not as a failure', async () => {
+      mockSelectSingle.mockResolvedValue({ data: null, error: { code: 'PGRST116' } });
+      expect(await getProfileForUserResult('u1', 'token-1')).toEqual({ value: null, error: null });
+    });
+
+    it('reports a dead database as a failure, so the caller can answer 503', async () => {
+      mockSelectSingle.mockResolvedValue({
+        data: null,
+        error: { message: 'upstream connect error or disconnect/reset before headers' },
+      });
+      const result = await getProfileForUserResult('u1', 'token-1');
+      expect(result.value).toBeNull();
+      expect(result.error?.kind).toBe('upstream');
+    });
+
+    it('reports a rejected token as absent and an unreachable auth server as a failure', async () => {
+      mockGetUser.mockResolvedValueOnce({
+        data: { user: null },
+        error: { name: 'AuthApiError', message: 'invalid claim', status: 401 },
+      });
+      expect(await getUserFromTokenResult('bad')).toEqual({ value: null, error: null });
+
+      mockGetUser.mockRejectedValueOnce(
+        Object.assign(new Error('Failed to fetch'), { name: 'AuthRetryableFetchError' }),
+      );
+      expect((await getUserFromTokenResult('good')).error?.kind).toBe('offline');
+    });
+
+    it('keeps the null-returning wrappers null for both outcomes', async () => {
+      mockSelectSingle.mockResolvedValue({ data: null, error: { message: 'boom' } });
+      expect(await getProfileForUser('u1', 'token-1')).toBeNull();
+      mockGetUser.mockResolvedValue({ data: { user: null }, error: { status: 401 } });
+      expect(await getUserFromToken('bad')).toBeNull();
     });
   });
 });

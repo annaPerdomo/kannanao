@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto';
 
 import { createClient, type User } from '@supabase/supabase-js';
 
+import { type DataError, toDataError } from '@/lib/dataError';
+
 /**
  * Short-lived in-memory cache for Bearer-token verification and the requester's
  * own profile row. Every API route pays a round-trip to the Supabase auth
@@ -25,8 +27,25 @@ interface Entry<T> {
   expiresAt: number;
 }
 
+/**
+ * `value: null, error: null` is a genuine absence (bad token, no profile row).
+ * A non-null `error` means the lookup went unanswered: answer 503, not 401.
+ */
+export interface AuthLookup<T> {
+  value: T | null;
+  error: DataError | null;
+}
+
+const ABSENT = { value: null, error: null } as const;
+
+function lookupFailure<T>(err: unknown): AuthLookup<T> {
+  const error = toDataError(err);
+  const answered = error.kind === 'auth' || error.kind === 'notFound';
+  return { value: null, error: answered ? null : error };
+}
+
 const userByToken = new Map<string, Entry<User>>();
-const userInFlight = new Map<string, Promise<User | null>>();
+const userInFlight = new Map<string, Promise<AuthLookup<User>>>();
 
 /**
  * Never use a raw access token as a map key — that retains live secrets in
@@ -47,7 +66,7 @@ export interface CachedProfile {
 }
 
 const profileById = new Map<string, Entry<CachedProfile>>();
-const profileInFlight = new Map<string, Promise<CachedProfile | null>>();
+const profileInFlight = new Map<string, Promise<AuthLookup<CachedProfile>>>();
 
 function supabaseConfig(): { url: string; anonKey: string } | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -82,24 +101,25 @@ function setEntry<T>(map: Map<string, Entry<T>>, key: string, value: T): void {
 }
 
 /** Verify a Supabase access token, deduplicating concurrent and repeat checks. */
-export async function getUserFromToken(token: string): Promise<User | null> {
+export async function getUserFromTokenResult(token: string): Promise<AuthLookup<User>> {
   const key = tokenKey(token);
   const cached = getFresh(userByToken, key);
-  if (cached) return cached;
+  if (cached) return { value: cached, error: null };
   const pending = userInFlight.get(key);
   if (pending) return pending;
 
   const config = supabaseConfig();
-  if (!config) return null;
+  if (!config) return ABSENT;
 
-  const promise = (async () => {
+  const promise = (async (): Promise<AuthLookup<User>> => {
     try {
       const { data, error } = await createClient(config.url, config.anonKey).auth.getUser(token);
-      if (error || !data.user) return null;
+      if (error) return lookupFailure(error);
+      if (!data.user) return ABSENT;
       setEntry(userByToken, key, data.user);
-      return data.user;
-    } catch {
-      return null;
+      return { value: data.user, error: null };
+    } catch (err) {
+      return lookupFailure(err);
     } finally {
       userInFlight.delete(key);
     }
@@ -108,24 +128,28 @@ export async function getUserFromToken(token: string): Promise<User | null> {
   return promise;
 }
 
+export async function getUserFromToken(token: string): Promise<User | null> {
+  return (await getUserFromTokenResult(token)).value;
+}
+
 /**
  * Fetch the requester's own profile row via an RLS-scoped client (the token in
  * the Authorization header), cached per user id. Callers must pass a userId
  * that came from `getUserFromToken` for the same token.
  */
-export async function getProfileForUser(
+export async function getProfileForUserResult(
   userId: string,
   token: string,
-): Promise<CachedProfile | null> {
+): Promise<AuthLookup<CachedProfile>> {
   const cached = getFresh(profileById, userId);
-  if (cached) return cached;
+  if (cached) return { value: cached, error: null };
   const pending = profileInFlight.get(userId);
   if (pending) return pending;
 
   const config = supabaseConfig();
-  if (!config) return null;
+  if (!config) return ABSENT;
 
-  const promise = (async () => {
+  const promise = (async (): Promise<AuthLookup<CachedProfile>> => {
     try {
       const supabase = createClient(config.url, config.anonKey, {
         global: { headers: { Authorization: `Bearer ${token}` } },
@@ -135,18 +159,26 @@ export async function getProfileForUser(
         .select('id, username, account_type, organizer_id, group_id, display_name')
         .eq('id', userId)
         .single();
-      if (error || !data) return null;
+      if (error) return lookupFailure(error);
+      if (!data) return ABSENT;
       const profile = data as CachedProfile;
       setEntry(profileById, userId, profile);
-      return profile;
-    } catch {
-      return null;
+      return { value: profile, error: null };
+    } catch (err) {
+      return lookupFailure(err);
     } finally {
       profileInFlight.delete(userId);
     }
   })();
   profileInFlight.set(userId, promise);
   return promise;
+}
+
+export async function getProfileForUser(
+  userId: string,
+  token: string,
+): Promise<CachedProfile | null> {
+  return (await getProfileForUserResult(userId, token)).value;
 }
 
 /**

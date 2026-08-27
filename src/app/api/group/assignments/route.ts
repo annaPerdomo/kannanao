@@ -4,7 +4,8 @@ import { availableNowFilter } from '@/lib/assignmentAvailability';
 import { isGoalMode } from '@/lib/assignmentMastery';
 import { logger } from '@/lib/logger';
 
-import { getProfileForUser, getUserFromToken } from '../../_lib/authCache';
+import { getProfileForUserResult, getUserFromTokenResult } from '../../_lib/authCache';
+import { backendUnavailable } from '../../_lib/backendUnavailable';
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
 import { type DeckHandout, dropOrphanedTemplates } from '../_lib/dropOrphanedTemplates';
@@ -232,7 +233,9 @@ export async function GET(req: NextRequest) {
   }
 
   const token = authHeader.slice(7);
-  const user = await getUserFromToken(token);
+  const auth = await getUserFromTokenResult(token);
+  if (auth.error) return backendUnavailable(auth.error, 'group/assignments.user');
+  const user = auth.value;
   if (!user) {
     return NextResponse.json({ error: 'Invalid token.' }, { status: 401 });
   }
@@ -240,7 +243,9 @@ export async function GET(req: NextRequest) {
   const sb = getServiceSupabase();
 
   // Check account type (cached per user)
-  const profile = await getProfileForUser(user.id, token);
+  const lookup = await getProfileForUserResult(user.id, token);
+  if (lookup.error) return backendUnavailable(lookup.error, 'group/assignments.profile');
+  const profile = lookup.value;
 
   // Optional group filter
   const groupId = req.nextUrl.searchParams.get('groupId');

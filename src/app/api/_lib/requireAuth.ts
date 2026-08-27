@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { getUserFromToken } from './authCache';
+import { getUserFromTokenResult } from './authCache';
+import { backendUnavailable } from './backendUnavailable';
 
 /**
  * Extracts the Bearer token and validates the user via Supabase.
@@ -20,11 +21,12 @@ export async function requireAuth(req: NextRequest): Promise<string | NextRespon
     return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
   }
 
-  const user = await getUserFromToken(authHeader.slice(7));
+  const user = await getUserFromTokenResult(authHeader.slice(7));
+  if (user.error) return backendUnavailable(user.error, 'requireAuth');
 
-  if (!user) {
+  if (!user.value) {
     return NextResponse.json({ error: 'Invalid or expired token.' }, { status: 401 });
   }
 
-  return user.id;
+  return user.value.id;
 }

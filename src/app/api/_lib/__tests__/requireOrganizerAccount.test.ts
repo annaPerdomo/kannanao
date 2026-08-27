@@ -55,19 +55,54 @@ describe('requireOrganizerAccount', () => {
     expect((result as NextResponse).status).toBe(401);
   });
 
-  it('returns 401 when auth.getUser fails', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: null }, error: new Error('bad token') });
+  it('returns 401 when the token is rejected', async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: null },
+      error: { name: 'AuthApiError', message: 'invalid claim: missing sub claim', status: 401 },
+    });
     const result = await requireOrganizerAccount(makeRequest('bad-token'));
     expect(result).toBeInstanceOf(NextResponse);
     expect((result as NextResponse).status).toBe(401);
   });
 
-  it('returns 401 when profile is not found', async () => {
+  it('returns 401 when the profile row is genuinely absent', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
-    mockSelectSingle.mockResolvedValue({ data: null, error: { message: 'Not found' } });
+    mockSelectSingle.mockResolvedValue({
+      data: null,
+      error: { code: 'PGRST116', message: 'JSON object requested, multiple (or no) rows returned' },
+    });
     const result = await requireOrganizerAccount(makeRequest('valid-token'));
     expect(result).toBeInstanceOf(NextResponse);
     expect((result as NextResponse).status).toBe(401);
+  });
+
+  // The 2026-08-26 signature: Auth healthy, PostgREST answering 503.
+  it('returns 503 when the profile lookup hits a dead backend', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
+    mockSelectSingle.mockResolvedValue({
+      data: null,
+      error: {
+        message:
+          'upstream connect error or disconnect/reset before headers. reset reason: remote connection failure',
+      },
+    });
+    const result = await requireOrganizerAccount(makeRequest('valid-token'));
+    expect((result as NextResponse).status).toBe(503);
+  });
+
+  it('returns 503 when the profile lookup fails for an unrecognized reason', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
+    mockSelectSingle.mockResolvedValue({ data: null, error: { message: 'Not found' } });
+    const result = await requireOrganizerAccount(makeRequest('valid-token'));
+    expect((result as NextResponse).status).toBe(503);
+  });
+
+  it('returns 503 when the auth service itself is unreachable', async () => {
+    mockGetUser.mockRejectedValue(
+      Object.assign(new Error('Failed to fetch'), { name: 'AuthRetryableFetchError', status: 0 }),
+    );
+    const result = await requireOrganizerAccount(makeRequest('valid-token'));
+    expect((result as NextResponse).status).toBe(503);
   });
 
   it('returns 403 for member accounts', async () => {
