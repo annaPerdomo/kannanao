@@ -17,10 +17,14 @@ global.fetch = mockFetch;
 
 import { useDeckReadiness } from '@/hooks/useDeckReadiness';
 import { _resetApiCache } from '@/lib/apiCache';
+import { DataError } from '@/lib/dataError';
 
 beforeEach(() => _resetApiCache());
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
+
+// The 2026-08-26 gateway body: text/plain, no JSON envelope.
+const ENVOY_BODY = 'upstream connect error or disconnect/reset before headers.';
 
 const READINESS = {
   decks: [
@@ -80,7 +84,39 @@ describe('useDeckReadiness', () => {
     mockFetch.mockRejectedValueOnce(new Error('network'));
     const { result } = renderHook(() => useDeckReadiness('group-1'));
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.error).toBe('Failed to load deck progress');
+    expect(result.current.error).toBeInstanceOf(DataError);
+    expect(result.current.errorMessage).toBe('Failed to load deck progress');
     expect(result.current.data).toBeNull();
+  });
+
+  it('calls a dead backend an outage rather than an empty rollup', async () => {
+    mockFetch.mockResolvedValueOnce(new Response(ENVOY_BODY, { status: 503 }));
+    const { result } = renderHook(() => useDeckReadiness('group-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.error?.kind).toBe('upstream');
+    expect(result.current.data).toBeNull();
+    expect(result.current.stale).toBe(false);
+  });
+
+  it('keeps the cached rollup through an outage and flags it as stale', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      mockFetch.mockResolvedValueOnce({ ok: true, json: async () => READINESS });
+      const first = renderHook(() => useDeckReadiness('group-1'));
+      await waitFor(() => expect(first.result.current.loading).toBe(false));
+
+      // Past the cache's 30s fresh window, so the second mount revalidates.
+      vi.setSystemTime(Date.now() + 31_000);
+      mockFetch.mockResolvedValueOnce(new Response(ENVOY_BODY, { status: 503 }));
+      const { result } = renderHook(() => useDeckReadiness('group-1'));
+      // Not `loading`: the cached paint clears that before the revalidation
+      // that turns out to fail has even reached the network.
+      await waitFor(() => expect(result.current.stale).toBe(true));
+
+      expect(result.current.data?.decks).toHaveLength(1);
+      expect(result.current.error).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

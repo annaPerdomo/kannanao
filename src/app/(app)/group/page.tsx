@@ -25,7 +25,7 @@ export default function GroupListPage() {
   const { brand } = theme.palette;
   const router = useRouter();
   const { isMemberAccount, loading: authLoading } = useAuth();
-  const { groups, loading, error, createGroup, pinGroup } = useGroups();
+  const { groups, loading, error, errorMessage, createGroup, pinGroup } = useGroups();
 
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -55,7 +55,7 @@ export default function GroupListPage() {
       <Box
         sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
       >
-        <Alert severity="error">{error}</Alert>
+        <Alert severity="error">{errorMessage}</Alert>
       </Box>
     );
   }

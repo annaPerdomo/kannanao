@@ -52,7 +52,7 @@ export function DeckReadinessPanel({ groupId, members, onViewLearners }: DeckRea
   const theme = useTheme();
   const t = useTranslations('Group.deckReadiness');
   const [expanded, setExpanded] = useState(false);
-  const { data, loading, error } = useDeckReadiness(groupId);
+  const { data, loading, error, errorMessage } = useDeckReadiness(groupId);
 
   const decks = data?.decks ?? [];
   const visible = expanded ? decks : decks.slice(0, COLLAPSED_ROWS);
@@ -70,7 +70,7 @@ export function DeckReadinessPanel({ groupId, members, onViewLearners }: DeckRea
       {loading ? (
         <Loading message={t('loading')} />
       ) : error ? (
-        <Alert severity="error">{error}</Alert>
+        <Alert severity="error">{errorMessage}</Alert>
       ) : decks.length === 0 ? (
         <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>{t('empty')}</Typography>
       ) : (

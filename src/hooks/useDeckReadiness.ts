@@ -2,7 +2,8 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
-import { fetchJsonCached, peekApiCache } from '@/lib/apiCache';
+import { fetchJsonCached, peekApiCache, peekApiCacheMeta } from '@/lib/apiCache';
+import { type DataError, toDataError } from '@/lib/dataError';
 import { sb } from '@/lib/supabase';
 
 export interface DeckReadiness {
@@ -42,7 +43,8 @@ export function useDeckReadiness(groupId: string | null) {
   // True from the first frame: the effect below runs only after that frame has
   // painted, and `loading: false` with no data renders as "no decks assigned".
   const [loading, setLoading] = useState(!!groupId);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<DataError | null>(null);
+  const [stale, setStale] = useState(false);
 
   useEffect(() => {
     if (!groupId) {
@@ -55,16 +57,20 @@ export function useDeckReadiness(groupId: string | null) {
     const url = `/api/group/readiness?groupId=${groupId}`;
     const cached = peekApiCache<DeckReadinessData>(url);
     if (cached) setData(cached);
+    setStale(peekApiCacheMeta(url)?.stale ?? false);
     setLoading(cached === undefined);
     setError(null);
     (async () => {
       try {
         const fresh = await fetchJsonCached<DeckReadinessData>(url, authHeaders);
         if (!cancelled) setData(fresh);
-      } catch {
-        if (!cancelled) setError(t('failedToLoad'));
+      } catch (err) {
+        if (!cancelled) setError(toDataError(err));
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setStale(peekApiCacheMeta(url)?.stale ?? false);
+          setLoading(false);
+        }
       }
     })();
     return () => {
@@ -72,5 +78,5 @@ export function useDeckReadiness(groupId: string | null) {
     };
   }, [groupId]);
 
-  return { data, loading, error };
+  return { data, loading, error, errorMessage: error ? t('failedToLoad') : null, stale };
 }

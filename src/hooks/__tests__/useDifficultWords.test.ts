@@ -93,7 +93,8 @@ describe('useDifficultWords', () => {
     mockFetch.mockRejectedValueOnce(new Error('network'));
     const { result } = renderHook(() => useDifficultWords('group-1'));
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.error).toBe('Failed to load tricky words');
+    expect(result.current.error?.kind).toBe('unknown');
+    expect(result.current.errorMessage).toBe('Failed to load tricky words');
     expect(result.current.data).toBeNull();
   });
 });

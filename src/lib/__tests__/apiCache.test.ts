@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { _resetApiCache, fetchJsonCached, invalidateApiCache, peekApiCache } from '@/lib/apiCache';
+import {
+  _resetApiCache,
+  fetchJsonCached,
+  invalidateApiCache,
+  peekApiCache,
+  peekApiCacheMeta,
+} from '@/lib/apiCache';
+import { isDataError } from '@/lib/dataError';
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
@@ -9,6 +16,21 @@ const HEADERS = () => ({ Authorization: 'Bearer t' });
 
 function okResponse(data: unknown) {
   return { ok: true, json: async () => data };
+}
+
+// The 2026-08-26 gateway body, verbatim: text/plain, no JSON envelope.
+const ENVOY_BODY =
+  'upstream connect error or disconnect/reset before headers. retried and the latest reset reason: remote connection failure, transport failure reason: delayed connect error: 111';
+
+const outage = () => new Response(ENVOY_BODY, { status: 503 });
+
+async function caught(promise: Promise<unknown>) {
+  try {
+    await promise;
+    throw new Error('expected a rejection');
+  } catch (err) {
+    return err;
+  }
 }
 
 describe('apiCache', () => {
@@ -49,16 +71,70 @@ describe('apiCache', () => {
     expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 
-  it('throws on a failed response with no cached fallback', async () => {
+  it('throws a DataError on a failed response with no cached fallback', async () => {
     mockFetch.mockResolvedValue({ ok: false, status: 500 });
-    await expect(fetchJsonCached('/api/a', HEADERS)).rejects.toThrow('500');
+    const err = await caught(fetchJsonCached('/api/a', HEADERS));
+    expect(isDataError(err)).toBe(true);
+    expect(peekApiCacheMeta('/api/a')).toBeUndefined();
   });
 
-  it('falls back to the cached value when a revalidation fails', async () => {
+  it("reports the outage's 503 as upstream", async () => {
+    mockFetch.mockResolvedValue(outage());
+    const err = await caught(fetchJsonCached('/api/a', HEADERS));
+    expect(isDataError(err) && err.kind).toBe('upstream');
+    expect(isDataError(err) && err.status).toBe(503);
+  });
+
+  it('reports a rejected fetch as offline', async () => {
+    mockFetch.mockRejectedValue(new TypeError('Failed to fetch'));
+    const err = await caught(fetchJsonCached('/api/a', HEADERS));
+    expect(isDataError(err) && err.kind).toBe('offline');
+  });
+
+  it('falls back to the cached value when a revalidation fails, and says it is stale', async () => {
     mockFetch.mockResolvedValueOnce(okResponse('good'));
     await fetchJsonCached('/api/a', HEADERS);
-    mockFetch.mockResolvedValueOnce({ ok: false, status: 500 });
+    mockFetch.mockResolvedValueOnce(outage());
     expect(await fetchJsonCached('/api/a', HEADERS, { freshMs: 0 })).toBe('good');
+    expect(peekApiCacheMeta('/api/a')?.stale).toBe(true);
+  });
+
+  it('does not mark a live value stale', async () => {
+    mockFetch.mockResolvedValue(okResponse('good'));
+    await fetchJsonCached('/api/a', HEADERS);
+    const meta = peekApiCacheMeta('/api/a');
+    expect(meta?.stale).toBe(false);
+    expect(meta?.fetchedAt).toBeGreaterThan(0);
+  });
+
+  it('clears the stale flag once a fetch succeeds again', async () => {
+    mockFetch.mockResolvedValueOnce(okResponse('good'));
+    await fetchJsonCached('/api/a', HEADERS);
+    mockFetch.mockResolvedValueOnce(outage());
+    await fetchJsonCached('/api/a', HEADERS, { freshMs: 0 });
+    mockFetch.mockResolvedValueOnce(okResponse('fresh'));
+    expect(await fetchJsonCached('/api/a', HEADERS, { freshMs: 0 })).toBe('fresh');
+    expect(peekApiCacheMeta('/api/a')?.stale).toBe(false);
+  });
+
+  it('serves the stale value up to the limit, then surfaces the outage', async () => {
+    mockFetch.mockResolvedValueOnce(okResponse('good'));
+    await fetchJsonCached('/api/a', HEADERS);
+
+    mockFetch.mockResolvedValue(outage());
+    for (let attempt = 0; attempt < 3; attempt++) {
+      expect(await fetchJsonCached('/api/a', HEADERS, { freshMs: 0 })).toBe('good');
+    }
+
+    const err = await caught(fetchJsonCached('/api/a', HEADERS, { freshMs: 0 }));
+    expect(isDataError(err) && err.kind).toBe('upstream');
+    // The old value stays put: an outage must not repaint the page as empty.
+    expect(peekApiCache('/api/a')).toBe('good');
+    expect(peekApiCacheMeta('/api/a')?.stale).toBe(true);
+  });
+
+  it('peekApiCacheMeta returns undefined for a key that was never fetched', () => {
+    expect(peekApiCacheMeta('/api/never')).toBeUndefined();
   });
 
   it('peekApiCache returns cached data and undefined for misses', async () => {

@@ -3,7 +3,13 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchJsonCached, invalidateApiCache, peekApiCache } from '@/lib/apiCache';
+import {
+  fetchJsonCached,
+  invalidateApiCache,
+  peekApiCache,
+  peekApiCacheMeta,
+} from '@/lib/apiCache';
+import { type DataError, toDataError } from '@/lib/dataError';
 import { sb } from '@/lib/supabase';
 
 /** One member's identity, enough to draw an initial avatar. */
@@ -46,7 +52,8 @@ export function useGroups(enabled = true) {
   // below still revalidates stale data in the background.
   const [groups, setGroups] = useState<Group[]>(() => peekApiCache(GROUPS_URL) ?? []);
   const [loading, setLoading] = useState(enabled && peekApiCache(GROUPS_URL) === undefined);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<DataError | null>(null);
+  const [stale, setStale] = useState(() => peekApiCacheMeta(GROUPS_URL)?.stale ?? false);
   const { user, isMemberAccount } = useAuth();
   const t = useTranslations('Group.useGroups');
 
@@ -59,6 +66,7 @@ export function useGroups(enabled = true) {
       }
       const cached = peekApiCache<Group[]>(GROUPS_URL);
       if (cached) setGroups(cached);
+      setStale(peekApiCacheMeta(GROUPS_URL)?.stale ?? false);
       setLoading(!cached);
       setError(null);
       try {
@@ -68,13 +76,14 @@ export function useGroups(enabled = true) {
           freshMs === undefined ? {} : { freshMs },
         );
         setGroups(data);
-      } catch {
-        setError(t('loadFailed'));
+      } catch (err) {
+        setError(toDataError(err));
       } finally {
+        setStale(peekApiCacheMeta(GROUPS_URL)?.stale ?? false);
         setLoading(false);
       }
     },
-    [user, isMemberAccount, enabled, t],
+    [user, isMemberAccount, enabled],
   );
 
   useEffect(() => {
@@ -158,6 +167,8 @@ export function useGroups(enabled = true) {
     groups,
     loading,
     error,
+    errorMessage: error ? t('loadFailed') : null,
+    stale,
     createGroup,
     updateGroup,
     deleteGroup,

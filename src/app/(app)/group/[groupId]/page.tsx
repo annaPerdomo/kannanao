@@ -48,19 +48,19 @@ export default function GroupDashboardPage() {
   const groupId = params?.groupId ?? '';
   const { isMemberAccount, displayName, user, loading: authLoading } = useAuth();
 
-  const { members, loading, error } = useGroupMembers(groupId);
+  const { members, loading, error, errorMessage } = useGroupMembers(groupId);
   const { leaderboard, loading: lbLoading } = useGroupLeaderboard(groupId);
   const { feed, loading: feedLoading } = useGroupFeed(groupId);
   const {
     activity,
     loading: activityLoading,
-    error: activityError,
+    errorMessage: activityError,
   } = useGroupActivity(groupId, ACTIVITY_DAYS);
   const { decks } = useDecks();
   const {
     assignments,
     loading: assignmentsLoading,
-    error: assignmentsError,
+    errorMessage: assignmentsError,
     createAssignment,
     updateAssignments,
     deleteAssignments,
@@ -70,7 +70,7 @@ export default function GroupDashboardPage() {
   const {
     data: difficultWords,
     loading: difficultWordsLoading,
-    error: difficultWordsError,
+    errorMessage: difficultWordsError,
   } = useDifficultWords(groupId);
   const { sendEncouragement } = useEncouragements();
   const { invites, createInvite, revokeInvite } = useInvites(groupId);
@@ -157,7 +157,7 @@ export default function GroupDashboardPage() {
       <Box
         sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
       >
-        <Alert severity="error">{error}</Alert>
+        <Alert severity="error">{errorMessage}</Alert>
       </Box>
     );
   }

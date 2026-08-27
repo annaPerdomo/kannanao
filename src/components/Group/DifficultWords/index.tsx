@@ -56,7 +56,7 @@ export function DifficultWords({ groupId }: DifficultWordsProps) {
   const { brand } = theme.palette;
   const [deckId, setDeckId] = useState<string>(ALL_DECKS);
   const [expanded, setExpanded] = useState(false);
-  const { data, loading, error } = useDifficultWords(groupId, deckId || null);
+  const { data, loading, error, errorMessage } = useDifficultWords(groupId, deckId || null);
 
   const words = data?.words ?? [];
   const visible = expanded ? words : words.slice(0, COLLAPSED_ROWS);
@@ -110,7 +110,7 @@ export function DifficultWords({ groupId }: DifficultWordsProps) {
       {loading ? (
         <Loading message={t('loadingMessage')} />
       ) : error ? (
-        <Alert severity="error">{error}</Alert>
+        <Alert severity="error">{errorMessage}</Alert>
       ) : decks.length === 0 ? (
         <EmptyState emoji="📚" body={t('noDecksBody')} />
       ) : words.length === 0 ? (
