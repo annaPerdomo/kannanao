@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   _resetApiCache,
@@ -18,7 +18,7 @@ function okResponse(data: unknown) {
   return { ok: true, json: async () => data };
 }
 
-// The 2026-08-26 gateway body, verbatim: text/plain, no JSON envelope.
+// The 2026-08-26 gateway body: text/plain, no JSON envelope.
 const ENVOY_BODY =
   'upstream connect error or disconnect/reset before headers. retried and the latest reset reason: remote connection failure, transport failure reason: delayed connect error: 111';
 
@@ -153,5 +153,72 @@ describe('apiCache', () => {
     expect(peekApiCache('/api/group/invite')).toBeUndefined();
     expect(peekApiCache('/api/group/invite?groupId=g1')).toBeUndefined();
     expect(peekApiCache('/api/other')).toBe('x');
+  });
+
+  it('invalidateApiCache clears the spent stale budget with the entry', async () => {
+    mockFetch.mockResolvedValueOnce(okResponse('good'));
+    await fetchJsonCached('/api/a', HEADERS);
+    mockFetch.mockResolvedValue(outage());
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await fetchJsonCached('/api/a', HEADERS, { freshMs: 0 });
+    }
+
+    invalidateApiCache('/api/a');
+    mockFetch.mockResolvedValueOnce(okResponse('again'));
+    expect(await fetchJsonCached('/api/a', HEADERS)).toBe('again');
+
+    mockFetch.mockResolvedValue(outage());
+    expect(await fetchJsonCached('/api/a', HEADERS, { freshMs: 0 })).toBe('again');
+  });
+
+  it('spends one stale serve per failed revalidation, not one per caller', async () => {
+    mockFetch.mockResolvedValueOnce(okResponse('good'));
+    await fetchJsonCached('/api/a', HEADERS);
+
+    mockFetch.mockResolvedValue(outage());
+    const both = await Promise.all([
+      fetchJsonCached('/api/a', HEADERS, { freshMs: 0 }),
+      fetchJsonCached('/api/a', HEADERS, { freshMs: 0 }),
+    ]);
+    expect(both).toEqual(['good', 'good']);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      expect(await fetchJsonCached('/api/a', HEADERS, { freshMs: 0 })).toBe('good');
+    }
+    const err = await caught(fetchJsonCached('/api/a', HEADERS, { freshMs: 0 }));
+    expect(isDataError(err) && err.kind).toBe('upstream');
+  });
+
+  describe('MAX_AGE_MS', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('stops serving a value older than ten minutes, outage or not', async () => {
+      mockFetch.mockResolvedValueOnce(okResponse('good'));
+      await fetchJsonCached('/api/a', HEADERS);
+
+      vi.advanceTimersByTime(10 * 60_000 + 1);
+      expect(peekApiCache('/api/a')).toBeUndefined();
+      expect(peekApiCacheMeta('/api/a')).toBeUndefined();
+
+      mockFetch.mockResolvedValue(outage());
+      const err = await caught(fetchJsonCached('/api/a', HEADERS, { freshMs: 0 }));
+      expect(isDataError(err) && err.kind).toBe('upstream');
+    });
+
+    it('still serves a value inside the window', async () => {
+      mockFetch.mockResolvedValueOnce(okResponse('good'));
+      await fetchJsonCached('/api/a', HEADERS);
+
+      vi.advanceTimersByTime(10 * 60_000 - 1_000);
+      mockFetch.mockResolvedValue(outage());
+      expect(await fetchJsonCached('/api/a', HEADERS, { freshMs: 0 })).toBe('good');
+    });
   });
 });
