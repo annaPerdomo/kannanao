@@ -84,9 +84,9 @@ describe('classification table', () => {
     }
   });
 
-  it('does not call a 404 an absence when the backend sent a code with it', () => {
+  it('still calls a 404 an absence when the backend sent an unrelated code with it', () => {
     expect(toDataError({ message: 'nope', code: 'PGRST100' }, { status: 404 }).kind).toBe(
-      'unknown',
+      'notFound',
     );
   });
 
@@ -105,8 +105,7 @@ describe('classification table', () => {
 });
 
 describe('shapes supabase-js actually produces', () => {
-  // postgrest-js does not throw when fetch rejects: it resolves with the
-  // TypeError flattened into a plain object and `status: 0`.
+  // postgrest-js does not throw when fetch rejects: it resolves with this.
   const fetchRejected = {
     message: 'TypeError: Failed to fetch',
     details: 'TypeError: Failed to fetch\n\nCaused by: Error: getaddrinfo ENOTFOUND',
@@ -149,6 +148,40 @@ describe('shapes supabase-js actually produces', () => {
     expect(toDataError({ message: 'cancelled', code: 'ABORT_ERR' }).kind).toBe('upstream');
   });
 
+  // auth-js rethrows a rejected fetch as its own class, with `status: 0`.
+  const authFetchError = (message: string, status = 0) =>
+    Object.assign(new Error(message), {
+      name: 'AuthRetryableFetchError',
+      __isAuthError: true,
+      status,
+    });
+
+  it('calls a dropped auth request offline even though the TypeError is gone', () => {
+    for (const message of ['Failed to fetch', 'fetch failed', 'Load failed']) {
+      const err = toDataError(authFetchError(message));
+      expect(err.kind).toBe('offline');
+      expect(isRetryable(err)).toBe(true);
+    }
+  });
+
+  it('calls the same class upstream when the auth server did answer', () => {
+    expect(toDataError(authFetchError('Service temporarily unavailable', 503)).kind).toBe(
+      'upstream',
+    );
+  });
+
+  it('recognises the functions-js and node-fetch spellings of the same failure', () => {
+    for (const name of ['FunctionsFetchError', 'FetchError']) {
+      const err = Object.assign(new Error('Failed to fetch'), { name });
+      expect(toDataError(err).kind).toBe('offline');
+    }
+  });
+
+  it('does not call a non-network failure offline just because it ends in FetchError', () => {
+    const err = Object.assign(new Error('invalid JWT'), { name: 'AuthRetryableFetchError' });
+    expect(toDataError(err).kind).toBe('unknown');
+  });
+
   it('reads a non-JSON gateway body handed back as a bare message', () => {
     // An unparseable 503 body arrives as `{ message: <body> }`, status separate.
     expect(toDataError({ message: ENVOY_BODY }, { status: 503 }).kind).toBe('upstream');
@@ -164,6 +197,16 @@ describe('classification order', () => {
 
   it('reads the gateway prose out of the cause of a wrapper error', () => {
     const err = toDataError(new Error('load decks failed', { cause: new Error(ENVOY_BODY) }));
+    expect(err.kind).toBe('upstream');
+    expect(err.message).toBe('load decks failed');
+  });
+
+  it('keeps reading down a twice-wrapped cause chain', () => {
+    const err = toDataError(
+      new Error('load decks failed', {
+        cause: new Error('Request failed (503)', { cause: new Error(ENVOY_BODY) }),
+      }),
+    );
     expect(err.kind).toBe('upstream');
     expect(err.message).toBe('load decks failed');
   });
@@ -193,6 +236,30 @@ describe('toDataError is total', () => {
   const namelessCircular: Record<string, unknown> = {};
   namelessCircular.self = namelessCircular;
 
+  const throwingGetter = (key: string) =>
+    Object.defineProperty({ message: 'boom' }, key, {
+      get() {
+        throw new Error(`reading ${key} exploded`);
+      },
+    });
+
+  const throwingCause = () =>
+    Object.defineProperty(new Error('wrapper'), 'cause', {
+      get() {
+        throw new Error('reading cause exploded');
+      },
+    });
+
+  const throwingProxy = () =>
+    new Proxy(
+      {},
+      {
+        get() {
+          throw new Error('proxy trap');
+        },
+      },
+    );
+
   const inputs: [string, unknown][] = [
     ['undefined', undefined],
     ['null', null],
@@ -211,6 +278,11 @@ describe('toDataError is total', () => {
     ['a Response', new Response('body', { status: 503 })],
     ['a circular object', circular],
     ['a circular object with no message', namelessCircular],
+    ['an object with a throwing message getter', throwingGetter('message')],
+    ['an object with a throwing status getter', throwingGetter('status')],
+    ['an object with a throwing code getter', throwingGetter('code')],
+    ['an Error with a throwing cause getter', throwingCause()],
+    ['a proxy that throws on every read', throwingProxy()],
   ];
 
   it.each(inputs)('returns a DataError for %s', (_label, input) => {
@@ -325,8 +397,7 @@ describe('dataErrorFromResponse', () => {
   });
 
   it('maps a 500 from one of our own API routes to upstream', async () => {
-    // Our routes catch a dead database and answer 500; the gateway's 503 never
-    // reaches the client.
+    // Our routes catch a dead database and answer 500; the 503 never gets out.
     const res = new Response(JSON.stringify({ error: 'Failed to load decks' }), { status: 500 });
     const err = await dataErrorFromResponse(res);
     expect(err.kind).toBe('upstream');
@@ -366,11 +437,31 @@ describe('dataErrorFromResponse', () => {
     await expect(res.json()).resolves.toEqual({ error: 'nope' });
   });
 
-  it('caps a runaway body instead of holding megabytes of proxy HTML', async () => {
-    const huge = `<html>${'x'.repeat(3_000_000)}</html>`;
-    const err = await dataErrorFromResponse(new Response(huge, { status: 502 }));
+  it('stops pulling a runaway body instead of buffering megabytes of proxy HTML', async () => {
+    const chunk = new TextEncoder().encode('x'.repeat(1024));
+    let pulled = 0;
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled += 1;
+        if (pulled > 3000) return controller.close();
+        controller.enqueue(chunk);
+      },
+    });
+
+    const err = await dataErrorFromResponse(new Response(stream, { status: 502 }));
     expect(err.kind).toBe('upstream');
     expect(err.message.length).toBeLessThanOrEqual(2048);
+    expect(pulled).toBeLessThan(10);
+  });
+
+  it('falls back to text() for a Response whose body is not a stream', async () => {
+    const bodyless = {
+      status: 500,
+      clone: () => ({ body: null, text: () => Promise.resolve('{"error":"nope"}') }),
+    };
+    const err = await dataErrorFromResponse(bodyless as unknown as Response);
+    expect(err.kind).toBe('upstream');
+    expect(err.message).toBe('nope');
   });
 
   it('survives an empty body and an unreadable body', async () => {

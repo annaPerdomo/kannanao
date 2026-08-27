@@ -1,8 +1,5 @@
-/**
- * The 2026-08-26 outage had PostgREST down while Auth stayed healthy, so every
- * read failed and the app rendered "no decks yet". `kind` separates those two.
- * Keep this a leaf: the client data path and the API routes both import it.
- */
+// PostgREST died while Auth stayed healthy on 2026-08-26, so reads failed and
+// the app rendered "no decks yet". Keep this a leaf: API routes import it too.
 
 import { errorMessage } from './errorMessage';
 
@@ -18,8 +15,8 @@ export class DataError extends Error {
   readonly kind: DataErrorKind;
   readonly status?: number;
   readonly code?: string;
-  // declare, not a field: a real field is enumerable, and JSON.stringify would
-  // then walk into the raw upstream object.
+  // declare, not a field: a field is enumerable, and JSON.stringify would then
+  // walk the raw upstream object.
   declare readonly cause?: unknown;
 
   constructor(kind: DataErrorKind, message: string, options: DataErrorOptions = {}) {
@@ -31,19 +28,20 @@ export class DataError extends Error {
   }
 }
 
-// Envoy's connect-failure body, captured during the outage. The trailing `111`
-// is an errno, not a stable string — match the prose, not the number.
+// Envoy's connect-failure body. The trailing `111` is an errno — match the prose.
 const UPSTREAM_BODY = /upstream connect error|delayed connect error/i;
 
 const OFFLINE_MESSAGE =
   /failed to fetch|fetch failed|networkerror|network request failed|load failed|connection refused|err_(internet_disconnected|network_changed|connection_refused|name_not_resolved)/i;
 
-/** supabase-js flattens a rejected fetch to `{ message: "<ErrorName>: <message>" }`. */
+// A rejected fetch never reaches us as a TypeError: postgrest-js flattens it to
+// `{ message: "TypeError: ..." }`, auth-js and functions-js rethrow it as *FetchError.
 const FLATTENED_NAME = /^\s*(TypeError|FetchError)\s*:/i;
+const FETCH_ERROR_NAME = /fetcherror$/i;
+
 const FLATTENED_ABORT = /^\s*(AbortError|TimeoutError)\s*:/i;
 const ABORT_HINT = /request was aborted/i;
 
-/** PostgREST's "no rows returned" from a `.single()` query — an absence, not an outage. */
 const NO_ROWS_CODE = 'PGRST116';
 
 // A reachable PostgREST answers 404 PGRST205 for a table and PGRST202 for a
@@ -56,6 +54,8 @@ const RETRY_STATUSES = new Set([408, 429]);
 
 const MAX_BODY_CHARS = 2048;
 
+const MAX_CAUSE_DEPTH = 3;
+
 export function isDataError(err: unknown): err is DataError {
   return err instanceof DataError;
 }
@@ -65,34 +65,30 @@ export function isRetryable(err: DataError): boolean {
   return err.status !== undefined && RETRY_STATUSES.has(err.status);
 }
 
-/** Never throws: it runs inside catch blocks, where the thrown shape is unknown. */
 export function toDataError(err: unknown, ctx?: { status?: number }): DataError {
   if (isDataError(err)) return err;
 
-  // httpStatus, not `??` alone: supabase-js reports a rejected fetch as
-  // `status: 0`, which would otherwise read as a real answer from a server.
-  const status = httpStatus(ctx?.status) ?? statusOf(err);
-  const code = codeOf(err);
-  const text = describe(err);
-  const kind = classify({ err, status, code, text: withCause(err, text) });
+  try {
+    // httpStatus, not `??`: supabase-js reports a rejected fetch as `status: 0`.
+    const status = httpStatus(ctx?.status) ?? statusOf(err);
+    const code = codeOf(err);
+    const text = describe(err);
+    const kind = classify({ err, status, code, text: withCause(err, text) });
 
-  return new DataError(kind, text.trim() || defaultMessage(kind, status), {
-    status,
-    code,
-    cause: err,
-  });
+    return new DataError(kind, text.trim() || defaultMessage(kind, status), {
+      status,
+      code,
+      cause: err,
+    });
+  } catch {
+    // A throwing getter must not take out the catch block that called us.
+    return new DataError('unknown', defaultMessage('unknown'), { cause: err });
+  }
 }
 
-// The outage answered 503 with `content-type: text/plain`, so a body that will
-// not parse as JSON still has to classify.
+// The outage answered 503 as text/plain: a body that fails JSON.parse still classifies.
 export async function dataErrorFromResponse(res: Response): Promise<DataError> {
-  let body = '';
-  try {
-    // clone: the caller still holds this Response and may still need its body.
-    body = (await res.clone().text()).slice(0, MAX_BODY_CHARS);
-  } catch {
-    body = '';
-  }
+  const body = await readCappedBody(res);
 
   let text = body.trim();
   let code: string | undefined;
@@ -109,6 +105,34 @@ export async function dataErrorFromResponse(res: Response): Promise<DataError> {
   return new DataError(kind, text || defaultMessage(kind, status), { status, code, cause: res });
 }
 
+// Bounded off the wire: `.text().slice()` still buffers a dead gateway's megabytes
+// of proxy HTML into a clone nobody drains.
+async function readCappedBody(res: Response): Promise<string> {
+  try {
+    const clone = res.clone();
+    const stream = clone.body;
+    if (!stream) return (await clone.text()).slice(0, MAX_BODY_CHARS);
+
+    const reader = stream.getReader();
+    const decoder = new TextDecoder();
+    let text = '';
+    try {
+      while (text.length < MAX_BODY_CHARS) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        text += decoder.decode(value, { stream: true });
+      }
+    } finally {
+      // Not awaited: a tee's cancel settles only once BOTH branches cancel, and
+      // the caller still holds the other one.
+      void reader.cancel().catch(() => undefined);
+    }
+    return text.slice(0, MAX_BODY_CHARS);
+  } catch {
+    return '';
+  }
+}
+
 interface Signals {
   err: unknown;
   status?: number;
@@ -119,8 +143,7 @@ interface Signals {
 function classify(signals: Signals): DataErrorKind {
   const { err, status, code, text } = signals;
 
-  // Body before status: the gateway sent the Envoy body under more than one
-  // status code, so the body is the more reliable of the two signals.
+  // Body before status: the gateway sent the Envoy prose under several statuses.
   if (UPSTREAM_BODY.test(text)) return 'upstream';
 
   if (code === NO_ROWS_CODE) return 'notFound';
@@ -131,9 +154,7 @@ function classify(signals: Signals): DataErrorKind {
   if (status !== undefined) {
     if (status >= 500) return 'upstream';
     if (AUTH_STATUSES.has(status)) return 'auth';
-    // A code alongside a 404 is the backend rejecting the request; only a bare
-    // 404 is an absence. Collapsing this is what renders "no decks yet".
-    if (status === 404) return code === undefined ? 'notFound' : 'unknown';
+    if (status === 404) return 'notFound';
     return 'unknown';
   }
 
@@ -145,17 +166,25 @@ function classify(signals: Signals): DataErrorKind {
 function isOffline(err: unknown, text: string): boolean {
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return true;
   if (!OFFLINE_MESSAGE.test(text)) return false;
-  return err instanceof TypeError || FLATTENED_NAME.test(text);
+  if (err instanceof TypeError || FLATTENED_NAME.test(text)) return true;
+  return FETCH_ERROR_NAME.test(nameOf(err));
 }
 
 function isAborted({ err, code, text }: Signals): boolean {
   if (code === 'ABORT_ERR') return true;
 
-  const rec = asRecord(err);
-  if (rec?.name === 'AbortError' || rec?.name === 'TimeoutError') return true;
-  if (typeof rec?.hint === 'string' && ABORT_HINT.test(rec.hint)) return true;
+  const name = nameOf(err);
+  if (name === 'AbortError' || name === 'TimeoutError') return true;
+
+  const hint = asRecord(err)?.hint;
+  if (typeof hint === 'string' && ABORT_HINT.test(hint)) return true;
 
   return FLATTENED_ABORT.test(text);
+}
+
+function nameOf(err: unknown): string {
+  const name = asRecord(err)?.name;
+  return typeof name === 'string' ? name : '';
 }
 
 function statusOf(err: unknown): number | undefined {
@@ -181,7 +210,6 @@ function codeOf(err: unknown): string | undefined {
   return typeof code === 'string' && code.trim() ? code.trim() : undefined;
 }
 
-/** Never JSON.stringifies the input: it may be circular and this must not throw. */
 function describe(err: unknown): string {
   if (isResponse(err))
     return err.statusText ? `HTTP ${err.status} ${err.statusText}` : `HTTP ${err.status}`;
@@ -199,12 +227,18 @@ function describe(err: unknown): string {
   return String(err);
 }
 
+// Bounded walk: cause chains can be circular, and wrappers nest more than one deep.
 function withCause(err: unknown, text: string): string {
-  const cause = asRecord(err)?.cause;
-  if (cause === undefined || cause === null) return text;
+  const parts = [text];
+  let cause = asRecord(err)?.cause;
 
-  const nested = describe(cause);
-  return nested && nested !== text ? `${text}\n${nested}` : text;
+  for (let depth = 0; depth < MAX_CAUSE_DEPTH && cause !== undefined && cause !== null; depth++) {
+    const nested = describe(cause);
+    if (nested && !parts.includes(nested)) parts.push(nested);
+    cause = asRecord(cause)?.cause;
+  }
+
+  return parts.join('\n');
 }
 
 function defaultMessage(kind: DataErrorKind, status?: number): string {
