@@ -1,5 +1,4 @@
-// PostgREST died while Auth stayed healthy on 2026-08-26, so reads failed and
-// the app rendered "no decks yet". Keep this a leaf: API routes import it too.
+// Keep this a leaf: API routes import it too.
 
 import { errorMessage } from './errorMessage';
 
@@ -33,6 +32,16 @@ const UPSTREAM_BODY = /upstream connect error|delayed connect error/i;
 
 const OFFLINE_MESSAGE =
   /failed to fetch|fetch failed|networkerror|network request failed|load failed|connection refused|err_(internet_disconnected|network_changed|connection_refused|name_not_resolved)/i;
+
+// Node and undici name a failed connect with an errno instead of a TypeError,
+// and only these mean the request never reached a server.
+const OFFLINE_CODES = new Set([
+  'ECONNREFUSED',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+  'ENETUNREACH',
+  'EHOSTUNREACH',
+]);
 
 // A rejected fetch never reaches us as a TypeError: postgrest-js flattens it to
 // `{ message: "TypeError: ..." }`, auth-js and functions-js rethrow it as *FetchError.
@@ -81,12 +90,10 @@ export function toDataError(err: unknown, ctx?: { status?: number }): DataError 
       cause: err,
     });
   } catch {
-    // A throwing getter must not take out the catch block that called us.
     return new DataError('unknown', defaultMessage('unknown'), { cause: err });
   }
 }
 
-// The outage answered 503 as text/plain: a body that fails JSON.parse still classifies.
 export async function dataErrorFromResponse(res: Response): Promise<DataError> {
   const body = await readCappedBody(res);
 
@@ -105,8 +112,7 @@ export async function dataErrorFromResponse(res: Response): Promise<DataError> {
   return new DataError(kind, text || defaultMessage(kind, status), { status, code, cause: res });
 }
 
-// Bounded off the wire: `.text().slice()` still buffers a dead gateway's megabytes
-// of proxy HTML into a clone nobody drains.
+// `.text().slice()` first buffers a dead gateway's megabytes of proxy HTML.
 async function readCappedBody(res: Response): Promise<string> {
   try {
     const clone = res.clone();
@@ -143,7 +149,6 @@ interface Signals {
 function classify(signals: Signals): DataErrorKind {
   const { err, status, code, text } = signals;
 
-  // Body before status: the gateway sent the Envoy prose under several statuses.
   if (UPSTREAM_BODY.test(text)) return 'upstream';
 
   if (code === NO_ROWS_CODE) return 'notFound';
@@ -158,6 +163,7 @@ function classify(signals: Signals): DataErrorKind {
     return 'unknown';
   }
 
+  if (code !== undefined && OFFLINE_CODES.has(code)) return 'offline';
   if (code === undefined && isOffline(err, text)) return 'offline';
 
   return 'unknown';
@@ -227,7 +233,7 @@ function describe(err: unknown): string {
   return String(err);
 }
 
-// Bounded walk: cause chains can be circular, and wrappers nest more than one deep.
+// Cause chains can be circular.
 function withCause(err: unknown, text: string): string {
   const parts = [text];
   let cause = asRecord(err)?.cause;

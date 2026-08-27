@@ -8,7 +8,7 @@ import {
   toDataError,
 } from '@/lib/dataError';
 
-// The gateway body reproduced with plain curl during the 2026-08-26 outage.
+// The 2026-08-26 gateway body: text/plain, no JSON envelope.
 const ENVOY_BODY =
   'upstream connect error or disconnect/reset before headers. retried and the latest reset reason: remote connection failure, transport failure reason: delayed connect error: 111';
 
@@ -179,6 +179,20 @@ describe('shapes supabase-js actually produces', () => {
 
   it('does not call a non-network failure offline just because it ends in FetchError', () => {
     const err = Object.assign(new Error('invalid JWT'), { name: 'AuthRetryableFetchError' });
+    expect(toDataError(err).kind).toBe('unknown');
+  });
+
+  it('reads a connect errno as offline, not as a PostgREST code', () => {
+    for (const code of ['ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN', 'ENETUNREACH', 'EHOSTUNREACH']) {
+      const err = Object.assign(new Error('fetch failed'), { name: 'FetchError', code });
+      const result = toDataError(err);
+      expect(result.kind).toBe('offline');
+      expect(isRetryable(result)).toBe(true);
+    }
+  });
+
+  it('does not treat every errno-carrying failure as offline', () => {
+    const err = Object.assign(new Error('write EPIPE'), { code: 'EPIPE' });
     expect(toDataError(err).kind).toBe('unknown');
   });
 
