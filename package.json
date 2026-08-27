@@ -17,6 +17,10 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "bundle:analyze": "ANALYZE=true next build",
+    "db:backup": "bash ops/backup/backup-db.sh",
+    "db:backup:storage": "node ops/backup/backup-storage.mjs",
+    "db:backup:size": "node ops/backup/backup-storage.mjs --manifest-only",
+    "db:restore": "bash ops/backup/restore-db.sh",
     "prepare": "husky"
   },
   "lint-staged": {
