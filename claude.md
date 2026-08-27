@@ -22,6 +22,7 @@ Next.js 15 app with React 19, MUI 7, Supabase, TypeScript.
 - `theme/` — MUI theme with design tokens
 - `types/` — shared TypeScript interfaces
 - `app/` — Next.js App Router pages and API routes
+- `ops/` — operational scripts (database backup/restore); see `docs/backups.md`
 - `pages/` — legacy page components (do not add new files here)
 
 **Route groups & static rendering**: the root layout (`app/layout.tsx`) is a pure, data-free shell. All authed/app routes live in `app/(app)/` whose layout reads cookies (via `getInitialAppData()`) and is therefore dynamically rendered per request. `app/landing/` lives OUTSIDE that group so it is statically prerendered and served from the CDN; the middleware rewrites anonymous `/` traffic to it. **Never read cookies/headers in the root layout or under `app/landing/`** — it would silently turn the landing (and everything else) back into per-request SSR. New pages go in `app/(app)/`.

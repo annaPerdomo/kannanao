@@ -1,0 +1,72 @@
+name: Nightly Supabase backup
+
+on:
+  schedule:
+    # 09:00 UTC = 02:00 America/Los_Angeles during PDT, 01:00 during PST.
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out the backup scripts from the app repo
+        uses: actions/checkout@v4
+        with:
+          repository: annaPerdomo/kannanao
+          ref: main
+          path: app
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Install the Postgres 17 client and age
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17 age
+          pg_dump --version
+
+      - name: Dump, verify and encrypt
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_DB_HOST: ${{ vars.SUPABASE_DB_HOST }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          BACKUP_AGE_RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+          BACKUP_DIR: ${{ github.workspace }}
+          BACKUP_KEEP: '30'
+        run: bash app/ops/backup/backup-db.sh
+
+      - name: Refuse to commit an unencrypted dump
+        run: |
+          if ls db/*.tar.gz 2>/dev/null | grep -q .; then
+            echo "::error::a plaintext archive was produced — BACKUP_AGE_RECIPIENT is not set"
+            exit 1
+          fi
+          ls -la db/
+
+      - name: Commit
+        run: |
+          git config user.name 'tangodachi-backup'
+          git config user.email 'tangodachi-backup@users.noreply.github.com'
+          git add -A db
+          if git diff --cached --quiet; then
+            echo "::error::no new archive to commit"
+            exit 1
+          fi
+          git commit -m "backup: $(date -u +%Y-%m-%d)"
+          git push
