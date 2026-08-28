@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { type DataError, toDataError } from '@/lib/dataError';
@@ -26,6 +26,7 @@ export function useReviewCards(): {
   loading: boolean;
   error: DataError | null;
   errorMessage: string | null;
+  retry: () => void;
 } {
   const t = useTranslations('Study.useReviewCards');
   const { user } = useAuth();
@@ -33,6 +34,7 @@ export function useReviewCards(): {
   const [allCards, setAllCards] = useState<Flashcard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<DataError | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!user || !isConfigured()) {
@@ -40,6 +42,8 @@ export function useReviewCards(): {
       return;
     }
     let cancelled = false;
+    setError(null);
+    setLoading(true);
     // Pull a generous due window so a big backlog can fill a whole session from
     // due cards alone before any top-up is needed. Both reads are scoped to the
     // user's accessible decks (fetched once, shared) so games never surface
@@ -64,7 +68,9 @@ export function useReviewCards(): {
     return () => {
       cancelled = true;
     };
-  }, [user, t]);
+  }, [user, t, reloadKey]);
+
+  const retry = useCallback(() => setReloadKey((n) => n + 1), []);
 
   return {
     dueCards,
@@ -72,5 +78,6 @@ export function useReviewCards(): {
     loading,
     error,
     errorMessage: error ? t('failedToLoadCards') : null,
+    retry,
   };
 }

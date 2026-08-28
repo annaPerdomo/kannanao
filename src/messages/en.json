@@ -11,6 +11,16 @@
     "retry": "Retry",
     "somethingWentWrong": "Something went wrong",
     "errorFallbackBody": "An unexpected error occurred. Please refresh the page or try again.",
+    "dataError": {
+      "offlineTitle": "Check your internet",
+      "offlineBody": "We can't reach your words right now. They're safe — try again in a minute.",
+      "upstreamTitle": "Our side is having a problem",
+      "upstreamBody": "Your words are safe. We're working on it — try again in a minute.",
+      "genericTitle": "Something went wrong",
+      "genericBody": "Your words are safe. Try again in a minute.",
+      "staleHint": "Showing what we saved earlier",
+      "tryAgain": "Try again"
+    },
     "unsplashCredit": "Photo by <photographer>{name}</photographer> on <unsplash>Unsplash</unsplash>",
     "readAloud": "Read aloud",
     "language": {
@@ -882,8 +892,7 @@
       "buildPrompt": "Build the Japanese for:",
       "removeLastCharacter": "Remove last character",
       "celebrationHeading": "かな Master!",
-      "celebrationSubheading": "{correct} / {total} words right on the first try",
-      "loadError": "We couldn't load your cards. Try again in a minute."
+      "celebrationSubheading": "{correct} / {total} words right on the first try"
     },
     "particlePicker": {
       "title": "Particle Picker",
@@ -904,8 +913,7 @@
       "howTo": "Tap a Japanese word, then the picture that means the same thing.",
       "celebrationHeading": "All matched!",
       "celebrationSubheading": "{count, plural, one {# word} other {# words}}",
-      "celebrationExtra": "{matches} matches · {misses} misses",
-      "loadError": "We couldn't load your cards. Try again in a minute."
+      "celebrationExtra": "{matches} matches · {misses} misses"
     },
     "counterGame": {
       "title": "How Many?",

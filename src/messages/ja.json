@@ -11,6 +11,16 @@
     "retry": "もう一度",
     "somethingWentWrong": "うまくいきませんでした",
     "errorFallbackBody": "予期しないエラーが発生しました。ページを更新するか、もう一度お試しください。",
+    "dataError": {
+      "offlineTitle": "インターネットを確認してください",
+      "offlineBody": "いまことばを読み込めません。ことばは無事なので、少ししてからもう一度お試しください。",
+      "upstreamTitle": "こちらで問題が起きています",
+      "upstreamBody": "ことばは無事です。直しているので、少ししてからもう一度お試しください。",
+      "genericTitle": "問題が発生しました",
+      "genericBody": "ことばは無事です。少ししてからもう一度お試しください。",
+      "staleHint": "前に保存した内容を表示しています",
+      "tryAgain": "もう一度"
+    },
     "unsplashCredit": "<photographer>{name}</photographer>による写真（<unsplash>Unsplash</unsplash>）",
     "readAloud": "読み上げ",
     "language": {
@@ -882,8 +892,7 @@
       "buildPrompt": "この日本語をつくろう:",
       "removeLastCharacter": "最後の文字を消す",
       "celebrationHeading": "かなマスター！",
-      "celebrationSubheading": "{correct} / {total} 語を一発で正解",
-      "loadError": "カードを読み込めませんでした。少ししてからもう一度お試しください。"
+      "celebrationSubheading": "{correct} / {total} 語を一発で正解"
     },
     "particlePicker": {
       "title": "助詞ピッカー",
@@ -904,8 +913,7 @@
       "howTo": "日本語の単語をタップして、同じ意味の絵をタップしよう。",
       "celebrationHeading": "ぜんぶマッチ！",
       "celebrationSubheading": "{count, plural, other {#語}}",
-      "celebrationExtra": "{matches}マッチ · {misses}ミス",
-      "loadError": "カードを読み込めませんでした。少ししてからもう一度お試しください。"
+      "celebrationExtra": "{matches}マッチ · {misses}ミス"
     },
     "counterGame": {
       "title": "なんまい？なんにん？",

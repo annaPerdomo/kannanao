@@ -1,12 +1,13 @@
 'use client';
 
 import BackspaceOutlinedIcon from '@mui/icons-material/BackspaceOutlined';
-import { Alert, alpha, Box, IconButton, Typography } from '@mui/material';
+import { alpha, Box, IconButton, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useRef, useState } from 'react';
 
+import { DataErrorState } from '@/components/DataErrorState';
 import { Loading } from '@/components/Loading';
 import { CelebrationScreen } from '@/components/Practice/CelebrationScreen';
 import { SpeakButton } from '@/components/SpeakButton';
@@ -254,8 +255,7 @@ function KanaBoard({ words, onExit }: { words: KanaWord[]; onExit: () => void })
 
 export function KanaBuilder() {
   const router = useRouter();
-  const t = useTranslations('Games.kanaBuilder');
-  const { dueCards, allCards, loading, error } = useReviewCards();
+  const { dueCards, allCards, loading, error, retry } = useReviewCards();
   // Pick the session's words once per load — due cards first, topped up at random.
   const words = useMemo(
     () => (loading ? [] : pickKanaWords(dueCards, allCards)),
@@ -265,9 +265,9 @@ export function KanaBuilder() {
   if (loading) return <Loading />;
   if (error) {
     return (
-      <Alert severity="error" sx={{ m: 3 }}>
-        {t('loadError')}
-      </Alert>
+      <Box sx={{ m: 3 }}>
+        <DataErrorState error={error} onRetry={retry} />
+      </Box>
     );
   }
   return <KanaBoard words={words} onExit={() => router.push('/review')} />;

@@ -23,6 +23,7 @@ import type { Layout as RGLLayout } from 'react-grid-layout';
 import { GridLayout } from 'react-grid-layout';
 
 import { DashedAddRow } from '@/components/DashedAddRow';
+import { DataErrorState } from '@/components/DataErrorState';
 import { DeckTile } from '@/components/DeckCard';
 import { DECK_TILE_MIN_HEIGHT } from '@/components/DeckCard/DeckTile';
 import { AssignmentCard, GroupRow, LeaderboardWidget } from '@/components/Group';
@@ -306,10 +307,16 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
     () => ({ isInGroup, canRunGroups: !isMemberAccount }),
     [isInGroup, isMemberAccount],
   );
-  const { decks, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, loading } = useDecks(
-    homeSections.decks,
-    initialData?.decks ?? undefined,
-  );
+  const {
+    decks,
+    deleteDeck,
+    pinDeck,
+    setDeckPublic,
+    updateDeckEmoji,
+    loading,
+    error: decksError,
+    retry: retryDecks,
+  } = useDecks(homeSections.decks, initialData?.decks ?? undefined);
   const { progress, addBonusXp } = useProgressCtx();
   const { ohanashikais, pinOhanashikai, createOhanashikai } = useOhanashikais(
     homeSections.speeches,
@@ -600,6 +607,11 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
         );
 
       case 'decks':
+        // "Create your first deck" is the wrong thing to say to someone whose
+        // library failed to load — that is the outage bug, on the home screen.
+        if (decksError && decks.length === 0) {
+          return <DataErrorState error={decksError} onRetry={retryDecks} dense />;
+        }
         return (
           <Stack spacing={1.25}>
             {!loading && pinnedDecks.length === 0 && (

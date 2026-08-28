@@ -21,6 +21,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { AddCardsModal } from '@/components/AddCards';
 import { AddExistingCardsDialog } from '@/components/AddExistingCardsDialog';
+import { DataErrorState } from '@/components/DataErrorState';
 import { BestQuizLine, DeckHeader, Label, PracticeHero } from '@/components/Deck';
 import { DeckSettingsDialog } from '@/components/DeckSettingsDialog';
 import { ImageCard } from '@/components/ImageCard';
@@ -91,6 +92,8 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     addCards,
     deleteCard,
     loading: cardsLoading,
+    error: cardsError,
+    retry: retryCards,
     updateCard,
     copyExistingCards,
     reorderCards,
@@ -353,7 +356,9 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
 
         {reordering && <ReorderBanner label={t('reorderBannerLabel')} />}
 
-        {cards.length === 0 ? (
+        {cardsError && cards.length === 0 ? (
+          <DataErrorState error={cardsError} onRetry={retryCards} />
+        ) : cards.length === 0 ? (
           <Box
             sx={{
               border: (t) => `1.5px dashed ${alpha(t.palette.brand[300], 0.4)}`,

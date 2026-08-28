@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
+import { DataErrorState, StaleDataHint } from '@/components/DataErrorState';
 import {
   ActivityTab,
   AssignmentsTab,
@@ -48,7 +49,7 @@ export default function GroupDashboardPage() {
   const groupId = params?.groupId ?? '';
   const { isMemberAccount, displayName, user, loading: authLoading } = useAuth();
 
-  const { members, loading, error, errorMessage } = useGroupMembers(groupId);
+  const { members, loading, error, errorMessage, stale } = useGroupMembers(groupId);
   const { leaderboard, loading: lbLoading } = useGroupLeaderboard(groupId);
   const { feed, loading: feedLoading } = useGroupFeed(groupId);
   const {
@@ -158,7 +159,7 @@ export default function GroupDashboardPage() {
       <Box
         sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
       >
-        <Alert severity="error">{errorMessage}</Alert>
+        <DataErrorState error={error} />
       </Box>
     );
   }
@@ -191,6 +192,8 @@ export default function GroupDashboardPage() {
           {errorMessage}
         </Alert>
       )}
+
+      <StaleDataHint show={stale && !error} />
 
       <Box sx={{ mb: { xs: 2.5, sm: 3 } }}>
         <NeedsAttention

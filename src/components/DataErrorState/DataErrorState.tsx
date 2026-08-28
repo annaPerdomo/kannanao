@@ -1,0 +1,89 @@
+'use client';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import { alpha, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
+
+import type { DataError, DataErrorKind } from '@/lib/dataError';
+
+interface DataErrorStateProps {
+  /** Null renders nothing, so callers can drop this in without a wrapper. */
+  error: DataError | null;
+  onRetry?: () => void;
+  /** Tighter spacing and no icon, for a widget rather than a whole page. */
+  dense?: boolean;
+}
+
+const COPY: Record<DataErrorKind, { icon: string; title: string; body: string }> = {
+  offline: { icon: '📡', title: 'offlineTitle', body: 'offlineBody' },
+  upstream: { icon: '🛠️', title: 'upstreamTitle', body: 'upstreamBody' },
+  auth: { icon: '🔑', title: 'genericTitle', body: 'genericBody' },
+  notFound: { icon: '🔍', title: 'genericTitle', body: 'genericBody' },
+  unknown: { icon: '🌧️', title: 'genericTitle', body: 'genericBody' },
+};
+
+/**
+ * The one shared "we couldn't load this" state. It exists so a backend failure
+ * never renders as the friendly you-have-nothing-yet empty state — during the
+ * 2026-08-26 outage a learner saw an empty library and read it as lost work.
+ */
+export function DataErrorState({ error, onRetry, dense = false }: DataErrorStateProps) {
+  const theme = useTheme();
+  const t = useTranslations('Common.dataError');
+
+  if (!error) return null;
+  const copy = COPY[error.kind];
+
+  return (
+    <Box
+      role="status"
+      aria-live="polite"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: dense ? 0.75 : 1.25,
+        px: 2,
+        py: dense ? 2 : 3,
+        borderRadius: 3,
+        bgcolor: alpha(theme.palette.brand[100], 0.5),
+        // text.primary throughout: brand mid-tones fail WCAG AA on this pastel.
+        color: 'text.primary',
+      }}
+    >
+      {!dense && (
+        <Typography aria-hidden component="span" sx={{ fontSize: '1.75rem', lineHeight: 1 }}>
+          {copy.icon}
+        </Typography>
+      )}
+
+      <Typography
+        sx={{ fontWeight: 700, fontSize: dense ? '0.9rem' : '1rem', textAlign: 'center' }}
+      >
+        {t(copy.title)}
+      </Typography>
+
+      <Typography
+        sx={{
+          fontSize: dense ? '0.8rem' : '0.875rem',
+          textAlign: 'center',
+          maxWidth: 320,
+        }}
+      >
+        {t(copy.body)}
+      </Typography>
+
+      {onRetry && (
+        <Button
+          variant="contained"
+          size={dense ? 'small' : 'medium'}
+          onClick={onRetry}
+          sx={{ mt: 0.5 }}
+        >
+          {t('tryAgain')}
+        </Button>
+      )}
+    </Box>
+  );
+}

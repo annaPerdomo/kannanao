@@ -25,6 +25,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import { CreateDeckDialog } from '@/components/CreateDeckDialog';
+import { DataErrorState } from '@/components/DataErrorState';
 import { DeckCard } from '@/components/DeckCard';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
@@ -42,8 +43,17 @@ export default function Decks() {
   const { brand, accent } = theme.palette;
   const router = useRouter();
 
-  const { decks, loading, deleteDeck, pinDeck, setDeckPublic, updateDeckEmoji, reorderDecks } =
-    useDecks();
+  const {
+    decks,
+    loading,
+    error,
+    retry,
+    deleteDeck,
+    pinDeck,
+    setDeckPublic,
+    updateDeckEmoji,
+    reorderDecks,
+  } = useDecks();
   const { user, isMemberAccount } = useAuth();
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -235,7 +245,9 @@ export default function Decks() {
 
       {reordering && <ReorderBanner label={t('reorderBannerLabel')} />}
 
-      {decks.length === 0 ? (
+      {error && decks.length === 0 ? (
+        <DataErrorState error={error} onRetry={retry} />
+      ) : decks.length === 0 ? (
         <Box
           sx={{
             border: `1.5px dashed ${alpha(brand[300], 0.45)}`,
