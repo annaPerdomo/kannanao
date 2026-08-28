@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { type DataError, toDataError } from '@/lib/dataError';
 import {
   getAccessibleDeckIds,
   getDueCards,
@@ -23,14 +24,15 @@ export function useReviewCards(): {
   dueCards: Flashcard[];
   allCards: Flashcard[];
   loading: boolean;
-  error: string | null;
+  error: DataError | null;
+  errorMessage: string | null;
 } {
   const t = useTranslations('Study.useReviewCards');
   const { user } = useAuth();
   const [dueCards, setDueCards] = useState<Flashcard[]>([]);
   const [allCards, setAllCards] = useState<Flashcard[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<DataError | null>(null);
 
   useEffect(() => {
     if (!user || !isConfigured()) {
@@ -52,7 +54,9 @@ export function useReviewCards(): {
         setAllCards(all);
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : t('failedToLoadCards'));
+        // Never surface `e.message`: it is a gateway body, not something a
+        // learner should read. The kind is what the UI branches on.
+        if (!cancelled) setError(toDataError(e));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -62,5 +66,11 @@ export function useReviewCards(): {
     };
   }, [user, t]);
 
-  return { dueCards, allCards, loading, error };
+  return {
+    dueCards,
+    allCards,
+    loading,
+    error,
+    errorMessage: error ? t('failedToLoadCards') : null,
+  };
 }

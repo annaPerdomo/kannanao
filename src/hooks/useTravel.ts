@@ -359,25 +359,37 @@ export function useShowCards() {
       try {
         await dbUpdateShowCard(id, patch);
       } catch {
-        // Rollback
-        const saved = await loadShowCards();
-        setCards([...saved, ...DEFAULT_SHOW_CARDS]);
+        // Rollback. The reload can fail too now that loadShowCards throws;
+        // keep the optimistic list rather than escaping as an unhandled reject.
+        try {
+          const saved = await loadShowCards();
+          setCards([...saved, ...DEFAULT_SHOW_CARDS]);
+        } catch {
+          setError(t('failedSaveCard'));
+        }
       }
     },
-    [],
+    [t],
   );
 
-  const deleteCard = useCallback(async (id: string) => {
-    // Optimistic remove
-    setCards((prev) => prev.filter((c) => c.id !== id));
-    try {
-      await dbDeleteShowCard(id);
-    } catch {
-      // Rollback: reload from DB
-      const saved = await loadShowCards();
-      setCards([...saved, ...DEFAULT_SHOW_CARDS]);
-    }
-  }, []);
+  const deleteCard = useCallback(
+    async (id: string) => {
+      // Optimistic remove
+      setCards((prev) => prev.filter((c) => c.id !== id));
+      try {
+        await dbDeleteShowCard(id);
+      } catch {
+        // Rollback: reload from DB. A failing reload must not escape the catch.
+        try {
+          const saved = await loadShowCards();
+          setCards([...saved, ...DEFAULT_SHOW_CARDS]);
+        } catch {
+          setError(t('failedSaveCard'));
+        }
+      }
+    },
+    [t],
+  );
 
   const filterByCategory = useCallback(
     (category: ShowCardCategory | 'all') => {

@@ -22,9 +22,15 @@ export function BestQuizLine({ deckId }: BestQuizLineProps) {
 
   useEffect(() => {
     let active = true;
-    getBestQuizForDeck(deckId).then((r) => {
-      if (active) setBest(r);
-    });
+    // Degrades to hiding the line: one optional stat must not take the deck
+    // page down with it, and there is nothing useful to say in its place.
+    getBestQuizForDeck(deckId)
+      .then((r) => {
+        if (active) setBest(r);
+      })
+      .catch(() => {
+        if (active) setBest(null);
+      });
     return () => {
       active = false;
     };

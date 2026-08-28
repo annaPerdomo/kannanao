@@ -76,11 +76,11 @@ export function SaveToDeckDialog({
     setError(null);
     setSavedDeck(null);
     setLoadingDecks(true);
-    loadDecks(user.id).then((loaded) => {
-      setDecks(loaded);
-      setLoadingDecks(false);
-    });
-  }, [open, user, resolvedDefaultDeckName]);
+    loadDecks(user.id)
+      .then((loaded) => setDecks(loaded))
+      .catch(() => setError(t('loadDecksError')))
+      .finally(() => setLoadingDecks(false));
+  }, [open, user, resolvedDefaultDeckName, t]);
 
   const insertCards = useCallback(
     async (deckId: string) => {

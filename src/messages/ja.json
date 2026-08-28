@@ -883,7 +883,7 @@
       "removeLastCharacter": "最後の文字を消す",
       "celebrationHeading": "かなマスター！",
       "celebrationSubheading": "{correct} / {total} 語を一発で正解",
-      "loadError": "カードを読み込めませんでした: {error}"
+      "loadError": "カードを読み込めませんでした。少ししてからもう一度お試しください。"
     },
     "particlePicker": {
       "title": "助詞ピッカー",
@@ -905,7 +905,7 @@
       "celebrationHeading": "ぜんぶマッチ！",
       "celebrationSubheading": "{count, plural, other {#語}}",
       "celebrationExtra": "{matches}マッチ · {misses}ミス",
-      "loadError": "カードを読み込めませんでした: {error}"
+      "loadError": "カードを読み込めませんでした。少ししてからもう一度お試しください。"
     },
     "counterGame": {
       "title": "なんまい？なんにん？",
@@ -2118,6 +2118,7 @@
       "defaultDeckName": "旅のフレーズ",
       "createNewDeck": "新しいデッキを作る",
       "loadingDecks": "デッキを読み込み中...",
+      "loadDecksError": "デッキを読み込めませんでした。少ししてからもう一度お試しください。",
       "orAddToExisting": "または既存のデッキに追加:",
       "cardsCount": "{count, plural, other {カード#枚}}",
       "noExistingDecks": "既存のデッキがありません。上で新しく作ってください。",
@@ -2466,7 +2467,8 @@
     "errors": {
       "failedStartScenario": "シーンを開始できませんでした",
       "failedContinueScenario": "会話を続けられませんでした",
-      "failedGenerateCard": "カードを作成できませんでした"
+      "failedGenerateCard": "カードを作成できませんでした",
+      "failedSaveCard": "変更を保存できませんでした。少ししてからもう一度お試しください。"
     }
   },
   "Ohanashikai": {

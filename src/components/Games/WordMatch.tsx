@@ -334,7 +334,7 @@ export function WordMatch() {
   if (error) {
     return (
       <Alert severity="error" sx={{ m: 3 }}>
-        {t('loadError', { error })}
+        {t('loadError')}
       </Alert>
     );
   }

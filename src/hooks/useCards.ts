@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 
+import { type DataError, toDataError } from '@/lib/dataError';
 import {
   dbCopyCardsIntoDeck,
   dbDeleteCard,
@@ -17,16 +18,26 @@ import type { Flashcard, MainViewMode } from '@/types/flashcard';
 export function useCards(deckId: string, onCountChange?: (count: number) => void) {
   const [cards, setCards] = useState<Flashcard[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<DataError | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    setError(null);
 
     const fetchCards = async () => {
-      const loaded = await loadCards(deckId);
-      if (cancelled) return;
-      setCards(loaded);
-      onCountChange?.(loaded.length);
-      setLoading(false);
+      try {
+        const loaded = await loadCards(deckId);
+        if (cancelled) return;
+        setCards(loaded);
+        onCountChange?.(loaded.length);
+      } catch (err) {
+        // A deck with no cards and a deck that failed to load are different
+        // states; don't let the second render as the first.
+        if (!cancelled) setError(toDataError(err));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     };
 
     void fetchCards();
@@ -34,7 +45,9 @@ export function useCards(deckId: string, onCountChange?: (count: number) => void
     return () => {
       cancelled = true;
     };
-  }, [deckId, onCountChange]);
+  }, [deckId, onCountChange, reloadKey]);
+
+  const retry = useCallback(() => setReloadKey((n) => n + 1), []);
 
   const addCard = useCallback(
     async (card: Omit<Flashcard, 'id' | 'position'>): Promise<Flashcard | undefined> => {
@@ -167,5 +180,7 @@ export function useCards(deckId: string, onCountChange?: (count: number) => void
     reorderCards,
     setAllMainViewMode,
     loading,
+    error,
+    retry,
   };
 }

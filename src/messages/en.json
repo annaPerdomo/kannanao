@@ -883,7 +883,7 @@
       "removeLastCharacter": "Remove last character",
       "celebrationHeading": "かな Master!",
       "celebrationSubheading": "{correct} / {total} words right on the first try",
-      "loadError": "Couldn’t load your cards: {error}"
+      "loadError": "We couldn't load your cards. Try again in a minute."
     },
     "particlePicker": {
       "title": "Particle Picker",
@@ -905,7 +905,7 @@
       "celebrationHeading": "All matched!",
       "celebrationSubheading": "{count, plural, one {# word} other {# words}}",
       "celebrationExtra": "{matches} matches · {misses} misses",
-      "loadError": "Couldn’t load your cards: {error}"
+      "loadError": "We couldn't load your cards. Try again in a minute."
     },
     "counterGame": {
       "title": "How Many?",
@@ -2121,6 +2121,7 @@
       "defaultDeckName": "Travel Phrases",
       "createNewDeck": "Create new deck",
       "loadingDecks": "Loading decks...",
+      "loadDecksError": "We couldn't load your decks. Try again in a minute.",
       "orAddToExisting": "Or add to an existing deck:",
       "cardsCount": "{count, plural, one {# card} other {# cards}}",
       "noExistingDecks": "No existing decks. Create a new one above.",
@@ -2469,7 +2470,8 @@
     "errors": {
       "failedStartScenario": "Failed to start scenario",
       "failedContinueScenario": "Failed to continue scenario",
-      "failedGenerateCard": "Failed to generate card"
+      "failedGenerateCard": "Failed to generate card",
+      "failedSaveCard": "We couldn't save that change. Try again in a minute."
     }
   },
   "Ohanashikai": {
