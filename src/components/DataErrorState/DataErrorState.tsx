@@ -8,10 +8,8 @@ import { useTranslations } from 'next-intl';
 import type { DataError, DataErrorKind } from '@/lib/dataError';
 
 interface DataErrorStateProps {
-  /** Null renders nothing, so callers can drop this in without a wrapper. */
   error: DataError | null;
   onRetry?: () => void;
-  /** Tighter spacing and no icon, for a widget rather than a whole page. */
   dense?: boolean;
 }
 
@@ -24,9 +22,8 @@ const COPY: Record<DataErrorKind, { icon: string; title: string; body: string }>
 };
 
 /**
- * The one shared "we couldn't load this" state. It exists so a backend failure
- * never renders as the friendly you-have-nothing-yet empty state — during the
- * 2026-08-26 outage a learner saw an empty library and read it as lost work.
+ * Must stay visibly distinct from the you-have-nothing-yet empty state: during
+ * the 2026-08-26 outage a learner read an empty library as lost work.
  */
 export function DataErrorState({ error, onRetry, dense = false }: DataErrorStateProps) {
   const theme = useTheme();

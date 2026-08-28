@@ -39,8 +39,8 @@ export default function Study({ deckId, onBack, questBanner, cardIds }: StudyPro
     return deckCards.filter((c) => wanted.has(c.id));
   }, [deckCards, cardIds]);
 
-  // A study session with zero cards is indistinguishable from a finished one,
-  // so a failed card load must stop here rather than render the celebration.
+  // FlipStudy renders zero cards as a finished session, so a failed load must
+  // stop here rather than show the celebration.
   if (cardsError && deckCards.length === 0) {
     return (
       <Box sx={{ maxWidth: 480, mx: 'auto', px: 2, py: 4 }}>

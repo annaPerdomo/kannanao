@@ -46,8 +46,7 @@ export function useDecks(enabled = true, initialDecks?: Deck[]) {
         if (cancelled) return;
         setDecks(loaded);
       } catch (err) {
-        // Leave `decks` alone: an empty library and a failed load must not look
-        // the same, and a retry that fails should not wipe what is on screen.
+        // Deliberately keeps `decks`: a failed retry must not wipe the screen.
         if (!cancelled) setError(toDataError(err));
       } finally {
         if (!cancelled) setLoading(false);

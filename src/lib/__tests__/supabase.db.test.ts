@@ -184,8 +184,7 @@ describe('loadDecks', () => {
   });
 
   it('should throw when the decks query errors, not report an empty library', async () => {
-    // The 2026-08-26 bug in one assertion: a failed read became `[]`, and a
-    // signed-in learner saw "no decks yet" for six hours.
+    // The 2026-08-26 bug in one assertion: a failed read became `[]`.
     setTable('decks', null, { message: 'DB error' });
 
     await expect(loadDecks('u1')).rejects.toBeInstanceOf(DataError);
@@ -615,8 +614,7 @@ describe('dbUpdateCard', () => {
   });
 
   it('should throw when the update errors', async () => {
-    // A silently failed write is worse than a failed read: the user believes
-    // their edit saved.
+    // Worse than a failed read: the user believes their edit saved.
     setTable('cards', null, { message: 'Update error' });
     await expect(dbUpdateCard('card-1', { word: 'test' })).rejects.toBeInstanceOf(DataError);
   });

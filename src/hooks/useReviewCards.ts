@@ -58,8 +58,7 @@ export function useReviewCards(): {
         setAllCards(all);
       })
       .catch((e) => {
-        // Never surface `e.message`: it is a gateway body, not something a
-        // learner should read. The kind is what the UI branches on.
+        // Never `e.message` — it is a gateway body, not learner-readable copy.
         if (!cancelled) setError(toDataError(e));
       })
       .finally(() => {

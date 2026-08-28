@@ -359,8 +359,8 @@ export function useShowCards() {
       try {
         await dbUpdateShowCard(id, patch);
       } catch {
-        // Rollback. The reload can fail too now that loadShowCards throws;
-        // keep the optimistic list rather than escaping as an unhandled reject.
+        // loadShowCards throws now, so an unguarded rollback reload escapes
+        // this catch as an unhandled rejection.
         try {
           const saved = await loadShowCards();
           setCards([...saved, ...DEFAULT_SHOW_CARDS]);
@@ -374,12 +374,11 @@ export function useShowCards() {
 
   const deleteCard = useCallback(
     async (id: string) => {
-      // Optimistic remove
       setCards((prev) => prev.filter((c) => c.id !== id));
       try {
         await dbDeleteShowCard(id);
       } catch {
-        // Rollback: reload from DB. A failing reload must not escape the catch.
+        // Guarded for the same reason as updateCard's rollback.
         try {
           const saved = await loadShowCards();
           setCards([...saved, ...DEFAULT_SHOW_CARDS]);

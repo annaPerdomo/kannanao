@@ -607,8 +607,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
         );
 
       case 'decks':
-        // "Create your first deck" is the wrong thing to say to someone whose
-        // library failed to load — that is the outage bug, on the home screen.
+        // Ahead of the empty state: "create your first deck" is the outage bug.
         if (decksError && decks.length === 0) {
           return <DataErrorState error={decksError} onRetry={retryDecks} dense />;
         }

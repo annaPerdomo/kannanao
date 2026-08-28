@@ -32,8 +32,6 @@ export function useCards(deckId: string, onCountChange?: (count: number) => void
         setCards(loaded);
         onCountChange?.(loaded.length);
       } catch (err) {
-        // A deck with no cards and a deck that failed to load are different
-        // states; don't let the second render as the first.
         if (!cancelled) setError(toDataError(err));
       } finally {
         if (!cancelled) setLoading(false);

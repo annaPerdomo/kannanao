@@ -52,8 +52,6 @@ function decksState(overrides: Record<string, unknown> = {}) {
   };
 }
 
-// ─── The distinction the whole pack exists for ───────────────────────────────
-
 describe('the deck library during an outage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -82,8 +80,6 @@ describe('the deck library during an outage', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });
-
-// ─── The rest of the page, so the outage branch is not the only path covered ──
 
 describe('the deck library in its ordinary states', () => {
   beforeEach(() => {

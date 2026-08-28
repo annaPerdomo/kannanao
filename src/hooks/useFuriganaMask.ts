@@ -38,8 +38,6 @@ export function useFuriganaMask(cards: Flashcard[]): (cardId: string) => boolean
           new Set(rows.filter((row) => cardStrength(row) === 'strong').map((row) => row.cardId)),
         );
       })
-      // Failing open leaves every reading visible, which is the same help-by-
-      // default state as before the fetch lands.
       .catch(() => {
         if (!cancelled) setStrongIds(EMPTY);
       });

@@ -478,8 +478,6 @@ describe('useDecks', () => {
     });
   });
 
-  // ─── Outage vs empty ────────────────────────────────────────────────────────
-
   describe('a failed load and an empty library', () => {
     it('sets error and leaves the deck list alone when the load throws', async () => {
       mockLoadDecks.mockRejectedValue(new DataError('upstream', 'gateway down', { status: 503 }));
