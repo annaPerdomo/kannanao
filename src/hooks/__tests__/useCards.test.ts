@@ -207,6 +207,21 @@ describe('useCards', () => {
 
       expect(returned).toBeNull();
     });
+
+    it('propagates a failed write instead of resolving null', async () => {
+      const original = makeCard('c1');
+      mockLoadCards.mockResolvedValue([original]);
+      mockUpdateCard.mockRejectedValue(new DataError('upstream', 'gateway down'));
+
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await expect(result.current.updateCard('c1', { meaning: 'x' })).rejects.toBeInstanceOf(
+        DataError,
+      );
+      // The card on screen must not claim the edit landed.
+      expect(result.current.cards[0]).toEqual(original);
+    });
   });
 
   describe('deleteCard', () => {

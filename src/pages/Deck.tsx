@@ -167,6 +167,10 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         return;
       }
       pictureReview.clear();
+    } catch {
+      // dbUpdateCard throws now; the null check above only ever covered the
+      // not-configured case, so without this a failed save shows nothing.
+      setPictureSaveError(t('pictureReviewSaveError'));
     } finally {
       setSavingPictures(false);
     }
