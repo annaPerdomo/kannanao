@@ -51,7 +51,7 @@ const EMPTY_FORM: LessonSetForm = {
 export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBuilderProps) {
   const t = useTranslations('Group.lessonBuilder');
   const router = useRouter();
-  const { plan, setPlan, results, building, applying, error, build, apply, reset } =
+  const { plan, setPlan, results, building, applying, applyFailed, error, build, apply, reset } =
     useLessonPlan();
 
   const [form, setForm] = useState<LessonSetForm>(EMPTY_FORM);
@@ -171,6 +171,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
           mode={mode}
           targetLevel={form.level}
           applying={applying}
+          ticksLocked={applyFailed}
           retryingIndex={retryingIndex}
           onDeckChange={handleDeckChange}
           onRetryDeck={handleRetryDeck}

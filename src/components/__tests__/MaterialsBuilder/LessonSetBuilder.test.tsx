@@ -309,6 +309,37 @@ describe('LessonSetBuilder', () => {
     expect(buildLessonPlanMock.mock.calls[0][0].styleNotes).toMatch(/young children/);
   });
 
+  it('locks the ticks after a failed apply so a retry matches what was created', async () => {
+    applyLessonPlanMock.mockRejectedValueOnce(new Error('network died'));
+    await reachTwoWeekReview();
+
+    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    await screen.findByText('network died');
+
+    expect(screen.getByRole('switch', { name: 'Include Snacks' })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: 'Include うどん' })).toBeDisabled();
+    expect(screen.getByText(/ticks are locked/i)).toBeInTheDocument();
+  });
+
+  it("never truncates the educator's own style notes to fit the audience pitch", async () => {
+    setup();
+    typeGoal();
+
+    fireEvent.mouseDown(screen.getByLabelText(/who is it for/i));
+    fireEvent.click(await screen.findByText('Kids'));
+
+    fireEvent.click(screen.getByRole('button', { name: /advanced options/i }));
+    const long = 'x'.repeat(295);
+    fireEvent.change(screen.getByLabelText(/what should the example sentences be like/i), {
+      target: { value: long },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /build the plan/i }));
+    await waitFor(() => expect(buildLessonPlanMock).toHaveBeenCalled());
+
+    expect(buildLessonPlanMock.mock.calls[0][0].styleNotes).toBe(long);
+  });
+
   it('opens a print window for the study sheets', async () => {
     const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
     await reachReviewStep();

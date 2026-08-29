@@ -26,6 +26,8 @@ interface PlanDeckCardProps {
   dueDate: string | null;
   reuse: DeckReuse;
   targetLevel: JlptLevel;
+  /** After a failed apply the ticks freeze so a retry matches what was created. */
+  ticksLocked: boolean;
   retrying: boolean;
   onDeckChange: (deck: PlanDeck) => void;
   onRetry: () => void;
@@ -37,6 +39,7 @@ export function PlanDeckCard({
   dueDate,
   reuse,
   targetLevel,
+  ticksLocked,
   retrying,
   onDeckChange,
   onRetry,
@@ -83,6 +86,7 @@ export function PlanDeckCard({
       >
         <Switch
           checked={deckOn}
+          disabled={ticksLocked}
           onChange={(e) => onDeckChange({ ...deck, excluded: !e.target.checked })}
           slotProps={{ input: { 'aria-label': t('includeWeekLabel', { name: deck.name }) } }}
         />
@@ -108,7 +112,7 @@ export function PlanDeckCard({
           size="small"
           startIcon={<RefreshIcon sx={{ fontSize: 16 }} />}
           onClick={onRetry}
-          disabled={retrying || !deckOn}
+          disabled={retrying || !deckOn || ticksLocked}
           sx={{ textTransform: 'none', fontWeight: 700, whiteSpace: 'nowrap' }}
         >
           {t('retryDeckButton')}
@@ -143,6 +147,7 @@ export function PlanDeckCard({
               index={i}
               reuseWords={reuse.perCard[i] ?? []}
               targetLevel={targetLevel}
+              tickLocked={ticksLocked}
               onChange={(patch) => updateCard(i, patch)}
             />
           ))}
@@ -152,6 +157,7 @@ export function PlanDeckCard({
           size="small"
           startIcon={<AddIcon sx={{ fontSize: 16 }} />}
           onClick={() => onDeckChange({ ...deck, cards: [...deck.cards, emptyPlanCard()] })}
+          disabled={ticksLocked}
           sx={{ textTransform: 'none', fontWeight: 700, mt: 1.5 }}
         >
           {t('addCardButton')}

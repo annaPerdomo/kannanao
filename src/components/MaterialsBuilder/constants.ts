@@ -30,12 +30,16 @@ const AUDIENCE_NOTES: Record<AudienceKey, string | undefined> = {
     'The learners are adults — work, travel, errands and polite everyday conversation make good topics.',
 };
 
-/** The audience pitch and the free-typed notes, folded into one styleNotes string. */
+/**
+ * The free-typed notes plus the audience pitch, folded into one styleNotes
+ * string. The educator's own words always survive whole; the canned note is
+ * appended only when it fits the server's cap entirely.
+ */
 export function effectiveStyleNotes(form: Pick<LessonSetForm, 'audience' | 'styleNotes'>) {
-  const combined = [AUDIENCE_NOTES[form.audience], form.styleNotes.trim()]
-    .filter(Boolean)
-    .join(' ')
-    .slice(0, STYLE_NOTES_MAX);
+  const typed = form.styleNotes.trim().slice(0, STYLE_NOTES_MAX);
+  const note = AUDIENCE_NOTES[form.audience];
+  const room = STYLE_NOTES_MAX - typed.length - (typed ? 1 : 0);
+  const combined = note && note.length <= room ? [typed, note].filter(Boolean).join(' ') : typed;
   return combined || undefined;
 }
 

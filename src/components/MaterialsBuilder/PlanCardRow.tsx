@@ -16,10 +16,19 @@ interface PlanCardRowProps {
   index: number;
   reuseWords: string[];
   targetLevel: JlptLevel;
+  /** After a failed apply the tick freezes so a retry matches what was created. */
+  tickLocked: boolean;
   onChange: (patch: Partial<PlanCard>) => void;
 }
 
-export function PlanCardRow({ card, index, reuseWords, targetLevel, onChange }: PlanCardRowProps) {
+export function PlanCardRow({
+  card,
+  index,
+  reuseWords,
+  targetLevel,
+  tickLocked,
+  onChange,
+}: PlanCardRowProps) {
   const t = useTranslations('Group.lessonBuilder');
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -42,6 +51,7 @@ export function PlanCardRow({ card, index, reuseWords, targetLevel, onChange }: 
       <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
         <Checkbox
           checked={included}
+          disabled={tickLocked}
           onChange={(e) => onChange({ excluded: !e.target.checked })}
           slotProps={{
             input: {

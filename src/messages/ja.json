@@ -1503,6 +1503,7 @@
       "loadingMessage": "よみこみ中…",
       "reviewHeading": "デッキ{decks}こ・カード{cards}まい — つくる前に自由になおせます",
       "reviewSubtitle": "いらないカードはチェックを外し、いらない週はオフにできます。ボタンをおすまで、なにもつくられません。",
+      "resumeLockNote": "さっきのしっぱいで、いくつかのデッキはもうできているかもしれません。そのためチェックはロックされています。もういちどボタンをおすと、同じプランのつづきをつくります。",
       "weekHeading": "{week}週目",
       "skippedHeading": "とばす",
       "deckNameLabel": "デッキ名",

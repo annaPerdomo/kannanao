@@ -1503,6 +1503,7 @@
       "loadingMessage": "Loading…",
       "reviewHeading": "{decks, plural, one {# deck} other {# decks}}, {cards, plural, one {# card} other {# cards}} — edit anything before you create them",
       "reviewSubtitle": "Untick a card or switch off a week to leave it out — nothing is made until you press the button.",
+      "resumeLockNote": "Some of these decks may already exist from the last try, so the ticks are locked. Press the button again to finish the same plan.",
       "weekHeading": "Week {week}",
       "skippedHeading": "Skipped",
       "deckNameLabel": "Deck name",

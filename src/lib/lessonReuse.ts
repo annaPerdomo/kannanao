@@ -1,7 +1,7 @@
 import type { PlanDeck } from '@/types/lessonPlan';
 
 import { stripFurigana } from './furigana';
-import { deckIsSkipped, includedCards } from './lessonPlanEdits';
+import { cardIsBlank, deckIsSkipped, includedCards } from './lessonPlanEdits';
 
 /** Words a sentence leans on, in the order they appear in the pool. */
 export function reusedWords(exampleJp: string, pool: string[]): string[] {
@@ -36,7 +36,7 @@ export function deckReuse(deck: PlanDeck, pool: string[]): DeckReuse {
   let reused = 0;
   let total = 0;
   cards.forEach((card, i) => {
-    if (card.excluded) return;
+    if (card.excluded || cardIsBlank(card)) return;
     total += 1;
     if (perCard[i].length > 0) reused += 1;
   });

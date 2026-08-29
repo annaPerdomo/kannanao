@@ -1,4 +1,5 @@
 'use client';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -26,6 +27,8 @@ interface ReviewStepProps {
   mode: GoalMode | null;
   targetLevel: JlptLevel;
   applying: boolean;
+  /** True after a failed apply: some decks may exist, so include ticks are frozen. */
+  ticksLocked: boolean;
   retryingIndex: number | null;
   onDeckChange: (index: number, deck: PlanDeck) => void;
   onRetryDeck: (index: number) => void;
@@ -43,6 +46,7 @@ export function ReviewStep({
   mode,
   targetLevel,
   applying,
+  ticksLocked,
   retryingIndex,
   onDeckChange,
   onRetryDeck,
@@ -72,6 +76,8 @@ export function ReviewStep({
         </Typography>
       </Box>
 
+      {ticksLocked && <Alert severity="info">{t('resumeLockNote')}</Alert>}
+
       {plan.decks.map((deck, i) => {
         const week = numbers[i];
         return (
@@ -83,6 +89,7 @@ export function ReviewStep({
             dueDate={week !== null ? addDaysToDate(dueDate, (week - 1) * 7) : null}
             reuse={reuse[i]}
             targetLevel={targetLevel}
+            ticksLocked={ticksLocked}
             retrying={retryingIndex === i}
             onDeckChange={(next) => onDeckChange(i, next)}
             onRetry={() => onRetryDeck(i)}

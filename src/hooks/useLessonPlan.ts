@@ -41,12 +41,19 @@ export function useLessonPlan() {
   const [building, setBuilding] = useState(false);
   const [applying, setApplying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /**
+   * A failed apply may have created some decks already; the retry finds them by
+   * name and index. Excluding decks between attempts would renumber the rest
+   * around decks that exist, so the review UI locks its ticks while this is set.
+   */
+  const [applyFailed, setApplyFailed] = useState(false);
 
   const build = useCallback(
     async (args: BuildPlanArgs) => {
       setBuilding(true);
       setError(null);
       setResults(null);
+      setApplyFailed(false);
       try {
         const { documents, ...rest } = args;
         const data = await buildLessonPlan({
@@ -78,6 +85,7 @@ export function useLessonPlan() {
         invalidateApiCache('/api/group/');
       } catch (err) {
         setError(err instanceof Error ? err.message : t('errorMessage'));
+        setApplyFailed(true);
       } finally {
         setApplying(false);
       }
@@ -90,7 +98,8 @@ export function useLessonPlan() {
     setPlanId(null);
     setResults(null);
     setError(null);
+    setApplyFailed(false);
   }, []);
 
-  return { plan, setPlan, results, building, applying, error, build, apply, reset };
+  return { plan, setPlan, results, building, applying, applyFailed, error, build, apply, reset };
 }
