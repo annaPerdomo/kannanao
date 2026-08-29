@@ -107,6 +107,7 @@ export function toDataError(err: unknown, ctx?: { status?: number }): DataError 
   }
 }
 
+// Consumes `res`'s body; callers must not read `res` again afterward.
 export async function dataErrorFromResponse(res: Response): Promise<DataError> {
   const body = await readCappedBody(res);
 

@@ -347,6 +347,8 @@ export function useShowCards() {
     [t],
   );
 
+  // Rollback snapshots close over `cards` at call time: two overlapping calls
+  // on the same id before a re-render would both restore the same stale state.
   const updateCard = useCallback(
     async (
       id: string,
