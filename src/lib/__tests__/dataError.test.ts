@@ -84,6 +84,15 @@ describe('classification table', () => {
     }
   });
 
+  it('maps a dead-database PostgREST code to upstream', () => {
+    expect(toDataError({ code: '57P03', message: 'the database system is starting up' }).kind).toBe(
+      'upstream',
+    );
+    expect(toDataError({ code: 'PGRST000', message: 'Database connection error' }).kind).toBe(
+      'upstream',
+    );
+  });
+
   it('still calls a 404 an absence when the backend sent an unrelated code with it', () => {
     expect(toDataError({ message: 'nope', code: 'PGRST100' }, { status: 404 }).kind).toBe(
       'notFound',
@@ -194,6 +203,15 @@ describe('shapes supabase-js actually produces', () => {
   it('does not treat every errno-carrying failure as offline', () => {
     const err = Object.assign(new Error('write EPIPE'), { code: 'EPIPE' });
     expect(toDataError(err).kind).toBe('unknown');
+  });
+
+  it('calls a connect timeout offline', () => {
+    expect(toDataError({ code: 'ETIMEDOUT' }).kind).toBe('offline');
+  });
+
+  it('calls any statusless, codeless-match failure offline once the browser is offline', () => {
+    setOnLine(false);
+    expect(toDataError({ code: 'SOME_UNRECOGNIZED_CODE', message: 'boom' }).kind).toBe('offline');
   });
 
   it('reads a non-JSON gateway body handed back as a bare message', () => {
@@ -444,11 +462,26 @@ describe('dataErrorFromResponse', () => {
     expect(err.message).toBe('{"message":"gateway t');
   });
 
-  it('leaves the body readable for the caller', async () => {
+  it('consumes the response body directly, since discarding it is the only caller', async () => {
     const res = new Response('{"error":"nope"}', { status: 500 });
     await dataErrorFromResponse(res);
-    expect(res.bodyUsed).toBe(false);
-    await expect(res.json()).resolves.toEqual({ error: 'nope' });
+    expect(res.bodyUsed).toBe(true);
+    await expect(res.json()).rejects.toThrow();
+  });
+
+  it('flushes a trailing multi-byte character split across chunks', async () => {
+    const bytes = new TextEncoder().encode('emoji: 😀');
+    const splitAt = bytes.length - 2; // splits the 4-byte emoji in half
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(bytes.slice(0, splitAt));
+        controller.enqueue(bytes.slice(splitAt));
+        controller.close();
+      },
+    });
+
+    const err = await dataErrorFromResponse(new Response(stream, { status: 500 }));
+    expect(err.message).toBe('emoji: 😀');
   });
 
   it('stops pulling a runaway body instead of buffering megabytes of proxy HTML', async () => {
@@ -471,7 +504,8 @@ describe('dataErrorFromResponse', () => {
   it('falls back to text() for a Response whose body is not a stream', async () => {
     const bodyless = {
       status: 500,
-      clone: () => ({ body: null, text: () => Promise.resolve('{"error":"nope"}') }),
+      body: null,
+      text: () => Promise.resolve('{"error":"nope"}'),
     };
     const err = await dataErrorFromResponse(bodyless as unknown as Response);
     expect(err.kind).toBe('upstream');
@@ -485,7 +519,6 @@ describe('dataErrorFromResponse', () => {
 
     const unreadable = {
       status: 503,
-      clone: () => unreadable,
       text: () => Promise.reject(new Error('already consumed')),
     };
     const err = await dataErrorFromResponse(unreadable as unknown as Response);

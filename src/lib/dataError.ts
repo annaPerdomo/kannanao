@@ -41,6 +41,8 @@ const OFFLINE_CODES = new Set([
   'EAI_AGAIN',
   'ENETUNREACH',
   'EHOSTUNREACH',
+  'ETIMEDOUT',
+  'UND_ERR_CONNECT_TIMEOUT',
 ]);
 
 // A rejected fetch never reaches us as a TypeError: postgrest-js flattens it to
@@ -56,6 +58,17 @@ const NO_ROWS_CODE = 'PGRST116';
 // A reachable PostgREST answers 404 PGRST205 for a table and PGRST202 for a
 // function when its schema cache is stale. The server is up: not an absence.
 const SCHEMA_CACHE_CODES = new Set(['PGRST202', 'PGRST205']);
+
+// PostgREST with a dead/unreachable database: the server answered, Postgres didn't.
+const DB_DOWN_CODES = new Set([
+  'PGRST000',
+  'PGRST001',
+  'PGRST002',
+  '57P03',
+  '53300',
+  '08001',
+  '08006',
+]);
 
 const AUTH_STATUSES = new Set([401, 403]);
 
@@ -115,9 +128,8 @@ export async function dataErrorFromResponse(res: Response): Promise<DataError> {
 // `.text().slice()` first buffers a dead gateway's megabytes of proxy HTML.
 async function readCappedBody(res: Response): Promise<string> {
   try {
-    const clone = res.clone();
-    const stream = clone.body;
-    if (!stream) return (await clone.text()).slice(0, MAX_BODY_CHARS);
+    const stream = res.body;
+    if (!stream) return (await res.text()).slice(0, MAX_BODY_CHARS);
 
     const reader = stream.getReader();
     const decoder = new TextDecoder();
@@ -129,10 +141,9 @@ async function readCappedBody(res: Response): Promise<string> {
         text += decoder.decode(value, { stream: true });
       }
     } finally {
-      // Not awaited: a tee's cancel settles only once BOTH branches cancel, and
-      // the caller still holds the other one.
       void reader.cancel().catch(() => undefined);
     }
+    text += decoder.decode();
     return text.slice(0, MAX_BODY_CHARS);
   } catch {
     return '';
@@ -153,6 +164,7 @@ function classify(signals: Signals): DataErrorKind {
 
   if (code === NO_ROWS_CODE) return 'notFound';
   if (code !== undefined && SCHEMA_CACHE_CODES.has(code)) return 'upstream';
+  if (code !== undefined && DB_DOWN_CODES.has(code)) return 'upstream';
 
   if (isAborted(signals)) return 'upstream';
 
@@ -164,7 +176,7 @@ function classify(signals: Signals): DataErrorKind {
   }
 
   if (code !== undefined && OFFLINE_CODES.has(code)) return 'offline';
-  if (code === undefined && isOffline(err, text)) return 'offline';
+  if (isOffline(err, text)) return 'offline';
 
   return 'unknown';
 }
