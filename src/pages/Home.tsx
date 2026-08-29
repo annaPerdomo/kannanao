@@ -322,8 +322,19 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
     homeSections.speeches,
     initialData?.ohanashikais ?? undefined,
   );
-  const { assignments } = useAssignments(undefined, homeSections.assignments, 'mine');
-  const { groups, loading: groupsLoading, createGroup, pinGroup } = useGroups(homeSections.groups);
+  const {
+    assignments,
+    error: assignmentsError,
+    refetch: refetchAssignments,
+  } = useAssignments(undefined, homeSections.assignments, 'mine');
+  const {
+    groups,
+    loading: groupsLoading,
+    error: groupsError,
+    refetch: refetchGroups,
+    createGroup,
+    pinGroup,
+  } = useGroups(homeSections.groups);
   // One board per group: an account can be in several, and pooling them would
   // rank classmates who never meet against each other. Gated on `isInGroup`
   // because the preference defaults to on for everyone while getSectionsForRole
@@ -504,6 +515,9 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
         );
 
       case 'groups':
+        if (groupsError && groups.length === 0) {
+          return <DataErrorState error={groupsError} onRetry={() => void refetchGroups()} dense />;
+        }
         // Without a loading state, the first paint is the empty state — "create
         // a group" shown to someone who already has four, until the fetch lands.
         if (groupsLoading && groups.length === 0) {
@@ -581,6 +595,15 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
         );
 
       case 'assignments':
+        if (assignmentsError && assignments.length === 0) {
+          return (
+            <DataErrorState
+              error={assignmentsError}
+              onRetry={() => void refetchAssignments()}
+              dense
+            />
+          );
+        }
         return (
           <>
             {pendingAssignments.length > 0 ? (

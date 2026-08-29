@@ -24,6 +24,7 @@ export function useCards(deckId: string, onCountChange?: (count: number) => void
   useEffect(() => {
     let cancelled = false;
     setError(null);
+    setLoading(true);
 
     const fetchCards = async () => {
       try {

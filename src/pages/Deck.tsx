@@ -62,6 +62,8 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const {
     decks,
     loading: decksLoading,
+    error: decksError,
+    retry: retryDecks,
     updateDeckCount,
     renameDeck,
     pinDeck,
@@ -182,6 +184,17 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: { xs: 1.5, sm: 2, lg: 3 }, py: 4 }}
       >
         <Loading message={t('loadingCards')} />
+      </Box>
+    );
+  }
+
+  if (!deck && decksError) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
+          {tCommon('back')}
+        </Button>
+        <DataErrorState error={decksError} onRetry={retryDecks} />
       </Box>
     );
   }

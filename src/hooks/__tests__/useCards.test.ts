@@ -495,5 +495,24 @@ describe('useCards', () => {
       await waitFor(() => expect(result.current.cards).toHaveLength(1));
       expect(result.current.error).toBeNull();
     });
+
+    it('goes back into loading immediately on retry, instead of flashing the empty state', async () => {
+      mockLoadCards.mockRejectedValueOnce(new DataError('upstream', 'gateway down'));
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.error).not.toBeNull());
+
+      let resolveRetry!: (cards: ReturnType<typeof makeCard>[]) => void;
+      mockLoadCards.mockReturnValue(
+        new Promise<ReturnType<typeof makeCard>[]>((resolve) => {
+          resolveRetry = resolve;
+        }),
+      );
+
+      act(() => result.current.retry());
+      expect(result.current.loading).toBe(true);
+
+      resolveRetry([makeCard('card-1')]);
+      await waitFor(() => expect(result.current.loading).toBe(false));
+    });
   });
 });
