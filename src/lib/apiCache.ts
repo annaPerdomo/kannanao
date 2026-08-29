@@ -40,6 +40,7 @@ export interface ApiCacheMeta {
 
 const cache = new Map<string, Entry>();
 const inFlight = new Map<string, Promise<unknown>>();
+const generations = new Map<string, number>();
 
 function liveEntry(key: string): Entry | undefined {
   const entry = cache.get(key);
@@ -79,12 +80,15 @@ export async function fetchJsonCached<T>(
   const pending = inFlight.get(url);
   if (pending) return pending as Promise<T>;
 
+  const startGen = generations.get(url) ?? 0;
   const promise = (async () => {
     try {
       const res = await fetch(url, { headers: await getHeaders() });
       if (!res.ok) throw await dataErrorFromResponse(res);
       const data = (await res.json()) as T;
-      cache.set(url, { data, fetchedAt: Date.now(), failures: 0 });
+      if ((generations.get(url) ?? 0) === startGen) {
+        cache.set(url, { data, fetchedAt: Date.now(), failures: 0 });
+      }
       return data;
     } catch (err) {
       const error = toDataError(err);
@@ -104,8 +108,12 @@ export async function fetchJsonCached<T>(
 
 /** Drop every cached entry whose key starts with `prefix` (e.g. after a mutation). */
 export function invalidateApiCache(prefix: string): void {
-  for (const key of cache.keys()) {
-    if (key.startsWith(prefix)) cache.delete(key);
+  const keys = new Set([...cache.keys(), ...inFlight.keys()]);
+  for (const key of keys) {
+    if (!key.startsWith(prefix)) continue;
+    generations.set(key, (generations.get(key) ?? 0) + 1);
+    cache.delete(key);
+    inFlight.delete(key);
   }
 }
 
@@ -113,4 +121,5 @@ export function invalidateApiCache(prefix: string): void {
 export function _resetApiCache(): void {
   cache.clear();
   inFlight.clear();
+  generations.clear();
 }

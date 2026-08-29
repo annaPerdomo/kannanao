@@ -190,6 +190,46 @@ describe('apiCache', () => {
     expect(isDataError(err) && err.kind).toBe('upstream');
   });
 
+  describe('invalidation racing an in-flight fetch', () => {
+    it('does not let a pre-invalidation fetch repopulate the cache once it resolves', async () => {
+      let resolveFetch!: (value: unknown) => void;
+      mockFetch.mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        }),
+      );
+
+      const pending = fetchJsonCached('/api/group/invite', HEADERS);
+      invalidateApiCache('/api/group/invite');
+      resolveFetch(okResponse('pre-mutation'));
+
+      expect(await pending).toBe('pre-mutation');
+      expect(peekApiCache('/api/group/invite')).toBeUndefined();
+    });
+
+    it('starts a fresh fetch for a call issued after the invalidation, not the doomed in-flight promise', async () => {
+      let resolveFirst!: (value: unknown) => void;
+      mockFetch.mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveFirst = resolve;
+        }),
+      );
+
+      const first = fetchJsonCached('/api/group/invite', HEADERS);
+      invalidateApiCache('/api/group/invite');
+
+      mockFetch.mockResolvedValueOnce(okResponse('post-mutation'));
+      const second = fetchJsonCached('/api/group/invite', HEADERS);
+
+      resolveFirst(okResponse('pre-mutation'));
+
+      expect(await first).toBe('pre-mutation');
+      expect(await second).toBe('post-mutation');
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(peekApiCache('/api/group/invite')).toBe('post-mutation');
+    });
+  });
+
   describe('MAX_AGE_MS', () => {
     beforeEach(() => {
       vi.useFakeTimers({ toFake: ['Date'] });
