@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import type { GroupMember } from '@/hooks/useGroup';
 import type { LeaderboardEntry } from '@/hooks/useGroupLeaderboard';
+import type { DataError } from '@/lib/dataError';
 
 import { GroupEncouragementForm } from '../GroupEncouragementForm';
 import { LeaderboardPanel } from '../LeaderboardPanel';
@@ -16,6 +17,7 @@ interface LearnersTabProps {
   members: GroupMember[];
   leaderboard: LeaderboardEntry[];
   leaderboardLoading: boolean;
+  leaderboardError?: DataError | null;
   leaderboardVisible: boolean;
   onLeaderboardVisibilityChange: (visible: boolean) => void;
   onSelectMember: (id: string) => void;
@@ -26,6 +28,7 @@ export function LearnersTab({
   members,
   leaderboard,
   leaderboardLoading,
+  leaderboardError,
   leaderboardVisible,
   onLeaderboardVisibilityChange,
   onSelectMember,
@@ -46,6 +49,7 @@ export function LearnersTab({
       <LeaderboardPanel
         entries={leaderboard}
         loading={leaderboardLoading}
+        error={leaderboardError}
         visible={leaderboardVisible}
         onVisibilityChange={onLeaderboardVisibilityChange}
       />

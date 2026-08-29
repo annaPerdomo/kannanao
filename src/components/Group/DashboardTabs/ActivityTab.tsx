@@ -3,9 +3,11 @@ import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import { useTranslations } from 'next-intl';
 
+import { DataErrorState } from '@/components/DataErrorState';
 import { Loading } from '@/components/Loading';
 import type { FeedItem } from '@/hooks/useGroup';
 import type { GroupActivity } from '@/hooks/useGroupActivity';
+import type { DataError } from '@/lib/dataError';
 
 import { ActivityFeed } from '../ActivityFeed';
 import { GroupModeBreakdown } from '../GroupCharts';
@@ -14,6 +16,7 @@ import { SectionCard } from '../SectionCard';
 interface ActivityTabProps {
   feed: FeedItem[];
   feedLoading: boolean;
+  feedError?: DataError | null;
   activity: GroupActivity | null;
   activityLoading: boolean;
   activityError: string | null;
@@ -22,6 +25,7 @@ interface ActivityTabProps {
 export function ActivityTab({
   feed,
   feedLoading,
+  feedError,
   activity,
   activityLoading,
   activityError,
@@ -32,7 +36,13 @@ export function ActivityTab({
   return (
     <Stack spacing={2.5}>
       <SectionCard title={t('recentActivityHeading')}>
-        {feedLoading ? <Loading message={t('loadingActivity')} /> : <ActivityFeed items={feed} />}
+        {feedError && feed.length === 0 ? (
+          <DataErrorState error={feedError} dense />
+        ) : feedLoading ? (
+          <Loading message={t('loadingActivity')} />
+        ) : (
+          <ActivityFeed items={feed} />
+        )}
       </SectionCard>
 
       <SectionCard title={tc('modeHeading')}>

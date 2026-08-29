@@ -354,40 +354,29 @@ export function useShowCards() {
         Pick<ShowCard, 'english' | 'japanese' | 'romaji' | 'situation' | 'icon' | 'category'>
       >,
     ) => {
+      const original = cards.find((c) => c.id === id);
       // Optimistic update
       setCards((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
       try {
         await dbUpdateShowCard(id, patch);
       } catch {
-        // loadShowCards throws now, so an unguarded rollback reload escapes
-        // this catch as an unhandled rejection.
-        try {
-          const saved = await loadShowCards();
-          setCards([...saved, ...DEFAULT_SHOW_CARDS]);
-        } catch {
-          setError(t('failedSaveCard'));
-        }
+        if (original) setCards((prev) => prev.map((c) => (c.id === id ? original : c)));
       }
     },
-    [t],
+    [cards],
   );
 
   const deleteCard = useCallback(
     async (id: string) => {
-      setCards((prev) => prev.filter((c) => c.id !== id));
+      const prev = cards;
+      setCards((current) => current.filter((c) => c.id !== id));
       try {
         await dbDeleteShowCard(id);
       } catch {
-        // Guarded for the same reason as updateCard's rollback.
-        try {
-          const saved = await loadShowCards();
-          setCards([...saved, ...DEFAULT_SHOW_CARDS]);
-        } catch {
-          setError(t('failedSaveCard'));
-        }
+        setCards(prev);
       }
     },
-    [t],
+    [cards],
   );
 
   const filterByCategory = useCallback(

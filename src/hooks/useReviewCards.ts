@@ -67,7 +67,7 @@ export function useReviewCards(): {
     return () => {
       cancelled = true;
     };
-  }, [user, t, reloadKey]);
+  }, [user, reloadKey]);
 
   const retry = useCallback(() => setReloadKey((n) => n + 1), []);
 

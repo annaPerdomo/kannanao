@@ -50,8 +50,8 @@ export default function GroupDashboardPage() {
   const { isMemberAccount, displayName, user, loading: authLoading } = useAuth();
 
   const { members, loading, error, errorMessage, stale } = useGroupMembers(groupId);
-  const { leaderboard, loading: lbLoading } = useGroupLeaderboard(groupId);
-  const { feed, loading: feedLoading } = useGroupFeed(groupId);
+  const { leaderboard, loading: lbLoading, error: leaderboardError } = useGroupLeaderboard(groupId);
+  const { feed, loading: feedLoading, error: feedError } = useGroupFeed(groupId);
   const {
     activity,
     loading: activityLoading,
@@ -237,6 +237,7 @@ export default function GroupDashboardPage() {
           members={members}
           leaderboard={leaderboard}
           leaderboardLoading={lbLoading}
+          leaderboardError={leaderboardError}
           leaderboardVisible={leaderboardVisible}
           onLeaderboardVisibilityChange={handleLeaderboardVisibilityChange}
           onSelectMember={(id) => router.push(`/group/${groupId}/members/${id}`)}
@@ -263,6 +264,7 @@ export default function GroupDashboardPage() {
         <ActivityTab
           feed={feed}
           feedLoading={feedLoading}
+          feedError={feedError}
           activity={activity}
           activityLoading={activityLoading}
           activityError={activityError}

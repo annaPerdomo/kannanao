@@ -276,7 +276,6 @@ export function useGroupFeed(groupId?: string | null) {
           setError(null);
         }
       } catch (err) {
-        // Reported, not rendered: the feed is a side panel, not the page.
         if (!cancelled) setError(toDataError(err));
       } finally {
         if (!cancelled) {

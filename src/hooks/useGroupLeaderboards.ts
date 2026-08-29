@@ -56,8 +56,6 @@ export function useGroupLeaderboards(enabled = true) {
         setBoards(data);
         setError(null);
       } catch (err) {
-        // Returned but not rendered: the dashboard shows "check back" rather
-        // than an error box for a board that failed to load.
         if (!cancelled) setError(toDataError(err));
       } finally {
         if (!cancelled) {
