@@ -102,6 +102,7 @@ function setEntry<T>(map: Map<string, Entry<T>>, key: string, value: T): void {
 
 /** Verify a Supabase access token, deduplicating concurrent and repeat checks. */
 export async function getUserFromTokenResult(token: string): Promise<AuthLookup<User>> {
+  if (!token) return ABSENT;
   const key = tokenKey(token);
   const cached = getFresh(userByToken, key);
   if (cached) return { value: cached, error: null };

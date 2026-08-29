@@ -4,7 +4,8 @@ import { availableNowFilter } from '@/lib/assignmentAvailability';
 import { evaluateMastery } from '@/lib/assignmentMastery';
 import { logger } from '@/lib/logger';
 
-import { getUserFromToken } from '../../../_lib/authCache';
+import { getUserFromTokenResult } from '../../../_lib/authCache';
+import { backendUnavailable } from '../../../_lib/backendUnavailable';
 import { rateLimit } from '../../../_lib/rateLimit';
 import { getServiceSupabase } from '../../_lib/serviceSupabase';
 
@@ -42,7 +43,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
   }
 
-  const user = await getUserFromToken(authHeader.slice(7));
+  const auth = await getUserFromTokenResult(authHeader.slice(7));
+  if (auth.error) return backendUnavailable(auth.error, 'group/assignments-complete.user');
+  const user = auth.value;
 
   if (!user) {
     return NextResponse.json({ error: 'Invalid or expired token.' }, { status: 401 });

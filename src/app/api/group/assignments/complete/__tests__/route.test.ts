@@ -2,15 +2,18 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
+import { DataError } from '@/lib/dataError';
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 
-const { getUserFromTokenMock } = vi.hoisted(() => ({
+const { getUserFromTokenMock, getUserFromTokenResultMock } = vi.hoisted(() => ({
   getUserFromTokenMock: vi.fn(),
+  getUserFromTokenResultMock: vi.fn(),
 }));
 
 vi.mock('@/app/api/_lib/authCache', () => ({
   getUserFromToken: (...args: unknown[]) => getUserFromTokenMock(...args),
+  getUserFromTokenResult: (...args: unknown[]) => getUserFromTokenResultMock(...args),
   _resetAuthCache: vi.fn(),
 }));
 
@@ -101,6 +104,10 @@ describe('POST /api/group/assignments/complete', () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://localhost:54321';
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
     getUserFromTokenMock.mockResolvedValue(USER);
+    getUserFromTokenResultMock.mockImplementation(async (...args: unknown[]) => ({
+      value: await getUserFromTokenMock(...args),
+      error: null,
+    }));
   });
 
   it('returns 401 without an auth header', async () => {
@@ -240,5 +247,14 @@ describe('POST /api/group/assignments/complete', () => {
     setTable('assignments', null, { message: 'boom' });
     const res = await POST(makeRequest({ deckId: 'deck-1' }));
     expect(res.status).toBe(500);
+  });
+
+  it('returns 503 when the auth service itself is unreachable', async () => {
+    getUserFromTokenResultMock.mockResolvedValue({
+      value: null,
+      error: new DataError('upstream', 'gateway down'),
+    });
+    const res = await POST(makeRequest({ deckId: 'deck-1' }));
+    expect(res.status).toBe(503);
   });
 });

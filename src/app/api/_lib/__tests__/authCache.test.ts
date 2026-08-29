@@ -83,6 +83,11 @@ describe('authCache', () => {
       expect(await getUserFromToken('token-1')).toBeNull();
       expect(mockGetUser).not.toHaveBeenCalled();
     });
+
+    it('treats an empty token as absent rather than asking Supabase', async () => {
+      expect(await getUserFromTokenResult('')).toEqual({ value: null, error: null });
+      expect(mockGetUser).not.toHaveBeenCalled();
+    });
   });
 
   describe('getProfileForUser', () => {

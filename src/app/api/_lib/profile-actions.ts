@@ -2,7 +2,8 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 import { addMembership } from '../group/_lib/membership';
-import { getUserFromToken } from './authCache';
+import { getUserFromTokenResult } from './authCache';
+import { backendUnavailable } from './backendUnavailable';
 
 export const FAKE_DOMAIN = 'kannanao.local';
 
@@ -47,7 +48,9 @@ export async function authenticateUser(req: Request): Promise<AuthSuccess | Auth
   }
 
   const token = authHeader.slice(7);
-  const user = await getUserFromToken(token);
+  const auth = await getUserFromTokenResult(token);
+  if (auth.error) return { error: backendUnavailable(auth.error, 'profile-actions.user') };
+  const user = auth.value;
 
   if (!user) {
     return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) };
