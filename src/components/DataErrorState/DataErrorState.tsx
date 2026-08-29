@@ -16,15 +16,12 @@ interface DataErrorStateProps {
 const COPY: Record<DataErrorKind, { icon: string; title: string; body: string }> = {
   offline: { icon: '📡', title: 'offlineTitle', body: 'offlineBody' },
   upstream: { icon: '🛠️', title: 'upstreamTitle', body: 'upstreamBody' },
-  auth: { icon: '🔑', title: 'genericTitle', body: 'genericBody' },
+  auth: { icon: '🔑', title: 'authTitle', body: 'authBody' },
   notFound: { icon: '🔍', title: 'genericTitle', body: 'genericBody' },
   unknown: { icon: '🌧️', title: 'genericTitle', body: 'genericBody' },
 };
 
-/**
- * Must stay visibly distinct from the you-have-nothing-yet empty state: during
- * the 2026-08-26 outage a learner read an empty library as lost work.
- */
+/** Must stay visibly distinct from the you-have-nothing-yet empty state. */
 export function DataErrorState({ error, onRetry, dense = false }: DataErrorStateProps) {
   const theme = useTheme();
   const t = useTranslations('Common.dataError');
@@ -71,7 +68,7 @@ export function DataErrorState({ error, onRetry, dense = false }: DataErrorState
         {t(copy.body)}
       </Typography>
 
-      {onRetry && (
+      {onRetry && error.kind !== 'auth' && (
         <Button
           variant="contained"
           size={dense ? 'small' : 'medium'}

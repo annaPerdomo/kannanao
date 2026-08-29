@@ -21,9 +21,20 @@ describe('DataErrorState', () => {
     expect(screen.getByText('Our side is having a problem')).toBeInTheDocument();
   });
 
-  it.each(['auth', 'notFound', 'unknown'] as const)('falls back to generic copy for %s', (kind) => {
+  it.each(['notFound', 'unknown'] as const)('falls back to generic copy for %s', (kind) => {
     renderWithProviders(<DataErrorState error={new DataError(kind, 'x')} />);
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+  });
+
+  it('tells a learner with an expired session to sign in again', () => {
+    renderWithProviders(<DataErrorState error={new DataError('auth', 'x')} />);
+    expect(screen.getByText('Please sign in again')).toBeInTheDocument();
+  });
+
+  it('never offers a retry for an expired session, even when the caller can retry', () => {
+    const onRetry = vi.fn();
+    renderWithProviders(<DataErrorState error={new DataError('auth', 'x')} onRetry={onRetry} />);
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('reassures the learner their words are safe', () => {

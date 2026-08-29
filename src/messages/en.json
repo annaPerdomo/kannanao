@@ -18,6 +18,8 @@
       "upstreamBody": "Your words are safe. We're working on it — try again in a minute.",
       "genericTitle": "Something went wrong",
       "genericBody": "Your words are safe. Try again in a minute.",
+      "authTitle": "Please sign in again",
+      "authBody": "Your words are safe — your session just ended. Sign in again to keep going.",
       "staleHint": "Showing what we saved earlier",
       "tryAgain": "Try again"
     },
