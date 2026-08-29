@@ -16,7 +16,14 @@ import { buildLessonPlan } from '@/services/api';
 import type { PlanDeck } from '@/types/lessonPlan';
 
 import { AskStep } from './AskStep';
-import { DEFAULT_CARDS_PER_DECK, DEFAULT_WEEKS, type LessonSetForm, nextSunday } from './constants';
+import {
+  DEFAULT_CARDS_PER_DECK,
+  DEFAULT_WEEKS,
+  effectiveStyleNotes,
+  type LessonSetForm,
+  nextSunday,
+} from './constants';
+import { PrintButtons } from './PrintButtons';
 import { ReviewStep } from './ReviewStep';
 
 interface LessonSetBuilderProps {
@@ -30,6 +37,7 @@ const EMPTY_FORM: LessonSetForm = {
   weeks: DEFAULT_WEEKS,
   cardsPerDeck: DEFAULT_CARDS_PER_DECK,
   level: DEFAULT_LEVEL,
+  audience: 'any',
   styleNotes: '',
   documents: [],
   withSentences: true,
@@ -80,7 +88,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
           cardsPerDeck: deck.cards?.length || form.cardsPerDeck,
           documents: form.documents.map((d) => ({ base64: d.base64, mimeType: d.mimeType })),
           level: form.level,
-          styleNotes: form.styleNotes.trim() || undefined,
+          styleNotes: effectiveStyleNotes(form),
         });
         const replacement = data.plan.decks[0];
         if (replacement) {
@@ -123,10 +131,11 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
               {t('deckFailed', { name: r.name, reason: r.error ?? '' })}
             </Alert>
           ))}
-          <Box>
+          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
             <Button variant="contained" onClick={() => router.push(`/group/${groupId}`)}>
               {t('backToGroupButton')}
             </Button>
+            {plan && <PrintButtons plan={plan} />}
           </Box>
         </Stack>
       )}
@@ -148,7 +157,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
               cardsPerDeck: form.cardsPerDeck,
               documents: form.documents,
               level: form.level,
-              styleNotes: form.styleNotes.trim() || undefined,
+              styleNotes: effectiveStyleNotes(form),
             })
           }
         />
@@ -160,6 +169,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
           dueDate={dueDate}
           accuracy={accuracy}
           mode={mode}
+          targetLevel={form.level}
           applying={applying}
           retryingIndex={retryingIndex}
           onDeckChange={handleDeckChange}
@@ -175,7 +185,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
               requiredMode: mode,
               withSentences: form.withSentences,
               level: form.level,
-              styleNotes: form.styleNotes.trim() || undefined,
+              styleNotes: effectiveStyleNotes(form),
             })
           }
           onStartOver={reset}

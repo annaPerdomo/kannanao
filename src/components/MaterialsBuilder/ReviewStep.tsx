@@ -11,16 +11,20 @@ import { useMemo } from 'react';
 
 import { AssignmentGoalPicker } from '@/components/Group/AssignmentGoalPicker';
 import type { GoalMode } from '@/lib/assignmentMastery';
+import { addDaysToDate, planCounts, weekNumbers } from '@/lib/lessonPlanEdits';
+import type { JlptLevel } from '@/lib/lessonPrompts';
 import { planReuse } from '@/lib/lessonReuse';
 import type { LessonPlan, PlanDeck } from '@/types/lessonPlan';
 
 import { PlanDeckCard } from './PlanDeckCard';
+import { PrintButtons } from './PrintButtons';
 
 interface ReviewStepProps {
   plan: LessonPlan;
   dueDate: string;
   accuracy: number | null;
   mode: GoalMode | null;
+  targetLevel: JlptLevel;
   applying: boolean;
   retryingIndex: number | null;
   onDeckChange: (index: number, deck: PlanDeck) => void;
@@ -37,6 +41,7 @@ export function ReviewStep({
   dueDate,
   accuracy,
   mode,
+  targetLevel,
   applying,
   retryingIndex,
   onDeckChange,
@@ -53,27 +58,37 @@ export function ReviewStep({
 
   // No outside vocabulary: reuse is measured within the plan, week 2 against week 1.
   const reuse = useMemo(() => planReuse(plan.decks, []), [plan.decks]);
-
-  const cardTotal = plan.decks.reduce((sum, d) => sum + (d.cards?.length ?? 0), 0);
+  const counts = useMemo(() => planCounts(plan), [plan]);
+  const numbers = useMemo(() => weekNumbers(plan.decks), [plan.decks]);
 
   return (
     <Stack spacing={2.5}>
-      <Typography component="h2" sx={{ fontWeight: 800, color: 'text.primary' }}>
-        {t('reviewHeading', { decks: plan.decks.length, cards: cardTotal })}
-      </Typography>
+      <Box>
+        <Typography component="h2" sx={{ fontWeight: 800, color: 'text.primary' }}>
+          {t('reviewHeading', { decks: counts.decks, cards: counts.cards })}
+        </Typography>
+        <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', mt: 0.5 }}>
+          {t('reviewSubtitle')}
+        </Typography>
+      </Box>
 
-      {plan.decks.map((deck, i) => (
-        <PlanDeckCard
-          // Keyed by index: the deck name is editable (see PlanDeckCard).
-          key={i}
-          deck={deck}
-          weekNumber={i + 1}
-          reuse={reuse[i]}
-          retrying={retryingIndex === i}
-          onDeckChange={(next) => onDeckChange(i, next)}
-          onRetry={() => onRetryDeck(i)}
-        />
-      ))}
+      {plan.decks.map((deck, i) => {
+        const week = numbers[i];
+        return (
+          <PlanDeckCard
+            // Keyed by index: the deck name is editable (see PlanDeckCard).
+            key={i}
+            deck={deck}
+            weekNumber={week}
+            dueDate={week !== null ? addDaysToDate(dueDate, (week - 1) * 7) : null}
+            reuse={reuse[i]}
+            targetLevel={targetLevel}
+            retrying={retryingIndex === i}
+            onDeckChange={(next) => onDeckChange(i, next)}
+            onRetry={() => onRetryDeck(i)}
+          />
+        );
+      })}
 
       <Paper
         elevation={0}
@@ -109,15 +124,16 @@ export function ReviewStep({
             {t('groupWideNotice')}
           </Typography>
 
-          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
             <Button
               variant="contained"
               size="large"
               onClick={onApply}
-              disabled={applying || plan.decks.length === 0}
+              disabled={applying || counts.decks === 0}
             >
               {applying ? t('applying') : t('applyButton')}
             </Button>
+            <PrintButtons plan={plan} disabled={applying || counts.decks === 0} />
             <Button onClick={onStartOver} disabled={applying} sx={{ textTransform: 'none' }}>
               {t('startOverButton')}
             </Button>

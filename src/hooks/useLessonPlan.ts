@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { invalidateApiCache } from '@/lib/apiCache';
+import { includedPlan } from '@/lib/lessonPlanEdits';
 import { applyLessonPlan, buildLessonPlan } from '@/services/api';
 import type { ApplyDeckResult, LessonDocument, LessonPlan } from '@/types/lessonPlan';
 
@@ -67,10 +68,12 @@ export function useLessonPlan() {
   const apply = useCallback(
     async (args: ApplyPlanArgs) => {
       if (!plan) return;
+      const kept = includedPlan(plan);
+      if (kept.decks.length === 0) return;
       setApplying(true);
       setError(null);
       try {
-        const data = await applyLessonPlan({ ...args, plan, planId: planId ?? undefined });
+        const data = await applyLessonPlan({ ...args, plan: kept, planId: planId ?? undefined });
         setResults(data.results ?? []);
         invalidateApiCache('/api/group/');
       } catch (err) {

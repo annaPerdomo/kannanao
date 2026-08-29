@@ -1,0 +1,129 @@
+'use client';
+import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
+import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
+import { alpha, useTheme } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { useTranslations } from 'next-intl';
+
+import { isJlptLevel, JLPT_LEVELS, type JlptLevel } from '@/lib/lessonPrompts';
+import type { PlanCard } from '@/types/lessonPlan';
+
+interface PlanCardRowProps {
+  card: PlanCard;
+  index: number;
+  reuseWords: string[];
+  targetLevel: JlptLevel;
+  onChange: (patch: Partial<PlanCard>) => void;
+}
+
+export function PlanCardRow({ card, index, reuseWords, targetLevel, onChange }: PlanCardRowProps) {
+  const t = useTranslations('Group.lessonBuilder');
+  const theme = useTheme();
+  const { brand } = theme.palette;
+
+  const included = !card.excluded;
+  const cardLevel = isJlptLevel(card.jlptLevel) ? card.jlptLevel : null;
+  const aboveLevel =
+    cardLevel !== null && JLPT_LEVELS.indexOf(cardLevel) > JLPT_LEVELS.indexOf(targetLevel);
+
+  return (
+    <Box
+      sx={{
+        p: 1.5,
+        borderRadius: theme.radii.md,
+        bgcolor: included ? alpha(brand[100], 0.35) : 'transparent',
+        border: included ? 'none' : `1px dashed ${alpha(brand[300], 0.6)}`,
+        opacity: included ? 1 : 0.55,
+      }}
+    >
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
+        <Checkbox
+          checked={included}
+          onChange={(e) => onChange({ excluded: !e.target.checked })}
+          slotProps={{
+            input: {
+              'aria-label': t('includeCardLabel', { word: card.word.trim() || `#${index + 1}` }),
+            },
+          }}
+          sx={{ p: 0.5, mt: 0.5 }}
+        />
+        <Box sx={{ flex: 1 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start', mb: 1 }}>
+            <TextField
+              value={card.word}
+              onChange={(e) => onChange({ word: e.target.value })}
+              size="small"
+              label={t('wordLabel')}
+              disabled={!included}
+              sx={{ flex: 1 }}
+            />
+            <TextField
+              value={card.reading}
+              onChange={(e) => onChange({ reading: e.target.value })}
+              size="small"
+              label={t('readingLabel')}
+              disabled={!included}
+              sx={{ flex: 1 }}
+            />
+            <TextField
+              value={card.meaning}
+              onChange={(e) => onChange({ meaning: e.target.value })}
+              size="small"
+              label={t('meaningLabel')}
+              disabled={!included}
+              sx={{ flex: 1.4 }}
+            />
+          </Stack>
+
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+            <TextField
+              value={card.exampleJp}
+              onChange={(e) => onChange({ exampleJp: e.target.value })}
+              size="small"
+              label={t('exampleJpLabel')}
+              disabled={!included}
+              fullWidth
+            />
+            <TextField
+              value={card.exampleEn}
+              onChange={(e) => onChange({ exampleEn: e.target.value })}
+              size="small"
+              label={t('exampleEnLabel')}
+              disabled={!included}
+              fullWidth
+            />
+          </Stack>
+
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 1 }}>
+            {!included && (
+              <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', fontWeight: 600 }}>
+                {t('cardSkippedNote')}
+              </Typography>
+            )}
+            {included && aboveLevel && (
+              <Chip
+                size="small"
+                label={t('aboveLevelChip', { level: cardLevel ?? '', target: targetLevel })}
+                sx={{
+                  bgcolor: alpha(theme.palette.warning.light, 0.35),
+                  color: 'text.primary',
+                  fontWeight: 600,
+                }}
+              />
+            )}
+            {included && reuseWords.length > 0 && (
+              <Chip
+                size="small"
+                label={t('buildsOnLabel', { words: reuseWords.join('、') })}
+                sx={{ bgcolor: alpha(brand[200], 0.5), color: 'text.primary', fontWeight: 600 }}
+              />
+            )}
+          </Stack>
+        </Box>
+      </Stack>
+    </Box>
+  );
+}

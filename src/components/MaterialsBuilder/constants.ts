@@ -1,4 +1,4 @@
-import type { JlptLevel } from '@/lib/lessonPrompts';
+import { type JlptLevel, STYLE_NOTES_MAX } from '@/lib/lessonPrompts';
 import type { LessonDocument } from '@/types/lessonPlan';
 
 export const WEEK_CHOICES = [1, 2, 3, 4, 5, 6, 7, 8] as const;
@@ -17,11 +17,34 @@ export const DOCUMENT_MAX_TOTAL_BYTES = 20 * 1024 * 1024;
 /** Goal ideas shown as chips above the goal field — keys under `Materials.suggestions`. */
 export const GOAL_SUGGESTION_KEYS = ['dailyLife', 'travel', 'foodCulture', 'seasons'] as const;
 
+export const AUDIENCE_CHOICES = ['any', 'kids', 'teens', 'adults'] as const;
+export type AudienceKey = (typeof AUDIENCE_CHOICES)[number];
+
+/** Prompts are written in English regardless of UI locale, so these are too. */
+const AUDIENCE_NOTES: Record<AudienceKey, string | undefined> = {
+  any: undefined,
+  kids: 'The learners are young children — keep topics playful and concrete (home, school, animals, food) and keep sentences short.',
+  teens:
+    'The learners are teenagers — school life, friends, club activities and everyday plans make good topics.',
+  adults:
+    'The learners are adults — work, travel, errands and polite everyday conversation make good topics.',
+};
+
+/** The audience pitch and the free-typed notes, folded into one styleNotes string. */
+export function effectiveStyleNotes(form: Pick<LessonSetForm, 'audience' | 'styleNotes'>) {
+  const combined = [AUDIENCE_NOTES[form.audience], form.styleNotes.trim()]
+    .filter(Boolean)
+    .join(' ')
+    .slice(0, STYLE_NOTES_MAX);
+  return combined || undefined;
+}
+
 export interface LessonSetForm {
   goal: string;
   weeks: number;
   cardsPerDeck: number;
   level: JlptLevel;
+  audience: AudienceKey;
   styleNotes: string;
   documents: LessonDocument[];
   withSentences: boolean;

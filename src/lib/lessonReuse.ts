@@ -1,6 +1,7 @@
 import type { PlanDeck } from '@/types/lessonPlan';
 
 import { stripFurigana } from './furigana';
+import { deckIsSkipped, includedCards } from './lessonPlanEdits';
 
 /** Words a sentence leans on, in the order they appear in the pool. */
 export function reusedWords(exampleJp: string, pool: string[]): string[] {
@@ -25,22 +26,28 @@ export interface DeckReuse {
 /**
  * How much of a planned deck builds on what the learner already knows.
  * `pool` is the learner's studied words plus every earlier deck in the plan.
+ * perCard stays index-aligned with every card for display; the counts cover
+ * only cards that will actually be created.
  */
 export function deckReuse(deck: PlanDeck, pool: string[]): DeckReuse {
   const cards = deck.cards ?? [];
   const perCard = cards.map((card) => reusedWords(card.exampleJp, pool));
 
-  return {
-    reused: perCard.filter((words) => words.length > 0).length,
-    total: cards.length,
-    perCard,
-  };
+  let reused = 0;
+  let total = 0;
+  cards.forEach((card, i) => {
+    if (card.excluded) return;
+    total += 1;
+    if (perCard[i].length > 0) reused += 1;
+  });
+
+  return { reused, total, perCard };
 }
 
 /**
  * Reuse for every deck in plan order. Each deck is measured against the
  * learner's known words plus the words of the decks that come before it —
- * which is exactly the pool the generator was given.
+ * only words that will actually be created feed the pool.
  */
 export function planReuse(decks: PlanDeck[], knownWords: string[]): DeckReuse[] {
   const pool = [...knownWords];
@@ -48,7 +55,8 @@ export function planReuse(decks: PlanDeck[], knownWords: string[]): DeckReuse[] 
 
   for (const deck of decks) {
     out.push(deckReuse(deck, pool));
-    pool.push(...(deck.cards ?? []).map((c) => c.word).filter(Boolean));
+    if (deckIsSkipped(deck)) continue;
+    pool.push(...includedCards(deck).map((c) => c.word));
   }
   return out;
 }

@@ -61,6 +61,41 @@ const PLAN = {
   ],
 };
 
+const TWO_WEEK_PLAN = {
+  decks: [
+    {
+      ...PLAN.decks[0],
+      cards: [
+        PLAN.decks[0].cards[0],
+        {
+          word: 'うどん',
+          reading: 'うどん',
+          meaning: 'udon',
+          exampleJp: 'うどんがすきです',
+          exampleEn: 'I like udon',
+          jlptLevel: 'N5',
+        },
+      ],
+    },
+    {
+      name: 'Snacks',
+      description: 'Snack words',
+      emoji: '🍡',
+      mainViewMode: 'hiragana' as const,
+      cards: [
+        {
+          word: 'おかし',
+          reading: 'おかし',
+          meaning: 'sweets',
+          exampleJp: 'おかしをかいます',
+          exampleEn: 'I buy sweets',
+          jlptLevel: 'N5',
+        },
+      ],
+    },
+  ],
+};
+
 function setup() {
   renderWithProviders(<LessonSetBuilder groups={[GROUP]} groupId="g1" onGroupChange={vi.fn()} />);
 }
@@ -76,6 +111,12 @@ async function reachReviewStep() {
   typeGoal();
   fireEvent.click(screen.getByRole('button', { name: /build the plan/i }));
   await screen.findByDisplayValue('Food words');
+}
+
+async function reachTwoWeekReview() {
+  buildLessonPlanMock.mockResolvedValue({ plan: TWO_WEEK_PLAN });
+  await reachReviewStep();
+  await screen.findByDisplayValue('Snacks');
 }
 
 beforeEach(() => {
@@ -197,5 +238,84 @@ describe('LessonSetBuilder', () => {
     expect(payload.memberId).toBeUndefined();
     expect(payload).toMatchObject({ groupId: 'g1', level: 'N5', withSentences: true });
     expect(typeof payload.firstDueDate).toBe('string');
+  });
+
+  it('unticking a card leaves it out of the apply payload and the counts', async () => {
+    await reachTwoWeekReview();
+
+    expect(screen.getByText(/2 decks, 3 cards/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Include うどん' }));
+    expect(screen.getByText(/2 decks, 2 cards/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
+
+    const payload = applyLessonPlanMock.mock.calls[0][0];
+    expect(payload.plan.decks[0].cards.map((c: { word: string }) => c.word)).toEqual(['ラーメン']);
+    expect(payload.plan.decks[0].cards[0].excluded).toBeUndefined();
+  });
+
+  it('switching a week off drops its whole deck from the apply payload', async () => {
+    await reachTwoWeekReview();
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Include Snacks' }));
+    expect(screen.getByText(/1 deck, 2 cards/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
+
+    const payload = applyLessonPlanMock.mock.calls[0][0];
+    expect(payload.plan.decks).toHaveLength(1);
+    expect(payload.plan.decks[0].name).toBe('Food words');
+  });
+
+  it('disables creating when everything is switched off', async () => {
+    await reachTwoWeekReview();
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Include Food words' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Include Snacks' }));
+
+    expect(screen.getByRole('button', { name: /create decks & assign/i })).toBeDisabled();
+  });
+
+  it('a card added in review reaches the payload; one left blank is dropped', async () => {
+    await reachReviewStep();
+
+    fireEvent.click(screen.getByRole('button', { name: /add a card/i }));
+    const wordFields = screen.getAllByLabelText('Word');
+    fireEvent.change(wordFields[wordFields.length - 1], { target: { value: 'たまご' } });
+    fireEvent.click(screen.getByRole('button', { name: /add a card/i }));
+
+    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
+
+    const payload = applyLessonPlanMock.mock.calls[0][0];
+    expect(payload.plan.decks[0].cards.map((c: { word: string }) => c.word)).toEqual([
+      'ラーメン',
+      'たまご',
+    ]);
+  });
+
+  it('folds the chosen audience into the styleNotes sent when building', async () => {
+    setup();
+    typeGoal();
+
+    fireEvent.mouseDown(screen.getByLabelText(/who is it for/i));
+    fireEvent.click(await screen.findByText('Kids'));
+
+    fireEvent.click(screen.getByRole('button', { name: /build the plan/i }));
+    await waitFor(() => expect(buildLessonPlanMock).toHaveBeenCalled());
+
+    expect(buildLessonPlanMock.mock.calls[0][0].styleNotes).toMatch(/young children/);
+  });
+
+  it('opens a print window for the study sheets', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+    await reachReviewStep();
+
+    fireEvent.click(screen.getByRole('button', { name: /print study sheets/i }));
+
+    expect(openSpy).toHaveBeenCalled();
+    openSpy.mockRestore();
   });
 });

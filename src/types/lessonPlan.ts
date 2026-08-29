@@ -5,6 +5,8 @@ export interface PlanCard {
   exampleJp: string;
   exampleEn: string;
   jlptLevel: string | null;
+  /** Review-step tick state; excluded cards are stripped before apply, never sent. */
+  excluded?: boolean;
 }
 
 export interface PlanDeck {
@@ -13,6 +15,8 @@ export interface PlanDeck {
   emoji: string;
   mainViewMode: 'hiragana' | 'kanji' | 'romaji';
   cards: PlanCard[];
+  /** Review-step tick state; excluded decks are stripped before apply, never sent. */
+  excluded?: boolean;
 }
 
 export interface LessonPlan {
