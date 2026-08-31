@@ -1,21 +1,22 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { DOCUMENT_MAX_BYTES } from '@/components/MaterialsBuilder/constants';
 import { normalizeFuriganaDeep } from '@/lib/furigana';
+import { LESSON_DOCUMENTS_BUCKET, ownsLessonDocumentPath } from '@/lib/lessonDocuments';
 import { logger } from '@/lib/logger';
 import type { GeneratedCard } from '@/types/flashcard';
 
 import { rateLimit } from '../_lib/rateLimit';
 import { requireOrganizerAccount } from '../_lib/requireOrganizerAccount';
+import { getServiceSupabase } from '../group/_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 3 };
 
+// The PDF reaches Storage from the browser and this route reads it back, so the
+// request body stays tiny — a base64 PDF used to hit Vercel's ~4.5 MB cap.
 const PdfExtractSchema = z.object({
-  // ~10 MB PDF fits comfortably within 13.3 MB of base64
-  pdfBase64: z
-    .string()
-    .min(1, 'pdfBase64 is required')
-    .max(14_000_000, 'PDF too large — max 10 MB'),
+  path: z.string().min(1, 'path is required'),
 });
 
 function stripPeriods(s: string) {
@@ -56,7 +57,40 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  const { pdfBase64 } = parsed.data;
+  const { path } = parsed.data;
+  // .pdf only: the part below labels the bytes application/pdf whatever they are.
+  if (!ownsLessonDocumentPath(path, orgCheck.id) || !path.endsWith('.pdf')) {
+    return NextResponse.json(
+      { error: 'That PDF could not be found — please upload it again.' },
+      { status: 400 },
+    );
+  }
+
+  let pdfBase64: string;
+  try {
+    const { data: blob, error } = await getServiceSupabase()
+      .storage.from(LESSON_DOCUMENTS_BUCKET)
+      .download(path);
+    if (error || !blob) {
+      return NextResponse.json(
+        { error: 'That PDF has expired — please upload it again.' },
+        { status: 400 },
+      );
+    }
+    if (blob.size > DOCUMENT_MAX_BYTES) {
+      return NextResponse.json(
+        { error: `PDF too large — max ${DOCUMENT_MAX_BYTES / (1024 * 1024)} MB` },
+        { status: 400 },
+      );
+    }
+    pdfBase64 = Buffer.from(await blob.arrayBuffer()).toString('base64');
+  } catch (err) {
+    logger.error('Failed to read the uploaded PDF', {
+      route: '/api/pdf-extract',
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return NextResponse.json({ error: 'Failed to read the uploaded PDF' }, { status: 500 });
+  }
 
   try {
     const response = await fetch(
