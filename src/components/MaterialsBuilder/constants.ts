@@ -1,3 +1,4 @@
+import { LESSON_DOCUMENT_MIME_TYPES } from '@/lib/lessonDocuments';
 import { type JlptLevel, STYLE_NOTES_MAX } from '@/lib/lessonPrompts';
 import type { LessonDocument } from '@/types/lessonPlan';
 
@@ -8,11 +9,15 @@ export const DEFAULT_WEEKS = 4;
 export const DEFAULT_CARDS_PER_DECK = 12;
 export const GOAL_MAX_LENGTH = 500;
 
-export const DOCUMENT_ACCEPTED_TYPES = ['application/pdf', 'text/plain'] as const;
+export const DOCUMENT_ACCEPTED_TYPES = LESSON_DOCUMENT_MIME_TYPES;
 export const DOCUMENT_ACCEPT_ATTR = '.pdf,.txt,application/pdf,text/plain';
-export const DOCUMENT_MAX_BYTES = 8 * 1024 * 1024;
-/** No cap on how many files an organizer can attach — only on their combined size. */
-export const DOCUMENT_MAX_TOTAL_BYTES = 20 * 1024 * 1024;
+export const DOCUMENT_MAX_BYTES = 10 * 1024 * 1024;
+/**
+ * Gemini caps one generateContent request — inline files plus prompt — at 20 MB,
+ * and base64 inflates a file by 4/3. 14 MB raw is ~18.7 MB encoded; raising this
+ * total makes the request itself fail, whatever the transport allows.
+ */
+export const DOCUMENT_MAX_TOTAL_BYTES = 14 * 1024 * 1024;
 
 /** Goal ideas shown as chips above the goal field — keys under `Materials.suggestions`. */
 export const GOAL_SUGGESTION_KEYS = ['dailyLife', 'travel', 'foodCulture', 'seasons'] as const;

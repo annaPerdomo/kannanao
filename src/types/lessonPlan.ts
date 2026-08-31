@@ -27,8 +27,9 @@ export interface LessonPlan {
 export interface LessonDocument {
   name: string;
   mimeType: string;
-  /** Base64 content, no data: URL prefix. */
-  base64: string;
+  /** Object key in the private `lesson-documents` bucket, `<organizerId>/<uuid>.<ext>`. */
+  path: string;
+  bytes: number;
 }
 
 export interface LessonPlanResponse {

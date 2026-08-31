@@ -6,6 +6,11 @@ import {
 } from '@/components/MaterialsBuilder/constants';
 import { normalizeFurigana } from '@/lib/furigana';
 import {
+  isLessonDocumentMimeType,
+  LESSON_DOCUMENTS_BUCKET,
+  ownsLessonDocumentPath,
+} from '@/lib/lessonDocuments';
+import {
   buildLessonPlanPrompt,
   CARDS_DEFAULT,
   CARDS_MAX,
@@ -20,6 +25,7 @@ import type { LessonPlan } from '@/types/lessonPlan';
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
 import { consumeLessonBudget } from '../_lib/lessonBudget';
+import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 3 };
 
@@ -28,13 +34,65 @@ const GOAL_MAX = 500;
 const WEEKS_MIN = 1;
 const WEEKS_MAX = 8;
 
-const DOCUMENT_MIME_TYPES = new Set(['application/pdf', 'text/plain']);
-const DOCUMENT_MAX_BASE64_CHARS = Math.ceil(DOCUMENT_MAX_BYTES / 3) * 4;
-const DOCUMENT_MAX_TOTAL_BASE64_CHARS = Math.ceil(DOCUMENT_MAX_TOTAL_BYTES / 3) * 4;
+/** Bounds the storage downloads a single request can trigger; the size caps bound legitimate use. */
+const DOCUMENT_MAX_COUNT = 24;
 
 interface LessonDocumentInput {
-  base64: string;
+  path: string;
   mimeType: string;
+}
+
+type InlineDataPart = { inline_data: { mime_type: string; data: string } };
+
+/**
+ * The sizes checked here are the real ones: the client's are advisory, and
+ * storage's own file_size_limit knows nothing about the combined cap.
+ */
+async function loadDocumentParts(
+  documents: LessonDocumentInput[],
+  organizerId: string,
+): Promise<InlineDataPart[] | NextResponse> {
+  const parts: InlineDataPart[] = [];
+  let totalBytes = 0;
+
+  try {
+    const storage = getServiceSupabase().storage.from(LESSON_DOCUMENTS_BUCKET);
+
+    for (const doc of documents) {
+      const { data: blob, error } = await storage.download(doc.path);
+      if (error || !blob) {
+        return NextResponse.json(
+          { error: 'A reference document has expired — please attach it again.' },
+          { status: 400 },
+        );
+      }
+      if (blob.size > DOCUMENT_MAX_BYTES) {
+        return NextResponse.json({ error: 'A reference document is too large.' }, { status: 400 });
+      }
+      totalBytes += blob.size;
+      if (totalBytes > DOCUMENT_MAX_TOTAL_BYTES) {
+        return NextResponse.json(
+          { error: 'Combined reference documents are too large.' },
+          { status: 400 },
+        );
+      }
+      parts.push({
+        inline_data: {
+          mime_type: doc.mimeType,
+          data: Buffer.from(await blob.arrayBuffer()).toString('base64'),
+        },
+      });
+    }
+  } catch (err) {
+    logger.error('Failed to read reference documents', {
+      route: 'POST /api/group/lesson-plan',
+      organizerId,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return NextResponse.json({ error: 'Failed to read the reference files.' }, { status: 500 });
+  }
+
+  return parts;
 }
 
 const GEMINI_URL =
@@ -140,32 +198,25 @@ export async function POST(req: NextRequest) {
     );
   }
   if (documents !== undefined) {
-    if (!Array.isArray(documents)) {
-      return NextResponse.json({ error: 'documents must be an array.' }, { status: 400 });
+    if (!Array.isArray(documents) || documents.length > DOCUMENT_MAX_COUNT) {
+      return NextResponse.json(
+        { error: `documents must be an array of at most ${DOCUMENT_MAX_COUNT} files.` },
+        { status: 400 },
+      );
     }
-    let totalBase64Chars = 0;
     for (const doc of documents) {
-      if (
-        typeof doc !== 'object' ||
-        doc === null ||
-        !doc.mimeType ||
-        !DOCUMENT_MIME_TYPES.has(doc.mimeType)
-      ) {
+      if (typeof doc !== 'object' || doc === null || !isLessonDocumentMimeType(doc.mimeType)) {
         return NextResponse.json(
           { error: 'Each document must be a PDF or plain text file.' },
           { status: 400 },
         );
       }
-      if (typeof doc.base64 !== 'string' || doc.base64.length > DOCUMENT_MAX_BASE64_CHARS) {
-        return NextResponse.json({ error: 'A reference document is too large.' }, { status: 400 });
+      if (!ownsLessonDocumentPath(doc.path, orgCheck.id)) {
+        return NextResponse.json(
+          { error: 'A reference document could not be found — please attach it again.' },
+          { status: 400 },
+        );
       }
-      totalBase64Chars += doc.base64.length;
-    }
-    if (totalBase64Chars > DOCUMENT_MAX_TOTAL_BASE64_CHARS) {
-      return NextResponse.json(
-        { error: 'Combined reference documents are too large.' },
-        { status: 400 },
-      );
     }
   }
 
@@ -174,16 +225,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
   }
 
+  const documentParts = await loadDocumentParts(documents ?? [], orgCheck.id);
+  if (documentParts instanceof NextResponse) return documentParts;
+
   const overBudget = await consumeLessonBudget(orgCheck.id);
   if (overBudget) return overBudget;
 
   try {
-    const documentCount = documents?.length ?? 0;
+    const documentCount = documentParts.length;
 
-    const parts: Array<Record<string, unknown>> = [];
-    for (const doc of documents ?? []) {
-      parts.push({ inline_data: { mime_type: doc.mimeType, data: doc.base64 } });
-    }
+    const parts: Array<Record<string, unknown>> = [...documentParts];
     parts.push({
       text: buildLessonPlanPrompt({
         goal: trimmedGoal,

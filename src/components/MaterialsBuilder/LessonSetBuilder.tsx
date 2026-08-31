@@ -86,7 +86,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
           goal: t('retryGoal', { goal: form.goal, deck: deck.name }),
           weeks: 1,
           cardsPerDeck: deck.cards?.length || form.cardsPerDeck,
-          documents: form.documents.map((d) => ({ base64: d.base64, mimeType: d.mimeType })),
+          documents: form.documents.map((d) => ({ path: d.path, mimeType: d.mimeType })),
           level: form.level,
           styleNotes: effectiveStyleNotes(form),
         });

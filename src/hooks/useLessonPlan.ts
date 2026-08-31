@@ -58,7 +58,7 @@ export function useLessonPlan() {
         const { documents, ...rest } = args;
         const data = await buildLessonPlan({
           ...rest,
-          documents: documents?.map((d) => ({ base64: d.base64, mimeType: d.mimeType })),
+          documents: documents?.map((d) => ({ path: d.path, mimeType: d.mimeType })),
         });
         setPlan(data.plan);
         setPlanId(uuidv4());

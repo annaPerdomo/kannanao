@@ -2,9 +2,10 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
-import { DOCUMENT_MAX_BYTES } from '@/components/MaterialsBuilder/constants';
-
-const DOCUMENT_MAX_BASE64_CHARS = Math.ceil(DOCUMENT_MAX_BYTES / 3) * 4;
+import {
+  DOCUMENT_MAX_BYTES,
+  DOCUMENT_MAX_TOTAL_BYTES,
+} from '@/components/MaterialsBuilder/constants';
 
 vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
   requireOrganizerAccount: vi.fn().mockResolvedValue({
@@ -23,10 +24,16 @@ function nextResult(table: string): QueryResult {
   return queues[table]?.shift() ?? { data: [], error: null };
 }
 
+const { downloadMock, rpcMock } = vi.hoisted(() => ({
+  downloadMock: vi.fn(),
+  rpcMock: vi.fn(),
+}));
+
 vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
   getServiceSupabase: () => ({
     // Budget is claimed by an RPC; the counter itself has its own test.
-    rpc: () => Promise.resolve({ data: 1, error: null }),
+    rpc: rpcMock,
+    storage: { from: () => ({ download: downloadMock }) },
     from(table: string) {
       const chain = {
         select: () => chain,
@@ -106,12 +113,24 @@ function mockGeminiPlan() {
 
 const VALID = { goal: 'Food words for a restaurant', weeks: 2, cardsPerDeck: 10 };
 
+/** A path shaped the way the mint route hands them out: `<organizerId>/<uuid>.<ext>`. */
+function ownPath(name: string) {
+  return `org1/${name}`;
+}
+
+/** Stands in for a downloaded object without allocating megabytes of test data. */
+function blobOfSize(bytes: number): Blob {
+  return { size: bytes, arrayBuffer: async () => new ArrayBuffer(0) } as unknown as Blob;
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   _resetStore();
   process.env.GEMINI_API_KEY = 'test-gemini-key';
   queues = { group_members: [], card_progress: [], cards: [] };
   inserted.length = 0;
+  rpcMock.mockResolvedValue({ data: 1, error: null });
+  downloadMock.mockResolvedValue({ data: new Blob(['abc']), error: null });
 });
 
 describe('POST /api/group/lesson-plan', () => {
@@ -197,9 +216,10 @@ describe('POST /api/group/lesson-plan', () => {
 
   it('rejects a document mime type that is not a PDF or plain text file', async () => {
     const res = await POST(
-      makeRequest({ ...VALID, documents: [{ base64: 'YWJj', mimeType: 'image/png' }] }),
+      makeRequest({ ...VALID, documents: [{ path: ownPath('a.png'), mimeType: 'image/png' }] }),
     );
     expect(res.status).toBe(400);
+    expect(downloadMock).not.toHaveBeenCalled();
   });
 
   it('rejects a malformed document entry instead of crashing', async () => {
@@ -207,49 +227,102 @@ describe('POST /api/group/lesson-plan', () => {
     expect(res.status).toBe(400);
   });
 
-  it('rejects a document over the per-file size cap', async () => {
+  it("refuses a path under another organizer's prefix", async () => {
     const res = await POST(
       makeRequest({
         ...VALID,
-        documents: [
-          { base64: 'a'.repeat(DOCUMENT_MAX_BASE64_CHARS + 1), mimeType: 'application/pdf' },
-        ],
+        documents: [{ path: 'org2/secret.pdf', mimeType: 'application/pdf' }],
       }),
     );
     expect(res.status).toBe(400);
+    expect(downloadMock).not.toHaveBeenCalled();
+  });
+
+  it('refuses a path that climbs out of the prefix with ..', async () => {
+    const res = await POST(
+      makeRequest({
+        ...VALID,
+        documents: [{ path: 'org1/../org2/secret.pdf', mimeType: 'application/pdf' }],
+      }),
+    );
+    expect(res.status).toBe(400);
+    expect(downloadMock).not.toHaveBeenCalled();
+  });
+
+  it('refuses more documents than one request may download', async () => {
+    const documents = Array.from({ length: 25 }, (_, i) => ({
+      path: ownPath(`doc-${i}.pdf`),
+      mimeType: 'application/pdf',
+    }));
+
+    const res = await POST(makeRequest({ ...VALID, documents }));
+    expect(res.status).toBe(400);
+    expect(downloadMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects a stored document that turns out to be over the per-file cap', async () => {
+    downloadMock.mockResolvedValueOnce({ data: blobOfSize(DOCUMENT_MAX_BYTES + 1), error: null });
+
+    const res = await POST(
+      makeRequest({
+        ...VALID,
+        documents: [{ path: ownPath('big.pdf'), mimeType: 'application/pdf' }],
+      }),
+    );
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe('A reference document is too large.');
   });
 
   it('rejects documents whose combined size is over the total cap', async () => {
-    const atPerFileCap = 'a'.repeat(DOCUMENT_MAX_BASE64_CHARS);
+    downloadMock.mockResolvedValue({ data: blobOfSize(DOCUMENT_MAX_BYTES), error: null });
+
     const res = await POST(
       makeRequest({
         ...VALID,
         documents: [
-          { base64: atPerFileCap, mimeType: 'application/pdf' },
-          { base64: atPerFileCap, mimeType: 'application/pdf' },
-          { base64: atPerFileCap, mimeType: 'application/pdf' },
+          { path: ownPath('a.pdf'), mimeType: 'application/pdf' },
+          { path: ownPath('b.pdf'), mimeType: 'application/pdf' },
         ],
       }),
     );
     expect(res.status).toBe(400);
-    const body = await res.json();
-    expect(body.error).toBe('Combined reference documents are too large.');
+    expect((await res.json()).error).toBe('Combined reference documents are too large.');
+  });
+
+  it('asks the organizer to re-attach a document that is no longer in storage', async () => {
+    downloadMock.mockResolvedValueOnce({ data: null, error: { message: 'Object not found' } });
+
+    const res = await POST(
+      makeRequest({
+        ...VALID,
+        documents: [{ path: ownPath('gone.pdf'), mimeType: 'application/pdf' }],
+      }),
+    );
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toContain('attach it again');
+    // Nothing was generated, so the day's allowance must be untouched.
+    expect(rpcMock).not.toHaveBeenCalled();
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 
   it('sends each document to Gemini as its own inline data part alongside the prompt', async () => {
     mockGeminiPlan();
+    downloadMock
+      .mockResolvedValueOnce({ data: new Blob(['abc']), error: null })
+      .mockResolvedValueOnce({ data: new Blob(['def']), error: null });
 
     const res = await POST(
       makeRequest({
         ...VALID,
         documents: [
-          { base64: 'YWJj', mimeType: 'application/pdf' },
-          { base64: 'ZGVm', mimeType: 'text/plain' },
+          { path: ownPath('vocab.pdf'), mimeType: 'application/pdf' },
+          { path: ownPath('syllabus.txt'), mimeType: 'text/plain' },
         ],
       }),
     );
     expect(res.status).toBe(200);
 
+    expect(downloadMock).toHaveBeenNthCalledWith(1, ownPath('vocab.pdf'));
     const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
     const parts = requestBody.contents[0].parts;
     expect(parts[0]).toEqual({
@@ -259,5 +332,24 @@ describe('POST /api/group/lesson-plan', () => {
       inline_data: { mime_type: 'text/plain', data: 'ZGVm' },
     });
     expect(parts[2].text).toContain('2 reference documents are attached');
+  });
+
+  it('accepts documents that together sit just under the combined cap', async () => {
+    mockGeminiPlan();
+    downloadMock.mockResolvedValue({
+      data: blobOfSize(Math.floor(DOCUMENT_MAX_TOTAL_BYTES / 2)),
+      error: null,
+    });
+
+    const res = await POST(
+      makeRequest({
+        ...VALID,
+        documents: [
+          { path: ownPath('a.pdf'), mimeType: 'application/pdf' },
+          { path: ownPath('b.pdf'), mimeType: 'application/pdf' },
+        ],
+      }),
+    );
+    expect(res.status).toBe(200);
   });
 });

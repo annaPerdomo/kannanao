@@ -13,10 +13,12 @@ global.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver;
 
 const buildLessonPlanMock = vi.fn();
 const applyLessonPlanMock = vi.fn();
+const uploadLessonDocumentMock = vi.fn();
 
 vi.mock('@/services/api', () => ({
   buildLessonPlan: (...args: unknown[]) => buildLessonPlanMock(...args),
   applyLessonPlan: (...args: unknown[]) => applyLessonPlanMock(...args),
+  uploadLessonDocument: (...args: unknown[]) => uploadLessonDocumentMock(...args),
 }));
 
 vi.mock('@/components/Loading', () => ({ Loading: () => <div>loading</div> }));
@@ -123,6 +125,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   buildLessonPlanMock.mockResolvedValue({ plan: PLAN });
   applyLessonPlanMock.mockResolvedValue({ results: [{ name: 'Food words', status: 'created' }] });
+  let uploads = 0;
+  uploadLessonDocumentMock.mockImplementation(() =>
+    Promise.resolve(`org1/upload-${(uploads += 1)}.txt`),
+  );
 });
 
 describe('LessonSetBuilder', () => {
@@ -167,7 +173,7 @@ describe('LessonSetBuilder', () => {
     });
   });
 
-  it('attaches a document and sends it along when building the plan', async () => {
+  it('uploads a document and sends its storage path when building the plan', async () => {
     setup();
     typeGoal();
 
@@ -176,14 +182,37 @@ describe('LessonSetBuilder', () => {
     fireEvent.change(input, { target: { files: [file] } });
     await screen.findByText('vocab.txt');
 
+    expect(uploadLessonDocumentMock).toHaveBeenCalledWith(file);
+
     fireEvent.click(screen.getByRole('button', { name: /build the plan/i }));
     await waitFor(() => expect(buildLessonPlanMock).toHaveBeenCalled());
 
     const payload = buildLessonPlanMock.mock.calls[0][0];
-    expect(payload.documents).toHaveLength(1);
-    expect(payload.documents[0].mimeType).toBe('text/plain');
-    expect(typeof payload.documents[0].base64).toBe('string');
-    expect(payload.documents[0].base64.length).toBeGreaterThan(0);
+    expect(payload.documents).toEqual([{ path: 'org1/upload-1.txt', mimeType: 'text/plain' }]);
+  });
+
+  it('reports a failed upload and attaches nothing', async () => {
+    uploadLessonDocumentMock.mockRejectedValueOnce(new Error('storage unreachable'));
+    setup();
+
+    const file = new File(['x'], 'vocab.txt', { type: 'text/plain' });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [file] } });
+
+    expect(await screen.findByText(/couldn't upload that file/i)).toBeInTheDocument();
+    expect(screen.queryByText('vocab.txt')).not.toBeInTheDocument();
+  });
+
+  it('never uploads a file that fails the size check', async () => {
+    setup();
+
+    const tooBig = new File(['x'], 'huge.pdf', { type: 'application/pdf' });
+    Object.defineProperty(tooBig, 'size', { value: 11 * 1024 * 1024 });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [tooBig] } });
+
+    expect(await screen.findByText(/under 10 MB/i)).toBeInTheDocument();
+    expect(uploadLessonDocumentMock).not.toHaveBeenCalled();
   });
 
   it('attaches multiple documents and lets the organizer remove one before building', async () => {
