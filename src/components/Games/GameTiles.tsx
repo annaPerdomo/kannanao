@@ -5,7 +5,7 @@ import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
-interface GameCardProps {
+export interface GameCardProps {
   title: string;
   jpTitle: string;
   description: string;
@@ -23,7 +23,7 @@ interface GameConfig {
   href: string;
 }
 
-function GameCard({ title, jpTitle, description, emoji, gradient, href }: GameCardProps) {
+export function GameCard({ title, jpTitle, description, emoji, gradient, href }: GameCardProps) {
   const router = useRouter();
   const theme = useTheme();
   const { brand } = theme.palette;

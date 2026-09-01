@@ -684,7 +684,9 @@
       "questionsTitle": "しつもんクエスト — 復習 | Tangodachi",
       "questionsDescription": "日本語の疑問詞を練習。しつもんに合う答えを選びます。",
       "countingTitle": "なんまい？なんにん？ — 復習 | Tangodachi",
-      "countingDescription": "日本語の助数詞を練習。ものをかぞえて まい・つ・にん の言い方をえらびます。"
+      "countingDescription": "日本語の助数詞を練習。ものをかぞえて まい・つ・にん の言い方をえらびます。",
+      "learnKanaTitle": "かなをまなぶ — 復習 | Tangodachi",
+      "learnKanaDescription": "ひらがなとカタカナを、1行ずつゼロから読めるように練習します。"
     }
   },
   "Practice": {
@@ -959,6 +961,49 @@
         "ticket": "チケット {count}",
         "tissue": "ティッシュ {count}"
       }
+    }
+  },
+  "KanaJourney": {
+    "common": {
+      "hint": "ヒントを見る",
+      "next": "つぎへ"
+    },
+    "recognize": {
+      "question": "この文字の音は？",
+      "tapToHear": "タップで音を聞く"
+    },
+    "recall": {
+      "question": "文字をえらぼう"
+    },
+    "lightning": {
+      "score": "{count}問せいかい",
+      "timeLeft": "のこり時間",
+      "timeUp": "時間だよ！{count}問せいかい",
+      "tapToHear": "タップで音を聞く"
+    },
+    "tile": {
+      "title": "かなをまなぶ",
+      "description": "ひらがなとカタカナをゼロから。1行ずつ読めるようになります。"
+    },
+    "journey": {
+      "title": "かなをまなぶ",
+      "subtitle": "行をえらんで、読むれんしゅうをはじめよう。",
+      "loading": "みちを ひらいています…",
+      "hiraganaTrack": "ひらがな",
+      "katakanaTrack": "カタカナ",
+      "katakanaLockedHint": "さいしょの{total}行で星をとると、カタカナがひらきます。いまは{total}行のうち{done}行。",
+      "katakanaLockedLabel": "カタカナ — ロック中。{total}行のうち{done}行に星",
+      "startHere": "ここから",
+      "timeToReview": "ふくしゅうの時間",
+      "islandLabel": "{kana} — 星{max}こ中{stars}こ",
+      "lockedIslandLabel": "{kana} — ロック中。まえの行をさきにおえよう"
+    },
+    "session": {
+      "recognizeHowTo": "文字を見て、その音をタップしよう。",
+      "recallHowTo": "音を聞いて、その文字をタップしよう。",
+      "lightningHowTo": "スピードラウンド。時間内にできるだけ多く正解しよう。",
+      "celebrationSubheading": "今回は {correct} / {total} 正解",
+      "backToJourney": "かなをまなぶにもどる"
     }
   },
   "Group": {

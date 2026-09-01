@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { DataErrorState } from '@/components/DataErrorState';
-import { GameTiles } from '@/components/Games';
+import { GameCard, GameTiles } from '@/components/Games';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { useDueCount } from '@/hooks/useDueCount';
@@ -87,6 +87,7 @@ function CaughtUpHero() {
  */
 export default function ReviewHubPage() {
   const t = useTranslations('Review.hubPage');
+  const tKana = useTranslations('KanaJourney.tile');
   const router = useRouter();
   const { dueCount, loading, error, retry } = useDueCount();
 
@@ -133,6 +134,16 @@ export default function ReviewHubPage() {
           >
             {t('funWaysToPractice')}
           </Typography>
+          <Box sx={{ mb: 1.5 }}>
+            <GameCard
+              title={tKana('title')}
+              description={tKana('description')}
+              jpTitle="かなをまなぶ"
+              emoji="🌸"
+              gradient="linear-gradient(135deg, #ec4899, #be185d)"
+              href="/review/learn-kana"
+            />
+          </Box>
           <GameTiles />
         </Grid>
       </Grid>

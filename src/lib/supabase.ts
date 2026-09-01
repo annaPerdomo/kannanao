@@ -1140,6 +1140,72 @@ export async function getCardProgressForUser(
   return (data ?? []).map(dbCardProgressToApp);
 }
 
+// ─── Per-character kana progress ────────────────────────────────
+
+export interface KanaProgress {
+  kana: string;
+  correctCount: number;
+  wrongCount: number;
+  lastReviewedAt: string | null;
+  nextReviewAt: string;
+  intervalDays: number;
+  ease: number;
+}
+
+interface KanaProgressRow {
+  kana: string;
+  correct_count: number;
+  wrong_count: number;
+  last_reviewed_at: string | null;
+  next_review_at: string;
+  interval_days: number;
+  ease: number;
+}
+
+function dbKanaProgressToApp(row: KanaProgressRow): KanaProgress {
+  return {
+    kana: row.kana,
+    correctCount: row.correct_count,
+    wrongCount: row.wrong_count,
+    lastReviewedAt: row.last_reviewed_at,
+    nextReviewAt: row.next_review_at,
+    intervalDays: row.interval_days,
+    ease: row.ease,
+  };
+}
+
+/**
+ * Records one graded kana answer; `increment_kana_progress` bumps the counter
+ * and advances the schedule in one statement. Never throws — a failed write
+ * must not break the drill — so false is the only rollback signal.
+ */
+export async function upsertKanaProgress(kana: string, correct: boolean): Promise<boolean> {
+  if (!isConfigured()) return false;
+  const { error } = await sb.rpc('increment_kana_progress', {
+    p_kana: kana,
+    p_correct: correct,
+  });
+  if (error) {
+    console.error('upsertKanaProgress error', error);
+    return false;
+  }
+  return true;
+}
+
+/** Every kana progress row for a user (RLS scopes this to `userId`); ~208 rows at most. */
+export async function getKanaProgress(userId: string): Promise<KanaProgress[]> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    return [];
+  }
+  const { data, error } = await sb.from('kana_progress').select('*').eq('user_id', userId);
+  if (error) {
+    console.error('Error loading kana progress', error);
+    throw toDataError(error);
+  }
+  return (data ?? []).map(dbKanaProgressToApp);
+}
+
 /**
  * Cross-deck due cards for Smart Review: cards whose scheduled review time has
  * arrived, ordered soonest-first, capped. Joins card_progress → cards, so cards

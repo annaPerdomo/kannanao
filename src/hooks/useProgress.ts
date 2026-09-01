@@ -43,6 +43,7 @@ export type SessionMode =
   | 'speech_recall'
   | 'kotoba-bubble'
   | 'kana-build'
+  | 'kana-journey'
   | 'particle-quiz'
   | 'question-quiz'
   | 'word-match'
@@ -460,13 +461,21 @@ export function useProgress(
    * correct. When `cardId` is provided (flip + card-based practice modes), the
    * answer is also recorded into per-card progress. Sentence/line-based modes
    * (kotoba-bubble, speech) omit it.
+   * `correctXp` overrides the JLPT-scaled rate for modes whose unit of work is
+   * smaller than a card.
    */
   const recordAnswer = useCallback(
-    async (sessionId: string, correct: boolean, jlptLevel?: JlptLevel, cardId?: string) => {
+    async (
+      sessionId: string,
+      correct: boolean,
+      jlptLevel?: JlptLevel,
+      cardId?: string,
+      correctXp?: number,
+    ) => {
       const base = progressRef.current;
       if (!base) return;
 
-      const xpGain = correct ? cardXp(jlptLevel) : XP_PER_WRONG;
+      const xpGain = correct ? (correctXp ?? cardXp(jlptLevel)) : XP_PER_WRONG;
       const newXp = base.total_xp + xpGain;
       const newLevel = levelFromXp(newXp);
       const newStudied = base.total_cards_studied + 1;

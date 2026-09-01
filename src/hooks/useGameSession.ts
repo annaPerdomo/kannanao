@@ -17,8 +17,12 @@ import type { JlptLevel } from '@/types/flashcard';
  * Also carries the combo meter so all four review games get the combo chip and
  * its flat bonuses for free. `combo` shares this hook's `useProgress` instance
  * (via `addBonusXp`), so its bonus writes accumulate with the per-answer writes.
+ *
+ * `options.correctXp` fixes the XP of a correct answer for modes that grade far
+ * faster than a card flip and would otherwise dominate the group leaderboard.
  */
-export function useGameSession(mode: SessionMode) {
+export function useGameSession(mode: SessionMode, options: { correctXp?: number } = {}) {
+  const { correctXp } = options;
   const { startSession, recordAnswer, endSession, addBonusXp } = useProgress();
   const { triggerXpEarned } = useXpAnimation();
   const combo = useCombo(addBonusXp);
@@ -47,18 +51,18 @@ export function useGameSession(mode: SessionMode) {
     async (correct: boolean, jlptLevel?: JlptLevel, cardId?: string) => {
       answeredRef.current += 1;
       if (correct) correctRef.current += 1;
-      triggerXpEarned(correct ? cardXp(jlptLevel) : XP_PER_WRONG);
+      triggerXpEarned(correct ? (correctXp ?? cardXp(jlptLevel)) : XP_PER_WRONG);
       const sessionId = sessionIdRef.current || (await sessionStartRef.current) || '';
       if (sessionId) {
         // Passing cardId advances that card's review schedule (card-based games
         // only). Grammar games call answer() without it — nothing to schedule.
-        await recordAnswer(sessionId, correct, jlptLevel, cardId);
+        await recordAnswer(sessionId, correct, jlptLevel, cardId, correctXp);
       }
       // Advance the combo AFTER the answer is recorded so its bonus write lands
       // on the updated progress snapshot.
       combo.onAnswer(correct);
     },
-    [recordAnswer, triggerXpEarned, combo],
+    [recordAnswer, triggerXpEarned, combo, correctXp],
   );
 
   const finish = useCallback(async () => {

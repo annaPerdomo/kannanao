@@ -684,7 +684,9 @@
       "questionsTitle": "Question Quest — Review | Tangodachi",
       "questionsDescription": "Practice Japanese question words — pick the answer that fits each question.",
       "countingTitle": "How Many? — Review | Tangodachi",
-      "countingDescription": "Practice Japanese counters — count the things and pick まい・つ・にん."
+      "countingDescription": "Practice Japanese counters — count the things and pick まい・つ・にん.",
+      "learnKanaTitle": "Learn Kana — Review | Tangodachi",
+      "learnKanaDescription": "Learn to read hiragana and katakana from zero, one row at a time."
     }
   },
   "Practice": {
@@ -959,6 +961,49 @@
         "ticket": "{count, plural, one {# ticket} other {# tickets}}",
         "tissue": "{count, plural, one {# tissue} other {# tissues}}"
       }
+    }
+  },
+  "KanaJourney": {
+    "common": {
+      "hint": "Show a hint",
+      "next": "Next"
+    },
+    "recognize": {
+      "question": "Which sound is this?",
+      "tapToHear": "Tap to hear it"
+    },
+    "recall": {
+      "question": "Pick the character"
+    },
+    "lightning": {
+      "score": "{count, plural, one {# right} other {# right}}",
+      "timeLeft": "Time left",
+      "timeUp": "Time's up! {count, plural, one {# right} other {# right}}",
+      "tapToHear": "Tap to hear it"
+    },
+    "tile": {
+      "title": "Learn Kana",
+      "description": "Read hiragana and katakana from zero — one row at a time."
+    },
+    "journey": {
+      "title": "Learn Kana",
+      "subtitle": "Pick a row and start reading.",
+      "loading": "Opening your path…",
+      "hiraganaTrack": "Hiragana",
+      "katakanaTrack": "Katakana",
+      "katakanaLockedHint": "Katakana opens after you earn a star on the first {total} rows — {done} of {total} so far.",
+      "katakanaLockedLabel": "Katakana — locked, {done} of {total} rows starred",
+      "startHere": "Start here",
+      "timeToReview": "Time to review",
+      "islandLabel": "{kana} — {stars} of {max} stars",
+      "lockedIslandLabel": "{kana} — locked, finish the row above first"
+    },
+    "session": {
+      "recognizeHowTo": "Look at the character, then tap the sound it makes.",
+      "recallHowTo": "Hear the sound, then tap the character that writes it.",
+      "lightningHowTo": "Speed round — get as many right as you can before time runs out.",
+      "celebrationSubheading": "{correct} / {total} right this round",
+      "backToJourney": "Back to Learn Kana"
     }
   },
   "Group": {
