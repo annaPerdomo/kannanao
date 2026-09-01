@@ -22,9 +22,8 @@ export function masteryMinCards(deckCardCount?: number | null): number {
 }
 
 /**
- * Modes a goal can require. Only modes whose sessions carry a deck_id can ever
- * complete an assignment (the arcade games and speech modes start sessions
- * with a null deck), so only these are offered/accepted as goal modes.
+ * Modes a goal can require. Only sessions carrying a deck_id can complete a deck
+ * goal, and the arcade games and speech modes start deckless sessions.
  */
 export const GOAL_MODES = [
   'study',
@@ -62,12 +61,16 @@ export const GOAL_ACCURACY_CHOICES = [70, 80, 90] as const;
 export interface MasteryCriteria {
   required_accuracy: number | null;
   required_mode: string | null;
+  /** Kana curriculum key when the goal is a kana row; null for a deck goal. */
+  kana_set?: string | null;
 }
 
 export interface MasterySessionStats {
   practice_mode: string | null;
   cards_studied: number;
   cards_correct: number;
+  /** The row a set-scoped kana session drilled; null for every other session. */
+  kana_set?: string | null;
 }
 
 export interface MasteryResult {
@@ -81,33 +84,46 @@ export interface MasteryResult {
   qualifyingAccuracy: number | null;
 }
 
+// Integer math, so a boundary case like 4/5 against 80% can't be lost to float
+// rounding.
+function accuracyOutcome(
+  requiredAccuracy: number | null,
+  session: MasterySessionStats,
+  minCards: number,
+): MasteryResult {
+  if (requiredAccuracy == null) return { completes: true, qualifyingAccuracy: null };
+  if (session.cards_studied < minCards) return { completes: false, qualifyingAccuracy: null };
+  const accuracy = Math.round((session.cards_correct / session.cards_studied) * 100);
+  const completes = session.cards_correct * 100 >= requiredAccuracy * session.cards_studied;
+  return { completes, qualifyingAccuracy: accuracy };
+}
+
 /**
  * Decide whether a finished session completes an assignment.
  *
- * Rules: (required_mode is null OR the session used it) AND
+ * Deck goal: (required_mode is null OR the session used it) AND
  * (required_accuracy is null OR the session hit it with at least
- * `masteryMinCards(deckCardCount)` cards). The accuracy comparison is done in
- * integer math (correct * 100 >= required * studied) so boundary cases like
- * 4/5 vs 80% can't be lost to float rounding.
+ * `masteryMinCards(deckCardCount)` cards).
+ *
+ * Kana goal: the session must be scoped to the assigned row — a mixed review
+ * that happened to cover it carries no kana_set and never counts — plus the
+ * same accuracy rule.
  */
 export function evaluateMastery(
   criteria: MasteryCriteria,
   session: MasterySessionStats,
   deckCardCount?: number | null,
 ): MasteryResult {
+  if (criteria.kana_set != null) {
+    if (session.kana_set !== criteria.kana_set) {
+      return { completes: false, qualifyingAccuracy: null };
+    }
+    return accuracyOutcome(criteria.required_accuracy, session, MASTERY_MIN_CARDS);
+  }
   if (criteria.required_mode != null && session.practice_mode !== criteria.required_mode) {
     return { completes: false, qualifyingAccuracy: null };
   }
-  if (criteria.required_accuracy == null) {
-    return { completes: true, qualifyingAccuracy: null };
-  }
-  if (session.cards_studied < masteryMinCards(deckCardCount)) {
-    return { completes: false, qualifyingAccuracy: null };
-  }
-  const accuracy = Math.round((session.cards_correct / session.cards_studied) * 100);
-  const completes =
-    session.cards_correct * 100 >= criteria.required_accuracy * session.cards_studied;
-  return { completes, qualifyingAccuracy: accuracy };
+  return accuracyOutcome(criteria.required_accuracy, session, masteryMinCards(deckCardCount));
 }
 
 /**
@@ -118,7 +134,8 @@ export function evaluateMastery(
  * `@/components/Group/useGoalLabel` so the label follows the active locale.
  */
 export function goalLabel(criteria: MasteryCriteria): string | null {
-  const { required_accuracy, required_mode } = criteria;
+  const { required_accuracy } = criteria;
+  const required_mode = criteria.kana_set != null ? null : criteria.required_mode;
   if (required_accuracy == null && required_mode == null) return null;
   const modeName = required_mode
     ? isGoalMode(required_mode)

@@ -66,6 +66,7 @@ function makeRequest(body: unknown, withAuth = true) {
 
 const assignment = (overrides: Record<string, unknown> = {}) => ({
   id: 'a1',
+  kana_set: null,
   required_accuracy: null,
   required_mode: null,
   progress_accuracy: null,
@@ -75,6 +76,7 @@ const assignment = (overrides: Record<string, unknown> = {}) => ({
 const session = (overrides: Record<string, unknown> = {}) => ({
   user_id: USER.id,
   deck_id: 'deck-1',
+  kana_set: null,
   practice_mode: 'match',
   cards_studied: 10,
   cards_correct: 9,
@@ -241,6 +243,53 @@ describe('POST /api/group/assignments/complete', () => {
     expect(json.completed).toBe(1);
     expect(completedIds()).toEqual(['a1']);
     expect(json.progressUpdated).toBe(1); // a2 records 80%
+  });
+
+  it('returns 400 when both a deck and a kana row are named', async () => {
+    const res = await POST(makeRequest({ deckId: 'deck-1', kanaSet: 'hira-ka', sessionId: 's1' }));
+    expect(res.status).toBe(400);
+  });
+
+  it('matches pending kana assignments on kana_set, not deck_id', async () => {
+    setTable('assignments', []);
+    await POST(makeRequest({ kanaSet: 'hira-ka', sessionId: 's1' }));
+    const eqs = ops.filter((o) => o.table === 'assignments' && o.method === 'eq');
+    expect(eqs.map((o) => o.args[0])).toContain('kana_set');
+    expect(eqs.map((o) => o.args[0])).not.toContain('deck_id');
+  });
+
+  it('completes a kana assignment from a session scoped to that row', async () => {
+    setTable('assignments', [assignment({ kana_set: 'hira-ka' })]);
+    setTable('study_sessions', session({ deck_id: null, kana_set: 'hira-ka' }));
+    const res = await POST(makeRequest({ kanaSet: 'hira-ka', sessionId: 's1' }));
+    expect((await res.json()).completed).toBe(1);
+    expect(completedIds()).toEqual(['a1']);
+  });
+
+  it('does not complete a kana assignment from a mixed session', async () => {
+    setTable('assignments', [assignment({ kana_set: 'hira-ka' })]);
+    setTable('study_sessions', session({ deck_id: null, kana_set: null }));
+    const res = await POST(makeRequest({ kanaSet: 'hira-ka', sessionId: 's1' }));
+    expect((await res.json()).completed).toBe(0);
+  });
+
+  it('never completes a kana assignment without a session to check', async () => {
+    setTable('assignments', [assignment({ kana_set: 'hira-ka' })]);
+    const res = await POST(makeRequest({ kanaSet: 'hira-ka' }));
+    expect((await res.json()).completed).toBe(0);
+  });
+
+  it('grades a kana accuracy goal against the session', async () => {
+    setTable('assignments', [assignment({ kana_set: 'hira-ka', required_accuracy: 95 })]);
+    setTable(
+      'study_sessions',
+      session({ deck_id: null, kana_set: 'hira-ka', cards_studied: 10, cards_correct: 9 }),
+    );
+    const res = await POST(makeRequest({ kanaSet: 'hira-ka', sessionId: 's1' }));
+    const json = await res.json();
+    expect(json.completed).toBe(0);
+    expect(json.progressUpdated).toBe(1);
+    expect(progressUpdates()[0].args[0]).toEqual({ progress_accuracy: 90 });
   });
 
   it('returns 500 when the assignment lookup fails', async () => {

@@ -212,6 +212,70 @@ describe('goalLabel', () => {
   });
 });
 
+describe('evaluateMastery — kana goals', () => {
+  const kana = (setId: string) => ({
+    required_accuracy: null,
+    required_mode: null,
+    kana_set: setId,
+  });
+
+  it('completes when a set-scoped session drilled the assigned row', () => {
+    const result = evaluateMastery(kana('hira-ka'), session({ kana_set: 'hira-ka' }));
+    expect(result.completes).toBe(true);
+  });
+
+  it('does not complete on a different row', () => {
+    const result = evaluateMastery(kana('hira-ka'), session({ kana_set: 'hira-sa' }));
+    expect(result).toEqual({ completes: false, qualifyingAccuracy: null });
+  });
+
+  it('does not complete on a mixed session, which carries no row at all', () => {
+    const result = evaluateMastery(kana('hira-ka'), session({ kana_set: null }));
+    expect(result.completes).toBe(false);
+  });
+
+  it('grades the accuracy goal on the matching row', () => {
+    expect(
+      evaluateMastery(
+        { ...kana('hira-ka'), required_accuracy: 80 },
+        session({ kana_set: 'hira-ka', cards_studied: 10, cards_correct: 8 }),
+      ),
+    ).toEqual({ completes: true, qualifyingAccuracy: 80 });
+    expect(
+      evaluateMastery(
+        { ...kana('hira-ka'), required_accuracy: 90 },
+        session({ kana_set: 'hira-ka', cards_studied: 10, cards_correct: 8 }),
+      ),
+    ).toEqual({ completes: false, qualifyingAccuracy: 80 });
+  });
+
+  it('holds the flat card floor — a kana row has no deck size to shrink it to', () => {
+    const result = evaluateMastery(
+      { ...kana('hira-ka'), required_accuracy: 80 },
+      session({ kana_set: 'hira-ka', cards_studied: MASTERY_MIN_CARDS - 1, cards_correct: 4 }),
+      3,
+    );
+    expect(result).toEqual({ completes: false, qualifyingAccuracy: null });
+  });
+
+  it('ignores required_mode, which means nothing for a kana row', () => {
+    const result = evaluateMastery(
+      { ...kana('hira-ka'), required_mode: 'match' },
+      session({ kana_set: 'hira-ka', practice_mode: 'kana-journey' }),
+    );
+    expect(result.completes).toBe(true);
+  });
+
+  it('leaves the mode out of a kana goal label', () => {
+    expect(goalLabel({ required_accuracy: 90, required_mode: 'match', kana_set: 'hira-ka' })).toBe(
+      '90%',
+    );
+    expect(
+      goalLabel({ required_accuracy: null, required_mode: 'match', kana_set: 'hira-ka' }),
+    ).toBe(null);
+  });
+});
+
 describe('isGoalMode', () => {
   it('accepts deck-tied modes and rejects everything else', () => {
     expect(isGoalMode('match')).toBe(true);

@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { countStrengths } from '@/lib/cardStrength';
+import { setCharacters } from '@/lib/kanaCurriculum';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../../_lib/rateLimit';
@@ -73,7 +74,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     sb
       .from('assignments')
       .select(
-        'id, deck_id, title, note, due_date, completed_at, created_at, required_accuracy, required_mode, progress_accuracy, decks(name, emoji)',
+        'id, deck_id, kana_set, title, note, due_date, completed_at, created_at, required_accuracy, required_mode, progress_accuracy, decks(name, emoji)',
       )
       .eq('member_id', memberId)
       .eq('organizer_id', orgCheck.id)
@@ -306,11 +307,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       rawAssignments.length > 0 ? Math.round((completedCount / rawAssignments.length) * 100) : 0,
     items: rawAssignments.map((a) => {
       const deck = a.decks as unknown as { name: string; emoji: string | null } | null;
+      // deckName carries the kana characters: the organizer's list has a single
+      // column for what was assigned.
+      const kanaName = a.kana_set ? setCharacters(a.kana_set as string) : null;
       return {
         id: a.id,
         title: a.title,
-        deckName: deck?.name ?? 'Unknown',
-        deckEmoji: deck?.emoji ?? null,
+        deckName: kanaName ?? deck?.name ?? 'Unknown',
+        deckEmoji: kanaName ? '🌸' : (deck?.emoji ?? null),
         dueDate: a.due_date,
         completedAt: a.completed_at,
         createdAt: a.created_at,

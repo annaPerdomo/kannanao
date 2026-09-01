@@ -13,19 +13,25 @@ const RATE_LIMIT = { windowMs: 60_000, max: 30 };
 
 interface PendingAssignment {
   id: string;
+  kana_set: string | null;
   required_accuracy: number | null;
   required_mode: string | null;
   progress_accuracy: number | null;
 }
 
 /**
- * POST — auto-complete a pending assignment when a member finishes studying a deck.
- * Accepts { deckId, sessionId? }. Assignments without mastery criteria complete
- * on any study (legacy behavior). Assignments with criteria are evaluated
- * against the finished session's stats (mode + accuracy, with a minimum card
- * floor); sessions that qualify but fall short update progress_accuracy so the
- * student sees their best attempt so far. No-ops gracefully if no matching
- * assignment exists.
+ * POST — auto-complete a pending assignment when a member finishes studying a
+ * deck, or a kana row.
+ *
+ * Accepts { deckId, sessionId? } or { kanaSet, sessionId? }. Assignments without
+ * mastery criteria complete on any study (legacy behavior). Assignments with
+ * criteria are evaluated against the finished session's stats (mode + accuracy,
+ * with a minimum card floor); sessions that qualify but fall short update
+ * progress_accuracy so the student sees their best attempt so far. No-ops
+ * gracefully if no matching assignment exists.
+ *
+ * A kana assignment has no "no criteria" shortcut — scoping is verified against
+ * the server-side session row — so it always needs the sessionId.
  */
 export async function POST(req: NextRequest) {
   const limited = await rateLimit(req, RATE_LIMIT);
@@ -52,24 +58,30 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => null);
-  const deckId = body?.deckId;
+  const deckId = typeof body?.deckId === 'string' ? body.deckId : null;
+  const kanaSet = typeof body?.kanaSet === 'string' ? body.kanaSet : null;
   const sessionId = typeof body?.sessionId === 'string' ? body.sessionId : null;
-  if (!deckId || typeof deckId !== 'string') {
-    return NextResponse.json({ error: 'deckId is required.' }, { status: 400 });
+  if (!deckId === !kanaSet) {
+    return NextResponse.json(
+      { error: 'Exactly one of deckId or kanaSet is required.' },
+      { status: 400 },
+    );
   }
 
   const sb = getServiceSupabase();
 
-  // Find pending assignment(s) for this user + deck. An assignment that hasn't
-  // started yet can't be completed — otherwise studying a deck the learner
-  // reached some other way would tick off week 8 during week 1.
-  const { data: pending, error: findError } = await sb
+  // Find pending assignment(s) for this user + deck (or kana row). An assignment
+  // that hasn't started yet can't be completed — otherwise studying a deck the
+  // learner reached some other way would tick off week 8 during week 1.
+  const pendingQuery = sb
     .from('assignments')
-    .select('id, required_accuracy, required_mode, progress_accuracy')
+    .select('id, kana_set, required_accuracy, required_mode, progress_accuracy')
     .eq('member_id', user.id)
-    .eq('deck_id', deckId)
     .is('completed_at', null)
     .or(availableNowFilter());
+  const { data: pending, error: findError } = await (deckId
+    ? pendingQuery.eq('deck_id', deckId)
+    : pendingQuery.eq('kana_set', kanaSet));
 
   if (findError) {
     logger.error('Failed to query assignments for auto-complete', {
@@ -84,25 +96,28 @@ export async function POST(req: NextRequest) {
   }
 
   const assignments = pending as PendingAssignment[];
-  const withCriteria = assignments.filter(
-    (a) => a.required_accuracy != null || a.required_mode != null,
-  );
+  // A kana assignment always has a criterion — the session must have been
+  // scoped to its row — so it never takes the completes-on-any-study path.
+  const hasCriteria = (a: PendingAssignment) =>
+    a.kana_set != null || a.required_accuracy != null || a.required_mode != null;
 
   // Criteria assignments need the session's stats. The session row is looked
   // up server-side (not trusted from the request body) and must belong to the
-  // requester and the studied deck.
+  // requester and the studied deck or kana row.
   let sessionStats: {
     practice_mode: string | null;
     cards_studied: number;
     cards_correct: number;
+    kana_set: string | null;
   } | null = null;
-  if (withCriteria.length > 0 && sessionId) {
+  if (assignments.some(hasCriteria) && sessionId) {
     const { data: session } = await sb
       .from('study_sessions')
-      .select('user_id, deck_id, practice_mode, cards_studied, cards_correct')
+      .select('user_id, deck_id, kana_set, practice_mode, cards_studied, cards_correct')
       .eq('id', sessionId)
       .maybeSingle();
-    if (session && session.user_id === user.id && session.deck_id === deckId) {
+    const targetMatches = deckId ? session?.deck_id === deckId : session?.kana_set === kanaSet;
+    if (session && session.user_id === user.id && targetMatches) {
       sessionStats = session;
     }
   }
@@ -110,7 +125,7 @@ export async function POST(req: NextRequest) {
   // Caps the card floor at the deck's size so a deck smaller than the floor can
   // still be completed. Only fetched when a session actually has to be graded.
   let deckCardCount: number | null = null;
-  if (sessionStats) {
+  if (sessionStats && deckId) {
     const { data: deck } = await sb
       .from('decks')
       .select('card_count')
@@ -123,8 +138,7 @@ export async function POST(req: NextRequest) {
   const progressUpdates: { id: string; accuracy: number }[] = [];
 
   for (const a of assignments) {
-    const hasCriteria = a.required_accuracy != null || a.required_mode != null;
-    if (!hasCriteria) {
+    if (!hasCriteria(a)) {
       toComplete.push(a.id);
       continue;
     }
