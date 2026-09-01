@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { MIN_SENTENCES } from '@/components/Practice/KotobaBubbleMode/constants';
 import type { StrengthCounts } from '@/lib/cardStrength';
 import {
   deckSupport,
@@ -18,6 +19,7 @@ const support = (overrides: Partial<MixedDeckSupport> = {}): MixedDeckSupport =>
   readingCards: 12,
   readingUnlocked: false,
   ttsReady: false,
+  sentenceCount: 0,
   ...overrides,
 });
 
@@ -130,6 +132,47 @@ describe('planMixedPractice', () => {
     expect(modes(legs)).not.toContain('fill');
   });
 
+  it('sends a sentence-seeded deck to Kotoba Bubble instead of fill', () => {
+    const legs = planMixedPractice({
+      support: support({ sentenceCount: MIN_SENTENCES }),
+      counts: counts({ strong: 4 }),
+    });
+    expect(legs[legs.length - 1]).toEqual({ step: 'goal', mode: 'kotoba-bubble' });
+  });
+
+  it('keeps reading above Kotoba Bubble when the deck unlocks it', () => {
+    const legs = planMixedPractice({
+      support: support({ readingUnlocked: true, sentenceCount: 20 }),
+      counts: counts({ strong: 4 }),
+    });
+    expect(legs[legs.length - 1]).toEqual({ step: 'goal', mode: 'reading' });
+  });
+
+  it('falls through to fill on a deck one sentence short of the floor', () => {
+    const legs = planMixedPractice({
+      support: support({ sentenceCount: MIN_SENTENCES - 1 }),
+      counts: counts({ strong: 4 }),
+    });
+    expect(legs[legs.length - 1]).toEqual({ step: 'goal', mode: 'fill' });
+  });
+
+  it('still asks for no production at all until a card is strong', () => {
+    const legs = planMixedPractice({
+      support: support({ sentenceCount: 20 }),
+      counts: counts(),
+    });
+    expect(modes(legs)).not.toContain('kotoba-bubble');
+  });
+
+  it('caps the session with the Kotoba Bubble rung in play', () => {
+    const legs = planMixedPractice({
+      support: support({ ttsReady: true, sentenceCount: 20 }),
+      counts: counts({ new: 4, learning: 4, strong: 4 }),
+    });
+    expect(legs.length).toBe(MAX_MIXED_LEGS);
+    expect(modes(legs)).toEqual(['study', 'recall', 'listen', 'kotoba-bubble']);
+  });
+
   it('caps the session and never trims the production rung off the end', () => {
     const legs = planMixedPractice({
       support: support({ ttsReady: true }),
@@ -156,12 +199,15 @@ describe('deckSupport', () => {
       card({ id: 'b', example_jp: '   ' }),
       card({ id: 'c', word: 'ねこ', reading: 'ねこ' }),
     ];
-    expect(deckSupport(cards, { readingUnlocked: true, ttsReady: false })).toEqual({
+    expect(
+      deckSupport(cards, { readingUnlocked: true, ttsReady: false, sentenceCount: 8 }),
+    ).toEqual({
       cardCount: 3,
       fillCards: 2,
       readingCards: 2,
       readingUnlocked: true,
       ttsReady: false,
+      sentenceCount: 8,
     });
   });
 });

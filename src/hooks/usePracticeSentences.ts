@@ -2,10 +2,12 @@
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { invalidateApiCache } from '@/lib/apiCache';
 import {
   deletePracticeSentences,
   fetchPracticeSentences,
   generatePracticeSentences,
+  practiceSentencesCacheKey,
   updatePracticeSentences,
 } from '@/services/api';
 import { dbSentenceToApp, type PracticeSentence } from '@/types/practiceSentence';
@@ -49,6 +51,11 @@ export function usePracticeSentences(deckId: string, memberId?: string) {
     };
   }, [deckId, memberId, t]);
 
+  const invalidate = useCallback(
+    () => invalidateApiCache(practiceSentencesCacheKey(deckId)),
+    [deckId],
+  );
+
   // Generate and regenerate always write the deck's shared set; `memberId` only
   // scopes the read above, so a legacy personalised set still displays.
   const generate = useCallback(async () => {
@@ -56,6 +63,7 @@ export function usePracticeSentences(deckId: string, memberId?: string) {
     setError(null);
     try {
       const rows = await generatePracticeSentences(deckId);
+      invalidate();
       if (mountedRef.current) {
         setSentences(rows.map(dbSentenceToApp));
         setJustGenerated(true);
@@ -67,14 +75,16 @@ export function usePracticeSentences(deckId: string, memberId?: string) {
     } finally {
       if (mountedRef.current) setGenerating(false);
     }
-  }, [deckId, t]);
+  }, [deckId, invalidate, t]);
 
   const regenerate = useCallback(async () => {
     setGenerating(true);
     setError(null);
     try {
       await deletePracticeSentences(deckId);
+      invalidate();
       const rows = await generatePracticeSentences(deckId);
+      invalidate();
       if (mountedRef.current) {
         setSentences(rows.map(dbSentenceToApp));
         setJustGenerated(true);
@@ -86,7 +96,7 @@ export function usePracticeSentences(deckId: string, memberId?: string) {
     } finally {
       if (mountedRef.current) setGenerating(false);
     }
-  }, [deckId, t]);
+  }, [deckId, invalidate, t]);
 
   const clearJustGenerated = useCallback(() => setJustGenerated(false), []);
 
@@ -99,6 +109,7 @@ export function usePracticeSentences(deckId: string, memberId?: string) {
       setError(null);
       try {
         const rows = await updatePracticeSentences(deckId, updates, deletes);
+        invalidate();
         if (mountedRef.current) setSentences(rows.map(dbSentenceToApp));
       } catch (err) {
         if (mountedRef.current) {
@@ -109,7 +120,7 @@ export function usePracticeSentences(deckId: string, memberId?: string) {
         if (mountedRef.current) setSaving(false);
       }
     },
-    [deckId, t],
+    [deckId, invalidate, t],
   );
 
   return {

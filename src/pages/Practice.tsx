@@ -33,12 +33,21 @@ interface PracticeProps {
   questBanner?: React.ReactNode;
   /** Restrict the session to these cards — a mixed practice leg, not the deck. */
   cardIds?: string[];
+  /** This page is one leg of a practice chain, so nothing here may ask a question. */
+  inChain?: boolean;
 }
 
 /** Show the batch picker when the deck exceeds this many cards. */
 const BATCH_PICKER_THRESHOLD = 10;
 
-export default function Practice({ deckId, mode, onBack, questBanner, cardIds }: PracticeProps) {
+export default function Practice({
+  deckId,
+  mode,
+  onBack,
+  questBanner,
+  cardIds,
+  inChain,
+}: PracticeProps) {
   const t = useTranslations('Practice.page');
   const { cards: deckCards, loading, error, retry } = useCards(deckId);
   const cards = useMemo(() => {
@@ -147,8 +156,11 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
     );
   }
 
-  // Kotoba Bubble always shows its own setup page (handles generation + batch picking)
-  if (mode === 'kotoba-bubble' && batchSize === null) {
+  const preSized = inChain || !!cardIds;
+
+  // The setup screen must stay off every chain leg: it dead-ends a member on an
+  // unseeded deck. The mode's own empty state still offers organizers Generate.
+  if (mode === 'kotoba-bubble' && !preSized && batchSize === null) {
     return (
       <Box
         sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
@@ -160,9 +172,7 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
     );
   }
 
-  // Show batch picker for large decks (non-kotoba-bubble). A mixed practice leg
-  // arrives pre-sized, and choosing is the decision that feature exists to remove.
-  const needsPicker = !cardIds && modeCards.length > BATCH_PICKER_THRESHOLD;
+  const needsPicker = !preSized && modeCards.length > BATCH_PICKER_THRESHOLD;
   if (needsPicker && batchSize === null) {
     return (
       <Box
@@ -176,8 +186,14 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
   }
 
   // A pre-sized leg never sees the picker, so its per-mode cap is applied here
-  // too — twelve Match cards would be twenty-four tiles on screen.
-  const effectiveBatchSize = batchSize ?? Math.min(modeCards.length, maxBatchForMode(mode));
+  // too — twelve Match cards would be twenty-four tiles on screen. Kotoba
+  // Bubble's batch counts sentences: sizing it from cards starves the game
+  // below MIN_SENTENCES on a short leg.
+  const effectiveBatchSize =
+    batchSize ??
+    (mode === 'kotoba-bubble'
+      ? maxBatchForMode(mode)
+      : Math.min(modeCards.length, maxBatchForMode(mode)));
 
   return (
     <PracticeStage>

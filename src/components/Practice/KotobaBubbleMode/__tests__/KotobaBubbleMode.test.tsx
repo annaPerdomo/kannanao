@@ -17,6 +17,7 @@ const {
   addBonusXp,
   triggerXpEarned,
   sentences,
+  sentencesOverride,
   usePracticeSentencesSpy,
   auth,
 } = vi.hoisted(() => ({
@@ -26,6 +27,9 @@ const {
   addBonusXp: vi.fn(),
   triggerXpEarned: vi.fn(),
   sentences: [] as unknown[],
+  // Lets a test hand the hook a fresh array reference, since useMemo in the
+  // component won't recompute from an in-place mutation of `sentences`.
+  sentencesOverride: { current: null as unknown[] | null },
   usePracticeSentencesSpy: vi.fn(),
   auth: { isMemberAccount: false, user: { id: 'user1' } as { id: string } | null },
 }));
@@ -38,12 +42,13 @@ vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => auth }));
 vi.mock('@/hooks/usePracticeSentences', () => ({
   usePracticeSentences: (deckId: string, memberId?: string) => {
     usePracticeSentencesSpy(deckId, memberId);
+    const current = sentencesOverride.current ?? sentences;
     return {
-      sentences,
+      sentences: current,
       loading: false,
       generating: false,
       error: null,
-      hasContent: sentences.length > 0,
+      hasContent: current.length > 0,
       generate: vi.fn(),
     };
   },
@@ -149,5 +154,77 @@ describe('KotobaBubbleMode sentence set', () => {
     );
 
     expect(usePracticeSentencesSpy).toHaveBeenCalledWith('d1', undefined);
+  });
+});
+
+// Regression: the unmount cleanup used to hardcode cardsStudied/cardsCorrect
+// to 0, so exiting mid-game (not via the finish button) forfeited XP.
+describe('KotobaBubbleMode session accounting', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    startSession.mockResolvedValue('sess-1');
+    recordAnswer.mockResolvedValue(undefined);
+    endSession.mockResolvedValue(undefined);
+    sentences.length = 0;
+    sentences.push(sentence('s1'), sentence('s2'), sentence('s3'));
+    sentencesOverride.current = null;
+  });
+
+  it('records real answers, not zeros, when the learner leaves before finishing', async () => {
+    const { unmount } = renderWithProviders(
+      <KotobaBubbleMode cards={cards} deckId="d1" batchSize={3} onExit={() => {}} />,
+    );
+
+    await answerWith(CORRECT);
+    await answerWith(WRONG);
+
+    unmount();
+
+    expect(endSession).toHaveBeenCalledTimes(1);
+    expect(endSession).toHaveBeenCalledWith(
+      'sess-1',
+      expect.objectContaining({ cardsStudied: 2, cardsCorrect: 1 }),
+    );
+  });
+
+  it('ends the prior session exactly once before a restart starts a new one', async () => {
+    renderWithProviders(
+      <KotobaBubbleMode cards={cards} deckId="d1" batchSize={3} onExit={() => {}} />,
+    );
+
+    await answerWith(CORRECT);
+    await answerWith(CORRECT);
+    await answerWith(CORRECT);
+
+    const toSummary = await screen.findByText('Sentence Review');
+    fireEvent.click(toSummary);
+
+    await waitFor(() => expect(screen.getByText('Practice Again')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('Practice Again'));
+
+    await waitFor(() => expect(endSession).toHaveBeenCalledTimes(1));
+    expect(startSession).toHaveBeenCalledTimes(2);
+  });
+
+  it('starts exactly one session even when the sentence list resolves, then changes, after mount', async () => {
+    sentencesOverride.current = [];
+
+    // batchSize > sentence count so gameSentences.length tracks the list's
+    // size instead of being clamped, or the start effect's dep never changes.
+    const { rerender } = renderWithProviders(
+      <KotobaBubbleMode cards={cards} deckId="d1" batchSize={10} onExit={() => {}} />,
+    );
+
+    expect(startSession).not.toHaveBeenCalled();
+
+    sentencesOverride.current = [sentence('s1'), sentence('s2'), sentence('s3')];
+    rerender(<KotobaBubbleMode cards={cards} deckId="d1" batchSize={10} onExit={() => {}} />);
+
+    await waitFor(() => expect(startSession).toHaveBeenCalledTimes(1));
+
+    sentencesOverride.current = [...sentencesOverride.current, sentence('s4')];
+    rerender(<KotobaBubbleMode cards={cards} deckId="d1" batchSize={10} onExit={() => {}} />);
+
+    expect(startSession).toHaveBeenCalledTimes(1);
   });
 });

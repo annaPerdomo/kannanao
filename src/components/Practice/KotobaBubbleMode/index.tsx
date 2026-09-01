@@ -121,10 +121,19 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
   const sessionIdRef = useRef<string>('');
   const sessionEndedRef = useRef(false);
   const startTimeRef = useRef(Date.now());
+  // Mirrors live state so the unmount cleanup's stable `[endSession]` dep
+  // array doesn't close over a stale render.
+  const resultsCountRef = useRef(0);
+  const totalCorrectRef = useRef(0);
+  // Guards against a second concurrent startSession call between the start
+  // effect firing and its promise resolving (sessionIdRef is still empty then).
+  const sessionStartedRef = useRef(false);
 
   // Start session when game begins
   useEffect(() => {
+    if (sessionStartedRef.current) return;
     if (gameSentences.length >= MIN_SENTENCES) {
+      sessionStartedRef.current = true;
       sessionEndedRef.current = false;
       startSession(deckId, 'kotoba-bubble').then((id) => {
         sessionIdRef.current = id;
@@ -138,8 +147,8 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
     return () => {
       if (sessionIdRef.current && !sessionEndedRef.current) {
         endSession(sessionIdRef.current, {
-          cardsStudied: 0,
-          cardsCorrect: 0,
+          cardsStudied: resultsCountRef.current,
+          cardsCorrect: totalCorrectRef.current,
           durationSecs: Math.round((Date.now() - startTimeRef.current) / 1000),
         });
       }
@@ -159,6 +168,7 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
   const finishGame = useCallback(async () => {
     if (sessionIdRef.current && !sessionEndedRef.current) {
       sessionEndedRef.current = true;
+      sessionStartedRef.current = false;
       await endSession(sessionIdRef.current, {
         cardsStudied: gameSentences.length,
         cardsCorrect: totalCorrect,
@@ -183,9 +193,11 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
 
       if (correct) {
         setTotalCorrect((c) => c + 1);
+        totalCorrectRef.current += 1;
       }
 
       setResults((prev) => [...prev, { sentence: currentSentence, correct }]);
+      resultsCountRef.current += 1;
 
       if (sessionIdRef.current) {
         // Sentence-based mode — no single card to attribute, so no cardId.
@@ -226,7 +238,10 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
     setGameComplete(false);
     setShowSummary(false);
     setResults([]);
+    resultsCountRef.current = 0;
+    totalCorrectRef.current = 0;
     sessionEndedRef.current = false;
+    sessionStartedRef.current = true;
     startSession(deckId, 'kotoba-bubble').then((id) => {
       sessionIdRef.current = id;
       startTimeRef.current = Date.now();

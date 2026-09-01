@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { invalidateApiCache } from '@/lib/apiCache';
 import { includedPlan } from '@/lib/lessonPlanEdits';
 import { mergeWarmUp } from '@/lib/lessonWarmUp';
-import { applyLessonPlan, buildLessonPlan } from '@/services/api';
+import { applyLessonPlan, buildLessonPlan, practiceSentencesCacheKey } from '@/services/api';
 import type { ApplyDeckResult, LessonDocument, LessonPlan, WarmUpWord } from '@/types/lessonPlan';
 
 export interface BuildPlanArgs {
@@ -95,6 +95,11 @@ export function useLessonPlan() {
         const data = await applyLessonPlan({ ...args, plan: kept, planId: planId ?? undefined });
         setResults(data.results ?? []);
         invalidateApiCache('/api/group/');
+        // The apply route seeds practice sentences server-side, so no client
+        // write path drops the cached read that generation invalidates.
+        for (const result of data.results ?? []) {
+          if (result.deckId) invalidateApiCache(practiceSentencesCacheKey(result.deckId));
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : t('errorMessage'));
         setApplyFailed(true);
