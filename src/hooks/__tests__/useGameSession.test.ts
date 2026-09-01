@@ -11,7 +11,9 @@ interface SessionSummary {
   durationSecs: number;
 }
 
-const mockStartSession = vi.fn(async (_deckId: string | null, _mode: string) => 'sess-1');
+const mockStartSession = vi.fn(
+  async (_deckId: string | null, _mode: string, _opts?: { kanaSet?: string | null }) => 'sess-1',
+);
 const mockRecordAnswer = vi.fn(
   async (_sessionId: string, _correct: boolean, _jlpt?: string, _cardId?: string) => {},
 );
@@ -41,9 +43,15 @@ describe('useGameSession', () => {
   it('starts one session on mount and only once', async () => {
     const { rerender } = renderHook(() => useGameSession('word-match'));
     await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
-    expect(mockStartSession).toHaveBeenCalledWith(null, 'word-match');
+    expect(mockStartSession).toHaveBeenCalledWith(null, 'word-match', { kanaSet: undefined });
     rerender();
     expect(mockStartSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('stamps the kana row on a set-scoped session so it can complete an assignment', async () => {
+    renderHook(() => useGameSession('kana-journey', { kanaSet: 'hira-ka' }));
+    await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+    expect(mockStartSession).toHaveBeenCalledWith(null, 'kana-journey', { kanaSet: 'hira-ka' });
   });
 
   it('forwards cardId to recordAnswer so card-based games advance the SRS', async () => {

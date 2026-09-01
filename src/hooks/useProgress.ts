@@ -58,6 +58,8 @@ export interface AssignmentCompleteResult {
 export interface StudySession {
   id: string;
   deck_id: string | null;
+  /** Set only by a session scoped to one kana row; null for a mixed review. */
+  kana_set?: string | null;
   practice_mode: SessionMode | null;
   cards_studied: number;
   cards_correct: number;
@@ -643,17 +645,22 @@ export function useProgress(
 
         await fetchAll();
 
-        // Auto-complete any pending assignment for the deck that was just studied.
-        // Awaited (not fired and forgotten) so that anything reading the
-        // assignment afterwards — the quest's finish screen most of all — can't
-        // race the write and report a goal as missed.
+        // Auto-complete any pending assignment for the deck — or the kana row —
+        // that was just studied. Awaited (not fired and forgotten) so that
+        // anything reading the assignment afterwards — the quest's finish screen
+        // most of all — can't race the write and report a goal as missed.
         try {
           const { data: session } = await supabase
             .from('study_sessions')
-            .select('deck_id')
+            .select('deck_id, kana_set')
             .eq('id', sessionId)
             .single();
-          if (session?.deck_id) {
+          const target = session?.deck_id
+            ? { deckId: session.deck_id }
+            : session?.kana_set
+              ? { kanaSet: session.kana_set }
+              : null;
+          if (target) {
             const { data: authData } = await supabase.auth.getSession();
             const token = authData.session?.access_token;
             if (token) {
@@ -665,7 +672,7 @@ export function useProgress(
                 },
                 // sessionId lets the server evaluate mastery goals (mode +
                 // accuracy) against this session's stats.
-                body: JSON.stringify({ deckId: session.deck_id, sessionId }),
+                body: JSON.stringify({ ...target, sessionId }),
               });
               // The assignment list is cached client-side; drop it so the
               // dashboard reflects the auto-completed assignment right away.
@@ -687,15 +694,25 @@ export function useProgress(
     [achievements, supabase, fetchAll, applyProgress],
   );
 
-  /** Call at the beginning of a study session to create a session row. */
   const startSession = useCallback(
-    async (deckId: string | null, mode?: SessionMode): Promise<string> => {
+    async (
+      deckId: string | null,
+      mode?: SessionMode,
+      opts?: { kanaSet?: string | null },
+    ): Promise<string> => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       const { data } = await supabase
         .from('study_sessions')
-        .insert({ deck_id: deckId ?? null, user_id: user?.id, practice_mode: mode ?? null })
+        .insert({
+          deck_id: deckId ?? null,
+          user_id: user?.id,
+          practice_mode: mode ?? null,
+          // Omitted, not null: a bundle that ships before the kana_set migration
+          // would otherwise fail every insert and stop recording XP app-wide.
+          ...(opts?.kanaSet ? { kana_set: opts.kanaSet } : {}),
+        })
         .select('id')
         .single();
 

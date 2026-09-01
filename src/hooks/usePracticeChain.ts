@@ -34,7 +34,11 @@ export function useStartAssignmentQuest() {
   const router = useRouter();
   return useCallback(
     (assignment: Assignment, deck?: Deck | null) => {
+      if (assignment.kana_set) {
+        return router.push(`/review/learn-kana?set=${encodeURIComponent(assignment.kana_set)}`);
+      }
       const deckId = assignment.deck_id;
+      if (!deckId) return;
       const deckPage = () => router.push(`/deck/${deckId}`);
       const goal = isGoalMode(assignment.required_mode) ? assignment.required_mode : null;
       if (goal && !chainLegHref(deckId, { step: 'goal', mode: goal }, 'assignment')) {

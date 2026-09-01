@@ -28,7 +28,12 @@ interface IslandSessionProps {
 
 export function IslandSession({ setId, byKana, record, onExit }: IslandSessionProps) {
   const t = useTranslations('KanaJourney.session');
-  const { answer, finish, comboCount } = useGameSession('kana-journey', { correctXp: KANA_XP });
+  // setId is stamped on the session row, which is what lets it complete a kana
+  // assignment. A mixed kana review must never pass one.
+  const { answer, finish, comboCount } = useGameSession('kana-journey', {
+    correctXp: KANA_XP,
+    kanaSet: setId,
+  });
 
   const set = getSet(setId);
   // Snapshotted at mount: recomputing these as answers land would reshuffle the

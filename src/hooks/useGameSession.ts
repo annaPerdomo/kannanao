@@ -21,8 +21,11 @@ import type { JlptLevel } from '@/types/flashcard';
  * `options.correctXp` fixes the XP of a correct answer for modes that grade far
  * faster than a card flip and would otherwise dominate the group leaderboard.
  */
-export function useGameSession(mode: SessionMode, options: { correctXp?: number } = {}) {
-  const { correctXp } = options;
+export function useGameSession(
+  mode: SessionMode,
+  options: { correctXp?: number; kanaSet?: string | null } = {},
+) {
+  const { correctXp, kanaSet } = options;
   const { startSession, recordAnswer, endSession, addBonusXp } = useProgress();
   const { triggerXpEarned } = useXpAnimation();
   const combo = useCombo(addBonusXp);
@@ -40,12 +43,12 @@ export function useGameSession(mode: SessionMode, options: { correctXp?: number 
     // startSession's identity changes whenever progress updates; only the
     // first invocation should create a session row.
     if (sessionStartRef.current) return;
-    sessionStartRef.current = startSession(null, mode).then((id) => {
+    sessionStartRef.current = startSession(null, mode, { kanaSet }).then((id) => {
       sessionIdRef.current = id;
       startTimeRef.current = Date.now();
       return id;
     });
-  }, [mode, startSession]);
+  }, [mode, kanaSet, startSession]);
 
   const answer = useCallback(
     async (correct: boolean, jlptLevel?: JlptLevel, cardId?: string) => {

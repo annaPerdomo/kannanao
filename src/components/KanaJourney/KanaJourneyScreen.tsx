@@ -1,6 +1,6 @@
 'use client';
 import { Box } from '@mui/material';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
@@ -8,7 +8,7 @@ import { DataErrorState } from '@/components/DataErrorState';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { useKanaProgress } from '@/hooks/useKanaProgress';
-import type { KanaTrack } from '@/lib/kanaCurriculum';
+import { getSet, isKanaSetId, type KanaTrack } from '@/lib/kanaCurriculum';
 import { LAYOUT } from '@/theme';
 
 import { IslandSession } from './IslandSession';
@@ -18,8 +18,14 @@ export function KanaJourneyScreen() {
   const t = useTranslations('KanaJourney.journey');
   const router = useRouter();
   const { byKana, loading, error, retry, record } = useKanaProgress();
-  const [track, setTrack] = useState<KanaTrack>('hiragana');
-  const [playing, setPlaying] = useState<string | null>(null);
+  // The assignment link. It bypasses the path's locks on purpose — an assigned
+  // row a learner cannot reach is a dead end, not a lesson.
+  const assigned = useSearchParams()?.get('set') ?? null;
+  const linkedSet = assigned !== null && isKanaSetId(assigned) ? assigned : null;
+  const [track, setTrack] = useState<KanaTrack>(
+    () => (linkedSet ? getSet(linkedSet)?.track : null) ?? 'hiragana',
+  );
+  const [playing, setPlaying] = useState<string | null>(linkedSet);
 
   const exitSession = useCallback(() => setPlaying(null), []);
 
