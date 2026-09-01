@@ -11,6 +11,7 @@ import { Loading } from '@/components/Loading';
 import type { Group } from '@/hooks/useGroups';
 import { useLessonPlan } from '@/hooks/useLessonPlan';
 import type { GoalMode } from '@/lib/assignmentMastery';
+import { attachPlanImages } from '@/lib/lessonImages';
 import { CARDS_MAX, CARDS_MIN, DEFAULT_LEVEL } from '@/lib/lessonPrompts';
 import { buildLessonPlan } from '@/services/api';
 import type { PlanDeck } from '@/types/lessonPlan';
@@ -41,6 +42,7 @@ const EMPTY_FORM: LessonSetForm = {
   styleNotes: '',
   documents: [],
   withSentences: true,
+  generateImages: false,
 };
 
 /**
@@ -108,7 +110,8 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
           styleNotes: effectiveStyleNotes(form),
           groupId,
         });
-        const replacement = data.plan.decks[0];
+        const replacementPlan = form.generateImages ? await attachPlanImages(data.plan) : data.plan;
+        const replacement = replacementPlan.decks[0];
         if (replacement) {
           setPlan((current) =>
             current
@@ -178,6 +181,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
               level: form.level,
               styleNotes: effectiveStyleNotes(form),
               groupId,
+              generateImages: form.generateImages,
             })
           }
         />

@@ -84,6 +84,9 @@
       "readingToggleOn": "このデッキの漢字のよみかたを練習できます",
       "readingToggleAuto": "漢字表示のデッキなので自動でオンになりました！",
       "readingToggleAria": "漢字のよみかた練習",
+      "generateImagesToggle": "画像をつくる",
+      "generateImagesToggleOn": "カードごとに画像がつきます",
+      "generateImagesToggleOff": "画像なしでカードをつくります",
       "addCardsOptional": "カードを追加（任意）",
       "createFailed": "デッキを作成できませんでした。もう一度お試しください。",
       "nameRequired": "先にデッキ名を入力してください"
@@ -1561,7 +1564,9 @@
       "errorMessage": "うまくいきませんでした。もういちどためしてください。",
       "emptyPlanMessage": "プランが空でした。とりあげたいことを少し変えてためしてください。",
       "sentencesToggleLabel": "ことばバブルの練習文もつくる",
-      "sentencesToggleHint": "デッキごとに1セット。グループのみんなが同じ文で練習するので、チェックもかんたんです。"
+      "sentencesToggleHint": "デッキごとに1セット。グループのみんなが同じ文で練習するので、チェックもかんたんです。",
+      "imagesToggleLabel": "カードごとに画像もつくる",
+      "imagesToggleHint": "ことばに合わせたUnsplash検索フレーズを使います。作成に時間がかかり、画像のクレジットも使います。"
     },
     "deckReadiness": {
       "heading": "デッキの仕上がり",

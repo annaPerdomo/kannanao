@@ -60,6 +60,21 @@ export function PlanCardRow({
           }}
           sx={{ p: 0.5, mt: 0.5 }}
         />
+        {card.imageUrl && (
+          <Box
+            component="img"
+            src={card.imageUrl}
+            alt=""
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: theme.radii.sm,
+              objectFit: 'cover',
+              flexShrink: 0,
+              mt: 0.5,
+            }}
+          />
+        )}
         <Box sx={{ flex: 1 }}>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start', mb: 1 }}>
             <TextField

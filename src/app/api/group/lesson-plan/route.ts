@@ -102,6 +102,8 @@ async function loadDocumentParts(
 const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
 
+// imageQuery is always requested, even with images off for this plan, so a
+// card can get a picture later via per-card regenerate without a fresh Gemini call.
 const PLAN_RESPONSE_SCHEMA = {
   type: 'object',
   properties: {
@@ -129,8 +131,17 @@ const PLAN_RESPONSE_SCHEMA = {
                   enum: ['N5', 'N4', 'N3', 'N2', 'N1'],
                   nullable: true,
                 },
+                imageQuery: { type: 'string' },
               },
-              required: ['word', 'reading', 'meaning', 'exampleJp', 'exampleEn', 'jlptLevel'],
+              required: [
+                'word',
+                'reading',
+                'meaning',
+                'exampleJp',
+                'exampleEn',
+                'jlptLevel',
+                'imageQuery',
+              ],
             },
           },
         },

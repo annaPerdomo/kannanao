@@ -117,7 +117,7 @@ export function readingFromFurigana(japanese: string): string {
  * spend the images route's per-minute budget on the first 20 and leave the rest
  * bare with nothing to show for it.
  */
-async function fetchPhotos(queries: string[]): Promise<Map<string, string>> {
+export async function fetchPhotos(queries: string[]): Promise<Map<string, string>> {
   const distinct = [...new Set(queries.filter(Boolean))];
   const urls = new Map<string, string>();
 
@@ -150,9 +150,10 @@ export async function withImages(
   generated: GeneratedCard[],
   deckId: string,
   mainViewMode: MainViewMode,
+  generateImages = true,
 ): Promise<NewCard[]> {
   const queries = generated.map((card) => card.image_query?.trim() ?? '');
-  const photos = await fetchPhotos(queries);
+  const photos = generateImages ? await fetchPhotos(queries) : new Map<string, string>();
 
   return generated.map((card, i) => ({
     word: card.word,
@@ -177,10 +178,11 @@ export async function reuseThenFetch(
   generated: GeneratedCard[],
   deckId: string,
   mainViewMode: MainViewMode,
+  generateImages = true,
 ): Promise<ReusableCard[]> {
   const existing = await dbFindCardsByWords(generated.map((c) => c.word));
   const { reused, toFetch } = applyReuse(generated, existing, deckId, mainViewMode);
-  const fetched = await withImages(toFetch, deckId, mainViewMode);
+  const fetched = await withImages(toFetch, deckId, mainViewMode, generateImages);
 
   let next = 0;
   return reused.map((card) => card ?? fetched[next++]);

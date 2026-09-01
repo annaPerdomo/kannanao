@@ -247,6 +247,19 @@ describe('POST /api/group/lesson-plan', () => {
     expect(prompt).toContain('Business settings, polite form');
   });
 
+  it('always asks Gemini for an imageQuery per card, so one is ready even if images are off', async () => {
+    mockGeminiPlan();
+
+    const res = await POST(makeRequest(VALID));
+    expect(res.status).toBe(200);
+
+    const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+    const cardSchema =
+      requestBody.generationConfig.response_schema.properties.decks.items.properties.cards.items;
+    expect(cardSchema.properties.imageQuery).toEqual({ type: 'string' });
+    expect(cardSchema.required).toContain('imageQuery');
+  });
+
   it('returns the plan and writes nothing', async () => {
     mockGeminiPlan();
 

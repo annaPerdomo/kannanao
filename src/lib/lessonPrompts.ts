@@ -113,6 +113,8 @@ ${trimmed}
 `;
 }
 
+const IMAGE_QUERY_RULE = `10. "imageQuery" is a 2-4 word English noun phrase for an Unsplash photo search (concrete, photographic, child-friendly). Verbs→scene (食べる="child eating noodles"), abstracts→closest visual (楽しい="children laughing").`;
+
 /** A whole lesson plan: one deck per week, easiest first. */
 export function buildLessonPlanPrompt(args: {
   goal: string;
@@ -169,7 +171,8 @@ ${levelRule}
 6. "mainViewMode" is how the front of the card should be shown: "hiragana", "kanji" or "romaji". Use "kanji" only when the words are written in kanji.
 7. "emoji" is a single emoji that fits the deck. "description" is one short plain sentence a non-technical adult would understand.
 8. "name" is a short deck title in the same language as the educator's request above.
-${duplicateRule}`;
+${duplicateRule}
+${IMAGE_QUERY_RULE}`;
 }
 
 /**

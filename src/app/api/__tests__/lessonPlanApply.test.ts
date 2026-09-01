@@ -176,6 +176,23 @@ describe('POST /api/group/lesson-plan/apply', () => {
     expect(assignments[0].title).toContain('Week 1');
   });
 
+  it('carries the image query and URL through when the plan card has them', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+
+    const plan = planWith(['Food']);
+    plan.decks[0].cards[0].imageQuery = 'sleeping cat';
+    plan.decks[0].cards[0].imageUrl = 'https://images.example/cat.jpg';
+
+    const res = await POST(makeRequest({ ...BASE, plan }));
+    expect(res.status).toBe(200);
+
+    expect(rowsFor('cards')[0]).toMatchObject({
+      image_query: 'sleeping cat',
+      image_url: 'https://images.example/cat.jpg',
+    });
+  });
+
   it('resumes a part-finished plan by name, not by position', async () => {
     // Run 1 created Food and Counting but died on Kana in between. Matched by
     // array position, Counting's deck would be reported as Kana.

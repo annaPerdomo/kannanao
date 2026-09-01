@@ -29,6 +29,7 @@ export function useCreateDeckFlow(onClose: () => void) {
   const [words, setWords] = useState<string[]>([]);
   const [pinToHome, setPinToHome] = useState(false);
   const [mainViewMode, setMainViewMode] = useState<MainViewMode>('hiragana');
+  const [generateImages, setGenerateImages] = useState(true);
   const [readingPractice, setReadingPracticeState] = useState(false);
   const [readingTouched, setReadingTouched] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -63,6 +64,7 @@ export function useCreateDeckFlow(onClose: () => void) {
     setWords([]);
     setPinToHome(false);
     setMainViewMode('hiragana');
+    setGenerateImages(true);
     setReadingPracticeState(false);
     setReadingTouched(false);
     setCreating(false);
@@ -111,7 +113,7 @@ export function useCreateDeckFlow(onClose: () => void) {
     }
 
     try {
-      const generated = await generate(finalWords, deckId, mainViewMode);
+      const generated = await generate(finalWords, deckId, mainViewMode, generateImages);
       // Hide the create dialog but stay mounted — the review step renders on top.
       onClose();
       review.review(generated);
@@ -135,7 +137,7 @@ export function useCreateDeckFlow(onClose: () => void) {
     if (!createdDeckId) return;
     setCreating(true);
     try {
-      const cards = await reuseThenFetch(extracted, createdDeckId, mainViewMode);
+      const cards = await reuseThenFetch(extracted, createdDeckId, mainViewMode, generateImages);
       setPdfOpen(false);
       onClose();
       review.review(cards);
@@ -148,7 +150,7 @@ export function useCreateDeckFlow(onClose: () => void) {
 
   const handleRegenerate = async (words: string[], instruction: string) => {
     if (!createdDeckId) return [];
-    return regenerate(words, instruction, createdDeckId, mainViewMode);
+    return regenerate(words, instruction, createdDeckId, mainViewMode, generateImages);
   };
 
   const handleReviewConfirm = async (confirmed: typeof review.cards) => {
@@ -182,6 +184,8 @@ export function useCreateDeckFlow(onClose: () => void) {
     setPinToHome,
     mainViewMode,
     setMainViewMode: changeMainViewMode,
+    generateImages,
+    setGenerateImages,
     readingPractice,
     readingAuto,
     setReadingPractice,

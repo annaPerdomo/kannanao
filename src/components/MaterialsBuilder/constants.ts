@@ -57,6 +57,7 @@ export interface LessonSetForm {
   styleNotes: string;
   documents: LessonDocument[];
   withSentences: boolean;
+  generateImages: boolean;
 }
 
 /** A study week ends on Sunday. */

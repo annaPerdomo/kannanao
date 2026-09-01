@@ -246,6 +246,17 @@ describe('buildLessonPlanPrompt', () => {
     expect(prompt).toContain('9. No duplicate words across the whole plan.');
     expect(prompt).not.toContain('9. No duplicate words across the whole plan, and none from');
   });
+
+  it('always asks for an imageQuery, even when the plan has images switched off', () => {
+    const prompt = buildLessonPlanPrompt({
+      goal: 'Food words',
+      weeks: 2,
+      cardsPerDeck: 10,
+      knownWords: [],
+    });
+
+    expect(prompt).toContain('"imageQuery" is a 2-4 word English noun phrase');
+  });
 });
 
 describe('dominantLevel', () => {

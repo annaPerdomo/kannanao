@@ -7,6 +7,10 @@ export interface PlanCard {
   jlptLevel: string | null;
   /** Review-step tick state; excluded cards are stripped before apply, never sent. */
   excluded?: boolean;
+  /** English search phrase for Unsplash, generated only when images were requested. */
+  imageQuery?: string | null;
+  /** Filled in client-side after imageQuery is looked up; absent until then. */
+  imageUrl?: string | null;
 }
 
 export interface PlanDeck {

@@ -84,6 +84,9 @@
       "readingToggleOn": "Learners can practice reading this deck's kanji",
       "readingToggleAuto": "Turned on for you — these cards lead with kanji!",
       "readingToggleAria": "Kanji reading practice",
+      "generateImagesToggle": "Generate images",
+      "generateImagesToggleOn": "Each card gets a matching picture",
+      "generateImagesToggleOff": "Cards are created without pictures",
       "addCardsOptional": "add cards (optional)",
       "createFailed": "Couldn't create the deck. Please try again.",
       "nameRequired": "Enter a deck name first"
@@ -1561,7 +1564,9 @@
       "errorMessage": "Something went wrong. Please try again.",
       "emptyPlanMessage": "The plan came back empty. Try describing the goal a little differently.",
       "sentencesToggleLabel": "Also make Kotoba Bubble practice sentences",
-      "sentencesToggleHint": "One set of sentences per deck — everyone in the group practices the same set, so it's easy to check over."
+      "sentencesToggleHint": "One set of sentences per deck — everyone in the group practices the same set, so it's easy to check over.",
+      "imagesToggleLabel": "Also generate a picture for each card",
+      "imagesToggleHint": "Uses an Unsplash search phrase written for the card's word — slower to build, and uses up image credits."
     },
     "deckReadiness": {
       "heading": "Deck readiness",
