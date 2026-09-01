@@ -42,14 +42,16 @@ export interface WarmUpWord {
   reading: string;
   meaning: string;
   deckName: string;
+  /** When the card was added to the group; null for a word introduced earlier in this same unsaved plan. */
+  addedAt: string | null;
 }
 
 export interface LessonPlanResponse {
   plan: LessonPlan;
   /** Known words the server filtered out of the generated plan. */
   warmUp?: WarmUpWord[];
-  /** Full group pool (words only); feeds the review step's "builds on" chips. */
-  knownWords?: string[];
+  /** Full group pool; feeds the review step's "builds on" chips. */
+  knownWords?: WarmUpWord[];
 }
 
 export interface ApplyDeckResult {

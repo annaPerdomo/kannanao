@@ -36,7 +36,7 @@ export function useLessonPlan() {
   const t = useTranslations('Group.lessonBuilder');
   const [plan, setPlan] = useState<LessonPlan | null>(null);
   const [warmUp, setWarmUp] = useState<WarmUpWord[]>([]);
-  const [knownWords, setKnownWords] = useState<string[]>([]);
+  const [knownWords, setKnownWords] = useState<WarmUpWord[]>([]);
   /**
    * Identifies this plan across apply attempts. Applying creates decks one at a
    * time; if it dies half way, retrying with the same id resumes instead of

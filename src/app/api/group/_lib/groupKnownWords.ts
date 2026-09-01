@@ -64,10 +64,11 @@ export async function getGroupKnownWords(
     reading: string | null;
     meaning: string | null;
     deck_id: string;
+    created_at: string;
   }>((from, to) =>
     sb
       .from('cards')
-      .select('word, reading, meaning, deck_id')
+      .select('word, reading, meaning, deck_id, created_at')
       .in('deck_id', ownedDeckIds)
       // The id tiebreak keeps pages stable: bulk inserts share a created_at.
       .order('created_at', { ascending: true })
@@ -90,6 +91,7 @@ export async function getGroupKnownWords(
       reading: card.reading ?? '',
       meaning: card.meaning ?? '',
       deckName,
+      addedAt: card.created_at,
     });
   }
 

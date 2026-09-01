@@ -60,6 +60,10 @@ export const CARDS_MIN = 5;
 export const CARDS_MAX = 20;
 export const CARDS_DEFAULT = 12;
 
+/** Bounds the plan route enforces on `goal`; composed goals must respect this too. */
+export const GOAL_MIN = 3;
+export const GOAL_MAX = 500;
+
 /** Longest a plan-supplied text field may be before it is truncated. */
 export const PLAN_TEXT_MAX = 200;
 

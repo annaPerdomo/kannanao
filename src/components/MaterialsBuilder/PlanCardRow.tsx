@@ -5,16 +5,17 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 
 import { isJlptLevel, JLPT_LEVELS, type JlptLevel } from '@/lib/lessonPrompts';
-import type { PlanCard } from '@/types/lessonPlan';
+import type { PlanCard, WarmUpWord } from '@/types/lessonPlan';
 
 interface PlanCardRowProps {
   card: PlanCard;
   index: number;
-  reuseWords: string[];
+  reuseSources: WarmUpWord[];
   targetLevel: JlptLevel;
   /** After a failed apply the tick freezes so a retry matches what was created. */
   tickLocked: boolean;
@@ -24,12 +25,13 @@ interface PlanCardRowProps {
 export function PlanCardRow({
   card,
   index,
-  reuseWords,
+  reuseSources,
   targetLevel,
   tickLocked,
   onChange,
 }: PlanCardRowProps) {
   const t = useTranslations('Group.lessonBuilder');
+  const format = useFormatter();
   const theme = useTheme();
   const { brand } = theme.palette;
 
@@ -139,13 +141,30 @@ export function PlanCardRow({
                 }}
               />
             )}
-            {included && reuseWords.length > 0 && (
-              <Chip
-                size="small"
-                label={t('buildsOnLabel', { words: reuseWords.join('、') })}
-                sx={{ bgcolor: alpha(brand[200], 0.5), color: 'text.primary', fontWeight: 600 }}
-              />
-            )}
+            {included &&
+              reuseSources.map((source) => (
+                <Tooltip
+                  key={source.word}
+                  title={
+                    source.addedAt
+                      ? t('buildsOnTooltipKnown', {
+                          deckName: source.deckName,
+                          date: format.dateTime(new Date(source.addedAt), {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          }),
+                        })
+                      : t('buildsOnTooltipThisLesson', { deckName: source.deckName })
+                  }
+                >
+                  <Chip
+                    size="small"
+                    label={t('buildsOnChipLabel', { word: source.word })}
+                    sx={{ bgcolor: alpha(brand[200], 0.5), color: 'text.primary', fontWeight: 600 }}
+                  />
+                </Tooltip>
+              ))}
           </Stack>
         </Box>
       </Stack>
