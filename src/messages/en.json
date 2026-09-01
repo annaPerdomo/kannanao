@@ -1156,9 +1156,14 @@
       "lastNudged": "Last nudged {date}"
     },
     "createAssignment": {
-      "title": "Assign a Deck",
-      "subtitle": "Choose a deck and members to assign it to",
+      "title": "Assign Work",
+      "subtitle": "Choose a deck or a row of kana, and who gets it",
       "selectDeck": "Select Deck",
+      "selectWhat": "What to assign",
+      "targetDeck": "A deck",
+      "targetKana": "Kana",
+      "hiragana": "Hiragana",
+      "katakana": "Katakana",
       "assignTo": "Assign To",
       "noteLabel": "Note (optional)",
       "notePlaceholder": "Focus on chapter 3 vocab",

@@ -1,4 +1,5 @@
 import type { Assignment } from '@/hooks/useAssignments';
+import { setCharacters } from '@/lib/kanaCurriculum';
 
 export interface AssignmentBatch {
   key: string;
@@ -33,6 +34,7 @@ export function groupAssignments(assignments: Assignment[]): AssignmentBatch[] {
   for (const a of assignments) {
     const key = JSON.stringify([
       a.deck_id,
+      a.kana_set,
       a.due_date,
       a.available_on,
       a.required_accuracy,
@@ -47,10 +49,11 @@ export function groupAssignments(assignments: Assignment[]): AssignmentBatch[] {
       batch.members.push(a);
       if (a.completed_at) batch.completed += 1;
     } else {
+      const kanaName = a.kana_set ? setCharacters(a.kana_set) : null;
       batches.set(key, {
         key,
-        deckName: a.decks?.name ?? null,
-        deckEmoji: a.decks?.emoji ?? null,
+        deckName: kanaName ?? a.decks?.name ?? null,
+        deckEmoji: kanaName ? '🌸' : (a.decks?.emoji ?? null),
         dueDate: a.due_date,
         availableOn: a.available_on,
         total: 1,

@@ -29,6 +29,7 @@ export { GroupEncouragementForm } from './GroupEncouragementForm';
 export { GroupRow } from './GroupRow';
 export { InviteList, isExpired } from './InviteList';
 export { InviteQRCode } from './InviteQRCode';
+export { KanaSetPicker } from './KanaSetPicker';
 export { LeaderboardPanel } from './LeaderboardPanel';
 export { LeaderboardWidget } from './LeaderboardWidget';
 export { LearnersTable } from './LearnersTable';

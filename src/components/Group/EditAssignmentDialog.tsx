@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
 import type { Assignment } from '@/hooks/useAssignments';
+import { setCharacters } from '@/lib/kanaCurriculum';
 
 interface EditAssignmentDialogProps {
   open: boolean;
@@ -74,6 +75,9 @@ export function EditAssignmentDialog({
 
   const deck = assignment.decks;
   const member = assignment.profiles;
+  const kanaRow = assignment.kana_set ? setCharacters(assignment.kana_set) : null;
+  const targetEmoji = kanaRow ? '🌸' : deck?.emoji || '📚';
+  const targetName = kanaRow || deck?.name || t('deckFallback');
 
   return (
     <StyledDialog
@@ -83,13 +87,13 @@ export function EditAssignmentDialog({
       subtitle={
         memberCount > 1
           ? t('subtitleBatch', {
-              emoji: deck?.emoji || '📚',
-              deckName: deck?.name || t('deckFallback'),
+              emoji: targetEmoji,
+              deckName: targetName,
               count: memberCount,
             })
           : t('subtitle', {
-              emoji: deck?.emoji || '📚',
-              deckName: deck?.name || t('deckFallback'),
+              emoji: targetEmoji,
+              deckName: targetName,
               memberName: member?.display_name || member?.username || t('memberFallback'),
             })
       }
