@@ -302,7 +302,8 @@ export async function applyLessonPlan(payload: {
   /** Pitch of the practice sentences — same value the plan was built with. */
   level?: string;
   styleNotes?: string;
-}): Promise<{ results: ApplyDeckResult[] }> {
+  kanaSets?: string[];
+}): Promise<{ results: ApplyDeckResult[]; kanaAssigned?: string[]; kanaFailed?: string[] }> {
   const res = await fetch(`${BASE}/group/lesson-plan/apply`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },

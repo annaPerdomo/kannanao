@@ -1,6 +1,7 @@
 import type { PlanDeck, WarmUpWord } from '@/types/lessonPlan';
 
 import { furiganaFromReading, parseFurigana } from './furigana';
+import { orderKanaSets } from './kanaCurriculum';
 
 export type PrintableVariant = 'study' | 'quiz';
 
@@ -19,6 +20,8 @@ export interface PrintableLabels {
   warmUpTitle?: string;
   warmUpHint?: string;
   deck?: string;
+  kanaTitle?: string;
+  kanaHint?: string;
 }
 
 function escapeHtml(text: string): string {
@@ -69,6 +72,11 @@ const PAGE_CSS = `
   ruby rt { font-size: 0.55em; }
   .jp { line-height: 2; }
   .en { font-size: 0.78rem; color: #555; }
+  section.kana { page-break-before: always; }
+  table.kana td { text-align: center; width: 5.5em; }
+  table.kana td.rowhead { text-align: left; width: auto; font-weight: 700; font-size: 0.8rem; }
+  .kana-char { font-size: 1.5rem; line-height: 1.2; }
+  .kana-romaji { font-size: 0.7rem; color: #555; }
 `;
 
 function studyRow(deck: PlanDeck, index: number): string {
@@ -108,6 +116,34 @@ function warmUpSection(warmUp: WarmUpWord[], labels: PrintableLabels): string {
   <p class="desc">${escapeHtml(labels.warmUpHint ?? '')}</p>
   <table>
     <thead><tr><th></th><th>${escapeHtml(labels.word)}</th><th>${escapeHtml(labels.meaning)}</th><th>${escapeHtml(labels.deck ?? '')}</th></tr></thead>
+    <tbody>
+${rows}
+    </tbody>
+  </table>
+</section>`;
+}
+
+/** Only the rows this lesson uses: a full 46+46 chart buries the handful of characters the teacher wants reinforced. */
+function kanaSheetSection(setIds: string[], labels: PrintableLabels): string {
+  const sets = orderKanaSets(setIds);
+  if (sets.length === 0) return '';
+
+  const rows = sets
+    .map((set) => {
+      const cells = set.entries
+        .map(
+          (entry) =>
+            `<td><div class="kana-char">${escapeHtml(entry.kana)}</div><div class="kana-romaji">${escapeHtml(entry.romaji)}</div></td>`,
+        )
+        .join('');
+      return `<tr><td class="rowhead">${escapeHtml(set.label)}</td>${cells}</tr>`;
+    })
+    .join('\n');
+
+  return `<section class="kana">
+  <h1>${escapeHtml(labels.kanaTitle ?? '')}</h1>
+  <p class="desc">${escapeHtml(labels.kanaHint ?? '')}</p>
+  <table class="kana">
     <tbody>
 ${rows}
     </tbody>
@@ -156,9 +192,11 @@ export function buildLessonPrintableHtml(args: {
   weeks: PrintableWeek[];
   labels: PrintableLabels;
   warmUp?: WarmUpWord[];
+  kanaSets?: string[];
 }): string {
   const warmUp =
     args.variant === 'study' && args.warmUp?.length ? warmUpSection(args.warmUp, args.labels) : '';
+  const kana = args.kanaSets?.length ? kanaSheetSection(args.kanaSets, args.labels) : '';
   const sections = args.weeks
     .map((week) => weekSection(week, args.variant, args.labels))
     .join('\n');
@@ -173,6 +211,7 @@ export function buildLessonPrintableHtml(args: {
 <body>
 ${warmUp}
 ${sections}
+${kana}
 <script>window.addEventListener('load', function () { window.print(); });</script>
 </body>
 </html>`;

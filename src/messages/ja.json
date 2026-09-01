@@ -1624,7 +1624,18 @@
       "sentencesToggleLabel": "ことばバブルの練習文もつくる",
       "sentencesToggleHint": "デッキごとに1セット。グループのみんなが同じ文で練習するので、チェックもかんたんです。",
       "imagesToggleLabel": "カードごとに画像もつくる",
-      "imagesToggleHint": "ことばに合わせたUnsplash検索フレーズを使います。作成に時間がかかり、画像のクレジットも使います。"
+      "imagesToggleHint": "ことばに合わせたUnsplash検索フレーズを使います。作成に時間がかかり、画像のクレジットも使います。",
+      "kanaGapChip": "あたらしい おと: {sounds}",
+      "kanaGapWorkingOn": "{kana} — れんしゅうちゅうの メンバー {count}にん: {names}",
+      "kanaGapUntried": "「かなを まなぶ」を まだ ためしていません: {names}",
+      "kanaNoDataNote": "ヒント: グループは まだ「かなを まなぶ」を つかっていないので、よみの データが ありません。",
+      "kanaCompanionTitle": "この レッスンには グループが まだ おぼえていない おとが あります: {sounds}",
+      "kanaCompanionToggle": "この かなの ぎょうも おなじ ひづけで だす",
+      "kanaAssignedMessage": "かなの ぎょう {sounds} も わりあてました。",
+      "kanaAssignFailed": "かなの ぎょう {sounds} は わりあてられませんでした。グループの ページから わりあてられます。",
+      "printKanaToggle": "この レッスンの おとの かなページを つける",
+      "printKanaTitle": "この レッスンの おと",
+      "printKanaHint": "この レッスンで つかう ぎょうだけです。こえに だして よんでみましょう。"
     },
     "deckReadiness": {
       "heading": "デッキの仕上がり",

@@ -1624,7 +1624,18 @@
       "sentencesToggleLabel": "Also make Kotoba Bubble practice sentences",
       "sentencesToggleHint": "One set of sentences per deck — everyone in the group practices the same set, so it's easy to check over.",
       "imagesToggleLabel": "Also generate a picture for each card",
-      "imagesToggleHint": "Uses an Unsplash search phrase written for the card's word — slower to build, and uses up image credits."
+      "imagesToggleHint": "Uses an Unsplash search phrase written for the card's word — slower to build, and uses up image credits.",
+      "kanaGapChip": "New sounds: {sounds}",
+      "kanaGapWorkingOn": "{kana} — {count, plural, one {# member is} other {# members are}} still working on it: {names}",
+      "kanaGapUntried": "Hasn't tried Learn Kana yet: {names}",
+      "kanaNoDataNote": "Tip: your group hasn't tried Learn Kana yet, so there's no reading data to check this plan against.",
+      "kanaCompanionTitle": "This lesson uses sounds your group hasn't mastered: {sounds}",
+      "kanaCompanionToggle": "Also assign these kana rows, due the same day",
+      "kanaAssignedMessage": "The kana rows {sounds} were assigned too.",
+      "kanaAssignFailed": "The kana rows {sounds} couldn't be assigned. You can assign them from the group page.",
+      "printKanaToggle": "Add a kana page for this lesson's sounds",
+      "printKanaTitle": "Sounds in this lesson",
+      "printKanaHint": "Just the rows this lesson uses — practise reading these out loud."
     },
     "deckReadiness": {
       "heading": "Deck readiness",
