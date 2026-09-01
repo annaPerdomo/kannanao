@@ -1,3 +1,4 @@
+import { fetchJsonCached } from '@/lib/apiCache';
 import { LESSON_DOCUMENTS_BUCKET } from '@/lib/lessonDocuments';
 import { sb } from '@/lib/supabase';
 import type { GeneratedCard, GeneratePayload } from '@/types/flashcard';
@@ -172,19 +173,20 @@ function memberQuery(memberId?: string): string {
   return memberId ? `?memberId=${encodeURIComponent(memberId)}` : '';
 }
 
+/** Cache key prefix for one deck's sentence reads — pass to `invalidateApiCache` after a write. */
+export function practiceSentencesCacheKey(deckId: string): string {
+  return `${BASE}/deck/${deckId}/practice-sentences`;
+}
+
 export async function fetchPracticeSentences(
   deckId: string,
   memberId?: string,
 ): Promise<DbPracticeSentence[]> {
-  const res = await fetch(`${BASE}/deck/${deckId}/practice-sentences${memberQuery(memberId)}`, {
-    headers: await authHeaders(),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body?.error ?? 'Failed to load practice sentences');
-  }
-  const data = await res.json();
-  return data.sentences as DbPracticeSentence[];
+  const data = await fetchJsonCached<{ sentences: DbPracticeSentence[] }>(
+    `${practiceSentencesCacheKey(deckId)}${memberQuery(memberId)}`,
+    authHeaders,
+  );
+  return data.sentences;
 }
 
 export async function generatePracticeSentences(deckId: string): Promise<DbPracticeSentence[]> {
