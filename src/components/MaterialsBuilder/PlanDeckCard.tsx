@@ -11,9 +11,10 @@ import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useFormatter, useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 
-import { emptyPlanCard } from '@/lib/lessonPlanEdits';
-import type { JlptLevel } from '@/lib/lessonPrompts';
+import { emptyPlanCard, includedCards } from '@/lib/lessonPlanEdits';
+import { CARDS_MAX, type JlptLevel } from '@/lib/lessonPrompts';
 import type { DeckReuse } from '@/lib/lessonReuse';
 import type { PlanCard, PlanDeck } from '@/types/lessonPlan';
 
@@ -31,6 +32,8 @@ interface PlanDeckCardProps {
   retrying: boolean;
   onDeckChange: (deck: PlanDeck) => void;
   onRetry: () => void;
+  /** Keep the approved cards and generate fresh ones for the rest, up to targetCount. */
+  onRegenerateUnapproved: (targetCount: number) => void;
 }
 
 export function PlanDeckCard({
@@ -43,6 +46,7 @@ export function PlanDeckCard({
   retrying,
   onDeckChange,
   onRetry,
+  onRegenerateUnapproved,
 }: PlanDeckCardProps) {
   const t = useTranslations('Group.lessonBuilder');
   const theme = useTheme();
@@ -51,6 +55,11 @@ export function PlanDeckCard({
 
   const deckOn = !deck.excluded;
   const noCardsLeft = deckOn && weekNumber === null;
+  const approvedCount = includedCards(deck).length;
+
+  // Resyncs when "Try again" or a regenerate changes the deck's card count.
+  const [targetCount, setTargetCount] = useState(deck.cards.length);
+  useEffect(() => setTargetCount(deck.cards.length), [deck.cards.length]);
 
   const updateCard = (index: number, patch: Partial<PlanCard>) => {
     const cards = deck.cards.map((c, i) => (i === index ? { ...c, ...patch } : c));
@@ -137,6 +146,10 @@ export function PlanDeckCard({
           </Typography>
         )}
 
+        <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', mt: 1.5 }}>
+          {t('approveHint')}
+        </Typography>
+
         <Stack spacing={1.5} sx={{ mt: 1.5 }}>
           {deck.cards.map((card, i) => (
             <PlanCardRow
@@ -145,7 +158,7 @@ export function PlanDeckCard({
               key={i}
               card={card}
               index={i}
-              reuseWords={reuse.perCard[i] ?? []}
+              reuseSources={reuse.perCard[i] ?? []}
               targetLevel={targetLevel}
               tickLocked={ticksLocked}
               onChange={(patch) => updateCard(i, patch)}
@@ -162,6 +175,44 @@ export function PlanDeckCard({
         >
           {t('addCardButton')}
         </Button>
+
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={1.5}
+          sx={{
+            mt: 2,
+            pt: 2,
+            borderTop: `1px dashed ${alpha(brand[300], 0.5)}`,
+            alignItems: { sm: 'center' },
+          }}
+        >
+          <TextField
+            type="number"
+            size="small"
+            label={t('targetCountLabel')}
+            value={targetCount}
+            onChange={(e) =>
+              setTargetCount(
+                Math.min(CARDS_MAX, Math.max(approvedCount, Number(e.target.value) || 0)),
+              )
+            }
+            disabled={ticksLocked}
+            slotProps={{ htmlInput: { min: approvedCount, max: CARDS_MAX } }}
+            sx={{ maxWidth: 160 }}
+          />
+          <Button
+            size="small"
+            startIcon={<RefreshIcon sx={{ fontSize: 16 }} />}
+            onClick={() => onRegenerateUnapproved(targetCount)}
+            disabled={retrying || ticksLocked}
+            sx={{ textTransform: 'none', fontWeight: 700, whiteSpace: 'nowrap' }}
+          >
+            {t('regenerateUnapprovedButton')}
+          </Button>
+          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+            {t('regenerateHint', { approved: approvedCount, target: targetCount })}
+          </Typography>
+        </Stack>
       </Collapse>
     </Paper>
   );

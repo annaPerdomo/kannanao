@@ -11,7 +11,9 @@ import { Loading } from '@/components/Loading';
 import type { Group } from '@/hooks/useGroups';
 import { useLessonPlan } from '@/hooks/useLessonPlan';
 import type { GoalMode } from '@/lib/assignmentMastery';
-import { CARDS_MAX, CARDS_MIN, DEFAULT_LEVEL } from '@/lib/lessonPrompts';
+import { attachPlanImages } from '@/lib/lessonImages';
+import { includedCards } from '@/lib/lessonPlanEdits';
+import { CARDS_MAX, CARDS_MIN, DEFAULT_LEVEL, GOAL_MAX } from '@/lib/lessonPrompts';
 import { buildLessonPlan } from '@/services/api';
 import type { PlanDeck } from '@/types/lessonPlan';
 
@@ -41,6 +43,7 @@ const EMPTY_FORM: LessonSetForm = {
   styleNotes: '',
   documents: [],
   withSentences: true,
+  generateImages: false,
 };
 
 /**
@@ -108,7 +111,8 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
           styleNotes: effectiveStyleNotes(form),
           groupId,
         });
-        const replacement = data.plan.decks[0];
+        const replacementPlan = form.generateImages ? await attachPlanImages(data.plan) : data.plan;
+        const replacement = replacementPlan.decks[0];
         if (replacement) {
           setPlan((current) =>
             current
@@ -117,6 +121,68 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
           );
           mergeWarmUpWords(data.warmUp ?? []);
         }
+      } catch (err) {
+        setRetryError(err instanceof Error ? err.message : t('errorMessage'));
+      } finally {
+        setRetryingIndex(null);
+      }
+    },
+    [plan, form, groupId, setPlan, mergeWarmUpWords, t],
+  );
+
+  /**
+   * Keep the approved cards exactly as they are and generate fresh
+   * replacements only for the gap — the unapproved ones, plus however many
+   * more the educator asked for by raising the target count.
+   */
+  const handleRegenerateUnapproved = useCallback(
+    async (index: number, targetCount: number) => {
+      if (!plan) return;
+      const deck = plan.decks[index];
+      const approved = includedCards(deck);
+      const needed = Math.min(CARDS_MAX, Math.max(0, targetCount - approved.length));
+
+      if (needed === 0) {
+        setPlan((current) =>
+          current
+            ? {
+                decks: current.decks.map((d, i) => (i === index ? { ...d, cards: approved } : d)),
+              }
+            : current,
+        );
+        return;
+      }
+
+      setRetryingIndex(index);
+      setRetryError(null);
+      try {
+        const data = await buildLessonPlan({
+          goal: t('regenerateGoal', {
+            goal: form.goal,
+            deck: deck.name,
+            words: approved.map((c) => c.word).join('、') || t('regenerateNoWords'),
+          }).slice(0, GOAL_MAX),
+          weeks: 1,
+          // Gemini's floor is CARDS_MIN even when fewer are actually needed;
+          // the extras are trimmed off below.
+          cardsPerDeck: Math.min(CARDS_MAX, Math.max(CARDS_MIN, needed)),
+          documents: form.documents.map((d) => ({ path: d.path, mimeType: d.mimeType })),
+          level: form.level,
+          styleNotes: effectiveStyleNotes(form),
+          groupId,
+        });
+        const generatedPlan = form.generateImages ? await attachPlanImages(data.plan) : data.plan;
+        const fresh = (generatedPlan.decks[0]?.cards ?? []).slice(0, needed);
+        setPlan((current) =>
+          current
+            ? {
+                decks: current.decks.map((d, i) =>
+                  i === index ? { ...d, cards: [...approved, ...fresh] } : d,
+                ),
+              }
+            : current,
+        );
+        mergeWarmUpWords(data.warmUp ?? []);
       } catch (err) {
         setRetryError(err instanceof Error ? err.message : t('errorMessage'));
       } finally {
@@ -178,6 +244,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
               level: form.level,
               styleNotes: effectiveStyleNotes(form),
               groupId,
+              generateImages: form.generateImages,
             })
           }
         />
@@ -197,6 +264,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
           retryingIndex={retryingIndex}
           onDeckChange={handleDeckChange}
           onRetryDeck={handleRetryDeck}
+          onRegenerateUnapproved={handleRegenerateUnapproved}
           onDueDateChange={setDueDate}
           onAccuracyChange={setAccuracy}
           onModeChange={setMode}

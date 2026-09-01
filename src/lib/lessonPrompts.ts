@@ -60,6 +60,10 @@ export const CARDS_MIN = 5;
 export const CARDS_MAX = 20;
 export const CARDS_DEFAULT = 12;
 
+/** Bounds the plan route enforces on `goal`; composed goals must respect this too. */
+export const GOAL_MIN = 3;
+export const GOAL_MAX = 500;
+
 /** Longest a plan-supplied text field may be before it is truncated. */
 export const PLAN_TEXT_MAX = 200;
 
@@ -112,6 +116,15 @@ ${trimmed}
 ###
 `;
 }
+
+function mainViewModeRule(level: JlptLevel): string {
+  if (level === 'N5' || level === 'N4') {
+    return `6. "mainViewMode" must be "hiragana" for every deck — a ${level} learner is still building kanji recognition, so the front of the card always stays in kana even for words that are normally written in kanji.`;
+  }
+  return `6. "mainViewMode" is how the front of the card should be shown: "hiragana", "kanji" or "romaji". This learner is at ${level}, so use "kanji" whenever the deck's words are normally written in kanji — only fall back to "hiragana" for a deck that is genuinely kana-only vocabulary.`;
+}
+
+const IMAGE_QUERY_RULE = `10. "imageQuery" is a 2-4 word English noun phrase for an Unsplash photo search (concrete, photographic, child-friendly). Verbs→scene (食べる="child eating noodles"), abstracts→closest visual (楽しい="children laughing").`;
 
 /** A whole lesson plan: one deck per week, easiest first. */
 export function buildLessonPlanPrompt(args: {
@@ -166,10 +179,11 @@ ${levelRule}
 3. "reading" is kana only. Leave it as an empty string when the word is already kana.
 4. "exampleJp" wraps every kanji or kanji compound with furigana using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです. Each group holds exactly one reading — never split a compound's reading with extra pipes ({無関係|むかんけい} or {無|む}{関|かん}{係|けい}, never {無関係|む|かん|けい}). Pure hiragana/katakana words need no wrapping.
 5. No romaji anywhere in a Japanese field.
-6. "mainViewMode" is how the front of the card should be shown: "hiragana", "kanji" or "romaji". Use "kanji" only when the words are written in kanji.
+${mainViewModeRule(level)}
 7. "emoji" is a single emoji that fits the deck. "description" is one short plain sentence a non-technical adult would understand.
 8. "name" is a short deck title in the same language as the educator's request above.
-${duplicateRule}`;
+${duplicateRule}
+${IMAGE_QUERY_RULE}`;
 }
 
 /**

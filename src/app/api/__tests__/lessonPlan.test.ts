@@ -134,7 +134,13 @@ function seedKnownWordsPool(args: {
   deckIds?: string[];
   plannedDeckIds?: string[];
   decks?: { id: string; name: string }[];
-  cards?: { word: string; reading: string; meaning: string; deck_id: string }[];
+  cards?: {
+    word: string;
+    reading: string;
+    meaning: string;
+    deck_id: string;
+    created_at?: string;
+  }[];
 }) {
   queues.assignments.push({
     data: (args.deckIds ?? []).map((id) => ({ deck_id: id })),
@@ -245,6 +251,19 @@ describe('POST /api/group/lesson-plan', () => {
     const prompt = requestBody.contents[0].parts[0].text;
     expect(prompt).toContain('upper-intermediate learner');
     expect(prompt).toContain('Business settings, polite form');
+  });
+
+  it('always asks Gemini for an imageQuery per card, so one is ready even if images are off', async () => {
+    mockGeminiPlan();
+
+    const res = await POST(makeRequest(VALID));
+    expect(res.status).toBe(200);
+
+    const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+    const cardSchema =
+      requestBody.generationConfig.response_schema.properties.decks.items.properties.cards.items;
+    expect(cardSchema.properties.imageQuery).toEqual({ type: 'string' });
+    expect(cardSchema.required).toContain('imageQuery');
   });
 
   it('returns the plan and writes nothing', async () => {
@@ -429,7 +448,9 @@ describe('POST /api/group/lesson-plan — group known-words dedupe', () => {
     seedKnownWordsPool({
       deckIds: ['d1'],
       decks: [{ id: 'd1', name: 'Animals' }],
-      cards: [{ word: 'ねこ', reading: 'ねこ', meaning: 'cat', deck_id: 'd1' }],
+      cards: [
+        { word: 'ねこ', reading: 'ねこ', meaning: 'cat', deck_id: 'd1', created_at: '2026-01-01' },
+      ],
     });
     mockGeminiPlanWithCards([
       { word: 'ねこ', reading: 'ねこ', meaning: 'cat' },
@@ -447,9 +468,11 @@ describe('POST /api/group/lesson-plan — group known-words dedupe', () => {
     const body = await res.json();
     expect(body.plan.decks[0].cards.map((c: { word: string }) => c.word)).toEqual(['ラーメン']);
     expect(body.warmUp).toEqual([
-      { word: 'ねこ', reading: 'ねこ', meaning: 'cat', deckName: 'Animals' },
+      { word: 'ねこ', reading: 'ねこ', meaning: 'cat', deckName: 'Animals', addedAt: '2026-01-01' },
     ]);
-    expect(body.knownWords).toEqual(['ねこ']);
+    expect(body.knownWords).toEqual([
+      { word: 'ねこ', reading: 'ねこ', meaning: 'cat', deckName: 'Animals', addedAt: '2026-01-01' },
+    ]);
   });
 
   it('skips the pool and the KNOWN VOCABULARY block when no groupId is given', async () => {

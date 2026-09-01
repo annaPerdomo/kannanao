@@ -273,7 +273,7 @@ describe('LessonSetBuilder', () => {
     await reachTwoWeekReview();
 
     expect(screen.getByText(/2 decks, 3 cards/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Include うどん' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Approve うどん' }));
     expect(screen.getByText(/2 decks, 2 cards/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
@@ -287,7 +287,7 @@ describe('LessonSetBuilder', () => {
   it('switching a week off drops its whole deck from the apply payload', async () => {
     await reachTwoWeekReview();
 
-    fireEvent.click(screen.getByRole('switch', { name: 'Include Snacks' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Approve all of Snacks' }));
     expect(screen.getByText(/1 deck, 2 cards/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
@@ -301,8 +301,8 @@ describe('LessonSetBuilder', () => {
   it('disables creating when everything is switched off', async () => {
     await reachTwoWeekReview();
 
-    fireEvent.click(screen.getByRole('switch', { name: 'Include Food words' }));
-    fireEvent.click(screen.getByRole('switch', { name: 'Include Snacks' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Approve all of Food words' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Approve all of Snacks' }));
 
     expect(screen.getByRole('button', { name: /create decks & assign/i })).toBeDisabled();
   });
@@ -345,8 +345,8 @@ describe('LessonSetBuilder', () => {
     fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
     await screen.findByText('network died');
 
-    expect(screen.getByRole('switch', { name: 'Include Snacks' })).toBeDisabled();
-    expect(screen.getByRole('checkbox', { name: 'Include うどん' })).toBeDisabled();
+    expect(screen.getByRole('switch', { name: 'Approve all of Snacks' })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: 'Approve うどん' })).toBeDisabled();
     expect(screen.getByText(/ticks are locked/i)).toBeInTheDocument();
   });
 

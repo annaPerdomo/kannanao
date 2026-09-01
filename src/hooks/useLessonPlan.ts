@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { invalidateApiCache } from '@/lib/apiCache';
+import { attachPlanImages } from '@/lib/lessonImages';
 import { includedPlan } from '@/lib/lessonPlanEdits';
 import { mergeWarmUp } from '@/lib/lessonWarmUp';
 import { applyLessonPlan, buildLessonPlan, practiceSentencesCacheKey } from '@/services/api';
@@ -17,6 +18,7 @@ export interface BuildPlanArgs {
   level?: string;
   styleNotes?: string;
   groupId?: string;
+  generateImages?: boolean;
 }
 
 export interface ApplyPlanArgs {
@@ -34,7 +36,7 @@ export function useLessonPlan() {
   const t = useTranslations('Group.lessonBuilder');
   const [plan, setPlan] = useState<LessonPlan | null>(null);
   const [warmUp, setWarmUp] = useState<WarmUpWord[]>([]);
-  const [knownWords, setKnownWords] = useState<string[]>([]);
+  const [knownWords, setKnownWords] = useState<WarmUpWord[]>([]);
   /**
    * Identifies this plan across apply attempts. Applying creates decks one at a
    * time; if it dies half way, retrying with the same id resumes instead of
@@ -59,12 +61,13 @@ export function useLessonPlan() {
       setResults(null);
       setApplyFailed(false);
       try {
-        const { documents, ...rest } = args;
+        const { documents, generateImages, ...rest } = args;
         const data = await buildLessonPlan({
           ...rest,
           documents: documents?.map((d) => ({ path: d.path, mimeType: d.mimeType })),
         });
-        setPlan(data.plan);
+        const plan = generateImages ? await attachPlanImages(data.plan) : data.plan;
+        setPlan(plan);
         setPlanId(uuidv4());
         setWarmUp(data.warmUp ?? []);
         setKnownWords(data.knownWords ?? []);

@@ -27,7 +27,14 @@ function deck(name: string, cards: PlanCard[], overrides: Partial<PlanDeck> = {}
 }
 
 function known(word: string, overrides: Partial<WarmUpWord> = {}): WarmUpWord {
-  return { word, reading: word, meaning: 'meaning', deckName: 'Old Deck', ...overrides };
+  return {
+    word,
+    reading: word,
+    meaning: 'meaning',
+    deckName: 'Old Deck',
+    addedAt: '2026-01-01T00:00:00Z',
+    ...overrides,
+  };
 }
 
 describe('normalizeWord', () => {
@@ -82,7 +89,13 @@ describe('splitKnownCards', () => {
     const { warmUp } = splitKnownCards(plan, pool);
 
     expect(warmUp).toEqual([
-      { word: '学校', reading: 'がっこう', meaning: 'school', deckName: 'Basics' },
+      {
+        word: '学校',
+        reading: 'がっこう',
+        meaning: 'school',
+        deckName: 'Basics',
+        addedAt: '2026-01-01T00:00:00Z',
+      },
     ]);
   });
 

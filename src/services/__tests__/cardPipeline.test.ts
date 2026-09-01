@@ -107,6 +107,15 @@ describe('withImages', () => {
     expect(card.image_query).toBe('');
   });
 
+  it('skips the image call entirely when generateImages is false', async () => {
+    answerWith(image);
+
+    const [card] = await withImages([generated()], 'deck-1', 'hiragana', false);
+
+    expect(fetchImagesBatch).not.toHaveBeenCalled();
+    expect(card.imageUrl).toBeUndefined();
+  });
+
   it('defaults a missing jlpt level to undefined rather than null', async () => {
     answerWith(null);
 

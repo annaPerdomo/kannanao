@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { deckReuse, planReuse, reusedWords } from '@/lib/lessonReuse';
-import type { PlanDeck } from '@/types/lessonPlan';
+import type { PlanDeck, WarmUpWord } from '@/types/lessonPlan';
 
 function deck(name: string, words: [string, string][]): PlanDeck {
   return {
@@ -20,18 +20,31 @@ function deck(name: string, words: [string, string][]): PlanDeck {
   };
 }
 
+function known(word: string, overrides: Partial<WarmUpWord> = {}): WarmUpWord {
+  return {
+    word,
+    reading: word,
+    meaning: 'meaning',
+    deckName: 'Old Deck',
+    addedAt: '2026-01-01T00:00:00Z',
+    ...overrides,
+  };
+}
+
 describe('reusedWords', () => {
   it('finds pool words inside a sentence, ignoring furigana markup', () => {
-    expect(reusedWords('{猫|ねこ}が{好|す}きです', ['猫', 'いぬ'])).toEqual(['猫']);
+    expect(reusedWords('{猫|ねこ}が{好|す}きです', [known('猫'), known('いぬ')])).toEqual([
+      known('猫'),
+    ]);
   });
 
   it('returns nothing for an empty sentence or an empty pool', () => {
-    expect(reusedWords('', ['猫'])).toEqual([]);
+    expect(reusedWords('', [known('猫')])).toEqual([]);
     expect(reusedWords('ねこがいます', [])).toEqual([]);
   });
 
   it('does not report the same word twice', () => {
-    expect(reusedWords('ねことねこ', ['ねこ', 'ねこ'])).toEqual(['ねこ']);
+    expect(reusedWords('ねことねこ', [known('ねこ'), known('ねこ')])).toEqual([known('ねこ')]);
   });
 });
 
@@ -42,11 +55,11 @@ describe('deckReuse', () => {
         ['いぬ', 'ねことあそぶ'],
         ['とり', 'とりがいます'],
       ]),
-      ['ねこ'],
+      [known('ねこ')],
     );
 
     expect(result).toMatchObject({ reused: 1, total: 2 });
-    expect(result.perCard).toEqual([['ねこ'], []]);
+    expect(result.perCard).toEqual([[known('ねこ')], []]);
   });
 
   it('leaves unticked and blank cards out of the counts but keeps perCard aligned', () => {
@@ -57,7 +70,7 @@ describe('deckReuse', () => {
     ]);
     planned.cards[1].excluded = true;
 
-    const result = deckReuse(planned, ['ねこ']);
+    const result = deckReuse(planned, [known('ねこ')]);
 
     expect(result).toMatchObject({ reused: 1, total: 1 });
     expect(result.perCard).toHaveLength(3);
@@ -75,7 +88,9 @@ describe('planReuse', () => {
 
     expect(first.reused).toBe(0);
     expect(second.reused).toBe(1);
-    expect(second.perCard[0]).toEqual(['ねこ']);
+    expect(second.perCard[0]).toEqual([
+      { word: 'ねこ', reading: 'ねこ', meaning: 'meaning', deckName: 'Week 1', addedAt: null },
+    ]);
   });
 
   it("a switched-off week's words never feed a later week's pool", () => {

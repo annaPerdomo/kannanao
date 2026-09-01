@@ -24,7 +24,7 @@ import { WarmUpPanel } from './WarmUpPanel';
 interface ReviewStepProps {
   plan: LessonPlan;
   warmUp: WarmUpWord[];
-  knownWords: string[];
+  knownWords: WarmUpWord[];
   dueDate: string;
   accuracy: number | null;
   mode: GoalMode | null;
@@ -35,6 +35,7 @@ interface ReviewStepProps {
   retryingIndex: number | null;
   onDeckChange: (index: number, deck: PlanDeck) => void;
   onRetryDeck: (index: number) => void;
+  onRegenerateUnapproved: (index: number, targetCount: number) => void;
   onDueDateChange: (date: string) => void;
   onAccuracyChange: (accuracy: number | null) => void;
   onModeChange: (mode: GoalMode | null) => void;
@@ -55,6 +56,7 @@ export function ReviewStep({
   retryingIndex,
   onDeckChange,
   onRetryDeck,
+  onRegenerateUnapproved,
   onDueDateChange,
   onAccuracyChange,
   onModeChange,
@@ -99,6 +101,7 @@ export function ReviewStep({
             retrying={retryingIndex === i}
             onDeckChange={(next) => onDeckChange(i, next)}
             onRetry={() => onRetryDeck(i)}
+            onRegenerateUnapproved={(targetCount) => onRegenerateUnapproved(i, targetCount)}
           />
         );
       })}

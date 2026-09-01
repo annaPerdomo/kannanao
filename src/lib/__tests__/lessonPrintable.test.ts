@@ -16,7 +16,7 @@ const LABELS = {
 };
 
 const WARM_UP: WarmUpWord[] = [
-  { word: '学校', reading: 'がっこう', meaning: 'school', deckName: 'Basics' },
+  { word: '学校', reading: 'がっこう', meaning: 'school', deckName: 'Basics', addedAt: null },
 ];
 
 const DECK: PlanDeck = {
@@ -122,6 +122,7 @@ describe('warm-up section', () => {
         reading: '',
         meaning: '<img src=x onerror=alert(1)>',
         deckName: '<script>alert(2)</script>',
+        addedAt: null,
       },
     ]);
 

@@ -18,12 +18,14 @@ interface UseGenerateResult {
     words: string[],
     deckId: string,
     mainViewMode?: MainViewMode,
+    generateImages?: boolean,
   ) => Promise<ReusableCard[]>;
   regenerate: (
     words: string[],
     instruction: string,
     deckId: string,
     mainViewMode?: MainViewMode,
+    generateImages?: boolean,
   ) => Promise<NewCard[]>;
 }
 
@@ -37,16 +39,22 @@ export function useGenerateFlashcards(): UseGenerateResult {
       words: string[],
       deckId: string,
       mainViewMode: MainViewMode,
-      options: { expandTopics: boolean; instruction?: string; reuseExisting?: boolean },
+      options: {
+        expandTopics: boolean;
+        instruction?: string;
+        reuseExisting?: boolean;
+        generateImages?: boolean;
+      },
     ): Promise<ReusableCard[]> => {
-      const { reuseExisting, ...payload } = options;
+      const { reuseExisting, generateImages = true, ...payload } = options;
       setGenerating(true);
       setError(null);
       try {
         const generated = await generateFlashcards({ pendingWords: words, ...payload });
-        if (!reuseExisting) return await withImages(generated, deckId, mainViewMode);
+        if (!reuseExisting)
+          return await withImages(generated, deckId, mainViewMode, generateImages);
 
-        return await reuseThenFetch(generated, deckId, mainViewMode);
+        return await reuseThenFetch(generated, deckId, mainViewMode, generateImages);
       } catch (err) {
         const msg = err instanceof Error ? err.message : t('generationFailed');
         setError(msg);
@@ -59,8 +67,13 @@ export function useGenerateFlashcards(): UseGenerateResult {
   );
 
   const generate = useCallback(
-    (words: string[], deckId: string, mainViewMode: MainViewMode = 'hiragana') =>
-      run(words, deckId, mainViewMode, { expandTopics: true, reuseExisting: true }),
+    (
+      words: string[],
+      deckId: string,
+      mainViewMode: MainViewMode = 'hiragana',
+      generateImages = true,
+    ) =>
+      run(words, deckId, mainViewMode, { expandTopics: true, reuseExisting: true, generateImages }),
     [run],
   );
 
@@ -76,7 +89,8 @@ export function useGenerateFlashcards(): UseGenerateResult {
       instruction: string,
       deckId: string,
       mainViewMode: MainViewMode = 'hiragana',
-    ) => run(words, deckId, mainViewMode, { expandTopics: false, instruction }),
+      generateImages = true,
+    ) => run(words, deckId, mainViewMode, { expandTopics: false, instruction, generateImages }),
     [run],
   );
 
