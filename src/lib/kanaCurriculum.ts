@@ -279,6 +279,48 @@ export function kanaBefore(setId: string): string[] {
     .flatMap((s) => s.entries.map((e) => e.kana));
 }
 
+const SMALL_Y = new Set(['ゃ', 'ゅ', 'ょ', 'ャ', 'ュ', 'ョ']);
+
+// The small tsu has no sound and no curriculum entry, but reading っ means
+// recognising the つ glyph, so it counts towards the row つ lives in.
+const SOKUON: Record<string, string> = { っ: 'つ', ッ: 'ツ' };
+
+function normalizeKana(kana: string): string {
+  return SOKUON[kana] ?? kana;
+}
+
+/**
+ * Combination sounds come back whole ('きゃ'); anything with no curriculum
+ * entry — ー, small vowels, spaces, kanji — is dropped, not reported.
+ */
+export function segmentReading(reading: string): string[] {
+  const chars = [...(reading ?? '')];
+  const out: string[] = [];
+
+  for (let i = 0; i < chars.length; i += 1) {
+    const next = chars[i + 1];
+    if (next && SMALL_Y.has(next) && ENTRIES_BY_KANA.has(chars[i] + next)) {
+      out.push(chars[i] + next);
+      i += 1;
+      continue;
+    }
+    const kana = normalizeKana(chars[i]);
+    if (ENTRIES_BY_KANA.has(kana)) out.push(kana);
+  }
+
+  return out;
+}
+
+export function kanaSetForChar(kana: string): string | null {
+  return ENTRIES_BY_KANA.get(normalizeKana(kana))?.setId ?? null;
+}
+
+/** Curriculum order for a set of row ids — hiragana before katakana, base rows first. */
+export function orderKanaSets(setIds: Iterable<string>): KanaSet[] {
+  const wanted = new Set(setIds);
+  return KANA_SETS.filter((set) => wanted.has(set.id));
+}
+
 // Drills prefer these as decoys over random characters: telling look-alikes
 // apart is the skill, and random decoys make a drill trivially easy.
 export const CONFUSABLE_GROUPS: string[][] = [

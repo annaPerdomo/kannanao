@@ -9,8 +9,11 @@ import {
   HIRAGANA_SETS,
   KANA_SETS,
   kanaBefore,
+  kanaSetForChar,
   type KanaTrack,
   KATAKANA_SETS,
+  orderKanaSets,
+  segmentReading,
   setsForTrack,
 } from '@/lib/kanaCurriculum';
 import { isPureKana } from '@/lib/reviewGames';
@@ -192,5 +195,82 @@ describe('confusable characters', () => {
 
   it('should have nothing to say about a character with no look-alikes', () => {
     expect(confusablesFor('ぴょ')).toEqual([]);
+  });
+});
+
+describe('segmentReading', () => {
+  it('should split a plain reading into its characters', () => {
+    expect(segmentReading('ねこ')).toEqual(['ね', 'こ']);
+  });
+
+  it('should keep a combination sound whole', () => {
+    expect(segmentReading('きゃく')).toEqual(['きゃ', 'く']);
+    expect(segmentReading('りょこう')).toEqual(['りょ', 'こ', 'う']);
+    expect(segmentReading('ジュース')).toEqual(['ジュ', 'ス']);
+  });
+
+  it('should read a dakuten character as its own entry, not its base', () => {
+    expect(segmentReading('がっこう')).toEqual(['が', 'つ', 'こ', 'う']);
+    expect(segmentReading('ぱん')).toEqual(['ぱ', 'ん']);
+  });
+
+  it('should count the small tsu as the row tsu lives in', () => {
+    expect(segmentReading('きって')).toEqual(['き', 'つ', 'て']);
+    expect(segmentReading('カップ')).toEqual(['カ', 'ツ', 'プ']);
+  });
+
+  it('should skip the katakana long vowel mark rather than report it', () => {
+    expect(segmentReading('コーヒー')).toEqual(['コ', 'ヒ']);
+  });
+
+  it('should treat a written-out long vowel as ordinary characters', () => {
+    expect(segmentReading('おかあさん')).toEqual(['お', 'か', 'あ', 'さ', 'ん']);
+  });
+
+  it('should silently drop anything with no curriculum entry', () => {
+    expect(segmentReading('ね こ・新')).toEqual(['ね', 'こ']);
+    expect(segmentReading('ファン')).toEqual(['フ', 'ン']);
+    expect(segmentReading('')).toEqual([]);
+  });
+
+  it('should map every character it emits to a curriculum row', () => {
+    const readings = ['きゃく', 'がっこう', 'コーヒー', 'ぴょん', 'じゃあ', 'カップ'];
+    for (const reading of readings) {
+      for (const kana of segmentReading(reading)) {
+        expect(kanaSetForChar(kana)).not.toBeNull();
+      }
+    }
+  });
+});
+
+describe('kanaSetForChar', () => {
+  it('should name the row a character belongs to', () => {
+    expect(kanaSetForChar('き')).toBe('hira-ka');
+    expect(kanaSetForChar('きゃ')).toBe('hira-kya');
+    expect(kanaSetForChar('ヲ')).toBe('kata-wa');
+  });
+
+  it('should send the small tsu to the ta row', () => {
+    expect(kanaSetForChar('っ')).toBe(kanaSetForChar('つ'));
+    expect(kanaSetForChar('ッ')).toBe(kanaSetForChar('ツ'));
+  });
+
+  it('should have nothing to say about a non-curriculum character', () => {
+    expect(kanaSetForChar('ー')).toBeNull();
+    expect(kanaSetForChar('新')).toBeNull();
+  });
+});
+
+describe('orderKanaSets', () => {
+  it('should return the named rows in curriculum order, hiragana first', () => {
+    expect(orderKanaSets(['kata-a', 'hira-ka', 'hira-a']).map((s) => s.id)).toEqual([
+      'hira-a',
+      'hira-ka',
+      'kata-a',
+    ]);
+  });
+
+  it('should ignore an id that names no row', () => {
+    expect(orderKanaSets(['nope']).length).toBe(0);
   });
 });
