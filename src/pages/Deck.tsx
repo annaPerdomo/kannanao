@@ -40,7 +40,7 @@ import { useDecks } from '@/hooks/useDecks';
 import { useGenerateFlashcards } from '@/hooks/useGenerateFlashcards';
 import { useStartMixedPractice } from '@/hooks/usePracticeChain';
 import { useJapaneseVoice } from '@/hooks/useSpeech';
-import { withImages } from '@/services/cardPipeline';
+import { reuseThenFetch } from '@/services/cardPipeline';
 import { LAYOUT } from '@/theme';
 import type { PracticeMode } from '@/types/app';
 import type { Flashcard, GeneratedCard, MainViewMode } from '@/types/flashcard';
@@ -135,7 +135,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   };
 
   const handlePdfCards = async (extracted: GeneratedCard[]) => {
-    const cards = await withImages(extracted, deckId, pendingMainViewMode);
+    const cards = await reuseThenFetch(extracted, deckId, pendingMainViewMode);
     setPdfImportOpen(false);
     review.review(cards);
   };

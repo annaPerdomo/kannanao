@@ -1,4 +1,5 @@
 import { furiganaToKana, normalizeFurigana, stripFurigana } from '@/lib/furigana';
+import { dbFindCardsByWords } from '@/lib/supabase';
 import type { Flashcard, GeneratedCard, MainViewMode } from '@/types/flashcard';
 
 import { encodeUnsplashUrl, fetchImagesBatch, generateFlashcards, IMAGE_BATCH_SIZE } from './api';
@@ -170,6 +171,19 @@ export async function withImages(
     cardType: card.card_type ?? 'word',
     jlptLevel: card.jlpt_level ?? undefined,
   }));
+}
+
+export async function reuseThenFetch(
+  generated: GeneratedCard[],
+  deckId: string,
+  mainViewMode: MainViewMode,
+): Promise<ReusableCard[]> {
+  const existing = await dbFindCardsByWords(generated.map((c) => c.word));
+  const { reused, toFetch } = applyReuse(generated, existing, deckId, mainViewMode);
+  const fetched = await withImages(toFetch, deckId, mainViewMode);
+
+  let next = 0;
+  return reused.map((card) => card ?? fetched[next++]);
 }
 
 /**
