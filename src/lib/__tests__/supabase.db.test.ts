@@ -23,6 +23,7 @@ function makeChain(table: string) {
     'update',
     'delete',
     'eq',
+    'not',
     'or',
     'lte',
     'order',

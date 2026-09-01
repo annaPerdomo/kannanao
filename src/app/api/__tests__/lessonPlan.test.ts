@@ -41,6 +41,7 @@ vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
         select: () => chain,
         eq: () => chain,
         gt: () => chain,
+        not: () => chain,
         in: () => chain,
         limit: () => chain,
         order: () => chain,

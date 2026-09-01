@@ -36,7 +36,12 @@ export async function getGroupKnownWords(
 
   const [assignmentRows, plannedRows] = await Promise.all([
     allRows<{ deck_id: string }>((from, to) =>
-      sb.from('assignments').select('deck_id').eq('group_id', groupId).range(from, to),
+      sb
+        .from('assignments')
+        .select('deck_id')
+        .eq('group_id', groupId)
+        .not('deck_id', 'is', null)
+        .range(from, to),
     ),
     allRows<{ deck_id: string }>((from, to) =>
       sb.from('planned_assignments').select('deck_id').eq('group_id', groupId).range(from, to),

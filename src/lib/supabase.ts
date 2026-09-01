@@ -71,7 +71,12 @@ export async function loadDecks(userId: string): Promise<Deck[]> {
     // assignment scheduled for a later week must not put its deck in the
     // library early — that is the pile of homework `available_on` exists to
     // prevent.
-    sb.from('assignments').select('deck_id').eq('member_id', userId).or(availableNowFilter()),
+    sb
+      .from('assignments')
+      .select('deck_id')
+      .eq('member_id', userId)
+      .not('deck_id', 'is', null)
+      .or(availableNowFilter()),
   ]);
 
   const { data: deckRows, error: deckError } = ownResult;
@@ -363,7 +368,14 @@ export async function getAccessibleDeckIds(userId: string): Promise<string[]> {
   if (!isConfigured()) return [];
   const [ownResult, assignedResult] = await Promise.all([
     sb.from('decks').select('id').eq('user_id', userId),
-    sb.from('assignments').select('deck_id').eq('member_id', userId).or(availableNowFilter()),
+    // Kana assignments carry no deck; a null here would land in the accessible
+    // set and every cross-deck read gates on that set.
+    sb
+      .from('assignments')
+      .select('deck_id')
+      .eq('member_id', userId)
+      .not('deck_id', 'is', null)
+      .or(availableNowFilter()),
   ]);
   const error = ownResult.error ?? assignedResult.error;
   if (error) {

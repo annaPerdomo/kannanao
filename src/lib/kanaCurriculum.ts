@@ -253,6 +253,15 @@ export function getSet(setId: string): KanaSet | undefined {
   return SETS_BY_ID.get(setId);
 }
 
+export function setCharacters(setId: string): string | null {
+  const set = SETS_BY_ID.get(setId);
+  return set ? set.entries.map((e) => e.kana).join(' · ') : null;
+}
+
+export function isKanaSetId(value: unknown): value is string {
+  return typeof value === 'string' && SETS_BY_ID.has(value);
+}
+
 export function getKanaEntry(kana: string): KanaEntry | undefined {
   return ENTRIES_BY_KANA.get(kana);
 }

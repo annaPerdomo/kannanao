@@ -16,7 +16,10 @@ export interface Assignment {
   id: string;
   organizer_id: string;
   member_id: string;
-  deck_id: string;
+  /** Null exactly when this is a kana assignment — the two are XOR in the DB. */
+  deck_id: string | null;
+  /** Kana curriculum key ('hira-ka'), or null for a deck assignment. */
+  kana_set: string | null;
   title: string | null;
   note: string | null;
   due_date: string | null;
@@ -106,7 +109,8 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
   const createAssignment = useCallback(
     async (opts: {
       memberIds: string[];
-      deckId: string;
+      deckId?: string;
+      kanaSet?: string;
       title?: string;
       note?: string;
       dueDate?: string;

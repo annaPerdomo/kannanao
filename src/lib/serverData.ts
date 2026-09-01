@@ -120,6 +120,7 @@ async function loadDecksServer(
       .from('assignments')
       .select('deck_id, decks(user_id)')
       .eq('member_id', userId)
+      .not('deck_id', 'is', null)
       .or(availableNowFilter()),
   ]);
   if (ownResult.error) return { decks: [], totalCount: 0 };

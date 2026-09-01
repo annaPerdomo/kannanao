@@ -44,6 +44,7 @@ function assignment(overrides: Partial<Assignment> = {}): Assignment {
     organizer_id: 'org1',
     member_id: 'member-1',
     deck_id: 'deck-1',
+    kana_set: null,
     title: null,
     note: null,
     due_date: null,
