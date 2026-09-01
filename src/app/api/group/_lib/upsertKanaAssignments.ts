@@ -28,9 +28,15 @@ export async function upsertKanaAssignments(
     memberIds: string[];
     rows: Record<string, unknown>[];
     fields: AssignmentFields;
+    /**
+     * False leaves existing rows untouched. The update branch overwrites every
+     * goal field, so a caller that assigns as a side effect of something else
+     * would wipe a note or due date the organizer set by hand.
+     */
+    updateExisting?: boolean;
   },
 ): Promise<Result> {
-  const { groupId, kanaSet, memberIds, rows, fields } = args;
+  const { groupId, kanaSet, memberIds, rows, fields, updateExisting = true } = args;
 
   const { data: existing, error: findError } = await sb
     .from('assignments')
@@ -43,7 +49,7 @@ export async function upsertKanaAssignments(
   const have = new Set((existing ?? []).map((r) => r.member_id as string));
   const saved: unknown[] = [];
 
-  if (have.size > 0) {
+  if (updateExisting && have.size > 0) {
     const { data, error } = await sb
       .from('assignments')
       .update(fields)

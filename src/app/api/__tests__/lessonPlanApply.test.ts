@@ -29,6 +29,7 @@ type QueryResult = { data?: unknown; error?: { message: string } | null };
 let reads: Record<string, QueryResult[]> = {};
 let insertReturns: Record<string, QueryResult[]> = {};
 let inserted: { table: string; rows: Record<string, unknown>[] }[] = [];
+let updated: { table: string; patch: Record<string, unknown> }[] = [];
 
 function nextRead(table: string): QueryResult {
   return reads[table]?.shift() ?? { data: null, error: null };
@@ -61,6 +62,17 @@ vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
         insert: (rows: Record<string, unknown> | Record<string, unknown>[]) => {
           inserted.push({ table, rows: Array.isArray(rows) ? rows : [rows] });
           return afterInsert;
+        },
+        update: (patch: Record<string, unknown>) => {
+          updated.push({ table, patch });
+          const afterUpdate = {
+            eq: () => afterUpdate,
+            in: () => afterUpdate,
+            select: () => afterUpdate,
+            then: (ok: (r: QueryResult) => unknown, err?: (e: unknown) => unknown) =>
+              Promise.resolve(nextInsertResult(table)).then(ok, err),
+          };
+          return afterUpdate;
         },
         upsert: (rows: Record<string, unknown> | Record<string, unknown>[]) => {
           inserted.push({ table, rows: Array.isArray(rows) ? rows : [rows] });
@@ -132,6 +144,7 @@ beforeEach(() => {
   };
   insertReturns = { decks: [], cards: [], assignments: [] };
   inserted = [];
+  updated = [];
 });
 
 describe('POST /api/group/lesson-plan/apply', () => {
@@ -145,6 +158,84 @@ describe('POST /api/group/lesson-plan/apply', () => {
     seedAccess();
     const res = await POST(
       makeRequest({ ...BASE, firstDueDate: 'someday', plan: planWith(['Week 1']) }),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('assigns the companion kana rows alongside the decks', async () => {
+    seedAccess(['m1', 'm2']);
+    insertReturns.decks.push({ data: { id: 'd1' } });
+
+    const res = await POST(
+      makeRequest({ ...BASE, plan: planWith(['Food']), kanaSets: ['hira-ra', 'hira-ra'] }),
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()).kanaAssigned).toEqual(['hira-ra']);
+
+    const kana = rowsFor('assignments').filter((r) => r.kana_set);
+    expect(kana).toHaveLength(2);
+    expect(kana[0]).toMatchObject({
+      member_id: 'm1',
+      group_id: 'g1',
+      deck_id: null,
+      kana_set: 'hira-ra',
+      due_date: '2026-08-09',
+      available_on: null,
+    });
+  });
+
+  it('leaves the kana rows alone when the organizer unticked them', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+
+    const res = await POST(makeRequest({ ...BASE, plan: planWith(['Food']) }));
+    expect((await res.json()).kanaAssigned).toEqual([]);
+    expect(rowsFor('assignments').filter((r) => r.kana_set)).toHaveLength(0);
+  });
+
+  it('never rewrites a kana row the organizer already assigned', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+    reads.assignments.push({ data: [{ member_id: 'm1' }], error: null });
+
+    const res = await POST(
+      makeRequest({ ...BASE, plan: planWith(['Food']), kanaSets: ['hira-ra'] }),
+    );
+    expect((await res.json()).kanaAssigned).toEqual(['hira-ra']);
+    expect(rowsFor('assignments').filter((r) => r.kana_set)).toHaveLength(0);
+    expect(updated.filter((u) => u.table === 'assignments')).toHaveLength(0);
+  });
+
+  it('skips the kana rows when every deck failed', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: null, error: { message: 'nope' } });
+
+    const res = await POST(
+      makeRequest({ ...BASE, plan: planWith(['Food']), kanaSets: ['hira-ra'] }),
+    );
+    expect((await res.json()).kanaAssigned).toEqual([]);
+    expect(rowsFor('assignments').filter((r) => r.kana_set)).toHaveLength(0);
+  });
+
+  it('reports the kana rows that could not be assigned', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+    // The deck's own assignment writes first; the kana row is the second write.
+    insertReturns.assignments.push({ data: [], error: null });
+    insertReturns.assignments.push({ data: null, error: { message: 'nope' } });
+
+    const res = await POST(
+      makeRequest({ ...BASE, plan: planWith(['Food']), kanaSets: ['hira-ra'] }),
+    );
+    const body = await res.json();
+    expect(body.kanaAssigned).toEqual([]);
+    expect(body.kanaFailed).toEqual(['hira-ra']);
+  });
+
+  it('rejects a kana row that is not in the curriculum', async () => {
+    seedAccess();
+    const res = await POST(
+      makeRequest({ ...BASE, plan: planWith(['Food']), kanaSets: ['hira-nope'] }),
     );
     expect(res.status).toBe(400);
   });
