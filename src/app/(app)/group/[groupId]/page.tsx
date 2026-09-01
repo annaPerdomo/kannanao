@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
+import { DataErrorState, StaleDataHint } from '@/components/DataErrorState';
 import {
   ActivityTab,
   AssignmentsTab,
@@ -48,19 +49,19 @@ export default function GroupDashboardPage() {
   const groupId = params?.groupId ?? '';
   const { isMemberAccount, displayName, user, loading: authLoading } = useAuth();
 
-  const { members, loading, error } = useGroupMembers(groupId);
-  const { leaderboard, loading: lbLoading } = useGroupLeaderboard(groupId);
-  const { feed, loading: feedLoading } = useGroupFeed(groupId);
+  const { members, loading, error, errorMessage, stale } = useGroupMembers(groupId);
+  const { leaderboard, loading: lbLoading, error: leaderboardError } = useGroupLeaderboard(groupId);
+  const { feed, loading: feedLoading, error: feedError } = useGroupFeed(groupId);
   const {
     activity,
     loading: activityLoading,
-    error: activityError,
+    errorMessage: activityError,
   } = useGroupActivity(groupId, ACTIVITY_DAYS);
   const { decks } = useDecks();
   const {
     assignments,
     loading: assignmentsLoading,
-    error: assignmentsError,
+    errorMessage: assignmentsError,
     createAssignment,
     updateAssignments,
     deleteAssignments,
@@ -70,7 +71,7 @@ export default function GroupDashboardPage() {
   const {
     data: difficultWords,
     loading: difficultWordsLoading,
-    error: difficultWordsError,
+    errorMessage: difficultWordsError,
   } = useDifficultWords(groupId);
   const { sendEncouragement } = useEncouragements();
   const { invites, createInvite, revokeInvite } = useInvites(groupId);
@@ -152,12 +153,13 @@ export default function GroupDashboardPage() {
     );
   }
 
-  if (error) {
+  // Not bare `error`: apiCache still holds the last good roster through an outage.
+  if (error && members.length === 0) {
     return (
       <Box
         sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
       >
-        <Alert severity="error">{error}</Alert>
+        <DataErrorState error={error} />
       </Box>
     );
   }
@@ -184,6 +186,14 @@ export default function GroupDashboardPage() {
         onOpenMaterials={handleOpenMaterials}
         activeInviteCount={activeInvites.length}
       />
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {errorMessage}
+        </Alert>
+      )}
+
+      <StaleDataHint show={stale && !error} />
 
       <Box sx={{ mb: { xs: 2.5, sm: 3 } }}>
         <NeedsAttention
@@ -227,6 +237,7 @@ export default function GroupDashboardPage() {
           members={members}
           leaderboard={leaderboard}
           leaderboardLoading={lbLoading}
+          leaderboardError={leaderboardError}
           leaderboardVisible={leaderboardVisible}
           onLeaderboardVisibilityChange={handleLeaderboardVisibilityChange}
           onSelectMember={(id) => router.push(`/group/${groupId}/members/${id}`)}
@@ -253,6 +264,7 @@ export default function GroupDashboardPage() {
         <ActivityTab
           feed={feed}
           feedLoading={feedLoading}
+          feedError={feedError}
           activity={activity}
           activityLoading={activityLoading}
           activityError={activityError}

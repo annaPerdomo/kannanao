@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { type DataError, toDataError } from '@/lib/dataError';
 import {
   dbCreateDeck,
   dbDeleteDeck,
@@ -22,6 +23,8 @@ export function useDecks(enabled = true, initialDecks?: Deck[]) {
   const t = useTranslations('Deck.useDecks');
   const [decks, setDecks] = useState<Deck[]>(initialDecks ?? []);
   const [loading, setLoading] = useState(enabled && !initialDecks);
+  const [error, setError] = useState<DataError | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -29,17 +32,25 @@ export function useDecks(enabled = true, initialDecks?: Deck[]) {
     if (initialDecks) return;
     if (!enabled || !user) {
       setDecks([]);
+      setError(null);
       setLoading(false);
       return;
     }
     let cancelled = false;
     setLoading(true);
+    setError(null);
 
     const fetchDecks = async () => {
-      const loaded = await loadDecks(user.id);
-      if (cancelled) return;
-      setDecks(loaded);
-      setLoading(false);
+      try {
+        const loaded = await loadDecks(user.id);
+        if (cancelled) return;
+        setDecks(loaded);
+      } catch (err) {
+        // Deliberately keeps `decks`: a failed retry must not wipe the screen.
+        if (!cancelled) setError(toDataError(err));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     };
 
     void fetchDecks();
@@ -47,7 +58,9 @@ export function useDecks(enabled = true, initialDecks?: Deck[]) {
     return () => {
       cancelled = true;
     };
-  }, [user, enabled, initialDecks]);
+  }, [user, enabled, initialDecks, reloadKey]);
+
+  const retry = useCallback(() => setReloadKey((n) => n + 1), []);
 
   const createDeck = useCallback(
     async (name: string, description?: string): Promise<Deck> => {
@@ -160,6 +173,8 @@ export function useDecks(enabled = true, initialDecks?: Deck[]) {
   return {
     decks,
     loading,
+    error,
+    retry,
     createDeck,
     deleteDeck,
     renameDeck,

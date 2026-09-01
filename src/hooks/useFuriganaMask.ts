@@ -31,12 +31,16 @@ export function useFuriganaMask(cards: Flashcard[]): (cardId: string) => boolean
   useEffect(() => {
     if (!user?.id || !idsKey || !isConfigured()) return;
     let cancelled = false;
-    getCardProgressForUser(user.id, idsKey.split(',')).then((rows) => {
-      if (cancelled) return;
-      setStrongIds(
-        new Set(rows.filter((row) => cardStrength(row) === 'strong').map((row) => row.cardId)),
-      );
-    });
+    getCardProgressForUser(user.id, idsKey.split(','))
+      .then((rows) => {
+        if (cancelled) return;
+        setStrongIds(
+          new Set(rows.filter((row) => cardStrength(row) === 'strong').map((row) => row.cardId)),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setStrongIds(EMPTY);
+      });
     return () => {
       cancelled = true;
     };

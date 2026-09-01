@@ -3,7 +3,8 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchJsonCached, peekApiCache } from '@/lib/apiCache';
+import { fetchJsonCached, peekApiCache, peekApiCacheMeta } from '@/lib/apiCache';
+import { type DataError, toDataError } from '@/lib/dataError';
 import { sb } from '@/lib/supabase';
 
 export interface GroupMember {
@@ -154,7 +155,8 @@ export function useGroupMembers(groupId?: string | null, enabled = true) {
   // below still revalidates stale data in the background.
   const [members, setMembers] = useState<GroupMember[]>(() => peekApiCache(url) ?? []);
   const [loading, setLoading] = useState(enabled && peekApiCache(url) === undefined);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<DataError | null>(null);
+  const [stale, setStale] = useState(() => peekApiCacheMeta(url)?.stale ?? false);
   const { user, isMemberAccount } = useAuth();
   const t = useTranslations('Group.useGroup');
 
@@ -167,6 +169,7 @@ export function useGroupMembers(groupId?: string | null, enabled = true) {
       }
       const cached = peekApiCache<GroupMember[]>(url);
       if (cached) setMembers(cached);
+      setStale(peekApiCacheMeta(url)?.stale ?? false);
       setLoading(!cached);
       setError(null);
       try {
@@ -176,13 +179,14 @@ export function useGroupMembers(groupId?: string | null, enabled = true) {
           freshMs === undefined ? {} : { freshMs },
         );
         setMembers(data);
-      } catch {
-        setError(t('failedToLoadMembers'));
+      } catch (err) {
+        setError(toDataError(err));
       } finally {
+        setStale(peekApiCacheMeta(url)?.stale ?? false);
         setLoading(false);
       }
     },
-    [user, isMemberAccount, url, enabled, t],
+    [user, isMemberAccount, url, enabled],
   );
 
   useEffect(() => {
@@ -191,13 +195,21 @@ export function useGroupMembers(groupId?: string | null, enabled = true) {
 
   const refetch = useCallback(() => load(0), [load]);
 
-  return { members, loading, error, refetch };
+  return {
+    members,
+    loading,
+    error,
+    errorMessage: error ? t('failedToLoadMembers') : null,
+    stale,
+    refetch,
+  };
 }
 
 export function useMemberDetail(memberId: string | null) {
   const [detail, setDetail] = useState<MemberDetail | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<DataError | null>(null);
+  const [stale, setStale] = useState(false);
   const t = useTranslations('Group.useGroup');
 
   const fetchDetail = useCallback(async () => {
@@ -208,30 +220,42 @@ export function useMemberDetail(memberId: string | null) {
     const url = `/api/group/members/${memberId}`;
     const cached = peekApiCache<MemberDetail>(url);
     if (cached) setDetail(cached);
+    setStale(peekApiCacheMeta(url)?.stale ?? false);
     setLoading(cached === undefined);
     setError(null);
     try {
       const data = await fetchJsonCached<MemberDetail>(url, authHeaders);
       setDetail(data);
-    } catch {
-      setError(t('failedToLoadDetails'));
+    } catch (err) {
+      setError(toDataError(err));
     } finally {
+      setStale(peekApiCacheMeta(url)?.stale ?? false);
       setLoading(false);
     }
-  }, [memberId, t]);
+  }, [memberId]);
 
   useEffect(() => {
     void fetchDetail();
   }, [fetchDetail]);
 
-  return { detail, loading, error, refetch: fetchDetail };
+  return {
+    detail,
+    loading,
+    error,
+    errorMessage: error ? t('failedToLoadDetails') : null,
+    stale,
+    refetch: fetchDetail,
+  };
 }
 
 export function useGroupFeed(groupId?: string | null) {
   const url = groupId ? `/api/group/feed?groupId=${groupId}` : '/api/group/feed';
   const [feed, setFeed] = useState<FeedItem[]>(() => peekApiCache(url) ?? []);
   const [loading, setLoading] = useState(() => peekApiCache(url) === undefined);
+  const [error, setError] = useState<DataError | null>(null);
+  const [stale, setStale] = useState(() => peekApiCacheMeta(url)?.stale ?? false);
   const { user } = useAuth();
+  const t = useTranslations('Group.useGroup');
 
   useEffect(() => {
     if (!user) {
@@ -242,15 +266,22 @@ export function useGroupFeed(groupId?: string | null) {
     let cancelled = false;
     const cached = peekApiCache<FeedItem[]>(url);
     if (cached) setFeed(cached);
+    setStale(peekApiCacheMeta(url)?.stale ?? false);
     setLoading(cached === undefined);
     (async () => {
       try {
         const data = await fetchJsonCached<FeedItem[]>(url, authHeaders);
-        if (!cancelled) setFeed(data);
-      } catch {
-        // silently fail for feed
+        if (!cancelled) {
+          setFeed(data);
+          setError(null);
+        }
+      } catch (err) {
+        if (!cancelled) setError(toDataError(err));
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setStale(peekApiCacheMeta(url)?.stale ?? false);
+          setLoading(false);
+        }
       }
     })();
     return () => {
@@ -258,7 +289,7 @@ export function useGroupFeed(groupId?: string | null) {
     };
   }, [user, url]);
 
-  return { feed, loading };
+  return { feed, loading, error, errorMessage: error ? t('failedToLoadFeed') : null, stale };
 }
 
 export function useMemberSessions(memberId: string | null) {

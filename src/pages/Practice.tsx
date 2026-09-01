@@ -3,6 +3,7 @@ import { Box, Button, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
+import { DataErrorState } from '@/components/DataErrorState';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { BatchPicker, maxBatchForMode } from '@/components/Practice/BatchPicker';
@@ -39,14 +40,19 @@ const BATCH_PICKER_THRESHOLD = 10;
 
 export default function Practice({ deckId, mode, onBack, questBanner, cardIds }: PracticeProps) {
   const t = useTranslations('Practice.page');
-  const { cards: deckCards, loading } = useCards(deckId);
+  const { cards: deckCards, loading, error, retry } = useCards(deckId);
   const cards = useMemo(() => {
     if (!cardIds) return deckCards;
     const wanted = new Set(cardIds);
     return deckCards.filter((c) => wanted.has(c.id));
   }, [deckCards, cardIds]);
   // Only Reading is deck-gated, so only Reading pays for the decks query.
-  const { decks, loading: decksLoading } = useDecks(mode === 'reading');
+  const {
+    decks,
+    loading: decksLoading,
+    error: decksError,
+    retry: retryDecks,
+  } = useDecks(mode === 'reading');
   const [batchSize, setBatchSize] = useState<number | null>(null);
 
   const modeTitles: Record<PracticeMode, string> = {
@@ -76,6 +82,17 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
         sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
       >
         <Loading message={t('loadingSession')} />
+      </Box>
+    );
+  }
+
+  if (error || (mode === 'reading' && decksError)) {
+    return (
+      <Box
+        sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
+      >
+        <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
+        <DataErrorState error={error ?? decksError} onRetry={error ? retry : retryDecks} />
       </Box>
     );
   }

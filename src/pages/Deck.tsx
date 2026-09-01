@@ -21,6 +21,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { AddCardsModal } from '@/components/AddCards';
 import { AddExistingCardsDialog } from '@/components/AddExistingCardsDialog';
+import { DataErrorState } from '@/components/DataErrorState';
 import { BestQuizLine, DeckHeader, Label, PracticeHero } from '@/components/Deck';
 import { DeckSettingsDialog } from '@/components/DeckSettingsDialog';
 import { ImageCard } from '@/components/ImageCard';
@@ -61,6 +62,8 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const {
     decks,
     loading: decksLoading,
+    error: decksError,
+    retry: retryDecks,
     updateDeckCount,
     renameDeck,
     pinDeck,
@@ -91,6 +94,8 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
     addCards,
     deleteCard,
     loading: cardsLoading,
+    error: cardsError,
+    retry: retryCards,
     updateCard,
     copyExistingCards,
     reorderCards,
@@ -164,6 +169,10 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         return;
       }
       pictureReview.clear();
+    } catch {
+      // dbUpdateCard throws now; the null check above only ever covered the
+      // not-configured case, so without this a failed save shows nothing.
+      setPictureSaveError(t('pictureReviewSaveError'));
     } finally {
       setSavingPictures(false);
     }
@@ -175,6 +184,17 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
         sx={{ maxWidth: LAYOUT.contentMaxWidth, mx: 'auto', px: { xs: 1.5, sm: 2, lg: 3 }, py: 4 }}
       >
         <Loading message={t('loadingCards')} />
+      </Box>
+    );
+  }
+
+  if (!deck && decksError) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
+          {tCommon('back')}
+        </Button>
+        <DataErrorState error={decksError} onRetry={retryDecks} />
       </Box>
     );
   }
@@ -353,7 +373,9 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
 
         {reordering && <ReorderBanner label={t('reorderBannerLabel')} />}
 
-        {cards.length === 0 ? (
+        {cardsError && cards.length === 0 ? (
+          <DataErrorState error={cardsError} onRetry={retryCards} />
+        ) : cards.length === 0 ? (
           <Box
             sx={{
               border: (t) => `1.5px dashed ${alpha(t.palette.brand[300], 0.4)}`,

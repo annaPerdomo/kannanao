@@ -1,9 +1,10 @@
 'use client';
-import { Alert, Box, Button, Grid, Typography } from '@mui/material';
+import { Box, Button, Grid, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+import { DataErrorState } from '@/components/DataErrorState';
 import { GameTiles } from '@/components/Games';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
@@ -87,7 +88,7 @@ function CaughtUpHero() {
 export default function ReviewHubPage() {
   const t = useTranslations('Review.hubPage');
   const router = useRouter();
-  const { dueCount, loading, error } = useDueCount();
+  const { dueCount, loading, error, retry } = useDueCount();
 
   return (
     <Box
@@ -117,9 +118,7 @@ export default function ReviewHubPage() {
           {loading ? (
             <Loading />
           ) : error ? (
-            <Alert severity="error" sx={{ borderRadius: 3 }}>
-              {t('loadError')}
-            </Alert>
+            <DataErrorState error={error} onRetry={retry} />
           ) : dueCount > 0 ? (
             <DueHero count={dueCount} onStart={() => router.push('/review/today')} />
           ) : (

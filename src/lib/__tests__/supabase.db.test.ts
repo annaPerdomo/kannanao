@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DataError } from '@/lib/dataError';
+
 // ─── Mock setup ───────────────────────────────────────────────────────────────
 
 const mockGetUser = vi.fn();
@@ -181,11 +183,27 @@ describe('loadDecks', () => {
     expect(decks[0].ownerId).toBe('u2');
   });
 
-  it('should return empty array when decks query errors', async () => {
+  it('should throw when the decks query errors, not report an empty library', async () => {
+    // The 2026-08-26 bug in one assertion: a failed read became `[]`.
     setTable('decks', null, { message: 'DB error' });
 
-    const decks = await loadDecks('u1');
-    expect(decks).toEqual([]);
+    await expect(loadDecks('u1')).rejects.toBeInstanceOf(DataError);
+  });
+
+  it('should carry the outage kind through to the caller', async () => {
+    setTable('decks', null, {
+      message:
+        'upstream connect error or disconnect/reset before headers. retried and the latest reset reason: remote connection failure, transport failure reason: delayed connect error: 111',
+    });
+
+    await expect(loadDecks('u1')).rejects.toMatchObject({ kind: 'upstream' });
+  });
+
+  it('should still return an empty array for a user who genuinely has no decks', async () => {
+    setTable('decks', []);
+    setTable('assignments', []);
+
+    await expect(loadDecks('u1')).resolves.toEqual([]);
   });
 
   it('should read each deck card_count independently', async () => {
@@ -427,10 +445,14 @@ describe('loadCards', () => {
     expect(cards[0].meaning).toBe('cat');
   });
 
-  it('should return empty array when query errors', async () => {
+  it('should throw when the query errors', async () => {
     setTable('cards', null, { message: 'Query error' });
-    const cards = await loadCards('deck-1');
-    expect(cards).toEqual([]);
+    await expect(loadCards('deck-1')).rejects.toBeInstanceOf(DataError);
+  });
+
+  it('should return an empty array for a deck that genuinely has no cards', async () => {
+    setTable('cards', []);
+    await expect(loadCards('deck-1')).resolves.toEqual([]);
   });
 });
 
@@ -488,12 +510,18 @@ describe('loadAccessibleCards', () => {
     expect(mockFrom).not.toHaveBeenCalledWith('cards');
   });
 
-  it('should return empty array on error', async () => {
+  it('should throw on error rather than claim the user has no cards', async () => {
     setTable('decks', [{ id: 'deck-1' }]);
     setTable('assignments', []);
     setTable('cards', null, { message: 'Error' });
-    const cards = await loadAccessibleCards('u1');
-    expect(cards).toEqual([]);
+    await expect(loadAccessibleCards('u1')).rejects.toBeInstanceOf(DataError);
+  });
+
+  it('should return an empty array when the accessible decks genuinely hold no cards', async () => {
+    setTable('decks', [{ id: 'deck-1' }]);
+    setTable('assignments', []);
+    setTable('cards', []);
+    await expect(loadAccessibleCards('u1')).resolves.toEqual([]);
   });
 
   it('should propagate an access-lookup error rather than claim no cards', async () => {
@@ -585,16 +613,19 @@ describe('dbUpdateCard', () => {
     expect(result?.meaning).toBe('kitten');
   });
 
-  it('should return null when query errors', async () => {
+  it('should throw when the update errors', async () => {
+    // Worse than a failed read: the user believes their edit saved.
     setTable('cards', null, { message: 'Update error' });
-    const result = await dbUpdateCard('card-1', { word: 'test' });
-    expect(result).toBeNull();
+    await expect(dbUpdateCard('card-1', { word: 'test' })).rejects.toBeInstanceOf(DataError);
   });
 
-  it('should return null when data is null', async () => {
+  it('should throw when the update returns no row', async () => {
     setTable('cards', null, null);
-    const result = await dbUpdateCard('card-1', { word: 'test' });
-    expect(result).toBeNull();
+    await expect(dbUpdateCard('card-1', { word: 'test' })).rejects.toBeInstanceOf(DataError);
+  });
+
+  it('should still resolve to null when the patch is empty and nothing is written', async () => {
+    await expect(dbUpdateCard('card-1', {})).resolves.toBeNull();
   });
 
   function lastUpdatePayload() {
@@ -869,10 +900,14 @@ describe('loadTodos', () => {
     vi.clearAllMocks();
   });
 
-  it('should return empty array on error', async () => {
+  it('should throw on error', async () => {
     setTable('todos', null, { message: 'Error' });
-    const todos = await loadTodos('u1');
-    expect(todos).toEqual([]);
+    await expect(loadTodos('u1')).rejects.toBeInstanceOf(DataError);
+  });
+
+  it('should return an empty array for a user with genuinely no todos', async () => {
+    setTable('todos', []);
+    await expect(loadTodos('u1')).resolves.toEqual([]);
   });
 
   it('should return mapped todos', async () => {
@@ -988,10 +1023,9 @@ describe('loadEventTypes', () => {
     vi.clearAllMocks();
   });
 
-  it('should return empty array on error', async () => {
+  it('should throw on error', async () => {
     setTable('event_types', null, { message: 'Error' });
-    const result = await loadEventTypes('u1');
-    expect(result).toEqual([]);
+    await expect(loadEventTypes('u1')).rejects.toBeInstanceOf(DataError);
   });
 
   it('should return empty array when data is null', async () => {
@@ -1161,10 +1195,14 @@ describe('getCardProgressForUser', () => {
     });
   });
 
-  it('should return empty array when the query errors', async () => {
+  it('should throw when the query errors', async () => {
     setTable('card_progress', null, { message: 'DB error' });
-    const rows = await getCardProgressForUser('u1');
-    expect(rows).toEqual([]);
+    await expect(getCardProgressForUser('u1')).rejects.toBeInstanceOf(DataError);
+  });
+
+  it('should return an empty array when the user genuinely has no progress rows', async () => {
+    setTable('card_progress', []);
+    await expect(getCardProgressForUser('u1')).resolves.toEqual([]);
   });
 
   it('should scope the read to the given cards', async () => {
@@ -1316,9 +1354,8 @@ describe('getBestQuizForDeck', () => {
     expect(best).toBeNull();
   });
 
-  it('returns null when the query errors', async () => {
+  it('throws when the query errors, so a failure is not read as "no attempts"', async () => {
     setTable('quiz_results', null, { message: 'DB error' });
-    const best = await getBestQuizForDeck('deck-1');
-    expect(best).toBeNull();
+    await expect(getBestQuizForDeck('deck-1')).rejects.toBeInstanceOf(DataError);
   });
 });

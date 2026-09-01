@@ -13,6 +13,7 @@ vi.mock('@/hooks/useDifficultWords', () => ({
 
 import { DifficultWords } from '@/components/Group/DifficultWords';
 import type { DifficultWord } from '@/hooks/useDifficultWords';
+import { DataError } from '@/lib/dataError';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -41,6 +42,7 @@ function mockData(words: DifficultWord[], decks = DECKS) {
     data: { learnerCount: 8, decks, words },
     loading: false,
     error: null,
+    errorMessage: null,
   });
 }
 
@@ -92,8 +94,25 @@ describe('DifficultWords', () => {
   });
 
   it('surfaces a load failure instead of an empty-looking list', () => {
-    useDifficultWordsMock.mockReturnValue({ data: null, loading: false, error: 'Nope' });
+    useDifficultWordsMock.mockReturnValue({
+      data: null,
+      loading: false,
+      error: new DataError('upstream', 'HTTP 503'),
+      errorMessage: 'Nope',
+    });
     renderWithProviders(<DifficultWords groupId="group-1" />);
     expect(screen.getByText('Nope')).toBeInTheDocument();
+  });
+
+  it('keeps the cached words on screen when a refresh fails', () => {
+    useDifficultWordsMock.mockReturnValue({
+      data: { learnerCount: 8, decks: DECKS, words: [word()] },
+      loading: false,
+      error: new DataError('upstream', 'HTTP 503'),
+      errorMessage: 'Nope',
+    });
+    renderWithProviders(<DifficultWords groupId="group-1" />);
+    expect(screen.getByText('Nope')).toBeInTheDocument();
+    expect(screen.getByText('覚える')).toBeInTheDocument();
   });
 });

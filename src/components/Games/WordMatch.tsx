@@ -1,12 +1,13 @@
 'use client';
 
 import CheckIcon from '@mui/icons-material/Check';
-import { Alert, alpha, Box, Grid, Typography } from '@mui/material';
+import { alpha, Box, Grid, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { DataErrorState } from '@/components/DataErrorState';
 import { Loading } from '@/components/Loading';
 import { CelebrationScreen } from '@/components/Practice/CelebrationScreen';
 import { SpeakButton } from '@/components/SpeakButton';
@@ -322,8 +323,7 @@ function MatchBoard({ words, onExit }: { words: MatchWord[]; onExit: () => void 
 
 export function WordMatch() {
   const router = useRouter();
-  const t = useTranslations('Games.wordMatch');
-  const { dueCards, allCards, loading, error } = useReviewCards();
+  const { dueCards, allCards, loading, error, retry } = useReviewCards();
   // Pick the session's words once per load — due cards first, topped up at random.
   const words = useMemo(
     () => (loading ? [] : pickMatchWords(dueCards, allCards)),
@@ -333,9 +333,9 @@ export function WordMatch() {
   if (loading) return <Loading />;
   if (error) {
     return (
-      <Alert severity="error" sx={{ m: 3 }}>
-        {t('loadError', { error })}
-      </Alert>
+      <Box sx={{ m: 3 }}>
+        <DataErrorState error={error} onRetry={retry} />
+      </Box>
     );
   }
   return <MatchBoard words={words} onExit={() => router.push('/review')} />;

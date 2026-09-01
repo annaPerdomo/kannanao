@@ -44,8 +44,11 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
 
   const { titleText, subtitleText, titleFurigana, speakText } = getFlashcardDisplayText(localCard);
   const handleSave = (updated: Flashcard) => {
+    const previous = localCard;
     setLocalCard(updated);
-    onUpdate?.(updated.id, updated);
+    // onUpdate rejects on a failed write now. Without the rollback the card
+    // keeps showing an edit that never reached the database.
+    void onUpdate?.(updated.id, updated).catch(() => setLocalCard(previous));
   };
 
   const isKanji = localCard.mainViewMode === 'kanji';

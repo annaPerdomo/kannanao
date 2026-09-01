@@ -67,7 +67,7 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
   const tTime = useTranslations('Group.timeAgo');
   const [selectedDeck, setSelectedDeck] = useState<string>(decks[0]?.id ?? '');
   const [expanded, setExpanded] = useState(false);
-  const { rows, loading, error } = useQuizResults(selectedDeck || null, groupId);
+  const { rows, loading, error, errorMessage } = useQuizResults(selectedDeck || null, groupId);
 
   const deck = useMemo(() => decks.find((d) => d.id === selectedDeck), [decks, selectedDeck]);
   const anyAttempts = rows.some((r) => r.attempts > 0);
@@ -133,8 +133,14 @@ export function QuizScoresPanel({ decks, groupId }: QuizScoresPanelProps) {
     >
       <DeckPicker decks={decks} value={selectedDeck} onChange={setSelectedDeck} />
 
-      {error ? (
-        <Typography sx={{ color: 'error.main', fontSize: '0.85rem' }}>{error}</Typography>
+      {error && rows.length > 0 && (
+        <Typography sx={{ color: 'error.main', fontSize: '0.85rem', mb: 1 }}>
+          {errorMessage}
+        </Typography>
+      )}
+
+      {error && rows.length === 0 ? (
+        <Typography sx={{ color: 'error.main', fontSize: '0.85rem' }}>{errorMessage}</Typography>
       ) : loading ? (
         <Loading message={t('loading')} />
       ) : (

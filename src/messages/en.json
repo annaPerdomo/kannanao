@@ -11,6 +11,18 @@
     "retry": "Retry",
     "somethingWentWrong": "Something went wrong",
     "errorFallbackBody": "An unexpected error occurred. Please refresh the page or try again.",
+    "dataError": {
+      "offlineTitle": "Check your internet",
+      "offlineBody": "We can't reach your words right now. They're safe — try again in a minute.",
+      "upstreamTitle": "Our side is having a problem",
+      "upstreamBody": "Your words are safe. We're working on it — try again in a minute.",
+      "genericTitle": "Something went wrong",
+      "genericBody": "Your words are safe. Try again in a minute.",
+      "authTitle": "Please sign in again",
+      "authBody": "Your words are safe — your session just ended. Sign in again to keep going.",
+      "staleHint": "Showing what we saved earlier",
+      "tryAgain": "Try again"
+    },
     "unsplashCredit": "Photo by <photographer>{name}</photographer> on <unsplash>Unsplash</unsplash>",
     "readAloud": "Read aloud",
     "language": {
@@ -882,8 +894,7 @@
       "buildPrompt": "Build the Japanese for:",
       "removeLastCharacter": "Remove last character",
       "celebrationHeading": "かな Master!",
-      "celebrationSubheading": "{correct} / {total} words right on the first try",
-      "loadError": "Couldn’t load your cards: {error}"
+      "celebrationSubheading": "{correct} / {total} words right on the first try"
     },
     "particlePicker": {
       "title": "Particle Picker",
@@ -904,8 +915,7 @@
       "howTo": "Tap a Japanese word, then the picture that means the same thing.",
       "celebrationHeading": "All matched!",
       "celebrationSubheading": "{count, plural, one {# word} other {# words}}",
-      "celebrationExtra": "{matches} matches · {misses} misses",
-      "loadError": "Couldn’t load your cards: {error}"
+      "celebrationExtra": "{matches} matches · {misses} misses"
     },
     "counterGame": {
       "title": "How Many?",
@@ -1016,7 +1026,8 @@
     },
     "useGroup": {
       "failedToLoadMembers": "Failed to load members",
-      "failedToLoadDetails": "Failed to load details"
+      "failedToLoadDetails": "Failed to load details",
+      "failedToLoadFeed": "Failed to load activity"
     },
     "assignmentCard": {
       "unknownDeck": "Unknown Deck",
@@ -1388,7 +1399,8 @@
     "leaderboard": {
       "empty": "No activity this week yet.",
       "xpAmount": "{xp} XP",
-      "cardsCount": "{count, plural, one {# card} other {# cards}}"
+      "cardsCount": "{count, plural, one {# card} other {# cards}}",
+      "loadFailed": "Failed to load the leaderboard"
     },
     "deckPicker": {
       "ariaLabel": "Pick a deck",
@@ -2119,6 +2131,7 @@
       "defaultDeckName": "Travel Phrases",
       "createNewDeck": "Create new deck",
       "loadingDecks": "Loading decks...",
+      "loadDecksError": "We couldn't load your decks. Try again in a minute.",
       "orAddToExisting": "Or add to an existing deck:",
       "cardsCount": "{count, plural, one {# card} other {# cards}}",
       "noExistingDecks": "No existing decks. Create a new one above.",
@@ -2467,7 +2480,8 @@
     "errors": {
       "failedStartScenario": "Failed to start scenario",
       "failedContinueScenario": "Failed to continue scenario",
-      "failedGenerateCard": "Failed to generate card"
+      "failedGenerateCard": "Failed to generate card",
+      "failedSaveCard": "We couldn't save that change. Try again in a minute."
     }
   },
   "Ohanashikai": {

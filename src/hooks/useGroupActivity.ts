@@ -2,7 +2,8 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
-import { fetchJsonCached, peekApiCache } from '@/lib/apiCache';
+import { fetchJsonCached, peekApiCache, peekApiCacheMeta } from '@/lib/apiCache';
+import { type DataError, toDataError } from '@/lib/dataError';
 import { sb } from '@/lib/supabase';
 
 export interface GroupActivityMember {
@@ -43,7 +44,8 @@ export function useGroupActivity(groupId: string | null, days = 14) {
   const t = useTranslations('Group.charts');
   const [activity, setActivity] = useState<GroupActivity | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<DataError | null>(null);
+  const [stale, setStale] = useState(false);
 
   useEffect(() => {
     if (!groupId) {
@@ -56,22 +58,26 @@ export function useGroupActivity(groupId: string | null, days = 14) {
     const url = `/api/group/activity?groupId=${groupId}&days=${days}&tzOffset=${tzOffset}`;
     const cached = peekApiCache<GroupActivity>(url);
     if (cached) setActivity(cached);
+    setStale(peekApiCacheMeta(url)?.stale ?? false);
     setLoading(cached === undefined);
     setError(null);
     (async () => {
       try {
         const data = await fetchJsonCached<GroupActivity>(url, authHeaders);
         if (!cancelled) setActivity(data);
-      } catch {
-        if (!cancelled) setError(t('loadFailed'));
+      } catch (err) {
+        if (!cancelled) setError(toDataError(err));
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setStale(peekApiCacheMeta(url)?.stale ?? false);
+          setLoading(false);
+        }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [groupId, days, t]);
+  }, [groupId, days]);
 
-  return { activity, loading, error };
+  return { activity, loading, error, errorMessage: error ? t('loadFailed') : null, stale };
 }

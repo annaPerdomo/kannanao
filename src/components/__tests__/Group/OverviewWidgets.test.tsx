@@ -8,12 +8,19 @@ import type { DeckReadiness, DeckReadinessData } from '@/hooks/useDeckReadiness'
 import type { DifficultWord } from '@/hooks/useDifficultWords';
 import type { GroupMember } from '@/hooks/useGroup';
 import type { GroupActivity } from '@/hooks/useGroupActivity';
+import { DataError } from '@/lib/dataError';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
-const readinessState: { data: DeckReadinessData | null; loading: boolean; error: string | null } = {
+const readinessState: {
+  data: DeckReadinessData | null;
+  loading: boolean;
+  error: DataError | null;
+  errorMessage: string | null;
+} = {
   data: null,
   loading: false,
   error: null,
+  errorMessage: null,
 };
 
 vi.mock('@/hooks/useDeckReadiness', () => ({
@@ -62,6 +69,7 @@ describe('DeckReadinessPanel', () => {
     readinessState.data = null;
     readinessState.loading = false;
     readinessState.error = null;
+    readinessState.errorMessage = null;
   });
 
   it('says what to do about the deck in plain words', () => {
@@ -126,9 +134,19 @@ describe('DeckReadinessPanel', () => {
   });
 
   it('shows its own error without borrowing another widget’s', () => {
-    readinessState.error = 'Failed to load deck progress';
+    readinessState.error = new DataError('upstream', 'HTTP 503');
+    readinessState.errorMessage = 'Failed to load deck progress';
     renderWithProviders(<DeckReadinessPanel groupId="g1" members={[]} onViewLearners={vi.fn()} />);
     expect(screen.getByText('Failed to load deck progress')).toBeInTheDocument();
+  });
+
+  it('keeps the cached rows on screen when a refresh fails', () => {
+    readinessState.data = { decks: [deck({ strong: 18, learning: 1, unseen: 1 })] };
+    readinessState.error = new DataError('upstream', 'HTTP 503');
+    readinessState.errorMessage = 'Failed to load deck progress';
+    renderWithProviders(<DeckReadinessPanel groupId="g1" members={[]} onViewLearners={vi.fn()} />);
+    expect(screen.getByText('Failed to load deck progress')).toBeInTheDocument();
+    expect(screen.getByText('90% strong')).toBeInTheDocument();
   });
 });
 

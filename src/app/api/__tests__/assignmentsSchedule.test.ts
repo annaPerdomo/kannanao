@@ -15,6 +15,10 @@ vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
 vi.mock('@/app/api/_lib/authCache', () => ({
   getUserFromToken: vi.fn().mockResolvedValue({ id: 'member1' }),
   getProfileForUser: vi.fn().mockResolvedValue({ account_type: 'member', organizer_id: 'org1' }),
+  getUserFromTokenResult: vi.fn().mockResolvedValue({ value: { id: 'member1' }, error: null }),
+  getProfileForUserResult: vi
+    .fn()
+    .mockResolvedValue({ value: { account_type: 'member', organizer_id: 'org1' }, error: null }),
   // rateLimit's _resetStore clears this cache too.
   _resetAuthCache: vi.fn(),
 }));

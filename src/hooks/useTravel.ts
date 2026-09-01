@@ -347,6 +347,8 @@ export function useShowCards() {
     [t],
   );
 
+  // Rollback snapshots close over `cards` at call time: two overlapping calls
+  // on the same id before a re-render would both restore the same stale state.
   const updateCard = useCallback(
     async (
       id: string,
@@ -354,30 +356,30 @@ export function useShowCards() {
         Pick<ShowCard, 'english' | 'japanese' | 'romaji' | 'situation' | 'icon' | 'category'>
       >,
     ) => {
+      const original = cards.find((c) => c.id === id);
       // Optimistic update
       setCards((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
       try {
         await dbUpdateShowCard(id, patch);
       } catch {
-        // Rollback
-        const saved = await loadShowCards();
-        setCards([...saved, ...DEFAULT_SHOW_CARDS]);
+        if (original) setCards((prev) => prev.map((c) => (c.id === id ? original : c)));
       }
     },
-    [],
+    [cards],
   );
 
-  const deleteCard = useCallback(async (id: string) => {
-    // Optimistic remove
-    setCards((prev) => prev.filter((c) => c.id !== id));
-    try {
-      await dbDeleteShowCard(id);
-    } catch {
-      // Rollback: reload from DB
-      const saved = await loadShowCards();
-      setCards([...saved, ...DEFAULT_SHOW_CARDS]);
-    }
-  }, []);
+  const deleteCard = useCallback(
+    async (id: string) => {
+      const prev = cards;
+      setCards((current) => current.filter((c) => c.id !== id));
+      try {
+        await dbDeleteShowCard(id);
+      } catch {
+        setCards(prev);
+      }
+    },
+    [cards],
+  );
 
   const filterByCategory = useCallback(
     (category: ShowCardCategory | 'all') => {

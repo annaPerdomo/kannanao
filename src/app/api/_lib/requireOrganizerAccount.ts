@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { getProfileForUser, getUserFromToken } from './authCache';
+import { getProfileForUserResult, getUserFromTokenResult } from './authCache';
+import { backendUnavailable } from './backendUnavailable';
 
 export interface OrganizerProfile {
   id: string;
@@ -29,24 +30,26 @@ export async function requireOrganizerAccount(
   }
 
   const token = authHeader.slice(7);
-  const user = await getUserFromToken(token);
+  const user = await getUserFromTokenResult(token);
+  if (user.error) return backendUnavailable(user.error, 'requireOrganizerAccount.user');
 
-  if (!user) {
+  if (!user.value) {
     return NextResponse.json({ error: 'Invalid or expired token.' }, { status: 401 });
   }
 
-  const profile = await getProfileForUser(user.id, token);
+  const profile = await getProfileForUserResult(user.value.id, token);
+  if (profile.error) return backendUnavailable(profile.error, 'requireOrganizerAccount.profile');
 
-  if (!profile) {
+  if (!profile.value) {
     return NextResponse.json({ error: 'Profile not found.' }, { status: 401 });
   }
 
-  if (profile.account_type === 'member') {
+  if (profile.value.account_type === 'member') {
     return NextResponse.json(
       { error: 'This feature is not available for member accounts.' },
       { status: 403 },
     );
   }
 
-  return profile as OrganizerProfile;
+  return profile.value as OrganizerProfile;
 }

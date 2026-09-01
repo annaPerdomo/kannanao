@@ -1,7 +1,9 @@
 'use client';
+import Box from '@mui/material/Box';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
+import { DataErrorState } from '@/components/DataErrorState';
 import FlipStudy from '@/components/FlipStudy';
 import { useCards } from '@/hooks/useCards';
 import { useDecks } from '@/hooks/useDecks';
@@ -22,7 +24,12 @@ interface StudyProps {
  */
 export default function Study({ deckId, onBack, questBanner, cardIds }: StudyProps) {
   const t = useTranslations('Study.study');
-  const { cards: deckCards, loading: cardsLoading } = useCards(deckId);
+  const {
+    cards: deckCards,
+    loading: cardsLoading,
+    error: cardsError,
+    retry: retryCards,
+  } = useCards(deckId);
   const { decks, loading: decksLoading } = useDecks();
   const deck = decks.find((d) => d.id === deckId);
   const deckName = deck ? deck.name : t('defaultDeckName');
@@ -31,6 +38,16 @@ export default function Study({ deckId, onBack, questBanner, cardIds }: StudyPro
     const wanted = new Set(cardIds);
     return deckCards.filter((c) => wanted.has(c.id));
   }, [deckCards, cardIds]);
+
+  // FlipStudy renders zero cards as a finished session, so a failed load must
+  // stop here rather than show the celebration.
+  if (cardsError && deckCards.length === 0) {
+    return (
+      <Box sx={{ maxWidth: 480, mx: 'auto', px: 2, py: 4 }}>
+        <DataErrorState error={cardsError} onRetry={retryCards} />
+      </Box>
+    );
+  }
 
   return (
     <FlipStudy

@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { getProfileForUser, getUserFromToken } from './authCache';
+import { getProfileForUserResult, getUserFromTokenResult } from './authCache';
+import { backendUnavailable } from './backendUnavailable';
 
 export interface AuthenticatedUser {
   id: string;
@@ -31,17 +32,19 @@ export async function requireAuthenticatedUser(
   }
 
   const token = authHeader.slice(7);
-  const user = await getUserFromToken(token);
+  const user = await getUserFromTokenResult(token);
+  if (user.error) return backendUnavailable(user.error, 'requireAuthenticatedUser.user');
 
-  if (!user) {
+  if (!user.value) {
     return NextResponse.json({ error: 'Invalid or expired token.' }, { status: 401 });
   }
 
-  const profile = await getProfileForUser(user.id, token);
+  const profile = await getProfileForUserResult(user.value.id, token);
+  if (profile.error) return backendUnavailable(profile.error, 'requireAuthenticatedUser.profile');
 
-  if (!profile) {
+  if (!profile.value) {
     return NextResponse.json({ error: 'Profile not found.' }, { status: 401 });
   }
 
-  return profile as AuthenticatedUser;
+  return profile.value as AuthenticatedUser;
 }

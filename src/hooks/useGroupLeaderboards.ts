@@ -1,8 +1,10 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchJsonCached, peekApiCache } from '@/lib/apiCache';
+import { fetchJsonCached, peekApiCache, peekApiCacheMeta } from '@/lib/apiCache';
+import { type DataError, toDataError } from '@/lib/dataError';
 import { sb } from '@/lib/supabase';
 
 import type { LeaderboardEntry } from './useGroupLeaderboard';
@@ -31,8 +33,10 @@ async function authHeaders(): Promise<Record<string, string>> {
 export function useGroupLeaderboards(enabled = true) {
   const [boards, setBoards] = useState<GroupBoard[]>(() => peekApiCache(URL) ?? []);
   const [loading, setLoading] = useState(enabled && peekApiCache(URL) === undefined);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<DataError | null>(null);
+  const [stale, setStale] = useState(() => peekApiCacheMeta(URL)?.stale ?? false);
   const { user } = useAuth();
+  const t = useTranslations('Group.leaderboard');
 
   useEffect(() => {
     if (!enabled || !user) {
@@ -43,6 +47,7 @@ export function useGroupLeaderboards(enabled = true) {
     let cancelled = false;
     const cached = peekApiCache<GroupBoard[]>(URL);
     if (cached) setBoards(cached);
+    setStale(peekApiCacheMeta(URL)?.stale ?? false);
     setLoading(cached === undefined);
     (async () => {
       try {
@@ -51,12 +56,12 @@ export function useGroupLeaderboards(enabled = true) {
         setBoards(data);
         setError(null);
       } catch (err) {
-        // Returned but not rendered: the dashboard shows "check back" rather
-        // than an error box for a board that failed to load.
-        if (!cancelled)
-          setError(err instanceof Error ? err.message : 'Failed to load leaderboards');
+        if (!cancelled) setError(toDataError(err));
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setStale(peekApiCacheMeta(URL)?.stale ?? false);
+          setLoading(false);
+        }
       }
     })();
     return () => {
@@ -64,5 +69,5 @@ export function useGroupLeaderboards(enabled = true) {
     };
   }, [user, enabled]);
 
-  return { boards, loading, error };
+  return { boards, loading, error, errorMessage: error ? t('loadFailed') : null, stale };
 }

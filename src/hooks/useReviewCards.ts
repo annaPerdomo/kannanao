@@ -1,9 +1,10 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { type DataError, toDataError } from '@/lib/dataError';
 import {
   getAccessibleDeckIds,
   getDueCards,
@@ -23,14 +24,17 @@ export function useReviewCards(): {
   dueCards: Flashcard[];
   allCards: Flashcard[];
   loading: boolean;
-  error: string | null;
+  error: DataError | null;
+  errorMessage: string | null;
+  retry: () => void;
 } {
   const t = useTranslations('Study.useReviewCards');
   const { user } = useAuth();
   const [dueCards, setDueCards] = useState<Flashcard[]>([]);
   const [allCards, setAllCards] = useState<Flashcard[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<DataError | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!user || !isConfigured()) {
@@ -38,6 +42,8 @@ export function useReviewCards(): {
       return;
     }
     let cancelled = false;
+    setError(null);
+    setLoading(true);
     // Pull a generous due window so a big backlog can fill a whole session from
     // due cards alone before any top-up is needed. Both reads are scoped to the
     // user's accessible decks (fetched once, shared) so games never surface
@@ -52,7 +58,8 @@ export function useReviewCards(): {
         setAllCards(all);
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : t('failedToLoadCards'));
+        // Never `e.message` — it is a gateway body, not learner-readable copy.
+        if (!cancelled) setError(toDataError(e));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -60,7 +67,16 @@ export function useReviewCards(): {
     return () => {
       cancelled = true;
     };
-  }, [user, t]);
+  }, [user, reloadKey]);
 
-  return { dueCards, allCards, loading, error };
+  const retry = useCallback(() => setReloadKey((n) => n + 1), []);
+
+  return {
+    dueCards,
+    allCards,
+    loading,
+    error,
+    errorMessage: error ? t('failedToLoadCards') : null,
+    retry,
+  };
 }

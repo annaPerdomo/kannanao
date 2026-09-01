@@ -24,6 +24,7 @@ vi.mock('@/lib/supabase', () => ({
 }));
 
 import { useCards } from '@/hooks/useCards';
+import { DataError } from '@/lib/dataError';
 import { isConfigured, showConfigBanner } from '@/lib/supabase';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -205,6 +206,21 @@ describe('useCards', () => {
       });
 
       expect(returned).toBeNull();
+    });
+
+    it('propagates a failed write instead of resolving null', async () => {
+      const original = makeCard('c1');
+      mockLoadCards.mockResolvedValue([original]);
+      mockUpdateCard.mockRejectedValue(new DataError('upstream', 'gateway down'));
+
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await expect(result.current.updateCard('c1', { meaning: 'x' })).rejects.toBeInstanceOf(
+        DataError,
+      );
+      // The card on screen must not claim the edit landed.
+      expect(result.current.cards[0]).toEqual(original);
     });
   });
 
@@ -433,6 +449,70 @@ describe('useCards', () => {
       });
 
       expect(returned).toBeUndefined();
+    });
+  });
+
+  describe('a failed load and an empty deck', () => {
+    it('sets error when the load throws', async () => {
+      mockLoadCards.mockRejectedValue(new DataError('upstream', 'gateway down', { status: 503 }));
+
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(result.current.error?.kind).toBe('upstream');
+      expect(result.current.cards).toEqual([]);
+    });
+
+    it('leaves error null for a deck that genuinely has no cards', async () => {
+      mockLoadCards.mockResolvedValue([]);
+
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(result.current.error).toBeNull();
+      expect(result.current.cards).toEqual([]);
+    });
+
+    it('does not report a card count to the parent when the load failed', async () => {
+      // A 0 here would overwrite the deck's real count with a lie.
+      const onCountChange = vi.fn();
+      mockLoadCards.mockRejectedValue(new DataError('upstream', 'gateway down'));
+
+      const { result } = renderHook(() => useCards('deck-1', onCountChange));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(onCountChange).not.toHaveBeenCalled();
+    });
+
+    it('retry refetches once the backend recovers', async () => {
+      mockLoadCards.mockRejectedValueOnce(new DataError('upstream', 'gateway down'));
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.error).not.toBeNull());
+
+      mockLoadCards.mockResolvedValue([makeCard('card-1')]);
+      act(() => result.current.retry());
+
+      await waitFor(() => expect(result.current.cards).toHaveLength(1));
+      expect(result.current.error).toBeNull();
+    });
+
+    it('goes back into loading immediately on retry, instead of flashing the empty state', async () => {
+      mockLoadCards.mockRejectedValueOnce(new DataError('upstream', 'gateway down'));
+      const { result } = renderHook(() => useCards('deck-1'));
+      await waitFor(() => expect(result.current.error).not.toBeNull());
+
+      let resolveRetry!: (cards: ReturnType<typeof makeCard>[]) => void;
+      mockLoadCards.mockReturnValue(
+        new Promise<ReturnType<typeof makeCard>[]>((resolve) => {
+          resolveRetry = resolve;
+        }),
+      );
+
+      act(() => result.current.retry());
+      expect(result.current.loading).toBe(true);
+
+      resolveRetry([makeCard('card-1')]);
+      await waitFor(() => expect(result.current.loading).toBe(false));
     });
   });
 });

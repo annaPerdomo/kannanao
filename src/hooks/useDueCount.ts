@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { type DataError, toDataError } from '@/lib/dataError';
 import { getDueCount } from '@/lib/supabase';
 
 /**
@@ -12,10 +13,16 @@ import { getDueCount } from '@/lib/supabase';
  * `error` is set when the count couldn't load — consumers must NOT show
  * "all caught up" in that case (0-due and unknown are different states).
  */
-export function useDueCount(): { dueCount: number; loading: boolean; error: string | null } {
+export function useDueCount(): {
+  dueCount: number;
+  loading: boolean;
+  error: DataError | null;
+  retry: () => void;
+} {
   const { user } = useAuth();
   const [count, setCount] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<DataError | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!user) {
@@ -23,19 +30,25 @@ export function useDueCount(): { dueCount: number; loading: boolean; error: stri
       return;
     }
     let cancelled = false;
+    setError(null);
     getDueCount(user.id)
       .then((c) => {
         if (!cancelled) setCount(c);
       })
       .catch((e) => {
         if (cancelled) return;
-        setError(e instanceof Error ? e.message : String(e));
+        setError(toDataError(e));
         setCount(0);
       });
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, reloadKey]);
 
-  return { dueCount: count ?? 0, loading: count === null, error };
+  const retry = useCallback(() => {
+    setCount(null);
+    setReloadKey((n) => n + 1);
+  }, []);
+
+  return { dueCount: count ?? 0, loading: count === null, error, retry };
 }

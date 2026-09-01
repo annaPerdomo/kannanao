@@ -3,7 +3,8 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchJsonCached, peekApiCache } from '@/lib/apiCache';
+import { fetchJsonCached, peekApiCache, peekApiCacheMeta } from '@/lib/apiCache';
+import { type DataError, toDataError } from '@/lib/dataError';
 import type { QuizScoreRow } from '@/lib/quiz';
 import { sb } from '@/lib/supabase';
 
@@ -26,7 +27,8 @@ export function useQuizResults(deckId: string | null, groupId?: string | null) {
   const [loading, setLoading] = useState(
     Boolean(url) && (url ? peekApiCache(url) === undefined : false),
   );
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<DataError | null>(null);
+  const [stale, setStale] = useState(false);
   const { user } = useAuth();
   const t = useTranslations('Group.quizScores');
 
@@ -38,21 +40,30 @@ export function useQuizResults(deckId: string | null, groupId?: string | null) {
     }
     const cached = peekApiCache<QuizScoreRow[]>(url);
     if (cached) setRows(cached);
+    setStale(peekApiCacheMeta(url)?.stale ?? false);
     setLoading(!cached);
     setError(null);
     try {
       const data = await fetchJsonCached<QuizScoreRow[]>(url, authHeaders);
       setRows(data);
-    } catch {
-      setError(t('loadFailed'));
+    } catch (err) {
+      setError(toDataError(err));
     } finally {
+      setStale(peekApiCacheMeta(url)?.stale ?? false);
       setLoading(false);
     }
-  }, [url, user, t]);
+  }, [url, user]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  return { rows, loading, error, refetch: load };
+  return {
+    rows,
+    loading,
+    error,
+    errorMessage: error ? t('loadFailed') : null,
+    stale,
+    refetch: load,
+  };
 }

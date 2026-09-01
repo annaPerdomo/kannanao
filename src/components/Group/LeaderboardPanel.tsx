@@ -6,8 +6,10 @@ import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
+import { DataErrorState } from '@/components/DataErrorState';
 import { Loading } from '@/components/Loading';
 import type { LeaderboardEntry } from '@/hooks/useGroupLeaderboard';
+import type { DataError } from '@/lib/dataError';
 
 import { LeaderboardWidget } from './LeaderboardWidget';
 import { SectionCard } from './SectionCard';
@@ -15,6 +17,7 @@ import { SectionCard } from './SectionCard';
 interface LeaderboardPanelProps {
   entries: LeaderboardEntry[];
   loading: boolean;
+  error?: DataError | null;
   visible: boolean;
   onVisibilityChange: (visible: boolean) => void;
 }
@@ -22,6 +25,7 @@ interface LeaderboardPanelProps {
 export function LeaderboardPanel({
   entries,
   loading,
+  error,
   visible,
   onVisibilityChange,
 }: LeaderboardPanelProps) {
@@ -57,6 +61,8 @@ export function LeaderboardPanel({
             {t('leaderboardHiddenBody')}
           </Typography>
         </Box>
+      ) : error && entries.length === 0 ? (
+        <DataErrorState error={error} dense />
       ) : loading ? (
         <Loading message={t('loadingLeaderboard')} />
       ) : (

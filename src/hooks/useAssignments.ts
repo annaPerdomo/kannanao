@@ -3,7 +3,13 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchJsonCached, invalidateApiCache, peekApiCache } from '@/lib/apiCache';
+import {
+  fetchJsonCached,
+  invalidateApiCache,
+  peekApiCache,
+  peekApiCacheMeta,
+} from '@/lib/apiCache';
+import { type DataError, toDataError } from '@/lib/dataError';
 import { sb } from '@/lib/supabase';
 
 export interface Assignment {
@@ -55,7 +61,8 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
   // below still revalidates stale data in the background.
   const [assignments, setAssignments] = useState<Assignment[]>(() => peekApiCache(url) ?? []);
   const [loading, setLoading] = useState(enabled && peekApiCache(url) === undefined);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<DataError | null>(null);
+  const [stale, setStale] = useState(() => peekApiCacheMeta(url)?.stale ?? false);
   const { user } = useAuth();
 
   const load = useCallback(
@@ -67,6 +74,7 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
       }
       const cached = peekApiCache<Assignment[]>(url);
       if (cached) setAssignments(cached);
+      setStale(peekApiCacheMeta(url)?.stale ?? false);
       setLoading(!cached);
       setError(null);
       try {
@@ -76,13 +84,14 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
           freshMs === undefined ? {} : { freshMs },
         );
         setAssignments(data);
-      } catch {
-        setError(t('failedToLoad'));
+      } catch (err) {
+        setError(toDataError(err));
       } finally {
+        setStale(peekApiCacheMeta(url)?.stale ?? false);
         setLoading(false);
       }
     },
-    [user, url, enabled, t],
+    [user, url, enabled],
   );
 
   useEffect(() => {
@@ -203,6 +212,8 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
     assignments,
     loading,
     error,
+    errorMessage: error ? t('failedToLoad') : null,
+    stale,
     createAssignment,
     updateAssignments,
     deleteAssignments,

@@ -4,6 +4,7 @@ import { createBrowserClient } from '@supabase/ssr';
 
 import { type Locale, parseLocale } from '@/i18n/config';
 import { availableNowFilter } from '@/lib/assignmentAvailability';
+import { toDataError } from '@/lib/dataError';
 import {
   type AccountType,
   dbCardToApp,
@@ -77,7 +78,7 @@ export async function loadDecks(userId: string): Promise<Deck[]> {
   const { data: assignedRows } = assignedResult;
   if (deckError) {
     console.error('Error loading decks', deckError);
-    return [];
+    throw toDataError(deckError);
   }
 
   const ownDeckIds = new Set((deckRows ?? []).map((d) => d.id));
@@ -255,7 +256,7 @@ export async function loadCards(deckId: string): Promise<Flashcard[]> {
 
   if (error) {
     console.error('Error loading cards', error);
-    return [];
+    throw toDataError(error);
   }
 
   return (data ?? []).map(dbCardToApp);
@@ -344,7 +345,7 @@ export async function dbUpdateCard(
 
   if (error || !data) {
     console.error('Error updating card', error);
-    return null;
+    throw toDataError(error ?? new Error('Card update returned no row'));
   }
 
   return dbCardToApp(data);
@@ -367,7 +368,7 @@ export async function getAccessibleDeckIds(userId: string): Promise<string[]> {
   const error = ownResult.error ?? assignedResult.error;
   if (error) {
     console.error('Error loading accessible deck ids', error);
-    throw new Error(error.message);
+    throw toDataError(error);
   }
   const ids = new Set<string>((ownResult.data ?? []).map((d) => d.id as string));
   for (const row of assignedResult.data ?? []) ids.add(row.deck_id as string);
@@ -400,7 +401,7 @@ export async function loadAccessibleCards(
 
   if (error) {
     console.error('Error loading accessible cards', error);
-    return [];
+    throw toDataError(error);
   }
 
   return (data ?? []).map(dbCardToApp);
@@ -841,7 +842,7 @@ export async function loadEventTypes(userId: string): Promise<EntryType[]> {
     .order('name', { ascending: true });
   if (error) {
     console.error('Error loading event types', error);
-    return [];
+    throw toDataError(error);
   }
   return (data ?? []).map(dbEventTypeToApp);
 }
@@ -906,7 +907,7 @@ export async function loadTodos(userId: string): Promise<Todo[]> {
     .order('created_at', { ascending: true });
   if (error) {
     console.error('Error loading todos', error);
-    return [];
+    throw toDataError(error);
   }
   return (data ?? []).map(dbTodoToApp);
 }
@@ -1022,7 +1023,7 @@ export async function loadShowCards(): Promise<ShowCard[]> {
     .order('created_at', { ascending: false });
   if (error) {
     console.error('Error loading show cards', error);
-    return [];
+    throw toDataError(error);
   }
   return (data ?? []).map(dbShowCardToApp);
 }
@@ -1134,7 +1135,7 @@ export async function getCardProgressForUser(
   const { data, error } = await (cardIds ? query.in('card_id', cardIds) : query);
   if (error) {
     console.error('Error loading card progress', error);
-    return [];
+    throw toDataError(error);
   }
   return (data ?? []).map(dbCardProgressToApp);
 }
@@ -1172,7 +1173,7 @@ export async function getDueCards(
     .limit(limit);
   if (error) {
     console.error('Error loading due cards', error);
-    throw new Error(error.message);
+    throw toDataError(error);
   }
   return (data ?? [])
     .map((row) => (row as unknown as { cards: SupabaseCardRow | null }).cards)
@@ -1193,7 +1194,7 @@ export async function getDueCount(userId: string): Promise<number> {
     .lte('next_review_at', new Date().toISOString());
   if (error) {
     console.error('Error loading due count', error);
-    throw new Error(error.message);
+    throw toDataError(error);
   }
   return count ?? 0;
 }
@@ -1256,7 +1257,7 @@ export async function getBestQuizForDeck(deckId: string): Promise<QuizScore | nu
     .maybeSingle();
   if (error) {
     console.error('getBestQuizForDeck error', error);
-    return null;
+    throw toDataError(error);
   }
   if (!data) return null;
   return { score: data.score, total: data.total, accuracy: data.accuracy, takenAt: data.taken_at };

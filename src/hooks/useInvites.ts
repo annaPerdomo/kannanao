@@ -4,7 +4,13 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchJsonCached, invalidateApiCache, peekApiCache } from '@/lib/apiCache';
+import {
+  fetchJsonCached,
+  invalidateApiCache,
+  peekApiCache,
+  peekApiCacheMeta,
+} from '@/lib/apiCache';
+import { type DataError, toDataError } from '@/lib/dataError';
 
 export interface InviteCode {
   id: string;
@@ -32,7 +38,8 @@ export function useInvites(groupId?: string | null) {
   // below still revalidates stale data in the background.
   const [invites, setInvites] = useState<InviteCode[]>(() => peekApiCache(url) ?? []);
   const [loading, setLoading] = useState(() => peekApiCache(url) === undefined);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<DataError | null>(null);
+  const [stale, setStale] = useState(() => peekApiCacheMeta(url)?.stale ?? false);
   const t = useTranslations('Group.useInvites');
 
   const headers = useCallback(() => {
@@ -45,6 +52,7 @@ export function useInvites(groupId?: string | null) {
     async (freshMs?: number) => {
       const cached = peekApiCache<InviteCode[]>(url);
       if (cached) setInvites(cached);
+      setStale(peekApiCacheMeta(url)?.stale ?? false);
       setLoading(!cached);
       setError(null);
       try {
@@ -54,13 +62,14 @@ export function useInvites(groupId?: string | null) {
           freshMs === undefined ? {} : { freshMs },
         );
         setInvites(data);
-      } catch {
-        setError(t('loadFailed'));
+      } catch (err) {
+        setError(toDataError(err));
       } finally {
+        setStale(peekApiCacheMeta(url)?.stale ?? false);
         setLoading(false);
       }
     },
-    [headers, url, t],
+    [headers, url],
   );
 
   useEffect(() => {
@@ -112,5 +121,14 @@ export function useInvites(groupId?: string | null) {
     [headers, fetchInvites, t],
   );
 
-  return { invites, loading, error, createInvite, revokeInvite, refresh: fetchInvites };
+  return {
+    invites,
+    loading,
+    error,
+    errorMessage: error ? t('loadFailed') : null,
+    stale,
+    createInvite,
+    revokeInvite,
+    refresh: fetchInvites,
+  };
 }

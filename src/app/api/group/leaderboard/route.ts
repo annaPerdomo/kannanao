@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { getProfileForUser, getUserFromToken } from '../../_lib/authCache';
+import { getProfileForUserResult, getUserFromTokenResult } from '../../_lib/authCache';
+import { backendUnavailable } from '../../_lib/backendUnavailable';
 import { rateLimit } from '../../_lib/rateLimit';
 import { buildLeaderboard } from '../_lib/leaderboard';
 import { membershipsOf } from '../_lib/membership';
@@ -29,7 +30,9 @@ export async function GET(req: NextRequest) {
   }
 
   const token = authHeader.slice(7);
-  const user = await getUserFromToken(token);
+  const auth = await getUserFromTokenResult(token);
+  if (auth.error) return backendUnavailable(auth.error, 'group/leaderboard.user');
+  const user = auth.value;
 
   if (!user) {
     return NextResponse.json({ error: 'Invalid or expired token.' }, { status: 401 });
@@ -38,8 +41,10 @@ export async function GET(req: NextRequest) {
   const sb = getServiceSupabase();
 
   // Get the user's profile to determine group membership (cached per user)
-  const profile = await getProfileForUser(user.id, token);
+  const lookup = await getProfileForUserResult(user.id, token);
+  if (lookup.error) return backendUnavailable(lookup.error, 'group/leaderboard.profile');
 
+  const profile = lookup.value;
   if (!profile) {
     return NextResponse.json({ error: 'Profile not found.' }, { status: 404 });
   }

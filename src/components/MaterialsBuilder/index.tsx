@@ -41,7 +41,7 @@ export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
   const { brand } = theme.palette;
   const router = useRouter();
   const { isMemberAccount, loading: authLoading } = useAuth();
-  const { groups, loading: groupsLoading, error: groupsError, refetch } = useGroups();
+  const { groups, loading: groupsLoading, errorMessage: groupsError, refetch } = useGroups();
 
   const [tab, setTab] = useState<BuilderTab>('lessonSet');
   const [groupId, setGroupId] = useState(initialGroupId ?? '');

@@ -33,6 +33,7 @@ vi.mock('@/contexts/AuthContext', () => ({
 }));
 
 import { useDecks } from '@/hooks/useDecks';
+import { DataError } from '@/lib/dataError';
 import { isConfigured, showConfigBanner } from '@/lib/supabase';
 import type { Deck } from '@/types/deck';
 
@@ -474,6 +475,63 @@ describe('useDecks', () => {
 
       expect(mockShowConfigBanner).toHaveBeenCalled();
       expect(mockRenameDeck).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('a failed load and an empty library', () => {
+    it('sets error and leaves the deck list alone when the load throws', async () => {
+      mockLoadDecks.mockRejectedValue(new DataError('upstream', 'gateway down', { status: 503 }));
+
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(result.current.error).toBeInstanceOf(DataError);
+      expect(result.current.error?.kind).toBe('upstream');
+      expect(result.current.decks).toEqual([]);
+    });
+
+    it('leaves error null for a user who genuinely has no decks', async () => {
+      mockLoadDecks.mockResolvedValue([]);
+
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(result.current.error).toBeNull();
+      expect(result.current.decks).toEqual([]);
+    });
+
+    it('wraps a non-DataError rejection so callers always get a kind', async () => {
+      mockLoadDecks.mockRejectedValue(new Error('boom'));
+
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(result.current.error).toBeInstanceOf(DataError);
+      expect(result.current.error?.kind).toBe('unknown');
+    });
+
+    it('retry refetches and clears the error once the backend recovers', async () => {
+      mockLoadDecks.mockRejectedValueOnce(new DataError('upstream', 'gateway down'));
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.error).not.toBeNull());
+
+      mockLoadDecks.mockResolvedValue([makeDeck()]);
+      act(() => result.current.retry());
+
+      await waitFor(() => expect(result.current.decks).toHaveLength(1));
+      expect(result.current.error).toBeNull();
+    });
+
+    it('keeps the decks already on screen when a retry fails again', async () => {
+      mockLoadDecks.mockResolvedValue([makeDeck()]);
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.decks).toHaveLength(1));
+
+      mockLoadDecks.mockRejectedValue(new DataError('upstream', 'still down'));
+      act(() => result.current.retry());
+
+      await waitFor(() => expect(result.current.error).not.toBeNull());
+      expect(result.current.decks).toHaveLength(1);
     });
   });
 });
