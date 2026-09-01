@@ -48,6 +48,20 @@ describe('deckReuse', () => {
     expect(result).toMatchObject({ reused: 1, total: 2 });
     expect(result.perCard).toEqual([['ねこ'], []]);
   });
+
+  it('leaves unticked and blank cards out of the counts but keeps perCard aligned', () => {
+    const planned = deck('Week 1', [
+      ['いぬ', 'ねことあそぶ'],
+      ['とり', 'ねこととり'],
+      ['', ''],
+    ]);
+    planned.cards[1].excluded = true;
+
+    const result = deckReuse(planned, ['ねこ']);
+
+    expect(result).toMatchObject({ reused: 1, total: 1 });
+    expect(result.perCard).toHaveLength(3);
+  });
 });
 
 describe('planReuse', () => {
@@ -62,5 +76,18 @@ describe('planReuse', () => {
     expect(first.reused).toBe(0);
     expect(second.reused).toBe(1);
     expect(second.perCard[0]).toEqual(['ねこ']);
+  });
+
+  it("a switched-off week's words never feed a later week's pool", () => {
+    const decks = [
+      deck('Week 1', [['ねこ', 'ねこがいます']]),
+      deck('Week 2', [['いぬ', 'ねこといぬ']]),
+    ];
+    decks[0].excluded = true;
+
+    const [, second] = planReuse(decks, []);
+
+    expect(second.reused).toBe(0);
+    expect(second.perCard[0]).toEqual([]);
   });
 });

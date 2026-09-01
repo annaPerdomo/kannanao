@@ -1,3 +1,4 @@
+import { LESSON_DOCUMENTS_BUCKET } from '@/lib/lessonDocuments';
 import { sb } from '@/lib/supabase';
 import type { GeneratedCard, GeneratePayload } from '@/types/flashcard';
 import type { ApplyDeckResult, LessonPlan, LessonPlanResponse } from '@/types/lessonPlan';
@@ -239,14 +240,40 @@ export async function deletePracticeSentences(deckId: string, memberId?: string)
 
 /* ── Lesson Builder ────────────────────────────────────────────── */
 
+/**
+ * Uploads a file straight from the browser to Storage and returns its object key.
+ * It never crosses a function, which is what keeps it clear of Vercel's ~4.5 MB
+ * request body limit.
+ */
+export async function uploadLessonDocument(file: File): Promise<string> {
+  const res = await fetch(`${BASE}/group/lesson-documents`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify({ mimeType: file.type }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to upload the file');
+  }
+  const { path, token } = (await res.json()) as { path: string; token: string };
+
+  const { error } = await sb.storage
+    .from(LESSON_DOCUMENTS_BUCKET)
+    .uploadToSignedUrl(path, token, file, { contentType: file.type });
+  if (error) throw new Error(error.message);
+
+  return path;
+}
+
 export async function buildLessonPlan(payload: {
   goal: string;
   weeks: number;
   cardsPerDeck: number;
-  documents?: Array<{ base64: string; mimeType: string }>;
+  documents?: Array<{ path: string; mimeType: string }>;
   /** JLPT level to pitch the plan at — defaults to N5 server-side. */
   level?: string;
   styleNotes?: string;
+  groupId?: string;
 }): Promise<LessonPlanResponse> {
   const res = await fetch(`${BASE}/group/lesson-plan`, {
     method: 'POST',

@@ -2,9 +2,13 @@
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
-import { dbFindCardsByWords } from '@/lib/supabase';
 import { generateFlashcards } from '@/services/api';
-import { applyReuse, type NewCard, type ReusableCard, withImages } from '@/services/cardPipeline';
+import {
+  type NewCard,
+  type ReusableCard,
+  reuseThenFetch,
+  withImages,
+} from '@/services/cardPipeline';
 import type { MainViewMode } from '@/types/flashcard';
 
 interface UseGenerateResult {
@@ -42,13 +46,7 @@ export function useGenerateFlashcards(): UseGenerateResult {
         const generated = await generateFlashcards({ pendingWords: words, ...payload });
         if (!reuseExisting) return await withImages(generated, deckId, mainViewMode);
 
-        const existing = await dbFindCardsByWords(generated.map((c) => c.word));
-        const { reused, toFetch } = applyReuse(generated, existing, deckId, mainViewMode);
-        const fetched = await withImages(toFetch, deckId, mainViewMode);
-
-        // Weave the fetched cards back into the gaps the reused ones left.
-        let next = 0;
-        return reused.map((card) => card ?? fetched[next++]);
+        return await reuseThenFetch(generated, deckId, mainViewMode);
       } catch (err) {
         const msg = err instanceof Error ? err.message : t('generationFailed');
         setError(msg);

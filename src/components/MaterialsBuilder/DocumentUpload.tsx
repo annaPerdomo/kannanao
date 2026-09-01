@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 
+import { uploadLessonDocument } from '@/services/api';
 import type { LessonDocument } from '@/types/lessonPlan';
 
 import {
@@ -24,36 +25,24 @@ interface DocumentUploadProps {
   onChange: (next: LessonDocument[]) => void;
 }
 
-function toBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve((reader.result as string).split(',')[1]);
-    reader.onerror = () => reject(new Error('read failed'));
-    reader.readAsDataURL(file);
-  });
-}
-
-function base64Bytes(base64: string): number {
-  return Math.floor((base64.length * 3) / 4);
-}
-
 export function DocumentUpload({ documents, onChange }: DocumentUploadProps) {
   const t = useTranslations('Group.lessonBuilder');
   const theme = useTheme();
   const { brand } = theme.palette;
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
-  const [reading, setReading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
-  const attachedBytes = documents.reduce((sum, d) => sum + base64Bytes(d.base64), 0);
+  const attachedBytes = documents.reduce((sum, d) => sum + d.bytes, 0);
 
   const handleFiles = async (files: FileList) => {
+    if (uploading) return;
     setError(null);
-    const accepted: LessonDocument[] = [];
+    const picked = Array.from(files);
     let runningBytes = attachedBytes;
 
-    for (const file of Array.from(files)) {
+    for (const file of picked) {
       if (
         !DOCUMENT_ACCEPTED_TYPES.includes(file.type as (typeof DOCUMENT_ACCEPTED_TYPES)[number])
       ) {
@@ -69,22 +58,23 @@ export function DocumentUpload({ documents, onChange }: DocumentUploadProps) {
         return;
       }
       runningBytes += file.size;
-      accepted.push({ name: file.name, mimeType: file.type, base64: '' });
     }
 
-    setReading(true);
+    setUploading(true);
     try {
-      const withContent = await Promise.all(
-        Array.from(files).map(async (file, i) => ({
-          ...accepted[i],
-          base64: await toBase64(file),
+      const uploaded = await Promise.all(
+        picked.map(async (file) => ({
+          name: file.name,
+          mimeType: file.type,
+          path: await uploadLessonDocument(file),
+          bytes: file.size,
         })),
       );
-      onChange([...documents, ...withContent]);
+      onChange([...documents, ...uploaded]);
     } catch {
-      setError(t('documentReadError'));
+      setError(t('documentUploadError'));
     } finally {
-      setReading(false);
+      setUploading(false);
     }
   };
 
@@ -108,24 +98,27 @@ export function DocumentUpload({ documents, onChange }: DocumentUploadProps) {
       />
       <Box
         role="button"
-        tabIndex={0}
+        tabIndex={uploading ? -1 : 0}
+        aria-disabled={uploading}
         aria-label={documents.length > 0 ? t('addMoreDocumentsButton') : t('attachDocumentButton')}
-        onClick={() => inputRef.current?.click()}
+        onClick={() => {
+          if (!uploading) inputRef.current?.click();
+        }}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (!uploading && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
             inputRef.current?.click();
           }
         }}
         onDragOver={(e) => {
           e.preventDefault();
-          setDragOver(true);
+          if (!uploading) setDragOver(true);
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => {
           e.preventDefault();
           setDragOver(false);
-          if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
+          if (!uploading && e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
         }}
         sx={{
           border: `2px dashed ${alpha(brand[400], dragOver ? 0.9 : 0.5)}`,
@@ -133,15 +126,16 @@ export function DocumentUpload({ documents, onChange }: DocumentUploadProps) {
           bgcolor: alpha(brand[50], dragOver ? 0.9 : 0.5),
           p: { xs: 2, sm: 2.5 },
           textAlign: 'center',
-          cursor: 'pointer',
+          cursor: uploading ? 'default' : 'pointer',
+          opacity: uploading ? 0.7 : 1,
           transition: 'border-color 120ms, background-color 120ms',
-          '&:hover': { borderColor: alpha(brand[400], 0.9) },
+          '&:hover': { borderColor: alpha(brand[400], uploading ? 0.5 : 0.9) },
         }}
       >
         <UploadFileIcon sx={{ color: brand[600], fontSize: 28 }} />
         <Typography sx={{ fontWeight: 700, color: brand[700], fontSize: '0.9rem' }}>
-          {reading
-            ? t('documentReading')
+          {uploading
+            ? t('documentUploading')
             : documents.length > 0
               ? t('addMoreDocumentsButton')
               : t('attachDocumentButton')}

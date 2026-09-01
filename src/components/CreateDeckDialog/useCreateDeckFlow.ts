@@ -8,7 +8,7 @@ import { useDecks } from '@/hooks/useDecks';
 import { useGenerateFlashcards } from '@/hooks/useGenerateFlashcards';
 import { errorMessage } from '@/lib/errorMessage';
 import { dbCopyCardsIntoDeck, dbInsertCards } from '@/lib/supabase';
-import { withImages } from '@/services/cardPipeline';
+import { reuseThenFetch } from '@/services/cardPipeline';
 import type { Flashcard, GeneratedCard, MainViewMode } from '@/types/flashcard';
 
 /**
@@ -135,7 +135,7 @@ export function useCreateDeckFlow(onClose: () => void) {
     if (!createdDeckId) return;
     setCreating(true);
     try {
-      const cards = await withImages(extracted, createdDeckId, mainViewMode);
+      const cards = await reuseThenFetch(extracted, createdDeckId, mainViewMode);
       setPdfOpen(false);
       onClose();
       review.review(cards);

@@ -213,6 +213,39 @@ describe('buildLessonPlanPrompt', () => {
     expect(prompt).toContain('EXTRA GUIDANCE');
     expect(prompt).toContain('Casual speech between friends');
   });
+
+  it('tells the model to skip known words and not duplicate them when the group has some', () => {
+    const prompt = buildLessonPlanPrompt({
+      goal: 'Food words',
+      weeks: 2,
+      cardsPerDeck: 10,
+      knownWords: KNOWN,
+    });
+
+    expect(prompt).toContain(
+      'KNOWN VOCABULARY — words this group has already studied in its existing decks:',
+    );
+    expect(prompt).toContain(
+      'Do NOT create cards for any of these words — they already have cards. Reuse them freely inside example sentences instead.',
+    );
+    expect(prompt).toContain(
+      '9. No duplicate words across the whole plan, and none from the KNOWN VOCABULARY list.',
+    );
+  });
+
+  it('omits the known-vocabulary block and keeps rule 9 plain when there are no known words', () => {
+    const prompt = buildLessonPlanPrompt({
+      goal: 'Food words',
+      weeks: 2,
+      cardsPerDeck: 10,
+      knownWords: [],
+    });
+
+    expect(prompt).not.toContain('KNOWN VOCABULARY');
+    expect(prompt).not.toContain('Do NOT create cards for any of these words');
+    expect(prompt).toContain('9. No duplicate words across the whole plan.');
+    expect(prompt).not.toContain('9. No duplicate words across the whole plan, and none from');
+  });
 });
 
 describe('dominantLevel', () => {

@@ -20,6 +20,7 @@ import type { Group } from '@/hooks/useGroups';
 import { JLPT_LEVELS, STYLE_NOTES_MAX } from '@/lib/lessonPrompts';
 
 import {
+  AUDIENCE_CHOICES,
   CARDS_PER_DECK_CHOICES,
   GOAL_MAX_LENGTH,
   GOAL_SUGGESTION_KEYS,
@@ -160,6 +161,19 @@ export function AskStep({
             {JLPT_LEVELS.map((level) => (
               <MenuItem key={level} value={level}>
                 {tm(`levels.${level}`)}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            select
+            label={tm('audienceLabel')}
+            value={form.audience}
+            onChange={(e) => onChange({ audience: e.target.value as LessonSetForm['audience'] })}
+          >
+            {AUDIENCE_CHOICES.map((audience) => (
+              <MenuItem key={audience} value={audience}>
+                {tm(`audience.${audience}`)}
               </MenuItem>
             ))}
           </TextField>

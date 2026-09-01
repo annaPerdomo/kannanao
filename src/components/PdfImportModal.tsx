@@ -6,9 +6,11 @@ import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
+import { DOCUMENT_MAX_BYTES } from '@/components/MaterialsBuilder/constants';
 import { StyledDialog } from '@/components/StyledDialog';
 import { errorMessage } from '@/lib/errorMessage';
 import { sb } from '@/lib/supabase';
+import { uploadLessonDocument } from '@/services/api';
 import type { GeneratedCard } from '@/types/flashcard';
 
 interface PdfImportModalProps {
@@ -24,6 +26,7 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
   const { brand, accent } = palette;
 
   const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [extracting, setExtracting] = useState(false);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +38,7 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
       setError(t('pleaseUploadPdf'));
       return;
     }
-    if (f.size > 20 * 1024 * 1024) {
+    if (f.size > DOCUMENT_MAX_BYTES) {
       setError(t('fileSizeError'));
       return;
     }
@@ -50,14 +53,6 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
     if (f) handleFile(f);
   };
 
-  const toBase64 = (f: File): Promise<string> =>
-    new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = () => res((r.result as string).split(',')[1]);
-      r.onerror = () => rej(new Error(t('readFailedError')));
-      r.readAsDataURL(f);
-    });
-
   // Extraction runs straight into the hand-off. There used to be a preview list
   // with its own "Add N cards" button here, which meant confirming the same
   // import twice — once against a cramped read-only list, then again in the
@@ -66,11 +61,23 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
   const handleExtract = async () => {
     if (!file) return;
     setError(null);
-    setExtracting(true);
+
+    // The PDF goes browser → Storage; only its object key is posted here, which
+    // is what keeps a big file clear of Vercel's ~4.5 MB request body limit.
+    let path: string;
+    setUploading(true);
+    try {
+      path = await uploadLessonDocument(file);
+    } catch {
+      setError(t('uploadFailedError'));
+      return;
+    } finally {
+      setUploading(false);
+    }
 
     let cards: GeneratedCard[];
+    setExtracting(true);
     try {
-      const pdfBase64 = await toBase64(file);
       const { data: sessionData } = await sb.auth.getSession();
       const token = sessionData.session?.access_token;
       const response = await fetch('/api/pdf-extract', {
@@ -79,7 +86,7 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ pdfBase64 }),
+        body: JSON.stringify({ path }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? t('extractionFailedFallback'));
@@ -122,12 +129,12 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
       title={t('title')}
       subtitle={t('subtitle')}
       maxWidth="sm"
-      closeDisabled={extracting || adding}
+      closeDisabled={uploading || extracting || adding}
       actions={
         <Button
           fullWidth
           variant="contained"
-          disabled={!file || extracting || adding}
+          disabled={!file || uploading || extracting || adding}
           onClick={handleExtract}
           sx={{
             background: `linear-gradient(135deg, ${brand[400]}, ${accent[300]})`,
@@ -142,8 +149,10 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
         </Button>
       }
     >
-      {extracting || adding ? (
-        <Loading message={adding ? t('addingCards') : t('extracting')} />
+      {uploading || extracting || adding ? (
+        <Loading
+          message={adding ? t('addingCards') : uploading ? t('uploadingPdf') : t('extracting')}
+        />
       ) : (
         <>
           {/* Drop zone */}
