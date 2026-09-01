@@ -19,6 +19,7 @@ type QueryResult = { data?: unknown; error?: { message: string } | null };
 
 let queues: Record<string, QueryResult[]> = {};
 const inserted: { table: string; rows: unknown }[] = [];
+let fromCalls: string[] = [];
 
 function nextResult(table: string): QueryResult {
   return queues[table]?.shift() ?? { data: [], error: null };
@@ -35,6 +36,7 @@ vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
     rpc: rpcMock,
     storage: { from: () => ({ download: downloadMock }) },
     from(table: string) {
+      fromCalls.push(table);
       const chain = {
         select: () => chain,
         eq: () => chain,
@@ -42,6 +44,7 @@ vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
         in: () => chain,
         limit: () => chain,
         order: () => chain,
+        range: () => chain,
         single: () => Promise.resolve(nextResult(table)),
         maybeSingle: () => Promise.resolve(nextResult(table)),
         insert: (rows: unknown) => {
@@ -123,12 +126,78 @@ function blobOfSize(bytes: number): Blob {
   return { size: bytes, arrayBuffer: async () => new ArrayBuffer(0) } as unknown as Blob;
 }
 
+function seedGroupAccess(groupId = 'g1') {
+  queues.groups.push({ data: { id: groupId, organizer_id: 'org1' }, error: null });
+}
+
+function seedKnownWordsPool(args: {
+  deckIds?: string[];
+  plannedDeckIds?: string[];
+  decks?: { id: string; name: string }[];
+  cards?: { word: string; reading: string; meaning: string; deck_id: string }[];
+}) {
+  queues.assignments.push({
+    data: (args.deckIds ?? []).map((id) => ({ deck_id: id })),
+    error: null,
+  });
+  queues.planned_assignments.push({
+    data: (args.plannedDeckIds ?? []).map((id) => ({ deck_id: id })),
+    error: null,
+  });
+  queues.decks.push({ data: args.decks ?? [], error: null });
+  queues.cards.push({ data: args.cards ?? [], error: null });
+}
+
+function mockGeminiPlanWithCards(cards: { word: string; reading: string; meaning: string }[]) {
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    status: 200,
+    json: async () => ({
+      candidates: [
+        {
+          content: {
+            parts: [
+              {
+                text: JSON.stringify({
+                  decks: [
+                    {
+                      name: 'Week 1',
+                      description: 'Food words',
+                      emoji: '🍜',
+                      mainViewMode: 'hiragana',
+                      cards: cards.map((c) => ({
+                        ...c,
+                        exampleJp: '{猫|ねこ}がラーメンをたべます',
+                        exampleEn: 'The cat eats ramen',
+                        jlptLevel: 'N5',
+                      })),
+                    },
+                  ],
+                }),
+              },
+            ],
+          },
+        },
+      ],
+    }),
+  });
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   _resetStore();
   process.env.GEMINI_API_KEY = 'test-gemini-key';
-  queues = { group_members: [], card_progress: [], cards: [] };
+  queues = {
+    group_members: [],
+    card_progress: [],
+    cards: [],
+    groups: [],
+    assignments: [],
+    planned_assignments: [],
+    decks: [],
+  };
   inserted.length = 0;
+  fromCalls = [];
   rpcMock.mockResolvedValue({ data: 1, error: null });
   downloadMock.mockResolvedValue({ data: new Blob(['abc']), error: null });
 });
@@ -351,5 +420,101 @@ describe('POST /api/group/lesson-plan', () => {
       }),
     );
     expect(res.status).toBe(200);
+  });
+});
+
+describe('POST /api/group/lesson-plan — group known-words dedupe', () => {
+  it('excludes the KNOWN VOCABULARY prompt block and filters cards into warmUp when given a groupId', async () => {
+    seedGroupAccess();
+    seedKnownWordsPool({
+      deckIds: ['d1'],
+      decks: [{ id: 'd1', name: 'Animals' }],
+      cards: [{ word: 'ねこ', reading: 'ねこ', meaning: 'cat', deck_id: 'd1' }],
+    });
+    mockGeminiPlanWithCards([
+      { word: 'ねこ', reading: 'ねこ', meaning: 'cat' },
+      { word: 'ラーメン', reading: 'ラーメン', meaning: 'ramen' },
+    ]);
+
+    const res = await POST(makeRequest({ ...VALID, groupId: 'g1' }));
+    expect(res.status).toBe(200);
+
+    const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+    const prompt = requestBody.contents[0].parts[0].text;
+    expect(prompt).toContain('KNOWN VOCABULARY — words this group has already studied');
+    expect(prompt).toContain('Do NOT create cards');
+
+    const body = await res.json();
+    expect(body.plan.decks[0].cards.map((c: { word: string }) => c.word)).toEqual(['ラーメン']);
+    expect(body.warmUp).toEqual([
+      { word: 'ねこ', reading: 'ねこ', meaning: 'cat', deckName: 'Animals' },
+    ]);
+    expect(body.knownWords).toEqual(['ねこ']);
+  });
+
+  it('skips the pool and the KNOWN VOCABULARY block when no groupId is given', async () => {
+    mockGeminiPlan();
+
+    const res = await POST(makeRequest(VALID));
+    expect(res.status).toBe(200);
+
+    expect(fromCalls).not.toContain('assignments');
+    expect(fromCalls).not.toContain('planned_assignments');
+
+    const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+    const prompt = requestBody.contents[0].parts[0].text;
+    expect(prompt).not.toContain('KNOWN VOCABULARY');
+
+    const body = await res.json();
+    expect(body.warmUp).toEqual([]);
+  });
+
+  it('returns 500 and never spends the budget when the pool query fails', async () => {
+    seedGroupAccess();
+    queues.assignments.push({ data: null, error: { message: 'boom' } });
+
+    const res = await POST(makeRequest({ ...VALID, groupId: 'g1' }));
+    expect(res.status).toBe(500);
+    expect((await res.json()).error).toBe("Could not load the group's existing words.");
+    expect(rpcMock).not.toHaveBeenCalled();
+  });
+
+  it('caps the prompt pool at 120 but still filters a match beyond the cap', async () => {
+    seedGroupAccess();
+    const cards = Array.from({ length: 121 }, (_, i) => ({
+      word: `word${i}`,
+      reading: `reading${i}`,
+      meaning: `meaning${i}`,
+      deck_id: 'd1',
+    }));
+    seedKnownWordsPool({
+      deckIds: ['d1'],
+      decks: [{ id: 'd1', name: 'Big Deck' }],
+      cards,
+    });
+    mockGeminiPlanWithCards([{ word: 'word120', reading: 'reading120', meaning: 'meaning120' }]);
+
+    const res = await POST(makeRequest({ ...VALID, groupId: 'g1' }));
+    expect(res.status).toBe(200);
+
+    const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+    const prompt = requestBody.contents[0].parts[0].text;
+    expect(prompt.match(/\(reading\d+\)/g) ?? []).toHaveLength(120);
+    expect(prompt).toContain('(reading119)');
+    expect(prompt).not.toContain('(reading120)');
+
+    const body = await res.json();
+    expect(body.plan.decks[0].cards).toHaveLength(0);
+    expect(body.warmUp).toEqual([
+      { word: 'word120', reading: 'reading120', meaning: 'meaning120', deckName: 'Big Deck' },
+    ]);
+  });
+
+  it('returns 404 for a group the organizer does not own', async () => {
+    queues.groups.push({ data: null, error: { message: 'not found' } });
+
+    const res = await POST(makeRequest({ ...VALID, groupId: 'missing-group' }));
+    expect(res.status).toBe(404);
+    expect(rpcMock).not.toHaveBeenCalled();
   });
 });

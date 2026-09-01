@@ -128,8 +128,9 @@ export function buildLessonPlanPrompt(args: {
   const known =
     knownWords.length > 0
       ? `
-KNOWN VOCABULARY — words this learner has already studied:
+KNOWN VOCABULARY — words this group has already studied in its existing decks:
 ${wordListText(knownWords)}
+Do NOT create cards for any of these words — they already have cards. Reuse them freely inside example sentences instead.
 `
       : '';
 
@@ -151,6 +152,8 @@ ${documentCount} reference documents are attached (vocabulary lists, syllabi, or
       : `1. Every card's example sentence must use vocabulary at or below ${level} and SHOULD reuse a word from the known list above or from an earlier deck in this same plan. Never force it — a bent sentence teaches nothing.
 2. Pick words and grammar that genuinely challenge a ${level} learner — do not pad the plan with beginner material — but do NOT introduce words above ${level}.${level === 'N1' ? ' Nuanced, native-like example sentences are welcome.' : ''}`;
 
+  const duplicateRule = `9. No duplicate words across the whole plan${knownWords.length > 0 ? ', and none from the KNOWN VOCABULARY list.' : '.'}`;
+
   return `You are a Japanese language teacher planning a short course for ${levelAudience(level)}.
 
 What the educator wants to cover:
@@ -166,7 +169,7 @@ ${levelRule}
 6. "mainViewMode" is how the front of the card should be shown: "hiragana", "kanji" or "romaji". Use "kanji" only when the words are written in kanji.
 7. "emoji" is a single emoji that fits the deck. "description" is one short plain sentence a non-technical adult would understand.
 8. "name" is a short deck title in the same language as the educator's request above.
-9. No duplicate words across the whole plan.`;
+${duplicateRule}`;
 }
 
 /**

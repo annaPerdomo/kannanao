@@ -5,6 +5,7 @@ import {
   DOCUMENT_MAX_TOTAL_BYTES,
 } from '@/components/MaterialsBuilder/constants';
 import { normalizeFurigana } from '@/lib/furigana';
+import { rankKnownWords } from '@/lib/knownWords';
 import {
   isLessonDocumentMimeType,
   LESSON_DOCUMENTS_BUCKET,
@@ -19,12 +20,15 @@ import {
   isJlptLevel,
   STYLE_NOTES_MAX,
 } from '@/lib/lessonPrompts';
+import { splitKnownCards } from '@/lib/lessonWarmUp';
 import { logger } from '@/lib/logger';
-import type { LessonPlan } from '@/types/lessonPlan';
+import type { LessonPlan, WarmUpWord } from '@/types/lessonPlan';
 
 import { rateLimit } from '../../_lib/rateLimit';
-import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { type OrganizerProfile, requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { getGroupKnownWords } from '../_lib/groupKnownWords';
 import { consumeLessonBudget } from '../_lib/lessonBudget';
+import { requireGroupAccess } from '../_lib/requireGroupAccess';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 3 };
@@ -147,18 +151,31 @@ export async function POST(req: NextRequest) {
   const limited = await rateLimit(req, RATE_LIMIT);
   if (limited) return limited;
 
-  const orgCheck = await requireOrganizerAccount(req);
-  if (orgCheck instanceof NextResponse) return orgCheck;
-
   const body = await req.json().catch(() => null);
-  const { goal, weeks, cardsPerDeck, documents, level, styleNotes } = (body ?? {}) as {
+  const { goal, weeks, cardsPerDeck, documents, level, styleNotes, groupId } = (body ?? {}) as {
     goal?: string;
     weeks?: number;
     cardsPerDeck?: number;
     documents?: LessonDocumentInput[];
     level?: string;
     styleNotes?: string;
+    groupId?: string;
   };
+
+  if (groupId !== undefined && (typeof groupId !== 'string' || groupId.trim().length === 0)) {
+    return NextResponse.json({ error: 'groupId must be a non-empty string.' }, { status: 400 });
+  }
+
+  let organizer: OrganizerProfile;
+  if (groupId) {
+    const access = await requireGroupAccess(req, groupId);
+    if (access instanceof NextResponse) return access;
+    organizer = access.organizer;
+  } else {
+    const access = await requireOrganizerAccount(req);
+    if (access instanceof NextResponse) return access;
+    organizer = access;
+  }
 
   const trimmedGoal = typeof goal === 'string' ? goal.trim() : '';
   if (trimmedGoal.length < GOAL_MIN || trimmedGoal.length > GOAL_MAX) {
@@ -211,7 +228,7 @@ export async function POST(req: NextRequest) {
           { status: 400 },
         );
       }
-      if (!ownsLessonDocumentPath(doc.path, orgCheck.id)) {
+      if (!ownsLessonDocumentPath(doc.path, organizer.id)) {
         return NextResponse.json(
           { error: 'A reference document could not be found — please attach it again.' },
           { status: 400 },
@@ -225,10 +242,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
   }
 
-  const documentParts = await loadDocumentParts(documents ?? [], orgCheck.id);
+  const documentParts = await loadDocumentParts(documents ?? [], organizer.id);
   if (documentParts instanceof NextResponse) return documentParts;
 
-  const overBudget = await consumeLessonBudget(orgCheck.id);
+  let pool: WarmUpWord[] = [];
+  if (groupId) {
+    try {
+      pool = await getGroupKnownWords(groupId, organizer.id);
+    } catch (err) {
+      logger.error("Failed to load the group's known words", {
+        route: 'POST /api/group/lesson-plan',
+        groupId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      return NextResponse.json(
+        { error: "Could not load the group's existing words." },
+        { status: 500 },
+      );
+    }
+  }
+
+  const overBudget = await consumeLessonBudget(organizer.id);
   if (overBudget) return overBudget;
 
   try {
@@ -240,8 +274,15 @@ export async function POST(req: NextRequest) {
         goal: trimmedGoal,
         weeks: weeks as number,
         cardsPerDeck: cards,
-        // Group-wide materials: no one learner's studied vocabulary seeds a plan.
-        knownWords: [],
+        knownWords: rankKnownWords(
+          pool.map((w) => ({
+            word: w.word,
+            reading: w.reading,
+            meaning: w.meaning,
+            correctCount: 0,
+            lastReviewedAt: null,
+          })),
+        ),
         documentCount,
         level: jlptLevel,
         styleNotes: trimmedStyleNotes || undefined,
@@ -294,21 +335,30 @@ export async function POST(req: NextRequest) {
       })),
     }));
 
+    const { plan: filteredPlan, warmUp } = splitKnownCards(plan, pool);
+
     logger.info('Lesson plan generated', {
       route: 'POST /api/group/lesson-plan',
-      organizerId: orgCheck.id,
+      organizerId: organizer.id,
+      groupId: groupId ?? null,
       weeks,
       cardsPerDeck: cards,
       level: jlptLevel,
       styleNoteChars: trimmedStyleNotes.length,
       documentCount,
-      deckCount: plan.decks.length,
-      cardCount: plan.decks.reduce((n, d) => n + (d.cards?.length ?? 0), 0),
+      knownWordCount: pool.length,
+      warmUpCount: warmUp.length,
+      deckCount: filteredPlan.decks.length,
+      cardCount: filteredPlan.decks.reduce((n, d) => n + (d.cards?.length ?? 0), 0),
       promptTokens: data.usageMetadata?.promptTokenCount ?? null,
       outputTokens: data.usageMetadata?.candidatesTokenCount ?? null,
     });
 
-    return NextResponse.json({ plan });
+    return NextResponse.json({
+      plan: filteredPlan,
+      warmUp,
+      knownWords: pool.map((w) => w.word),
+    });
   } catch (err) {
     logger.error('Unhandled error', {
       route: 'POST /api/group/lesson-plan',

@@ -32,8 +32,20 @@ export interface LessonDocument {
   bytes: number;
 }
 
+/** A pool word already covered by the group's decks; shown as a display-only warm-up list. */
+export interface WarmUpWord {
+  word: string;
+  reading: string;
+  meaning: string;
+  deckName: string;
+}
+
 export interface LessonPlanResponse {
   plan: LessonPlan;
+  /** Known words the server filtered out of the generated plan. */
+  warmUp?: WarmUpWord[];
+  /** Full group pool (words only); feeds the review step's "builds on" chips. */
+  knownWords?: string[];
 }
 
 export interface ApplyDeckResult {
