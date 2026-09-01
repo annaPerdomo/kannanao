@@ -13,6 +13,8 @@ const LABELS = {
   warmUpTitle: 'Warm-up review',
   warmUpHint: 'Words your group already knows.',
   deck: 'Deck',
+  kanaTitle: 'Sounds in this lesson',
+  kanaHint: 'Just the rows this lesson uses.',
 };
 
 const WARM_UP: WarmUpWord[] = [
@@ -130,5 +132,40 @@ describe('warm-up section', () => {
     expect(html).not.toContain('<img src=x');
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
     expect(html).toContain('&lt;script&gt;alert(2)&lt;/script&gt;');
+  });
+});
+
+describe('the kana reference page', () => {
+  function html(kanaSets?: string[]) {
+    return buildLessonPrintableHtml({
+      title: 'Study sheets',
+      locale: 'en',
+      variant: 'study',
+      weeks: [{ heading: 'Week 1 — Food words', deck: DECK }],
+      labels: LABELS,
+      kanaSets,
+    });
+  }
+
+  it('should be left out unless rows are named', () => {
+    expect(html()).not.toContain('Sounds in this lesson');
+    expect(html([])).not.toContain('Sounds in this lesson');
+  });
+
+  it('should print only the rows the lesson uses, not the whole chart', () => {
+    const out = html(['hira-ra']);
+    expect(out).toContain('Sounds in this lesson');
+    for (const kana of ['ら', 'り', 'る', 'れ', 'ろ']) expect(out).toContain(kana);
+    expect(out).not.toContain('>か<');
+    expect(out).not.toContain('ぴょ');
+  });
+
+  it('should print the rows in curriculum order whatever order they arrive in', () => {
+    const out = html(['kata-a', 'hira-ka']);
+    expect(out.indexOf('>か<')).toBeLessThan(out.indexOf('>ア<'));
+  });
+
+  it('should give every character its romaji', () => {
+    expect(html(['hira-ra'])).toContain('>ri<');
   });
 });

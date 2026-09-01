@@ -12,6 +12,7 @@ function member(overrides: Partial<Assignment> = {}): Assignment {
     organizer_id: 'org1',
     member_id: 'm1',
     deck_id: 'd1',
+    kana_set: null,
     title: null,
     note: null,
     due_date: null,

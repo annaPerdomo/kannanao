@@ -49,7 +49,7 @@ function makeChain(table: string) {
     return { data: rows, error };
   };
   const chain: Record<string, unknown> = {};
-  ['select', 'or', 'order', 'limit', 'update', 'insert', 'upsert', 'delete'].forEach((m) => {
+  ['select', 'or', 'not', 'order', 'limit', 'update', 'insert', 'upsert', 'delete'].forEach((m) => {
     chain[m] = vi.fn((...args: unknown[]) => {
       calls.push({ table, method: m, args });
       return chain;

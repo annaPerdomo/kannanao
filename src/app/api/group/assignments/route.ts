@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { availableNowFilter } from '@/lib/assignmentAvailability';
 import { isGoalMode } from '@/lib/assignmentMastery';
+import { isKanaSetId } from '@/lib/kanaCurriculum';
 import { logger } from '@/lib/logger';
 
 import { getProfileForUserResult, getUserFromTokenResult } from '../../_lib/authCache';
@@ -11,6 +12,7 @@ import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
 import { type DeckHandout, dropOrphanedTemplates } from '../_lib/dropOrphanedTemplates';
 import { memberIdsFor, membershipsOf } from '../_lib/membership';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
+import { upsertKanaAssignments } from '../_lib/upsertKanaAssignments';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
 
@@ -38,6 +40,7 @@ export async function POST(req: NextRequest) {
   const {
     memberIds,
     deckId,
+    kanaSet,
     title,
     note,
     dueDate,
@@ -47,7 +50,8 @@ export async function POST(req: NextRequest) {
     requiredMode,
   } = body as {
     memberIds: string[];
-    deckId: string;
+    deckId?: string;
+    kanaSet?: string;
     title?: string;
     note?: string;
     dueDate?: string;
@@ -57,9 +61,23 @@ export async function POST(req: NextRequest) {
     requiredMode?: string | null;
   };
 
-  if (!Array.isArray(memberIds) || memberIds.length === 0 || !deckId) {
+  if (!Array.isArray(memberIds) || memberIds.length === 0) {
+    return NextResponse.json({ error: 'memberIds (array) is required.' }, { status: 400 });
+  }
+  const deck = typeof deckId === 'string' && deckId ? deckId : null;
+  // Mirrors the assignments_deck_xor_kana CHECK: an assignment names one thing.
+  if (!deck === !kanaSet) {
     return NextResponse.json(
-      { error: 'memberIds (array) and deckId are required.' },
+      { error: 'Exactly one of deckId or kanaSet is required.' },
+      { status: 400 },
+    );
+  }
+  if (kanaSet && !isKanaSetId(kanaSet)) {
+    return NextResponse.json({ error: 'kanaSet is not a valid kana row.' }, { status: 400 });
+  }
+  if (kanaSet && requiredMode != null) {
+    return NextResponse.json(
+      { error: 'requiredMode does not apply to a kana goal.' },
       { status: 400 },
     );
   }
@@ -113,38 +131,52 @@ export async function POST(req: NextRequest) {
     }
     resolvedGroupId = firstGroup.id;
   }
+  if (!resolvedGroupId) {
+    return NextResponse.json({ error: 'No groups found. Create a group first.' }, { status: 400 });
+  }
 
   // Members must be in the group the assignment names, not merely somewhere on
   // this organizer's roster: group_id is what the row cascades on.
   const validIds = new Set(
     await memberIdsFor({ organizerId: orgCheck.id, groupId: resolvedGroupId }),
   );
-  const rows = memberIds
-    .filter((id) => validIds.has(id))
-    .map((memberId) => ({
-      organizer_id: orgCheck.id,
-      group_id: resolvedGroupId,
-      member_id: memberId,
-      deck_id: deckId,
-      title: title?.trim().slice(0, 200) || null,
-      note: note?.trim().slice(0, 500) || null,
-      due_date: dueDate || null,
-      available_on: availableOn || null,
-      required_accuracy: requiredAccuracy ?? null,
-      required_mode: requiredMode ?? null,
-    }));
+  const targetIds = memberIds.filter((id) => validIds.has(id));
+  const fields = {
+    title: title?.trim().slice(0, 200) || null,
+    note: note?.trim().slice(0, 500) || null,
+    due_date: dueDate || null,
+    available_on: availableOn || null,
+    required_accuracy: requiredAccuracy ?? null,
+    required_mode: requiredMode ?? null,
+  };
+  const rows = targetIds.map((memberId) => ({
+    organizer_id: orgCheck.id,
+    group_id: resolvedGroupId,
+    member_id: memberId,
+    deck_id: deck,
+    kana_set: kanaSet ?? null,
+    ...fields,
+  }));
 
   if (rows.length === 0) {
     return NextResponse.json({ error: 'No valid members found.' }, { status: 400 });
   }
 
-  const { data, error } = await sb
-    .from('assignments')
-    // Group-scoped: the same deck assigned in another of this organizer's
-    // groups is a separate row. Keyed on member+deck alone, the second group's
-    // assignment silently repurposes the first group's.
-    .upsert(rows, { onConflict: 'member_id,deck_id,group_id' })
-    .select();
+  const { data, error } = kanaSet
+    ? await upsertKanaAssignments(sb, {
+        groupId: resolvedGroupId,
+        kanaSet,
+        memberIds: targetIds,
+        rows,
+        fields,
+      })
+    : await sb
+        .from('assignments')
+        // Group-scoped: the same deck assigned in another of this organizer's
+        // groups is a separate row. Keyed on member+deck alone, the second
+        // group's assignment silently repurposes the first group's.
+        .upsert(rows, { onConflict: 'member_id,deck_id,group_id' })
+        .select();
 
   if (error) {
     logger.error('Failed to create assignments', {

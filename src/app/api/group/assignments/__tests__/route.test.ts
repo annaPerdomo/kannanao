@@ -37,14 +37,24 @@ function setTable(table: string, data: unknown, error: unknown = null) {
 }
 
 const upsertMock = vi.fn();
+const insertMock = vi.fn();
+const updateMock = vi.fn();
 const eqCalls: { table: string; args: unknown[] }[] = [];
 const inCalls: { table: string; args: unknown[] }[] = [];
 
 function makeChain(table: string) {
   const result = () => tableData[table] ?? { data: null, error: null };
   const chain: Record<string, unknown> = {};
-  ['select', 'order', 'limit', 'or'].forEach((m) => {
+  ['select', 'order', 'limit', 'or', 'not'].forEach((m) => {
     chain[m] = vi.fn(() => chain);
+  });
+  chain.insert = vi.fn((...args: unknown[]) => {
+    insertMock(table, ...args);
+    return chain;
+  });
+  chain.update = vi.fn((...args: unknown[]) => {
+    updateMock(table, ...args);
+    return chain;
   });
   chain.eq = vi.fn((...args: unknown[]) => {
     eqCalls.push({ table, args });
@@ -146,6 +156,67 @@ describe('POST /api/group/assignments (mastery goals)', () => {
       expect(upsertMock).not.toHaveBeenCalled();
     },
   );
+});
+
+describe('POST /api/group/assignments (kana goals)', () => {
+  const KANA_BODY = { memberIds: ['m1'], kanaSet: 'hira-ka' };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    _resetStore();
+    for (const k of Object.keys(tableData)) delete tableData[k];
+    requireOrganizerAccountMock.mockResolvedValue(ORGANIZER);
+    setTable('groups', { id: 'g1' });
+    setTable('group_members', [{ member_id: 'm1' }]);
+    setTable('assignments', []);
+  });
+
+  it('inserts a kana row with a null deck_id', async () => {
+    const res = await POST(makeRequest(KANA_BODY));
+    expect(res.status).toBe(201);
+    const rows = insertMock.mock.calls[0][1] as Record<string, unknown>[];
+    expect(rows[0]).toMatchObject({ kana_set: 'hira-ka', deck_id: null, member_id: 'm1' });
+    // The deck upsert must not be the path a kana row takes: its ON CONFLICT
+    // target cannot infer the partial unique index.
+    expect(upsertMock).not.toHaveBeenCalled();
+  });
+
+  it('updates the existing row instead of inserting a duplicate', async () => {
+    setTable('assignments', [{ member_id: 'm1' }]);
+    const res = await POST(makeRequest({ ...KANA_BODY, dueDate: '2026-09-30' }));
+    expect(res.status).toBe(201);
+    expect(insertMock).not.toHaveBeenCalled();
+    expect(updateMock.mock.calls[0][1]).toMatchObject({ due_date: '2026-09-30' });
+  });
+
+  it.each([
+    [{ memberIds: ['m1'] }, 'neither a deck nor a kana row'],
+    [{ memberIds: ['m1'], deckId: 'deck-1', kanaSet: 'hira-ka' }, 'both at once'],
+  ])('rejects %j — %s', async (body, _label) => {
+    const res = await POST(makeRequest(body));
+    expect(res.status).toBe(400);
+    expect(insertMock).not.toHaveBeenCalled();
+    expect(upsertMock).not.toHaveBeenCalled();
+  });
+
+  it.each(['hira-nope', 'hira_ka', '', 42])('rejects kanaSet %p', async (value) => {
+    const res = await POST(makeRequest({ memberIds: ['m1'], kanaSet: value }));
+    expect(res.status).toBe(400);
+    expect(insertMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects a requiredMode on a kana goal', async () => {
+    const res = await POST(makeRequest({ ...KANA_BODY, requiredMode: 'match' }));
+    expect(res.status).toBe(400);
+    expect(insertMock).not.toHaveBeenCalled();
+  });
+
+  it('accepts an accuracy goal on a kana row', async () => {
+    const res = await POST(makeRequest({ ...KANA_BODY, requiredAccuracy: 90 }));
+    expect(res.status).toBe(201);
+    const rows = insertMock.mock.calls[0][1] as Record<string, unknown>[];
+    expect(rows[0].required_accuracy).toBe(90);
+  });
 });
 
 describe('GET /api/group/assignments', () => {

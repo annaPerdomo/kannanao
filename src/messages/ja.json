@@ -684,7 +684,9 @@
       "questionsTitle": "しつもんクエスト — 復習 | Tangodachi",
       "questionsDescription": "日本語の疑問詞を練習。しつもんに合う答えを選びます。",
       "countingTitle": "なんまい？なんにん？ — 復習 | Tangodachi",
-      "countingDescription": "日本語の助数詞を練習。ものをかぞえて まい・つ・にん の言い方をえらびます。"
+      "countingDescription": "日本語の助数詞を練習。ものをかぞえて まい・つ・にん の言い方をえらびます。",
+      "learnKanaTitle": "かなをまなぶ — 復習 | Tangodachi",
+      "learnKanaDescription": "ひらがなとカタカナを、1行ずつゼロから読めるように練習します。"
     }
   },
   "Practice": {
@@ -961,6 +963,49 @@
       }
     }
   },
+  "KanaJourney": {
+    "common": {
+      "hint": "ヒントを見る",
+      "next": "つぎへ"
+    },
+    "recognize": {
+      "question": "この文字の音は？",
+      "tapToHear": "タップで音を聞く"
+    },
+    "recall": {
+      "question": "文字をえらぼう"
+    },
+    "lightning": {
+      "score": "{count}問せいかい",
+      "timeLeft": "のこり時間",
+      "timeUp": "時間だよ！{count}問せいかい",
+      "tapToHear": "タップで音を聞く"
+    },
+    "tile": {
+      "title": "かなをまなぶ",
+      "description": "ひらがなとカタカナをゼロから。1行ずつ読めるようになります。"
+    },
+    "journey": {
+      "title": "かなをまなぶ",
+      "subtitle": "行をえらんで、読むれんしゅうをはじめよう。",
+      "loading": "みちを ひらいています…",
+      "hiraganaTrack": "ひらがな",
+      "katakanaTrack": "カタカナ",
+      "katakanaLockedHint": "さいしょの{total}行で星をとると、カタカナがひらきます。いまは{total}行のうち{done}行。",
+      "katakanaLockedLabel": "カタカナ — ロック中。{total}行のうち{done}行に星",
+      "startHere": "ここから",
+      "timeToReview": "ふくしゅうの時間",
+      "islandLabel": "{kana} — 星{max}こ中{stars}こ",
+      "lockedIslandLabel": "{kana} — ロック中。まえの行をさきにおえよう"
+    },
+    "session": {
+      "recognizeHowTo": "文字を見て、その音をタップしよう。",
+      "recallHowTo": "音を聞いて、その文字をタップしよう。",
+      "lightningHowTo": "スピードラウンド。時間内にできるだけ多く正解しよう。",
+      "celebrationSubheading": "今回は {correct} / {total} 正解",
+      "backToJourney": "かなをまなぶにもどる"
+    }
+  },
   "Group": {
     "timeAgo": {
       "never": "まだなし",
@@ -1112,8 +1157,13 @@
     },
     "createAssignment": {
       "title": "課題を出す",
-      "subtitle": "デッキと出すメンバーを選びましょう",
+      "subtitle": "デッキかかなの行と、出す相手を選びましょう",
       "selectDeck": "デッキを選ぶ",
+      "selectWhat": "何を出すか",
+      "targetDeck": "デッキ",
+      "targetKana": "かな",
+      "hiragana": "ひらがな",
+      "katakana": "カタカナ",
       "assignTo": "出す相手",
       "noteLabel": "メモ（任意）",
       "notePlaceholder": "3章の単語を中心に",
@@ -1574,7 +1624,18 @@
       "sentencesToggleLabel": "ことばバブルの練習文もつくる",
       "sentencesToggleHint": "デッキごとに1セット。グループのみんなが同じ文で練習するので、チェックもかんたんです。",
       "imagesToggleLabel": "カードごとに画像もつくる",
-      "imagesToggleHint": "ことばに合わせたUnsplash検索フレーズを使います。作成に時間がかかり、画像のクレジットも使います。"
+      "imagesToggleHint": "ことばに合わせたUnsplash検索フレーズを使います。作成に時間がかかり、画像のクレジットも使います。",
+      "kanaGapChip": "あたらしい おと: {sounds}",
+      "kanaGapWorkingOn": "{kana} — れんしゅうちゅうの メンバー {count}にん: {names}",
+      "kanaGapUntried": "「かなを まなぶ」を まだ ためしていません: {names}",
+      "kanaNoDataNote": "ヒント: グループは まだ「かなを まなぶ」を つかっていないので、よみの データが ありません。",
+      "kanaCompanionTitle": "この レッスンには グループが まだ おぼえていない おとが あります: {sounds}",
+      "kanaCompanionToggle": "この かなの ぎょうも おなじ ひづけで だす",
+      "kanaAssignedMessage": "かなの ぎょう {sounds} も わりあてました。",
+      "kanaAssignFailed": "かなの ぎょう {sounds} は わりあてられませんでした。グループの ページから わりあてられます。",
+      "printKanaToggle": "この レッスンの おとの かなページを つける",
+      "printKanaTitle": "この レッスンの おと",
+      "printKanaHint": "この レッスンで つかう ぎょうだけです。こえに だして よんでみましょう。"
     },
     "deckReadiness": {
       "heading": "デッキの仕上がり",

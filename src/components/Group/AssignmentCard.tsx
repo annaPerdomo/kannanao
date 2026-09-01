@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
 import type { Assignment } from '@/hooks/useAssignments';
+import { setCharacters } from '@/lib/kanaCurriculum';
 
 import { dueDateLabel } from './dueDate';
 import { useGoalLabel } from './useGoalLabel';
@@ -40,6 +41,7 @@ export function AssignmentCard({ assignment, onStart }: AssignmentCardProps) {
   const { brand } = theme.palette;
   const isCompleted = !!assignment.completed_at;
   const deck = assignment.decks;
+  const kanaRow = assignment.kana_set ? setCharacters(assignment.kana_set) : null;
   const urgency = dueDateColor(assignment.due_date);
   const goal = useGoalLabel()(assignment);
 
@@ -59,7 +61,7 @@ export function AssignmentCard({ assignment, onStart }: AssignmentCardProps) {
     >
       {/* Deck emoji */}
       <Typography sx={{ fontSize: '1.3rem', flexShrink: 0 }}>
-        {isCompleted ? '✅' : deck?.emoji || '📚'}
+        {isCompleted ? '✅' : kanaRow ? '🌸' : deck?.emoji || '📚'}
       </Typography>
 
       {/* Content */}
@@ -73,7 +75,7 @@ export function AssignmentCard({ assignment, onStart }: AssignmentCardProps) {
           }}
           noWrap
         >
-          {deck?.name || t('unknownDeck')}
+          {kanaRow || deck?.name || t('unknownDeck')}
         </Typography>
         {assignment.note && (
           <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', mt: 0.2 }} noWrap>

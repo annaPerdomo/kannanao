@@ -9,6 +9,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useFormatter, useTranslations } from 'next-intl';
 
+import type { KanaGap } from '@/lib/kanaGaps';
 import { isJlptLevel, JLPT_LEVELS, type JlptLevel } from '@/lib/lessonPrompts';
 import type { PlanCard, WarmUpWord } from '@/types/lessonPlan';
 
@@ -16,16 +17,42 @@ interface PlanCardRowProps {
   card: PlanCard;
   index: number;
   reuseSources: WarmUpWord[];
+  kanaGaps: KanaGap[];
   targetLevel: JlptLevel;
   /** After a failed apply the tick freezes so a retry matches what was created. */
   tickLocked: boolean;
   onChange: (patch: Partial<PlanCard>) => void;
 }
 
+function KanaGapDetail({ gaps }: { gaps: KanaGap[] }) {
+  const t = useTranslations('Group.lessonBuilder');
+  const untried = gaps[0]?.untried ?? [];
+
+  return (
+    <Box>
+      {gaps.map((gap) => (
+        <Typography key={gap.kana} sx={{ fontSize: '0.75rem' }}>
+          {t('kanaGapWorkingOn', {
+            kana: gap.kana,
+            names: gap.shaky.map((m) => m.name).join('、'),
+            count: gap.shaky.length,
+          })}
+        </Typography>
+      ))}
+      {untried.length > 0 && (
+        <Typography sx={{ fontSize: '0.75rem', mt: 0.5 }}>
+          {t('kanaGapUntried', { names: untried.map((m) => m.name).join('、') })}
+        </Typography>
+      )}
+    </Box>
+  );
+}
+
 export function PlanCardRow({
   card,
   index,
   reuseSources,
+  kanaGaps,
   targetLevel,
   tickLocked,
   onChange,
@@ -140,6 +167,15 @@ export function PlanCardRow({
                   fontWeight: 600,
                 }}
               />
+            )}
+            {included && kanaGaps.length > 0 && (
+              <Tooltip title={<KanaGapDetail gaps={kanaGaps} />}>
+                <Chip
+                  size="small"
+                  label={t('kanaGapChip', { sounds: kanaGaps.map((g) => g.kana).join('・') })}
+                  sx={{ bgcolor: alpha(brand[200], 0.5), color: 'text.primary', fontWeight: 600 }}
+                />
+              </Tooltip>
             )}
             {included &&
               reuseSources.map((source) => (

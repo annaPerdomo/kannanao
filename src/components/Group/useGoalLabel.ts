@@ -18,7 +18,8 @@ export function useGoalLabel() {
   const t = useTranslations('Group.goalPicker');
   return useCallback(
     (criteria: MasteryCriteria): string | null => {
-      const { required_accuracy, required_mode } = criteria;
+      const { required_accuracy } = criteria;
+      const required_mode = criteria.kana_set != null ? null : criteria.required_mode;
       if (required_accuracy == null && required_mode == null) return null;
       const modeName = required_mode
         ? isGoalMode(required_mode)

@@ -684,7 +684,9 @@
       "questionsTitle": "Question Quest — Review | Tangodachi",
       "questionsDescription": "Practice Japanese question words — pick the answer that fits each question.",
       "countingTitle": "How Many? — Review | Tangodachi",
-      "countingDescription": "Practice Japanese counters — count the things and pick まい・つ・にん."
+      "countingDescription": "Practice Japanese counters — count the things and pick まい・つ・にん.",
+      "learnKanaTitle": "Learn Kana — Review | Tangodachi",
+      "learnKanaDescription": "Learn to read hiragana and katakana from zero, one row at a time."
     }
   },
   "Practice": {
@@ -961,6 +963,49 @@
       }
     }
   },
+  "KanaJourney": {
+    "common": {
+      "hint": "Show a hint",
+      "next": "Next"
+    },
+    "recognize": {
+      "question": "Which sound is this?",
+      "tapToHear": "Tap to hear it"
+    },
+    "recall": {
+      "question": "Pick the character"
+    },
+    "lightning": {
+      "score": "{count, plural, one {# right} other {# right}}",
+      "timeLeft": "Time left",
+      "timeUp": "Time's up! {count, plural, one {# right} other {# right}}",
+      "tapToHear": "Tap to hear it"
+    },
+    "tile": {
+      "title": "Learn Kana",
+      "description": "Read hiragana and katakana from zero — one row at a time."
+    },
+    "journey": {
+      "title": "Learn Kana",
+      "subtitle": "Pick a row and start reading.",
+      "loading": "Opening your path…",
+      "hiraganaTrack": "Hiragana",
+      "katakanaTrack": "Katakana",
+      "katakanaLockedHint": "Katakana opens after you earn a star on the first {total} rows — {done} of {total} so far.",
+      "katakanaLockedLabel": "Katakana — locked, {done} of {total} rows starred",
+      "startHere": "Start here",
+      "timeToReview": "Time to review",
+      "islandLabel": "{kana} — {stars} of {max} stars",
+      "lockedIslandLabel": "{kana} — locked, finish the row above first"
+    },
+    "session": {
+      "recognizeHowTo": "Look at the character, then tap the sound it makes.",
+      "recallHowTo": "Hear the sound, then tap the character that writes it.",
+      "lightningHowTo": "Speed round — get as many right as you can before time runs out.",
+      "celebrationSubheading": "{correct} / {total} right this round",
+      "backToJourney": "Back to Learn Kana"
+    }
+  },
   "Group": {
     "timeAgo": {
       "never": "Never",
@@ -1111,9 +1156,14 @@
       "lastNudged": "Last nudged {date}"
     },
     "createAssignment": {
-      "title": "Assign a Deck",
-      "subtitle": "Choose a deck and members to assign it to",
+      "title": "Assign Work",
+      "subtitle": "Choose a deck or a row of kana, and who gets it",
       "selectDeck": "Select Deck",
+      "selectWhat": "What to assign",
+      "targetDeck": "A deck",
+      "targetKana": "Kana",
+      "hiragana": "Hiragana",
+      "katakana": "Katakana",
       "assignTo": "Assign To",
       "noteLabel": "Note (optional)",
       "notePlaceholder": "Focus on chapter 3 vocab",
@@ -1574,7 +1624,18 @@
       "sentencesToggleLabel": "Also make Kotoba Bubble practice sentences",
       "sentencesToggleHint": "One set of sentences per deck — everyone in the group practices the same set, so it's easy to check over.",
       "imagesToggleLabel": "Also generate a picture for each card",
-      "imagesToggleHint": "Uses an Unsplash search phrase written for the card's word — slower to build, and uses up image credits."
+      "imagesToggleHint": "Uses an Unsplash search phrase written for the card's word — slower to build, and uses up image credits.",
+      "kanaGapChip": "New sounds: {sounds}",
+      "kanaGapWorkingOn": "{kana} — {count, plural, one {# member is} other {# members are}} still working on it: {names}",
+      "kanaGapUntried": "Hasn't tried Learn Kana yet: {names}",
+      "kanaNoDataNote": "Tip: your group hasn't tried Learn Kana yet, so there's no reading data to check this plan against.",
+      "kanaCompanionTitle": "This lesson uses sounds your group hasn't mastered: {sounds}",
+      "kanaCompanionToggle": "Also assign these kana rows, due the same day",
+      "kanaAssignedMessage": "The kana rows {sounds} were assigned too.",
+      "kanaAssignFailed": "The kana rows {sounds} couldn't be assigned. You can assign them from the group page.",
+      "printKanaToggle": "Add a kana page for this lesson's sounds",
+      "printKanaTitle": "Sounds in this lesson",
+      "printKanaHint": "Just the rows this lesson uses — practise reading these out loud."
     },
     "deckReadiness": {
       "heading": "Deck readiness",

@@ -101,4 +101,48 @@ describe('CreateAssignmentDialog', () => {
     fireEvent.click(screen.getByRole('checkbox'));
     expect(assign).toBeEnabled();
   });
+
+  it('assigns a kana row by its characters, with no deckId', async () => {
+    const onCreate = setup();
+    fireEvent.click(screen.getByRole('button', { name: 'Kana' }));
+    fireEvent.click(screen.getByRole('button', { name: 'か · き · く · け · こ' }));
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: /^assign$/i }));
+
+    await waitFor(() => expect(onCreate).toHaveBeenCalled());
+    const arg = onCreate.mock.calls[0][0];
+    expect(arg.kanaSet).toBe('hira-ka');
+    expect(arg.deckId).toBeUndefined();
+  });
+
+  it('offers both scripts, labelled, so あ and ア can be told apart', () => {
+    setup();
+    fireEvent.click(screen.getByRole('button', { name: 'Kana' }));
+    expect(screen.getByText('Hiragana')).toBeInTheDocument();
+    expect(screen.getByText('Katakana')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ア · イ · ウ · エ · オ' })).toBeInTheDocument();
+  });
+
+  it('drops the activity question for kana — the activity is fixed', () => {
+    setup();
+    fireEvent.click(screen.getByRole('button', { name: 'Kana' }));
+    fireEvent.click(screen.getByRole('button', { name: /add a goal/i }));
+    expect(screen.getByRole('button', { name: '80%' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Match' })).not.toBeInTheDocument();
+  });
+
+  it('clears a mode goal picked on the deck side before switching to kana', async () => {
+    const onCreate = setup();
+    fireEvent.click(screen.getByText(/Animals/));
+    fireEvent.click(screen.getByRole('button', { name: /add a goal/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Match' }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Kana' }));
+    fireEvent.click(screen.getByRole('button', { name: 'か · き · く · け · こ' }));
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: /^assign$/i }));
+
+    await waitFor(() => expect(onCreate).toHaveBeenCalled());
+    expect(onCreate.mock.calls[0][0].requiredMode).toBeUndefined();
+  });
 });

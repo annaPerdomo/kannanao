@@ -98,6 +98,14 @@ const TWO_WEEK_PLAN = {
   ],
 };
 
+const READINESS = {
+  members: [
+    { id: 'm1', name: 'Ken', started: true },
+    { id: 'm2', name: 'Sam', started: false },
+  ],
+  shakyBy: { ラ: [0] },
+};
+
 function setup() {
   renderWithProviders(<LessonSetBuilder groups={[GROUP]} groupId="g1" onGroupChange={vi.fn()} />);
 }
@@ -450,5 +458,48 @@ describe('LessonSetBuilder', () => {
     const payload = applyLessonPlanMock.mock.calls[0][0];
     expect(payload).not.toHaveProperty('warmUp');
     expect(payload.plan).toEqual(PLAN);
+  });
+});
+
+describe('LessonSetBuilder kana support', () => {
+  async function reachReviewWithKanaGaps() {
+    buildLessonPlanMock.mockResolvedValue({ plan: PLAN, kanaReadiness: READINESS });
+    await reachReviewStep();
+  }
+
+  it('flags the sounds the group has not mastered, and no others', async () => {
+    await reachReviewWithKanaGaps();
+
+    expect(screen.getByText('New sounds: ラ')).toBeInTheDocument();
+  });
+
+  it('says nothing per card when the group has never used Learn Kana', async () => {
+    buildLessonPlanMock.mockResolvedValue({
+      plan: PLAN,
+      kanaReadiness: { members: [{ id: 'm2', name: 'Sam', started: false }], shakyBy: {} },
+    });
+    await reachReviewStep();
+
+    expect(screen.queryByText(/New sounds/)).not.toBeInTheDocument();
+    expect(screen.getByText(/hasn't tried Learn Kana yet/i)).toBeInTheDocument();
+  });
+
+  it('assigns the matching kana row alongside the decks by default', async () => {
+    await reachReviewWithKanaGaps();
+
+    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+
+    await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
+    expect(applyLessonPlanMock.mock.calls[0][0].kanaSets).toEqual(['kata-ra']);
+  });
+
+  it('lets the organizer untick the companion assignment', async () => {
+    await reachReviewWithKanaGaps();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /also assign these kana rows/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+
+    await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
+    expect(applyLessonPlanMock.mock.calls[0][0].kanaSets).toEqual([]);
   });
 });

@@ -1,3 +1,5 @@
+import type { GroupKanaReadiness } from '@/lib/kanaGaps';
+
 export interface PlanCard {
   word: string;
   reading: string;
@@ -52,6 +54,7 @@ export interface LessonPlanResponse {
   warmUp?: WarmUpWord[];
   /** Full group pool; feeds the review step's "builds on" chips. */
   knownWords?: WarmUpWord[];
+  kanaReadiness?: GroupKanaReadiness | null;
 }
 
 export interface ApplyDeckResult {

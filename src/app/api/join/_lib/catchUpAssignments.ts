@@ -2,13 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { logger } from '@/lib/logger';
 
-/**
- * Fields that make two assignment rows "the same handout". Kept in step with
- * the key groupAssignments() batches on, so a caught-up learner joins the
- * existing row on the organizer's list instead of starting a new one.
- */
-const HANDOUT_FIELDS = [
-  'deck_id',
+const GOAL_FIELDS = [
   'title',
   'note',
   'due_date',
@@ -16,6 +10,13 @@ const HANDOUT_FIELDS = [
   'required_accuracy',
   'required_mode',
 ] as const;
+
+/**
+ * Fields that make two assignment rows "the same handout". Kept in step with
+ * the key groupAssignments() batches on, so a caught-up learner joins the
+ * existing row on the organizer's list instead of starting a new one.
+ */
+const HANDOUT_FIELDS = ['deck_id', ...GOAL_FIELDS] as const;
 
 interface AssignmentRow {
   deck_id: string;
@@ -32,7 +33,7 @@ function handoutKey(row: AssignmentRow): string {
 }
 
 /** Soonest deadline first; an open-ended handout sorts last. */
-function byDueDate(a: AssignmentRow, b: AssignmentRow): number {
+function byDueDate(a: { due_date: string | null }, b: { due_date: string | null }): number {
   if (a.due_date === b.due_date) return 0;
   if (!a.due_date) return 1;
   if (!b.due_date) return -1;
@@ -68,6 +69,8 @@ export async function catchUpGroupAssignments(
     .from('assignments')
     .select(columns)
     .eq('group_id', groupId)
+    // Deck handouts only; kana rows are caught up by catchUpKana() below.
+    .not('deck_id', 'is', null)
     .or(`due_date.is.null,due_date.gte.${today}`);
 
   if (error) {
@@ -113,8 +116,6 @@ export async function catchUpGroupAssignments(
     toCreate.set(template.deck_id, template);
   }
 
-  if (toCreate.size === 0) return 0;
-
   const inserts = [...toCreate.values()].map((row) => ({
     organizer_id: organizerId,
     group_id: groupId,
@@ -128,26 +129,102 @@ export async function catchUpGroupAssignments(
     required_mode: row.required_mode,
   }));
 
-  // Upsert, not insert: a join racing this one collides, and an insert would
-  // roll back every other handout in the batch.
-  const { error: insertError } = await sb
-    .from('assignments')
-    .upsert(inserts, { onConflict: 'member_id,deck_id,group_id', ignoreDuplicates: true });
+  let created = 0;
 
-  if (insertError) {
-    logger.warn('Failed to catch new member up on group assignments', {
-      route,
-      error: insertError.message,
-    });
-    return 0;
+  if (inserts.length > 0) {
+    // Upsert, not insert: a join racing this one collides, and an insert would
+    // roll back every other handout in the batch.
+    const { error: insertError } = await sb
+      .from('assignments')
+      .upsert(inserts, { onConflict: 'member_id,deck_id,group_id', ignoreDuplicates: true });
+
+    if (insertError) {
+      logger.warn('Failed to catch new member up on group assignments', {
+        route,
+        error: insertError.message,
+      });
+    } else {
+      created += inserts.length;
+    }
   }
+
+  // Its own statement: kana rows key on a partial index the deck upsert's ON
+  // CONFLICT cannot name, and failing here must not cost the deck handouts.
+  created += await catchUpKana(sb, { groupId, organizerId, memberId, today, route });
+
+  if (created === 0) return 0;
 
   logger.info('Caught new member up on group assignments', {
     route,
     groupId,
     memberId,
-    count: inserts.length,
+    count: created,
   });
+
+  return created;
+}
+
+interface KanaRow extends Omit<AssignmentRow, 'deck_id'> {
+  member_id: string;
+  kana_set: string;
+}
+
+async function catchUpKana(
+  sb: SupabaseClient,
+  args: { groupId: string; organizerId: string; memberId: string; today: string; route: string },
+): Promise<number> {
+  const { groupId, organizerId, memberId, today, route } = args;
+
+  const { data, error } = await sb
+    .from('assignments')
+    .select(`member_id, kana_set, ${GOAL_FIELDS.join(', ')}`)
+    .eq('group_id', groupId)
+    .not('kana_set', 'is', null)
+    .or(`due_date.is.null,due_date.gte.${today}`);
+
+  if (error) {
+    logger.warn('Failed to read group kana assignments for catch-up', {
+      route,
+      error: error.message,
+    });
+    return 0;
+  }
+
+  const rows = (data ?? []) as unknown as KanaRow[];
+  const mine = new Set(rows.filter((r) => r.member_id === memberId).map((r) => r.kana_set));
+
+  const toCreate = new Map<string, KanaRow>();
+  for (const row of [...rows].sort(byDueDate)) {
+    if (row.member_id === memberId || mine.has(row.kana_set)) continue;
+    if (toCreate.has(row.kana_set)) continue;
+    toCreate.set(row.kana_set, row);
+  }
+
+  if (toCreate.size === 0) return 0;
+
+  const inserts = [...toCreate.values()].map((row) => ({
+    organizer_id: organizerId,
+    group_id: groupId,
+    member_id: memberId,
+    deck_id: null,
+    kana_set: row.kana_set,
+    title: row.title,
+    note: row.note,
+    due_date: row.due_date,
+    available_on: row.available_on,
+    required_accuracy: row.required_accuracy,
+    required_mode: row.required_mode,
+  }));
+
+  const { error: insertError } = await sb.from('assignments').insert(inserts);
+
+  if (insertError) {
+    logger.warn('Failed to catch new member up on group kana assignments', {
+      route,
+      error: insertError.message,
+    });
+    return 0;
+  }
 
   return inserts.length;
 }

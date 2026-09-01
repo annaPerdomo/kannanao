@@ -71,7 +71,12 @@ export async function loadDecks(userId: string): Promise<Deck[]> {
     // assignment scheduled for a later week must not put its deck in the
     // library early — that is the pile of homework `available_on` exists to
     // prevent.
-    sb.from('assignments').select('deck_id').eq('member_id', userId).or(availableNowFilter()),
+    sb
+      .from('assignments')
+      .select('deck_id')
+      .eq('member_id', userId)
+      .not('deck_id', 'is', null)
+      .or(availableNowFilter()),
   ]);
 
   const { data: deckRows, error: deckError } = ownResult;
@@ -363,7 +368,14 @@ export async function getAccessibleDeckIds(userId: string): Promise<string[]> {
   if (!isConfigured()) return [];
   const [ownResult, assignedResult] = await Promise.all([
     sb.from('decks').select('id').eq('user_id', userId),
-    sb.from('assignments').select('deck_id').eq('member_id', userId).or(availableNowFilter()),
+    // Kana assignments carry no deck; a null here would land in the accessible
+    // set and every cross-deck read gates on that set.
+    sb
+      .from('assignments')
+      .select('deck_id')
+      .eq('member_id', userId)
+      .not('deck_id', 'is', null)
+      .or(availableNowFilter()),
   ]);
   const error = ownResult.error ?? assignedResult.error;
   if (error) {
@@ -1138,6 +1150,72 @@ export async function getCardProgressForUser(
     throw toDataError(error);
   }
   return (data ?? []).map(dbCardProgressToApp);
+}
+
+// ─── Per-character kana progress ────────────────────────────────
+
+export interface KanaProgress {
+  kana: string;
+  correctCount: number;
+  wrongCount: number;
+  lastReviewedAt: string | null;
+  nextReviewAt: string;
+  intervalDays: number;
+  ease: number;
+}
+
+interface KanaProgressRow {
+  kana: string;
+  correct_count: number;
+  wrong_count: number;
+  last_reviewed_at: string | null;
+  next_review_at: string;
+  interval_days: number;
+  ease: number;
+}
+
+function dbKanaProgressToApp(row: KanaProgressRow): KanaProgress {
+  return {
+    kana: row.kana,
+    correctCount: row.correct_count,
+    wrongCount: row.wrong_count,
+    lastReviewedAt: row.last_reviewed_at,
+    nextReviewAt: row.next_review_at,
+    intervalDays: row.interval_days,
+    ease: row.ease,
+  };
+}
+
+/**
+ * Records one graded kana answer; `increment_kana_progress` bumps the counter
+ * and advances the schedule in one statement. Never throws — a failed write
+ * must not break the drill — so false is the only rollback signal.
+ */
+export async function upsertKanaProgress(kana: string, correct: boolean): Promise<boolean> {
+  if (!isConfigured()) return false;
+  const { error } = await sb.rpc('increment_kana_progress', {
+    p_kana: kana,
+    p_correct: correct,
+  });
+  if (error) {
+    console.error('upsertKanaProgress error', error);
+    return false;
+  }
+  return true;
+}
+
+/** Every kana progress row for a user (RLS scopes this to `userId`); ~208 rows at most. */
+export async function getKanaProgress(userId: string): Promise<KanaProgress[]> {
+  if (!isConfigured()) {
+    showConfigBanner();
+    return [];
+  }
+  const { data, error } = await sb.from('kana_progress').select('*').eq('user_id', userId);
+  if (error) {
+    console.error('Error loading kana progress', error);
+    throw toDataError(error);
+  }
+  return (data ?? []).map(dbKanaProgressToApp);
 }
 
 /**

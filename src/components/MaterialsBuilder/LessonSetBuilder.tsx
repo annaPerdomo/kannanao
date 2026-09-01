@@ -11,6 +11,7 @@ import { Loading } from '@/components/Loading';
 import type { Group } from '@/hooks/useGroups';
 import { useLessonPlan } from '@/hooks/useLessonPlan';
 import type { GoalMode } from '@/lib/assignmentMastery';
+import { setCharacters } from '@/lib/kanaCurriculum';
 import { attachPlanImages } from '@/lib/lessonImages';
 import { includedCards } from '@/lib/lessonPlanEdits';
 import { CARDS_MAX, CARDS_MIN, DEFAULT_LEVEL, GOAL_MAX } from '@/lib/lessonPrompts';
@@ -63,6 +64,9 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
     building,
     applying,
     applyFailed,
+    kanaReadiness,
+    kanaAssigned,
+    kanaFailed,
     error,
     build,
     apply,
@@ -74,6 +78,8 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
   const [dueDate, setDueDate] = useState(() => nextSunday());
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [mode, setMode] = useState<GoalMode | null>(null);
+  const [assignKanaSets, setAssignKanaSets] = useState(true);
+  const [companionSets, setCompanionSets] = useState<string[]>([]);
   const [retryingIndex, setRetryingIndex] = useState<number | null>(null);
   const [retryError, setRetryError] = useState<string | null>(null);
 
@@ -211,6 +217,26 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
       {results && (
         <Stack spacing={2}>
           <Alert severity="success">{t('successMessage', { count: createdCount })}</Alert>
+          {kanaAssigned.length > 0 && (
+            <Alert severity="success">
+              {t('kanaAssignedMessage', {
+                sounds: kanaAssigned
+                  .map((setId) => setCharacters(setId))
+                  .filter(Boolean)
+                  .join('　'),
+              })}
+            </Alert>
+          )}
+          {kanaFailed.length > 0 && (
+            <Alert severity="warning">
+              {t('kanaAssignFailed', {
+                sounds: kanaFailed
+                  .map((setId) => setCharacters(setId))
+                  .filter(Boolean)
+                  .join('　'),
+              })}
+            </Alert>
+          )}
           {failed.map((r) => (
             <Alert key={r.name} severity="warning">
               {t('deckFailed', { name: r.name, reason: r.error ?? '' })}
@@ -220,7 +246,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
             <Button variant="contained" onClick={() => router.push(`/group/${groupId}`)}>
               {t('backToGroupButton')}
             </Button>
-            {plan && <PrintButtons plan={plan} warmUp={warmUp} />}
+            {plan && <PrintButtons plan={plan} warmUp={warmUp} kanaSets={companionSets} />}
           </Box>
         </Stack>
       )}
@@ -255,6 +281,8 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
           plan={plan}
           warmUp={warmUp}
           knownWords={knownWords}
+          kanaReadiness={kanaReadiness}
+          assignKanaSets={assignKanaSets}
           dueDate={dueDate}
           accuracy={accuracy}
           mode={mode}
@@ -268,6 +296,8 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
           onDueDateChange={setDueDate}
           onAccuracyChange={setAccuracy}
           onModeChange={setMode}
+          onAssignKanaSetsChange={setAssignKanaSets}
+          onCompanionSetsChange={setCompanionSets}
           onApply={() =>
             apply({
               groupId,
@@ -277,6 +307,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
               withSentences: form.withSentences,
               level: form.level,
               styleNotes: effectiveStyleNotes(form),
+              kanaSets: assignKanaSets ? companionSets : [],
             })
           }
           onStartOver={reset}

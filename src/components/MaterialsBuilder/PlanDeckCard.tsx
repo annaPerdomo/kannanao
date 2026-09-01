@@ -13,6 +13,7 @@ import Typography from '@mui/material/Typography';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
+import type { KanaGap } from '@/lib/kanaGaps';
 import { emptyPlanCard, includedCards } from '@/lib/lessonPlanEdits';
 import { CARDS_MAX, type JlptLevel } from '@/lib/lessonPrompts';
 import type { DeckReuse } from '@/lib/lessonReuse';
@@ -26,6 +27,7 @@ interface PlanDeckCardProps {
   weekNumber: number | null;
   dueDate: string | null;
   reuse: DeckReuse;
+  kanaGaps: KanaGap[][];
   targetLevel: JlptLevel;
   /** After a failed apply the ticks freeze so a retry matches what was created. */
   ticksLocked: boolean;
@@ -41,6 +43,7 @@ export function PlanDeckCard({
   weekNumber,
   dueDate,
   reuse,
+  kanaGaps,
   targetLevel,
   ticksLocked,
   retrying,
@@ -159,6 +162,7 @@ export function PlanDeckCard({
               card={card}
               index={i}
               reuseSources={reuse.perCard[i] ?? []}
+              kanaGaps={kanaGaps[i] ?? []}
               targetLevel={targetLevel}
               tickLocked={ticksLocked}
               onChange={(patch) => updateCard(i, patch)}

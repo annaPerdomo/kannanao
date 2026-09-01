@@ -28,7 +28,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   // Verify ownership
   const { data: existing } = await sb
     .from('assignments')
-    .select('id')
+    .select('id, kana_set')
     .eq('id', id)
     .eq('organizer_id', orgCheck.id)
     .single();
@@ -75,6 +75,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (v !== null && !isGoalMode(v)) {
       return NextResponse.json(
         { error: 'requiredMode is not a valid goal mode.' },
+        { status: 400 },
+      );
+    }
+    if (v !== null && existing.kana_set != null) {
+      return NextResponse.json(
+        { error: 'requiredMode does not apply to a kana goal.' },
         { status: 400 },
       );
     }
