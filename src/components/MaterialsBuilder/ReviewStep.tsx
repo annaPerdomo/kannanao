@@ -15,13 +15,16 @@ import type { GoalMode } from '@/lib/assignmentMastery';
 import { addDaysToDate, planCounts, weekNumbers } from '@/lib/lessonPlanEdits';
 import type { JlptLevel } from '@/lib/lessonPrompts';
 import { planReuse } from '@/lib/lessonReuse';
-import type { LessonPlan, PlanDeck } from '@/types/lessonPlan';
+import type { LessonPlan, PlanDeck, WarmUpWord } from '@/types/lessonPlan';
 
 import { PlanDeckCard } from './PlanDeckCard';
 import { PrintButtons } from './PrintButtons';
+import { WarmUpPanel } from './WarmUpPanel';
 
 interface ReviewStepProps {
   plan: LessonPlan;
+  warmUp: WarmUpWord[];
+  knownWords: string[];
   dueDate: string;
   accuracy: number | null;
   mode: GoalMode | null;
@@ -41,6 +44,8 @@ interface ReviewStepProps {
 
 export function ReviewStep({
   plan,
+  warmUp,
+  knownWords,
   dueDate,
   accuracy,
   mode,
@@ -60,8 +65,7 @@ export function ReviewStep({
   const theme = useTheme();
   const { brand } = theme.palette;
 
-  // No outside vocabulary: reuse is measured within the plan, week 2 against week 1.
-  const reuse = useMemo(() => planReuse(plan.decks, []), [plan.decks]);
+  const reuse = useMemo(() => planReuse(plan.decks, knownWords), [plan.decks, knownWords]);
   const counts = useMemo(() => planCounts(plan), [plan]);
   const numbers = useMemo(() => weekNumbers(plan.decks), [plan.decks]);
 
@@ -77,6 +81,8 @@ export function ReviewStep({
       </Box>
 
       {ticksLocked && <Alert severity="info">{t('resumeLockNote')}</Alert>}
+
+      <WarmUpPanel warmUp={warmUp} />
 
       {plan.decks.map((deck, i) => {
         const week = numbers[i];
@@ -140,7 +146,7 @@ export function ReviewStep({
             >
               {applying ? t('applying') : t('applyButton')}
             </Button>
-            <PrintButtons plan={plan} disabled={applying || counts.decks === 0} />
+            <PrintButtons plan={plan} warmUp={warmUp} disabled={applying || counts.decks === 0} />
             <Button onClick={onStartOver} disabled={applying} sx={{ textTransform: 'none' }}>
               {t('startOverButton')}
             </Button>

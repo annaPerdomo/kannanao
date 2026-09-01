@@ -273,6 +273,7 @@ export async function buildLessonPlan(payload: {
   /** JLPT level to pitch the plan at — defaults to N5 server-side. */
   level?: string;
   styleNotes?: string;
+  groupId?: string;
 }): Promise<LessonPlanResponse> {
   const res = await fetch(`${BASE}/group/lesson-plan`, {
     method: 'POST',

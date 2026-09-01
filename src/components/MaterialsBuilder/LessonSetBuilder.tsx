@@ -11,7 +11,7 @@ import { Loading } from '@/components/Loading';
 import type { Group } from '@/hooks/useGroups';
 import { useLessonPlan } from '@/hooks/useLessonPlan';
 import type { GoalMode } from '@/lib/assignmentMastery';
-import { DEFAULT_LEVEL } from '@/lib/lessonPrompts';
+import { CARDS_MAX, CARDS_MIN, DEFAULT_LEVEL } from '@/lib/lessonPrompts';
 import { buildLessonPlan } from '@/services/api';
 import type { PlanDeck } from '@/types/lessonPlan';
 
@@ -51,8 +51,21 @@ const EMPTY_FORM: LessonSetForm = {
 export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBuilderProps) {
   const t = useTranslations('Group.lessonBuilder');
   const router = useRouter();
-  const { plan, setPlan, results, building, applying, applyFailed, error, build, apply, reset } =
-    useLessonPlan();
+  const {
+    plan,
+    setPlan,
+    warmUp,
+    knownWords,
+    results,
+    building,
+    applying,
+    applyFailed,
+    error,
+    build,
+    apply,
+    reset,
+    mergeWarmUpWords,
+  } = useLessonPlan();
 
   const [form, setForm] = useState<LessonSetForm>(EMPTY_FORM);
   const [dueDate, setDueDate] = useState(() => nextSunday());
@@ -85,10 +98,15 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
         const data = await buildLessonPlan({
           goal: t('retryGoal', { goal: form.goal, deck: deck.name }),
           weeks: 1,
-          cardsPerDeck: deck.cards?.length || form.cardsPerDeck,
+          // The known-word filter can shrink a deck below the route's minimum.
+          cardsPerDeck: Math.min(
+            CARDS_MAX,
+            Math.max(CARDS_MIN, deck.cards?.length || form.cardsPerDeck),
+          ),
           documents: form.documents.map((d) => ({ path: d.path, mimeType: d.mimeType })),
           level: form.level,
           styleNotes: effectiveStyleNotes(form),
+          groupId,
         });
         const replacement = data.plan.decks[0];
         if (replacement) {
@@ -97,6 +115,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
               ? { decks: current.decks.map((d, i) => (i === index ? replacement : d)) }
               : current,
           );
+          mergeWarmUpWords(data.warmUp ?? []);
         }
       } catch (err) {
         setRetryError(err instanceof Error ? err.message : t('errorMessage'));
@@ -104,7 +123,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
         setRetryingIndex(null);
       }
     },
-    [plan, form, setPlan, t],
+    [plan, form, groupId, setPlan, mergeWarmUpWords, t],
   );
 
   const createdCount = results?.filter((r) => r.status === 'created').length ?? 0;
@@ -135,7 +154,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
             <Button variant="contained" onClick={() => router.push(`/group/${groupId}`)}>
               {t('backToGroupButton')}
             </Button>
-            {plan && <PrintButtons plan={plan} />}
+            {plan && <PrintButtons plan={plan} warmUp={warmUp} />}
           </Box>
         </Stack>
       )}
@@ -158,6 +177,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
               documents: form.documents,
               level: form.level,
               styleNotes: effectiveStyleNotes(form),
+              groupId,
             })
           }
         />
@@ -166,6 +186,8 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
       {!results && !building && !applying && plan && (
         <ReviewStep
           plan={plan}
+          warmUp={warmUp}
+          knownWords={knownWords}
           dueDate={dueDate}
           accuracy={accuracy}
           mode={mode}

@@ -11,15 +11,16 @@ import {
   openPrintWindow,
   type PrintableVariant,
 } from '@/lib/lessonPrintable';
-import type { LessonPlan } from '@/types/lessonPlan';
+import type { LessonPlan, WarmUpWord } from '@/types/lessonPlan';
 
 interface PrintButtonsProps {
   plan: LessonPlan;
+  warmUp?: WarmUpWord[];
   disabled?: boolean;
 }
 
 /** "Print study sheets" / "Print quiz sheets" — paper handouts from the same plan. */
-export function PrintButtons({ plan, disabled }: PrintButtonsProps) {
+export function PrintButtons({ plan, warmUp, disabled }: PrintButtonsProps) {
   const t = useTranslations('Group.lessonBuilder');
   const locale = useLocale();
 
@@ -43,11 +44,15 @@ export function PrintButtons({ plan, disabled }: PrintButtonsProps) {
           reading: t('readingLabel'),
           meaning: t('meaningLabel'),
           example: t('printExampleLabel'),
+          warmUpTitle: t('warmUpTitle'),
+          warmUpHint: t('warmUpHint'),
+          deck: t('warmUpDeckColumn'),
         },
+        warmUp,
       });
       openPrintWindow(html);
     },
-    [plan, locale, t],
+    [plan, warmUp, locale, t],
   );
 
   return (

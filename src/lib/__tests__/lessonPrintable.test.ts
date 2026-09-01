@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildLessonPrintableHtml, furiganaToRubyHtml } from '@/lib/lessonPrintable';
-import type { PlanDeck } from '@/types/lessonPlan';
+import type { PlanDeck, WarmUpWord } from '@/types/lessonPlan';
 
 const LABELS = {
   name: 'Name',
@@ -10,7 +10,14 @@ const LABELS = {
   reading: 'Reading',
   meaning: 'Meaning',
   example: 'Example',
+  warmUpTitle: 'Warm-up review',
+  warmUpHint: 'Words your group already knows.',
+  deck: 'Deck',
 };
+
+const WARM_UP: WarmUpWord[] = [
+  { word: '学校', reading: 'がっこう', meaning: 'school', deckName: 'Basics' },
+];
 
 const DECK: PlanDeck = {
   name: 'Food words',
@@ -29,13 +36,14 @@ const DECK: PlanDeck = {
   ],
 };
 
-function build(variant: 'study' | 'quiz', deck: PlanDeck = DECK) {
+function build(variant: 'study' | 'quiz', deck: PlanDeck = DECK, warmUp?: WarmUpWord[]) {
   return buildLessonPrintableHtml({
     title: 'Study sheets',
     locale: 'en',
     variant,
     weeks: [{ heading: 'Week 1 — Food words', deck }],
     labels: LABELS,
+    warmUp,
   });
 }
 
@@ -78,5 +86,48 @@ describe('buildLessonPrintableHtml', () => {
     expect(html).not.toContain('<script>alert');
     expect(html).not.toContain('<img src=x');
     expect(html).toContain('&lt;script&gt;');
+  });
+});
+
+describe('warm-up section', () => {
+  it('study sheets show the warm-up title, hint, words, meanings and decks before the first week', () => {
+    const html = build('study', DECK, WARM_UP);
+
+    expect(html).toContain('class="warmup"');
+    expect(html).toContain('Warm-up review');
+    expect(html).toContain('Words your group already knows.');
+    expect(html).toContain('>Deck<');
+    expect(html).toContain('<ruby>学校<rt>がっこう</rt></ruby>');
+    expect(html).toContain('school');
+    expect(html).toContain('Basics');
+    expect(html.indexOf('class="warmup"')).toBeLessThan(html.indexOf('class="week"'));
+  });
+
+  it('quiz sheets never show the warm-up section', () => {
+    const html = build('quiz', DECK, WARM_UP);
+
+    expect(html).not.toContain('class="warmup"');
+    expect(html).not.toContain('Warm-up review');
+  });
+
+  it('study sheets with no warm-up entries omit the section', () => {
+    expect(build('study', DECK, [])).not.toContain('class="warmup"');
+    expect(build('study', DECK, undefined)).not.toContain('class="warmup"');
+  });
+
+  it('escapes hostile warm-up content', () => {
+    const html = build('study', DECK, [
+      {
+        word: '<script>alert(1)</script>',
+        reading: '',
+        meaning: '<img src=x onerror=alert(1)>',
+        deckName: '<script>alert(2)</script>',
+      },
+    ]);
+
+    expect(html).not.toContain('<script>alert');
+    expect(html).not.toContain('<img src=x');
+    expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+    expect(html).toContain('&lt;script&gt;alert(2)&lt;/script&gt;');
   });
 });

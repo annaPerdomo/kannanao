@@ -378,4 +378,77 @@ describe('LessonSetBuilder', () => {
     expect(openSpy).toHaveBeenCalled();
     openSpy.mockRestore();
   });
+
+  it('sends the selected group id when building the plan', async () => {
+    await reachReviewStep();
+
+    expect(buildLessonPlanMock.mock.calls[0][0]).toMatchObject({ groupId: 'g1' });
+  });
+
+  it('shows the warm-up review panel with each known word and its deck', async () => {
+    buildLessonPlanMock.mockResolvedValueOnce({
+      plan: PLAN,
+      warmUp: [{ word: '会う', reading: 'あう', meaning: 'to meet', deckName: 'Verbs' }],
+    });
+    await reachReviewStep();
+
+    expect(screen.getByText('Warm-up review')).toBeInTheDocument();
+    expect(screen.getByText(/会う（あう）/)).toBeInTheDocument();
+    expect(screen.getByText('from Verbs')).toBeInTheDocument();
+  });
+
+  it('hides the warm-up panel when the plan has no known words', async () => {
+    await reachReviewStep();
+
+    expect(screen.queryByText('Warm-up review')).not.toBeInTheDocument();
+  });
+
+  it('per-deck retry sends the group id and merges new warm-up entries with the existing ones', async () => {
+    buildLessonPlanMock.mockResolvedValueOnce({
+      plan: PLAN,
+      warmUp: [{ word: '会う', reading: 'あう', meaning: 'to meet', deckName: 'Verbs' }],
+    });
+    await reachReviewStep();
+
+    buildLessonPlanMock.mockResolvedValueOnce({
+      plan: PLAN,
+      warmUp: [{ word: '飲む', reading: 'のむ', meaning: 'to drink', deckName: 'Verbs' }],
+    });
+    fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+
+    await waitFor(() => expect(buildLessonPlanMock).toHaveBeenCalledTimes(2));
+    expect(buildLessonPlanMock.mock.calls[1][0]).toMatchObject({ groupId: 'g1' });
+
+    expect(await screen.findByText(/飲む（のむ）/)).toBeInTheDocument();
+    expect(screen.getByText(/会う（あう）/)).toBeInTheDocument();
+  });
+
+  it('clamps the retry card count when the known-word filter shrank the deck below the minimum', async () => {
+    buildLessonPlanMock.mockResolvedValueOnce({
+      plan: PLAN,
+      warmUp: [{ word: '会う', reading: 'あう', meaning: 'to meet', deckName: 'Verbs' }],
+    });
+    await reachReviewStep();
+
+    buildLessonPlanMock.mockResolvedValueOnce({ plan: PLAN });
+    fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+
+    await waitFor(() => expect(buildLessonPlanMock).toHaveBeenCalledTimes(2));
+    expect(buildLessonPlanMock.mock.calls[1][0]).toMatchObject({ cardsPerDeck: 5 });
+  });
+
+  it('keeps the warm-up list out of the apply payload — same plan and no warmUp key', async () => {
+    buildLessonPlanMock.mockResolvedValueOnce({
+      plan: PLAN,
+      warmUp: [{ word: '会う', reading: 'あう', meaning: 'to meet', deckName: 'Verbs' }],
+    });
+    await reachReviewStep();
+
+    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
+
+    const payload = applyLessonPlanMock.mock.calls[0][0];
+    expect(payload).not.toHaveProperty('warmUp');
+    expect(payload.plan).toEqual(PLAN);
+  });
 });

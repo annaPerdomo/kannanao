@@ -1,4 +1,4 @@
-import type { PlanDeck } from '@/types/lessonPlan';
+import type { PlanDeck, WarmUpWord } from '@/types/lessonPlan';
 
 import { furiganaFromReading, parseFurigana } from './furigana';
 
@@ -16,6 +16,9 @@ export interface PrintableLabels {
   reading: string;
   meaning: string;
   example: string;
+  warmUpTitle?: string;
+  warmUpHint?: string;
+  deck?: string;
 }
 
 function escapeHtml(text: string): string {
@@ -52,6 +55,7 @@ const PAGE_CSS = `
   }
   @page { margin: 14mm; }
   section.week { page-break-after: always; }
+  section.warmup { page-break-after: always; }
   section.week:last-child { page-break-after: auto; }
   .week-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
   h1 { font-size: 1.15rem; margin: 0 0 4px; }
@@ -85,6 +89,30 @@ function quizRow(deck: PlanDeck, index: number): string {
     <td class="blank"></td>
     <td class="blank"></td>
   </tr>`;
+}
+
+function warmUpSection(warmUp: WarmUpWord[], labels: PrintableLabels): string {
+  const rows = warmUp
+    .map(
+      (w, i) => `<tr>
+    <td class="num">${i + 1}</td>
+    <td class="jp">${wordCellHtml(w.word, w.reading)}</td>
+    <td>${escapeHtml(w.meaning)}</td>
+    <td>${escapeHtml(w.deckName)}</td>
+  </tr>`,
+    )
+    .join('\n');
+
+  return `<section class="warmup">
+  <h1>${escapeHtml(labels.warmUpTitle ?? '')}</h1>
+  <p class="desc">${escapeHtml(labels.warmUpHint ?? '')}</p>
+  <table>
+    <thead><tr><th></th><th>${escapeHtml(labels.word)}</th><th>${escapeHtml(labels.meaning)}</th><th>${escapeHtml(labels.deck ?? '')}</th></tr></thead>
+    <tbody>
+${rows}
+    </tbody>
+  </table>
+</section>`;
 }
 
 function weekSection(
@@ -127,7 +155,10 @@ export function buildLessonPrintableHtml(args: {
   variant: PrintableVariant;
   weeks: PrintableWeek[];
   labels: PrintableLabels;
+  warmUp?: WarmUpWord[];
 }): string {
+  const warmUp =
+    args.variant === 'study' && args.warmUp?.length ? warmUpSection(args.warmUp, args.labels) : '';
   const sections = args.weeks
     .map((week) => weekSection(week, args.variant, args.labels))
     .join('\n');
@@ -140,6 +171,7 @@ export function buildLessonPrintableHtml(args: {
 <style>${PAGE_CSS}</style>
 </head>
 <body>
+${warmUp}
 ${sections}
 <script>window.addEventListener('load', function () { window.print(); });</script>
 </body>

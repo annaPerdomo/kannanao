@@ -5,8 +5,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { invalidateApiCache } from '@/lib/apiCache';
 import { includedPlan } from '@/lib/lessonPlanEdits';
+import { mergeWarmUp } from '@/lib/lessonWarmUp';
 import { applyLessonPlan, buildLessonPlan } from '@/services/api';
-import type { ApplyDeckResult, LessonDocument, LessonPlan } from '@/types/lessonPlan';
+import type { ApplyDeckResult, LessonDocument, LessonPlan, WarmUpWord } from '@/types/lessonPlan';
 
 export interface BuildPlanArgs {
   goal: string;
@@ -15,6 +16,7 @@ export interface BuildPlanArgs {
   documents?: LessonDocument[];
   level?: string;
   styleNotes?: string;
+  groupId?: string;
 }
 
 export interface ApplyPlanArgs {
@@ -31,6 +33,8 @@ export interface ApplyPlanArgs {
 export function useLessonPlan() {
   const t = useTranslations('Group.lessonBuilder');
   const [plan, setPlan] = useState<LessonPlan | null>(null);
+  const [warmUp, setWarmUp] = useState<WarmUpWord[]>([]);
+  const [knownWords, setKnownWords] = useState<string[]>([]);
   /**
    * Identifies this plan across apply attempts. Applying creates decks one at a
    * time; if it dies half way, retrying with the same id resumes instead of
@@ -62,15 +66,23 @@ export function useLessonPlan() {
         });
         setPlan(data.plan);
         setPlanId(uuidv4());
+        setWarmUp(data.warmUp ?? []);
+        setKnownWords(data.knownWords ?? []);
       } catch (err) {
         setError(err instanceof Error ? err.message : t('errorMessage'));
         setPlan(null);
+        setWarmUp([]);
+        setKnownWords([]);
       } finally {
         setBuilding(false);
       }
     },
     [t],
   );
+
+  const mergeWarmUpWords = useCallback((next: WarmUpWord[]) => {
+    setWarmUp((current) => mergeWarmUp(current, next));
+  }, []);
 
   const apply = useCallback(
     async (args: ApplyPlanArgs) => {
@@ -99,7 +111,23 @@ export function useLessonPlan() {
     setResults(null);
     setError(null);
     setApplyFailed(false);
+    setWarmUp([]);
+    setKnownWords([]);
   }, []);
 
-  return { plan, setPlan, results, building, applying, applyFailed, error, build, apply, reset };
+  return {
+    plan,
+    setPlan,
+    warmUp,
+    knownWords,
+    results,
+    building,
+    applying,
+    applyFailed,
+    error,
+    build,
+    apply,
+    reset,
+    mergeWarmUpWords,
+  };
 }
