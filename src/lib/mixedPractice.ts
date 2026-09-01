@@ -7,6 +7,7 @@
  * sentences, no Japanese voice, Reading switched off) drops out silently, down
  * to a floor of flip plus meaning pick that any two-card deck can serve.
  */
+import { MIN_SENTENCES } from '@/components/Practice/KotobaBubbleMode/constants';
 import {
   eligibleReadingCards,
   MIN_READING_CARDS,
@@ -28,6 +29,8 @@ export interface MixedDeckSupport {
   readingUnlocked: boolean;
   /** A Japanese voice resolved — Listen is useless without one. */
   ttsReady: boolean;
+  /** Deck-wide, unlike every other field here: sentences aren't tied to cards. */
+  sentenceCount: number;
 }
 
 /** The choice-based exercises need distractors, and Match needs a grid. */
@@ -40,7 +43,11 @@ const MIN_FILL_CARDS = 2;
 
 export function deckSupport(
   cards: Flashcard[],
-  { readingUnlocked, ttsReady }: { readingUnlocked: boolean; ttsReady: boolean },
+  {
+    readingUnlocked,
+    ttsReady,
+    sentenceCount,
+  }: { readingUnlocked: boolean; ttsReady: boolean; sentenceCount: number },
 ): MixedDeckSupport {
   return {
     cardCount: cards.length,
@@ -48,6 +55,7 @@ export function deckSupport(
     readingCards: eligibleReadingCards(cards).length,
     readingUnlocked,
     ttsReady,
+    sentenceCount,
   };
 }
 
@@ -86,12 +94,17 @@ export interface MixedPlanInput {
   exclude?: readonly GoalMode[];
 }
 
-/** The top rung: producing the word, not picking it. Reading outranks Fill. */
+/**
+ * The top rung: producing the word, not picking it. Kotoba Bubble must stay
+ * above Fill: every sentence-seeded deck has example_jp, so Fill would win
+ * every time from below and the rung would never fire.
+ */
 function productionLeg({ support, counts }: MixedPlanInput): ChainLeg | null {
   if (counts.strong === 0) return null;
   if (support.readingUnlocked && support.readingCards >= MIN_READING_CARDS) {
     return { step: 'goal', mode: 'reading' };
   }
+  if (support.sentenceCount >= MIN_SENTENCES) return { step: 'goal', mode: 'kotoba-bubble' };
   if (support.fillCards >= MIN_FILL_CARDS) return { step: 'goal', mode: 'fill' };
   return null;
 }

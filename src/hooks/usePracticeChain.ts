@@ -20,6 +20,7 @@ import {
   writeChainState,
 } from '@/lib/practiceChain';
 import { dbDeckCardCount, getCardProgressForUser } from '@/lib/supabase';
+import { fetchPracticeSentences } from '@/services/api';
 import type { Deck } from '@/types/deck';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -72,7 +73,7 @@ export function useStartAssignmentQuest() {
  */
 export function useStartMixedPractice() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isMemberAccount } = useAuth();
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,17 +86,26 @@ export function useStartMixedPractice() {
       setStarting(true);
       setError(null);
       try {
-        const progress = user
-          ? await getCardProgressForUser(
-              user.id,
-              cards.map((c) => c.id),
-            )
-          : [];
+        // A member's legacy personalised set can differ from the shared one, so
+        // count the set the mode will play or the rung dead-ends. A failed read
+        // must cost the rung, not the button.
+        const [progress, sentences] = await Promise.all([
+          user
+            ? getCardProgressForUser(
+                user.id,
+                cards.map((c) => c.id),
+              )
+            : Promise.resolve([]),
+          fetchPracticeSentences(
+            deckId,
+            isMemberAccount ? (user?.id ?? undefined) : undefined,
+          ).catch(() => []),
+        ]);
         // Plan against the cards this session will actually play, not the deck:
         // if none of the twelve carry an example sentence there is no Fill leg.
         const session = pickMixedSessionCards(cards, progress);
         const legs = planMixedPractice({
-          support: deckSupport(session, support),
+          support: deckSupport(session, { ...support, sentenceCount: sentences.length }),
           counts: countStrengths(
             session.map((c) => c.id),
             progress,
@@ -123,7 +133,7 @@ export function useStartMixedPractice() {
         setStarting(false);
       }
     },
-    [router, user],
+    [router, user, isMemberAccount],
   );
 
   return { start, starting, error };

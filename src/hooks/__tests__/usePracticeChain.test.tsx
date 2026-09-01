@@ -19,7 +19,15 @@ vi.mock('@/lib/supabase', () => ({
   getCardProgressForUser: (userId: string, cardIds?: string[]) => mockProgress(userId, cardIds),
 }));
 
-vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
+let isMemberAccount = false;
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({ user: { id: 'u1' }, isMemberAccount }),
+}));
+
+const mockSentences = vi.fn();
+vi.mock('@/services/api', () => ({
+  fetchPracticeSentences: (deckId: string, memberId?: string) => mockSentences(deckId, memberId),
+}));
 
 import type { Assignment } from '@/hooks/useAssignments';
 import {
@@ -74,6 +82,8 @@ beforeEach(() => {
   replace.mockClear();
   mockCardCount.mockReset().mockResolvedValue(12);
   mockProgress.mockReset().mockResolvedValue([]);
+  mockSentences.mockReset().mockResolvedValue([]);
+  isMemberAccount = false;
   search = new URLSearchParams('chain=assignment');
 });
 
@@ -160,6 +170,65 @@ describe('useStartMixedPractice', () => {
       'u1',
       cards.map((c) => c.id),
     );
+  });
+
+  const strongRows = (ids: string[]) =>
+    ids.map((cardId) => ({
+      cardId,
+      correctCount: 3,
+      wrongCount: 0,
+      lastReviewedAt: null,
+      nextReviewAt: '2020-01-01T00:00:00.000Z',
+      intervalDays: 6,
+      ease: 2.5,
+    }));
+
+  const sentence = (id: string) => ({ id, deck_id: 'd1' });
+
+  it('climbs to Kotoba Bubble once the deck has sentences to play', async () => {
+    mockProgress.mockResolvedValue(strongRows(cards.map((c) => c.id)));
+    mockSentences.mockResolvedValue([sentence('s1'), sentence('s2'), sentence('s3')]);
+    const { result } = renderHook(() => useStartMixedPractice());
+    await act(async () => {
+      await result.current.start('d1', cards, { readingUnlocked: false, ttsReady: false });
+    });
+
+    const legs = readChainState()?.legs?.map((leg) => leg.mode);
+    expect(legs?.[legs.length - 1]).toBe('kotoba-bubble');
+  });
+
+  it('counts a member against their own sentence set, not the shared one', async () => {
+    isMemberAccount = true;
+    const { result } = renderHook(() => useStartMixedPractice());
+    await act(async () => {
+      await result.current.start('d1', cards, { readingUnlocked: false, ttsReady: false });
+    });
+
+    expect(mockSentences).toHaveBeenCalledWith('d1', 'u1');
+  });
+
+  it('reads the shared sentence set for an organizer', async () => {
+    const { result } = renderHook(() => useStartMixedPractice());
+    await act(async () => {
+      await result.current.start('d1', cards, { readingUnlocked: false, ttsReady: false });
+    });
+
+    expect(mockSentences).toHaveBeenCalledWith('d1', undefined);
+  });
+
+  it('drops the Kotoba Bubble rung when the sentence read fails, not the button', async () => {
+    mockProgress.mockResolvedValue(strongRows(cards.map((c) => c.id)));
+    mockSentences.mockRejectedValue(new Error('offline'));
+    const { result } = renderHook(() => useStartMixedPractice());
+    await act(async () => {
+      await result.current.start('d1', cards, { readingUnlocked: false, ttsReady: false });
+    });
+
+    const legs = readChainState()?.legs?.map((leg) => leg.mode);
+    expect(legs).not.toContain('kotoba-bubble');
+    expect(legs?.[legs.length - 1]).toBe('fill');
+    expect(result.current.error).toBeNull();
+    expect(push).toHaveBeenCalled();
   });
 
   it('surfaces a failed start instead of leaving the button busy forever', async () => {

@@ -52,6 +52,13 @@ describe('planAssignmentQuest', () => {
     expect(modes).not.toContain('fill');
   });
 
+  it('never puts Kotoba Bubble in a quest middle', () => {
+    for (const mode of ['fill', 'recall', 'kotoba-bubble', 'listen', 'reading', 'quiz']) {
+      const middle = plan(mode).slice(1, -1);
+      expect(middle.map((leg) => leg.mode)).not.toContain('kotoba-bubble');
+    }
+  });
+
   it('always starts on flip study, so the first leg needs no deck data', () => {
     for (const mode of [null, 'study', 'match', 'quiz', 'reading']) {
       expect(plan(mode, 0)[0].mode).toBe('study');
