@@ -5,6 +5,7 @@ import {
   DOCUMENT_MAX_TOTAL_BYTES,
 } from '@/components/MaterialsBuilder/constants';
 import { normalizeFurigana } from '@/lib/furigana';
+import type { GroupKanaReadiness } from '@/lib/kanaGaps';
 import { rankKnownWords } from '@/lib/knownWords';
 import {
   isLessonDocumentMimeType,
@@ -28,6 +29,7 @@ import type { LessonPlan, WarmUpWord } from '@/types/lessonPlan';
 
 import { rateLimit } from '../../_lib/rateLimit';
 import { type OrganizerProfile, requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { getGroupKnownKana } from '../_lib/groupKnownKana';
 import { getGroupKnownWords } from '../_lib/groupKnownWords';
 import { consumeLessonBudget } from '../_lib/lessonBudget';
 import { requireGroupAccess } from '../_lib/requireGroupAccess';
@@ -257,20 +259,37 @@ export async function POST(req: NextRequest) {
   if (documentParts instanceof NextResponse) return documentParts;
 
   let pool: WarmUpWord[] = [];
+  let kanaReadiness: GroupKanaReadiness | null = null;
   if (groupId) {
-    try {
-      pool = await getGroupKnownWords(groupId, organizer.id);
-    } catch (err) {
-      logger.error("Failed to load the group's known words", {
-        route: 'POST /api/group/lesson-plan',
-        groupId,
-        error: err instanceof Error ? err.message : String(err),
-      });
+    // Reading data is a bonus signal on the review step, so a failure there
+    // costs the chips, never the plan the organizer is waiting for.
+    const [readiness, words] = await Promise.all([
+      getGroupKnownKana(groupId, organizer.id).catch((err) => {
+        logger.error("Failed to load the group's kana progress", {
+          route: 'POST /api/group/lesson-plan',
+          groupId,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        return null;
+      }),
+      getGroupKnownWords(groupId, organizer.id).catch((err) => {
+        logger.error("Failed to load the group's known words", {
+          route: 'POST /api/group/lesson-plan',
+          groupId,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        return null;
+      }),
+    ]);
+
+    if (words === null) {
       return NextResponse.json(
         { error: "Could not load the group's existing words." },
         { status: 500 },
       );
     }
+    kanaReadiness = readiness;
+    pool = words;
   }
 
   const overBudget = await consumeLessonBudget(organizer.id);
@@ -369,6 +388,7 @@ export async function POST(req: NextRequest) {
       plan: filteredPlan,
       warmUp,
       knownWords: pool,
+      kanaReadiness,
     });
   } catch (err) {
     logger.error('Unhandled error', {
