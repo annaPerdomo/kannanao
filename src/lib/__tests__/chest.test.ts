@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { CHEST_XP, chestVariant, isChestEligible } from '@/lib/chest';
+import { CHEST_XP, chestVariant, isChestEligible, remainingForReward } from '@/lib/chest';
 
 const TODAY = '2026-07-11';
 
@@ -39,5 +39,16 @@ describe('chestVariant', () => {
   it('is golden only for a perfect clear', () => {
     expect(chestVariant(true)).toBe('gold');
     expect(chestVariant(false)).toBe('wood');
+  });
+});
+
+describe('remainingForReward', () => {
+  it('judges an ordinary review by the real queue', () => {
+    expect(remainingForReward(5, false)).toBe(5);
+    expect(remainingForReward(0, false)).toBe(0);
+  });
+
+  it('treats a finished capped session as a cleared queue', () => {
+    expect(remainingForReward(30, true)).toBe(0);
   });
 });

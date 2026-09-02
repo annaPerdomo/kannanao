@@ -16,7 +16,13 @@ import { useCombo } from '@/hooks/useCombo';
 import { useProgress } from '@/hooks/useProgress';
 import { XP_PER_WRONG } from '@/hooks/useProgress';
 import { sampleBuddyWords } from '@/lib/buddyWords';
-import { CHEST_XP, chestVariant, isChestEligible, localDateString } from '@/lib/chest';
+import {
+  CHEST_XP,
+  chestVariant,
+  isChestEligible,
+  localDateString,
+  remainingForReward,
+} from '@/lib/chest';
 import { cardXp } from '@/lib/flashcardUtils';
 import { planQuest } from '@/lib/quest';
 import { getDueCount } from '@/lib/supabase';
@@ -36,6 +42,7 @@ export interface ReviewQuestProps {
   /** Writes one graded character to kana_progress; never throws. */
   recordKana?: (kana: string, correct: boolean) => Promise<void>;
   onExit: () => void;
+  cappedSession?: boolean;
 }
 
 /**
@@ -45,7 +52,13 @@ export interface ReviewQuestProps {
  * Match → optional Boss Round — and the perfect bonus + daily chest are checked
  * once, at the end.
  */
-export function ReviewQuest({ cards, kanaChars, recordKana, onExit }: ReviewQuestProps) {
+export function ReviewQuest({
+  cards,
+  kanaChars,
+  recordKana,
+  onExit,
+  cappedSession = false,
+}: ReviewQuestProps) {
   const t = useTranslations('Review.reviewQuest');
   const { user } = useAuth();
   const { startSession, recordAnswer, endSession, addBonusXp, openDailyChest, progress } =
@@ -134,11 +147,12 @@ export function ReviewQuest({ cards, kanaChars, recordKana, onExit }: ReviewQues
     // celebration.
     try {
       const dueCount = user ? await getDueCount(user.id) : 1;
+      const cleared = remainingForReward(dueCount, cappedSession);
       setChestEligible(
         isChestEligible({
           lastChestDate: lastChestDateRef.current,
           today: localDateString(new Date()),
-          dueCount,
+          dueCount: cleared,
           fromReview: true,
         }),
       );
@@ -146,7 +160,7 @@ export function ReviewQuest({ cards, kanaChars, recordKana, onExit }: ReviewQues
       // must not hold up or break the celebration. A failed count skips the
       // award for good (endedRef blocks a retry), which beats paying out for a
       // queue we can't confirm is empty.
-      if (dueCount === 0) {
+      if (cleared === 0) {
         void awardFriendship('adventure')
           .then((award) => setHeartsEarned(award?.awarded ?? 0))
           .catch(() => {});
@@ -156,7 +170,7 @@ export function ReviewQuest({ cards, kanaChars, recordKana, onExit }: ReviewQues
     }
 
     setDone(true);
-  }, [cards, endSession, user, awardFriendship]);
+  }, [cards, endSession, user, awardFriendship, cappedSession]);
 
   // Cards already SRS-advanced by a correct answer this quest. The Boss Round
   // deliberately re-tests the last Word Match cards, and without this a card

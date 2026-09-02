@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import type { ChainLeg, ChainStep } from '@/lib/practiceChain';
 
 const STEP_EMOJI: Record<ChainStep, string> = {
+  review: '⚔️',
   warmup: '🔖',
   practice: '🍉',
   goal: '🎯',

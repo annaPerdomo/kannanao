@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { LearnerRedirect } from '@/components/LearnerRedirect';
 import { TravelHub } from '@/components/Travel';
 import { APP_NAME, APP_URL } from '@/lib/brand';
 
@@ -62,6 +63,7 @@ export default function TravelPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <LearnerRedirect to="/" />
       <TravelHub />
     </>
   );

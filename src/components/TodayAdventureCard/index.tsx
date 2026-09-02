@@ -140,11 +140,11 @@ export function TodayAdventureCard() {
       : tFriendship('nearMilestone.fact', { count: near.heartsAway, name: buddyName })
     : null;
 
-  const start = () => router.push('/review/today');
-  const playGame = () => router.push('/review');
+  const start = () => router.push('/review/start');
+  const playGame = () => router.push('/review?games=1');
   // Pointer convenience only, no role/tabIndex: a focusable button nested in a
   // role="button" makes its accessible name presentational. Start is the control.
-  const clickable = state === 'due';
+  const clickable = state !== 'completed';
 
   return (
     <Box
@@ -164,6 +164,7 @@ export function TodayAdventureCard() {
           faceSrc={buddyFaceSrc(creditedKey, FACE_CELEBRATE)}
           // The chest fallback proves a cleared queue, not a paid heart.
           hearts={hasFriendship ? FRIENDSHIP_POINTS.adventure : 0}
+          onPractice={start}
           onPlayGame={playGame}
         />
       )}
@@ -179,7 +180,12 @@ export function TodayAdventureCard() {
         />
       )}
       {state === 'nothingDue' && (
-        <NothingDueState onPlayGame={playGame} onPracticeDeck={() => router.push('/decks')} />
+        <NothingDueState
+          buddyName={buddyName}
+          faceSrc={buddyFaceSrc(buddyKey, FACE_DEFAULT)}
+          onStart={start}
+          onPlayGame={playGame}
+        />
       )}
 
       {returning && (

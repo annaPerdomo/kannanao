@@ -27,7 +27,7 @@ import { DataErrorState } from '@/components/DataErrorState';
 import { DeckTile } from '@/components/DeckCard';
 import { DECK_TILE_MIN_HEIGHT } from '@/components/DeckCard/DeckTile';
 import { AssignmentCard, GroupRow, LeaderboardWidget } from '@/components/Group';
-import { GreetingHero, SpeechRow, XpProgressCard } from '@/components/Home';
+import { getGreeting, GreetingHero, SpeechRow, XpProgressCard } from '@/components/Home';
 import { LoadingOverlay } from '@/components/Loading';
 import { TodayAdventureCard } from '@/components/TodayAdventureCard';
 import { TodoList } from '@/components/TodoList';
@@ -40,7 +40,6 @@ import { useGroups } from '@/hooks/useGroups';
 import { useOhanashikais } from '@/hooks/useOhanashikais';
 import { useStartAssignmentQuest } from '@/hooks/usePracticeChain';
 import type { HomeData } from '@/lib/dbMappers';
-import { resolveTimeOfDay } from '@/lib/timeOfDay';
 import type { SectionKey } from '@/types/homeSections';
 import {
   getSectionsForRole,
@@ -86,30 +85,6 @@ function useHasOpened(open: boolean): boolean {
     if (open) setOpened(true);
   }, [open]);
   return opened;
-}
-
-/**
- * Tango's greeting — おはよう / こんにちは / こんばんは, in Japanese whichever locale
- * the UI is in. It shares `resolveTimeOfDay` with the hero's banner art, so
- * こんばんは can never end up over the sunrise illustration.
- *
- * Rich rather than plain text because Japanese permits a line break between any
- * two characters: left alone, a narrow hero splits the reader's own name as
- * «Annaさ / ん！». The `<n>` run holds the name and its honorific together, which
- * leaves the 、as the only place the line may break.
- */
-function getGreeting(
-  name: string,
-  t: ReturnType<typeof useTranslations<'Home.greeting'>>,
-): React.ReactNode {
-  return t.rich(resolveTimeOfDay(new Date()), {
-    name,
-    n: (chunks) => (
-      <Box component="span" sx={{ whiteSpace: 'nowrap' }}>
-        {chunks}
-      </Box>
-    ),
-  });
 }
 
 function DashboardSection({

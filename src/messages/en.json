@@ -519,15 +519,20 @@
   },
   "Review": {
     "hubPage": {
-      "title": "Review",
-      "subtitle": "Practice your due words and play games",
+      "title": "Practice",
+      "subtitle": "One tap — we pick the exercises",
       "wordsWaiting": "{count, plural, one {# word is waiting} other {# words are waiting}}",
-      "waitingBody": "A few minutes keeps your words fresh — clear them for a chest 🎁",
-      "startTodaysPractice": "Start today’s practice",
-      "caughtUpTitle": "All caught up!",
-      "caughtUpBody": "Nothing due right now — pick a game below to stay sharp.",
-      "funWaysToPractice": "Fun ways to practice",
-      "loadError": "Couldn't check which words are due. Please refresh to try again."
+      "waitingBody": "A few minutes keeps your words fresh 🎁",
+      "funWaysToPractice": "Extra games, just for fun",
+      "todaysPractice": "Today's practice",
+      "readyTitle": "Ready to practice?",
+      "thenDeck": "then {deck}",
+      "fromDeck": "Words from {deck}",
+      "minutesEstimate": "~{min} min",
+      "startPractice": "Start practice",
+      "whatHappens": "Flashcards, games and a challenge — one after another.",
+      "nothingYetTitle": "Nothing to practice yet",
+      "nothingYetBody": "Once your teacher shares words with you — or you make a deck — your practice starts here."
     },
     "questMap": {
       "warmup": "Warm-up",
@@ -695,6 +700,14 @@
       "countingDescription": "Practice Japanese counters — count the things and pick まい・つ・にん.",
       "learnKanaTitle": "Learn Kana — Review | Tangodachi",
       "learnKanaDescription": "Learn to read hiragana and katakana from zero, one row at a time."
+    },
+    "startPage": {
+      "preparing": "Getting your practice ready…",
+      "nothingYetTitle": "Nothing to practice yet",
+      "nothingYetBody": "Once your teacher shares words with you — or you make a deck — your practice starts here.",
+      "startFailedBody": "We couldn't start your practice. Please try again.",
+      "tryAgain": "Try again",
+      "playAGame": "Play a game"
     }
   },
   "Practice": {
@@ -1814,7 +1827,10 @@
       "speech": "Speech",
       "travel": "Travel",
       "stats": "Stats",
-      "shop": "Shop"
+      "shop": "Shop",
+      "practice": "Practice",
+      "binder": "My Cards",
+      "me": "Me"
     },
     "userMenu": {
       "signIn": "Sign In",
@@ -1845,13 +1861,14 @@
       "start": "Start",
       "completedTitle": "Adventure complete!",
       "completedHearts": "+{count} ❤️ with {name}",
-      "nothingDueTitle": "No reviews waiting today.",
-      "nothingDueBody": "Nice work — everything is fresh. Want to keep playing?",
+      "nothingDueTitle": "Practice with {name}!",
+      "nothingDueBody": "Flashcards, games and a challenge — picked for you",
       "playGame": "Play a game",
-      "practiceDeck": "Practice a deck",
       "welcomeBack": "Welcome back! {name} saved your place.",
       "daysThisWeek": "{count, plural, one {# study day} other {# study days}} this week",
-      "weekDotsAria": "Study days this week, Monday to Sunday"
+      "weekDotsAria": "Study days this week, Monday to Sunday",
+      "completedBody": "Great work today. Want to keep going?",
+      "practiceMore": "Practice more"
     },
     "welcomeBanner": {
       "openShopAriaLabel": "Open shop",
@@ -5076,7 +5093,8 @@
     "stepName": {
       "warmup": "Warm up",
       "practice": "Practice",
-      "goal": "Show what you know"
+      "goal": "Show what you know",
+      "review": "Today's reviews"
     },
     "nextStep": "Next: {step}",
     "seeHowYouDid": "See how you did",
@@ -5090,6 +5108,84 @@
     "backHome": "Back to home",
     "checkFailed": "We couldn't check your goal just now.",
     "checkAgain": "Check again",
-    "stopForNow": "Stop for now"
+    "stopForNow": "Stop for now",
+    "finishPractice": "All done! Back home"
+  },
+  "LearnerHome": {
+    "homeworkTitle": "📬 From your teacher",
+    "homeworkDone": "All done — nothing waiting from your teacher. Nice!",
+    "leaderboardTitle": "🏆 This week",
+    "extraGames": "Extra games, just for fun",
+    "lesson": {
+      "start": "Start",
+      "bestSoFar": "best so far {best}%",
+      "goalProgressAria": "Progress toward the goal",
+      "pastDue": "Past due — you can still do it!"
+    },
+    "collection": {
+      "title": "Your card collection",
+      "summary": "{collected} of {total} cards collected",
+      "gold": "{count, plural, one {# gold} other {# gold}}",
+      "open": "Open"
+    }
+  },
+  "Me": {
+    "tabsAria": "Progress and shop",
+    "progress": "My progress",
+    "shop": "Shop"
+  },
+  "Binder": {
+    "title": "My Cards",
+    "subtitle": "Every word you’ve been given — turn them over by practising",
+    "loading": "Opening your binder…",
+    "emptyTitle": "Your binder is empty",
+    "emptyBody": "When your teacher shares words with you, they’ll appear here as cards.",
+    "tabsAria": "Lessons",
+    "allLessons": "All",
+    "collected": "{collected} of {total} collected",
+    "collectedAria": "Cards collected",
+    "practiceLesson": "Practice this lesson",
+    "practiceStarting": "Getting ready…",
+    "practiceFailed": "We couldn’t start practice. Please try again.",
+    "noMatches": "No cards match — try a different filter.",
+    "lockedHint": "Practice to turn this card over!",
+    "card": {
+      "locked": "Not yet",
+      "kind": "Word",
+      "openAria": "Open card {word}",
+      "lockedAria": "{word} — not collected yet"
+    },
+    "filters": {
+      "searchPlaceholder": "Search a word, reading or meaning",
+      "searchAria": "Search cards",
+      "sortLabel": "Sort",
+      "sort": {
+        "lesson": "Lesson order",
+        "strongest": "Strongest first",
+        "weakest": "Needs work first",
+        "newest": "Recently practised",
+        "missed": "Most missed",
+        "reading": "A to Z (あいうえお)"
+      },
+      "strengthAria": "How well you know them",
+      "strength": {
+        "all": "All",
+        "strong": "Know it",
+        "learning": "Learning",
+        "new": "Not yet"
+      },
+      "levelAria": "JLPT level",
+      "anyLevel": "Any level",
+      "typeAria": "Words or phrases",
+      "type": {
+        "all": "Words & phrases",
+        "word": "Words",
+        "phrase": "Phrases"
+      }
+    },
+    "detail": {
+      "record": "You got it right {correct} of {total} times",
+      "noRecord": "You haven’t answered this one yet"
+    }
   }
 }

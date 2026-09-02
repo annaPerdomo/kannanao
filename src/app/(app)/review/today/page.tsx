@@ -1,14 +1,18 @@
 'use client';
 import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { ReviewQuest } from '@/components/ReviewQuest';
 import { useAuth } from '@/contexts/AuthContext';
+import { QuestHandoffProvider } from '@/contexts/QuestHandoffContext';
 import { useKanaProgress } from '@/hooks/useKanaProgress';
+import { usePracticeChain } from '@/hooks/usePracticeChain';
+import { DAILY_REVIEW_CAP } from '@/lib/dailyPractice';
+import { CHAIN_PARAM } from '@/lib/practiceChain';
 import { KANA_MAX_DUE, KANA_WAIT_MS, pickQuestKana, planQuest } from '@/lib/quest';
 import { getDueCards } from '@/lib/supabase';
 import { LAYOUT } from '@/theme';
@@ -78,6 +82,10 @@ export default function ReviewTodayPage() {
   const t = useTranslations('Review.todayPage');
   const router = useRouter();
   const { user } = useAuth();
+  const chain = usePracticeChain({ deckId: null, mode: 'review' });
+  // Off the URL, not the chain: the chain resolves after mount, and the fetch
+  // below would run twice with two different sizes.
+  const daily = useSearchParams()?.get(CHAIN_PARAM) === 'daily';
   const { byKana, error: kanaError, record: recordKana } = useKanaProgress();
   const [cards, setCards] = useState<Flashcard[] | null>(null);
   const [kanaChars, setKanaChars] = useState<string[] | null>(null);
@@ -93,7 +101,7 @@ export default function ReviewTodayPage() {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-    getDueCards(user.id)
+    getDueCards(user.id, daily ? DAILY_REVIEW_CAP : undefined)
       .then((due) => {
         if (!cancelled) setCards(due);
       })
@@ -105,7 +113,7 @@ export default function ReviewTodayPage() {
     return () => {
       cancelled = true;
     };
-  }, [user, attempt]);
+  }, [user, attempt, daily]);
 
   // Picked ONCE: a fresh array per render reshuffles the drills mid-node. A
   // failed, slow or irrelevant read means no characters, never a blocked queue.
@@ -127,6 +135,13 @@ export default function ReviewTodayPage() {
     const timer = setTimeout(() => setKanaChars([]), KANA_WAIT_MS);
     return () => clearTimeout(timer);
   }, [byKana, kanaError, kanaChars, cards]);
+
+  const nothingToPlay =
+    cards !== null && kanaChars !== null && planQuest(cards, kanaChars).nodes.length === 0;
+  const skip = nothingToPlay ? chain?.handoff?.onNext : undefined;
+  useEffect(() => {
+    skip?.();
+  }, [skip]);
 
   if (error) {
     return (
@@ -168,17 +183,21 @@ export default function ReviewTodayPage() {
     );
   }
 
-  // Not cards.length: "all caught up" has to mean the characters too.
-  if (planQuest(cards, kanaChars).nodes.length === 0) {
+  if (nothingToPlay) {
+    if (chain) return <Loading message={t('findingReviews')} />;
     return <AllDone onGames={() => router.push('/review')} onHome={() => router.push('/')} />;
   }
 
   return (
-    <ReviewQuest
-      cards={cards}
-      kanaChars={kanaChars}
-      recordKana={recordKana}
-      onExit={() => router.push('/review')}
-    />
+    <QuestHandoffProvider value={chain?.handoff ?? null}>
+      <ReviewQuest
+        key={chain?.attempt ?? 0}
+        cards={cards}
+        kanaChars={kanaChars}
+        recordKana={recordKana}
+        cappedSession={daily && chain !== null}
+        onExit={chain ? chain.abandon : () => router.push('/review')}
+      />
+    </QuestHandoffProvider>
   );
 }

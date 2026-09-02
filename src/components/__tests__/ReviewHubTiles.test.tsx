@@ -4,9 +4,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 const mockPush = vi.fn();
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: mockPush }) }));
-vi.mock('@/hooks/useDueCount', () => ({
-  useDueCount: () => ({ dueCount: 0, loading: false, error: null, retry: vi.fn() }),
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush }),
+  useSearchParams: () => new URLSearchParams('games=1'),
+}));
+vi.mock('@/hooks/useDailyPractice', () => ({
+  useDailyFocus: () => ({
+    dueCount: 0,
+    kanaDue: false,
+    focus: null,
+    empty: true,
+    loading: false,
+    error: null,
+    retry: vi.fn(),
+  }),
 }));
 
 import ReviewHubPage from '@/app/(app)/review/page';

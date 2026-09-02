@@ -12,6 +12,9 @@ import HomeSkeleton from './HomeSkeleton';
 // anonymous visitors — who only ever see the landing page below — never download
 // it. It's only referenced inside ResolvedHome, which renders for signed-in users.
 const Home = dynamic(() => import('@/pages/Home'), { loading: () => <HomeSkeleton /> });
+const LearnerHome = dynamic(() => import('@/components/LearnerHome').then((m) => m.LearnerHome), {
+  loading: () => <HomeSkeleton />,
+});
 
 // Renders the dashboard when the user is authenticated, otherwise the landing
 // page (passed as children so it's always server-rendered for SEO). The home
@@ -25,8 +28,9 @@ export default function HomeWrapper({
   homeDataPromise: Promise<HomeData>;
   children: React.ReactNode;
 }) {
-  const { session } = useAuth();
+  const { session, isMemberAccount } = useAuth();
   if (!session) return <>{children}</>;
+  if (isMemberAccount) return <LearnerHome />;
   return (
     <Suspense fallback={<HomeSkeleton />}>
       <ResolvedHome homeDataPromise={homeDataPromise} />

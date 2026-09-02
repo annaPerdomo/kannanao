@@ -124,3 +124,47 @@ describe('chain state storage', () => {
     expect(readChainState()?.legs).toBeNull();
   });
 });
+
+describe('daily chain', () => {
+  beforeEach(() => window.sessionStorage.clear());
+
+  it('routes the review leg to the today page, but only for a daily session', () => {
+    expect(chainLegHref('', { step: 'review', mode: 'review' }, 'daily')).toBe(
+      '/review/today?chain=daily',
+    );
+    expect(chainLegHref('d1', { step: 'review', mode: 'review' }, 'mixed')).toBeNull();
+  });
+
+  it("uses the leg's own deck over the chain's", () => {
+    expect(chainLegHref('', { step: 'practice', mode: 'match', deckId: 'd2' }, 'daily')).toBe(
+      '/deck/d2/practice/match?chain=daily',
+    );
+  });
+
+  it('round-trips per-leg decks and cards', () => {
+    const legs = [
+      { step: 'review' as const, mode: 'review' as const },
+      { step: 'practice' as const, mode: 'recall' as const, deckId: 'd1', cardIds: ['c1', 'c2'] },
+    ];
+    writeChainState({
+      kind: 'daily',
+      deckId: 'd1',
+      index: 0,
+      legs,
+      cardIds: null,
+      assignmentId: null,
+      requiredMode: null,
+      requiredAccuracy: null,
+      cardCount: 2,
+    });
+    expect(readChainState()).toMatchObject({ kind: 'daily', legs });
+  });
+
+  it('drops a daily chain that lost its plan', () => {
+    window.sessionStorage.setItem(
+      'kannanao:practice-chain',
+      JSON.stringify({ kind: 'daily', deckId: 'd1', index: 0, legs: null }),
+    );
+    expect(readChainState()).toBeNull();
+  });
+});

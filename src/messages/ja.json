@@ -519,15 +519,20 @@
   },
   "Review": {
     "hubPage": {
-      "title": "復習",
-      "subtitle": "今日のことばを練習してゲームであそぼう",
+      "title": "練習",
+      "subtitle": "ワンタップで、今日の練習がはじまるよ",
       "wordsWaiting": "{count, plural, other {#語が待っています}}",
-      "waitingBody": "数分の復習でことばを忘れにくく — ぜんぶクリアしてチェストをゲット 🎁",
-      "startTodaysPractice": "今日の練習をはじめる",
-      "caughtUpTitle": "すべて完了！",
-      "caughtUpBody": "今は復習がありません — 下のゲームであそんで力をキープしよう",
-      "funWaysToPractice": "たのしく練習",
-      "loadError": "復習することばを確認できませんでした。ページを更新してもう一度ためしてください。"
+      "waitingBody": "数分の復習でことばを忘れにくく 🎁",
+      "funWaysToPractice": "おまけのゲーム",
+      "todaysPractice": "今日の練習",
+      "readyTitle": "練習の準備はいい？",
+      "thenDeck": "そのあと {deck}",
+      "fromDeck": "{deck} のことば",
+      "minutesEstimate": "約{min}分",
+      "startPractice": "練習をはじめる",
+      "whatHappens": "フラッシュカード、ゲーム、チャレンジがつづけて出てくるよ。",
+      "nothingYetTitle": "まだ練習することばがありません",
+      "nothingYetBody": "先生からことばが届くか、自分でデッキを作ると、ここから練習できるよ。"
     },
     "questMap": {
       "warmup": "ウォームアップ",
@@ -695,6 +700,14 @@
       "countingDescription": "日本語の助数詞を練習。ものをかぞえて まい・つ・にん の言い方をえらびます。",
       "learnKanaTitle": "かなをまなぶ — 復習 | Tangodachi",
       "learnKanaDescription": "ひらがなとカタカナを、1行ずつゼロから読めるように練習します。"
+    },
+    "startPage": {
+      "preparing": "練習を準備しています…",
+      "nothingYetTitle": "まだ練習することばがありません",
+      "nothingYetBody": "先生からことばが届くか、自分でデッキを作ると、ここから練習できるよ。",
+      "startFailedBody": "練習をはじめられませんでした。もう一度ためしてください。",
+      "tryAgain": "もう一度ためす",
+      "playAGame": "ゲームであそぶ"
     }
   },
   "Practice": {
@@ -1814,7 +1827,10 @@
       "speech": "スピーチ",
       "travel": "トラベル",
       "stats": "記録",
-      "shop": "ショップ"
+      "shop": "ショップ",
+      "practice": "練習",
+      "binder": "カード",
+      "me": "マイページ"
     },
     "userMenu": {
       "signIn": "ログイン",
@@ -1845,13 +1861,14 @@
       "start": "はじめる",
       "completedTitle": "ぼうけんクリア！",
       "completedHearts": "{name}となかよし +{count} ❤️",
-      "nothingDueTitle": "今日の復習はありません。",
-      "nothingDueBody": "よくできました！ほかのこともやってみる？",
+      "nothingDueTitle": "{name}と練習しよう！",
+      "nothingDueBody": "フラッシュカード、ゲーム、チャレンジをおまかせで",
       "playGame": "ゲームであそぶ",
-      "practiceDeck": "デッキで練習",
       "welcomeBack": "おかえりなさい！{name}がつづきを待っていたよ。",
       "daysThisWeek": "{count, plural, other {今週は#日}}勉強したよ",
-      "weekDotsAria": "今週の勉強した日、月曜日から日曜日"
+      "weekDotsAria": "今週の勉強した日、月曜日から日曜日",
+      "completedBody": "今日もよくがんばったね。もっとやってみる？",
+      "practiceMore": "もっと練習"
     },
     "welcomeBanner": {
       "openShopAriaLabel": "ショップを開く",
@@ -5073,7 +5090,8 @@
     "stepName": {
       "warmup": "ウォームアップ",
       "practice": "れんしゅう",
-      "goal": "力をみせよう"
+      "goal": "力をみせよう",
+      "review": "今日の復習"
     },
     "nextStep": "次: {step}",
     "seeHowYouDid": "けっかを見る",
@@ -5087,6 +5105,84 @@
     "backHome": "ホームにもどる",
     "checkFailed": "いま目標をかくにんできませんでした。",
     "checkAgain": "もう一度かくにん",
-    "stopForNow": "ここでやめる"
+    "stopForNow": "ここでやめる",
+    "finishPractice": "ぜんぶ完了！ホームへ"
+  },
+  "LearnerHome": {
+    "homeworkTitle": "📬 先生から",
+    "homeworkDone": "ぜんぶ完了！先生からの課題はありません。すごい！",
+    "leaderboardTitle": "🏆 今週",
+    "extraGames": "おまけのゲーム",
+    "lesson": {
+      "start": "はじめる",
+      "bestSoFar": "いまのベスト {best}%",
+      "goalProgressAria": "目標までの進み具合",
+      "pastDue": "期限をすぎたけど、まだできるよ！"
+    },
+    "collection": {
+      "title": "カードコレクション",
+      "summary": "{total}枚中 {collected}枚 ゲット",
+      "gold": "{count, plural, other {金カード #枚}}",
+      "open": "ひらく"
+    }
+  },
+  "Me": {
+    "tabsAria": "記録とショップ",
+    "progress": "記録",
+    "shop": "ショップ"
+  },
+  "Binder": {
+    "title": "カードコレクション",
+    "subtitle": "もらったことばはぜんぶここに。練習するとカードがめくれるよ",
+    "loading": "バインダーをひらいています…",
+    "emptyTitle": "バインダーはまだ空っぽ",
+    "emptyBody": "先生からことばが届くと、ここにカードとしてならぶよ。",
+    "tabsAria": "レッスン",
+    "allLessons": "すべて",
+    "collected": "{total}枚中 {collected}枚 ゲット",
+    "collectedAria": "集めたカード",
+    "practiceLesson": "このレッスンを練習",
+    "practiceStarting": "準備中…",
+    "practiceFailed": "練習をはじめられませんでした。もう一度ためしてください。",
+    "noMatches": "あてはまるカードがありません。ほかの条件でさがしてみよう。",
+    "lockedHint": "練習するとカードがめくれるよ！",
+    "card": {
+      "locked": "まだ",
+      "kind": "ことば",
+      "openAria": "カード「{word}」をひらく",
+      "lockedAria": "{word} — まだゲットしていません"
+    },
+    "filters": {
+      "searchPlaceholder": "ことば・よみ・意味でさがす",
+      "searchAria": "カードをさがす",
+      "sortLabel": "ならびかえ",
+      "sort": {
+        "lesson": "レッスン順",
+        "strongest": "得意な順",
+        "weakest": "苦手な順",
+        "newest": "最近練習した順",
+        "missed": "まちがえた順",
+        "reading": "あいうえお順"
+      },
+      "strengthAria": "おぼえ具合",
+      "strength": {
+        "all": "すべて",
+        "strong": "ばっちり",
+        "learning": "練習中",
+        "new": "まだ"
+      },
+      "levelAria": "JLPTレベル",
+      "anyLevel": "すべてのレベル",
+      "typeAria": "ことばとフレーズ",
+      "type": {
+        "all": "ことば＆フレーズ",
+        "word": "ことば",
+        "phrase": "フレーズ"
+      }
+    },
+    "detail": {
+      "record": "{total}回中 {correct}回 正解",
+      "noRecord": "まだ答えていません"
+    }
   }
 }
