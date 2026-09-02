@@ -5,6 +5,7 @@ export interface KanaMastery {
   correctCount: number;
   wrongCount: number;
   nextReviewAt?: string | null;
+  lastReviewedAt?: string | null;
   /** Current SRS schedule, carried so an optimistic write can advance it locally. */
   intervalDays?: number;
   ease?: number;
@@ -14,10 +15,16 @@ export type KanaProgressMap = Map<string, KanaMastery>;
 
 export type KanaStars = 0 | 1 | 2 | 3;
 
-/** Correct answers needed for the 1st, 2nd and 3rd star. */
-export const STAR_THRESHOLDS = [1, 3, 5] as const;
+export const STRENGTH_BANDS = [0.4, 0.6, 0.8] as const;
 
 export const MASTERED_STARS = 3;
+
+const DAY_MS = 86_400_000;
+
+const MIN_HALF_LIFE_DAYS = 0.5;
+const LAPSE_HALF_LIFE_CAP_DAYS = 3;
+
+const FULL_EVIDENCE_ANSWERS = 6;
 
 /** Sets of the first track a learner must star before the second track opens. */
 export const TRACK_UNLOCK_SETS = 3;
@@ -31,18 +38,57 @@ export interface KanaIsland {
   dueCount: number;
 }
 
-// The last star also needs more right than wrong: without that, guessing
-// through a row for long enough reads as mastered.
-export function kanaStars(progress?: KanaMastery): KanaStars {
-  if (!progress) return 0;
-  const { correctCount, wrongCount } = progress;
-  if (correctCount < STAR_THRESHOLDS[0]) return 0;
-  if (correctCount < STAR_THRESHOLDS[1]) return 1;
-  if (correctCount < STAR_THRESHOLDS[2] || correctCount <= wrongCount) return 2;
-  return 3;
+export function isUnseen(progress?: KanaMastery): boolean {
+  return !progress || progress.correctCount + progress.wrongCount <= 0;
 }
 
-/** The "learner reads this character" bar. No app caller yet — read by furigana gating. */
+export function totalAnswers(progress?: KanaMastery): number {
+  return progress ? progress.correctCount + progress.wrongCount : 0;
+}
+
+/**
+ * What the learner has earned on this character, 0..1: lifetime accuracy,
+ * discounted while the evidence is thin. Never falls as time passes.
+ */
+export function earnedStrength(progress?: KanaMastery): number {
+  if (!progress || isUnseen(progress)) return 0;
+  const answers = totalAnswers(progress);
+  const evidence = 0.5 + 0.5 * Math.min(1, answers / FULL_EVIDENCE_ANSWERS);
+  return Math.min(1, (progress.correctCount / answers) * evidence);
+}
+
+function halfLifeDays(progress: KanaMastery): number {
+  // A lapsed character's interval is 0, so its answer history holds the
+  // half-life up: otherwise one slip decays a known character overnight.
+  if (progress.intervalDays && progress.intervalDays > 0) return progress.intervalDays;
+  return Math.max(MIN_HALF_LIFE_DAYS, Math.min(LAPSE_HALF_LIFE_CAP_DAYS, progress.correctCount));
+}
+
+/**
+ * How likely the learner is to read this right now, 0..1 — earned strength
+ * decayed since the last review. Drives practice order, never unlocking.
+ */
+export function kanaStrength(progress: KanaMastery | undefined, now: Date = new Date()): number {
+  const earned = earnedStrength(progress);
+  if (!progress || earned <= 0) return 0;
+  const elapsedDays = progress.lastReviewedAt
+    ? Math.max(0, (now.getTime() - new Date(progress.lastReviewedAt).getTime()) / DAY_MS)
+    : 0;
+  const retention = Math.pow(0.5, elapsedDays / halfLifeDays(progress));
+  return Math.min(1, Math.max(0, earned * retention));
+}
+
+// Stars gate island and track unlocking, so they read earned strength:
+// decaying them takes the map back off a learner returning from a week away.
+export function kanaStars(progress?: KanaMastery): KanaStars {
+  const strength = earnedStrength(progress);
+  if (strength >= STRENGTH_BANDS[2]) return 3;
+  if (strength >= STRENGTH_BANDS[1]) return 2;
+  if (strength >= STRENGTH_BANDS[0]) return 1;
+  return 0;
+}
+
+/** The "learner reads this character" bar — also reading-prompts' "the group knows this kana". */
 export function isKanaKnown(progress?: KanaMastery): boolean {
   return kanaStars(progress) >= MASTERED_STARS;
 }
@@ -128,11 +174,16 @@ export function drillChars(
   return set.entries
     .map((entry, index) => {
       const progress = byKana.get(entry.kana);
-      return { kana: entry.kana, due: isDue(progress, now), stars: kanaStars(progress), index };
+      return {
+        kana: entry.kana,
+        due: isDue(progress, now),
+        strength: kanaStrength(progress, now),
+        index,
+      };
     })
     .sort((a, b) => {
       if (a.due !== b.due) return a.due ? -1 : 1;
-      if (a.stars !== b.stars) return a.stars - b.stars;
+      if (a.strength !== b.strength) return a.strength - b.strength;
       return a.index - b.index;
     })
     .map((c) => c.kana);

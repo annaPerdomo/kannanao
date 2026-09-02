@@ -1,22 +1,32 @@
 import { describe, expect, it } from 'vitest';
 
-import { getSet, HIRAGANA_SETS, KATAKANA_SETS } from '@/lib/kanaCurriculum';
+import { allKana, getSet, HIRAGANA_SETS, KATAKANA_SETS } from '@/lib/kanaCurriculum';
 import {
   buildIslands,
   drillChars,
+  earnedStrength,
   isKanaKnown,
   isTrackUnlocked,
+  isUnseen,
   type KanaMastery,
   kanaProgressMap,
   kanaStars,
+  kanaStrength,
   setStars,
+  STRENGTH_BANDS,
   TRACK_UNLOCK_SETS,
   trackUnlockProgress,
   unlockedKana,
 } from '@/lib/kanaProficiency';
 
-const YESTERDAY = new Date(Date.now() - 86_400_000).toISOString();
-const TOMORROW = new Date(Date.now() + 86_400_000).toISOString();
+const DAY_MS = 86_400_000;
+const NOW = new Date('2026-09-01T09:00:00.000Z');
+const YESTERDAY = new Date(Date.now() - DAY_MS).toISOString();
+const TOMORROW = new Date(Date.now() + DAY_MS).toISOString();
+
+function daysAgo(days: number): string {
+  return new Date(NOW.getTime() - days * DAY_MS).toISOString();
+}
 
 function mastery(correct: number, wrong = 0, nextReviewAt: string | null = TOMORROW): KanaMastery {
   return { correctCount: correct, wrongCount: wrong, nextReviewAt };
@@ -28,30 +38,116 @@ function progressFor(setIds: string[], level: KanaMastery) {
   );
 }
 
+describe('kanaStrength', () => {
+  it('should read a character with no row at all as unseen, not merely weak', () => {
+    expect(kanaStrength(undefined)).toBe(0);
+    expect(isUnseen(undefined)).toBe(true);
+    expect(isUnseen(mastery(0, 0))).toBe(true);
+    expect(isUnseen(mastery(0, 1))).toBe(false);
+  });
+
+  it('should decay with the SRS interval as the half-life', () => {
+    const fresh = { ...mastery(6), lastReviewedAt: NOW.toISOString(), intervalDays: 1 };
+    const stale = { ...fresh, lastReviewedAt: daysAgo(1) };
+    const older = { ...fresh, lastReviewedAt: daysAgo(3) };
+    expect(kanaStrength(fresh, NOW)).toBeCloseTo(1, 5);
+    expect(kanaStrength(stale, NOW)).toBeCloseTo(0.5, 5);
+    expect(kanaStrength(older, NOW)).toBeCloseTo(0.125, 5);
+  });
+
+  it('should keep a long-interval character strong over the same elapsed days', () => {
+    const long = { ...mastery(6), lastReviewedAt: daysAgo(3), intervalDays: 30 };
+    const short = { ...long, intervalDays: 1 };
+    expect(kanaStrength(long, NOW)).toBeGreaterThan(0.9);
+    expect(kanaStrength(long, NOW)).toBeGreaterThan(kanaStrength(short, NOW));
+  });
+
+  it('should not divide by a zero interval when the last answer was wrong', () => {
+    const missed = { ...mastery(3, 3), lastReviewedAt: daysAgo(0.5), intervalDays: 0 };
+    expect(kanaStrength(missed, NOW)).toBeGreaterThan(0);
+    expect(kanaStrength(missed, NOW)).toBeLessThan(earnedStrength(missed));
+  });
+
+  it('should not let one miss erase a well-known character overnight', () => {
+    const slipped = { ...mastery(12, 1), lastReviewedAt: daysAgo(1), intervalDays: 0 };
+    expect(kanaStrength(slipped, NOW)).toBeGreaterThan(STRENGTH_BANDS[1]);
+  });
+
+  it('should scale by lifetime accuracy so a coin-flip character never reads as solid', () => {
+    expect(kanaStrength(mastery(20, 20), NOW)).toBeLessThan(STRENGTH_BANDS[1]);
+    expect(kanaStrength(mastery(20, 0), NOW)).toBeGreaterThan(STRENGTH_BANDS[2]);
+  });
+
+  it('should never lower strength when another correct answer arrives', () => {
+    let previous = 0;
+    for (let correct = 1; correct <= 10; correct += 1) {
+      const strength = kanaStrength(mastery(correct, 2), NOW);
+      expect(strength).toBeGreaterThanOrEqual(previous);
+      previous = strength;
+    }
+  });
+
+  it('should never raise strength as more time passes', () => {
+    const base = { ...mastery(6), lastReviewedAt: NOW.toISOString(), intervalDays: 5 };
+    let previous = Infinity;
+    for (const days of [0, 1, 2, 5, 10, 40]) {
+      const strength = kanaStrength({ ...base, lastReviewedAt: daysAgo(days) }, NOW);
+      expect(strength).toBeLessThanOrEqual(previous);
+      previous = strength;
+    }
+  });
+});
+
 describe('kanaStars', () => {
   it('should give no stars to a character never answered', () => {
     expect(kanaStars(undefined)).toBe(0);
     expect(kanaStars(mastery(0))).toBe(0);
   });
 
-  it('should step through the thresholds at 1, 3 and 5 correct', () => {
+  it('should climb through the bands as answers accumulate', () => {
     expect(kanaStars(mastery(1))).toBe(1);
-    expect(kanaStars(mastery(2))).toBe(1);
     expect(kanaStars(mastery(3))).toBe(2);
-    expect(kanaStars(mastery(4))).toBe(2);
     expect(kanaStars(mastery(5))).toBe(3);
   });
 
+  it('should sit each band exactly on its threshold', () => {
+    expect(kanaStars(mastery(2, 4))).toBe(0);
+    expect(kanaStars(mastery(4, 6))).toBe(1);
+    expect(kanaStars(mastery(9, 6))).toBe(2);
+    expect(kanaStars(mastery(12, 3))).toBe(3);
+  });
+
+  it('should withhold the last star from one lucky answer that is not yet due', () => {
+    expect(kanaStars(mastery(1))).toBe(1);
+    expect(kanaStars(mastery(2))).toBe(2);
+  });
+
   it('should withhold the last star from a guesser with as many wrongs as rights', () => {
-    expect(kanaStars(mastery(9, 9))).toBe(2);
-    expect(kanaStars(mastery(9, 12))).toBe(2);
-    expect(kanaStars(mastery(9, 8))).toBe(3);
+    expect(kanaStars(mastery(9, 9))).toBe(1);
+    expect(kanaStars(mastery(9, 12))).toBe(1);
+    expect(kanaStars(mastery(9, 8))).toBe(1);
+  });
+
+  it('should keep every star through a break, however long', () => {
+    const mastered = { ...mastery(8), lastReviewedAt: NOW.toISOString(), intervalDays: 2 };
+    expect(kanaStars(mastered)).toBe(3);
+    expect(kanaStars({ ...mastered, lastReviewedAt: daysAgo(10) })).toBe(3);
+    expect(kanaStrength({ ...mastered, lastReviewedAt: daysAgo(10) }, NOW)).toBeLessThan(
+      STRENGTH_BANDS[0],
+    );
   });
 
   it('should treat three stars as knowing the character', () => {
     expect(isKanaKnown(mastery(5, 1))).toBe(true);
     expect(isKanaKnown(mastery(5, 5))).toBe(false);
     expect(isKanaKnown(undefined)).toBe(false);
+  });
+
+  it('should hold the reads-it bar at four-fifths accuracy once evidence is in', () => {
+    expect(isKanaKnown(mastery(10, 3))).toBe(false);
+    expect(isKanaKnown(mastery(12, 3))).toBe(true);
+    expect(isKanaKnown(mastery(4))).toBe(true);
+    expect(isKanaKnown(mastery(3))).toBe(false);
   });
 });
 
@@ -67,7 +163,7 @@ describe('setStars', () => {
 
   it('should award three stars only when every character clears the bar', () => {
     expect(setStars('hira-a', progressFor(['hira-a'], mastery(5)))).toBe(3);
-    expect(setStars('hira-a', progressFor(['hira-a'], mastery(5, 5)))).toBe(2);
+    expect(setStars('hira-a', progressFor(['hira-a'], mastery(5, 5)))).toBe(1);
   });
 
   it('should return no stars for an unknown set id', () => {
@@ -106,6 +202,18 @@ describe('buildIslands', () => {
       'available',
       'locked',
     ]);
+  });
+
+  it('should keep an opened row open after a week away, only marking it due', () => {
+    const stale = {
+      ...mastery(6, 0, daysAgo(1)),
+      lastReviewedAt: daysAgo(7),
+      intervalDays: 1,
+    };
+    const islands = buildIslands('hiragana', progressFor(['hira-a'], stale), NOW);
+    expect(islands[0].status).toBe('mastered');
+    expect(islands[1].status).toBe('next');
+    expect(islands[0].dueCount).toBe(5);
   });
 
   it('should count characters whose spaced review has come around', () => {

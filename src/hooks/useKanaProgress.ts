@@ -81,6 +81,7 @@ export function useKanaProgress(): {
         correctCount: (before?.correctCount ?? 0) + (correct ? 1 : 0),
         wrongCount: (before?.wrongCount ?? 0) + (correct ? 0 : 1),
         nextReviewAt: schedule.nextReviewAt.toISOString(),
+        lastReviewedAt: new Date().toISOString(),
         intervalDays: schedule.intervalDays,
         ease: schedule.ease,
       });
