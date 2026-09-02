@@ -25,7 +25,7 @@ export interface PrintableLabels {
   kanaContextual?: Partial<Record<KanaLabelKey, string>>;
 }
 
-function escapeHtml(text: string): string {
+export function escapeHtml(text: string): string {
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -49,7 +49,8 @@ function wordCellHtml(word: string, reading: string): string {
   return marked ? furiganaToRubyHtml(marked) : escapeHtml(word);
 }
 
-const PAGE_CSS = `
+// Black on white, no background floods: a school printer may have only grey toner.
+export const PRINT_BASE_CSS = `
   * { box-sizing: border-box; }
   body {
     font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
@@ -58,6 +59,10 @@ const PAGE_CSS = `
     padding: 24px;
   }
   @page { margin: 14mm; }
+`;
+
+const PAGE_CSS = `
+  ${PRINT_BASE_CSS}
   section.week { page-break-after: always; }
   section.warmup { page-break-after: always; }
   section.week:last-child { page-break-after: auto; }
