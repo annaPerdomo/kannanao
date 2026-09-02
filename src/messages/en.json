@@ -964,6 +964,15 @@
     }
   },
   "KanaJourney": {
+    "check": {
+      "title": "Quick check",
+      "howTo": "Tap the sound each character makes. Go fast — we'll double-check as you go.",
+      "question": "Which sound is this?",
+      "solid": "{count, plural, one {# character looks solid} other {# characters look solid}}",
+      "workOn": "We'll start with {kana}, and double-check the rest as you go.",
+      "workOnNothing": "Nothing looks shaky — we'll double-check as you go.",
+      "startReview": "Start reviewing"
+    },
     "contextual": {
       "littleTsu": "little つ",
       "longSound": "long sound"
@@ -995,6 +1004,8 @@
     },
     "journey": {
       "contextualBlock": "Sound changers",
+      "check": "Quick check",
+      "checkHint": "Already read some of these? The quick check takes a minute.",
       "title": "Learn Kana",
       "subtitle": "Tap any character to practise it.",
       "loading": "Opening your chart…",

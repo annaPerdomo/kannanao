@@ -1,14 +1,24 @@
 import { describe, expect, it } from 'vitest';
 
-import { allKana, getSet } from '@/lib/kanaCurriculum';
 import {
+  allKana,
+  getKanaEntry,
+  getSet,
+  isContextualKana,
+  kanaDifficulty,
+} from '@/lib/kanaCurriculum';
+import {
+  CHECK_CREDIT_PER_HIT,
   difficultyWeight,
   drillChars,
   earnedStrength,
+  gradeKanaCheck,
   isKanaKnown,
   isNewLearner,
   isUnseen,
+  KANA_CHECK_SIZE,
   type KanaMastery,
+  type KanaProgressMap,
   kanaProgressMap,
   kanaStars,
   kanaStrength,
@@ -16,6 +26,7 @@ import {
   MAX_UNSEEN_PER_QUEUE,
   needsReviewCount,
   NEW_LEARNER_MAX_SEEN,
+  pickKanaCheck,
   pickReviewQueue,
   setStars,
   STRENGTH_BANDS,
@@ -404,5 +415,108 @@ describe('isNewLearner', () => {
 
   it('should not count a character that only has an empty row', () => {
     expect(isNewLearner(progressFor(['hira-a', 'hira-ka'], mastery(0, 0)))).toBe(true);
+  });
+});
+
+describe('pickKanaCheck', () => {
+  it("should ask a minute's worth of questions, not the whole chart", () => {
+    expect(pickKanaCheck()).toHaveLength(KANA_CHECK_SIZE);
+    expect(pickKanaCheck(10)).toHaveLength(10);
+    expect(pickKanaCheck(0)).toEqual([]);
+  });
+
+  it('should never ask about a character that has no sound of its own', () => {
+    expect(pickKanaCheck(KANA_CHECK_SIZE).some(isContextualKana)).toBe(false);
+    expect(pickKanaCheck(500).some(isContextualKana)).toBe(false);
+  });
+
+  it('should sample both scripts and all three kinds of row', () => {
+    const sample = pickKanaCheck();
+    const kinds = new Set(sample.map((k) => getSet(getKanaEntry(k)!.setId)!.kind));
+    const tracks = new Set(sample.map((k) => getKanaEntry(k)!.track));
+    expect([...tracks].sort()).toEqual(['hiragana', 'katakana']);
+    expect([...kinds].sort()).toEqual(['base', 'combo', 'marked']);
+  });
+
+  it('should spread the questions over rows rather than exhaust one', () => {
+    const rows = pickKanaCheck().map((k) => getKanaEntry(k)!.setId);
+    expect(new Set(rows).size).toBe(rows.length);
+  });
+
+  it("should spend a row's one question on its hardest character — き, not か", () => {
+    const sample = pickKanaCheck();
+    expect(sample).toContain('き');
+    expect(sample).not.toContain('か');
+  });
+
+  it('should never ask the same character twice, and never run past the chart', () => {
+    const everything = pickKanaCheck(500);
+    expect(new Set(everything).size).toBe(everything.length);
+    expect(everything.length).toBe(allKana().filter((k) => !isContextualKana(k)).length);
+  });
+
+  it('should give the same questions every run, so a check is reproducible', () => {
+    expect(pickKanaCheck()).toEqual(pickKanaCheck());
+  });
+});
+
+describe('gradeKanaCheck', () => {
+  const empty: KanaProgressMap = new Map();
+
+  it('should record the character she was actually asked', () => {
+    expect(gradeKanaCheck('き', true, empty).correct[0]).toBe('き');
+    expect(gradeKanaCheck('き', false, empty)).toEqual({ correct: [], wrong: ['き'] });
+  });
+
+  it('should credit a few of the row she just read, never the whole row', () => {
+    const { correct } = gradeKanaCheck('き', true, empty);
+    expect(correct.length).toBe(1 + CHECK_CREDIT_PER_HIT);
+    expect(getSet('hira-ka')!.entries.map((e) => e.kana)).toEqual(
+      expect.arrayContaining(correct.slice(1)),
+    );
+  });
+
+  it('should credit nothing at all for a miss', () => {
+    expect(gradeKanaCheck('き', false, empty).correct).toEqual([]);
+  });
+
+  it('should never credit a character harder than the one she read', () => {
+    const { correct } = gradeKanaCheck('か', true, empty);
+    expect(correct).not.toContain('き');
+    expect(correct.every((k) => kanaDifficulty(k) <= kanaDifficulty('か'))).toBe(true);
+  });
+
+  it('should leave real evidence alone rather than seed over it', () => {
+    const answered = kanaProgressMap(
+      getSet('hira-ka')!
+        .entries.filter((e) => e.kana !== 'き')
+        .map((e) => ({ kana: e.kana, correctCount: 1, wrongCount: 3 })),
+    );
+    expect(gradeKanaCheck('き', true, answered).correct).toEqual(['き']);
+  });
+
+  it('should never claim a character she was not shown is known', () => {
+    const byKana: KanaProgressMap = new Map();
+    for (const kana of gradeKanaCheck('き', true, byKana).correct) {
+      byKana.set(kana, {
+        correctCount: 1,
+        wrongCount: 0,
+        lastReviewedAt: new Date().toISOString(),
+      });
+    }
+    for (const progress of byKana.values()) {
+      expect(isKanaKnown(progress)).toBe(false);
+      expect(kanaStrengthState(progress)).toBe('learning');
+    }
+  });
+
+  it('should leave a missed character looking new, not failing', () => {
+    const missed: KanaMastery = { correctCount: 0, wrongCount: 1, intervalDays: 0 };
+    expect(kanaStars(missed)).toBe(0);
+    expect(kanaStrengthState(missed)).toBe('learning');
+  });
+
+  it('should shrug at a character that is in no row at all', () => {
+    expect(gradeKanaCheck('新', true, empty).correct).toEqual(['新']);
   });
 });

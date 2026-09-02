@@ -1,4 +1,13 @@
-import { allKana, getSet, kanaDifficulty, type KanaTrack } from '@/lib/kanaCurriculum';
+import {
+  allKana,
+  getKanaEntry,
+  getSet,
+  kanaDifficulty,
+  type KanaSet,
+  type KanaSetKind,
+  type KanaTrack,
+  setsForTrack,
+} from '@/lib/kanaCurriculum';
 
 /** The part of a `kana_progress` row proficiency is judged on. */
 export interface KanaMastery {
@@ -271,4 +280,100 @@ export function drillChars(
       return a.index - b.index;
     })
     .map((c) => c.kana);
+}
+
+export const KANA_CHECK_SIZE = 24;
+
+/** How many of its row's easier characters one right answer may credit. */
+export const CHECK_CREDIT_PER_HIT = 2;
+
+const CHECK_KINDS: KanaSetKind[] = ['base', 'marked', 'combo'];
+
+const CHECK_TRACKS: KanaTrack[] = ['hiragana', 'katakana'];
+
+// Rows round-robin, hardest character first: one question per row generalises
+// further than five questions in the あ row, and き tells us more than あ.
+function bucketOrder(sets: KanaSet[]): string[] {
+  const rows = sets.map((set) =>
+    [...set.entries]
+      .sort((a, b) => kanaDifficulty(b.kana) - kanaDifficulty(a.kana) || a.order - b.order)
+      .map((entry) => entry.kana),
+  );
+  const depth = rows.reduce((max, row) => Math.max(max, row.length), 0);
+  const out: string[] = [];
+  for (let i = 0; i < depth; i += 1) {
+    for (const row of rows) if (row[i]) out.push(row[i]);
+  }
+  return out;
+}
+
+function shareOut(buckets: string[][], size: number): number[] {
+  const total = buckets.reduce((n, bucket) => n + bucket.length, 0);
+  const wanted = Math.min(size, total);
+  const exact = buckets.map((bucket) => (bucket.length / total) * wanted);
+  const take = exact.map(Math.floor);
+  const order = exact
+    .map((value, i) => ({ i, frac: value - Math.floor(value) }))
+    .sort((a, b) => b.frac - a.frac || a.i - b.i);
+
+  let left = wanted - take.reduce((n, t) => n + t, 0);
+  for (const { i } of order) {
+    if (left <= 0) break;
+    if (take[i] >= buckets[i].length) continue;
+    take[i] += 1;
+    left -= 1;
+  }
+  return take;
+}
+
+export function pickKanaCheck(size: number = KANA_CHECK_SIZE): string[] {
+  if (size <= 0) return [];
+  const buckets = CHECK_TRACKS.flatMap((track) =>
+    CHECK_KINDS.map((kind) => setsForTrack(track).filter((set) => set.kind === kind)),
+  )
+    .map(bucketOrder)
+    .filter((bucket) => bucket.length > 0);
+
+  const take = shareOut(buckets, Math.floor(size));
+  const picked = buckets.map((bucket, i) => bucket.slice(0, take[i]));
+  const depth = picked.reduce((max, bucket) => Math.max(max, bucket.length), 0);
+
+  const out: string[] = [];
+  for (let i = 0; i < depth; i += 1) {
+    for (const bucket of picked) if (bucket[i]) out.push(bucket[i]);
+  }
+  return out;
+}
+
+export interface KanaCheckGrade {
+  /** Record each as one correct answer; the character she was asked is first. */
+  correct: string[];
+  wrong: string[];
+}
+
+/**
+ * A hit also credits up to `CHECK_CREDIT_PER_HIT` easier characters of its row
+ * that have no history — one answer each, never the three stars of "reads it".
+ */
+export function gradeKanaCheck(
+  kana: string,
+  correct: boolean,
+  byKana: KanaProgressMap,
+): KanaCheckGrade {
+  if (!correct) return { correct: [], wrong: [kana] };
+
+  const entry = getKanaEntry(kana);
+  const row = entry ? getSet(entry.setId)?.entries : undefined;
+  const credited = (row ?? [])
+    .filter(
+      (mate) =>
+        mate.kana !== kana &&
+        isUnseen(byKana.get(mate.kana)) &&
+        kanaDifficulty(mate.kana) <= kanaDifficulty(kana),
+    )
+    .sort((a, b) => kanaDifficulty(a.kana) - kanaDifficulty(b.kana) || a.order - b.order)
+    .slice(0, CHECK_CREDIT_PER_HIT)
+    .map((mate) => mate.kana);
+
+  return { correct: [kana, ...credited], wrong: [] };
 }

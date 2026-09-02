@@ -20,6 +20,14 @@ const progress = {
 };
 vi.mock('@/hooks/useKanaProgress', () => ({ useKanaProgress: () => progress }));
 
+vi.mock('../KanaCheck', () => ({
+  KanaCheck: ({ onReview }: { onReview: () => void }) => (
+    <button type="button" onClick={onReview}>
+      checking
+    </button>
+  ),
+}));
+
 vi.mock('../KanaSession', () => ({
   KanaSession: ({ setId, kana, chars }: { setId?: string; kana?: string; chars?: string[] }) => (
     <div>playing {setId ?? kana ?? chars?.join(' ')}</div>
@@ -88,6 +96,33 @@ describe('KanaJourneyScreen', () => {
     renderWithProviders(<KanaJourneyScreen />);
     expect(screen.queryByText(/^playing /)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^あ —/ })).toBeInTheDocument();
+  });
+
+  it('should offer the quick check to a learner the app knows nothing about', () => {
+    renderWithProviders(<KanaJourneyScreen />);
+    expect(
+      screen.getByText('Already read some of these? The quick check takes a minute.'),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Quick check' }));
+    expect(screen.getByRole('button', { name: 'checking' })).toBeInTheDocument();
+  });
+
+  it('should keep the check on offer for someone back after a summer', () => {
+    progress.byKana = new Map(
+      [...'あいうえおかきくけこ'].map((kana) => [kana, { correctCount: 9, wrongCount: 0 }]),
+    );
+    renderWithProviders(<KanaJourneyScreen />);
+    expect(
+      screen.queryByText('Already read some of these? The quick check takes a minute.'),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Quick check' })).toBeInTheDocument();
+  });
+
+  it('should hand the learner from the check straight into a review', () => {
+    renderWithProviders(<KanaJourneyScreen />);
+    fireEvent.click(screen.getByRole('button', { name: 'Quick check' }));
+    fireEvent.click(screen.getByRole('button', { name: 'checking' }));
+    expect(screen.getByText(/^playing /)).toBeInTheDocument();
   });
 
   it('should go back to the review hub from the header', () => {

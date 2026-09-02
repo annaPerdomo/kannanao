@@ -13,6 +13,7 @@ import { pickReviewQueue, REVIEW_SESSION_SIZE } from '@/lib/kanaProficiency';
 import { LAYOUT } from '@/theme';
 
 import { KanaChart } from './KanaChart';
+import { KanaCheck } from './KanaCheck';
 import { KanaSession, type KanaSessionRequest } from './KanaSession';
 import { ReviewButton } from './ReviewButton';
 
@@ -28,6 +29,7 @@ export function KanaJourneyScreen() {
   const [session, setSession] = useState<KanaSessionRequest | null>(
     linkedSet ? { setId: linkedSet } : null,
   );
+  const [checking, setChecking] = useState(false);
 
   const exitSession = useCallback(() => setSession(null), []);
   const playRow = useCallback((setId: string) => setSession({ setId }), []);
@@ -42,6 +44,23 @@ export function KanaJourneyScreen() {
       }),
     });
   }, [byKana]);
+
+  const startCheck = useCallback(() => setChecking(true), []);
+  const finishCheck = useCallback(() => {
+    setChecking(false);
+    review();
+  }, [review]);
+
+  if (checking && byKana) {
+    return (
+      <KanaCheck
+        byKana={byKana}
+        record={record}
+        onExit={() => setChecking(false)}
+        onReview={finishCheck}
+      />
+    );
+  }
 
   if (session && byKana) {
     return (
@@ -84,7 +103,7 @@ export function KanaJourneyScreen() {
         <DataErrorState error={error} onRetry={retry} />
       ) : (
         <>
-          <ReviewButton byKana={byKana} onReview={review} />
+          <ReviewButton byKana={byKana} onReview={review} onCheck={startCheck} />
           <KanaChart
             track={track}
             byKana={byKana}

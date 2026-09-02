@@ -43,9 +43,10 @@ function Legend() {
 interface ReviewButtonProps {
   byKana: KanaProgressMap;
   onReview: () => void;
+  onCheck: () => void;
 }
 
-export function ReviewButton({ byKana, onReview }: ReviewButtonProps) {
+export function ReviewButton({ byKana, onReview, onCheck }: ReviewButtonProps) {
   const t = useTranslations('KanaJourney.journey');
   const count = needsReviewCount(byKana);
   const beginner = isNewLearner(byKana);
@@ -67,6 +68,17 @@ export function ReviewButton({ byKana, onReview }: ReviewButtonProps) {
           </Typography>
         )}
       </Box>
+      <Stack spacing={0.5} sx={{ alignItems: 'center' }}>
+        <Button variant={beginner ? 'outlined' : 'text'} size="small" onClick={onCheck}>
+          {t('check')}
+        </Button>
+        {beginner && (
+          <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
+            {t('checkHint')}
+          </Typography>
+        )}
+      </Stack>
+
       <Legend />
     </Stack>
   );

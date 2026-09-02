@@ -964,6 +964,15 @@
     }
   },
   "KanaJourney": {
+    "check": {
+      "title": "かんたんチェック",
+      "howTo": "文字の おとを タップしよう。はやくても だいじょうぶ。",
+      "question": "この文字の音は？",
+      "solid": "{count}文字は ばっちりそう",
+      "workOn": "まずは {kana} から。ほかも れんしゅうしながら たしかめよう。",
+      "workOnNothing": "あぶない文字は なさそう。れんしゅうしながら たしかめよう。",
+      "startReview": "ふくしゅうを はじめる"
+    },
     "contextual": {
       "littleTsu": "ちいさい つ",
       "longSound": "のばす おと"
@@ -995,6 +1004,8 @@
     },
     "journey": {
       "contextualBlock": "おとを かえる もじ",
+      "check": "かんたんチェック",
+      "checkHint": "もう よめる もじが ある？ チェックは 1ぷんだよ。",
       "title": "かなをまなぶ",
       "subtitle": "文字をタップして れんしゅうしよう。",
       "loading": "ひょうを ひらいています…",
