@@ -9,6 +9,7 @@ import {
   HIRAGANA_SETS,
   KANA_SETS,
   kanaBefore,
+  kanaDifficulty,
   kanaSetForChar,
   type KanaTrack,
   KATAKANA_SETS,
@@ -272,5 +273,30 @@ describe('orderKanaSets', () => {
 
   it('should ignore an id that names no row', () => {
     expect(orderKanaSets(['nope']).length).toBe(0);
+  });
+});
+
+describe('kanaDifficulty', () => {
+  it('should rank plain rows below marked rows below combination sounds', () => {
+    expect(kanaDifficulty('か')).toBeLessThan(kanaDifficulty('が'));
+    expect(kanaDifficulty('が')).toBeLessThan(kanaDifficulty('ぎゃ'));
+  });
+
+  it('should add to a character that has look-alikes', () => {
+    expect(kanaDifficulty('ね')).toBeGreaterThan(kanaDifficulty('な'));
+    expect(kanaDifficulty('シ')).toBeGreaterThan(kanaDifficulty('サ'));
+  });
+
+  it('should add to a character beginner words hardly ever use', () => {
+    expect(kanaDifficulty('む')).toBeGreaterThan(kanaDifficulty('ま'));
+  });
+
+  it('should read the small tsu as the row it belongs to', () => {
+    expect(kanaDifficulty('っ')).toBe(kanaDifficulty('つ'));
+  });
+
+  it('should stay inside 0 and 1, and stay neutral about an unknown character', () => {
+    expect(allKana().every((k) => kanaDifficulty(k) >= 0 && kanaDifficulty(k) <= 1)).toBe(true);
+    expect(kanaDifficulty('新')).toBe(0.5);
   });
 });

@@ -342,6 +342,15 @@ export const CONFUSABLE_GROUPS: string[][] = [
   ['チ', 'テ'],
 ];
 
+// Hand-maintained: these barely appear in beginner vocabulary, and nothing
+// else in the app measures frequency.
+const LOW_FREQUENCY_KANA = new Set(['ぬ', 'ね', 'む', 'ヌ', 'ネ', 'ム', 'ヲ']);
+
+const KIND_DIFFICULTY: Record<KanaSetKind, number> = { base: 0.2, marked: 0.5, combo: 0.75 };
+const CONFUSABLE_BUMP = 0.15;
+const LOW_FREQUENCY_BUMP = 0.15;
+const UNKNOWN_DIFFICULTY = 0.5;
+
 const CONFUSABLES_BY_KANA = new Map<string, string[]>();
 for (const group of CONFUSABLE_GROUPS) {
   for (const kana of group) {
@@ -353,4 +362,18 @@ for (const group of CONFUSABLE_GROUPS) {
 /** Look-alikes for `kana` across both scripts, closest first. */
 export function confusablesFor(kana: string): string[] {
   return CONFUSABLES_BY_KANA.get(kana) ?? [];
+}
+
+/**
+ * How hard a character is before this learner has answered it — 0 (easiest) to
+ * 1. A prior only: callers must fade it out as personal evidence accumulates.
+ */
+export function kanaDifficulty(kana: string): number {
+  const entry = ENTRIES_BY_KANA.get(normalizeKana(kana));
+  if (!entry) return UNKNOWN_DIFFICULTY;
+  const kind = SETS_BY_ID.get(entry.setId)!.kind;
+  const bumps =
+    (CONFUSABLES_BY_KANA.has(entry.kana) ? CONFUSABLE_BUMP : 0) +
+    (LOW_FREQUENCY_KANA.has(entry.kana) ? LOW_FREQUENCY_BUMP : 0);
+  return Math.min(1, KIND_DIFFICULTY[kind] + bumps);
 }
