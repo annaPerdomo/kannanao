@@ -4,12 +4,16 @@ import { HIRAGANA_MNEMONICS, type KanaMnemonic, KATAKANA_MNEMONICS } from './kan
 
 export type KanaTrack = 'hiragana' | 'katakana';
 
-/** Curriculum order: plain rows, then the dakuten/handakuten rows, then the small-や rows. */
-export type KanaSetKind = 'base' | 'marked' | 'combo';
+/** Curriculum order: plain rows, dakuten rows, small-や rows, then the characters that only work inside a word. */
+export type KanaSetKind = 'base' | 'marked' | 'combo' | 'contextual';
+
+export type KanaLabelKey = 'littleTsu' | 'longSound';
 
 export interface KanaEntry {
   kana: string;
+  /** Empty for contextual characters, which have no sound of their own. */
   romaji: string;
+  labelKey?: KanaLabelKey;
   setId: string;
   track: KanaTrack;
   /** 1-based position within the track, across all sets. */
@@ -46,8 +50,7 @@ const SA = ['さ', 'し', 'す', 'せ', 'そ'];
 const TA = ['た', 'ち', 'つ', 'て', 'と'];
 const HA = ['は', 'ひ', 'ふ', 'へ', 'ほ'];
 
-// The standard chart only, deliberately: no extended katakana (ファ ティ ヴ …),
-// and no ー — it has no sound of its own.
+// The standard chart only, deliberately: no extended katakana (ファ ティ ヴ …).
 const ROWS: RowSpec[] = [
   { key: 'a', kind: 'base', kana: A, romaji: ['a', 'i', 'u', 'e', 'o'] },
   { key: 'ka', kind: 'base', kana: KA, romaji: ['ka', 'ki', 'ku', 'ke', 'ko'] },
@@ -194,6 +197,36 @@ const ROWS: RowSpec[] = [
 
 const TRACK_PREFIX: Record<KanaTrack, string> = { hiragana: 'hira', katakana: 'kata' };
 
+const CONTEXTUAL_KEY = 'context';
+
+interface ContextualSpec {
+  kana: string;
+  labelKey: KanaLabelKey;
+  mnemonic: KanaMnemonic;
+}
+
+const LITTLE_TSU_MNEMONIC: KanaMnemonic = {
+  en: 'A small つ — stop for a beat before the next sound.',
+  ja: 'ちいさい つ。つぎの おとの まえで ひとやすみ。',
+};
+
+// ー belongs to katakana only: hiragana writes its long sounds out (おかあさん),
+// so putting the bar in both charts would invent a character the learner never reads.
+const CONTEXTUAL: Record<KanaTrack, ContextualSpec[]> = {
+  hiragana: [{ kana: 'っ', labelKey: 'littleTsu', mnemonic: LITTLE_TSU_MNEMONIC }],
+  katakana: [
+    { kana: 'ッ', labelKey: 'littleTsu', mnemonic: LITTLE_TSU_MNEMONIC },
+    {
+      kana: 'ー',
+      labelKey: 'longSound',
+      mnemonic: {
+        en: 'A line — hold the sound before it for an extra beat.',
+        ja: 'ぼう。まえの おとを ながく のばす。',
+      },
+    },
+  ],
+};
+
 function derivedMnemonic(kana: string, base: string, kind: KanaSetKind): KanaMnemonic {
   if (kind === 'combo') {
     return {
@@ -218,7 +251,7 @@ function buildTrack(track: KanaTrack): KanaSet[] {
   const mnemonics = track === 'katakana' ? KATAKANA_MNEMONICS : HIRAGANA_MNEMONICS;
   let order = 0;
 
-  return ROWS.map((row, rowIndex) => {
+  const rows = ROWS.map((row, rowIndex) => {
     const id = `${TRACK_PREFIX[track]}-${row.key}`;
     const entries = row.kana.map((rawKana, i) => {
       const kana = toTrack(rawKana);
@@ -236,6 +269,28 @@ function buildTrack(track: KanaTrack): KanaSet[] {
     });
     return { id, track, kind: row.kind, order: rowIndex + 1, label: entries[0].kana, entries };
   });
+
+  // Appended last so every character that already has a kana_progress row keeps
+  // the setId and order it was written with.
+  const contextual: KanaSet = {
+    id: `${TRACK_PREFIX[track]}-${CONTEXTUAL_KEY}`,
+    track,
+    kind: 'contextual',
+    order: rows.length + 1,
+    label: CONTEXTUAL[track][0].kana,
+    entries: CONTEXTUAL[track].map((spec) => {
+      order += 1;
+      return {
+        ...spec,
+        romaji: '',
+        setId: `${TRACK_PREFIX[track]}-${CONTEXTUAL_KEY}`,
+        track,
+        order,
+      };
+    }),
+  };
+
+  return [...rows, contextual];
 }
 
 export const HIRAGANA_SETS: KanaSet[] = buildTrack('hiragana');
@@ -273,17 +328,9 @@ export function allKana(track?: KanaTrack): string[] {
 
 const SMALL_Y = new Set(['ゃ', 'ゅ', 'ょ', 'ャ', 'ュ', 'ョ']);
 
-// The small tsu has no sound and no curriculum entry, but reading っ means
-// recognising the つ glyph, so it counts towards the row つ lives in.
-const SOKUON: Record<string, string> = { っ: 'つ', ッ: 'ツ' };
-
-function normalizeKana(kana: string): string {
-  return SOKUON[kana] ?? kana;
-}
-
 /**
  * Combination sounds come back whole ('きゃ'); anything with no curriculum
- * entry — ー, small vowels, spaces, kanji — is dropped, not reported.
+ * entry — small vowels, spaces, kanji — is dropped, not reported.
  */
 export function segmentReading(reading: string): string[] {
   const chars = [...(reading ?? '')];
@@ -296,7 +343,7 @@ export function segmentReading(reading: string): string[] {
       i += 1;
       continue;
     }
-    const kana = normalizeKana(chars[i]);
+    const kana = chars[i];
     if (ENTRIES_BY_KANA.has(kana)) out.push(kana);
   }
 
@@ -304,7 +351,20 @@ export function segmentReading(reading: string): string[] {
 }
 
 export function kanaSetForChar(kana: string): string | null {
-  return ENTRIES_BY_KANA.get(normalizeKana(kana))?.setId ?? null;
+  return ENTRIES_BY_KANA.get(kana)?.setId ?? null;
+}
+
+/**
+ * The characters with no sound of their own (small っ/ッ, ー). Every isolated
+ * drill and pool must filter them out, or a decoy renders as a blank tile.
+ */
+export function isContextualKana(kana: string): boolean {
+  return ENTRIES_BY_KANA.get(kana)?.labelKey !== undefined;
+}
+
+export function isComboKana(kana: string): boolean {
+  const entry = ENTRIES_BY_KANA.get(kana);
+  return !!entry && SETS_BY_ID.get(entry.setId)!.kind === 'combo';
 }
 
 /** Curriculum order for a set of row ids — hiragana before katakana, base rows first. */
@@ -338,7 +398,12 @@ export const CONFUSABLE_GROUPS: string[][] = [
 // else in the app measures frequency.
 const LOW_FREQUENCY_KANA = new Set(['ぬ', 'ね', 'む', 'ヌ', 'ネ', 'ム', 'ヲ']);
 
-const KIND_DIFFICULTY: Record<KanaSetKind, number> = { base: 0.2, marked: 0.5, combo: 0.75 };
+const KIND_DIFFICULTY: Record<KanaSetKind, number> = {
+  base: 0.2,
+  marked: 0.5,
+  combo: 0.75,
+  contextual: 0.9,
+};
 const CONFUSABLE_BUMP = 0.15;
 const LOW_FREQUENCY_BUMP = 0.15;
 const UNKNOWN_DIFFICULTY = 0.5;
@@ -361,7 +426,7 @@ export function confusablesFor(kana: string): string[] {
  * 1. A prior only: callers must fade it out as personal evidence accumulates.
  */
 export function kanaDifficulty(kana: string): number {
-  const entry = ENTRIES_BY_KANA.get(normalizeKana(kana));
+  const entry = ENTRIES_BY_KANA.get(kana);
   if (!entry) return UNKNOWN_DIFFICULTY;
   const kind = SETS_BY_ID.get(entry.setId)!.kind;
   const bumps =

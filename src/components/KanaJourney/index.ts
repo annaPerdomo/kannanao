@@ -5,6 +5,7 @@ export {
   type ChartBlock,
   type ChartColumn,
   COMBO_ROWS,
+  KANA_XP,
   stateTint,
   VOWEL_ROWS,
 } from './constants';

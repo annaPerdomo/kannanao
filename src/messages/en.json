@@ -964,6 +964,10 @@
     }
   },
   "KanaJourney": {
+    "contextual": {
+      "littleTsu": "little つ",
+      "longSound": "long sound"
+    },
     "common": {
       "hint": "Show a hint",
       "next": "Next"
@@ -986,6 +990,7 @@
       "description": "Read hiragana and katakana — and brush up the ones going rusty."
     },
     "journey": {
+      "contextualBlock": "Sound changers",
       "title": "Learn Kana",
       "subtitle": "Tap any character to practise it.",
       "loading": "Opening your chart…",

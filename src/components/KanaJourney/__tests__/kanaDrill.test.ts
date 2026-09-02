@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { allKana } from '@/lib/kanaCurriculum';
+import { allKana, isContextualKana } from '@/lib/kanaCurriculum';
 
 import {
   buildDrillPool,
@@ -46,7 +46,13 @@ describe('romajiOf', () => {
 describe('buildDrillPool', () => {
   it('should draw on the whole track when no pool is given', () => {
     const pool = buildDrillPool(['な', 'に']);
-    expect(pool).toEqual(allKana('hiragana'));
+    expect(pool).toEqual(allKana('hiragana').filter((k) => !isContextualKana(k)));
+  });
+
+  it('should keep っ and ー out of every pool: they cannot label an option', () => {
+    expect(buildDrillPool(['な']).some(isContextualKana)).toBe(false);
+    expect(buildDrillPool(['ナ'], ['ッ', 'ー']).some(isContextualKana)).toBe(false);
+    expect(buildDrillPool([]).some(isContextualKana)).toBe(false);
   });
 
   it('should span both scripts for a mixed queue', () => {
@@ -68,7 +74,7 @@ describe('buildDrillPool', () => {
   });
 
   it('should fall back to the whole chart for characters it does not know', () => {
-    expect(buildDrillPool(['漢'])).toEqual(allKana());
+    expect(buildDrillPool(['漢'])).toEqual(allKana().filter((k) => !isContextualKana(k)));
   });
 });
 

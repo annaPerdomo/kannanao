@@ -118,29 +118,55 @@ describe('KanaChart', () => {
   });
 });
 
+describe('the contextual characters on the chart', () => {
+  it('should caption a character that has no sound in plain words', () => {
+    renderChart();
+    const cell = screen.getByRole('button', { name: /^っ —/ });
+    expect(cell).toHaveAccessibleName('っ — little つ, new');
+    expect(cell).toHaveTextContent('little つ');
+  });
+
+  it('should keep the long line on the katakana chart, where it is read', () => {
+    renderChart({ track: 'katakana' });
+    expect(screen.getByRole('button', { name: /^ー —/ })).toHaveTextContent('long sound');
+    expect(screen.getByRole('button', { name: /^ッ —/ })).toBeInTheDocument();
+  });
+
+  it('should drill a contextual cell from a tap like any other', () => {
+    const { onPlayKana } = renderChart();
+    fireEvent.click(screen.getByRole('button', { name: /^っ —/ }));
+    expect(onPlayKana).toHaveBeenCalledWith('っ');
+  });
+
+  it('should offer no row-practice header for characters that are not a row', () => {
+    renderChart();
+    expect(screen.queryByRole('button', { name: 'Practise the っ row' })).not.toBeInTheDocument();
+  });
+});
+
 describe('ReviewButton', () => {
   it('should count what is waiting in plain words', () => {
     renderWithProviders(
-      <ReviewButton byKana={progressFor(['hira-a'], RUSTY)} onReview={vi.fn()} />,
+      <ReviewButton byKana={progressFor(['hira-a'], RUSTY)} onReview={vi.fn()} onCheck={vi.fn()} />,
     );
     expect(screen.getByText('5 characters to brush up')).toBeInTheDocument();
   });
 
   it('should point a learner with no history at the first row, not at a brush-up', () => {
-    renderWithProviders(<ReviewButton byKana={new Map()} onReview={vi.fn()} />);
+    renderWithProviders(<ReviewButton byKana={new Map()} onReview={vi.fn()} onCheck={vi.fn()} />);
     expect(screen.getByText('Start with the あ row')).toBeInTheDocument();
     expect(screen.queryByText(/brush up/)).not.toBeInTheDocument();
   });
 
   it('should drop the hint once she has answered enough to be ordered by', () => {
     const byKana = progressFor(['hira-a', 'hira-ka', 'hira-sa'], SOLID);
-    renderWithProviders(<ReviewButton byKana={byKana} onReview={vi.fn()} />);
+    renderWithProviders(<ReviewButton byKana={byKana} onReview={vi.fn()} onCheck={vi.fn()} />);
     expect(screen.queryByText(/^Start with/)).not.toBeInTheDocument();
   });
 
   it('should start the review when tapped', () => {
     const onReview = vi.fn();
-    renderWithProviders(<ReviewButton byKana={new Map()} onReview={onReview} />);
+    renderWithProviders(<ReviewButton byKana={new Map()} onReview={onReview} onCheck={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Review' }));
     expect(onReview).toHaveBeenCalled();
   });
@@ -214,6 +240,24 @@ describe('KanaSession', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('should never ask what sound a contextual character makes', () => {
+    renderSession({ chars: ['っ'] });
+    expect(screen.queryByText('Which sound is this?')).not.toBeInTheDocument();
+    expect(screen.getByText('Which one did you hear?')).toBeInTheDocument();
+    expect(screen.getByText('1 / 1')).toBeInTheDocument();
+  });
+
+  it('should add the word pairs to a session whose queue holds one', () => {
+    renderSession({ chars: ['あ', 'い', 'う', 'っ'] });
+    expect(screen.getByText('1 / 4')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tap to hear it' })).not.toHaveTextContent('っ');
+  });
+
+  it('should leave the word pairs out when nothing in the queue needs them', () => {
+    renderSession({ chars: ['あ', 'い', 'う'] });
+    expect(screen.getByText('1 / 3')).toBeInTheDocument();
   });
 
   it('should end the session before leaving when the learner quits', async () => {

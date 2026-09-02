@@ -964,6 +964,10 @@
     }
   },
   "KanaJourney": {
+    "contextual": {
+      "littleTsu": "ちいさい つ",
+      "longSound": "のばす おと"
+    },
     "common": {
       "hint": "ヒントを見る",
       "next": "つぎへ"
@@ -986,6 +990,7 @@
       "description": "ひらがなとカタカナ。わすれかけた文字をふくしゅう。"
     },
     "journey": {
+      "contextualBlock": "おとを かえる もじ",
       "title": "かなをまなぶ",
       "subtitle": "文字をタップして れんしゅうしよう。",
       "loading": "ひょうを ひらいています…",

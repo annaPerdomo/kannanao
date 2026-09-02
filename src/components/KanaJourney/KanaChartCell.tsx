@@ -16,6 +16,7 @@ interface KanaChartCellProps {
 
 export function KanaChartCell({ entry, state, onPlay }: KanaChartCellProps) {
   const t = useTranslations('KanaJourney.journey');
+  const tContextual = useTranslations('KanaJourney.contextual');
   const theme = useTheme();
 
   if (!entry) {
@@ -23,6 +24,7 @@ export function KanaChartCell({ entry, state, onPlay }: KanaChartCellProps) {
   }
 
   const play = () => onPlay(entry.kana);
+  const caption = entry.labelKey ? tContextual(entry.labelKey) : entry.romaji;
 
   return (
     <Box
@@ -30,7 +32,7 @@ export function KanaChartCell({ entry, state, onPlay }: KanaChartCellProps) {
       tabIndex={0}
       aria-label={t('cellLabel', {
         kana: entry.kana,
-        romaji: entry.romaji,
+        romaji: caption,
         state: t(`state.${state}`),
       })}
       onClick={play}
@@ -70,9 +72,15 @@ export function KanaChartCell({ entry, state, onPlay }: KanaChartCellProps) {
       <Typography
         aria-hidden
         component="span"
-        sx={{ fontSize: { xs: '0.6rem', sm: '0.66rem' }, color: 'text.secondary' }}
+        sx={{
+          fontSize: { xs: '0.6rem', sm: '0.66rem' },
+          color: 'text.secondary',
+          px: 0.25,
+          textAlign: 'center',
+          lineHeight: 1.15,
+        }}
       >
-        {entry.romaji}
+        {caption}
       </Typography>
     </Box>
   );

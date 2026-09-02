@@ -9,6 +9,10 @@ import type { KanaStrengthState } from '@/lib/kanaProficiency';
 export const CHART_DIRECTION: 'rtl' | 'ltr' = 'rtl';
 
 export const VOWEL_ROWS = ['a', 'i', 'u', 'e', 'o'] as const;
+
+// Lightning grades ~2 answers a second: at the 40 XP card rate one replayed row
+// would outrank a week of vocabulary study on the group leaderboard.
+export const KANA_XP = 8;
 export const COMBO_ROWS = ['ya', 'yu', 'yo'] as const;
 
 // Real holes, not short columns: the gaps in や and わ are part of how the
@@ -28,7 +32,7 @@ export interface ChartColumn {
 }
 
 export interface ChartBlock {
-  id: 'base' | 'marked' | 'combo';
+  id: 'base' | 'marked' | 'combo' | 'contextual';
   rowLabels: readonly string[];
   columns: ChartColumn[];
 }
@@ -57,6 +61,16 @@ function block(
   return { id, rowLabels, columns };
 }
 
+// No column header: it would offer a "practise this row" tap the cells already give.
+function contextualBlock(sets: KanaSet[]): ChartBlock {
+  const set = sets.find((s) => s.kind === 'contextual')!;
+  return {
+    id: 'contextual',
+    rowLabels: [],
+    columns: [{ setId: set.id, label: set.label, cells: set.entries }],
+  };
+}
+
 export function buildKanaChart(track: KanaTrack): ChartBlock[] {
   const sets = setsForTrack(track);
   const ofKind = (kind: KanaSetKind) => sets.filter((set) => set.kind === kind);
@@ -67,6 +81,7 @@ export function buildKanaChart(track: KanaTrack): ChartBlock[] {
     block('base', VOWEL_ROWS, ofKind('base'), [nColumn]),
     block('marked', VOWEL_ROWS, ofKind('marked')),
     block('combo', COMBO_ROWS, ofKind('combo')),
+    contextualBlock(sets),
   ];
 }
 

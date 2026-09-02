@@ -13,6 +13,7 @@ import { KanaChartCell } from './KanaChartCell';
 const BLOCK_TITLES: Partial<Record<ChartBlock['id'], string>> = {
   marked: 'markedBlock',
   combo: 'comboBlock',
+  contextual: 'contextualBlock',
 };
 
 interface KanaChartProps {
@@ -92,6 +93,7 @@ function Block({
 }: { block: ChartBlock } & Pick<KanaChartProps, 'byKana' | 'onPlayRow' | 'onPlayKana'>) {
   const t = useTranslations('KanaJourney.journey');
   const titleKey = BLOCK_TITLES[block.id];
+  const bare = block.rowLabels.length === 0;
 
   return (
     // minWidth 0: as a flex item this block would otherwise grow to its content
@@ -108,24 +110,38 @@ function Block({
       {/* Scrolls inside this box at every width: reflowing to a list on a
           phone brings back the layout the chart replaced. */}
       <Box
-        dir={CHART_DIRECTION}
+        // rtl orders the gojuon columns; a bare strip has no columns to order,
+        // and would just print っ ー backwards.
+        dir={bare ? 'ltr' : CHART_DIRECTION}
         sx={{ overflowX: 'auto', overflowY: 'hidden', pb: 1, mx: -0.5, px: 0.5 }}
       >
         <Stack direction="row" spacing={0.5} useFlexGap sx={{ width: 'max-content' }}>
-          <RowLabels labels={block.rowLabels} />
-          {block.columns.map((col) => (
-            <Stack key={`${col.setId}-${col.label}`} spacing={0.5}>
-              <ColumnHeader label={col.label} onClick={() => onPlayRow(col.setId)} />
-              {col.cells.map((entry, i) => (
-                <KanaChartCell
-                  key={entry?.kana ?? `${col.label}-gap-${i}`}
-                  entry={entry}
-                  state={kanaStrengthState(entry ? byKana.get(entry.kana) : undefined)}
-                  onPlay={onPlayKana}
-                />
-              ))}
-            </Stack>
-          ))}
+          {bare ? (
+            block.columns[0].cells.map((entry, i) => (
+              <KanaChartCell
+                key={entry?.kana ?? `bare-gap-${i}`}
+                entry={entry}
+                state={kanaStrengthState(entry ? byKana.get(entry.kana) : undefined)}
+                onPlay={onPlayKana}
+              />
+            ))
+          ) : (
+            <RowLabels labels={block.rowLabels} />
+          )}
+          {!bare &&
+            block.columns.map((col) => (
+              <Stack key={`${col.setId}-${col.label}`} spacing={0.5}>
+                <ColumnHeader label={col.label} onClick={() => onPlayRow(col.setId)} />
+                {col.cells.map((entry, i) => (
+                  <KanaChartCell
+                    key={entry?.kana ?? `${col.label}-gap-${i}`}
+                    entry={entry}
+                    state={kanaStrengthState(entry ? byKana.get(entry.kana) : undefined)}
+                    onPlay={onPlayKana}
+                  />
+                ))}
+              </Stack>
+            ))}
         </Stack>
       </Box>
     </Box>
