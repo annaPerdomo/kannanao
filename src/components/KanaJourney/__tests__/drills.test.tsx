@@ -31,9 +31,7 @@ beforeEach(() => {
 
 describe('RecognizeDrill', () => {
   it('should show a character and four sounds to choose from', () => {
-    renderWithProviders(
-      <RecognizeDrill setId="hira-a" chars={['あ']} onAnswer={vi.fn()} onComplete={vi.fn()} />,
-    );
+    renderWithProviders(<RecognizeDrill chars={['あ']} onAnswer={vi.fn()} onComplete={vi.fn()} />);
     expect(screen.getByText('Which sound is this?')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Tap to hear it' })).toHaveTextContent('あ');
     expect(screen.getAllByRole('button', { name: /^Answer [A-D]:/ })).toHaveLength(4);
@@ -41,9 +39,7 @@ describe('RecognizeDrill', () => {
 
   it('should report a right answer and play the character', () => {
     const onAnswer = vi.fn();
-    renderWithProviders(
-      <RecognizeDrill setId="hira-a" chars={['あ']} onAnswer={onAnswer} onComplete={vi.fn()} />,
-    );
+    renderWithProviders(<RecognizeDrill chars={['あ']} onAnswer={onAnswer} onComplete={vi.fn()} />);
     tapSound('a');
     expect(onAnswer).toHaveBeenCalledWith('あ', true);
     expect(mockSpeak).toHaveBeenCalledWith('あ');
@@ -51,9 +47,7 @@ describe('RecognizeDrill', () => {
 
   it('should report a wrong answer once and ignore a second tap', () => {
     const onAnswer = vi.fn();
-    renderWithProviders(
-      <RecognizeDrill setId="hira-a" chars={['あ']} onAnswer={onAnswer} onComplete={vi.fn()} />,
-    );
+    renderWithProviders(<RecognizeDrill chars={['あ']} onAnswer={onAnswer} onComplete={vi.fn()} />);
     const wrong = screen
       .getAllByRole('button', { name: /^Answer [A-D]:/ })
       .find((b) => !b.textContent?.endsWith('a'))!;
@@ -64,17 +58,13 @@ describe('RecognizeDrill', () => {
   });
 
   it('should play the character when the glyph is tapped', () => {
-    renderWithProviders(
-      <RecognizeDrill setId="hira-a" chars={['あ']} onAnswer={vi.fn()} onComplete={vi.fn()} />,
-    );
+    renderWithProviders(<RecognizeDrill chars={['あ']} onAnswer={vi.fn()} onComplete={vi.fn()} />);
     tap('Tap to hear it');
     expect(mockSpeak).toHaveBeenCalledWith('あ');
   });
 
   it('should offer a hint only after a wrong answer, and only behind a tap', () => {
-    renderWithProviders(
-      <RecognizeDrill setId="hira-a" chars={['あ']} onAnswer={vi.fn()} onComplete={vi.fn()} />,
-    );
+    renderWithProviders(<RecognizeDrill chars={['あ']} onAnswer={vi.fn()} onComplete={vi.fn()} />);
     expect(screen.queryByRole('button', { name: 'Show a hint' })).not.toBeInTheDocument();
 
     const wrong = screen
@@ -92,7 +82,7 @@ describe('RecognizeDrill', () => {
     try {
       const onComplete = vi.fn();
       renderWithProviders(
-        <RecognizeDrill setId="hira-a" chars={['あ']} onAnswer={vi.fn()} onComplete={onComplete} />,
+        <RecognizeDrill chars={['あ']} onAnswer={vi.fn()} onComplete={onComplete} />,
       );
       const wrong = screen
         .getAllByRole('button', { name: /^Answer [A-D]:/ })
@@ -113,7 +103,7 @@ describe('RecognizeDrill', () => {
     try {
       const onComplete = vi.fn();
       renderWithProviders(
-        <RecognizeDrill setId="hira-a" chars={['あ']} onAnswer={vi.fn()} onComplete={onComplete} />,
+        <RecognizeDrill chars={['あ']} onAnswer={vi.fn()} onComplete={onComplete} />,
       );
       tapSound('a');
       expect(onComplete).not.toHaveBeenCalled();
@@ -131,7 +121,7 @@ describe('RecognizeDrill', () => {
     try {
       const onAnswer = vi.fn();
       renderWithProviders(
-        <RecognizeDrill setId="hira-a" chars={CHARS} onAnswer={onAnswer} onComplete={vi.fn()} />,
+        <RecognizeDrill chars={CHARS} onAnswer={onAnswer} onComplete={vi.fn()} />,
       );
       const sounds: Record<string, string> = { あ: 'a', い: 'i', う: 'u' };
       for (let i = 0; i < CHARS.length; i++) {
@@ -148,9 +138,7 @@ describe('RecognizeDrill', () => {
 
 describe('RecallDrill', () => {
   it('should show a sound and character tiles to pick from', () => {
-    renderWithProviders(
-      <RecallDrill setId="hira-a" chars={['あ']} onAnswer={vi.fn()} onComplete={vi.fn()} />,
-    );
+    renderWithProviders(<RecallDrill chars={['あ']} onAnswer={vi.fn()} onComplete={vi.fn()} />);
     expect(screen.getByText('Pick the character')).toBeInTheDocument();
     expect(screen.getByText('a')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'あ' })).toBeInTheDocument();
@@ -158,9 +146,7 @@ describe('RecallDrill', () => {
 
   it('should grade the tile the learner picks', () => {
     const onAnswer = vi.fn();
-    renderWithProviders(
-      <RecallDrill setId="hira-a" chars={['あ']} onAnswer={onAnswer} onComplete={vi.fn()} />,
-    );
+    renderWithProviders(<RecallDrill chars={['あ']} onAnswer={onAnswer} onComplete={vi.fn()} />);
     tap('あ');
     expect(onAnswer).toHaveBeenCalledWith('あ', true);
   });
@@ -169,9 +155,8 @@ describe('RecallDrill', () => {
     const onAnswer = vi.fn();
     renderWithProviders(
       <RecallDrill
-        setId="hira-a"
         chars={['あ']}
-        unlocked={['あ', 'い', 'う', 'え']}
+        decoyPool={['あ', 'い', 'う', 'え']}
         onAnswer={onAnswer}
         onComplete={vi.fn()}
       />,
@@ -183,9 +168,8 @@ describe('RecallDrill', () => {
   it('should never put both characters of a same-sound pair on the board', () => {
     renderWithProviders(
       <RecallDrill
-        setId="hira-da"
         chars={['ぢ']}
-        unlocked={['じ', 'ず', 'づ', 'か', 'き', 'く']}
+        decoyPool={['じ', 'ず', 'づ', 'か', 'き', 'く']}
         onAnswer={vi.fn()}
         onComplete={vi.fn()}
       />,
@@ -199,7 +183,7 @@ describe('RecallDrill', () => {
     try {
       const onComplete = vi.fn();
       renderWithProviders(
-        <RecallDrill setId="hira-a" chars={['あ']} onAnswer={vi.fn()} onComplete={onComplete} />,
+        <RecallDrill chars={['あ']} onAnswer={vi.fn()} onComplete={onComplete} />,
       );
       tap('あ');
       act(() => void vi.advanceTimersByTime(1100));
@@ -215,9 +199,7 @@ describe('LightningRound', () => {
   afterEach(() => vi.useRealTimers());
 
   it('should start at zero and count the right answers', () => {
-    renderWithProviders(
-      <LightningRound setId="hira-a" chars={CHARS} onAnswer={vi.fn()} onComplete={vi.fn()} />,
-    );
+    renderWithProviders(<LightningRound chars={CHARS} onAnswer={vi.fn()} onComplete={vi.fn()} />);
     expect(screen.getByText('0 right')).toBeInTheDocument();
 
     const kana = screen.getByRole('button', { name: 'Tap to hear it' }).textContent!;
@@ -226,9 +208,7 @@ describe('LightningRound', () => {
   });
 
   it('should show a filling bar rather than a countdown clock', () => {
-    renderWithProviders(
-      <LightningRound setId="hira-a" chars={CHARS} onAnswer={vi.fn()} onComplete={vi.fn()} />,
-    );
+    renderWithProviders(<LightningRound chars={CHARS} onAnswer={vi.fn()} onComplete={vi.fn()} />);
     const bar = screen.getByRole('progressbar', { name: 'Time left' });
     expect(bar).toHaveAttribute('aria-valuenow', '0');
     act(() => void vi.advanceTimersByTime(22_500));
@@ -238,7 +218,7 @@ describe('LightningRound', () => {
   it('should end after 45 seconds and say so once', () => {
     const onComplete = vi.fn();
     renderWithProviders(
-      <LightningRound setId="hira-a" chars={CHARS} onAnswer={vi.fn()} onComplete={onComplete} />,
+      <LightningRound chars={CHARS} onAnswer={vi.fn()} onComplete={onComplete} />,
     );
     act(() => void vi.advanceTimersByTime(44_000));
     expect(onComplete).not.toHaveBeenCalled();
@@ -253,9 +233,7 @@ describe('LightningRound', () => {
 
   it('should keep asking after every character has come up once', () => {
     const onAnswer = vi.fn();
-    renderWithProviders(
-      <LightningRound setId="hira-a" chars={['あ']} onAnswer={onAnswer} onComplete={vi.fn()} />,
-    );
+    renderWithProviders(<LightningRound chars={['あ']} onAnswer={onAnswer} onComplete={vi.fn()} />);
     for (let i = 0; i < 4; i++) {
       tapSound('a');
       act(() => void vi.advanceTimersByTime(450));

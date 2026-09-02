@@ -983,27 +983,36 @@
     },
     "tile": {
       "title": "Learn Kana",
-      "description": "Read hiragana and katakana from zero — one row at a time."
+      "description": "Read hiragana and katakana — and brush up the ones going rusty."
     },
     "journey": {
       "title": "Learn Kana",
-      "subtitle": "Pick a row and start reading.",
-      "loading": "Opening your path…",
+      "subtitle": "Tap any character to practise it.",
+      "loading": "Opening your chart…",
       "hiraganaTrack": "Hiragana",
       "katakanaTrack": "Katakana",
-      "katakanaLockedHint": "Katakana opens after you earn a star on the first {total} rows — {done} of {total} so far.",
-      "katakanaLockedLabel": "Katakana — locked, {done} of {total} rows starred",
-      "startHere": "Start here",
-      "timeToReview": "Time to review",
-      "islandLabel": "{kana} — {stars} of {max} stars",
-      "lockedIslandLabel": "{kana} — locked, finish the row above first"
+      "review": "Review",
+      "reviewSubtitle": "{count, plural, one {# character to brush up} other {# characters to brush up}}",
+      "reviewNothing": "Nothing to brush up — practise anything you like",
+      "startHint": "Start with the {kana} row",
+      "rowLabel": "Practise the {kana} row",
+      "cellLabel": "{kana} — {romaji}, {state}",
+      "markedBlock": "Sounds with marks",
+      "comboBlock": "Two-part sounds",
+      "state": {
+        "new": "new",
+        "learning": "getting there",
+        "rusty": "getting rusty",
+        "solid": "solid"
+      }
     },
     "session": {
       "recognizeHowTo": "Look at the character, then tap the sound it makes.",
       "recallHowTo": "Hear the sound, then tap the character that writes it.",
       "lightningHowTo": "Speed round — get as many right as you can before time runs out.",
       "celebrationSubheading": "{correct} / {total} right this round",
-      "backToJourney": "Back to Learn Kana"
+      "backToJourney": "Back to Learn Kana",
+      "mixedTitle": "Brush-up"
     }
   },
   "Group": {

@@ -1,11 +1,4 @@
-import {
-  allKana,
-  getSet,
-  kanaDifficulty,
-  type KanaSet,
-  type KanaTrack,
-  setsForTrack,
-} from '@/lib/kanaCurriculum';
+import { allKana, getSet, kanaDifficulty, type KanaTrack } from '@/lib/kanaCurriculum';
 
 /** The part of a `kana_progress` row proficiency is judged on. */
 export interface KanaMastery {
@@ -32,18 +25,6 @@ const MIN_HALF_LIFE_DAYS = 0.5;
 const LAPSE_HALF_LIFE_CAP_DAYS = 3;
 
 const FULL_EVIDENCE_ANSWERS = 6;
-
-/** Sets of the first track a learner must star before the second track opens. */
-export const TRACK_UNLOCK_SETS = 3;
-
-export type IslandStatus = 'locked' | 'next' | 'available' | 'mastered';
-
-export interface KanaIsland {
-  set: KanaSet;
-  stars: KanaStars;
-  status: IslandStatus;
-  dueCount: number;
-}
 
 export function isUnseen(progress?: KanaMastery): boolean {
   return !progress || progress.correctCount + progress.wrongCount <= 0;
@@ -85,14 +66,26 @@ export function kanaStrength(progress: KanaMastery | undefined, now: Date = new 
   return Math.min(1, Math.max(0, earned * retention));
 }
 
-// Stars gate island and track unlocking, so they read earned strength:
-// decaying them takes the map back off a learner returning from a week away.
+// Stars read earned strength, never decayed strength: "she has learned this"
+// must survive a week away, which is what kanaStrengthState answers instead.
 export function kanaStars(progress?: KanaMastery): KanaStars {
   const strength = earnedStrength(progress);
   if (strength >= STRENGTH_BANDS[2]) return 3;
   if (strength >= STRENGTH_BANDS[1]) return 2;
   if (strength >= STRENGTH_BANDS[0]) return 1;
   return 0;
+}
+
+export type KanaStrengthState = 'new' | 'learning' | 'rusty' | 'solid';
+
+export function kanaStrengthState(
+  progress: KanaMastery | undefined,
+  now: Date = new Date(),
+): KanaStrengthState {
+  if (isUnseen(progress)) return 'new';
+  if (kanaStrength(progress, now) >= STRONG_STRENGTH) return 'solid';
+  if (earnedStrength(progress) >= STRONG_STRENGTH) return 'rusty';
+  return 'learning';
 }
 
 /** The "learner reads this character" bar — also reading-prompts' "the group knows this kana". */
@@ -118,64 +111,13 @@ function isDue(progress: KanaMastery | undefined, now: Date): boolean {
   return new Date(progress.nextReviewAt).getTime() <= now.getTime();
 }
 
-// A set opens on the previous set's FIRST star, not on mastery: gating on
-// mastery strands a learner who cannot perfect one row.
-export function buildIslands(
-  track: KanaTrack,
-  byKana: KanaProgressMap,
-  now: Date = new Date(),
-): KanaIsland[] {
-  const islands: KanaIsland[] = [];
-  let unlocked = true;
-  let nextTaken = false;
-
-  for (const set of setsForTrack(track)) {
-    const stars = setStars(set.id, byKana);
-    let status: IslandStatus;
-    if (!unlocked) status = 'locked';
-    else if (stars >= MASTERED_STARS) status = 'mastered';
-    else if (!nextTaken) {
-      status = 'next';
-      nextTaken = true;
-    } else status = 'available';
-
-    islands.push({
-      set,
-      stars,
-      status,
-      dueCount: set.entries.filter((e) => isDue(byKana.get(e.kana), now)).length,
-    });
-    unlocked = unlocked && stars >= 1;
-  }
-
-  return islands;
-}
-
-export function isTrackUnlocked(track: KanaTrack, byKana: KanaProgressMap): boolean {
-  if (track === 'hiragana') return true;
-  return setsForTrack('hiragana')
-    .slice(0, TRACK_UNLOCK_SETS)
-    .every((set) => setStars(set.id, byKana) >= 1);
-}
-
-/** Feeds the "{n} of 3" count in KanaJourney.journey locked copy. */
-export function trackUnlockProgress(byKana: KanaProgressMap): number {
-  return setsForTrack('hiragana')
-    .slice(0, TRACK_UNLOCK_SETS)
-    .filter((set) => setStars(set.id, byKana) >= 1).length;
-}
-
-export function unlockedKana(track: KanaTrack, byKana: KanaProgressMap): string[] {
-  return buildIslands(track, byKana)
-    .filter((island) => island.status !== 'locked')
-    .flatMap((island) => island.set.entries.map((e) => e.kana));
-}
-
 export const STRONG_STRENGTH = STRENGTH_BANDS[2];
 
 export const STRONG_INTERLEAVE_RATIO = 0.25;
 
 export const MAX_UNSEEN_PER_QUEUE = 5;
+
+export const REVIEW_SESSION_SIZE = 12;
 
 const UNSEEN_SCORE = 0.8;
 const DIFFICULTY_PRIOR_MAX = 0.6;
@@ -218,20 +160,11 @@ function reviewScore(kana: string, progress: KanaMastery | undefined, now: Date)
   return 1 - kanaStrength(progress, now) + overdueBonus(progress, now) + missedLast + prior;
 }
 
-// The pool is the journey she has opened plus everything she has met, never
-// the whole chart: an unasked-for ヴ in a beginner's session reads as a bug.
-function trackPool(byKana: KanaProgressMap, track: KanaTrack, requested: boolean): string[] {
-  const seen = (kana: string) => !isUnseen(byKana.get(kana));
-  const chart = allKana(track);
-  if (!requested && !isTrackUnlocked(track, byKana) && !chart.some(seen)) return [];
-  const open = new Set(unlockedKana(track, byKana));
-  return chart.filter((kana) => open.has(kana) || seen(kana));
-}
-
-function queuePool(byKana: KanaProgressMap, { setId, track }: ReviewQueueOptions): string[] {
+// The whole chart, never the progress rows: a character with no row has no
+// next_review_at, so a pool built from rows never surfaces it.
+function queuePool({ setId, track }: ReviewQueueOptions): string[] {
   if (setId) return getSet(setId)?.entries.map((e) => e.kana) ?? [];
-  if (track && track !== 'both') return trackPool(byKana, track, true);
-  return (['hiragana', 'katakana'] as KanaTrack[]).flatMap((t) => trackPool(byKana, t, false));
+  return track && track !== 'both' ? allKana(track) : allKana();
 }
 
 function interleave(needy: string[], strong: string[]): string[] {
@@ -246,18 +179,22 @@ function interleave(needy: string[], strong: string[]): string[] {
   return [...out, ...strong.slice(placed)];
 }
 
-/**
- * The characters to practise next, weakest first and shaped into a session.
- * Deterministic: the same progress and the same `now` give the same queue.
- */
-export function pickReviewQueue(byKana: KanaProgressMap, opts: ReviewQueueOptions): string[] {
-  const now = opts.now ?? new Date();
-  const size = Math.max(0, Math.floor(opts.size));
-  const pool = queuePool(byKana, opts);
+interface ScoredKana {
+  kana: string;
+  score: number;
+  strong: boolean;
+}
 
-  const seen = pool.filter((kana) => !isUnseen(byKana.get(kana)));
-  const byScore = (a: { score: number }, b: { score: number }) => b.score - a.score;
-  const scored = seen
+const byScore = (a: ScoredKana, b: ScoredKana) => b.score - a.score;
+
+function splitPool(
+  byKana: KanaProgressMap,
+  opts: ReviewQueueOptions,
+  now: Date,
+): { needy: string[]; strong: string[] } {
+  const pool = queuePool(opts);
+  const scored = pool
+    .filter((kana) => !isUnseen(byKana.get(kana)))
     .map((kana) => ({
       kana,
       score: reviewScore(kana, byKana.get(kana), now),
@@ -269,10 +206,18 @@ export function pickReviewQueue(byKana: KanaProgressMap, opts: ReviewQueueOption
   const fresh = pool
     .filter((kana) => isUnseen(byKana.get(kana)))
     .slice(0, MAX_UNSEEN_PER_QUEUE)
-    .map((kana) => ({ kana, score: UNSEEN_SCORE }));
+    .map((kana) => ({ kana, score: UNSEEN_SCORE, strong: false }));
 
-  const needy = [...scored.filter((c) => !c.strong), ...fresh].sort(byScore).map((c) => c.kana);
-  const strong = scored.filter((c) => c.strong).map((c) => c.kana);
+  return {
+    needy: [...scored.filter((c) => !c.strong), ...fresh].sort(byScore).map((c) => c.kana),
+    strong: scored.filter((c) => c.strong).map((c) => c.kana),
+  };
+}
+
+export function pickReviewQueue(byKana: KanaProgressMap, opts: ReviewQueueOptions): string[] {
+  const now = opts.now ?? new Date();
+  const size = Math.max(0, Math.floor(opts.size));
+  const { needy, strong } = splitPool(byKana, opts, now);
 
   const allowStrong = opts.includeStrong !== false;
   const strongSlots = allowStrong
@@ -281,6 +226,26 @@ export function pickReviewQueue(byKana: KanaProgressMap, opts: ReviewQueueOption
   const picked = needy.slice(0, size - strongSlots);
   const backfill = allowStrong ? size - strongSlots - picked.length : 0;
   return interleave(picked, strong.slice(0, strongSlots + backfill));
+}
+
+export function needsReviewCount(
+  byKana: KanaProgressMap,
+  opts: Omit<ReviewQueueOptions, 'size'> = {},
+): number {
+  const now = opts.now ?? new Date();
+  return splitPool(byKana, { ...opts, size: 0 }, now).needy.filter(
+    (kana) => !isUnseen(byKana.get(kana)),
+  ).length;
+}
+
+export const NEW_LEARNER_MAX_SEEN = 10;
+
+export function isNewLearner(byKana: KanaProgressMap): boolean {
+  let seen = 0;
+  for (const progress of byKana.values()) {
+    if (!isUnseen(progress) && (seen += 1) >= NEW_LEARNER_MAX_SEEN) return false;
+  }
+  return true;
 }
 
 export function drillChars(

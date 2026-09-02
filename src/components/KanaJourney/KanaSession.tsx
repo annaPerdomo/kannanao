@@ -6,42 +6,55 @@ import { GameShell } from '@/components/Games/GameShell';
 import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
 import { useGameSession } from '@/hooks/useGameSession';
 import { getSet } from '@/lib/kanaCurriculum';
-import { drillChars, type KanaProgressMap, unlockedKana } from '@/lib/kanaProficiency';
+import { drillChars, type KanaProgressMap } from '@/lib/kanaProficiency';
 
+import { focusDrillChars } from './kanaDrill';
 import { LightningRound } from './LightningRound';
 import { RecallDrill } from './RecallDrill';
 import { RecognizeDrill } from './RecognizeDrill';
 
 const STAGES = ['recognize', 'recall', 'lightning'] as const;
+const MIN_LIGHTNING_CHARS = 3;
 
 // Lightning grades ~2 answers a second: at the 40 XP card rate one replayed row
 // would outrank a week of vocabulary study on the group leaderboard.
 const KANA_XP = 8;
 
-interface IslandSessionProps {
-  setId: string;
+export interface KanaSessionRequest {
+  /** Stamped on the session row and completes a kana assignment: never set on a mixed review. */
+  setId?: string;
+  kana?: string;
+  chars?: string[];
+}
+
+interface KanaSessionProps extends KanaSessionRequest {
   byKana: KanaProgressMap;
   /** Writes one graded answer to kana_progress; never throws. */
   record: (kana: string, correct: boolean) => Promise<void>;
   onExit: () => void;
 }
 
-export function IslandSession({ setId, byKana, record, onExit }: IslandSessionProps) {
+function sessionChars({ setId, kana, chars }: KanaSessionRequest, byKana: KanaProgressMap) {
+  if (chars) return chars;
+  if (kana) return focusDrillChars(kana);
+  return setId ? drillChars(setId, byKana) : [];
+}
+
+export function KanaSession({ setId, kana, chars, byKana, record, onExit }: KanaSessionProps) {
   const t = useTranslations('KanaJourney.session');
-  // setId is stamped on the session row, which is what lets it complete a kana
-  // assignment. A mixed kana review must never pass one.
   const { answer, finish, comboCount } = useGameSession('kana-journey', {
     correctXp: KANA_XP,
-    kanaSet: setId,
+    kanaSet: setId ?? null,
   });
 
-  const set = getSet(setId);
   // Snapshotted at mount: recomputing these as answers land would reshuffle the
   // question stream and the on-screen choices mid-question.
-  const [{ chars, unlocked }] = useState(() => ({
-    chars: drillChars(setId, byKana),
-    unlocked: set ? unlockedKana(set.track, byKana) : [],
-  }));
+  const [session] = useState(() => {
+    const list = sessionChars({ setId, kana, chars }, byKana);
+    const stages =
+      list.length >= MIN_LIGHTNING_CHARS ? STAGES : STAGES.filter((s) => s !== 'lightning');
+    return { chars: list, stages };
+  });
 
   const [stageIdx, setStageIdx] = useState(0);
   const [done, setDone] = useState(false);
@@ -71,18 +84,18 @@ export function IslandSession({ setId, byKana, record, onExit }: IslandSessionPr
   }, [finish]);
 
   const handleStageComplete = useCallback(() => {
-    if (stageIdx + 1 >= STAGES.length) {
+    if (stageIdx + 1 >= session.stages.length) {
       void endRun();
       return;
     }
     setStageIdx(stageIdx + 1);
-  }, [stageIdx, endRun]);
+  }, [stageIdx, session.stages.length, endRun]);
 
   const quit = useCallback(() => {
     void endRun().then(onExit);
   }, [endRun, onExit]);
 
-  if (!set) return null;
+  if (session.chars.length === 0) return null;
 
   if (done) {
     const pct = answeredRef.current > 0 ? correctRef.current / answeredRef.current : 1;
@@ -102,22 +115,23 @@ export function IslandSession({ setId, byKana, record, onExit }: IslandSessionPr
     );
   }
 
-  const stage = STAGES[stageIdx];
+  const row = setId ? getSet(setId) : undefined;
+  const title = row ? row.entries.map((e) => e.kana).join(' · ') : (kana ?? t('mixedTitle'));
+
+  const stage = session.stages[stageIdx];
   const drillProps = {
-    setId,
-    chars,
-    unlocked,
+    chars: session.chars,
     onAnswer: handleAnswer,
     onComplete: handleStageComplete,
   };
 
   return (
     <GameShell
-      title={set.entries.map((e) => e.kana).join(' · ')}
-      emoji={set.label}
+      title={title}
+      emoji={row?.label ?? kana ?? '🌸'}
       howTo={t(`${stage}HowTo`)}
       current={stageIdx}
-      total={STAGES.length}
+      total={session.stages.length}
       comboCount={comboCount}
       onQuit={quit}
     >

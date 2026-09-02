@@ -20,8 +20,10 @@ const progress = {
 };
 vi.mock('@/hooks/useKanaProgress', () => ({ useKanaProgress: () => progress }));
 
-vi.mock('../IslandSession', () => ({
-  IslandSession: ({ setId }: { setId: string }) => <div>playing {setId}</div>,
+vi.mock('../KanaSession', () => ({
+  KanaSession: ({ setId, kana, chars }: { setId?: string; kana?: string; chars?: string[] }) => (
+    <div>playing {setId ?? kana ?? chars?.join(' ')}</div>
+  ),
 }));
 
 import { KanaJourneyScreen } from '../KanaJourneyScreen';
@@ -35,32 +37,44 @@ beforeEach(() => {
 });
 
 describe('KanaJourneyScreen', () => {
-  it('should show the path once progress has loaded', () => {
+  it('should show the chart once progress has loaded', () => {
     renderWithProviders(<KanaJourneyScreen />);
-    expect(screen.getByRole('button', { name: /^あ · い · う · え · お —/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^あ —/ })).toBeInTheDocument();
   });
 
-  it('should wait on a spinner instead of an empty path', () => {
+  it('should wait on a spinner instead of an empty chart', () => {
     progress.loading = true;
     progress.byKana = null as unknown as Map<string, never>;
     renderWithProviders(<KanaJourneyScreen />);
-    expect(screen.getByText('Opening your path…')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^あ ·/ })).not.toBeInTheDocument();
+    expect(screen.getByText('Opening your chart…')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^あ —/ })).not.toBeInTheDocument();
   });
 
   it('should tell a failed load apart from an empty one, and offer a retry', () => {
     progress.error = new DataError('upstream', 'down');
     progress.byKana = null as unknown as Map<string, never>;
     renderWithProviders(<KanaJourneyScreen />);
-    expect(screen.queryByRole('button', { name: /^あ ·/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^あ —/ })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
     expect(progress.retry).toHaveBeenCalled();
   });
 
-  it('should drop into the session for the island the learner picked', () => {
+  it('should drill the single character whose cell the learner tapped', () => {
     renderWithProviders(<KanaJourneyScreen />);
-    fireEvent.click(screen.getByRole('button', { name: /^あ · い · う · え · お —/ }));
-    expect(screen.getByText('playing hira-a')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /^ぬ —/ }));
+    expect(screen.getByText('playing ぬ')).toBeInTheDocument();
+  });
+
+  it('should drill a whole family from its column header', () => {
+    renderWithProviders(<KanaJourneyScreen />);
+    fireEvent.click(screen.getByRole('button', { name: 'Practise the か row' }));
+    expect(screen.getByText('playing hira-ka')).toBeInTheDocument();
+  });
+
+  it('should start the Review button on the queue, not on a row', () => {
+    renderWithProviders(<KanaJourneyScreen />);
+    fireEvent.click(screen.getByRole('button', { name: 'Review' }));
+    expect(screen.getByText('playing あ い う え お')).toBeInTheDocument();
   });
 
   it('should open the assigned row straight away from an assignment link', () => {
@@ -73,7 +87,7 @@ describe('KanaJourneyScreen', () => {
     searchParams.set('set', 'hira-nope');
     renderWithProviders(<KanaJourneyScreen />);
     expect(screen.queryByText(/^playing /)).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^あ · い · う · え · お —/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^あ —/ })).toBeInTheDocument();
   });
 
   it('should go back to the review hub from the header', () => {

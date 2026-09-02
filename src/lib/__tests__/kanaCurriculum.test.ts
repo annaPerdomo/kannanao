@@ -8,7 +8,6 @@ import {
   getSet,
   HIRAGANA_SETS,
   KANA_SETS,
-  kanaBefore,
   kanaDifficulty,
   kanaSetForChar,
   type KanaTrack,
@@ -160,13 +159,6 @@ describe('lookups', () => {
     expect(getSet('hira-ka')!.entries).toHaveLength(5);
     expect(getSet('nope')).toBeUndefined();
     expect(getKanaEntry('X')).toBeUndefined();
-  });
-
-  it('should list only earlier sets of the same track for kanaBefore', () => {
-    expect(kanaBefore('hira-a')).toEqual([]);
-    expect(kanaBefore('hira-ka')).toEqual(['あ', 'い', 'う', 'え', 'お']);
-    expect(kanaBefore('kata-ka')).toEqual(['ア', 'イ', 'ウ', 'エ', 'オ']);
-    expect(kanaBefore('unknown')).toEqual([]);
   });
 
   it('should return all 208 characters when no track is given', () => {

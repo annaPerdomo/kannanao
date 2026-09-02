@@ -15,12 +15,12 @@ export const LIGHTNING_SECONDS = 45;
 const TICK_MS = 250;
 const ADVANCE_MS = 450;
 
-export function LightningRound({ setId, chars, onAnswer, onComplete, unlocked }: KanaDrillProps) {
+export function LightningRound({ chars, onAnswer, onComplete, decoyPool }: KanaDrillProps) {
   const t = useTranslations('KanaJourney.lightning');
   const theme = useTheme();
   const { speak } = useSpeech();
 
-  const pool = useMemo(() => buildDrillPool(setId, unlocked), [setId, unlocked]);
+  const pool = useMemo(() => buildDrillPool(chars, decoyPool), [chars, decoyPool]);
   // Enough repeats that the clock, not the question stream, ends the round even
   // when the learner answers at the ADVANCE_MS floor.
   const order = useMemo(

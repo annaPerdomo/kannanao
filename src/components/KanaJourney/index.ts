@@ -1,5 +1,15 @@
-export { IslandButton, StarRow } from './IslandButton';
-export { IslandSession } from './IslandSession';
+export {
+  buildKanaChart,
+  CELL_WIDTH,
+  CHART_DIRECTION,
+  type ChartBlock,
+  type ChartColumn,
+  COMBO_ROWS,
+  stateTint,
+  VOWEL_ROWS,
+} from './constants';
+export { KanaChart } from './KanaChart';
+export { KanaChartCell } from './KanaChartCell';
 export {
   buildDrillPool,
   buildKanaChoices,
@@ -12,9 +22,10 @@ export {
 export { KanaGlyph } from './KanaGlyph';
 export { KanaHint } from './KanaHint';
 export { KanaJourneyScreen } from './KanaJourneyScreen';
+export { KanaSession, type KanaSessionRequest } from './KanaSession';
 export { KanaTileGrid } from './KanaTileGrid';
 export { LIGHTNING_SECONDS, LightningRound } from './LightningRound';
 export { RecallDrill } from './RecallDrill';
 export { RecognizeDrill } from './RecognizeDrill';
-export { TrackPath } from './TrackPath';
+export { ReviewButton } from './ReviewButton';
 export type { KanaDrillProps } from './types';

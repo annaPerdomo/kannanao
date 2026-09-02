@@ -983,27 +983,36 @@
     },
     "tile": {
       "title": "かなをまなぶ",
-      "description": "ひらがなとカタカナをゼロから。1行ずつ読めるようになります。"
+      "description": "ひらがなとカタカナ。わすれかけた文字をふくしゅう。"
     },
     "journey": {
       "title": "かなをまなぶ",
-      "subtitle": "行をえらんで、読むれんしゅうをはじめよう。",
-      "loading": "みちを ひらいています…",
+      "subtitle": "文字をタップして れんしゅうしよう。",
+      "loading": "ひょうを ひらいています…",
       "hiraganaTrack": "ひらがな",
       "katakanaTrack": "カタカナ",
-      "katakanaLockedHint": "さいしょの{total}行で星をとると、カタカナがひらきます。いまは{total}行のうち{done}行。",
-      "katakanaLockedLabel": "カタカナ — ロック中。{total}行のうち{done}行に星",
-      "startHere": "ここから",
-      "timeToReview": "ふくしゅうの時間",
-      "islandLabel": "{kana} — 星{max}こ中{stars}こ",
-      "lockedIslandLabel": "{kana} — ロック中。まえの行をさきにおえよう"
+      "review": "ふくしゅう",
+      "reviewSubtitle": "{count}文字を ふくしゅうしよう",
+      "reviewNothing": "ふくしゅうは なし。すきな文字を タップしてね",
+      "startHint": "{kana}の行から はじめよう",
+      "rowLabel": "{kana}の行を れんしゅう",
+      "cellLabel": "{kana} — {romaji}、{state}",
+      "markedBlock": "てんてん・まるの おと",
+      "comboBlock": "ちいさい や・ゆ・よ",
+      "state": {
+        "new": "はじめて",
+        "learning": "れんしゅう中",
+        "rusty": "わすれかけ",
+        "solid": "ばっちり"
+      }
     },
     "session": {
       "recognizeHowTo": "文字を見て、その音をタップしよう。",
       "recallHowTo": "音を聞いて、その文字をタップしよう。",
       "lightningHowTo": "スピードラウンド。時間内にできるだけ多く正解しよう。",
       "celebrationSubheading": "今回は {correct} / {total} 正解",
-      "backToJourney": "かなをまなぶにもどる"
+      "backToJourney": "かなをまなぶにもどる",
+      "mixedTitle": "ふくしゅう"
     }
   },
   "Group": {

@@ -271,14 +271,6 @@ export function allKana(track?: KanaTrack): string[] {
   return sets.flatMap((s) => s.entries.map((e) => e.kana));
 }
 
-export function kanaBefore(setId: string): string[] {
-  const set = getSet(setId);
-  if (!set) return [];
-  return setsForTrack(set.track)
-    .filter((s) => s.order < set.order)
-    .flatMap((s) => s.entries.map((e) => e.kana));
-}
-
 const SMALL_Y = new Set(['ゃ', 'ゅ', 'ょ', 'ャ', 'ュ', 'ョ']);
 
 // The small tsu has no sound and no curriculum entry, but reading っ means

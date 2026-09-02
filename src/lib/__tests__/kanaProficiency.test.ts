@@ -1,26 +1,25 @@
 import { describe, expect, it } from 'vitest';
 
-import { allKana, getSet, HIRAGANA_SETS, KATAKANA_SETS } from '@/lib/kanaCurriculum';
+import { allKana, getSet } from '@/lib/kanaCurriculum';
 import {
-  buildIslands,
   difficultyWeight,
   drillChars,
   earnedStrength,
   isKanaKnown,
-  isTrackUnlocked,
+  isNewLearner,
   isUnseen,
   type KanaMastery,
   kanaProgressMap,
   kanaStars,
   kanaStrength,
+  kanaStrengthState,
   MAX_UNSEEN_PER_QUEUE,
+  needsReviewCount,
+  NEW_LEARNER_MAX_SEEN,
   pickReviewQueue,
   setStars,
   STRENGTH_BANDS,
   STRONG_INTERLEAVE_RATIO,
-  TRACK_UNLOCK_SETS,
-  trackUnlockProgress,
-  unlockedKana,
 } from '@/lib/kanaProficiency';
 
 const DAY_MS = 86_400_000;
@@ -175,91 +174,6 @@ describe('setStars', () => {
   });
 });
 
-describe('buildIslands', () => {
-  it('should open only the first row for a brand-new learner', () => {
-    const islands = buildIslands('hiragana', new Map());
-    expect(islands).toHaveLength(HIRAGANA_SETS.length);
-    expect(islands[0].status).toBe('next');
-    expect(islands.slice(1).every((i) => i.status === 'locked')).toBe(true);
-  });
-
-  it('should open the next row once the one before it has a single star', () => {
-    const islands = buildIslands('hiragana', progressFor(['hira-a'], mastery(1)));
-    expect(islands[0].status).toBe('next');
-    expect(islands[1].status).toBe('available');
-    expect(islands[2].status).toBe('locked');
-  });
-
-  it('should mark a fully starred row mastered and point at the row after it', () => {
-    const islands = buildIslands('hiragana', progressFor(['hira-a'], mastery(5)));
-    expect(islands[0].status).toBe('mastered');
-    expect(islands[1].status).toBe('next');
-    expect(islands[2].status).toBe('locked');
-  });
-
-  it('should label reachable rows past the current one as available', () => {
-    const byKana = progressFor(['hira-a', 'hira-ka'], mastery(1));
-    const islands = buildIslands('hiragana', byKana);
-    expect(islands.map((i) => i.status).slice(0, 4)).toEqual([
-      'next',
-      'available',
-      'available',
-      'locked',
-    ]);
-  });
-
-  it('should keep an opened row open after a week away, only marking it due', () => {
-    const stale = {
-      ...mastery(6, 0, daysAgo(1)),
-      lastReviewedAt: daysAgo(7),
-      intervalDays: 1,
-    };
-    const islands = buildIslands('hiragana', progressFor(['hira-a'], stale), NOW);
-    expect(islands[0].status).toBe('mastered');
-    expect(islands[1].status).toBe('next');
-    expect(islands[0].dueCount).toBe(5);
-  });
-
-  it('should count characters whose spaced review has come around', () => {
-    const byKana = progressFor(['hira-a'], mastery(5, 0, YESTERDAY));
-    expect(buildIslands('hiragana', byKana)[0].dueCount).toBe(5);
-    expect(buildIslands('hiragana', progressFor(['hira-a'], mastery(5)))[0].dueCount).toBe(0);
-  });
-});
-
-describe('track unlocking', () => {
-  it('should always allow hiragana', () => {
-    expect(isTrackUnlocked('hiragana', new Map())).toBe(true);
-  });
-
-  it('should keep katakana shut until the first three hiragana rows are starred', () => {
-    const two = progressFor(['hira-a', 'hira-ka'], mastery(1));
-    expect(isTrackUnlocked('katakana', two)).toBe(false);
-    expect(trackUnlockProgress(two)).toBe(2);
-
-    const three = progressFor(['hira-a', 'hira-ka', 'hira-sa'], mastery(1));
-    expect(isTrackUnlocked('katakana', three)).toBe(true);
-    expect(trackUnlockProgress(three)).toBe(TRACK_UNLOCK_SETS);
-  });
-
-  it('should not require finishing hiragana to start katakana', () => {
-    const three = progressFor(['hira-a', 'hira-ka', 'hira-sa'], mastery(1));
-    expect(isTrackUnlocked('katakana', three)).toBe(true);
-    expect(buildIslands('hiragana', three).some((i) => i.status === 'locked')).toBe(true);
-    expect(buildIslands('katakana', three)[0].status).toBe('next');
-    expect(KATAKANA_SETS[0].entries[0].kana).toBe('ア');
-  });
-});
-
-describe('unlockedKana', () => {
-  it('should offer only reached characters as a decoy pool', () => {
-    const pool = unlockedKana('hiragana', progressFor(['hira-a'], mastery(5)));
-    expect(pool).toContain('あ');
-    expect(pool).toContain('か');
-    expect(pool).not.toContain('さ');
-  });
-});
-
 describe('drillChars', () => {
   it('should lead a replay with the characters that came due', () => {
     const set = getSet('hira-a')!;
@@ -337,12 +251,17 @@ describe('pickReviewQueue', () => {
     expect(queue.every((k) => getSet('hira-ka')!.entries.some((e) => e.kana === k))).toBe(true);
   });
 
-  it('should never hand a beginner a character the journey has not opened', () => {
-    const byKana = progressFor(['hira-a'], mastery(1));
+  it('should reach a character she has never once practised', () => {
+    const byKana = everythingSolid();
+    byKana.delete('ぬ');
+    expect(pickReviewQueue(byKana, { size: 12, now: NOW })).toContain('ぬ');
+  });
+
+  it('should introduce brand-new characters in curriculum order, a few at a time', () => {
+    const byKana = progressFor(['hira-a'], mastery(5));
     const queue = pickReviewQueue(byKana, { size: 20, now: NOW });
-    const open = unlockedKana('hiragana', byKana);
-    expect(queue.every((k) => open.includes(k))).toBe(true);
-    expect(queue).not.toContain('ア');
+    expect(queue).toContain('か');
+    expect(queue).not.toContain('ら');
   });
 
   it('should introduce only a handful of brand-new characters in one session', () => {
@@ -431,5 +350,59 @@ describe('pickReviewQueue', () => {
 
   it('should hand back nothing for a zero-size session', () => {
     expect(pickReviewQueue(new Map(), { size: 0, now: NOW })).toEqual([]);
+  });
+});
+
+describe('kanaStrengthState', () => {
+  it('should call a character new only when it has never been answered', () => {
+    expect(kanaStrengthState(undefined, NOW)).toBe('new');
+    expect(kanaStrengthState(mastery(0, 1), NOW)).toBe('learning');
+  });
+
+  it('should separate a character going rusty from one never learned', () => {
+    const learned = { ...mastery(12), lastReviewedAt: daysAgo(0), intervalDays: 10 };
+    expect(kanaStrengthState(learned, NOW)).toBe('solid');
+    expect(kanaStrengthState({ ...learned, lastReviewedAt: daysAgo(20) }, NOW)).toBe('rusty');
+  });
+
+  it('should not promote a shaky character to rusty just because time passed', () => {
+    const shakyOld = { ...mastery(4, 4), lastReviewedAt: daysAgo(30), intervalDays: 1 };
+    expect(kanaStrengthState(shakyOld, NOW)).toBe('learning');
+  });
+});
+
+describe('needsReviewCount', () => {
+  it('should count what the Review button will actually work on', () => {
+    const byKana = everythingSolid();
+    ['ぬ', 'ね', 'む'].forEach((k) => byKana.set(k, shaky(k)));
+    expect(needsReviewCount(byKana, { now: NOW })).toBe(3);
+  });
+
+  it('should not call never-seen characters a brush-up', () => {
+    expect(needsReviewCount(new Map(), { now: NOW })).toBe(0);
+  });
+
+  it('should say nothing is waiting when every character is fresh', () => {
+    expect(needsReviewCount(everythingSolid(), { now: NOW })).toBe(0);
+  });
+});
+
+describe('isNewLearner', () => {
+  it('should treat a learner with almost no answers as new', () => {
+    expect(isNewLearner(new Map())).toBe(true);
+    expect(isNewLearner(progressFor(['hira-a'], mastery(3)))).toBe(true);
+  });
+
+  it('should stop guiding once there are enough answers to order practice by', () => {
+    const answered = kanaProgressMap(
+      allKana('hiragana')
+        .slice(0, NEW_LEARNER_MAX_SEEN)
+        .map((kana) => ({ kana, ...mastery(1) })),
+    );
+    expect(isNewLearner(answered)).toBe(false);
+  });
+
+  it('should not count a character that only has an empty row', () => {
+    expect(isNewLearner(progressFor(['hira-a', 'hira-ka'], mastery(0, 0)))).toBe(true);
   });
 });
