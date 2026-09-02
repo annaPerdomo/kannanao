@@ -109,7 +109,16 @@ export function GameCard({ title, jpTitle, description, emoji, gradient, href }:
         </Box>
         <Typography
           variant="body2"
-          sx={{ color: 'text.secondary', lineHeight: 1.4, fontSize: '0.78rem', mt: 0.25 }}
+          sx={{
+            color: 'text.secondary',
+            lineHeight: 1.4,
+            fontSize: '0.78rem',
+            mt: 0.25,
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: 2,
+            overflow: 'hidden',
+          }}
         >
           {description}
         </Typography>
@@ -156,7 +165,12 @@ const GAMES: GameConfig[] = [
   },
 ];
 
-export function GameTiles() {
+export interface GameTilesProps {
+  /** Cards shown ahead of the built-in games, inside the same grid. */
+  leading?: GameCardProps[];
+}
+
+export function GameTiles({ leading = [] }: GameTilesProps) {
   const t = useTranslations('Games.tiles');
   return (
     // auto-fit, not a breakpoint: the list is full-width on a phone and a side
@@ -168,8 +182,12 @@ export function GameTiles() {
         display: 'grid',
         gap: 1.5,
         gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
+        alignItems: 'stretch',
       }}
     >
+      {leading.map((card) => (
+        <GameCard key={card.href} {...card} />
+      ))}
       {GAMES.map((game) => (
         <GameCard
           key={game.href}
