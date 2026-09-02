@@ -13,6 +13,7 @@ import { pickReviewQueue, REVIEW_SESSION_SIZE } from '@/lib/kanaProficiency';
 import { LAYOUT } from '@/theme';
 
 import { KanaChart } from './KanaChart';
+import { KanaChartPrintButton } from './KanaChartPrintButton';
 import { KanaCheck } from './KanaCheck';
 import { KanaSession, type KanaSessionRequest } from './KanaSession';
 import { ReviewButton } from './ReviewButton';
@@ -111,6 +112,7 @@ export function KanaJourneyScreen() {
             onPlayRow={playRow}
             onPlayKana={playKana}
           />
+          <KanaChartPrintButton track={track} />
         </>
       )}
     </Box>

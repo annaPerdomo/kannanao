@@ -1024,7 +1024,10 @@
         "learning": "getting there",
         "rusty": "getting rusty",
         "solid": "solid"
-      }
+      },
+      "printChart": "Print this chart",
+      "printChartTitle": "{script} chart",
+      "printChartHint": "Put it up where you study."
     },
     "session": {
       "wordPairHowTo": "Listen to the word, then tap the spelling you heard.",

@@ -11,6 +11,7 @@ export {
 } from './constants';
 export { KanaChart } from './KanaChart';
 export { KanaChartCell } from './KanaChartCell';
+export { KanaChartPrintButton } from './KanaChartPrintButton';
 export { KanaCheck } from './KanaCheck';
 export {
   buildDrillPool,

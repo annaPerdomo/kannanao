@@ -1024,7 +1024,10 @@
         "learning": "れんしゅう中",
         "rusty": "わすれかけ",
         "solid": "ばっちり"
-      }
+      },
+      "printChart": "この ひょうを いんさつ",
+      "printChartTitle": "{script}の ひょう",
+      "printChartHint": "べんきょうする ばしょに はっておこう。"
     },
     "session": {
       "wordPairHowTo": "ことばを 聞いて、聞こえた かきかたを タップしよう。",
