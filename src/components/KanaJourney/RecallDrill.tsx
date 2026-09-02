@@ -12,11 +12,11 @@ import type { KanaDrillProps } from './types';
 
 const ADVANCE_MS = 1100;
 
-export function RecallDrill({ setId, chars, onAnswer, onComplete, unlocked }: KanaDrillProps) {
+export function RecallDrill({ chars, onAnswer, onComplete, decoyPool }: KanaDrillProps) {
   const t = useTranslations('KanaJourney.recall');
   const tCommon = useTranslations('KanaJourney.common');
 
-  const pool = useMemo(() => buildDrillPool(setId, unlocked), [setId, unlocked]);
+  const pool = useMemo(() => buildDrillPool(chars, decoyPool), [chars, decoyPool]);
   const order = useMemo(() => drillOrder(chars), [chars]);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);

@@ -7,8 +7,10 @@ import {
   getKanaEntry,
   getSet,
   HIRAGANA_SETS,
+  isComboKana,
+  isContextualKana,
   KANA_SETS,
-  kanaBefore,
+  kanaDifficulty,
   kanaSetForChar,
   type KanaTrack,
   KATAKANA_SETS,
@@ -28,14 +30,40 @@ describe('kana curriculum shape', () => {
     expect(KATAKANA_SETS[0].id).toBe('kata-a');
   });
 
-  it.each(TRACKS)('should have 104 characters in %s: 46 base, 25 marked, 33 combos', (track) => {
-    const sets = setsForTrack(track);
-    const count = (kind: string) =>
-      sets.filter((s) => s.kind === kind).reduce((n, s) => n + s.entries.length, 0);
-    expect(count('base')).toBe(46);
-    expect(count('marked')).toBe(25);
-    expect(count('combo')).toBe(33);
-    expect(allKana(track)).toHaveLength(104);
+  it.each(TRACKS)(
+    'should have 104 sounded characters in %s: 46 base, 25 marked, 33 combos',
+    (track) => {
+      const sets = setsForTrack(track);
+      const count = (kind: string) =>
+        sets.filter((s) => s.kind === kind).reduce((n, s) => n + s.entries.length, 0);
+      expect(count('base')).toBe(46);
+      expect(count('marked')).toBe(25);
+      expect(count('combo')).toBe(33);
+      expect(allKana(track).filter((k) => !isContextualKana(k))).toHaveLength(104);
+    },
+  );
+
+  it('should carry the small tsu in both tracks and the long line in katakana only', () => {
+    expect(allKana('hiragana').filter(isContextualKana)).toEqual(['っ']);
+    expect(allKana('katakana').filter(isContextualKana)).toEqual(['ッ', 'ー']);
+  });
+
+  it('should put the contextual characters last so no existing character moves', () => {
+    for (const track of TRACKS) {
+      const entries = setsForTrack(track).flatMap((s) => s.entries);
+      const first = entries.findIndex((e) => isContextualKana(e.kana));
+      expect(entries.slice(first).every((e) => isContextualKana(e.kana))).toBe(true);
+    }
+    expect(getKanaEntry('あ')!.order).toBe(1);
+    expect(getKanaEntry('き')!.setId).toBe('hira-ka');
+    expect(getKanaEntry('ぴょ')!.order).toBe(104);
+  });
+
+  it('should caption a contextual character in words, never in romaji', () => {
+    expect(getKanaEntry('っ')!.romaji).toBe('');
+    expect(getKanaEntry('っ')!.labelKey).toBe('littleTsu');
+    expect(getKanaEntry('ー')!.labelKey).toBe('longSound');
+    expect(getKanaEntry('か')!.labelKey).toBeUndefined();
   });
 
   it('should include を — the object particle a learner meets in their first sentence', () => {
@@ -43,9 +71,8 @@ describe('kana curriculum shape', () => {
     expect(getSet('kata-wa')!.entries.map((e) => e.kana)).toEqual(['ワ', 'ヲ', 'ン']);
   });
 
-  it('should exclude extended katakana and the long-vowel mark', () => {
+  it('should exclude extended katakana', () => {
     const kana = allKana();
-    expect(kana).not.toContain('ー');
     for (const extended of ['ファ', 'ティ', 'ヴ', 'ウィ']) {
       expect(kana).not.toContain(extended);
     }
@@ -116,7 +143,7 @@ describe('kana romaji', () => {
   // One direction only: the reverse (toKana(romaji) === kana) is deliberately
   // not asserted — it cannot hold for the duplicate-sound pairs below.
   it('should match wanakana for every character in both tracks', () => {
-    for (const kana of allKana()) {
+    for (const kana of allKana().filter((k) => !isContextualKana(k))) {
       expect(toRomaji(kana)).toBe(getKanaEntry(kana)!.romaji);
     }
   });
@@ -149,7 +176,10 @@ describe('kana romaji', () => {
 
   it('should give the two tracks matching sounds position for position', () => {
     const romaji = (track: KanaTrack) =>
-      setsForTrack(track).flatMap((s) => s.entries.map((e) => e.romaji));
+      setsForTrack(track)
+        .flatMap((s) => s.entries)
+        .filter((e) => !isContextualKana(e.kana))
+        .map((e) => e.romaji);
     expect(romaji('katakana')).toEqual(romaji('hiragana'));
   });
 });
@@ -161,15 +191,8 @@ describe('lookups', () => {
     expect(getKanaEntry('X')).toBeUndefined();
   });
 
-  it('should list only earlier sets of the same track for kanaBefore', () => {
-    expect(kanaBefore('hira-a')).toEqual([]);
-    expect(kanaBefore('hira-ka')).toEqual(['あ', 'い', 'う', 'え', 'お']);
-    expect(kanaBefore('kata-ka')).toEqual(['ア', 'イ', 'ウ', 'エ', 'オ']);
-    expect(kanaBefore('unknown')).toEqual([]);
-  });
-
-  it('should return all 208 characters when no track is given', () => {
-    expect(allKana()).toHaveLength(208);
+  it('should return every character when no track is given', () => {
+    expect(allKana()).toHaveLength(211);
   });
 });
 
@@ -206,21 +229,21 @@ describe('segmentReading', () => {
   it('should keep a combination sound whole', () => {
     expect(segmentReading('きゃく')).toEqual(['きゃ', 'く']);
     expect(segmentReading('りょこう')).toEqual(['りょ', 'こ', 'う']);
-    expect(segmentReading('ジュース')).toEqual(['ジュ', 'ス']);
+    expect(segmentReading('ジュース')).toEqual(['ジュ', 'ー', 'ス']);
   });
 
   it('should read a dakuten character as its own entry, not its base', () => {
-    expect(segmentReading('がっこう')).toEqual(['が', 'つ', 'こ', 'う']);
+    expect(segmentReading('がっこう')).toEqual(['が', 'っ', 'こ', 'う']);
     expect(segmentReading('ぱん')).toEqual(['ぱ', 'ん']);
   });
 
-  it('should count the small tsu as the row tsu lives in', () => {
-    expect(segmentReading('きって')).toEqual(['き', 'つ', 'て']);
-    expect(segmentReading('カップ')).toEqual(['カ', 'ツ', 'プ']);
+  it('should report the small tsu as itself, the character a reader has to notice', () => {
+    expect(segmentReading('きって')).toEqual(['き', 'っ', 'て']);
+    expect(segmentReading('カップ')).toEqual(['カ', 'ッ', 'プ']);
   });
 
-  it('should skip the katakana long vowel mark rather than report it', () => {
-    expect(segmentReading('コーヒー')).toEqual(['コ', 'ヒ']);
+  it('should report the long line rather than swallow it', () => {
+    expect(segmentReading('コーヒー')).toEqual(['コ', 'ー', 'ヒ', 'ー']);
   });
 
   it('should treat a written-out long vowel as ordinary characters', () => {
@@ -243,6 +266,21 @@ describe('segmentReading', () => {
   });
 });
 
+describe('isContextualKana and isComboKana', () => {
+  it('should name only the characters with no sound of their own', () => {
+    expect(allKana().filter(isContextualKana)).toEqual(['っ', 'ッ', 'ー']);
+    expect(isContextualKana('つ')).toBe(false);
+    expect(isContextualKana('新')).toBe(false);
+  });
+
+  it('should name the two-part sounds in both scripts', () => {
+    expect(isComboKana('きゃ')).toBe(true);
+    expect(isComboKana('ジュ')).toBe(true);
+    expect(isComboKana('き')).toBe(false);
+    expect(isComboKana('っ')).toBe(false);
+  });
+});
+
 describe('kanaSetForChar', () => {
   it('should name the row a character belongs to', () => {
     expect(kanaSetForChar('き')).toBe('hira-ka');
@@ -250,14 +288,15 @@ describe('kanaSetForChar', () => {
     expect(kanaSetForChar('ヲ')).toBe('kata-wa');
   });
 
-  it('should send the small tsu to the ta row', () => {
-    expect(kanaSetForChar('っ')).toBe(kanaSetForChar('つ'));
-    expect(kanaSetForChar('ッ')).toBe(kanaSetForChar('ツ'));
+  it('should give the contextual characters a row of their own', () => {
+    expect(kanaSetForChar('っ')).toBe('hira-context');
+    expect(kanaSetForChar('ッ')).toBe('kata-context');
+    expect(kanaSetForChar('ー')).toBe('kata-context');
   });
 
   it('should have nothing to say about a non-curriculum character', () => {
-    expect(kanaSetForChar('ー')).toBeNull();
     expect(kanaSetForChar('新')).toBeNull();
+    expect(kanaSetForChar('ぁ')).toBeNull();
   });
 });
 
@@ -272,5 +311,32 @@ describe('orderKanaSets', () => {
 
   it('should ignore an id that names no row', () => {
     expect(orderKanaSets(['nope']).length).toBe(0);
+  });
+});
+
+describe('kanaDifficulty', () => {
+  it('should rank plain rows below marked rows below combination sounds', () => {
+    expect(kanaDifficulty('か')).toBeLessThan(kanaDifficulty('が'));
+    expect(kanaDifficulty('が')).toBeLessThan(kanaDifficulty('ぎゃ'));
+  });
+
+  it('should add to a character that has look-alikes', () => {
+    expect(kanaDifficulty('ね')).toBeGreaterThan(kanaDifficulty('な'));
+    expect(kanaDifficulty('シ')).toBeGreaterThan(kanaDifficulty('サ'));
+  });
+
+  it('should add to a character beginner words hardly ever use', () => {
+    expect(kanaDifficulty('む')).toBeGreaterThan(kanaDifficulty('ま'));
+  });
+
+  it('should rank the contextual characters above every sounded one', () => {
+    const sounded = allKana().filter((k) => !isContextualKana(k));
+    expect(kanaDifficulty('っ')).toBeGreaterThan(Math.max(...sounded.map(kanaDifficulty)));
+    expect(kanaDifficulty('ー')).toBe(kanaDifficulty('っ'));
+  });
+
+  it('should stay inside 0 and 1, and stay neutral about an unknown character', () => {
+    expect(allKana().every((k) => kanaDifficulty(k) >= 0 && kanaDifficulty(k) <= 1)).toBe(true);
+    expect(kanaDifficulty('新')).toBe(0.5);
   });
 });

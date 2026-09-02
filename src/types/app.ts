@@ -7,7 +7,8 @@ export type PracticeMode =
   | 'kotoba-bubble'
   | 'quiz'
   | 'listen'
-  | 'reading';
+  | 'reading'
+  | 'kanji-match';
 
 export interface AppState {
   screen: Screen;

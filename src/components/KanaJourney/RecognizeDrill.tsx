@@ -14,13 +14,13 @@ import type { KanaDrillProps } from './types';
 
 const ADVANCE_MS = 1100;
 
-export function RecognizeDrill({ setId, chars, onAnswer, onComplete, unlocked }: KanaDrillProps) {
+export function RecognizeDrill({ chars, onAnswer, onComplete, decoyPool }: KanaDrillProps) {
   const t = useTranslations('KanaJourney.recognize');
   const tCommon = useTranslations('KanaJourney.common');
   const theme = useTheme();
   const { speak } = useSpeech();
 
-  const pool = useMemo(() => buildDrillPool(setId, unlocked), [setId, unlocked]);
+  const pool = useMemo(() => buildDrillPool(chars, decoyPool), [chars, decoyPool]);
   const order = useMemo(() => drillOrder(chars), [chars]);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);

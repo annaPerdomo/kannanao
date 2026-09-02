@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getSet, kanaBefore } from '@/lib/kanaCurriculum';
+import { allKana, isContextualKana } from '@/lib/kanaCurriculum';
 
 import {
   buildDrillPool,
@@ -8,11 +8,29 @@ import {
   buildRomajiChoices,
   CHOICE_COUNT,
   drillOrder,
+  FOCUS_SIZE,
+  focusDrillChars,
   pickDecoys,
   romajiOf,
 } from '../kanaDrill';
 
 const HIRA_A = ['あ', 'い', 'う', 'え', 'お'];
+
+describe('focusDrillChars', () => {
+  it('should put the tapped character first, then its look-alikes, then its row', () => {
+    expect(focusDrillChars('ぬ')).toEqual(['ぬ', 'め', 'な', 'に', 'ね']);
+  });
+
+  it('should fill a session from the row, so a short row still gives its whole row', () => {
+    for (const kana of ['あ', 'ソ']) expect(focusDrillChars(kana)).toHaveLength(FOCUS_SIZE);
+    expect(focusDrillChars('ん')).toEqual(['ん', 'わ', 'を']);
+    expect(focusDrillChars('きゅ')).toEqual(['きゅ', 'きゃ', 'きょ']);
+  });
+
+  it('should return nothing for a character outside the curriculum', () => {
+    expect(focusDrillChars('漢')).toEqual([]);
+  });
+});
 
 describe('romajiOf', () => {
   it('should read a character from the curriculum', () => {
@@ -26,34 +44,43 @@ describe('romajiOf', () => {
 });
 
 describe('buildDrillPool', () => {
-  it('should draw on the set itself plus everything unlocked before it', () => {
-    const pool = buildDrillPool('hira-na');
-    expect(pool).toEqual(expect.arrayContaining(getSet('hira-na')!.entries.map((e) => e.kana)));
-    expect(pool).toEqual(expect.arrayContaining(kanaBefore('hira-na')));
-    expect(pool).not.toContain('ま');
+  it('should draw on the whole track when no pool is given', () => {
+    const pool = buildDrillPool(['な', 'に']);
+    expect(pool).toEqual(allKana('hiragana').filter((k) => !isContextualKana(k)));
   });
 
-  it('should top up from the rest of the track when the learner has almost nothing unlocked', () => {
-    const pool = buildDrillPool('hira-a', ['あ', 'い']);
+  it('should keep っ and ー out of every pool: they cannot label an option', () => {
+    expect(buildDrillPool(['な']).some(isContextualKana)).toBe(false);
+    expect(buildDrillPool(['ナ'], ['ッ', 'ー']).some(isContextualKana)).toBe(false);
+    expect(buildDrillPool([]).some(isContextualKana)).toBe(false);
+  });
+
+  it('should span both scripts for a mixed queue', () => {
+    const pool = buildDrillPool(['な', 'ニ']);
+    expect(pool).toContain('な');
+    expect(pool).toContain('ニ');
+  });
+
+  it('should top up a pool too small to fill four options', () => {
+    const pool = buildDrillPool(['あ'], ['あ', 'い']);
     expect(pool.length).toBeGreaterThanOrEqual(CHOICE_COUNT);
     expect(pool.slice(0, 2)).toEqual(['あ', 'い']);
     expect(new Set(pool).size).toBe(pool.length);
   });
 
-  it('should keep a big enough unlocked pool exactly as given', () => {
-    const unlocked = [...HIRA_A, 'か'];
-    expect(buildDrillPool('hira-a', unlocked)).toEqual(unlocked);
+  it('should keep a big enough pool exactly as given', () => {
+    const given = [...HIRA_A, 'か'];
+    expect(buildDrillPool(['あ'], given)).toEqual(given);
   });
 
-  it('should stay with the unlocked list for an unknown set', () => {
-    expect(buildDrillPool('nope', ['あ'])).toEqual(['あ']);
-    expect(buildDrillPool('nope')).toEqual([]);
+  it('should fall back to the whole chart for characters it does not know', () => {
+    expect(buildDrillPool(['漢'])).toEqual(allKana().filter((k) => !isContextualKana(k)));
   });
 });
 
 describe('pickDecoys', () => {
   it('should return the requested number of decoys, never the target', () => {
-    const decoys = pickDecoys('あ', buildDrillPool('hira-a'));
+    const decoys = pickDecoys('あ', buildDrillPool(HIRA_A));
     expect(decoys).toHaveLength(CHOICE_COUNT - 1);
     expect(decoys).not.toContain('あ');
   });
@@ -90,13 +117,13 @@ describe('pickDecoys', () => {
   });
 
   it('should honour a custom decoy count', () => {
-    expect(pickDecoys('あ', buildDrillPool('hira-ka'), 1)).toHaveLength(1);
+    expect(pickDecoys('あ', buildDrillPool(['か', 'き', 'く', 'け', 'こ']), 1)).toHaveLength(1);
   });
 });
 
 describe('buildRomajiChoices', () => {
   it('should offer four sounds with exactly one right answer', () => {
-    const choices = buildRomajiChoices('か', buildDrillPool('hira-ka'));
+    const choices = buildRomajiChoices('か', buildDrillPool(['か', 'き', 'く', 'け', 'こ']));
     expect(choices).toHaveLength(CHOICE_COUNT);
     expect(choices.filter((c) => c.correct)).toHaveLength(1);
     expect(choices.find((c) => c.correct)!.text).toBe('ka');
@@ -104,7 +131,9 @@ describe('buildRomajiChoices', () => {
 
   it('should never repeat a sound among the options', () => {
     for (const kana of ['じ', 'ず', 'ぢ', 'づ']) {
-      const texts = buildRomajiChoices(kana, buildDrillPool('hira-da')).map((c) => c.text);
+      const texts = buildRomajiChoices(kana, buildDrillPool(['だ', 'ぢ', 'づ', 'で', 'ど'])).map(
+        (c) => c.text,
+      );
       expect(new Set(texts).size).toBe(texts.length);
     }
   });
@@ -112,7 +141,7 @@ describe('buildRomajiChoices', () => {
 
 describe('buildKanaChoices', () => {
   it('should offer four characters with exactly one right answer', () => {
-    const choices = buildKanaChoices('き', buildDrillPool('hira-ka'));
+    const choices = buildKanaChoices('き', buildDrillPool(['か', 'き', 'く', 'け', 'こ']));
     expect(choices).toHaveLength(CHOICE_COUNT);
     expect(choices.filter((c) => c.correct)).toHaveLength(1);
     expect(choices.find((c) => c.correct)!.text).toBe('き');

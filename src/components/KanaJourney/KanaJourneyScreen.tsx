@@ -9,31 +9,67 @@ import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { useKanaProgress } from '@/hooks/useKanaProgress';
 import { getSet, isKanaSetId, type KanaTrack } from '@/lib/kanaCurriculum';
+import { pickReviewQueue, REVIEW_SESSION_SIZE } from '@/lib/kanaProficiency';
 import { LAYOUT } from '@/theme';
 
-import { IslandSession } from './IslandSession';
-import { TrackPath } from './TrackPath';
+import { KanaChart } from './KanaChart';
+import { KanaChartPrintButton } from './KanaChartPrintButton';
+import { KanaCheck } from './KanaCheck';
+import { KanaSession, type KanaSessionRequest } from './KanaSession';
+import { ReviewButton } from './ReviewButton';
 
 export function KanaJourneyScreen() {
   const t = useTranslations('KanaJourney.journey');
   const router = useRouter();
   const { byKana, loading, error, retry, record } = useKanaProgress();
-  // The assignment link. It bypasses the path's locks on purpose — an assigned
-  // row a learner cannot reach is a dead end, not a lesson.
   const assigned = useSearchParams()?.get('set') ?? null;
   const linkedSet = assigned !== null && isKanaSetId(assigned) ? assigned : null;
   const [track, setTrack] = useState<KanaTrack>(
     () => (linkedSet ? getSet(linkedSet)?.track : null) ?? 'hiragana',
   );
-  const [playing, setPlaying] = useState<string | null>(linkedSet);
+  const [session, setSession] = useState<KanaSessionRequest | null>(
+    linkedSet ? { setId: linkedSet } : null,
+  );
+  const [checking, setChecking] = useState(false);
 
-  const exitSession = useCallback(() => setPlaying(null), []);
+  const exitSession = useCallback(() => setSession(null), []);
+  const playRow = useCallback((setId: string) => setSession({ setId }), []);
+  const playKana = useCallback((kana: string) => setSession({ kana }), []);
+  const review = useCallback(() => {
+    if (!byKana) return;
+    setSession({
+      chars: pickReviewQueue(byKana, {
+        track: 'both',
+        size: REVIEW_SESSION_SIZE,
+        includeStrong: true,
+      }),
+    });
+  }, [byKana]);
 
-  if (playing && byKana) {
+  const startCheck = useCallback(() => setChecking(true), []);
+  const finishCheck = useCallback(() => {
+    setChecking(false);
+    review();
+  }, [review]);
+
+  if (checking && byKana) {
     return (
-      <IslandSession
-        key={playing}
-        setId={playing}
+      <KanaCheck
+        byKana={byKana}
+        record={record}
+        onExit={() => setChecking(false)}
+        onReview={finishCheck}
+      />
+    );
+  }
+
+  if (session && byKana) {
+    return (
+      <KanaSession
+        key={session.setId ?? session.kana ?? session.chars?.join('')}
+        setId={session.setId}
+        kana={session.kana}
+        chars={session.chars}
         byKana={byKana}
         record={record}
         onExit={exitSession}
@@ -67,7 +103,17 @@ export function KanaJourneyScreen() {
       ) : error || !byKana ? (
         <DataErrorState error={error} onRetry={retry} />
       ) : (
-        <TrackPath track={track} byKana={byKana} onTrackChange={setTrack} onPlay={setPlaying} />
+        <>
+          <ReviewButton byKana={byKana} onReview={review} onCheck={startCheck} />
+          <KanaChart
+            track={track}
+            byKana={byKana}
+            onTrackChange={setTrack}
+            onPlayRow={playRow}
+            onPlayKana={playKana}
+          />
+          <KanaChartPrintButton track={track} />
+        </>
       )}
     </Box>
   );

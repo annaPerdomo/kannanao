@@ -26,6 +26,13 @@ describe('Review hub — Learn Kana tile', () => {
     expect(mockPush).toHaveBeenCalledWith('/review/learn-kana');
   });
 
+  it('should no longer promise one row at a time, which the chart replaced', () => {
+    renderWithProviders(<ReviewHubPage />);
+    const tile = screen.getByRole('button', { name: /^Learn Kana —/ });
+    expect(tile).toHaveAccessibleName(/brush up the ones going rusty/);
+    expect(tile).not.toHaveAccessibleName(/one row at a time/);
+  });
+
   it('should sit ahead of the arcade games', () => {
     const { container } = renderWithProviders(<ReviewHubPage />);
     const tiles = within(container).getAllByRole('button', { name: /—/ });

@@ -1,4 +1,4 @@
-import { allKana } from '@/lib/kanaCurriculum';
+import { allKana, isContextualKana } from '@/lib/kanaCurriculum';
 import {
   type GroupKanaReadiness,
   KANA_SIGNAL_MIN_ANSWERS,
@@ -76,7 +76,10 @@ export async function getGroupKnownKana(
   // absent rows as gaps would flag every character in every plan.
   const startedIndexes = members.flatMap((m, i) => (m.started ? [i] : []));
   const shakyBy: Record<string, number[]> = {};
-  for (const kana of startedIndexes.length > 0 ? allKana() : []) {
+  // っ/ッ/ー are only ever answered in a word pair, so nearly every learner
+  // lacks a row for them: scanning them would flag every loanword in a plan.
+  const scanned = startedIndexes.length > 0 ? allKana().filter((k) => !isContextualKana(k)) : [];
+  for (const kana of scanned) {
     const behind = startedIndexes.filter((i) => !knownByMember.get(members[i].id)?.has(kana));
     if (behind.length > 0) shakyBy[kana] = behind;
   }

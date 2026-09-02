@@ -2,7 +2,7 @@ export { CounterGame } from './CounterGame';
 export * from './countersData';
 export * from './data';
 export { GameShell } from './GameShell';
-export { GameCard, type GameCardProps, GameTiles } from './GameTiles';
+export { GameCard, type GameCardProps, GameTiles, type GameTilesProps } from './GameTiles';
 export * from './gameWords';
 export { KanaBuilder } from './KanaBuilder';
 export { ParticlePicker } from './ParticlePicker';

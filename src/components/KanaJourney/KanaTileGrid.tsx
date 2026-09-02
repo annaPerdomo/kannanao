@@ -9,9 +9,19 @@ interface KanaTileGridProps {
   onSelect: (kana: string) => void;
 }
 
+// Word-pair choices are whole words, not single characters: a fixed 3rem tile
+// would push きって past the edge of a half-width column on a phone.
+function tileFontSize(choices: string[]) {
+  const longest = Math.max(0, ...choices.map((choice) => [...choice].length));
+  if (longest <= 2) return { xs: '2.4rem', sm: '3rem' };
+  if (longest <= 4) return { xs: '1.7rem', sm: '2.1rem' };
+  return { xs: '1.3rem', sm: '1.6rem' };
+}
+
 export function KanaTileGrid({ choices, correct, selected, onSelect }: KanaTileGridProps) {
   const theme = useTheme();
   const { brand, surfaces } = theme.palette;
+  const fontSize = tileFontSize(choices);
 
   return (
     <Grid container spacing={{ xs: 1, sm: 1.5 }}>
@@ -65,14 +75,7 @@ export function KanaTileGrid({ choices, correct, selected, onSelect }: KanaTileG
                   : {},
               }}
             >
-              <Typography
-                component="span"
-                sx={{
-                  fontSize: { xs: '2.4rem', sm: '3rem' },
-                  lineHeight: 1,
-                  color: 'text.primary',
-                }}
-              >
+              <Typography component="span" sx={{ fontSize, lineHeight: 1, color: 'text.primary' }}>
                 {choice}
               </Typography>
             </Box>

@@ -77,6 +77,21 @@ describe('getGroupKnownKana', () => {
     expect(readiness.shakyBy['い']).toEqual([0]);
   });
 
+  it('should hold the reads-it bar at four-fifths accuracy', async () => {
+    rosterIds = ['m1'];
+    tables.profiles = [profile('m1', 'ken')];
+    tables.kana_progress = [
+      progress('m1', 'あ', 12, 3),
+      progress('m1', 'い', 10, 3),
+      progress('m1', 'う', 4),
+    ];
+
+    const readiness = await getGroupKnownKana('g1', 'org1');
+    expect(readiness.shakyBy['あ']).toBeUndefined();
+    expect(readiness.shakyBy['い']).toEqual([0]);
+    expect(readiness.shakyBy['う']).toBeUndefined();
+  });
+
   it('should point at members by index and leave untried members out of the count', async () => {
     rosterIds = ['m1', 'm2', 'm3'];
     tables.profiles = [profile('m1', 'ken'), profile('m2', 'mai'), profile('m3', 'sam')];
@@ -89,6 +104,15 @@ describe('getGroupKnownKana', () => {
     const readiness = await getGroupKnownKana('g1', 'org1');
     expect(readiness.members.map((m) => m.started)).toEqual([true, true, false]);
     expect(readiness.shakyBy['ら']).toEqual([1]);
+  });
+
+  it('should never flag the characters that have no question of their own', async () => {
+    rosterIds = ['m1'];
+    tables.profiles = [profile('m1', 'ken')];
+    tables.kana_progress = [progress('m1', 'あ', 6)];
+
+    const readiness = await getGroupKnownKana('g1', 'org1');
+    for (const kana of ['っ', 'ッ', 'ー']) expect(readiness.shakyBy[kana]).toBeUndefined();
   });
 
   it('should prefer a display name over the username', async () => {

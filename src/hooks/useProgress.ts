@@ -39,6 +39,7 @@ export type SessionMode =
   | 'quiz'
   | 'listen'
   | 'reading'
+  | 'kanji-match'
   | 'speech_read'
   | 'speech_recall'
   | 'kotoba-bubble'

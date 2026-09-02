@@ -31,6 +31,7 @@ import { WarmUpPanel } from './WarmUpPanel';
 
 interface ReviewStepProps {
   plan: LessonPlan;
+  groupId: string;
   warmUp: WarmUpWord[];
   knownWords: WarmUpWord[];
   kanaReadiness: GroupKanaReadiness | null;
@@ -58,6 +59,7 @@ interface ReviewStepProps {
 
 export function ReviewStep({
   plan,
+  groupId,
   warmUp,
   knownWords,
   kanaReadiness,
@@ -201,6 +203,7 @@ export function ReviewStep({
               plan={plan}
               warmUp={warmUp}
               kanaSets={companionSets}
+              groupId={groupId}
               disabled={applying || counts.decks === 0}
             />
             <Button onClick={onStartOver} disabled={applying} sx={{ textTransform: 'none' }}>

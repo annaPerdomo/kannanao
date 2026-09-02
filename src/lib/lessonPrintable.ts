@@ -1,7 +1,7 @@
 import type { PlanDeck, WarmUpWord } from '@/types/lessonPlan';
 
 import { furiganaFromReading, parseFurigana } from './furigana';
-import { orderKanaSets } from './kanaCurriculum';
+import { type KanaLabelKey, orderKanaSets } from './kanaCurriculum';
 
 export type PrintableVariant = 'study' | 'quiz';
 
@@ -22,9 +22,10 @@ export interface PrintableLabels {
   deck?: string;
   kanaTitle?: string;
   kanaHint?: string;
+  kanaContextual?: Partial<Record<KanaLabelKey, string>>;
 }
 
-function escapeHtml(text: string): string {
+export function escapeHtml(text: string): string {
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -48,7 +49,8 @@ function wordCellHtml(word: string, reading: string): string {
   return marked ? furiganaToRubyHtml(marked) : escapeHtml(word);
 }
 
-const PAGE_CSS = `
+// Black on white, no background floods: a school printer may have only grey toner.
+export const PRINT_BASE_CSS = `
   * { box-sizing: border-box; }
   body {
     font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
@@ -57,6 +59,10 @@ const PAGE_CSS = `
     padding: 24px;
   }
   @page { margin: 14mm; }
+`;
+
+const PAGE_CSS = `
+  ${PRINT_BASE_CSS}
   section.week { page-break-after: always; }
   section.warmup { page-break-after: always; }
   section.week:last-child { page-break-after: auto; }
@@ -131,10 +137,12 @@ function kanaSheetSection(setIds: string[], labels: PrintableLabels): string {
   const rows = sets
     .map((set) => {
       const cells = set.entries
-        .map(
-          (entry) =>
-            `<td><div class="kana-char">${escapeHtml(entry.kana)}</div><div class="kana-romaji">${escapeHtml(entry.romaji)}</div></td>`,
-        )
+        .map((entry) => {
+          const caption = entry.labelKey
+            ? (labels.kanaContextual?.[entry.labelKey] ?? '')
+            : entry.romaji;
+          return `<td><div class="kana-char">${escapeHtml(entry.kana)}</div><div class="kana-romaji">${escapeHtml(caption)}</div></td>`;
+        })
         .join('');
       return `<tr><td class="rowhead">${escapeHtml(set.label)}</td>${cells}</tr>`;
     })
@@ -217,10 +225,21 @@ ${kana}
 </html>`;
 }
 
-/** Opens the built document in a new tab, which immediately offers the print dialog. */
-export function openPrintWindow(html: string): void {
-  const win = window.open('', '_blank');
-  if (!win) return;
+// Safari only honours window.open inside the gesture handler, so a caller that
+// has to await data must claim the tab first and write into it afterwards.
+export function openBlankPrintWindow(): Window | null {
+  return window.open('', '_blank');
+}
+
+export function writePrintWindow(win: Window, html: string): void {
   win.document.write(html);
   win.document.close();
+}
+
+/** False means the browser blocked the tab. */
+export function openPrintWindow(html: string): boolean {
+  const win = openBlankPrintWindow();
+  if (!win) return false;
+  writePrintWindow(win, html);
+  return true;
 }

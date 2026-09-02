@@ -129,6 +129,7 @@
       "locked": "ロック中",
       "play": "あそぶ →",
       "unlockHint": "カードを2枚以上追加すると練習モードが使えます。",
+      "noKanjiCards": "漢字のカードが すこし ひつようです",
       "mixedError": "練習をはじめられませんでした。もう一度おためしください。"
     },
     "practiceModes": {
@@ -155,6 +156,10 @@
       "reading": {
         "label": "よみかた",
         "description": "漢字の読み方をつくる"
+      },
+      "kanjiMatch": {
+        "label": "かんじペア",
+        "description": "ことばと よみかたを ペアにする"
       },
       "quiz": {
         "label": "クイズ",
@@ -527,6 +532,7 @@
     "questMap": {
       "warmup": "ウォームアップ",
       "match": "ワードマッチ",
+      "kana": "もじ",
       "boss": "ボスラウンド",
       "chest": "チェスト"
     },
@@ -549,7 +555,9 @@
       "bossRoundTitle": "ボスラウンド",
       "bossRoundSubtitle": "最後の3語 — 意味を選ぼう。XPは2倍！",
       "todaysPractice": "今日の練習",
-      "cardsBadge": "{count, plural, other {カード#枚}}"
+      "cardsBadge": "{count, plural, other {カード#枚}}",
+      "kanaRoundTitle": "もじ",
+      "kanaRoundSubtitle": "{count, plural, other {もじを#こ おさらいしよう}}"
     },
     "todayPage": {
       "findingReviews": "復習をさがしています…",
@@ -714,7 +722,8 @@
         "kotobaBubble": "文づくり",
         "quiz": "クイズ",
         "listen": "リスニング",
-        "reading": "よみかた"
+        "reading": "よみかた",
+        "kanjiMatch": "かんじペア"
       }
     },
     "batchPicker": {
@@ -964,6 +973,26 @@
     }
   },
   "KanaJourney": {
+    "check": {
+      "title": "かんたんチェック",
+      "howTo": "文字の おとを タップしよう。はやくても だいじょうぶ。",
+      "question": "この文字の音は？",
+      "solid": "{count}文字は ばっちりそう",
+      "workOn": "まずは {kana} から。ほかも れんしゅうしながら たしかめよう。",
+      "workOnNothing": "あぶない文字は なさそう。れんしゅうしながら たしかめよう。",
+      "startReview": "ふくしゅうを はじめる"
+    },
+    "contextual": {
+      "littleTsu": "ちいさい つ",
+      "longSound": "のばす おと"
+    },
+    "wordPair": {
+      "question": "どっちを 聞いた？",
+      "listen": "タップで音を聞く"
+    },
+    "scriptMatch": {
+      "question": "ひらがなと カタカナを ペアにしよう。"
+    },
     "common": {
       "hint": "ヒントを見る",
       "next": "つぎへ"
@@ -983,27 +1012,44 @@
     },
     "tile": {
       "title": "かなをまなぶ",
-      "description": "ひらがなとカタカナをゼロから。1行ずつ読めるようになります。"
+      "description": "ひらがなとカタカナ。わすれかけた文字をふくしゅう。"
     },
     "journey": {
+      "contextualBlock": "おとを かえる もじ",
+      "check": "かんたんチェック",
+      "checkHint": "もう よめる もじが ある？ チェックは 1ぷんだよ。",
       "title": "かなをまなぶ",
-      "subtitle": "行をえらんで、読むれんしゅうをはじめよう。",
-      "loading": "みちを ひらいています…",
+      "subtitle": "文字をタップして れんしゅうしよう。",
+      "loading": "ひょうを ひらいています…",
       "hiraganaTrack": "ひらがな",
       "katakanaTrack": "カタカナ",
-      "katakanaLockedHint": "さいしょの{total}行で星をとると、カタカナがひらきます。いまは{total}行のうち{done}行。",
-      "katakanaLockedLabel": "カタカナ — ロック中。{total}行のうち{done}行に星",
-      "startHere": "ここから",
-      "timeToReview": "ふくしゅうの時間",
-      "islandLabel": "{kana} — 星{max}こ中{stars}こ",
-      "lockedIslandLabel": "{kana} — ロック中。まえの行をさきにおえよう"
+      "review": "ふくしゅう",
+      "reviewSubtitle": "{count}文字を ふくしゅうしよう",
+      "reviewNothing": "ふくしゅうは なし。すきな文字を タップしてね",
+      "startHint": "{kana}の行から はじめよう",
+      "rowLabel": "{kana}の行を れんしゅう",
+      "cellLabel": "{kana} — {romaji}、{state}",
+      "markedBlock": "てんてん・まるの おと",
+      "comboBlock": "ちいさい や・ゆ・よ",
+      "state": {
+        "new": "はじめて",
+        "learning": "れんしゅう中",
+        "rusty": "わすれかけ",
+        "solid": "ばっちり"
+      },
+      "printChart": "この ひょうを いんさつ",
+      "printChartTitle": "{script}の ひょう",
+      "printChartHint": "べんきょうする ばしょに はっておこう。"
     },
     "session": {
+      "scriptMatchHowTo": "ひらがなを タップして、おなじ おとの カタカナを タップしよう。",
+      "wordPairHowTo": "ことばを 聞いて、聞こえた かきかたを タップしよう。",
       "recognizeHowTo": "文字を見て、その音をタップしよう。",
       "recallHowTo": "音を聞いて、その文字をタップしよう。",
       "lightningHowTo": "スピードラウンド。時間内にできるだけ多く正解しよう。",
       "celebrationSubheading": "今回は {correct} / {total} 正解",
-      "backToJourney": "かなをまなぶにもどる"
+      "backToJourney": "かなをまなぶにもどる",
+      "mixedTitle": "ふくしゅう"
     }
   },
   "Group": {
@@ -1117,7 +1163,8 @@
         "kotobaBubble": "文づくり",
         "quiz": "クイズ",
         "listen": "リスニング",
-        "reading": "よみかた"
+        "reading": "よみかた",
+        "kanjiMatch": "かんじペア"
       },
       "goalBoth": "{mode}で{accuracy}%",
       "goalAccuracyOnly": "{accuracy}%",
@@ -1635,7 +1682,29 @@
       "kanaAssignFailed": "かなの ぎょう {sounds} は わりあてられませんでした。グループの ページから わりあてられます。",
       "printKanaToggle": "この レッスンの おとの かなページを つける",
       "printKanaTitle": "この レッスンの おと",
-      "printKanaHint": "この レッスンで つかう ぎょうだけです。こえに だして よんでみましょう。"
+      "printKanaHint": "この レッスンで つかう ぎょうだけです。こえに だして よんでみましょう。",
+      "referenceSheetsButton": "一覧表を印刷",
+      "sheetsTitle": "一覧表",
+      "sheetsSubtitle": "配ったり、壁に貼ったりできる表です。",
+      "sheetsScriptLabel": "どの表",
+      "sheetsScriptBoth": "両方を並べて",
+      "sheetsRomajiToggle": "ローマ字を入れる",
+      "sheetsBlankToggle": "書き込み用の空欄",
+      "sheetsKanaButton": "かな表",
+      "sheetsGroupButton": "グループの進み具合",
+      "sheetsKanjiButton": "漢字の練習シート",
+      "sheetsKanaTitle": "かな表",
+      "sheetsKanaHint": "各列を上から下へ、あ・い・う・え・お と読みます。",
+      "sheetsBlankTitle": "かな練習シート",
+      "sheetsBlankHint": "マスの中に一文字ずつ書きましょう。",
+      "sheetsGroupTitle": "グループが読めるかな",
+      "sheetsGroupHint": "全体の割合だけです。個人の名前は出ません。",
+      "sheetsGroupLegend": "各バーは、{count}人のうち何人がその文字を読めるかを表します。",
+      "sheetsGroupLoading": "グループの読みを確認しています…",
+      "sheetsPopupBlocked": "ブラウザが印刷用のタブをブロックしました。このサイトのポップアップを許可して、もう一度お試しください。",
+      "sheetsGroupEmpty": "このグループにはまだ学習者がいません。",
+      "sheetsKanjiTitle": "漢字の練習シート",
+      "sheetsKanjiEmpty": "この計画には漢字で書く語がありません。"
     },
     "deckReadiness": {
       "heading": "デッキの仕上がり",
@@ -1771,6 +1840,7 @@
       "title": "今日のぼうけん",
       "missionHelp": "{name}をてつだおう！",
       "reviewsCount": "{count, plural, other {#問}}",
+      "charactersCount": "{count, plural, other {もじ#こ}}",
       "minutesEstimate": "約{min}分",
       "start": "はじめる",
       "completedTitle": "ぼうけんクリア！",

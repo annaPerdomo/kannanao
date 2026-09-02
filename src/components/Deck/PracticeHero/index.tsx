@@ -5,6 +5,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { MIN_READING_CARDS } from '@/components/Practice/ReadingMode/eligibility';
 import type { PracticeMode } from '@/types/app';
 
 import { PRACTICE_CONFIG } from '../constants';
@@ -21,6 +22,8 @@ interface PracticeHeroProps {
   onPractice: (mode: PracticeMode) => void;
   /** Kanji Reading practice is unlocked for this deck (deck settings). */
   readingUnlocked?: boolean;
+  /** Word ↔ reading pairs the deck can deal — Kanji Pairs needs a boardful. */
+  kanjiPairCount?: number;
   /** Start a mixed session. Absent (or on a deck too small) leaves the plain grid. */
   onMixedPractice?: () => void;
   /** The mixed session is being planned — the progress read has not landed yet. */
@@ -34,6 +37,7 @@ export function PracticeHero({
   onStudy,
   onPractice,
   readingUnlocked = false,
+  kanjiPairCount = 0,
   onMixedPractice,
   mixedStarting = false,
   mixedError = false,
@@ -43,7 +47,10 @@ export function PracticeHero({
   const { brand } = useTheme().palette;
   const practiceDisabled = cardCount < 2;
   // Absent, not locked, until the owner unlocks it: kana comes long before kanji.
-  const tiles = PRACTICE_CONFIG.filter((tile) => tile.mode !== 'reading' || readingUnlocked);
+  const tiles = PRACTICE_CONFIG.filter(
+    (tile) => (tile.mode !== 'reading' && tile.mode !== 'kanji-match') || readingUnlocked,
+  );
+  const noKanji = kanjiPairCount < MIN_READING_CARDS;
   const mixed = !!onMixedPractice && !practiceDisabled;
   // Demoted, never deleted: for some learners one game is the whole hook.
   const [gamesOpen, setGamesOpen] = useState(false);
@@ -123,7 +130,7 @@ export function PracticeHero({
         <Box
           sx={{
             display: 'grid',
-            // 8 tiles (Flashcards + 7 modes) — four per row fills both rows exactly.
+            // Four per row keeps a kana deck's 8 tiles as two full rows.
             gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' },
             gap: { xs: 1.5, sm: 2 },
           }}
@@ -141,17 +148,20 @@ export function PracticeHero({
           />
           {tiles.map(({ mode, labelKey, descriptionKey, kanji, color }) => {
             const label = tModes(labelKey);
+            const disabled = practiceDisabled || (mode === 'kanji-match' && noKanji);
             return (
               <PracticeTile
                 key={mode}
                 kanji={kanji}
                 color={color}
                 label={label}
-                description={tModes(descriptionKey)}
-                cta={practiceDisabled ? t('locked') : t('play')}
-                disabled={practiceDisabled}
+                description={
+                  mode === 'kanji-match' && noKanji ? t('noKanjiCards') : tModes(descriptionKey)
+                }
+                cta={disabled ? t('locked') : t('play')}
+                disabled={disabled}
                 ariaLabel={
-                  practiceDisabled ? t('lockedAria', { label }) : t('startPracticeAria', { label })
+                  disabled ? t('lockedAria', { label }) : t('startPracticeAria', { label })
                 }
                 onActivate={() => onPractice(mode)}
               />

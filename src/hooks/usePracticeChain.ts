@@ -44,7 +44,9 @@ export function useStartAssignmentQuest() {
       if (goal && !chainLegHref(deckId, { step: 'goal', mode: goal }, 'assignment')) {
         return deckPage();
       }
-      if (goal === 'reading' && deck && deck.readingPractice !== true) return deckPage();
+      if ((goal === 'reading' || goal === 'kanji-match') && deck && deck.readingPractice !== true) {
+        return deckPage();
+      }
 
       const legs = planAssignmentQuest({
         cardCount: deck?.cardCount ?? 0,

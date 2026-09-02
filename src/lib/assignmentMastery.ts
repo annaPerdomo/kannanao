@@ -35,6 +35,7 @@ export const GOAL_MODES = [
   'quiz',
   'listen',
   'reading',
+  'kanji-match',
 ] as const satisfies readonly SessionMode[];
 
 export type GoalMode = (typeof GOAL_MODES)[number];
@@ -49,6 +50,7 @@ export const GOAL_MODE_LABELS: Record<GoalMode, string> = {
   quiz: 'Quiz',
   listen: 'Listen',
   reading: 'Reading',
+  'kanji-match': 'Kanji Pairs',
 };
 
 export function isGoalMode(value: unknown): value is GoalMode {
