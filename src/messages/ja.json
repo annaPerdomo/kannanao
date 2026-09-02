@@ -1829,6 +1829,7 @@
       "title": "今日のぼうけん",
       "missionHelp": "{name}をてつだおう！",
       "reviewsCount": "{count, plural, other {#問}}",
+      "charactersCount": "{count, plural, other {もじ#こ}}",
       "minutesEstimate": "約{min}分",
       "start": "はじめる",
       "completedTitle": "ぼうけんクリア！",

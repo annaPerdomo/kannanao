@@ -1,9 +1,10 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TodayAdventureCard } from '@/components/TodayAdventureCard';
 import { minutesFor } from '@/components/TodayAdventureCard/AdventureStates';
 import { localDateString } from '@/lib/chest';
+import { KANA_WAIT_MS } from '@/lib/quest';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 const push = vi.fn();
@@ -22,6 +23,11 @@ vi.mock('@/contexts/BuddyFriendshipContext', () => ({
 
 const shopState = vi.fn();
 vi.mock('@/contexts/ShopContext', () => ({ useShopCtx: () => shopState() }));
+
+const kanaState = vi.fn();
+vi.mock('@/hooks/useKanaProgress', () => ({
+  useKanaProgress: (enabled?: boolean) => kanaState(enabled),
+}));
 
 const TODAY = localDateString(new Date());
 const dayBefore = (days: number) => {
@@ -81,6 +87,8 @@ describe('TodayAdventureCard', () => {
     progressState.mockReturnValue(progress());
     friendshipState.mockReturnValue(friendship());
     shopState.mockReturnValue({ equipped: { study_buddy: 'buddy_bunny' } });
+    kanaState.mockClear();
+    kanaState.mockReturnValue({ byKana: new Map(), error: null });
   });
 
   // Row for row, not one guessed height — the hero clips an over-tall placeholder.
@@ -345,6 +353,76 @@ describe('TodayAdventureCard', () => {
       await settled();
       expect(screen.queryByText(/study day/)).toBeNull();
       expect(screen.getByRole('img', { name: /Study days this week/ })).toBeInTheDocument();
+    });
+  });
+  describe('characters she is quietly forgetting', () => {
+    /** Three characters answered, all wrong — weak, and not "never seen". */
+    const slipping = () =>
+      new Map(
+        ['ぬ', 'ね', 'ま'].map((kana) => [
+          kana,
+          {
+            correctCount: 1,
+            wrongCount: 4,
+            intervalDays: 0,
+            ease: 2.5,
+            lastReviewedAt: dayBefore(9),
+            nextReviewAt: dayBefore(8),
+          },
+        ]),
+      );
+
+    it('should not spend a query on the chart while cards are waiting', async () => {
+      dueState.mockReturnValue(due({ dueCount: 6 }));
+      renderWithProviders(<TodayAdventureCard />);
+      await settled();
+      expect(kanaState).toHaveBeenCalledWith(false);
+      expect(screen.getByText('6 reviews · ~2 min')).toBeInTheDocument();
+    });
+
+    it('should offer the quest when the cards are clear but the reading is not', async () => {
+      dueState.mockReturnValue(due({ dueCount: 0 }));
+      kanaState.mockReturnValue({ byKana: slipping(), error: null });
+      renderWithProviders(<TodayAdventureCard />);
+
+      await screen.findByRole('button', { name: 'Start' });
+      expect(screen.getByText('3 characters · ~2 min')).toBeInTheDocument();
+      expect(screen.queryByText('No reviews waiting today.')).toBeNull();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+      expect(push).toHaveBeenCalledWith('/review/today');
+    });
+
+    it('should still say all caught up when the reading is solid too', async () => {
+      dueState.mockReturnValue(due({ dueCount: 0 }));
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText('No reviews waiting today.');
+    });
+
+    describe('when the chart read hangs', () => {
+      beforeEach(() => vi.useFakeTimers({ shouldAdvanceTime: true }));
+      afterEach(() => vi.useRealTimers());
+
+      // getKanaProgress has no timeout — without the deadline the skeleton stays.
+      it('should give up on the characters and show the card anyway', async () => {
+        dueState.mockReturnValue(due({ dueCount: 0 }));
+        kanaState.mockReturnValue({ byKana: null, error: null });
+        renderWithProviders(<TodayAdventureCard />);
+        expect(document.querySelector('.MuiSkeleton-root')).not.toBeNull();
+
+        await act(async () => {
+          vi.advanceTimersByTime(KANA_WAIT_MS);
+        });
+        expect(screen.getByText('No reviews waiting today.')).toBeInTheDocument();
+      });
+    });
+
+    it('should stay hidden when the due count failed', async () => {
+      dueState.mockReturnValue(due({ dueCount: 0, error: 'boom' }));
+      kanaState.mockReturnValue({ byKana: slipping(), error: null });
+      const { container } = renderWithProviders(<TodayAdventureCard />);
+      await settled();
+      expect(container).toBeEmptyDOMElement();
     });
   });
 });

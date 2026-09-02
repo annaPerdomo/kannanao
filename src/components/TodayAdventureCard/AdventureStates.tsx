@@ -11,6 +11,9 @@ import { FACE_SIZE } from './styles';
 /** Round on purpose: the "~N min" promise says "this is short", not a real ETA. */
 const SECONDS_PER_CARD = 20;
 
+/** KanaRound drills every character twice — recognize, then recall. */
+const KANA_QUESTIONS = 2;
+
 export function minutesFor(dueCount: number): number {
   return Math.max(1, Math.ceil((dueCount * SECONDS_PER_CARD) / 60));
 }
@@ -108,15 +111,18 @@ export function DueState({
   buddyName,
   faceSrc,
   dueCount,
+  kanaCount,
   friendshipLine,
   onStart,
   onPlayGame,
 }: StateProps & {
   dueCount: number;
+  kanaCount?: number;
   friendshipLine?: string | null;
   onStart: () => void;
   onPlayGame: () => void;
 }) {
+  const kana = kanaCount ?? 0;
   const t = useTranslations('Home.adventure');
   // The card body carries its own onClick, so every button here must stop the
   // click from reaching it.
@@ -136,8 +142,11 @@ export function DueState({
             {t('missionHelp', { name: buddyName })}
           </Typography>
           <Typography variant="body2" sx={{ fontWeight: 600, color: alpha('#fff', 0.9) }}>
-            {t('reviewsCount', { count: dueCount })} ·{' '}
-            {t('minutesEstimate', { min: minutesFor(dueCount) })}
+            {[
+              ...(dueCount > 0 ? [t('reviewsCount', { count: dueCount })] : []),
+              ...(kana > 0 || dueCount === 0 ? [t('charactersCount', { count: kana })] : []),
+              t('minutesEstimate', { min: minutesFor(dueCount + kana * KANA_QUESTIONS) }),
+            ].join(' · ')}
           </Typography>
         </Box>
         {/* Stock contained variant — the theme paints it with a background-image

@@ -1829,6 +1829,7 @@
       "title": "Today's Adventure",
       "missionHelp": "Help {name}!",
       "reviewsCount": "{count, plural, one {# review} other {# reviews}}",
+      "charactersCount": "{count, plural, one {# character} other {# characters}}",
       "minutesEstimate": "~{min} min",
       "start": "Start",
       "completedTitle": "Adventure complete!",
