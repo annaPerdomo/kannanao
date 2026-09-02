@@ -2,6 +2,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { use } from 'react';
 
+import { LearnerRedirect } from '@/components/LearnerRedirect';
 import Deck from '@/pages/Deck';
 
 export default function DeckPage({ params }: { params: Promise<{ id: string }> }) {
@@ -11,11 +12,14 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
   const backPath = searchParams?.get('from') === 'home' ? '/' : '/decks';
 
   return (
-    <Deck
-      deckId={id}
-      onBack={() => router.push(backPath)}
-      onStudy={() => router.push(`/deck/${id}/study`)}
-      onPractice={(mode) => router.push(`/deck/${id}/practice/${mode}`)}
-    />
+    <>
+      <LearnerRedirect to="/binder" />
+      <Deck
+        deckId={id}
+        onBack={() => router.push(backPath)}
+        onStudy={() => router.push(`/deck/${id}/study`)}
+        onPractice={(mode) => router.push(`/deck/${id}/practice/${mode}`)}
+      />
+    </>
   );
 }

@@ -22,7 +22,7 @@ import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
 import { useProgressCtx } from '@/contexts/ProgressContext';
 import { LAYOUT } from '@/theme';
 
-import { NAV_ITEMS } from './constants';
+import { navItemsFor } from './constants';
 import { EditNameDialog } from './EditNameDialog';
 import { LanguageMenu } from './LanguageMenu';
 import { NavLinks } from './NavLinks';
@@ -110,7 +110,7 @@ export function NavBar() {
   );
 
   const navItems = useMemo(
-    () => NAV_ITEMS.filter((item) => !item.organizerOnly || !isMemberAccount),
+    () => navItemsFor(isMemberAccount).filter((item) => !item.organizerOnly || !isMemberAccount),
     [isMemberAccount],
   );
 

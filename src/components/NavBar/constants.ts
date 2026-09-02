@@ -4,13 +4,27 @@ import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import FlightIcon from '@mui/icons-material/Flight';
 import GroupsIcon from '@mui/icons-material/Groups';
 import HomeIcon from '@mui/icons-material/Home';
+import InsertEmoticonIcon from '@mui/icons-material/InsertEmoticon';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MicIcon from '@mui/icons-material/Mic';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 
 export interface NavItem {
   /** Translation key under `Nav.items`. */
-  key: 'home' | 'decks' | 'materials' | 'groups' | 'speech' | 'travel' | 'stats' | 'shop';
+  key:
+    | 'home'
+    | 'practice'
+    | 'binder'
+    | 'me'
+    | 'decks'
+    | 'materials'
+    | 'groups'
+    | 'speech'
+    | 'travel'
+    | 'stats'
+    | 'shop';
   href: string;
   icon: SvgIconComponent;
   /** Active only on an exact pathname match instead of a prefix match. */
@@ -19,6 +33,7 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
+  { key: 'practice', href: '/review', icon: LocalFireDepartmentIcon },
   { key: 'decks', href: '/decks', icon: LibraryBooksIcon },
   { key: 'materials', href: '/materials', icon: DesignServicesIcon, organizerOnly: true },
   { key: 'groups', href: '/group', icon: GroupsIcon, organizerOnly: true },
@@ -28,13 +43,26 @@ export const NAV_ITEMS: NavItem[] = [
   { key: 'shop', href: '/shop', icon: StorefrontIcon, exact: true },
 ];
 
-// The bottom bar replaces the logo-as-home-link, so it prepends Home. Materials
-// is left out: MuiBottomNavigation splits the width evenly with no scroll, so an
-// eighth action leaves ~47px each on a 375px phone and the labels clip.
+export const LEARNER_NAV_ITEMS: NavItem[] = [
+  { key: 'practice', href: '/', icon: LocalFireDepartmentIcon, exact: true },
+  { key: 'binder', href: '/binder', icon: MenuBookIcon },
+  { key: 'me', href: '/me', icon: InsertEmoticonIcon },
+];
+
+export function navItemsFor(isMemberAccount: boolean): NavItem[] {
+  return isMemberAccount ? LEARNER_NAV_ITEMS : NAV_ITEMS;
+}
+
+// Home replaces the logo link; Materials and Travel are dropped because
+// MuiBottomNavigation splits the width evenly with no scroll and eight labels clip on a phone.
 export const BOTTOM_NAV_ITEMS: NavItem[] = [
   { key: 'home', href: '/', icon: HomeIcon, exact: true },
-  ...NAV_ITEMS.filter((item) => item.key !== 'materials'),
+  ...NAV_ITEMS.filter((item) => item.key !== 'materials' && item.key !== 'travel'),
 ];
+
+export function bottomNavItemsFor(isMemberAccount: boolean): NavItem[] {
+  return isMemberAccount ? LEARNER_NAV_ITEMS : BOTTOM_NAV_ITEMS;
+}
 
 // Sized to nearly fill the Toolbar (56 xs / 64 sm / 78 md) so the buddy's
 // face is legible; the avatar button loses its vertical padding to make room.

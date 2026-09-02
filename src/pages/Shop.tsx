@@ -45,7 +45,7 @@ import { buddyFaceSrc } from '@/lib/buddies';
 import { type ColorScheme, LAYOUT } from '@/theme';
 import type { ShopCategory, ShopItem } from '@/types/shop';
 
-export default function Shop() {
+export default function Shop({ embedded = false }: { embedded?: boolean } = {}) {
   const router = useRouter();
   const t = useTranslations('Shop');
   const tItems = useTranslations('Shop.items');
@@ -231,7 +231,7 @@ export default function Shop() {
           icon={<CardGiftcardIcon />}
           title={t('title')}
           subtitle={t('subtitle')}
-          onBack={() => router.push('/')}
+          onBack={embedded ? undefined : () => router.push('/')}
           mb={0}
           endContent={
             loading ? (

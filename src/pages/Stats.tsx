@@ -25,7 +25,7 @@ import { useProgressCtx } from '@/contexts/ProgressContext';
 import { ACHIEVEMENTS } from '@/hooks/useProgress';
 import { LAYOUT } from '@/theme';
 
-export default function Stats() {
+export default function Stats({ embedded = false }: { embedded?: boolean } = {}) {
   const router = useRouter();
   const t = useTranslations('Stats');
   const tCommon = useTranslations('Common');
@@ -69,7 +69,7 @@ export default function Stats() {
         icon={<InsightsIcon />}
         title={t('pageHeader.title')}
         subtitle={t('pageHeader.subtitle')}
-        onBack={() => router.push('/')}
+        onBack={embedded ? undefined : () => router.push('/')}
         mb={3}
       />
 

@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { useAuth } from '@/contexts/AuthContext';
 
-import { BOTTOM_NAV_ITEMS } from './constants';
+import { bottomNavItemsFor } from './constants';
 
 export const BOTTOM_NAV_HEIGHT = 56;
 
@@ -21,7 +21,9 @@ export function BottomNav() {
 
   if (!user) return null;
 
-  const items = BOTTOM_NAV_ITEMS.filter((item) => !item.organizerOnly || !isMemberAccount);
+  const items = bottomNavItemsFor(isMemberAccount).filter(
+    (item) => !item.organizerOnly || !isMemberAccount,
+  );
   const currentIndex = items.findIndex((item) =>
     item.exact ? pathname === item.href : pathname?.startsWith(item.href),
   );
