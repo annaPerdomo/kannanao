@@ -527,6 +527,7 @@
     "questMap": {
       "warmup": "ウォームアップ",
       "match": "ワードマッチ",
+      "kana": "もじ",
       "boss": "ボスラウンド",
       "chest": "チェスト"
     },
@@ -549,7 +550,9 @@
       "bossRoundTitle": "ボスラウンド",
       "bossRoundSubtitle": "最後の3語 — 意味を選ぼう。XPは2倍！",
       "todaysPractice": "今日の練習",
-      "cardsBadge": "{count, plural, other {カード#枚}}"
+      "cardsBadge": "{count, plural, other {カード#枚}}",
+      "kanaRoundTitle": "もじ",
+      "kanaRoundSubtitle": "{count, plural, other {もじを#こ おさらいしよう}}"
     },
     "todayPage": {
       "findingReviews": "復習をさがしています…",

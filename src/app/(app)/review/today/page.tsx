@@ -8,6 +8,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Loading } from '@/components/Loading';
 import { ReviewQuest } from '@/components/ReviewQuest';
 import { useAuth } from '@/contexts/AuthContext';
+import { useKanaProgress } from '@/hooks/useKanaProgress';
+import { KANA_MAX_DUE, KANA_WAIT_MS, pickQuestKana, planQuest } from '@/lib/quest';
 import { getDueCards } from '@/lib/supabase';
 import { LAYOUT } from '@/theme';
 import type { Flashcard } from '@/types/flashcard';
@@ -68,16 +70,17 @@ function AllDone({ onGames, onHome }: { onGames: () => void; onHome: () => void 
 
 /**
  * Today's practice, presented as a short quest. Pulls the cards due right now
- * across ALL the student's decks and hands them to <ReviewQuest>, which sizes
- * the node path (Warm-up → Word Match → Boss Round), runs it inside one review
- * session, and ends with the perfect bonus + daily chest. Only cards graded at
+ * across ALL the student's decks — plus the few characters the reading queue
+ * says are slipping — and hands them to <ReviewQuest>. Only cards graded at
  * least once ever become due (see getDueCards), so this never floods day one.
  */
 export default function ReviewTodayPage() {
   const t = useTranslations('Review.todayPage');
   const router = useRouter();
   const { user } = useAuth();
+  const { byKana, error: kanaError, record: recordKana } = useKanaProgress();
   const [cards, setCards] = useState<Flashcard[] | null>(null);
+  const [kanaChars, setKanaChars] = useState<string[] | null>(null);
   const [error, setError] = useState(false);
   // Bumped by the retry button; re-runs the fetch effect.
   const [attempt, setAttempt] = useState(0);
@@ -104,6 +107,27 @@ export default function ReviewTodayPage() {
     };
   }, [user, attempt]);
 
+  // Picked ONCE: a fresh array per render reshuffles the drills mid-node. A
+  // failed, slow or irrelevant read means no characters, never a blocked queue.
+  useEffect(() => {
+    if (kanaChars !== null) return;
+    // kanaNodeSize drops the node at this size anyway — nothing to wait for.
+    if (cards !== null && cards.length > KANA_MAX_DUE) {
+      setKanaChars([]);
+      return;
+    }
+    if (byKana) {
+      setKanaChars(pickQuestKana(byKana));
+      return;
+    }
+    if (kanaError) {
+      setKanaChars([]);
+      return;
+    }
+    const timer = setTimeout(() => setKanaChars([]), KANA_WAIT_MS);
+    return () => clearTimeout(timer);
+  }, [byKana, kanaError, kanaChars, cards]);
+
   if (error) {
     return (
       <Box
@@ -129,7 +153,7 @@ export default function ReviewTodayPage() {
     );
   }
 
-  if (cards === null) {
+  if (cards === null || kanaChars === null) {
     return (
       <Box
         sx={{
@@ -144,9 +168,17 @@ export default function ReviewTodayPage() {
     );
   }
 
-  if (cards.length === 0) {
+  // Not cards.length: "all caught up" has to mean the characters too.
+  if (planQuest(cards, kanaChars).nodes.length === 0) {
     return <AllDone onGames={() => router.push('/review')} onHome={() => router.push('/')} />;
   }
 
-  return <ReviewQuest cards={cards} onExit={() => router.push('/review')} />;
+  return (
+    <ReviewQuest
+      cards={cards}
+      kanaChars={kanaChars}
+      recordKana={recordKana}
+      onExit={() => router.push('/review')}
+    />
+  );
 }

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import FlipStudy, { type FlipStudyController } from '@/components/FlipStudy';
 import { cardsToMatchWords, WordMatchEmbedded } from '@/components/Games';
+import { KANA_XP } from '@/components/KanaJourney';
 import { Loading } from '@/components/Loading';
 import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,6 +24,7 @@ import { LAYOUT } from '@/theme';
 import type { Flashcard } from '@/types/flashcard';
 
 import { BossRound } from './BossRound';
+import { KanaRound } from './KanaRound';
 import { QuestInterstitial } from './QuestInterstitial';
 import { QuestMap } from './QuestMap';
 import type { QuestGrade } from './types';
@@ -30,6 +32,9 @@ import type { QuestGrade } from './types';
 export interface ReviewQuestProps {
   /** Due cards for today, soonest-first (already fetched by the page). */
   cards: Flashcard[];
+  kanaChars?: string[];
+  /** Writes one graded character to kana_progress; never throws. */
+  recordKana?: (kana: string, correct: boolean) => Promise<void>;
   onExit: () => void;
 }
 
@@ -40,7 +45,7 @@ export interface ReviewQuestProps {
  * Match → optional Boss Round — and the perfect bonus + daily chest are checked
  * once, at the end.
  */
-export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
+export function ReviewQuest({ cards, kanaChars, recordKana, onExit }: ReviewQuestProps) {
   const t = useTranslations('Review.reviewQuest');
   const { user } = useAuth();
   const { startSession, recordAnswer, endSession, addBonusXp, openDailyChest, progress } =
@@ -63,7 +68,11 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
   );
   const combo = useCombo(trackedAddBonusXp);
 
-  const plan = useMemo(() => planQuest(cards), [cards]);
+  // No writer means no kana node: XP for evidence nobody stores.
+  const plan = useMemo(
+    () => planQuest(cards, recordKana ? (kanaChars ?? []) : []),
+    [cards, kanaChars, recordKana],
+  );
   const matchWords = useMemo(() => cardsToMatchWords(plan.match), [plan.match]);
 
   const sessionIdRef = useRef('');
@@ -81,6 +90,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
   const [ready, setReady] = useState(false);
   const [nodeIdx, setNodeIdx] = useState(0);
   const [showBossIntro, setShowBossIntro] = useState(false);
+  const [showKanaIntro, setShowKanaIntro] = useState(() => plan.nodes[0]?.type === 'kana');
   const [done, setDone] = useState(false);
   const [chestEligible, setChestEligible] = useState(false);
   const [perfect, setPerfect] = useState(false);
@@ -88,8 +98,9 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
 
   // Open the one review session on mount. startSession is identity-stable, so
   // this fires exactly once even as progress updates.
+  const questSize = plan.nodes.length;
   useEffect(() => {
-    if (cards.length === 0) return;
+    if (questSize === 0) return;
     let cancelled = false;
     startSession(null, 'review').then((id) => {
       if (cancelled) return;
@@ -100,7 +111,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
     return () => {
       cancelled = true;
     };
-  }, [cards.length, startSession]);
+  }, [questSize, startSession]);
 
   const finishQuest = useCallback(async () => {
     if (endedRef.current) return;
@@ -177,6 +188,24 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
     [triggerXpEarned, recordAnswer, combo],
   );
 
+  // Both writes go through pendingWritesRef: finishQuest's endSession re-reads
+  // the session XP, and a write still in flight reads it back stale.
+  const gradeKana = useCallback(
+    (kana: string, correct: boolean) => {
+      answeredRef.current += 1;
+      if (correct) correctRef.current += 1;
+      triggerXpEarned(correct ? KANA_XP : XP_PER_WRONG);
+      if (sessionIdRef.current) {
+        pendingWritesRef.current.push(
+          recordAnswer(sessionIdRef.current, correct, undefined, undefined, KANA_XP),
+        );
+      }
+      if (recordKana) pendingWritesRef.current.push(recordKana(kana, correct));
+      combo.onAnswer(correct);
+    },
+    [triggerXpEarned, recordAnswer, recordKana, combo],
+  );
+
   const advanceNode = useCallback(() => {
     const next = nodeIdx + 1;
     if (next >= plan.nodes.length) {
@@ -184,6 +213,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
       return;
     }
     if (plan.nodes[next].type === 'boss') setShowBossIntro(true);
+    if (plan.nodes[next].type === 'kana') setShowKanaIntro(true);
     setNodeIdx(next);
   }, [nodeIdx, plan.nodes, finishQuest]);
 
@@ -205,7 +235,7 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
     [grade, advanceNode, combo.count],
   );
 
-  if (cards.length === 0) return null;
+  if (plan.nodes.length === 0) return null;
   if (!ready) {
     return (
       <Box
@@ -260,6 +290,22 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
     <QuestMap nodes={plan.nodes} currentIndex={nodeIdx} chestAvailable={chestAvailable} />
   );
 
+  // ── Characters intro interstitial ──────────────────────────────────────────
+  if (showKanaIntro && node?.type === 'kana') {
+    return (
+      <Box
+        sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
+      >
+        <QuestInterstitial
+          emoji="あ"
+          title={t('kanaRoundTitle')}
+          subtitle={t('kanaRoundSubtitle', { count: plan.kana.length })}
+          onContinue={() => setShowKanaIntro(false)}
+        />
+      </Box>
+    );
+  }
+
   // ── Boss intro interstitial ────────────────────────────────────────────────
   if (showBossIntro && node?.type === 'boss') {
     return (
@@ -299,6 +345,17 @@ export function ReviewQuest({ cards, onExit }: ReviewQuestProps) {
           words={matchWords}
           comboCount={combo.count}
           onPairResolved={(correct, cardId, jlpt) => grade(correct, jlpt, cardId)}
+          onComplete={advanceNode}
+          onQuit={onExit}
+          questMap={questMap}
+        />
+      )}
+
+      {node?.type === 'kana' && (
+        <KanaRound
+          chars={plan.kana}
+          comboCount={combo.count}
+          onAnswer={gradeKana}
           onComplete={advanceNode}
           onQuit={onExit}
           questMap={questMap}

@@ -527,6 +527,7 @@
     "questMap": {
       "warmup": "Warm-up",
       "match": "Word Match",
+      "kana": "Characters",
       "boss": "Boss Round",
       "chest": "Chest"
     },
@@ -549,7 +550,9 @@
       "bossRoundTitle": "Boss Round",
       "bossRoundSubtitle": "Your last 3 words — pick the meaning. Worth double!",
       "todaysPractice": "Today's Practice",
-      "cardsBadge": "{count, plural, one {# card} other {# cards}}"
+      "cardsBadge": "{count, plural, one {# card} other {# cards}}",
+      "kanaRoundTitle": "Characters",
+      "kanaRoundSubtitle": "{count, plural, one {# character to brush up} other {# characters to brush up}}"
     },
     "todayPage": {
       "findingReviews": "Finding your reviews…",
