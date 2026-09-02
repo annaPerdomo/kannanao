@@ -106,6 +106,15 @@ describe('getGroupKnownKana', () => {
     expect(readiness.shakyBy['ら']).toEqual([1]);
   });
 
+  it('should never flag the characters that have no question of their own', async () => {
+    rosterIds = ['m1'];
+    tables.profiles = [profile('m1', 'ken')];
+    tables.kana_progress = [progress('m1', 'あ', 6)];
+
+    const readiness = await getGroupKnownKana('g1', 'org1');
+    for (const kana of ['っ', 'ッ', 'ー']) expect(readiness.shakyBy[kana]).toBeUndefined();
+  });
+
   it('should prefer a display name over the username', async () => {
     rosterIds = ['m1'];
     tables.profiles = [{ id: 'm1', username: 'ken', display_name: 'Ken T.' }];

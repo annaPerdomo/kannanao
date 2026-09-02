@@ -15,6 +15,7 @@ const LABELS = {
   deck: 'Deck',
   kanaTitle: 'Sounds in this lesson',
   kanaHint: 'Just the rows this lesson uses.',
+  kanaContextual: { littleTsu: 'little tsu', longSound: 'long sound' },
 };
 
 const WARM_UP: WarmUpWord[] = [
@@ -167,5 +168,12 @@ describe('the kana reference page', () => {
 
   it('should give every character its romaji', () => {
     expect(html(['hira-ra'])).toContain('>ri<');
+  });
+
+  it('should caption the characters that have no romaji instead of printing a blank', () => {
+    const out = html(['kata-context']);
+    expect(out).toContain('>little tsu<');
+    expect(out).toContain('>long sound<');
+    expect(out).not.toContain('<div class="kana-romaji"></div>');
   });
 });

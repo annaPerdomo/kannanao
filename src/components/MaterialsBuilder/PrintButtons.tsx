@@ -28,6 +28,7 @@ interface PrintButtonsProps {
 /** "Print study sheets" / "Print quiz sheets" — paper handouts from the same plan. */
 export function PrintButtons({ plan, warmUp, kanaSets, disabled }: PrintButtonsProps) {
   const t = useTranslations('Group.lessonBuilder');
+  const tContextual = useTranslations('KanaJourney.contextual');
   const locale = useLocale();
 
   // Read after mount: the server render has no localStorage and would mismatch.
@@ -64,13 +65,17 @@ export function PrintButtons({ plan, warmUp, kanaSets, disabled }: PrintButtonsP
           deck: t('warmUpDeckColumn'),
           kanaTitle: t('printKanaTitle'),
           kanaHint: t('printKanaHint'),
+          kanaContextual: {
+            littleTsu: tContextual('littleTsu'),
+            longSound: tContextual('longSound'),
+          },
         },
         warmUp,
         kanaSets: includeKana ? kanaSets : [],
       });
       openPrintWindow(html);
     },
-    [plan, warmUp, kanaSets, includeKana, locale, t],
+    [plan, warmUp, kanaSets, includeKana, locale, t, tContextual],
   );
 
   return (

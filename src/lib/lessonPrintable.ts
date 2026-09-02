@@ -1,7 +1,7 @@
 import type { PlanDeck, WarmUpWord } from '@/types/lessonPlan';
 
 import { furiganaFromReading, parseFurigana } from './furigana';
-import { orderKanaSets } from './kanaCurriculum';
+import { type KanaLabelKey, orderKanaSets } from './kanaCurriculum';
 
 export type PrintableVariant = 'study' | 'quiz';
 
@@ -22,6 +22,7 @@ export interface PrintableLabels {
   deck?: string;
   kanaTitle?: string;
   kanaHint?: string;
+  kanaContextual?: Partial<Record<KanaLabelKey, string>>;
 }
 
 function escapeHtml(text: string): string {
@@ -131,10 +132,12 @@ function kanaSheetSection(setIds: string[], labels: PrintableLabels): string {
   const rows = sets
     .map((set) => {
       const cells = set.entries
-        .map(
-          (entry) =>
-            `<td><div class="kana-char">${escapeHtml(entry.kana)}</div><div class="kana-romaji">${escapeHtml(entry.romaji)}</div></td>`,
-        )
+        .map((entry) => {
+          const caption = entry.labelKey
+            ? (labels.kanaContextual?.[entry.labelKey] ?? '')
+            : entry.romaji;
+          return `<td><div class="kana-char">${escapeHtml(entry.kana)}</div><div class="kana-romaji">${escapeHtml(caption)}</div></td>`;
+        })
         .join('');
       return `<tr><td class="rowhead">${escapeHtml(set.label)}</td>${cells}</tr>`;
     })
