@@ -172,22 +172,24 @@ describe('TodayAdventureCard', () => {
       expect(screen.getByText(/6 reviews · ~2 min/)).toBeInTheDocument();
     });
 
-    it('should keep a route to the games hub after the adventure is done', async () => {
+    it('should still offer more practice after the adventure is done', async () => {
       friendshipState.mockReturnValue(friendship({ buddy_bunny: TODAY }));
       renderWithProviders(<TodayAdventureCard />);
       await screen.findByText('Adventure complete!');
+      fireEvent.click(screen.getByRole('button', { name: 'Practice more' }));
+      expect(push).toHaveBeenCalledWith('/review/start');
       fireEvent.click(screen.getByRole('button', { name: 'Play a game' }));
-      expect(push).toHaveBeenCalledWith('/review');
+      expect(push).toHaveBeenCalledWith('/review?games=1');
     });
 
-    it('should stay calm and offer two side doors when nothing is due', async () => {
+    it('should start the assigned words when nothing is due', async () => {
       dueState.mockReturnValue(due({ dueCount: 0 }));
       renderWithProviders(<TodayAdventureCard />);
-      await screen.findByText('No reviews waiting today.');
+      await screen.findByText('Practice with Tsuki!');
+      fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+      expect(push).toHaveBeenCalledWith('/review/start');
       fireEvent.click(screen.getByRole('button', { name: 'Play a game' }));
-      expect(push).toHaveBeenCalledWith('/review');
-      fireEvent.click(screen.getByRole('button', { name: 'Practice a deck' }));
-      expect(push).toHaveBeenCalledWith('/decks');
+      expect(push).toHaveBeenCalledWith('/review?games=1');
     });
   });
 
@@ -201,7 +203,7 @@ describe('TodayAdventureCard', () => {
       expect(screen.getByText(/6 reviews/)).toBeInTheDocument();
       expect(screen.queryByText("Today's Adventure")).toBeNull();
       fireEvent.click(screen.getByRole('button', { name: 'Start' }));
-      expect(push).toHaveBeenCalledWith('/review/today');
+      expect(push).toHaveBeenCalledWith('/review/start');
     });
 
     it('should name the reward when the next milestone is a fact', async () => {
@@ -269,10 +271,10 @@ describe('TodayAdventureCard', () => {
   });
 
   describe('starting the adventure', () => {
-    it('should go to the daily adventure from the Start button', async () => {
+    it('should go to the practice launcher from the Start button', async () => {
       renderWithProviders(<TodayAdventureCard />);
       fireEvent.click(await screen.findByRole('button', { name: 'Start' }));
-      expect(push).toHaveBeenCalledWith('/review/today');
+      expect(push).toHaveBeenCalledWith('/review/start');
     });
 
     // A focusable button inside a role="button" makes its accessible name
@@ -290,7 +292,7 @@ describe('TodayAdventureCard', () => {
       renderWithProviders(<TodayAdventureCard />);
       fireEvent.click(await screen.findByRole('button', { name: 'Play a game' }));
       expect(push).toHaveBeenCalledTimes(1);
-      expect(push).toHaveBeenCalledWith('/review');
+      expect(push).toHaveBeenCalledWith('/review?games=1');
     });
   });
 
@@ -354,6 +356,10 @@ describe('minutesFor', () => {
     expect(minutesFor(1)).toBe(1);
     expect(minutesFor(3)).toBe(1);
     expect(minutesFor(4)).toBe(2);
-    expect(minutesFor(30)).toBe(10);
+  });
+
+  it('should stop growing once the queue passes the review cap', () => {
+    expect(minutesFor(30)).toBe(minutesFor(12));
+    expect(minutesFor(30)).toBe(4);
   });
 });

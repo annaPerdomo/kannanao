@@ -12,14 +12,20 @@ import { PRACTICE_CONFIG } from '@/components/Deck/constants';
 
 import type { GoalMode } from './assignmentMastery';
 
-export type ChainStep = 'warmup' | 'practice' | 'goal';
+export type ChainStep = 'review' | 'warmup' | 'practice' | 'goal';
 
 export interface ChainLeg {
   step: ChainStep;
   mode: GoalMode;
+  /** Unset means the chain's deck. */
+  deckId?: string;
+  /** Unset means the chain's `cardIds`, else the whole deck. */
+  cardIds?: string[];
 }
 
-export type ChainKind = 'assignment' | 'mixed';
+export type ChainKind = 'assignment' | 'mixed' | 'daily';
+
+export const REVIEW_LEG_HREF = '/review/today';
 
 const PRACTICE_ROUTE_MODES: readonly string[] = PRACTICE_CONFIG.map((tile) => tile.mode);
 
@@ -31,9 +37,11 @@ export const CHAIN_PARAM = 'chain';
  */
 export function chainLegHref(deckId: string, leg: ChainLeg, kind: ChainKind): string | null {
   const marker = `?${CHAIN_PARAM}=${kind}`;
-  if (leg.mode === 'study') return `/deck/${deckId}/study${marker}`;
+  const deck = leg.deckId ?? deckId;
+  if (leg.mode === 'review') return kind === 'daily' ? `${REVIEW_LEG_HREF}${marker}` : null;
+  if (leg.mode === 'study') return `/deck/${deck}/study${marker}`;
   if (PRACTICE_ROUTE_MODES.includes(leg.mode)) {
-    return `/deck/${deckId}/practice/${leg.mode}${marker}`;
+    return `/deck/${deck}/practice/${leg.mode}${marker}`;
   }
   return null;
 }
@@ -65,7 +73,13 @@ function readLegs(value: unknown): ChainLeg[] | null {
   if (!Array.isArray(value)) return null;
   const legs = value.filter(
     (leg): leg is ChainLeg =>
-      !!leg && typeof leg === 'object' && typeof (leg as ChainLeg).mode === 'string',
+      !!leg &&
+      typeof leg === 'object' &&
+      typeof (leg as ChainLeg).mode === 'string' &&
+      ((leg as ChainLeg).deckId === undefined || typeof (leg as ChainLeg).deckId === 'string') &&
+      ((leg as ChainLeg).cardIds === undefined ||
+        (Array.isArray((leg as ChainLeg).cardIds) &&
+          (leg as ChainLeg).cardIds!.every((id) => typeof id === 'string'))),
   );
   return legs.length === value.length ? legs : null;
 }
@@ -85,9 +99,11 @@ export function readChainState(): PracticeChainState | null {
     const s = parsed as Partial<PracticeChainState>;
     if (typeof s.deckId !== 'string') return null;
     if (typeof s.index !== 'number' || s.index < 0) return null;
-    const kind: ChainKind = s.kind === 'mixed' ? 'mixed' : 'assignment';
+    const kind: ChainKind =
+      s.kind === 'mixed' ? 'mixed' : s.kind === 'daily' ? 'daily' : 'assignment';
     // An assignment quest with no assignment has nothing to complete or grade.
     if (kind === 'assignment' && typeof s.assignmentId !== 'string') return null;
+    if (kind === 'daily' && !readLegs(s.legs)) return null;
     return {
       kind,
       deckId: s.deckId,

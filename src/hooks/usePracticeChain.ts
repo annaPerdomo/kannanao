@@ -9,6 +9,8 @@ import type { Assignment } from '@/hooks/useAssignments';
 import { type GoalMode, isGoalMode } from '@/lib/assignmentMastery';
 import { planAssignmentQuest } from '@/lib/assignmentQuest';
 import { countStrengths } from '@/lib/cardStrength';
+import { localDateString } from '@/lib/chest';
+import { bumpDailyRound, type FocusPick, planDailyPractice } from '@/lib/dailyPractice';
 import { deckSupport, pickMixedSessionCards, planMixedPractice } from '@/lib/mixedPractice';
 import {
   CHAIN_PARAM,
@@ -19,7 +21,7 @@ import {
   readChainState,
   writeChainState,
 } from '@/lib/practiceChain';
-import { dbDeckCardCount, getCardProgressForUser } from '@/lib/supabase';
+import { dbDeckCardCount, getCardProgressForUser, loadCards } from '@/lib/supabase';
 import type { Deck } from '@/types/deck';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -129,6 +131,45 @@ export function useStartMixedPractice() {
   return { start, starting, error };
 }
 
+/** Resolves false when there is nothing to play, so the launcher can say so. */
+export function useStartDailyPractice() {
+  const router = useRouter();
+  const { user } = useAuth();
+  return useCallback(
+    async (focus: FocusPick | null, dueCount: number, ttsReady: boolean): Promise<boolean> => {
+      const cards = focus ? await loadCards(focus.deckId) : [];
+      const progress =
+        focus && user
+          ? await getCardProgressForUser(
+              user.id,
+              cards.map((c) => c.id),
+            )
+          : [];
+      const legs = planDailyPractice({ dueCount, focus, cards, progress, ttsReady });
+      const deckId = focus?.deckId ?? '';
+      const href = legs.length > 0 ? chainLegHref(deckId, legs[0], 'daily') : null;
+      if (!href) return false;
+      // Only a chain that plays this deck can settle its assignment.
+      const playsDeck = legs.some((leg) => leg.deckId === deckId);
+      writeChainState({
+        kind: 'daily',
+        deckId,
+        index: 0,
+        legs,
+        cardIds: null,
+        assignmentId: playsDeck ? (focus?.assignment?.id ?? null) : null,
+        requiredMode: playsDeck ? (focus?.assignment?.requiredMode ?? null) : null,
+        requiredAccuracy: playsDeck ? (focus?.assignment?.requiredAccuracy ?? null) : null,
+        cardCount: cards.length,
+      });
+      bumpDailyRound(localDateString(new Date()));
+      router.replace(href);
+      return true;
+    },
+    [router, user],
+  );
+}
+
 /** The next action an end-of-session screen offers inside a chain. */
 export interface ChainHandoff {
   label: string;
@@ -143,6 +184,8 @@ export interface ActiveChain {
   legs: ChainLeg[];
   index: number;
   leg: ChainLeg;
+  /** Cards this leg plays; undefined means the whole deck. */
+  cardIds: string[] | undefined;
   /** 'finish' once an assignment quest's goal leg is over. */
   phase: 'play' | 'finish';
   /** Bumped by `retry` so the page can remount the mode for a fresh session. */
@@ -169,7 +212,8 @@ export function usePracticeChain({
   deckId,
   mode,
 }: {
-  deckId: string;
+  /** Null on the cross-deck Review page, which belongs to no deck. */
+  deckId: string | null;
   mode: GoalMode;
 }): ActiveChain | null {
   const t = useTranslations('AssignmentQuest');
@@ -191,7 +235,8 @@ export function usePracticeChain({
       return;
     }
     const stored = readChainState();
-    if (!stored || stored.deckId !== deckId || stored.kind !== marked) {
+    const wrongDeck = stored?.kind !== 'daily' && stored?.deckId !== deckId;
+    if (!stored || wrongDeck || stored.kind !== marked) {
       if (stored) clearChainState();
       setState(null);
       return;
@@ -223,7 +268,7 @@ export function usePracticeChain({
 
   const legs = useMemo(() => {
     if (!state) return [];
-    if (state.kind === 'mixed') return state.legs ?? [];
+    if (state.kind !== 'assignment') return state.legs ?? [];
     return state.cardCount === null
       ? []
       : planAssignmentQuest({ cardCount: state.cardCount, requiredMode: state.requiredMode });
@@ -235,7 +280,8 @@ export function usePracticeChain({
   // instant before the next route takes over, so it is exempt: clearing there
   // would wipe the chain the page we're navigating to is about to read.
   const advancingRef = useRef(false);
-  const matches = !!leg && leg.mode === mode;
+  const legDeck = leg?.deckId ?? state?.deckId;
+  const matches = !!leg && leg.mode === mode && (mode === 'review' || legDeck === deckId);
   useEffect(() => {
     // Page and stored leg agreeing again means the hand-off landed, so the
     // exemption ends — left set it would swallow every later mismatch.
@@ -252,10 +298,11 @@ export function usePracticeChain({
     setState(null);
   }, []);
 
+  const exitHref = state?.kind === 'daily' || deckId === null ? '/review' : `/deck/${deckId}`;
   const abandon = useCallback(() => {
     stop();
-    router.push(`/deck/${deckId}`);
-  }, [stop, router, deckId]);
+    router.push(exitHref);
+  }, [stop, router, exitHref]);
 
   const goHome = useCallback(() => {
     stop();
@@ -289,21 +336,24 @@ export function usePracticeChain({
   // A quest names the next leg by its role; a mixed session names the game,
   // since nobody picked it and the label is the only warning of what's coming.
   const nextLabel = nextLeg
-    ? state.kind === 'assignment'
+    ? state.kind === 'assignment' || nextLeg.mode === 'review'
       ? t(`stepName.${nextLeg.step}`)
       : modeLabel(nextLeg.mode, tModes, tHero)
     : null;
   const handoff: ChainHandoff | null = nextLabel
     ? { label: t('nextStep', { step: nextLabel }), onNext: advance, onStop: abandon }
-    : state.kind === 'assignment'
+    : state.assignmentId
       ? { label: t('seeHowYouDid'), onNext: () => setPhase('finish'), onStop: abandon }
-      : null;
+      : state.kind === 'daily'
+        ? { label: t('finishPractice'), onNext: goHome, onStop: abandon }
+        : null;
 
   return {
     state,
     legs,
     index: state.index,
     leg,
+    cardIds: leg.cardIds ?? state.cardIds ?? undefined,
     phase,
     attempt,
     handoff,

@@ -45,7 +45,7 @@ export default function PracticePage({
         deckId={id}
         mode={mode as PracticeMode}
         onBack={chain ? chain.abandon : () => router.back()}
-        cardIds={chain?.state.cardIds ?? undefined}
+        cardIds={chain?.cardIds}
         questBanner={
           chain ? <QuestStepBanner legs={chain.legs} currentIndex={chain.index} /> : null
         }

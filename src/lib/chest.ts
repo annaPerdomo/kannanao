@@ -49,6 +49,14 @@ export function isChestEligible({
   return true;
 }
 
+/**
+ * A capped daily session counts as a cleared queue on purpose: judged by the real
+ * count, a learner behind by more than the cap could never earn the chest or hearts.
+ */
+export function remainingForReward(dueCount: number, cappedSession: boolean): number {
+  return cappedSession ? 0 : dueCount;
+}
+
 /** Golden chest for a flawless clear, wooden otherwise — presentation only. */
 export function chestVariant(perfect: boolean): 'gold' | 'wood' {
   return perfect ? 'gold' : 'wood';

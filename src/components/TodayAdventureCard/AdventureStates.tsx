@@ -6,13 +6,16 @@ import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
+import { DAILY_REVIEW_CAP } from '@/lib/dailyPractice';
+
 import { FACE_SIZE } from './styles';
 
 /** Round on purpose: the "~N min" promise says "this is short", not a real ETA. */
 const SECONDS_PER_CARD = 20;
 
 export function minutesFor(dueCount: number): number {
-  return Math.max(1, Math.ceil((dueCount * SECONDS_PER_CARD) / 60));
+  const played = Math.min(dueCount, DAILY_REVIEW_CAP);
+  return Math.max(1, Math.ceil((played * SECONDS_PER_CARD) / 60));
 }
 
 /** Decorative — the buddy's name is already in the copy, hence the empty alt. */
@@ -77,29 +80,48 @@ const linkSx = {
   px: 0.5,
 };
 
+/**
+ * The card body carries its own onClick, so every button here must stop the
+ * click from reaching it.
+ */
+const handle = (fn: () => void) => (e: React.MouseEvent) => {
+  e.stopPropagation();
+  fn();
+};
+
 export function CompletedState({
   buddyName,
   faceSrc,
   hearts,
+  onPractice,
   onPlayGame,
-}: StateProps & { hearts: number; onPlayGame: () => void }) {
+}: StateProps & { hearts: number; onPractice: () => void; onPlayGame: () => void }) {
   const t = useTranslations('Home.adventure');
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-      <BuddyFace src={faceSrc} />
-      <Box sx={{ minWidth: 0 }}>
-        <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#fff', lineHeight: 1.25 }}>
-          {t('completedTitle')}
-        </Typography>
-        {hearts > 0 && (
-          <Typography variant="body2" sx={{ fontWeight: 600, color: alpha('#fff', 0.9) }}>
-            {t('completedHearts', { count: hearts, name: buddyName })}
+    <Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+        <BuddyFace src={faceSrc} />
+        <Box sx={{ minWidth: 0, flexGrow: 1, flexBasis: 0 }}>
+          <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#fff', lineHeight: 1.25 }}>
+            {t('completedTitle')}
           </Typography>
-        )}
-        <Button size="small" variant="text" onClick={onPlayGame} sx={{ ...linkSx, ml: -0.5 }}>
-          {t('playGame')}
+          <Typography variant="body2" sx={{ fontWeight: 600, color: alpha('#fff', 0.9) }}>
+            {hearts > 0
+              ? t('completedHearts', { count: hearts, name: buddyName })
+              : t('completedBody')}
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          onClick={handle(onPractice)}
+          sx={{ flexShrink: 0, fontWeight: 800, px: 2.5 }}
+        >
+          {t('practiceMore')}
         </Button>
       </Box>
+      <Button size="small" variant="text" onClick={handle(onPlayGame)} sx={linkSx}>
+        {t('playGame')}
+      </Button>
     </Box>
   );
 }
@@ -118,12 +140,6 @@ export function DueState({
   onPlayGame: () => void;
 }) {
   const t = useTranslations('Home.adventure');
-  // The card body carries its own onClick, so every button here must stop the
-  // click from reaching it.
-  const handle = (fn: () => void) => (e: React.MouseEvent) => {
-    e.stopPropagation();
-    fn();
-  };
   return (
     <Box>
       <Eyebrow label={!friendshipLine}>{friendshipLine ?? t('title')}</Eyebrow>
@@ -159,29 +175,36 @@ export function DueState({
 }
 
 export function NothingDueState({
+  buddyName,
+  faceSrc,
+  onStart,
   onPlayGame,
-  onPracticeDeck,
-}: {
-  onPlayGame: () => void;
-  onPracticeDeck: () => void;
-}) {
+}: StateProps & { onStart: () => void; onPlayGame: () => void }) {
   const t = useTranslations('Home.adventure');
   return (
     <Box>
-      <Typography sx={{ fontWeight: 700, color: '#fff', lineHeight: 1.3 }}>
-        {t('nothingDueTitle')}
-      </Typography>
-      <Typography variant="body2" sx={{ color: alpha('#fff', 0.85), mb: 0.5 }}>
-        {t('nothingDueBody')}
-      </Typography>
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-        <Button size="small" variant="text" onClick={onPlayGame} sx={linkSx}>
-          {t('playGame')}
-        </Button>
-        <Button size="small" variant="text" onClick={onPracticeDeck} sx={linkSx}>
-          {t('practiceDeck')}
+      <Eyebrow label>{t('title')}</Eyebrow>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+        <BuddyFace src={faceSrc} />
+        <Box sx={{ minWidth: 0, flexGrow: 1, flexBasis: 0 }}>
+          <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#fff', lineHeight: 1.25 }}>
+            {t('nothingDueTitle', { name: buddyName })}
+          </Typography>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: alpha('#fff', 0.9) }}>
+            {t('nothingDueBody')}
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          onClick={handle(onStart)}
+          sx={{ flexShrink: 0, fontWeight: 800, px: 2.5 }}
+        >
+          {t('start')}
         </Button>
       </Box>
+      <Button size="small" variant="text" onClick={handle(onPlayGame)} sx={linkSx}>
+        {t('playGame')}
+      </Button>
     </Box>
   );
 }

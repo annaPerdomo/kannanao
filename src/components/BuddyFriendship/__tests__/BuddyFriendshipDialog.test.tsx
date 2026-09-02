@@ -324,7 +324,7 @@ describe('BuddyFriendshipDialog', () => {
     render(<BuddyFriendshipDialog />);
 
     fireEvent.click(screen.getByRole('button', { name: 'today.adventure.cta|buddy_tango.name' }));
-    expect(push).toHaveBeenCalledWith('/review/today');
+    expect(push).toHaveBeenCalledWith('/review/start');
     expect(closeStories).toHaveBeenCalledTimes(1);
   });
 

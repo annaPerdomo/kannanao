@@ -1,101 +1,120 @@
 'use client';
-import { Box, Button, Grid, Typography } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Box, Button, Collapse, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 import { DataErrorState } from '@/components/DataErrorState';
 import { GameTiles } from '@/components/Games';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
-import { useDueCount } from '@/hooks/useDueCount';
+import { useDailyFocus } from '@/hooks/useDailyPractice';
+import { previewMinutes } from '@/lib/dailyPractice';
 import { LAYOUT } from '@/theme';
 
-/** Bright call-to-action when cards are waiting: count + one big start button. */
-function DueHero({ count, onStart }: { count: number; onStart: () => void }) {
+const GAMES_PARAM = 'games';
+
+const heroSx = {
+  borderRadius: 4,
+  px: { xs: 3, sm: 4 },
+  py: { xs: 3.5, sm: 4 },
+  textAlign: 'center',
+} as const;
+
+function PracticeHero({
+  dueCount,
+  deckLabel,
+  onStart,
+}: {
+  dueCount: number;
+  deckLabel: string | null;
+  onStart: () => void;
+}) {
   const t = useTranslations('Review.hubPage');
   return (
     <Box
       sx={{
-        borderRadius: 4,
-        px: { xs: 3, sm: 4 },
-        py: { xs: 3.5, sm: 4 },
-        textAlign: 'center',
+        ...heroSx,
         color: '#fff',
         background: (t) =>
           `linear-gradient(135deg, ${t.palette.brand[500]} 0%, ${t.palette.accent[500]} 100%)`,
         boxShadow: (t) => `0 8px 26px ${alpha(t.palette.brand[400], 0.35)}`,
       }}
     >
-      <Typography sx={{ fontSize: '3rem', lineHeight: 1, mb: 1 }}>⚔️</Typography>
-      <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>
-        {t('wordsWaiting', { count })}
+      <Typography sx={{ fontSize: '3rem', lineHeight: 1, mb: 1 }} aria-hidden>
+        🎯
       </Typography>
-      <Typography sx={{ color: alpha('#fff', 0.92), mb: 3 }}>{t('waitingBody')}</Typography>
+      <Typography
+        variant="caption"
+        component="p"
+        sx={{ fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', opacity: 0.8 }}
+      >
+        {t('todaysPractice')}
+      </Typography>
+      <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>
+        {dueCount > 0 ? t('wordsWaiting', { count: dueCount }) : t('readyTitle')}
+      </Typography>
+      <Typography sx={{ color: alpha('#fff', 0.92), mb: 3 }}>
+        {deckLabel
+          ? dueCount > 0
+            ? t('thenDeck', { deck: deckLabel })
+            : t('fromDeck', { deck: deckLabel })
+          : t('waitingBody')}
+        {' · '}
+        {t('minutesEstimate', { min: previewMinutes(dueCount, deckLabel !== null) })}
+      </Typography>
+      {/* Stock contained variant: the theme paints a gradient an sx bgcolor sits behind. */}
       <Button
         variant="contained"
+        size="large"
         onClick={onStart}
-        sx={{
-          borderRadius: 999,
-          px: 4,
-          py: 1.25,
-          fontWeight: 800,
-          fontSize: '1rem',
-          // The contained variant already paints the brand[600]→[700] gradient
-          // with white text (theme/index.ts). Don't set `bgcolor`/`color` here:
-          // `bgcolor` only sets background-color, which sits *behind* the opaque
-          // gradient background-image and never shows — so a light text color set
-          // to pair with it renders dark-on-dark and goes illegible (worst on
-          // rose gold, where both are deep reds). White-on-gradient is legible on
-          // every theme since brand[600]/[700] are dark across all schemes.
-        }}
+        sx={{ borderRadius: 999, px: 5, py: 1.25, fontWeight: 800, fontSize: '1.05rem' }}
       >
-        {t('startTodaysPractice')}
+        {t('startPractice')}
       </Button>
+      <Typography variant="body2" sx={{ mt: 2, color: alpha('#fff', 0.85) }}>
+        {t('whatHappens')}
+      </Typography>
     </Box>
   );
 }
 
-/** Calm state when nothing is due — never a dead end; games are right below. */
-function CaughtUpHero() {
+function NothingYet() {
   const t = useTranslations('Review.hubPage');
   return (
     <Box
       sx={{
-        borderRadius: 4,
-        px: { xs: 3, sm: 4 },
-        py: { xs: 3.5, sm: 4 },
-        textAlign: 'center',
+        ...heroSx,
         border: (t) => `1.5px solid ${alpha(t.palette.brand[300], 0.4)}`,
         bgcolor: (t) => alpha(t.palette.brand[50], 0.7),
       }}
     >
-      <Typography sx={{ fontSize: '3rem', lineHeight: 1, mb: 1 }}>🌿</Typography>
-      <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', mb: 0.5 }}>
-        {t('caughtUpTitle')}
+      <Typography sx={{ fontSize: '3rem', lineHeight: 1, mb: 1 }} aria-hidden>
+        🌱
       </Typography>
-      <Typography sx={{ color: 'text.secondary' }}>{t('caughtUpBody')}</Typography>
+      <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', mb: 0.5 }}>
+        {t('nothingYetTitle')}
+      </Typography>
+      <Typography sx={{ color: 'text.secondary' }}>{t('nothingYetBody')}</Typography>
     </Box>
   );
 }
 
-/**
- * Review — the single cross-deck practice home. Reads top-to-bottom as: what's
- * due today → one big start button (the flip-review flow at /review/today) →
- * fun games that practice the same due cards first. The home hero's adventure
- * card links here; no SRS jargon ever surfaces.
- */
 export default function ReviewHubPage() {
   const t = useTranslations('Review.hubPage');
   const router = useRouter();
-  const { dueCount, loading, error, retry } = useDueCount();
+  const searchParams = useSearchParams();
+  const { dueCount, focus, empty, loading, error, retry } = useDailyFocus();
+  const [gamesOpen, setGamesOpen] = useState(searchParams?.get(GAMES_PARAM) === '1');
+
+  const deckLabel = focus ? `${focus.emoji} ${focus.deckName}`.trim() : null;
 
   return (
     <Box
       sx={{
-        // Wider than the narrow column: on a sideways tablet the hero and the
-        // games sit side by side instead of stacking past the fold.
-        maxWidth: { xs: LAYOUT.narrowMaxWidth, md: LAYOUT.headerMaxWidth },
+        maxWidth: LAYOUT.narrowMaxWidth,
         mx: 'auto',
         px: LAYOUT.pagePx,
         py: { xs: 3, sm: 4 },
@@ -113,29 +132,43 @@ export default function ReviewHubPage() {
         mb={{ xs: 2, sm: 3 }}
       />
 
-      <Grid container spacing={{ xs: 3, md: 4 }} alignItems="flex-start">
-        <Grid size={{ xs: 12, md: 4 }}>
-          {loading ? (
-            <Loading />
-          ) : error ? (
-            <DataErrorState error={error} onRetry={retry} />
-          ) : dueCount > 0 ? (
-            <DueHero count={dueCount} onStart={() => router.push('/review/today')} />
-          ) : (
-            <CaughtUpHero />
-          )}
-        </Grid>
+      {loading ? (
+        <Loading />
+      ) : error ? (
+        <DataErrorState error={error} onRetry={retry} />
+      ) : empty ? (
+        <NothingYet />
+      ) : (
+        <PracticeHero
+          dueCount={dueCount}
+          deckLabel={deckLabel}
+          onStart={() => router.push('/review/start')}
+        />
+      )}
 
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Typography
-            variant="h6"
-            sx={{ fontWeight: 800, color: 'text.primary', mt: { xs: 1, md: 0 }, mb: 2 }}
-          >
-            {t('funWaysToPractice')}
-          </Typography>
-          <GameTiles />
-        </Grid>
-      </Grid>
+      <Box sx={{ mt: { xs: 3, sm: 4 } }}>
+        <Button
+          onClick={() => setGamesOpen((open) => !open)}
+          aria-expanded={gamesOpen}
+          aria-controls="extra-games"
+          endIcon={
+            <ExpandMoreIcon
+              sx={{
+                transform: gamesOpen ? 'rotate(180deg)' : 'none',
+                transition: 'transform 0.2s ease',
+              }}
+            />
+          }
+          sx={{ fontWeight: 800, color: 'text.primary' }}
+        >
+          {t('funWaysToPractice')}
+        </Button>
+        <Collapse in={gamesOpen} id="extra-games">
+          <Box sx={{ pt: 1.5 }}>
+            <GameTiles />
+          </Box>
+        </Collapse>
+      </Box>
     </Box>
   );
 }

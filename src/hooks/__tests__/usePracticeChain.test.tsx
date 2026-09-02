@@ -14,9 +14,11 @@ vi.mock('next/navigation', () => ({
 
 const mockCardCount = vi.fn();
 const mockProgress = vi.fn();
+const mockLoadCards = vi.fn();
 vi.mock('@/lib/supabase', () => ({
   dbDeckCardCount: (deckId: string) => mockCardCount(deckId),
   getCardProgressForUser: (userId: string, cardIds?: string[]) => mockProgress(userId, cardIds),
+  loadCards: (deckId: string) => mockLoadCards(deckId),
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
@@ -25,9 +27,11 @@ import type { Assignment } from '@/hooks/useAssignments';
 import {
   usePracticeChain,
   useStartAssignmentQuest,
+  useStartDailyPractice,
   useStartMixedPractice,
 } from '@/hooks/usePracticeChain';
 import type { GoalMode } from '@/lib/assignmentMastery';
+import type { FocusPick } from '@/lib/dailyPractice';
 import { readChainState, writeChainState } from '@/lib/practiceChain';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -74,6 +78,7 @@ beforeEach(() => {
   replace.mockClear();
   mockCardCount.mockReset().mockResolvedValue(12);
   mockProgress.mockReset().mockResolvedValue([]);
+  mockLoadCards.mockReset().mockResolvedValue([]);
   search = new URLSearchParams('chain=assignment');
 });
 
@@ -370,5 +375,143 @@ describe('a mixed session running its legs', () => {
     await waitFor(() => expect(result.current).not.toBeNull());
     expect(result.current?.handoff).toBeNull();
     expect(result.current?.phase).toBe('play');
+  });
+});
+
+describe('useStartDailyPractice', () => {
+  const cards = Array.from({ length: 12 }, (_, i) => card(`c${i}`));
+  const focus = (assignment: FocusPick['assignment'] = null): FocusPick => ({
+    deckId: 'd1',
+    deckName: 'Week 1',
+    emoji: '📘',
+    cardCount: 12,
+    readingUnlocked: false,
+    assignment,
+  });
+
+  it('opens on the review leg when words are due', async () => {
+    mockLoadCards.mockResolvedValue(cards);
+    const { result } = renderHook(() => useStartDailyPractice());
+    let ok = false;
+    await act(async () => {
+      ok = await result.current(focus(), 3, false);
+    });
+
+    expect(ok).toBe(true);
+    expect(replace).toHaveBeenCalledWith('/review/today?chain=daily');
+    const state = readChainState();
+    expect(state?.kind).toBe('daily');
+    expect(state?.legs?.[0].mode).toBe('review');
+    expect(state?.legs?.[1]).toMatchObject({ mode: 'study', deckId: 'd1' });
+  });
+
+  it('goes straight to the deck when nothing is due', async () => {
+    mockLoadCards.mockResolvedValue(cards);
+    const { result } = renderHook(() => useStartDailyPractice());
+    await act(async () => {
+      await result.current(focus(), 0, false);
+    });
+    expect(replace).toHaveBeenCalledWith('/deck/d1/study?chain=daily');
+  });
+
+  it('carries the assignment only when the chain plays its deck', async () => {
+    mockLoadCards.mockResolvedValue(cards);
+    const goal = { id: 'a1', requiredMode: 'quiz', requiredAccuracy: 80 };
+    const { result } = renderHook(() => useStartDailyPractice());
+    await act(async () => {
+      await result.current(focus(goal), 0, false);
+    });
+    expect(readChainState()).toMatchObject({ assignmentId: 'a1', requiredMode: 'quiz' });
+    expect(readChainState()?.legs?.at(-1)).toMatchObject({ step: 'goal', mode: 'quiz' });
+
+    window.sessionStorage.clear();
+    mockLoadCards.mockResolvedValue([]);
+    await act(async () => {
+      await result.current(null, 2, false);
+    });
+    expect(readChainState()?.assignmentId).toBeNull();
+  });
+
+  it('reports nothing to play instead of navigating', async () => {
+    const { result } = renderHook(() => useStartDailyPractice());
+    let ok = true;
+    await act(async () => {
+      ok = await result.current(null, 0, false);
+    });
+    expect(ok).toBe(false);
+    expect(push).not.toHaveBeenCalled();
+    expect(readChainState()).toBeNull();
+  });
+});
+
+describe('usePracticeChain — daily session', () => {
+  const dailyState = (index = 0, assignmentId: string | null = null) => ({
+    kind: 'daily' as const,
+    deckId: 'd1',
+    index,
+    legs: [
+      { step: 'review' as const, mode: 'review' as const },
+      { step: 'practice' as const, mode: 'recall' as const, deckId: 'd1', cardIds: ['c1', 'c2'] },
+      { step: 'practice' as const, mode: 'match' as const, deckId: 'd1', cardIds: ['c1', 'c2'] },
+    ],
+    cardIds: null,
+    assignmentId,
+    requiredMode: null,
+    requiredAccuracy: null,
+    cardCount: 12,
+  });
+
+  beforeEach(() => {
+    search = new URLSearchParams('chain=daily');
+  });
+
+  it('runs the review leg from the deckless today page', async () => {
+    writeChainState(dailyState());
+    const { result } = renderHook(() => usePracticeChain({ deckId: null, mode: 'review' }));
+    await waitFor(() => expect(result.current).not.toBeNull());
+    expect(result.current?.legs).toHaveLength(3);
+    expect(result.current?.handoff?.label).toContain('Next');
+
+    act(() => result.current?.handoff?.onNext());
+    expect(replace).toHaveBeenCalledWith('/deck/d1/practice/recall?chain=daily');
+    expect(readChainState()?.index).toBe(1);
+  });
+
+  it('hands each deck leg its own cards', async () => {
+    writeChainState(dailyState(1));
+    const { result } = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'recall' }));
+    await waitFor(() => expect(result.current).not.toBeNull());
+    expect(result.current?.cardIds).toEqual(['c1', 'c2']);
+  });
+
+  it('ignores a leg that belongs to another deck', async () => {
+    writeChainState(dailyState(1));
+    const { result } = renderHook(() => usePracticeChain({ deckId: 'd2', mode: 'recall' }));
+    await waitFor(() => expect(readChainState()).toBeNull());
+    expect(result.current).toBeNull();
+  });
+
+  it('sends the last leg home, and leaves to the hub', async () => {
+    writeChainState(dailyState(2));
+    const { result } = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'match' }));
+    await waitFor(() => expect(result.current).not.toBeNull());
+
+    act(() => result.current?.handoff?.onNext());
+    expect(push).toHaveBeenCalledWith('/');
+    expect(readChainState()).toBeNull();
+
+    writeChainState(dailyState(2));
+    const again = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'match' }));
+    await waitFor(() => expect(again.result.current).not.toBeNull());
+    act(() => again.result.current?.abandon());
+    expect(push).toHaveBeenLastCalledWith('/review');
+  });
+
+  it('ends on the assignment verdict when it played one', async () => {
+    writeChainState(dailyState(2, 'a1'));
+    const { result } = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'match' }));
+    await waitFor(() => expect(result.current).not.toBeNull());
+    act(() => result.current?.handoff?.onNext());
+    expect(result.current?.phase).toBe('finish');
   });
 });

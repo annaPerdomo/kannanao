@@ -17,8 +17,8 @@ import { FRIENDSHIP_POINTS, type FriendshipSource } from '@/lib/friendship';
 
 /** Adventure must land where TodayAdventureCard's own CTA does; nothing enforces it. */
 const GOAL_ROUTES: Partial<Record<FriendshipSource, string>> = {
-  adventure: '/review/today',
-  session: '/decks',
+  adventure: '/review/start',
+  session: '/review/start',
 };
 
 const HEARTS_PER_DAY = Object.values(FRIENDSHIP_POINTS).reduce((total, n) => total + n, 0);
