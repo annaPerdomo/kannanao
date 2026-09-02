@@ -129,6 +129,7 @@
       "locked": "Locked",
       "play": "Play →",
       "unlockHint": "Add at least 2 cards to unlock practice modes.",
+      "noKanjiCards": "Needs a few cards with kanji",
       "mixedError": "We couldn't start practice. Please try again."
     },
     "practiceModes": {
@@ -155,6 +156,10 @@
       "reading": {
         "label": "Reading",
         "description": "See the kanji, build its reading"
+      },
+      "kanjiMatch": {
+        "label": "Kanji Pairs",
+        "description": "Match each word with how it's read"
       },
       "quiz": {
         "label": "Quiz",
@@ -717,7 +722,8 @@
         "kotobaBubble": "Sentence Builder",
         "quiz": "Quiz",
         "listen": "Listen",
-        "reading": "Reading"
+        "reading": "Reading",
+        "kanjiMatch": "Kanji Pairs"
       }
     },
     "batchPicker": {
@@ -1157,7 +1163,8 @@
         "kotobaBubble": "Sentence Builder",
         "quiz": "Quiz",
         "listen": "Listen",
-        "reading": "Reading"
+        "reading": "Reading",
+        "kanjiMatch": "Kanji Pairs"
       },
       "goalBoth": "{accuracy}% in {mode}",
       "goalAccuracyOnly": "{accuracy}%",

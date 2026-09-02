@@ -27,8 +27,9 @@ import { DeckSettingsDialog } from '@/components/DeckSettingsDialog';
 import { ImageCard } from '@/components/ImageCard';
 import { Loading } from '@/components/Loading';
 import { PdfImportModal } from '@/components/PdfImportModal';
-// Direct module import, not the barrel: the deck page needs only the pure
-// filter, not the whole Reading mode component tree.
+// Direct module imports, not the barrels: the deck page needs only the pure
+// functions, not the whole practice-mode component trees.
+import { kanjiMatchPairs } from '@/components/Practice/KanjiMatchMode/pairs';
 import { eligibleReadingCards } from '@/components/Practice/ReadingMode/eligibility';
 import { ReorderBanner } from '@/components/ReorderBanner';
 import { ReviewCardsDialog } from '@/components/ReviewCardsDialog';
@@ -109,6 +110,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
 
   const canReorder = !isMemberAccount && cards.length > 1;
   const readingCardCount = useMemo(() => eligibleReadingCards(cards).length, [cards]);
+  const kanjiPairCount = useMemo(() => kanjiMatchPairs(cards).length, [cards]);
   const deckViewMode = useMemo(
     () =>
       cards.length > 0 && cards.every((c) => c.mainViewMode === cards[0].mainViewMode)
@@ -291,6 +293,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           onStudy={onStudy}
           onPractice={onPractice}
           readingUnlocked={deck.readingPractice === true}
+          kanjiPairCount={kanjiPairCount}
           onMixedPractice={() =>
             void startMixed(deckId, cards, {
               readingUnlocked: deck.readingPractice === true,

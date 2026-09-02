@@ -14,6 +14,7 @@ const MODE_EMOJI: Record<PracticeMode, string> = {
   quiz: '📝',
   listen: '🎧',
   reading: '📖',
+  'kanji-match': '🀄',
 };
 
 interface BatchPickerProps {
@@ -39,7 +40,7 @@ interface BatchOption {
  * pre-sized session skips this picker and still owes the cap.
  */
 export function maxBatchForMode(mode: PracticeMode): number {
-  return mode === 'match' ? 10 : mode === 'kotoba-bubble' ? 15 : 20;
+  return mode === 'match' ? 10 : mode === 'kanji-match' ? 12 : mode === 'kotoba-bubble' ? 15 : 20;
 }
 
 function getOptions(totalCards: number, mode: PracticeMode): BatchOption[] {

@@ -129,6 +129,7 @@
       "locked": "ロック中",
       "play": "あそぶ →",
       "unlockHint": "カードを2枚以上追加すると練習モードが使えます。",
+      "noKanjiCards": "漢字のカードが すこし ひつようです",
       "mixedError": "練習をはじめられませんでした。もう一度おためしください。"
     },
     "practiceModes": {
@@ -155,6 +156,10 @@
       "reading": {
         "label": "よみかた",
         "description": "漢字の読み方をつくる"
+      },
+      "kanjiMatch": {
+        "label": "かんじペア",
+        "description": "ことばと よみかたを ペアにする"
       },
       "quiz": {
         "label": "クイズ",
@@ -717,7 +722,8 @@
         "kotobaBubble": "文づくり",
         "quiz": "クイズ",
         "listen": "リスニング",
-        "reading": "よみかた"
+        "reading": "よみかた",
+        "kanjiMatch": "かんじペア"
       }
     },
     "batchPicker": {
@@ -1157,7 +1163,8 @@
         "kotobaBubble": "文づくり",
         "quiz": "クイズ",
         "listen": "リスニング",
-        "reading": "よみかた"
+        "reading": "よみかた",
+        "kanjiMatch": "かんじペア"
       },
       "goalBoth": "{mode}で{accuracy}%",
       "goalAccuracyOnly": "{accuracy}%",

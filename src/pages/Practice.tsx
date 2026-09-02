@@ -8,6 +8,7 @@ import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { BatchPicker, maxBatchForMode } from '@/components/Practice/BatchPicker';
 import { FillMode } from '@/components/Practice/FillMode';
+import { KanjiMatchMode, kanjiMatchPairs } from '@/components/Practice/KanjiMatchMode';
 import { KotobaBubbleMode } from '@/components/Practice/KotobaBubbleMode';
 import { KotobaBubbleSetup } from '@/components/Practice/KotobaBubbleMode/KotobaBubbleSetup';
 import { ListenMode } from '@/components/Practice/ListenMode';
@@ -55,13 +56,14 @@ export default function Practice({
     const wanted = new Set(cardIds);
     return deckCards.filter((c) => wanted.has(c.id));
   }, [deckCards, cardIds]);
-  // Only Reading is deck-gated, so only Reading pays for the decks query.
+  // Both kanji modes hang off the deck's one Reading switch.
+  const needsKanji = mode === 'reading' || mode === 'kanji-match';
   const {
     decks,
     loading: decksLoading,
     error: decksError,
     retry: retryDecks,
-  } = useDecks(mode === 'reading');
+  } = useDecks(needsKanji);
   const [batchSize, setBatchSize] = useState<number | null>(null);
 
   const modeTitles: Record<PracticeMode, string> = {
@@ -72,6 +74,7 @@ export default function Practice({
     quiz: t('modeTitles.quiz'),
     listen: t('modeTitles.listen'),
     reading: t('modeTitles.reading'),
+    'kanji-match': t('modeTitles.kanjiMatch'),
   };
   // Fill-in-the-blank needs a sentence to blank out. A card with no example
   // (older Travel saves, or a generation that came back without one) rendered
@@ -80,7 +83,7 @@ export default function Practice({
   const modeCards =
     mode === 'fill'
       ? cards.filter((c) => c.example_jp.trim())
-      : mode === 'reading'
+      : needsKanji
         ? eligibleReadingCards(cards)
         : cards;
   const badge = t('cardsBadge', { count: modeCards.length });
@@ -95,7 +98,7 @@ export default function Practice({
     );
   }
 
-  if (error || (mode === 'reading' && decksError)) {
+  if (error || (needsKanji && decksError)) {
     return (
       <Box
         sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
@@ -107,11 +110,14 @@ export default function Practice({
   }
 
   // Typing the URL must not get past the deck's Reading switch either.
-  const readingLocked =
-    mode === 'reading' && decks.find((d) => d.id === deckId)?.readingPractice !== true;
+  const readingLocked = needsKanji && decks.find((d) => d.id === deckId)?.readingPractice !== true;
+
+  // 作る/造る/創る is one pair, so counting cards here would open a board of a
+  // single forced match.
+  const kanjiUnits = mode === 'kanji-match' ? kanjiMatchPairs(modeCards).length : modeCards.length;
 
   // Locked and too-few-cards get the same message, so neither is a dead end.
-  if (readingLocked || (mode === 'reading' && modeCards.length < MIN_READING_CARDS)) {
+  if (readingLocked || (needsKanji && kanjiUnits < MIN_READING_CARDS)) {
     return (
       <Box
         sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
@@ -119,7 +125,7 @@ export default function Practice({
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography sx={{ fontSize: '3rem', mb: 1 }} aria-hidden>
-            📖
+            {mode === 'kanji-match' ? '🀄' : '📖'}
           </Typography>
           <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 420, mx: 'auto' }}>
             {readingLocked ? t('readingLocked') : t('noKanjiCards')}
@@ -235,6 +241,14 @@ export default function Practice({
       )}
       {mode === 'reading' && (
         <ReadingMode
+          cards={modeCards}
+          deckId={deckId}
+          batchSize={effectiveBatchSize}
+          onExit={onBack}
+        />
+      )}
+      {mode === 'kanji-match' && (
+        <KanjiMatchMode
           cards={modeCards}
           deckId={deckId}
           batchSize={effectiveBatchSize}

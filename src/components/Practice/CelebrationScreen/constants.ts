@@ -4,6 +4,7 @@ export type PracticeMode =
   | 'recall'
   | 'listen'
   | 'reading'
+  | 'kanji-match'
   | 'study'
   | 'speech_read'
   | 'speech_recall'
@@ -155,6 +156,7 @@ export const MODE_EMOJIS: Record<PracticeMode, string[]> = {
   match: ['🎯', '🎊', '🎉', '🎈', '⭐', '🔗'],
   listen: ['🎧', '🎵', '✨', '🌟', '👂', '⭐'],
   reading: ['📖', '✨', '🌟', '📚', '🎯', '⭐'],
+  'kanji-match': ['🀄', '✨', '🌟', '🔗', '🎯', '⭐'],
   study: ['📚', '🌸', '✨', '💫', '🦋', '⭐'],
   speech_read: ['🎤', '🌸', '✨', '📖', '🌟', '🎀'],
   speech_recall: ['🎤', '🌟', '💪', '⭐', '🎯', '✨'],
