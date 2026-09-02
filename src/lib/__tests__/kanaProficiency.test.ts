@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { allKana, getSet, HIRAGANA_SETS, KATAKANA_SETS } from '@/lib/kanaCurriculum';
 import {
   buildIslands,
+  difficultyWeight,
   drillChars,
   earnedStrength,
   isKanaKnown,
@@ -12,8 +13,11 @@ import {
   kanaProgressMap,
   kanaStars,
   kanaStrength,
+  MAX_UNSEEN_PER_QUEUE,
+  pickReviewQueue,
   setStars,
   STRENGTH_BANDS,
+  STRONG_INTERLEAVE_RATIO,
   TRACK_UNLOCK_SETS,
   trackUnlockProgress,
   unlockedKana,
@@ -278,5 +282,154 @@ describe('drillChars', () => {
 
   it('should return nothing for an unknown set id', () => {
     expect(drillChars('nope', new Map())).toEqual([]);
+  });
+});
+
+function solid(kana: string): KanaMastery & { kana: string } {
+  return {
+    kana,
+    correctCount: 12,
+    wrongCount: 0,
+    lastReviewedAt: daysAgo(1),
+    nextReviewAt: new Date(NOW.getTime() + 20 * DAY_MS).toISOString(),
+    intervalDays: 30,
+    ease: 2.5,
+  };
+}
+
+function shaky(kana: string, overrides: Partial<KanaMastery> = {}): KanaMastery & { kana: string } {
+  return {
+    kana,
+    correctCount: 2,
+    wrongCount: 5,
+    lastReviewedAt: daysAgo(4),
+    nextReviewAt: daysAgo(3),
+    intervalDays: 1,
+    ease: 1.4,
+    ...overrides,
+  };
+}
+
+/** Every character of both tracks answered well, so only the exceptions stand out. */
+function everythingSolid() {
+  return kanaProgressMap(allKana().map(solid));
+}
+
+describe('pickReviewQueue', () => {
+  it('should lead with the character the learner is losing, not the next unread row', () => {
+    const byKana = everythingSolid();
+    byKana.set('ぬ', shaky('ぬ'));
+    expect(pickReviewQueue(byKana, { size: 8, now: NOW })[0]).toBe('ぬ');
+  });
+
+  it('should mix both scripts by default and honour a single track', () => {
+    const byKana = everythingSolid();
+    byKana.set('ぬ', shaky('ぬ'));
+    byKana.set('ヌ', shaky('ヌ'));
+    expect(pickReviewQueue(byKana, { size: 12, now: NOW })).toEqual(
+      expect.arrayContaining(['ぬ', 'ヌ']),
+    );
+    expect(pickReviewQueue(byKana, { size: 12, track: 'hiragana', now: NOW })).not.toContain('ヌ');
+  });
+
+  it('should stay inside one row when a set is chosen deliberately', () => {
+    const queue = pickReviewQueue(new Map(), { size: 20, setId: 'hira-ka', now: NOW });
+    expect(queue.every((k) => getSet('hira-ka')!.entries.some((e) => e.kana === k))).toBe(true);
+  });
+
+  it('should never hand a beginner a character the journey has not opened', () => {
+    const byKana = progressFor(['hira-a'], mastery(1));
+    const queue = pickReviewQueue(byKana, { size: 20, now: NOW });
+    const open = unlockedKana('hiragana', byKana);
+    expect(queue.every((k) => open.includes(k))).toBe(true);
+    expect(queue).not.toContain('ア');
+  });
+
+  it('should introduce only a handful of brand-new characters in one session', () => {
+    const queue = pickReviewQueue(new Map(), { size: 20, now: NOW });
+    expect(queue).toHaveLength(MAX_UNSEEN_PER_QUEUE);
+    expect(queue.slice(0, 3)).toEqual(['あ', 'い', 'う']);
+  });
+
+  it('should interleave a minority of strong characters so the session is not all failure', () => {
+    const byKana = everythingSolid();
+    const weak = ['ぬ', 'ね', 'む', 'ゆ', 'ろ', 'を'];
+    weak.forEach((k) => byKana.set(k, shaky(k)));
+    const queue = pickReviewQueue(byKana, { size: 8, now: NOW });
+    const strongCount = queue.filter((k) => !weak.includes(k)).length;
+    expect(strongCount).toBe(Math.floor(8 * STRONG_INTERLEAVE_RATIO));
+    expect(queue).toHaveLength(8);
+    expect(queue[0]).not.toBe(queue[1]);
+  });
+
+  it('should drop the warm-up characters when the caller asks for weak ones only', () => {
+    const byKana = everythingSolid();
+    const weak = ['ぬ', 'ね', 'む'];
+    weak.forEach((k) => byKana.set(k, shaky(k)));
+    expect(pickReviewQueue(byKana, { size: 8, includeStrong: false, now: NOW })).toEqual(
+      expect.arrayContaining(weak),
+    );
+    expect(pickReviewQueue(byKana, { size: 8, includeStrong: false, now: NOW })).toHaveLength(3);
+  });
+
+  it('should never emit the same character twice in a row', () => {
+    const byKana = everythingSolid();
+    ['ぬ', 'ね'].forEach((k) => byKana.set(k, shaky(k)));
+    const queue = pickReviewQueue(byKana, { size: 16, now: NOW });
+    expect(queue.some((kana, i) => i > 0 && kana === queue[i - 1])).toBe(false);
+  });
+
+  it('should give the same queue twice for the same progress and the same clock', () => {
+    const byKana = everythingSolid();
+    ['ぬ', 'ね', 'にゃ'].forEach((k) => byKana.set(k, shaky(k)));
+    expect(pickReviewQueue(byKana, { size: 10, now: NOW })).toEqual(
+      pickReviewQueue(byKana, { size: 10, now: NOW }),
+    );
+  });
+
+  it('should return the whole pool when the session is bigger than the row', () => {
+    const byKana = kanaProgressMap(getSet('hira-ka')!.entries.map((e) => solid(e.kana)));
+    expect(pickReviewQueue(byKana, { size: 50, setId: 'hira-ka', now: NOW })).toHaveLength(5);
+  });
+
+  it('should surface a hard character ahead of an easy one while both are new to her', () => {
+    const byKana = everythingSolid();
+    const thin = { correctCount: 1, wrongCount: 0, lastReviewedAt: daysAgo(2), intervalDays: 1 };
+    byKana.set('にゃ', thin);
+    byKana.set('か', thin);
+    const queue = pickReviewQueue(byKana, { size: 6, now: NOW });
+    expect(queue.indexOf('にゃ')).toBeLessThan(queue.indexOf('か'));
+  });
+
+  it('should stop favouring a hard character once she has proved she reads it', () => {
+    const byKana = everythingSolid();
+    byKana.set('にゃ', {
+      correctCount: 30,
+      wrongCount: 1,
+      lastReviewedAt: daysAgo(1),
+      nextReviewAt: daysAgo(0.5),
+      intervalDays: 20,
+      ease: 2.6,
+    });
+    byKana.set('か', {
+      correctCount: 6,
+      wrongCount: 5,
+      lastReviewedAt: daysAgo(2),
+      nextReviewAt: daysAgo(1),
+      intervalDays: 2,
+      ease: 1.5,
+    });
+    const queue = pickReviewQueue(byKana, { size: 6, now: NOW });
+    expect(queue.indexOf('か')).toBeLessThan(queue.indexOf('にゃ'));
+  });
+
+  it('should fade the difficulty prior as gradings accumulate', () => {
+    expect(difficultyWeight(0)).toBe(1);
+    expect(difficultyWeight(3)).toBeCloseTo(0.5, 5);
+    expect(difficultyWeight(30)).toBeLessThan(0.1);
+  });
+
+  it('should hand back nothing for a zero-size session', () => {
+    expect(pickReviewQueue(new Map(), { size: 0, now: NOW })).toEqual([]);
   });
 });

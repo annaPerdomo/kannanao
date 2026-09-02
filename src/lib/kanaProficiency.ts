@@ -1,4 +1,11 @@
-import { getSet, type KanaSet, type KanaTrack, setsForTrack } from '@/lib/kanaCurriculum';
+import {
+  allKana,
+  getSet,
+  kanaDifficulty,
+  type KanaSet,
+  type KanaTrack,
+  setsForTrack,
+} from '@/lib/kanaCurriculum';
 
 /** The part of a `kana_progress` row proficiency is judged on. */
 export interface KanaMastery {
@@ -162,6 +169,118 @@ export function unlockedKana(track: KanaTrack, byKana: KanaProgressMap): string[
   return buildIslands(track, byKana)
     .filter((island) => island.status !== 'locked')
     .flatMap((island) => island.set.entries.map((e) => e.kana));
+}
+
+export const STRONG_STRENGTH = STRENGTH_BANDS[2];
+
+export const STRONG_INTERLEAVE_RATIO = 0.25;
+
+export const MAX_UNSEEN_PER_QUEUE = 5;
+
+const UNSEEN_SCORE = 0.8;
+const DIFFICULTY_PRIOR_MAX = 0.6;
+const PRIOR_HALF_EVIDENCE = 3;
+const DUE_BONUS = 0.3;
+const OVERDUE_BONUS_PER_DAY = 0.05;
+const MAX_OVERDUE_BONUS = 0.2;
+const LAST_ANSWER_WRONG_BONUS = 0.3;
+
+export interface ReviewQueueOptions {
+  /**
+   * Upper bound, not a promise: a queue runs short rather than introduce more
+   * than `MAX_UNSEEN_PER_QUEUE` never-answered characters at once.
+   */
+  size: number;
+  track?: KanaTrack | 'both';
+  setId?: string;
+  includeStrong?: boolean;
+  now?: Date;
+}
+
+export function difficultyWeight(answers: number): number {
+  return 1 / (1 + answers / PRIOR_HALF_EVIDENCE);
+}
+
+function overdueBonus(progress: KanaMastery, now: Date): number {
+  if (!progress.nextReviewAt) return 0;
+  const overdueMs = now.getTime() - new Date(progress.nextReviewAt).getTime();
+  if (overdueMs < 0) return 0;
+  return DUE_BONUS + Math.min(MAX_OVERDUE_BONUS, (overdueMs / DAY_MS) * OVERDUE_BONUS_PER_DAY);
+}
+
+function reviewScore(kana: string, progress: KanaMastery | undefined, now: Date): number {
+  if (!progress || isUnseen(progress)) return UNSEEN_SCORE;
+  const prior =
+    kanaDifficulty(kana) * difficultyWeight(totalAnswers(progress)) * DIFFICULTY_PRIOR_MAX;
+  // srs_next zeroes the interval only on a wrong answer, so this reads "she
+  // missed it last time" without a second column.
+  const missedLast = progress.intervalDays === 0 ? LAST_ANSWER_WRONG_BONUS : 0;
+  return 1 - kanaStrength(progress, now) + overdueBonus(progress, now) + missedLast + prior;
+}
+
+// The pool is the journey she has opened plus everything she has met, never
+// the whole chart: an unasked-for ヴ in a beginner's session reads as a bug.
+function trackPool(byKana: KanaProgressMap, track: KanaTrack, requested: boolean): string[] {
+  const seen = (kana: string) => !isUnseen(byKana.get(kana));
+  const chart = allKana(track);
+  if (!requested && !isTrackUnlocked(track, byKana) && !chart.some(seen)) return [];
+  const open = new Set(unlockedKana(track, byKana));
+  return chart.filter((kana) => open.has(kana) || seen(kana));
+}
+
+function queuePool(byKana: KanaProgressMap, { setId, track }: ReviewQueueOptions): string[] {
+  if (setId) return getSet(setId)?.entries.map((e) => e.kana) ?? [];
+  if (track && track !== 'both') return trackPool(byKana, track, true);
+  return (['hiragana', 'katakana'] as KanaTrack[]).flatMap((t) => trackPool(byKana, t, false));
+}
+
+function interleave(needy: string[], strong: string[]): string[] {
+  if (strong.length === 0) return needy;
+  const gap = Math.max(1, Math.round(needy.length / (strong.length + 1)));
+  const out: string[] = [];
+  let placed = 0;
+  needy.forEach((kana, i) => {
+    out.push(kana);
+    if (placed < strong.length && (i + 1) % gap === 0) out.push(strong[placed++]);
+  });
+  return [...out, ...strong.slice(placed)];
+}
+
+/**
+ * The characters to practise next, weakest first and shaped into a session.
+ * Deterministic: the same progress and the same `now` give the same queue.
+ */
+export function pickReviewQueue(byKana: KanaProgressMap, opts: ReviewQueueOptions): string[] {
+  const now = opts.now ?? new Date();
+  const size = Math.max(0, Math.floor(opts.size));
+  const pool = queuePool(byKana, opts);
+
+  const seen = pool.filter((kana) => !isUnseen(byKana.get(kana)));
+  const byScore = (a: { score: number }, b: { score: number }) => b.score - a.score;
+  const scored = seen
+    .map((kana) => ({
+      kana,
+      score: reviewScore(kana, byKana.get(kana), now),
+      strong: kanaStrength(byKana.get(kana), now) >= STRONG_STRENGTH,
+    }))
+    .sort(byScore);
+
+  // Unseen characters keep curriculum order: a beginner meets あ before にゃ.
+  const fresh = pool
+    .filter((kana) => isUnseen(byKana.get(kana)))
+    .slice(0, MAX_UNSEEN_PER_QUEUE)
+    .map((kana) => ({ kana, score: UNSEEN_SCORE }));
+
+  const needy = [...scored.filter((c) => !c.strong), ...fresh].sort(byScore).map((c) => c.kana);
+  const strong = scored.filter((c) => c.strong).map((c) => c.kana);
+
+  const allowStrong = opts.includeStrong !== false;
+  const strongSlots = allowStrong
+    ? Math.min(strong.length, Math.floor(size * STRONG_INTERLEAVE_RATIO))
+    : 0;
+  const picked = needy.slice(0, size - strongSlots);
+  const backfill = allowStrong ? size - strongSlots - picked.length : 0;
+  return interleave(picked, strong.slice(0, strongSlots + backfill));
 }
 
 export function drillChars(
