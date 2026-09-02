@@ -1,4 +1,5 @@
 import { fireEvent, screen } from '@testing-library/react';
+import { act } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { renderWithProviders } from '@/test/renderWithProviders';
@@ -72,5 +73,70 @@ describe('WordMatch board', () => {
     fireEvent.click(tile('しごと'));
 
     expect(onPairResolved).not.toHaveBeenCalled();
+  });
+});
+
+describe('WordMatch board, after the shared-board lift', () => {
+  it('offers read-aloud on the Japanese tiles only', () => {
+    renderBoard();
+
+    expect(screen.getAllByRole('button', { name: 'Read aloud' })).toHaveLength(WORDS.length);
+  });
+
+  it('shows the emoji alongside the meaning when the word has one', () => {
+    const onPairResolved = vi.fn();
+    renderWithProviders(
+      <WordMatchEmbedded
+        words={[{ jp: 'ねこ', english: 'cat', emoji: '🐱', speak: 'ねこ' }]}
+        comboCount={0}
+        onPairResolved={onPairResolved}
+        onComplete={vi.fn()}
+        onQuit={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: '🐱 cat' })).toBeInTheDocument();
+  });
+
+  it('hands back once every pair in the round is matched', () => {
+    vi.useFakeTimers();
+    try {
+      const onComplete = vi.fn();
+      renderWithProviders(
+        <WordMatchEmbedded
+          words={WORDS}
+          comboCount={0}
+          onPairResolved={vi.fn()}
+          onComplete={onComplete}
+          onQuit={vi.fn()}
+        />,
+      );
+
+      fireEvent.click(tile('やちん'));
+      fireEvent.click(tile('rent'));
+      fireEvent.click(tile('しごと'));
+      fireEvent.click(tile('work'));
+      expect(onComplete).not.toHaveBeenCalled();
+
+      act(() => void vi.advanceTimersByTime(800));
+      expect(onComplete).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('hands back immediately when it is handed no words at all', () => {
+    const onComplete = vi.fn();
+    renderWithProviders(
+      <WordMatchEmbedded
+        words={[]}
+        comboCount={0}
+        onPairResolved={vi.fn()}
+        onComplete={onComplete}
+        onQuit={vi.fn()}
+      />,
+    );
+
+    expect(onComplete).toHaveBeenCalled();
   });
 });
