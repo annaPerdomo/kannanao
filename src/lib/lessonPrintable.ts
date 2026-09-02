@@ -225,10 +225,21 @@ ${kana}
 </html>`;
 }
 
-/** Opens the built document in a new tab, which immediately offers the print dialog. */
-export function openPrintWindow(html: string): void {
-  const win = window.open('', '_blank');
-  if (!win) return;
+// Safari only honours window.open inside the gesture handler, so a caller that
+// has to await data must claim the tab first and write into it afterwards.
+export function openBlankPrintWindow(): Window | null {
+  return window.open('', '_blank');
+}
+
+export function writePrintWindow(win: Window, html: string): void {
   win.document.write(html);
   win.document.close();
+}
+
+/** False means the browser blocked the tab. */
+export function openPrintWindow(html: string): boolean {
+  const win = openBlankPrintWindow();
+  if (!win) return false;
+  writePrintWindow(win, html);
+  return true;
 }

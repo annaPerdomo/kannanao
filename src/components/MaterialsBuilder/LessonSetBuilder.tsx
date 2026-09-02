@@ -246,7 +246,14 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
             <Button variant="contained" onClick={() => router.push(`/group/${groupId}`)}>
               {t('backToGroupButton')}
             </Button>
-            {plan && <PrintButtons plan={plan} warmUp={warmUp} kanaSets={companionSets} />}
+            {plan && (
+              <PrintButtons
+                plan={plan}
+                warmUp={warmUp}
+                kanaSets={companionSets}
+                groupId={groupId}
+              />
+            )}
           </Box>
         </Stack>
       )}
@@ -279,6 +286,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
       {!results && !building && !applying && plan && (
         <ReviewStep
           plan={plan}
+          groupId={groupId}
           warmUp={warmUp}
           knownWords={knownWords}
           kanaReadiness={kanaReadiness}

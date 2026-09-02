@@ -1,4 +1,5 @@
 'use client';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import PrintIcon from '@mui/icons-material/Print';
 import QuizIcon from '@mui/icons-material/Quiz';
 import Button from '@mui/material/Button';
@@ -17,19 +18,24 @@ import {
 import type { LessonPlan, WarmUpWord } from '@/types/lessonPlan';
 
 import { loadKanaSheetPreference, saveKanaSheetPreference } from './kanaSheetPreference';
+import { ReferenceSheetsDialog } from './ReferenceSheetsDialog';
 
 interface PrintButtonsProps {
   plan: LessonPlan;
   warmUp?: WarmUpWord[];
   kanaSets?: string[];
+  groupId?: string;
+  /** Gates the plan-derived sheets only; the reference charts don't read the plan. */
   disabled?: boolean;
 }
 
 /** "Print study sheets" / "Print quiz sheets" — paper handouts from the same plan. */
-export function PrintButtons({ plan, warmUp, kanaSets, disabled }: PrintButtonsProps) {
+export function PrintButtons({ plan, warmUp, kanaSets, groupId, disabled }: PrintButtonsProps) {
   const t = useTranslations('Group.lessonBuilder');
   const tContextual = useTranslations('KanaJourney.contextual');
   const locale = useLocale();
+
+  const [sheetsOpen, setSheetsOpen] = useState(false);
 
   // Read after mount: the server render has no localStorage and would mismatch.
   const [includeKana, setIncludeKana] = useState(true);
@@ -96,6 +102,13 @@ export function PrintButtons({ plan, warmUp, kanaSets, disabled }: PrintButtonsP
       >
         {t('printQuizButton')}
       </Button>
+      <Button
+        startIcon={<GridOnIcon sx={{ fontSize: 18 }} />}
+        onClick={() => setSheetsOpen(true)}
+        sx={{ textTransform: 'none', fontWeight: 700 }}
+      >
+        {t('referenceSheetsButton')}
+      </Button>
       {!!kanaSets?.length && (
         <FormControlLabel
           control={
@@ -112,6 +125,12 @@ export function PrintButtons({ plan, warmUp, kanaSets, disabled }: PrintButtonsP
           }
         />
       )}
+      <ReferenceSheetsDialog
+        open={sheetsOpen}
+        onClose={() => setSheetsOpen(false)}
+        plan={plan}
+        groupId={groupId}
+      />
     </>
   );
 }
