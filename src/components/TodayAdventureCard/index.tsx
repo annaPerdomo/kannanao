@@ -5,15 +5,17 @@ import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
 import { useProgressCtx } from '@/contexts/ProgressContext';
 import { useShopCtx } from '@/contexts/ShopContext';
 import { useDueCount } from '@/hooks/useDueCount';
+import { useKanaProgress } from '@/hooks/useKanaProgress';
 import { buddyFaceSrc, resolveBuddyKey } from '@/lib/buddies';
 import { localDateString } from '@/lib/chest';
 import { FRIENDSHIP_POINTS } from '@/lib/friendship';
+import { KANA_WAIT_MS, kanaNodeSize, pickQuestKana } from '@/lib/quest';
 import { isReturningAfterBreak } from '@/lib/studyWeek';
 
 import { AdventureSkeleton } from './AdventureSkeleton';
@@ -53,6 +55,9 @@ export function TodayAdventureCard() {
     ensureLoaded,
   } = useBuddyFriendshipCtx();
   const { equipped: shopEquipped } = useShopCtx();
+  // Gated: an unconditional read would add a query to the home path for everyone.
+  const kanaWanted = !dueLoading && !dueError && dueCount === 0;
+  const { byKana, error: kanaError } = useKanaProgress(kanaWanted);
 
   // The provider doesn't fetch friendships on mount, and an unloaded `friendships`
   // is indistinguishable from "no row yet" — hold the skeleton rather than fall
@@ -61,11 +66,22 @@ export function TodayAdventureCard() {
     void ensureLoaded();
   }, [ensureLoaded]);
 
+  // Bounded, or a hung kana read leaves the hero on a skeleton for good.
+  const [kanaTimedOut, setKanaTimedOut] = useState(false);
+  useEffect(() => {
+    if (!kanaWanted || byKana || kanaError) return;
+    const timer = setTimeout(() => setKanaTimedOut(true), KANA_WAIT_MS);
+    return () => clearTimeout(timer);
+  }, [kanaWanted, byKana, kanaError]);
+
   // 'error' releases the gate too — the chest fallback below beats a skeleton
   // that never resolves.
   const friendshipSettled = friendshipLoad === 'loaded' || friendshipLoad === 'error';
 
   if (dueLoading || progressLoading || !friendshipSettled) return <AdventureSkeleton />;
+  if (kanaWanted && byKana === null && !kanaError && !kanaTimedOut) return <AdventureSkeleton />;
+
+  const kanaCount = byKana ? kanaNodeSize(dueCount, pickQuestKana(byKana).length) : 0;
 
   // Local dates during render are safe only because the gate above holds until
   // client data lands — the server never reaches a date-dependent branch.
@@ -97,7 +113,11 @@ export function TodayAdventureCard() {
   // error would be a lie. Completed doesn't read the count, so it still renders.
   if (!completedToday && dueError) return null;
 
-  const state: AdventureState = completedToday ? 'completed' : dueCount > 0 ? 'due' : 'nothingDue';
+  const state: AdventureState = completedToday
+    ? 'completed'
+    : dueCount > 0 || kanaCount > 0
+      ? 'due'
+      : 'nothingDue';
   const returning =
     state !== 'completed' &&
     isReturningAfterBreak(progress?.last_study_date ?? null, today, yesterday);
@@ -153,6 +173,7 @@ export function TodayAdventureCard() {
           buddyName={buddyName}
           faceSrc={buddyFaceSrc(buddyKey, FACE_DEFAULT)}
           dueCount={dueCount}
+          kanaCount={kanaCount}
           friendshipLine={friendshipLine}
           onStart={start}
           onPlayGame={playGame}

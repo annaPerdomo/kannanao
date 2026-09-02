@@ -19,6 +19,8 @@ interface AssignmentGoalPickerProps {
   onModeChange: (mode: GoalMode | null) => void;
   /** Modes the chosen deck can't answer — offering them would set an impossible goal. */
   unavailableModes?: readonly GoalMode[];
+  /** A kana goal's activity is fixed, so the whole mode question is dropped. */
+  hideModes?: boolean;
 }
 
 /**
@@ -32,6 +34,7 @@ export function AssignmentGoalPicker({
   onAccuracyChange,
   onModeChange,
   unavailableModes = [],
+  hideModes = false,
 }: AssignmentGoalPickerProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -127,26 +130,28 @@ export function AssignmentGoalPicker({
             </Box>
           </Box>
 
-          <Box>
-            <Typography
-              sx={{
-                fontSize: '0.65rem',
-                fontWeight: 800,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                color: brand[500],
-                mb: 1,
-              }}
-            >
-              {t('inWhichActivity')}
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-              {chip(mode === null, t('anyActivity'), () => onModeChange(null))}
-              {GOAL_MODES.filter((m) => !unavailableModes.includes(m)).map((m) =>
-                chip(mode === m, t(`modes.${goalModeMessageKey(m)}`), () => onModeChange(m)),
-              )}
+          {!hideModes && (
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: '0.65rem',
+                  fontWeight: 800,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  color: brand[500],
+                  mb: 1,
+                }}
+              >
+                {t('inWhichActivity')}
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                {chip(mode === null, t('anyActivity'), () => onModeChange(null))}
+                {GOAL_MODES.filter((m) => !unavailableModes.includes(m)).map((m) =>
+                  chip(mode === m, t(`modes.${goalModeMessageKey(m)}`), () => onModeChange(m)),
+                )}
+              </Box>
             </Box>
-          </Box>
+          )}
         </Box>
       </Collapse>
     </Box>

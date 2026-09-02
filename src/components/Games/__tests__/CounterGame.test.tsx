@@ -71,7 +71,13 @@ describe('CounterGame', () => {
   it('advances to the next round after a correct tap', async () => {
     renderWithProviders(<CounterGame />);
     await tap('みっつ');
-    expect(mockRecordAnswer).toHaveBeenCalledWith('session-1', true, undefined, undefined);
+    expect(mockRecordAnswer).toHaveBeenCalledWith(
+      'session-1',
+      true,
+      undefined,
+      undefined,
+      undefined,
+    );
 
     act(() => vi.advanceTimersByTime(1600));
     expect(screen.getByRole('img', { name: '2 boys' })).toBeInTheDocument();
@@ -83,7 +89,13 @@ describe('CounterGame', () => {
     await tap('さんまい');
 
     expect(screen.getByText('みっつ — 3 apples')).toBeInTheDocument();
-    expect(mockRecordAnswer).toHaveBeenCalledWith('session-1', false, undefined, undefined);
+    expect(mockRecordAnswer).toHaveBeenCalledWith(
+      'session-1',
+      false,
+      undefined,
+      undefined,
+      undefined,
+    );
   });
 
   it('ends the session once the last round is answered', async () => {

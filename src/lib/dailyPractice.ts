@@ -72,15 +72,14 @@ export function pickFocusDeck(
   const byId = new Map(decks.map((d) => [d.id, d]));
   const usable = (deck: Deck | undefined): deck is Deck =>
     !!deck && deck.cardCount >= MIN_FOCUS_CARDS;
+  const deckOf = (a: Assignment) => (a.deck_id ? byId.get(a.deck_id) : undefined);
 
   const open = assignments
-    .filter(
-      (a) => !a.completed_at && isAvailable(a.available_on, today) && usable(byId.get(a.deck_id)),
-    )
+    .filter((a) => !a.completed_at && isAvailable(a.available_on, today) && usable(deckOf(a)))
     .sort(byDueThenCreated);
   if (open.length > 0) {
     const pick = open[round % open.length];
-    return toFocus(byId.get(pick.deck_id)!, pick);
+    return toFocus(deckOf(pick)!, pick);
   }
 
   const assignedIds = new Set(
@@ -96,10 +95,13 @@ export function pickFocusDeck(
 
 export interface DailyPlanInput {
   dueCount: number;
+  /** Characters the reading queue says are slipping; a review leg with no words due still plays them. */
+  kanaDue?: boolean;
   focus: FocusPick | null;
   cards: Flashcard[];
   progress: CardProgress[];
   ttsReady: boolean;
+  sentenceCount: number;
 }
 
 function focusGoal(focus: FocusPick): GoalMode | null {
@@ -118,20 +120,26 @@ function fit(legs: ChainLeg[], budget: number): ChainLeg[] {
 
 export function planDailyPractice({
   dueCount,
+  kanaDue = false,
   focus,
   cards,
   progress,
   ttsReady,
+  sentenceCount,
 }: DailyPlanInput): ChainLeg[] {
   const legs: ChainLeg[] = [];
-  if (dueCount > 0) legs.push({ step: 'review', mode: 'review' });
+  if (dueCount > 0 || kanaDue) legs.push({ step: 'review', mode: 'review' });
   if (!focus) return legs;
 
   const goal = focusGoal(focus);
   const session = pickMixedSessionCards(cards, progress);
   const sessionIds = session.map((c) => c.id);
   const mixed = planMixedPractice({
-    support: deckSupport(session, { readingUnlocked: focus.readingUnlocked, ttsReady }),
+    support: deckSupport(session, {
+      readingUnlocked: focus.readingUnlocked,
+      ttsReady,
+      sentenceCount,
+    }),
     counts: countStrengths(sessionIds, progress),
     exclude: goal ? [goal] : [],
   });

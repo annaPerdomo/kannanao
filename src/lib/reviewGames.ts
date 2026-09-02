@@ -29,6 +29,19 @@ export function hiraganaToKatakana(text: string): string {
   return out;
 }
 
+/**
+ * Convert katakana to hiragana. Covers the full katakana block (ァ–ヶ) by
+ * codepoint shift; ー, ヷ–ヺ and any other characters pass through unchanged.
+ */
+export function katakanaToHiragana(text: string): string {
+  let out = '';
+  for (const ch of text) {
+    const code = ch.codePointAt(0)!;
+    out += code >= 0x30a1 && code <= 0x30f6 ? String.fromCodePoint(code - 0x60) : ch;
+  }
+  return out;
+}
+
 /** True when the text is entirely kana (hiragana or katakana, incl. ー). */
 export function isPureKana(text: string): boolean {
   return /^[ぁ-ゖァ-ヺー]+$/.test(text);

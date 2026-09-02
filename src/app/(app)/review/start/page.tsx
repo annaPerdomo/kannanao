@@ -30,7 +30,7 @@ function Frame({ children }: { children: React.ReactNode }) {
 export default function PracticeStartPage() {
   const t = useTranslations('Review.startPage');
   const router = useRouter();
-  const { dueCount, focus, empty, loading, error, retry } = useDailyFocus();
+  const { dueCount, kanaDue, focus, empty, loading, error, retry } = useDailyFocus();
   // Voice is settled before planning: a voiceless browser hangs on a Listen leg mid-chain.
   const voice = useJapaneseVoice();
   const start = useStartDailyPractice();
@@ -40,13 +40,13 @@ export default function PracticeStartPage() {
   useEffect(() => {
     if (loading || error || empty || voice === 'checking' || startedRef.current) return;
     startedRef.current = true;
-    start(focus, dueCount, voice === 'ready').then(
+    start(focus, dueCount, voice === 'ready', kanaDue).then(
       (ok) => {
         if (!ok) setStartError(true);
       },
       () => setStartError(true),
     );
-  }, [loading, error, empty, voice, start, focus, dueCount]);
+  }, [loading, error, empty, voice, start, focus, dueCount, kanaDue]);
 
   if (error) {
     return (

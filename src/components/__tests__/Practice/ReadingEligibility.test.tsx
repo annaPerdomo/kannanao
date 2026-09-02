@@ -51,6 +51,11 @@ vi.mock('@/components/Practice/KotobaBubbleMode', () => ({ KotobaBubbleMode: () 
 vi.mock('@/components/Practice/KotobaBubbleMode/KotobaBubbleSetup', () => ({
   KotobaBubbleSetup: () => null,
 }));
+// The page also calls the real kanjiMatchPairs, so only the component is stubbed.
+vi.mock('@/components/Practice/KanjiMatchMode', async () => ({
+  ...(await vi.importActual<object>('@/components/Practice/KanjiMatchMode/pairs')),
+  KanjiMatchMode: () => <div data-testid="kanji-board" />,
+}));
 
 import Practice from '@/pages/Practice';
 
@@ -131,6 +136,55 @@ describe('Reading mode eligibility on the practice page', () => {
 
     await waitFor(() => expect(screen.getByRole('progressbar')).toBeInTheDocument());
     expect(screen.getByText('4 cards')).toBeInTheDocument();
+  });
+});
+
+describe('Kanji Pairs eligibility on the practice page', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    readingUnlocked.current = true;
+  });
+
+  it('turns away a learner who types the URL for a locked deck', async () => {
+    cards.current = KANJI_CARDS;
+    readingUnlocked.current = false;
+    renderMode('kanji-match');
+
+    await waitFor(() =>
+      expect(screen.getByText(/isn't open for this deck yet/)).toBeInTheDocument(),
+    );
+    expect(screen.queryByTestId('kanji-board')).not.toBeInTheDocument();
+  });
+
+  it('sends a kana-only deck back to the picker instead of an empty board', async () => {
+    cards.current = KANA_CARDS;
+    renderMode('kanji-match');
+
+    await waitFor(() => expect(screen.getByText(/needs a few kanji words/)).toBeInTheDocument());
+    expect(screen.queryByTestId('kanji-board')).not.toBeInTheDocument();
+  });
+
+  it('deals the board once enough kanji cards exist, counting only those', async () => {
+    cards.current = [...KANJI_CARDS, ...KANA_CARDS];
+    renderMode('kanji-match');
+
+    await waitFor(() => expect(screen.getByTestId('kanji-board')).toBeInTheDocument());
+    expect(screen.getByText('4 cards')).toBeInTheDocument();
+  });
+
+  // Five eligible cards, two pairs: the gate counts pairs, not cards.
+  it('turns away a deck whose kanji cards mostly share one reading', async () => {
+    cards.current = [
+      makeCard('s1', '作る', 'つくる'),
+      makeCard('s2', '造る', 'つくる'),
+      makeCard('s3', '創る', 'つくる'),
+      makeCard('s4', '佃る', 'つくる'),
+      makeCard('s5', '走る', 'はしる'),
+    ];
+    renderMode('kanji-match');
+
+    await waitFor(() => expect(screen.getByText(/needs a few kanji words/)).toBeInTheDocument());
+    expect(screen.queryByTestId('kanji-board')).not.toBeInTheDocument();
   });
 });
 

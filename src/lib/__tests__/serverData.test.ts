@@ -49,6 +49,7 @@ function makeChain(table: string) {
   });
   chain.eq = vi.fn(() => chain);
   chain.or = vi.fn(() => chain);
+  chain.not = vi.fn(() => chain);
   chain.order = vi.fn(() => chain);
   chain.in = vi.fn((col: string) => {
     if (col === 'id') b.hasInId = true;

@@ -84,6 +84,9 @@
       "readingToggleOn": "Learners can practice reading this deck's kanji",
       "readingToggleAuto": "Turned on for you — these cards lead with kanji!",
       "readingToggleAria": "Kanji reading practice",
+      "generateImagesToggle": "Generate images",
+      "generateImagesToggleOn": "Each card gets a matching picture",
+      "generateImagesToggleOff": "Cards are created without pictures",
       "addCardsOptional": "add cards (optional)",
       "createFailed": "Couldn't create the deck. Please try again.",
       "nameRequired": "Enter a deck name first"
@@ -126,6 +129,7 @@
       "locked": "Locked",
       "play": "Play →",
       "unlockHint": "Add at least 2 cards to unlock practice modes.",
+      "noKanjiCards": "Needs a few cards with kanji",
       "mixedError": "We couldn't start practice. Please try again."
     },
     "practiceModes": {
@@ -152,6 +156,10 @@
       "reading": {
         "label": "Reading",
         "description": "See the kanji, build its reading"
+      },
+      "kanjiMatch": {
+        "label": "Kanji Pairs",
+        "description": "Match each word with how it's read"
       },
       "quiz": {
         "label": "Quiz",
@@ -529,6 +537,7 @@
     "questMap": {
       "warmup": "Warm-up",
       "match": "Word Match",
+      "kana": "Characters",
       "boss": "Boss Round",
       "chest": "Chest"
     },
@@ -551,7 +560,9 @@
       "bossRoundTitle": "Boss Round",
       "bossRoundSubtitle": "Your last 3 words — pick the meaning. Worth double!",
       "todaysPractice": "Today's Practice",
-      "cardsBadge": "{count, plural, one {# card} other {# cards}}"
+      "cardsBadge": "{count, plural, one {# card} other {# cards}}",
+      "kanaRoundTitle": "Characters",
+      "kanaRoundSubtitle": "{count, plural, one {# character to brush up} other {# characters to brush up}}"
     },
     "todayPage": {
       "findingReviews": "Finding your reviews…",
@@ -686,7 +697,9 @@
       "questionsTitle": "Question Quest — Review | Tangodachi",
       "questionsDescription": "Practice Japanese question words — pick the answer that fits each question.",
       "countingTitle": "How Many? — Review | Tangodachi",
-      "countingDescription": "Practice Japanese counters — count the things and pick まい・つ・にん."
+      "countingDescription": "Practice Japanese counters — count the things and pick まい・つ・にん.",
+      "learnKanaTitle": "Learn Kana — Review | Tangodachi",
+      "learnKanaDescription": "Learn to read hiragana and katakana from zero, one row at a time."
     },
     "startPage": {
       "preparing": "Getting your practice ready…",
@@ -722,7 +735,8 @@
         "kotobaBubble": "Sentence Builder",
         "quiz": "Quiz",
         "listen": "Listen",
-        "reading": "Reading"
+        "reading": "Reading",
+        "kanjiMatch": "Kanji Pairs"
       }
     },
     "batchPicker": {
@@ -971,6 +985,86 @@
       }
     }
   },
+  "KanaJourney": {
+    "check": {
+      "title": "Quick check",
+      "howTo": "Tap the sound each character makes. Go fast — we'll double-check as you go.",
+      "question": "Which sound is this?",
+      "solid": "{count, plural, one {# character looks solid} other {# characters look solid}}",
+      "workOn": "We'll start with {kana}, and double-check the rest as you go.",
+      "workOnNothing": "Nothing looks shaky — we'll double-check as you go.",
+      "startReview": "Start reviewing"
+    },
+    "contextual": {
+      "littleTsu": "little つ",
+      "longSound": "long sound"
+    },
+    "wordPair": {
+      "question": "Which one did you hear?",
+      "listen": "Tap to hear it"
+    },
+    "scriptMatch": {
+      "question": "Match each hiragana with its katakana."
+    },
+    "common": {
+      "hint": "Show a hint",
+      "next": "Next"
+    },
+    "recognize": {
+      "question": "Which sound is this?",
+      "tapToHear": "Tap to hear it"
+    },
+    "recall": {
+      "question": "Pick the character"
+    },
+    "lightning": {
+      "score": "{count, plural, one {# right} other {# right}}",
+      "timeLeft": "Time left",
+      "timeUp": "Time's up! {count, plural, one {# right} other {# right}}",
+      "tapToHear": "Tap to hear it"
+    },
+    "tile": {
+      "title": "Learn Kana",
+      "description": "Read hiragana and katakana — and brush up the ones going rusty."
+    },
+    "journey": {
+      "contextualBlock": "Sound changers",
+      "check": "Quick check",
+      "checkHint": "Already read some of these? The quick check takes a minute.",
+      "title": "Learn Kana",
+      "subtitle": "Tap any character to practise it.",
+      "loading": "Opening your chart…",
+      "hiraganaTrack": "Hiragana",
+      "katakanaTrack": "Katakana",
+      "review": "Review",
+      "reviewSubtitle": "{count, plural, one {# character to brush up} other {# characters to brush up}}",
+      "reviewNothing": "Nothing to brush up — practise anything you like",
+      "startHint": "Start with the {kana} row",
+      "rowLabel": "Practise the {kana} row",
+      "cellLabel": "{kana} — {romaji}, {state}",
+      "markedBlock": "Sounds with marks",
+      "comboBlock": "Two-part sounds",
+      "state": {
+        "new": "new",
+        "learning": "getting there",
+        "rusty": "getting rusty",
+        "solid": "solid"
+      },
+      "printChart": "Print this chart",
+      "printChartTitle": "{script} chart",
+      "printChartHint": "Put it up where you study."
+    },
+    "session": {
+      "scriptMatchHowTo": "Tap a hiragana, then the katakana that says the same sound.",
+      "wordPairHowTo": "Listen to the word, then tap the spelling you heard.",
+      "recognizeHowTo": "Look at the character, then tap the sound it makes.",
+      "recallHowTo": "Hear the sound, then tap the character that writes it.",
+      "lightningHowTo": "Speed round — get as many right as you can before time runs out.",
+      "celebrationSubheading": "{correct} / {total} right this round",
+      "backToJourney": "Back to Learn Kana",
+      "mixedTitle": "Brush-up"
+    }
+  },
   "Group": {
     "timeAgo": {
       "never": "Never",
@@ -1082,7 +1176,8 @@
         "kotobaBubble": "Sentence Builder",
         "quiz": "Quiz",
         "listen": "Listen",
-        "reading": "Reading"
+        "reading": "Reading",
+        "kanjiMatch": "Kanji Pairs"
       },
       "goalBoth": "{accuracy}% in {mode}",
       "goalAccuracyOnly": "{accuracy}%",
@@ -1121,9 +1216,14 @@
       "lastNudged": "Last nudged {date}"
     },
     "createAssignment": {
-      "title": "Assign a Deck",
-      "subtitle": "Choose a deck and members to assign it to",
+      "title": "Assign Work",
+      "subtitle": "Choose a deck or a row of kana, and who gets it",
       "selectDeck": "Select Deck",
+      "selectWhat": "What to assign",
+      "targetDeck": "A deck",
+      "targetKana": "Kana",
+      "hiragana": "Hiragana",
+      "katakana": "Katakana",
       "assignTo": "Assign To",
       "noteLabel": "Note (optional)",
       "notePlaceholder": "Focus on chapter 3 vocab",
@@ -1538,16 +1638,24 @@
       "meaningLabel": "Meaning",
       "exampleJpLabel": "Example (Japanese)",
       "exampleEnLabel": "Example (English)",
-      "includeCardLabel": "Include {word}",
-      "includeWeekLabel": "Include {name}",
-      "cardSkippedNote": "Won't be created",
+      "includeCardLabel": "Approve {word}",
+      "includeWeekLabel": "Approve all of {name}",
+      "cardSkippedNote": "Not approved — won't be created unless you regenerate",
       "weekSkippedNote": "This week is switched off — its deck won't be created.",
-      "noCardsNote": "No cards are ticked, so this week will be skipped.",
+      "noCardsNote": "No cards are approved, so this week will be skipped.",
       "addCardButton": "Add a card",
       "dueChip": "Due {date}",
       "aboveLevelChip": "{level} — above {target}",
-      "buildsOnLabel": "builds on: {words}",
+      "buildsOnChipLabel": "builds on: {word}",
+      "buildsOnTooltipKnown": "From {deckName}, added {date}",
+      "buildsOnTooltipThisLesson": "From {deckName} — introduced earlier in this plan, not yet saved",
       "retentionLine": "{reused} of {total} cards build on words from earlier weeks",
+      "approveHint": "Check the cards you want to keep. Anything left unchecked won't be created — regenerate to swap those out for new ones instead of adding cards by hand.",
+      "targetCountLabel": "Cards in this deck",
+      "regenerateUnapprovedButton": "Regenerate unapproved",
+      "regenerateHint": "Keeps your {approved} approved cards and generates fresh ones to reach {target} total.",
+      "regenerateGoal": "{goal} — for this week's deck: {deck}. Generate NEW vocabulary cards only; do not repeat any of these words, which are already approved: {words}",
+      "regenerateNoWords": "(none yet)",
       "retryDeckButton": "Try again",
       "retryGoal": "{goal} — redo just this week's deck: {deck}",
       "dueDateLabel": "First deck due",
@@ -1574,7 +1682,42 @@
       "errorMessage": "Something went wrong. Please try again.",
       "emptyPlanMessage": "The plan came back empty. Try describing the goal a little differently.",
       "sentencesToggleLabel": "Also make Kotoba Bubble practice sentences",
-      "sentencesToggleHint": "One set of sentences per deck — everyone in the group practices the same set, so it's easy to check over."
+      "sentencesToggleHint": "One set of sentences per deck — everyone in the group practices the same set, so it's easy to check over.",
+      "imagesToggleLabel": "Also generate a picture for each card",
+      "imagesToggleHint": "Uses an Unsplash search phrase written for the card's word — slower to build, and uses up image credits.",
+      "kanaGapChip": "New sounds: {sounds}",
+      "kanaGapWorkingOn": "{kana} — {count, plural, one {# member is} other {# members are}} still working on it: {names}",
+      "kanaGapUntried": "Hasn't tried Learn Kana yet: {names}",
+      "kanaNoDataNote": "Tip: your group hasn't tried Learn Kana yet, so there's no reading data to check this plan against.",
+      "kanaCompanionTitle": "This lesson uses sounds your group hasn't mastered: {sounds}",
+      "kanaCompanionToggle": "Also assign these kana rows, due the same day",
+      "kanaAssignedMessage": "The kana rows {sounds} were assigned too.",
+      "kanaAssignFailed": "The kana rows {sounds} couldn't be assigned. You can assign them from the group page.",
+      "printKanaToggle": "Add a kana page for this lesson's sounds",
+      "printKanaTitle": "Sounds in this lesson",
+      "printKanaHint": "Just the rows this lesson uses — practise reading these out loud.",
+      "referenceSheetsButton": "Print reference sheets",
+      "sheetsTitle": "Reference sheets",
+      "sheetsSubtitle": "Charts to hand out or pin up.",
+      "sheetsScriptLabel": "Which chart",
+      "sheetsScriptBoth": "Both, side by side",
+      "sheetsRomajiToggle": "Show romaji",
+      "sheetsBlankToggle": "Blank grid to write in",
+      "sheetsKanaButton": "Kana chart",
+      "sheetsGroupButton": "Group progress chart",
+      "sheetsKanjiButton": "Kanji writing sheet",
+      "sheetsKanaTitle": "Kana chart",
+      "sheetsKanaHint": "Read each column downwards: a, i, u, e, o.",
+      "sheetsBlankTitle": "Kana practice grid",
+      "sheetsBlankHint": "Write each character in its box.",
+      "sheetsGroupTitle": "Kana your group can read",
+      "sheetsGroupHint": "Coverage only — no learner is named.",
+      "sheetsGroupLegend": "Each bar shows how many of {count} learners read that character.",
+      "sheetsGroupLoading": "Checking what your group reads…",
+      "sheetsPopupBlocked": "Your browser blocked the print tab. Allow pop-ups for this site and try again.",
+      "sheetsGroupEmpty": "No learners in this group yet.",
+      "sheetsKanjiTitle": "Kanji writing sheet",
+      "sheetsKanjiEmpty": "No words in this plan are written with kanji."
     },
     "deckReadiness": {
       "heading": "Deck readiness",
@@ -1713,6 +1856,7 @@
       "title": "Today's Adventure",
       "missionHelp": "Help {name}!",
       "reviewsCount": "{count, plural, one {# review} other {# reviews}}",
+      "charactersCount": "{count, plural, one {# character} other {# characters}}",
       "minutesEstimate": "~{min} min",
       "start": "Start",
       "completedTitle": "Adventure complete!",

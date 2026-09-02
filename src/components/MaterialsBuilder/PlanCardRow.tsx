@@ -5,31 +5,60 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 
+import type { KanaGap } from '@/lib/kanaGaps';
 import { isJlptLevel, JLPT_LEVELS, type JlptLevel } from '@/lib/lessonPrompts';
-import type { PlanCard } from '@/types/lessonPlan';
+import type { PlanCard, WarmUpWord } from '@/types/lessonPlan';
 
 interface PlanCardRowProps {
   card: PlanCard;
   index: number;
-  reuseWords: string[];
+  reuseSources: WarmUpWord[];
+  kanaGaps: KanaGap[];
   targetLevel: JlptLevel;
   /** After a failed apply the tick freezes so a retry matches what was created. */
   tickLocked: boolean;
   onChange: (patch: Partial<PlanCard>) => void;
 }
 
+function KanaGapDetail({ gaps }: { gaps: KanaGap[] }) {
+  const t = useTranslations('Group.lessonBuilder');
+  const untried = gaps[0]?.untried ?? [];
+
+  return (
+    <Box>
+      {gaps.map((gap) => (
+        <Typography key={gap.kana} sx={{ fontSize: '0.75rem' }}>
+          {t('kanaGapWorkingOn', {
+            kana: gap.kana,
+            names: gap.shaky.map((m) => m.name).join('、'),
+            count: gap.shaky.length,
+          })}
+        </Typography>
+      ))}
+      {untried.length > 0 && (
+        <Typography sx={{ fontSize: '0.75rem', mt: 0.5 }}>
+          {t('kanaGapUntried', { names: untried.map((m) => m.name).join('、') })}
+        </Typography>
+      )}
+    </Box>
+  );
+}
+
 export function PlanCardRow({
   card,
   index,
-  reuseWords,
+  reuseSources,
+  kanaGaps,
   targetLevel,
   tickLocked,
   onChange,
 }: PlanCardRowProps) {
   const t = useTranslations('Group.lessonBuilder');
+  const format = useFormatter();
   const theme = useTheme();
   const { brand } = theme.palette;
 
@@ -60,6 +89,21 @@ export function PlanCardRow({
           }}
           sx={{ p: 0.5, mt: 0.5 }}
         />
+        {card.imageUrl && (
+          <Box
+            component="img"
+            src={card.imageUrl}
+            alt=""
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: theme.radii.sm,
+              objectFit: 'cover',
+              flexShrink: 0,
+              mt: 0.5,
+            }}
+          />
+        )}
         <Box sx={{ flex: 1 }}>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start', mb: 1 }}>
             <TextField
@@ -124,13 +168,39 @@ export function PlanCardRow({
                 }}
               />
             )}
-            {included && reuseWords.length > 0 && (
-              <Chip
-                size="small"
-                label={t('buildsOnLabel', { words: reuseWords.join('、') })}
-                sx={{ bgcolor: alpha(brand[200], 0.5), color: 'text.primary', fontWeight: 600 }}
-              />
+            {included && kanaGaps.length > 0 && (
+              <Tooltip title={<KanaGapDetail gaps={kanaGaps} />}>
+                <Chip
+                  size="small"
+                  label={t('kanaGapChip', { sounds: kanaGaps.map((g) => g.kana).join('・') })}
+                  sx={{ bgcolor: alpha(brand[200], 0.5), color: 'text.primary', fontWeight: 600 }}
+                />
+              </Tooltip>
             )}
+            {included &&
+              reuseSources.map((source) => (
+                <Tooltip
+                  key={source.word}
+                  title={
+                    source.addedAt
+                      ? t('buildsOnTooltipKnown', {
+                          deckName: source.deckName,
+                          date: format.dateTime(new Date(source.addedAt), {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          }),
+                        })
+                      : t('buildsOnTooltipThisLesson', { deckName: source.deckName })
+                  }
+                >
+                  <Chip
+                    size="small"
+                    label={t('buildsOnChipLabel', { word: source.word })}
+                    sx={{ bgcolor: alpha(brand[200], 0.5), color: 'text.primary', fontWeight: 600 }}
+                  />
+                </Tooltip>
+              ))}
           </Stack>
         </Box>
       </Stack>

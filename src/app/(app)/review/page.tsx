@@ -104,6 +104,7 @@ function NothingYet() {
 
 export default function ReviewHubPage() {
   const t = useTranslations('Review.hubPage');
+  const tKana = useTranslations('KanaJourney.tile');
   const router = useRouter();
   const searchParams = useSearchParams();
   const { dueCount, focus, empty, loading, error, retry } = useDailyFocus();
@@ -165,7 +166,18 @@ export default function ReviewHubPage() {
         </Button>
         <Collapse in={gamesOpen} id="extra-games">
           <Box sx={{ pt: 1.5 }}>
-            <GameTiles />
+            <GameTiles
+              leading={[
+                {
+                  title: tKana('title'),
+                  description: tKana('description'),
+                  jpTitle: 'かなをまなぶ',
+                  emoji: '🌸',
+                  gradient: 'linear-gradient(135deg, #ec4899, #be185d)',
+                  href: '/review/learn-kana',
+                },
+              ]}
+            />
           </Box>
         </Collapse>
       </Box>

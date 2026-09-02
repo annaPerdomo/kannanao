@@ -8,6 +8,7 @@ import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { BatchPicker, maxBatchForMode } from '@/components/Practice/BatchPicker';
 import { FillMode } from '@/components/Practice/FillMode';
+import { KanjiMatchMode, kanjiMatchPairs } from '@/components/Practice/KanjiMatchMode';
 import { KotobaBubbleMode } from '@/components/Practice/KotobaBubbleMode';
 import { KotobaBubbleSetup } from '@/components/Practice/KotobaBubbleMode/KotobaBubbleSetup';
 import { ListenMode } from '@/components/Practice/ListenMode';
@@ -33,12 +34,21 @@ interface PracticeProps {
   questBanner?: React.ReactNode;
   /** Restrict the session to these cards — a mixed practice leg, not the deck. */
   cardIds?: string[];
+  /** This page is one leg of a practice chain, so nothing here may ask a question. */
+  inChain?: boolean;
 }
 
 /** Show the batch picker when the deck exceeds this many cards. */
 const BATCH_PICKER_THRESHOLD = 10;
 
-export default function Practice({ deckId, mode, onBack, questBanner, cardIds }: PracticeProps) {
+export default function Practice({
+  deckId,
+  mode,
+  onBack,
+  questBanner,
+  cardIds,
+  inChain,
+}: PracticeProps) {
   const t = useTranslations('Practice.page');
   const { cards: deckCards, loading, error, retry } = useCards(deckId);
   const cards = useMemo(() => {
@@ -46,13 +56,14 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
     const wanted = new Set(cardIds);
     return deckCards.filter((c) => wanted.has(c.id));
   }, [deckCards, cardIds]);
-  // Only Reading is deck-gated, so only Reading pays for the decks query.
+  // Both kanji modes hang off the deck's one Reading switch.
+  const needsKanji = mode === 'reading' || mode === 'kanji-match';
   const {
     decks,
     loading: decksLoading,
     error: decksError,
     retry: retryDecks,
-  } = useDecks(mode === 'reading');
+  } = useDecks(needsKanji);
   const [batchSize, setBatchSize] = useState<number | null>(null);
 
   const modeTitles: Record<PracticeMode, string> = {
@@ -63,6 +74,7 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
     quiz: t('modeTitles.quiz'),
     listen: t('modeTitles.listen'),
     reading: t('modeTitles.reading'),
+    'kanji-match': t('modeTitles.kanjiMatch'),
   };
   // Fill-in-the-blank needs a sentence to blank out. A card with no example
   // (older Travel saves, or a generation that came back without one) rendered
@@ -71,7 +83,7 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
   const modeCards =
     mode === 'fill'
       ? cards.filter((c) => c.example_jp.trim())
-      : mode === 'reading'
+      : needsKanji
         ? eligibleReadingCards(cards)
         : cards;
   const badge = t('cardsBadge', { count: modeCards.length });
@@ -86,7 +98,7 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
     );
   }
 
-  if (error || (mode === 'reading' && decksError)) {
+  if (error || (needsKanji && decksError)) {
     return (
       <Box
         sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
@@ -98,11 +110,14 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
   }
 
   // Typing the URL must not get past the deck's Reading switch either.
-  const readingLocked =
-    mode === 'reading' && decks.find((d) => d.id === deckId)?.readingPractice !== true;
+  const readingLocked = needsKanji && decks.find((d) => d.id === deckId)?.readingPractice !== true;
+
+  // 作る/造る/創る is one pair, so counting cards here would open a board of a
+  // single forced match.
+  const kanjiUnits = mode === 'kanji-match' ? kanjiMatchPairs(modeCards).length : modeCards.length;
 
   // Locked and too-few-cards get the same message, so neither is a dead end.
-  if (readingLocked || (mode === 'reading' && modeCards.length < MIN_READING_CARDS)) {
+  if (readingLocked || (needsKanji && kanjiUnits < MIN_READING_CARDS)) {
     return (
       <Box
         sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
@@ -110,7 +125,7 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
         <PageHeader title={modeTitles[mode]} onBack={onBack} badge={badge} mb={3} />
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography sx={{ fontSize: '3rem', mb: 1 }} aria-hidden>
-            📖
+            {mode === 'kanji-match' ? '🀄' : '📖'}
           </Typography>
           <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 420, mx: 'auto' }}>
             {readingLocked ? t('readingLocked') : t('noKanjiCards')}
@@ -147,8 +162,11 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
     );
   }
 
-  // Kotoba Bubble always shows its own setup page (handles generation + batch picking)
-  if (mode === 'kotoba-bubble' && batchSize === null) {
+  const preSized = inChain || !!cardIds;
+
+  // The setup screen must stay off every chain leg: it dead-ends a member on an
+  // unseeded deck. The mode's own empty state still offers organizers Generate.
+  if (mode === 'kotoba-bubble' && !preSized && batchSize === null) {
     return (
       <Box
         sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
@@ -160,9 +178,7 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
     );
   }
 
-  // Show batch picker for large decks (non-kotoba-bubble). A mixed practice leg
-  // arrives pre-sized, and choosing is the decision that feature exists to remove.
-  const needsPicker = !cardIds && modeCards.length > BATCH_PICKER_THRESHOLD;
+  const needsPicker = !preSized && modeCards.length > BATCH_PICKER_THRESHOLD;
   if (needsPicker && batchSize === null) {
     return (
       <Box
@@ -176,8 +192,14 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
   }
 
   // A pre-sized leg never sees the picker, so its per-mode cap is applied here
-  // too — twelve Match cards would be twenty-four tiles on screen.
-  const effectiveBatchSize = batchSize ?? Math.min(modeCards.length, maxBatchForMode(mode));
+  // too — twelve Match cards would be twenty-four tiles on screen. Kotoba
+  // Bubble's batch counts sentences: sizing it from cards starves the game
+  // below MIN_SENTENCES on a short leg.
+  const effectiveBatchSize =
+    batchSize ??
+    (mode === 'kotoba-bubble'
+      ? maxBatchForMode(mode)
+      : Math.min(modeCards.length, maxBatchForMode(mode)));
 
   return (
     <PracticeStage>
@@ -219,6 +241,14 @@ export default function Practice({ deckId, mode, onBack, questBanner, cardIds }:
       )}
       {mode === 'reading' && (
         <ReadingMode
+          cards={modeCards}
+          deckId={deckId}
+          batchSize={effectiveBatchSize}
+          onExit={onBack}
+        />
+      )}
+      {mode === 'kanji-match' && (
+        <KanjiMatchMode
           cards={modeCards}
           deckId={deckId}
           batchSize={effectiveBatchSize}

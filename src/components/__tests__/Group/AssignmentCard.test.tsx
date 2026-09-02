@@ -11,6 +11,7 @@ function assignment(overrides: Partial<Assignment> = {}): Assignment {
     organizer_id: 'org1',
     member_id: 'm1',
     deck_id: 'd1',
+    kana_set: null,
     title: null,
     note: null,
     due_date: null,
@@ -44,6 +45,17 @@ describe('AssignmentCard', () => {
       />,
     );
     expect(screen.getByText('🎯 Goal: 80% in Match — Best so far: 65%')).toBeInTheDocument();
+  });
+
+  it('names a kana assignment by its characters, not the missing deck', () => {
+    renderWithProviders(
+      <AssignmentCard
+        assignment={assignment({ deck_id: null, kana_set: 'hira-ka', decks: null })}
+        onStart={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('か · き · く · け · こ')).toBeInTheDocument();
+    expect(screen.queryByText(/Unknown Deck/)).not.toBeInTheDocument();
   });
 
   it('shows the goal without best-so-far before the first qualifying attempt', () => {

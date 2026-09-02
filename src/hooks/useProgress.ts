@@ -39,10 +39,12 @@ export type SessionMode =
   | 'quiz'
   | 'listen'
   | 'reading'
+  | 'kanji-match'
   | 'speech_read'
   | 'speech_recall'
   | 'kotoba-bubble'
   | 'kana-build'
+  | 'kana-journey'
   | 'particle-quiz'
   | 'question-quiz'
   | 'word-match'
@@ -57,6 +59,8 @@ export interface AssignmentCompleteResult {
 export interface StudySession {
   id: string;
   deck_id: string | null;
+  /** Set only by a session scoped to one kana row; null for a mixed review. */
+  kana_set?: string | null;
   practice_mode: SessionMode | null;
   cards_studied: number;
   cards_correct: number;
@@ -460,13 +464,21 @@ export function useProgress(
    * correct. When `cardId` is provided (flip + card-based practice modes), the
    * answer is also recorded into per-card progress. Sentence/line-based modes
    * (kotoba-bubble, speech) omit it.
+   * `correctXp` overrides the JLPT-scaled rate for modes whose unit of work is
+   * smaller than a card.
    */
   const recordAnswer = useCallback(
-    async (sessionId: string, correct: boolean, jlptLevel?: JlptLevel, cardId?: string) => {
+    async (
+      sessionId: string,
+      correct: boolean,
+      jlptLevel?: JlptLevel,
+      cardId?: string,
+      correctXp?: number,
+    ) => {
       const base = progressRef.current;
       if (!base) return;
 
-      const xpGain = correct ? cardXp(jlptLevel) : XP_PER_WRONG;
+      const xpGain = correct ? (correctXp ?? cardXp(jlptLevel)) : XP_PER_WRONG;
       const newXp = base.total_xp + xpGain;
       const newLevel = levelFromXp(newXp);
       const newStudied = base.total_cards_studied + 1;
@@ -634,17 +646,22 @@ export function useProgress(
 
         await fetchAll();
 
-        // Auto-complete any pending assignment for the deck that was just studied.
-        // Awaited (not fired and forgotten) so that anything reading the
-        // assignment afterwards — the quest's finish screen most of all — can't
-        // race the write and report a goal as missed.
+        // Auto-complete any pending assignment for the deck — or the kana row —
+        // that was just studied. Awaited (not fired and forgotten) so that
+        // anything reading the assignment afterwards — the quest's finish screen
+        // most of all — can't race the write and report a goal as missed.
         try {
           const { data: session } = await supabase
             .from('study_sessions')
-            .select('deck_id')
+            .select('deck_id, kana_set')
             .eq('id', sessionId)
             .single();
-          if (session?.deck_id) {
+          const target = session?.deck_id
+            ? { deckId: session.deck_id }
+            : session?.kana_set
+              ? { kanaSet: session.kana_set }
+              : null;
+          if (target) {
             const { data: authData } = await supabase.auth.getSession();
             const token = authData.session?.access_token;
             if (token) {
@@ -656,7 +673,7 @@ export function useProgress(
                 },
                 // sessionId lets the server evaluate mastery goals (mode +
                 // accuracy) against this session's stats.
-                body: JSON.stringify({ deckId: session.deck_id, sessionId }),
+                body: JSON.stringify({ ...target, sessionId }),
               });
               // The assignment list is cached client-side; drop it so the
               // dashboard reflects the auto-completed assignment right away.
@@ -678,15 +695,25 @@ export function useProgress(
     [achievements, supabase, fetchAll, applyProgress],
   );
 
-  /** Call at the beginning of a study session to create a session row. */
   const startSession = useCallback(
-    async (deckId: string | null, mode?: SessionMode): Promise<string> => {
+    async (
+      deckId: string | null,
+      mode?: SessionMode,
+      opts?: { kanaSet?: string | null },
+    ): Promise<string> => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       const { data } = await supabase
         .from('study_sessions')
-        .insert({ deck_id: deckId ?? null, user_id: user?.id, practice_mode: mode ?? null })
+        .insert({
+          deck_id: deckId ?? null,
+          user_id: user?.id,
+          practice_mode: mode ?? null,
+          // Omitted, not null: a bundle that ships before the kana_set migration
+          // would otherwise fail every insert and stop recording XP app-wide.
+          ...(opts?.kanaSet ? { kana_set: opts.kanaSet } : {}),
+        })
         .select('id')
         .single();
 

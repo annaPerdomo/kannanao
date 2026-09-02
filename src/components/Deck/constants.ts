@@ -56,6 +56,13 @@ export const PRACTICE_CONFIG: PracticeTileConfig[] = [
     color: '#047857',
   },
   {
+    mode: 'kanji-match',
+    labelKey: 'kanjiMatch.label',
+    descriptionKey: 'kanjiMatch.description',
+    kanji: '対',
+    color: '#7C2D12',
+  },
+  {
     mode: 'quiz',
     labelKey: 'quiz.label',
     descriptionKey: 'quiz.description',

@@ -5,6 +5,7 @@ import {
   DOCUMENT_MAX_TOTAL_BYTES,
 } from '@/components/MaterialsBuilder/constants';
 import { normalizeFurigana } from '@/lib/furigana';
+import type { GroupKanaReadiness } from '@/lib/kanaGaps';
 import { rankKnownWords } from '@/lib/knownWords';
 import {
   isLessonDocumentMimeType,
@@ -17,6 +18,8 @@ import {
   CARDS_MAX,
   CARDS_MIN,
   DEFAULT_LEVEL,
+  GOAL_MAX,
+  GOAL_MIN,
   isJlptLevel,
   STYLE_NOTES_MAX,
 } from '@/lib/lessonPrompts';
@@ -26,6 +29,7 @@ import type { LessonPlan, WarmUpWord } from '@/types/lessonPlan';
 
 import { rateLimit } from '../../_lib/rateLimit';
 import { type OrganizerProfile, requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { getGroupKnownKana } from '../_lib/groupKnownKana';
 import { getGroupKnownWords } from '../_lib/groupKnownWords';
 import { consumeLessonBudget } from '../_lib/lessonBudget';
 import { requireGroupAccess } from '../_lib/requireGroupAccess';
@@ -33,8 +37,6 @@ import { getServiceSupabase } from '../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 3 };
 
-const GOAL_MIN = 3;
-const GOAL_MAX = 500;
 const WEEKS_MIN = 1;
 const WEEKS_MAX = 8;
 
@@ -102,6 +104,8 @@ async function loadDocumentParts(
 const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
 
+// imageQuery is always requested, even with images off for this plan, so a
+// card can get a picture later via per-card regenerate without a fresh Gemini call.
 const PLAN_RESPONSE_SCHEMA = {
   type: 'object',
   properties: {
@@ -129,8 +133,17 @@ const PLAN_RESPONSE_SCHEMA = {
                   enum: ['N5', 'N4', 'N3', 'N2', 'N1'],
                   nullable: true,
                 },
+                imageQuery: { type: 'string' },
               },
-              required: ['word', 'reading', 'meaning', 'exampleJp', 'exampleEn', 'jlptLevel'],
+              required: [
+                'word',
+                'reading',
+                'meaning',
+                'exampleJp',
+                'exampleEn',
+                'jlptLevel',
+                'imageQuery',
+              ],
             },
           },
         },
@@ -246,20 +259,37 @@ export async function POST(req: NextRequest) {
   if (documentParts instanceof NextResponse) return documentParts;
 
   let pool: WarmUpWord[] = [];
+  let kanaReadiness: GroupKanaReadiness | null = null;
   if (groupId) {
-    try {
-      pool = await getGroupKnownWords(groupId, organizer.id);
-    } catch (err) {
-      logger.error("Failed to load the group's known words", {
-        route: 'POST /api/group/lesson-plan',
-        groupId,
-        error: err instanceof Error ? err.message : String(err),
-      });
+    // Reading data is a bonus signal on the review step, so a failure there
+    // costs the chips, never the plan the organizer is waiting for.
+    const [readiness, words] = await Promise.all([
+      getGroupKnownKana(groupId, organizer.id).catch((err) => {
+        logger.error("Failed to load the group's kana progress", {
+          route: 'POST /api/group/lesson-plan',
+          groupId,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        return null;
+      }),
+      getGroupKnownWords(groupId, organizer.id).catch((err) => {
+        logger.error("Failed to load the group's known words", {
+          route: 'POST /api/group/lesson-plan',
+          groupId,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        return null;
+      }),
+    ]);
+
+    if (words === null) {
       return NextResponse.json(
         { error: "Could not load the group's existing words." },
         { status: 500 },
       );
     }
+    kanaReadiness = readiness;
+    pool = words;
   }
 
   const overBudget = await consumeLessonBudget(organizer.id);
@@ -357,7 +387,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       plan: filteredPlan,
       warmUp,
-      knownWords: pool.map((w) => w.word),
+      knownWords: pool,
+      kanaReadiness,
     });
   } catch (err) {
     logger.error('Unhandled error', {

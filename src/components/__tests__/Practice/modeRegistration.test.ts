@@ -59,6 +59,31 @@ describe('reading mode registration', () => {
   });
 });
 
+describe('kanji match mode registration', () => {
+  it('should have a tile on the deck practice picker', () => {
+    const tile = PRACTICE_CONFIG.find((t) => t.mode === 'kanji-match');
+    expect(tile).toBeDefined();
+    expect(tile?.kanji).toBe('対');
+    expect(tile?.labelKey).toBe('kanjiMatch.label');
+  });
+
+  it('should have a stats label and colour', () => {
+    expect(MODE_LABELS['kanji-match']).toBe('Kanji Pairs');
+    expect(MODE_COLORS['kanji-match']).toMatch(/^#[0-9A-F]{6}$/i);
+  });
+
+  it('should have celebration emojis', () => {
+    expect(MODE_EMOJIS['kanji-match'].length).toBeGreaterThan(0);
+  });
+
+  // The point of shipping it as a mode rather than a game: it carries a deck_id.
+  it('should be assignable as an organizer goal mode', () => {
+    expect(GOAL_MODES).toContain('kanji-match');
+    expect(GOAL_MODE_LABELS['kanji-match']).toBe('Kanji Pairs');
+    expect(isGoalMode('kanji-match')).toBe(true);
+  });
+});
+
 // A missing message key throws only when the mode is opened, so walk every
 // registered mode in both locales rather than trusting the newest one.
 const LOCALES = { en, ja } as const;

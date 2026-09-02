@@ -11,7 +11,9 @@ interface SessionSummary {
   durationSecs: number;
 }
 
-const mockStartSession = vi.fn(async (_deckId: string | null, _mode: string) => 'sess-1');
+const mockStartSession = vi.fn(
+  async (_deckId: string | null, _mode: string, _opts?: { kanaSet?: string | null }) => 'sess-1',
+);
 const mockRecordAnswer = vi.fn(
   async (_sessionId: string, _correct: boolean, _jlpt?: string, _cardId?: string) => {},
 );
@@ -41,9 +43,15 @@ describe('useGameSession', () => {
   it('starts one session on mount and only once', async () => {
     const { rerender } = renderHook(() => useGameSession('word-match'));
     await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
-    expect(mockStartSession).toHaveBeenCalledWith(null, 'word-match');
+    expect(mockStartSession).toHaveBeenCalledWith(null, 'word-match', { kanaSet: undefined });
     rerender();
     expect(mockStartSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('stamps the kana row on a set-scoped session so it can complete an assignment', async () => {
+    renderHook(() => useGameSession('kana-journey', { kanaSet: 'hira-ka' }));
+    await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+    expect(mockStartSession).toHaveBeenCalledWith(null, 'kana-journey', { kanaSet: 'hira-ka' });
   });
 
   it('forwards cardId to recordAnswer so card-based games advance the SRS', async () => {
@@ -54,7 +62,7 @@ describe('useGameSession', () => {
       await result.current.answer(true, 'N5', 'card-42');
     });
 
-    expect(mockRecordAnswer).toHaveBeenCalledWith('sess-1', true, 'N5', 'card-42');
+    expect(mockRecordAnswer).toHaveBeenCalledWith('sess-1', true, 'N5', 'card-42', undefined);
     // Correct answer earns level-scaled XP (not the wrong-answer constant).
     expect(mockTriggerXpEarned).toHaveBeenCalledTimes(1);
     expect(mockTriggerXpEarned.mock.calls[0][0]).toBeGreaterThan(2);
@@ -68,9 +76,21 @@ describe('useGameSession', () => {
       await result.current.answer(false);
     });
 
-    expect(mockRecordAnswer).toHaveBeenCalledWith('sess-1', false, undefined, undefined);
+    expect(mockRecordAnswer).toHaveBeenCalledWith('sess-1', false, undefined, undefined, undefined);
     // Wrong answer earns the flat consolation XP.
     expect(mockTriggerXpEarned).toHaveBeenCalledWith(2);
+  });
+
+  it('grades at correctXp when the mode overrides the card rate', async () => {
+    const { result } = renderHook(() => useGameSession('kana-journey', { correctXp: 8 }));
+    await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      await result.current.answer(true);
+    });
+
+    expect(mockRecordAnswer).toHaveBeenCalledWith('sess-1', true, undefined, undefined, 8);
+    expect(mockTriggerXpEarned).toHaveBeenCalledWith(8);
   });
 
   it('closes the session with accumulated counts on finish', async () => {
@@ -125,7 +145,7 @@ describe('useGameSession', () => {
       await answered;
     });
 
-    expect(mockRecordAnswer).toHaveBeenCalledWith('sess-late', true, 'N5', 'card-1');
+    expect(mockRecordAnswer).toHaveBeenCalledWith('sess-late', true, 'N5', 'card-1', undefined);
   });
 
   it('finish waits for the session insert so an instant quit still closes the row', async () => {

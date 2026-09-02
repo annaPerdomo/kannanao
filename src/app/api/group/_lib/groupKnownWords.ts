@@ -1,28 +1,8 @@
 import { normalizeWord } from '@/lib/lessonWarmUp';
 import type { WarmUpWord } from '@/types/lessonPlan';
 
+import { allRows } from './allRows';
 import { getServiceSupabase } from './serviceSupabase';
-
-const PAGE = 1000;
-
-/**
- * PostgREST silently caps result sets (max-rows, default 1000); a truncated
- * pool would let duplicate cards through, so read pages until one comes short.
- */
-async function allRows<T>(
-  page: (
-    from: number,
-    to: number,
-  ) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
-): Promise<T[]> {
-  const rows: T[] = [];
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await page(from, from + PAGE - 1);
-    if (error) throw new Error(error.message);
-    rows.push(...(data ?? []));
-    if ((data ?? []).length < PAGE) return rows;
-  }
-}
 
 /**
  * Oldest card first; deck ownership is re-checked because the service client
@@ -36,7 +16,12 @@ export async function getGroupKnownWords(
 
   const [assignmentRows, plannedRows] = await Promise.all([
     allRows<{ deck_id: string }>((from, to) =>
-      sb.from('assignments').select('deck_id').eq('group_id', groupId).range(from, to),
+      sb
+        .from('assignments')
+        .select('deck_id')
+        .eq('group_id', groupId)
+        .not('deck_id', 'is', null)
+        .range(from, to),
     ),
     allRows<{ deck_id: string }>((from, to) =>
       sb.from('planned_assignments').select('deck_id').eq('group_id', groupId).range(from, to),
@@ -64,10 +49,11 @@ export async function getGroupKnownWords(
     reading: string | null;
     meaning: string | null;
     deck_id: string;
+    created_at: string;
   }>((from, to) =>
     sb
       .from('cards')
-      .select('word, reading, meaning, deck_id')
+      .select('word, reading, meaning, deck_id, created_at')
       .in('deck_id', ownedDeckIds)
       // The id tiebreak keeps pages stable: bulk inserts share a created_at.
       .order('created_at', { ascending: true })
@@ -90,6 +76,7 @@ export async function getGroupKnownWords(
       reading: card.reading ?? '',
       meaning: card.meaning ?? '',
       deckName,
+      addedAt: card.created_at,
     });
   }
 

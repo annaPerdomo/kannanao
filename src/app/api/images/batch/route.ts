@@ -11,7 +11,10 @@ import {
   type UnsplashPhoto,
 } from '../../_lib/unsplash';
 
-const RATE_LIMIT = { windowMs: 60_000, max: 5 };
+// A full multi-week lesson plan (8 weeks x 20 cards) can need up to 7 batches
+// of MAX_BATCH_QUERIES back-to-back; keep max above that so the plan doesn't
+// throttle its own last few decks.
+const RATE_LIMIT = { windowMs: 60_000, max: 10 };
 
 /**
  * A full batch is 25 searches plus up to 25 download pings. Run one at a time

@@ -1,5 +1,7 @@
 'use client';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import ImageIcon from '@mui/icons-material/Image';
+import ImageNotSupportedOutlinedIcon from '@mui/icons-material/ImageNotSupportedOutlined';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import { Box, Button, CircularProgress, TextField, Typography } from '@mui/material';
@@ -139,6 +141,24 @@ export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: ()
                 checked={flow.readingPractice}
                 onChange={flow.setReadingPractice}
                 ariaLabel={t('readingToggleAria')}
+              />
+              <ToggleRow
+                icon={
+                  flow.generateImages ? (
+                    <ImageIcon sx={{ fontSize: '1rem', color: brand[600] }} />
+                  ) : (
+                    <ImageNotSupportedOutlinedIcon
+                      sx={{ fontSize: '1rem', color: alpha(brand[500], 0.55) }}
+                    />
+                  )
+                }
+                title={t('generateImagesToggle')}
+                helper={
+                  flow.generateImages ? t('generateImagesToggleOn') : t('generateImagesToggleOff')
+                }
+                checked={flow.generateImages}
+                onChange={flow.setGenerateImages}
+                ariaLabel={t('generateImagesToggle')}
               />
             </Box>
 

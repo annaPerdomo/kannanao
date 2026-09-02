@@ -122,11 +122,17 @@ describe('planDailyPractice', () => {
       cards,
       progress: [],
       ttsReady: false,
+      sentenceCount: 0,
       ...input,
     });
 
   it('opens on the cross-deck review when words are due', () => {
     const legs = plan({ dueCount: 4 });
+    expect(legs[0]).toEqual({ step: 'review', mode: 'review' });
+  });
+
+  it('still opens on review when only characters are slipping', () => {
+    const legs = plan({ dueCount: 0, kanaDue: true });
     expect(legs[0]).toEqual({ step: 'review', mode: 'review' });
   });
 

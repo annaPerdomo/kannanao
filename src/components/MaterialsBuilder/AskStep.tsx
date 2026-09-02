@@ -243,6 +243,12 @@ export function AskStep({
             checked={form.withSentences}
             onToggle={(withSentences) => onChange({ withSentences })}
           />
+          <MaterialCard
+            label={t('imagesToggleLabel')}
+            hint={t('imagesToggleHint')}
+            checked={form.generateImages}
+            onToggle={(generateImages) => onChange({ generateImages })}
+          />
         </Stack>
       </StepSection>
 

@@ -79,7 +79,8 @@ export async function GET(req: NextRequest) {
     .from('assignments')
     .select('deck_id')
     .eq('organizer_id', orgCheck.id)
-    .eq('group_id', groupId);
+    .eq('group_id', groupId)
+    .not('deck_id', 'is', null);
 
   if (assignedErr) {
     logger.error('Failed to load assigned decks', {

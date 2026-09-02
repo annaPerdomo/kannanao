@@ -22,6 +22,7 @@ import {
   writeChainState,
 } from '@/lib/practiceChain';
 import { dbDeckCardCount, getCardProgressForUser, loadCards } from '@/lib/supabase';
+import { fetchPracticeSentences } from '@/services/api';
 import type { Deck } from '@/types/deck';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -35,13 +36,19 @@ export function useStartAssignmentQuest() {
   const router = useRouter();
   return useCallback(
     (assignment: Assignment, deck?: Deck | null) => {
+      if (assignment.kana_set) {
+        return router.push(`/review/learn-kana?set=${encodeURIComponent(assignment.kana_set)}`);
+      }
       const deckId = assignment.deck_id;
+      if (!deckId) return;
       const deckPage = () => router.push(`/deck/${deckId}`);
       const goal = isGoalMode(assignment.required_mode) ? assignment.required_mode : null;
       if (goal && !chainLegHref(deckId, { step: 'goal', mode: goal }, 'assignment')) {
         return deckPage();
       }
-      if (goal === 'reading' && deck && deck.readingPractice !== true) return deckPage();
+      if ((goal === 'reading' || goal === 'kanji-match') && deck && deck.readingPractice !== true) {
+        return deckPage();
+      }
 
       const legs = planAssignmentQuest({
         cardCount: deck?.cardCount ?? 0,
@@ -74,7 +81,7 @@ export function useStartAssignmentQuest() {
  */
 export function useStartMixedPractice() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isMemberAccount } = useAuth();
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -87,17 +94,26 @@ export function useStartMixedPractice() {
       setStarting(true);
       setError(null);
       try {
-        const progress = user
-          ? await getCardProgressForUser(
-              user.id,
-              cards.map((c) => c.id),
-            )
-          : [];
+        // A member's legacy personalised set can differ from the shared one, so
+        // count the set the mode will play or the rung dead-ends. A failed read
+        // must cost the rung, not the button.
+        const [progress, sentences] = await Promise.all([
+          user
+            ? getCardProgressForUser(
+                user.id,
+                cards.map((c) => c.id),
+              )
+            : Promise.resolve([]),
+          fetchPracticeSentences(
+            deckId,
+            isMemberAccount ? (user?.id ?? undefined) : undefined,
+          ).catch(() => []),
+        ]);
         // Plan against the cards this session will actually play, not the deck:
         // if none of the twelve carry an example sentence there is no Fill leg.
         const session = pickMixedSessionCards(cards, progress);
         const legs = planMixedPractice({
-          support: deckSupport(session, support),
+          support: deckSupport(session, { ...support, sentenceCount: sentences.length }),
           counts: countStrengths(
             session.map((c) => c.id),
             progress,
@@ -125,7 +141,7 @@ export function useStartMixedPractice() {
         setStarting(false);
       }
     },
-    [router, user],
+    [router, user, isMemberAccount],
   );
 
   return { start, starting, error };
@@ -134,18 +150,38 @@ export function useStartMixedPractice() {
 /** Resolves false when there is nothing to play, so the launcher can say so. */
 export function useStartDailyPractice() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isMemberAccount } = useAuth();
   return useCallback(
-    async (focus: FocusPick | null, dueCount: number, ttsReady: boolean): Promise<boolean> => {
+    async (
+      focus: FocusPick | null,
+      dueCount: number,
+      ttsReady: boolean,
+      kanaDue = false,
+    ): Promise<boolean> => {
       const cards = focus ? await loadCards(focus.deckId) : [];
-      const progress =
+      const [progress, sentences] = await Promise.all([
         focus && user
-          ? await getCardProgressForUser(
+          ? getCardProgressForUser(
               user.id,
               cards.map((c) => c.id),
             )
-          : [];
-      const legs = planDailyPractice({ dueCount, focus, cards, progress, ttsReady });
+          : Promise.resolve([]),
+        focus
+          ? fetchPracticeSentences(
+              focus.deckId,
+              isMemberAccount ? (user?.id ?? undefined) : undefined,
+            ).catch(() => [])
+          : Promise.resolve([]),
+      ]);
+      const legs = planDailyPractice({
+        dueCount,
+        kanaDue,
+        focus,
+        cards,
+        progress,
+        ttsReady,
+        sentenceCount: sentences.length,
+      });
       const deckId = focus?.deckId ?? '';
       const href = legs.length > 0 ? chainLegHref(deckId, legs[0], 'daily') : null;
       if (!href) return false;
@@ -166,7 +202,7 @@ export function useStartDailyPractice() {
       router.replace(href);
       return true;
     },
-    [router, user],
+    [router, user, isMemberAccount],
   );
 }
 

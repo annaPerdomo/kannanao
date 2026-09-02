@@ -4,9 +4,11 @@ import { useCallback, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { invalidateApiCache } from '@/lib/apiCache';
+import type { GroupKanaReadiness } from '@/lib/kanaGaps';
+import { attachPlanImages } from '@/lib/lessonImages';
 import { includedPlan } from '@/lib/lessonPlanEdits';
 import { mergeWarmUp } from '@/lib/lessonWarmUp';
-import { applyLessonPlan, buildLessonPlan } from '@/services/api';
+import { applyLessonPlan, buildLessonPlan, practiceSentencesCacheKey } from '@/services/api';
 import type { ApplyDeckResult, LessonDocument, LessonPlan, WarmUpWord } from '@/types/lessonPlan';
 
 export interface BuildPlanArgs {
@@ -17,6 +19,7 @@ export interface BuildPlanArgs {
   level?: string;
   styleNotes?: string;
   groupId?: string;
+  generateImages?: boolean;
 }
 
 export interface ApplyPlanArgs {
@@ -28,13 +31,15 @@ export interface ApplyPlanArgs {
   withSentences?: boolean;
   level?: string;
   styleNotes?: string;
+  kanaSets?: string[];
 }
 
 export function useLessonPlan() {
   const t = useTranslations('Group.lessonBuilder');
   const [plan, setPlan] = useState<LessonPlan | null>(null);
   const [warmUp, setWarmUp] = useState<WarmUpWord[]>([]);
-  const [knownWords, setKnownWords] = useState<string[]>([]);
+  const [knownWords, setKnownWords] = useState<WarmUpWord[]>([]);
+  const [kanaReadiness, setKanaReadiness] = useState<GroupKanaReadiness | null>(null);
   /**
    * Identifies this plan across apply attempts. Applying creates decks one at a
    * time; if it dies half way, retrying with the same id resumes instead of
@@ -42,6 +47,8 @@ export function useLessonPlan() {
    */
   const [planId, setPlanId] = useState<string | null>(null);
   const [results, setResults] = useState<ApplyDeckResult[] | null>(null);
+  const [kanaAssigned, setKanaAssigned] = useState<string[]>([]);
+  const [kanaFailed, setKanaFailed] = useState<string[]>([]);
   const [building, setBuilding] = useState(false);
   const [applying, setApplying] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,20 +66,23 @@ export function useLessonPlan() {
       setResults(null);
       setApplyFailed(false);
       try {
-        const { documents, ...rest } = args;
+        const { documents, generateImages, ...rest } = args;
         const data = await buildLessonPlan({
           ...rest,
           documents: documents?.map((d) => ({ path: d.path, mimeType: d.mimeType })),
         });
-        setPlan(data.plan);
+        const plan = generateImages ? await attachPlanImages(data.plan) : data.plan;
+        setPlan(plan);
         setPlanId(uuidv4());
         setWarmUp(data.warmUp ?? []);
         setKnownWords(data.knownWords ?? []);
+        setKanaReadiness(data.kanaReadiness ?? null);
       } catch (err) {
         setError(err instanceof Error ? err.message : t('errorMessage'));
         setPlan(null);
         setWarmUp([]);
         setKnownWords([]);
+        setKanaReadiness(null);
       } finally {
         setBuilding(false);
       }
@@ -94,7 +104,14 @@ export function useLessonPlan() {
       try {
         const data = await applyLessonPlan({ ...args, plan: kept, planId: planId ?? undefined });
         setResults(data.results ?? []);
+        setKanaAssigned(data.kanaAssigned ?? []);
+        setKanaFailed(data.kanaFailed ?? []);
         invalidateApiCache('/api/group/');
+        // The apply route seeds practice sentences server-side, so no client
+        // write path drops the cached read that generation invalidates.
+        for (const result of data.results ?? []) {
+          if (result.deckId) invalidateApiCache(practiceSentencesCacheKey(result.deckId));
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : t('errorMessage'));
         setApplyFailed(true);
@@ -109,10 +126,13 @@ export function useLessonPlan() {
     setPlan(null);
     setPlanId(null);
     setResults(null);
+    setKanaAssigned([]);
+    setKanaFailed([]);
     setError(null);
     setApplyFailed(false);
     setWarmUp([]);
     setKnownWords([]);
+    setKanaReadiness(null);
   }, []);
 
   return {
@@ -120,7 +140,10 @@ export function useLessonPlan() {
     setPlan,
     warmUp,
     knownWords,
+    kanaReadiness,
     results,
+    kanaAssigned,
+    kanaFailed,
     building,
     applying,
     applyFailed,

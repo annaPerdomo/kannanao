@@ -23,6 +23,7 @@ function makeChain(table: string) {
     'update',
     'delete',
     'eq',
+    'not',
     'or',
     'lte',
     'order',
@@ -84,6 +85,7 @@ import {
   getCardProgressForUser,
   getDueCards,
   getDueCount,
+  getKanaProgress,
   insertQuizResult,
   loadAccessibleCards,
   loadCards,
@@ -96,6 +98,7 @@ import {
   updateProfileLocale,
   updateProfileShowTodo,
   upsertCardProgress,
+  upsertKanaProgress,
   upsertProfile,
 } from '@/lib/supabase';
 import type { Flashcard } from '@/types/flashcard';
@@ -1154,6 +1157,88 @@ describe('upsertCardProgress', () => {
   it('should not throw when the RPC errors (just logs)', async () => {
     mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'boom' } });
     await expect(upsertCardProgress('card-1', true)).resolves.toBeUndefined();
+  });
+});
+
+// ─── kana progress ────────────────────────────────────────────────────────────
+
+describe('upsertKanaProgress', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockRpc.mockResolvedValue({ data: null, error: null });
+  });
+
+  it('should call the increment_kana_progress RPC with the character and result', async () => {
+    await upsertKanaProgress('\u3042', true);
+    expect(mockRpc).toHaveBeenCalledWith('increment_kana_progress', {
+      p_kana: '\u3042',
+      p_correct: true,
+    });
+  });
+
+  it('should pass a combination character through unchanged', async () => {
+    await upsertKanaProgress('\u304d\u3083', false);
+    expect(mockRpc).toHaveBeenCalledWith('increment_kana_progress', {
+      p_kana: '\u304d\u3083',
+      p_correct: false,
+    });
+  });
+
+  it('should report success so the caller can keep its optimistic update', async () => {
+    await expect(upsertKanaProgress('\u3042', true)).resolves.toBe(true);
+  });
+
+  it('should report failure instead of throwing when the RPC errors', async () => {
+    mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'boom' } });
+    await expect(upsertKanaProgress('\u3042', true)).resolves.toBe(false);
+  });
+});
+
+describe('getKanaProgress', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should map rows to the app shape', async () => {
+    setTable('kana_progress', [
+      {
+        kana: '\u3042',
+        correct_count: 4,
+        wrong_count: 2,
+        last_reviewed_at: '2026-08-30T00:00:00Z',
+        next_review_at: '2026-09-02T00:00:00Z',
+        interval_days: 3,
+        ease: 2.55,
+      },
+    ]);
+    await expect(getKanaProgress('u1')).resolves.toEqual([
+      {
+        kana: '\u3042',
+        correctCount: 4,
+        wrongCount: 2,
+        lastReviewedAt: '2026-08-30T00:00:00Z',
+        nextReviewAt: '2026-09-02T00:00:00Z',
+        intervalDays: 3,
+        ease: 2.55,
+      },
+    ]);
+  });
+
+  it('should scope the read to the user', async () => {
+    setTable('kana_progress', []);
+    await getKanaProgress('u1');
+    const chain = mockFrom.mock.results[0].value as Record<string, ReturnType<typeof vi.fn>>;
+    expect(chain.eq).toHaveBeenCalledWith('user_id', 'u1');
+  });
+
+  it('should return an empty array for a learner who has never drilled', async () => {
+    setTable('kana_progress', []);
+    await expect(getKanaProgress('u1')).resolves.toEqual([]);
+  });
+
+  it('should throw when the query errors', async () => {
+    setTable('kana_progress', null, { message: 'DB error' });
+    await expect(getKanaProgress('u1')).rejects.toBeInstanceOf(DataError);
   });
 });
 

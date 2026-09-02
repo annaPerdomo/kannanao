@@ -6,6 +6,8 @@ import {
   CircularProgress,
   FormControlLabel,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -17,6 +19,7 @@ import type { GroupMember } from '@/hooks/useGroup';
 import type { GoalMode } from '@/lib/assignmentMastery';
 
 import { AssignmentGoalPicker } from './AssignmentGoalPicker';
+import { KanaSetPicker } from './KanaSetPicker';
 
 interface Deck {
   id: string;
@@ -34,7 +37,8 @@ interface CreateAssignmentDialogProps {
   preSelectedMembers?: string[];
   onCreate: (opts: {
     memberIds: string[];
-    deckId: string;
+    deckId?: string;
+    kanaSet?: string;
     title?: string;
     note?: string;
     dueDate?: string;
@@ -60,7 +64,9 @@ export function CreateAssignmentDialog({
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(
     new Set(preSelectedMembers ?? []),
   );
+  const [target, setTarget] = useState<'deck' | 'kana'>('deck');
   const [selectedDeck, setSelectedDeck] = useState<string>('');
+  const [selectedKana, setSelectedKana] = useState<string>('');
   const [note, setNote] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [availableOn, setAvailableOn] = useState('');
@@ -69,12 +75,18 @@ export function CreateAssignmentDialog({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // A Reading goal on a deck that hasn't unlocked Reading could never be met.
+  const isKana = target === 'kana';
+  // A kanji goal on a deck that hasn't unlocked Reading could never be met.
   const readingUnavailable: GoalMode[] = decks.find((d) => d.id === selectedDeck)?.readingPractice
     ? []
-    : ['reading'];
-  // Drop a stale Reading goal when the organizer switches to a locked deck.
-  if (goalMode === 'reading' && readingUnavailable.length > 0) setGoalMode(null);
+    : ['reading', 'kanji-match'];
+  // Drop a stale kanji goal when the organizer switches to a locked deck, and
+  // any mode goal on switching to kana — the API rejects that combination.
+  if (goalMode && (isKana || readingUnavailable.includes(goalMode))) {
+    setGoalMode(null);
+  }
+
+  const chosen = isKana ? selectedKana : selectedDeck;
 
   const handleToggleMember = (id: string) => {
     setSelectedMembers((prev) => {
@@ -86,13 +98,14 @@ export function CreateAssignmentDialog({
   };
 
   const handleCreate = async () => {
-    if (selectedMembers.size === 0 || !selectedDeck) return;
+    if (selectedMembers.size === 0 || !chosen) return;
     setSaving(true);
     setError(null);
     try {
       await onCreate({
         memberIds: Array.from(selectedMembers),
-        deckId: selectedDeck,
+        deckId: isKana ? undefined : selectedDeck,
+        kanaSet: isKana ? selectedKana : undefined,
         note: note.trim() || undefined,
         dueDate: dueDate || undefined,
         availableOn: availableOn || undefined,
@@ -102,6 +115,7 @@ export function CreateAssignmentDialog({
       // Reset and close
       setSelectedMembers(new Set(preSelectedMembers ?? []));
       setSelectedDeck('');
+      setSelectedKana('');
       setNote('');
       setDueDate('');
       setAvailableOn('');
@@ -134,7 +148,7 @@ export function CreateAssignmentDialog({
           <Button
             variant="contained"
             onClick={handleCreate}
-            disabled={saving || selectedMembers.size === 0 || !selectedDeck}
+            disabled={saving || selectedMembers.size === 0 || !chosen}
             startIcon={saving ? <CircularProgress size={14} sx={{ color: 'white' }} /> : undefined}
             sx={{
               textTransform: 'none',
@@ -152,7 +166,7 @@ export function CreateAssignmentDialog({
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {error && <Typography sx={{ color: 'error.main', fontSize: '0.8rem' }}>{error}</Typography>}
 
-        {/* Deck selection */}
+        {/* What to assign: a deck, or a row of kana */}
         <Box>
           <Typography
             sx={{
@@ -164,30 +178,45 @@ export function CreateAssignmentDialog({
               mb: 1,
             }}
           >
-            {t('selectDeck')}
+            {t('selectWhat')}
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-            {decks.map((deck) => (
-              <Box
-                key={deck.id}
-                onClick={() => setSelectedDeck(deck.id)}
-                sx={{
-                  px: 1.5,
-                  py: 0.75,
-                  borderRadius: 2,
-                  border: `1.5px solid ${selectedDeck === deck.id ? brand[500] : alpha(brand[300], 0.4)}`,
-                  bgcolor: selectedDeck === deck.id ? alpha(brand[100], 0.8) : 'transparent',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  '&:hover': { borderColor: brand[400] },
-                }}
-              >
-                <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: brand[800] }}>
-                  {deck.emoji || '📚'} {deck.name}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={target}
+            onChange={(_, next: 'deck' | 'kana' | null) => next && setTarget(next)}
+            sx={{ mb: 1.5, '& .MuiToggleButton-root': { textTransform: 'none', px: 2 } }}
+          >
+            <ToggleButton value="deck">{t('targetDeck')}</ToggleButton>
+            <ToggleButton value="kana">{t('targetKana')}</ToggleButton>
+          </ToggleButtonGroup>
+
+          {isKana ? (
+            <KanaSetPicker value={selectedKana} onChange={setSelectedKana} />
+          ) : (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+              {decks.map((deck) => (
+                <Box
+                  key={deck.id}
+                  onClick={() => setSelectedDeck(deck.id)}
+                  sx={{
+                    px: 1.5,
+                    py: 0.75,
+                    borderRadius: 2,
+                    border: `1.5px solid ${selectedDeck === deck.id ? brand[500] : alpha(brand[300], 0.4)}`,
+                    bgcolor: selectedDeck === deck.id ? alpha(brand[100], 0.8) : 'transparent',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    '&:hover': { borderColor: brand[400] },
+                  }}
+                >
+                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: brand[800] }}>
+                    {deck.emoji || '📚'} {deck.name}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
         </Box>
 
         {/* Member selection */}
@@ -283,6 +312,7 @@ export function CreateAssignmentDialog({
           onAccuracyChange={setGoalAccuracy}
           onModeChange={setGoalMode}
           unavailableModes={readingUnavailable}
+          hideModes={isKana}
         />
       </Box>
     </StyledDialog>

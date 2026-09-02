@@ -1,3 +1,5 @@
+import type { GroupKanaReadiness } from '@/lib/kanaGaps';
+
 export interface PlanCard {
   word: string;
   reading: string;
@@ -7,6 +9,10 @@ export interface PlanCard {
   jlptLevel: string | null;
   /** Review-step tick state; excluded cards are stripped before apply, never sent. */
   excluded?: boolean;
+  /** English search phrase for Unsplash, generated only when images were requested. */
+  imageQuery?: string | null;
+  /** Filled in client-side after imageQuery is looked up; absent until then. */
+  imageUrl?: string | null;
 }
 
 export interface PlanDeck {
@@ -38,14 +44,17 @@ export interface WarmUpWord {
   reading: string;
   meaning: string;
   deckName: string;
+  /** When the card was added to the group; null for a word introduced earlier in this same unsaved plan. */
+  addedAt: string | null;
 }
 
 export interface LessonPlanResponse {
   plan: LessonPlan;
   /** Known words the server filtered out of the generated plan. */
   warmUp?: WarmUpWord[];
-  /** Full group pool (words only); feeds the review step's "builds on" chips. */
-  knownWords?: string[];
+  /** Full group pool; feeds the review step's "builds on" chips. */
+  knownWords?: WarmUpWord[];
+  kanaReadiness?: GroupKanaReadiness | null;
 }
 
 export interface ApplyDeckResult {

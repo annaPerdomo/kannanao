@@ -246,6 +246,46 @@ describe('buildLessonPlanPrompt', () => {
     expect(prompt).toContain('9. No duplicate words across the whole plan.');
     expect(prompt).not.toContain('9. No duplicate words across the whole plan, and none from');
   });
+
+  it('forces hiragana for N5 and N4 learners regardless of how the words are written', () => {
+    for (const level of ['N5', 'N4'] as const) {
+      const prompt = buildLessonPlanPrompt({
+        goal: 'Food words',
+        weeks: 2,
+        cardsPerDeck: 10,
+        knownWords: [],
+        level,
+      });
+
+      expect(prompt).toContain(`must be "hiragana" for every deck — a ${level} learner`);
+    }
+  });
+
+  it('lets the model choose kanji vs hiragana for N3 and above', () => {
+    const prompt = buildLessonPlanPrompt({
+      goal: 'Business Japanese',
+      weeks: 2,
+      cardsPerDeck: 10,
+      knownWords: [],
+      level: 'N3',
+    });
+
+    expect(prompt).toContain(
+      'use "kanji" whenever the deck\'s words are normally written in kanji',
+    );
+    expect(prompt).not.toContain('must be "hiragana" for every deck');
+  });
+
+  it('always asks for an imageQuery, even when the plan has images switched off', () => {
+    const prompt = buildLessonPlanPrompt({
+      goal: 'Food words',
+      weeks: 2,
+      cardsPerDeck: 10,
+      knownWords: [],
+    });
+
+    expect(prompt).toContain('"imageQuery" is a 2-4 word English noun phrase');
+  });
 });
 
 describe('dominantLevel', () => {

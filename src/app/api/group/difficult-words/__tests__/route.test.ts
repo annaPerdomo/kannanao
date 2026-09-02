@@ -22,7 +22,7 @@ function makeChain(table: string) {
   const result = () => tableData[table] ?? { data: null, error: null };
   const asPromise = () => Promise.resolve(result());
   const chain: Record<string, unknown> = {};
-  ['select', 'eq', 'in', 'order', 'limit'].forEach((m) => {
+  ['select', 'eq', 'in', 'not', 'order', 'limit'].forEach((m) => {
     chain[m] = vi.fn(() => chain);
   });
   chain.single = vi.fn(() => asPromise());

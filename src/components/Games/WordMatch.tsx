@@ -1,36 +1,37 @@
 'use client';
 
-import CheckIcon from '@mui/icons-material/Check';
-import { alpha, Box, Grid, Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { Box } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { DataErrorState } from '@/components/DataErrorState';
 import { Loading } from '@/components/Loading';
+import { type MatchPair, type MatchRoundProgress, PairBoard } from '@/components/MatchPairs';
 import { CelebrationScreen } from '@/components/Practice/CelebrationScreen';
-import { SpeakButton } from '@/components/SpeakButton';
 import { useGameSession } from '@/hooks/useGameSession';
 import { useReviewCards } from '@/hooks/useReviewCards';
-import { chunkRounds, shuffle } from '@/lib/reviewGames';
 import type { JlptLevel } from '@/types/flashcard';
 
 import { GameShell } from './GameShell';
 import { type MatchWord, pickMatchWords } from './gameWords';
 
-const PAIRS_PER_ROUND = 6;
-
-interface Tile {
-  id: string;
-  jp: string;
-  side: 'jp' | 'en';
-  label: string;
-  speak?: string;
+interface WordMatchPair extends MatchPair {
+  word: MatchWord;
 }
 
 /** How a resolved (correct) or attempted (wrong) pair is reported upward. */
 export type MatchGradeFn = (correct: boolean, word: MatchWord | undefined) => void;
+
+function toPairs(words: MatchWord[]): WordMatchPair[] {
+  return words.map((word) => ({
+    key: word.jp,
+    left: word.jp,
+    right: word.emoji ? `${word.emoji} ${word.english}` : word.english,
+    leftSpeak: word.speak,
+    word,
+  }));
+}
 
 interface MatchGridProps {
   words: MatchWord[];
@@ -41,98 +42,21 @@ interface MatchGridProps {
   questMap?: React.ReactNode;
 }
 
-/**
- * The tile-matching board itself — no session ownership. Both the standalone
- * game and the embedded quest node render this; they differ only in how they
- * grade answers and what happens on completion.
- */
 function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit, questMap }: MatchGridProps) {
-  const theme = useTheme();
-  const { brand, surfaces } = theme.palette;
   const t = useTranslations('Games.wordMatch');
+  const pairs = useMemo(() => toPairs(words), [words]);
+  const [progress, setProgress] = useState<MatchRoundProgress>({ index: 0, total: 1 });
 
-  const rounds = useMemo(() => chunkRounds(words, PAIRS_PER_ROUND), [words]);
-  const [roundIdx, setRoundIdx] = useState(0);
-  const [matched, setMatched] = useState<Set<string>>(new Set());
-  const [selected, setSelected] = useState<Tile | null>(null);
-  const [wrongId, setWrongId] = useState<string | null>(null);
-  const correctRef = useRef(0);
-  const answeredRef = useRef(0);
-  const byJp = useMemo(() => new Map(words.map((w) => [w.jp, w])), [words]);
+  const handleGrade = useCallback(
+    (correct: boolean, pair: WordMatchPair | undefined) => onGrade(correct, pair?.word),
+    [onGrade],
+  );
 
-  // An embedded quest node can be fed an empty word list (e.g. every due card
-  // lacked a display text or meaning) — hand back immediately instead of
-  // crashing on rounds[0] below.
+  // No words: hand back rather than open a GameShell with nothing in it.
   useEffect(() => {
     if (words.length === 0) onComplete({ correct: 0, total: 0 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [words.length]);
-
-  const round = rounds[roundIdx] ?? [];
-  const tiles = useMemo<Tile[]>(
-    () =>
-      shuffle(
-        (rounds[roundIdx] ?? []).flatMap((w): Tile[] => [
-          { id: `jp-${w.jp}`, jp: w.jp, side: 'jp', label: w.jp, speak: w.speak },
-          {
-            id: `en-${w.jp}`,
-            jp: w.jp,
-            side: 'en',
-            label: w.emoji ? `${w.emoji} ${w.english}` : w.english,
-          },
-        ]),
-      ),
-    [rounds, roundIdx],
-  );
-
-  const handleSelect = (tile: Tile) => {
-    if (matched.has(tile.jp) || wrongId) return;
-    if (selected?.id === tile.id) {
-      setSelected(null);
-      return;
-    }
-    if (!selected) {
-      setSelected(tile);
-      return;
-    }
-    // Tapping another tile on the SAME side switches the selection — it's a
-    // re-pick, not an answer, so it must never be graded (or penalize the SRS).
-    if (selected.side === tile.side) {
-      setSelected(tile);
-      return;
-    }
-
-    answeredRef.current += 1;
-    if (selected.jp === tile.jp) {
-      correctRef.current += 1;
-      // The pair IS one card — grade it once, correct, so it advances the SRS.
-      onGrade(true, byJp.get(tile.jp));
-      const next = new Set([...matched, tile.jp]);
-      setMatched(next);
-      setSelected(null);
-      if (next.size === round.length) {
-        setTimeout(() => {
-          setMatched(new Set());
-          if (roundIdx + 1 >= rounds.length) {
-            onComplete({ correct: correctRef.current, total: answeredRef.current });
-          } else {
-            setRoundIdx(roundIdx + 1);
-          }
-        }, 800);
-      }
-    } else {
-      // A wrong attempt is blamed on the clicked card (same convention as the
-      // deck-practice MatchMode) so a word the player struggles with comes back
-      // SOONER — dropping the cardId here meant games could only ever push a
-      // card's schedule forward, never reset it.
-      onGrade(false, byJp.get(tile.jp));
-      setWrongId(tile.id);
-      setTimeout(() => {
-        setWrongId(null);
-        setSelected(null);
-      }, 600);
-    }
-  };
 
   if (words.length === 0) return null;
 
@@ -141,132 +65,18 @@ function MatchGrid({ words, comboCount, onGrade, onComplete, onQuit, questMap }:
       title={t('title')}
       emoji="🍉"
       howTo={t('howTo')}
-      current={roundIdx}
-      total={rounds.length}
+      current={progress.index}
+      total={progress.total}
       comboCount={comboCount}
       onQuit={onQuit}
       questMap={questMap}
     >
-      <Grid container spacing={1.5}>
-        {tiles.map((tile) => {
-          const isMatched = matched.has(tile.jp);
-          const isSelected = selected?.id === tile.id;
-          const isWrong = wrongId === tile.id || (!!wrongId && isSelected);
-          return (
-            <Grid size={{ xs: 6, sm: 4 }} key={tile.id}>
-              <Box
-                sx={{
-                  position: 'relative',
-                  p: 1.5,
-                  minHeight: 68,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: 3,
-                  border: '2px solid',
-                  textAlign: 'center',
-                  transition: 'all 0.15s',
-                  borderColor: isMatched
-                    ? 'success.main'
-                    : isWrong
-                      ? 'error.main'
-                      : isSelected
-                        ? 'primary.main'
-                        : alpha(brand[200], 0.7),
-                  bgcolor: isMatched
-                    ? alpha(theme.palette.success.main, 0.1)
-                    : isWrong
-                      ? alpha(theme.palette.error.main, 0.08)
-                      : isSelected
-                        ? alpha(brand[300], 0.16)
-                        : surfaces.input,
-                  opacity: isMatched ? 0.75 : 1,
-                  transform: isSelected ? 'scale(1.04)' : 'scale(1)',
-                  // A touch device has no hover to leave: iPad Safari would keep
-                  // the last-tapped tile lit as if it were still selected.
-                  '@media (hover: hover)': {
-                    '&:hover': !isMatched
-                      ? { borderColor: brand[500], bgcolor: alpha(brand[300], 0.2) }
-                      : {},
-                  },
-                }}
-              >
-                {/* A real <button>, not a role="button" div: Safari spends the
-                    first tap on the div's hover state, so every match took two
-                    taps. It sits under the content, not around it, so the
-                    read-aloud button keeps its own click. */}
-                <Box
-                  component="button"
-                  type="button"
-                  aria-label={tile.label}
-                  aria-pressed={isSelected}
-                  // aria-disabled, not disabled: the browser blurs a focused
-                  // button as it disables, dropping keyboard focus to the top
-                  // of the page on every match.
-                  aria-disabled={isMatched || undefined}
-                  tabIndex={isMatched ? -1 : 0}
-                  onClick={() => handleSelect(tile)}
-                  sx={{
-                    position: 'absolute',
-                    inset: 0,
-                    p: 0,
-                    border: 0,
-                    background: 'none',
-                    borderRadius: 'inherit',
-                    cursor: isMatched ? 'default' : 'pointer',
-                    '&:focus-visible': {
-                      outline: `2px solid ${brand[600]}`,
-                      outlineOffset: '-4px',
-                    },
-                  }}
-                />
-                <Box
-                  sx={{
-                    position: 'relative',
-                    pointerEvents: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 0.5,
-                    minWidth: 0,
-                    maxWidth: '100%',
-                  }}
-                >
-                  {isMatched ? (
-                    <CheckIcon sx={{ fontSize: '1.2rem', color: 'success.main' }} />
-                  ) : tile.side === 'jp' ? (
-                    <>
-                      {/* The label is already the button's accessible name —
-                          leaving it exposed reads every tile out twice. */}
-                      <Typography
-                        aria-hidden
-                        sx={{ fontFamily: (t) => t.fonts.jp, fontSize: '1.05rem' }}
-                      >
-                        {tile.label}
-                      </Typography>
-                      {tile.speak && (
-                        <SpeakButton
-                          text={tile.speak}
-                          iconSize="0.9rem"
-                          hitSlop={4}
-                          sx={{
-                            pointerEvents: 'auto',
-                            '&.Mui-disabled': { pointerEvents: 'auto' },
-                          }}
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <Typography aria-hidden sx={{ fontSize: '0.85rem' }}>
-                      {tile.label}
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
-            </Grid>
-          );
-        })}
-      </Grid>
+      <PairBoard<WordMatchPair>
+        pairs={pairs}
+        onGrade={handleGrade}
+        onComplete={onComplete}
+        onProgress={setProgress}
+      />
     </GameShell>
   );
 }

@@ -98,6 +98,14 @@ const TWO_WEEK_PLAN = {
   ],
 };
 
+const READINESS = {
+  members: [
+    { id: 'm1', name: 'Ken', started: true },
+    { id: 'm2', name: 'Sam', started: false },
+  ],
+  shakyBy: { ラ: [0] },
+};
+
 function setup() {
   renderWithProviders(<LessonSetBuilder groups={[GROUP]} groupId="g1" onGroupChange={vi.fn()} />);
 }
@@ -273,7 +281,7 @@ describe('LessonSetBuilder', () => {
     await reachTwoWeekReview();
 
     expect(screen.getByText(/2 decks, 3 cards/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Include うどん' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Approve うどん' }));
     expect(screen.getByText(/2 decks, 2 cards/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
@@ -287,7 +295,7 @@ describe('LessonSetBuilder', () => {
   it('switching a week off drops its whole deck from the apply payload', async () => {
     await reachTwoWeekReview();
 
-    fireEvent.click(screen.getByRole('switch', { name: 'Include Snacks' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Approve all of Snacks' }));
     expect(screen.getByText(/1 deck, 2 cards/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
@@ -301,8 +309,8 @@ describe('LessonSetBuilder', () => {
   it('disables creating when everything is switched off', async () => {
     await reachTwoWeekReview();
 
-    fireEvent.click(screen.getByRole('switch', { name: 'Include Food words' }));
-    fireEvent.click(screen.getByRole('switch', { name: 'Include Snacks' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Approve all of Food words' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Approve all of Snacks' }));
 
     expect(screen.getByRole('button', { name: /create decks & assign/i })).toBeDisabled();
   });
@@ -345,8 +353,8 @@ describe('LessonSetBuilder', () => {
     fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
     await screen.findByText('network died');
 
-    expect(screen.getByRole('switch', { name: 'Include Snacks' })).toBeDisabled();
-    expect(screen.getByRole('checkbox', { name: 'Include うどん' })).toBeDisabled();
+    expect(screen.getByRole('switch', { name: 'Approve all of Snacks' })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: 'Approve うどん' })).toBeDisabled();
     expect(screen.getByText(/ticks are locked/i)).toBeInTheDocument();
   });
 
@@ -450,5 +458,48 @@ describe('LessonSetBuilder', () => {
     const payload = applyLessonPlanMock.mock.calls[0][0];
     expect(payload).not.toHaveProperty('warmUp');
     expect(payload.plan).toEqual(PLAN);
+  });
+});
+
+describe('LessonSetBuilder kana support', () => {
+  async function reachReviewWithKanaGaps() {
+    buildLessonPlanMock.mockResolvedValue({ plan: PLAN, kanaReadiness: READINESS });
+    await reachReviewStep();
+  }
+
+  it('flags the sounds the group has not mastered, and no others', async () => {
+    await reachReviewWithKanaGaps();
+
+    expect(screen.getByText('New sounds: ラ')).toBeInTheDocument();
+  });
+
+  it('says nothing per card when the group has never used Learn Kana', async () => {
+    buildLessonPlanMock.mockResolvedValue({
+      plan: PLAN,
+      kanaReadiness: { members: [{ id: 'm2', name: 'Sam', started: false }], shakyBy: {} },
+    });
+    await reachReviewStep();
+
+    expect(screen.queryByText(/New sounds/)).not.toBeInTheDocument();
+    expect(screen.getByText(/hasn't tried Learn Kana yet/i)).toBeInTheDocument();
+  });
+
+  it('assigns the matching kana row alongside the decks by default', async () => {
+    await reachReviewWithKanaGaps();
+
+    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+
+    await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
+    expect(applyLessonPlanMock.mock.calls[0][0].kanaSets).toEqual(['kata-ra']);
+  });
+
+  it('lets the organizer untick the companion assignment', async () => {
+    await reachReviewWithKanaGaps();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /also assign these kana rows/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+
+    await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
+    expect(applyLessonPlanMock.mock.calls[0][0].kanaSets).toEqual([]);
   });
 });
