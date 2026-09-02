@@ -13,7 +13,9 @@ const START_EASE = 2.5;
 
 // `byKana` stays null until the first load resolves: defaulting to an empty map
 // would render an outage as "no stars yet" and re-lock the learner's progress.
-export function useKanaProgress(): {
+// `enabled: false` skips the fetch and leaves `byKana` null — a disabled hook
+// is "unknown", never "no progress".
+export function useKanaProgress(enabled = true): {
   byKana: KanaProgressMap | null;
   loading: boolean;
   error: DataError | null;
@@ -34,6 +36,7 @@ export function useKanaProgress(): {
   }, []);
 
   useEffect(() => {
+    if (!enabled) return;
     if (!user) {
       apply(new Map());
       return;
@@ -51,7 +54,7 @@ export function useKanaProgress(): {
     return () => {
       cancelled = true;
     };
-  }, [user, reloadKey, apply]);
+  }, [user, reloadKey, apply, enabled]);
 
   const retry = useCallback(() => {
     apply(null);

@@ -145,6 +145,8 @@ export interface ReviewQueueOptions {
   track?: KanaTrack | 'both';
   setId?: string;
   includeStrong?: boolean;
+  /** false drops never-answered characters entirely, rather than capping them. */
+  includeUnseen?: boolean;
   now?: Date;
 }
 
@@ -212,10 +214,13 @@ function splitPool(
     .sort(byScore);
 
   // Unseen characters keep curriculum order: a beginner meets あ before にゃ.
-  const fresh = pool
-    .filter((kana) => isUnseen(byKana.get(kana)))
-    .slice(0, MAX_UNSEEN_PER_QUEUE)
-    .map((kana) => ({ kana, score: UNSEEN_SCORE, strong: false }));
+  const fresh: ScoredKana[] =
+    opts.includeUnseen === false
+      ? []
+      : pool
+          .filter((kana) => isUnseen(byKana.get(kana)))
+          .slice(0, MAX_UNSEEN_PER_QUEUE)
+          .map((kana) => ({ kana, score: UNSEEN_SCORE, strong: false }));
 
   return {
     needy: [...scored.filter((c) => !c.strong), ...fresh].sort(byScore).map((c) => c.kana),
