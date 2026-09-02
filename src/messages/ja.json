@@ -984,6 +984,9 @@
       "question": "どっちを 聞いた？",
       "listen": "タップで音を聞く"
     },
+    "scriptMatch": {
+      "question": "ひらがなと カタカナを ペアにしよう。"
+    },
     "common": {
       "hint": "ヒントを見る",
       "next": "つぎへ"
@@ -1033,6 +1036,7 @@
       "printChartHint": "べんきょうする ばしょに はっておこう。"
     },
     "session": {
+      "scriptMatchHowTo": "ひらがなを タップして、おなじ おとの カタカナを タップしよう。",
       "wordPairHowTo": "ことばを 聞いて、聞こえた かきかたを タップしよう。",
       "recognizeHowTo": "文字を見て、その音をタップしよう。",
       "recallHowTo": "音を聞いて、その文字をタップしよう。",

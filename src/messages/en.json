@@ -984,6 +984,9 @@
       "question": "Which one did you hear?",
       "listen": "Tap to hear it"
     },
+    "scriptMatch": {
+      "question": "Match each hiragana with its katakana."
+    },
     "common": {
       "hint": "Show a hint",
       "next": "Next"
@@ -1033,6 +1036,7 @@
       "printChartHint": "Put it up where you study."
     },
     "session": {
+      "scriptMatchHowTo": "Tap a hiragana, then the katakana that says the same sound.",
       "wordPairHowTo": "Listen to the word, then tap the spelling you heard.",
       "recognizeHowTo": "Look at the character, then tap the sound it makes.",
       "recallHowTo": "Hear the sound, then tap the character that writes it.",

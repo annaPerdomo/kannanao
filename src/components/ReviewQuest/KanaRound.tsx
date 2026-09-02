@@ -33,9 +33,9 @@ export function KanaRound({
   const [answered, setAnswered] = useState(0);
 
   const handleAnswer = useCallback(
-    (kana: string, correct: boolean) => {
+    (kana: string | string[], correct: boolean) => {
       setAnswered((n) => n + 1);
-      onAnswer(kana, correct);
+      for (const one of Array.isArray(kana) ? kana : [kana]) onAnswer(one, correct);
     },
     [onAnswer],
   );

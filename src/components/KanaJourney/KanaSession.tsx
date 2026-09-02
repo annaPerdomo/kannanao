@@ -13,10 +13,12 @@ import { focusDrillChars } from './kanaDrill';
 import { LightningRound } from './LightningRound';
 import { RecallDrill } from './RecallDrill';
 import { RecognizeDrill } from './RecognizeDrill';
+import { ScriptMatchDrill } from './ScriptMatchDrill';
+import { sessionScriptPairs } from './scriptPairs';
 import { WordPairDrill } from './WordPairDrill';
 import { pairsFor } from './wordPairs';
 
-const STAGES = ['recognize', 'recall', 'wordPair', 'lightning'] as const;
+const STAGES = ['recognize', 'recall', 'scriptMatch', 'wordPair', 'lightning'] as const;
 const MIN_LIGHTNING_CHARS = 3;
 
 export interface KanaSessionRequest {
@@ -53,13 +55,15 @@ export function KanaSession({ setId, kana, chars, byKana, record, onExit }: Kana
     const isolated = list.filter((c) => !isContextualKana(c));
     const inWords = list.filter((c) => isContextualKana(c) || isComboKana(c));
     const hasPairs = pairsFor(inWords).length > 0;
+    const scriptPairs = sessionScriptPairs(isolated);
 
     const stages = STAGES.filter((stage) => {
       if (stage === 'wordPair') return hasPairs;
+      if (stage === 'scriptMatch') return scriptPairs.length > 0;
       if (isolated.length === 0) return false;
       return stage !== 'lightning' || isolated.length >= MIN_LIGHTNING_CHARS;
     });
-    return { chars: list, isolated, inWords, stages };
+    return { chars: list, isolated, inWords, scriptPairs, stages };
   });
 
   const [stageIdx, setStageIdx] = useState(0);
@@ -69,12 +73,16 @@ export function KanaSession({ setId, kana, chars, byKana, record, onExit }: Kana
   const writesRef = useRef<Promise<unknown>[]>([]);
   const finishedRef = useRef(false);
 
+  // A list means one answer that proved several characters at once (a script
+  // pair): one XP grade, one kana_progress write per character.
   const handleAnswer = useCallback(
-    (kana: string, correct: boolean) => {
+    (kana: string | string[], correct: boolean) => {
       answeredRef.current += 1;
       if (correct) correctRef.current += 1;
       writesRef.current.push(answer(correct));
-      writesRef.current.push(record(kana, correct));
+      for (const one of Array.isArray(kana) ? kana : [kana]) {
+        writesRef.current.push(record(one, correct));
+      }
     },
     [answer, record],
   );
@@ -143,6 +151,13 @@ export function KanaSession({ setId, kana, chars, byKana, record, onExit }: Kana
     >
       {stage === 'recognize' && <RecognizeDrill {...drillProps} />}
       {stage === 'recall' && <RecallDrill {...drillProps} />}
+      {stage === 'scriptMatch' && (
+        <ScriptMatchDrill
+          pairs={session.scriptPairs}
+          onAnswer={handleAnswer}
+          onComplete={handleStageComplete}
+        />
+      )}
       {stage === 'wordPair' && <WordPairDrill {...drillProps} chars={session.inWords} />}
       {stage === 'lightning' && <LightningRound {...drillProps} />}
     </GameShell>
