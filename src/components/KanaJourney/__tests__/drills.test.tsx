@@ -14,6 +14,8 @@ vi.mock('@/hooks/useSpeech', () => ({
 import { LightningRound } from '../LightningRound';
 import { RecallDrill } from '../RecallDrill';
 import { RecognizeDrill } from '../RecognizeDrill';
+import { WordPairDrill } from '../WordPairDrill';
+import { WORD_PAIRS } from '../wordPairs';
 
 const CHARS = ['あ', 'い', 'う'];
 
@@ -240,5 +242,54 @@ describe('LightningRound', () => {
     }
     expect(onAnswer).toHaveBeenCalledTimes(4);
     expect(onAnswer.mock.calls.every((c) => c[0] === 'あ')).toBe(true);
+  });
+});
+
+describe('WordPairDrill', () => {
+  const tapAnswer = (text: string) => tap(text);
+
+  // The pair on screen is drawn at random from the list, so every assertion
+  // has to read back which one it got rather than assume one.
+  const spellings = () =>
+    screen.getAllByRole('button').map((b) => b.getAttribute('aria-label') ?? '');
+  const shownPair = () => WORD_PAIRS.find((pair) => spellings().includes(pair.word))!;
+
+  it('should offer two spellings of a word it never shows written down', () => {
+    renderWithProviders(<WordPairDrill chars={['っ']} onAnswer={vi.fn()} onComplete={vi.fn()} />);
+    expect(screen.getByText('Which one did you hear?')).toBeInTheDocument();
+    const pair = shownPair();
+    expect(spellings()).toEqual(expect.arrayContaining([pair.word, pair.decoy]));
+  });
+
+  it('should play the word only when the learner taps, never on its own', () => {
+    renderWithProviders(<WordPairDrill chars={['っ']} onAnswer={vi.fn()} onComplete={vi.fn()} />);
+    expect(mockSpeak).not.toHaveBeenCalled();
+    tap('Read aloud');
+    expect(mockSpeak).toHaveBeenCalledWith(shownPair().word);
+  });
+
+  it('should record every character the pair exercises, not the word', () => {
+    const onAnswer = vi.fn();
+    renderWithProviders(<WordPairDrill chars={['ー']} onAnswer={onAnswer} onComplete={vi.fn()} />);
+    const pair = shownPair();
+    tapAnswer(pair.word);
+    expect(onAnswer.mock.calls).toEqual(pair.chars.map((kana) => [kana, true]));
+  });
+
+  it('should mark the near-miss spelling wrong for the same characters', () => {
+    const onAnswer = vi.fn();
+    renderWithProviders(<WordPairDrill chars={['ー']} onAnswer={onAnswer} onComplete={vi.fn()} />);
+    const pair = shownPair();
+    tapAnswer(pair.decoy);
+    expect(onAnswer.mock.calls).toEqual(pair.chars.map((kana) => [kana, false]));
+    expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument();
+  });
+
+  it('should finish rather than hang when nothing pairs with the queue', () => {
+    const onComplete = vi.fn();
+    renderWithProviders(
+      <WordPairDrill chars={['ん']} onAnswer={vi.fn()} onComplete={onComplete} />,
+    );
+    expect(onComplete).toHaveBeenCalled();
   });
 });

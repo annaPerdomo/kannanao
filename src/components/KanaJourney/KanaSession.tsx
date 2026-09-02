@@ -5,20 +5,19 @@ import { useCallback, useRef, useState } from 'react';
 import { GameShell } from '@/components/Games/GameShell';
 import { CelebrationScreen, pickPraise } from '@/components/Practice/CelebrationScreen';
 import { useGameSession } from '@/hooks/useGameSession';
-import { getSet } from '@/lib/kanaCurriculum';
+import { getSet, isComboKana, isContextualKana } from '@/lib/kanaCurriculum';
 import { drillChars, type KanaProgressMap } from '@/lib/kanaProficiency';
 
+import { KANA_XP } from './constants';
 import { focusDrillChars } from './kanaDrill';
 import { LightningRound } from './LightningRound';
 import { RecallDrill } from './RecallDrill';
 import { RecognizeDrill } from './RecognizeDrill';
+import { WordPairDrill } from './WordPairDrill';
+import { pairsFor } from './wordPairs';
 
-const STAGES = ['recognize', 'recall', 'lightning'] as const;
+const STAGES = ['recognize', 'recall', 'wordPair', 'lightning'] as const;
 const MIN_LIGHTNING_CHARS = 3;
-
-// Lightning grades ~2 answers a second: at the 40 XP card rate one replayed row
-// would outrank a week of vocabulary study on the group leaderboard.
-const KANA_XP = 8;
 
 export interface KanaSessionRequest {
   /** Stamped on the session row and completes a kana assignment: never set on a mixed review. */
@@ -51,9 +50,16 @@ export function KanaSession({ setId, kana, chars, byKana, record, onExit }: Kana
   // question stream and the on-screen choices mid-question.
   const [session] = useState(() => {
     const list = sessionChars({ setId, kana, chars }, byKana);
-    const stages =
-      list.length >= MIN_LIGHTNING_CHARS ? STAGES : STAGES.filter((s) => s !== 'lightning');
-    return { chars: list, stages };
+    const isolated = list.filter((c) => !isContextualKana(c));
+    const inWords = list.filter((c) => isContextualKana(c) || isComboKana(c));
+    const hasPairs = pairsFor(inWords).length > 0;
+
+    const stages = STAGES.filter((stage) => {
+      if (stage === 'wordPair') return hasPairs;
+      if (isolated.length === 0) return false;
+      return stage !== 'lightning' || isolated.length >= MIN_LIGHTNING_CHARS;
+    });
+    return { chars: list, isolated, inWords, stages };
   });
 
   const [stageIdx, setStageIdx] = useState(0);
@@ -95,7 +101,7 @@ export function KanaSession({ setId, kana, chars, byKana, record, onExit }: Kana
     void endRun().then(onExit);
   }, [endRun, onExit]);
 
-  if (session.chars.length === 0) return null;
+  if (session.chars.length === 0 || session.stages.length === 0) return null;
 
   if (done) {
     const pct = answeredRef.current > 0 ? correctRef.current / answeredRef.current : 1;
@@ -120,7 +126,7 @@ export function KanaSession({ setId, kana, chars, byKana, record, onExit }: Kana
 
   const stage = session.stages[stageIdx];
   const drillProps = {
-    chars: session.chars,
+    chars: session.isolated,
     onAnswer: handleAnswer,
     onComplete: handleStageComplete,
   };
@@ -137,6 +143,7 @@ export function KanaSession({ setId, kana, chars, byKana, record, onExit }: Kana
     >
       {stage === 'recognize' && <RecognizeDrill {...drillProps} />}
       {stage === 'recall' && <RecallDrill {...drillProps} />}
+      {stage === 'wordPair' && <WordPairDrill {...drillProps} chars={session.inWords} />}
       {stage === 'lightning' && <LightningRound {...drillProps} />}
     </GameShell>
   );

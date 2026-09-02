@@ -30,3 +30,5 @@ export { RecallDrill } from './RecallDrill';
 export { RecognizeDrill } from './RecognizeDrill';
 export { ReviewButton } from './ReviewButton';
 export type { KanaDrillProps } from './types';
+export { WordPairDrill } from './WordPairDrill';
+export { pairsFor, WORD_PAIR_ROUND, WORD_PAIRS, type WordPair } from './wordPairs';

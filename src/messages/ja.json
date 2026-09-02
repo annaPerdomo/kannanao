@@ -968,6 +968,10 @@
       "littleTsu": "ちいさい つ",
       "longSound": "のばす おと"
     },
+    "wordPair": {
+      "question": "どっちを 聞いた？",
+      "listen": "タップで音を聞く"
+    },
     "common": {
       "hint": "ヒントを見る",
       "next": "つぎへ"
@@ -1012,6 +1016,7 @@
       }
     },
     "session": {
+      "wordPairHowTo": "ことばを 聞いて、聞こえた かきかたを タップしよう。",
       "recognizeHowTo": "文字を見て、その音をタップしよう。",
       "recallHowTo": "音を聞いて、その文字をタップしよう。",
       "lightningHowTo": "スピードラウンド。時間内にできるだけ多く正解しよう。",
