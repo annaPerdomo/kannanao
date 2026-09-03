@@ -5192,6 +5192,26 @@
     "detail": {
       "record": "You got it right {correct} of {total} times",
       "noRecord": "You haven’t answered this one yet"
+    },
+    "memoriesTab": "Memories",
+    "memories": {
+      "collected": "{collected} of {total} memories",
+      "collectedAria": "Memories collected",
+      "intro": "Each new friendship level with your buddy unlocks a memory card.",
+      "loadFailed": "We couldn’t load your memories.",
+      "retry": "Try again",
+      "empty": "Practice with your buddy to make your first memory.",
+      "lockedHint": "{count, plural, one {# more heart} other {# more hearts}} with {name} and this memory opens.",
+      "card": {
+        "openAria": "Open memory: {title}",
+        "lockedAria": "{title} — {count, plural, one {# more heart} other {# more hearts}} with {name}",
+        "lockedTitle": "???",
+        "more": "{count} more ❤️",
+        "memoryOf": "{name}"
+      },
+      "detail": {
+        "subtitle": "A memory with {name} · {levelName}"
+      }
     }
   }
 }

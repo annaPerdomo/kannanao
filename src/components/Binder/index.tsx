@@ -2,10 +2,8 @@
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import LinearProgress from '@mui/material/LinearProgress';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
-import { alpha } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
@@ -42,9 +40,12 @@ import type { Flashcard } from '@/types/flashcard';
 import { BinderCard } from './BinderCard';
 import { BinderFilters } from './BinderFilters';
 import { CardDetailDialog } from './CardDetailDialog';
+import { CollectedBar, CollectedPanel } from './CollectedBar';
+import { MemoriesTab } from './MemoriesTab';
 import { binderGridSx } from './styles';
 
 const ALL = '__all__';
+const MEMORIES = '__memories__';
 
 function useBinderData() {
   const { user } = useAuth();
@@ -98,27 +99,6 @@ function useBinderData() {
   };
 }
 
-function CollectedBar({ collected, total }: { collected: number; total: number }) {
-  const t = useTranslations('Binder');
-  const pct = total === 0 ? 0 : Math.round((collected / total) * 100);
-  return (
-    <Box>
-      <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
-        <Typography sx={{ fontWeight: 800, color: 'text.primary' }}>
-          {t('collected', { collected, total })}
-        </Typography>
-        <Typography sx={{ fontWeight: 700, color: 'text.secondary' }}>{pct}%</Typography>
-      </Stack>
-      <LinearProgress
-        variant="determinate"
-        value={pct}
-        aria-label={t('collectedAria')}
-        sx={{ height: 10, borderRadius: 999 }}
-      />
-    </Box>
-  );
-}
-
 export function Binder() {
   const t = useTranslations('Binder');
   const { tabs, loading, error, retry } = useBinderData();
@@ -164,19 +144,17 @@ export function Binder() {
 
   if (error) return frame(<DataErrorState error={error} onRetry={retry} />);
   if (loading) return frame(<Loading message={t('loading')} />);
-  if (tabs.length === 0) {
-    return frame(
-      <Box sx={{ textAlign: 'center', py: 6 }}>
-        <Typography sx={{ fontSize: '3rem', mb: 1 }} aria-hidden>
-          🌱
-        </Typography>
-        <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary' }}>
-          {t('emptyTitle')}
-        </Typography>
-        <Typography color="text.secondary">{t('emptyBody')}</Typography>
-      </Box>,
-    );
-  }
+  const emptyDecks = (
+    <Box sx={{ textAlign: 'center', py: 6 }}>
+      <Typography sx={{ fontSize: '3rem', mb: 1 }} aria-hidden>
+        🌱
+      </Typography>
+      <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary' }}>
+        {t('emptyTitle')}
+      </Typography>
+      <Typography color="text.secondary">{t('emptyBody')}</Typography>
+    </Box>
+  );
 
   return frame(
     <Stack spacing={{ xs: 2, sm: 2.5 }}>
@@ -197,67 +175,75 @@ export function Binder() {
             label={`${x.deck.emoji ? `${x.deck.emoji} ` : ''}${x.deck.name} · ${x.collected}/${x.cards.length}`}
           />
         ))}
+        <Tab value={MEMORIES} label={`💞 ${t('memoriesTab')}`} />
       </Tabs>
 
-      <Box
-        sx={{
-          p: { xs: 2, sm: 2.5 },
-          borderRadius: 4,
-          bgcolor: (t) => alpha(t.palette.brand[50], 0.7),
-          border: (t) => `1.5px solid ${alpha(t.palette.brand[300], 0.4)}`,
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          alignItems: { sm: 'center' },
-          gap: 2,
-        }}
-      >
-        <Box sx={{ flexGrow: 1 }}>
-          <CollectedBar collected={collected} total={pool.length} />
-        </Box>
-        {current && current.cards.length >= 2 && (
-          <Button
-            variant="contained"
-            disabled={starting || voice === 'checking'}
-            onClick={() =>
-              void start(
-                current.deck.id,
-                current.cards.map((c) => c.card),
-                {
-                  readingUnlocked: current.deck.readingPractice === true,
-                  ttsReady: voice === 'ready',
-                },
-              )
-            }
-            sx={{ flexShrink: 0, fontWeight: 800, px: 3 }}
-          >
-            {starting ? t('practiceStarting') : t('practiceLesson')}
-          </Button>
-        )}
-      </Box>
-      {startError && <Alert severity="error">{t('practiceFailed')}</Alert>}
-
-      <BinderFilters filters={filters} onChange={setFilters} levels={levels} phrases={phrases} />
-
-      {shown.length === 0 ? (
-        <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-          {t('noMatches')}
-        </Typography>
+      {tab === MEMORIES ? (
+        <MemoriesTab />
+      ) : tabs.length === 0 ? (
+        emptyDecks
       ) : (
-        <Box sx={binderGridSx}>
-          {shown.map((entry) => (
-            <BinderCard key={entry.card.id} entry={entry} onOpen={openCard} />
-          ))}
-        </Box>
-      )}
+        <>
+          <CollectedPanel>
+            <Box sx={{ flexGrow: 1 }}>
+              <CollectedBar
+                collected={collected}
+                total={pool.length}
+                label={t('collected', { collected, total: pool.length })}
+                ariaLabel={t('collectedAria')}
+              />
+            </Box>
+            {current && current.cards.length >= 2 && (
+              <Button
+                variant="contained"
+                disabled={starting || voice === 'checking'}
+                onClick={() =>
+                  void start(
+                    current.deck.id,
+                    current.cards.map((c) => c.card),
+                    {
+                      readingUnlocked: current.deck.readingPractice === true,
+                      ttsReady: voice === 'ready',
+                    },
+                  )
+                }
+                sx={{ flexShrink: 0, fontWeight: 800, px: 3 }}
+              >
+                {starting ? t('practiceStarting') : t('practiceLesson')}
+              </Button>
+            )}
+          </CollectedPanel>
+          {startError && <Alert severity="error">{t('practiceFailed')}</Alert>}
 
-      <CardDetailDialog entry={open} onClose={() => setOpen(null)} />
-      <Snackbar
-        open={hint}
-        autoHideDuration={2500}
-        onClose={() => setHint(false)}
-        message={t('lockedHint')}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      />
+          <BinderFilters
+            filters={filters}
+            onChange={setFilters}
+            levels={levels}
+            phrases={phrases}
+          />
+
+          {shown.length === 0 ? (
+            <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+              {t('noMatches')}
+            </Typography>
+          ) : (
+            <Box sx={binderGridSx}>
+              {shown.map((entry) => (
+                <BinderCard key={entry.card.id} entry={entry} onOpen={openCard} />
+              ))}
+            </Box>
+          )}
+
+          <CardDetailDialog entry={open} onClose={() => setOpen(null)} />
+          <Snackbar
+            open={hint}
+            autoHideDuration={2500}
+            onClose={() => setHint(false)}
+            message={t('lockedHint')}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          />
+        </>
+      )}
     </Stack>,
   );
 }

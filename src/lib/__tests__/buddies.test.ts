@@ -11,6 +11,7 @@ import {
   BUDDY_ART,
   BUDDY_FACE_COUNT,
   buddyFaceSrc,
+  buddyMemorySrc,
   buddyShopSrc,
   DEFAULT_BUDDY_KEY,
   makeAvatar,
@@ -53,6 +54,14 @@ describe('asset paths', () => {
   it('builds shop art paths and falls back to the default buddy', () => {
     expect(buddyShopSrc('buddy_pink_cat')).toBe('/buddies/shop/calico.webp');
     expect(buddyShopSrc('nonsense')).toBe('/buddies/shop/tango.webp');
+  });
+
+  it('points memory scenes at the level file and falls back when one is missing', () => {
+    expect(buddyMemorySrc('buddy_penguin', 3)).toBe('/buddies/memories/penguin-l3.webp');
+    expect(buddyMemorySrc('buddy_tanuki', 2)).toBeNull();
+    expect(buddyMemorySrc('buddy_tanuki', 3)).toBe('/buddies/memories/tanuki-l3.webp');
+    expect(buddyMemorySrc('buddy_tango', 1)).toBeNull();
+    expect(buddyMemorySrc('nonsense', 2)).toBeNull();
   });
 
   it('randomFaceVariant stays within 1..BUDDY_FACE_COUNT', () => {

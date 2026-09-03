@@ -5189,6 +5189,26 @@
     "detail": {
       "record": "{total}回中 {correct}回 正解",
       "noRecord": "まだ答えていません"
+    },
+    "memoriesTab": "おもいで",
+    "memories": {
+      "collected": "おもいで {collected}／{total}",
+      "collectedAria": "あつめたおもいで",
+      "intro": "バディともっとなかよくなると、おもいでカードがひらくよ。",
+      "loadFailed": "おもいでをよみこめませんでした。",
+      "retry": "もういちど",
+      "empty": "バディといっしょに練習して、はじめてのおもいでをつくろう。",
+      "lockedHint": "{name}とのハートがあと{count}こで、このおもいでがひらくよ。",
+      "card": {
+        "openAria": "おもいで「{title}」をひらく",
+        "lockedAria": "{title} — {name}とのハートがあと{count}こ",
+        "lockedTitle": "???",
+        "more": "あと{count} ❤️",
+        "memoryOf": "{name}"
+      },
+      "detail": {
+        "subtitle": "{name}とのおもいで · {levelName}"
+      }
     }
   }
 }
