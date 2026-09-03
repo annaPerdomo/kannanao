@@ -34,12 +34,12 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    // Chromium and WebKit disagree on flex/aspect-ratio resolution: the card
-    // once rendered 0px wide on iOS only.
+    // Chromium and WebKit disagree on flex/aspect-ratio and on line breaking:
+    // the card once rendered 0px wide, and the greeting ran off the hero, on iOS only.
     {
-      name: 'webkit-cards',
+      name: 'webkit-mobile',
       use: { ...devices['iPhone 12'] },
-      testMatch: /card-layout/,
+      testMatch: /card-layout|mobile-layout/,
     },
   ],
 });

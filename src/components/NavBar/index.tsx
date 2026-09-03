@@ -22,7 +22,13 @@ import { useDirectMessagesCtx } from '@/contexts/DirectMessagesContext';
 import { useProgressCtx } from '@/contexts/ProgressContext';
 import { LAYOUT } from '@/theme';
 
-import { navItemsFor } from './constants';
+import {
+  BRAND_LOCKUP_MIN_WIDTH,
+  BRAND_LOCKUP_SX,
+  navItemsFor,
+  TOOLBAR_GAP,
+  TOOLBAR_PX,
+} from './constants';
 import { EditNameDialog } from './EditNameDialog';
 import { LanguageMenu } from './LanguageMenu';
 import { NavLinks } from './NavLinks';
@@ -82,7 +88,7 @@ export function NavBar() {
     borderRadius: theme.radii.pill,
     // Base (xs) values matter even though nav links hide below sm: UserMenu
     // reuses this sx for the sign-in and avatar buttons, which render on phones.
-    px: 1.5,
+    px: { xs: 0.75, sm: 1.5 },
     py: { xs: 0.5, md: 0.8 },
     minWidth: 0,
     whiteSpace: 'nowrap' as const,
@@ -134,22 +140,29 @@ export function NavBar() {
             maxWidth: LAYOUT.contentMaxWidth,
             width: '100%',
             mx: 'auto',
-            px: LAYOUT.pagePx,
+            px: TOOLBAR_PX,
             minHeight: NAVBAR_TOOLBAR_HEIGHT,
-            gap: { xs: 1.5, md: 2 },
+            gap: TOOLBAR_GAP,
           }}
         >
           {/* Brand lockup: mascot + wordmark + たんごだち (see public/brand/logo-lockup.png) */}
-          <Link href="/" style={{ textDecoration: 'none', userSelect: 'none' }}>
+          {/* The bar's only shrinkable item; the floor keeps it readable and keeps
+              mobile-layout.spec's overflow check able to fail. */}
+          <Link
+            href="/"
+            style={{
+              textDecoration: 'none',
+              userSelect: 'none',
+              minWidth: BRAND_LOCKUP_MIN_WIDTH,
+              flexShrink: 1,
+            }}
+          >
             <Box
               component="img"
               src="/brand/logo-lockup.png"
               alt={t('brandName')}
               sx={{
-                display: 'block',
-                height: { xs: 40, sm: 46, md: 60 },
-                width: 'auto',
-                flex: 'none',
+                ...BRAND_LOCKUP_SX,
                 transition: 'transform 0.2s ease',
                 '&:hover': { transform: 'scale(1.04)' },
               }}
@@ -172,12 +185,19 @@ export function NavBar() {
 
           {/* User info — right group */}
           {user ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, md: 1.25 } }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                flexShrink: 0,
+                gap: { xs: 0.5, md: 1.25 },
+              }}
+            >
               {/* Direct messages — navigate to notifications page */}
               <IconButton
                 aria-label={t('messagesAriaLabel')}
                 onClick={() => router.push('/notifications')}
-                sx={{ color: brand[500] }}
+                sx={{ color: brand[500], p: { xs: 0.75, md: 1 } }}
               >
                 <Badge
                   badgeContent={dmUnreadCount}
@@ -207,7 +227,7 @@ export function NavBar() {
                     bgcolor: 'rgba(254,226,226,0.7)',
                     border: '1px solid rgba(252,165,165,0.5)',
                     borderRadius: theme.radii.pill,
-                    px: { xs: 1.25, md: 1.5 },
+                    px: { xs: 0.9, md: 1.5 },
                     py: { xs: 0.4, md: 0.65 },
                     cursor: 'pointer',
                   }}

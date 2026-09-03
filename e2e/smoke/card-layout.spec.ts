@@ -1,6 +1,7 @@
 import { expect, type Page, test } from '@playwright/test';
 
 import en from '../../src/messages/en.json';
+import { signIn } from '../helpers/signIn';
 
 /**
  * Runs on webkit too: WebKit collapsed the old card sizing to a 0-width
@@ -30,23 +31,7 @@ test.describe('Flashcard layout', () => {
   test.describe.configure({ timeout: 240_000 });
 
   async function openFlipStudy(page: Page) {
-    const username = page.locator('input[type="text"], input[type="email"]').first();
-    const password = page.locator('input[type="password"]').first();
-    // Hydration wipes the typed credentials and a submit mid-compile never
-    // navigates — retry both layers, WebKit needs it.
-    await expect(async () => {
-      if (new URL(page.url()).pathname === '/') return;
-      if (!page.url().includes('/login')) await page.goto('/login');
-      await expect(async () => {
-        if ((await username.inputValue()) !== USERNAME) await username.fill(USERNAME!);
-        if ((await password.inputValue()) !== PASSWORD) await password.fill(PASSWORD!);
-        expect(await username.inputValue()).toBe(USERNAME);
-        expect(await password.inputValue()).toBe(PASSWORD);
-      }).toPass({ timeout: 60_000 });
-      await page.locator('button[type="submit"]').first().click();
-      await page.waitForURL('/', { timeout: 45_000 });
-    }).toPass({ timeout: 150_000, intervals: [2_000] });
-    await page.waitForLoadState('load');
+    await signIn(page);
     await page.goto('/decks').catch(() => page.goto('/decks'));
     const openDeckPrefix = en.Deck.deckCard.openDeckAria.split('{')[0];
     await page.locator(`[aria-label^="${openDeckPrefix}"]`).first().click({ timeout: 30_000 });
