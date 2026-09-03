@@ -1,5 +1,5 @@
-import { screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { FriendshipAwardToast } from '@/components/HomeBuddy/FriendshipAwardToast';
 import type { BuddyStoryRequest } from '@/contexts/BuddyFriendshipContext';
@@ -34,6 +34,28 @@ describe('FriendshipAwardToast', () => {
     levelUpEvent = null;
     pathname = '/';
     recentWords = [];
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('should play a second award after the first instead of replacing it', () => {
+    vi.useFakeTimers();
+    awardEvent = { buddyKey: 'buddy_axolotl', source: 'session', awarded: 1, words: [] };
+    const { rerender } = render(<FriendshipAwardToast />);
+    expect(screen.getByRole('status')).toHaveTextContent('kept practicing');
+
+    awardEvent = { buddyKey: 'buddy_axolotl', source: 'adventure', awarded: 3, words: [] };
+    rerender(<FriendshipAwardToast />);
+    expect(screen.getByRole('status')).toHaveTextContent('kept practicing');
+
+    act(() => {
+      vi.advanceTimersByTime(2600);
+    });
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '+3 ❤️ Momo loved studying with you today!',
+    );
   });
 
   it('should stay out of the way when no heart was paid', () => {

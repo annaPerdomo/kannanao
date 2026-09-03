@@ -35,6 +35,7 @@ interface ShownAward {
 }
 
 type Anchor = Pick<ShownAward, 'faceX' | 'faceY' | 'lineX' | 'lineY'>;
+type QueuedAward = Omit<ShownAward, keyof Anchor>;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), Math.max(min, max));
@@ -65,6 +66,9 @@ export function FriendshipAwardToast() {
   const { awardEvent, clearAwardEvent, storyRequest, levelUpEvent } = useBuddyFriendshipCtx();
 
   const [shown, setShown] = useState<ShownAward | null>(null);
+  // The session and adventure hearts land together at the end of a chain;
+  // played back to back, neither overwrites the other.
+  const [queue, setQueue] = useState<QueuedAward[]>([]);
   const nextKey = useRef(0);
 
   // storyRequest lands a render late: the provider opens the dialog from a
@@ -73,9 +77,19 @@ export function FriendshipAwardToast() {
 
   useEffect(() => {
     if (!awardEvent) return;
-    if (!celebrating) setShown({ key: ++nextKey.current, ...awardEvent, ...anchorFromBuddy() });
+    if (!celebrating) {
+      const queued = { key: ++nextKey.current, ...awardEvent };
+      setQueue((current) => [...current, queued]);
+    }
     clearAwardEvent();
   }, [awardEvent, celebrating, clearAwardEvent]);
+
+  useEffect(() => {
+    if (shown || queue.length === 0) return;
+    const [head, ...rest] = queue;
+    setShown({ ...head, ...anchorFromBuddy() });
+    setQueue(rest);
+  }, [shown, queue]);
 
   useEffect(() => {
     if (!shown) return;

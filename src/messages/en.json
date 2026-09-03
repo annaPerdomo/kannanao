@@ -1961,7 +1961,7 @@
           "done": "Done",
           "error": "That didn't save. Check your connection and try again.",
           "adventure": {
-            "title": "Finish today's adventure",
+            "title": "Finish today's practice",
             "cta": "Start"
           },
           "session": {

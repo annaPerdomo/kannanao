@@ -10,6 +10,7 @@ export interface QuestHandoff {
    * button, so without this the only way out is the system back gesture.
    */
   onStop: () => void;
+  final?: boolean;
 }
 
 const QuestHandoffCtx = createContext<QuestHandoff | null>(null);
