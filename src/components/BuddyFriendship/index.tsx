@@ -18,6 +18,8 @@ import { LevelUpSequence } from './LevelUpSequence';
 import { MemoryList } from './MemoryList';
 import { NextMilestoneCallout } from './NextMilestoneCallout';
 
+export { milestoneMessage } from './NextMilestoneCallout';
+
 const TITLE_ID = 'buddy-friendship-title';
 
 export function BuddyFriendshipDialog() {

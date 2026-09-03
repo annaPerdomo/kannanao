@@ -10,6 +10,7 @@ import { useShopCtx } from '@/contexts/ShopContext';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { CELEBRATION_THEMES } from '@/hooks/useShop';
 
+import { BuddyMoment } from './BuddyMoment';
 import {
   ALL_THEMES,
   CELEBRATION_KEY_TO_THEME,
@@ -369,6 +370,10 @@ export function CelebrationScreen({
         )}
 
         {chest && <ChestReward chest={chest} textColor={cfg.textColor} />}
+
+        {activeHandoff?.final && (
+          <BuddyMoment textColor={cfg.textColor} subTextColor={cfg.subTextColor} />
+        )}
 
         <Box sx={{ mt: 3, animation: 'fadeUp 0.5s 0.72s ease both' }}>
           <Button

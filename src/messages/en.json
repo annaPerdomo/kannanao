@@ -756,7 +756,13 @@
       "chestReward": "+{xp} XP!",
       "goldenChestTap": "Golden chest — tap to open!",
       "dailyChestTap": "Daily chest — tap to open!",
-      "heartsEarned": "+{count} ❤️ friendship"
+      "heartsEarned": "+{count} ❤️ friendship",
+      "buddy": {
+        "heartsToday": "{earned} of {total} hearts today",
+        "pat": "Pat {name}",
+        "patAria": "Give {name} a pat",
+        "patted": "+1 ❤️"
+      }
     },
     "fillMode": {
       "fillPrompt": "FILL IN THE BLANK",

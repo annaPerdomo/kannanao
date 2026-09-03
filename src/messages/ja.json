@@ -756,7 +756,13 @@
       "chestReward": "+{xp} XP！",
       "goldenChestTap": "ゴールドチェスト — タップして開けよう！",
       "dailyChestTap": "デイリーチェスト — タップして開けよう！",
-      "heartsEarned": "なかよしハート +{count}"
+      "heartsEarned": "なかよしハート +{count}",
+      "buddy": {
+        "heartsToday": "今日のハート {earned}／{total}",
+        "pat": "{name}をなでる",
+        "patAria": "{name}をなでる",
+        "patted": "+1 ❤️"
+      }
     },
     "fillMode": {
       "fillPrompt": "あなをうめよう",
