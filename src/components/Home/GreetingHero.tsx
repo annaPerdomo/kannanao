@@ -264,8 +264,9 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
               fontWeight: 800,
               lineHeight: 1.25,
               fontSize: { xs: '1.6rem', sm: '1.9rem', md: '2.125rem' },
-              // Japanese would otherwise break between any two kana
+              // Japanese would otherwise break between any two kana.
               wordBreak: 'keep-all',
+              overflowWrap: 'anywhere',
               color: '#fff',
               textShadow: `0 2px 16px rgba(${HERO_SCRIM},0.6), 0 1px 3px rgba(${HERO_SCRIM},0.5)`,
             }}
