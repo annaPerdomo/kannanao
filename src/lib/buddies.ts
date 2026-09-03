@@ -6,9 +6,10 @@
  * `promo/new-profile-and-study-buddies.png` + `promo/tango-face-only-for-study-buddy.png`
  * (faces). Momiji's shop pose comes from `promo/tanuki-study-buddy-many.png`,
  * her faces from `promo/momiji-faces.png`, and the coming-soon teaser cutouts
- * from `promo/momo-maru.png`. Adding a buddy means a new entry here, translated
- * phrase sets under `Shop.buddies.<key>` in both messages/en.json and ja.json,
- * and a re-run of that script.
+ * from `promo/momo-maru.png`, and the memory scenes from `promo/<id>-l<2..5>.png`.
+ * Adding a buddy means a new entry here, translated phrase sets under
+ * `Shop.buddies.<key>` in both messages/en.json and ja.json, and a re-run of
+ * that script.
  */
 
 export const BUDDY_FACE_COUNT = 8;
@@ -49,6 +50,27 @@ export function buddyFaceSrc(key: string, variant: number): string {
 export function buddyShopSrc(key: string): string {
   const art = BUDDY_ART[key] ?? BUDDY_ART[DEFAULT_BUDDY_KEY];
   return `/buddies/shop/${art.id}.webp`;
+}
+
+// Scenes under public/buddies/memories/<id>-l<n>.webp; tanuki-l2 is still owed.
+const MEMORY_ART_LEVELS: Record<string, readonly number[]> = {
+  tango: [2, 3, 4, 5],
+  bunny: [2, 3, 4, 5],
+  penguin: [2, 3, 4, 5],
+  panda: [2, 3, 4, 5],
+  fox: [2, 3, 4, 5],
+  calico: [2, 3, 4, 5],
+  otter: [2, 3, 4, 5],
+  luckycat: [2, 3, 4, 5],
+  kappa: [2, 3, 4, 5],
+  tanuki: [3, 4, 5],
+  redpanda: [2, 3, 4, 5],
+};
+
+export function buddyMemorySrc(key: string, level: number): string | null {
+  const art = BUDDY_ART[key];
+  if (!art || !MEMORY_ART_LEVELS[art.id]?.includes(level)) return null;
+  return `/buddies/memories/${art.id}-l${level}.webp`;
 }
 
 export function randomFaceVariant(): number {

@@ -17,6 +17,8 @@ export const FRIENDSHIP_POINTS: Record<FriendshipSource, number> = {
   pet: 1,
 };
 
+export const HEARTS_PER_DAY = Object.values(FRIENDSHIP_POINTS).reduce((total, n) => total + n, 0);
+
 /**
  * Cumulative hearts required to REACH level index+1. At the max pace of
  * 5/day the level-ups land near days 3, 8, 16, 28 — quick early wins, then

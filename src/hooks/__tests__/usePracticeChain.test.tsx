@@ -31,6 +31,11 @@ vi.mock('@/services/api', () => ({
   fetchPracticeSentences: (deckId: string, memberId?: string) => mockSentences(deckId, memberId),
 }));
 
+const mockAward = vi.fn();
+vi.mock('@/contexts/BuddyFriendshipContext', () => ({
+  useBuddyFriendshipCtx: () => ({ awardFriendship: mockAward }),
+}));
+
 import type { Assignment } from '@/hooks/useAssignments';
 import {
   usePracticeChain,
@@ -41,6 +46,7 @@ import {
 import type { GoalMode } from '@/lib/assignmentMastery';
 import type { FocusPick } from '@/lib/dailyPractice';
 import { readChainState, writeChainState } from '@/lib/practiceChain';
+import { publishSessionEnd } from '@/lib/sessionSignal';
 import type { Flashcard } from '@/types/flashcard';
 
 const assignment = (overrides: Partial<Assignment> = {}): Assignment =>
@@ -88,6 +94,7 @@ beforeEach(() => {
   mockProgress.mockReset().mockResolvedValue([]);
   mockLoadCards.mockReset().mockResolvedValue([]);
   mockSentences.mockReset().mockResolvedValue([]);
+  mockAward.mockReset().mockResolvedValue(null);
   isMemberAccount = false;
   search = new URLSearchParams('chain=assignment');
 });
@@ -582,5 +589,81 @@ describe('usePracticeChain — daily session', () => {
     await waitFor(() => expect(result.current).not.toBeNull());
     act(() => result.current?.handoff?.onNext());
     expect(result.current?.phase).toBe('finish');
+  });
+
+  it('marks only the last leg as the final handoff', async () => {
+    writeChainState(dailyState(1));
+    const mid = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'recall' }));
+    await waitFor(() => expect(mid.result.current).not.toBeNull());
+    expect(mid.result.current?.handoff?.final).toBe(false);
+    mid.unmount();
+
+    writeChainState(dailyState(2));
+    const last = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'match' }));
+    await waitFor(() => expect(last.result.current).not.toBeNull());
+    expect(last.result.current?.handoff?.final).toBe(true);
+  });
+
+  it('pays the adventure hearts when the last leg is finished', async () => {
+    writeChainState(dailyState(2));
+    const { result } = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'match' }));
+    await waitFor(() => expect(result.current).not.toBeNull());
+
+    act(() => publishSessionEnd(12));
+    expect(mockAward).not.toHaveBeenCalled();
+    act(() => result.current?.handoff?.onNext());
+    expect(mockAward).toHaveBeenCalledWith('adventure');
+    expect(push).toHaveBeenCalledWith('/');
+  });
+
+  it('pays nothing when the learner quits out of the last leg', async () => {
+    writeChainState(dailyState(2));
+    const { result } = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'match' }));
+    await waitFor(() => expect(result.current).not.toBeNull());
+
+    act(() => publishSessionEnd(12));
+    act(() => result.current?.handoff?.onStop());
+    expect(mockAward).not.toHaveBeenCalled();
+  });
+
+  it('pays nothing when a mixed lesson from the binder ends', async () => {
+    search = new URLSearchParams('chain=mixed');
+    writeChainState({
+      kind: 'mixed',
+      deckId: 'd1',
+      index: 1,
+      legs: [
+        { step: 'practice', mode: 'recall' },
+        { step: 'goal', mode: 'fill' },
+      ],
+      cardIds: ['c1', 'c2'],
+      assignmentId: null,
+      requiredMode: null,
+      requiredAccuracy: null,
+      cardCount: 12,
+    });
+    const { result } = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'fill' }));
+    await waitFor(() => expect(result.current).not.toBeNull());
+
+    act(() => publishSessionEnd(12));
+    act(() => result.current?.handoff?.onNext());
+    expect(mockAward).not.toHaveBeenCalled();
+  });
+
+  it('pays nothing for a middle leg or a session too short to count', async () => {
+    writeChainState(dailyState(1));
+    const mid = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'recall' }));
+    await waitFor(() => expect(mid.result.current).not.toBeNull());
+    act(() => publishSessionEnd(12));
+    act(() => mid.result.current?.handoff?.onNext());
+    expect(mockAward).not.toHaveBeenCalled();
+    mid.unmount();
+
+    writeChainState(dailyState(2));
+    const last = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'match' }));
+    await waitFor(() => expect(last.result.current).not.toBeNull());
+    act(() => publishSessionEnd(2));
+    act(() => last.result.current?.handoff?.onNext());
+    expect(mockAward).not.toHaveBeenCalled();
   });
 });

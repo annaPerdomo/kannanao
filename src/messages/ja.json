@@ -756,7 +756,13 @@
       "chestReward": "+{xp} XP！",
       "goldenChestTap": "ゴールドチェスト — タップして開けよう！",
       "dailyChestTap": "デイリーチェスト — タップして開けよう！",
-      "heartsEarned": "なかよしハート +{count}"
+      "heartsEarned": "なかよしハート +{count}",
+      "buddy": {
+        "heartsToday": "今日のハート {earned}／{total}",
+        "pat": "{name}をなでる",
+        "patAria": "{name}をなでる",
+        "patted": "+1 ❤️"
+      }
     },
     "fillMode": {
       "fillPrompt": "あなをうめよう",
@@ -1961,7 +1967,7 @@
           "done": "できた",
           "error": "ほぞんできませんでした。つうしんをたしかめて、もういちどためしてね。",
           "adventure": {
-            "title": "今日のぼうけんをクリアする",
+            "title": "今日の練習をぜんぶやる",
             "cta": "はじめる"
           },
           "session": {
@@ -5183,6 +5189,26 @@
     "detail": {
       "record": "{total}回中 {correct}回 正解",
       "noRecord": "まだ答えていません"
+    },
+    "memoriesTab": "おもいで",
+    "memories": {
+      "collected": "おもいで {collected}／{total}",
+      "collectedAria": "あつめたおもいで",
+      "intro": "バディともっとなかよくなると、おもいでカードがひらくよ。",
+      "loadFailed": "おもいでをよみこめませんでした。",
+      "retry": "もういちど",
+      "empty": "バディといっしょに練習して、はじめてのおもいでをつくろう。",
+      "lockedHint": "{name}とのハートがあと{count}こで、このおもいでがひらくよ。",
+      "card": {
+        "openAria": "おもいで「{title}」をひらく",
+        "lockedAria": "{title} — {name}とのハートがあと{count}こ",
+        "lockedTitle": "???",
+        "more": "あと{count} ❤️",
+        "memoryOf": "{name}"
+      },
+      "detail": {
+        "subtitle": "{name}とのおもいで · {levelName}"
+      }
     }
   }
 }

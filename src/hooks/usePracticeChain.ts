@@ -5,12 +5,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { PRACTICE_CONFIG } from '@/components/Deck/constants';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
 import type { Assignment } from '@/hooks/useAssignments';
 import { type GoalMode, isGoalMode } from '@/lib/assignmentMastery';
 import { planAssignmentQuest } from '@/lib/assignmentQuest';
 import { countStrengths } from '@/lib/cardStrength';
 import { localDateString } from '@/lib/chest';
 import { bumpDailyRound, type FocusPick, planDailyPractice } from '@/lib/dailyPractice';
+import { isMeaningfulSession } from '@/lib/friendship';
 import { deckSupport, pickMixedSessionCards, planMixedPractice } from '@/lib/mixedPractice';
 import {
   CHAIN_PARAM,
@@ -21,6 +23,7 @@ import {
   readChainState,
   writeChainState,
 } from '@/lib/practiceChain';
+import { onSessionEnd } from '@/lib/sessionSignal';
 import { dbDeckCardCount, getCardProgressForUser, loadCards } from '@/lib/supabase';
 import { fetchPracticeSentences } from '@/services/api';
 import type { Deck } from '@/types/deck';
@@ -212,6 +215,7 @@ export interface ChainHandoff {
   onNext: () => void;
   /** Leave mid-chain. The finish screens cover the app's own back controls. */
   onStop: () => void;
+  final: boolean;
 }
 
 /** What a leg page needs to render chain chrome and hand off to the next leg. */
@@ -258,6 +262,7 @@ export function usePracticeChain({
   const router = useRouter();
   const searchParams = useSearchParams();
   const marked = searchParams?.get(CHAIN_PARAM);
+  const { awardFriendship } = useBuddyFriendshipCtx();
 
   const [state, setState] = useState<PracticeChainState | null>(null);
   const [phase, setPhase] = useState<'play' | 'finish'>('play');
@@ -329,6 +334,17 @@ export function usePracticeChain({
     if (state && legs.length > 0) clearChainState();
   }, [state, legs, matches]);
 
+  // Every mode's in-session quit also ends the session, so the signal alone
+  // can't tell a finished leg from a bailed one; only the Finish button pays.
+  const lastEndRef = useRef(0);
+  useEffect(
+    () =>
+      onSessionEnd((signal) => {
+        lastEndRef.current = signal.cardsStudied;
+      }),
+    [],
+  );
+
   const stop = useCallback(() => {
     clearChainState();
     setState(null);
@@ -339,6 +355,15 @@ export function usePracticeChain({
     stop();
     router.push(exitHref);
   }, [stop, router, exitHref]);
+
+  // Daily only: a Binder mini-lesson must not satisfy "today's practice".
+  const finishDaily = useCallback(() => {
+    if (state?.kind === 'daily' && isMeaningfulSession(lastEndRef.current)) {
+      void awardFriendship('adventure').catch(() => {});
+    }
+    stop();
+    router.push('/');
+  }, [state?.kind, awardFriendship, stop, router]);
 
   const goHome = useCallback(() => {
     stop();
@@ -377,11 +402,16 @@ export function usePracticeChain({
       : modeLabel(nextLeg.mode, tModes, tHero)
     : null;
   const handoff: ChainHandoff | null = nextLabel
-    ? { label: t('nextStep', { step: nextLabel }), onNext: advance, onStop: abandon }
+    ? { label: t('nextStep', { step: nextLabel }), onNext: advance, onStop: abandon, final: false }
     : state.assignmentId
-      ? { label: t('seeHowYouDid'), onNext: () => setPhase('finish'), onStop: abandon }
+      ? {
+          label: t('seeHowYouDid'),
+          onNext: () => setPhase('finish'),
+          onStop: abandon,
+          final: true,
+        }
       : state.kind === 'daily'
-        ? { label: t('finishPractice'), onNext: goHome, onStop: abandon }
+        ? { label: t('finishPractice'), onNext: finishDaily, onStop: abandon, final: true }
         : null;
 
   return {

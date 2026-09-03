@@ -9,6 +9,28 @@ import { useTranslations } from 'next-intl';
 
 import { nextPromisedMilestone } from '@/lib/friendshipMilestones';
 
+type FriendshipTranslate = (key: string, values?: Record<string, string | number>) => string;
+
+export function milestoneMessage(
+  t: FriendshipTranslate,
+  copy: unknown,
+  name: string,
+  points: number,
+): string {
+  const promised = nextPromisedMilestone(copy, points);
+  if (!promised) return t('milestone.max', { name });
+  if (!promised.authored) {
+    return t('milestone.level', {
+      count: promised.heartsAway,
+      name,
+      levelName: t(`levelNames.${promised.milestone.level}`),
+    });
+  }
+  return promised.milestone.kind === 'memory'
+    ? t('milestone.memory', { count: promised.heartsAway, name })
+    : t('milestone.fact', { count: promised.heartsAway, name });
+}
+
 interface NextMilestoneCalloutProps {
   copy: unknown;
   name: string;
@@ -20,22 +42,7 @@ export function NextMilestoneCallout({ copy, name, points }: NextMilestoneCallou
   const { brand } = useTheme().palette;
 
   const promised = nextPromisedMilestone(copy, points);
-
-  let message: string;
-  if (!promised) {
-    message = t('milestone.max', { name });
-  } else if (!promised.authored) {
-    message = t('milestone.level', {
-      count: promised.heartsAway,
-      name,
-      levelName: t(`levelNames.${promised.milestone.level}`),
-    });
-  } else {
-    message =
-      promised.milestone.kind === 'memory'
-        ? t('milestone.memory', { count: promised.heartsAway, name })
-        : t('milestone.fact', { count: promised.heartsAway, name });
-  }
+  const message = milestoneMessage(t, copy, name, points);
 
   return (
     <Box
