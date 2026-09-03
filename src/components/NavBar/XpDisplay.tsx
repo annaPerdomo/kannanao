@@ -110,7 +110,7 @@ export function XpDisplay({ onClick }: { onClick: () => void }) {
           `linear-gradient(135deg, ${alpha(theme.palette.brand[100], 0.85)}, ${alpha('#fef3c7', 0.85)})`,
         border: `1.5px solid ${alpha('#f59e0b', 0.4)}`,
         borderRadius: (theme) => theme.radii.pill,
-        px: { xs: 1.25, md: 1.75 },
+        px: { xs: 1, md: 1.75 },
         py: { xs: 0.4, md: 0.65 },
         cursor: 'pointer',
         overflow: 'visible',

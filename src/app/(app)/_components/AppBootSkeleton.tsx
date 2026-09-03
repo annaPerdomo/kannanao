@@ -9,7 +9,13 @@ import Toolbar from '@mui/material/Toolbar';
 
 import { AppBackground } from '@/components/AppBackground';
 import { Loading } from '@/components/Loading';
-import { AVATAR_SIZE } from '@/components/NavBar/constants';
+import {
+  AVATAR_SIZE,
+  BRAND_LOCKUP_MIN_WIDTH,
+  BRAND_LOCKUP_SX,
+  TOOLBAR_GAP,
+  TOOLBAR_PX,
+} from '@/components/NavBar/constants';
 import { APP_NAME } from '@/lib/brand';
 import { createAppTheme, LAYOUT } from '@/theme';
 
@@ -41,18 +47,15 @@ function NavBarSkeleton() {
           maxWidth: LAYOUT.contentMaxWidth,
           width: '100%',
           mx: 'auto',
-          px: LAYOUT.pagePx,
+          px: TOOLBAR_PX,
           minHeight: { xs: 56, sm: 64, md: 78 },
-          gap: { xs: 1.5, md: 2.5 },
+          gap: TOOLBAR_GAP,
         }}
       >
         {/* Must match the real NavBar lockup so boot → hydration doesn't visibly swap. */}
-        <Box
-          component="img"
-          src="/brand/logo-lockup.png"
-          alt={APP_NAME}
-          sx={{ display: 'block', height: { xs: 40, sm: 46, md: 60 }, width: 'auto', flex: 'none' }}
-        />
+        <Box sx={{ minWidth: BRAND_LOCKUP_MIN_WIDTH, flexShrink: 1 }}>
+          <Box component="img" src="/brand/logo-lockup.png" alt={APP_NAME} sx={BRAND_LOCKUP_SX} />
+        </Box>
 
         {/* Centered nav-link placeholders */}
         <Box

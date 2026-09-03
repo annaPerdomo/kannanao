@@ -45,7 +45,7 @@ export function LanguageMenu() {
         aria-label={t('ariaLabel')}
         onClick={(e) => setMenuAnchor(e.currentTarget)}
         disabled={saving}
-        sx={{ color: brand[500] }}
+        sx={{ color: brand[500], p: { xs: 0.75, md: 1 } }}
       >
         <TranslateIcon sx={{ fontSize: { xs: '1.1rem', md: '1.3rem' } }} />
       </IconButton>

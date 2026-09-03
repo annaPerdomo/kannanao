@@ -11,6 +11,8 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MicIcon from '@mui/icons-material/Mic';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 
+import { LAYOUT } from '@/theme';
+
 export interface NavItem {
   /** Translation key under `Nav.items`. */
   key:
@@ -68,3 +70,15 @@ export function bottomNavItemsFor(isMemberAccount: boolean): NavItem[] {
 // face is legible; the avatar button loses its vertical padding to make room.
 // Shared with AppBootSkeleton so the boot placeholder can't drift.
 export const AVATAR_SIZE = { xs: 44, sm: 52, md: 58 };
+
+// Shared with AppBootSkeleton: a lockup that moves at hydration reads as a swap.
+export const TOOLBAR_PX = { ...LAYOUT.pagePx, xs: 1.5 };
+export const TOOLBAR_GAP = { xs: 1, md: 2 };
+export const BRAND_LOCKUP_MIN_WIDTH = 96;
+export const BRAND_LOCKUP_SX = {
+  display: 'block',
+  height: 'auto',
+  maxHeight: { xs: 40, sm: 46, md: 60 },
+  width: 'auto',
+  maxWidth: '100%',
+} as const;
