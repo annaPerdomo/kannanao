@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test';
 
+import { signIn } from '../helpers/signIn';
+
+// Mirrors BRAND_LOCKUP_MIN_WIDTH in src/components/NavBar/constants.ts.
+const MIN_LOCKUP_WIDTH = 96;
+
 const PHONES = [
   { name: 'iPhone 12', width: 390, height: 844 },
   { name: 'iPhone SE', width: 375, height: 667 },
@@ -47,4 +52,40 @@ test.describe('Mobile layout', () => {
     );
     expect(unintended).toBe(0);
   });
+});
+
+/**
+ * Runs on webkit too: `word-break: keep-all` gives WebKit no break after 「、」,
+ * so the greeting ran off the hero on iOS only. Needs SHOT_USERNAME / SHOT_PASSWORD.
+ */
+test.describe('Signed-in home on a phone', () => {
+  const USERNAME = process.env.SHOT_USERNAME;
+  const PASSWORD = process.env.SHOT_PASSWORD;
+
+  test.skip(!USERNAME || !PASSWORD, 'Set SHOT_USERNAME / SHOT_PASSWORD to run the home checks');
+  test.describe.configure({ timeout: 240_000 });
+
+  for (const phone of PHONES) {
+    test(`the home fits a ${phone.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: phone.width, height: phone.height });
+      await signIn(page);
+      await page.waitForTimeout(2500);
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow, `the home overflows horizontally by ${overflow}px`).toBeLessThanOrEqual(0);
+
+      const lockup = await page.locator('header a[href="/"] img').first().boundingBox();
+      expect(lockup).toBeTruthy();
+      expect(lockup!.width, `the brand lockup shrank to ${lockup!.width}px`).toBeGreaterThanOrEqual(
+        MIN_LOCKUP_WIDTH,
+      );
+
+      const greeting = page.locator('h4[lang="ja"]').first();
+      await expect(greeting).toBeVisible();
+      const clipped = await greeting.evaluate((el) => el.scrollWidth - el.clientWidth);
+      expect(clipped, `the greeting is clipped by ${clipped}px`).toBeLessThanOrEqual(1);
+    });
+  }
 });
