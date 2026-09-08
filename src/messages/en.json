@@ -563,7 +563,15 @@
       "todaysPractice": "Today's Practice",
       "cardsBadge": "{count, plural, one {# card} other {# cards}}",
       "kanaRoundTitle": "Characters",
-      "kanaRoundSubtitle": "{count, plural, one {# character to brush up} other {# characters to brush up}}"
+      "kanaRoundSubtitle": "{count, plural, one {# character to brush up} other {# characters to brush up}}",
+      "kanaRoundTitleNew": "New characters",
+      "kanaRoundNew": "{count, plural, one {# new character to meet} other {# new characters to meet}}",
+      "kanaRoundMixed": "{newCount, plural, one {# new} other {# new}}, {brushUp, plural, one {# to brush up} other {# to brush up}}",
+      "meetTitle": "Meet this character",
+      "meetTapToHear": "Tap to hear it",
+      "meetGotIt": "Got it",
+      "meetHowTo": "Look at the character, hear it, then you will be asked.",
+      "readsHiragana": "You read hiragana now! 🎉"
     },
     "todayPage": {
       "findingReviews": "Finding your reviews…",

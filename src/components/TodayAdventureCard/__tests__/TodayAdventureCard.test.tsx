@@ -414,6 +414,16 @@ describe('TodayAdventureCard', () => {
       expect(push).toHaveBeenCalledWith('/review/start');
     });
 
+    it('should offer the first characters to a member who has never read one', async () => {
+      dueState.mockReturnValue(due({ dueCount: 0 }));
+      kanaState.mockReturnValue({ byKana: new Map(), error: null });
+      renderWithProviders(<TodayAdventureCard />);
+
+      await screen.findByRole('button', { name: 'Start' });
+      expect(screen.getByText(/3 characters/)).toBeInTheDocument();
+      expect(screen.queryByText('Practice with Tsuki!')).toBeNull();
+    });
+
     it('should still say all caught up when the reading is solid too', async () => {
       dueState.mockReturnValue(due({ dueCount: 0 }));
       kanaState.mockReturnValue({ byKana: readsBothTracks(), error: null });

@@ -24,6 +24,7 @@ import {
   remainingForReward,
 } from '@/lib/chest';
 import { cardXp } from '@/lib/flashcardUtils';
+import type { KanaProgressMap } from '@/lib/kanaProficiency';
 import { planQuest } from '@/lib/quest';
 import { getDueCount } from '@/lib/supabase';
 import { LAYOUT } from '@/theme';
@@ -34,11 +35,14 @@ import { KanaRound } from './KanaRound';
 import { QuestInterstitial } from './QuestInterstitial';
 import { QuestMap } from './QuestMap';
 import type { QuestGrade } from './types';
+import { useQuestKana } from './useQuestKana';
 
 export interface ReviewQuestProps {
   /** Due cards for today, soonest-first (already fetched by the page). */
   cards: Flashcard[];
   kanaChars?: string[];
+  /** Live kana progress; snapshotted at mount to decide first meetings and credit. */
+  kanaProgress?: KanaProgressMap | null;
   /** Writes one graded character to kana_progress; never throws. */
   recordKana?: (kana: string, correct: boolean) => Promise<void>;
   onExit: () => void;
@@ -55,6 +59,7 @@ export interface ReviewQuestProps {
 export function ReviewQuest({
   cards,
   kanaChars,
+  kanaProgress,
   recordKana,
   onExit,
   cappedSession = false,
@@ -104,6 +109,8 @@ export function ReviewQuest({
   const [nodeIdx, setNodeIdx] = useState(0);
   const [showBossIntro, setShowBossIntro] = useState(false);
   const [showKanaIntro, setShowKanaIntro] = useState(() => plan.nodes[0]?.type === 'kana');
+  const questKana = useQuestKana(plan.kana, kanaProgress);
+  const { newChars: newKana, brushUpCount } = questKana;
   const [done, setDone] = useState(false);
   const [chestEligible, setChestEligible] = useState(false);
   const [perfect, setPerfect] = useState(false);
@@ -214,10 +221,14 @@ export function ReviewQuest({
           recordAnswer(sessionIdRef.current, correct, undefined, undefined, KANA_XP),
         );
       }
-      if (recordKana) pendingWritesRef.current.push(recordKana(kana, correct));
+      if (recordKana) {
+        const graded = questKana.grade(kana, correct);
+        for (const one of graded.correct) pendingWritesRef.current.push(recordKana(one, true));
+        for (const one of graded.wrong) pendingWritesRef.current.push(recordKana(one, false));
+      }
       combo.onAnswer(correct);
     },
-    [triggerXpEarned, recordAnswer, recordKana, combo],
+    [triggerXpEarned, recordAnswer, recordKana, combo, questKana],
   );
 
   const advanceNode = useCallback(() => {
@@ -269,11 +280,13 @@ export function ReviewQuest({
   if (done) {
     const pct = answeredRef.current > 0 ? correctRef.current / answeredRef.current : 1;
     const praise = pickPraise(pct, 0);
+    const readsNow = questKana.readsHiraganaNow();
     return (
       <CelebrationScreen
         heading={praise.jp}
         headingEn={praise.en}
         subheading={t('clearedReview')}
+        extra={readsNow ? t('readsHiragana') : undefined}
         mode="study"
         exitLabel={t('backToReview')}
         heartsEarned={heartsEarned}
@@ -305,6 +318,12 @@ export function ReviewQuest({
   );
 
   // ── Characters intro interstitial ──────────────────────────────────────────
+  const kanaSubtitle =
+    newKana.length > 0 && brushUpCount > 0
+      ? t('kanaRoundMixed', { newCount: newKana.length, brushUp: brushUpCount })
+      : newKana.length > 0
+        ? t('kanaRoundNew', { count: newKana.length })
+        : t('kanaRoundSubtitle', { count: brushUpCount });
   if (showKanaIntro && node?.type === 'kana') {
     return (
       <Box
@@ -312,8 +331,8 @@ export function ReviewQuest({
       >
         <QuestInterstitial
           emoji="あ"
-          title={t('kanaRoundTitle')}
-          subtitle={t('kanaRoundSubtitle', { count: plan.kana.length })}
+          title={newKana.length > 0 ? t('kanaRoundTitleNew') : t('kanaRoundTitle')}
+          subtitle={kanaSubtitle}
           onContinue={() => setShowKanaIntro(false)}
         />
       </Box>
@@ -368,6 +387,7 @@ export function ReviewQuest({
       {node?.type === 'kana' && (
         <KanaRound
           chars={plan.kana}
+          newChars={newKana}
           comboCount={combo.count}
           onAnswer={gradeKana}
           onComplete={advanceNode}

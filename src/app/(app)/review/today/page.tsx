@@ -200,6 +200,7 @@ export default function ReviewTodayPage() {
         key={chain?.attempt ?? 0}
         cards={cards}
         kanaChars={kanaChars}
+        kanaProgress={byKana}
         recordKana={recordKana}
         cappedSession={daily && chain !== null}
         onExit={chain ? chain.abandon : () => router.push('/review')}

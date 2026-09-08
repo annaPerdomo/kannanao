@@ -563,7 +563,15 @@
       "todaysPractice": "今日の練習",
       "cardsBadge": "{count, plural, other {カード#枚}}",
       "kanaRoundTitle": "もじ",
-      "kanaRoundSubtitle": "{count, plural, other {もじを#こ おさらいしよう}}"
+      "kanaRoundSubtitle": "{count, plural, other {もじを#こ おさらいしよう}}",
+      "kanaRoundTitleNew": "あたらしい もじ",
+      "kanaRoundNew": "{count, plural, other {あたらしい もじ #こに であおう}}",
+      "kanaRoundMixed": "{newCount, plural, other {あたらしい #こ}}、{brushUp, plural, other {おさらい #こ}}",
+      "meetTitle": "この もじに であおう",
+      "meetTapToHear": "タップして きいてみよう",
+      "meetGotIt": "わかった",
+      "meetHowTo": "もじを みて、おとを きいてから もんだいに すすみます。",
+      "readsHiragana": "ひらがなが よめるように なったよ！🎉"
     },
     "todayPage": {
       "findingReviews": "復習をさがしています…",
