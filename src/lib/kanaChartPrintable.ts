@@ -41,6 +41,8 @@ export interface KanjiSheetWeek {
 export interface GroupKanaCoverage {
   learnerCount: number;
   knownByKana: Record<string, number>;
+  /** Learners who have actually answered characters — the denominator for "the group reads this". */
+  startedCount?: number;
 }
 
 export interface GroupSheetLabels extends KanaSheetLabels {

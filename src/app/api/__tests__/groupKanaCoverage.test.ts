@@ -42,6 +42,7 @@ describe('getGroupKanaCoverage', () => {
     expect(await getGroupKanaCoverage('g1', 'org1')).toEqual({
       learnerCount: 0,
       knownByKana: {},
+      startedCount: 0,
     });
   });
 
@@ -52,6 +53,7 @@ describe('getGroupKanaCoverage', () => {
     expect(await getGroupKanaCoverage('g1', 'org1')).toEqual({
       learnerCount: 3,
       knownByKana: { あ: 2, い: 1 },
+      startedCount: 3,
     });
   });
 
@@ -61,6 +63,16 @@ describe('getGroupKanaCoverage', () => {
     progressRows = [progress('m1', 'あ', 12, 3), progress('m1', 'い', 10, 3)];
 
     expect((await getGroupKanaCoverage('g1', 'org1')).knownByKana).toEqual({ あ: 1 });
+  });
+
+  it('should count only learners who have really tried, not the whole roster', async () => {
+    rosterIds = ['m1', 'm2', 'm3'];
+    // m3 tapped two characters and stopped: not evidence the group cannot read.
+    progressRows = [progress('m1', 'あ', 6), progress('m2', 'あ', 6), progress('m3', 'い', 1, 1)];
+
+    const coverage = await getGroupKanaCoverage('g1', 'org1');
+    expect(coverage.learnerCount).toBe(3);
+    expect(coverage.startedCount).toBe(2);
   });
 
   it('should never carry a learner id into the printable coverage', async () => {

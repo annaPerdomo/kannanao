@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { isGoalMode } from '@/lib/assignmentMastery';
-import { isKanaSetId, setCharacters } from '@/lib/kanaCurriculum';
+import { isKanaSetId } from '@/lib/kanaCurriculum';
 import { MAX_COMPANION_KANA_SETS } from '@/lib/kanaGaps';
 import { KNOWN_WORD_CAP, type KnownWord } from '@/lib/knownWords';
 import {
@@ -15,11 +15,11 @@ import { logger } from '@/lib/logger';
 import type { ApplyDeckResult, LessonPlan, PlanDeck } from '@/types/lessonPlan';
 
 import { rateLimit } from '../../../_lib/rateLimit';
+import { assignCompanionKana } from '../../_lib/assignCompanionKana';
 import { generateDeckSentences } from '../../_lib/generateDeckSentences';
 import { consumeLessonBudget } from '../../_lib/lessonBudget';
 import { requireGroupAccess } from '../../_lib/requireGroupAccess';
 import { getServiceSupabase } from '../../_lib/serviceSupabase';
-import { upsertKanaAssignments } from '../../_lib/upsertKanaAssignments';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 3 };
 const MAX_DECKS = 8;
@@ -288,12 +288,13 @@ export async function POST(req: NextRequest) {
 
   const kana =
     deckIdsInOrder.length > 0
-      ? await assignKanaSets({
-          setIds: companionSets,
+      ? await assignCompanionKana({
+          sb: getServiceSupabase(),
+          rows: companionSets.map((setId) => ({ setId, dueDate: dueDateFor(firstDueDate, 0) })),
           organizerId,
           groupId,
           memberIds,
-          dueDate: dueDateFor(firstDueDate, 0),
+          route: 'POST /api/group/lesson-plan/apply',
         })
       : { assigned: [], failed: [] };
 
@@ -337,65 +338,6 @@ export async function POST(req: NextRequest) {
     kanaAssigned: kana.assigned,
     kanaFailed: kana.failed,
   });
-}
-
-async function assignKanaSets(args: {
-  setIds: string[];
-  organizerId: string;
-  groupId: string;
-  memberIds: string[];
-  dueDate: string | null;
-}): Promise<{ assigned: string[]; failed: string[] }> {
-  if (args.setIds.length === 0 || args.memberIds.length === 0) {
-    return { assigned: [], failed: [] };
-  }
-
-  const sb = getServiceSupabase();
-  const assigned: string[] = [];
-  const failed: string[] = [];
-
-  for (const kanaSet of args.setIds) {
-    const fields = {
-      title: (setCharacters(kanaSet) ?? kanaSet).slice(0, 200),
-      note: null,
-      due_date: args.dueDate,
-      // Reading practice is needed for week 1, so it opens straight away
-      // rather than a week before its own due date like the decks do.
-      available_on: null,
-      required_accuracy: null,
-      required_mode: null,
-    };
-
-    const { error } = await upsertKanaAssignments(sb, {
-      groupId: args.groupId,
-      kanaSet,
-      memberIds: args.memberIds,
-      rows: args.memberIds.map((memberId) => ({
-        organizer_id: args.organizerId,
-        group_id: args.groupId,
-        member_id: memberId,
-        deck_id: null,
-        kana_set: kanaSet,
-        ...fields,
-      })),
-      fields,
-      updateExisting: false,
-    });
-
-    if (error) {
-      logger.error('Failed to assign a companion kana row', {
-        route: 'POST /api/group/lesson-plan/apply',
-        groupId: args.groupId,
-        kanaSet,
-        error: error.message,
-      });
-      failed.push(kanaSet);
-      continue;
-    }
-    assigned.push(kanaSet);
-  }
-
-  return { assigned, failed };
 }
 
 /** One deck, its cards and its assignment. Each step reports rather than throws. */
