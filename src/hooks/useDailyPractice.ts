@@ -5,6 +5,7 @@ import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
 import { useDueCount } from '@/hooks/useDueCount';
 import { useKanaProgress } from '@/hooks/useKanaProgress';
+import { openKanaSetIds } from '@/lib/assignmentAvailability';
 import { localDateString } from '@/lib/chest';
 import { type FocusPick, pickFocusDeck, readDailyRound } from '@/lib/dailyPractice';
 import type { DataError } from '@/lib/dataError';
@@ -41,7 +42,8 @@ export function useDailyFocus(enabled = true): DailyFocus {
     return () => clearTimeout(timer);
   }, [kanaWanted, byKana, kanaError]);
   const kanaSettled = !kanaWanted || byKana !== null || !!kanaError || kanaTimedOut;
-  const kanaDue = kanaWanted && !!byKana && pickQuestKana(byKana).length > 0;
+  const assignedKanaSetIds = useMemo(() => openKanaSetIds(assignments), [assignments]);
+  const kanaDue = kanaWanted && !!byKana && pickQuestKana(byKana, assignedKanaSetIds).length > 0;
 
   const loading = dueLoading || assignmentsLoading || decksLoading || !kanaSettled;
   // An assignments failure is swallowed on purpose: it only costs the homework-first pick.

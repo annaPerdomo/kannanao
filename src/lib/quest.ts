@@ -14,8 +14,15 @@
  *               deliberately share the final cards so a big backlog gets a third
  *               format without inventing extra cards.
  */
-import { isContextualKana } from '@/lib/kanaCurriculum';
-import { type KanaProgressMap, pickReviewQueue } from '@/lib/kanaProficiency';
+import { getSet, isContextualKana, type KanaTrack, setsForTrack } from '@/lib/kanaCurriculum';
+import {
+  gradeKanaCheck,
+  isUnseen,
+  type KanaCheckGrade,
+  type KanaProgressMap,
+  pickReviewQueue,
+  readingStage,
+} from '@/lib/kanaProficiency';
 import type { Flashcard } from '@/types/flashcard';
 
 export type QuestNodeType = 'warmup' | 'match' | 'kana' | 'boss';
@@ -43,9 +50,12 @@ export const BOSS_MIN_DUE = 4;
 /** Fewest due cards that earn the three-node (Word Match) quest. */
 export const MATCH_MIN_DUE = 8;
 
-export const KANA_NODE_CHARS = 4;
+export const KANA_NODE_CHARS = 5;
 export const KANA_MIN_CHARS = 3;
 export const KANA_MAX_DUE = 12;
+
+/** Never-seen characters the quest may introduce in one node. */
+export const INTRO_CHARS_PER_QUEST = 3;
 
 // getKanaProgress has no timeout and supabase-js adds none: past this, a
 // surface waiting on the read gives up and plans a quest with no characters.
@@ -54,18 +64,72 @@ export const KANA_WAIT_MS = 4000;
 /** Wider than the node so the characters dropped below can't starve it. */
 export const KANA_QUEUE_SCAN = KANA_NODE_CHARS * 2;
 
-/**
- * Weakest first, and only what she has answered: unseen characters belong to
- * Learn Kana, and っ/ッ/ー have no romaji, so a drill would print the answer.
- */
-export function pickQuestKana(byKana: KanaProgressMap, now?: Date): string[] {
-  return pickReviewQueue(byKana, {
+function baseChars(track: KanaTrack): string[] {
+  return setsForTrack(track)
+    .filter((set) => set.kind === 'base')
+    .flatMap((set) => set.entries.map((entry) => entry.kana));
+}
+
+// An assigned row leads either script — the educator meant this week. Without
+// one, katakana waits for hiragana, the order decks.reading_practice assumes.
+function introChars(byKana: KanaProgressMap, assignedSetIds: string[], exclude: Set<string>) {
+  const taken = new Set(exclude);
+  const take = (kana: string) => {
+    if (isContextualKana(kana) || taken.has(kana) || !isUnseen(byKana.get(kana))) return false;
+    taken.add(kana);
+    return true;
+  };
+
+  const assigned = assignedSetIds
+    .flatMap((id) => getSet(id)?.entries.map((entry) => entry.kana) ?? [])
+    .filter(take)
+    .slice(0, INTRO_CHARS_PER_QUEST);
+
+  const budget = INTRO_CHARS_PER_QUEST - assigned.length;
+  if (budget <= 0) return assigned;
+
+  const track: KanaTrack = readingStage(byKana, 'hiragana') === 'reads' ? 'katakana' : 'hiragana';
+  const curriculum = baseChars(track).filter(take).slice(0, budget);
+
+  return [...assigned, ...curriculum];
+}
+
+// The quest must START reading, not only maintain it: Learn Kana sits under
+// "Fun ways to practise" and production learners never open it.
+export function pickQuestKana(
+  byKana: KanaProgressMap,
+  assignedSetIds: string[] = [],
+  now?: Date,
+): string[] {
+  const weak = pickReviewQueue(byKana, {
     track: 'both',
     size: KANA_QUEUE_SCAN,
     includeStrong: false,
     includeUnseen: false,
     now,
   }).filter((kana) => !isContextualKana(kana));
+
+  const intro = introChars(byKana, assignedSetIds, new Set(weak));
+  // planQuest keeps only the first KANA_NODE_CHARS: without a reserved slot a
+  // learner whose backlog fills the node never meets a new character again.
+  const reserved = Math.min(intro.length, Math.max(1, KANA_NODE_CHARS - weak.length));
+  const keep = KANA_NODE_CHARS - reserved;
+  return [
+    ...weak.slice(0, keep),
+    ...intro.slice(0, reserved),
+    ...weak.slice(keep),
+    ...intro.slice(reserved),
+  ];
+}
+
+/** A first-ever hit also credits easier row-mates — the Kana Check rule. */
+export function gradeQuestKana(
+  kana: string,
+  correct: boolean,
+  byKana: KanaProgressMap,
+): KanaCheckGrade {
+  if (correct && isUnseen(byKana.get(kana))) return gradeKanaCheck(kana, true, byKana);
+  return correct ? { correct: [kana], wrong: [] } : { correct: [], wrong: [kana] };
 }
 
 export function kanaNodeSize(dueCount: number, weakCount: number): number {

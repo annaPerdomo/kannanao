@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { availabilityToday, availableNowFilter, isAvailable } from '@/lib/assignmentAvailability';
+import {
+  availabilityToday,
+  availableNowFilter,
+  isAvailable,
+  openKanaSetIds,
+} from '@/lib/assignmentAvailability';
 
 describe('availabilityToday', () => {
   it('is a plain date, which is what available_on stores', () => {
@@ -37,5 +42,35 @@ describe('isAvailable', () => {
 
   it('hides a week that has not started', () => {
     expect(isAvailable('2026-08-10', '2026-08-03')).toBe(false);
+  });
+});
+
+describe('openKanaSetIds', () => {
+  const row = (
+    kana_set: string | null,
+    extra: Partial<{ completed_at: string | null; available_on: string | null }> = {},
+  ) => ({
+    kana_set,
+    completed_at: null,
+    available_on: null,
+    ...extra,
+  });
+
+  it('keeps only open, available kana rows and drops deck assignments', () => {
+    expect(
+      openKanaSetIds([
+        row(null),
+        row('hira-ka'),
+        row('hira-a', { completed_at: '2026-09-01' }),
+        row('hira-sa', { available_on: '2099-01-01' }),
+      ]),
+    ).toEqual(['hira-ka']);
+  });
+
+  it('returns curriculum order and dedupes, whatever the list order', () => {
+    expect(openKanaSetIds([row('hira-ka'), row('hira-a'), row('hira-ka')])).toEqual([
+      'hira-a',
+      'hira-ka',
+    ]);
   });
 });

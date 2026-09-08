@@ -254,12 +254,24 @@ export function needsReviewCount(
 
 export const NEW_LEARNER_MAX_SEEN = 10;
 
-export function isNewLearner(byKana: KanaProgressMap): boolean {
+export function isNewLearner(byKana: KanaProgressMap, track?: KanaTrack): boolean {
   let seen = 0;
-  for (const progress of byKana.values()) {
+  for (const [kana, progress] of byKana) {
+    if (track && getKanaEntry(kana)?.track !== track) continue;
     if (!isUnseen(progress) && (seen += 1) >= NEW_LEARNER_MAX_SEEN) return false;
   }
   return true;
+}
+
+export type ReadingStage = 'new' | 'learning' | 'reads';
+
+export function readingStage(byKana: KanaProgressMap, track: KanaTrack): ReadingStage {
+  const baseSets = setsForTrack(track).filter((set) => set.kind === 'base');
+  const reads = baseSets.every((set) =>
+    set.entries.every((entry) => isKanaKnown(byKana.get(entry.kana))),
+  );
+  if (reads) return 'reads';
+  return isNewLearner(byKana, track) ? 'new' : 'learning';
 }
 
 export function drillChars(

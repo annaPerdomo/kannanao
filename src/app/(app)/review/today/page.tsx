@@ -3,14 +3,16 @@ import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { ReviewQuest } from '@/components/ReviewQuest';
 import { useAuth } from '@/contexts/AuthContext';
 import { QuestHandoffProvider } from '@/contexts/QuestHandoffContext';
+import { useAssignments } from '@/hooks/useAssignments';
 import { useKanaProgress } from '@/hooks/useKanaProgress';
 import { usePracticeChain } from '@/hooks/usePracticeChain';
+import { openKanaSetIds } from '@/lib/assignmentAvailability';
 import { DAILY_REVIEW_CAP } from '@/lib/dailyPractice';
 import { CHAIN_PARAM } from '@/lib/practiceChain';
 import { KANA_MAX_DUE, KANA_WAIT_MS, pickQuestKana, planQuest } from '@/lib/quest';
@@ -87,6 +89,8 @@ export default function ReviewTodayPage() {
   // below would run twice with two different sizes.
   const daily = useSearchParams()?.get(CHAIN_PARAM) === 'daily';
   const { byKana, error: kanaError, record: recordKana } = useKanaProgress();
+  const { assignments, loading: assignmentsLoading } = useAssignments(undefined, true, 'mine');
+  const assignedKanaSetIds = useMemo(() => openKanaSetIds(assignments), [assignments]);
   const [cards, setCards] = useState<Flashcard[] | null>(null);
   const [kanaChars, setKanaChars] = useState<string[] | null>(null);
   const [error, setError] = useState(false);
@@ -125,7 +129,9 @@ export default function ReviewTodayPage() {
       return;
     }
     if (byKana) {
-      setKanaChars(pickQuestKana(byKana));
+      // Assignments are best-effort: a slow homework read must cost the
+      // educator's row ordering, never the whole kana node.
+      setKanaChars(pickQuestKana(byKana, assignmentsLoading ? [] : assignedKanaSetIds));
       return;
     }
     if (kanaError) {
@@ -134,7 +140,7 @@ export default function ReviewTodayPage() {
     }
     const timer = setTimeout(() => setKanaChars([]), KANA_WAIT_MS);
     return () => clearTimeout(timer);
-  }, [byKana, kanaError, kanaChars, cards]);
+  }, [byKana, kanaError, kanaChars, cards, assignmentsLoading, assignedKanaSetIds]);
 
   const nothingToPlay =
     cards !== null && kanaChars !== null && planQuest(cards, kanaChars).nodes.length === 0;

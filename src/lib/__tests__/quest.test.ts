@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import { allKana, getSet, isContextualKana, setsForTrack } from '@/lib/kanaCurriculum';
 import {
+  gradeQuestKana,
+  INTRO_CHARS_PER_QUEST,
   KANA_MAX_DUE,
   KANA_MIN_CHARS,
   KANA_NODE_CHARS,
-  KANA_QUEUE_SCAN,
   pickQuestKana,
   planQuest,
   planQuestNodes,
@@ -100,7 +102,7 @@ describe('the kana node — when it appears and how big it gets', () => {
   const weak = (n: number) => Array.from({ length: n }, (_, i) => `k${i}`);
 
   it('no cards due but kana slipping → a kana-only quest (the 🎉 would be a lie)', () => {
-    const nodes = planQuestNodes(0, 4);
+    const nodes = planQuestNodes(0, KANA_NODE_CHARS);
     expect(nodes.map((x) => x.type)).toEqual(['kana']);
     expect(nodes[0].cardCount).toBe(KANA_NODE_CHARS);
   });
@@ -127,7 +129,7 @@ describe('the kana node — when it appears and how big it gets', () => {
   });
 
   it('the cap holds however far behind the learner is', () => {
-    for (const weakCount of [4, 12, 40, 200]) {
+    for (const weakCount of [KANA_NODE_CHARS, 12, 40, 200]) {
       const kana = planQuestNodes(5, weakCount).find((x) => x.type === 'kana');
       expect(kana?.cardCount).toBe(KANA_NODE_CHARS);
     }
@@ -173,7 +175,7 @@ describe('the kana node — when it appears and how big it gets', () => {
   });
 });
 
-describe('pickQuestKana — only the characters she has actually met', () => {
+describe('pickQuestKana — maintains reading and starts it', () => {
   const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString();
 
   const slipping = (kana: string[]) =>
@@ -191,40 +193,12 @@ describe('pickQuestKana — only the characters she has actually met', () => {
       ]),
     );
 
-  it('a learner who has never opened the chart gets nothing — that is Learn Kana’s job', () => {
-    expect(pickQuestKana(new Map())).toEqual([]);
-  });
-
-  it('surfaces the characters she is losing, weakest first', () => {
-    const picked = pickQuestKana(slipping(['ぬ', 'ね', 'ま', 'ヒャ']));
-    expect(picked.length).toBeGreaterThanOrEqual(KANA_MIN_CHARS);
-    expect(new Set(picked)).toEqual(new Set(['ぬ', 'ね', 'ま', 'ヒャ']));
-  });
-
-  it('never returns a character with no answer history mixed in', () => {
-    const picked = pickQuestKana(slipping(['ぬ', 'ね', 'ま']));
-    expect(picked).toHaveLength(3);
-  });
-
-  it('drops っ/ッ/ー — a character with no sound of its own cannot be asked for', () => {
-    // Word-pair grading writes rows for these, so they do reach the queue.
-    const picked = pickQuestKana(slipping(['ぬ', 'ね', 'ま', 'っ', 'ッ', 'ー']));
-    expect(new Set(picked)).toEqual(new Set(['ぬ', 'ね', 'ま']));
-  });
-
-  it('never-seen characters do not eat the scan — the node can still fill', () => {
-    const picked = pickQuestKana(
-      slipping(['ぬ', 'ね', 'ま', 'ヒャ', 'そ', 'る', 'ソ', 'ツ', 'わ']),
-    );
-    expect(picked).toHaveLength(KANA_QUEUE_SCAN);
-  });
-
-  it('a strong reader earns no node', () => {
-    const strong = new Map(
-      ['あ', 'い', 'う', 'え', 'お'].map((k) => [
+  const mastered = (kana: string[]) =>
+    new Map(
+      kana.map((k) => [
         k,
         {
-          correctCount: 20,
+          correctCount: 5,
           wrongCount: 0,
           intervalDays: 30,
           ease: 2.5,
@@ -233,9 +207,101 @@ describe('pickQuestKana — only the characters she has actually met', () => {
         },
       ]),
     );
-    expect(planQuestNodes(6, pickQuestKana(strong).length).map((x) => x.type)).toEqual([
+
+  const hiraganaBase = setsForTrack('hiragana')
+    .filter((set) => set.kind === 'base')
+    .flatMap((set) => set.entries.map((e) => e.kana));
+  const katakanaBase = setsForTrack('katakana')
+    .filter((set) => set.kind === 'base')
+    .flatMap((set) => set.entries.map((e) => e.kana));
+
+  it('an empty map introduces the first INTRO_CHARS_PER_QUEST hiragana, in curriculum order', () => {
+    expect(pickQuestKana(new Map())).toEqual(allKana('hiragana').slice(0, INTRO_CHARS_PER_QUEST));
+    expect(pickQuestKana(new Map())).toEqual(['あ', 'い', 'う']);
+  });
+
+  it('never introduces a contextual character — they have no romaji to ask for', () => {
+    const picked = pickQuestKana(slipping(['ぬ', 'ね', 'ま', 'っ', 'ッ', 'ー']));
+    expect(picked.some(isContextualKana)).toBe(false);
+    expect(new Set(picked.slice(0, 3))).toEqual(new Set(['ぬ', 'ね', 'ま']));
+  });
+
+  it('puts weak, already-seen characters first and fills only the remaining slots with new ones', () => {
+    const picked = pickQuestKana(slipping(['ぬ', 'ね']));
+    expect(new Set(picked.slice(0, 2))).toEqual(new Set(['ぬ', 'ね']));
+    expect(picked.slice(2)).toEqual(['あ', 'い', 'う']);
+  });
+
+  it('caps the introduction at INTRO_CHARS_PER_QUEST, however many characters are unseen', () => {
+    // The whole hiragana chart (well over 40 characters) is unseen here.
+    expect(hiraganaBase.length + katakanaBase.length).toBeGreaterThan(40);
+    const picked = pickQuestKana(new Map());
+    expect(picked).toHaveLength(INTRO_CHARS_PER_QUEST);
+  });
+
+  it('keeps katakana out of the introduction while hiragana is not yet "reads"', () => {
+    const picked = pickQuestKana(slipping(['ぬ', 'ね']));
+    expect(picked.some((k) => katakanaBase.includes(k))).toBe(false);
+  });
+
+  it('introduces katakana once hiragana reads', () => {
+    const picked = pickQuestKana(mastered(hiraganaBase));
+    expect(picked).toEqual(katakanaBase.slice(0, INTRO_CHARS_PER_QUEST));
+  });
+
+  it('lets an open kana assignment lead the introduction, in either script, regardless of the gate', () => {
+    const assignedRow = getSet('kata-a')!.entries.map((e) => e.kana);
+    const picked = pickQuestKana(new Map(), ['kata-a']);
+    expect(picked).toEqual(assignedRow.slice(0, INTRO_CHARS_PER_QUEST));
+  });
+
+  it('fills any budget left after the assigned row from the curriculum', () => {
+    // ヤ already mastered (dropped as "strong"), leaving ユ・ヨ as the only
+    // unseen characters in the assigned row — one slot short of the cap.
+    const byKana = mastered(['ヤ']);
+    expect(pickQuestKana(byKana, ['kata-ya'])).toEqual(['ユ', 'ヨ', 'あ']);
+  });
+
+  it('a learner who reads both tracks fully and has nothing weak gets no node', () => {
+    const byKana = mastered([...hiraganaBase, ...katakanaBase]);
+    expect(pickQuestKana(byKana)).toEqual([]);
+    expect(planQuestNodes(6, pickQuestKana(byKana).length).map((x) => x.type)).toEqual([
       'warmup',
       'boss',
     ]);
+  });
+  it('never repeats a character an assigned row already contributed', () => {
+    const picked = pickQuestKana(mastered(['あ', 'い', 'う']), ['hira-a']);
+    expect(new Set(picked).size).toBe(picked.length);
+  });
+
+  it('dedupes two open assignments that overlap on the same row', () => {
+    const picked = pickQuestKana(new Map(), ['hira-a', 'hira-a']);
+    expect(new Set(picked).size).toBe(picked.length);
+  });
+
+  it('still introduces one new character when the backlog would fill the node', () => {
+    const backlog = hiraganaBase.slice(0, 8);
+    const node = planQuest([], pickQuestKana(slipping(backlog))).kana;
+    expect(node).toHaveLength(KANA_NODE_CHARS);
+    expect(node.filter((k) => !backlog.includes(k))).toHaveLength(1);
+  });
+});
+
+describe('gradeQuestKana — credit for meeting a character for the first time', () => {
+  it('credits easier, still-unseen row-mates on a first-ever hit', () => {
+    const grade = gradeQuestKana('き', true, new Map());
+    expect(grade.correct[0]).toBe('き');
+    expect(grade.correct.length).toBeGreaterThan(1);
+    expect(grade.wrong).toEqual([]);
+  });
+
+  it('credits nothing extra for a character she has already met', () => {
+    const seen = new Map([['き', { correctCount: 2, wrongCount: 1 }]]);
+    expect(gradeQuestKana('き', true, seen)).toEqual({ correct: ['き'], wrong: [] });
+  });
+
+  it('credits nothing on a miss', () => {
+    expect(gradeQuestKana('き', false, new Map())).toEqual({ correct: [], wrong: ['き'] });
   });
 });
