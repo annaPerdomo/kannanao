@@ -9,9 +9,11 @@ import { HIRAGANA_SETS, type KanaSet, KATAKANA_SETS } from '@/lib/kanaCurriculum
 interface KanaSetPickerProps {
   value: string | null;
   onChange: (setId: string) => void;
+  /** Show one script's rows only. Both, when unset. */
+  script?: 'hiragana' | 'katakana' | 'both';
 }
 
-export function KanaSetPicker({ value, onChange }: KanaSetPickerProps) {
+export function KanaSetPicker({ value, onChange, script = 'both' }: KanaSetPickerProps) {
   const theme = useTheme();
   const t = useTranslations('Group.createAssignment');
   const { brand } = theme.palette;
@@ -70,8 +72,8 @@ export function KanaSetPicker({ value, onChange }: KanaSetPickerProps) {
         pr: 0.5,
       }}
     >
-      {group(t('hiragana'), HIRAGANA_SETS)}
-      {group(t('katakana'), KATAKANA_SETS)}
+      {script !== 'katakana' && group(t('hiragana'), HIRAGANA_SETS)}
+      {script !== 'hiragana' && group(t('katakana'), KATAKANA_SETS)}
     </Box>
   );
 }
