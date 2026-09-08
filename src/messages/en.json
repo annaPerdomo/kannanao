@@ -523,6 +523,7 @@
       "subtitle": "One tap — we pick the exercises",
       "wordsWaiting": "{count, plural, one {# word is waiting} other {# words are waiting}}",
       "waitingBody": "A few minutes keeps your words fresh 🎁",
+      "soundsBody": "A few minutes of reading practice from your teacher 🔊",
       "funWaysToPractice": "Extra games, just for fun",
       "todaysPractice": "Today's practice",
       "readyTitle": "Ready to practice?",

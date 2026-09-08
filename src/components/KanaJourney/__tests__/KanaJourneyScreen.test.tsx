@@ -2,12 +2,14 @@ import { fireEvent, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DataError } from '@/lib/dataError';
+import { clearChainState, writeChainState } from '@/lib/practiceChain';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 const mockPush = vi.fn();
+const mockReplace = vi.fn();
 const searchParams = new URLSearchParams();
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace }),
   useSearchParams: () => searchParams,
 }));
 
@@ -29,8 +31,23 @@ vi.mock('../KanaCheck', () => ({
 }));
 
 vi.mock('../KanaSession', () => ({
-  KanaSession: ({ setId, kana, chars }: { setId?: string; kana?: string; chars?: string[] }) => (
-    <div>playing {setId ?? kana ?? chars?.join(' ')}</div>
+  KanaSession: ({
+    setId,
+    kana,
+    chars,
+    onExit,
+  }: {
+    setId?: string;
+    kana?: string;
+    chars?: string[];
+    onExit: () => void;
+  }) => (
+    <div>
+      playing {setId ?? kana ?? chars?.join(' ')}
+      <button type="button" onClick={onExit}>
+        quit
+      </button>
+    </div>
   ),
 }));
 
@@ -42,6 +59,8 @@ beforeEach(() => {
   progress.loading = false;
   progress.error = null;
   searchParams.delete('set');
+  searchParams.delete('chain');
+  clearChainState();
 });
 
 describe('KanaJourneyScreen', () => {
@@ -128,6 +147,33 @@ describe('KanaJourneyScreen', () => {
   it('should go back to the review hub from the header', () => {
     renderWithProviders(<KanaJourneyScreen />);
     fireEvent.click(screen.getByRole('button', { name: /back/i }));
+    expect(mockPush).toHaveBeenCalledWith('/review');
+  });
+
+  it('should return to the chart on quitting a row picked outside a chain', () => {
+    renderWithProviders(<KanaJourneyScreen />);
+    fireEvent.click(screen.getByRole('button', { name: 'Practise the か row' }));
+    fireEvent.click(screen.getByRole('button', { name: 'quit' }));
+    expect(mockPush).not.toHaveBeenCalledWith('/review');
+    expect(screen.getByRole('button', { name: /^あ —/ })).toBeInTheDocument();
+  });
+
+  it('should abandon the whole chain on quitting the kana leg', () => {
+    searchParams.set('set', 'hira-ka');
+    searchParams.set('chain', 'daily');
+    writeChainState({
+      kind: 'daily',
+      deckId: '',
+      index: 0,
+      legs: [{ step: 'goal', mode: 'kana-journey', kanaSet: 'hira-ka' }],
+      cardIds: null,
+      assignmentId: null,
+      requiredMode: null,
+      requiredAccuracy: null,
+      cardCount: null,
+    });
+    renderWithProviders(<KanaJourneyScreen />);
+    fireEvent.click(screen.getByRole('button', { name: 'quit' }));
     expect(mockPush).toHaveBeenCalledWith('/review');
   });
 });

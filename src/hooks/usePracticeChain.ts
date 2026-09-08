@@ -18,6 +18,7 @@ import {
   CHAIN_PARAM,
   type ChainLeg,
   chainLegHref,
+  type ChainMode,
   clearChainState,
   type PracticeChainState,
   readChainState,
@@ -160,6 +161,7 @@ export function useStartDailyPractice() {
       dueCount: number,
       ttsReady: boolean,
       kanaDue = false,
+      kanaRow: string | null = null,
     ): Promise<boolean> => {
       const cards = focus ? await loadCards(focus.deckId) : [];
       const [progress, sentences] = await Promise.all([
@@ -179,6 +181,7 @@ export function useStartDailyPractice() {
       const legs = planDailyPractice({
         dueCount,
         kanaDue,
+        kanaRow,
         focus,
         cards,
         progress,
@@ -251,14 +254,18 @@ export interface ActiveChain {
 export function usePracticeChain({
   deckId,
   mode,
+  kanaSet,
 }: {
-  /** Null on the cross-deck Review page, which belongs to no deck. */
+  /** Null on the cross-deck Review and kana-journey pages, which belong to no deck. */
   deckId: string | null;
-  mode: GoalMode;
+  mode: ChainMode;
+  /** A kana leg's identity, as deckId is a deck leg's. */
+  kanaSet?: string | null;
 }): ActiveChain | null {
   const t = useTranslations('AssignmentQuest');
   const tModes = useTranslations('Deck.practiceModes');
   const tHero = useTranslations('Deck.practiceHero');
+  const tKana = useTranslations('KanaJourney.journey');
   const router = useRouter();
   const searchParams = useSearchParams();
   const marked = searchParams?.get(CHAIN_PARAM);
@@ -322,7 +329,14 @@ export function usePracticeChain({
   // would wipe the chain the page we're navigating to is about to read.
   const advancingRef = useRef(false);
   const legDeck = leg?.deckId ?? state?.deckId;
-  const matches = !!leg && leg.mode === mode && (mode === 'review' || legDeck === deckId);
+  const matches =
+    !!leg &&
+    leg.mode === mode &&
+    (mode === 'review'
+      ? true
+      : mode === 'kana-journey'
+        ? leg.kanaSet === kanaSet
+        : legDeck === deckId);
   useEffect(() => {
     // Page and stored leg agreeing again means the hand-off landed, so the
     // exemption ends — left set it would swallow every later mismatch.
@@ -399,7 +413,9 @@ export function usePracticeChain({
   const nextLabel = nextLeg
     ? state.kind === 'assignment' || nextLeg.mode === 'review'
       ? t(`stepName.${nextLeg.step}`)
-      : modeLabel(nextLeg.mode, tModes, tHero)
+      : nextLeg.mode === 'kana-journey'
+        ? tKana('title')
+        : modeLabel(nextLeg.mode, tModes, tHero)
     : null;
   const handoff: ChainHandoff | null = nextLabel
     ? { label: t('nextStep', { step: nextLabel }), onNext: advance, onStop: abandon, final: false }

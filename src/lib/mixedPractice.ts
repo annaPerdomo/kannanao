@@ -14,9 +14,8 @@ import {
 } from '@/components/Practice/ReadingMode/eligibility';
 import type { Flashcard } from '@/types/flashcard';
 
-import type { GoalMode } from './assignmentMastery';
 import { cardStrength, type StrengthCounts } from './cardStrength';
-import type { ChainLeg } from './practiceChain';
+import type { ChainLeg, ChainMode } from './practiceChain';
 import type { CardProgress } from './supabase';
 
 /** What this deck, on this device, is able to ask. */
@@ -91,7 +90,7 @@ export interface MixedPlanInput {
   support: MixedDeckSupport;
   counts: StrengthCounts;
   /** Modes to leave out — an assignment quest owns its goal mode and warm-up. */
-  exclude?: readonly GoalMode[];
+  exclude?: readonly ChainMode[];
 }
 
 /**

@@ -2,7 +2,7 @@ import type { Assignment } from '@/hooks/useAssignments';
 import type { Deck } from '@/types/deck';
 import type { Flashcard } from '@/types/flashcard';
 
-import { isAvailable } from './assignmentAvailability';
+import { isAvailable, openKanaSetIds } from './assignmentAvailability';
 import { type GoalMode, isGoalMode } from './assignmentMastery';
 import { countStrengths } from './cardStrength';
 import { deckSupport, pickMixedSessionCards, planMixedPractice } from './mixedPractice';
@@ -63,6 +63,16 @@ function dayIndex(today: string): number {
   return Number.isFinite(ms) ? Math.floor(ms / 86_400_000) : 0;
 }
 
+export function pickKanaRow(assignments: Assignment[], today: string, round = 0): string | null {
+  const openIds = new Set(openKanaSetIds(assignments, today));
+  if (openIds.size === 0) return null;
+  const open = assignments
+    .filter((a) => a.kana_set != null && openIds.has(a.kana_set))
+    .sort(byDueThenCreated);
+  if (open.length === 0) return null;
+  return open[round % open.length].kana_set;
+}
+
 export function pickFocusDeck(
   assignments: Assignment[],
   decks: Deck[],
@@ -97,6 +107,8 @@ export interface DailyPlanInput {
   dueCount: number;
   /** Characters the reading queue says are slipping; a review leg with no words due still plays them. */
   kanaDue?: boolean;
+  /** A kana curriculum set id, not an assignment id. */
+  kanaRow?: string | null;
   focus: FocusPick | null;
   cards: Flashcard[];
   progress: CardProgress[];
@@ -121,6 +133,7 @@ function fit(legs: ChainLeg[], budget: number): ChainLeg[] {
 export function planDailyPractice({
   dueCount,
   kanaDue = false,
+  kanaRow = null,
   focus,
   cards,
   progress,
@@ -129,6 +142,7 @@ export function planDailyPractice({
 }: DailyPlanInput): ChainLeg[] {
   const legs: ChainLeg[] = [];
   if (dueCount > 0 || kanaDue) legs.push({ step: 'review', mode: 'review' });
+  if (kanaRow) legs.push({ step: 'practice', mode: 'kana-journey', kanaSet: kanaRow });
   if (!focus) return legs;
 
   const goal = focusGoal(focus);
@@ -188,9 +202,10 @@ export function bumpDailyRound(today: string): void {
 
 const PREVIEW_DECK_LEGS = 3;
 
-export function previewMinutes(dueCount: number, hasFocus: boolean): number {
+export function previewMinutes(dueCount: number, hasFocus: boolean, hasKanaRow = false): number {
   const legs: ChainLeg[] = [];
   if (dueCount > 0) legs.push({ step: 'review', mode: 'review' });
+  if (hasKanaRow) legs.push({ step: 'goal', mode: 'kana-journey' });
   for (let i = 0; hasFocus && i < PREVIEW_DECK_LEGS; i++)
     legs.push({ step: 'practice', mode: 'recall' });
   return estimateMinutes(legs, dueCount);

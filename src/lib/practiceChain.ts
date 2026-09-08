@@ -14,13 +14,17 @@ import type { GoalMode } from './assignmentMastery';
 
 export type ChainStep = 'review' | 'warmup' | 'practice' | 'goal';
 
+export type ChainMode = GoalMode | 'kana-journey';
+
 export interface ChainLeg {
   step: ChainStep;
-  mode: GoalMode;
+  mode: ChainMode;
   /** Unset means the chain's deck. */
   deckId?: string;
   /** Unset means the chain's `cardIds`, else the whole deck. */
   cardIds?: string[];
+  /** Set only on a `kana-journey` leg — the assigned row's curriculum id. */
+  kanaSet?: string;
 }
 
 export type ChainKind = 'assignment' | 'mixed' | 'daily';
@@ -39,6 +43,11 @@ export function chainLegHref(deckId: string, leg: ChainLeg, kind: ChainKind): st
   const marker = `?${CHAIN_PARAM}=${kind}`;
   const deck = leg.deckId ?? deckId;
   if (leg.mode === 'review') return kind === 'daily' ? `${REVIEW_LEG_HREF}${marker}` : null;
+  if (leg.mode === 'kana-journey') {
+    return kind === 'daily' && leg.kanaSet
+      ? `/review/learn-kana?set=${encodeURIComponent(leg.kanaSet)}&${CHAIN_PARAM}=${kind}`
+      : null;
+  }
   if (leg.mode === 'study') return `/deck/${deck}/study${marker}`;
   if (PRACTICE_ROUTE_MODES.includes(leg.mode)) {
     return `/deck/${deck}/practice/${leg.mode}${marker}`;
@@ -79,7 +88,8 @@ function readLegs(value: unknown): ChainLeg[] | null {
       ((leg as ChainLeg).deckId === undefined || typeof (leg as ChainLeg).deckId === 'string') &&
       ((leg as ChainLeg).cardIds === undefined ||
         (Array.isArray((leg as ChainLeg).cardIds) &&
-          (leg as ChainLeg).cardIds!.every((id) => typeof id === 'string'))),
+          (leg as ChainLeg).cardIds!.every((id) => typeof id === 'string'))) &&
+      ((leg as ChainLeg).kanaSet === undefined || typeof (leg as ChainLeg).kanaSet === 'string'),
   );
   return legs.length === value.length ? legs : null;
 }

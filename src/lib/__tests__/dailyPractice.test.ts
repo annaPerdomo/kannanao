@@ -7,6 +7,7 @@ import {
   estimateMinutes,
   MAX_DAILY_LEGS,
   pickFocusDeck,
+  pickKanaRow,
   planDailyPractice,
   previewMinutes,
   readDailyRound,
@@ -24,6 +25,20 @@ const assignment = (overrides: Partial<Assignment> = {}): Assignment =>
   ({
     id: `a-${overrides.deck_id ?? 'd1'}`,
     deck_id: 'd1',
+    completed_at: null,
+    available_on: null,
+    due_date: null,
+    created_at: '2026-08-01T00:00:00Z',
+    required_mode: null,
+    required_accuracy: null,
+    ...overrides,
+  }) as Assignment;
+
+const kanaAssignment = (overrides: Partial<Assignment> = {}): Assignment =>
+  ({
+    id: `ka-${overrides.kana_set ?? 'hira-ka'}`,
+    deck_id: null,
+    kana_set: 'hira-ka',
     completed_at: null,
     available_on: null,
     due_date: null,
@@ -113,6 +128,49 @@ describe('pickFocusDeck', () => {
   });
 });
 
+describe('pickKanaRow', () => {
+  it('picks the soonest-due open kana row', () => {
+    const set = pickKanaRow(
+      [
+        kanaAssignment({ kana_set: 'hira-ka', due_date: '2026-09-20' }),
+        kanaAssignment({ kana_set: 'hira-a', due_date: '2026-09-05' }),
+      ],
+      TODAY,
+    );
+    expect(set).toBe('hira-a');
+  });
+
+  it('skips finished and not-yet-available rows', () => {
+    expect(
+      pickKanaRow(
+        [
+          kanaAssignment({ kana_set: 'hira-ka', completed_at: '2026-09-01T00:00:00Z' }),
+          kanaAssignment({ kana_set: 'hira-sa', available_on: '2026-09-09' }),
+          kanaAssignment({ kana_set: 'hira-a' }),
+        ],
+        TODAY,
+      ),
+    ).toBe('hira-a');
+  });
+
+  it('rotates between open rows as the day goes on', () => {
+    const assignments = [
+      kanaAssignment({ kana_set: 'hira-ka' }),
+      kanaAssignment({ kana_set: 'hira-a' }),
+    ];
+    expect(pickKanaRow(assignments, TODAY, 0)).toBe('hira-ka');
+    expect(pickKanaRow(assignments, TODAY, 1)).toBe('hira-a');
+    expect(pickKanaRow(assignments, TODAY, 2)).toBe('hira-ka');
+  });
+
+  it('returns null when nothing is open', () => {
+    expect(pickKanaRow([], TODAY)).toBeNull();
+    expect(
+      pickKanaRow([kanaAssignment({ completed_at: '2026-09-01T00:00:00Z' })], TODAY),
+    ).toBeNull();
+  });
+});
+
 describe('planDailyPractice', () => {
   const cards = Array.from({ length: 12 }, (_, i) => card(`c${i}`));
   const plan = (input: Partial<Parameters<typeof planDailyPractice>[0]>) =>
@@ -181,6 +239,53 @@ describe('planDailyPractice', () => {
     expect(legs[legs.length - 1].mode).toBe('quiz');
     expect(legs.some((leg) => leg.mode === 'reading' || leg.mode === 'fill')).toBe(true);
   });
+
+  it('leads with the assigned kana row, right after review and before the deck legs', () => {
+    const legs = plan({ dueCount: 4, kanaRow: 'hira-ka' });
+    expect(legs[0]).toEqual({ step: 'review', mode: 'review' });
+    expect(legs[1]).toEqual({ step: 'practice', mode: 'kana-journey', kanaSet: 'hira-ka' });
+    expect(legs.slice(2).every((leg) => leg.step !== 'review' && leg.mode !== 'kana-journey')).toBe(
+      true,
+    );
+  });
+
+  it('leads with the kana row even with no review due', () => {
+    const legs = plan({ dueCount: 0, kanaRow: 'hira-ka' });
+    expect(legs[0]).toEqual({ step: 'practice', mode: 'kana-journey', kanaSet: 'hira-ka' });
+  });
+
+  it('counts the kana leg against the cap, trimming a deck leg', () => {
+    const progress = cards.map((c) => strong(c.id));
+    const withKana = plan({
+      dueCount: 5,
+      ttsReady: true,
+      progress,
+      kanaRow: 'hira-ka',
+      focus: focusFor(deck('d1', { readingPractice: true }), assignment({ required_mode: 'quiz' })),
+    });
+    const withoutKana = plan({
+      dueCount: 5,
+      ttsReady: true,
+      progress,
+      focus: focusFor(deck('d1', { readingPractice: true }), assignment({ required_mode: 'quiz' })),
+    });
+    expect(withKana.length).toBeLessThanOrEqual(MAX_DAILY_LEGS);
+    expect(withKana.some((leg) => leg.mode === 'kana-journey')).toBe(true);
+    expect(withKana.length).toBe(withoutKana.length);
+    expect(
+      withKana.filter((leg) => leg.step !== 'review' && leg.mode !== 'kana-journey').length,
+    ).toBe(
+      withoutKana.filter((leg) => leg.step !== 'review' && leg.mode !== 'kana-journey').length - 1,
+    );
+  });
+
+  it('still leads with the kana row when it is the only open homework', () => {
+    const decks = [deck('own'), deck('d1')];
+    const focus = pickFocusDeck([], decks, TODAY);
+    expect(focus?.assignment).toBeNull();
+    const legs = plan({ dueCount: 0, kanaRow: 'hira-ka', focus });
+    expect(legs[0]).toEqual({ step: 'practice', mode: 'kana-journey', kanaSet: 'hira-ka' });
+  });
 });
 
 describe('estimates', () => {
@@ -196,6 +301,11 @@ describe('estimates', () => {
   it('previews a short session before any cards are loaded', () => {
     expect(previewMinutes(0, true)).toBe(5);
     expect(previewMinutes(3, false)).toBe(1);
+  });
+
+  it('prices in an assigned kana row when one is open', () => {
+    expect(previewMinutes(0, false, true)).toBeGreaterThan(previewMinutes(0, false, false));
+    expect(previewMinutes(0, true, true)).toBeGreaterThan(previewMinutes(0, true, false));
   });
 });
 

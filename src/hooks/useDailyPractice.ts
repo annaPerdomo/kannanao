@@ -5,15 +5,16 @@ import { useAssignments } from '@/hooks/useAssignments';
 import { useDecks } from '@/hooks/useDecks';
 import { useDueCount } from '@/hooks/useDueCount';
 import { useKanaProgress } from '@/hooks/useKanaProgress';
-import { openKanaSetIds } from '@/lib/assignmentAvailability';
+import { availabilityToday, openKanaSetIds } from '@/lib/assignmentAvailability';
 import { localDateString } from '@/lib/chest';
-import { type FocusPick, pickFocusDeck, readDailyRound } from '@/lib/dailyPractice';
+import { type FocusPick, pickFocusDeck, pickKanaRow, readDailyRound } from '@/lib/dailyPractice';
 import type { DataError } from '@/lib/dataError';
 import { KANA_WAIT_MS, pickQuestKana } from '@/lib/quest';
 
 export interface DailyFocus {
   dueCount: number;
   kanaDue: boolean;
+  kanaRow: string | null;
   focus: FocusPick | null;
   empty: boolean;
   loading: boolean;
@@ -55,11 +56,23 @@ export function useDailyFocus(enabled = true): DailyFocus {
     return pickFocusDeck(assignments, decks, today, readDailyRound(today));
   }, [loading, assignments, decks]);
 
+  const kanaRow = useMemo(() => {
+    if (loading) return null;
+    // The completion route decides availability in DEFAULT_TIME_ZONE; offering
+    // a row the device thinks is open but the server does not never ticks off.
+    return pickKanaRow(
+      assignments,
+      availabilityToday(),
+      readDailyRound(localDateString(new Date())),
+    );
+  }, [loading, assignments]);
+
   return {
     dueCount,
     kanaDue,
+    kanaRow,
     focus,
-    empty: !loading && !error && dueCount === 0 && !kanaDue && focus === null,
+    empty: !loading && !error && dueCount === 0 && !kanaDue && focus === null && kanaRow === null,
     loading,
     error,
     retry: () => {
