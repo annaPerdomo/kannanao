@@ -167,7 +167,14 @@ describe('POST /api/group/lesson-plan/apply', () => {
     insertReturns.decks.push({ data: { id: 'd1' } });
 
     const res = await POST(
-      makeRequest({ ...BASE, plan: planWith(['Food']), kanaSets: ['hira-ra', 'hira-ra'] }),
+      makeRequest({
+        ...BASE,
+        plan: planWith(['Food']),
+        kanaWeeks: [
+          { setId: 'hira-ra', dueDate: '2026-08-09' },
+          { setId: 'hira-ra', dueDate: '2026-08-09' },
+        ],
+      }),
     );
     expect(res.status).toBe(200);
     expect((await res.json()).kanaAssigned).toEqual(['hira-ra']);
@@ -182,6 +189,61 @@ describe('POST /api/group/lesson-plan/apply', () => {
       due_date: '2026-08-09',
       available_on: null,
     });
+  });
+
+  it("gives each kana row its own due date, not the plan's first one", async () => {
+    seedAccess(['m1']);
+    insertReturns.decks.push({ data: { id: 'd1' } });
+
+    const res = await POST(
+      makeRequest({
+        ...BASE,
+        plan: planWith(['Food']),
+        kanaWeeks: [
+          { setId: 'hira-ra', dueDate: '2026-08-06' },
+          { setId: 'hira-a', dueDate: '2026-08-13' },
+        ],
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()).kanaAssigned).toEqual(['hira-ra', 'hira-a']);
+
+    const kana = rowsFor('assignments').filter((r) => r.kana_set);
+    expect(kana.find((r) => r.kana_set === 'hira-ra')).toMatchObject({ due_date: '2026-08-06' });
+    expect(kana.find((r) => r.kana_set === 'hira-a')).toMatchObject({ due_date: '2026-08-13' });
+  });
+
+  // updateExisting:false is the writer's own guarantee; this only proves the
+  // route still forwards a retry's rows rather than special-casing them away.
+  it('stays idempotent on a retry: a row every member already has is not recreated', async () => {
+    seedAccess(['m1']);
+    insertReturns.decks.push({ data: { id: 'd1' } });
+    reads.assignments.push({ data: [{ member_id: 'm1' }], error: null });
+
+    const res = await POST(
+      makeRequest({
+        ...BASE,
+        plan: planWith(['Food']),
+        kanaWeeks: [{ setId: 'hira-ra', dueDate: '2026-08-06' }],
+      }),
+    );
+    expect((await res.json()).kanaAssigned).toEqual(['hira-ra']);
+    expect(rowsFor('assignments').filter((r) => r.kana_set)).toHaveLength(0);
+    expect(updated.filter((u) => u.table === 'assignments')).toHaveLength(0);
+  });
+
+  it('still assigns rows for a browser left open across the deploy', async () => {
+    seedAccess(['m1']);
+    insertReturns.decks.push({ data: { id: 'd1' } });
+    reads.assignments.push({ data: [], error: null });
+    insertReturns.assignments.push({ data: [{ id: 'a1' }], error: null });
+
+    // The pre-schedule client posts a flat list with no due dates of its own.
+    const res = await POST(
+      makeRequest({ ...BASE, plan: planWith(['Food']), kanaSets: ['hira-ra'] }),
+    );
+    expect((await res.json()).kanaAssigned).toEqual(['hira-ra']);
+    expect(rowsFor('assignments').filter((r) => r.kana_set)).toHaveLength(1);
   });
 
   it('leaves the kana rows alone when the organizer unticked them', async () => {
@@ -199,7 +261,11 @@ describe('POST /api/group/lesson-plan/apply', () => {
     reads.assignments.push({ data: [{ member_id: 'm1' }], error: null });
 
     const res = await POST(
-      makeRequest({ ...BASE, plan: planWith(['Food']), kanaSets: ['hira-ra'] }),
+      makeRequest({
+        ...BASE,
+        plan: planWith(['Food']),
+        kanaWeeks: [{ setId: 'hira-ra', dueDate: '2026-08-09' }],
+      }),
     );
     expect((await res.json()).kanaAssigned).toEqual(['hira-ra']);
     expect(rowsFor('assignments').filter((r) => r.kana_set)).toHaveLength(0);
@@ -211,7 +277,11 @@ describe('POST /api/group/lesson-plan/apply', () => {
     insertReturns.decks.push({ data: null, error: { message: 'nope' } });
 
     const res = await POST(
-      makeRequest({ ...BASE, plan: planWith(['Food']), kanaSets: ['hira-ra'] }),
+      makeRequest({
+        ...BASE,
+        plan: planWith(['Food']),
+        kanaWeeks: [{ setId: 'hira-ra', dueDate: '2026-08-09' }],
+      }),
     );
     expect((await res.json()).kanaAssigned).toEqual([]);
     expect(rowsFor('assignments').filter((r) => r.kana_set)).toHaveLength(0);
@@ -225,7 +295,11 @@ describe('POST /api/group/lesson-plan/apply', () => {
     insertReturns.assignments.push({ data: null, error: { message: 'nope' } });
 
     const res = await POST(
-      makeRequest({ ...BASE, plan: planWith(['Food']), kanaSets: ['hira-ra'] }),
+      makeRequest({
+        ...BASE,
+        plan: planWith(['Food']),
+        kanaWeeks: [{ setId: 'hira-ra', dueDate: '2026-08-09' }],
+      }),
     );
     const body = await res.json();
     expect(body.kanaAssigned).toEqual([]);
@@ -235,7 +309,23 @@ describe('POST /api/group/lesson-plan/apply', () => {
   it('rejects a kana row that is not in the curriculum', async () => {
     seedAccess();
     const res = await POST(
-      makeRequest({ ...BASE, plan: planWith(['Food']), kanaSets: ['hira-nope'] }),
+      makeRequest({
+        ...BASE,
+        plan: planWith(['Food']),
+        kanaWeeks: [{ setId: 'hira-nope', dueDate: '2026-08-09' }],
+      }),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a kana row with an invalid due date', async () => {
+    seedAccess();
+    const res = await POST(
+      makeRequest({
+        ...BASE,
+        plan: planWith(['Food']),
+        kanaWeeks: [{ setId: 'hira-ra', dueDate: 'someday' }],
+      }),
     );
     expect(res.status).toBe(400);
   });

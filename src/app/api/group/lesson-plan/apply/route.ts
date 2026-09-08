@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { isGoalMode } from '@/lib/assignmentMastery';
 import { isKanaSetId } from '@/lib/kanaCurriculum';
-import { MAX_COMPANION_KANA_SETS } from '@/lib/kanaGaps';
+import { MAX_COMPANION_KANA_ROWS } from '@/lib/kanaGaps';
 import { KNOWN_WORD_CAP, type KnownWord } from '@/lib/knownWords';
 import {
   CARDS_MAX,
@@ -15,7 +15,7 @@ import { logger } from '@/lib/logger';
 import type { ApplyDeckResult, LessonPlan, PlanDeck } from '@/types/lessonPlan';
 
 import { rateLimit } from '../../../_lib/rateLimit';
-import { assignCompanionKana } from '../../_lib/assignCompanionKana';
+import { assignCompanionKana, type CompanionKanaRow } from '../../_lib/assignCompanionKana';
 import { generateDeckSentences } from '../../_lib/generateDeckSentences';
 import { consumeLessonBudget } from '../../_lib/lessonBudget';
 import { requireGroupAccess } from '../../_lib/requireGroupAccess';
@@ -135,6 +135,7 @@ export async function POST(req: NextRequest) {
     withSentences = true,
     level,
     styleNotes,
+    kanaWeeks,
     kanaSets,
   } = (body ?? {}) as {
     groupId?: string;
@@ -147,6 +148,9 @@ export async function POST(req: NextRequest) {
     withSentences?: boolean;
     level?: string;
     styleNotes?: string;
+    /** planLessonKana's per-row schedule: one due date per curriculum row, not one for the whole plan. */
+    kanaWeeks?: { setId: string; dueDate: string | null }[];
+    /** Pre-schedule clients sent a flat row list sharing the first due date. */
     kanaSets?: string[];
   };
 
@@ -195,10 +199,42 @@ export async function POST(req: NextRequest) {
   if (styleNotes !== undefined && typeof styleNotes !== 'string') {
     return NextResponse.json({ error: 'styleNotes must be a string.' }, { status: 400 });
   }
-  if (kanaSets !== undefined && (!Array.isArray(kanaSets) || !kanaSets.every(isKanaSetId))) {
-    return NextResponse.json({ error: 'kanaSets must be curriculum row ids.' }, { status: 400 });
+  const kanaWeeksValid =
+    kanaWeeks === undefined ||
+    (Array.isArray(kanaWeeks) &&
+      kanaWeeks.every(
+        (row) =>
+          row &&
+          typeof row === 'object' &&
+          isKanaSetId(row.setId) &&
+          (row.dueDate === null || (typeof row.dueDate === 'string' && shiftDays(row.dueDate, 0))),
+      ));
+  if (!kanaWeeksValid) {
+    return NextResponse.json(
+      { error: 'kanaWeeks must be curriculum row ids with valid due dates.' },
+      { status: 400 },
+    );
   }
-  const companionSets = [...new Set(kanaSets ?? [])].slice(0, MAX_COMPANION_KANA_SETS);
+  const legacyRows = Array.isArray(kanaSets)
+    ? kanaSets.filter(isKanaSetId).map((setId) => ({ setId, dueDate: dueDateFor(firstDueDate, 0) }))
+    : [];
+  // One due date wins per row: the plan schedules a row once, but a resumed
+  // apply can still hand it a stale duplicate from an earlier attempt's payload.
+  const seenSets = new Set<string>();
+  const companionRows: CompanionKanaRow[] = [];
+  const droppedSets: string[] = [];
+  for (const row of kanaWeeks?.length ? kanaWeeks : legacyRows) {
+    if (seenSets.has(row.setId)) continue;
+    if (seenSets.size >= MAX_COMPANION_KANA_ROWS) {
+      droppedSets.push(row.setId);
+      continue;
+    }
+    seenSets.add(row.setId);
+    companionRows.push({
+      setId: row.setId,
+      dueDate: shiftDays(row.dueDate ?? '', 0) ?? row.dueDate,
+    });
+  }
   const trimmedStyleNotes = (styleNotes ?? '').trim().slice(0, STYLE_NOTES_MAX);
   const oversized = decks.find((d) => (d.cards?.length ?? 0) > CARDS_MAX);
   if (oversized) {
@@ -290,7 +326,7 @@ export async function POST(req: NextRequest) {
     deckIdsInOrder.length > 0
       ? await assignCompanionKana({
           sb: getServiceSupabase(),
-          rows: companionSets.map((setId) => ({ setId, dueDate: dueDateFor(firstDueDate, 0) })),
+          rows: companionRows,
           organizerId,
           groupId,
           memberIds,
@@ -336,7 +372,7 @@ export async function POST(req: NextRequest) {
     results,
     sentenceResults,
     kanaAssigned: kana.assigned,
-    kanaFailed: kana.failed,
+    kanaFailed: [...kana.failed, ...droppedSets],
   });
 }
 

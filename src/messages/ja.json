@@ -1706,7 +1706,7 @@
       "kanaNoDataNote": "ヒント: グループは まだ「かなを まなぶ」を つかっていないので、よみの データが ありません。",
       "kanaCompanionTitle": "この レッスンには グループが まだ おぼえていない おとが あります: {sounds}",
       "kanaCompanionToggle": "この かなの ぎょうも おなじ ひづけで だす",
-      "kanaAssignedMessage": "かなの ぎょう {sounds} も わりあてました。",
+      "kanaAssignedMessage": "かなの ぎょう {sounds} も、レッスンの しゅうに あわせて わりあてました。",
       "kanaAssignFailed": "かなの ぎょう {sounds} は わりあてられませんでした。グループの ページから わりあてられます。",
       "printKanaToggle": "この レッスンの おとの かなページを つける",
       "printKanaTitle": "この レッスンの おと",

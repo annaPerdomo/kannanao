@@ -1706,7 +1706,7 @@
       "kanaNoDataNote": "Tip: your group hasn't tried Learn Kana yet, so there's no reading data to check this plan against.",
       "kanaCompanionTitle": "This lesson uses sounds your group hasn't mastered: {sounds}",
       "kanaCompanionToggle": "Also assign these kana rows, due the same day",
-      "kanaAssignedMessage": "The kana rows {sounds} were assigned too.",
+      "kanaAssignedMessage": "The kana rows {sounds} were assigned too, spread across the plan's weeks.",
       "kanaAssignFailed": "The kana rows {sounds} couldn't be assigned. You can assign them from the group page.",
       "printKanaToggle": "Add a kana page for this lesson's sounds",
       "printKanaTitle": "Sounds in this lesson",

@@ -240,6 +240,32 @@ describe('POST /api/group/lesson-plan', () => {
     expect(res.status).toBe(400);
   });
 
+  it('rejects a readingLevel missing one of the two tracks', async () => {
+    const res = await POST(makeRequest({ ...VALID, readingLevel: { hiragana: 'yes' } }));
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a readingLevel answer outside the known set', async () => {
+    const res = await POST(
+      makeRequest({ ...VALID, readingLevel: { hiragana: 'fluent', katakana: 'yes' } }),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('accepts a valid readingLevel and carries it into the log line', async () => {
+    mockGeminiPlan();
+    const res = await POST(
+      makeRequest({ ...VALID, readingLevel: { hiragana: 'yes', katakana: 'not-yet' } }),
+    );
+    expect(res.status).toBe(200);
+  });
+
+  it('returns no kana reading stages without a groupId', async () => {
+    mockGeminiPlan();
+    const res = await POST(makeRequest(VALID));
+    expect((await res.json()).kanaReadingStages).toBeNull();
+  });
+
   it('pitches the prompt at the requested level and includes the style notes', async () => {
     mockGeminiPlan();
 
