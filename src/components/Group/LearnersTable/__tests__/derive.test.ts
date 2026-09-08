@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import type { GroupMember } from '@/hooks/useGroup';
 
-import { accuracyFraction, accuracyTone, learnerStatus, sortLearners } from '../derive';
+import {
+  accuracyFraction,
+  accuracyTone,
+  learnerStatus,
+  readingLabel,
+  sortLearners,
+} from '../derive';
 
 const NOW = Date.UTC(2026, 7, 8, 12, 0, 0);
 const DAY = 86_400_000;
@@ -149,5 +155,36 @@ describe('sortLearners', () => {
     const copy = [...members];
     sortLearners(members, 'streak', 'asc', NOW);
     expect(members).toEqual(copy);
+  });
+});
+
+describe('readingLabel', () => {
+  const t = (key: string) => key;
+
+  it('says nothing at all until a learner has read something', () => {
+    expect(readingLabel(member(), t)).toBeNull();
+    expect(readingLabel(member({ hiragana: 'new', katakana: 'new' }), t)).toBeNull();
+  });
+
+  it('names the track the learner is actually on', () => {
+    expect(readingLabel(member({ hiragana: 'learning', katakana: 'new' }), t)).toBe(
+      'readingLearningHiragana',
+    );
+    expect(readingLabel(member({ hiragana: 'reads', katakana: 'new' }), t)).toBe('readingHiragana');
+    expect(readingLabel(member({ hiragana: 'reads', katakana: 'learning' }), t)).toBe(
+      'readingLearningKatakana',
+    );
+    expect(readingLabel(member({ hiragana: 'reads', katakana: 'reads' }), t)).toBe('readingBoth');
+  });
+
+  it('sorts the learners who read furthest last', () => {
+    const behind = member({ hiragana: 'new', katakana: 'new' });
+    const middle = member({ hiragana: 'reads', katakana: 'new' });
+    const ahead = member({ hiragana: 'reads', katakana: 'reads' });
+    expect(sortLearners([ahead, behind, middle], 'reading', 'asc').map((m) => m.id)).toEqual([
+      behind.id,
+      middle.id,
+      ahead.id,
+    ]);
   });
 });

@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
           route: '/api/group/members',
           error: err instanceof Error ? err.message : String(err),
         });
-        return [] as KanaProgressRow[];
+        return null;
       }),
       reviewBacklogFor(memberIds, '/api/group/members'),
     ]);
@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
     string,
     { kana: string; correctCount: number; wrongCount: number }[]
   >();
-  for (const row of kanaProgressRows) {
+  for (const row of kanaProgressRows ?? []) {
     const list = kanaRowsByMember.get(row.user_id) ?? [];
     list.push({
       kana: row.kana,
@@ -120,8 +120,10 @@ export async function GET(req: NextRequest) {
     const byKana = kanaProgressMap(kanaRowsByMember.get(m.id) ?? []);
     return {
       id: m.id,
-      hiragana: readingStage(byKana, 'hiragana'),
-      katakana: readingStage(byKana, 'katakana'),
+      // Omitted, never guessed: a failed read would otherwise report every
+      // learner as having met no characters.
+      hiragana: kanaProgressRows ? readingStage(byKana, 'hiragana') : undefined,
+      katakana: kanaProgressRows ? readingStage(byKana, 'katakana') : undefined,
       username: m.username,
       displayName: m.display_name,
       avatar: m.avatar,

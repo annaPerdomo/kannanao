@@ -484,22 +484,65 @@ describe('LessonSetBuilder kana support', () => {
     expect(screen.getByText(/hasn't tried Learn Kana yet/i)).toBeInTheDocument();
   });
 
-  it('assigns the matching kana row alongside the decks by default', async () => {
+  it('assigns the matching kana row alongside the decks, ahead of its own week', async () => {
     await reachReviewWithKanaGaps();
 
     fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
 
     await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
-    expect(applyLessonPlanMock.mock.calls[0][0].kanaSets).toEqual(['kata-ra']);
+    const rows = applyLessonPlanMock.mock.calls[0][0].kanaWeeks;
+    // "Katakana not yet" is the N5 default, so every katakana row the words use.
+    expect(rows.map((r: { setId: string }) => r.setId)).toContain('kata-ra');
+    // Three days before the week it supports, never the same day.
+    expect(rows[0].dueDate < applyLessonPlanMock.mock.calls[0][0].firstDueDate).toBe(true);
   });
 
-  it('lets the organizer untick the companion assignment', async () => {
+  it("lets the organizer switch off a week's sounds", async () => {
     await reachReviewWithKanaGaps();
 
-    fireEvent.click(screen.getByRole('checkbox', { name: /also assign these kana rows/i }));
+    fireEvent.click(screen.getByRole('switch', { name: /hand out the sounds due/i }));
     fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
 
     await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
-    expect(applyLessonPlanMock.mock.calls[0][0].kanaSets).toEqual([]);
+    expect(applyLessonPlanMock.mock.calls[0][0].kanaWeeks).toEqual([]);
+  });
+
+  it('asks whether the group reads each script, and sends the answer', async () => {
+    setup();
+    typeGoal();
+    fireEvent.click(screen.getByRole('button', { name: /build the plan/i }));
+
+    await waitFor(() => expect(buildLessonPlanMock).toHaveBeenCalled());
+    // N5 by default: hiragana alongside the words, katakana not yet.
+    expect(buildLessonPlanMock.mock.calls[0][0].readingLevel).toEqual({
+      hiragana: 'learning',
+      katakana: 'not-yet',
+    });
+  });
+
+  it('keeps the level guess when nobody in the group has started reading', async () => {
+    buildLessonPlanMock.mockResolvedValue({
+      plan: PLAN,
+      kanaReadingStages: { hiragana: [], katakana: [] },
+    });
+    await reachReviewStep();
+
+    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
+    // An empty list is nobody having tried, not evidence the group reads.
+    const rows = applyLessonPlanMock.mock.calls[0][0].kanaWeeks;
+    expect(rows.length).toBeGreaterThan(0);
+  });
+
+  it('lets real reading data override the level guess', async () => {
+    buildLessonPlanMock.mockResolvedValue({
+      plan: PLAN,
+      kanaReadingStages: { hiragana: ['reads', 'reads'], katakana: ['reads', 'reads'] },
+    });
+    await reachReviewStep();
+
+    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
+    expect(applyLessonPlanMock.mock.calls[0][0].kanaWeeks).toEqual([]);
   });
 });

@@ -53,6 +53,8 @@ function rowKey(item: AttentionItem): string {
   if (item.kind === 'inactiveLearner') return `inactive-${item.memberId}`;
   if (item.kind === 'inactiveLearnersCollapsed') return 'inactive-collapsed';
   if (item.kind === 'reviewBacklog') return `backlog-${item.memberId}`;
+  if (item.kind === 'readingBehind') return `reading-${item.memberId}`;
+  if (item.kind === 'readingBehindCollapsed') return 'reading-collapsed';
   if (item.kind === 'reviewBacklogCollapsed') return 'backlog-collapsed';
   if (item.kind === 'wordsForgotten') return 'words-forgotten';
   return `assignment-${item.batchKey}`;

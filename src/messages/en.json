@@ -1585,7 +1585,12 @@
       "staleSummary": "{count, plural, one {# member hasn't studied this week} other {# members haven't studied this week}}",
       "allCaughtUp": "Everyone has studied recently.",
       "emptyTitle": "No members yet",
-      "emptyBody": "Use Invite to add members to this group."
+      "emptyBody": "Use Invite to add members to this group.",
+      "colReading": "Reading",
+      "readingLearningHiragana": "Learning hiragana",
+      "readingHiragana": "Reads hiragana",
+      "readingLearningKatakana": "Learning katakana",
+      "readingBoth": "Reads both"
     },
     "needsAttention": {
       "heading": "Needs attention",
@@ -1622,7 +1627,10 @@
       "wordsForgottenHeadline": "{count, plural, one {# word is being forgotten} other {# words are being forgotten}}",
       "wordsForgottenSubline": "{words} · {count, plural, one {# learner affected} other {# learners affected}}",
       "wordSeparator": ", ",
-      "reviewWordsAction": "Review words"
+      "reviewWordsAction": "Review words",
+      "readingBehindHeadline": "{name} can't read the words in {deck} yet",
+      "readingBehindSubline": "Practice introduces new characters — a kana row would help.",
+      "readingBehindCollapsedHeadline": "{count} learners can't read the words in {deck} yet"
     },
     "lessonBuilder": {
       "goalLabel": "What do you want to cover?",
@@ -1732,7 +1740,12 @@
       "sheetsPopupBlocked": "Your browser blocked the print tab. Allow pop-ups for this site and try again.",
       "sheetsGroupEmpty": "No learners in this group yet.",
       "sheetsKanjiTitle": "Kanji writing sheet",
-      "sheetsKanjiEmpty": "No words in this plan are written with kanji."
+      "sheetsKanjiEmpty": "No words in this plan are written with kanji.",
+      "soundsLineTitle": "Sounds for this week · due {date}",
+      "soundsSwitchLabel": "Hand out the sounds due {date}",
+      "soundsShaky": "Some learners are still working on this row",
+      "soundsNewToAll": "New to everyone",
+      "soundsAfterPlanHeading": "More sounds, after week {week} of the course"
     },
     "deckReadiness": {
       "heading": "Deck readiness",
@@ -1883,6 +1896,13 @@
       "tryAgainButton": "Try again",
       "firstDueDateMissing": "Pick a date for the first week.",
       "weekSwitchLabelOff": "Bring back the week due {date}"
+    },
+    "readingHiraganaLabel": "Can they read hiragana?",
+    "readingKatakanaLabel": "Can they read katakana?",
+    "readingAnswer": {
+      "not-yet": "Not yet",
+      "learning": "Learning",
+      "yes": "Yes"
     }
   },
   "Nav": {

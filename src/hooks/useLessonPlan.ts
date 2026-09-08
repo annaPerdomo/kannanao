@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { invalidateApiCache } from '@/lib/apiCache';
-import type { GroupKanaReadiness } from '@/lib/kanaGaps';
+import type { GroupKanaReadiness, GroupKanaReadingStages, ReadingLevelInput } from '@/lib/kanaGaps';
 import { attachPlanImages } from '@/lib/lessonImages';
 import { includedPlan } from '@/lib/lessonPlanEdits';
 import { mergeWarmUp } from '@/lib/lessonWarmUp';
@@ -20,6 +20,7 @@ export interface BuildPlanArgs {
   styleNotes?: string;
   groupId?: string;
   generateImages?: boolean;
+  readingLevel?: ReadingLevelInput;
 }
 
 export interface ApplyPlanArgs {
@@ -31,7 +32,7 @@ export interface ApplyPlanArgs {
   withSentences?: boolean;
   level?: string;
   styleNotes?: string;
-  kanaSets?: string[];
+  kanaWeeks?: { setId: string; dueDate: string | null }[];
 }
 
 export function useLessonPlan() {
@@ -40,6 +41,7 @@ export function useLessonPlan() {
   const [warmUp, setWarmUp] = useState<WarmUpWord[]>([]);
   const [knownWords, setKnownWords] = useState<WarmUpWord[]>([]);
   const [kanaReadiness, setKanaReadiness] = useState<GroupKanaReadiness | null>(null);
+  const [kanaReadingStages, setKanaReadingStages] = useState<GroupKanaReadingStages | null>(null);
   /**
    * Identifies this plan across apply attempts. Applying creates decks one at a
    * time; if it dies half way, retrying with the same id resumes instead of
@@ -77,12 +79,14 @@ export function useLessonPlan() {
         setWarmUp(data.warmUp ?? []);
         setKnownWords(data.knownWords ?? []);
         setKanaReadiness(data.kanaReadiness ?? null);
+        setKanaReadingStages(data.kanaReadingStages ?? null);
       } catch (err) {
         setError(err instanceof Error ? err.message : t('errorMessage'));
         setPlan(null);
         setWarmUp([]);
         setKnownWords([]);
         setKanaReadiness(null);
+        setKanaReadingStages(null);
       } finally {
         setBuilding(false);
       }
@@ -141,6 +145,7 @@ export function useLessonPlan() {
     warmUp,
     knownWords,
     kanaReadiness,
+    kanaReadingStages,
     results,
     kanaAssigned,
     kanaFailed,

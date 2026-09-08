@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchJsonCached, peekApiCache, peekApiCacheMeta } from '@/lib/apiCache';
 import { type DataError, toDataError } from '@/lib/dataError';
+import type { ReadingStage } from '@/lib/kanaProficiency';
 import { sb } from '@/lib/supabase';
 
 export interface GroupMember {
@@ -30,6 +31,9 @@ export interface GroupMember {
    */
   reviewsWaiting: number | null;
   reviewsOverdue3d: number | null;
+  /** Reading stage per track. Absent when the reading read failed. */
+  hiragana?: ReadingStage;
+  katakana?: ReadingStage;
 }
 
 export interface MasteryCounts {

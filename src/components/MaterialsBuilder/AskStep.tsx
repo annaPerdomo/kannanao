@@ -28,6 +28,7 @@ import {
   WEEK_CHOICES,
 } from './constants';
 import { DocumentUpload } from './DocumentUpload';
+import { ReadingQuestion } from './ReadingQuestion';
 import { StepSection } from './StepSection';
 
 interface AskStepProps {
@@ -164,6 +165,11 @@ export function AskStep({
               </MenuItem>
             ))}
           </TextField>
+
+          <ReadingQuestion
+            value={form.readingLevel}
+            onChange={(readingLevel) => onChange({ readingLevel })}
+          />
 
           <TextField
             select

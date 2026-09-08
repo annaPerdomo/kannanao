@@ -276,6 +276,8 @@ export async function buildLessonPlan(payload: {
   level?: string;
   styleNotes?: string;
   groupId?: string;
+  /** Whether the group reads each script — request-scoped, like `level`. */
+  readingLevel?: { hiragana: string; katakana: string };
 }): Promise<LessonPlanResponse> {
   const res = await fetch(`${BASE}/group/lesson-plan`, {
     method: 'POST',
@@ -302,7 +304,8 @@ export async function applyLessonPlan(payload: {
   /** Pitch of the practice sentences — same value the plan was built with. */
   level?: string;
   styleNotes?: string;
-  kanaSets?: string[];
+  /** One due date per curriculum row — the schedule from planLessonKana. */
+  kanaWeeks?: { setId: string; dueDate: string | null }[];
 }): Promise<{ results: ApplyDeckResult[]; kanaAssigned?: string[]; kanaFailed?: string[] }> {
   const res = await fetch(`${BASE}/group/lesson-plan/apply`, {
     method: 'POST',

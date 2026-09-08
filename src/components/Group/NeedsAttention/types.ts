@@ -56,6 +56,23 @@ export interface ReviewBacklogCollapsedItem {
   count: number;
 }
 
+/** A learner who cannot read yet, with a deck of words due within the week. */
+export interface ReadingBehindItem {
+  kind: 'readingBehind';
+  severity: 'warning';
+  memberId: string;
+  name: string;
+  deckName: string;
+}
+
+/** Collapses >MAX_READING_ROWS reading rows into one summary row. */
+export interface ReadingBehindCollapsedItem {
+  kind: 'readingBehindCollapsed';
+  severity: 'warning';
+  count: number;
+  deckName: string;
+}
+
 /** Words the group had learned and has started missing again. */
 export interface WordsForgottenItem {
   kind: 'wordsForgotten';
@@ -74,4 +91,6 @@ export type AttentionItem =
   | AssignmentDueItem
   | ReviewBacklogItem
   | ReviewBacklogCollapsedItem
+  | ReadingBehindItem
+  | ReadingBehindCollapsedItem
   | WordsForgottenItem;

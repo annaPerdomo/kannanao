@@ -11,6 +11,7 @@ import {
   DUE_SOON_DAYS,
   MAX_BACKLOG_ROWS,
   MAX_INACTIVE_ROWS,
+  MAX_READING_ROWS,
   MIN_FORGOTTEN_WORDS,
   MS_PER_DAY,
   WORDS_PREVIEW_COUNT,
@@ -146,10 +147,37 @@ export function deriveAttentionItems(
 
   const forgotten = forgottenWordsItem(words);
 
+  // Words a learner cannot read are words they cannot practise. Only the decks
+  // and stages the page already loaded — no extra query for the card readings.
+  const soonest = [...overdueItems, ...dueSoonItems].sort(
+    (a, b) => a.daysUntilDue - b.daysUntilDue,
+  )[0];
+  const behind = soonest
+    ? members.filter((m) => !inactiveIds.has(m.id) && m.hiragana === 'new')
+    : [];
+  const readingItems: AttentionItem[] =
+    behind.length > MAX_READING_ROWS
+      ? [
+          {
+            kind: 'readingBehindCollapsed',
+            severity: 'warning',
+            count: behind.length,
+            deckName: soonest?.deckName ?? '',
+          },
+        ]
+      : behind.map((member) => ({
+          kind: 'readingBehind',
+          severity: 'warning',
+          memberId: member.id,
+          name: member.displayName || member.username,
+          deckName: soonest?.deckName ?? '',
+        }));
+
   return [
     ...overdueItems,
     ...inactiveItems,
     ...dueSoonItems,
+    ...readingItems,
     ...(forgotten ? [forgotten] : []),
     ...backlogItems,
   ];

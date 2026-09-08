@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import type { GroupMember } from '@/hooks/useGroup';
 
 import { REVIEW_BACKLOG_THRESHOLD } from '../reviewBacklog';
-import { accuracyFraction, accuracyTone } from './derive';
+import { accuracyFraction, accuracyTone, readingLabel } from './derive';
 import { accuracyCompactLabel, cardsStudiedLabel, streakLabel } from './format';
 import { LearnerIdentity } from './LearnerIdentity';
 import { StatusLabel } from './StatusLabel';
@@ -54,6 +54,12 @@ export function MobileList({ members, onSelect }: MobileListProps) {
             <Box sx={{ pl: '48px', mt: 0.5 }}>
               <StatusLabel member={member} />
             </Box>
+            {/* No column header on a phone, so a dash would read as broken. */}
+            {readingLabel(member, t) && (
+              <Typography sx={{ pl: '48px', fontSize: '0.78rem', color: 'text.secondary' }}>
+                {readingLabel(member, t)}
+              </Typography>
+            )}
             <Typography sx={{ pl: '48px', mt: 0.25, fontSize: '0.78rem', color: 'text.secondary' }}>
               {streakLabel(member, t)} · {cardsStudiedLabel(member, t)} ·{' '}
               <Box component="span" sx={{ color: accuracyColor, fontWeight: 700 }}>
