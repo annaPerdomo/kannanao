@@ -1089,6 +1089,22 @@
       "yesterday": "Yesterday",
       "daysAgo": "{days}d ago"
     },
+    "materialsProgress": {
+      "heading": "Where the group is",
+      "finished": "Finished",
+      "inProgress": "In progress",
+      "comingUp": "Coming up",
+      "nextDue": "Next due: {deck}",
+      "recentlyFinished": "Recently finished",
+      "notHandedOut": "Not handed out yet",
+      "andMore": "and {count} more",
+      "assign": "Assign",
+      "assignAria": "Assign {deck}",
+      "emptyHint": "Make a deck, then hand it out here.",
+      "seeAllAssignments": "See all assignments",
+      "makeMaterials": "Make new materials",
+      "loading": "Loading your plan..."
+    },
     "memberDetail": {
       "loadingMemberDetails": "Loading member details...",
       "level": "Level {level}",

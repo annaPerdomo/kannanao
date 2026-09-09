@@ -80,6 +80,10 @@ export default function GroupDashboardPage() {
   const ownDecks = decks.filter((d) => !d.isShared);
 
   const [assignOpen, setAssignOpen] = useState(false);
+  const [assignDeckId, setAssignDeckId] = useState<string | null>(null);
+  // Bumped on every open so the dialog remounts with fresh state instead of
+  // carrying a cancelled preselection into the next handout.
+  const [assignSession, setAssignSession] = useState(0);
   const [createInviteOpen, setCreateInviteOpen] = useState(false);
   const [qrInvite, setQrInvite] = useState<InviteCode | null>(null);
 
@@ -103,6 +107,12 @@ export default function GroupDashboardPage() {
   const handleOpenMaterials = useCallback(() => {
     router.push(`/materials?group=${groupId}`);
   }, [router, groupId]);
+
+  const openAssign = useCallback((deckId: string | null = null) => {
+    setAssignDeckId(deckId);
+    setAssignSession((n) => n + 1);
+    setAssignOpen(true);
+  }, []);
 
   const handleSendEncouragement = useCallback(
     async (memberId: string, message: string, emoji?: string) => {
@@ -227,8 +237,14 @@ export default function GroupDashboardPage() {
           words={difficultWords?.words}
           wordsLoading={difficultWordsLoading}
           wordsError={difficultWordsError}
+          assignments={assignments}
+          assignmentsLoading={assignmentsLoading}
+          assignmentsError={assignmentsError}
+          ownDecks={ownDecks}
+          canAssign={members.length > 0}
           onNavigateTab={handleTabChange}
           onOpenMaterials={handleOpenMaterials}
+          onAssignDeck={openAssign}
         />
       )}
 
@@ -251,7 +267,7 @@ export default function GroupDashboardPage() {
           onEditAssignments={updateAssignments}
           onDeleteAssignments={deleteAssignments}
           canAssign={members.length > 0}
-          onAssign={() => setAssignOpen(true)}
+          onAssign={() => openAssign()}
           ownDecks={ownDecks}
           groupId={groupId}
           onSendEncouragement={handleSendEncouragement}
@@ -272,10 +288,15 @@ export default function GroupDashboardPage() {
       )}
 
       <CreateAssignmentDialog
+        key={assignSession}
         open={assignOpen}
-        onClose={() => setAssignOpen(false)}
+        onClose={() => {
+          setAssignOpen(false);
+          setAssignDeckId(null);
+        }}
         members={members}
         decks={ownDecks}
+        preSelectedDeckId={assignDeckId ?? undefined}
         onCreate={createAssignment}
       />
 

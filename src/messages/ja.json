@@ -1089,6 +1089,22 @@
       "yesterday": "きのう",
       "daysAgo": "{days}日前"
     },
+    "materialsProgress": {
+      "heading": "グループの現在地",
+      "finished": "終わった",
+      "inProgress": "進行中",
+      "comingUp": "これから",
+      "nextDue": "次の期限: {deck}",
+      "recentlyFinished": "最近終わったもの",
+      "notHandedOut": "まだ配っていないもの",
+      "andMore": "他 {count} 件",
+      "assign": "配る",
+      "assignAria": "{deck} を配る",
+      "emptyHint": "デッキを作って、ここから配りましょう。",
+      "seeAllAssignments": "課題をすべて見る",
+      "makeMaterials": "新しい教材を作る",
+      "loading": "予定を読み込み中..."
+    },
     "memberDetail": {
       "loadingMemberDetails": "メンバーの詳細を読み込み中...",
       "level": "レベル {level}",
