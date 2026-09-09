@@ -1250,7 +1250,12 @@
       "sectionFinished": "終わったもの",
       "sectionCount": "{label} · {count}",
       "nothingInProgress": "今進行中のものはありません。",
-      "finishedDate": "{date} に終了"
+      "finishedDate": "{date} に終了",
+      "neverGotThis": "{count} 人がまだ受け取っていません",
+      "giveToThem": "この人たちに配る",
+      "giveToThemAria": "まだ受け取っていない {count} 人に {deckName} を配る",
+      "memberNeverGot": "まだ受け取っていない",
+      "doneCountMissing": "{done}/{total} 完了 · {missing} 人未配布"
     },
     "createAssignment": {
       "title": "課題を出す",

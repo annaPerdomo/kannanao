@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { AssignmentsList, groupAssignments } from '@/components/Group/AssignmentsList';
 import type { Assignment } from '@/hooks/useAssignments';
+import type { GroupMember } from '@/hooks/useGroup';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -46,6 +47,45 @@ function render(assignments: Assignment[], onDeleteBatch = vi.fn().mockResolvedV
     />,
   );
   return onDeleteBatch;
+}
+
+function groupMember(overrides: Partial<GroupMember> = {}): GroupMember {
+  return {
+    id: 'm1',
+    username: 'mika',
+    displayName: 'Mika',
+    createdAt: '2026-07-01T00:00:00Z',
+    level: 1,
+    totalXp: 0,
+    streakDays: 0,
+    totalCardsStudied: 0,
+    totalCorrect: 0,
+    totalSessions: 0,
+    lastActive: null,
+    lastNudgedAt: null,
+    masteryLearning: 0,
+    masteryStrong: 0,
+    reviewsWaiting: null,
+    reviewsOverdue3d: null,
+    ...overrides,
+  } as GroupMember;
+}
+
+function renderWithRoster(
+  assignments: Assignment[],
+  members: GroupMember[],
+  onAssignMissing = vi.fn(),
+) {
+  renderWithProviders(
+    <AssignmentsList
+      assignments={assignments}
+      onEditBatch={vi.fn().mockResolvedValue(undefined)}
+      onDeleteBatch={vi.fn().mockResolvedValue(undefined)}
+      members={members}
+      onAssignMissing={onAssignMissing}
+    />,
+  );
+  return onAssignMissing;
 }
 
 describe('groupAssignments', () => {
@@ -245,5 +285,57 @@ describe('AssignmentsList', () => {
     render(handout(2, { completed_at: iso(-1) }));
     expect(screen.getByText('In progress · 0')).toBeInTheDocument();
     expect(screen.getByText('Nothing in progress right now.')).toBeInTheDocument();
+  });
+
+  it('flags learners who never got a handout and hands it to them in one tap', () => {
+    const roster = [
+      groupMember({ id: 'm0' }),
+      groupMember({ id: 'm1' }),
+      groupMember({ id: 'extra1', displayName: 'Extra One' }),
+      groupMember({ id: 'extra2', displayName: 'Extra Two' }),
+    ];
+    const onAssignMissing = renderWithRoster(handout(2), roster);
+
+    expect(screen.getByText('2 learners never got this')).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Give Animals to the 2 learners who never got it' }),
+    );
+    expect(onAssignMissing).toHaveBeenCalledTimes(1);
+    const [calledBatch, calledIds] = onAssignMissing.mock.calls[0];
+    expect(calledBatch.deckName).toBe('Animals');
+    expect(calledIds.sort()).toEqual(['extra1', 'extra2']);
+  });
+
+  it('counts missing learners next to a finished handout', () => {
+    const roster = [
+      groupMember({ id: 'm0' }),
+      groupMember({ id: 'm1' }),
+      groupMember({ id: 'late' }),
+    ];
+    renderWithRoster(handout(2, { completed_at: iso(-1) }), roster);
+
+    expect(screen.getByText('2/2 done · 1 missing')).toBeInTheDocument();
+  });
+
+  it('does not flag a learner who holds the deck under another deadline', () => {
+    const roster = [groupMember({ id: 'm0' }), groupMember({ id: 'm1' })];
+    const later = assignment({ id: 'later', member_id: 'm1', due_date: iso(9) });
+    renderWithRoster([assignment({ id: 'a0', member_id: 'm0' }), later], roster);
+
+    expect(screen.queryByText(/never got this/i)).not.toBeInTheDocument();
+  });
+
+  it('does not flag missing learners on a scheduled handout', () => {
+    const roster = [groupMember({ id: 'm0' }), groupMember({ id: 'extra' })];
+    renderWithRoster(handout(1, { available_on: iso(1) }), roster);
+    expect(screen.queryByText(/never got this/i)).not.toBeInTheDocument();
+  });
+
+  it('lists the missing members inside the expanded member list', () => {
+    const roster = [groupMember({ id: 'm0' }), groupMember({ id: 'extra', displayName: 'Extra' })];
+    renderWithRoster(handout(1), roster);
+    fireEvent.click(screen.getByRole('button', { name: /Show who's done/i }));
+    expect(screen.getByText('Extra')).toBeInTheDocument();
+    expect(screen.getByText('never got this')).toBeInTheDocument();
   });
 });

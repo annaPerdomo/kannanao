@@ -1,4 +1,7 @@
 import type { Assignment } from '@/hooks/useAssignments';
+import type { GroupMember } from '@/hooks/useGroup';
+
+import type { AssignmentBatch } from './groupAssignments';
 
 export type MemberStatus = 'done' | 'close' | 'notStarted';
 
@@ -52,4 +55,21 @@ export function groupBatchMembers(members: Assignment[]): BatchMemberRow[] {
     if (a.status === 'close') return (b.progressAccuracy ?? 0) - (a.progressAccuracy ?? 0);
     return a.name.localeCompare(b.name);
   });
+}
+
+// Checked against every assignment, not just this batch: the API upserts on
+// member + deck, so handing a deck to someone who holds it elsewhere overwrites their copy.
+export function missingMembers(
+  batch: AssignmentBatch,
+  members: GroupMember[],
+  assignments: Assignment[],
+): GroupMember[] {
+  const { deck_id, kana_set } = batch.sample;
+  const covered = new Set(batch.members.map((m) => m.member_id));
+  for (const a of assignments) {
+    if ((deck_id && a.deck_id === deck_id) || (kana_set && a.kana_set === kana_set)) {
+      covered.add(a.member_id);
+    }
+  }
+  return members.filter((m) => !covered.has(m.id));
 }

@@ -10,6 +10,7 @@ import { useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
 import type { Assignment } from '@/hooks/useAssignments';
+import type { GroupMember } from '@/hooks/useGroup';
 
 import { todayIso } from '../dueDate';
 import { EditAssignmentDialog } from '../EditAssignmentDialog';
@@ -32,6 +33,8 @@ interface AssignmentsListProps {
   ) => Promise<void>;
   onDeleteBatch: (ids: string[]) => Promise<void>;
   onSendEncouragement?: (memberId: string, message: string, emoji?: string) => Promise<unknown>;
+  members?: GroupMember[];
+  onAssignMissing?: (batch: AssignmentBatch, memberIds: string[]) => void;
 }
 
 export function AssignmentsList({
@@ -39,6 +42,8 @@ export function AssignmentsList({
   onEditBatch,
   onDeleteBatch,
   onSendEncouragement,
+  members,
+  onAssignMissing,
 }: AssignmentsListProps) {
   const theme = useTheme();
   const t = useTranslations('Group.assignmentsList');
@@ -64,6 +69,9 @@ export function AssignmentsList({
         setDeleteError(null);
       }}
       onSendEncouragement={onSendEncouragement}
+      members={members}
+      assignments={assignments}
+      onAssignMissing={onAssignMissing}
     />
   );
 

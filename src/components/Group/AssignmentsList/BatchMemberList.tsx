@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import type { Assignment } from '@/hooks/useAssignments';
+import type { GroupMember } from '@/hooks/useGroup';
 
 import { timeAgo } from '../timeAgo';
 import { groupBatchMembers, isNearGoal } from './batchMemberGrouping';
@@ -19,6 +20,7 @@ interface BatchMemberListProps {
   requiredAccuracy: number | null;
   deckName: string;
   onSendEncouragement?: (memberId: string, message: string, emoji?: string) => Promise<unknown>;
+  missingMembers?: GroupMember[];
 }
 
 export function BatchMemberList({
@@ -27,6 +29,7 @@ export function BatchMemberList({
   requiredAccuracy,
   deckName,
   onSendEncouragement,
+  missingMembers,
 }: BatchMemberListProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -142,6 +145,23 @@ export function BatchMemberList({
           </Box>
         );
       })}
+      {missingMembers?.map((m) => (
+        <Box key={m.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.9, minWidth: 0 }}>
+          <FiberManualRecordIcon
+            aria-hidden
+            sx={{ fontSize: 9, flexShrink: 0, color: alpha(brand[400], 0.25) }}
+          />
+          <Typography
+            sx={{ fontSize: '0.8rem', fontWeight: 700, color: 'text.primary', flexShrink: 0 }}
+            noWrap
+          >
+            {m.displayName || m.username}
+          </Typography>
+          <Typography sx={{ fontSize: '0.76rem', color: 'text.secondary' }} noWrap>
+            {t('memberNeverGot')}
+          </Typography>
+        </Box>
+      ))}
     </Box>
   );
 }
