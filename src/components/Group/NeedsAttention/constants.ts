@@ -14,3 +14,6 @@ export const MIN_FORGOTTEN_WORDS = 3;
 export const WORDS_PREVIEW_COUNT = 3;
 
 export const MS_PER_DAY = 86_400_000;
+
+/** A reading row per learner is a lot of panel; past this the educator needs the table. */
+export const MAX_READING_ROWS = 3;

@@ -36,6 +36,8 @@ interface PlanDeckCardProps {
   onRetry: () => void;
   /** Keep the approved cards and generate fresh ones for the rest, up to targetCount. */
   onRegenerateUnapproved: (targetCount: number) => void;
+  /** This week's kana rows. */
+  sounds?: React.ReactNode;
 }
 
 export function PlanDeckCard({
@@ -50,6 +52,7 @@ export function PlanDeckCard({
   onDeckChange,
   onRetry,
   onRegenerateUnapproved,
+  sounds,
 }: PlanDeckCardProps) {
   const t = useTranslations('Group.lessonBuilder');
   const theme = useTheme();
@@ -141,6 +144,8 @@ export function PlanDeckCard({
           {t('noCardsNote')}
         </Typography>
       )}
+
+      {deckOn && sounds}
 
       <Collapse in={deckOn}>
         {weekNumber !== null && weekNumber > 1 && (

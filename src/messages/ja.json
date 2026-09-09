@@ -523,6 +523,7 @@
       "subtitle": "ワンタップで、今日の練習がはじまるよ",
       "wordsWaiting": "{count, plural, other {#語が待っています}}",
       "waitingBody": "数分の復習でことばを忘れにくく 🎁",
+      "soundsBody": "先生からの もじの れんしゅう 数分 🔊",
       "funWaysToPractice": "おまけのゲーム",
       "todaysPractice": "今日の練習",
       "readyTitle": "練習の準備はいい？",
@@ -562,7 +563,15 @@
       "todaysPractice": "今日の練習",
       "cardsBadge": "{count, plural, other {カード#枚}}",
       "kanaRoundTitle": "もじ",
-      "kanaRoundSubtitle": "{count, plural, other {もじを#こ おさらいしよう}}"
+      "kanaRoundSubtitle": "{count, plural, other {もじを#こ おさらいしよう}}",
+      "kanaRoundTitleNew": "あたらしい もじ",
+      "kanaRoundNew": "{count, plural, other {あたらしい もじ #こに であおう}}",
+      "kanaRoundMixed": "{newCount, plural, other {あたらしい #こ}}、{brushUp, plural, other {おさらい #こ}}",
+      "meetTitle": "この もじに であおう",
+      "meetTapToHear": "タップして きいてみよう",
+      "meetGotIt": "わかった",
+      "meetHowTo": "もじを みて、おとを きいてから もんだいに すすみます。",
+      "readsHiragana": "ひらがなが よめるように なったよ！🎉"
     },
     "todayPage": {
       "findingReviews": "復習をさがしています…",
@@ -1576,7 +1585,12 @@
       "staleSummary": "{count, plural, other {#人}}が今週まだ学習していません",
       "allCaughtUp": "全員が最近学習しています。",
       "emptyTitle": "メンバーがまだいません",
-      "emptyBody": "「招待」からこのグループにメンバーを追加しましょう。"
+      "emptyBody": "「招待」からこのグループにメンバーを追加しましょう。",
+      "colReading": "よみ",
+      "readingLearningHiragana": "ひらがな れんしゅうちゅう",
+      "readingHiragana": "ひらがなが よめる",
+      "readingLearningKatakana": "カタカナ れんしゅうちゅう",
+      "readingBoth": "りょうほう よめる"
     },
     "needsAttention": {
       "heading": "対応が必要なこと",
@@ -1613,7 +1627,10 @@
       "wordsForgottenHeadline": "{count, plural, other {#語}}をわすれかけています",
       "wordsForgottenSubline": "{words} · {count, plural, other {#人}}がつまずいています",
       "wordSeparator": "、",
-      "reviewWordsAction": "単語を見る"
+      "reviewWordsAction": "単語を見る",
+      "readingBehindHeadline": "{name} は {deck} の ことばが まだ よめません",
+      "readingBehindSubline": "れんしゅうで あたらしい もじに であえます。もじの ぎょうを わたすと よいかも。",
+      "readingBehindCollapsedHeadline": "{count} 人が {deck} の ことばを まだ よめません"
     },
     "lessonBuilder": {
       "goalLabel": "なにをとりあげますか？",
@@ -1697,7 +1714,7 @@
       "kanaNoDataNote": "ヒント: グループは まだ「かなを まなぶ」を つかっていないので、よみの データが ありません。",
       "kanaCompanionTitle": "この レッスンには グループが まだ おぼえていない おとが あります: {sounds}",
       "kanaCompanionToggle": "この かなの ぎょうも おなじ ひづけで だす",
-      "kanaAssignedMessage": "かなの ぎょう {sounds} も わりあてました。",
+      "kanaAssignedMessage": "かなの ぎょう {sounds} も、レッスンの しゅうに あわせて わりあてました。",
       "kanaAssignFailed": "かなの ぎょう {sounds} は わりあてられませんでした。グループの ページから わりあてられます。",
       "printKanaToggle": "この レッスンの おとの かなページを つける",
       "printKanaTitle": "この レッスンの おと",
@@ -1723,7 +1740,12 @@
       "sheetsPopupBlocked": "ブラウザが印刷用のタブをブロックしました。このサイトのポップアップを許可して、もう一度お試しください。",
       "sheetsGroupEmpty": "このグループにはまだ学習者がいません。",
       "sheetsKanjiTitle": "漢字の練習シート",
-      "sheetsKanjiEmpty": "この計画には漢字で書く語がありません。"
+      "sheetsKanjiEmpty": "この計画には漢字で書く語がありません。",
+      "soundsLineTitle": "こんしゅうの もじ・{date} まで",
+      "soundsSwitchLabel": "{date} きげんの もじを わたす",
+      "soundsShaky": "まだ れんしゅうちゅうの 人が います",
+      "soundsNewToAll": "ぜんいん はじめて",
+      "soundsAfterPlanHeading": "コースの {week} しゅうめの あとの もじ"
     },
     "deckReadiness": {
       "heading": "デッキの仕上がり",
@@ -1764,7 +1786,8 @@
     "loadingMessage": "よみこみ中…",
     "tabs": {
       "lessonSet": "レッスンセット",
-      "deck": "デッキだけ"
+      "deck": "デッキだけ",
+      "kana": "もじ"
     },
     "step1Title": "なにをつくりますか？",
     "step1Subtitle": "目標やトピック、おぼえたいことばを書いてください。資料をつけてもOKです。",
@@ -1817,6 +1840,69 @@
       "copyHint": "ほかのデッキのカードをつかいまわせます。",
       "createButton": "デッキをつくる",
       "seeDecksButton": "デッキ一覧へ"
+    },
+    "kanaCourse": {
+      "step1Title": "だれが よむ？",
+      "step1Subtitle": "グループと、もじの もとを えらびます。",
+      "step2Title": "コースの かたち",
+      "step2Subtitle": "1しゅうかんに どれだけ よむか、いつ はじめるか。",
+      "groupLabel": "グループ",
+      "sourceLessons": "レッスンに でてくる もじ",
+      "sourceLessonsHint": "グループが つかっている {count} このデッキから。",
+      "sourceLessonsLoading": "グループの レッスンを みています…",
+      "sourceLessonsEmpty": "このグループには まだ レッスンが ありません。",
+      "sourceChart": "ひょう ぜんぶ",
+      "sourceChartHint": "ひょうの じゅんばんに、まいしゅう すこしずつ。",
+      "script": {
+        "hiragana": "ひらがな",
+        "katakana": "カタカナ",
+        "both": "りょうほう"
+      },
+      "startRowLabel": "はじめる ぎょう",
+      "startRowSuggestion": "グループは {kana} の ぎょうまで よめています。",
+      "weeksLabel": "しゅうすう",
+      "weeksValue": "{count} しゅうかん",
+      "rowsPerWeekLabel": "1しゅうの ぎょうすう",
+      "rowsPerWeekValue": "{count} ぎょう",
+      "firstDueDateLabel": "1しゅうめの きげん",
+      "lessonsDatesHint": "それぞれの ぎょうは、つかう レッスンの すうじつまえが きげんです。",
+      "buildButton": "コースを つくる",
+      "reviewHeading": "{weeks} しゅうかん・{rows} ぎょう",
+      "reviewSubtitle": "わたしたくない しゅう や ぎょうは オフに できます。",
+      "nothingToTeach": "このグループは ここは もう ぜんぶ よめます。べつの もじか、もっと さきの ぎょうから はじめてみてください。",
+      "weekTitle": "{number} しゅうめ",
+      "weekSkipped": "スキップ",
+      "weekSwitchLabel": "{number} しゅうめを いれる",
+      "rowNewToEveryone": "ぜんいん はじめて",
+      "rowSomeRead": "{total} にんちゅう {count} にんが もう よめます",
+      "rowMostlyRead": "グループは もう よめます",
+      "printWeekButton": "こんしゅうの もじを いんさつ",
+      "printBlankButton": "れんしゅうシートを いんさつ",
+      "printWeekTitle": "こんしゅうの もじ",
+      "printBlankTitle": "れんしゅうシート",
+      "applyButton": "コースを わたす",
+      "applying": "わたしています…",
+      "applyingMessage": "よみの コースを わたしています…",
+      "startOverButton": "さいしょから",
+      "groupWideNotice": "グループ ぜんいんに わたされます。あとから さんかした人にも わたされます。",
+      "appliedMessage": "{rows} ぎょうを {learners} にんに わたしました。",
+      "appliedSounds": "わたした もじ：{sounds}",
+      "appliedFailed": "つぎの ぎょうは わたせませんでした：{sounds}",
+      "backToGroupButton": "グループに もどる",
+      "planAnotherButton": "べつの コースを つくる",
+      "sourceError": "グループの レッスンを よみこめませんでした。",
+      "applyError": "コースを わたせませんでした。",
+      "appliedNothing": "なにも わたせませんでした。もういちど おためしください。",
+      "tryAgainButton": "もういちど",
+      "firstDueDateMissing": "1しゅうめの ひづけを えらんでください。",
+      "weekSwitchLabelOff": "{date} きげんの しゅうを もどす"
+    },
+    "readingHiraganaLabel": "ひらがなは よめますか？",
+    "readingKatakanaLabel": "カタカナは よめますか？",
+    "readingAnswer": {
+      "not-yet": "まだ",
+      "learning": "れんしゅうちゅう",
+      "yes": "よめる"
     }
   },
   "Nav": {

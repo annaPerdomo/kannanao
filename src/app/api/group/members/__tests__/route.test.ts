@@ -25,7 +25,7 @@ function setTable(table: string, data: unknown, error: unknown = null) {
 function makeChain(table: string) {
   const asPromise = () => Promise.resolve(tableData[table] ?? { data: null, error: null });
   const chain: Record<string, unknown> = {};
-  ['select', 'eq', 'in', 'order'].forEach((m) => {
+  ['select', 'eq', 'in', 'order', 'range'].forEach((m) => {
     chain[m] = vi.fn(() => chain);
   });
   chain.then = (onfulfilled: (v: unknown) => unknown, onrejected?: (e: unknown) => unknown) =>
@@ -177,5 +177,51 @@ describe('GET /api/group/members — review backlog', () => {
           m.reviewsWaiting === null && m.reviewsOverdue3d === null,
       ),
     ).toBe(true);
+  });
+});
+
+describe('GET /api/group/members — kana reading stages', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    _resetStore();
+    for (const key of Object.keys(tableData)) delete tableData[key];
+    requireOrganizerAccountMock.mockResolvedValue(ORGANIZER);
+    rpcMock.mockResolvedValue({ data: [], error: null });
+    setTable('profiles', [
+      { id: 'm1', username: 'naomi', display_name: null, avatar: null, created_at: '2026-01-01' },
+      { id: 'm2', username: 'taro', display_name: null, avatar: null, created_at: '2026-01-02' },
+    ]);
+    setTable('user_progress', []);
+    setTable('card_progress', []);
+  });
+
+  it("defaults a member with no kana_progress rows to 'new' on both tracks", async () => {
+    setTable('kana_progress', []);
+    const res = await GET(request());
+    const body = await res.json();
+    expect(body.find((m: { id: string }) => m.id === 'm1')).toMatchObject({
+      hiragana: 'new',
+      katakana: 'new',
+    });
+  });
+
+  it("moves a member past 'new' once enough hiragana rows have been seen", async () => {
+    const seen = [...'あいうえおかきくけこ'].map((kana) => ({
+      user_id: 'm1',
+      kana,
+      correct_count: 1,
+      wrong_count: 0,
+    }));
+    setTable('kana_progress', seen);
+
+    const res = await GET(request());
+    const body = await res.json();
+    const m1 = body.find((m: { id: string }) => m.id === 'm1');
+    expect(m1.hiragana).toBe('learning');
+    expect(m1.katakana).toBe('new');
+
+    // A member the query never returned rows for stays untouched.
+    const m2 = body.find((m: { id: string }) => m.id === 'm2');
+    expect(m2).toMatchObject({ hiragana: 'new', katakana: 'new' });
   });
 });

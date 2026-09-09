@@ -46,6 +46,24 @@ import type { Flashcard } from '@/types/flashcard';
 
 const CHARS = ['ぬ', 'ね', 'ま'];
 
+const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString();
+
+/** Characters the learner has met before — no meet card, straight to the drill. */
+const seen = (chars: string[]) =>
+  new Map(
+    chars.map((k) => [
+      k,
+      {
+        correctCount: 1,
+        wrongCount: 4,
+        intervalDays: 0,
+        ease: 2.5,
+        lastReviewedAt: daysAgo(9),
+        nextReviewAt: daysAgo(8),
+      },
+    ]),
+  );
+
 function cards(n: number): Flashcard[] {
   return Array.from({ length: n }, (_, i) => ({
     id: `c${i}`,
@@ -62,13 +80,13 @@ function cards(n: number): Flashcard[] {
   }));
 }
 
-function answerCorrectly(): string {
+function answerCorrectly(chars: string[] = CHARS): string {
   // Recall offers character tiles labelled by the character; Recognize offers
   // sounds labelled "Answer A: <romaji>" — which is on screen tells them apart.
-  const asTiles = CHARS.filter((k) => screen.queryAllByRole('button', { name: k }).length > 0);
+  const asTiles = chars.filter((k) => screen.queryAllByRole('button', { name: k }).length > 0);
   const asked = asTiles.length
-    ? CHARS.find((k) => screen.queryAllByText(romajiOf(k)).length > 0)!
-    : CHARS.find((k) => screen.queryAllByText(k).length > 0)!;
+    ? chars.find((k) => screen.queryAllByText(romajiOf(k)).length > 0)!
+    : chars.find((k) => screen.queryAllByText(k).length > 0)!;
 
   fireEvent.click(
     asTiles.length
@@ -92,7 +110,13 @@ describe('ReviewQuest — the kana node', () => {
 
   async function renderKanaOnlyQuest(recordKana: (k: string, c: boolean) => Promise<void>) {
     renderWithProviders(
-      <ReviewQuest cards={[]} kanaChars={CHARS} recordKana={recordKana} onExit={vi.fn()} />,
+      <ReviewQuest
+        cards={[]}
+        kanaChars={CHARS}
+        kanaProgress={seen(CHARS)}
+        recordKana={recordKana}
+        onExit={vi.fn()}
+      />,
     );
     await act(async () => {});
     fireEvent.click(screen.getByRole('button', { name: /continue|let's go/i }));
@@ -138,7 +162,13 @@ describe('ReviewQuest — the kana node', () => {
   it('follows the warm-up in a mixed quest, behind its own intro', async () => {
     const recordKana = vi.fn(async () => {});
     renderWithProviders(
-      <ReviewQuest cards={cards(2)} kanaChars={CHARS} recordKana={recordKana} onExit={vi.fn()} />,
+      <ReviewQuest
+        cards={cards(2)}
+        kanaChars={CHARS}
+        kanaProgress={seen(CHARS)}
+        recordKana={recordKana}
+        onExit={vi.fn()}
+      />,
     );
     await act(async () => {});
 
@@ -163,5 +193,56 @@ describe('ReviewQuest — the kana node', () => {
       <ReviewQuest cards={[]} kanaChars={CHARS} onExit={vi.fn()} />,
     );
     expect(container).toBeEmptyDOMElement();
+  });
+  describe('meeting a character for the first time', () => {
+    const NEW_CHARS = ['あ', 'い', 'う'];
+
+    async function renderFirstMeeting(recordKana: (k: string, c: boolean) => Promise<void>) {
+      renderWithProviders(
+        <ReviewQuest
+          cards={[]}
+          kanaChars={NEW_CHARS}
+          kanaProgress={new Map()}
+          recordKana={recordKana}
+          onExit={vi.fn()}
+        />,
+      );
+      await act(async () => {});
+      fireEvent.click(screen.getByRole('button', { name: /continue|let's go/i }));
+    }
+
+    it('shows the character before asking about it', async () => {
+      await renderFirstMeeting(vi.fn(async () => {}));
+      expect(screen.getByText('Meet this character')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument();
+    });
+
+    it('asks only once every new character has been met', async () => {
+      await renderFirstMeeting(vi.fn(async () => {}));
+      for (let i = 0; i < NEW_CHARS.length; i += 1) {
+        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+      }
+      expect(screen.queryByRole('button', { name: 'Got it' })).toBeNull();
+      expect(screen.getByText(/which sound|どの おと/i)).toBeInTheDocument();
+    });
+
+    it('credits the easier row-mates of a character met and answered right', async () => {
+      const recordKana = vi.fn(async (_kana: string, _correct: boolean) => {});
+      await renderFirstMeeting(recordKana);
+      for (let i = 0; i < NEW_CHARS.length; i += 1) {
+        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+      }
+
+      // The quest map also prints あ, so read the character off the glyph itself.
+      const asked = screen.getByRole('button', { name: 'Tap to hear it' }).textContent!;
+      fireEvent.click(screen.getByRole('button', { name: new RegExp(`: ${romajiOf(asked)}$`) }));
+      act(() => {
+        vi.advanceTimersByTime(1200);
+      });
+
+      expect(recordKana).toHaveBeenCalledWith(asked, true);
+      expect(recordKana.mock.calls.length).toBeGreaterThan(1);
+      expect(recordKana.mock.calls.every((call) => call[1] === true)).toBe(true);
+    });
   });
 });

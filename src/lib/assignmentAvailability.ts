@@ -1,4 +1,5 @@
 import { DEFAULT_TIME_ZONE } from '@/i18n/config';
+import { orderKanaSets } from '@/lib/kanaCurriculum';
 
 import { dateStringInTimeZone } from './reviewReminder';
 
@@ -27,4 +28,19 @@ export function availableNowFilter(today: string = availabilityToday()): string 
 /** True when an already-loaded assignment row has started for the learner. */
 export function isAvailable(availableOn: string | null | undefined, today = availabilityToday()) {
   return !availableOn || availableOn <= today;
+}
+
+/** Open kana rows, in curriculum order. */
+export function openKanaSetIds(
+  assignments: {
+    kana_set: string | null;
+    completed_at: string | null;
+    available_on: string | null;
+  }[],
+  today = availabilityToday(),
+): string[] {
+  const ids = assignments
+    .filter((a) => a.kana_set != null && !a.completed_at && isAvailable(a.available_on, today))
+    .map((a) => a.kana_set as string);
+  return orderKanaSets(new Set(ids)).map((set) => set.id);
 }

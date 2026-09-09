@@ -26,10 +26,12 @@ const heroSx = {
 function PracticeHero({
   dueCount,
   deckLabel,
+  hasKanaRow,
   onStart,
 }: {
   dueCount: number;
   deckLabel: string | null;
+  hasKanaRow: boolean;
   onStart: () => void;
 }) {
   const t = useTranslations('Review.hubPage');
@@ -61,9 +63,11 @@ function PracticeHero({
           ? dueCount > 0
             ? t('thenDeck', { deck: deckLabel })
             : t('fromDeck', { deck: deckLabel })
-          : t('waitingBody')}
+          : hasKanaRow
+            ? t('soundsBody')
+            : t('waitingBody')}
         {' · '}
-        {t('minutesEstimate', { min: previewMinutes(dueCount, deckLabel !== null) })}
+        {t('minutesEstimate', { min: previewMinutes(dueCount, deckLabel !== null, hasKanaRow) })}
       </Typography>
       {/* Stock contained variant: the theme paints a gradient an sx bgcolor sits behind. */}
       <Button
@@ -107,7 +111,7 @@ export default function ReviewHubPage() {
   const tKana = useTranslations('KanaJourney.tile');
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { dueCount, focus, empty, loading, error, retry } = useDailyFocus();
+  const { dueCount, focus, kanaRow, empty, loading, error, retry } = useDailyFocus();
   const [gamesOpen, setGamesOpen] = useState(searchParams?.get(GAMES_PARAM) === '1');
 
   const deckLabel = focus ? `${focus.emoji} ${focus.deckName}`.trim() : null;
@@ -143,6 +147,7 @@ export default function ReviewHubPage() {
         <PracticeHero
           dueCount={dueCount}
           deckLabel={deckLabel}
+          hasKanaRow={kanaRow !== null}
           onStart={() => router.push('/review/start')}
         />
       )}

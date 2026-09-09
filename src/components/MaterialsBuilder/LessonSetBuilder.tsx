@@ -5,29 +5,29 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import type { Group } from '@/hooks/useGroups';
 import { useLessonPlan } from '@/hooks/useLessonPlan';
 import type { GoalMode } from '@/lib/assignmentMastery';
 import { setCharacters } from '@/lib/kanaCurriculum';
-import { attachPlanImages } from '@/lib/lessonImages';
-import { includedCards } from '@/lib/lessonPlanEdits';
-import { CARDS_MAX, CARDS_MIN, DEFAULT_LEVEL, GOAL_MAX } from '@/lib/lessonPrompts';
-import { buildLessonPlan } from '@/services/api';
+import { prefillReadingLevelAnswer } from '@/lib/kanaGaps';
+import { DEFAULT_LEVEL } from '@/lib/lessonPrompts';
 import type { PlanDeck } from '@/types/lessonPlan';
 
 import { AskStep } from './AskStep';
 import {
   DEFAULT_CARDS_PER_DECK,
   DEFAULT_WEEKS,
+  defaultReadingLevel,
   effectiveStyleNotes,
   type LessonSetForm,
   nextSunday,
 } from './constants';
 import { PrintButtons } from './PrintButtons';
 import { ReviewStep } from './ReviewStep';
+import { useDeckRedraw } from './useDeckRedraw';
 
 interface LessonSetBuilderProps {
   groups: Group[];
@@ -45,6 +45,7 @@ const EMPTY_FORM: LessonSetForm = {
   documents: [],
   withSentences: true,
   generateImages: false,
+  readingLevel: defaultReadingLevel(DEFAULT_LEVEL),
 };
 
 /**
@@ -65,6 +66,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
     applying,
     applyFailed,
     kanaReadiness,
+    kanaReadingStages,
     kanaAssigned,
     kanaFailed,
     error,
@@ -78,14 +80,39 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
   const [dueDate, setDueDate] = useState(() => nextSunday());
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [mode, setMode] = useState<GoalMode | null>(null);
-  const [assignKanaSets, setAssignKanaSets] = useState(true);
-  const [companionSets, setCompanionSets] = useState<string[]>([]);
-  const [retryingIndex, setRetryingIndex] = useState<number | null>(null);
-  const [retryError, setRetryError] = useState<string | null>(null);
+  const [skippedSoundWeeks, setSkippedSoundWeeks] = useState<number[]>([]);
+  const [companionRows, setCompanionRows] = useState<{ setId: string; dueDate: string }[]>([]);
+
+  const { retryingIndex, retryError, handleRetryDeck, handleRegenerateUnapproved } = useDeckRedraw({
+    plan,
+    form,
+    groupId,
+    setPlan,
+    mergeWarmUpWords,
+  });
 
   const patchForm = useCallback((patch: Partial<LessonSetForm>) => {
     setForm((current) => ({ ...current, ...patch }));
   }, []);
+
+  // Real reading data outranks the level guess, but only until the educator
+  // touches the control: after that the answer is theirs.
+  const [readingAnswered, setReadingAnswered] = useState(false);
+  useEffect(() => {
+    if (!kanaReadingStages || readingAnswered) return;
+    setForm((current) => ({
+      ...current,
+      readingLevel: {
+        // An empty list is nobody having started, not evidence about the group.
+        hiragana: kanaReadingStages.hiragana.length
+          ? prefillReadingLevelAnswer(kanaReadingStages.hiragana)
+          : current.readingLevel.hiragana,
+        katakana: kanaReadingStages.katakana.length
+          ? prefillReadingLevelAnswer(kanaReadingStages.katakana)
+          : current.readingLevel.katakana,
+      },
+    }));
+  }, [kanaReadingStages, readingAnswered]);
 
   const handleDeckChange = useCallback(
     (index: number, deck: PlanDeck) => {
@@ -94,108 +121,6 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
       );
     },
     [setPlan],
-  );
-
-  /** Redraw one deck rather than the whole plan — the common case when one lands badly. */
-  const handleRetryDeck = useCallback(
-    async (index: number) => {
-      if (!plan) return;
-      setRetryingIndex(index);
-      setRetryError(null);
-      try {
-        const deck = plan.decks[index];
-        const data = await buildLessonPlan({
-          goal: t('retryGoal', { goal: form.goal, deck: deck.name }),
-          weeks: 1,
-          // The known-word filter can shrink a deck below the route's minimum.
-          cardsPerDeck: Math.min(
-            CARDS_MAX,
-            Math.max(CARDS_MIN, deck.cards?.length || form.cardsPerDeck),
-          ),
-          documents: form.documents.map((d) => ({ path: d.path, mimeType: d.mimeType })),
-          level: form.level,
-          styleNotes: effectiveStyleNotes(form),
-          groupId,
-        });
-        const replacementPlan = form.generateImages ? await attachPlanImages(data.plan) : data.plan;
-        const replacement = replacementPlan.decks[0];
-        if (replacement) {
-          setPlan((current) =>
-            current
-              ? { decks: current.decks.map((d, i) => (i === index ? replacement : d)) }
-              : current,
-          );
-          mergeWarmUpWords(data.warmUp ?? []);
-        }
-      } catch (err) {
-        setRetryError(err instanceof Error ? err.message : t('errorMessage'));
-      } finally {
-        setRetryingIndex(null);
-      }
-    },
-    [plan, form, groupId, setPlan, mergeWarmUpWords, t],
-  );
-
-  /**
-   * Keep the approved cards exactly as they are and generate fresh
-   * replacements only for the gap — the unapproved ones, plus however many
-   * more the educator asked for by raising the target count.
-   */
-  const handleRegenerateUnapproved = useCallback(
-    async (index: number, targetCount: number) => {
-      if (!plan) return;
-      const deck = plan.decks[index];
-      const approved = includedCards(deck);
-      const needed = Math.min(CARDS_MAX, Math.max(0, targetCount - approved.length));
-
-      if (needed === 0) {
-        setPlan((current) =>
-          current
-            ? {
-                decks: current.decks.map((d, i) => (i === index ? { ...d, cards: approved } : d)),
-              }
-            : current,
-        );
-        return;
-      }
-
-      setRetryingIndex(index);
-      setRetryError(null);
-      try {
-        const data = await buildLessonPlan({
-          goal: t('regenerateGoal', {
-            goal: form.goal,
-            deck: deck.name,
-            words: approved.map((c) => c.word).join('、') || t('regenerateNoWords'),
-          }).slice(0, GOAL_MAX),
-          weeks: 1,
-          // Gemini's floor is CARDS_MIN even when fewer are actually needed;
-          // the extras are trimmed off below.
-          cardsPerDeck: Math.min(CARDS_MAX, Math.max(CARDS_MIN, needed)),
-          documents: form.documents.map((d) => ({ path: d.path, mimeType: d.mimeType })),
-          level: form.level,
-          styleNotes: effectiveStyleNotes(form),
-          groupId,
-        });
-        const generatedPlan = form.generateImages ? await attachPlanImages(data.plan) : data.plan;
-        const fresh = (generatedPlan.decks[0]?.cards ?? []).slice(0, needed);
-        setPlan((current) =>
-          current
-            ? {
-                decks: current.decks.map((d, i) =>
-                  i === index ? { ...d, cards: [...approved, ...fresh] } : d,
-                ),
-              }
-            : current,
-        );
-        mergeWarmUpWords(data.warmUp ?? []);
-      } catch (err) {
-        setRetryError(err instanceof Error ? err.message : t('errorMessage'));
-      } finally {
-        setRetryingIndex(null);
-      }
-    },
-    [plan, form, groupId, setPlan, mergeWarmUpWords, t],
   );
 
   const createdCount = results?.filter((r) => r.status === 'created').length ?? 0;
@@ -250,7 +175,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
               <PrintButtons
                 plan={plan}
                 warmUp={warmUp}
-                kanaSets={companionSets}
+                kanaSets={companionRows.map((row) => row.setId)}
                 groupId={groupId}
               />
             )}
@@ -267,7 +192,16 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
           groupId={groupId}
           form={form}
           onGroupChange={onGroupChange}
-          onChange={patchForm}
+          onChange={(patch) => {
+            if (patch.readingLevel) setReadingAnswered(true);
+            // The level is the only signal until the educator answers, so it
+            // still moves the answer with it.
+            patchForm(
+              patch.level && !readingAnswered
+                ? { ...patch, readingLevel: defaultReadingLevel(patch.level) }
+                : patch,
+            );
+          }}
           onSubmit={() =>
             build({
               goal: form.goal,
@@ -278,6 +212,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
               styleNotes: effectiveStyleNotes(form),
               groupId,
               generateImages: form.generateImages,
+              readingLevel: form.readingLevel,
             })
           }
         />
@@ -290,7 +225,8 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
           warmUp={warmUp}
           knownWords={knownWords}
           kanaReadiness={kanaReadiness}
-          assignKanaSets={assignKanaSets}
+          readingLevel={form.readingLevel}
+          skippedSoundWeeks={skippedSoundWeeks}
           dueDate={dueDate}
           accuracy={accuracy}
           mode={mode}
@@ -304,8 +240,8 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
           onDueDateChange={setDueDate}
           onAccuracyChange={setAccuracy}
           onModeChange={setMode}
-          onAssignKanaSetsChange={setAssignKanaSets}
-          onCompanionSetsChange={setCompanionSets}
+          onSkippedSoundWeeksChange={setSkippedSoundWeeks}
+          onCompanionSetsChange={setCompanionRows}
           onApply={() =>
             apply({
               groupId,
@@ -315,7 +251,7 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
               withSentences: form.withSentences,
               level: form.level,
               styleNotes: effectiveStyleNotes(form),
-              kanaSets: assignKanaSets ? companionSets : [],
+              kanaWeeks: companionRows,
             })
           }
           onStartOver={reset}

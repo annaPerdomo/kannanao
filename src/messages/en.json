@@ -523,6 +523,7 @@
       "subtitle": "One tap — we pick the exercises",
       "wordsWaiting": "{count, plural, one {# word is waiting} other {# words are waiting}}",
       "waitingBody": "A few minutes keeps your words fresh 🎁",
+      "soundsBody": "A few minutes of reading practice from your teacher 🔊",
       "funWaysToPractice": "Extra games, just for fun",
       "todaysPractice": "Today's practice",
       "readyTitle": "Ready to practice?",
@@ -562,7 +563,15 @@
       "todaysPractice": "Today's Practice",
       "cardsBadge": "{count, plural, one {# card} other {# cards}}",
       "kanaRoundTitle": "Characters",
-      "kanaRoundSubtitle": "{count, plural, one {# character to brush up} other {# characters to brush up}}"
+      "kanaRoundSubtitle": "{count, plural, one {# character to brush up} other {# characters to brush up}}",
+      "kanaRoundTitleNew": "New characters",
+      "kanaRoundNew": "{count, plural, one {# new character to meet} other {# new characters to meet}}",
+      "kanaRoundMixed": "{newCount, plural, one {# new} other {# new}}, {brushUp, plural, one {# to brush up} other {# to brush up}}",
+      "meetTitle": "Meet this character",
+      "meetTapToHear": "Tap to hear it",
+      "meetGotIt": "Got it",
+      "meetHowTo": "Look at the character, hear it, then you will be asked.",
+      "readsHiragana": "You read hiragana now! 🎉"
     },
     "todayPage": {
       "findingReviews": "Finding your reviews…",
@@ -1576,7 +1585,12 @@
       "staleSummary": "{count, plural, one {# member hasn't studied this week} other {# members haven't studied this week}}",
       "allCaughtUp": "Everyone has studied recently.",
       "emptyTitle": "No members yet",
-      "emptyBody": "Use Invite to add members to this group."
+      "emptyBody": "Use Invite to add members to this group.",
+      "colReading": "Reading",
+      "readingLearningHiragana": "Learning hiragana",
+      "readingHiragana": "Reads hiragana",
+      "readingLearningKatakana": "Learning katakana",
+      "readingBoth": "Reads both"
     },
     "needsAttention": {
       "heading": "Needs attention",
@@ -1613,7 +1627,10 @@
       "wordsForgottenHeadline": "{count, plural, one {# word is being forgotten} other {# words are being forgotten}}",
       "wordsForgottenSubline": "{words} · {count, plural, one {# learner affected} other {# learners affected}}",
       "wordSeparator": ", ",
-      "reviewWordsAction": "Review words"
+      "reviewWordsAction": "Review words",
+      "readingBehindHeadline": "{name} can't read the words in {deck} yet",
+      "readingBehindSubline": "Practice introduces new characters — a kana row would help.",
+      "readingBehindCollapsedHeadline": "{count} learners can't read the words in {deck} yet"
     },
     "lessonBuilder": {
       "goalLabel": "What do you want to cover?",
@@ -1697,7 +1714,7 @@
       "kanaNoDataNote": "Tip: your group hasn't tried Learn Kana yet, so there's no reading data to check this plan against.",
       "kanaCompanionTitle": "This lesson uses sounds your group hasn't mastered: {sounds}",
       "kanaCompanionToggle": "Also assign these kana rows, due the same day",
-      "kanaAssignedMessage": "The kana rows {sounds} were assigned too.",
+      "kanaAssignedMessage": "The kana rows {sounds} were assigned too, spread across the plan's weeks.",
       "kanaAssignFailed": "The kana rows {sounds} couldn't be assigned. You can assign them from the group page.",
       "printKanaToggle": "Add a kana page for this lesson's sounds",
       "printKanaTitle": "Sounds in this lesson",
@@ -1723,7 +1740,12 @@
       "sheetsPopupBlocked": "Your browser blocked the print tab. Allow pop-ups for this site and try again.",
       "sheetsGroupEmpty": "No learners in this group yet.",
       "sheetsKanjiTitle": "Kanji writing sheet",
-      "sheetsKanjiEmpty": "No words in this plan are written with kanji."
+      "sheetsKanjiEmpty": "No words in this plan are written with kanji.",
+      "soundsLineTitle": "Sounds for this week · due {date}",
+      "soundsSwitchLabel": "Hand out the sounds due {date}",
+      "soundsShaky": "Some learners are still working on this row",
+      "soundsNewToAll": "New to everyone",
+      "soundsAfterPlanHeading": "More sounds, after week {week} of the course"
     },
     "deckReadiness": {
       "heading": "Deck readiness",
@@ -1764,7 +1786,8 @@
     "loadingMessage": "Loading…",
     "tabs": {
       "lessonSet": "Lesson set",
-      "deck": "Single deck"
+      "deck": "Single deck",
+      "kana": "Kana"
     },
     "step1Title": "What do you want to create?",
     "step1Subtitle": "Describe your goals, topics or vocabulary — or attach files for the plan to follow.",
@@ -1817,6 +1840,69 @@
       "copyHint": "Reuse cards from your other decks.",
       "createButton": "Create a deck",
       "seeDecksButton": "See your decks"
+    },
+    "kanaCourse": {
+      "step1Title": "Who is reading?",
+      "step1Subtitle": "Pick the group and where the sounds come from.",
+      "step2Title": "Shape the course",
+      "step2Subtitle": "How much reading each week, and when it starts.",
+      "groupLabel": "Group",
+      "sourceLessons": "The sounds in our lessons",
+      "sourceLessonsHint": "From the {count, plural, one {# deck} other {# decks}} your group is working on.",
+      "sourceLessonsLoading": "Looking at your group's lessons…",
+      "sourceLessonsEmpty": "Your group has no lessons handed out yet.",
+      "sourceChart": "The whole chart",
+      "sourceChartHint": "Walk down the rows in order, a few each week.",
+      "script": {
+        "hiragana": "ひらがな",
+        "katakana": "カタカナ",
+        "both": "Both"
+      },
+      "startRowLabel": "Start from",
+      "startRowSuggestion": "Your group already reads up to the {kana} row.",
+      "weeksLabel": "Weeks",
+      "weeksValue": "{count, plural, one {# week} other {# weeks}}",
+      "rowsPerWeekLabel": "Rows a week",
+      "rowsPerWeekValue": "{count, plural, one {# row} other {# rows}}",
+      "firstDueDateLabel": "First week due",
+      "lessonsDatesHint": "Each row is due a few days before the lesson that needs it.",
+      "buildButton": "Plan the course",
+      "reviewHeading": "{weeks, plural, one {# week} other {# weeks}}, {rows, plural, one {# row} other {# rows}}",
+      "reviewSubtitle": "Switch off any week or row you don't want to hand out.",
+      "nothingToTeach": "Your group already reads everything here. Try the other script, or start further down the chart.",
+      "weekTitle": "Week {number}",
+      "weekSkipped": "Skipped",
+      "weekSwitchLabel": "Include week {number}",
+      "rowNewToEveryone": "New for everyone",
+      "rowSomeRead": "{count} of {total} already read this",
+      "rowMostlyRead": "Your group already reads this",
+      "printWeekButton": "Print this week's sounds",
+      "printBlankButton": "Print practice sheet",
+      "printWeekTitle": "This week's sounds",
+      "printBlankTitle": "Practice sheet",
+      "applyButton": "Hand out the course",
+      "applying": "Handing out…",
+      "applyingMessage": "Handing out the reading course…",
+      "startOverButton": "Start over",
+      "groupWideNotice": "Everyone in the group gets these rows. Anyone who joins later gets them too.",
+      "appliedMessage": "{rows, plural, one {# row} other {# rows}} handed out to {learners, plural, one {# learner} other {# learners}}.",
+      "appliedSounds": "Sounds handed out: {sounds}",
+      "appliedFailed": "These rows could not be handed out: {sounds}",
+      "backToGroupButton": "Back to the group",
+      "planAnotherButton": "Plan another course",
+      "sourceError": "We could not read your group's lessons.",
+      "applyError": "We could not hand out the course.",
+      "appliedNothing": "Nothing was handed out. Please try again.",
+      "tryAgainButton": "Try again",
+      "firstDueDateMissing": "Pick a date for the first week.",
+      "weekSwitchLabelOff": "Bring back the week due {date}"
+    },
+    "readingHiraganaLabel": "Can they read hiragana?",
+    "readingKatakanaLabel": "Can they read katakana?",
+    "readingAnswer": {
+      "not-yet": "Not yet",
+      "learning": "Learning",
+      "yes": "Yes"
     }
   },
   "Nav": {

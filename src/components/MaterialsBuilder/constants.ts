@@ -1,3 +1,4 @@
+import type { ReadingLevelInput } from '@/lib/kanaGaps';
 import { LESSON_DOCUMENT_MIME_TYPES } from '@/lib/lessonDocuments';
 import { type JlptLevel, STYLE_NOTES_MAX } from '@/lib/lessonPrompts';
 import type { LessonDocument } from '@/types/lessonPlan';
@@ -48,6 +49,16 @@ export function effectiveStyleNotes(form: Pick<LessonSetForm, 'audience' | 'styl
   return combined || undefined;
 }
 
+/**
+ * Before any reading data exists the level is the only signal: an N5 course
+ * teaches hiragana alongside the words, and N4 and up assume both scripts.
+ */
+export function defaultReadingLevel(level: JlptLevel): ReadingLevelInput {
+  return level === 'N5'
+    ? { hiragana: 'learning', katakana: 'not-yet' }
+    : { hiragana: 'yes', katakana: 'yes' };
+}
+
 export interface LessonSetForm {
   goal: string;
   weeks: number;
@@ -58,6 +69,7 @@ export interface LessonSetForm {
   documents: LessonDocument[];
   withSentences: boolean;
   generateImages: boolean;
+  readingLevel: ReadingLevelInput;
 }
 
 /** A study week ends on Sunday. */

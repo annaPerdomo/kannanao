@@ -6,6 +6,7 @@ import {
   getSet,
   isContextualKana,
   kanaDifficulty,
+  setsForTrack,
 } from '@/lib/kanaCurriculum';
 import {
   CHECK_CREDIT_PER_HIT,
@@ -28,6 +29,7 @@ import {
   NEW_LEARNER_MAX_SEEN,
   pickKanaCheck,
   pickReviewQueue,
+  readingStage,
   setStars,
   STRENGTH_BANDS,
   STRONG_INTERLEAVE_RATIO,
@@ -415,6 +417,39 @@ describe('isNewLearner', () => {
 
   it('should not count a character that only has an empty row', () => {
     expect(isNewLearner(progressFor(['hira-a', 'hira-ka'], mastery(0, 0)))).toBe(true);
+  });
+});
+
+describe('readingStage', () => {
+  const baseSetIds = (track: 'hiragana' | 'katakana') =>
+    setsForTrack(track)
+      .filter((set) => set.kind === 'base')
+      .map((set) => set.id);
+
+  it('should call an empty map new', () => {
+    expect(readingStage(new Map(), 'hiragana')).toBe('new');
+  });
+
+  it('should still call one mastered row new — not enough seen to guide practice', () => {
+    expect(readingStage(progressFor(['hira-a'], mastery(5)), 'hiragana')).toBe('new');
+  });
+
+  it('should call 45 of 46 base characters known "learning", not "reads"', () => {
+    const byKana = progressFor(baseSetIds('hiragana'), mastery(5));
+    const last = allKana('hiragana')[45];
+    byKana.delete(last);
+    expect(readingStage(byKana, 'hiragana')).toBe('learning');
+  });
+
+  it('should call every base character known "reads", even with marked rows untouched', () => {
+    const byKana = progressFor(baseSetIds('hiragana'), mastery(5));
+    expect(readingStage(byKana, 'hiragana')).toBe('reads');
+  });
+
+  it('should judge each track on its own characters', () => {
+    const byKana = progressFor(baseSetIds('hiragana'), mastery(5));
+    expect(readingStage(byKana, 'hiragana')).toBe('reads');
+    expect(readingStage(byKana, 'katakana')).toBe('new');
   });
 });
 

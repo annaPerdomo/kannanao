@@ -1,8 +1,9 @@
 import type { GroupMember } from '@/hooks/useGroup';
+import type { ReadingStage } from '@/lib/kanaProficiency';
 
 import { daysSinceActive, STALE_DAYS } from '../memberActivity';
 
-export type SortKey = 'status' | 'streak' | 'cards' | 'reviews' | 'accuracy';
+export type SortKey = 'status' | 'reading' | 'streak' | 'cards' | 'reviews' | 'accuracy';
 export type SortDirection = 'asc' | 'desc';
 
 export const DEFAULT_SORT_KEY: SortKey = 'status';
@@ -40,8 +41,28 @@ export function accuracyTone(fraction: number): AccuracyTone {
   return 'error';
 }
 
+/** The furthest a learner has got: katakana counts only once hiragana reads. */
+const READING_RANK: Record<ReadingStage, number> = { new: 0, learning: 1, reads: 2 };
+
+function readingRank(member: GroupMember): number {
+  if (!member.hiragana) return -1;
+  return READING_RANK[member.hiragana] * 3 + READING_RANK[member.katakana ?? 'new'];
+}
+
+/** Null means nothing to say: a dash, never "hasn't started" — we cannot tell those apart. */
+export function readingLabel(member: GroupMember, t: (key: string) => string): string | null {
+  if (!member.hiragana || (member.hiragana === 'new' && (member.katakana ?? 'new') === 'new')) {
+    return null;
+  }
+  if (member.hiragana !== 'reads') return t('readingLearningHiragana');
+  if ((member.katakana ?? 'new') === 'reads') return t('readingBoth');
+  if (member.katakana === 'learning') return t('readingLearningKatakana');
+  return t('readingHiragana');
+}
+
 function sortRank(member: GroupMember, key: SortKey, now: number): number {
   if (key === 'status') return daysSinceActive(member.lastActive, now);
+  if (key === 'reading') return readingRank(member);
   if (key === 'streak') return member.streakDays;
   if (key === 'cards') return member.totalCardsStudied;
   if (key === 'reviews') return member.reviewsWaiting ?? -1;

@@ -57,7 +57,7 @@ function RowActions({
     );
   }
 
-  if (item.kind === 'reviewBacklog') {
+  if (item.kind === 'reviewBacklog' || item.kind === 'readingBehind') {
     return (
       <Button
         size="small"
@@ -130,6 +130,20 @@ function useRowText(item: AttentionItem): { headline: string; subline: string } 
     };
   }
 
+  if (item.kind === 'readingBehind') {
+    return {
+      headline: t('readingBehindHeadline', { name: item.name, deck: item.deckName }),
+      subline: t('readingBehindSubline'),
+    };
+  }
+
+  if (item.kind === 'readingBehindCollapsed') {
+    return {
+      headline: t('readingBehindCollapsedHeadline', { count: item.count, deck: item.deckName }),
+      subline: t('readingBehindSubline'),
+    };
+  }
+
   if (item.kind === 'reviewBacklog') {
     return {
       headline: t('reviewBacklogHeadline', { name: item.name, count: item.reviewsWaiting }),
@@ -195,6 +209,8 @@ const ROW_ICONS: Record<AttentionItem['kind'], typeof PersonOffOutlinedIcon> = {
   assignmentDue: EventBusyOutlinedIcon,
   reviewBacklog: ScheduleOutlinedIcon,
   reviewBacklogCollapsed: ScheduleOutlinedIcon,
+  readingBehind: TranslateOutlinedIcon,
+  readingBehindCollapsed: TranslateOutlinedIcon,
   wordsForgotten: TranslateOutlinedIcon,
 };
 

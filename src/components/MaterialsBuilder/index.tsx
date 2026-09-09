@@ -1,6 +1,7 @@
 'use client';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import StyleIcon from '@mui/icons-material/Style';
+import TranslateIcon from '@mui/icons-material/Translate';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -21,6 +22,7 @@ import { useGroups } from '@/hooks/useGroups';
 import { LAYOUT } from '@/theme';
 
 import { DeckPanel } from './DeckPanel';
+import { KanaCourseBuilder } from './KanaCourseBuilder';
 import { LessonSetBuilder } from './LessonSetBuilder';
 
 interface MaterialsBuilderProps {
@@ -28,7 +30,7 @@ interface MaterialsBuilderProps {
   initialGroupId?: string;
 }
 
-type BuilderTab = 'lessonSet' | 'deck';
+type BuilderTab = 'lessonSet' | 'kana' | 'deck';
 
 /**
  * One organizer-only front door for study materials: a lesson set (decks +
@@ -108,6 +110,12 @@ export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
               label={t('tabs.lessonSet')}
             />
             <Tab
+              value="kana"
+              icon={<TranslateIcon sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+              label={t('tabs.kana')}
+            />
+            <Tab
               value="deck"
               icon={<StyleIcon sx={{ fontSize: 18 }} />}
               iconPosition="start"
@@ -129,7 +137,7 @@ export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
 
       {/* A failed fetch also leaves `groups` empty — rule it out before telling
           an organizer who has groups to go create one. */}
-      {tab === 'lessonSet' && groupsError && (
+      {tab !== 'deck' && groupsError && (
         <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
           <Alert severity="error">{groupsError}</Alert>
           <Button variant="contained" onClick={() => void refetch()}>
@@ -138,7 +146,7 @@ export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
         </Stack>
       )}
 
-      {tab === 'lessonSet' && !groupsError && groups.length === 0 && (
+      {tab !== 'deck' && !groupsError && groups.length === 0 && (
         <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
           <Alert severity="info">{t('noGroups')}</Alert>
           <Button variant="contained" onClick={() => router.push('/group')}>
@@ -149,6 +157,10 @@ export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
 
       {tab === 'lessonSet' && !groupsError && groups.length > 0 && (
         <LessonSetBuilder groups={groups} groupId={activeGroupId} onGroupChange={setGroupId} />
+      )}
+
+      {tab === 'kana' && !groupsError && groups.length > 0 && (
+        <KanaCourseBuilder groups={groups} groupId={activeGroupId} onGroupChange={setGroupId} />
       )}
 
       {tab === 'deck' && <DeckPanel />}

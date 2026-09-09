@@ -12,22 +12,24 @@ import { useEffect, useMemo } from 'react';
 
 import { AssignmentGoalPicker } from '@/components/Group/AssignmentGoalPicker';
 import type { GoalMode } from '@/lib/assignmentMastery';
-import { setCharacters } from '@/lib/kanaCurriculum';
 import {
-  companionSetIds,
+  gapSetIds,
   type GroupKanaReadiness,
   hasKanaSignal,
+  MAX_COMPANION_KANA_ROWS,
   planKanaGaps,
+  planLessonKana,
+  type ReadingLevelInput,
 } from '@/lib/kanaGaps';
-import { addDaysToDate, planCounts, weekNumbers } from '@/lib/lessonPlanEdits';
+import { addDaysToDate, deckIsSkipped, planCounts, weekNumbers } from '@/lib/lessonPlanEdits';
 import type { JlptLevel } from '@/lib/lessonPrompts';
 import { planReuse } from '@/lib/lessonReuse';
 import type { LessonPlan, PlanDeck, WarmUpWord } from '@/types/lessonPlan';
 
-import { KanaCompanionCallout } from './KanaCompanionCallout';
 import { PlanDeckCard } from './PlanDeckCard';
 import { PrintButtons } from './PrintButtons';
 import { WarmUpPanel } from './WarmUpPanel';
+import { WeekSoundsLine } from './WeekSoundsLine';
 
 interface ReviewStepProps {
   plan: LessonPlan;
@@ -35,7 +37,9 @@ interface ReviewStepProps {
   warmUp: WarmUpWord[];
   knownWords: WarmUpWord[];
   kanaReadiness: GroupKanaReadiness | null;
-  assignKanaSets: boolean;
+  readingLevel: ReadingLevelInput;
+  /** Week numbers whose rows the educator switched off. */
+  skippedSoundWeeks: number[];
   dueDate: string;
   accuracy: number | null;
   mode: GoalMode | null;
@@ -50,9 +54,9 @@ interface ReviewStepProps {
   onDueDateChange: (date: string) => void;
   onAccuracyChange: (accuracy: number | null) => void;
   onModeChange: (mode: GoalMode | null) => void;
-  onAssignKanaSetsChange: (assign: boolean) => void;
+  onSkippedSoundWeeksChange: (weeks: number[]) => void;
   /** Lifted so apply and the post-apply print button see the same rows. */
-  onCompanionSetsChange: (setIds: string[]) => void;
+  onCompanionSetsChange: (rows: { setId: string; dueDate: string }[]) => void;
   onApply: () => void;
   onStartOver: () => void;
 }
@@ -63,7 +67,8 @@ export function ReviewStep({
   warmUp,
   knownWords,
   kanaReadiness,
-  assignKanaSets,
+  readingLevel,
+  skippedSoundWeeks,
   dueDate,
   accuracy,
   mode,
@@ -77,7 +82,7 @@ export function ReviewStep({
   onDueDateChange,
   onAccuracyChange,
   onModeChange,
-  onAssignKanaSetsChange,
+  onSkippedSoundWeeksChange,
   onCompanionSetsChange,
   onApply,
   onStartOver,
@@ -93,14 +98,53 @@ export function ReviewStep({
     () => planKanaGaps(plan.decks, kanaReadiness),
     [plan.decks, kanaReadiness],
   );
-  const companionSets = useMemo(
-    () => companionSetIds(plan.decks, kanaGaps),
-    [plan.decks, kanaGaps],
+  // Capped here as well as server-side: what the review shows, what apply
+  // sends and what the sheets print all have to be the same list.
+  const soundWeeks = useMemo(() => {
+    const weeks = planLessonKana(plan.decks, kanaReadiness, readingLevel, dueDate).weeks;
+    const kept: typeof weeks = [];
+    let rows = 0;
+    for (const week of weeks) {
+      const room = MAX_COMPANION_KANA_ROWS - rows;
+      if (room <= 0) break;
+      const setIds = week.setIds.slice(0, room);
+      rows += setIds.length;
+      kept.push({ ...week, setIds });
+    }
+    return kept;
+  }, [plan.decks, kanaReadiness, readingLevel, dueDate]);
+  // Rows the plan needed but its own weeks could not hold: shown after the
+  // last deck so nothing is handed out that the educator never saw.
+  const overflowWeeks = useMemo(
+    () => soundWeeks.filter((week) => !numbers.includes(week.index)),
+    [soundWeeks, numbers],
   );
-  const companionKey = companionSets.join(',');
+  const handedOut = useMemo(
+    () => soundWeeks.filter((week) => !skippedSoundWeeks.includes(week.index)),
+    [soundWeeks, skippedSoundWeeks],
+  );
+  const companionKey = handedOut
+    .flatMap((week) => week.setIds.map((setId) => `${setId}:${week.dueDate}`))
+    .join(',');
   useEffect(() => {
-    onCompanionSetsChange(companionKey ? companionKey.split(',') : []);
+    onCompanionSetsChange(
+      companionKey
+        ? companionKey.split(',').map((pair) => {
+            const [setId, dueDate] = pair.split(':');
+            return { setId, dueDate };
+          })
+        : [],
+    );
   }, [companionKey, onCompanionSetsChange]);
+
+  // Only the cards still going out: an excluded card must not explain a chip.
+  const shakySetIds = useMemo(
+    () =>
+      kanaGaps.flatMap((deck, i) =>
+        deckIsSkipped(plan.decks[i]) ? [] : deck.flatMap((cards) => gapSetIds(cards)),
+      ),
+    [kanaGaps, plan.decks],
+  );
 
   const noKanaData =
     !!kanaReadiness && kanaReadiness.members.length > 0 && !hasKanaSignal(kanaReadiness);
@@ -143,9 +187,58 @@ export function ReviewStep({
             onDeckChange={(next) => onDeckChange(i, next)}
             onRetry={() => onRetryDeck(i)}
             onRegenerateUnapproved={(targetCount) => onRegenerateUnapproved(i, targetCount)}
+            sounds={
+              week === null ? null : (
+                <WeekSoundsLine
+                  setIds={soundWeeks.find((s) => s.index === week)?.setIds ?? []}
+                  dueDate={soundWeeks.find((s) => s.index === week)?.dueDate ?? ''}
+                  handOut={!skippedSoundWeeks.includes(week)}
+                  locked={ticksLocked}
+                  shakySetIds={shakySetIds}
+                  onHandOutChange={(on) =>
+                    onSkippedSoundWeeksChange(
+                      on
+                        ? skippedSoundWeeks.filter((n) => n !== week)
+                        : [...skippedSoundWeeks, week],
+                    )
+                  }
+                />
+              )
+            }
           />
         );
       })}
+
+      {overflowWeeks.map((week) => (
+        <Paper
+          key={`sounds-${week.index}`}
+          elevation={0}
+          sx={{
+            p: { xs: 2, sm: 2.5 },
+            borderRadius: theme.radii.lg,
+            border: `1px solid ${alpha(brand[300], 0.4)}`,
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Typography sx={{ fontWeight: 800 }}>
+            {t('soundsAfterPlanHeading', { week: week.index })}
+          </Typography>
+          <WeekSoundsLine
+            setIds={week.setIds}
+            dueDate={week.dueDate}
+            handOut={!skippedSoundWeeks.includes(week.index)}
+            locked={ticksLocked}
+            shakySetIds={shakySetIds}
+            onHandOutChange={(on) =>
+              onSkippedSoundWeeksChange(
+                on
+                  ? skippedSoundWeeks.filter((n) => n !== week.index)
+                  : [...skippedSoundWeeks, week.index],
+              )
+            }
+          />
+        </Paper>
+      ))}
 
       <Paper
         elevation={0}
@@ -177,15 +270,6 @@ export function ReviewStep({
             onModeChange={onModeChange}
           />
 
-          <KanaCompanionCallout
-            sounds={companionSets
-              .map((setId) => setCharacters(setId))
-              .filter((chars): chars is string => !!chars)}
-            checked={assignKanaSets}
-            disabled={ticksLocked}
-            onChange={onAssignKanaSetsChange}
-          />
-
           <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
             {t('groupWideNotice')}
           </Typography>
@@ -202,7 +286,7 @@ export function ReviewStep({
             <PrintButtons
               plan={plan}
               warmUp={warmUp}
-              kanaSets={companionSets}
+              kanaSets={handedOut.flatMap((week) => week.setIds)}
               groupId={groupId}
               disabled={applying || counts.decks === 0}
             />

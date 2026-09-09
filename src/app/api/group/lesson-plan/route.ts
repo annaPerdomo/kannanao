@@ -5,7 +5,13 @@ import {
   DOCUMENT_MAX_TOTAL_BYTES,
 } from '@/components/MaterialsBuilder/constants';
 import { normalizeFurigana } from '@/lib/furigana';
-import type { GroupKanaReadiness } from '@/lib/kanaGaps';
+import {
+  DEFAULT_KANA_READING_ANSWER,
+  type GroupKanaReadiness,
+  type GroupKanaReadingStages,
+  isKanaReadingAnswer,
+  type ReadingLevelInput,
+} from '@/lib/kanaGaps';
 import { rankKnownWords } from '@/lib/knownWords';
 import {
   isLessonDocumentMimeType,
@@ -165,15 +171,17 @@ export async function POST(req: NextRequest) {
   if (limited) return limited;
 
   const body = await req.json().catch(() => null);
-  const { goal, weeks, cardsPerDeck, documents, level, styleNotes, groupId } = (body ?? {}) as {
-    goal?: string;
-    weeks?: number;
-    cardsPerDeck?: number;
-    documents?: LessonDocumentInput[];
-    level?: string;
-    styleNotes?: string;
-    groupId?: string;
-  };
+  const { goal, weeks, cardsPerDeck, documents, level, styleNotes, groupId, readingLevel } =
+    (body ?? {}) as {
+      goal?: string;
+      weeks?: number;
+      cardsPerDeck?: number;
+      documents?: LessonDocumentInput[];
+      level?: string;
+      styleNotes?: string;
+      groupId?: string;
+      readingLevel?: Partial<ReadingLevelInput>;
+    };
 
   if (groupId !== undefined && (typeof groupId !== 'string' || groupId.trim().length === 0)) {
     return NextResponse.json({ error: 'groupId must be a non-empty string.' }, { status: 400 });
@@ -219,6 +227,24 @@ export async function POST(req: NextRequest) {
   if (styleNotes !== undefined && typeof styleNotes !== 'string') {
     return NextResponse.json({ error: 'styleNotes must be a string.' }, { status: 400 });
   }
+  if (
+    readingLevel !== undefined &&
+    (typeof readingLevel !== 'object' ||
+      readingLevel === null ||
+      !isKanaReadingAnswer(readingLevel.hiragana) ||
+      !isKanaReadingAnswer(readingLevel.katakana))
+  ) {
+    return NextResponse.json(
+      { error: 'readingLevel must give a hiragana and katakana answer.' },
+      { status: 400 },
+    );
+  }
+  const readingLevelInput: ReadingLevelInput =
+    readingLevel &&
+    isKanaReadingAnswer(readingLevel.hiragana) &&
+    isKanaReadingAnswer(readingLevel.katakana)
+      ? { hiragana: readingLevel.hiragana, katakana: readingLevel.katakana }
+      : { hiragana: DEFAULT_KANA_READING_ANSWER, katakana: DEFAULT_KANA_READING_ANSWER };
   const jlptLevel = isJlptLevel(level) ? level : DEFAULT_LEVEL;
   const trimmedStyleNotes = (styleNotes ?? '').trim();
   if (trimmedStyleNotes.length > STYLE_NOTES_MAX) {
@@ -374,6 +400,7 @@ export async function POST(req: NextRequest) {
       weeks,
       cardsPerDeck: cards,
       level: jlptLevel,
+      readingLevel: readingLevelInput,
       styleNoteChars: trimmedStyleNotes.length,
       documentCount,
       knownWordCount: pool.length,
@@ -384,11 +411,17 @@ export async function POST(req: NextRequest) {
       outputTokens: data.usageMetadata?.candidatesTokenCount ?? null,
     });
 
+    const kanaReadingStages: GroupKanaReadingStages | null = kanaReadiness?.stages ?? null;
+    const bareReadiness: GroupKanaReadiness | null = kanaReadiness
+      ? { members: kanaReadiness.members, shakyBy: kanaReadiness.shakyBy }
+      : null;
+
     return NextResponse.json({
       plan: filteredPlan,
       warmUp,
       knownWords: pool,
-      kanaReadiness,
+      kanaReadiness: bareReadiness,
+      kanaReadingStages,
     });
   } catch (err) {
     logger.error('Unhandled error', {

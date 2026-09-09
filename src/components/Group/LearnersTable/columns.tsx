@@ -5,6 +5,7 @@ import type { GroupMember } from '@/hooks/useGroup';
 import { AccuracyCell } from './AccuracyCell';
 import { CardsCell } from './CardsCell';
 import type { SortKey } from './derive';
+import { ReadingCell } from './ReadingCell';
 import { ReviewsWaitingCell } from './ReviewsWaitingCell';
 import { StatusLabel } from './StatusLabel';
 import { StreakCell } from './StreakCell';
@@ -23,6 +24,7 @@ export interface LearnerColumn {
  */
 export const LEARNER_COLUMNS: LearnerColumn[] = [
   { key: 'status', labelKey: 'colStatus', align: 'left', Cell: StatusLabel },
+  { key: 'reading', labelKey: 'colReading', align: 'left', Cell: ReadingCell },
   { key: 'streak', labelKey: 'colStreak', align: 'right', Cell: StreakCell },
   { key: 'cards', labelKey: 'colCards', align: 'right', Cell: CardsCell },
   { key: 'reviews', labelKey: 'colReviewsWaiting', align: 'right', Cell: ReviewsWaitingCell },

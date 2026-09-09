@@ -1,13 +1,22 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { aggregateMasteryByUser } from '@/lib/cardStrength';
+import { kanaProgressMap, readingStage } from '@/lib/kanaProficiency';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { allRows } from '../_lib/allRows';
 import { memberIdsFor } from '../_lib/membership';
 import { backlogOf, reviewBacklogFor } from '../_lib/reviewBacklog';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
+
+interface KanaProgressRow {
+  user_id: string;
+  kana: string;
+  correct_count: number | null;
+  wrong_count: number | null;
+}
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
 
@@ -53,16 +62,33 @@ export async function GET(req: NextRequest) {
   // pulling their entire study_sessions history just to find the latest one.
   // The members UI only buckets activity by day (today / <3d / inactive), so
   // day granularity is sufficient.
-  const [{ data: progressRows }, { data: cardProgressRows }, backlog] = await Promise.all([
-    sb
-      .from('user_progress')
-      .select(
-        'user_id, total_xp, level, streak_days, total_cards_studied, total_correct, total_sessions, last_study_date',
-      )
-      .in('user_id', memberIds),
-    sb.from('card_progress').select('user_id, interval_days, ease').in('user_id', memberIds),
-    reviewBacklogFor(memberIds, '/api/group/members'),
-  ]);
+  const [{ data: progressRows }, { data: cardProgressRows }, kanaProgressRows, backlog] =
+    await Promise.all([
+      sb
+        .from('user_progress')
+        .select(
+          'user_id, total_xp, level, streak_days, total_cards_studied, total_correct, total_sessions, last_study_date',
+        )
+        .in('user_id', memberIds),
+      sb.from('card_progress').select('user_id, interval_days, ease').in('user_id', memberIds),
+      // Reading is one column of the table: a failed read must not blank the roster.
+      allRows<KanaProgressRow>((from, to) =>
+        sb
+          .from('kana_progress')
+          .select('user_id, kana, correct_count, wrong_count')
+          .in('user_id', memberIds)
+          .order('user_id', { ascending: true })
+          .order('kana', { ascending: true })
+          .range(from, to),
+      ).catch((err: unknown) => {
+        logger.error('Failed to load reading progress for the members list', {
+          route: '/api/group/members',
+          error: err instanceof Error ? err.message : String(err),
+        });
+        return null;
+      }),
+      reviewBacklogFor(memberIds, '/api/group/members'),
+    ]);
 
   const progressMap = new Map((progressRows ?? []).map((p) => [p.user_id, p]));
   const masteryByUser = aggregateMasteryByUser(
@@ -73,12 +99,31 @@ export async function GET(req: NextRequest) {
     })),
   );
 
+  const kanaRowsByMember = new Map<
+    string,
+    { kana: string; correctCount: number; wrongCount: number }[]
+  >();
+  for (const row of kanaProgressRows ?? []) {
+    const list = kanaRowsByMember.get(row.user_id) ?? [];
+    list.push({
+      kana: row.kana,
+      correctCount: row.correct_count ?? 0,
+      wrongCount: row.wrong_count ?? 0,
+    });
+    kanaRowsByMember.set(row.user_id, list);
+  }
+
   const result = members.map((m) => {
     const prog = progressMap.get(m.id);
     const mastery = masteryByUser.get(m.id);
     const { reviewsWaiting, reviewsOverdue3d } = backlogOf(backlog, m.id);
+    const byKana = kanaProgressMap(kanaRowsByMember.get(m.id) ?? []);
     return {
       id: m.id,
+      // Omitted, never guessed: a failed read would otherwise report every
+      // learner as having met no characters.
+      hiragana: kanaProgressRows ? readingStage(byKana, 'hiragana') : undefined,
+      katakana: kanaProgressRows ? readingStage(byKana, 'katakana') : undefined,
       username: m.username,
       displayName: m.display_name,
       avatar: m.avatar,

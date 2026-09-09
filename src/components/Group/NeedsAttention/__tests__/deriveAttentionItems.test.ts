@@ -441,4 +441,48 @@ describe('deriveAttentionItems — words being forgotten', () => {
     const items = deriveAttentionItems([backlogged], [soon], words, NOW);
     expect(items.map((i) => i.kind)).toEqual(['assignmentDue', 'wordsForgotten', 'reviewBacklog']);
   });
+
+  describe("a learner who cannot read the week's words", () => {
+    it('names the soonest deck for a learner who has met no characters', () => {
+      // Studying, just not reading yet: an inactive learner is already named above.
+      const behind = member({
+        id: 'm1',
+        displayName: 'Rin',
+        lastActive: daysAgo(1),
+        hiragana: 'new',
+        katakana: 'new',
+      });
+      const items = deriveAttentionItems(
+        [behind],
+        [assignment({ due_date: daysFromNow(2), completed_at: null })],
+        [],
+        NOW,
+      );
+      const reading = items.find((i) => i.kind === 'readingBehind');
+      expect(reading).toMatchObject({ memberId: 'm1', name: 'Rin', deckName: 'Kanji Basics' });
+    });
+
+    it('says nothing about a learner who is already reading', () => {
+      const reading = member({
+        id: 'm1',
+        lastActive: daysAgo(1),
+        hiragana: 'learning',
+        katakana: 'new',
+      });
+      const items = deriveAttentionItems(
+        [reading],
+        [assignment({ due_date: daysFromNow(2), completed_at: null })],
+        [],
+        NOW,
+      );
+      expect(items.some((i) => i.kind === 'readingBehind')).toBe(false);
+    });
+
+    it('stays quiet when no deck is due — there is nothing to be behind on', () => {
+      const behind = member({ id: 'm1', lastActive: daysAgo(1), hiragana: 'new', katakana: 'new' });
+      expect(
+        deriveAttentionItems([behind], [], [], NOW).some((i) => i.kind === 'readingBehind'),
+      ).toBe(false);
+    });
+  });
 });

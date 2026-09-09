@@ -32,6 +32,19 @@ describe('chainLegHref', () => {
   it('has nowhere to send a review goal', () => {
     expect(chainLegHref('d1', { step: 'goal', mode: 'review' }, 'assignment')).toBeNull();
   });
+
+  it('routes a kana row leg to Learn Kana, but only for a daily session', () => {
+    expect(
+      chainLegHref('', { step: 'goal', mode: 'kana-journey', kanaSet: 'hira-ka' }, 'daily'),
+    ).toBe('/review/learn-kana?set=hira-ka&chain=daily');
+    expect(
+      chainLegHref('d1', { step: 'goal', mode: 'kana-journey', kanaSet: 'hira-ka' }, 'assignment'),
+    ).toBeNull();
+  });
+
+  it('has nowhere to send a kana row leg missing its set', () => {
+    expect(chainLegHref('', { step: 'goal', mode: 'kana-journey' }, 'daily')).toBeNull();
+  });
 });
 
 describe('chain state storage', () => {
@@ -164,6 +177,38 @@ describe('daily chain', () => {
     window.sessionStorage.setItem(
       'kannanao:practice-chain',
       JSON.stringify({ kind: 'daily', deckId: 'd1', index: 0, legs: null }),
+    );
+    expect(readChainState()).toBeNull();
+  });
+
+  it('round-trips a kana row leg, curriculum id included', () => {
+    const legs = [
+      { step: 'review' as const, mode: 'review' as const },
+      { step: 'goal' as const, mode: 'kana-journey' as const, kanaSet: 'hira-ka' },
+    ];
+    writeChainState({
+      kind: 'daily',
+      deckId: '',
+      index: 0,
+      legs,
+      cardIds: null,
+      assignmentId: null,
+      requiredMode: null,
+      requiredAccuracy: null,
+      cardCount: null,
+    });
+    expect(readChainState()).toMatchObject({ kind: 'daily', legs });
+  });
+
+  it('drops a daily chain whose kana leg has a non-string set', () => {
+    window.sessionStorage.setItem(
+      'kannanao:practice-chain',
+      JSON.stringify({
+        kind: 'daily',
+        deckId: '',
+        index: 0,
+        legs: [{ step: 'goal', mode: 'kana-journey', kanaSet: 42 }],
+      }),
     );
     expect(readChainState()).toBeNull();
   });

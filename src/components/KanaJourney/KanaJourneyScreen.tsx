@@ -7,7 +7,9 @@ import { useCallback, useState } from 'react';
 import { DataErrorState } from '@/components/DataErrorState';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
+import { QuestHandoffProvider } from '@/contexts/QuestHandoffContext';
 import { useKanaProgress } from '@/hooks/useKanaProgress';
+import { usePracticeChain } from '@/hooks/usePracticeChain';
 import { getSet, isKanaSetId, type KanaTrack } from '@/lib/kanaCurriculum';
 import { pickReviewQueue, REVIEW_SESSION_SIZE } from '@/lib/kanaProficiency';
 import { LAYOUT } from '@/theme';
@@ -24,6 +26,7 @@ export function KanaJourneyScreen() {
   const { byKana, loading, error, retry, record } = useKanaProgress();
   const assigned = useSearchParams()?.get('set') ?? null;
   const linkedSet = assigned !== null && isKanaSetId(assigned) ? assigned : null;
+  const chain = usePracticeChain({ deckId: null, mode: 'kana-journey', kanaSet: linkedSet });
   const [track, setTrack] = useState<KanaTrack>(
     () => (linkedSet ? getSet(linkedSet)?.track : null) ?? 'hiragana',
   );
@@ -33,6 +36,8 @@ export function KanaJourneyScreen() {
   const [checking, setChecking] = useState(false);
 
   const exitSession = useCallback(() => setSession(null), []);
+  // A chain leg's exit is a chain exit — the chart underneath belongs to no leg.
+  const onSessionExit = chain ? chain.abandon : exitSession;
   const playRow = useCallback((setId: string) => setSession({ setId }), []);
   const playKana = useCallback((kana: string) => setSession({ kana }), []);
   const review = useCallback(() => {
@@ -65,15 +70,17 @@ export function KanaJourneyScreen() {
 
   if (session && byKana) {
     return (
-      <KanaSession
-        key={session.setId ?? session.kana ?? session.chars?.join('')}
-        setId={session.setId}
-        kana={session.kana}
-        chars={session.chars}
-        byKana={byKana}
-        record={record}
-        onExit={exitSession}
-      />
+      <QuestHandoffProvider value={chain?.handoff ?? null}>
+        <KanaSession
+          key={session.setId ?? session.kana ?? session.chars?.join('')}
+          setId={session.setId}
+          kana={session.kana}
+          chars={session.chars}
+          byKana={byKana}
+          record={record}
+          onExit={onSessionExit}
+        />
+      </QuestHandoffProvider>
     );
   }
 

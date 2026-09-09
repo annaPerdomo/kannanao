@@ -4,8 +4,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TodayAdventureCard } from '@/components/TodayAdventureCard';
 import { minutesFor } from '@/components/TodayAdventureCard/AdventureStates';
 import { localDateString } from '@/lib/chest';
+import { setsForTrack } from '@/lib/kanaCurriculum';
 import { KANA_WAIT_MS } from '@/lib/quest';
 import { renderWithProviders } from '@/test/renderWithProviders';
+
+/** Every base character of both tracks known — a learner who truly "reads". */
+const readsBothTracks = () =>
+  new Map(
+    [...setsForTrack('hiragana'), ...setsForTrack('katakana')]
+      .filter((set) => set.kind === 'base')
+      .flatMap((set) => set.entries.map((e) => e.kana))
+      .map((kana) => [kana, { correctCount: 5, wrongCount: 0 }]),
+  );
 
 const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
@@ -88,7 +98,13 @@ describe('TodayAdventureCard', () => {
     friendshipState.mockReturnValue(friendship());
     shopState.mockReturnValue({ equipped: { study_buddy: 'buddy_bunny' } });
     kanaState.mockClear();
-    kanaState.mockReturnValue({ byKana: new Map(), error: null });
+    // Mirrors useKanaProgress's real contract: disabled (cards already due)
+    // means "unknown", never "no progress" — a Map either way would make the
+    // quest's own new-character introduction fire while cards are waiting.
+    kanaState.mockImplementation((enabled?: boolean) => ({
+      byKana: enabled ? new Map() : null,
+      error: null,
+    }));
   });
 
   // Row for row, not one guessed height — the hero clips an over-tall placeholder.
@@ -192,6 +208,7 @@ describe('TodayAdventureCard', () => {
 
     it('should start the assigned words when nothing is due', async () => {
       dueState.mockReturnValue(due({ dueCount: 0 }));
+      kanaState.mockReturnValue({ byKana: readsBothTracks(), error: null });
       renderWithProviders(<TodayAdventureCard />);
       await screen.findByText('Practice with Tsuki!');
       fireEvent.click(screen.getByRole('button', { name: 'Start' }));
@@ -388,15 +405,28 @@ describe('TodayAdventureCard', () => {
       renderWithProviders(<TodayAdventureCard />);
 
       await screen.findByRole('button', { name: 'Start' });
-      expect(screen.getByText('3 characters · ~2 min')).toBeInTheDocument();
+      // Weak characters (ぬ ね ま) plus new ones the quest now introduces on
+      // its own, capped at KANA_NODE_CHARS.
+      expect(screen.getByText('5 characters · ~4 min')).toBeInTheDocument();
       expect(screen.queryByText('Practice with Tsuki!')).toBeNull();
 
       fireEvent.click(screen.getByRole('button', { name: 'Start' }));
       expect(push).toHaveBeenCalledWith('/review/start');
     });
 
+    it('should offer the first characters to a member who has never read one', async () => {
+      dueState.mockReturnValue(due({ dueCount: 0 }));
+      kanaState.mockReturnValue({ byKana: new Map(), error: null });
+      renderWithProviders(<TodayAdventureCard />);
+
+      await screen.findByRole('button', { name: 'Start' });
+      expect(screen.getByText(/3 characters/)).toBeInTheDocument();
+      expect(screen.queryByText('Practice with Tsuki!')).toBeNull();
+    });
+
     it('should still say all caught up when the reading is solid too', async () => {
       dueState.mockReturnValue(due({ dueCount: 0 }));
+      kanaState.mockReturnValue({ byKana: readsBothTracks(), error: null });
       renderWithProviders(<TodayAdventureCard />);
       await screen.findByText('Practice with Tsuki!');
     });

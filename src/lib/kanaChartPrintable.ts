@@ -2,7 +2,7 @@ import type { PlanDeck } from '@/types/lessonPlan';
 
 import { furiganaFromReading } from './furigana';
 import { buildKanaChart, CHART_DIRECTION, type ChartBlock } from './kanaChart';
-import type { KanaEntry, KanaLabelKey, KanaTrack } from './kanaCurriculum';
+import { getSet, type KanaEntry, type KanaLabelKey, type KanaTrack } from './kanaCurriculum';
 import { escapeHtml, furiganaToRubyHtml, PRINT_BASE_CSS } from './lessonPrintable';
 import { isPureKana } from './reviewGames';
 
@@ -12,6 +12,8 @@ export interface KanaSheetOptions {
   script: KanaSheetScript;
   romaji: boolean;
   blank: boolean;
+  /** Print only these rows — a week's sheet. Unset prints the whole chart. */
+  setIds?: string[];
 }
 
 export interface KanaSheetLabels {
@@ -41,6 +43,8 @@ export interface KanjiSheetWeek {
 export interface GroupKanaCoverage {
   learnerCount: number;
   knownByKana: Record<string, number>;
+  /** Learners who have actually answered characters — the denominator for "the group reads this". */
+  startedCount?: number;
 }
 
 export interface GroupSheetLabels extends KanaSheetLabels {
@@ -72,10 +76,11 @@ interface PrintBlock {
 
 // Nothing here knows the chart order: a curriculum change reaches paper
 // through kanaChart.ts alone.
-function printBlocks(script: KanaSheetScript): PrintBlock[] {
+function printBlocks(script: KanaSheetScript, setIds?: string[]): PrintBlock[] {
   const [first, ...rest] = TRACKS[script].map(buildKanaChart);
+  const wanted = setIds?.length ? new Set(setIds) : null;
 
-  return first.map((block, bi) => ({
+  const blocks = first.map((block, bi) => ({
     id: block.id,
     rowLabels: block.rowLabels,
     columns: block.columns.map((col, ci) => {
@@ -94,6 +99,11 @@ function printBlocks(script: KanaSheetScript): PrintBlock[] {
       };
     }),
   }));
+
+  if (!wanted) return blocks;
+  return blocks
+    .map((block) => ({ ...block, columns: block.columns.filter((c) => wanted.has(c.setId)) }))
+    .filter((block) => block.columns.length > 0);
 }
 
 function caption(cell: PrintCell, labels: KanaSheetLabels): string {
@@ -238,19 +248,28 @@ export function buildKanaChartPrintableHtml(args: {
   labels: KanaSheetLabels;
 }): string {
   const { options, labels } = args;
-  const body = chartHtml(printBlocks(options.script), labels, (cell) =>
-    cellHtml(cell, options, labels),
-  );
+  // A 'both' column carries only the hiragana row's id, so a filtered sheet is
+  // built one track at a time — otherwise the katakana rows print as nothing.
+  const tracks: KanaTrack[] = options.setIds?.length
+    ? TRACKS[options.script].filter((track) =>
+        options.setIds!.some((setId) => getSet(setId)?.track === track),
+      )
+    : TRACKS[options.script];
 
-  return documentHtml(
-    labels.title,
-    args.locale,
-    GRID_CSS,
-    `<div class="sheet">
+  const sheets = (tracks.length > 0 ? tracks : TRACKS[options.script]).map((track) => {
+    const script = options.setIds?.length ? track : options.script;
+    const body = chartHtml(printBlocks(script, options.setIds), labels, (cell) =>
+      cellHtml(cell, options, labels),
+    );
+    return `<div class="sheet">
 ${sheetHead(labels.title, labels)}
 ${body}
-</div>`,
-  );
+</div>`;
+  });
+
+  // Unfiltered 'both' keeps its single merged sheet, as it always has.
+  const body = options.setIds?.length ? sheets.join('\n') : sheets[0];
+  return documentHtml(labels.title, args.locale, GRID_CSS, body);
 }
 
 function coverageCellHtml(cell: PrintCell | null, coverage: GroupKanaCoverage): string {

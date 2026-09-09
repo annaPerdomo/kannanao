@@ -1,10 +1,16 @@
 import { allKana, isContextualKana } from '@/lib/kanaCurriculum';
 import {
   type GroupKanaReadiness,
+  type GroupKanaReadingStages,
   KANA_SIGNAL_MIN_ANSWERS,
   type KanaGroupMember,
 } from '@/lib/kanaGaps';
-import { isKanaKnown, type KanaMastery } from '@/lib/kanaProficiency';
+import {
+  isKanaKnown,
+  type KanaMastery,
+  kanaProgressMap,
+  readingStage,
+} from '@/lib/kanaProficiency';
 
 import { allRows } from './allRows';
 import { memberIdsFor } from './membership';
@@ -50,6 +56,7 @@ export async function getGroupKnownKana(
 
   const answersByMember = new Map<string, number>();
   const knownByMember = new Map<string, Set<string>>();
+  const masteryRowsByMember = new Map<string, (KanaMastery & { kana: string })[]>();
 
   for (const row of progressRows) {
     const mastery: KanaMastery = {
@@ -60,6 +67,9 @@ export async function getGroupKnownKana(
       row.user_id,
       (answersByMember.get(row.user_id) ?? 0) + mastery.correctCount + mastery.wrongCount,
     );
+    const rows = masteryRowsByMember.get(row.user_id) ?? [];
+    rows.push({ ...mastery, kana: row.kana });
+    masteryRowsByMember.set(row.user_id, rows);
     if (!isKanaKnown(mastery)) continue;
     const known = knownByMember.get(row.user_id) ?? new Set<string>();
     known.add(row.kana);
@@ -71,6 +81,16 @@ export async function getGroupKnownKana(
     name: profile.display_name?.trim() || profile.username || '',
     started: (answersByMember.get(profile.id) ?? 0) >= KANA_SIGNAL_MIN_ANSWERS,
   }));
+
+  // Untried members are 'new' on every track by construction, so they are left
+  // out here too — the same judgement hasKanaSignal already applies to shakyBy.
+  const stages: GroupKanaReadingStages = { hiragana: [], katakana: [] };
+  for (const member of members) {
+    if (!member.started) continue;
+    const byKana = kanaProgressMap(masteryRowsByMember.get(member.id) ?? []);
+    stages.hiragana.push(readingStage(byKana, 'hiragana'));
+    stages.katakana.push(readingStage(byKana, 'katakana'));
+  }
 
   // Untried members are excluded from the judgement entirely: counting their
   // absent rows as gaps would flag every character in every plan.
@@ -84,5 +104,5 @@ export async function getGroupKnownKana(
     if (behind.length > 0) shakyBy[kana] = behind;
   }
 
-  return { members, shakyBy };
+  return { members, shakyBy, stages };
 }

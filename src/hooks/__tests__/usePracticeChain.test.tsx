@@ -518,6 +518,33 @@ describe('useStartDailyPractice', () => {
     expect(push).not.toHaveBeenCalled();
     expect(readChainState()).toBeNull();
   });
+
+  it('threads an assigned kana row in as the leg right after review', async () => {
+    mockLoadCards.mockResolvedValue(cards);
+    const { result } = renderHook(() => useStartDailyPractice());
+    await act(async () => {
+      await result.current(focus(), 3, false, false, 'hira-ka');
+    });
+    expect(replace).toHaveBeenCalledWith('/review/today?chain=daily');
+    const state = readChainState();
+    expect(state?.legs?.[0].mode).toBe('review');
+    expect(state?.legs?.[1]).toEqual({
+      step: 'practice',
+      mode: 'kana-journey',
+      kanaSet: 'hira-ka',
+    });
+  });
+
+  it('opens straight on the kana row when it is the only thing to play', async () => {
+    mockLoadCards.mockResolvedValue([]);
+    const { result } = renderHook(() => useStartDailyPractice());
+    let ok = false;
+    await act(async () => {
+      ok = await result.current(null, 0, false, false, 'hira-ka');
+    });
+    expect(ok).toBe(true);
+    expect(replace).toHaveBeenCalledWith('/review/learn-kana?set=hira-ka&chain=daily');
+  });
 });
 
 describe('usePracticeChain — daily session', () => {
@@ -565,6 +592,82 @@ describe('usePracticeChain — daily session', () => {
     const { result } = renderHook(() => usePracticeChain({ deckId: 'd2', mode: 'recall' }));
     await waitFor(() => expect(readChainState()).toBeNull());
     expect(result.current).toBeNull();
+  });
+
+  it('names the kana row as the next step from the review leg', async () => {
+    writeChainState({
+      kind: 'daily',
+      deckId: 'd1',
+      index: 0,
+      legs: [
+        { step: 'review' as const, mode: 'review' as const },
+        { step: 'practice' as const, mode: 'kana-journey' as const, kanaSet: 'hira-ka' },
+      ],
+      cardIds: null,
+      assignmentId: null,
+      requiredMode: null,
+      requiredAccuracy: null,
+      cardCount: null,
+    });
+    const { result } = renderHook(() => usePracticeChain({ deckId: null, mode: 'review' }));
+    await waitFor(() => expect(result.current).not.toBeNull());
+    expect(result.current?.handoff?.label).toContain('Learn Kana');
+
+    act(() => result.current?.handoff?.onNext());
+    expect(replace).toHaveBeenCalledWith('/review/learn-kana?set=hira-ka&chain=daily');
+  });
+
+  it('does not run a kana leg from a different row than the one it names', async () => {
+    writeChainState({
+      kind: 'daily',
+      deckId: 'd1',
+      index: 1,
+      legs: [
+        { step: 'review' as const, mode: 'review' as const },
+        { step: 'practice' as const, mode: 'kana-journey' as const, kanaSet: 'hira-ka' },
+      ],
+      cardIds: null,
+      assignmentId: null,
+      requiredMode: null,
+      requiredAccuracy: null,
+      cardCount: 12,
+    });
+    const { result } = renderHook(() =>
+      usePracticeChain({ deckId: null, mode: 'kana-journey', kanaSet: 'hira-sa' }),
+    );
+    await waitFor(() => expect(result.current).toBeNull());
+  });
+
+  it('runs the kana row leg from the deckless Learn Kana page', async () => {
+    writeChainState({
+      kind: 'daily',
+      deckId: 'd1',
+      index: 1,
+      legs: [
+        { step: 'review' as const, mode: 'review' as const },
+        { step: 'practice' as const, mode: 'kana-journey' as const, kanaSet: 'hira-ka' },
+        {
+          step: 'practice' as const,
+          mode: 'recall' as const,
+          deckId: 'd1',
+          cardIds: ['c1', 'c2'],
+        },
+      ],
+      cardIds: null,
+      assignmentId: null,
+      requiredMode: null,
+      requiredAccuracy: null,
+      cardCount: 12,
+    });
+    const { result } = renderHook(() =>
+      usePracticeChain({ deckId: null, mode: 'kana-journey', kanaSet: 'hira-ka' }),
+    );
+    await waitFor(() => expect(result.current).not.toBeNull());
+    expect(result.current?.handoff?.label).toContain('Guess It!');
+
+    act(() => result.current?.handoff?.onNext());
+    expect(replace).toHaveBeenCalledWith('/deck/d1/practice/recall?chain=daily');
+    expect(readChainState()?.index).toBe(2);
   });
 
   it('sends the last leg home, and leaves to the hub', async () => {
