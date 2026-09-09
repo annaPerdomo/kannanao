@@ -121,6 +121,22 @@ describe('groupAssignments', () => {
       'Done',
     ]);
   });
+
+  it('sets finishedAt to the latest completed_at once every member is done', () => {
+    const [first, second] = handout(2);
+    const secondCompletedAt = iso(-1);
+    const batches = groupAssignments([
+      { ...first, completed_at: iso(-3) },
+      { ...second, completed_at: secondCompletedAt },
+    ]);
+    expect(batches[0].finishedAt).toBe(secondCompletedAt);
+  });
+
+  it('leaves finishedAt null while any member is unfinished', () => {
+    const [done, ...rest] = handout(3);
+    const batches = groupAssignments([{ ...done, completed_at: iso(-1) }, ...rest]);
+    expect(batches[0].finishedAt).toBeNull();
+  });
 });
 
 describe('AssignmentsList', () => {
@@ -192,5 +208,42 @@ describe('AssignmentsList', () => {
 
     expect(await screen.findByText('Removed for 1 of 3 members')).toBeInTheDocument();
     expect(screen.getByText(/will be removed for all 3 members/i)).toBeInTheDocument();
+  });
+
+  it('collapses finished handouts to 3 with a Show all button, expanding on click', () => {
+    const finished = Array.from(
+      { length: 5 },
+      (_, i) =>
+        handout(1, {
+          deck_id: `d${i}`,
+          completed_at: iso(-1),
+        }).map((a) => ({ ...a, decks: { id: `d${i}`, name: `Deck ${i}`, emoji: '📗' } }))[0],
+    );
+    render(finished);
+
+    expect(screen.getByText('Finished · 5')).toBeInTheDocument();
+    expect(screen.getAllByText(/^Deck \d$/)).toHaveLength(3);
+
+    fireEvent.click(screen.getByRole('button', { name: /Show all 5/i }));
+    expect(screen.getAllByText(/^Deck \d$/)).toHaveLength(5);
+  });
+
+  it('shows section headings with counts for in-progress and upcoming handouts', () => {
+    render([
+      ...handout(2, { due_date: iso(5) }),
+      ...handout(2, { deck_id: 'd2', available_on: iso(10) }).map((a) => ({
+        ...a,
+        decks: { id: 'd2', name: 'Verbs', emoji: '📘' },
+      })),
+    ]);
+
+    expect(screen.getByText('In progress · 1')).toBeInTheDocument();
+    expect(screen.getByText('Coming up · 1')).toBeInTheDocument();
+  });
+
+  it('shows the nothing-in-progress hint when only finished batches exist', () => {
+    render(handout(2, { completed_at: iso(-1) }));
+    expect(screen.getByText('In progress · 0')).toBeInTheDocument();
+    expect(screen.getByText('Nothing in progress right now.')).toBeInTheDocument();
   });
 });

@@ -1228,7 +1228,13 @@
       "nudgeSentShort": "Sent",
       "nudgeFailed": "Couldn't send. Please try again.",
       "nudgeDefaultMessage": "Don't forget to finish {deck}! 💪",
-      "lastNudged": "Last nudged {date}"
+      "lastNudged": "Last nudged {date}",
+      "sectionCurrent": "In progress",
+      "sectionUpcoming": "Coming up",
+      "sectionFinished": "Finished",
+      "sectionCount": "{label} · {count}",
+      "nothingInProgress": "Nothing in progress right now.",
+      "finishedDate": "Finished {date}"
     },
     "createAssignment": {
       "title": "Assign Work",

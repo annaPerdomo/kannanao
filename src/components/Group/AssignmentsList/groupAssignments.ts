@@ -10,6 +10,7 @@ export interface AssignmentBatch {
   availableOn: string | null;
   total: number;
   completed: number;
+  finishedAt: string | null;
   ids: string[];
   /** One member's copy, for the goal label and the edit dialog's current values. */
   sample: Assignment;
@@ -58,11 +59,23 @@ export function groupAssignments(assignments: Assignment[]): AssignmentBatch[] {
         availableOn: a.available_on,
         total: 1,
         completed: a.completed_at ? 1 : 0,
+        finishedAt: null,
         ids: [a.id],
         sample: a,
         members: [a],
       });
     }
+  }
+
+  for (const batch of batches.values()) {
+    batch.finishedAt =
+      batch.completed === batch.total
+        ? batch.members.reduce<string | null>((latest, m) => {
+            if (!m.completed_at) return latest;
+            if (!latest || m.completed_at > latest) return m.completed_at;
+            return latest;
+          }, null)
+        : null;
   }
 
   return [...batches.values()].sort((x, y) => {

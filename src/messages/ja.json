@@ -1228,7 +1228,13 @@
       "nudgeSentShort": "送信済み",
       "nudgeFailed": "送信できませんでした。もう一度お試しください。",
       "nudgeDefaultMessage": "「{deck}」を忘れずに終わらせよう！💪",
-      "lastNudged": "最終声かけ：{date}"
+      "lastNudged": "最終声かけ：{date}",
+      "sectionCurrent": "進行中",
+      "sectionUpcoming": "これから",
+      "sectionFinished": "終わったもの",
+      "sectionCount": "{label} · {count}",
+      "nothingInProgress": "今進行中のものはありません。",
+      "finishedDate": "{date} に終了"
     },
     "createAssignment": {
       "title": "課題を出す",

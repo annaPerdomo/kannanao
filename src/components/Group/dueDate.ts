@@ -2,6 +2,11 @@ import type { useTranslations } from 'next-intl';
 
 const MS_PER_DAY = 86_400_000;
 
+/** UTC on purpose: `available_on` is a plain date compared as a string, so local time would drift near midnight. */
+export function todayIso(now = Date.now()): string {
+  return new Date(now).toISOString().slice(0, 10);
+}
+
 export type DueBucket = 'overdue' | 'today' | 'tomorrow' | 'later';
 
 /**
