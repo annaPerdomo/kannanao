@@ -8,9 +8,11 @@ import { useState } from 'react';
 
 import { sumLastDays } from '@/components/Group/activityWeek';
 import { Loading } from '@/components/Loading';
+import type { Assignment } from '@/hooks/useAssignments';
 import type { DifficultWord } from '@/hooks/useDifficultWords';
 import type { GroupMember } from '@/hooks/useGroup';
 import type { GroupActivity } from '@/hooks/useGroupActivity';
+import type { Deck } from '@/types/deck';
 
 import { DeckReadinessPanel } from '../DeckReadiness';
 import {
@@ -19,6 +21,7 @@ import {
   DailyRangeSelect,
   StudyHeatmap,
 } from '../GroupCharts';
+import { MaterialsProgress } from '../MaterialsProgress';
 import { PracticeStrength } from '../PracticeStrength';
 import { ReteachNext } from '../ReteachNext';
 import { SectionCard } from '../SectionCard';
@@ -33,8 +36,14 @@ interface OverviewTabProps {
   words: DifficultWord[] | undefined;
   wordsLoading: boolean;
   wordsError: string | null;
+  assignments: Assignment[];
+  assignmentsLoading: boolean;
+  assignmentsError: string | null;
+  ownDecks: Deck[];
+  canAssign: boolean;
   onNavigateTab: (tab: GroupDashboardTab) => void;
   onOpenMaterials: () => void;
+  onAssignDeck: (deckId: string) => void;
 }
 
 /** Anything that is a whole tab of its own does not get a preview here. */
@@ -47,8 +56,14 @@ export function OverviewTab({
   words,
   wordsLoading,
   wordsError,
+  assignments,
+  assignmentsLoading,
+  assignmentsError,
+  ownDecks,
+  canAssign,
   onNavigateTab,
   onOpenMaterials,
+  onAssignDeck,
 }: OverviewTabProps) {
   const theme = useTheme();
   const tc = useTranslations('Group.charts');
@@ -89,11 +104,11 @@ export function OverviewTab({
           </SectionCard>
         </Box>
 
-        <Box sx={{ order: 3 }}>
+        <Box sx={{ order: 4 }}>
           <PracticeStrength activity={activity} loading={activityLoading} error={activityError} />
         </Box>
 
-        <Box sx={{ order: 4 }}>
+        <Box sx={{ order: 5 }}>
           <SectionCard
             icon={
               <CalendarMonthOutlinedIcon
@@ -129,6 +144,19 @@ export function OverviewTab({
         }}
       >
         <Box sx={{ order: 1 }}>
+          <MaterialsProgress
+            assignments={assignments}
+            loading={assignmentsLoading}
+            error={assignmentsError}
+            ownDecks={ownDecks}
+            canAssign={canAssign}
+            onViewAssignments={() => onNavigateTab('assignments')}
+            onAssignDeck={onAssignDeck}
+            onOpenMaterials={onOpenMaterials}
+          />
+        </Box>
+
+        <Box sx={{ order: 2 }}>
           <DeckReadinessPanel
             groupId={groupId}
             members={members}
@@ -136,7 +164,7 @@ export function OverviewTab({
           />
         </Box>
 
-        <Box sx={{ order: 2 }}>
+        <Box sx={{ order: 3 }}>
           <ReteachNext
             words={words}
             loading={wordsLoading}

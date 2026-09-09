@@ -9,17 +9,16 @@ import { DataErrorState, StaleDataHint } from '@/components/DataErrorState';
 import {
   ActivityTab,
   AssignmentsTab,
-  CreateAssignmentDialog,
-  CreateInviteDialog,
+  GroupDashboardDialogs,
   GroupDashboardHeader,
   type GroupDashboardTab,
-  InviteQRCode,
   isExpired,
   isGroupDashboardTab,
   LearnersTab,
   NeedsAttention,
   OverviewTab,
   TabBar,
+  useAssignDialog,
   WeekStatStrip,
   WordsTab,
 } from '@/components/Group';
@@ -33,8 +32,7 @@ import { useGroupFeed, useGroupMembers } from '@/hooks/useGroup';
 import { useGroupActivity } from '@/hooks/useGroupActivity';
 import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
 import { useGroups } from '@/hooks/useGroups';
-import type { InviteCode } from '@/hooks/useInvites';
-import { useInvites } from '@/hooks/useInvites';
+import { type InviteCode, useInvites } from '@/hooks/useInvites';
 import { LAYOUT } from '@/theme';
 
 /** Two weeks of columns in the daily chart; its last week fills the heatmap. */
@@ -79,7 +77,7 @@ export default function GroupDashboardPage() {
   const group = groups.find((g) => g.id === groupId);
   const ownDecks = decks.filter((d) => !d.isShared);
 
-  const [assignOpen, setAssignOpen] = useState(false);
+  const assignDialog = useAssignDialog();
   const [createInviteOpen, setCreateInviteOpen] = useState(false);
   const [qrInvite, setQrInvite] = useState<InviteCode | null>(null);
 
@@ -227,8 +225,14 @@ export default function GroupDashboardPage() {
           words={difficultWords?.words}
           wordsLoading={difficultWordsLoading}
           wordsError={difficultWordsError}
+          assignments={assignments}
+          assignmentsLoading={assignmentsLoading}
+          assignmentsError={assignmentsError}
+          ownDecks={ownDecks}
+          canAssign={members.length > 0}
           onNavigateTab={handleTabChange}
           onOpenMaterials={handleOpenMaterials}
+          onAssignDeck={(deckId) => assignDialog.openAssign({ deckId })}
         />
       )}
 
@@ -251,10 +255,12 @@ export default function GroupDashboardPage() {
           onEditAssignments={updateAssignments}
           onDeleteAssignments={deleteAssignments}
           canAssign={members.length > 0}
-          onAssign={() => setAssignOpen(true)}
+          onAssign={() => assignDialog.openAssign()}
           ownDecks={ownDecks}
           groupId={groupId}
           onSendEncouragement={handleSendEncouragement}
+          members={members}
+          onAssignMissing={assignDialog.assignMissing}
         />
       )}
 
@@ -271,36 +277,25 @@ export default function GroupDashboardPage() {
         />
       )}
 
-      <CreateAssignmentDialog
-        open={assignOpen}
-        onClose={() => setAssignOpen(false)}
+      <GroupDashboardDialogs
+        assignDialog={assignDialog}
         members={members}
-        decks={ownDecks}
-        onCreate={createAssignment}
-      />
-
-      <CreateInviteDialog
-        open={createInviteOpen}
-        onClose={() => setCreateInviteOpen(false)}
-        onCreate={createInvite}
-        onCreated={(invite) => {
+        ownDecks={ownDecks}
+        onCreateAssignment={createAssignment}
+        createInviteOpen={createInviteOpen}
+        onCloseCreateInvite={() => setCreateInviteOpen(false)}
+        onCreateInvite={createInvite}
+        invites={invites}
+        onRevokeInvite={revokeInvite}
+        qrInvite={qrInvite}
+        onCreatedInvite={(invite) => {
           setCreateInviteOpen(false);
           setQrInvite(invite);
         }}
-        invites={invites}
-        onRevoke={revokeInvite}
-        onShowQR={(invite) => setQrInvite(invite)}
+        onShowQr={(invite) => setQrInvite(invite)}
+        onCloseQr={() => setQrInvite(null)}
+        organizerName={displayName ?? user?.email?.split('@')[0] ?? ''}
       />
-
-      {qrInvite && (
-        <InviteQRCode
-          open={Boolean(qrInvite)}
-          onClose={() => setQrInvite(null)}
-          code={qrInvite.code}
-          label={qrInvite.label}
-          organizerName={displayName ?? user?.email?.split('@')[0] ?? ''}
-        />
-      )}
     </Box>
   );
 }

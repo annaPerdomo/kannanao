@@ -16,10 +16,11 @@ import { useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
 import type { GroupMember } from '@/hooks/useGroup';
-import type { GoalMode } from '@/lib/assignmentMastery';
+import { type GoalMode, isGoalMode } from '@/lib/assignmentMastery';
 
 import { AssignmentGoalPicker } from './AssignmentGoalPicker';
 import { KanaSetPicker } from './KanaSetPicker';
+import type { AssignPresetFields } from './useAssignDialog';
 
 interface Deck {
   id: string;
@@ -35,6 +36,9 @@ interface CreateAssignmentDialogProps {
   decks: Deck[];
   /** Pre-selected member IDs (e.g. when opened from member detail) */
   preSelectedMembers?: string[];
+  preSelectedDeckId?: string;
+  preSelectedKanaSet?: string;
+  preSelectedFields?: AssignPresetFields;
   onCreate: (opts: {
     memberIds: string[];
     deckId?: string;
@@ -54,6 +58,9 @@ export function CreateAssignmentDialog({
   members,
   decks,
   preSelectedMembers,
+  preSelectedDeckId,
+  preSelectedKanaSet,
+  preSelectedFields,
   onCreate,
 }: CreateAssignmentDialogProps) {
   const theme = useTheme();
@@ -62,16 +69,24 @@ export function CreateAssignmentDialog({
   const { brand, accent } = theme.palette;
 
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(
-    new Set(preSelectedMembers ?? []),
+    () =>
+      new Set(
+        preSelectedMembers ??
+          (preSelectedDeckId || preSelectedKanaSet ? members.map((m) => m.id) : []),
+      ),
   );
-  const [target, setTarget] = useState<'deck' | 'kana'>('deck');
-  const [selectedDeck, setSelectedDeck] = useState<string>('');
-  const [selectedKana, setSelectedKana] = useState<string>('');
-  const [note, setNote] = useState('');
-  const [dueDate, setDueDate] = useState('');
+  const [target, setTarget] = useState<'deck' | 'kana'>(preSelectedKanaSet ? 'kana' : 'deck');
+  const [selectedDeck, setSelectedDeck] = useState<string>(preSelectedDeckId ?? '');
+  const [selectedKana, setSelectedKana] = useState<string>(preSelectedKanaSet ?? '');
+  const [note, setNote] = useState(preSelectedFields?.note ?? '');
+  const [dueDate, setDueDate] = useState(preSelectedFields?.dueDate ?? '');
   const [availableOn, setAvailableOn] = useState('');
-  const [goalAccuracy, setGoalAccuracy] = useState<number | null>(null);
-  const [goalMode, setGoalMode] = useState<GoalMode | null>(null);
+  const [goalAccuracy, setGoalAccuracy] = useState<number | null>(
+    preSelectedFields?.requiredAccuracy ?? null,
+  );
+  const [goalMode, setGoalMode] = useState<GoalMode | null>(
+    isGoalMode(preSelectedFields?.requiredMode) ? preSelectedFields.requiredMode : null,
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

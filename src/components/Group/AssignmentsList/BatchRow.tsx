@@ -3,7 +3,9 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditIcon from '@mui/icons-material/EditOutlined';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -13,8 +15,12 @@ import Typography from '@mui/material/Typography';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-import { dueDateLabel } from '../dueDate';
+import type { Assignment } from '@/hooks/useAssignments';
+import type { GroupMember } from '@/hooks/useGroup';
+
+import { dueDateLabel, todayIso } from '../dueDate';
 import { useGoalLabel } from '../useGoalLabel';
+import { missingMembers as computeMissingMembers } from './batchMemberGrouping';
 import { BatchMemberList } from './BatchMemberList';
 import type { AssignmentBatch } from './groupAssignments';
 
@@ -37,9 +43,20 @@ interface BatchRowProps {
   onEdit: () => void;
   onDelete: () => void;
   onSendEncouragement?: (memberId: string, message: string, emoji?: string) => Promise<unknown>;
+  members?: GroupMember[];
+  assignments?: Assignment[];
+  onAssignMissing?: (batch: AssignmentBatch, memberIds: string[]) => void;
 }
 
-export function BatchRow({ batch, onEdit, onDelete, onSendEncouragement }: BatchRowProps) {
+export function BatchRow({
+  batch,
+  onEdit,
+  onDelete,
+  onSendEncouragement,
+  members,
+  assignments = [],
+  onAssignMissing,
+}: BatchRowProps) {
   const theme = useTheme();
   const t = useTranslations('Group.assignmentsList');
   const locale = useLocale();
@@ -47,14 +64,16 @@ export function BatchRow({ batch, onEdit, onDelete, onSendEncouragement }: Batch
   const [membersOpen, setMembersOpen] = useState(false);
   const isDone = batch.completed === batch.total;
   // Scheduled for a future date: visible to the organizer, not yet to the learner.
-  const isScheduled =
-    !!batch.availableOn && batch.availableOn > new Date().toISOString().slice(0, 10);
+  const isScheduled = !!batch.availableOn && batch.availableOn > todayIso();
   const urgency = !isDone && !isScheduled ? dueDateColor(batch.dueDate) : null;
   const goal = useGoalLabel()(batch.sample);
   const urgencyColor = urgency === 'red' ? theme.palette.error.main : theme.palette.warning.main;
   const deckName = batch.deckName || t('unknownDeck');
   const pct = Math.round((batch.completed / batch.total) * 100);
   const emoji = isDone ? '✅' : batch.deckEmoji || '📚';
+
+  const missing = members && !isScheduled ? computeMissingMembers(batch, members, assignments) : [];
+  const missingIds = missing.map((m) => m.id);
 
   const membersListId = `assignment-members-${batch.ids[0]}`;
 
@@ -89,7 +108,13 @@ export function BatchRow({ batch, onEdit, onDelete, onSendEncouragement }: Batch
                 color: 'text.primary',
               }}
             >
-              {t('doneCount', { done: batch.completed, total: batch.total })}
+              {isDone && missing.length > 0
+                ? t('doneCountMissing', {
+                    done: batch.completed,
+                    total: batch.total,
+                    missing: missing.length,
+                  })
+                : t('doneCount', { done: batch.completed, total: batch.total })}
             </Typography>
           </Box>
 
@@ -109,12 +134,15 @@ export function BatchRow({ batch, onEdit, onDelete, onSendEncouragement }: Batch
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
             <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', minWidth: 0 }} noWrap>
               {[
+                isDone && batch.finishedAt
+                  ? t('finishedDate', { date: formatDate(batch.finishedAt, locale) })
+                  : null,
                 // A future start date is the more useful fact: the learner cannot
                 // see this one yet, so "due in 27 days" would be misleading alone.
                 isScheduled
                   ? t('startsOn', { date: formatDate(batch.availableOn!, locale) })
                   : null,
-                batch.dueDate && !urgency
+                !isDone && batch.dueDate && !urgency
                   ? t('dueOn', { date: formatDate(batch.dueDate, locale) })
                   : null,
                 goal ? t('goalLabel', { goal }) : null,
@@ -141,6 +169,39 @@ export function BatchRow({ batch, onEdit, onDelete, onSendEncouragement }: Batch
               </Box>
             )}
           </Box>
+
+          {missing.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.3, minWidth: 0 }}>
+              <PersonAddAltOutlinedIcon
+                aria-hidden
+                sx={{ fontSize: 14, flexShrink: 0, color: theme.palette.warning.main }}
+              />
+              <Typography
+                sx={{ fontSize: '0.75rem', color: 'text.secondary', flexShrink: 0 }}
+                noWrap
+              >
+                {t('neverGotThis', { count: missing.length })}
+              </Typography>
+              {onAssignMissing && (
+                <Button
+                  size="small"
+                  onClick={() => onAssignMissing(batch, missingIds)}
+                  aria-label={t('giveToThemAria', { deckName, count: missing.length })}
+                  sx={{
+                    minWidth: 0,
+                    py: 0,
+                    px: 0.5,
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    textTransform: 'none',
+                    color: brand[600],
+                  }}
+                >
+                  {t('giveToThem')}
+                </Button>
+              )}
+            </Box>
+          )}
         </Box>
 
         <Box sx={{ display: 'flex', gap: 0.25, flexShrink: 0 }}>
@@ -188,6 +249,7 @@ export function BatchRow({ batch, onEdit, onDelete, onSendEncouragement }: Batch
           requiredAccuracy={batch.sample.required_accuracy}
           deckName={deckName}
           onSendEncouragement={onSendEncouragement}
+          missingMembers={missing}
         />
       </Collapse>
     </Paper>

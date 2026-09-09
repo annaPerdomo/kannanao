@@ -1089,6 +1089,22 @@
       "yesterday": "きのう",
       "daysAgo": "{days}日前"
     },
+    "materialsProgress": {
+      "heading": "グループの現在地",
+      "finished": "終わった",
+      "inProgress": "進行中",
+      "comingUp": "これから",
+      "nextDue": "次の期限: {deck}",
+      "recentlyFinished": "最近終わったもの",
+      "notHandedOut": "まだ配っていないもの",
+      "andMore": "他 {count} 件",
+      "assign": "配る",
+      "assignAria": "{deck} を配る",
+      "emptyHint": "デッキを作って、ここから配りましょう。",
+      "seeAllAssignments": "課題をすべて見る",
+      "makeMaterials": "新しい教材を作る",
+      "loading": "予定を読み込み中..."
+    },
     "memberDetail": {
       "loadingMemberDetails": "メンバーの詳細を読み込み中...",
       "level": "レベル {level}",
@@ -1228,7 +1244,18 @@
       "nudgeSentShort": "送信済み",
       "nudgeFailed": "送信できませんでした。もう一度お試しください。",
       "nudgeDefaultMessage": "「{deck}」を忘れずに終わらせよう！💪",
-      "lastNudged": "最終声かけ：{date}"
+      "lastNudged": "最終声かけ：{date}",
+      "sectionCurrent": "進行中",
+      "sectionUpcoming": "これから",
+      "sectionFinished": "終わったもの",
+      "sectionCount": "{label} · {count}",
+      "nothingInProgress": "今進行中のものはありません。",
+      "finishedDate": "{date} に終了",
+      "neverGotThis": "{count} 人がまだ受け取っていません",
+      "giveToThem": "この人たちに配る",
+      "giveToThemAria": "まだ受け取っていない {count} 人に {deckName} を配る",
+      "memberNeverGot": "まだ受け取っていない",
+      "doneCountMissing": "{done}/{total} 完了 · {missing} 人未配布"
     },
     "createAssignment": {
       "title": "課題を出す",

@@ -10,10 +10,17 @@ import { useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
 import type { Assignment } from '@/hooks/useAssignments';
+import type { GroupMember } from '@/hooks/useGroup';
 
+import { todayIso } from '../dueDate';
 import { EditAssignmentDialog } from '../EditAssignmentDialog';
+import { ShowMoreButton } from '../ShowMoreButton';
 import { BatchRow } from './BatchRow';
 import { type AssignmentBatch, groupAssignments } from './groupAssignments';
+import { sectionBatches } from './sectionBatches';
+import { SectionHeading } from './SectionHeading';
+
+export const FINISHED_PREVIEW = 3;
 
 export { type AssignmentBatch, groupAssignments } from './groupAssignments';
 
@@ -26,6 +33,8 @@ interface AssignmentsListProps {
   ) => Promise<void>;
   onDeleteBatch: (ids: string[]) => Promise<void>;
   onSendEncouragement?: (memberId: string, message: string, emoji?: string) => Promise<unknown>;
+  members?: GroupMember[];
+  onAssignMissing?: (batch: AssignmentBatch, memberIds: string[]) => void;
 }
 
 export function AssignmentsList({
@@ -33,6 +42,8 @@ export function AssignmentsList({
   onEditBatch,
   onDeleteBatch,
   onSendEncouragement,
+  members,
+  onAssignMissing,
 }: AssignmentsListProps) {
   const theme = useTheme();
   const t = useTranslations('Group.assignmentsList');
@@ -42,8 +53,27 @@ export function AssignmentsList({
   const [removing, setRemoving] = useState<AssignmentBatch | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [finishedExpanded, setFinishedExpanded] = useState(false);
 
   const batches = groupAssignments(assignments);
+  const { upcoming, current, finished } = sectionBatches(batches, todayIso());
+  const visibleFinished = finishedExpanded ? finished : finished.slice(0, FINISHED_PREVIEW);
+
+  const renderRow = (batch: AssignmentBatch) => (
+    <BatchRow
+      key={batch.key}
+      batch={batch}
+      onEdit={() => setEditing(batch)}
+      onDelete={() => {
+        setRemoving(batch);
+        setDeleteError(null);
+      }}
+      onSendEncouragement={onSendEncouragement}
+      members={members}
+      assignments={assignments}
+      onAssignMissing={onAssignMissing}
+    />
+  );
 
   const closeRemoveDialog = () => {
     if (deleting) return;
@@ -90,19 +120,38 @@ export function AssignmentsList({
 
   return (
     <>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-        {batches.map((batch) => (
-          <BatchRow
-            key={batch.key}
-            batch={batch}
-            onEdit={() => setEditing(batch)}
-            onDelete={() => {
-              setRemoving(batch);
-              setDeleteError(null);
-            }}
-            onSendEncouragement={onSendEncouragement}
-          />
-        ))}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+          <SectionHeading label={t('sectionCurrent')} count={current.length} />
+          {current.length === 0 ? (
+            <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
+              {t('nothingInProgress')}
+            </Typography>
+          ) : (
+            current.map(renderRow)
+          )}
+        </Box>
+
+        {upcoming.length > 0 && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+            <SectionHeading label={t('sectionUpcoming')} count={upcoming.length} />
+            {upcoming.map(renderRow)}
+          </Box>
+        )}
+
+        {finished.length > 0 && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+            <SectionHeading label={t('sectionFinished')} count={finished.length} />
+            {visibleFinished.map(renderRow)}
+            {finished.length > FINISHED_PREVIEW && (
+              <ShowMoreButton
+                expanded={finishedExpanded}
+                total={finished.length}
+                onClick={() => setFinishedExpanded((v) => !v)}
+              />
+            )}
+          </Box>
+        )}
       </Box>
 
       <EditAssignmentDialog

@@ -7,9 +7,10 @@ import { useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 
 import type { Assignment } from '@/hooks/useAssignments';
+import type { GroupMember } from '@/hooks/useGroup';
 import type { Deck } from '@/types/deck';
 
-import { AssignmentsList } from '../AssignmentsList';
+import { type AssignmentBatch, AssignmentsList } from '../AssignmentsList';
 import { QuizScoresPanel } from '../QuizScoresPanel';
 import { SectionCard } from '../SectionCard';
 
@@ -25,6 +26,8 @@ interface AssignmentsTabProps {
   ownDecks: Deck[];
   groupId: string;
   onSendEncouragement: (memberId: string, message: string, emoji?: string) => Promise<unknown>;
+  members: GroupMember[];
+  onAssignMissing: (batch: AssignmentBatch, memberIds: string[]) => void;
 }
 
 export function AssignmentsTab({
@@ -36,6 +39,8 @@ export function AssignmentsTab({
   ownDecks,
   groupId,
   onSendEncouragement,
+  members,
+  onAssignMissing,
 }: AssignmentsTabProps) {
   const t = useTranslations('Group.groupPage');
   const theme = useTheme();
@@ -61,6 +66,8 @@ export function AssignmentsTab({
           onEditBatch={onEditAssignments}
           onDeleteBatch={onDeleteAssignments}
           onSendEncouragement={onSendEncouragement}
+          members={members}
+          onAssignMissing={onAssignMissing}
         />
       </SectionCard>
 

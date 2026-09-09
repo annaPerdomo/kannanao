@@ -43,9 +43,16 @@ import type { GroupMember } from '@/hooks/useGroup';
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
 const members = [{ id: 'm1', username: 'kai', displayName: 'Kai' }] as unknown as GroupMember[];
+const twoMembers = [
+  { id: 'm1', username: 'kai', displayName: 'Kai' },
+  { id: 'm2', username: 'yui', displayName: 'Yui' },
+] as unknown as GroupMember[];
 const decks = [{ id: 'd1', name: 'Animals', emoji: '🐾' }];
 
-function setup(onCreate = vi.fn().mockResolvedValue(undefined)) {
+function setup(
+  onCreate = vi.fn().mockResolvedValue(undefined),
+  extraProps: Partial<React.ComponentProps<typeof CreateAssignmentDialog>> = {},
+) {
   renderWithProviders(
     <CreateAssignmentDialog
       open
@@ -53,6 +60,7 @@ function setup(onCreate = vi.fn().mockResolvedValue(undefined)) {
       members={members}
       decks={decks}
       onCreate={onCreate}
+      {...extraProps}
     />,
   );
   return onCreate;
@@ -144,5 +152,56 @@ describe('CreateAssignmentDialog', () => {
 
     await waitFor(() => expect(onCreate).toHaveBeenCalled());
     expect(onCreate.mock.calls[0][0].requiredMode).toBeUndefined();
+  });
+
+  it('opening with preSelectedKanaSet starts in kana mode with that set chosen', async () => {
+    const onCreate = setup(vi.fn().mockResolvedValue(undefined), {
+      members: twoMembers,
+      preSelectedKanaSet: 'hira-ka',
+    });
+
+    expect(screen.getByRole('button', { name: 'か · き · く · け · こ' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /^assign$/i }));
+
+    await waitFor(() => expect(onCreate).toHaveBeenCalled());
+    const arg = onCreate.mock.calls[0][0];
+    expect(arg.kanaSet).toBe('hira-ka');
+    expect(arg.deckId).toBeUndefined();
+    expect(arg.memberIds.sort()).toEqual(['m1', 'm2']);
+  });
+
+  it('seeds the note, deadline, and goal from preSelectedFields', async () => {
+    const onCreate = setup(vi.fn().mockResolvedValue(undefined), {
+      members: twoMembers,
+      preSelectedDeckId: 'd1',
+      preSelectedFields: { note: 'Chapter 3', dueDate: '2030-01-05', requiredAccuracy: 80 },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /^assign$/i }));
+
+    await waitFor(() => expect(onCreate).toHaveBeenCalled());
+    expect(onCreate.mock.calls[0][0]).toMatchObject({
+      note: 'Chapter 3',
+      dueDate: '2030-01-05',
+      requiredAccuracy: 80,
+    });
+  });
+
+  it('opening with preSelectedDeckId selects that deck and all members', async () => {
+    const onCreate = setup(vi.fn().mockResolvedValue(undefined), {
+      members: twoMembers,
+      preSelectedDeckId: 'd1',
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /^assign$/i }));
+
+    await waitFor(() => expect(onCreate).toHaveBeenCalled());
+    const arg = onCreate.mock.calls[0][0];
+    expect(arg.deckId).toBe('d1');
+    expect(arg.memberIds.sort()).toEqual(['m1', 'm2']);
   });
 });

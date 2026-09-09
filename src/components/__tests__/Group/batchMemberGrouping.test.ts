@@ -3,8 +3,11 @@ import { describe, expect, it } from 'vitest';
 import {
   groupBatchMembers,
   isNearGoal,
+  missingMembers,
 } from '@/components/Group/AssignmentsList/batchMemberGrouping';
+import type { AssignmentBatch } from '@/components/Group/AssignmentsList/groupAssignments';
 import type { Assignment } from '@/hooks/useAssignments';
+import type { GroupMember } from '@/hooks/useGroup';
 
 function member(overrides: Partial<Assignment> = {}): Assignment {
   return {
@@ -101,5 +104,82 @@ describe('isNearGoal', () => {
 
   it('is false outside the 15-point margin', () => {
     expect(isNearGoal(50, 80)).toBe(false);
+  });
+});
+
+function groupMember(overrides: Partial<GroupMember> = {}): GroupMember {
+  return {
+    id: 'm1',
+    username: 'mika',
+    displayName: 'Mika',
+    createdAt: '2026-07-01T00:00:00Z',
+    level: 1,
+    totalXp: 0,
+    streakDays: 0,
+    totalCardsStudied: 0,
+    totalCorrect: 0,
+    totalSessions: 0,
+    lastActive: null,
+    lastNudgedAt: null,
+    masteryLearning: 0,
+    masteryStrong: 0,
+    reviewsWaiting: null,
+    reviewsOverdue3d: null,
+    ...overrides,
+  } as GroupMember;
+}
+
+function batch(memberIds: string[]): AssignmentBatch {
+  return {
+    key: 'k',
+    deckName: 'Animals',
+    deckEmoji: '🐾',
+    dueDate: null,
+    availableOn: null,
+    total: memberIds.length,
+    completed: 0,
+    finishedAt: null,
+    ids: memberIds.map((id, i) => `a${i}`),
+    sample: member({ member_id: memberIds[0] ?? 'm1' }),
+    members: memberIds.map((id) => member({ member_id: id })),
+  };
+}
+
+describe('missingMembers', () => {
+  it('returns members absent from the batch, in roster order', () => {
+    const roster = [
+      groupMember({ id: 'm1' }),
+      groupMember({ id: 'm2' }),
+      groupMember({ id: 'm3' }),
+    ];
+    const result = missingMembers(batch(['m1']), roster, []);
+    expect(result.map((m) => m.id)).toEqual(['m2', 'm3']);
+  });
+
+  it('is empty when every member already has a copy', () => {
+    const roster = [groupMember({ id: 'm1' }), groupMember({ id: 'm2' })];
+    expect(missingMembers(batch(['m1', 'm2']), roster, [])).toHaveLength(0);
+  });
+
+  it('ignores a member whose id appears once among many copies', () => {
+    const roster = [
+      groupMember({ id: 'm1' }),
+      groupMember({ id: 'm2' }),
+      groupMember({ id: 'm3' }),
+    ];
+    const result = missingMembers(batch(['m1', 'm2', 'm1']), roster, []);
+    expect(result.map((m) => m.id)).toEqual(['m3']);
+  });
+
+  it('does not flag a member who holds the same deck in another batch', () => {
+    const roster = [groupMember({ id: 'm1' }), groupMember({ id: 'm2' })];
+    const elsewhere = [member({ id: 'x', member_id: 'm2', deck_id: 'd1', due_date: '2026-01-01' })];
+    expect(missingMembers(batch(['m1']), roster, elsewhere)).toHaveLength(0);
+  });
+
+  it('still flags a member who only holds a different deck', () => {
+    const roster = [groupMember({ id: 'm1' }), groupMember({ id: 'm2' })];
+    const other = [member({ id: 'x', member_id: 'm2', deck_id: 'd9' })];
+    expect(missingMembers(batch(['m1']), roster, other).map((m) => m.id)).toEqual(['m2']);
   });
 });
