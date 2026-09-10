@@ -1,22 +1,22 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { aggregateMasteryByUser } from '@/lib/cardStrength';
-import { kanaProgressMap, readingStage } from '@/lib/kanaProficiency';
+import { readingStage } from '@/lib/kanaProficiency';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
 import { allRows } from '../_lib/allRows';
+import {
+  groupKanaProgressByUser,
+  KANA_PROGRESS_COLUMNS,
+  type KanaProgressRow,
+  knownCount,
+  toKanaProgressMap,
+} from '../_lib/memberReading';
 import { memberIdsFor } from '../_lib/membership';
 import { backlogOf, reviewBacklogFor } from '../_lib/reviewBacklog';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
-
-interface KanaProgressRow {
-  user_id: string;
-  kana: string;
-  correct_count: number | null;
-  wrong_count: number | null;
-}
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
 
@@ -72,10 +72,10 @@ export async function GET(req: NextRequest) {
         .in('user_id', memberIds),
       sb.from('card_progress').select('user_id, interval_days, ease').in('user_id', memberIds),
       // Reading is one column of the table: a failed read must not blank the roster.
-      allRows<KanaProgressRow>((from, to) =>
+      allRows<KanaProgressRow & { user_id: string }>((from, to) =>
         sb
           .from('kana_progress')
-          .select('user_id, kana, correct_count, wrong_count')
+          .select(`user_id, ${KANA_PROGRESS_COLUMNS}`)
           .in('user_id', memberIds)
           .order('user_id', { ascending: true })
           .order('kana', { ascending: true })
@@ -99,31 +99,21 @@ export async function GET(req: NextRequest) {
     })),
   );
 
-  const kanaRowsByMember = new Map<
-    string,
-    { kana: string; correctCount: number; wrongCount: number }[]
-  >();
-  for (const row of kanaProgressRows ?? []) {
-    const list = kanaRowsByMember.get(row.user_id) ?? [];
-    list.push({
-      kana: row.kana,
-      correctCount: row.correct_count ?? 0,
-      wrongCount: row.wrong_count ?? 0,
-    });
-    kanaRowsByMember.set(row.user_id, list);
-  }
+  const kanaRowsByMember = groupKanaProgressByUser(kanaProgressRows ?? []);
 
   const result = members.map((m) => {
     const prog = progressMap.get(m.id);
     const mastery = masteryByUser.get(m.id);
     const { reviewsWaiting, reviewsOverdue3d } = backlogOf(backlog, m.id);
-    const byKana = kanaProgressMap(kanaRowsByMember.get(m.id) ?? []);
+    const byKana = toKanaProgressMap(kanaRowsByMember.get(m.id) ?? []);
     return {
       id: m.id,
       // Omitted, never guessed: a failed read would otherwise report every
       // learner as having met no characters.
       hiragana: kanaProgressRows ? readingStage(byKana, 'hiragana') : undefined,
       katakana: kanaProgressRows ? readingStage(byKana, 'katakana') : undefined,
+      hiraganaKnown: kanaProgressRows ? knownCount(byKana, 'hiragana') : undefined,
+      katakanaKnown: kanaProgressRows ? knownCount(byKana, 'katakana') : undefined,
       username: m.username,
       displayName: m.display_name,
       avatar: m.avatar,

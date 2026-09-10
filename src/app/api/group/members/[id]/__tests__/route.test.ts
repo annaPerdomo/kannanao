@@ -264,3 +264,46 @@ describe('GET /api/group/members/[id] — review backlog', () => {
     expect(body).toMatchObject({ reviewsWaiting: null, reviewsOverdue3d: null });
   });
 });
+
+describe('GET /api/group/members/[id] — reading', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    _resetStore();
+    for (const k of Object.keys(tableData)) delete tableData[k];
+    requireOrganizerAccountMock.mockResolvedValue(ORGANIZER);
+    rpcMock.mockResolvedValue({ data: [], error: null });
+    setTable('profiles', { id: 'm1', username: 'kid', display_name: 'Kid' });
+    setTable('group_members', [{ member_id: 'm1', group_id: 'g1', organizer_id: 'org-1' }]);
+  });
+
+  it('includes a reading breakdown with both tracks', async () => {
+    setTable('kana_progress', [
+      { kana: 'あ', correct_count: 12, wrong_count: 0, last_reviewed_at: '2026-08-01T00:00:00Z' },
+    ]);
+
+    const res = await GET(makeRequest(), { params });
+    const body = await res.json();
+
+    expect(body.reading.hiragana.seen).toBe(1);
+    expect(body.reading.katakana.seen).toBe(0);
+    expect(body.reading.lastPracticedAt).toBe('2026-08-01T00:00:00Z');
+  });
+
+  it('reports an empty reading breakdown when the member has no kana_progress rows', async () => {
+    setTable('kana_progress', []);
+    const res = await GET(makeRequest(), { params });
+    const body = await res.json();
+    expect(body.reading.hiragana.seen).toBe(0);
+    expect(body.reading.katakana.seen).toBe(0);
+    expect(body.reading.lastPracticedAt).toBeNull();
+  });
+
+  // Null, not an empty breakdown, so the detail view can tell "never studied" apart from "read failed".
+  it('reports reading as null when the kana_progress query fails', async () => {
+    setTable('kana_progress', null, { message: 'boom' });
+    const res = await GET(makeRequest(), { params });
+    const body = await res.json();
+    expect(res.status).toBe(200);
+    expect(body.reading).toBeNull();
+  });
+});

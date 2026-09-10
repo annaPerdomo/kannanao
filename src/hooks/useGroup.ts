@@ -7,6 +7,7 @@ import { fetchJsonCached, peekApiCache, peekApiCacheMeta } from '@/lib/apiCache'
 import { type DataError, toDataError } from '@/lib/dataError';
 import type { ReadingStage } from '@/lib/kanaProficiency';
 import { sb } from '@/lib/supabase';
+import type { MemberReading } from '@/types/reading';
 
 export interface GroupMember {
   id: string;
@@ -34,6 +35,9 @@ export interface GroupMember {
   /** Reading stage per track. Absent when the reading read failed. */
   hiragana?: ReadingStage;
   katakana?: ReadingStage;
+  /** Characters known (`isKanaKnown`) per track. Absent when the reading read failed. */
+  hiraganaKnown?: number;
+  katakanaKnown?: number;
 }
 
 export interface MasteryCounts {
@@ -140,6 +144,7 @@ export interface MemberDetail {
   }[];
   reviewsWaiting: number | null;
   reviewsOverdue3d: number | null;
+  reading: MemberReading | null;
 }
 
 export interface FeedItem {

@@ -1,4 +1,5 @@
 'use client';
+import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
@@ -15,15 +16,22 @@ export function ReadingCell({ member }: ReadingCellProps) {
   const label = readingLabel(member, t);
 
   return (
-    <Typography
-      sx={{
-        fontSize: '0.85rem',
-        fontWeight: 600,
-        color: label ? 'text.primary' : 'text.secondary',
-      }}
-      noWrap
-    >
-      {label ?? '—'}
-    </Typography>
+    <Box>
+      <Typography
+        sx={{
+          fontSize: '0.85rem',
+          fontWeight: 600,
+          color: label ? 'text.primary' : 'text.secondary',
+        }}
+        noWrap
+      >
+        {label ?? '—'}
+      </Typography>
+      {label && member.hiraganaKnown !== undefined && member.katakanaKnown !== undefined && (
+        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }} noWrap>
+          {t('readingCounts', { hiragana: member.hiraganaKnown, katakana: member.katakanaKnown })}
+        </Typography>
+      )}
+    </Box>
   );
 }

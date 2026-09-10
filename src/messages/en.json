@@ -1131,7 +1131,29 @@
       "never": "Never",
       "durationSeconds": "{secs}s",
       "durationMinutes": "{mins}m",
-      "seeContentsAria": "See what's in {deckName}"
+      "seeContentsAria": "See what's in {deckName}",
+      "reading": {
+        "title": "Reading",
+        "lastPracticed": "Last practised {date}",
+        "notStarted": "Hasn't started reading practice yet.",
+        "hiragana": "Hiragana",
+        "katakana": "Katakana",
+        "stage": {
+          "new": "Just starting",
+          "learning": "Learning",
+          "reads": "Reads it"
+        },
+        "knownCount": "{known} of {total} characters",
+        "showCharacters": "Show characters",
+        "hideCharacters": "Hide characters",
+        "chipAria": "{kana}, {stars} of 3 stars",
+        "state": {
+          "solid": "Solid",
+          "learning": "Learning",
+          "rusty": "Needs a refresh",
+          "new": "Not yet"
+        }
+      }
     },
     "practiceBreakdown": {
       "heading": "Practice Mode Breakdown",
@@ -1631,7 +1653,8 @@
       "readingLearningHiragana": "Learning hiragana",
       "readingHiragana": "Reads hiragana",
       "readingLearningKatakana": "Learning katakana",
-      "readingBoth": "Reads both"
+      "readingBoth": "Reads both",
+      "readingCounts": "あ {hiragana} · ア {katakana}"
     },
     "needsAttention": {
       "heading": "Needs attention",

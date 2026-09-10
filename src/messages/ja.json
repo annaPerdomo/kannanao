@@ -1131,7 +1131,29 @@
       "never": "まだ",
       "durationSeconds": "{secs}秒",
       "durationMinutes": "{mins}分",
-      "seeContentsAria": "{deckName}の中身を見る"
+      "seeContentsAria": "{deckName}の中身を見る",
+      "reading": {
+        "title": "読む力",
+        "lastPracticed": "最後の練習：{date}",
+        "notStarted": "読む練習はまだ始めていません。",
+        "hiragana": "ひらがな",
+        "katakana": "カタカナ",
+        "stage": {
+          "new": "これから",
+          "learning": "練習中",
+          "reads": "読める"
+        },
+        "knownCount": "{total}文字中{known}文字",
+        "showCharacters": "文字を見る",
+        "hideCharacters": "文字をかくす",
+        "chipAria": "{kana}、星{stars}／3",
+        "state": {
+          "solid": "ばっちり",
+          "learning": "練習中",
+          "rusty": "おさらい",
+          "new": "まだ"
+        }
+      }
     },
     "practiceBreakdown": {
       "heading": "練習モード別の記録",
@@ -1631,7 +1653,8 @@
       "readingLearningHiragana": "ひらがな れんしゅうちゅう",
       "readingHiragana": "ひらがなが よめる",
       "readingLearningKatakana": "カタカナ れんしゅうちゅう",
-      "readingBoth": "りょうほう よめる"
+      "readingBoth": "りょうほう よめる",
+      "readingCounts": "あ {hiragana}・ア {katakana}"
     },
     "needsAttention": {
       "heading": "対応が必要なこと",

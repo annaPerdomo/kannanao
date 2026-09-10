@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../../_lib/requireOrganizerAccount';
+import { KANA_PROGRESS_COLUMNS, memberReading, toKanaProgressMap } from '../../_lib/memberReading';
 import { isMemberOfOrganizer } from '../../_lib/membership';
 import { backlogOf, reviewBacklogFor } from '../../_lib/reviewBacklog';
 import { getServiceSupabase } from '../../_lib/serviceSupabase';
@@ -47,6 +48,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     allSessionsRes,
     weakWordsRes,
     backlog,
+    kanaProgressRes,
   ] = await Promise.all([
     sb
       .from('user_progress')
@@ -95,6 +97,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       .eq('user_id', memberId)
       .gt('wrong_count', 0),
     reviewBacklogFor([memberId], `/api/group/members/${memberId}`),
+    sb.from('kana_progress').select(KANA_PROGRESS_COLUMNS).eq('user_id', memberId),
   ]);
 
   if (progressRes.error) {
@@ -364,6 +367,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const prog = progressRes.data;
   const { reviewsWaiting, reviewsOverdue3d } = backlogOf(backlog, memberId);
+  if (kanaProgressRes.error) {
+    logger.error('Failed to load reading progress for member detail', {
+      route: `/api/group/members/${memberId}`,
+      error: kanaProgressRes.error.message,
+    });
+  }
+  const reading = kanaProgressRes.error
+    ? null
+    : memberReading(toKanaProgressMap(kanaProgressRes.data ?? []));
 
   return NextResponse.json({
     member: {
@@ -402,5 +414,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     totalMastery,
     reviewsWaiting,
     reviewsOverdue3d,
+    reading,
   });
 }
