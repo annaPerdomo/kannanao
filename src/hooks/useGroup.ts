@@ -115,6 +115,10 @@ export interface MemberDetail {
       title: string | null;
       deckName: string;
       deckEmoji: string | null;
+      deckId: string | null;
+      kanaSet: string | null;
+      note: string | null;
+      availableOn: string | null;
       dueDate: string | null;
       completedAt: string | null;
       createdAt: string;

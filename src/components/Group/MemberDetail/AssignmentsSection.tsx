@@ -2,16 +2,20 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import Box from '@mui/material/Box';
+import ButtonBase from '@mui/material/ButtonBase';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 import type { MemberDetail } from '@/hooks/useGroup';
+import type { HandoutRef } from '@/types/handout';
 
+import { HandoutDetailDialog } from '../HandoutDetailDialog';
 import { useGoalLabel } from '../useGoalLabel';
-import { useMemberFormatters } from './helpers';
+import { handoutRefFromItem, useMemberFormatters } from './helpers';
 
 type Assignments = MemberDetail['assignments'];
 
@@ -26,6 +30,7 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
   const tList = useTranslations('Group.assignmentsList');
   const getGoalLabel = useGoalLabel();
   const { formatDate } = useMemberFormatters();
+  const [detail, setDetail] = useState<HandoutRef | null>(null);
 
   return (
     <Box sx={{ mb: 3 }}>
@@ -147,17 +152,28 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
                 <Typography sx={{ fontSize: '0.75rem', flexShrink: 0 }}>
                   {a.deckEmoji || '📚'}
                 </Typography>
-                <Typography
+                <ButtonBase
+                  onClick={() => setDetail(handoutRefFromItem(a))}
+                  aria-label={t('seeContentsAria', { deckName: a.title || a.deckName })}
                   sx={{
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: isCompleted ? 'text.secondary' : brand[800],
-                    textDecoration: isCompleted ? 'line-through' : 'none',
+                    minWidth: 0,
+                    justifyContent: 'flex-start',
+                    '&:hover, &:focus-visible': { textDecoration: 'underline' },
                   }}
-                  noWrap
                 >
-                  {a.title || a.deckName}
-                </Typography>
+                  <Typography
+                    component="span"
+                    sx={{
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      color: isCompleted ? 'text.secondary' : brand[800],
+                      textDecoration: isCompleted ? 'line-through' : 'none',
+                    }}
+                    noWrap
+                  >
+                    {a.title || a.deckName}
+                  </Typography>
+                </ButtonBase>
               </Box>
               {goal && (
                 <Typography
@@ -193,6 +209,12 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
           </Paper>
         );
       })}
+
+      <HandoutDetailDialog
+        open={detail !== null}
+        handout={detail}
+        onClose={() => setDetail(null)}
+      />
     </Box>
   );
 }

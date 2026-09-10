@@ -74,7 +74,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     sb
       .from('assignments')
       .select(
-        'id, deck_id, kana_set, title, note, due_date, completed_at, created_at, required_accuracy, required_mode, progress_accuracy, decks(name, emoji)',
+        'id, deck_id, kana_set, title, note, due_date, available_on, completed_at, created_at, required_accuracy, required_mode, progress_accuracy, decks(name, emoji)',
       )
       .eq('member_id', memberId)
       .eq('organizer_id', orgCheck.id)
@@ -315,6 +315,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         title: a.title,
         deckName: kanaName ?? deck?.name ?? 'Unknown',
         deckEmoji: kanaName ? '🌸' : (deck?.emoji ?? null),
+        deckId: a.deck_id,
+        kanaSet: a.kana_set,
+        note: a.note,
+        availableOn: a.available_on,
         dueDate: a.due_date,
         completedAt: a.completed_at,
         createdAt: a.created_at,

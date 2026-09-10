@@ -1130,7 +1130,8 @@
       "dueOn": "Due {date}",
       "never": "Never",
       "durationSeconds": "{secs}s",
-      "durationMinutes": "{mins}m"
+      "durationMinutes": "{mins}m",
+      "seeContentsAria": "See what's in {deckName}"
     },
     "practiceBreakdown": {
       "heading": "Practice Mode Breakdown",

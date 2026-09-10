@@ -124,6 +124,65 @@ describe('GET /api/group/members/[id] — weak words', () => {
   });
 });
 
+describe('GET /api/group/members/[id] — assignments', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    _resetStore();
+    for (const k of Object.keys(tableData)) delete tableData[k];
+    requireOrganizerAccountMock.mockResolvedValue(ORGANIZER);
+    setTable('profiles', { id: 'm1', username: 'kid', display_name: 'Kid' });
+    setTable('group_members', [{ member_id: 'm1', group_id: 'g1', organizer_id: 'org-1' }]);
+  });
+
+  it('includes the handout content fields on each item', async () => {
+    setTable('assignments', [
+      {
+        id: 'a1',
+        deck_id: 'd1',
+        kana_set: null,
+        title: null,
+        note: 'Study before Friday',
+        due_date: '2026-10-01',
+        available_on: '2026-09-15',
+        completed_at: null,
+        created_at: '2026-09-01T00:00:00Z',
+        required_accuracy: 80,
+        required_mode: 'study',
+        progress_accuracy: null,
+        decks: { name: 'Animals', emoji: '🐶' },
+      },
+      {
+        id: 'a2',
+        deck_id: null,
+        kana_set: 'hira-a',
+        title: null,
+        note: null,
+        due_date: null,
+        available_on: null,
+        completed_at: null,
+        created_at: '2026-09-01T00:00:00Z',
+        required_accuracy: null,
+        required_mode: null,
+        progress_accuracy: null,
+        decks: null,
+      },
+    ]);
+
+    const res = await GET(makeRequest(), { params });
+    const body = await res.json();
+
+    expect(body.assignments.items[0]).toMatchObject({
+      deckId: 'd1',
+      kanaSet: null,
+      note: 'Study before Friday',
+      availableOn: '2026-09-15',
+      requiredMode: 'study',
+    });
+    expect(body.assignments.items[1]).toMatchObject({ deckId: null, kanaSet: 'hira-a' });
+    expect(body.assignments.items[1].deckName).not.toBe('');
+  });
+});
+
 describe('GET /api/group/members/[id] — mastery breakdown', () => {
   beforeEach(() => {
     vi.clearAllMocks();

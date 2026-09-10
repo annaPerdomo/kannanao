@@ -1130,7 +1130,8 @@
       "dueOn": "{date}まで",
       "never": "まだ",
       "durationSeconds": "{secs}秒",
-      "durationMinutes": "{mins}分"
+      "durationMinutes": "{mins}分",
+      "seeContentsAria": "{deckName}の中身を見る"
     },
     "practiceBreakdown": {
       "heading": "練習モード別の記録",

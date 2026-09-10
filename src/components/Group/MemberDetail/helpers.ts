@@ -2,7 +2,24 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
+import type { MemberDetail } from '@/hooks/useGroup';
+import type { HandoutRef } from '@/types/handout';
+
 import { formatDate as formatDateShared } from '../dueDate';
+
+export function handoutRefFromItem(item: MemberDetail['assignments']['items'][number]): HandoutRef {
+  return {
+    deckId: item.deckId,
+    kanaSet: item.kanaSet,
+    name: item.title || item.deckName,
+    emoji: item.deckEmoji,
+    note: item.note,
+    availableOn: item.availableOn,
+    dueDate: item.dueDate,
+    requiredAccuracy: item.requiredAccuracy,
+    requiredMode: item.requiredMode,
+  };
+}
 
 /**
  * Locale-aware date/duration formatters shared by the MemberDetail sections.
