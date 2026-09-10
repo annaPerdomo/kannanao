@@ -202,7 +202,25 @@ describe('GET /api/group/members — kana reading stages', () => {
     expect(body.find((m: { id: string }) => m.id === 'm1')).toMatchObject({
       hiragana: 'new',
       katakana: 'new',
+      hiraganaKnown: 0,
+      katakanaKnown: 0,
     });
+  });
+
+  it('reports known-character counts alongside the reading stage', async () => {
+    const known = [...'あいうえおかきくけこさしすせそ'].map((kana) => ({
+      user_id: 'm1',
+      kana,
+      correct_count: 12,
+      wrong_count: 0,
+    }));
+    setTable('kana_progress', known);
+
+    const res = await GET(request());
+    const body = await res.json();
+    const m1 = body.find((m: { id: string }) => m.id === 'm1');
+    expect(m1.hiraganaKnown).toBe(15);
+    expect(m1.katakanaKnown).toBe(0);
   });
 
   it("moves a member past 'new' once enough hiragana rows have been seen", async () => {

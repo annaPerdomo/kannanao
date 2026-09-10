@@ -11,9 +11,11 @@ import { useState } from 'react';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { Assignment } from '@/hooks/useAssignments';
 import type { GroupMember } from '@/hooks/useGroup';
+import { type HandoutRef, handoutRefFromAssignment } from '@/types/handout';
 
 import { todayIso } from '../dueDate';
 import { EditAssignmentDialog } from '../EditAssignmentDialog';
+import { HandoutDetailDialog } from '../HandoutDetailDialog';
 import { ShowMoreButton } from '../ShowMoreButton';
 import { BatchRow } from './BatchRow';
 import { type AssignmentBatch, groupAssignments } from './groupAssignments';
@@ -54,6 +56,7 @@ export function AssignmentsList({
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [finishedExpanded, setFinishedExpanded] = useState(false);
+  const [detail, setDetail] = useState<HandoutRef | null>(null);
 
   const batches = groupAssignments(assignments);
   const { upcoming, current, finished } = sectionBatches(batches, todayIso());
@@ -72,6 +75,9 @@ export function AssignmentsList({
       members={members}
       assignments={assignments}
       onAssignMissing={onAssignMissing}
+      onOpenDetail={() =>
+        setDetail(handoutRefFromAssignment(batch.sample, batch.deckName || t('unknownDeck')))
+      }
     />
   );
 
@@ -153,6 +159,12 @@ export function AssignmentsList({
           </Box>
         )}
       </Box>
+
+      <HandoutDetailDialog
+        open={detail !== null}
+        handout={detail}
+        onClose={() => setDetail(null)}
+      />
 
       <EditAssignmentDialog
         open={editing !== null}

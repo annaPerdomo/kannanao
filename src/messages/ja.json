@@ -1130,7 +1130,30 @@
       "dueOn": "{date}まで",
       "never": "まだ",
       "durationSeconds": "{secs}秒",
-      "durationMinutes": "{mins}分"
+      "durationMinutes": "{mins}分",
+      "seeContentsAria": "{deckName}の中身を見る",
+      "reading": {
+        "title": "読む力",
+        "lastPracticed": "最後の練習：{date}",
+        "notStarted": "読む練習はまだ始めていません。",
+        "hiragana": "ひらがな",
+        "katakana": "カタカナ",
+        "stage": {
+          "new": "これから",
+          "learning": "練習中",
+          "reads": "読める"
+        },
+        "knownCount": "{total}文字中{known}文字",
+        "showCharacters": "文字を見る",
+        "hideCharacters": "文字をかくす",
+        "chipAria": "{kana}、星{stars}／3",
+        "state": {
+          "solid": "ばっちり",
+          "learning": "練習中",
+          "rusty": "おさらい",
+          "new": "まだ"
+        }
+      }
     },
     "practiceBreakdown": {
       "heading": "練習モード別の記録",
@@ -1255,7 +1278,20 @@
       "giveToThem": "この人たちに配る",
       "giveToThemAria": "まだ受け取っていない {count} 人に {deckName} を配る",
       "memberNeverGot": "まだ受け取っていない",
-      "doneCountMissing": "{done}/{total} 完了 · {missing} 人未配布"
+      "doneCountMissing": "{done}/{total} 完了 · {missing} 人未配布",
+      "seeContentsAria": "{deckName}の中身を見る"
+    },
+    "handoutDetail": {
+      "dueOn": "{date}まで",
+      "noDueDate": "期限なし",
+      "availableFrom": "{date}から学ぶ人に表示",
+      "goal": "目標：{goal}",
+      "noteLine": "メモ：{note}",
+      "wordsCount": "{count}語",
+      "charactersCount": "{count}文字",
+      "noWords": "このデッキにはまだ単語がありません。",
+      "loadError": "単語を読み込めませんでした。もう一度お試しください。",
+      "unknownKanaSet": "このかなの行は使えなくなりました。"
     },
     "createAssignment": {
       "title": "課題を出す",
@@ -1617,7 +1653,8 @@
       "readingLearningHiragana": "ひらがな れんしゅうちゅう",
       "readingHiragana": "ひらがなが よめる",
       "readingLearningKatakana": "カタカナ れんしゅうちゅう",
-      "readingBoth": "りょうほう よめる"
+      "readingBoth": "りょうほう よめる",
+      "readingCounts": "あ {hiragana}・ア {katakana}"
     },
     "needsAttention": {
       "heading": "対応が必要なこと",

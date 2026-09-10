@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../../_lib/requireOrganizerAccount';
+import { KANA_PROGRESS_COLUMNS, memberReading, toKanaProgressMap } from '../../_lib/memberReading';
 import { isMemberOfOrganizer } from '../../_lib/membership';
 import { backlogOf, reviewBacklogFor } from '../../_lib/reviewBacklog';
 import { getServiceSupabase } from '../../_lib/serviceSupabase';
@@ -47,6 +48,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     allSessionsRes,
     weakWordsRes,
     backlog,
+    kanaProgressRes,
   ] = await Promise.all([
     sb
       .from('user_progress')
@@ -74,7 +76,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     sb
       .from('assignments')
       .select(
-        'id, deck_id, kana_set, title, note, due_date, completed_at, created_at, required_accuracy, required_mode, progress_accuracy, decks(name, emoji)',
+        'id, deck_id, kana_set, title, note, due_date, available_on, completed_at, created_at, required_accuracy, required_mode, progress_accuracy, decks(name, emoji)',
       )
       .eq('member_id', memberId)
       .eq('organizer_id', orgCheck.id)
@@ -95,6 +97,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       .eq('user_id', memberId)
       .gt('wrong_count', 0),
     reviewBacklogFor([memberId], `/api/group/members/${memberId}`),
+    sb.from('kana_progress').select(KANA_PROGRESS_COLUMNS).eq('user_id', memberId),
   ]);
 
   if (progressRes.error) {
@@ -315,6 +318,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         title: a.title,
         deckName: kanaName ?? deck?.name ?? 'Unknown',
         deckEmoji: kanaName ? '🌸' : (deck?.emoji ?? null),
+        deckId: a.deck_id,
+        kanaSet: a.kana_set,
+        note: a.note,
+        availableOn: a.available_on,
         dueDate: a.due_date,
         completedAt: a.completed_at,
         createdAt: a.created_at,
@@ -360,6 +367,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const prog = progressRes.data;
   const { reviewsWaiting, reviewsOverdue3d } = backlogOf(backlog, memberId);
+  if (kanaProgressRes.error) {
+    logger.error('Failed to load reading progress for member detail', {
+      route: `/api/group/members/${memberId}`,
+      error: kanaProgressRes.error.message,
+    });
+  }
+  const reading = kanaProgressRes.error
+    ? null
+    : memberReading(toKanaProgressMap(kanaProgressRes.data ?? []));
 
   return NextResponse.json({
     member: {
@@ -398,5 +414,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     totalMastery,
     reviewsWaiting,
     reviewsOverdue3d,
+    reading,
   });
 }

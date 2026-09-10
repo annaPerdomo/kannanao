@@ -25,6 +25,7 @@ import { AssignmentsSection } from './AssignmentsSection';
 import { useMemberFormatters } from './helpers';
 import { MasteryBreakdown } from './MasteryBreakdown';
 import { PracticeModeBreakdown } from './PracticeModeBreakdown';
+import { ReadingSection } from './ReadingSection';
 import { RecentSessionsSection } from './RecentSessionsSection';
 import { TrickyWords } from './TrickyWords';
 
@@ -56,6 +57,7 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
     totalMastery,
     reviewsWaiting,
     reviewsOverdue3d,
+    reading,
   } = detail;
   const { current, needed } = xpProgressInLevel(progress.totalXp);
   const pct = Math.round((current / needed) * 100);
@@ -152,6 +154,12 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
       <PracticeModeBreakdown stats={practiceModeStats} />
 
       <MasteryBreakdown mastery={totalMastery} />
+
+      {reading && (
+        <Box sx={{ mb: 3 }}>
+          <ReadingSection reading={reading} />
+        </Box>
+      )}
 
       {/* Tricky words — the member's most-missed cards */}
       <TrickyWords weakWords={weakWords ?? []} />

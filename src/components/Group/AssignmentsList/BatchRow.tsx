@@ -6,6 +6,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import ButtonBase from '@mui/material/ButtonBase';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -18,7 +19,7 @@ import { useState } from 'react';
 import type { Assignment } from '@/hooks/useAssignments';
 import type { GroupMember } from '@/hooks/useGroup';
 
-import { dueDateLabel, todayIso } from '../dueDate';
+import { dueDateLabel, formatDate, todayIso } from '../dueDate';
 import { useGoalLabel } from '../useGoalLabel';
 import { missingMembers as computeMissingMembers } from './batchMemberGrouping';
 import { BatchMemberList } from './BatchMemberList';
@@ -34,10 +35,6 @@ function dueDateColor(dueDate: string | null): 'orange' | 'red' | null {
   return null;
 }
 
-function formatDate(dateStr: string, locale: string): string {
-  return new Date(dateStr).toLocaleDateString(locale, { month: 'short', day: 'numeric' });
-}
-
 interface BatchRowProps {
   batch: AssignmentBatch;
   onEdit: () => void;
@@ -46,6 +43,7 @@ interface BatchRowProps {
   members?: GroupMember[];
   assignments?: Assignment[];
   onAssignMissing?: (batch: AssignmentBatch, memberIds: string[]) => void;
+  onOpenDetail: () => void;
 }
 
 export function BatchRow({
@@ -56,6 +54,7 @@ export function BatchRow({
   members,
   assignments = [],
   onAssignMissing,
+  onOpenDetail,
 }: BatchRowProps) {
   const theme = useTheme();
   const t = useTranslations('Group.assignmentsList');
@@ -92,12 +91,26 @@ export function BatchRow({
 
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-            <Typography
-              sx={{ fontWeight: 700, fontSize: '0.88rem', color: 'text.primary', minWidth: 0 }}
-              noWrap
+            <ButtonBase
+              onClick={onOpenDetail}
+              aria-label={t('seeContentsAria', { deckName })}
+              sx={{
+                minWidth: 0,
+                justifyContent: 'flex-start',
+                fontWeight: 700,
+                fontSize: '0.88rem',
+                color: 'text.primary',
+                '&:hover, &:focus-visible': { textDecoration: 'underline' },
+              }}
             >
-              {deckName}
-            </Typography>
+              <Typography
+                component="span"
+                sx={{ fontWeight: 700, fontSize: '0.88rem', color: 'text.primary', minWidth: 0 }}
+                noWrap
+              >
+                {deckName}
+              </Typography>
+            </ButtonBase>
             <Typography
               sx={{
                 ml: 'auto',
