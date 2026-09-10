@@ -2,6 +2,8 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
+import { formatDate as formatDateShared } from '../dueDate';
+
 /**
  * Locale-aware date/duration formatters shared by the MemberDetail sections.
  * Keys live under Group.memberDetail so every section renders the same way.
@@ -19,10 +21,7 @@ export function useMemberFormatters() {
       },
       formatDate(dateStr: string | null): string {
         if (!dateStr) return t('never');
-        return new Date(dateStr).toLocaleDateString(locale, {
-          month: 'short',
-          day: 'numeric',
-        });
+        return formatDateShared(dateStr, locale);
       },
     }),
     [t, locale],

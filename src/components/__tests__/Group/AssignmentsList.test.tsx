@@ -6,6 +6,10 @@ import type { Assignment } from '@/hooks/useAssignments';
 import type { GroupMember } from '@/hooks/useGroup';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
+vi.mock('@/hooks/useDeckWords', () => ({
+  useDeckWords: () => ({ words: [], loading: false, error: null }),
+}));
+
 const DAY = 24 * 60 * 60 * 1000;
 const iso = (offsetDays: number) => new Date(Date.now() + offsetDays * DAY).toISOString();
 
@@ -337,5 +341,11 @@ describe('AssignmentsList', () => {
     fireEvent.click(screen.getByRole('button', { name: /Show who's done/i }));
     expect(screen.getByText('Extra')).toBeInTheDocument();
     expect(screen.getByText('never got this')).toBeInTheDocument();
+  });
+
+  it('opens the handout detail dialog when the deck name is clicked', () => {
+    render(handout(2));
+    fireEvent.click(screen.getByRole('button', { name: "See what's in Animals" }));
+    expect(screen.getByText('🐾 Animals')).toBeInTheDocument();
   });
 });

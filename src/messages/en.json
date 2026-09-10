@@ -1255,7 +1255,20 @@
       "giveToThem": "Give it to them",
       "giveToThemAria": "Give {deckName} to the {count} learners who never got it",
       "memberNeverGot": "never got this",
-      "doneCountMissing": "{done}/{total} done · {missing} missing"
+      "doneCountMissing": "{done}/{total} done · {missing} missing",
+      "seeContentsAria": "See what's in {deckName}"
+    },
+    "handoutDetail": {
+      "dueOn": "Due {date}",
+      "noDueDate": "No due date",
+      "availableFrom": "Learners see it from {date}",
+      "goal": "Goal: {goal}",
+      "noteLine": "Note: {note}",
+      "wordsCount": "{count, plural, one {# word} other {# words}}",
+      "charactersCount": "{count, plural, one {# character} other {# characters}}",
+      "noWords": "This deck has no words yet.",
+      "loadError": "Couldn't load the words. Try again.",
+      "unknownKanaSet": "This kana row isn't available anymore."
     },
     "createAssignment": {
       "title": "Assign Work",

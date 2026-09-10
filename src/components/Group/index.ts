@@ -28,6 +28,7 @@ export { GroupDashboardDialogs } from './GroupDashboardDialogs';
 export { GroupDashboardHeader } from './GroupDashboardHeader';
 export { GroupEncouragementForm } from './GroupEncouragementForm';
 export { GroupRow } from './GroupRow';
+export { HandoutDetailDialog } from './HandoutDetailDialog';
 export { InviteList, isExpired } from './InviteList';
 export { InviteQRCode } from './InviteQRCode';
 export { KanaSetPicker } from './KanaSetPicker';
