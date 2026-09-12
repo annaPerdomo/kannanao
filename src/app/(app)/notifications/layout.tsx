@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
+import { NAVBAR_HEIGHT } from '@/components/NavBar';
 import { BOTTOM_NAV_HEIGHT } from '@/components/NavBar/BottomNav';
 import { StyledDialog } from '@/components/StyledDialog';
 import { useAuth } from '@/contexts/AuthContext';
@@ -128,7 +129,7 @@ export default function NotificationsLayout({ children }: { children: React.Reac
       <Box
         sx={{
           position: 'fixed',
-          top: { xs: 56, sm: 64 },
+          top: NAVBAR_HEIGHT,
           left: 0,
           right: 0,
           bottom: { xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom))`, sm: 0 },
