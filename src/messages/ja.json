@@ -33,6 +33,20 @@
     "showReading": "よみがなを見る",
     "hideReading": "よみがなをかくす"
   },
+  "FuriganaEditor": {
+    "sentence": "文",
+    "readings": "読みがな",
+    "readingFor": "{kanji}の読み",
+    "readingHint": "かな",
+    "kanaOnly": "かなで入力してください",
+    "noKanji": "漢字はありません",
+    "autoFill": "読みを自動でつける",
+    "autoFillFailed": "読みをつけられませんでした。もう一度お試しください。",
+    "edit": "読みを編集",
+    "done": "完了",
+    "cancel": "キャンセル",
+    "empty": "まだ文がありません"
+  },
   "Deck": {
     "addCardsModal": {
       "title": "カードを追加",

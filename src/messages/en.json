@@ -33,6 +33,20 @@
     "showReading": "Show reading",
     "hideReading": "Hide reading"
   },
+  "FuriganaEditor": {
+    "sentence": "Sentence",
+    "readings": "Readings",
+    "readingFor": "Reading for {kanji}",
+    "readingHint": "kana",
+    "kanaOnly": "Kana only",
+    "noKanji": "No kanji in this sentence",
+    "autoFill": "Fill in readings",
+    "autoFillFailed": "Couldn't fill in readings. Try again.",
+    "edit": "Edit reading",
+    "done": "Done",
+    "cancel": "Cancel",
+    "empty": "No sentence yet"
+  },
   "Deck": {
     "addCardsModal": {
       "title": "Add Cards",
