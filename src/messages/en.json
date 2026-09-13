@@ -1735,8 +1735,6 @@
       "wordLabel": "Word",
       "readingLabel": "Reading",
       "meaningLabel": "Meaning",
-      "exampleJpLabel": "Example (Japanese)",
-      "exampleEnLabel": "Example (English)",
       "includeCardLabel": "Approve {word}",
       "includeWeekLabel": "Approve all of {name}",
       "cardSkippedNote": "Not approved — won't be created unless you regenerate",

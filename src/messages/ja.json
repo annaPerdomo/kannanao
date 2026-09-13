@@ -1735,8 +1735,6 @@
       "wordLabel": "ことば",
       "readingLabel": "よみ",
       "meaningLabel": "いみ",
-      "exampleJpLabel": "例文（日本語）",
-      "exampleEnLabel": "例文（英語）",
       "includeCardLabel": "{word}をしょうにんする",
       "includeWeekLabel": "{name}をぜんぶしょうにんする",
       "cardSkippedNote": "しょうにんされていません — つくりなおさない限り作成されません",

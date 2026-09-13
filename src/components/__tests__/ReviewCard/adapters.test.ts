@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { pendingToReview, reviewPatchToPending } from '@/components/ReviewCard';
+import {
+  pendingToReview,
+  planToReview,
+  reviewPatchToPending,
+  reviewPatchToPlan,
+} from '@/components/ReviewCard';
 import type { PendingCard } from '@/components/ReviewCardsDialog';
+import type { PlanCard } from '@/types/lessonPlan';
 
 function pendingCard(over: Partial<PendingCard> = {}): PendingCard {
   return {
@@ -64,5 +70,62 @@ describe('pendingToReview / reviewPatchToPending', () => {
   it('converts a null imageUrl or jlptLevel patch to undefined', () => {
     expect(reviewPatchToPending({ imageUrl: null })).toEqual({ imageUrl: undefined });
     expect(reviewPatchToPending({ jlptLevel: null })).toEqual({ jlptLevel: undefined });
+  });
+});
+
+function planCard(over: Partial<PlanCard> = {}): PlanCard {
+  return {
+    word: '猫',
+    reading: 'ねこ',
+    meaning: 'cat',
+    exampleJp: '{猫|ねこ}がいる。',
+    exampleEn: 'There is a cat.',
+    jlptLevel: 'N5',
+    ...over,
+  };
+}
+
+describe('planToReview / reviewPatchToPlan', () => {
+  it('maps a PlanCard to the review shape', () => {
+    const card = planCard({ imageQuery: 'cat', imageUrl: 'https://example.com/cat.png' });
+    expect(planToReview(card)).toEqual({
+      word: '猫',
+      reading: 'ねこ',
+      meaning: 'cat',
+      exampleJp: '{猫|ねこ}がいる。',
+      exampleEn: 'There is a cat.',
+      imageQuery: 'cat',
+      imageUrl: 'https://example.com/cat.png',
+      jlptLevel: 'N5',
+    });
+  });
+
+  it('defaults a missing imageQuery to an empty string and a missing imageUrl to null', () => {
+    const card = planCard();
+    expect(planToReview(card).imageQuery).toBe('');
+    expect(planToReview(card).imageUrl).toBeNull();
+  });
+
+  it('round-trips a patch back to PlanCard field names, including a null imageUrl', () => {
+    const patch = reviewPatchToPlan({
+      word: '犬',
+      reading: 'いぬ',
+      meaning: 'dog',
+      exampleJp: '{犬|いぬ}がいる。',
+      exampleEn: 'There is a dog.',
+      imageQuery: 'dog',
+      imageUrl: null,
+      jlptLevel: 'N4',
+    });
+    expect(patch).toEqual({
+      word: '犬',
+      reading: 'いぬ',
+      meaning: 'dog',
+      exampleJp: '{犬|いぬ}がいる。',
+      exampleEn: 'There is a dog.',
+      imageQuery: 'dog',
+      imageUrl: null,
+      jlptLevel: 'N4',
+    });
   });
 });

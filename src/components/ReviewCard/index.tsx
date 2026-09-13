@@ -1,4 +1,4 @@
-export { pendingToReview, reviewPatchToPending } from './adapters';
+export { pendingToReview, planToReview, reviewPatchToPending, reviewPatchToPlan } from './adapters';
 export { ReviewCardFields } from './ReviewCardFields';
 export type { ReviewCardImagePatch } from './ReviewCardImage';
 export { ReviewCardImage } from './ReviewCardImage';

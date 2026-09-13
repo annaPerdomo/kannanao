@@ -131,7 +131,10 @@ export function ReviewCardRow({
         </Box>
 
         {chips && (
-          <Box onClick={(e) => e.stopPropagation()} sx={{ display: 'flex', gap: 0.5 }}>
+          <Box
+            onClick={(e) => e.stopPropagation()}
+            sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, minWidth: 0 }}
+          >
             {chips}
           </Box>
         )}
