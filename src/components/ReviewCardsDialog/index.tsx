@@ -1,15 +1,7 @@
 'use client';
 
-import CheckIcon from '@mui/icons-material/Check';
-import {
-  Alert,
-  Box,
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogContent,
-  Typography,
-} from '@mui/material';
+import Alert from '@mui/material/Alert';
+import Dialog from '@mui/material/Dialog';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -17,9 +9,14 @@ import { useCallback, useState } from 'react';
 import { swapReusedVersion } from '@/services/cardPipeline';
 import type { MainViewMode } from '@/types/flashcard';
 
-import { CardRow, type PendingCard } from './CardRow';
+import { CardList } from './CardList';
+import { DialogFooter } from './DialogFooter';
 import { RegenerateBar } from './RegenerateBar';
+import { ReuseBanner } from './ReuseBanner';
 import { ReviewHeader } from './ReviewHeader';
+import type { PendingCard } from './types';
+
+export type { PendingCard } from './types';
 
 interface ReviewCardsDialogProps {
   open: boolean;
@@ -65,12 +62,8 @@ export function ReviewCardsDialog({
 }: ReviewCardsDialogProps) {
   const theme = useTheme();
   const tRegen = useTranslations('Deck.reviewCardsDialog.regenerate');
-  const tReuse = useTranslations('Deck.reviewCardsDialog.reuse');
-  const { brand, accent } = theme.palette;
+  const { brand } = theme.palette;
   const [cards, setCards] = useState<PendingCard[]>(initialCards);
-  const [originalExamples, setOriginalExamples] = useState<string[]>(() =>
-    initialCards.map((c) => c.example_jp),
-  );
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [regenerating, setRegenerating] = useState(false);
@@ -80,7 +73,6 @@ export function ReviewCardsDialog({
   if (initialCards !== prevInitial) {
     setPrevInitial(initialCards);
     setCards(initialCards);
-    setOriginalExamples(initialCards.map((c) => c.example_jp));
     setSelected(new Set());
     setRegenError(null);
   }
@@ -91,7 +83,6 @@ export function ReviewCardsDialog({
 
   const handleDelete = useCallback((index: number) => {
     setCards((prev) => prev.filter((_, i) => i !== index));
-    setOriginalExamples((prev) => prev.filter((_, i) => i !== index));
     // Selection is by position, so removing a row renumbers everything below it.
     setSelected((prev) => {
       const next = new Set<number>();
@@ -118,8 +109,8 @@ export function ReviewCardsDialog({
     setCards((prev) => prev.map((c) => ({ ...c, mainViewMode: mode })));
   }, []);
 
-  const handleToggleExpand = useCallback((index: number) => {
-    setExpandedIndex((prev) => (prev === index ? null : index));
+  const handleToggleExpand = useCallback((index: number, open: boolean) => {
+    setExpandedIndex(open ? index : null);
   }, []);
 
   const swappable = cards.filter((c) => c.alternate);
@@ -133,10 +124,7 @@ export function ReviewCardsDialog({
    */
   const handleSwapVersions = useCallback(() => {
     setCards((prev) => prev.map(swapReusedVersion));
-    setOriginalExamples((prev) =>
-      prev.map((example, i) => cards[i]?.alternate?.example_jp ?? example),
-    );
-  }, [cards]);
+  }, []);
 
   const handleConfirm = () => {
     if (cards.length === 0) return;
@@ -170,13 +158,6 @@ export function ReviewCardsDialog({
               ...fresh[n],
               mainViewMode: prev[cardIndex].mainViewMode,
             };
-          });
-          return next;
-        });
-        setOriginalExamples((prev) => {
-          const next = [...prev];
-          indices.forEach((cardIndex, n) => {
-            if (fresh[n]) next[cardIndex] = fresh[n].example_jp;
           });
           return next;
         });
@@ -228,76 +209,23 @@ export function ReviewCardsDialog({
         subtitle={subtitle}
       />
 
-      {reusedCount > 0 && (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            flexWrap: 'wrap',
-            px: 2.5,
-            py: 1.25,
-            bgcolor: alpha(accent[100], 0.5),
-            borderBottom: `1px solid ${alpha(accent[300], 0.35)}`,
-          }}
-        >
-          <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'text.primary' }}>
-            {showingFresh
-              ? tReuse('bannerFresh', { count: reusedCount })
-              : tReuse('banner', { count: reusedCount })}
-          </Typography>
-          <Button
-            size="small"
-            onClick={handleSwapVersions}
-            sx={{
-              minWidth: 0,
-              px: 0.75,
-              fontSize: '0.68rem',
-              fontWeight: 800,
-              textTransform: 'none',
-              color: brand[700],
-            }}
-          >
-            {showingFresh ? tReuse('useSavedInstead') : tReuse('useNewInstead')}
-          </Button>
-        </Box>
-      )}
+      <ReuseBanner
+        reusedCount={reusedCount}
+        showingFresh={showingFresh}
+        onSwapVersions={handleSwapVersions}
+      />
 
-      {/* Card list */}
-      <DialogContent
-        sx={{
-          px: 2,
-          pt: 2,
-          pb: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1,
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch',
-        }}
-      >
-        {cards.length === 0 && (
-          <Typography
-            sx={{ textAlign: 'center', color: alpha(brand[700], 0.6), fontSize: '0.85rem', py: 4 }}
-          >
-            All cards have been removed.
-          </Typography>
-        )}
-        {cards.map((card, i) => (
-          <CardRow
-            key={`${card.word}-${card.reading}-${i}`}
-            card={card}
-            originalExampleJp={originalExamples[i] ?? ''}
-            index={i}
-            expanded={expandedIndex === i}
-            onToggleExpand={handleToggleExpand}
-            onUpdate={handleUpdate}
-            onDelete={allowRemove ? handleDelete : undefined}
-            selected={selected.has(i)}
-            onToggleSelect={onRegenerate ? handleToggleSelect : undefined}
-          />
-        ))}
-      </DialogContent>
+      <CardList
+        cards={cards}
+        expandedIndex={expandedIndex}
+        selected={selected}
+        allowRemove={allowRemove}
+        showSelection={Boolean(onRegenerate)}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
+        onToggleSelect={handleToggleSelect}
+        onToggleExpand={handleToggleExpand}
+      />
 
       {onRegenerate && cards.length > 0 && (
         <RegenerateBar
@@ -317,61 +245,14 @@ export function ReviewCardsDialog({
         </Alert>
       )}
 
-      {/* Footer */}
-      <Box
-        sx={{
-          px: 2.5,
-          py: 2,
-          borderTop: `1.5px solid ${alpha(brand[300], 0.2)}`,
-          display: 'flex',
-          gap: 1.5,
-          justifyContent: 'flex-end',
-          background: `linear-gradient(0deg, ${brand[50]} 0%, transparent 100%)`,
-        }}
-      >
-        <Button
-          variant="outlined"
-          disabled={saving}
-          onClick={onClose}
-          sx={{
-            borderRadius: '10px',
-            fontWeight: 700,
-            fontSize: '0.82rem',
-            textTransform: 'none',
-            borderColor: alpha(brand[300], 0.5),
-            color: brand[700],
-            '&:hover': { borderColor: brand[400], bgcolor: alpha(brand[300], 0.06) },
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          disabled={cards.length === 0 || regenerating || saving}
-          onClick={handleConfirm}
-          startIcon={
-            saving ? (
-              <CircularProgress size={14} color="inherit" />
-            ) : (
-              <CheckIcon sx={{ fontSize: 16 }} />
-            )
-          }
-          sx={{
-            borderRadius: '10px',
-            fontWeight: 800,
-            fontSize: '0.82rem',
-            textTransform: 'none',
-            background:
-              cards.length > 0
-                ? `linear-gradient(135deg, ${brand[400]} 0%, ${brand[500]} 50%, ${accent[500]} 100%)`
-                : undefined,
-            boxShadow: cards.length > 0 ? `0 4px 14px ${alpha(brand[500], 0.35)}` : undefined,
-            '&:hover': { boxShadow: `0 6px 20px ${alpha(brand[500], 0.45)}` },
-          }}
-        >
-          {confirmLabel ?? `Add ${cards.length} Card${cards.length !== 1 ? 's' : ''} to Deck`}
-        </Button>
-      </Box>
+      <DialogFooter
+        cardCount={cards.length}
+        saving={saving}
+        regenerating={regenerating}
+        confirmLabel={confirmLabel}
+        onClose={onClose}
+        onConfirm={handleConfirm}
+      />
     </Dialog>
   );
 }

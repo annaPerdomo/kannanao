@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useState } from 'react';
 
-import type { PendingCard } from '@/components/ReviewCardsDialog/CardRow';
+import type { PendingCard } from '@/components/ReviewCardsDialog';
 
 /**
  * Holds the cards waiting in the "Review Cards" step. Every AI path (type a

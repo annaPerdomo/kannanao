@@ -6,6 +6,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
+import { FuriganaField } from '@/components/FuriganaField';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { Flashcard, JlptLevel, MainViewMode } from '@/types/flashcard';
 
@@ -68,6 +69,10 @@ export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogPr
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setFields((prev) => ({ ...prev, [key]: e.target.value }));
     };
+
+  const setField = (key: keyof EditableFields, value: string) => {
+    setFields((prev) => ({ ...prev, [key]: value }));
+  };
 
   const handleSave = async () => {
     if (!card) return;
@@ -140,32 +145,43 @@ export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogPr
           reading={fields.reading}
         />
 
-        {FIELD_CONFIG.map(({ key, labelKey, placeholderKey, multiline, rows, helperTextKey }) => (
-          <TextField
-            key={key}
-            label={tFields(labelKey)}
-            value={fields[key] ?? ''}
-            onChange={handleFieldChange(key)}
-            placeholder={tFields(placeholderKey)}
-            multiline={multiline}
-            rows={rows}
-            helperText={helperTextKey ? tFields(helperTextKey) : undefined}
-            fullWidth
-            size="small"
-            sx={{
-              ...sharedTextFieldSx,
-              ...((key === 'reading' && mainViewMode === 'hiragana') ||
-              (key === 'word' && mainViewMode === 'kanji')
-                ? {
-                    '& .MuiOutlinedInput-root fieldset': {
-                      borderColor: alpha(brand[400], 0.5),
-                      borderWidth: '1.5px',
-                    },
-                  }
-                : {}),
-            }}
-          />
-        ))}
+        {FIELD_CONFIG.map(
+          ({ key, labelKey, placeholderKey, multiline, rows, helperTextKey, kind }) =>
+            kind === 'furigana' ? (
+              <FuriganaField
+                key={key}
+                label={tFields(labelKey)}
+                value={fields[key] ?? ''}
+                onChange={(v) => setField(key, v)}
+                disabled={saving}
+              />
+            ) : (
+              <TextField
+                key={key}
+                label={tFields(labelKey)}
+                value={fields[key] ?? ''}
+                onChange={handleFieldChange(key)}
+                placeholder={placeholderKey ? tFields(placeholderKey) : undefined}
+                multiline={multiline}
+                rows={rows}
+                helperText={helperTextKey ? tFields(helperTextKey) : undefined}
+                fullWidth
+                size="small"
+                sx={{
+                  ...sharedTextFieldSx,
+                  ...((key === 'reading' && mainViewMode === 'hiragana') ||
+                  (key === 'word' && mainViewMode === 'kanji')
+                    ? {
+                        '& .MuiOutlinedInput-root fieldset': {
+                          borderColor: alpha(brand[400], 0.5),
+                          borderWidth: '1.5px',
+                        },
+                      }
+                    : {}),
+                }}
+              />
+            ),
+        )}
 
         <Divider sx={{ borderColor: alpha(brand[300], 0.25), my: 0.5 }} />
 

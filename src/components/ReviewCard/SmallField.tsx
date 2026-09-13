@@ -6,6 +6,7 @@ interface SmallFieldProps {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   multiline?: boolean;
+  disabled?: boolean;
   endAdornment?: React.ReactNode;
   helperText?: React.ReactNode;
 }
@@ -15,6 +16,7 @@ export function SmallField({
   value,
   onChange,
   multiline,
+  disabled,
   endAdornment,
   helperText,
 }: SmallFieldProps) {
@@ -30,6 +32,7 @@ export function SmallField({
       multiline={multiline}
       minRows={multiline ? 2 : undefined}
       fullWidth
+      disabled={disabled}
       helperText={helperText}
       slotProps={endAdornment ? { input: { endAdornment } } : undefined}
       sx={{

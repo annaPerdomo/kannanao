@@ -33,6 +33,35 @@
     "showReading": "Show reading",
     "hideReading": "Hide reading"
   },
+  "FuriganaEditor": {
+    "sentence": "Sentence",
+    "readings": "Readings",
+    "readingFor": "Reading for {kanji}",
+    "readingHint": "kana",
+    "kanaOnly": "Kana only",
+    "noKanji": "No kanji in this sentence",
+    "autoFill": "Fill in readings",
+    "autoFillFailed": "Couldn't fill in readings. Try again.",
+    "edit": "Edit reading",
+    "done": "Done",
+    "cancel": "Cancel",
+    "empty": "No sentence yet"
+  },
+  "ReviewCard": {
+    "word": "Word",
+    "reading": "Reading",
+    "meaning": "Meaning",
+    "exampleJp": "Example sentence",
+    "exampleEn": "English",
+    "expand": "Show details",
+    "collapse": "Hide details",
+    "imageSearch": "Picture search words",
+    "searchImage": "Find a new picture",
+    "uploadImage": "Upload a picture",
+    "removeImage": "Remove picture",
+    "noImage": "No picture",
+    "imageFailed": "Couldn't find a picture. Try different words."
+  },
   "Deck": {
     "addCardsModal": {
       "title": "Add Cards",
@@ -250,9 +279,7 @@
           "helperText": "English translation"
         },
         "exampleJp": {
-          "label": "Example Sentence (JP)",
-          "placeholder": "e.g. 猫が好きです。",
-          "helperText": "Japanese example sentence"
+          "label": "Example Sentence (JP)"
         },
         "exampleEn": {
           "label": "Example Sentence (EN)",
@@ -307,11 +334,6 @@
     "reviewCardsDialog": {
       "cardRow": {
         "removeCardTooltip": "Remove card",
-        "imageSearchLabel": "Image Search",
-        "searchTermPlaceholder": "Search term…",
-        "fetchFromUnsplashTooltip": "Fetch from Unsplash",
-        "uploadImageTooltip": "Upload image",
-        "removeImageTooltip": "Remove image",
         "displayLabel": "Display:",
         "romajiOption": "A",
         "hiraganaFallback": "ひ",
@@ -321,16 +343,6 @@
         "phraseOption": "Phrase",
         "jlptLabel": "JLPT:",
         "noneOption": "—",
-        "noImagePlaceholder": "—",
-        "autoAddFuriganaTooltip": "Auto-add furigana markup with AI",
-        "wordFieldLabel": "Word (漢字)",
-        "readingFieldLabel": "Reading (ひらがな)",
-        "meaningFieldLabel": "Meaning",
-        "furiganaHint": "💡 Use <code>{example}</code> to show readings above kanji on the card",
-        "furiganaHintExample": "'{'漢字|かんじ'}'",
-        "exampleJpFieldLabel": "Example (JP)",
-        "exampleEnFieldLabel": "Example (EN)",
-        "noMeaningPlaceholder": "No meaning yet",
         "selectCardAria": "Select {word} to redo",
         "reusedFromDeck": "From {deck}",
         "reused": "Reused",
@@ -1723,8 +1735,6 @@
       "wordLabel": "Word",
       "readingLabel": "Reading",
       "meaningLabel": "Meaning",
-      "exampleJpLabel": "Example (Japanese)",
-      "exampleEnLabel": "Example (English)",
       "includeCardLabel": "Approve {word}",
       "includeWeekLabel": "Approve all of {name}",
       "cardSkippedNote": "Not approved — won't be created unless you regenerate",
@@ -2873,7 +2883,7 @@
       "manualHint": "<strong>Manual:</strong> Use <kanjiReadingCode></kanjiReadingCode> format, e.g. <exampleCode></exampleCode>. Plain hiragana works too!",
       "newLinePlaceholder": "Type a new line and press Enter…",
       "add": "Add",
-      "saveEnter": "Save (Enter)",
+      "save": "Save",
       "cancelEsc": "Cancel (Esc)",
       "editLine": "Edit line",
       "deleteLine": "Delete line"

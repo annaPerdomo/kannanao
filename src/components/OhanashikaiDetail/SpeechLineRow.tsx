@@ -7,11 +7,11 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
-import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
+import { FuriganaEditor } from '@/components/FuriganaEditor';
 import FuriganaText, { stripFurigana } from '@/components/FuriganaText';
 import { SpeakButton } from '@/components/SpeakButton';
 
@@ -82,21 +82,13 @@ export function SpeechLineRow({
 
       <Box sx={{ flexGrow: 1, minWidth: 0 }}>
         {isEditing ? (
-          <TextField
-            value={editVal}
-            onChange={(e) => onEditValChange(e.target.value)}
+          <Box
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) void onCommitEdit();
-              if (e.key === 'Escape') onCancelEdit();
+              if (e.key === 'Escape' && !e.nativeEvent.isComposing) onCancelEdit();
             }}
-            size="small"
-            fullWidth
-            multiline
-            autoFocus
-            sx={{
-              '& .MuiOutlinedInput-root': { fontFamily: (t) => t.fonts.jp, fontSize: '0.95rem' },
-            }}
-          />
+          >
+            <FuriganaEditor value={editVal} onChange={onEditValChange} autoFocus />
+          </Box>
         ) : (
           <FuriganaText
             text={text}
@@ -115,7 +107,7 @@ export function SpeechLineRow({
       <Stack direction="row" spacing={0.25} flexShrink={0}>
         {isEditing ? (
           <>
-            <Tooltip title={t('saveEnter')}>
+            <Tooltip title={t('save')}>
               <IconButton
                 size="small"
                 onClick={onCommitEdit}

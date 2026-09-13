@@ -65,11 +65,13 @@ export const LANDING_NAMESPACES = [
   'Auth',
   'Common',
   'Deck',
+  'FuriganaEditor',
   'Home',
   'Landing',
   'Messages',
   'Nav',
   'Review',
+  'ReviewCard',
   'Shop',
   'Study',
 ] as const satisfies readonly (keyof Messages)[];

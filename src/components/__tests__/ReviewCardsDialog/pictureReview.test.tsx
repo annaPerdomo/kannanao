@@ -1,8 +1,8 @@
 import { fireEvent, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { PendingCard } from '@/components/ReviewCardsDialog';
 import { ReviewCardsDialog } from '@/components/ReviewCardsDialog';
-import type { PendingCard } from '@/components/ReviewCardsDialog/CardRow';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 const mockFetchImage = vi.fn();
@@ -88,7 +88,7 @@ describe('ReviewCardsDialog over saved cards', () => {
     });
     const { onConfirm } = setup();
 
-    fireEvent.click(screen.getAllByLabelText('Fetch from Unsplash')[0]);
+    fireEvent.click(screen.getAllByLabelText('Find a new picture')[0]);
     await screen.findByRole('button', { name: /Save pictures/ });
     fireEvent.click(screen.getByRole('button', { name: /Save pictures/ }));
 
@@ -115,7 +115,7 @@ describe('ReviewCardsDialog over saved cards', () => {
   it('clears a picture through to the confirm', () => {
     const { onConfirm } = setup();
 
-    fireEvent.click(screen.getAllByLabelText('Remove image')[0]);
+    fireEvent.click(screen.getAllByLabelText('Remove picture')[0]);
     fireEvent.click(screen.getByRole('button', { name: /Save pictures/ }));
 
     expect(onConfirm.mock.calls[0][0][0].imageUrl).toBeUndefined();

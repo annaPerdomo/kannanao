@@ -33,6 +33,35 @@
     "showReading": "よみがなを見る",
     "hideReading": "よみがなをかくす"
   },
+  "FuriganaEditor": {
+    "sentence": "文",
+    "readings": "読みがな",
+    "readingFor": "{kanji}の読み",
+    "readingHint": "かな",
+    "kanaOnly": "かなで入力してください",
+    "noKanji": "漢字はありません",
+    "autoFill": "読みを自動でつける",
+    "autoFillFailed": "読みをつけられませんでした。もう一度お試しください。",
+    "edit": "読みを編集",
+    "done": "完了",
+    "cancel": "キャンセル",
+    "empty": "まだ文がありません"
+  },
+  "ReviewCard": {
+    "word": "ことば",
+    "reading": "読み",
+    "meaning": "意味",
+    "exampleJp": "例文",
+    "exampleEn": "英語",
+    "expand": "くわしく見る",
+    "collapse": "閉じる",
+    "imageSearch": "画像の検索ワード",
+    "searchImage": "新しい画像をさがす",
+    "uploadImage": "画像をアップロード",
+    "removeImage": "画像を消す",
+    "noImage": "画像なし",
+    "imageFailed": "画像が見つかりませんでした。別のことばで試してください。"
+  },
   "Deck": {
     "addCardsModal": {
       "title": "カードを追加",
@@ -250,9 +279,7 @@
           "helperText": "英語の訳"
         },
         "exampleJp": {
-          "label": "例文（日本語）",
-          "placeholder": "例: 猫が好きです。",
-          "helperText": "日本語の例文"
+          "label": "例文（日本語）"
         },
         "exampleEn": {
           "label": "例文（英語）",
@@ -307,11 +334,6 @@
     "reviewCardsDialog": {
       "cardRow": {
         "removeCardTooltip": "カードを削除",
-        "imageSearchLabel": "画像を検索",
-        "searchTermPlaceholder": "検索ワード…",
-        "fetchFromUnsplashTooltip": "Unsplashから取得",
-        "uploadImageTooltip": "画像をアップロード",
-        "removeImageTooltip": "画像を削除",
         "displayLabel": "表示:",
         "romajiOption": "A",
         "hiraganaFallback": "ひ",
@@ -321,16 +343,6 @@
         "phraseOption": "フレーズ",
         "jlptLabel": "JLPT:",
         "noneOption": "—",
-        "noImagePlaceholder": "—",
-        "autoAddFuriganaTooltip": "AIでふりがなを自動でつける",
-        "wordFieldLabel": "単語（漢字）",
-        "readingFieldLabel": "読み方（ひらがな）",
-        "meaningFieldLabel": "意味",
-        "furiganaHint": "💡 <code>{example}</code> と書くと、カードの漢字の上に読みがつきます",
-        "furiganaHintExample": "'{'漢字|かんじ'}'",
-        "exampleJpFieldLabel": "例文（日本語）",
-        "exampleEnFieldLabel": "例文（英語）",
-        "noMeaningPlaceholder": "意味が未設定",
         "selectCardAria": "{word}を作り直す対象に選ぶ",
         "reusedFromDeck": "{deck}から",
         "reused": "再利用",
@@ -1723,8 +1735,6 @@
       "wordLabel": "ことば",
       "readingLabel": "よみ",
       "meaningLabel": "いみ",
-      "exampleJpLabel": "例文（日本語）",
-      "exampleEnLabel": "例文（英語）",
       "includeCardLabel": "{word}をしょうにんする",
       "includeWeekLabel": "{name}をぜんぶしょうにんする",
       "cardSkippedNote": "しょうにんされていません — つくりなおさない限り作成されません",
@@ -2870,7 +2880,7 @@
       "manualHint": "<strong>手動:</strong> <kanjiReadingCode></kanjiReadingCode> の形で書きます。例: <exampleCode></exampleCode>。ひらがなだけでも大丈夫！",
       "newLinePlaceholder": "新しい行を入力してEnter…",
       "add": "追加",
-      "saveEnter": "保存（Enter）",
+      "save": "保存",
       "cancelEsc": "キャンセル（Esc）",
       "editLine": "行を編集",
       "deleteLine": "行を削除"
