@@ -53,7 +53,10 @@ export function FuriganaField({
       <Box
         sx={sx}
         onKeyDown={(e) => {
-          if (e.key === 'Escape' && !e.nativeEvent.isComposing) cancel();
+          if (e.key === 'Escape' && !e.nativeEvent.isComposing) {
+            e.stopPropagation();
+            cancel();
+          }
         }}
       >
         <FuriganaEditor

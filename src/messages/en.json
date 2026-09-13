@@ -264,9 +264,7 @@
           "helperText": "English translation"
         },
         "exampleJp": {
-          "label": "Example Sentence (JP)",
-          "placeholder": "e.g. 猫が好きです。",
-          "helperText": "Japanese example sentence"
+          "label": "Example Sentence (JP)"
         },
         "exampleEn": {
           "label": "Example Sentence (EN)",
@@ -2887,7 +2885,7 @@
       "manualHint": "<strong>Manual:</strong> Use <kanjiReadingCode></kanjiReadingCode> format, e.g. <exampleCode></exampleCode>. Plain hiragana works too!",
       "newLinePlaceholder": "Type a new line and press Enter…",
       "add": "Add",
-      "saveEnter": "Save (Enter)",
+      "save": "Save",
       "cancelEsc": "Cancel (Esc)",
       "editLine": "Edit line",
       "deleteLine": "Delete line"

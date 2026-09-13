@@ -19,10 +19,11 @@ export const JLPT_LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
 export const FIELD_CONFIG: {
   key: keyof EditableFields;
   labelKey: string;
-  placeholderKey: string;
+  placeholderKey?: string;
   multiline?: boolean;
   rows?: number;
   helperTextKey?: string;
+  kind?: 'furigana';
 }[] = [
   {
     key: 'word',
@@ -51,10 +52,7 @@ export const FIELD_CONFIG: {
   {
     key: 'example_jp',
     labelKey: 'exampleJp.label',
-    placeholderKey: 'exampleJp.placeholder',
-    multiline: true,
-    rows: 2,
-    helperTextKey: 'exampleJp.helperText',
+    kind: 'furigana',
   },
   {
     key: 'example_en',

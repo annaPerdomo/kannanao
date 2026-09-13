@@ -264,9 +264,7 @@
           "helperText": "英語の訳"
         },
         "exampleJp": {
-          "label": "例文（日本語）",
-          "placeholder": "例: 猫が好きです。",
-          "helperText": "日本語の例文"
+          "label": "例文（日本語）"
         },
         "exampleEn": {
           "label": "例文（英語）",
@@ -2884,7 +2882,7 @@
       "manualHint": "<strong>手動:</strong> <kanjiReadingCode></kanjiReadingCode> の形で書きます。例: <exampleCode></exampleCode>。ひらがなだけでも大丈夫！",
       "newLinePlaceholder": "新しい行を入力してEnter…",
       "add": "追加",
-      "saveEnter": "保存（Enter）",
+      "save": "保存",
       "cancelEsc": "キャンセル（Esc）",
       "editLine": "行を編集",
       "deleteLine": "行を削除"

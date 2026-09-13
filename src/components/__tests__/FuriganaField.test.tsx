@@ -47,4 +47,21 @@ describe('FuriganaField', () => {
 
     expect(onChange).toHaveBeenLastCalledWith('{私|わたし}は');
   });
+
+  it('Escape cancels the edit without propagating to an ancestor listener', () => {
+    const onChange = vi.fn();
+    const onParentKeyDown = vi.fn();
+    renderWithProviders(
+      <div onKeyDown={onParentKeyDown}>
+        <FuriganaField value="{私|わたし}は" onChange={onChange} label="Example" />
+      </div>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit reading' }));
+    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Example' }), { key: 'Escape' });
+
+    expect(onChange).toHaveBeenLastCalledWith('{私|わたし}は');
+    expect(screen.queryByRole('button', { name: 'Done' })).not.toBeInTheDocument();
+    expect(onParentKeyDown).not.toHaveBeenCalled();
+  });
 });
