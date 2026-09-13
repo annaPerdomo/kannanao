@@ -71,6 +71,7 @@ export const LANDING_NAMESPACES = [
   'Messages',
   'Nav',
   'Review',
+  'ReviewCard',
   'Shop',
   'Study',
 ] as const satisfies readonly (keyof Messages)[];

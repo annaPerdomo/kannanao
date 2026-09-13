@@ -1,8 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { PendingCard } from '@/components/ReviewCardsDialog';
 import { ReviewCardsDialog } from '@/components/ReviewCardsDialog';
-import type { PendingCard } from '@/components/ReviewCardsDialog/CardRow';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 vi.mock('@/services/api', () => ({

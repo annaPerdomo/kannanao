@@ -1,0 +1,3 @@
+export const IMAGE_PREVIEW_MAX_WIDTH = 240;
+export const IMAGE_PREVIEW_MIN_WIDTH = 160;
+export const SUMMARY_THUMBNAIL_SIZE = 56;

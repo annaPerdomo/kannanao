@@ -47,6 +47,21 @@
     "cancel": "キャンセル",
     "empty": "まだ文がありません"
   },
+  "ReviewCard": {
+    "word": "ことば",
+    "reading": "読み",
+    "meaning": "意味",
+    "exampleJp": "例文",
+    "exampleEn": "英語",
+    "expand": "くわしく見る",
+    "collapse": "閉じる",
+    "imageSearch": "画像の検索ワード",
+    "searchImage": "新しい画像をさがす",
+    "uploadImage": "画像をアップロード",
+    "removeImage": "画像を消す",
+    "noImage": "画像なし",
+    "imageFailed": "画像が見つかりませんでした。別のことばで試してください。"
+  },
   "Deck": {
     "addCardsModal": {
       "title": "カードを追加",
@@ -319,11 +334,6 @@
     "reviewCardsDialog": {
       "cardRow": {
         "removeCardTooltip": "カードを削除",
-        "imageSearchLabel": "画像を検索",
-        "searchTermPlaceholder": "検索ワード…",
-        "fetchFromUnsplashTooltip": "Unsplashから取得",
-        "uploadImageTooltip": "画像をアップロード",
-        "removeImageTooltip": "画像を削除",
         "displayLabel": "表示:",
         "romajiOption": "A",
         "hiraganaFallback": "ひ",
@@ -333,16 +343,6 @@
         "phraseOption": "フレーズ",
         "jlptLabel": "JLPT:",
         "noneOption": "—",
-        "noImagePlaceholder": "—",
-        "autoAddFuriganaTooltip": "AIでふりがなを自動でつける",
-        "wordFieldLabel": "単語（漢字）",
-        "readingFieldLabel": "読み方（ひらがな）",
-        "meaningFieldLabel": "意味",
-        "furiganaHint": "💡 <code>{example}</code> と書くと、カードの漢字の上に読みがつきます",
-        "furiganaHintExample": "'{'漢字|かんじ'}'",
-        "exampleJpFieldLabel": "例文（日本語）",
-        "exampleEnFieldLabel": "例文（英語）",
-        "noMeaningPlaceholder": "意味が未設定",
         "selectCardAria": "{word}を作り直す対象に選ぶ",
         "reusedFromDeck": "{deck}から",
         "reused": "再利用",

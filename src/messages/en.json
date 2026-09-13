@@ -47,6 +47,21 @@
     "cancel": "Cancel",
     "empty": "No sentence yet"
   },
+  "ReviewCard": {
+    "word": "Word",
+    "reading": "Reading",
+    "meaning": "Meaning",
+    "exampleJp": "Example sentence",
+    "exampleEn": "English",
+    "expand": "Show details",
+    "collapse": "Hide details",
+    "imageSearch": "Picture search words",
+    "searchImage": "Find a new picture",
+    "uploadImage": "Upload a picture",
+    "removeImage": "Remove picture",
+    "noImage": "No picture",
+    "imageFailed": "Couldn't find a picture. Try different words."
+  },
   "Deck": {
     "addCardsModal": {
       "title": "Add Cards",
@@ -319,11 +334,6 @@
     "reviewCardsDialog": {
       "cardRow": {
         "removeCardTooltip": "Remove card",
-        "imageSearchLabel": "Image Search",
-        "searchTermPlaceholder": "Search term…",
-        "fetchFromUnsplashTooltip": "Fetch from Unsplash",
-        "uploadImageTooltip": "Upload image",
-        "removeImageTooltip": "Remove image",
         "displayLabel": "Display:",
         "romajiOption": "A",
         "hiraganaFallback": "ひ",
@@ -333,16 +343,6 @@
         "phraseOption": "Phrase",
         "jlptLabel": "JLPT:",
         "noneOption": "—",
-        "noImagePlaceholder": "—",
-        "autoAddFuriganaTooltip": "Auto-add furigana markup with AI",
-        "wordFieldLabel": "Word (漢字)",
-        "readingFieldLabel": "Reading (ひらがな)",
-        "meaningFieldLabel": "Meaning",
-        "furiganaHint": "💡 Use <code>{example}</code> to show readings above kanji on the card",
-        "furiganaHintExample": "'{'漢字|かんじ'}'",
-        "exampleJpFieldLabel": "Example (JP)",
-        "exampleEnFieldLabel": "Example (EN)",
-        "noMeaningPlaceholder": "No meaning yet",
         "selectCardAria": "Select {word} to redo",
         "reusedFromDeck": "From {deck}",
         "reused": "Reused",
