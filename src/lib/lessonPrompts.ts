@@ -1,3 +1,4 @@
+import { FURIGANA_MARKUP_RULE } from './furigana';
 import type { KnownWord } from './knownWords';
 
 export interface PromptWord {
@@ -177,7 +178,7 @@ Produce exactly ${weeks} decks of exactly ${cardsPerDeck} cards each, ordered EA
 RULES:
 ${levelRule}
 3. "reading" is kana only. Leave it as an empty string when the word is already kana.
-4. "exampleJp" wraps every kanji or kanji compound with furigana using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです. Each group holds exactly one reading — never split a compound's reading with extra pipes ({無関係|むかんけい} or {無|む}{関|かん}{係|けい}, never {無関係|む|かん|けい}). Pure hiragana/katakana words need no wrapping.
+4. "exampleJp" furigana: ${FURIGANA_MARKUP_RULE}
 5. No romaji anywhere in a Japanese field.
 ${mainViewModeRule(level)}
 7. "emoji" is a single emoji that fits the deck. "description" is one short plain sentence a non-technical adult would understand.
@@ -219,7 +220,7 @@ IMPORTANT RULES:
       : `Write natural sentences pitched at JLPT ${level} — grammar and length that challenge this learner, with plain or polite form kept consistent within a conversation`
   }
 4. Each sentence must have ONE clearly identifiable target particle to test
-5. Wrap every kanji or kanji compound with furigana using {kanji|reading} format. Example: {猫|ねこ}が{好|す}きです. Each group holds exactly one reading — never split a compound's reading with extra pipes ({無関係|むかんけい} or {無|む}{関|かん}{係|けい}, never {無関係|む|かん|けい}).
+5. Furigana: ${FURIGANA_MARKUP_RULE}
 6. Pure hiragana/katakana words need no wrapping
 7. Provide 2-3 plausible distractor particles for each sentence (wrong but reasonable alternatives)
 8. particle_index is the character position of the target particle in the PLAIN text (after removing all {x|y} markup, counting from 0)

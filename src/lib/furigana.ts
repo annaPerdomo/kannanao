@@ -11,6 +11,9 @@
 
 export type FuriganaSegment = string | { kanji: string; reading: string };
 
+export const FURIGANA_MARKUP_RULE =
+  "Give each kanji its own hiragana reading in {kanji|reading} format, so a learner sees which kanji makes which sound: {駐|ちゅう}{車|しゃ}, {学|がっ}{校|こう}, {食|た}べます. Keep kanji together in one group only when the reading can't be divided among them (jukujikun): {今日|きょう}, {大人|おとな}, {明日|あした}. One reading per group, never {駐車|ちゅう|しゃ}. Okurigana and pure hiragana/katakana stay outside the braces.";
+
 /** `{kanji|reading}` or `{kanji|reading|reading…}`. */
 const GROUP_SOURCE = /\{([^|{}]+)((?:\|[^|{}]+)+)\}/;
 
@@ -60,7 +63,7 @@ const isKanjiRun = (run: string) => KANJI_CHAR.test(run[0]);
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** Katakana folded to hiragana so a word's ゴム matches a reading's ごむ. */
-const toHiragana = (s: string) =>
+export const toHiragana = (s: string) =>
   s.replace(/[ァ-ヶ]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0x60));
 
 /**

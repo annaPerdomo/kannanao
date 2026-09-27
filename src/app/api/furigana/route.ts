@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { normalizeFuriganaDeep } from '@/lib/furigana';
+import { FURIGANA_MARKUP_RULE, normalizeFuriganaDeep } from '@/lib/furigana';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../_lib/rateLimit';
@@ -42,11 +42,9 @@ export async function POST(req: NextRequest) {
 
 For each line of Japanese text below, do two things in one pass:
 1. Rewrite it using natural kanji where a native Japanese speaker would write them (e.g. わたし→私, はは→母, にほんご→日本語, たべます→食べます)
-2. Wrap every kanji or kanji compound immediately with its hiragana reading using {kanji|reading} format
+2. Add furigana. ${FURIGANA_MARKUP_RULE}
 
 Critical formatting rules:
-- Each group holds exactly one reading: {無関係|むかんけい} ✓  {無関係|む|かん|けい} ✗
-- Only wrap the kanji characters, not the surrounding hiragana: {食|た}べます ✓  {食べます|たべます} ✗
 - Katakana words and foreign names (マロリー, ダニエル, ラーメン) stay as katakana, no markup
 - Japanese names in kanji still get furigana: {三浦|みうら}{直美|なおみ}
 - Hiragana grammatical particles and endings (は, の, と, です, etc.) stay as hiragana, no markup
