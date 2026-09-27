@@ -245,3 +245,7 @@ Database: 3 new tables (`invite_codes`, `assignments`, `encouragements`) and 3 n
 ## 📄 License
 
 All rights reserved. See [LICENSE](./LICENSE).
+
+### Third-party data
+
+Kanji readings in `src/lib/kanjiReadings.json` come from [KANJIDIC2](https://www.edrdg.org/wiki/index.php/KANJIDIC_Project), property of the [Electronic Dictionary Research and Development Group](https://www.edrdg.org/), used under the [Creative Commons Attribution-ShareAlike 4.0 licence](https://www.edrdg.org/edrdg/licence.html). That file is a derivative of KANJIDIC2 and is itself licensed CC BY-SA 4.0; it is excluded from the all-rights-reserved terms above.

@@ -2,9 +2,15 @@ import { describe, expect, it } from 'vitest';
 
 import { parseFurigana } from '@/lib/furigana';
 import {
+  dictionarySplit,
   isKana,
+  joinGroups,
+  readingCutOptions,
   reflowReadings,
+  segmentsFromMarkup,
   segmentsToMarkup,
+  splitAllByKanji,
+  splitGroup,
   splitKanjiRuns,
   withReading,
 } from '@/lib/furiganaEdit';
@@ -85,5 +91,75 @@ describe('isKana', () => {
     ['日本', false],
   ])('%s -> %s', (text, expected) => {
     expect(isKana(text)).toBe(expected);
+  });
+});
+
+const DICT = new Map([
+  ['駐', ['ちゅう']],
+  ['車', ['しゃ', 'くるま']],
+  ['今', ['こん', 'いま']],
+  ['日', ['にち', 'ひ']],
+]);
+
+describe('segmentsFromMarkup', () => {
+  it('keeps stored per-kanji groups apart and turns bare kanji into empty groups', () => {
+    expect(segmentsFromMarkup('{駐|ちゅう}{車|しゃ}は禁止')).toEqual([
+      { kanji: '駐', reading: 'ちゅう' },
+      { kanji: '車', reading: 'しゃ' },
+      'は',
+      { kanji: '禁止', reading: '' },
+    ]);
+  });
+
+  it('keeps a cleared neighbour as its own group', () => {
+    expect(segmentsFromMarkup('駐{車|しゃ}')).toEqual([
+      { kanji: '駐', reading: '' },
+      { kanji: '車', reading: 'しゃ' },
+    ]);
+  });
+});
+
+describe('joinGroups / splitGroup', () => {
+  const split = segmentsFromMarkup('{駐|ちゅう}{車|しゃ}です');
+
+  it('joins a group with the next one, concatenating readings', () => {
+    expect(joinGroups(split, 0)).toEqual([{ kanji: '駐車', reading: 'ちゅうしゃ' }, 'です']);
+  });
+
+  it('splits a group before a character with the given readings', () => {
+    const joined = joinGroups(split, 0);
+    expect(splitGroup(joined, 0, 1, ['ちゅう', 'しゃ'])).toEqual(split);
+  });
+
+  it('join then split round-trips through markup', () => {
+    const markup = segmentsToMarkup(splitGroup(joinGroups(split, 0), 0, 1, ['ちゅう', 'しゃ']));
+    expect(markup).toBe('{駐|ちゅう}{車|しゃ}です');
+  });
+});
+
+describe('dictionarySplit / splitAllByKanji', () => {
+  it('divides a group at a character when the dictionary knows the kanji', () => {
+    expect(dictionarySplit({ kanji: '駐車', reading: 'ちゅうしゃ' }, 1, DICT)).toEqual([
+      'ちゅう',
+      'しゃ',
+    ]);
+    expect(dictionarySplit({ kanji: '今日', reading: 'きょう' }, 1, DICT)).toBeNull();
+  });
+
+  it('splits every divisible group and leaves jukujikun whole', () => {
+    const segments = segmentsFromMarkup('{今日|きょう}は{駐車|ちゅうしゃ}');
+    expect(segmentsToMarkup(splitAllByKanji(segments, DICT))).toBe(
+      '{今日|きょう}は{駐|ちゅう}{車|しゃ}',
+    );
+  });
+});
+
+describe('readingCutOptions', () => {
+  it('skips cuts that would start a reading with a small kana or ん', () => {
+    expect(readingCutOptions('ちゅうしゃ')).toEqual([
+      ['ちゅ', 'うしゃ'],
+      ['ちゅう', 'しゃ'],
+    ]);
+    expect(readingCutOptions('きんし')).toEqual([['きん', 'し']]);
   });
 });
