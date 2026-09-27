@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
+import type * as KanjiReadings from '@/lib/kanjiReadings';
 
 // ─── Mock requireOrganizerAccount to pass through ────────────────────────────
 
@@ -12,6 +13,13 @@ vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
     account_type: 'organizer',
   }),
 }));
+
+// ─── Mock the kanji reading dictionary, real by default ──────────────────────
+
+vi.mock('@/lib/kanjiReadings', async (importActual) => {
+  const actual = await importActual<typeof KanjiReadings>();
+  return { ...actual, loadKanjiReadings: vi.fn(actual.loadKanjiReadings) };
+});
 
 // ─── Mock fetch ───────────────────────────────────────────────────────────────
 
@@ -25,6 +33,9 @@ beforeEach(() => {
 });
 
 import { POST } from '@/app/api/furigana/route';
+import { loadKanjiReadings } from '@/lib/kanjiReadings';
+
+const mockLoadKanjiReadings = vi.mocked(loadKanjiReadings);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -116,5 +127,27 @@ describe('POST /api/furigana', () => {
     const req = makeRequest({ lines: ['ねこ'] });
     const res = await POST(req);
     expect(res.status).toBe(500);
+  });
+
+  it('splits a word-level compound into one reading per kanji', async () => {
+    mockGeminiSuccess(['{駐車|ちゅうしゃ}は{今日|きょう}']);
+
+    const req = makeRequest({ lines: ['ちゅうしゃはきょう'] });
+    const res = await POST(req);
+    const body = await res.json();
+
+    expect(body.lines[0]).toBe('{駐|ちゅう}{車|しゃ}は{今日|きょう}');
+  });
+
+  it('still returns 200 when the kanji reading dictionary fails to load', async () => {
+    mockLoadKanjiReadings.mockRejectedValueOnce(new Error('boom'));
+    mockGeminiSuccess(['{駐車|ちゅうしゃ}は{今日|きょう}']);
+
+    const req = makeRequest({ lines: ['ちゅうしゃはきょう'] });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.lines[0]).toBe('{駐車|ちゅうしゃ}は{今日|きょう}');
   });
 });

@@ -9,6 +9,7 @@ import type { GeneratedCard } from '@/types/flashcard';
 
 import { rateLimit } from '../_lib/rateLimit';
 import { requireOrganizerAccount } from '../_lib/requireOrganizerAccount';
+import { splitFuriganaSafe } from '../_lib/splitFurigana';
 import { getServiceSupabase } from '../group/_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 3 };
@@ -167,8 +168,9 @@ export async function POST(req: NextRequest) {
 
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]';
     const cards: GeneratedCard[] = JSON.parse(rawText);
-    const cleaned = cards.map((c) => ({
-      ...normalizeFuriganaDeep(c),
+    const split = await splitFuriganaSafe(normalizeFuriganaDeep(cards), '/api/pdf-extract');
+    const cleaned = cards.map((c, i) => ({
+      ...split[i],
       word: stripPeriods(c.word),
       reading: stripPeriods(c.reading),
       meaning: stripPeriods(c.meaning),

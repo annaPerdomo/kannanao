@@ -35,6 +35,7 @@ import type { LessonPlan, WarmUpWord } from '@/types/lessonPlan';
 
 import { rateLimit } from '../../_lib/rateLimit';
 import { type OrganizerProfile, requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { splitFuriganaSafe } from '../../_lib/splitFurigana';
 import { getGroupKnownKana } from '../_lib/groupKnownKana';
 import { getGroupKnownWords } from '../_lib/groupKnownWords';
 import { consumeLessonBudget } from '../_lib/lessonBudget';
@@ -383,13 +384,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    plan.decks = plan.decks.map((deck) => ({
+    const normalizedDecks = plan.decks.map((deck) => ({
       ...deck,
       cards: (deck.cards ?? []).map((card) => ({
         ...card,
         exampleJp: normalizeFurigana(card.exampleJp ?? ''),
       })),
     }));
+    plan.decks = await splitFuriganaSafe(normalizedDecks, 'POST /api/group/lesson-plan');
 
     const { plan: filteredPlan, warmUp } = splitKnownCards(plan, pool);
 

@@ -39,8 +39,17 @@ describe('splitReading', () => {
     ['大人', 'おとな'],
     ['明日', 'あした'],
     ['時計', 'とけい'],
+    ['一人', 'ひとり'],
+    ['二人', 'ふたり'],
+    ['上手', 'じょうず'],
+    ['一人暮', 'ひとりぐ'],
   ])('returns null for jukujikun %s %s', (kanji, reading) => {
     expect(splitReading(kanji, reading, dict)).toBeNull();
+  });
+
+  it('still splits compounds that only resemble a jukujikun exception in kanji or reading', () => {
+    expect(splitReading('人々', 'ひとびと', dict)).toEqual(['ひと', 'びと']);
+    expect(splitReading('入居者', 'にゅうきょしゃ', dict)).toEqual(['にゅう', 'きょ', 'しゃ']);
   });
 
   it('returns null for a wrong reading, a single kanji, or an empty reading', () => {

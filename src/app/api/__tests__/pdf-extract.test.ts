@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
 import { DOCUMENT_MAX_BYTES } from '@/components/MaterialsBuilder/constants';
+import type * as KanjiReadings from '@/lib/kanjiReadings';
 
 // ─── Mock requireOrganizerAccount to pass through ────────────────────────────
 
@@ -22,6 +23,13 @@ vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
   getServiceSupabase: () => ({ storage: { from: () => ({ download: downloadMock }) } }),
 }));
 
+// ─── Mock the kanji reading dictionary, real by default ──────────────────────
+
+vi.mock('@/lib/kanjiReadings', async (importActual) => {
+  const actual = await importActual<typeof KanjiReadings>();
+  return { ...actual, loadKanjiReadings: vi.fn(actual.loadKanjiReadings) };
+});
+
 // ─── Mock fetch ───────────────────────────────────────────────────────────────
 
 const mockFetch = vi.fn();
@@ -37,6 +45,9 @@ beforeEach(() => {
 });
 
 import { POST } from '@/app/api/pdf-extract/route';
+import { loadKanjiReadings } from '@/lib/kanjiReadings';
+
+const mockLoadKanjiReadings = vi.mocked(loadKanjiReadings);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -175,5 +186,47 @@ describe('POST /api/pdf-extract', () => {
     const req = makeRequest({ path: OWN_PATH });
     const res = await POST(req);
     expect(res.status).toBe(429);
+  });
+
+  it('splits a word-level compound into one reading per kanji', async () => {
+    mockGeminiSuccess([
+      {
+        word: '駐車',
+        reading: 'ちゅうしゃ',
+        meaning: 'parking',
+        image_query: 'parking lot',
+        example_jp: '{駐車|ちゅうしゃ}は{今日|きょう}禁止',
+        example_en: 'No parking today',
+        card_type: 'word',
+        jlpt_level: 'N5',
+      },
+    ]);
+
+    const req = makeRequest({ path: OWN_PATH });
+    const res = await POST(req);
+    const body = await res.json();
+    expect(body[0].example_jp).toBe('{駐|ちゅう}{車|しゃ}は{今日|きょう}禁止');
+  });
+
+  it('still returns 200 when the kanji reading dictionary fails to load', async () => {
+    mockLoadKanjiReadings.mockRejectedValueOnce(new Error('boom'));
+    mockGeminiSuccess([
+      {
+        word: '駐車',
+        reading: 'ちゅうしゃ',
+        meaning: 'parking',
+        image_query: 'parking lot',
+        example_jp: '{駐車|ちゅうしゃ}は{今日|きょう}禁止',
+        example_en: 'No parking today',
+        card_type: 'word',
+        jlpt_level: 'N5',
+      },
+    ]);
+
+    const req = makeRequest({ path: OWN_PATH });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body[0].example_jp).toBe('{駐車|ちゅうしゃ}は{今日|きょう}禁止');
   });
 });

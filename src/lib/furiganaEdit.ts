@@ -1,4 +1,4 @@
-import { type FuriganaSegment, parseFurigana } from './furigana';
+import { furiganaGroupRegex, type FuriganaSegment, parseFurigana } from './furigana';
 import { type KanjiReadingDict, splitReading } from './kanjiReadings';
 
 export const KANJI_RUN_REGEX = /[㐀-䶿一-鿿々〆ヶ]+/g;
@@ -164,6 +164,22 @@ export function splitAllByKanji(
 }
 
 const CANNOT_START_READING = /^[ぁぃぅぇぉゃゅょゎっんァィゥェォャュョヮッンー]/;
+
+function splitFuriganaString(text: string, dict: KanjiReadingDict): string {
+  if (!furiganaGroupRegex().test(text)) return text;
+  return segmentsToMarkup(splitAllByKanji(segmentsFromMarkup(text), dict));
+}
+
+export function splitFuriganaDeep<T>(value: T, dict: KanjiReadingDict): T {
+  if (typeof value === 'string') return splitFuriganaString(value, dict) as T;
+  if (Array.isArray(value)) return value.map((v) => splitFuriganaDeep(v, dict)) as T;
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, val]) => [key, splitFuriganaDeep(val, dict)]),
+    ) as T;
+  }
+  return value;
+}
 
 export function readingCutOptions(reading: string): [string, string][] {
   const chars = Array.from(reading);

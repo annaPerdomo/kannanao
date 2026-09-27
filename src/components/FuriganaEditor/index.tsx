@@ -168,7 +168,13 @@ export function FuriganaEditor({
         disabled={busy}
         autoFocus={autoFocus}
         inputProps={{ 'aria-label': fieldLabel }}
-        sx={{ fontSize: SIZES[size].text, fontWeight: 600, py: 0.5, lineHeight: 1.6 }}
+        sx={{
+          fontSize: SIZES[size].text,
+          fontWeight: 600,
+          py: 0.5,
+          lineHeight: 1.6,
+          '@media (pointer: coarse)': { fontSize: '16px' },
+        }}
       />
 
       {plain && (

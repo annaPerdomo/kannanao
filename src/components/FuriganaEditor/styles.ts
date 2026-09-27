@@ -51,9 +51,10 @@ export const readingInputSx =
     const { readingRem } = SIZES[size];
     const empty = readingLength === 0;
     const ok = tone === 'ok';
+    const widthChars = empty ? 2.5 : readingLength;
     return {
       alignSelf: 'stretch',
-      minWidth: `calc(${empty ? 2.5 : readingLength} * ${readingRem}rem + 10px)`,
+      minWidth: `calc(${widthChars} * ${readingRem}rem + 10px)`,
       fontSize: `${readingRem}rem`,
       fontWeight: 700,
       color: 'text.primary',
@@ -69,6 +70,13 @@ export const readingInputSx =
       },
       '& input': { textAlign: 'center', py: '2px', px: '3px', width: '100%' },
       '& input::placeholder': { color: theme.palette.text.secondary, opacity: 0.6 },
+      '@media (pointer: coarse)': {
+        // iOS Safari zooms the page when a focused input's text is under 16px.
+        fontSize: '16px',
+        minHeight: 36,
+        minWidth: `calc(${widthChars} * 16px + 10px)`,
+        '& input': { fontSize: '16px' },
+      },
     };
   };
 
@@ -79,9 +87,21 @@ export const seamSx = (size: FuriganaSize) => (theme: Theme) => ({
   borderRadius: '6px',
   color: theme.palette.brand[600],
   opacity: 0.7,
+  position: 'relative',
   transition: 'opacity 0.15s ease, background-color 0.15s ease',
   '&:hover, &:focus-visible': { opacity: 1, bgcolor: alpha(theme.palette.brand[300], 0.18) },
   '& svg': { fontSize: 14 },
+  '@media (pointer: coarse)': {
+    opacity: 1,
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: size === 'small' ? -8 : -10,
+      right: size === 'small' ? -8 : -10,
+      height: 44,
+    },
+  },
 });
 
 export const kanjiSx = (size: FuriganaSize) => ({

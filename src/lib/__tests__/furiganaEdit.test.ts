@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseFurigana } from '@/lib/furigana';
+import { furiganaToKana, parseFurigana, stripFurigana } from '@/lib/furigana';
 import {
   dictionarySplit,
   isKana,
@@ -10,6 +10,7 @@ import {
   segmentsFromMarkup,
   segmentsToMarkup,
   splitAllByKanji,
+  splitFuriganaDeep,
   splitGroup,
   splitKanjiRuns,
   withReading,
@@ -151,6 +152,34 @@ describe('dictionarySplit / splitAllByKanji', () => {
     expect(segmentsToMarkup(splitAllByKanji(segments, DICT))).toBe(
       '{今日|きょう}は{駐|ちゅう}{車|しゃ}',
     );
+  });
+});
+
+describe('splitFuriganaDeep', () => {
+  it('splits a divisible group nested in an object/array', () => {
+    const value = {
+      cards: [{ example_jp: '{駐車|ちゅうしゃ}は禁止', tags: ['{駐車|ちゅうしゃ}'] }],
+    };
+    expect(splitFuriganaDeep(value, DICT)).toEqual({
+      cards: [{ example_jp: '{駐|ちゅう}{車|しゃ}は禁止', tags: ['{駐|ちゅう}{車|しゃ}'] }],
+    });
+  });
+
+  it('leaves a jukujikun group whole', () => {
+    expect(splitFuriganaDeep('{今日|きょう}は晴れ', DICT)).toBe('{今日|きょう}は晴れ');
+  });
+
+  it('returns markup-free strings unchanged', () => {
+    expect(splitFuriganaDeep('駐車', DICT)).toBe('駐車');
+    expect(splitFuriganaDeep('parking', DICT)).toBe('parking');
+    expect(splitFuriganaDeep('ちゅうしゃ', DICT)).toBe('ちゅうしゃ');
+  });
+
+  it('preserves stripped text and kana reading for a mixed sentence', () => {
+    const before = '{駐車|ちゅうしゃ}は{今日|きょう}禁止です';
+    const after = splitFuriganaDeep(before, DICT);
+    expect(stripFurigana(after)).toBe(stripFurigana(before));
+    expect(furiganaToKana(after)).toBe(furiganaToKana(before));
   });
 });
 

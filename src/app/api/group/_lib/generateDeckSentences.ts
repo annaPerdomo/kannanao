@@ -10,6 +10,7 @@ import {
 import { logger } from '@/lib/logger';
 import type { DbPracticeSentence } from '@/types/practiceSentence';
 
+import { splitFuriganaSafe } from '../../_lib/splitFurigana';
 import { getServiceSupabase } from './serviceSupabase';
 
 const GEMINI_URL =
@@ -217,7 +218,7 @@ export async function generateDeckSentences(args: {
   );
   const nextOrder = new Map<number, number>();
 
-  const rows = ordered.map((s) => {
+  const preRows = ordered.map((s) => {
     const group = s.conversation_group ?? 0;
     const order = nextOrder.get(group) ?? 0;
     nextOrder.set(group, order + 1);
@@ -237,6 +238,8 @@ export async function generateDeckSentences(args: {
         .filter((id): id is string => !!id),
     };
   });
+
+  const rows = await splitFuriganaSafe(preRows, 'generateDeckSentences');
 
   const { error: insertError } = await sb.from('deck_practice_sentences').insert(rows);
 

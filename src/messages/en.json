@@ -2310,6 +2310,12 @@
     },
     "language": {
       "description": "The language for buttons, menus and labels. Your Japanese words and cards do not change."
+    },
+    "credits": {
+      "title": "Credits",
+      "description": "Data and pictures that help Tangodachi work",
+      "kanjidic": "Kanji readings come from <kanjidic>KANJIDIC2</kanjidic>, made by the <edrdg>Electronic Dictionary Research and Development Group</edrdg>, used under the <licence>Creative Commons Attribution-ShareAlike 4.0 licence</licence>.",
+      "unsplash": "Card pictures come from <unsplash>Unsplash</unsplash>, and photographers are credited on their pictures."
     }
   },
   "Messages": {

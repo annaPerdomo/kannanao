@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../_lib/rateLimit';
 import { requireOrganizerAccount } from '../_lib/requireOrganizerAccount';
+import { splitFuriganaSafe } from '../_lib/splitFurigana';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 10 };
 
@@ -46,7 +47,7 @@ For each line of Japanese text below, do two things in one pass:
 
 Critical formatting rules:
 - Katakana words and foreign names (マロリー, ダニエル, ラーメン) stay as katakana, no markup
-- Japanese names in kanji still get furigana: {三浦|みうら}{直美|なおみ}
+- Japanese names in kanji still get furigana: {三|み}{浦|うら}{直|なお}{美|み}
 - Hiragana grammatical particles and endings (は, の, と, です, etc.) stay as hiragana, no markup
 - Preserve all punctuation and spacing exactly
 - Output exactly one formatted string per input line, same order, no numbering, no explanation
@@ -90,7 +91,8 @@ ${lines.map((l, i) => `${i + 1}. ${l}`).join('\n')}`;
     }
 
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '{"lines":[]}';
-    return NextResponse.json(normalizeFuriganaDeep(JSON.parse(rawText)));
+    const normalized = normalizeFuriganaDeep(JSON.parse(rawText));
+    return NextResponse.json(await splitFuriganaSafe(normalized, '/api/furigana'));
   } catch (err) {
     logger.error('Unhandled error', {
       route: '/api/furigana',

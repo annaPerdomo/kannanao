@@ -28,6 +28,14 @@ const HALF_VOICED: Record<string, string> = { は: 'ぱ', ひ: 'ぴ', ふ: 'ぷ'
 const GEMINATING = new Set(['く', 'き', 'つ', 'ち', 'り']);
 const ITERATION_MARK = '々';
 
+// Per-kanji readings would combine into a valid split (一|ひと + 人|り), but the
+// word is jukujikun — kept whole even inside a longer compound like 一人暮らし.
+const JUKUJIKUN: ReadonlyMap<string, string> = new Map([
+  ['一人', 'ひとり'],
+  ['二人', 'ふたり'],
+  ['上手', 'じょうず'],
+]);
+
 let cached: Promise<KanjiReadingDict> | null = null;
 
 // Source: KANJIDIC2 (EDRDG, CC BY-SA 4.0), built by the local-only
@@ -78,6 +86,10 @@ export function splitReading(
   const chars = Array.from(kanji);
   const target = toHiragana(reading);
   if (chars.length < 2 || !target) return null;
+
+  for (const [word, wordReading] of JUKUJIKUN) {
+    if (kanji.includes(word) && target.includes(wordReading)) return null;
+  }
 
   const found = new Map<string, number[]>();
   const walk = (i: number, pos: number, cuts: number[]) => {
