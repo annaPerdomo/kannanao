@@ -79,7 +79,6 @@ export const sharedTextFieldSx = (theme: Theme) =>
       '&.Mui-focused': { color: theme.palette.brand[500] },
     },
     '& .MuiFormHelperText-root': {
-      fontSize: '0.68rem',
       color: alpha(theme.palette.brand[700], 0.6),
     },
   }) as const;

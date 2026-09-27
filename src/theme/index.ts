@@ -935,6 +935,19 @@ export function createAppTheme(scheme: ColorScheme = 'sakura', locale: Locale = 
         },
       },
 
+      MuiFormHelperText: {
+        styleOverrides: {
+          root: {
+            fontFamily: fonts.label,
+            fontWeight: 400,
+            fontSize: '0.75rem',
+            lineHeight: 1.4,
+            letterSpacing: 0,
+            marginTop: 4,
+          },
+        },
+      },
+
       MuiTextField: {
         styleOverrides: {
           root: ({ theme }) => ({

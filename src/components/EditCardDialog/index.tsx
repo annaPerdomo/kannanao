@@ -133,7 +133,7 @@ export function EditCardDialog({ card, open, onClose, onSave }: EditCardDialogPr
         </>
       }
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
         <CardSettingsPanel
           mainViewMode={mainViewMode}
           onMainViewModeChange={setMainViewMode}
