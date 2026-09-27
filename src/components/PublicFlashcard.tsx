@@ -221,7 +221,7 @@ export function PublicFlashcard({ card, width = '100%', height = 300 }: PublicFl
                   <Box>
                     <Typography
                       sx={{
-                        fontFamily: (t) => t.fonts.mono,
+                        fontFamily: (t) => t.fonts.label,
                         fontSize: '0.58rem',
                         color: brand[500],
                         letterSpacing: '0.12em',
@@ -250,7 +250,7 @@ export function PublicFlashcard({ card, width = '100%', height = 300 }: PublicFl
                   <Box>
                     <Typography
                       sx={{
-                        fontFamily: (t) => t.fonts.mono,
+                        fontFamily: (t) => t.fonts.label,
                         fontSize: '0.58rem',
                         color: brand[500],
                         letterSpacing: '0.12em',
@@ -278,7 +278,7 @@ export function PublicFlashcard({ card, width = '100%', height = 300 }: PublicFl
                 <Box>
                   <Typography
                     sx={{
-                      fontFamily: (t) => t.fonts.mono,
+                      fontFamily: (t) => t.fonts.label,
                       fontSize: '0.58rem',
                       color: brand[500],
                       letterSpacing: '0.12em',
@@ -320,7 +320,7 @@ export function PublicFlashcard({ card, width = '100%', height = 300 }: PublicFl
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
                   <Typography
                     sx={{
-                      fontFamily: (t) => t.fonts.mono,
+                      fontFamily: (t) => t.fonts.label,
                       fontSize: '0.58rem',
                       color: brand[500],
                       letterSpacing: '0.12em',

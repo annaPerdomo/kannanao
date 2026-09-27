@@ -551,7 +551,7 @@ export function MatchMode({ cards, deckId, batchSize, onExit }: MatchModeProps) 
                   <Typography
                     aria-hidden
                     sx={{
-                      fontFamily: '"DM Mono", monospace',
+                      fontFamily: (t) => t.fonts.label,
                       fontSize: enLabelFontSize(tile.label),
                       color: 'text.primary',
                       minWidth: 0,

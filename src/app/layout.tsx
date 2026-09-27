@@ -74,8 +74,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/*
           Warm the Google Fonts connection up-front. The actual per-theme
           stylesheet is injected client-side by <ThemeFonts> based on the active
-          color scheme, so only the ~5 families that theme uses are loaded
-          (instead of all 20). preconnect keeps that post-hydration fetch fast.
+          color scheme, so only the ~5 families that theme uses are loaded.
+          preconnect keeps that post-hydration fetch fast.
         */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

@@ -86,7 +86,7 @@ export function CardStatBox({ label, value }: { label: string; value: string }) 
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
             mb: '3px',
-            fontFamily: (t) => t.fonts.mono,
+            fontFamily: (t) => t.fonts.label,
           }}
         >
           {label}

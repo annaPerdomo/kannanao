@@ -95,7 +95,7 @@ export function InviteList({ invites, onRevoke, onShowQR }: InviteListProps) {
                   size="small"
                   sx={{
                     fontSize: '0.78rem',
-                    fontFamily: 'monospace',
+                    fontFamily: (t) => t.fonts.label,
                     fontWeight: 700,
                     height: 24,
                     bgcolor: alpha(brand[200], 0.5),

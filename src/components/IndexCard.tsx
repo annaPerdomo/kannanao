@@ -104,7 +104,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
                     fontSize: '0.62rem',
                     color: '#777',
                     letterSpacing: '0.08em',
-                    fontFamily: (t) => t.fonts.mono,
+                    fontFamily: (t) => t.fonts.label,
                   }}
                 >
                   JLPT {card.jlptLevel}
@@ -150,7 +150,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
                 fontSize: '0.6rem',
                 color: '#999',
                 letterSpacing: '0.15em',
-                fontFamily: (t) => t.fonts.mono,
+                fontFamily: (t) => t.fonts.label,
                 textTransform: 'uppercase',
               }}
             >
@@ -169,7 +169,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
                 color: '#777',
                 textTransform: 'uppercase',
                 letterSpacing: '0.12em',
-                fontFamily: (t) => t.fonts.mono,
+                fontFamily: (t) => t.fonts.label,
               }}
             >
               Answer
@@ -199,7 +199,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
                       color: '#888',
                       textTransform: 'uppercase',
                       letterSpacing: '0.1em',
-                      fontFamily: (t) => t.fonts.mono,
+                      fontFamily: (t) => t.fonts.label,
                       mb: 0.5,
                     }}
                   >
@@ -226,7 +226,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
                       color: '#888',
                       textTransform: 'uppercase',
                       letterSpacing: '0.1em',
-                      fontFamily: (t) => t.fonts.mono,
+                      fontFamily: (t) => t.fonts.label,
                       mb: 0.5,
                     }}
                   >
@@ -252,7 +252,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
                     color: '#888',
                     textTransform: 'uppercase',
                     letterSpacing: '0.1em',
-                    fontFamily: (t) => t.fonts.mono,
+                    fontFamily: (t) => t.fonts.label,
                     mb: 0.5,
                   }}
                 >
@@ -293,7 +293,7 @@ export function IndexCard({ card, width = '100%', height = 300 }: IndexCardProps
                     color: '#888',
                     textTransform: 'uppercase',
                     letterSpacing: '0.1em',
-                    fontFamily: (t) => t.fonts.mono,
+                    fontFamily: (t) => t.fonts.label,
                   }}
                 >
                   Example

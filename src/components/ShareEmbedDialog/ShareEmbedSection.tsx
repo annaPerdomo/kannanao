@@ -137,7 +137,7 @@ export function ShareEmbedSection({
             <Typography
               component="pre"
               sx={{
-                fontFamily: (th) => th.fonts.mono,
+                fontFamily: (th) => th.fonts.label,
                 fontSize: '0.72rem',
                 color: 'text.primary',
                 whiteSpace: 'pre-wrap',
@@ -194,7 +194,7 @@ export function ShareEmbedSection({
                     color: brand[500],
                     fontWeight: 800,
                     minWidth: 14,
-                    fontFamily: (th) => th.fonts.mono,
+                    fontFamily: (th) => th.fonts.label,
                   }}
                 >
                   {i + 1}.

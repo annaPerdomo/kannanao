@@ -13,7 +13,7 @@ import { LANDING_DISPLAY_FONT } from './landingFonts';
  * labels, so overriding that one key re-faces the whole page without touching a
  * single section — and without changing `fonts.display` for the app, where the
  * serif is the intended look. Product surfaces embedded in the page (the demo
- * Flashcards) read `fonts.jp` / `fonts.mono`, which are left alone so they keep
+ * Flashcards) read `fonts.jp` / `fonts.label`, which are left alone so they keep
  * rendering exactly as they do inside the app.
  */
 export function LandingTheme({ children }: { children: ReactNode }) {

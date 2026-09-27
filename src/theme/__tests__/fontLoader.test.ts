@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { type ColorScheme } from '@/theme';
+import { type ColorScheme, themeFonts } from '@/theme';
 import { buildFontHref } from '@/theme/fontLoader';
 
 const ALL_SCHEMES: ColorScheme[] = [
@@ -40,11 +40,22 @@ describe('buildFontHref', () => {
     }
   });
 
-  it('loads only the active theme’s fonts, not all 20', () => {
-    // Sakura uses 5 families; the combined sheet had 20.
+  it('loads every family each theme names in its font stacks', () => {
+    for (const scheme of ALL_SCHEMES) {
+      const loaded = familiesIn(buildFontHref(scheme));
+      const named = Object.values(themeFonts[scheme])
+        .map((stack) => stack.match(/"([^"]+)"/)?.[1])
+        .filter((name): name is string => Boolean(name))
+        .map((name) => name.replace(/ /g, '+'));
+      for (const name of named) expect(loaded, `${scheme}: ${name}`).toContain(name);
+    }
+  });
+
+  it('loads only the active theme’s fonts, not every theme’s', () => {
     const families = familiesIn(buildFontHref('sakura'));
     expect(families).toHaveLength(5);
     expect(families).toContain('Noto+Serif+JP');
+    expect(families).toContain('Figtree');
     // Matcha-only fonts must not leak into other themes.
     expect(families).not.toContain('Zen+Maru+Gothic');
     expect(families).not.toContain('Shippori+Mincho');

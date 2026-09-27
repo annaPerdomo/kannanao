@@ -5,8 +5,8 @@ import { useEffect } from 'react';
 import { useColorScheme } from '@/contexts/ThemeContext';
 import { buildFontHref } from '@/theme/fontLoader';
 
-// Loads only the active theme's Google Fonts (~5 families) instead of all 20
-// across every theme. Splitting per-theme cuts the font stylesheet from ~1.46 MB
+// Loads only the active theme's Google Fonts (~5 families) instead of every
+// theme's. Splitting per-theme cuts the font stylesheet from ~1.46 MB
 // to ~355–560 KB depending on theme. Driven by the *rendered* scheme so the
 // loaded fonts always match what MUI is drawing, and swaps on theme change.
 //

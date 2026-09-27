@@ -173,7 +173,7 @@ function CelebrationOverlay({ cardCount, onReset }: { cardCount: number; onReset
             fontSize: '0.68rem',
             color: 'rgba(255,255,255,0.45)',
             letterSpacing: '0.1em',
-            fontFamily: (theme) => theme.fonts.mono,
+            fontFamily: (theme) => theme.fonts.label,
           }}
         >
           {t('tapToReviewAgain')}
@@ -476,7 +476,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
                   color: cardTheme === scheme ? t.palette.brand[700] : '#aaa',
                   cursor: 'pointer',
                   fontSize: '0.65rem',
-                  fontFamily: (t) => t.fonts.mono,
+                  fontFamily: (t) => t.fonts.label,
                   letterSpacing: '0.05em',
                   fontWeight: cardTheme === scheme ? 700 : 400,
                   transition: 'all 0.18s ease',
@@ -504,7 +504,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
                 color: cardTheme === 'plain' ? t.palette.brand[700] : '#aaa',
                 cursor: 'pointer',
                 fontSize: '0.65rem',
-                fontFamily: (t) => t.fonts.mono,
+                fontFamily: (t) => t.fonts.label,
                 letterSpacing: '0.05em',
                 fontWeight: cardTheme === 'plain' ? 700 : 400,
                 transition: 'all 0.18s ease',
@@ -692,7 +692,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
               sx={{
                 fontSize: '0.6rem',
                 color: 'text.disabled',
-                fontFamily: (theme) => theme.fonts.mono,
+                fontFamily: (theme) => theme.fonts.label,
                 letterSpacing: '0.06em',
               }}
             >
@@ -706,7 +706,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
               sx={{
                 fontSize: '0.6rem',
                 color: 'primary.main',
-                fontFamily: (theme) => theme.fonts.mono,
+                fontFamily: (theme) => theme.fonts.label,
                 letterSpacing: '0.06em',
                 textDecoration: 'none',
                 fontWeight: 700,
@@ -724,7 +724,7 @@ export default function PublicStudyViewer({ deckId }: PublicStudyViewerProps) {
             sx={{
               fontSize: '0.62rem',
               color: 'text.disabled',
-              fontFamily: (theme) => theme.fonts.mono,
+              fontFamily: (theme) => theme.fonts.label,
               letterSpacing: '0.06em',
               textDecoration: 'none',
               '&:hover': { color: 'text.secondary', textDecoration: 'underline' },

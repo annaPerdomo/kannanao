@@ -283,7 +283,7 @@ export function Flashcard({
                     {subtitleText && !titleFurigana && (
                       <Typography
                         sx={{
-                          fontFamily: (t) => t.fonts.mono,
+                          fontFamily: (t) => t.fonts.label,
                           fontSize: cq(10.4),
                           color: '#888',
                           letterSpacing: '0.08em',
@@ -352,7 +352,7 @@ export function Flashcard({
                     {subtitleText && !titleFurigana && (
                       <Typography
                         sx={{
-                          fontFamily: (t) => t.fonts.mono,
+                          fontFamily: (t) => t.fonts.label,
                           fontSize: cq(11.2),
                           color: '#888',
                           letterSpacing: '0.08em',
@@ -421,7 +421,7 @@ export function Flashcard({
                     sx={{
                       fontSize: cq(8.3),
                       color: alpha(brand[600], 0.7),
-                      fontFamily: (t) => t.fonts.mono,
+                      fontFamily: (t) => t.fonts.label,
                       letterSpacing: '0.06em',
                     }}
                   >
@@ -432,7 +432,7 @@ export function Flashcard({
                   sx={{
                     fontSize: cq(8.3),
                     color: alpha(brand[500], 0.5),
-                    fontFamily: (t) => t.fonts.mono,
+                    fontFamily: (t) => t.fonts.label,
                   }}
                 >
                   ★
@@ -503,7 +503,7 @@ export function Flashcard({
                   <Box>
                     <Typography
                       sx={{
-                        fontFamily: (t) => t.fonts.mono,
+                        fontFamily: (t) => t.fonts.label,
                         fontSize: cq(9.9),
                         color: brand[500],
                         letterSpacing: '0.14em',
@@ -540,7 +540,7 @@ export function Flashcard({
                 <Box>
                   <Typography
                     sx={{
-                      fontFamily: (t) => t.fonts.mono,
+                      fontFamily: (t) => t.fonts.label,
                       fontSize: cq(9.9),
                       color: brand[500],
                       letterSpacing: '0.14em',
@@ -574,7 +574,7 @@ export function Flashcard({
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.75 }}>
                     <Typography
                       sx={{
-                        fontFamily: (t) => t.fonts.mono,
+                        fontFamily: (t) => t.fonts.label,
                         fontSize: cq(9.9),
                         color: brand[500],
                         letterSpacing: '0.14em',
@@ -631,7 +631,7 @@ export function Flashcard({
                     sx={{
                       fontSize: cq(8.3),
                       color: alpha(brand[600], 0.7),
-                      fontFamily: (t) => t.fonts.mono,
+                      fontFamily: (t) => t.fonts.label,
                       letterSpacing: '0.06em',
                     }}
                   >
@@ -642,7 +642,7 @@ export function Flashcard({
                   sx={{
                     fontSize: cq(8.3),
                     color: alpha(brand[500], 0.5),
-                    fontFamily: (t) => t.fonts.mono,
+                    fontFamily: (t) => t.fonts.label,
                   }}
                 >
                   {t('tapToFlipBack')}

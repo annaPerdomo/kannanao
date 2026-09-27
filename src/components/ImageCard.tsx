@@ -256,7 +256,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                   sx={{
                     fontSize: '0.6rem',
                     color: '#888',
-                    fontFamily: (t) => t.fonts.mono,
+                    fontFamily: (t) => t.fonts.label,
                     letterSpacing: '0.08em',
                     mb: 0.5,
                   }}
@@ -323,7 +323,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
                   mb: '3px',
-                  fontFamily: (t) => t.fonts.mono,
+                  fontFamily: (t) => t.fonts.label,
                 }}
               >
                 {t('meaningLabel')}
@@ -356,7 +356,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                       color: typeAccent,
                       letterSpacing: '0.12em',
                       textTransform: 'uppercase',
-                      fontFamily: (t) => t.fonts.mono,
+                      fontFamily: (t) => t.fonts.label,
                     }}
                   >
                     {t('sampleSentenceLabel')}
@@ -406,7 +406,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
                 sx={{
                   fontSize: '0.52rem',
                   color: alpha(brand[600], 0.7),
-                  fontFamily: (t) => t.fonts.mono,
+                  fontFamily: (t) => t.fonts.label,
                   letterSpacing: '0.06em',
                 }}
               >
@@ -417,7 +417,7 @@ export function ImageCard({ card, onDelete, onUpdate, readOnly }: ImageCardProps
               sx={{
                 fontSize: '0.52rem',
                 color: alpha(brand[500], 0.5),
-                fontFamily: (t) => t.fonts.mono,
+                fontFamily: (t) => t.fonts.label,
               }}
             >
               ★

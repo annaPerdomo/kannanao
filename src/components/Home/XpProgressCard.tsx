@@ -83,8 +83,6 @@ export function XpProgressCard({ level, totalXp, onShopClick }: XpProgressCardPr
           mb={1}
           sx={{ flexWrap: 'wrap' }}
         >
-          {/* body2, not caption: this theme's caption face is monospaced, which
-              turns the one number the card exists to show into a readout. */}
           <Typography
             variant="body2"
             sx={{

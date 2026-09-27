@@ -269,7 +269,7 @@ describe('createAppTheme', () => {
     it('appends a JP chain before the generic keyword on every stack', () => {
       ALL.forEach((scheme) => {
         Object.values(themeFonts[scheme]).forEach((stack) => {
-          expect(stack).toMatch(/(sans-serif|serif|monospace)$/);
+          expect(stack).toMatch(/(sans-serif|serif)$/);
           // The JP families sit between the Latin face and the generic, so the
           // browser reaches them before falling back to last-resort matching.
           expect(stack).toMatch(/Hiragino/);

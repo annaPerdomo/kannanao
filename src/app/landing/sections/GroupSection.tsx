@@ -231,7 +231,7 @@ export function GroupSection() {
                       fontSize: '0.62rem',
                       color: macChrome.text,
                       letterSpacing: '0.02em',
-                      fontFamily: (t) => t.fonts.mono,
+                      fontFamily: (t) => t.fonts.label,
                     }}
                   >
                     {APP_DOMAIN}/embed/demo-yume
@@ -256,7 +256,7 @@ export function GroupSection() {
                     fontSize: '0.62rem',
                     color: macChrome.text,
                     textAlign: 'center',
-                    fontFamily: (t) => t.fonts.mono,
+                    fontFamily: (t) => t.fonts.label,
                   }}
                 >
                   {t('poweredBy')}

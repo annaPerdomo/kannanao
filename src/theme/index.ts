@@ -35,7 +35,7 @@ export type FontConfig = {
   primary: string; // body / UI text
   display: string; // h1 / h2 headings
   jp: string; // Japanese text
-  mono: string; // captions / code
+  label: string; // captions / small tracked labels
   cute: string; // decorative / playful accents
 };
 
@@ -54,12 +54,9 @@ const JP_SERIF_FALLBACK = "'Hiragino Mincho ProN', 'Yu Mincho'";
 // Keyed by the generic keyword each stack already ends in, so a serif display
 // face falls back to a mincho and a sans body face to a gothic — matching the
 // Latin face's tone instead of flattening every JP glyph to one default.
-// `monospace` takes the gothic chain: there is no JP monospace we can rely on
-// being installed, and JP glyphs are full-width (so they still align).
 const JP_FALLBACK_FOR_GENERIC: Record<string, string> = {
   serif: JP_SERIF_FALLBACK,
   'sans-serif': JP_SANS_FALLBACK,
-  monospace: JP_SANS_FALLBACK,
 };
 
 /**
@@ -91,7 +88,7 @@ function withJpFallbacks(config: FontConfig): FontConfig {
     primary: withJpFallback(config.primary),
     display: withJpFallback(config.display),
     jp: withJpFallback(config.jp),
-    mono: withJpFallback(config.mono),
+    label: withJpFallback(config.label),
     cute: withJpFallback(config.cute),
   };
 }
@@ -105,84 +102,84 @@ const latinThemeFonts: Record<ColorScheme, FontConfig> = {
     primary: '"Nunito", sans-serif',
     display: '"DM Serif Display", serif',
     jp: '"Noto Serif JP", serif',
-    mono: '"DM Mono", monospace',
+    label: '"Figtree", sans-serif',
     cute: '"Fredoka", sans-serif',
   },
   murasaki: {
     primary: '"Raleway", sans-serif',
     display: '"Playfair Display", serif',
     jp: '"Noto Serif JP", serif',
-    mono: '"JetBrains Mono", monospace',
+    label: '"Figtree", sans-serif',
     cute: '"Quicksand", sans-serif',
   },
   yuki: {
     primary: '"Inter", sans-serif',
     display: '"Space Grotesk", sans-serif',
     jp: '"Noto Sans JP", sans-serif',
-    mono: '"Space Mono", monospace',
+    label: '"Figtree", sans-serif',
     cute: '"Nunito", sans-serif',
   },
   ocean: {
     primary: '"Outfit", sans-serif',
     display: '"Sora", sans-serif',
     jp: '"Noto Sans JP", sans-serif',
-    mono: '"Space Mono", monospace',
+    label: '"Figtree", sans-serif',
     cute: '"Fredoka", sans-serif',
   },
   forest: {
     primary: '"Lora", serif',
     display: '"Playfair Display", serif',
     jp: '"Noto Serif JP", serif',
-    mono: '"DM Mono", monospace',
+    label: '"Figtree", sans-serif',
     cute: '"Nunito", sans-serif',
   },
   sunset: {
     primary: '"Nunito", sans-serif',
     display: '"Abril Fatface", serif',
     jp: '"Noto Sans JP", sans-serif',
-    mono: '"DM Mono", monospace',
+    label: '"Figtree", sans-serif',
     cute: '"Fredoka", sans-serif',
   },
   lavender: {
     primary: '"Quicksand", sans-serif',
     display: '"Cormorant Garamond", serif',
     jp: '"Noto Serif JP", serif',
-    mono: '"DM Mono", monospace',
+    label: '"Figtree", sans-serif',
     cute: '"Fredoka", sans-serif',
   },
   midnight: {
     primary: '"Sora", sans-serif',
     display: '"Space Grotesk", sans-serif',
     jp: '"Noto Sans JP", sans-serif',
-    mono: '"JetBrains Mono", monospace',
+    label: '"Figtree", sans-serif',
     cute: '"Nunito", sans-serif',
   },
   matcha: {
     primary: '"Zen Maru Gothic", sans-serif',
     display: '"Shippori Mincho", serif',
     jp: '"Zen Maru Gothic", sans-serif',
-    mono: '"DM Mono", monospace',
+    label: '"Figtree", sans-serif',
     cute: '"Quicksand", sans-serif',
   },
   rosegold: {
     primary: '"Raleway", sans-serif',
     display: '"Cormorant Garamond", serif',
     jp: '"Noto Serif JP", serif',
-    mono: '"DM Mono", monospace',
+    label: '"Figtree", sans-serif',
     cute: '"Quicksand", sans-serif',
   },
   cottagecore: {
     primary: '"Nunito", sans-serif',
     display: '"Lora", serif',
     jp: '"Noto Serif JP", serif',
-    mono: '"DM Mono", monospace',
+    label: '"Figtree", sans-serif',
     cute: '"Fredoka", sans-serif',
   },
   galaxy: {
     primary: '"Outfit", sans-serif',
     display: '"Space Grotesk", sans-serif',
     jp: '"Noto Sans JP", sans-serif',
-    mono: '"Space Mono", monospace',
+    label: '"Figtree", sans-serif',
     cute: '"Quicksand", sans-serif',
   },
 };
@@ -855,7 +852,7 @@ export function createAppTheme(scheme: ColorScheme = 'sakura', locale: Locale = 
         fontSize: '0.875rem',
       },
       caption: {
-        fontFamily: fonts.mono,
+        fontFamily: fonts.label,
         fontSize: '0.72rem',
         fontWeight: 700,
         letterSpacing: '0.08em',

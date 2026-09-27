@@ -82,7 +82,7 @@ export function InviteQRCode({ open, onClose, code, label, organizerName }: Invi
             margin: 1rem 0;
           }
           .url {
-            font-family: monospace;
+            font-family: sans-serif;
             font-size: 0.85rem;
             color: #666;
             word-break: break-all;
@@ -157,7 +157,7 @@ export function InviteQRCode({ open, onClose, code, label, organizerName }: Invi
               p: 1.5,
               borderRadius: 2,
               bgcolor: alpha(brand[100], 0.3),
-              fontFamily: 'monospace',
+              fontFamily: (t) => t.fonts.label,
               fontSize: '0.75rem',
               color: 'text.secondary',
               wordBreak: 'break-all',
