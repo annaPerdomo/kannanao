@@ -47,7 +47,7 @@ For each line of Japanese text below, do two things in one pass:
 
 Critical formatting rules:
 - Katakana words and foreign names (マロリー, ダニエル, ラーメン) stay as katakana, no markup
-- Japanese names in kanji still get furigana: {三浦|みうら}{直美|なおみ}
+- Japanese names in kanji still get furigana: {三|み}{浦|うら}{直|なお}{美|み}
 - Hiragana grammatical particles and endings (は, の, と, です, etc.) stay as hiragana, no markup
 - Preserve all punctuation and spacing exactly
 - Output exactly one formatted string per input line, same order, no numbering, no explanation
