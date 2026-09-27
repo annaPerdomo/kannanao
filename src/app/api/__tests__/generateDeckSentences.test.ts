@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type * as KanjiReadings from '@/lib/kanjiReadings';
+
 type QueryResult = { data?: unknown; error?: { message: string } | null };
 
 let queues: Record<string, QueryResult[]>;
@@ -32,10 +34,18 @@ vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
   }),
 }));
 
+vi.mock('@/lib/kanjiReadings', async (importActual) => {
+  const actual = await importActual<typeof KanjiReadings>();
+  return { ...actual, loadKanjiReadings: vi.fn(actual.loadKanjiReadings) };
+});
+
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 import { generateDeckSentences } from '@/app/api/group/_lib/generateDeckSentences';
+import { loadKanjiReadings } from '@/lib/kanjiReadings';
+
+const mockLoadKanjiReadings = vi.mocked(loadKanjiReadings);
 
 const ARGS = {
   deckId: 'd1',
@@ -129,6 +139,31 @@ describe('generateDeckSentences', () => {
       [1, 1],
       [2, 0],
     ]);
+  });
+
+  it('splits a word-level compound in sentence_jp into one reading per kanji', async () => {
+    ownDeck();
+    withCards();
+    geminiReturns([sentence({ sentence_jp: '{駐車|ちゅうしゃ}は{今日|きょう}禁止' })]);
+
+    const result = await generateDeckSentences(ARGS);
+
+    expect(result.status).toBe('generated');
+    const rows = inserted.find((i) => i.table === 'deck_practice_sentences')!.rows;
+    expect(rows[0].sentence_jp).toBe('{駐|ちゅう}{車|しゃ}は{今日|きょう}禁止');
+  });
+
+  it('still saves the sentences when the kanji reading dictionary fails to load', async () => {
+    mockLoadKanjiReadings.mockRejectedValueOnce(new Error('boom'));
+    ownDeck();
+    withCards();
+    geminiReturns([sentence({ sentence_jp: '{駐車|ちゅうしゃ}は{今日|きょう}禁止' })]);
+
+    const result = await generateDeckSentences(ARGS);
+
+    expect(result.status).toBe('generated');
+    const rows = inserted.find((i) => i.table === 'deck_practice_sentences')!.rows;
+    expect(rows[0].sentence_jp).toBe('{駐車|ちゅうしゃ}は{今日|きょう}禁止');
   });
 
   it('does not let one hard word pitch a beginner deck above N5', async () => {

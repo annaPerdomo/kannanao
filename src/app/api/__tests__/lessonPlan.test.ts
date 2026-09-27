@@ -6,6 +6,7 @@ import {
   DOCUMENT_MAX_BYTES,
   DOCUMENT_MAX_TOTAL_BYTES,
 } from '@/components/MaterialsBuilder/constants';
+import type * as KanjiReadings from '@/lib/kanjiReadings';
 
 vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
   requireOrganizerAccount: vi.fn().mockResolvedValue({
@@ -14,6 +15,11 @@ vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
     account_type: 'organizer',
   }),
 }));
+
+vi.mock('@/lib/kanjiReadings', async (importActual) => {
+  const actual = await importActual<typeof KanjiReadings>();
+  return { ...actual, loadKanjiReadings: vi.fn(actual.loadKanjiReadings) };
+});
 
 type QueryResult = { data?: unknown; error?: { message: string } | null };
 
@@ -67,6 +73,9 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 import { POST } from '@/app/api/group/lesson-plan/route';
+import { loadKanjiReadings } from '@/lib/kanjiReadings';
+
+const mockLoadKanjiReadings = vi.mocked(loadKanjiReadings);
 
 function makeRequest(body: unknown) {
   return new NextRequest('http://localhost/api/group/lesson-plan', {
@@ -303,6 +312,94 @@ describe('POST /api/group/lesson-plan', () => {
     expect(body.plan.decks).toHaveLength(1);
     expect(body.plan.decks[0].cards[0].word).toBe('ラーメン');
     expect(inserted).toHaveLength(0);
+  });
+
+  it('splits a word-level compound in exampleJp into one reading per kanji', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    decks: [
+                      {
+                        name: 'Week 1',
+                        description: 'Parking words',
+                        emoji: '🚗',
+                        mainViewMode: 'hiragana',
+                        cards: [
+                          {
+                            word: '駐車',
+                            reading: 'ちゅうしゃ',
+                            meaning: 'parking',
+                            exampleJp: '{駐車|ちゅうしゃ}は{今日|きょう}禁止',
+                            exampleEn: 'No parking today',
+                            jlptLevel: 'N5',
+                          },
+                        ],
+                      },
+                    ],
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    });
+
+    const res = await POST(makeRequest(VALID));
+    const body = await res.json();
+    expect(body.plan.decks[0].cards[0].exampleJp).toBe('{駐|ちゅう}{車|しゃ}は{今日|きょう}禁止');
+  });
+
+  it('still returns 200 when the kanji reading dictionary fails to load', async () => {
+    mockLoadKanjiReadings.mockRejectedValueOnce(new Error('boom'));
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    decks: [
+                      {
+                        name: 'Week 1',
+                        description: 'Parking words',
+                        emoji: '🚗',
+                        mainViewMode: 'hiragana',
+                        cards: [
+                          {
+                            word: '駐車',
+                            reading: 'ちゅうしゃ',
+                            meaning: 'parking',
+                            exampleJp: '{駐車|ちゅうしゃ}は{今日|きょう}禁止',
+                            exampleEn: 'No parking today',
+                            jlptLevel: 'N5',
+                          },
+                        ],
+                      },
+                    ],
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    });
+
+    const res = await POST(makeRequest(VALID));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.plan.decks[0].cards[0].exampleJp).toBe('{駐車|ちゅうしゃ}は{今日|きょう}禁止');
   });
 
   it('reports a Gemini failure as 502', async () => {

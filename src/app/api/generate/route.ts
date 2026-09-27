@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../_lib/rateLimit';
 import { requireOrganizerAccount } from '../_lib/requireOrganizerAccount';
+import { splitFuriganaSafe } from '../_lib/splitFurigana';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 10 };
 
@@ -142,7 +143,10 @@ If a word has multiple meanings or translations, include all common ones separat
     }
 
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]';
-    const cards = normalizeFuriganaDeep(JSON.parse(rawText));
+    const cards = await splitFuriganaSafe(
+      normalizeFuriganaDeep(JSON.parse(rawText)),
+      '/api/generate',
+    );
     // Backstop for the prompt's own limit. Without expansion the input cap
     // already bounds this, so only trim when the model was free to expand.
     if (expandTopics && Array.isArray(cards) && cards.length > MAX_EXPANDED_CARDS) {

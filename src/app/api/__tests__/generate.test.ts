@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
+import type * as KanjiReadings from '@/lib/kanjiReadings';
 
 // ─── Mock requireOrganizerAccount to pass through ────────────────────────────
 
@@ -12,6 +13,13 @@ vi.mock('@/app/api/_lib/requireOrganizerAccount', () => ({
     account_type: 'organizer',
   }),
 }));
+
+// ─── Mock the kanji reading dictionary, real by default ──────────────────────
+
+vi.mock('@/lib/kanjiReadings', async (importActual) => {
+  const actual = await importActual<typeof KanjiReadings>();
+  return { ...actual, loadKanjiReadings: vi.fn(actual.loadKanjiReadings) };
+});
 
 // ─── Mock fetch ───────────────────────────────────────────────────────────────
 
@@ -27,6 +35,9 @@ beforeEach(() => {
 });
 
 import { POST } from '@/app/api/generate/route';
+import { loadKanjiReadings } from '@/lib/kanjiReadings';
+
+const mockLoadKanjiReadings = vi.mocked(loadKanjiReadings);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -279,5 +290,25 @@ describe('POST /api/generate', () => {
     const res = await POST(makeRequest({ pendingWords: ['学校'] }));
     const body = await res.json();
     expect(body[0].example_jp).toBe('{学|がっ}{校|こう}へ行きます');
+  });
+
+  it('splits a word-level compound into one reading per kanji', async () => {
+    mockGeminiSuccess([
+      { word: '駐車', reading: 'ちゅうしゃ', example_jp: '{駐車|ちゅうしゃ}は{今日|きょう}禁止' },
+    ]);
+    const res = await POST(makeRequest({ pendingWords: ['駐車'] }));
+    const body = await res.json();
+    expect(body[0].example_jp).toBe('{駐|ちゅう}{車|しゃ}は{今日|きょう}禁止');
+  });
+
+  it('still returns 200 when the kanji reading dictionary fails to load', async () => {
+    mockLoadKanjiReadings.mockRejectedValueOnce(new Error('boom'));
+    mockGeminiSuccess([
+      { word: '駐車', reading: 'ちゅうしゃ', example_jp: '{駐車|ちゅうしゃ}は{今日|きょう}禁止' },
+    ]);
+    const res = await POST(makeRequest({ pendingWords: ['駐車'] }));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body[0].example_jp).toBe('{駐車|ちゅうしゃ}は{今日|きょう}禁止');
   });
 });

@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../_lib/rateLimit';
 import { requireOrganizerAccount } from '../_lib/requireOrganizerAccount';
+import { splitFuriganaSafe } from '../_lib/splitFurigana';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 10 };
 
@@ -90,7 +91,8 @@ ${lines.map((l, i) => `${i + 1}. ${l}`).join('\n')}`;
     }
 
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '{"lines":[]}';
-    return NextResponse.json(normalizeFuriganaDeep(JSON.parse(rawText)));
+    const normalized = normalizeFuriganaDeep(JSON.parse(rawText));
+    return NextResponse.json(await splitFuriganaSafe(normalized, '/api/furigana'));
   } catch (err) {
     logger.error('Unhandled error', {
       route: '/api/furigana',
