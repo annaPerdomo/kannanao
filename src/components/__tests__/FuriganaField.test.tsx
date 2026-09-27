@@ -8,6 +8,10 @@ vi.mock('@/services/api', () => ({
   formatFurigana: vi.fn(),
 }));
 
+vi.mock('@/hooks/useKanjiReadings', () => ({
+  useKanjiReadings: () => ({ data: null, loading: true, error: false }),
+}));
+
 describe('FuriganaField', () => {
   it('renders ruby and the edit button in display mode; empty value shows emptyText', () => {
     renderWithProviders(<FuriganaField value="{私|わたし}は" onChange={vi.fn()} label="Example" />);

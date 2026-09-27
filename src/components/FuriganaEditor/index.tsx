@@ -1,23 +1,46 @@
 'use client';
-import AutoFixHighRoundedIcon from '@mui/icons-material/AutoFixHighRounded';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
+import InputBase from '@mui/material/InputBase';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
-import FuriganaText from '@/components/FuriganaText';
-import { parseFurigana, stripFurigana } from '@/lib/furigana';
-import { readingGroups, reflowReadings, segmentsToMarkup, withReading } from '@/lib/furiganaEdit';
+import { useKanjiReadings } from '@/hooks/useKanjiReadings';
+import type { FuriganaSegment } from '@/lib/furigana';
+import {
+  dictionarySplit,
+  isKana,
+  joinGroups,
+  readingGroups,
+  reflowReadings,
+  segmentsFromMarkup,
+  segmentsToMarkup,
+  splitAllByKanji,
+  splitGroup,
+  withReading,
+} from '@/lib/furiganaEdit';
+import { isUsualReading, type KanjiReadingDict } from '@/lib/kanjiReadings';
 import { formatFurigana } from '@/services/api';
 
-import { ReadingGroupInput } from './ReadingGroupInput';
+import { RubyWorkbench } from './RubyWorkbench';
+import { SplitPicker } from './SplitPicker';
+import { frameSx, type FuriganaSize, type ReadingTone, SIZES } from './styles';
+
+export { frameSx, type FuriganaSize, SIZES } from './styles';
 
 const stripBraceChars = (s: string) => s.replace(/[{|}]/g, '');
+
+const plainText = (segments: FuriganaSegment[]) =>
+  segments.map((seg) => (typeof seg === 'string' ? seg : seg.kanji)).join('');
+
+function toneFor(kanji: string, reading: string, dict: KanjiReadingDict | null): ReadingTone {
+  if (!isKana(reading)) return 'error';
+  if (dict && Array.from(kanji).length === 1 && isUsualReading(kanji, reading, dict) === false) {
+    return 'warning';
+  }
+  return 'ok';
+}
 
 export interface FuriganaEditorProps {
   value: string;
@@ -26,6 +49,8 @@ export interface FuriganaEditorProps {
   autoFill?: boolean;
   disabled?: boolean;
   autoFocus?: boolean;
+  size?: FuriganaSize;
+  actions?: ReactNode;
 }
 
 export function FuriganaEditor({
@@ -35,10 +60,20 @@ export function FuriganaEditor({
   autoFill = true,
   disabled,
   autoFocus,
+  size = 'medium',
+  actions,
 }: FuriganaEditorProps) {
   const t = useTranslations('FuriganaEditor');
+  const { data: dict } = useKanjiReadings();
   const [filling, setFilling] = useState(false);
   const [fillError, setFillError] = useState(false);
+  const [pendingSplit, setPendingSplit] = useState<{
+    index: number;
+    at: number;
+    kanji: string;
+    anchor: HTMLElement;
+  } | null>(null);
+  const frameRef = useRef<HTMLFieldSetElement>(null);
   const mounted = useRef(true);
   useEffect(
     () => () => {
@@ -47,26 +82,65 @@ export function FuriganaEditor({
     [],
   );
 
-  const plain = stripFurigana(value);
-  // Reflow over the plain text, not parseFurigana(value) alone, so a run whose
-  // reading was just cleared to '' keeps its segment (and input) instead of vanishing.
-  const segments = reflowReadings(plain, parseFurigana(value));
-  const groups = readingGroups(segments);
+  // Markup can't hold an empty reading, so a just-split `{駐|}{車|}` would
+  // re-parse as one group; keep our own segments until the value changes from outside.
+  const [segments, setSegments] = useState(() => segmentsFromMarkup(value));
+  const [synced, setSynced] = useState(value);
+  if (value !== synced) {
+    setSynced(value);
+    setSegments(segmentsFromMarkup(value));
+  }
 
-  const handleSentenceChange = (next: string) => {
-    onChange(segmentsToMarkup(reflowReadings(stripBraceChars(next), segments)));
+  const commit = (next: FuriganaSegment[]) => {
+    const markup = segmentsToMarkup(next);
+    setSynced(markup);
+    setSegments(next);
+    setPendingSplit(null);
+    onChange(markup);
   };
 
-  const handleReadingChange = (index: number, reading: string) => {
-    onChange(segmentsToMarkup(withReading(segments, index, stripBraceChars(reading))));
+  const focusGroup = (index: number) =>
+    requestAnimationFrame(() =>
+      frameRef.current
+        ?.querySelectorAll<HTMLInputElement>('input[data-reading-input]')
+        [index]?.focus(),
+    );
+
+  const plain = plainText(segments);
+  const groups = readingGroups(segments);
+  const tones = groups.map((g) => toneFor(g.kanji, g.reading, dict));
+  const warnings = [
+    ...new Set(
+      groups
+        .filter((_, i) => tones[i] === 'warning')
+        .map((g) => t('unusualReading', { kanji: g.kanji, reading: g.reading })),
+    ),
+  ];
+  const busy = disabled || filling;
+  const canSplitAll =
+    !!dict && segmentsToMarkup(splitAllByKanji(segments, dict)) !== segmentsToMarkup(segments);
+
+  const handleSplit = (index: number, at: number, anchor: HTMLElement) => {
+    const group = groups[index];
+    const readings: [string, string] | null = !group.reading
+      ? ['', '']
+      : dict && dictionarySplit(group, at, dict);
+    if (readings) {
+      commit(splitGroup(segments, index, at, readings));
+      focusGroup(index);
+    } else {
+      setPendingSplit({ index, at, kanji: group.kanji, anchor });
+    }
   };
 
   const handleAutoFill = async () => {
     setFilling(true);
     setFillError(false);
     try {
-      const [result] = await formatFurigana([value]);
-      if (mounted.current && typeof result === 'string') onChange(result);
+      const [result] = await formatFurigana([segmentsToMarkup(segments)]);
+      if (!mounted.current || typeof result !== 'string') return;
+      const next = segmentsFromMarkup(result);
+      commit(dict ? splitAllByKanji(next, dict) : next);
     } catch {
       if (mounted.current) setFillError(true);
     } finally {
@@ -74,69 +148,80 @@ export function FuriganaEditor({
     }
   };
 
+  const fieldLabel = label ?? t('sentence');
+
   return (
-    <Stack spacing={1.5}>
-      <TextField
-        label={label ?? t('sentence')}
+    <Box
+      component="fieldset"
+      ref={frameRef}
+      sx={[
+        frameSx(size),
+        (theme) => ({ '&:focus-within': { borderColor: theme.palette.brand[400] } }),
+      ]}
+    >
+      <legend>{fieldLabel}</legend>
+      <InputBase
         value={plain}
-        onChange={(e) => handleSentenceChange(e.target.value)}
+        onChange={(e) => commit(reflowReadings(stripBraceChars(e.target.value), segments))}
         multiline
         fullWidth
-        disabled={disabled}
+        disabled={busy}
         autoFocus={autoFocus}
+        inputProps={{ 'aria-label': fieldLabel }}
+        sx={{ fontSize: SIZES[size].text, fontWeight: 600, py: 0.5, lineHeight: 1.6 }}
       />
 
       {plain && (
-        <Box
-          role="status"
-          aria-live="polite"
-          sx={{ bgcolor: 'background.default', borderRadius: 2, p: 1.5 }}
-        >
-          <FuriganaText text={value} showFurigana />
-        </Box>
+        <RubyWorkbench
+          segments={segments}
+          tones={tones}
+          warnings={warnings}
+          size={size}
+          disabled={busy}
+          filling={filling}
+          onReadingChange={(i, reading) =>
+            commit(withReading(segments, i, stripBraceChars(reading)))
+          }
+          onJoin={(i) => {
+            commit(joinGroups(segments, i));
+            focusGroup(i);
+          }}
+          onSplit={handleSplit}
+          onSplitAll={
+            canSplitAll && dict ? () => commit(splitAllByKanji(segments, dict)) : undefined
+          }
+          onAutoFill={autoFill ? () => void handleAutoFill() : undefined}
+        />
       )}
 
-      <Stack spacing={0.75}>
-        <Typography variant="caption" color="text.secondary">
-          {t('readings')}
-        </Typography>
-        {groups.length === 0 ? (
-          <Typography variant="caption" color="text.secondary">
-            {t('noKanji')}
-          </Typography>
-        ) : (
-          <Stack direction="row" flexWrap="wrap" gap={1}>
-            {groups.map((group, i) => (
-              <ReadingGroupInput
-                key={i}
-                kanji={group.kanji}
-                reading={group.reading}
-                disabled={disabled}
-                onChange={(reading) => handleReadingChange(i, reading)}
-              />
-            ))}
-          </Stack>
-        )}
-      </Stack>
-
-      {autoFill && (
-        <Box>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={filling ? <CircularProgress size={16} /> : <AutoFixHighRoundedIcon />}
-            onClick={() => void handleAutoFill()}
-            disabled={disabled || filling || !plain}
-          >
-            {t('autoFill')}
-          </Button>
-          {fillError && (
-            <Alert severity="error" sx={{ mt: 1 }}>
-              {t('autoFillFailed')}
-            </Alert>
-          )}
-        </Box>
+      {pendingSplit && groups[pendingSplit.index]?.kanji === pendingSplit.kanji && (
+        <SplitPicker
+          group={groups[pendingSplit.index]}
+          at={pendingSplit.at}
+          anchor={pendingSplit.anchor}
+          dict={dict}
+          onClose={() => {
+            setPendingSplit(null);
+            focusGroup(pendingSplit.index);
+          }}
+          onPick={(readings) => {
+            commit(splitGroup(segments, pendingSplit.index, pendingSplit.at, readings));
+            focusGroup(pendingSplit.index);
+          }}
+        />
       )}
-    </Stack>
+
+      {fillError && (
+        <Alert severity="error" sx={{ mt: 1 }}>
+          {t('autoFillFailed')}
+        </Alert>
+      )}
+
+      {actions && (
+        <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ mt: 1 }}>
+          {actions}
+        </Stack>
+      )}
+    </Box>
   );
 }

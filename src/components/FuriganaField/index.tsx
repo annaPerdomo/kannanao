@@ -9,8 +9,10 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-import { FuriganaEditor } from '@/components/FuriganaEditor';
+import { frameSx, FuriganaEditor, type FuriganaSize, SIZES } from '@/components/FuriganaEditor';
 import FuriganaText from '@/components/FuriganaText';
+
+const ACTION_SX = { fontSize: '0.8rem', px: 1.75, py: 0.5, minWidth: 0 } as const;
 
 export interface FuriganaFieldProps {
   value: string;
@@ -19,6 +21,7 @@ export interface FuriganaFieldProps {
   disabled?: boolean;
   autoFill?: boolean;
   emptyText?: string;
+  size?: FuriganaSize;
   sx?: SxProps<Theme>;
 }
 
@@ -29,6 +32,7 @@ export function FuriganaField({
   disabled,
   autoFill,
   emptyText,
+  size = 'medium',
   sx,
 }: FuriganaFieldProps) {
   const t = useTranslations('FuriganaEditor');
@@ -45,8 +49,6 @@ export function FuriganaField({
     onChange(priorValue);
     setEditing(false);
   };
-
-  const done = () => setEditing(false);
 
   if (editing) {
     return (
@@ -65,48 +67,81 @@ export function FuriganaField({
           label={label}
           autoFill={autoFill}
           disabled={disabled}
+          size={size}
           autoFocus
+          actions={
+            <>
+              <Button size="small" onClick={cancel} disabled={disabled} sx={ACTION_SX}>
+                {t('cancel')}
+              </Button>
+              <Button
+                size="small"
+                variant="contained"
+                onClick={() => setEditing(false)}
+                disabled={disabled}
+                sx={ACTION_SX}
+              >
+                {t('done')}
+              </Button>
+            </>
+          }
         />
-        <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ mt: 1.5 }}>
-          <Button onClick={cancel} disabled={disabled}>
-            {t('cancel')}
-          </Button>
-          <Button variant="contained" onClick={done} disabled={disabled}>
-            {t('done')}
-          </Button>
-        </Stack>
       </Box>
     );
   }
 
   return (
-    <Box sx={sx}>
-      <Typography variant="caption" color="text.secondary">
-        {label}
-      </Typography>
+    <Box
+      component="fieldset"
+      sx={[
+        frameSx(size),
+        (theme) => ({
+          cursor: disabled ? 'default' : 'pointer',
+          opacity: disabled ? 0.6 : 1,
+          '&:hover': disabled ? {} : { borderColor: theme.palette.brand[400] },
+          '&:focus-within': { borderColor: theme.palette.brand[400] },
+        }),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <legend>{label}</legend>
       <Stack direction="row" alignItems="center" spacing={1}>
-        {value ? (
-          <Box
-            role={disabled ? undefined : 'button'}
-            tabIndex={disabled ? undefined : 0}
-            onClick={startEdit}
-            onKeyDown={(e) => {
-              if (disabled) return;
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                startEdit();
-              }
-            }}
-            sx={{ cursor: disabled ? 'default' : 'pointer', flexGrow: 1 }}
-          >
-            <FuriganaText text={value} showFurigana />
-          </Box>
-        ) : (
-          <Typography color="text.secondary" sx={{ flexGrow: 1 }}>
-            {emptyText ?? t('empty')}
-          </Typography>
-        )}
-        <IconButton aria-label={t('edit')} onClick={startEdit} disabled={disabled} size="small">
+        <Box
+          role={disabled ? undefined : 'button'}
+          tabIndex={disabled ? undefined : 0}
+          aria-label={disabled ? undefined : `${t('edit')}: ${label}`}
+          onClick={startEdit}
+          onKeyDown={(e) => {
+            if (disabled) return;
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              startEdit();
+            }
+          }}
+          sx={{ flexGrow: 1, minWidth: 0, outline: 'none' }}
+        >
+          {value ? (
+            <FuriganaText
+              text={value}
+              showFurigana
+              sx={{ fontSize: SIZES[size].text, fontWeight: 600, lineHeight: 2.3 }}
+            />
+          ) : (
+            <Typography
+              color="text.secondary"
+              sx={{ fontSize: SIZES[size].text, lineHeight: 2.2, fontStyle: 'italic' }}
+            >
+              {emptyText ?? t('empty')}
+            </Typography>
+          )}
+        </Box>
+        <IconButton
+          aria-label={t('edit')}
+          onClick={startEdit}
+          disabled={disabled}
+          size="small"
+          sx={{ color: 'brand.500' }}
+        >
           <EditRoundedIcon fontSize="small" />
         </IconButton>
       </Stack>

@@ -45,7 +45,14 @@
     "edit": "読みを編集",
     "done": "完了",
     "cancel": "キャンセル",
-    "empty": "まだ文がありません"
+    "empty": "まだ文がありません",
+    "join": "{left}と{right}の読みをひとつにまとめる",
+    "split": "{left}と{right}の読みを分ける",
+    "splitAll": "漢字ごとに分ける",
+    "splitWhere": "{kanji}の読みはどこまで？",
+    "splitTypeMyself": "空にして自分で入力",
+    "dictionaryMatch": "辞書と一致",
+    "unusualReading": "「{kanji}」を「{reading}」と読むのはめずらしいです。確認してください。"
   },
   "ReviewCard": {
     "word": "ことば",

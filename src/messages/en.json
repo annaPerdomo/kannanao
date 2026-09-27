@@ -45,7 +45,14 @@
     "edit": "Edit reading",
     "done": "Done",
     "cancel": "Cancel",
-    "empty": "No sentence yet"
+    "empty": "No sentence yet",
+    "join": "Join {left} and {right} into one reading",
+    "split": "Give {left} and {right} their own readings",
+    "splitAll": "Split by kanji",
+    "splitWhere": "Where does {kanji}'s reading end?",
+    "splitTypeMyself": "Leave them blank and type",
+    "dictionaryMatch": "matches the dictionary",
+    "unusualReading": "{kanji} isn't usually read {reading}. Double-check it."
   },
   "ReviewCard": {
     "word": "Word",

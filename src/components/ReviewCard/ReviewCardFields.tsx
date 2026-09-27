@@ -44,6 +44,7 @@ export function ReviewCardFields({ value, onChange, disabled, labels }: ReviewCa
         value={value.exampleJp}
         onChange={(exampleJp) => onChange({ exampleJp })}
         label={t('exampleJp')}
+        size="small"
         disabled={disabled}
       />
       <SmallField
