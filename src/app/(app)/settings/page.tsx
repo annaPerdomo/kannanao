@@ -32,6 +32,7 @@ import type { InviteCode } from '@/hooks/useInvites';
 import { useInvites } from '@/hooks/useInvites';
 import { LAYOUT } from '@/theme';
 
+import { CreditsSection } from './CreditsSection';
 import { LanguagePicker } from './LanguagePicker';
 import { Section } from './Section';
 
@@ -469,6 +470,10 @@ export default function SettingsPage() {
             </Stack>
           )}
         </Section>
+
+        <Divider />
+
+        <CreditsSection />
       </Stack>
 
       <CreateInviteDialog
