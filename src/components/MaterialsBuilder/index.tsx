@@ -1,5 +1,6 @@
 'use client';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
+import LinkIcon from '@mui/icons-material/Link';
 import StyleIcon from '@mui/icons-material/Style';
 import TranslateIcon from '@mui/icons-material/Translate';
 import Alert from '@mui/material/Alert';
@@ -24,19 +25,21 @@ import { LAYOUT } from '@/theme';
 import { DeckPanel } from './DeckPanel';
 import { KanaCourseBuilder } from './KanaCourseBuilder';
 import { LessonSetBuilder } from './LessonSetBuilder';
+import { QuizletImport } from './QuizletImport';
 
 interface MaterialsBuilderProps {
   /** Group to preselect, e.g. when arriving from a group page. */
   initialGroupId?: string;
+  initialTab?: BuilderTab;
 }
 
-type BuilderTab = 'lessonSet' | 'kana' | 'deck';
+export type BuilderTab = 'lessonSet' | 'kana' | 'deck' | 'quizlet';
 
 /**
  * One organizer-only front door for study materials: a lesson set (decks +
  * schedule + practice sentences) or a single deck.
  */
-export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
+export function MaterialsBuilder({ initialGroupId, initialTab }: MaterialsBuilderProps) {
   const t = useTranslations('Materials');
   const tCommon = useTranslations('Common');
   const theme = useTheme();
@@ -45,7 +48,7 @@ export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
   const { isMemberAccount, loading: authLoading } = useAuth();
   const { groups, loading: groupsLoading, errorMessage: groupsError, refetch } = useGroups();
 
-  const [tab, setTab] = useState<BuilderTab>('lessonSet');
+  const [tab, setTab] = useState<BuilderTab>(initialTab ?? 'lessonSet');
   const [groupId, setGroupId] = useState(initialGroupId ?? '');
 
   useEffect(() => {
@@ -62,6 +65,7 @@ export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
   // A stale initialGroupId (deleted group) falls back to the first group.
   const activeGroupId =
     groupId && groups.some((g) => g.id === groupId) ? groupId : (groups[0]?.id ?? '');
+  const needsGroup = tab === 'lessonSet' || tab === 'kana';
 
   return (
     <Container sx={{ py: { xs: 3, sm: 4 }, maxWidth: LAYOUT.contentMaxWidth }}>
@@ -80,7 +84,7 @@ export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
           alignItems: 'stretch',
         }}
       >
-        <Box sx={{ p: { xs: 2.5, sm: 3 }, flex: 1 }}>
+        <Box sx={{ p: { xs: 2.5, sm: 3 }, flex: 1, minWidth: 0 }}>
           <Typography
             component="h1"
             sx={{ fontWeight: 800, fontSize: { xs: '1.4rem', sm: '1.6rem' } }}
@@ -92,6 +96,8 @@ export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
           <Tabs
             value={tab}
             onChange={(_, next: BuilderTab) => setTab(next)}
+            variant="scrollable"
+            scrollButtons={false}
             sx={{
               mt: 2,
               minHeight: 0,
@@ -121,6 +127,12 @@ export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
               iconPosition="start"
               label={t('tabs.deck')}
             />
+            <Tab
+              value="quizlet"
+              icon={<LinkIcon sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+              label={t('tabs.quizlet')}
+            />
           </Tabs>
         </Box>
         <Box
@@ -137,7 +149,7 @@ export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
 
       {/* A failed fetch also leaves `groups` empty — rule it out before telling
           an organizer who has groups to go create one. */}
-      {tab !== 'deck' && groupsError && (
+      {(needsGroup || tab === 'quizlet') && groupsError && (
         <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
           <Alert severity="error">{groupsError}</Alert>
           <Button variant="contained" onClick={() => void refetch()}>
@@ -146,7 +158,7 @@ export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
         </Stack>
       )}
 
-      {tab !== 'deck' && !groupsError && groups.length === 0 && (
+      {needsGroup && !groupsError && groups.length === 0 && (
         <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
           <Alert severity="info">{t('noGroups')}</Alert>
           <Button variant="contained" onClick={() => router.push('/group')}>
@@ -164,6 +176,10 @@ export function MaterialsBuilder({ initialGroupId }: MaterialsBuilderProps) {
       )}
 
       {tab === 'deck' && <DeckPanel />}
+
+      {tab === 'quizlet' && (
+        <QuizletImport groups={groups} groupId={activeGroupId} onGroupChange={setGroupId} />
+      )}
     </Container>
   );
 }
