@@ -20,6 +20,7 @@ import { generateDeckSentences } from '../../_lib/generateDeckSentences';
 import { consumeLessonBudget } from '../../_lib/lessonBudget';
 import { requireGroupAccess } from '../../_lib/requireGroupAccess';
 import { getServiceSupabase } from '../../_lib/serviceSupabase';
+import { saveLessonPlanDecks, saveLessonPlanRow } from './saveLessonUnit';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 3 };
 const MAX_DECKS = 8;
@@ -137,6 +138,7 @@ export async function POST(req: NextRequest) {
     styleNotes,
     kanaWeeks,
     kanaSets,
+    title,
   } = (body ?? {}) as {
     groupId?: string;
     plan?: LessonPlan;
@@ -148,6 +150,8 @@ export async function POST(req: NextRequest) {
     withSentences?: boolean;
     level?: string;
     styleNotes?: string;
+    /** The unit's name in the Lesson Library — derived client-side from the goal text. */
+    title?: string;
     /** planLessonKana's per-row schedule: one due date per curriculum row, not one for the whole plan. */
     kanaWeeks?: { setId: string; dueDate: string | null }[];
     /** Pre-schedule clients sent a flat row list sharing the first due date. */
@@ -198,6 +202,9 @@ export async function POST(req: NextRequest) {
   }
   if (styleNotes !== undefined && typeof styleNotes !== 'string') {
     return NextResponse.json({ error: 'styleNotes must be a string.' }, { status: 400 });
+  }
+  if (title !== undefined && typeof title !== 'string') {
+    return NextResponse.json({ error: 'title must be a string.' }, { status: 400 });
   }
   const kanaWeeksValid =
     kanaWeeks === undefined ||
@@ -271,6 +278,10 @@ export async function POST(req: NextRequest) {
   );
   if (overBudget) return overBudget;
 
+  const planRowOk = planId
+    ? await saveLessonPlanRow({ planId, organizerId, groupId, title, level })
+    : false;
+
   const basePosition = await nextDeckPosition(organizerId);
   const results: ApplyDeckResult[] = [];
   const deckIdsInOrder: string[] = [];
@@ -320,6 +331,10 @@ export async function POST(req: NextRequest) {
     });
     results.push(result);
     if (result.status === 'created' && result.deckId) deckIdsInOrder.push(result.deckId);
+  }
+
+  if (planId && planRowOk) {
+    await saveLessonPlanDecks({ planId, results });
   }
 
   const kana =

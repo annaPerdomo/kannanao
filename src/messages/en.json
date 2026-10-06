@@ -1871,6 +1871,9 @@
       "kana": "Kana",
       "quizlet": "Quizlet"
     },
+    "library": {
+      "loadError": "Couldn't load your lessons. Try again in a moment."
+    },
     "step1Title": "What do you want to create?",
     "step1Subtitle": "Describe your goals, topics or vocabulary — or attach files for the plan to follow.",
     "step2Title": "Set the plan",

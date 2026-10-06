@@ -7,6 +7,7 @@ import { invalidateApiCache } from '@/lib/apiCache';
 import type { GroupKanaReadiness, GroupKanaReadingStages, ReadingLevelInput } from '@/lib/kanaGaps';
 import { attachPlanImages } from '@/lib/lessonImages';
 import { includedPlan } from '@/lib/lessonPlanEdits';
+import { unitTitleFromGoal } from '@/lib/lessonUnits';
 import { mergeWarmUp } from '@/lib/lessonWarmUp';
 import { applyLessonPlan, buildLessonPlan, practiceSentencesCacheKey } from '@/services/api';
 import type { ApplyDeckResult, LessonDocument, LessonPlan, WarmUpWord } from '@/types/lessonPlan';
@@ -38,6 +39,7 @@ export interface ApplyPlanArgs {
 export function useLessonPlan() {
   const t = useTranslations('Group.lessonBuilder');
   const [plan, setPlan] = useState<LessonPlan | null>(null);
+  const [goal, setGoal] = useState('');
   const [warmUp, setWarmUp] = useState<WarmUpWord[]>([]);
   const [knownWords, setKnownWords] = useState<WarmUpWord[]>([]);
   const [kanaReadiness, setKanaReadiness] = useState<GroupKanaReadiness | null>(null);
@@ -75,6 +77,7 @@ export function useLessonPlan() {
         });
         const plan = generateImages ? await attachPlanImages(data.plan) : data.plan;
         setPlan(plan);
+        setGoal(args.goal);
         setPlanId(uuidv4());
         setWarmUp(data.warmUp ?? []);
         setKnownWords(data.knownWords ?? []);
@@ -106,7 +109,12 @@ export function useLessonPlan() {
       setApplying(true);
       setError(null);
       try {
-        const data = await applyLessonPlan({ ...args, plan: kept, planId: planId ?? undefined });
+        const data = await applyLessonPlan({
+          ...args,
+          plan: kept,
+          planId: planId ?? undefined,
+          title: unitTitleFromGoal(goal) ?? undefined,
+        });
         setResults(data.results ?? []);
         setKanaAssigned(data.kanaAssigned ?? []);
         setKanaFailed(data.kanaFailed ?? []);
@@ -123,11 +131,12 @@ export function useLessonPlan() {
         setApplying(false);
       }
     },
-    [plan, planId, t],
+    [plan, planId, goal, t],
   );
 
   const reset = useCallback(() => {
     setPlan(null);
+    setGoal('');
     setPlanId(null);
     setResults(null);
     setKanaAssigned([]);

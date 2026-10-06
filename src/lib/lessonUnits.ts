@@ -1,0 +1,191 @@
+import type {
+  LessonLibrary,
+  LessonUnit,
+  LessonUnitWeek,
+  LessonWeekStatus,
+} from '@/types/lessonUnit';
+
+export function weekStatus(
+  availableOn: string | null,
+  dueDate: string | null,
+  today: string,
+): LessonWeekStatus {
+  if (availableOn && availableOn > today) return 'upcoming';
+  if (dueDate && dueDate < today) return 'past';
+  return 'current';
+}
+
+interface ScheduleFields {
+  title: string | null;
+  note: string | null;
+  due_date: string | null;
+  available_on: string | null;
+  required_accuracy: number | null;
+  required_mode: string | null;
+}
+
+const EMPTY_SCHEDULE: ScheduleFields = {
+  title: null,
+  note: null,
+  due_date: null,
+  available_on: null,
+  required_accuracy: null,
+  required_mode: null,
+};
+
+function scheduleKey(fields: ScheduleFields): string {
+  return JSON.stringify([
+    fields.title,
+    fields.note,
+    fields.due_date,
+    fields.available_on,
+    fields.required_accuracy,
+    fields.required_mode,
+  ]);
+}
+
+function mostCommonSchedule(rows: ScheduleFields[]): ScheduleFields | null {
+  if (rows.length === 0) return null;
+  const counts = new Map<string, { fields: ScheduleFields; count: number }>();
+  for (const row of rows) {
+    const key = scheduleKey(row);
+    const entry = counts.get(key);
+    if (entry) entry.count += 1;
+    else counts.set(key, { fields: row, count: 1 });
+  }
+
+  let best: { fields: ScheduleFields; count: number } | null = null;
+  for (const entry of counts.values()) {
+    if (!best || entry.count > best.count) {
+      best = entry;
+      continue;
+    }
+    if (entry.count === best.count) {
+      const bestDue = best.fields.due_date ?? '9999-99-99';
+      const dueCandidate = entry.fields.due_date ?? '9999-99-99';
+      if (dueCandidate < bestDue) best = entry;
+    }
+  }
+  return best?.fields ?? null;
+}
+
+export function buildLessonLibrary(input: {
+  plans: { id: string; title: string | null; jlpt_level: string | null; created_at: string }[];
+  planDecks: { plan_id: string; deck_id: string; position: number }[];
+  decks: { id: string; name: string; emoji: string | null }[];
+  templates: {
+    deck_id: string;
+    title: string | null;
+    note: string | null;
+    due_date: string | null;
+    available_on: string | null;
+    required_accuracy: number | null;
+    required_mode: string | null;
+  }[];
+  assignments: {
+    deck_id: string | null;
+    title: string | null;
+    note: string | null;
+    due_date: string | null;
+    available_on: string | null;
+    required_accuracy: number | null;
+    required_mode: string | null;
+    completed_at: string | null;
+  }[];
+  today: string;
+}): LessonLibrary {
+  const { plans, planDecks, decks, templates, assignments, today } = input;
+
+  const deckById = new Map(decks.map((d) => [d.id, d]));
+  const templateByDeck = new Map(templates.map((t) => [t.deck_id, t]));
+
+  const assignmentsByDeck = new Map<string, typeof assignments>();
+  for (const row of assignments) {
+    if (!row.deck_id) continue;
+    const list = assignmentsByDeck.get(row.deck_id) ?? [];
+    list.push(row);
+    assignmentsByDeck.set(row.deck_id, list);
+  }
+
+  function scheduleFor(deckId: string): ScheduleFields {
+    const template = templateByDeck.get(deckId);
+    if (template) return template;
+    const rows = assignmentsByDeck.get(deckId) ?? [];
+    return mostCommonSchedule(rows.map((r) => ({ ...r }))) ?? EMPTY_SCHEDULE;
+  }
+
+  function weekFor(deckId: string, week: number | null): LessonUnitWeek | null {
+    const deck = deckById.get(deckId);
+    if (!deck) return null;
+    const schedule = scheduleFor(deckId);
+    const rows = assignmentsByDeck.get(deckId) ?? [];
+    return {
+      deckId,
+      deckName: deck.name,
+      deckEmoji: deck.emoji,
+      week,
+      title: schedule.title,
+      note: schedule.note,
+      dueDate: schedule.due_date,
+      availableOn: schedule.available_on,
+      requiredAccuracy: schedule.required_accuracy,
+      requiredMode: schedule.required_mode,
+      learnerCount: rows.length,
+      finishedCount: rows.filter((r) => r.completed_at).length,
+      status: weekStatus(schedule.available_on, schedule.due_date, today),
+    };
+  }
+
+  const plannedDeckIds = new Set(planDecks.map((pd) => pd.deck_id));
+
+  const units: LessonUnit[] = plans
+    .map((plan) => {
+      const ordered = planDecks
+        .filter((pd) => pd.plan_id === plan.id)
+        .sort((a, b) => a.position - b.position);
+      const weeks = ordered
+        .map((pd, index) => weekFor(pd.deck_id, index + 1))
+        .filter((w): w is LessonUnitWeek => w !== null);
+      return {
+        id: plan.id,
+        title: plan.title,
+        level: plan.jlpt_level,
+        createdAt: plan.created_at,
+        weeks,
+      };
+    })
+    .filter((unit) => unit.weeks.length > 0)
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
+
+  const scheduledDeckIds = new Set<string>([
+    ...templates.map((t) => t.deck_id),
+    ...assignments.filter((a) => a.deck_id).map((a) => a.deck_id as string),
+  ]);
+
+  const loose = [...scheduledDeckIds]
+    .filter((deckId) => !plannedDeckIds.has(deckId))
+    .map((deckId) => weekFor(deckId, null))
+    .filter((w): w is LessonUnitWeek => w !== null)
+    .sort((a, b) => {
+      const dueA = a.dueDate ?? '9999-99-99';
+      const dueB = b.dueDate ?? '9999-99-99';
+      return dueA < dueB ? -1 : dueA > dueB ? 1 : 0;
+    });
+
+  return { units, loose };
+}
+
+const WHITESPACE_RE = /\s+/g;
+const GOAL_TITLE_MAX = 60;
+
+export function unitTitleFromGoal(goal: string): string | null {
+  const firstLine = goal
+    .split('\n')
+    .map((line) => line.trim())
+    .find((line) => line.length > 0);
+  if (!firstLine) return null;
+  const collapsed = firstLine.replace(WHITESPACE_RE, ' ').trim();
+  if (!collapsed) return null;
+  if (collapsed.length > GOAL_TITLE_MAX) return `${collapsed.slice(0, GOAL_TITLE_MAX - 1)}…`;
+  return collapsed;
+}

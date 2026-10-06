@@ -30,6 +30,7 @@ let reads: Record<string, QueryResult[]> = {};
 let insertReturns: Record<string, QueryResult[]> = {};
 let inserted: { table: string; rows: Record<string, unknown>[] }[] = [];
 let updated: { table: string; patch: Record<string, unknown> }[] = [];
+let upsertOptions: { table: string; options: Record<string, unknown> }[] = [];
 
 function nextRead(table: string): QueryResult {
   return reads[table]?.shift() ?? { data: null, error: null };
@@ -74,8 +75,12 @@ vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
           };
           return afterUpdate;
         },
-        upsert: (rows: Record<string, unknown> | Record<string, unknown>[]) => {
+        upsert: (
+          rows: Record<string, unknown> | Record<string, unknown>[],
+          options: Record<string, unknown> = {},
+        ) => {
           inserted.push({ table, rows: Array.isArray(rows) ? rows : [rows] });
+          upsertOptions.push({ table, options });
           return afterInsert;
         },
         then: (ok: (r: QueryResult) => unknown, err?: (e: unknown) => unknown) =>
@@ -141,10 +146,12 @@ beforeEach(() => {
     cards: [],
     assignments: [],
     card_progress: [],
+    lesson_plans: [],
   };
   insertReturns = { decks: [], cards: [], assignments: [] };
   inserted = [];
   updated = [];
+  upsertOptions = [];
 });
 
 describe('POST /api/group/lesson-plan/apply', () => {
@@ -500,5 +507,77 @@ describe('POST /api/group/lesson-plan/apply', () => {
     expect(res.status).toBe(200);
     expect(generateDeckSentencesMock).not.toHaveBeenCalled();
     await expect(res.json()).resolves.toMatchObject({ sentenceResults: [] });
+  });
+
+  const PLAN_ID = '11111111-2222-3333-4444-555555555555';
+
+  it('upserts the lesson_plans row with ignoreDuplicates when planId is present', async () => {
+    reads.decks.push({ data: [], error: null });
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+
+    await POST(
+      makeRequest({ ...BASE, planId: PLAN_ID, title: 'Food & Drink', plan: planWith(['Food']) }),
+    );
+
+    expect(rowsFor('lesson_plans')).toEqual([
+      expect.objectContaining({
+        id: PLAN_ID,
+        organizer_id: 'org1',
+        group_id: 'g1',
+        title: 'Food & Drink',
+      }),
+    ]);
+    expect(upsertOptions.find((u) => u.table === 'lesson_plans')?.options).toMatchObject({
+      onConflict: 'id',
+      ignoreDuplicates: true,
+    });
+  });
+
+  it('writes lesson_plan_decks rows for both created and resumed decks', async () => {
+    reads.decks.push({ data: [{ id: 'd1', name: 'Food', card_count: 1 }], error: null });
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd2' } });
+    reads.lesson_plans.push({ data: { organizer_id: 'org1', group_id: 'g1' }, error: null });
+
+    await POST(
+      makeRequest({
+        ...BASE,
+        planId: PLAN_ID,
+        plan: planWith(['Food', 'Counting']),
+      }),
+    );
+
+    expect(rowsFor('lesson_plan_decks')).toEqual([
+      { plan_id: PLAN_ID, deck_id: 'd1', position: 0 },
+      { plan_id: PLAN_ID, deck_id: 'd2', position: 1 },
+    ]);
+  });
+
+  it('trims a title to 80 characters', async () => {
+    reads.decks.push({ data: [], error: null });
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+
+    await POST(
+      makeRequest({
+        ...BASE,
+        planId: PLAN_ID,
+        title: 'x'.repeat(100),
+        plan: planWith(['Food']),
+      }),
+    );
+
+    expect(rowsFor('lesson_plans')[0].title).toHaveLength(80);
+  });
+
+  it('does not fail the apply when the lesson_plans write errors', async () => {
+    reads.decks.push({ data: [], error: null });
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+    insertReturns.lesson_plans = [{ data: null, error: { message: 'nope' } }];
+
+    const res = await POST(makeRequest({ ...BASE, planId: PLAN_ID, plan: planWith(['Food']) }));
+    expect(res.status).toBe(200);
   });
 });
