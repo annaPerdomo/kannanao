@@ -8,6 +8,7 @@ const mockGetUser = vi.fn();
 const mockGetSession = vi.fn().mockResolvedValue({ data: { session: null } });
 
 const tableData: Record<string, { data: unknown; error: unknown; count?: number }> = {};
+const insertCalls: { table: string; rows: unknown }[] = [];
 
 function setTable(table: string, data: unknown, error: unknown = null, count?: number) {
   tableData[table] = { data, error, count };
@@ -35,6 +36,10 @@ function makeChain(table: string) {
   });
   chain.single = vi.fn(() => asPromise());
   chain.maybeSingle = vi.fn(() => asPromise());
+  chain.insert = vi.fn((rows: unknown) => {
+    insertCalls.push({ table, rows });
+    return chain;
+  });
   // Make the chain itself thenable so `await chain` works
   chain.then = (onfulfilled: (v: unknown) => unknown, onrejected?: (e: unknown) => unknown) =>
     asPromise().then(onfulfilled, onrejected);
@@ -59,6 +64,7 @@ vi.mock('@supabase/ssr', () => ({
 }));
 
 import {
+  CARD_COPY_COLUMNS,
   dbCopyCardsIntoDeck,
   dbCreateDeck,
   dbCreateEventType,
@@ -565,6 +571,7 @@ describe('dbInsertCards', () => {
 describe('dbCopyCardsIntoDeck', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    insertCalls.length = 0;
   });
 
   it('should return empty array when given no cards', async () => {
@@ -577,6 +584,16 @@ describe('dbCopyCardsIntoDeck', () => {
     const sourceCard: Flashcard = { id: 'c1', ...makeCard() };
     const result = await dbCopyCardsIntoDeck('deck-target', [sourceCard]);
     expect(result).toHaveLength(1);
+  });
+
+  it('inserts every CARD_COPY_COLUMNS field plus deck_id and position', async () => {
+    setTable('cards', [makeCardRow({ deck_id: 'deck-target' })]);
+    const sourceCard: Flashcard = { id: 'c1', ...makeCard() };
+    await dbCopyCardsIntoDeck('deck-target', [sourceCard]);
+
+    const call = insertCalls.find((c) => c.table === 'cards');
+    const row = (call?.rows as Record<string, unknown>[])[0];
+    expect(Object.keys(row).sort()).toEqual([...CARD_COPY_COLUMNS, 'deck_id', 'position'].sort());
   });
 });
 

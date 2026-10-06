@@ -13,6 +13,19 @@ export function shiftDate(date: string | null, days: number): string | null {
   return new Date(start + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 }
 
+const WEEK_DAYS = 7;
+
+/** Due a week after the unit's last week, or a week from today when there is no last week or it already passed. */
+export function nextWeekDates(
+  lastDueDate: string | null,
+  today: string,
+): { dueDate: string; availableOn: string } {
+  const base = lastDueDate !== null && lastDueDate >= today ? lastDueDate : today;
+  const dueDate = shiftDate(base, WEEK_DAYS) ?? base;
+  const availableOn = shiftDate(dueDate, -WEEK_DAYS) ?? dueDate;
+  return { dueDate, availableOn };
+}
+
 export function weekStatus(
   availableOn: string | null,
   dueDate: string | null,

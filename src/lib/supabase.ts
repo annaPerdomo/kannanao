@@ -4,6 +4,7 @@ import { createBrowserClient } from '@supabase/ssr';
 
 import { type Locale, parseLocale } from '@/i18n/config';
 import { availableNowFilter } from '@/lib/assignmentAvailability';
+import { CARD_COPY_COLUMNS } from '@/lib/cardCopyColumns';
 import { toDataError } from '@/lib/dataError';
 import {
   type AccountType,
@@ -24,6 +25,7 @@ import type { ShowCard, ShowCardCategory } from '@/types/travel';
 // working unchanged.
 export { dbCardToApp, dbDeckToApp };
 export type { AccountType };
+export { CARD_COPY_COLUMNS };
 
 const SUPABASE_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL';
@@ -495,21 +497,24 @@ export async function dbCopyCardsIntoDeck(
     .maybeSingle();
   const startPos = (maxRow?.position ?? -1) + 1;
 
-  const rows = cards.map((card, i) => ({
-    deck_id: targetDeckId,
-    word: card.word,
-    reading: card.reading || '',
-    romaji: card.romaji || '',
-    meaning: card.meaning || '',
-    image_url: card.imageUrl || '',
-    image_query: card.image_query || '',
-    example_jp: card.example_jp || '',
-    example_en: card.example_en || '',
-    main_view_mode: card.mainViewMode ?? 'hiragana',
-    card_type: card.cardType ?? 'word',
-    jlpt_level: card.jlptLevel ?? null,
-    position: startPos + i,
-  }));
+  const rows = cards.map((card, i) => {
+    // Flashcard carries no image credit text, so a copy from this path is always null.
+    const row: Record<(typeof CARD_COPY_COLUMNS)[number], unknown> = {
+      word: card.word,
+      reading: card.reading || '',
+      romaji: card.romaji || '',
+      meaning: card.meaning || '',
+      image_url: card.imageUrl || '',
+      image_credit: null,
+      image_query: card.image_query || '',
+      example_jp: card.example_jp || '',
+      example_en: card.example_en || '',
+      main_view_mode: card.mainViewMode ?? 'hiragana',
+      card_type: card.cardType ?? 'word',
+      jlpt_level: card.jlptLevel ?? null,
+    };
+    return { ...row, deck_id: targetDeckId, position: startPos + i };
+  });
 
   const { data, error } = await sb.from('cards').insert(rows).select('*');
 

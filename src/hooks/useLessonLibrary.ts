@@ -11,6 +11,8 @@ import type { HandoutPatch, LessonLibrary, LessonUnitWeek } from '@/types/lesson
 export const LESSON_LIBRARY_CACHE_PREFIX = '/api/group/lessons';
 const ASSIGNMENTS_CACHE_PREFIX = '/api/group/assignments';
 
+export type AddWeekResult = 'ok' | 'already_in_unit' | 'error';
+
 async function authHeaders(): Promise<Record<string, string>> {
   const { data } = await sb.auth.getSession();
   const token = data.session?.access_token;
@@ -41,6 +43,10 @@ export function useLessonLibrary(groupId: string | null): {
   removeWeek: (deckId: string) => Promise<boolean>;
   renameUnit: (planId: string, title: string | null) => Promise<boolean>;
   shiftFrom: (planId: string, fromDeckId: string, days: number) => Promise<boolean>;
+  addWeek: (
+    planId: string,
+    input: { kind: 'deck'; deckId: string } | { kind: 'review' },
+  ) => Promise<AddWeekResult>;
 } {
   const t = useTranslations('Materials.library');
   const url = groupId ? `${LESSON_LIBRARY_CACHE_PREFIX}?groupId=${groupId}` : null;
@@ -282,5 +288,50 @@ export function useLessonLibrary(groupId: string | null): {
     [library, url, setLibraryForUrl, backgroundRefresh],
   );
 
-  return { library, loading, error, saving, refetch, editWeek, removeWeek, renameUnit, shiftFrom };
+  /** Not optimistic — the server builds the new week's row — so this only refetches on success. */
+  const addWeek = useCallback(
+    async (
+      planId: string,
+      input: { kind: 'deck'; deckId: string } | { kind: 'review' },
+    ): Promise<AddWeekResult> => {
+      if (!url) return 'error';
+      const requestUrl = url;
+      setSaving(true);
+      try {
+        const res = await fetch(`/api/group/lessons/${planId}/weeks`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+          body: JSON.stringify(input),
+        });
+        if (res.status === 409) {
+          const body = await res.json().catch(() => null);
+          await backgroundRefresh(requestUrl);
+          // A position-collision conflict (23505 on the link insert) is distinct
+          // from "that deck is already in a unit" and surfaces as a plain error.
+          return body?.error === 'already_in_unit' ? 'already_in_unit' : 'error';
+        }
+        if (!res.ok) throw new Error();
+        await backgroundRefresh(requestUrl);
+        return 'ok';
+      } catch {
+        return 'error';
+      } finally {
+        setSaving(false);
+      }
+    },
+    [url, backgroundRefresh],
+  );
+
+  return {
+    library,
+    loading,
+    error,
+    saving,
+    refetch,
+    editWeek,
+    removeWeek,
+    renameUnit,
+    shiftFrom,
+    addWeek,
+  };
 }

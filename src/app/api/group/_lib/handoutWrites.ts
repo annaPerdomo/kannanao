@@ -1,6 +1,7 @@
 import { isGoalMode } from '@/lib/assignmentMastery';
 import type { HandoutPatch } from '@/types/lessonUnit';
 
+import { memberIdsFor } from './membership';
 import { type getServiceSupabase } from './serviceSupabase';
 
 const TITLE_MAX = 200;
@@ -94,6 +95,73 @@ export async function updateHandout(
     .eq('group_id', groupId)
     .eq('deck_id', deckId);
   if (templateError) return { error: templateError.message };
+
+  return { error: null };
+}
+
+/** Row shape matches the apply route's assignDeck/savePlannedSchedule — one `assignments` row per learner plus the `planned_assignments` template. */
+export async function assignHandout(
+  sb: ReturnType<typeof getServiceSupabase>,
+  args: {
+    organizerId: string;
+    groupId: string;
+    deckId: string;
+    title: string | null;
+    note: string | null;
+    dueDate: string | null;
+    availableOn: string | null;
+    requiredAccuracy: number | null;
+    requiredMode: string | null;
+  },
+): Promise<{ error: string | null }> {
+  const {
+    organizerId,
+    groupId,
+    deckId,
+    title,
+    note,
+    dueDate,
+    availableOn,
+    requiredAccuracy,
+    requiredMode,
+  } = args;
+
+  const { error: templateError } = await sb.from('planned_assignments').upsert(
+    {
+      organizer_id: organizerId,
+      group_id: groupId,
+      deck_id: deckId,
+      title,
+      note,
+      due_date: dueDate,
+      available_on: availableOn,
+      required_accuracy: requiredAccuracy,
+      required_mode: requiredMode,
+    },
+    { onConflict: 'group_id,deck_id' },
+  );
+  if (templateError) return { error: templateError.message };
+
+  const memberIds = await memberIdsFor({ organizerId, groupId });
+  if (memberIds.length === 0) return { error: null };
+
+  const rows = memberIds.map((memberId) => ({
+    organizer_id: organizerId,
+    group_id: groupId,
+    member_id: memberId,
+    deck_id: deckId,
+    title,
+    note,
+    due_date: dueDate,
+    available_on: availableOn,
+    required_accuracy: requiredAccuracy,
+    required_mode: requiredMode,
+  }));
+
+  const { error: assignmentsError } = await sb
+    .from('assignments')
+    .upsert(rows, { onConflict: 'member_id,deck_id,group_id' });
+  if (assignmentsError) return { error: assignmentsError.message };
 
   return { error: null };
 }

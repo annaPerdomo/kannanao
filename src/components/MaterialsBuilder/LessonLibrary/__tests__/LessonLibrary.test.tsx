@@ -10,6 +10,7 @@ const mockEditWeek = vi.fn();
 const mockRemoveWeek = vi.fn();
 const mockRenameUnit = vi.fn();
 const mockShiftFrom = vi.fn();
+const mockAddWeek = vi.fn();
 
 vi.mock('@/hooks/useLessonLibrary', () => ({
   useLessonLibrary: (...args: unknown[]) => mockUseLessonLibrary(...args),
@@ -17,6 +18,11 @@ vi.mock('@/hooks/useLessonLibrary', () => ({
 
 vi.mock('@/hooks/useGroups', () => ({
   useGroups: () => ({ groups: [{ id: 'g1', name: 'Tuesday Club' }] }),
+}));
+
+const mockUseDecks = vi.fn();
+vi.mock('@/hooks/useDecks', () => ({
+  useDecks: (...args: unknown[]) => mockUseDecks(...args),
 }));
 
 const mockHandoutDetailDialog = vi.fn();
@@ -59,6 +65,7 @@ function setLibrary(data: LessonLibraryData | null, overrides: Record<string, un
     removeWeek: mockRemoveWeek,
     renameUnit: mockRenameUnit,
     shiftFrom: mockShiftFrom,
+    addWeek: mockAddWeek,
     ...overrides,
   });
 }
@@ -72,6 +79,8 @@ describe('LessonLibrary', () => {
     mockRemoveWeek.mockReset().mockResolvedValue(true);
     mockRenameUnit.mockReset().mockResolvedValue(true);
     mockShiftFrom.mockReset().mockResolvedValue(true);
+    mockAddWeek.mockReset().mockResolvedValue('ok');
+    mockUseDecks.mockReset().mockReturnValue({ decks: [], loading: false, error: null });
   });
 
   it('shows the loading state', () => {
@@ -293,5 +302,109 @@ describe('LessonLibrary', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
     expect(mockEditWeek).not.toHaveBeenCalled();
+  });
+
+  it('shows the can-do list in week order and hides it when no week has a note', () => {
+    setLibrary({
+      units: [
+        {
+          id: 'u1',
+          title: 'Unit 1',
+          level: null,
+          createdAt: '2026-09-01T00:00:00Z',
+          weeks: [
+            week({ deckId: 'd1', week: 1, note: 'I can greet people.' }),
+            week({ deckId: 'd2', week: 2, note: null }),
+            week({ deckId: 'd3', week: 3, note: 'I can order food.' }),
+          ],
+        },
+      ],
+      loose: [],
+    });
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    expect(screen.getByText('By the end of this unit, learners can:')).toBeInTheDocument();
+    const items = screen.getAllByRole('listitem').map((el) => el.textContent);
+    expect(items).toEqual(['I can greet people.', 'I can order food.']);
+  });
+
+  it('hides the can-do list when no week in the unit has a note', () => {
+    setLibrary(oneUnitLibrary());
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    expect(screen.queryByText('By the end of this unit, learners can:')).not.toBeInTheDocument();
+  });
+
+  it('opens the add-week dialog, selects the review tile with the keyboard, and adds it', async () => {
+    setLibrary(oneUnitLibrary());
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add a week' }));
+    const reviewTile = screen.getByText('Review week').closest('[role="button"]') as Element;
+    expect(reviewTile).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.keyDown(reviewTile, { key: 'Enter' });
+    expect(reviewTile).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add week' }));
+    expect(mockAddWeek).toHaveBeenCalledWith('u1', { kind: 'review' });
+  });
+
+  it('shows the already-in-unit message instead of the generic save error', async () => {
+    mockAddWeek.mockResolvedValue('already_in_unit');
+    setLibrary(oneUnitLibrary());
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add a week' }));
+    const reviewTile = screen.getByText('Review week').closest('[role="button"]') as Element;
+    fireEvent.click(reviewTile);
+    fireEvent.click(screen.getByRole('button', { name: 'Add week' }));
+
+    expect(
+      await screen.findByText('That deck is already part of a unit for this group.'),
+    ).toBeInTheDocument();
+  });
+
+  it('only enables the deck fetch while the add-week dialog is open', () => {
+    mockUseDecks.mockReturnValue({ decks: [], loading: false, error: null });
+    setLibrary(oneUnitLibrary());
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    expect(mockUseDecks).toHaveBeenLastCalledWith(false);
+    fireEvent.click(screen.getByRole('button', { name: 'Add a week' }));
+    expect(mockUseDecks).toHaveBeenLastCalledWith(true);
+  });
+
+  it('excludes shared decks from the deck picker', () => {
+    mockUseDecks.mockReturnValue({
+      decks: [
+        { id: 'd9', name: 'Own deck', emoji: null, isShared: false },
+        { id: 'd10', name: 'Shared deck', emoji: null, isShared: true },
+      ],
+      loading: false,
+      error: null,
+    });
+    setLibrary(oneUnitLibrary());
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add a week' }));
+    fireEvent.click(screen.getByText('A deck I already have'));
+    fireEvent.mouseDown(screen.getByRole('combobox'));
+
+    expect(screen.getByText(/Own deck/)).toBeInTheDocument();
+    expect(screen.queryByText(/Shared deck/)).not.toBeInTheDocument();
+  });
+
+  it('disables Add week until a deck is chosen in deck mode', () => {
+    mockUseDecks.mockReturnValue({
+      decks: [{ id: 'd9', name: 'Spare deck', emoji: null }],
+      loading: false,
+      error: null,
+    });
+    setLibrary(oneUnitLibrary());
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add a week' }));
+    fireEvent.click(screen.getByText('A deck I already have'));
+
+    expect(screen.getByRole('button', { name: 'Add week' })).toBeDisabled();
   });
 });

@@ -2,6 +2,7 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
@@ -21,12 +22,15 @@ import type { LessonUnit, LessonUnitWeek } from '@/types/lessonUnit';
 
 import { WeekRow } from './WeekRow';
 
+const CAN_DO_MAX = 8;
+
 interface UnitCardProps {
   unit: LessonUnit;
   onOpenWeek: (week: LessonUnitWeek) => void;
   onEditWeek: (week: LessonUnitWeek) => void;
   onShiftWeek: (week: LessonUnitWeek) => void;
   onRenameUnit: (title: string | null) => void;
+  onAddWeek: () => void;
   defaultExpanded?: boolean;
 }
 
@@ -36,6 +40,7 @@ export function UnitCard({
   onEditWeek,
   onShiftWeek,
   onRenameUnit,
+  onAddWeek,
   defaultExpanded = false,
 }: UnitCardProps) {
   const t = useTranslations('Materials.library');
@@ -60,6 +65,7 @@ export function UnitCard({
     .join(' · ');
 
   const title = unit.title ?? t('untitledUnit', { date: formatDate(unit.createdAt, locale) });
+  const canDoNotes = unit.weeks.map((w) => w.note).filter((note): note is string => Boolean(note));
 
   const startRename = () => {
     setDraftTitle(unit.title ?? '');
@@ -159,6 +165,40 @@ export function UnitCard({
 
       <Collapse in={expanded}>
         <Stack spacing={1} sx={{ p: { xs: 1.5, sm: 2 }, pt: 0 }}>
+          {canDoNotes.length > 0 && (
+            <Box
+              sx={{
+                p: 1.25,
+                borderRadius: theme.radii.md,
+                bgcolor: alpha(brand[100], 0.4),
+              }}
+            >
+              <Typography sx={{ fontWeight: 700, fontSize: '0.8rem', color: 'text.primary' }}>
+                {t('canDoHeading')}
+              </Typography>
+              <Stack
+                component="ul"
+                spacing={0.25}
+                sx={{ listStyle: 'disc', pl: 2.5, m: 0, mt: 0.5 }}
+              >
+                {canDoNotes.slice(0, CAN_DO_MAX).map((note, i) => (
+                  <Typography
+                    component="li"
+                    key={i}
+                    sx={{ fontSize: '0.8rem', color: 'text.secondary' }}
+                  >
+                    {note}
+                  </Typography>
+                ))}
+              </Stack>
+              {canDoNotes.length > CAN_DO_MAX && (
+                <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5 }}>
+                  {t('canDoMore', { n: canDoNotes.length - CAN_DO_MAX })}
+                </Typography>
+              )}
+            </Box>
+          )}
+
           {unit.weeks.map((week) => (
             <WeekRow
               key={week.deckId}
@@ -168,6 +208,15 @@ export function UnitCard({
               onShift={() => onShiftWeek(week)}
             />
           ))}
+
+          {unit.weeks.length >= 1 && (
+            <Button
+              onClick={onAddWeek}
+              sx={{ alignSelf: 'flex-start', textTransform: 'none', fontWeight: 700 }}
+            >
+              {t('addWeek')}
+            </Button>
+          )}
         </Stack>
       </Collapse>
     </Paper>

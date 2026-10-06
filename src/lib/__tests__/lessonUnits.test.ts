@@ -5,6 +5,7 @@ import type { LessonUnit, LessonUnitWeek } from '@/types/lessonUnit';
 import {
   buildLessonLibrary,
   currentWeekSummary,
+  nextWeekDates,
   shiftDate,
   unitTitleFromGoal,
   weekStatus,
@@ -31,6 +32,26 @@ describe('shiftDate', () => {
 
   it('returns null for an invalid date', () => {
     expect(shiftDate('not-a-date', 7)).toBeNull();
+  });
+});
+
+describe('nextWeekDates', () => {
+  it('falls a week after the last due date', () => {
+    expect(nextWeekDates('2026-10-13', TODAY)).toEqual({
+      dueDate: '2026-10-20',
+      availableOn: '2026-10-13',
+    });
+  });
+
+  it('falls a week from today when there is no last due date', () => {
+    expect(nextWeekDates(null, TODAY)).toEqual({ dueDate: '2026-10-13', availableOn: TODAY });
+  });
+
+  it('falls a week from today when the last due date has already passed', () => {
+    expect(nextWeekDates('2026-09-01', TODAY)).toEqual({
+      dueDate: '2026-10-13',
+      availableOn: TODAY,
+    });
   });
 });
 

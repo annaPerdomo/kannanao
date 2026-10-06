@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const { memberIdsForMock } = vi.hoisted(() => ({ memberIdsForMock: vi.fn() }));
+vi.mock('../membership', () => ({
+  memberIdsFor: (...args: unknown[]) => memberIdsForMock(...args),
+}));
+
 import {
+  assignHandout,
   checkDateOrder,
   handoutPatchToDbUpdates,
   parseHandoutPatch,
@@ -118,6 +124,10 @@ function makeChain(onCall: (table: string, method: string, args: unknown[]) => v
   });
   chain.delete = vi.fn((...args: unknown[]) => {
     onCall('', 'delete', args);
+    return chain;
+  });
+  chain.upsert = vi.fn((...args: unknown[]) => {
+    onCall('', 'upsert', args);
     return chain;
   });
   return chain;
@@ -245,6 +255,90 @@ describe('removeHandout', () => {
     results.assignments = { error: { message: 'boom' } };
     const sb = makeSb();
     const { error } = await removeHandout(sb, { organizerId: 'org1', groupId: 'g1', deckId: 'd1' });
+    expect(error).toBe('boom');
+  });
+});
+
+describe('assignHandout', () => {
+  let calls: { table: string; method: string; args: unknown[] }[];
+  let results: Record<string, { error: { message: string } | null }>;
+
+  function makeSb() {
+    return {
+      from: vi.fn((table: string) => {
+        const chain = makeChain((_t, method, args) => calls.push({ table, method, args }));
+        chain.then = (onfulfilled: (v: unknown) => unknown) =>
+          Promise.resolve(results[table] ?? { error: null }).then(onfulfilled);
+        return chain;
+      }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+  }
+
+  const ARGS = {
+    organizerId: 'org1',
+    groupId: 'g1',
+    deckId: 'd1',
+    title: 'Week 2',
+    note: 'I can count to ten.',
+    dueDate: '2026-10-20',
+    availableOn: '2026-10-13',
+    requiredAccuracy: 80,
+    requiredMode: 'quiz',
+  };
+
+  beforeEach(() => {
+    calls = [];
+    results = {};
+    memberIdsForMock.mockReset().mockResolvedValue(['m1', 'm2']);
+  });
+
+  it('upserts the template and one assignments row per member', async () => {
+    const sb = makeSb();
+    const { error } = await assignHandout(sb, ARGS);
+    expect(error).toBeNull();
+
+    const upserts = calls.filter((c) => c.method === 'upsert');
+    expect(upserts.map((c) => c.table)).toEqual(
+      expect.arrayContaining(['planned_assignments', 'assignments']),
+    );
+
+    const templateRow = upserts.find((c) => c.table === 'planned_assignments')?.args[0] as Record<
+      string,
+      unknown
+    >;
+    expect(templateRow).toMatchObject({
+      organizer_id: 'org1',
+      group_id: 'g1',
+      deck_id: 'd1',
+      title: 'Week 2',
+      due_date: '2026-10-20',
+      available_on: '2026-10-13',
+      required_accuracy: 80,
+      required_mode: 'quiz',
+    });
+
+    const assignmentRows = upserts.find((c) => c.table === 'assignments')?.args[0] as Record<
+      string,
+      unknown
+    >[];
+    expect(assignmentRows).toHaveLength(2);
+    expect(assignmentRows.map((r) => r.member_id)).toEqual(['m1', 'm2']);
+  });
+
+  it('skips the assignments upsert when the group has no members yet', async () => {
+    memberIdsForMock.mockResolvedValue([]);
+    const sb = makeSb();
+    const { error } = await assignHandout(sb, ARGS);
+    expect(error).toBeNull();
+    const upserts = calls.filter((c) => c.method === 'upsert');
+    expect(upserts.map((c) => c.table)).toEqual(['planned_assignments']);
+  });
+
+  it('surfaces a db error from the template upsert', async () => {
+    results.planned_assignments = { error: { message: 'boom' } };
+    const sb = makeSb();
+    const { error } = await assignHandout(sb, ARGS);
     expect(error).toBe('boom');
   });
 });

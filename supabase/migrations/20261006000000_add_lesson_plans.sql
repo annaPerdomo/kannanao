@@ -16,7 +16,8 @@ CREATE TABLE lesson_plan_decks (
   plan_id   uuid NOT NULL REFERENCES lesson_plans(id) ON DELETE CASCADE,
   deck_id   uuid NOT NULL REFERENCES decks(id)        ON DELETE CASCADE,
   position  integer NOT NULL,
-  PRIMARY KEY (plan_id, deck_id)
+  PRIMARY KEY (plan_id, deck_id),
+  UNIQUE (plan_id, position)
 );
 
 CREATE INDEX idx_lesson_plan_decks_deck ON lesson_plan_decks(deck_id);

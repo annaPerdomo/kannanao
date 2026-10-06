@@ -10,11 +10,13 @@ import { useMemo, useState } from 'react';
 import { HandoutDetailDialog } from '@/components/Group/HandoutDetailDialog';
 import { SectionCard } from '@/components/Group/SectionCard';
 import { Loading } from '@/components/Loading';
+import { useDecks } from '@/hooks/useDecks';
 import { useGroups } from '@/hooks/useGroups';
 import { useLessonLibrary } from '@/hooks/useLessonLibrary';
 import { handoutRefFromWeek } from '@/types/handout';
 import type { LessonUnit, LessonUnitWeek } from '@/types/lessonUnit';
 
+import { AddWeekDialog, type AddWeekInput } from './AddWeekDialog';
 import { EditWeekDialog } from './EditWeekDialog';
 import { ShiftDialog } from './ShiftDialog';
 import { UnitCard } from './UnitCard';
@@ -27,9 +29,21 @@ interface LessonLibraryProps {
 
 export function LessonLibrary({ groupId, onBuild }: LessonLibraryProps) {
   const t = useTranslations('Materials.library');
-  const { library, loading, error, saving, refetch, editWeek, removeWeek, renameUnit, shiftFrom } =
-    useLessonLibrary(groupId);
+  const {
+    library,
+    loading,
+    error,
+    saving,
+    refetch,
+    editWeek,
+    removeWeek,
+    renameUnit,
+    shiftFrom,
+    addWeek,
+  } = useLessonLibrary(groupId);
   const { groups } = useGroups();
+  const [addingUnit, setAddingUnit] = useState<LessonUnit | null>(null);
+  const { decks } = useDecks(addingUnit != null);
   const groupName = groups.find((g) => g.id === groupId)?.name ?? '';
   const [activeWeek, setActiveWeek] = useState<LessonUnitWeek | null>(null);
   const [editingWeek, setEditingWeek] = useState<LessonUnitWeek | null>(null);
@@ -42,6 +56,15 @@ export function LessonLibrary({ groupId, onBuild }: LessonLibraryProps) {
   const firstCurrentUnitId = useMemo(
     () => library?.units.find((unit) => unit.weeks.some((w) => w.status === 'current'))?.id ?? null,
     [library],
+  );
+
+  const usedDeckIds = useMemo(
+    () => new Set(library?.units.flatMap((unit) => unit.weeks.map((w) => w.deckId)) ?? []),
+    [library],
+  );
+  const availableDecks = useMemo(
+    () => decks.filter((d) => !d.isShared && !usedDeckIds.has(d.id)),
+    [decks, usedDeckIds],
   );
 
   const handleEditSave = async (deckId: string, patch: Parameters<typeof editWeek>[1]) => {
@@ -60,6 +83,13 @@ export function LessonLibrary({ groupId, onBuild }: LessonLibraryProps) {
     const ok = await shiftFrom(planId, fromDeckId, days);
     if (ok) setToast({ message: t('movedToast'), severity: 'success' });
     return ok;
+  };
+
+  const handleAddWeek = async (input: AddWeekInput) => {
+    if (!addingUnit) return 'error' as const;
+    const result = await addWeek(addingUnit.id, input);
+    if (result === 'ok') setToast({ message: t('addedToast'), severity: 'success' });
+    return result;
   };
 
   const handleRenameUnit = async (unitId: string, title: string | null) => {
@@ -114,6 +144,7 @@ export function LessonLibrary({ groupId, onBuild }: LessonLibraryProps) {
               setShiftingWeek(week);
             }}
             onRenameUnit={(title) => void handleRenameUnit(unit.id, title)}
+            onAddWeek={() => setAddingUnit(unit)}
             defaultExpanded={unit.id === firstCurrentUnitId}
           />
         ))}
@@ -160,6 +191,14 @@ export function LessonLibrary({ groupId, onBuild }: LessonLibraryProps) {
         week={shiftingWeek}
         saving={saving}
         onShift={handleShift}
+      />
+
+      <AddWeekDialog
+        open={addingUnit != null}
+        onClose={() => setAddingUnit(null)}
+        decks={availableDecks}
+        saving={saving}
+        onAdd={handleAddWeek}
       />
 
       <Snackbar open={toast != null} autoHideDuration={3000} onClose={() => setToast(null)}>

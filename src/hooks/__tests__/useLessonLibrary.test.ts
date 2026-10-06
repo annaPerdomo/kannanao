@@ -266,6 +266,97 @@ describe('useLessonLibrary', () => {
     expect(result.current.library).toEqual(original);
   });
 
+  it('addWeek posts to the unit, refetches and invalidates, without an optimistic change', async () => {
+    const original = unitLibrary();
+    const refetched = unitLibrary();
+    refetched.units[0].weeks.push(week({ deckId: 'd2', deckName: 'Review', week: 2 }));
+
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => original });
+    const { result } = renderHook(() => useLessonLibrary('g1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ deckId: 'd2' }) });
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => refetched });
+
+    let outcome: string = '';
+    await act(async () => {
+      outcome = await result.current.addWeek('u1', { kind: 'review' });
+    });
+
+    expect(outcome).toBe('ok');
+    expect(result.current.library?.units[0].weeks).toHaveLength(2);
+
+    const postCall = mockFetch.mock.calls.find(([url]) => url === '/api/group/lessons/u1/weeks');
+    expect(postCall?.[1]).toMatchObject({
+      method: 'POST',
+      body: JSON.stringify({ kind: 'review' }),
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('addWeek returns "error" on failure and leaves the library untouched', async () => {
+    const original = unitLibrary();
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => original });
+    const { result } = renderHook(() => useLessonLibrary('g1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 500, json: async () => ({}) });
+
+    let outcome: string = 'ok';
+    await act(async () => {
+      outcome = await result.current.addWeek('u1', { kind: 'deck', deckId: 'd9' });
+    });
+
+    expect(outcome).toBe('error');
+    expect(result.current.library).toEqual(original);
+  });
+
+  it('addWeek returns "already_in_unit" on a 409 with that error body, and refetches', async () => {
+    const original = unitLibrary();
+    const refetched = unitLibrary();
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => original });
+    const { result } = renderHook(() => useLessonLibrary('g1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 409,
+      json: async () => ({ error: 'already_in_unit' }),
+    });
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => refetched });
+
+    let outcome: string = '';
+    await act(async () => {
+      outcome = await result.current.addWeek('u1', { kind: 'deck', deckId: 'd9' });
+    });
+
+    expect(outcome).toBe('already_in_unit');
+    expect(mockFetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('addWeek returns "error" on a 409 position conflict, and still refetches', async () => {
+    const original = unitLibrary();
+    const refetched = unitLibrary();
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => original });
+    const { result } = renderHook(() => useLessonLibrary('g1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 409,
+      json: async () => ({ error: 'conflict' }),
+    });
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => refetched });
+
+    let outcome: string = '';
+    await act(async () => {
+      outcome = await result.current.addWeek('u1', { kind: 'review' });
+    });
+
+    expect(outcome).toBe('error');
+    expect(mockFetch).toHaveBeenCalledTimes(3);
+  });
+
   it('keeps loading false while the background refresh after a successful edit is in flight', async () => {
     const original = unitLibrary();
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => original });
