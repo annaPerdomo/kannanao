@@ -17,6 +17,7 @@ import { handoutRefFromWeek } from '@/types/handout';
 import type { LessonUnit, LessonUnitWeek } from '@/types/lessonUnit';
 
 import { AddWeekDialog, type AddWeekInput } from './AddWeekDialog';
+import { CopyUnitDialog } from './CopyUnitDialog';
 import { EditWeekDialog } from './EditWeekDialog';
 import { ShiftDialog } from './ShiftDialog';
 import { UnitCard } from './UnitCard';
@@ -25,9 +26,10 @@ import { WeekRow } from './WeekRow';
 interface LessonLibraryProps {
   groupId: string;
   onBuild: () => void;
+  onSwitchGroup?: (groupId: string) => void;
 }
 
-export function LessonLibrary({ groupId, onBuild }: LessonLibraryProps) {
+export function LessonLibrary({ groupId, onBuild, onSwitchGroup }: LessonLibraryProps) {
   const t = useTranslations('Materials.library');
   const {
     library,
@@ -40,6 +42,7 @@ export function LessonLibrary({ groupId, onBuild }: LessonLibraryProps) {
     renameUnit,
     shiftFrom,
     addWeek,
+    copyUnit,
   } = useLessonLibrary(groupId);
   const { groups } = useGroups();
   const [addingUnit, setAddingUnit] = useState<LessonUnit | null>(null);
@@ -49,6 +52,7 @@ export function LessonLibrary({ groupId, onBuild }: LessonLibraryProps) {
   const [editingWeek, setEditingWeek] = useState<LessonUnitWeek | null>(null);
   const [shiftingUnit, setShiftingUnit] = useState<LessonUnit | null>(null);
   const [shiftingWeek, setShiftingWeek] = useState<LessonUnitWeek | null>(null);
+  const [copyingUnit, setCopyingUnit] = useState<LessonUnit | null>(null);
   const [toast, setToast] = useState<{ message: string; severity: 'success' | 'error' } | null>(
     null,
   );
@@ -145,6 +149,7 @@ export function LessonLibrary({ groupId, onBuild }: LessonLibraryProps) {
             }}
             onRenameUnit={(title) => void handleRenameUnit(unit.id, title)}
             onAddWeek={() => setAddingUnit(unit)}
+            onCopyUnit={() => setCopyingUnit(unit)}
             defaultExpanded={unit.id === firstCurrentUnitId}
           />
         ))}
@@ -199,6 +204,17 @@ export function LessonLibrary({ groupId, onBuild }: LessonLibraryProps) {
         decks={availableDecks}
         saving={saving}
         onAdd={handleAddWeek}
+      />
+
+      <CopyUnitDialog
+        open={copyingUnit != null}
+        onClose={() => setCopyingUnit(null)}
+        unit={copyingUnit}
+        groups={groups}
+        sourceGroupId={groupId}
+        saving={saving}
+        onCopy={copyUnit}
+        onSwitchGroup={(id) => onSwitchGroup?.(id)}
       />
 
       <Snackbar open={toast != null} autoHideDuration={3000} onClose={() => setToast(null)}>

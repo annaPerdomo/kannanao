@@ -26,6 +26,47 @@ export function nextWeekDates(
   return { dueDate, availableOn };
 }
 
+/** Preserves each week's gap from the source's first due date, so a shifted holiday week survives the copy. */
+export function rebaseSchedule(
+  weeks: { dueDate: string | null; availableOn: string | null }[],
+  firstDueDate: string,
+): { dueDate: string; availableOn: string }[] {
+  const sourceFirstDue = weeks.find((w) => w.dueDate !== null)?.dueDate ?? null;
+
+  const result: { dueDate: string; availableOn: string }[] = [];
+  let previousDue: string | null = null;
+  for (const week of weeks) {
+    let dueDate: string;
+    if (week.dueDate !== null && sourceFirstDue !== null) {
+      const offsetDays = Math.round(
+        (Date.parse(`${week.dueDate}T00:00:00Z`) - Date.parse(`${sourceFirstDue}T00:00:00Z`)) /
+          (24 * 60 * 60 * 1000),
+      );
+      dueDate = shiftDate(firstDueDate, offsetDays) ?? firstDueDate;
+    } else if (previousDue !== null) {
+      dueDate = shiftDate(previousDue, WEEK_DAYS) ?? previousDue;
+    } else {
+      dueDate = firstDueDate;
+    }
+
+    let availableOn: string;
+    if (week.availableOn !== null && week.dueDate !== null) {
+      const gapDays = Math.round(
+        (Date.parse(`${week.dueDate}T00:00:00Z`) - Date.parse(`${week.availableOn}T00:00:00Z`)) /
+          (24 * 60 * 60 * 1000),
+      );
+      availableOn = shiftDate(dueDate, -gapDays) ?? dueDate;
+    } else {
+      availableOn = shiftDate(dueDate, -WEEK_DAYS) ?? dueDate;
+    }
+    if (availableOn > dueDate) availableOn = dueDate;
+
+    result.push({ dueDate, availableOn });
+    previousDue = dueDate;
+  }
+  return result;
+}
+
 export function weekStatus(
   availableOn: string | null,
   dueDate: string | null,

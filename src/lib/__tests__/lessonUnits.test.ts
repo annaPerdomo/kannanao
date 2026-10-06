@@ -6,6 +6,7 @@ import {
   buildLessonLibrary,
   currentWeekSummary,
   nextWeekDates,
+  rebaseSchedule,
   shiftDate,
   unitTitleFromGoal,
   weekStatus,
@@ -353,5 +354,84 @@ describe('currentWeekSummary', () => {
       makeWeek({ week: 3, status: 'current', learnerCount: 10, finishedCount: 0 }),
     ]);
     expect(currentWeekSummary(unit).lastFinished).toBeNull();
+  });
+});
+
+describe('rebaseSchedule', () => {
+  it('rebases a plain weekly schedule to a new first due date', () => {
+    const weeks = [
+      { dueDate: '2026-09-01', availableOn: '2026-08-25' },
+      { dueDate: '2026-09-08', availableOn: '2026-09-01' },
+      { dueDate: '2026-09-15', availableOn: '2026-09-08' },
+    ];
+    expect(rebaseSchedule(weeks, '2026-10-06')).toEqual([
+      { dueDate: '2026-10-06', availableOn: '2026-09-29' },
+      { dueDate: '2026-10-13', availableOn: '2026-10-06' },
+      { dueDate: '2026-10-20', availableOn: '2026-10-13' },
+    ]);
+  });
+
+  it('preserves a holiday gap larger than a week', () => {
+    const weeks = [
+      { dueDate: '2026-09-01', availableOn: '2026-08-25' },
+      { dueDate: '2026-09-15', availableOn: '2026-09-08' },
+    ];
+    expect(rebaseSchedule(weeks, '2026-10-06')).toEqual([
+      { dueDate: '2026-10-06', availableOn: '2026-09-29' },
+      { dueDate: '2026-10-20', availableOn: '2026-10-13' },
+    ]);
+  });
+
+  it('gives a leading null due date the new first due date, and later nulls the previous due date plus 7', () => {
+    const weeks = [
+      { dueDate: null, availableOn: null },
+      { dueDate: null, availableOn: null },
+    ];
+    expect(rebaseSchedule(weeks, '2026-10-06')).toEqual([
+      { dueDate: '2026-10-06', availableOn: '2026-09-29' },
+      { dueDate: '2026-10-13', availableOn: '2026-10-06' },
+    ]);
+  });
+
+  it('falls back to due minus 7 when availableOn is null', () => {
+    const weeks = [{ dueDate: '2026-09-01', availableOn: null }];
+    expect(rebaseSchedule(weeks, '2026-10-06')).toEqual([
+      { dueDate: '2026-10-06', availableOn: '2026-09-29' },
+    ]);
+  });
+
+  it('clamps availableOn to dueDate when the source gap is negative', () => {
+    const weeks = [{ dueDate: '2026-09-01', availableOn: '2026-09-03' }];
+    expect(rebaseSchedule(weeks, '2026-10-06')).toEqual([
+      { dueDate: '2026-10-06', availableOn: '2026-10-06' },
+    ]);
+  });
+
+  // Not a goal: dated offsets are never clamped, so a null-filled week
+  // (previous + 7) can land on the same date as the dated week after it.
+  it('documents a middle null colliding with the dated week after it', () => {
+    const weeks = [
+      { dueDate: '2026-09-01', availableOn: '2026-08-25' },
+      { dueDate: null, availableOn: null },
+      { dueDate: '2026-09-08', availableOn: '2026-09-01' },
+    ];
+    expect(rebaseSchedule(weeks, '2026-10-06')).toEqual([
+      { dueDate: '2026-10-06', availableOn: '2026-09-29' },
+      { dueDate: '2026-10-13', availableOn: '2026-10-06' },
+      { dueDate: '2026-10-13', availableOn: '2026-10-06' },
+    ]);
+  });
+
+  // Same collision, different cause: the leading null anchors to firstDueDate,
+  // and the dated week's zero offset (from that same source due date) lands there too.
+  it('documents a leading null colliding with the dated week after it', () => {
+    const weeks = [
+      { dueDate: null, availableOn: null },
+      { dueDate: '2026-09-08', availableOn: '2026-09-01' },
+    ];
+    expect(rebaseSchedule(weeks, '2026-10-06')).toEqual([
+      { dueDate: '2026-10-06', availableOn: '2026-09-29' },
+      { dueDate: '2026-10-06', availableOn: '2026-09-29' },
+    ]);
   });
 });

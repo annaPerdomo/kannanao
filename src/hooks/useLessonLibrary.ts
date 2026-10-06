@@ -13,6 +13,11 @@ const ASSIGNMENTS_CACHE_PREFIX = '/api/group/assignments';
 
 export type AddWeekResult = 'ok' | 'already_in_unit' | 'error';
 
+export type CopyUnitHookResult =
+  | { status: 'ok'; added: number; skipped: string[] }
+  | { status: 'nothing' }
+  | { status: 'error' };
+
 async function authHeaders(): Promise<Record<string, string>> {
   const { data } = await sb.auth.getSession();
   const token = data.session?.access_token;
@@ -47,6 +52,7 @@ export function useLessonLibrary(groupId: string | null): {
     planId: string,
     input: { kind: 'deck'; deckId: string } | { kind: 'review' },
   ) => Promise<AddWeekResult>;
+  copyUnit: (planId: string, groupId: string, firstDueDate: string) => Promise<CopyUnitHookResult>;
 } {
   const t = useTranslations('Materials.library');
   const url = groupId ? `${LESSON_LIBRARY_CACHE_PREFIX}?groupId=${groupId}` : null;
@@ -322,6 +328,39 @@ export function useLessonLibrary(groupId: string | null): {
     [url, backgroundRefresh],
   );
 
+  /** Not optimistic — the copy happens in another group — so this only invalidates both caches. */
+  const copyUnit = useCallback(
+    async (
+      planId: string,
+      targetGroupId: string,
+      firstDueDate: string,
+    ): Promise<CopyUnitHookResult> => {
+      setSaving(true);
+      try {
+        const res = await fetch(`/api/group/lessons/${planId}/copy`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+          body: JSON.stringify({ groupId: targetGroupId, firstDueDate }),
+        });
+        invalidateApiCache(LESSON_LIBRARY_CACHE_PREFIX);
+        invalidateApiCache(ASSIGNMENTS_CACHE_PREFIX);
+        if (res.status === 409) return { status: 'nothing' };
+        if (!res.ok) return { status: 'error' };
+        const data = await res.json();
+        return {
+          status: 'ok',
+          added: data.added as number,
+          skipped: ((data.skipped ?? []) as { name: string }[]).map((s) => s.name),
+        };
+      } catch {
+        return { status: 'error' };
+      } finally {
+        setSaving(false);
+      }
+    },
+    [],
+  );
+
   return {
     library,
     loading,
@@ -333,5 +372,6 @@ export function useLessonLibrary(groupId: string | null): {
     renameUnit,
     shiftFrom,
     addWeek,
+    copyUnit,
   };
 }

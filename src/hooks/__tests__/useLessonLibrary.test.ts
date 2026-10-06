@@ -431,4 +431,72 @@ describe('useLessonLibrary', () => {
 
     expect(result.current.library).toEqual(libraryB);
   });
+
+  it('copyUnit posts to the copy route, returns added/skipped names, and invalidates both caches', async () => {
+    const original = unitLibrary();
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => original });
+    const { result } = renderHook(() => useLessonLibrary('g1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ planId: 'p2', added: 1, skipped: [{ deckId: 'd2', name: 'Food' }] }),
+    });
+
+    let outcome: Awaited<ReturnType<typeof result.current.copyUnit>> = { status: 'error' };
+    await act(async () => {
+      outcome = await result.current.copyUnit('u1', 'g2', '2026-10-20');
+    });
+
+    expect(outcome).toEqual({ status: 'ok', added: 1, skipped: ['Food'] });
+    const postCall = mockFetch.mock.calls.find(([url]) => url === '/api/group/lessons/u1/copy');
+    expect(postCall?.[1]).toMatchObject({
+      method: 'POST',
+      body: JSON.stringify({ groupId: 'g2', firstDueDate: '2026-10-20' }),
+    });
+  });
+
+  it('copyUnit returns status "error" on a server failure', async () => {
+    const original = unitLibrary();
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => original });
+    const { result } = renderHook(() => useLessonLibrary('g1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 500, json: async () => ({}) });
+
+    let outcome: Awaited<ReturnType<typeof result.current.copyUnit>> = {
+      status: 'ok',
+      added: 1,
+      skipped: [],
+    };
+    await act(async () => {
+      outcome = await result.current.copyUnit('u1', 'g2', '2026-10-20');
+    });
+
+    expect(outcome).toEqual({ status: 'error' });
+  });
+
+  it('copyUnit returns status "nothing" on a 409 (every week already handed out)', async () => {
+    const original = unitLibrary();
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => original });
+    const { result } = renderHook(() => useLessonLibrary('g1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 409,
+      json: async () => ({ error: 'nothing_to_copy' }),
+    });
+
+    let outcome: Awaited<ReturnType<typeof result.current.copyUnit>> = {
+      status: 'ok',
+      added: 1,
+      skipped: [],
+    };
+    await act(async () => {
+      outcome = await result.current.copyUnit('u1', 'g2', '2026-10-20');
+    });
+
+    expect(outcome).toEqual({ status: 'nothing' });
+  });
 });

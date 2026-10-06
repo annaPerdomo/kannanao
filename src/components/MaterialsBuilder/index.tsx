@@ -186,7 +186,11 @@ export function MaterialsBuilder({ initialGroupId, initialTab }: MaterialsBuilde
       {tab === 'assigned' && !groupsError && groups.length > 0 && (
         <Stack spacing={2}>
           <GroupSelect groups={groups} value={activeGroupId} onChange={setGroupId} />
-          <LessonLibrary groupId={activeGroupId} onBuild={() => setTab('lessonSet')} />
+          <LessonLibrary
+            groupId={activeGroupId}
+            onBuild={() => setTab('lessonSet')}
+            onSwitchGroup={setGroupId}
+          />
         </Stack>
       )}
 

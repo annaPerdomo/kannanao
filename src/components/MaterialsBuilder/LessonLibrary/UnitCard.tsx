@@ -31,6 +31,7 @@ interface UnitCardProps {
   onShiftWeek: (week: LessonUnitWeek) => void;
   onRenameUnit: (title: string | null) => void;
   onAddWeek: () => void;
+  onCopyUnit: () => void;
   defaultExpanded?: boolean;
 }
 
@@ -41,6 +42,7 @@ export function UnitCard({
   onShiftWeek,
   onRenameUnit,
   onAddWeek,
+  onCopyUnit,
   defaultExpanded = false,
 }: UnitCardProps) {
   const t = useTranslations('Materials.library');
@@ -148,6 +150,14 @@ export function UnitCard({
             }}
           >
             {t('rename')}
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setMenuAnchor(null);
+              onCopyUnit();
+            }}
+          >
+            {t('copyUnit')}
           </MenuItem>
         </Menu>
         <IconButton
