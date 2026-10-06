@@ -99,3 +99,43 @@ SELECT
   ) - 1
 FROM deck_due
 ON CONFLICT DO NOTHING;
+
+-- One statement per table, not per-row updates matched on current dates: a
+-- shifted row's new value can collide with another row's still-unshifted
+-- value, double-shifting it. Nulls stay null (date + interval on null is null).
+CREATE OR REPLACE FUNCTION shift_lesson_plan(
+  p_plan_id uuid,
+  p_organizer_id uuid,
+  p_group_id uuid,
+  p_from_position int,
+  p_days int
+) RETURNS void
+LANGUAGE sql
+SECURITY INVOKER
+AS $$
+  UPDATE assignments
+  SET due_date = due_date + p_days,
+      available_on = available_on + p_days
+  WHERE organizer_id = p_organizer_id
+    AND group_id = p_group_id
+    AND deck_id IN (
+      SELECT deck_id FROM lesson_plan_decks
+      WHERE plan_id = p_plan_id AND position >= p_from_position
+    );
+
+  UPDATE planned_assignments
+  SET due_date = due_date + p_days,
+      available_on = available_on + p_days
+  WHERE organizer_id = p_organizer_id
+    AND group_id = p_group_id
+    AND deck_id IN (
+      SELECT deck_id FROM lesson_plan_decks
+      WHERE plan_id = p_plan_id AND position >= p_from_position
+    );
+$$;
+
+-- Only the service role calls this; no client should be able to move a group's schedule directly.
+REVOKE EXECUTE ON FUNCTION shift_lesson_plan(uuid, uuid, uuid, int, int) FROM public;
+REVOKE EXECUTE ON FUNCTION shift_lesson_plan(uuid, uuid, uuid, int, int) FROM anon;
+REVOKE EXECUTE ON FUNCTION shift_lesson_plan(uuid, uuid, uuid, int, int) FROM authenticated;
+GRANT EXECUTE ON FUNCTION shift_lesson_plan(uuid, uuid, uuid, int, int) TO service_role;

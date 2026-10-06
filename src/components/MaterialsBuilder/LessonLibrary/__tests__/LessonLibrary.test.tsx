@@ -6,9 +6,17 @@ import type { LessonLibrary as LessonLibraryData, LessonUnitWeek } from '@/types
 
 const mockUseLessonLibrary = vi.fn();
 const mockRefetch = vi.fn();
+const mockEditWeek = vi.fn();
+const mockRemoveWeek = vi.fn();
+const mockRenameUnit = vi.fn();
+const mockShiftFrom = vi.fn();
 
 vi.mock('@/hooks/useLessonLibrary', () => ({
   useLessonLibrary: (...args: unknown[]) => mockUseLessonLibrary(...args),
+}));
+
+vi.mock('@/hooks/useGroups', () => ({
+  useGroups: () => ({ groups: [{ id: 'g1', name: 'Tuesday Club' }] }),
 }));
 
 const mockHandoutDetailDialog = vi.fn();
@@ -45,7 +53,12 @@ function setLibrary(data: LessonLibraryData | null, overrides: Record<string, un
     library: data,
     loading: false,
     error: null,
+    saving: false,
     refetch: mockRefetch,
+    editWeek: mockEditWeek,
+    removeWeek: mockRemoveWeek,
+    renameUnit: mockRenameUnit,
+    shiftFrom: mockShiftFrom,
     ...overrides,
   });
 }
@@ -55,6 +68,10 @@ describe('LessonLibrary', () => {
     mockUseLessonLibrary.mockReset();
     mockRefetch.mockReset();
     mockHandoutDetailDialog.mockReset();
+    mockEditWeek.mockReset().mockResolvedValue(true);
+    mockRemoveWeek.mockReset().mockResolvedValue(true);
+    mockRenameUnit.mockReset().mockResolvedValue(true);
+    mockShiftFrom.mockReset().mockResolvedValue(true);
   });
 
   it('shows the loading state', () => {
@@ -157,5 +174,124 @@ describe('LessonLibrary', () => {
     expect(screen.getByText('Other handouts')).toBeInTheDocument();
     expect(screen.getByText(/Loose deck/)).toBeInTheDocument();
     expect(screen.getByText('1/2 finished')).toBeInTheDocument();
+  });
+
+  function oneUnitLibrary(): LessonLibraryData {
+    return {
+      units: [
+        {
+          id: 'u1',
+          title: 'Unit 1',
+          level: null,
+          createdAt: '2026-09-01T00:00:00Z',
+          weeks: [week({ deckId: 'd1', deckName: 'Food', week: 1, status: 'current' })],
+        },
+      ],
+      loose: [],
+    };
+  }
+
+  it('has an edit icon with an aria-label and saves the patch from the edit dialog', () => {
+    setLibrary(oneUnitLibrary());
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    const editButton = screen.getByRole('button', { name: 'Edit week 1' });
+    fireEvent.click(editButton);
+
+    const titleInput = screen.getByLabelText('Title');
+    fireEvent.change(titleInput, { target: { value: 'New title' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(mockEditWeek).toHaveBeenCalledWith(
+      'd1',
+      expect.objectContaining({ title: 'New title' }),
+    );
+  });
+
+  it('removes a week through the confirm view', () => {
+    setLibrary(oneUnitLibrary());
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit week 1' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove this week' }));
+    expect(screen.getByText(/Remove week 1 from this unit/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+    expect(mockRemoveWeek).toHaveBeenCalledWith('d1');
+  });
+
+  it('shows the shift preview text from the overflow menu', () => {
+    setLibrary(oneUnitLibrary());
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'More for week 1' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Move this week and later' }));
+
+    expect(screen.getByText(/Week 1 will be due/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(mockShiftFrom).toHaveBeenCalledWith('u1', 'd1', 7);
+  });
+
+  it('renames the unit on Enter from the inline field', () => {
+    setLibrary(oneUnitLibrary());
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Options for Unit 1' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Rename' }));
+
+    const input = screen.getByDisplayValue('Unit 1');
+    fireEvent.change(input, { target: { value: 'New unit name' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(mockRenameUnit).toHaveBeenCalledWith('u1', 'New unit name');
+  });
+
+  it('shows an error toast when renameUnit fails', async () => {
+    mockRenameUnit.mockResolvedValueOnce(false);
+    setLibrary(oneUnitLibrary());
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Options for Unit 1' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Rename' }));
+    const input = screen.getByDisplayValue('Unit 1');
+    fireEvent.change(input, { target: { value: 'New unit name' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(await screen.findByText("Couldn't save. Try again.")).toBeInTheDocument();
+  });
+
+  it('gives loose handouts an edit button but no move-week overflow', () => {
+    setLibrary({
+      units: [],
+      loose: [week({ deckId: 'd3', deckName: 'Loose deck', week: null })],
+    });
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: 'Edit week 1' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /More for week/ })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit week 1' }));
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'New title' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(mockEditWeek).toHaveBeenCalledWith(
+      'd3',
+      expect.objectContaining({ title: 'New title' }),
+    );
+  });
+
+  it('disables Save and shows a helper text when the open date is after the due date', () => {
+    setLibrary(oneUnitLibrary());
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit week 1' }));
+    fireEvent.change(screen.getByLabelText('Opens'), { target: { value: '2026-10-20' } });
+    fireEvent.change(screen.getByLabelText('Due'), { target: { value: '2026-10-13' } });
+
+    expect(
+      screen.getByText('The open date must be on or before the due date.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+    expect(mockEditWeek).not.toHaveBeenCalled();
   });
 });

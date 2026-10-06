@@ -1,9 +1,15 @@
 'use client';
+import EditIcon from '@mui/icons-material/Edit';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useLocale, useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 import { formatDate } from '@/components/Group/dueDate';
 import type { LessonUnitWeek, LessonWeekStatus } from '@/types/lessonUnit';
@@ -11,6 +17,8 @@ import type { LessonUnitWeek, LessonWeekStatus } from '@/types/lessonUnit';
 interface WeekRowProps {
   week: LessonUnitWeek;
   onOpen: () => void;
+  onEdit?: () => void;
+  onShift?: () => void;
 }
 
 const STATUS_KEY: Record<LessonWeekStatus, string> = {
@@ -19,11 +27,12 @@ const STATUS_KEY: Record<LessonWeekStatus, string> = {
   past: 'statusPast',
 };
 
-export function WeekRow({ week, onOpen }: WeekRowProps) {
+export function WeekRow({ week, onOpen, onEdit, onShift }: WeekRowProps) {
   const t = useTranslations('Materials.library');
   const locale = useLocale();
   const theme = useTheme();
   const { brand, success, warning } = theme.palette;
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
   const dateParts = [
     week.availableOn ? t('opens', { date: formatDate(week.availableOn, locale) }) : null,
@@ -87,6 +96,49 @@ export function WeekRow({ week, onOpen }: WeekRowProps) {
           ? t('waitingForLearners')
           : t('finishedCount', { finished: week.finishedCount, learners: week.learnerCount })}
       </Typography>
+
+      {onEdit && (
+        <IconButton
+          aria-label={t('editWeek', { n: week.week ?? 1 })}
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
+        >
+          <EditIcon sx={{ fontSize: 16 }} />
+        </IconButton>
+      )}
+
+      {onShift && (
+        <>
+          <IconButton
+            aria-label={t('weekMenu', { n: week.week ?? 1 })}
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              setMenuAnchor(e.currentTarget);
+            }}
+          >
+            <MoreVertIcon sx={{ fontSize: 16 }} />
+          </IconButton>
+          <Menu
+            anchorEl={menuAnchor}
+            open={Boolean(menuAnchor)}
+            onClose={() => setMenuAnchor(null)}
+          >
+            <MenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuAnchor(null);
+                onShift();
+              }}
+            >
+              {t('moveLater')}
+            </MenuItem>
+          </Menu>
+        </>
+      )}
     </Box>
   );
 }

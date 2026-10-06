@@ -5,11 +5,34 @@ import type { LessonUnit, LessonUnitWeek } from '@/types/lessonUnit';
 import {
   buildLessonLibrary,
   currentWeekSummary,
+  shiftDate,
   unitTitleFromGoal,
   weekStatus,
 } from '../lessonUnits';
 
 const TODAY = '2026-10-06';
+
+describe('shiftDate', () => {
+  it('shifts forward within a month', () => {
+    expect(shiftDate('2026-10-06', 7)).toBe('2026-10-13');
+  });
+
+  it('shifts backward across a month boundary', () => {
+    expect(shiftDate('2026-10-03', -7)).toBe('2026-09-26');
+  });
+
+  it('shifts across a year boundary', () => {
+    expect(shiftDate('2026-12-29', 7)).toBe('2027-01-05');
+  });
+
+  it('passes null through unchanged', () => {
+    expect(shiftDate(null, 7)).toBeNull();
+  });
+
+  it('returns null for an invalid date', () => {
+    expect(shiftDate('not-a-date', 7)).toBeNull();
+  });
+});
 
 describe('weekStatus', () => {
   it('is upcoming when availableOn is in the future', () => {

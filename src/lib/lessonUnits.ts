@@ -5,6 +5,14 @@ import type {
   LessonWeekStatus,
 } from '@/types/lessonUnit';
 
+/** UTC math only — these are plain 'YYYY-MM-DD' strings, so local time would drift near midnight. */
+export function shiftDate(date: string | null, days: number): string | null {
+  if (date === null) return null;
+  const start = Date.parse(`${date}T00:00:00Z`);
+  if (Number.isNaN(start)) return null;
+  return new Date(start + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
 export function weekStatus(
   availableOn: string | null,
   dueDate: string | null,
