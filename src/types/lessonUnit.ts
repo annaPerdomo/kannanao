@@ -1,5 +1,14 @@
 export type LessonWeekStatus = 'upcoming' | 'current' | 'past';
 
+export interface HandoutPatch {
+  title?: string | null;
+  note?: string | null;
+  dueDate?: string | null;
+  availableOn?: string | null;
+  requiredAccuracy?: number | null;
+  requiredMode?: string | null;
+}
+
 export interface LessonUnitWeek {
   deckId: string;
   deckName: string;

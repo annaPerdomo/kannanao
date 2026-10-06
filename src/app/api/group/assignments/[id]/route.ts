@@ -1,10 +1,10 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { isGoalMode } from '@/lib/assignmentMastery';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../../_lib/requireOrganizerAccount';
+import { handoutPatchToDbUpdates, parseHandoutPatch } from '../../_lib/handoutWrites';
 import { getServiceSupabase } from '../../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 20 };
@@ -37,55 +37,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Assignment not found.' }, { status: 404 });
   }
 
-  // Coerce non-string values to null instead of calling .trim() on them —
-  // a numeric/object payload must not be able to 500 the route.
-  const updates: Record<string, unknown> = {};
-  if ('title' in body) {
-    updates.title = typeof body.title === 'string' ? body.title.trim().slice(0, 200) || null : null;
+  const parsed = parseHandoutPatch(body);
+  if ('error' in parsed) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
-  if ('note' in body) {
-    updates.note = typeof body.note === 'string' ? body.note.trim().slice(0, 500) || null : null;
+  if (
+    'requiredMode' in parsed.patch &&
+    parsed.patch.requiredMode !== null &&
+    existing.kana_set != null
+  ) {
+    return NextResponse.json(
+      { error: 'requiredMode does not apply to a kana goal.' },
+      { status: 400 },
+    );
   }
-  if ('availableOn' in body) {
-    const v = body.availableOn;
-    if (v !== null && v !== '' && !/^\d{4}-\d{2}-\d{2}$/.test(String(v))) {
-      return NextResponse.json({ error: 'Invalid availableOn.' }, { status: 400 });
-    }
-    updates.available_on = v || null;
-  }
-  if ('dueDate' in body) {
-    const v = body.dueDate;
-    if (v !== null && v !== undefined && (typeof v !== 'string' || Number.isNaN(Date.parse(v)))) {
-      return NextResponse.json({ error: 'Invalid dueDate.' }, { status: 400 });
-    }
-    updates.due_date = v || null;
-  }
-  if ('requiredAccuracy' in body) {
-    const v = body.requiredAccuracy;
-    if (v !== null && (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > 100)) {
-      return NextResponse.json(
-        { error: 'requiredAccuracy must be an integer between 0 and 100.' },
-        { status: 400 },
-      );
-    }
-    updates.required_accuracy = v;
-  }
-  if ('requiredMode' in body) {
-    const v = body.requiredMode;
-    if (v !== null && !isGoalMode(v)) {
-      return NextResponse.json(
-        { error: 'requiredMode is not a valid goal mode.' },
-        { status: 400 },
-      );
-    }
-    if (v !== null && existing.kana_set != null) {
-      return NextResponse.json(
-        { error: 'requiredMode does not apply to a kana goal.' },
-        { status: 400 },
-      );
-    }
-    updates.required_mode = v;
-  }
+
+  const updates: Record<string, unknown> = handoutPatchToDbUpdates(parsed.patch);
   if ('completedAt' in body) {
     const v = body.completedAt;
     if (v !== null && (typeof v !== 'string' || Number.isNaN(Date.parse(v)))) {
