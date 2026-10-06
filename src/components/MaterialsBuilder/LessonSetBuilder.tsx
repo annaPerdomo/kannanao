@@ -9,7 +9,9 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import type { Group } from '@/hooks/useGroups';
+import { LESSON_LIBRARY_CACHE_PREFIX } from '@/hooks/useLessonLibrary';
 import { useLessonPlan } from '@/hooks/useLessonPlan';
+import { invalidateApiCache } from '@/lib/apiCache';
 import type { GoalMode } from '@/lib/assignmentMastery';
 import { setCharacters } from '@/lib/kanaCurriculum';
 import { prefillReadingLevelAnswer } from '@/lib/kanaGaps';
@@ -33,6 +35,7 @@ interface LessonSetBuilderProps {
   groups: Group[];
   groupId: string;
   onGroupChange: (groupId: string) => void;
+  onShowAssigned: () => void;
 }
 
 const EMPTY_FORM: LessonSetForm = {
@@ -53,8 +56,14 @@ const EMPTY_FORM: LessonSetForm = {
  * assign", so a plan the organizer doesn't like costs nothing. Applying covers
  * the whole group: current members now, later joiners via the saved schedule.
  */
-export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBuilderProps) {
+export function LessonSetBuilder({
+  groups,
+  groupId,
+  onGroupChange,
+  onShowAssigned,
+}: LessonSetBuilderProps) {
   const t = useTranslations('Group.lessonBuilder');
+  const tLibrary = useTranslations('Materials.library');
   const router = useRouter();
   const {
     plan,
@@ -170,6 +179,15 @@ export function LessonSetBuilder({ groups, groupId, onGroupChange }: LessonSetBu
           <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
             <Button variant="contained" onClick={() => router.push(`/group/${groupId}`)}>
               {t('backToGroupButton')}
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                invalidateApiCache(LESSON_LIBRARY_CACHE_PREFIX);
+                onShowAssigned();
+              }}
+            >
+              {tLibrary('seeInAssigned')}
             </Button>
             {plan && (
               <PrintButtons

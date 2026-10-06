@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildLessonLibrary, unitTitleFromGoal, weekStatus } from '../lessonUnits';
+import type { LessonUnit, LessonUnitWeek } from '@/types/lessonUnit';
+
+import {
+  buildLessonLibrary,
+  currentWeekSummary,
+  unitTitleFromGoal,
+  weekStatus,
+} from '../lessonUnits';
 
 const TODAY = '2026-10-06';
 
@@ -223,5 +230,84 @@ describe('unitTitleFromGoal', () => {
 
   it('returns null for a blank goal', () => {
     expect(unitTitleFromGoal('   \n   ')).toBeNull();
+  });
+});
+
+function makeWeek(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
+  return {
+    deckId: 'd1',
+    deckName: 'Food',
+    deckEmoji: null,
+    week: 1,
+    title: null,
+    note: null,
+    dueDate: null,
+    availableOn: null,
+    requiredAccuracy: null,
+    requiredMode: null,
+    learnerCount: 0,
+    finishedCount: 0,
+    status: 'current',
+    ...overrides,
+  };
+}
+
+function makeUnit(weeks: LessonUnitWeek[]): LessonUnit {
+  return { id: 'u1', title: 'Unit 1', level: null, createdAt: '2026-09-01T00:00:00Z', weeks };
+}
+
+describe('currentWeekSummary', () => {
+  it('picks the current week mid-unit and the week immediately before it', () => {
+    const unit = makeUnit([
+      makeWeek({ week: 1, status: 'past', learnerCount: 10, finishedCount: 9 }),
+      makeWeek({ week: 2, status: 'current', learnerCount: 10, finishedCount: 3 }),
+      makeWeek({ week: 3, status: 'upcoming' }),
+    ]);
+    expect(currentWeekSummary(unit)).toEqual({
+      current: 2,
+      total: 3,
+      lastFinished: { finished: 9, learners: 10 },
+    });
+  });
+
+  it('falls back to the first upcoming week when nothing is current', () => {
+    const unit = makeUnit([
+      makeWeek({ week: 1, status: 'upcoming' }),
+      makeWeek({ week: 2, status: 'upcoming' }),
+    ]);
+    expect(currentWeekSummary(unit).current).toBe(1);
+  });
+
+  it('reports current and lastFinished both null when every week is past', () => {
+    const unit = makeUnit([
+      makeWeek({ week: 1, status: 'past', learnerCount: 5, finishedCount: 5 }),
+      makeWeek({ week: 2, status: 'past', learnerCount: 5, finishedCount: 4 }),
+    ]);
+    const summary = currentWeekSummary(unit);
+    expect(summary.current).toBeNull();
+    expect(summary.lastFinished).toBeNull();
+  });
+
+  it('reports no lastFinished when the previous week has no learners yet', () => {
+    const unit = makeUnit([
+      makeWeek({ week: 1, status: 'past', learnerCount: 0, finishedCount: 0 }),
+      makeWeek({ week: 2, status: 'current', learnerCount: 0, finishedCount: 0 }),
+    ]);
+    expect(currentWeekSummary(unit).lastFinished).toBeNull();
+  });
+
+  it('reports no lastFinished when there is no week immediately before the current one', () => {
+    const unit = makeUnit([
+      makeWeek({ week: 1, status: 'current', learnerCount: 10, finishedCount: 5 }),
+    ]);
+    expect(currentWeekSummary(unit).lastFinished).toBeNull();
+  });
+
+  it('ignores an older finished week that is not directly before the current one', () => {
+    const unit = makeUnit([
+      makeWeek({ week: 1, status: 'past', learnerCount: 10, finishedCount: 10 }),
+      makeWeek({ week: 3, status: 'current', learnerCount: 10, finishedCount: 0 }),
+    ]);
+    expect(currentWeekSummary(unit).lastFinished).toBeNull();
   });
 });

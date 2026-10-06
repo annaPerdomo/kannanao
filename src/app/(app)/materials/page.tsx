@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { type BuilderTab, MaterialsBuilder } from '@/components/MaterialsBuilder';
 
-const TABS: BuilderTab[] = ['lessonSet', 'kana', 'deck', 'quizlet'];
+const TABS: BuilderTab[] = ['assigned', 'lessonSet', 'kana', 'deck', 'quizlet'];
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('Materials.meta');

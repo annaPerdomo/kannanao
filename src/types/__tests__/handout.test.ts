@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Assignment } from '@/hooks/useAssignments';
-import { handoutRefFromAssignment } from '@/types/handout';
+import { handoutRefFromAssignment, handoutRefFromWeek } from '@/types/handout';
+import type { LessonUnitWeek } from '@/types/lessonUnit';
 
 function makeAssignment(overrides: Partial<Assignment> = {}): Assignment {
   return {
@@ -64,6 +65,38 @@ describe('handoutRefFromAssignment', () => {
       dueDate: '2026-10-01',
       requiredAccuracy: null,
       requiredMode: null,
+    });
+  });
+});
+
+describe('handoutRefFromWeek', () => {
+  it('maps a lesson unit week', () => {
+    const week: LessonUnitWeek = {
+      deckId: 'deck1',
+      deckName: 'Animals',
+      deckEmoji: '🐶',
+      week: 2,
+      title: null,
+      note: 'Review before the quiz',
+      dueDate: '2026-10-09',
+      availableOn: '2026-10-02',
+      requiredAccuracy: 80,
+      requiredMode: 'study',
+      learnerCount: 5,
+      finishedCount: 3,
+      status: 'current',
+    };
+
+    expect(handoutRefFromWeek(week)).toEqual({
+      deckId: 'deck1',
+      kanaSet: null,
+      name: 'Animals',
+      emoji: '🐶',
+      note: 'Review before the quiz',
+      availableOn: '2026-10-02',
+      dueDate: '2026-10-09',
+      requiredAccuracy: 80,
+      requiredMode: 'study',
     });
   });
 });

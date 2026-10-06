@@ -175,6 +175,26 @@ export function buildLessonLibrary(input: {
   return { units, loose };
 }
 
+export function currentWeekSummary(unit: LessonUnit): {
+  current: number | null;
+  total: number;
+  lastFinished: { finished: number; learners: number } | null;
+} {
+  const total = unit.weeks.length;
+  const currentWeek =
+    unit.weeks.find((w) => w.status === 'current') ??
+    unit.weeks.find((w) => w.status === 'upcoming');
+  const current = currentWeek?.week ?? null;
+
+  const previousWeek = current != null ? unit.weeks.find((w) => w.week === current - 1) : null;
+  const lastFinished =
+    previousWeek && previousWeek.learnerCount > 0
+      ? { finished: previousWeek.finishedCount, learners: previousWeek.learnerCount }
+      : null;
+
+  return { current, total, lastFinished };
+}
+
 const WHITESPACE_RE = /\s+/g;
 const GOAL_TITLE_MAX = 60;
 

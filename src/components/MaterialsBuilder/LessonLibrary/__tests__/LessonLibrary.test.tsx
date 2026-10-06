@@ -1,0 +1,161 @@
+import { fireEvent, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { renderWithProviders } from '@/test/renderWithProviders';
+import type { LessonLibrary as LessonLibraryData, LessonUnitWeek } from '@/types/lessonUnit';
+
+const mockUseLessonLibrary = vi.fn();
+const mockRefetch = vi.fn();
+
+vi.mock('@/hooks/useLessonLibrary', () => ({
+  useLessonLibrary: (...args: unknown[]) => mockUseLessonLibrary(...args),
+}));
+
+const mockHandoutDetailDialog = vi.fn();
+vi.mock('@/components/Group/HandoutDetailDialog', () => ({
+  HandoutDetailDialog: (props: unknown) => {
+    mockHandoutDetailDialog(props);
+    return null;
+  },
+}));
+
+import { LessonLibrary } from '@/components/MaterialsBuilder/LessonLibrary';
+
+function week(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
+  return {
+    deckId: 'd1',
+    deckName: 'Food',
+    deckEmoji: '🍜',
+    week: 1,
+    title: null,
+    note: null,
+    dueDate: '2026-10-09',
+    availableOn: '2026-10-02',
+    requiredAccuracy: null,
+    requiredMode: null,
+    learnerCount: 0,
+    finishedCount: 0,
+    status: 'current',
+    ...overrides,
+  };
+}
+
+function setLibrary(data: LessonLibraryData | null, overrides: Record<string, unknown> = {}) {
+  mockUseLessonLibrary.mockReturnValue({
+    library: data,
+    loading: false,
+    error: null,
+    refetch: mockRefetch,
+    ...overrides,
+  });
+}
+
+describe('LessonLibrary', () => {
+  beforeEach(() => {
+    mockUseLessonLibrary.mockReset();
+    mockRefetch.mockReset();
+    mockHandoutDetailDialog.mockReset();
+  });
+
+  it('shows the loading state', () => {
+    setLibrary(null, { loading: true });
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('shows the error state and calls refetch on retry', () => {
+    setLibrary(null, { error: "Couldn't load your lessons. Try again in a moment." });
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    expect(screen.getByText(/couldn't load your lessons/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+    expect(mockRefetch).toHaveBeenCalled();
+  });
+
+  it('shows the empty state and calls onBuild', () => {
+    setLibrary({ units: [], loose: [] });
+    const onBuild = vi.fn();
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={onBuild} />);
+    expect(screen.getByText('Nothing assigned to this group yet')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /build a lesson set/i }));
+    expect(onBuild).toHaveBeenCalled();
+  });
+
+  it('expands only the unit containing the current week, and opens the handout dialog on Enter', () => {
+    setLibrary({
+      units: [
+        {
+          id: 'u-new',
+          title: 'Unit 2',
+          level: null,
+          createdAt: '2026-09-15T00:00:00Z',
+          weeks: [week({ deckId: 'd2', deckName: 'Animals', week: 1, status: 'current' })],
+        },
+        {
+          id: 'u-old',
+          title: 'Unit 1',
+          level: null,
+          createdAt: '2026-01-01T00:00:00Z',
+          weeks: [week({ deckId: 'd1', deckName: 'Food', week: 1, status: 'past' })],
+        },
+      ],
+      loose: [],
+    });
+
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: 'Hide weeks' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: 'Show weeks' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+
+    const animalsRow = screen.getByText(/Animals/).closest('[role="button"]');
+    expect(animalsRow).toBeTruthy();
+
+    fireEvent.keyDown(animalsRow as Element, { key: 'Enter' });
+    expect(mockHandoutDetailDialog).toHaveBeenCalledWith(
+      expect.objectContaining({ open: true, handout: expect.objectContaining({ deckId: 'd2' }) }),
+    );
+  });
+
+  it('shows "Waiting for learners to join" when a week has no learners', () => {
+    setLibrary({
+      units: [
+        {
+          id: 'u1',
+          title: 'Unit 1',
+          level: null,
+          createdAt: '2026-09-01T00:00:00Z',
+          weeks: [week({ learnerCount: 0, status: 'current' })],
+        },
+      ],
+      loose: [],
+    });
+
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    expect(screen.getByText('Waiting for learners to join')).toBeInTheDocument();
+  });
+
+  it('renders loose handouts under "Other handouts"', () => {
+    setLibrary({
+      units: [],
+      loose: [
+        week({
+          deckId: 'd3',
+          deckName: 'Loose deck',
+          week: null,
+          learnerCount: 2,
+          finishedCount: 1,
+        }),
+      ],
+    });
+
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    expect(screen.getByText('Other handouts')).toBeInTheDocument();
+    expect(screen.getByText(/Loose deck/)).toBeInTheDocument();
+    expect(screen.getByText('1/2 finished')).toBeInTheDocument();
+  });
+});

@@ -71,7 +71,14 @@ const PLAN = {
 };
 
 function setup() {
-  renderWithProviders(<LessonSetBuilder groups={[GROUP]} groupId="g1" onGroupChange={vi.fn()} />);
+  renderWithProviders(
+    <LessonSetBuilder
+      groups={[GROUP]}
+      groupId="g1"
+      onGroupChange={vi.fn()}
+      onShowAssigned={vi.fn()}
+    />,
+  );
 }
 
 function typeGoal() {
