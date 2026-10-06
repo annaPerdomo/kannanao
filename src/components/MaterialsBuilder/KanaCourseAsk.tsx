@@ -17,6 +17,7 @@ import type { Group } from '@/hooks/useGroups';
 import type { KanaCourseScript } from '@/lib/kanaCourse';
 import { setCharacters } from '@/lib/kanaCurriculum';
 
+import { GroupSelect } from './GroupSelect';
 import {
   KANA_COURSE_WEEK_CHOICES,
   KANA_SCRIPT_CHOICES,
@@ -100,21 +101,7 @@ export function KanaCourseAsk({
     <Stack spacing={3}>
       <StepSection number={1} title={t('step1Title')} subtitle={t('step1Subtitle')}>
         <Stack spacing={1.5}>
-          {groups.length > 1 && (
-            <TextField
-              select
-              label={t('groupLabel')}
-              value={groupId}
-              onChange={(e) => onGroupChange(e.target.value)}
-              sx={{ maxWidth: 320 }}
-            >
-              {groups.map((g) => (
-                <MenuItem key={g.id} value={g.id}>
-                  {g.emoji ? `${g.emoji} ${g.name}` : g.name}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
+          <GroupSelect groups={groups} value={groupId} onChange={onGroupChange} />
 
           <Stack direction="row" flexWrap="wrap" gap={1.5}>
             <SourceCard

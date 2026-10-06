@@ -28,6 +28,7 @@ import {
   WEEK_CHOICES,
 } from './constants';
 import { DocumentUpload } from './DocumentUpload';
+import { GroupSelect } from './GroupSelect';
 import { ReadingQuestion } from './ReadingQuestion';
 import { StepSection } from './StepSection';
 
@@ -138,20 +139,7 @@ export function AskStep({
             gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' },
           }}
         >
-          {groups.length > 1 && (
-            <TextField
-              select
-              label={tm('groupLabel')}
-              value={groupId}
-              onChange={(e) => onGroupChange(e.target.value)}
-            >
-              {groups.map((g) => (
-                <MenuItem key={g.id} value={g.id}>
-                  {g.emoji ? `${g.emoji} ${g.name}` : g.name}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
+          <GroupSelect groups={groups} value={groupId} onChange={onGroupChange} />
 
           <TextField
             select

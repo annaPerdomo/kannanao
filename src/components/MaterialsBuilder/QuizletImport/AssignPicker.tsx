@@ -3,14 +3,14 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
-import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
 import { useGroupMembers } from '@/hooks/useGroup';
 import type { Group } from '@/hooks/useGroups';
+
+import { GroupSelect } from '../GroupSelect';
 
 interface AssignPickerProps {
   groups: Group[];
@@ -45,26 +45,16 @@ export function AssignPicker({
           {t('assignSubtitle')}
         </Typography>
       </Box>
-      {groups.length > 1 && (
-        <TextField
-          select
-          size="small"
-          label={t('groupLabel')}
-          value={groupId}
-          disabled={disabled}
-          onChange={(e) => {
-            onGroupChange(e.target.value);
-            onMemberIdsChange([]);
-          }}
-          sx={{ maxWidth: 320 }}
-        >
-          {groups.map((g) => (
-            <MenuItem key={g.id} value={g.id}>
-              {g.emoji ? `${g.emoji} ${g.name}` : g.name}
-            </MenuItem>
-          ))}
-        </TextField>
-      )}
+      <GroupSelect
+        groups={groups}
+        value={groupId}
+        disabled={disabled}
+        size="small"
+        onChange={(id) => {
+          onGroupChange(id);
+          onMemberIdsChange([]);
+        }}
+      />
       {loading && <CircularProgress size={24} aria-label={t('loadingMembers')} />}
       {error && <Alert severity="error">{t('membersFailed')}</Alert>}
       {!loading && !error && members.length === 0 && (
