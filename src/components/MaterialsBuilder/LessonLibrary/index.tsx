@@ -141,6 +141,7 @@ export function LessonLibrary({ groupId, onBuild, onSwitchGroup }: LessonLibrary
           <UnitCard
             key={unit.id}
             unit={unit}
+            groupName={groupName}
             onOpenWeek={setActiveWeek}
             onEditWeek={setEditingWeek}
             onShiftWeek={(week) => {
