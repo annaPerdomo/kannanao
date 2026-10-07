@@ -33,6 +33,38 @@ vi.mock('@/components/Group/HandoutDetailDialog', () => ({
   },
 }));
 
+vi.mock('@/hooks/useHandoutWords', () => ({
+  useHandoutWords: () => ({
+    data: {
+      deck: { id: 'd1', name: 'Food', emoji: null },
+      learnerCount: 0,
+      words: [
+        {
+          card: {
+            id: 'c1',
+            word: '猫',
+            reading: 'ねこ',
+            meaning: 'cat',
+            image_query: '',
+            example_jp: '',
+            example_en: '',
+            mainViewMode: 'hiragana',
+            cardType: 'word',
+            deckId: 'd1',
+            position: 0,
+          },
+          seenCount: 0,
+          strongCount: 0,
+          trickyCount: 0,
+        },
+      ],
+      learner: null,
+    },
+    loading: false,
+    error: null,
+  }),
+}));
+
 import { LessonLibrary } from '@/components/MaterialsBuilder/LessonLibrary';
 
 function week(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
@@ -49,6 +81,7 @@ function week(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
     requiredMode: null,
     learnerCount: 0,
     finishedCount: 0,
+    wordCount: 0,
     status: 'current',
     ...overrides,
   };
@@ -147,6 +180,27 @@ describe('LessonLibrary', () => {
     );
   });
 
+  it('shows the word count on the row, hiding it when zero', () => {
+    setLibrary({
+      units: [
+        {
+          id: 'u1',
+          title: 'Unit 1',
+          level: null,
+          createdAt: '2026-09-01T00:00:00Z',
+          weeks: [
+            week({ deckId: 'd1', deckName: 'Food', week: 1, wordCount: 12 }),
+            week({ deckId: 'd2', deckName: 'Travel', week: 2, wordCount: 0 }),
+          ],
+        },
+      ],
+      loose: [],
+    });
+
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    expect(screen.getByText('12 words')).toBeInTheDocument();
+  });
+
   it('shows "Waiting for learners to join" when a week has no learners', () => {
     setLibrary({
       units: [
@@ -175,6 +229,7 @@ describe('LessonLibrary', () => {
           week: null,
           learnerCount: 2,
           finishedCount: 1,
+          wordCount: 0,
         }),
       ],
     });
@@ -214,6 +269,21 @@ describe('LessonLibrary', () => {
     expect(mockEditWeek).toHaveBeenCalledWith(
       'd1',
       expect.objectContaining({ title: 'New title' }),
+    );
+  });
+
+  it('closes the edit dialog and opens the detail dialog for the same week', () => {
+    setLibrary(oneUnitLibrary());
+    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit week 1' }));
+    mockHandoutDetailDialog.mockClear();
+
+    fireEvent.click(screen.getByRole('button', { name: 'See how learners are doing' }));
+
+    expect(screen.queryByLabelText('Title')).not.toBeInTheDocument();
+    expect(mockHandoutDetailDialog).toHaveBeenCalledWith(
+      expect.objectContaining({ open: true, handout: expect.objectContaining({ deckId: 'd1' }) }),
     );
   });
 

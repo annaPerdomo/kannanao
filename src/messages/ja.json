@@ -1310,7 +1310,12 @@
       "charactersCount": "{count}文字",
       "noWords": "このデッキにはまだ単語がありません。",
       "loadError": "単語を読み込めませんでした。もう一度お試しください。",
-      "unknownKanaSet": "このかなの行は使えなくなりました。"
+      "unknownKanaSet": "このかなの行は使えなくなりました。",
+      "groupSummary": "学習者は{total}語中{seen}語に取り組みました・{strong}語はほとんどの人が定着",
+      "noLearnersYet": "まだ学習者がいないため、記録はありません。",
+      "seenOf": "{learners}人中{seen}人が学習",
+      "strongCount": "定着 {count}人",
+      "trickyCount": "苦手 {count}人"
     },
     "createAssignment": {
       "title": "課題を出す",
@@ -1947,7 +1952,12 @@
       "printWord": "単語",
       "printMeaning": "意味",
       "printLoading": "単語リストを準備中…",
-      "printError": "単語リストを読み込めませんでした。このウィンドウを閉じて、もう一度お試しください。"
+      "printError": "単語リストを読み込めませんでした。このウィンドウを閉じて、もう一度お試しください。",
+      "words": {
+        "count": "{count}語",
+        "inThisWeek": "この週の単語（{count}語）",
+        "seeLearners": "学習者の様子を見る"
+      }
     },
     "step1Title": "なにをつくりますか？",
     "step1Subtitle": "目標やトピック、おぼえたいことばを書いてください。資料をつけてもOKです。",

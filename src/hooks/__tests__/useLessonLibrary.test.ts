@@ -37,6 +37,7 @@ function week(overrides: Partial<LessonLibraryData['units'][number]['weeks'][num
     requiredMode: null,
     learnerCount: 2,
     finishedCount: 0,
+    wordCount: 0,
     status: 'current' as const,
     ...overrides,
   };

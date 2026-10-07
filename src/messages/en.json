@@ -1310,7 +1310,12 @@
       "charactersCount": "{count, plural, one {# character} other {# characters}}",
       "noWords": "This deck has no words yet.",
       "loadError": "Couldn't load the words. Try again.",
-      "unknownKanaSet": "This kana row isn't available anymore."
+      "unknownKanaSet": "This kana row isn't available anymore.",
+      "groupSummary": "Learners have met {seen} of {total} words · {strong} strong for most",
+      "noLearnersYet": "No learners in this group yet, so there is nothing to track.",
+      "seenOf": "{seen}/{learners} seen",
+      "strongCount": "{count} strong",
+      "trickyCount": "{count} tricky"
     },
     "createAssignment": {
       "title": "Assign Work",
@@ -1947,7 +1952,12 @@
       "printWord": "Word",
       "printMeaning": "Meaning",
       "printLoading": "Getting the word lists…",
-      "printError": "Couldn't load the word lists. Close this window and try again."
+      "printError": "Couldn't load the word lists. Close this window and try again.",
+      "words": {
+        "count": "{count, plural, one {# word} other {# words}}",
+        "inThisWeek": "Words in this week ({count})",
+        "seeLearners": "See how learners are doing"
+      }
     },
     "step1Title": "What do you want to create?",
     "step1Subtitle": "Describe your goals, topics or vocabulary — or attach files for the plan to follow.",

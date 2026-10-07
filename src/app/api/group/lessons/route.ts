@@ -119,10 +119,23 @@ export async function GET(req: NextRequest) {
         )
       : [];
 
+    const ownedIds = (decks as { id: string }[]).map((d) => d.id);
+
+    const cardRows = ownedIds.length
+      ? await allRows<{ deck_id: string }>((from, to) =>
+          sb.from('cards').select('deck_id').in('deck_id', ownedIds).order('id').range(from, to),
+        )
+      : [];
+    const cardCounts: Record<string, number> = {};
+    for (const row of cardRows) {
+      cardCounts[row.deck_id] = (cardCounts[row.deck_id] ?? 0) + 1;
+    }
+
     const library = buildLessonLibrary({
       plans,
       planDecks,
       decks: decks as { id: string; name: string; emoji: string | null }[],
+      cardCounts,
       templates,
       assignments,
       today: todayIso(),

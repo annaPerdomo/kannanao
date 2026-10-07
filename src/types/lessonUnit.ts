@@ -23,6 +23,7 @@ export interface LessonUnitWeek {
   requiredMode: string | null;
   learnerCount: number;
   finishedCount: number;
+  wordCount: number;
   status: LessonWeekStatus;
 }
 

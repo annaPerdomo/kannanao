@@ -84,6 +84,7 @@ describe('handoutRefFromWeek', () => {
       requiredMode: 'study',
       learnerCount: 5,
       finishedCount: 3,
+      wordCount: 0,
       status: 'current',
     };
 

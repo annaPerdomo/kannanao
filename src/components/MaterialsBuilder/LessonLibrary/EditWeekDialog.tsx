@@ -13,24 +13,30 @@ import { StyledDialog } from '@/components/StyledDialog';
 import { type GoalMode, isGoalMode } from '@/lib/assignmentMastery';
 import type { HandoutPatch, LessonUnitWeek } from '@/types/lessonUnit';
 
+import { WordStrip } from './WordStrip';
+
 interface EditWeekDialogProps {
   open: boolean;
   onClose: () => void;
   week: LessonUnitWeek | null;
+  groupId: string;
   groupName: string;
   saving: boolean;
   onSave: (deckId: string, patch: HandoutPatch) => Promise<boolean>;
   onRemove: (deckId: string) => Promise<boolean>;
+  onShowDetail: () => void;
 }
 
 export function EditWeekDialog({
   open,
   onClose,
   week,
+  groupId,
   groupName,
   saving,
   onSave,
   onRemove,
+  onShowDetail,
 }: EditWeekDialogProps) {
   const t = useTranslations('Materials.library');
 
@@ -147,6 +153,7 @@ export function EditWeekDialog({
         </Typography>
       ) : (
         <Stack spacing={2}>
+          <WordStrip deckId={week.deckId} groupId={groupId} onShowDetail={onShowDetail} />
           <TextField
             label={t('fieldTitle')}
             value={title}

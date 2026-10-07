@@ -8,6 +8,8 @@ import { useTranslations } from 'next-intl';
 import { Loading } from '@/components/Loading';
 import { useDeckWords } from '@/hooks/useDeckWords';
 
+import { WordRow } from './WordRow';
+
 interface WordListProps {
   deckId: string;
 }
@@ -31,19 +33,7 @@ export function WordList({ deckId }: WordListProps) {
         sx={{ maxHeight: '50vh', overflowY: 'auto', gap: 0.75, pr: 0.5 }}
       >
         {words.map((card) => (
-          <Stack key={card.id} sx={{ py: 0.5 }}>
-            <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: 'text.primary' }}>
-              {card.word}
-            </Typography>
-            {card.reading && card.reading !== card.word && (
-              <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
-                {card.reading}
-              </Typography>
-            )}
-            <Typography sx={{ fontSize: '0.85rem', color: 'text.primary' }}>
-              {card.meaning}
-            </Typography>
-          </Stack>
+          <WordRow key={card.id} card={card} />
         ))}
       </Stack>
     </>

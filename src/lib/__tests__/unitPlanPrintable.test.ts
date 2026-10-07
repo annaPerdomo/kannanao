@@ -18,6 +18,7 @@ function makeWeek(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
     requiredMode: null,
     learnerCount: 0,
     finishedCount: 0,
+    wordCount: 0,
     status: 'current',
     ...overrides,
   };

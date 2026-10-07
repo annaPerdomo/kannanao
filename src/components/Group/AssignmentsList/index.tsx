@@ -37,6 +37,7 @@ interface AssignmentsListProps {
   onSendEncouragement?: (memberId: string, message: string, emoji?: string) => Promise<unknown>;
   members?: GroupMember[];
   onAssignMissing?: (batch: AssignmentBatch, memberIds: string[]) => void;
+  groupId: string;
 }
 
 export function AssignmentsList({
@@ -46,6 +47,7 @@ export function AssignmentsList({
   onSendEncouragement,
   members,
   onAssignMissing,
+  groupId,
 }: AssignmentsListProps) {
   const theme = useTheme();
   const t = useTranslations('Group.assignmentsList');
@@ -164,6 +166,7 @@ export function AssignmentsList({
         open={detail !== null}
         handout={detail}
         onClose={() => setDetail(null)}
+        groupId={groupId}
       />
 
       <EditAssignmentDialog
@@ -171,8 +174,14 @@ export function AssignmentsList({
         onClose={() => setEditing(null)}
         assignment={editing?.sample ?? null}
         memberCount={editing?.total ?? 1}
+        groupId={groupId}
         onSave={async (_id, updates) => {
           await onEditBatch(editing?.ids ?? [], updates);
+        }}
+        onShowDetail={() => {
+          if (!editing) return;
+          setEditing(null);
+          setDetail(handoutRefFromAssignment(editing.sample, editing.deckName || t('unknownDeck')));
         }}
       />
 

@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
+import { WordStrip } from '@/components/MaterialsBuilder/LessonLibrary/WordStrip';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { Assignment } from '@/hooks/useAssignments';
 import { setCharacters } from '@/lib/kanaCurriculum';
@@ -22,6 +23,8 @@ interface EditAssignmentDialogProps {
   ) => Promise<void>;
   /** How many members share this assignment — the edit applies to all of them. */
   memberCount?: number;
+  groupId: string;
+  onShowDetail?: () => void;
 }
 
 export function EditAssignmentDialog({
@@ -30,6 +33,8 @@ export function EditAssignmentDialog({
   assignment,
   onSave,
   memberCount = 1,
+  groupId,
+  onShowDetail,
 }: EditAssignmentDialogProps) {
   const theme = useTheme();
   const t = useTranslations('Group.editAssignment');
@@ -127,6 +132,10 @@ export function EditAssignmentDialog({
     >
       <Stack spacing={2}>
         {error && <Typography sx={{ color: 'error.main', fontSize: '0.8rem' }}>{error}</Typography>}
+
+        {assignment.deck_id && onShowDetail && (
+          <WordStrip deckId={assignment.deck_id} groupId={groupId} onShowDetail={onShowDetail} />
+        )}
 
         <TextField
           label={t('noteLabel')}

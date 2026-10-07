@@ -68,6 +68,7 @@ export function AssignmentsTab({
           onSendEncouragement={onSendEncouragement}
           members={members}
           onAssignMissing={onAssignMissing}
+          groupId={groupId}
         />
       </SectionCard>
 

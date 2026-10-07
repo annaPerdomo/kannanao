@@ -48,6 +48,7 @@ function render(assignments: Assignment[], onDeleteBatch = vi.fn().mockResolvedV
       assignments={assignments}
       onEditBatch={vi.fn().mockResolvedValue(undefined)}
       onDeleteBatch={onDeleteBatch}
+      groupId="g1"
     />,
   );
   return onDeleteBatch;
@@ -87,6 +88,7 @@ function renderWithRoster(
       onDeleteBatch={vi.fn().mockResolvedValue(undefined)}
       members={members}
       onAssignMissing={onAssignMissing}
+      groupId="g1"
     />,
   );
   return onAssignMissing;

@@ -244,6 +244,26 @@ describe('buildLessonLibrary', () => {
     expect(library.units[0].weeks.map((w) => w.week)).toEqual([1, 2, 3]);
   });
 
+  it('reads wordCount from cardCounts, defaulting to 0', () => {
+    const library = buildLessonLibrary({
+      plans: [{ id: 'p1', title: null, jlpt_level: null, created_at: '2026-09-01T00:00:00Z' }],
+      planDecks: [
+        { plan_id: 'p1', deck_id: 'd1', position: 0 },
+        { plan_id: 'p1', deck_id: 'd2', position: 1 },
+      ],
+      decks: [
+        { id: 'd1', name: 'Food', emoji: null },
+        { id: 'd2', name: 'Travel', emoji: null },
+      ],
+      cardCounts: { d1: 12 },
+      templates: [],
+      assignments: [],
+      today: TODAY,
+    });
+    expect(library.units[0].weeks[0].wordCount).toBe(12);
+    expect(library.units[0].weeks[1].wordCount).toBe(0);
+  });
+
   it('drops a unit with zero weeks', () => {
     const library = buildLessonLibrary({
       plans: [{ id: 'p1', title: null, jlpt_level: null, created_at: '2026-09-01T00:00:00Z' }],
@@ -292,6 +312,7 @@ function makeWeek(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
     requiredMode: null,
     learnerCount: 0,
     finishedCount: 0,
+    wordCount: 0,
     status: 'current',
     ...overrides,
   };

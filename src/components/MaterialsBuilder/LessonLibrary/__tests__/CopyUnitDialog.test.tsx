@@ -26,6 +26,7 @@ function unit(overrides: Partial<LessonUnit> = {}): LessonUnit {
         requiredMode: null,
         learnerCount: 0,
         finishedCount: 0,
+        wordCount: 0,
         status: 'past',
       },
     ],

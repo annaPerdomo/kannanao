@@ -75,6 +75,11 @@ export function WeekRow({ week, onOpen, onEdit, onShift }: WeekRowProps) {
             {dateParts.join(' · ')}
           </Typography>
         )}
+        {week.wordCount > 0 && (
+          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.25 }} noWrap>
+            {t('words.count', { count: week.wordCount })}
+          </Typography>
+        )}
       </Box>
 
       <Chip

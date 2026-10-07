@@ -7,6 +7,7 @@ import type { HandoutRef } from '@/types/handout';
 
 import { formatDate } from '../dueDate';
 import { useGoalLabel } from '../useGoalLabel';
+import { GroupWordList } from './GroupWordList';
 import { KanaSetList } from './KanaSetList';
 import { WordList } from './WordList';
 
@@ -14,9 +15,10 @@ interface HandoutDetailDialogProps {
   open: boolean;
   onClose: () => void;
   handout: HandoutRef | null;
+  groupId?: string | null;
 }
 
-export function HandoutDetailDialog({ open, onClose, handout }: HandoutDetailDialogProps) {
+export function HandoutDetailDialog({ open, onClose, handout, groupId }: HandoutDetailDialogProps) {
   const t = useTranslations('Group.handoutDetail');
   const locale = useLocale();
   const goal = useGoalLabel()({
@@ -59,7 +61,11 @@ export function HandoutDetailDialog({ open, onClose, handout }: HandoutDetailDia
             </Typography>
           )}
           {handout.deckId ? (
-            <WordList deckId={handout.deckId} />
+            groupId ? (
+              <GroupWordList groupId={groupId} deckId={handout.deckId} />
+            ) : (
+              <WordList deckId={handout.deckId} />
+            )
           ) : handout.kanaSet ? (
             <KanaSetList kanaSet={handout.kanaSet} />
           ) : null}

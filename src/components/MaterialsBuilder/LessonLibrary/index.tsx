@@ -175,16 +175,22 @@ export function LessonLibrary({ groupId, onBuild, onSwitchGroup }: LessonLibrary
         open={activeWeek != null}
         onClose={() => setActiveWeek(null)}
         handout={activeWeek ? handoutRefFromWeek(activeWeek) : null}
+        groupId={groupId}
       />
 
       <EditWeekDialog
         open={editingWeek != null}
         onClose={() => setEditingWeek(null)}
         week={editingWeek}
+        groupId={groupId}
         groupName={groupName}
         saving={saving}
         onSave={handleEditSave}
         onRemove={handleRemove}
+        onShowDetail={() => {
+          setEditingWeek(null);
+          setActiveWeek(editingWeek);
+        }}
       />
 
       <ShiftDialog

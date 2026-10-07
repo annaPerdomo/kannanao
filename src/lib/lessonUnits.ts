@@ -135,6 +135,7 @@ export function buildLessonLibrary(input: {
   plans: { id: string; title: string | null; jlpt_level: string | null; created_at: string }[];
   planDecks: { plan_id: string; deck_id: string; position: number }[];
   decks: { id: string; name: string; emoji: string | null }[];
+  cardCounts?: Record<string, number>;
   templates: {
     deck_id: string;
     title: string | null;
@@ -156,7 +157,7 @@ export function buildLessonLibrary(input: {
   }[];
   today: string;
 }): LessonLibrary {
-  const { plans, planDecks, decks, templates, assignments, today } = input;
+  const { plans, planDecks, decks, cardCounts = {}, templates, assignments, today } = input;
 
   const deckById = new Map(decks.map((d) => [d.id, d]));
   const templateByDeck = new Map(templates.map((t) => [t.deck_id, t]));
@@ -194,6 +195,7 @@ export function buildLessonLibrary(input: {
       requiredMode: schedule.required_mode,
       learnerCount: rows.length,
       finishedCount: rows.filter((r) => r.completed_at).length,
+      wordCount: cardCounts[deckId] ?? 0,
       status: weekStatus(schedule.available_on, schedule.due_date, today),
     };
   }
