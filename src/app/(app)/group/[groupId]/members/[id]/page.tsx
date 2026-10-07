@@ -55,6 +55,7 @@ export default function MemberDetailPage() {
           loading={loading || authLoading}
           onBack={() => router.push(`/group/${groupId}`)}
           onSendEncouragement={sendEncouragement}
+          groupId={groupId}
         />
       ) : (
         <Loading message={t('loadingMemberDetails')} />

@@ -1315,7 +1315,21 @@
       "noLearnersYet": "まだ学習者がいないため、記録はありません。",
       "seenOf": "{learners}人中{seen}人が学習",
       "strongCount": "定着 {count}人",
-      "trickyCount": "苦手 {count}人"
+      "trickyCount": "苦手 {count}人",
+      "learnerSummary": "{name}さん：定着 {strong}語・学習中 {learning}語・未学習 {unseen}語",
+      "upNext": "次の練習で出る単語（{count}語）",
+      "upNextHint": "苦手な単語から順に出ます。",
+      "goalPlaysAll": "ゴールの回ではこの週の単語がすべて出ます。",
+      "strength": {
+        "new": "未学習",
+        "learning": "学習中",
+        "strong": "定着"
+      },
+      "tricky": "苦手",
+      "lastSeen": "最終学習 {date}",
+      "seeByLearner": "学習者ごとに見る",
+      "backToGroup": "グループに戻る",
+      "pickLearner": "学習者を選ぶ"
     },
     "createAssignment": {
       "title": "課題を出す",

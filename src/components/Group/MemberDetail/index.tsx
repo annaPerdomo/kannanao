@@ -34,9 +34,16 @@ interface MemberDetailProps {
   loading: boolean;
   onBack: () => void;
   onSendEncouragement?: (memberId: string, message: string, emoji?: string) => Promise<void>;
+  groupId?: string | null;
 }
 
-export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: MemberDetailProps) {
+export function MemberDetail({
+  detail,
+  loading,
+  onBack,
+  onSendEncouragement,
+  groupId,
+}: MemberDetailProps) {
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   const t = useTranslations('Group.memberDetail');
@@ -233,7 +240,14 @@ export function MemberDetail({ detail, loading, onBack, onSendEncouragement }: M
         </Box>
       )}
 
-      {assignments.total > 0 && <AssignmentsSection assignments={assignments} />}
+      {assignments.total > 0 && (
+        <AssignmentsSection
+          assignments={assignments}
+          groupId={groupId}
+          memberId={member.id}
+          memberName={member.displayName || member.username}
+        />
+      )}
 
       {sessions.length > 0 && (
         <RecentSessionsSection memberId={member.id} initialSessions={sessions} />

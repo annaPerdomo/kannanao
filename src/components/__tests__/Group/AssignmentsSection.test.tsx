@@ -6,9 +6,14 @@ import type { MemberDetail } from '@/hooks/useGroup';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 const mockUseDeckWords = vi.fn();
+const mockUseHandoutWords = vi.fn();
 
 vi.mock('@/hooks/useDeckWords', () => ({
   useDeckWords: (...args: unknown[]) => mockUseDeckWords(...args),
+}));
+
+vi.mock('@/hooks/useHandoutWords', () => ({
+  useHandoutWords: (...args: unknown[]) => mockUseHandoutWords(...args),
 }));
 
 function makeAssignments(): MemberDetail['assignments'] {
@@ -43,6 +48,8 @@ describe('AssignmentsSection', () => {
   beforeEach(() => {
     mockUseDeckWords.mockReset();
     mockUseDeckWords.mockReturnValue({ words: [], loading: false, error: null });
+    mockUseHandoutWords.mockReset();
+    mockUseHandoutWords.mockReturnValue({ data: null, loading: false, error: null });
   });
 
   it('opens the handout detail dialog when a handout name is clicked', () => {
@@ -51,5 +58,23 @@ describe('AssignmentsSection', () => {
     fireEvent.click(screen.getByRole('button', { name: "See what's in Animals" }));
 
     expect(screen.getByText('🐶 Animals')).toBeInTheDocument();
+  });
+
+  it('opens the dialog in learner mode when groupId and memberId are given', () => {
+    renderWithProviders(
+      <AssignmentsSection
+        assignments={makeAssignments()}
+        groupId="g1"
+        memberId="m1"
+        memberName="Naomi"
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: "See what's in Animals" }));
+
+    expect(mockUseHandoutWords).toHaveBeenCalledWith(
+      expect.objectContaining({ groupId: 'g1', memberId: 'm1' }),
+    );
+    expect(mockUseDeckWords).not.toHaveBeenCalled();
   });
 });

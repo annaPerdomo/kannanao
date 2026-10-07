@@ -1,26 +1,35 @@
 'use client';
 import Typography from '@mui/material/Typography';
 import { useLocale, useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
 import type { HandoutRef } from '@/types/handout';
 
 import { formatDate } from '../dueDate';
 import { useGoalLabel } from '../useGoalLabel';
-import { GroupWordList } from './GroupWordList';
-import { KanaSetList } from './KanaSetList';
-import { WordList } from './WordList';
+import { HandoutBody, type ViewMember } from './HandoutBody';
 
 interface HandoutDetailDialogProps {
   open: boolean;
   onClose: () => void;
   handout: HandoutRef | null;
   groupId?: string | null;
+  memberId?: string | null;
+  memberName?: string | null;
 }
 
-export function HandoutDetailDialog({ open, onClose, handout, groupId }: HandoutDetailDialogProps) {
+export function HandoutDetailDialog({
+  open,
+  onClose,
+  handout,
+  groupId,
+  memberId,
+  memberName,
+}: HandoutDetailDialogProps) {
   const t = useTranslations('Group.handoutDetail');
   const locale = useLocale();
+  const [viewMember, setViewMember] = useState<ViewMember | null>(null);
   const goal = useGoalLabel()({
     required_accuracy: handout?.requiredAccuracy ?? null,
     required_mode: handout?.requiredMode ?? null,
@@ -34,10 +43,15 @@ export function HandoutDetailDialog({ open, onClose, handout, groupId }: Handout
       : t('noDueDate')
     : undefined;
 
+  const handleClose = () => {
+    setViewMember(null);
+    onClose();
+  };
+
   return (
     <StyledDialog
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       title={title}
       subtitle={subtitle}
       maxWidth="sm"
@@ -60,15 +74,15 @@ export function HandoutDetailDialog({ open, onClose, handout, groupId }: Handout
               {t('noteLine', { note: handout.note })}
             </Typography>
           )}
-          {handout.deckId ? (
-            groupId ? (
-              <GroupWordList groupId={groupId} deckId={handout.deckId} />
-            ) : (
-              <WordList deckId={handout.deckId} />
-            )
-          ) : handout.kanaSet ? (
-            <KanaSetList kanaSet={handout.kanaSet} />
-          ) : null}
+          <HandoutBody
+            handout={handout}
+            groupId={groupId}
+            memberId={memberId}
+            memberName={memberName}
+            viewMember={viewMember}
+            onPickLearner={setViewMember}
+            onBackToGroup={() => setViewMember(null)}
+          />
         </>
       )}
     </StyledDialog>

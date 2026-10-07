@@ -1,4 +1,5 @@
 import { type CardStrength, cardStrength } from '@/lib/cardStrength';
+import type { CardProgress } from '@/lib/supabase';
 import type { Flashcard } from '@/types/flashcard';
 
 export interface WordProgressRow {
@@ -91,6 +92,20 @@ export function learnerWordInsights(
       tricky: isTricky(row.correctCount, row.wrongCount),
     };
   });
+}
+
+export function toCardProgress(insights: LearnerWordInsight[]): CardProgress[] {
+  return insights
+    .filter((insight) => insight.strength !== 'new')
+    .map((insight) => ({
+      cardId: insight.card.id,
+      correctCount: insight.correctCount,
+      wrongCount: insight.wrongCount,
+      lastReviewedAt: insight.lastReviewedAt,
+      nextReviewAt: insight.nextReviewAt ?? '',
+      intervalDays: insight.intervalDays,
+      ease: insight.ease,
+    }));
 }
 
 export function summarizeGroupWords(

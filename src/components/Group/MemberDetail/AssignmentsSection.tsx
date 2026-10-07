@@ -21,9 +21,17 @@ type Assignments = MemberDetail['assignments'];
 
 interface AssignmentsSectionProps {
   assignments: Assignments;
+  groupId?: string | null;
+  memberId?: string | null;
+  memberName?: string | null;
 }
 
-export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
+export function AssignmentsSection({
+  assignments,
+  groupId,
+  memberId,
+  memberName,
+}: AssignmentsSectionProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
   const t = useTranslations('Group.memberDetail');
@@ -214,6 +222,9 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
         open={detail !== null}
         handout={detail}
         onClose={() => setDetail(null)}
+        groupId={groupId}
+        memberId={memberId}
+        memberName={memberName}
       />
     </Box>
   );

@@ -5,8 +5,10 @@ import {
   isTricky,
   learnerWordInsights,
   summarizeGroupWords,
+  toCardProgress,
   type WordProgressRow,
 } from '@/lib/handoutWords';
+import { pickMixedSessionCards } from '@/lib/mixedPractice';
 import type { Flashcard } from '@/types/flashcard';
 
 function card(id: string): Flashcard {
@@ -119,6 +121,41 @@ describe('learnerWordInsights', () => {
       ease: 2.5,
       tricky: false,
     });
+  });
+});
+
+describe('learnerWordInsights round-trip into pickMixedSessionCards', () => {
+  it('orders weakest first when insights are converted back into CardProgress rows', () => {
+    const cards = [card('strong'), card('learning'), card('new')];
+    const rows: WordProgressRow[] = [
+      row({
+        userId: 'u1',
+        cardId: 'strong',
+        correctCount: 5,
+        wrongCount: 0,
+        intervalDays: 3,
+        ease: 2.5,
+      }),
+      row({
+        userId: 'u1',
+        cardId: 'learning',
+        correctCount: 1,
+        wrongCount: 1,
+        intervalDays: 1,
+        ease: 2.3,
+      }),
+    ];
+
+    const insights = learnerWordInsights(cards, rows);
+    expect(insights.map((i) => i.strength)).toEqual(['strong', 'learning', 'new']);
+
+    const progress = toCardProgress(insights);
+    const picked = pickMixedSessionCards(
+      insights.map((i) => i.card),
+      progress,
+    );
+
+    expect(picked.map((c) => c.id)).toEqual(['learning', 'new', 'strong']);
   });
 });
 

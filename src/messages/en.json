@@ -1315,7 +1315,21 @@
       "noLearnersYet": "No learners in this group yet, so there is nothing to track.",
       "seenOf": "{seen}/{learners} seen",
       "strongCount": "{count} strong",
-      "trickyCount": "{count} tricky"
+      "trickyCount": "{count} tricky",
+      "learnerSummary": "{name}: {strong} strong · {learning} still learning · {unseen} not yet seen",
+      "upNext": "Up next in Practice ({count})",
+      "upNextHint": "The words they are weakest on come first.",
+      "goalPlaysAll": "The goal round uses every word in this week.",
+      "strength": {
+        "new": "Not yet seen",
+        "learning": "Learning",
+        "strong": "Strong"
+      },
+      "tricky": "Tricky",
+      "lastSeen": "Last seen {date}",
+      "seeByLearner": "See one learner",
+      "backToGroup": "Back to the group",
+      "pickLearner": "Choose a learner"
     },
     "createAssignment": {
       "title": "Assign Work",
