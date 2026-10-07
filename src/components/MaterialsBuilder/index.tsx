@@ -1,4 +1,5 @@
 'use client';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import LinkIcon from '@mui/icons-material/Link';
 import StyleIcon from '@mui/icons-material/Style';
@@ -23,7 +24,9 @@ import { useGroups } from '@/hooks/useGroups';
 import { LAYOUT } from '@/theme';
 
 import { DeckPanel } from './DeckPanel';
+import { GroupSelect } from './GroupSelect';
 import { KanaCourseBuilder } from './KanaCourseBuilder';
+import { LessonLibrary } from './LessonLibrary';
 import { LessonSetBuilder } from './LessonSetBuilder';
 import { QuizletImport } from './QuizletImport';
 
@@ -33,7 +36,7 @@ interface MaterialsBuilderProps {
   initialTab?: BuilderTab;
 }
 
-export type BuilderTab = 'lessonSet' | 'kana' | 'deck' | 'quizlet';
+export type BuilderTab = 'assigned' | 'lessonSet' | 'kana' | 'deck' | 'quizlet';
 
 /**
  * One organizer-only front door for study materials: a lesson set (decks +
@@ -50,12 +53,19 @@ export function MaterialsBuilder({ initialGroupId, initialTab }: MaterialsBuilde
 
   const [tab, setTab] = useState<BuilderTab>(initialTab ?? 'lessonSet');
   const [groupId, setGroupId] = useState(initialGroupId ?? '');
+  const [lessonSetMounted, setLessonSetMounted] = useState(false);
 
   useEffect(() => {
     if (!authLoading && isMemberAccount) {
       router.push('/');
     }
   }, [authLoading, isMemberAccount, router]);
+
+  useEffect(() => {
+    if (tab === 'lessonSet' && !groupsError && groups.length > 0) {
+      setLessonSetMounted(true);
+    }
+  }, [tab, groupsError, groups.length]);
 
   // Members hold the loader until the redirect lands, never the builder.
   if (authLoading || isMemberAccount || groupsLoading) {
@@ -65,7 +75,7 @@ export function MaterialsBuilder({ initialGroupId, initialTab }: MaterialsBuilde
   // A stale initialGroupId (deleted group) falls back to the first group.
   const activeGroupId =
     groupId && groups.some((g) => g.id === groupId) ? groupId : (groups[0]?.id ?? '');
-  const needsGroup = tab === 'lessonSet' || tab === 'kana';
+  const needsGroup = tab === 'assigned' || tab === 'lessonSet' || tab === 'kana';
 
   return (
     <Container sx={{ py: { xs: 3, sm: 4 }, maxWidth: LAYOUT.contentMaxWidth }}>
@@ -109,6 +119,12 @@ export function MaterialsBuilder({ initialGroupId, initialTab }: MaterialsBuilde
               },
             }}
           >
+            <Tab
+              value="assigned"
+              icon={<AssignmentTurnedInIcon sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+              label={t('tabs.assigned')}
+            />
             <Tab
               value="lessonSet"
               icon={<CollectionsBookmarkIcon sx={{ fontSize: 18 }} />}
@@ -167,8 +183,26 @@ export function MaterialsBuilder({ initialGroupId, initialTab }: MaterialsBuilde
         </Stack>
       )}
 
-      {tab === 'lessonSet' && !groupsError && groups.length > 0 && (
-        <LessonSetBuilder groups={groups} groupId={activeGroupId} onGroupChange={setGroupId} />
+      {tab === 'assigned' && !groupsError && groups.length > 0 && (
+        <Stack spacing={2}>
+          <GroupSelect groups={groups} value={activeGroupId} onChange={setGroupId} />
+          <LessonLibrary
+            groupId={activeGroupId}
+            onBuild={() => setTab('lessonSet')}
+            onSwitchGroup={setGroupId}
+          />
+        </Stack>
+      )}
+
+      {lessonSetMounted && (
+        <Box sx={{ display: tab === 'lessonSet' ? 'block' : 'none' }}>
+          <LessonSetBuilder
+            groups={groups}
+            groupId={activeGroupId}
+            onGroupChange={setGroupId}
+            onShowAssigned={() => setTab('assigned')}
+          />
+        </Box>
       )}
 
       {tab === 'kana' && !groupsError && groups.length > 0 && (

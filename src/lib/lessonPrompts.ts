@@ -181,7 +181,7 @@ ${levelRule}
 4. "exampleJp" furigana: ${FURIGANA_MARKUP_RULE}
 5. No romaji anywhere in a Japanese field.
 ${mainViewModeRule(level)}
-7. "emoji" is a single emoji that fits the deck. "description" is one short plain sentence a non-technical adult would understand.
+7. "emoji" is a single emoji that fits the deck. "description" is ONE learner-facing can-do goal for the week, in plain English, starting with "I can" (e.g. "I can say what I like to do after school."). It names a real-world task, not a grammar label.
 8. "name" is a short deck title in the same language as the educator's request above.
 ${duplicateRule}
 ${IMAGE_QUERY_RULE}`;

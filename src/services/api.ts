@@ -306,6 +306,8 @@ export async function applyLessonPlan(payload: {
   styleNotes?: string;
   /** One due date per curriculum row — the schedule from planLessonKana. */
   kanaWeeks?: { setId: string; dueDate: string | null }[];
+  /** The unit's name in the Lesson Library — derived client-side from the goal text. */
+  title?: string;
 }): Promise<{ results: ApplyDeckResult[]; kanaAssigned?: string[]; kanaFailed?: string[] }> {
   const res = await fetch(`${BASE}/group/lesson-plan/apply`, {
     method: 'POST',

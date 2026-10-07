@@ -276,6 +276,20 @@ describe('buildLessonPlanPrompt', () => {
     expect(prompt).not.toContain('must be "hiragana" for every deck');
   });
 
+  it('asks for an "I can" can-do goal instead of a plain description sentence', () => {
+    const prompt = buildLessonPlanPrompt({
+      goal: 'Food words',
+      weeks: 2,
+      cardsPerDeck: 10,
+      knownWords: [],
+    });
+
+    expect(prompt).toContain(
+      '"description" is ONE learner-facing can-do goal for the week, in plain English, starting with "I can"',
+    );
+    expect(prompt).not.toContain('"description" is one short plain sentence');
+  });
+
   it('always asks for an imageQuery, even when the plan has images switched off', () => {
     const prompt = buildLessonPlanPrompt({
       goal: 'Food words',
