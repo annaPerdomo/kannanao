@@ -1,4 +1,5 @@
 export { ActivityFeed } from './ActivityFeed';
+export { AddDeckToGroupDialog } from './AddDeckToGroupDialog';
 export {
   ADD_SOURCE_ROUTES,
   ADD_SOURCES,

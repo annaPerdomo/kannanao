@@ -1,5 +1,6 @@
 'use client';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
@@ -20,6 +21,7 @@ export interface DeckActionsProps {
   onShare?: (id: string) => void;
   onPin?: (id: string, pinned: boolean) => void;
   onEmojiChange?: (id: string, emoji: string | null) => void;
+  onAddToGroup?: (id: string) => void;
   isOwner?: boolean;
   /**
    * `compact` is the collectible card's cramped footer; `roomy` is the home
@@ -44,6 +46,7 @@ export function DeckActions({
   onShare,
   onPin,
   onEmojiChange,
+  onAddToGroup,
   isOwner = true,
   size = 'compact',
 }: DeckActionsProps) {
@@ -216,6 +219,22 @@ export function DeckActions({
                 ✓
               </Box>
             )}
+          </IconButton>
+        </Tooltip>
+      )}
+
+      {isOwner && onAddToGroup && (
+        <Tooltip title={t('addToGroupTooltip')}>
+          <IconButton
+            size="small"
+            aria-label={t('addToGroupAria', { name: deck.name })}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToGroup(deck.id);
+            }}
+            sx={buttonSx()}
+          >
+            <GroupAddIcon sx={{ fontSize: s.icon }} />
           </IconButton>
         </Tooltip>
       )}

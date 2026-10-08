@@ -143,7 +143,9 @@
       "share": "Share",
       "settings": "Settings",
       "unpinFromHome": "Unpin from home",
-      "pinToHome": "Pin to home"
+      "pinToHome": "Pin to home",
+      "addToGroupTooltip": "Add to a group",
+      "addToGroupAria": "Add deck to a group"
     },
     "practiceHero": {
       "choosePractice": "Choose a practice",
@@ -218,7 +220,9 @@
       "shareDeck": "Share deck",
       "deleteDeck": "Delete deck",
       "openDeckAria": "Open deck: {name}",
-      "cardsLabel": "cards"
+      "cardsLabel": "cards",
+      "addToGroupTooltip": "Add to a group",
+      "addToGroupAria": "Add {name} to a group"
     },
     "editCardDialog": {
       "title": "Edit Card",
@@ -1912,6 +1916,13 @@
       "backToGroupsButton": "Back to your groups",
       "savedNotHandedOut": "Saved to your decks — not handed out yet.",
       "handItOutButton": "Hand it out"
+    },
+    "addDeckToGroup": {
+      "dialogTitle": "Add to a group",
+      "loading": "Loading your groups…",
+      "openGroupAria": "Hand out to {name}",
+      "emptyMessage": "Make a group first, then you can hand this deck out.",
+      "makeGroupButton": "Make a group"
     }
   },
   "Materials": {

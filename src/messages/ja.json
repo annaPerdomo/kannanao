@@ -143,7 +143,9 @@
       "share": "共有",
       "settings": "設定",
       "unpinFromHome": "ホームのピンを外す",
-      "pinToHome": "ホームにピン留め"
+      "pinToHome": "ホームにピン留め",
+      "addToGroupTooltip": "グループに追加",
+      "addToGroupAria": "デッキをグループに追加"
     },
     "practiceHero": {
       "choosePractice": "練習をえらぼう",
@@ -218,7 +220,9 @@
       "shareDeck": "デッキを共有",
       "deleteDeck": "デッキを削除",
       "openDeckAria": "デッキを開く: {name}",
-      "cardsLabel": "枚"
+      "cardsLabel": "枚",
+      "addToGroupTooltip": "グループに追加",
+      "addToGroupAria": "{name}をグループに追加"
     },
     "editCardDialog": {
       "title": "カードを編集",
@@ -1912,6 +1916,13 @@
       "backToGroupsButton": "グループ一覧へ",
       "savedNotHandedOut": "デッキには保存されました — まだ配布はされていません。",
       "handItOutButton": "配布する"
+    },
+    "addDeckToGroup": {
+      "dialogTitle": "グループに追加",
+      "loading": "グループを読み込み中…",
+      "openGroupAria": "{name}に配る",
+      "emptyMessage": "まずグループを作ると、このデッキを配れるようになります。",
+      "makeGroupButton": "グループを作る"
     }
   },
   "Materials": {

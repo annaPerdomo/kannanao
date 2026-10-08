@@ -286,6 +286,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           onSettingsOpen={() => setSettingsOpen(true)}
           onEmojiChange={updateDeckEmoji}
           readOnly={isMemberAccount}
+          canAddToGroup={!isMemberAccount && deck.ownerId === user?.id}
         />
 
         <PracticeHero

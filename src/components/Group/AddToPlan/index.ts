@@ -8,3 +8,4 @@ export {
   addToPlanDestination,
   isAddSource,
 } from './constants';
+export { SourceRow } from './SourceRow';
