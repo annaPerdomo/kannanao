@@ -16,7 +16,11 @@ import type { Flashcard, GeneratedCard, MainViewMode } from '@/types/flashcard';
  * none). The AI doors hand off to the same Review Cards step the deck page
  * uses, so a card created here is identical to one created there.
  */
-export function useCreateDeckFlow(onClose: () => void) {
+export function useCreateDeckFlow(
+  onClose: () => void,
+  onDeckCreated?: (deckId: string) => void,
+  onDeckStarted?: (deckId: string) => void,
+) {
   const t = useTranslations('Deck.createDeckDialog');
   const router = useRouter();
   const { createDeck, pinDeck, setDeckReadingPractice } = useDecks();
@@ -76,7 +80,11 @@ export function useCreateDeckFlow(onClose: () => void) {
   const navigateToDeck = (deckId: string) => {
     reset();
     onClose();
-    router.push(`/deck/${deckId}`);
+    if (onDeckCreated) {
+      onDeckCreated(deckId);
+    } else {
+      router.push(`/deck/${deckId}`);
+    }
   };
 
   /** Create the deck the "add cards" doors need before they can open. */
@@ -93,6 +101,7 @@ export function useCreateDeckFlow(onClose: () => void) {
       if (pinToHome) await pinDeck(deck.id, true);
       if (readingPractice) await setDeckReadingPractice(deck.id, true);
       setCreatedDeckId(deck.id);
+      onDeckStarted?.(deck.id);
       return deck.id;
     } catch (err) {
       setFlowError(errorMessage(err, t('createFailed')));

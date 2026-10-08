@@ -41,6 +41,7 @@ interface KanaCourseBuilderProps {
   groups: Group[];
   groupId: string;
   onGroupChange: (groupId: string) => void;
+  hideGroupSelect?: boolean;
 }
 
 const EMPTY_SELECTION: KanaCourseSelection = { skippedWeeks: [], skippedRows: [] };
@@ -65,7 +66,12 @@ async function authHeaders(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export function KanaCourseBuilder({ groups, groupId, onGroupChange }: KanaCourseBuilderProps) {
+export function KanaCourseBuilder({
+  groups,
+  groupId,
+  onGroupChange,
+  hideGroupSelect = false,
+}: KanaCourseBuilderProps) {
   const t = useTranslations('Materials.kanaCourse');
   const router = useRouter();
   const { source, loadingSource, applying, results, error, loadSource, apply, reset } =
@@ -182,7 +188,7 @@ export function KanaCourseBuilder({ groups, groupId, onGroupChange }: KanaCourse
             </Button>
           ) : (
             <>
-              <Button variant="contained" onClick={() => router.push(`/group/${groupId}`)}>
+              <Button variant="contained" onClick={() => router.push(`/group/${groupId}?tab=plan`)}>
                 {t('backToGroupButton')}
               </Button>
               <Button onClick={startOver} sx={{ textTransform: 'none' }}>
@@ -216,6 +222,7 @@ export function KanaCourseBuilder({ groups, groupId, onGroupChange }: KanaCourse
           onGroupChange={onGroupChange}
           onChange={patchForm}
           onSubmit={build}
+          hideGroupSelect={hideGroupSelect}
         />
       )}
 

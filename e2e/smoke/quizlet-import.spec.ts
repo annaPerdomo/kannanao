@@ -36,13 +36,13 @@ test.describe('Quizlet import', () => {
 
   test('each bookmarklet send becomes its own deck to review', async ({ page }) => {
     await signIn(page);
-    await page.goto(`/materials?tab=quizlet${hashFor(COLORS)}`);
+    await page.goto(`/group?next=quizlet${hashFor(COLORS)}`);
     const names = page.getByLabel(en.Materials.quizlet.deckName);
     await expect(names).toHaveCount(1, { timeout: 60_000 });
     await expect(names.first()).toHaveValue('Ch5-5 Colors');
     expect(new URL(page.url()).hash).toBe('');
 
-    await page.goto(`/materials?tab=quizlet${hashFor(PATTERNS)}`);
+    await page.goto(`/group?next=quizlet${hashFor(PATTERNS)}`);
     await expect(names).toHaveCount(2, { timeout: 60_000 });
     await expect(names.nth(1)).toHaveValue('Ch5 Sentence patterns');
 

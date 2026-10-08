@@ -19,6 +19,7 @@ interface DeckCardProps {
   onShare?: (id: string) => void;
   onPin?: (id: string, pinned: boolean) => void;
   onEmojiChange?: (id: string, emoji: string | null) => void;
+  onAddToGroup?: (id: string) => void;
   isOwner?: boolean;
 }
 
@@ -29,6 +30,7 @@ export function DeckCard({
   onShare,
   onPin,
   onEmojiChange,
+  onAddToGroup,
   isOwner = true,
 }: DeckCardProps) {
   const t = useTranslations('Deck.deckCard');
@@ -105,6 +107,7 @@ export function DeckCard({
           onShare={onShare}
           onPin={onPin}
           onEmojiChange={onEmojiChange}
+          onAddToGroup={onAddToGroup}
           isOwner={isOwner}
         />
       </Box>

@@ -23,9 +23,15 @@ interface QuizletImportProps {
   groups: Group[];
   groupId: string;
   onGroupChange: (groupId: string) => void;
+  hideGroupSelect?: boolean;
 }
 
-export function QuizletImport({ groups, groupId, onGroupChange }: QuizletImportProps) {
+export function QuizletImport({
+  groups,
+  groupId,
+  onGroupChange,
+  hideGroupSelect = false,
+}: QuizletImportProps) {
   const t = useTranslations('Materials.quizlet');
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -90,6 +96,7 @@ export function QuizletImport({ groups, groupId, onGroupChange }: QuizletImportP
                   memberIds={memberIds}
                   onMemberIdsChange={setMemberIds}
                   disabled={saving}
+                  hideGroupSelect={hideGroupSelect}
                 />
               )}
               <Button

@@ -1,6 +1,5 @@
 import type { SvgIconComponent } from '@mui/icons-material';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import FlightIcon from '@mui/icons-material/Flight';
 import GroupsIcon from '@mui/icons-material/Groups';
 import HomeIcon from '@mui/icons-material/Home';
@@ -21,7 +20,6 @@ export interface NavItem {
     | 'binder'
     | 'me'
     | 'decks'
-    | 'materials'
     | 'groups'
     | 'speech'
     | 'travel'
@@ -37,7 +35,6 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { key: 'practice', href: '/review', icon: LocalFireDepartmentIcon },
   { key: 'decks', href: '/decks', icon: LibraryBooksIcon },
-  { key: 'materials', href: '/materials', icon: DesignServicesIcon, organizerOnly: true },
   { key: 'groups', href: '/group', icon: GroupsIcon, organizerOnly: true },
   { key: 'speech', href: '/ohanashikai', icon: MicIcon },
   { key: 'travel', href: '/travel', icon: FlightIcon },
@@ -55,11 +52,11 @@ export function navItemsFor(isMemberAccount: boolean): NavItem[] {
   return isMemberAccount ? LEARNER_NAV_ITEMS : NAV_ITEMS;
 }
 
-// Home replaces the logo link; Materials and Travel are dropped because
-// MuiBottomNavigation splits the width evenly with no scroll and eight labels clip on a phone.
+// Home replaces the logo link; Travel is dropped because MuiBottomNavigation
+// splits the width evenly with no scroll and seven labels clip on a phone.
 export const BOTTOM_NAV_ITEMS: NavItem[] = [
   { key: 'home', href: '/', icon: HomeIcon, exact: true },
-  ...NAV_ITEMS.filter((item) => item.key !== 'materials' && item.key !== 'travel'),
+  ...NAV_ITEMS.filter((item) => item.key !== 'travel'),
 ];
 
 export function bottomNavItemsFor(isMemberAccount: boolean): NavItem[] {

@@ -14,7 +14,12 @@ describe('learner navigation', () => {
   });
 
   it('leaves organizers on the full nav', () => {
-    expect(navItemsFor(false).map((i) => i.key)).toContain('materials');
+    expect(navItemsFor(false).map((i) => i.key)).toContain('groups');
     expect(bottomNavItemsFor(false).map((i) => i.key)).not.toContain('binder');
+  });
+
+  it('has retired Materials as its own nav destination', () => {
+    expect(navItemsFor(false).map((i) => i.key)).not.toContain('materials');
+    expect(bottomNavItemsFor(false).map((i) => i.key)).not.toContain('materials');
   });
 });

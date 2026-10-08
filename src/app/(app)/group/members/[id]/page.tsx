@@ -21,8 +21,8 @@ export default function LegacyMemberDetailPage() {
     (async () => {
       try {
         const { sb } = await import('@/lib/supabase');
-        const { data } = await sb.auth.getSession();
-        const token = data.session?.access_token;
+        const { data: session } = await sb.auth.getSession();
+        const token = session.session?.access_token;
         if (!token) {
           router.push('/');
           return;
@@ -34,17 +34,10 @@ export default function LegacyMemberDetailPage() {
           router.push('/group');
           return;
         }
-        await res.json();
-        // Try to find a group for this member — fall back to group list
-        const membersRes = await fetch('/api/group/groups', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (membersRes.ok) {
-          const groups = await membersRes.json();
-          if (groups.length > 0) {
-            router.replace(`/group/${groups[0].id}/members/${id}`);
-            return;
-          }
+        const body = await res.json();
+        if (body.groupId) {
+          router.replace(`/group/${body.groupId}/members/${id}`);
+          return;
         }
         router.push('/group');
       } catch {

@@ -42,6 +42,19 @@ export async function isMemberOfOrganizer(memberId: string, organizerId: string)
   return (data?.length ?? 0) > 0;
 }
 
+/** Most recently joined of this organizer's groups, or null if not a member of any. */
+export async function latestGroupOf(memberId: string, organizerId: string): Promise<string | null> {
+  const { data } = await getServiceSupabase()
+    .from('group_members')
+    .select('group_id')
+    .eq('member_id', memberId)
+    .eq('organizer_id', organizerId)
+    .order('joined_at', { ascending: false })
+    .limit(1);
+
+  return (data?.[0]?.group_id as string | undefined) ?? null;
+}
+
 /** True when the learner is in this specific group. */
 export async function isMemberOfGroup(memberId: string, groupId: string): Promise<boolean> {
   const { data } = await getServiceSupabase()

@@ -143,7 +143,9 @@
       "share": "共有",
       "settings": "設定",
       "unpinFromHome": "ホームのピンを外す",
-      "pinToHome": "ホームにピン留め"
+      "pinToHome": "ホームにピン留め",
+      "addToGroupTooltip": "グループに追加",
+      "addToGroupAria": "デッキをグループに追加"
     },
     "practiceHero": {
       "choosePractice": "練習をえらぼう",
@@ -218,7 +220,9 @@
       "shareDeck": "デッキを共有",
       "deleteDeck": "デッキを削除",
       "openDeckAria": "デッキを開く: {name}",
-      "cardsLabel": "枚"
+      "cardsLabel": "枚",
+      "addToGroupTooltip": "グループに追加",
+      "addToGroupAria": "{name}をグループに追加"
     },
     "editCardDialog": {
       "title": "カードを編集",
@@ -1120,7 +1124,7 @@
       "assign": "配る",
       "assignAria": "{deck} を配る",
       "emptyHint": "デッキを作って、ここから配りましょう。",
-      "seeAllAssignments": "課題をすべて見る",
+      "seeAllAssignments": "プランを見る",
       "makeMaterials": "新しい教材を作る",
       "loading": "予定を読み込み中..."
     },
@@ -1142,7 +1146,7 @@
       "masteryLearningCount": "学習中{count}枚",
       "masteryStrongCount": "定着{count}枚",
       "achievements": "実績",
-      "assignmentsHeading": "課題",
+      "assignmentsHeading": "配布物",
       "assignmentsCompleted": "{completed}/{total} 完了",
       "assignmentsPending": "残り{count}件",
       "assignmentsOverdue": "期限切れ{count}件",
@@ -1231,7 +1235,7 @@
       "noAttempts": "まだ誰もこのクイズを受けていません。",
       "loadFailed": "クイズの成績を読み込めませんでした",
       "summary": "{total}人中{taken}人が受験・平均{average}%",
-      "noDecksBody": "教材ビルダーでデッキをつくると、ここにクイズの成績が表示されます。",
+      "noDecksBody": "「プランに追加」からデッキをつくると、ここにクイズの成績が表示されます。",
       "lastTaken": "最終受験：{date}"
     },
     "goalPicker": {
@@ -1257,13 +1261,13 @@
       "goalModeOnly": "{mode}で練習"
     },
     "assignmentsList": {
-      "noAssignmentsTitle": "課題がまだありません",
-      "noAssignmentsBody": "「課題を出す」ボタンから、メンバーにデッキを出せます。",
+      "noAssignmentsTitle": "配布物がまだありません",
+      "noAssignmentsBody": "「デッキを配る」ボタンから、メンバーにデッキを配れます。",
       "unknownMember": "不明",
       "unknownDeck": "不明なデッキ",
       "dueOn": "{date}まで",
-      "editAssignmentAria": "{deckName}の課題を編集",
-      "removeAssignmentAria": "{deckName}の課題を削除",
+      "editAssignmentAria": "{deckName}の配布を編集",
+      "removeAssignmentAria": "{deckName}の配布を削除",
       "goalProgress": "🎯 目標: {goal}{state, select, best { — これまでの最高: {accuracy}%} reached { — {accuracy}%を達成} other {}}",
       "overdueBy": "{days}日おくれ",
       "dueToday": "今日まで",
@@ -1271,9 +1275,9 @@
       "dueInDays": "あと{days}日",
       "doneCount": "{done}/{total} 完了",
       "goalLabel": "目標: {goal}",
-      "removeTitle": "課題を削除しますか？",
+      "removeTitle": "配布を削除しますか？",
       "removeBody": "「{deck}」を{count, plural, other {#人全員}}から削除します。",
-      "removeFailed": "課題を削除できませんでした。もう一度お試しください。",
+      "removeFailed": "配布を削除できませんでした。もう一度お試しください。",
       "startsOn": "{date} から",
       "expandMembersAria": "{deckName}の進捗を表示",
       "collapseMembersAria": "{deckName}の進捗を非表示",
@@ -1333,26 +1337,26 @@
       "openFullPage": "ページで開く"
     },
     "createAssignment": {
-      "title": "課題を出す",
+      "title": "配る",
       "subtitle": "デッキかかなの行と、出す相手を選びましょう",
       "selectDeck": "デッキを選ぶ",
-      "selectWhat": "何を出すか",
+      "selectWhat": "何を配るか",
       "targetDeck": "デッキ",
       "targetKana": "かな",
       "hiragana": "ひらがな",
       "katakana": "カタカナ",
-      "assignTo": "出す相手",
+      "assignTo": "配る相手",
       "noteLabel": "メモ（任意）",
       "notePlaceholder": "3章の単語を中心に",
       "dueDateLabel": "しめ切り（任意）",
-      "assign": "出す",
-      "assigning": "送信中...",
-      "failedToCreate": "課題を出せませんでした",
+      "assign": "配る",
+      "assigning": "配布中...",
+      "failedToCreate": "配布できませんでした",
       "availableOnLabel": "表示を始める日",
       "availableOnHelp": "空白のまま出すと、すぐに表示されます。"
     },
     "editAssignment": {
-      "title": "課題を編集",
+      "title": "配布を編集",
       "subtitle": "{emoji} {deckName} — {memberName}",
       "deckFallback": "デッキ",
       "memberFallback": "メンバー",
@@ -1360,17 +1364,17 @@
       "notePlaceholder": "3章の単語を中心に",
       "dueDateLabel": "しめ切り（任意）",
       "saving": "保存中...",
-      "failedToUpdate": "課題を更新できませんでした",
+      "failedToUpdate": "配布を更新できませんでした",
       "subtitleBatch": "{emoji} {deckName}・{count, plural, other {#人}}",
       "availableOnLabel": "表示を始める日",
       "availableOnHelp": "空白のまま出すと、すぐに表示されます。"
     },
     "useAssignments": {
-      "failedToLoad": "課題を読み込めませんでした",
-      "failedToCreate": "課題を出せませんでした",
+      "failedToLoad": "配布を読み込めませんでした",
+      "failedToCreate": "配布できませんでした",
       "updateFailed": "変更を保存できませんでした。もう一度お試しください。",
       "updatePartial": "{total}人中{ok}人分を保存しました。もう一度お試しください。",
-      "deleteFailed": "課題を削除できませんでした。もう一度お試しください。"
+      "deleteFailed": "配布を削除できませんでした。もう一度お試しください。"
     },
     "createGroup": {
       "title": "グループを作成",
@@ -1502,14 +1506,14 @@
       "renameGroup": "グループ名を変更",
       "defaultTitle": "グループのダッシュボード",
       "memberCountInGroup": "このグループにメンバー{count, plural, other {#人}}",
-      "assignDeckButton": "課題を出す",
+      "assignDeckButton": "デッキを配る",
       "weeklyLeaderboard": "今週のランキング",
       "visible": "表示中",
       "hidden": "非表示",
       "loadingLeaderboard": "ランキングを読み込み中...",
       "leaderboardHiddenBody": "ランキングはメンバーには表示されていません。",
       "encouragementHeading": "応援メッセージを送る",
-      "assignmentsHeading": "課題",
+      "assignmentsHeading": "配布物",
       "recentActivityHeading": "最近の活動",
       "loadingActivity": "活動を読み込み中...",
       "showAll": "すべて見る（{count}）",
@@ -1517,15 +1521,21 @@
       "quickActionsLabel": "クイックアクション",
       "inviteLearnersTitle": "学習者を招待",
       "inviteLearnersSubtitle": "リンクまたはQRコードで共有",
-      "materialsBuilderTitle": "教材ビルダーを開く",
-      "materialsBuilderSubtitle": "デッキ・レッスン・課題をつくる"
+      "addToPlanTitle": "プランに追加",
+      "addToPlanSubtitle": "新しい週・デッキ・かな目標をつくる"
     },
     "dashboardTabs": {
-      "overview": "概要",
+      "today": "今日",
+      "plan": "プラン",
       "learners": "学習者",
-      "assignments": "課題",
-      "words": "単語",
-      "activity": "活動"
+      "words": "単語"
+    },
+    "planTab": {
+      "planHeading": "プラン",
+      "handOutDeckButton": "デッキを配る",
+      "kanaGoalsHeading": "かな目標",
+      "emptyBody": "まだ何も計画されていません。最初の週を追加しましょう。",
+      "addToPlanButton": "プランに追加"
     },
     "groupsPage": {
       "loadingGroups": "グループを読み込み中...",
@@ -1534,7 +1544,8 @@
       "newGroupButton": "新しいグループ",
       "noGroupsTitle": "グループがまだありません",
       "noGroupsBody": "グループを作って、メンバーをまとめましょう。",
-      "createFirstGroupButton": "最初のグループを作成"
+      "createFirstGroupButton": "最初のグループを作成",
+      "pickGroupForQuizlet": "インポート先のグループを選んでください"
     },
     "joinPage": {
       "invalidInviteCode": "招待コードが正しくありません。",
@@ -1720,7 +1731,7 @@
       "assignmentDueInDaysHeadline": "{deck}はあと{days, plural, other {#日}}で期限です",
       "assignmentDoneSubline": "{total, plural, other {#人}}中{done}人が完了",
       "assignmentCloseSuffix": "{name}さんはあと少し（{progress}% / 目標{goal}%）",
-      "viewAssignmentAction": "課題を見る",
+      "viewAssignmentAction": "配布を見る",
       "viewAllCount": "{count, plural, other {対応が必要な#件をすべて見る →}}",
       "showLessAction": "とじる",
       "nudgeDialogTitle": "{name}さんに声をかける",
@@ -1791,7 +1802,7 @@
       "startOverButton": "さいしょから",
       "successMessage": "デッキを{count}こつくって、グループのみんなにわりあてました。",
       "deckFailed": "{name}でもんだいがありました：{reason}",
-      "backToGroupButton": "グループにもどる",
+      "backToGroupButton": "プランを見る",
       "printStudyButton": "学習プリントを印刷",
       "printQuizButton": "テストプリントを印刷",
       "printStudyTitle": "学習プリント",
@@ -1875,29 +1886,52 @@
       "heading": "にがてな練習モード",
       "accuracy": "正解率 {pct}%",
       "lowSample": "まだ練習が足りません"
+    },
+    "addToPlan": {
+      "dialogTitle": "プランに追加",
+      "chooseCta": "選ぶ",
+      "startCta": "はじめる",
+      "lesson": {
+        "title": "AIでレッスンを作る",
+        "description": "テーマや教科書のページ、PDFから単語・例文・週ごとの予定を作ります。"
+      },
+      "decks": {
+        "title": "持っているデッキを使う",
+        "description": "すでに作ったデッキを配ります。"
+      },
+      "quizlet": {
+        "title": "Quizletからインポート",
+        "description": "グループがすでに使っているセットを取り込みます。"
+      },
+      "kana": {
+        "title": "かな講座",
+        "description": "ひらがな・カタカナを週に数行ずつ。"
+      },
+      "blank": {
+        "title": "白紙のデッキから作る",
+        "description": "自分で単語を入力します。"
+      },
+      "groupNotFoundTitle": "グループが見つかりません",
+      "groupNotFoundBody": "削除されたか、アクセスできない可能性があります。",
+      "backToGroupsButton": "グループ一覧へ",
+      "savedNotHandedOut": "デッキには保存されました — まだ配布はされていません。",
+      "handItOutButton": "配布する"
+    },
+    "addDeckToGroup": {
+      "dialogTitle": "グループに追加",
+      "loading": "グループを読み込み中…",
+      "openGroupAria": "{name}に配る",
+      "emptyMessage": "まずグループを作ると、このデッキを配れるようになります。",
+      "makeGroupButton": "グループを作る"
     }
   },
   "Materials": {
-    "meta": {
-      "title": "教材づくり | Tangodachi",
-      "description": "レッスンセットもデッキ1つも、数秒で。デッキ・例文・週ごとの予定を、ちょうどいいレベルでつくれます。"
-    },
-    "title": "教材づくり",
-    "subtitle": "レッスンセットも、デッキ1つだけでも、数秒でつくれます。",
-    "loadingMessage": "よみこみ中…",
-    "tabs": {
-      "assigned": "配布済み",
-      "lessonSet": "レッスンセット",
-      "deck": "デッキだけ",
-      "kana": "もじ",
-      "quizlet": "Quizlet"
-    },
     "library": {
       "loadError": "レッスンを読み込めませんでした。少し待ってからもう一度お試しください。",
       "emptyTitle": "このグループにはまだ配布したものがありません",
-      "emptyBody": "レッスンセットを作ると、ここに週ごとに表示されます。",
-      "buildButton": "レッスンセットを作る",
-      "untitledUnit": "{date}のレッスンセット",
+      "emptyBody": "レッスンを作ると、ここに週ごとに表示されます。",
+      "buildButton": "レッスンを作る",
+      "untitledUnit": "{date}のレッスン",
       "weekLabel": "第{n}週",
       "weekOfTotal": "全{total}週中 第{current}週",
       "allWeeksDone": "全{total}週 終了",
@@ -1912,7 +1946,6 @@
       "otherHandouts": "その他の配布物",
       "showWeeks": "週を表示",
       "hideWeeks": "週を隠す",
-      "seeInAssigned": "配布済みで見る",
       "retry": "再試行",
       "editWeekSubtitle": "変更は{group}の全員に適用されます。後から参加する学習者にも同じ内容が表示されます。",
       "fieldTitle": "タイトル",
@@ -1974,8 +2007,8 @@
     },
     "handoutPage": {
       "metaTitle": "配布物",
-      "backToAssigned": "配布済みに戻る",
-      "backToAssignedIn": "配布済みに戻る・{group}",
+      "backToPlan": "プランに戻る",
+      "backToPlanIn": "プランに戻る・{group}",
       "notFound": "このグループには配布されていません。削除された可能性があります。",
       "noDueDate": "締切なし",
       "goal": "ゴール：{goal}",
@@ -2058,20 +2091,6 @@
       "foodCultureGoal": "食べもののことばとレストランでの注文、食文化とマナー",
       "seasonsLabel": "季節と行事",
       "seasonsGoal": "四季と天気のことば、一年の行事やおまつり"
-    },
-    "noGroups": "さきにグループをつくってください。そのあとでレッスンセットをつくれます。学習者はいつでも入れます。",
-    "createGroupButton": "グループへ",
-    "deckPanel": {
-      "title": "デッキをつくる",
-      "subtitle": "すきなトピックや単語リストから、デッキを1つつくれます。",
-      "aiRow": "AIで生成",
-      "aiHint": "トピックを書くと、カードが自動でできあがります。",
-      "pdfRow": "PDFからとりこむ",
-      "pdfHint": "資料から単語をぬきだします。",
-      "copyRow": "もっているカードをコピー",
-      "copyHint": "ほかのデッキのカードをつかいまわせます。",
-      "createButton": "デッキをつくる",
-      "seeDecksButton": "デッキ一覧へ"
     },
     "kanaCourse": {
       "step1Title": "だれが よむ？",
@@ -2162,14 +2181,14 @@
       "hideCards": "カードをとじる",
       "phrase": "フレーズ",
       "assignTitle": "学習者にわたす（任意）",
-      "assignSubtitle": "えらんだ学習者の「練習」ページに、それぞれのデッキが課題としてとどきます。",
+      "assignSubtitle": "えらんだ学習者の「練習」ページに、それぞれのデッキが配布物としてとどきます。",
       "groupLabel": "グループ",
       "membersFailed": "学習者を読みこめませんでした。デッキの保存はできます。",
       "noMembers": "このグループにはまだ学習者がいません。",
       "saveButton": "デッキを{count}こ保存",
       "saving": "保存中…",
       "saveFailed": "保存中にエラーがおきました。保存できなかったセットはのこっているので、もう一度ためしてください。",
-      "assignFailed": "デッキは保存しましたが、一部をわたせませんでした。グループのページから課題にしてください。",
+      "assignFailed": "デッキは保存しましたが、一部をわたせませんでした。グループのページから配ってください。",
       "savedTitle": "デッキを{count}こ保存しました",
       "savedLine": "— {count}まい",
       "savedLineAssigned": "— {count}まい・わたしました",
@@ -2186,7 +2205,6 @@
     "items": {
       "home": "ホーム",
       "decks": "デッキ",
-      "materials": "教材",
       "groups": "グループ",
       "speech": "スピーチ",
       "travel": "トラベル",
@@ -2262,6 +2280,15 @@
       "loading": "グループを読み込み中…",
       "createGroup": "グループを作成",
       "emptyPin": "ピン留めするとここに表示されます。グループのピンアイコンを押してください ✨"
+    },
+    "teachingToday": {
+      "heading": "今日の様子",
+      "allGroups": "すべてのグループ →",
+      "allQuiet": "今日はみんな順調です。",
+      "rowQuiet": "順調です",
+      "rowError": "{name}を読み込めませんでした",
+      "moreCount": "ほか{count}件",
+      "thisWeek": "今週：{title}"
     },
     "leaderboardSection": {
       "emptyCheckBack": "もっと人が参加したら見てみてね！"
@@ -2481,10 +2508,10 @@
       "onSuccess": "毎日のリマインダーをオンにしました！",
       "offSuccess": "毎日のリマインダーをオフにしました。"
     },
-    "inviteMembers": {
-      "title": "メンバーを招待",
-      "description": "招待リンクを作って、QRコードで学習グループにメンバーを迎えましょう。",
-      "createButton": "招待リンクを作成"
+    "invites": {
+      "title": "招待",
+      "description": "それぞれのグループのページから学習者を招待できます。",
+      "goToGroupsButton": "グループを見る"
     },
     "password": {
       "title": "パスワード",

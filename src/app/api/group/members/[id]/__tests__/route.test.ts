@@ -265,6 +265,29 @@ describe('GET /api/group/members/[id] — review backlog', () => {
   });
 });
 
+describe('GET /api/group/members/[id] — groupId', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    _resetStore();
+    for (const k of Object.keys(tableData)) delete tableData[k];
+    requireOrganizerAccountMock.mockResolvedValue(ORGANIZER);
+    setTable('profiles', { id: 'm1', username: 'kid', display_name: 'Kid' });
+  });
+
+  it('returns the group_id of the membership row', async () => {
+    setTable('group_members', [{ member_id: 'm1', group_id: 'g1', organizer_id: 'org-1' }]);
+    const res = await GET(makeRequest(), { params });
+    const body = await res.json();
+    expect(body.groupId).toBe('g1');
+  });
+
+  it("returns 404 when the member doesn't belong to this organizer", async () => {
+    setTable('group_members', []);
+    const res = await GET(makeRequest(), { params });
+    expect(res.status).toBe(404);
+  });
+});
+
 describe('GET /api/group/members/[id] — reading', () => {
   beforeEach(() => {
     vi.clearAllMocks();

@@ -15,6 +15,7 @@ vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => authState }));
 
 vi.mock('@/components/CreateDeckDialog', () => ({ CreateDeckDialog: () => null }));
 vi.mock('@/components/ShareEmbedDialog', () => ({ ShareEmbedDialog: () => null }));
+vi.mock('@/components/Group', () => ({ AddDeckToGroupDialog: () => null }));
 
 import { DataError } from '@/lib/dataError';
 import Decks from '@/pages/Decks';
@@ -159,5 +160,26 @@ describe('the deck library in its ordinary states', () => {
     renderWithProviders(<Decks />);
 
     expect(screen.getByText('Kanji Basics')).toBeInTheDocument();
+  });
+
+  it('offers "Add to a group" for a deck the organizer owns', () => {
+    useDecksMock.mockReturnValue(decksState({ decks: [makeDeck()] }));
+    renderWithProviders(<Decks />);
+    expect(screen.getByRole('button', { name: /Add Kanji Basics to a group/ })).toBeInTheDocument();
+  });
+
+  it('hides "Add to a group" for a deck the organizer does not own', () => {
+    useDecksMock.mockReturnValue(
+      decksState({ decks: [makeDeck({ ownerId: 'someone-else', isShared: true })] }),
+    );
+    renderWithProviders(<Decks />);
+    expect(screen.queryByRole('button', { name: /to a group/ })).not.toBeInTheDocument();
+  });
+
+  it('hides "Add to a group" for a member account', () => {
+    authState.isMemberAccount = true;
+    useDecksMock.mockReturnValue(decksState({ decks: [makeDeck()] }));
+    renderWithProviders(<Decks />);
+    expect(screen.queryByRole('button', { name: /to a group/ })).not.toBeInTheDocument();
   });
 });

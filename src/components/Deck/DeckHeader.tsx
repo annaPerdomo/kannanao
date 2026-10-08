@@ -2,6 +2,7 @@
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import TuneIcon from '@mui/icons-material/Tune';
@@ -16,12 +17,18 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
 
 import { EmojiPickerPopover } from '@/components/EmojiPickerPopover';
 import { PageHeader } from '@/components/PageHeader';
 import type { Deck } from '@/types/deck';
+
+const AddDeckToGroupDialog = dynamic(
+  () => import('@/components/Group/AddDeckToGroupDialog').then((m) => m.AddDeckToGroupDialog),
+  { ssr: false },
+);
 
 interface DeckHeaderProps {
   deck: Deck;
@@ -32,6 +39,7 @@ interface DeckHeaderProps {
   onSettingsOpen: () => void;
   onEmojiChange: (id: string, emoji: string | null) => void;
   readOnly?: boolean;
+  canAddToGroup?: boolean;
 }
 
 export function DeckHeader({
@@ -43,6 +51,7 @@ export function DeckHeader({
   onSettingsOpen,
   onEmojiChange,
   readOnly,
+  canAddToGroup = false,
 }: DeckHeaderProps) {
   const t = useTranslations('Deck.deckHeader');
   const tCommon = useTranslations('Common');
@@ -53,6 +62,7 @@ export function DeckHeader({
   const [nameVal, setNameVal] = useState('');
   const [descVal, setDescVal] = useState('');
   const [emojiAnchor, setEmojiAnchor] = useState<HTMLElement | null>(null);
+  const [addToGroupOpen, setAddToGroupOpen] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const startEdit = useCallback(() => {
@@ -294,6 +304,57 @@ export function DeckHeader({
                 {t('settings')}
               </Button>
             )}
+            {canAddToGroup && (
+              <>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<GroupAddIcon sx={{ fontSize: 15 }} />}
+                  onClick={() => setAddToGroupOpen(true)}
+                  sx={{
+                    display: { xs: 'none', sm: 'inline-flex' },
+                    borderRadius: '9px',
+                    px: 2,
+                    py: '5px',
+                    fontSize: '0.76rem',
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    borderColor: alpha(brand[300], 0.45),
+                    color: alpha(brand[500], 0.8),
+                    '&:hover': {
+                      bgcolor: alpha(brand[100], 0.8),
+                      color: brand[600],
+                      borderColor: alpha(brand[500], 0.6),
+                    },
+                  }}
+                >
+                  {t('addToGroupTooltip')}
+                </Button>
+                <Tooltip title={t('addToGroupTooltip')}>
+                  <IconButton
+                    size="small"
+                    aria-label={t('addToGroupAria')}
+                    onClick={() => setAddToGroupOpen(true)}
+                    sx={{
+                      display: { xs: 'inline-flex', sm: 'none' },
+                      width: 30,
+                      height: 30,
+                      borderRadius: '8px',
+                      border: `1.5px solid ${alpha(brand[300], 0.45)}`,
+                      bgcolor: alpha('#FFFFFF', 0.4),
+                      color: alpha(brand[500], 0.55),
+                      '&:hover': {
+                        bgcolor: alpha(brand[100], 0.8),
+                        color: brand[600],
+                        borderColor: alpha(brand[500], 0.6),
+                      },
+                    }}
+                  >
+                    <GroupAddIcon sx={{ fontSize: 15 }} />
+                  </IconButton>
+                </Tooltip>
+              </>
+            )}
             <Tooltip title={deck.pinned ? t('unpinFromHome') : t('pinToHome')}>
               <IconButton
                 size="small"
@@ -330,6 +391,15 @@ export function DeckHeader({
           onClose={() => setEmojiAnchor(null)}
           onSelect={(emoji) => onEmojiChange(deck.id, emoji)}
           onRemove={deck.emoji ? () => onEmojiChange(deck.id, null) : undefined}
+        />
+      )}
+
+      {canAddToGroup && addToGroupOpen && (
+        <AddDeckToGroupDialog
+          open={addToGroupOpen}
+          onClose={() => setAddToGroupOpen(false)}
+          deckId={deck.id}
+          deckName={deck.name}
         />
       )}
     </>

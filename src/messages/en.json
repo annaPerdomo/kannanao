@@ -143,7 +143,9 @@
       "share": "Share",
       "settings": "Settings",
       "unpinFromHome": "Unpin from home",
-      "pinToHome": "Pin to home"
+      "pinToHome": "Pin to home",
+      "addToGroupTooltip": "Add to a group",
+      "addToGroupAria": "Add deck to a group"
     },
     "practiceHero": {
       "choosePractice": "Choose a practice",
@@ -218,7 +220,9 @@
       "shareDeck": "Share deck",
       "deleteDeck": "Delete deck",
       "openDeckAria": "Open deck: {name}",
-      "cardsLabel": "cards"
+      "cardsLabel": "cards",
+      "addToGroupTooltip": "Add to a group",
+      "addToGroupAria": "Add {name} to a group"
     },
     "editCardDialog": {
       "title": "Edit Card",
@@ -1117,10 +1121,10 @@
       "recentlyFinished": "Recently finished",
       "notHandedOut": "Not handed out yet",
       "andMore": "and {count} more",
-      "assign": "Assign",
-      "assignAria": "Assign {deck}",
+      "assign": "Hand out",
+      "assignAria": "Hand out {deck}",
       "emptyHint": "Make a deck, then hand it out here.",
-      "seeAllAssignments": "See all assignments",
+      "seeAllAssignments": "See the plan",
       "makeMaterials": "Make new materials",
       "loading": "Loading your plan..."
     },
@@ -1142,7 +1146,7 @@
       "masteryLearningCount": "{count} learning",
       "masteryStrongCount": "{count} strong",
       "achievements": "Achievements",
-      "assignmentsHeading": "Assignments",
+      "assignmentsHeading": "Handouts",
       "assignmentsCompleted": "{completed}/{total} completed",
       "assignmentsPending": "{count} pending",
       "assignmentsOverdue": "{count} overdue",
@@ -1231,7 +1235,7 @@
       "noAttempts": "No one has taken this quiz yet.",
       "loadFailed": "Failed to load quiz scores",
       "summary": "{taken} of {total} have taken it · average {average}%",
-      "noDecksBody": "Make a deck in the Materials Builder to see quiz scores here.",
+      "noDecksBody": "Make a deck from \"Add to plan\" to see quiz scores here.",
       "lastTaken": "Last taken {date}"
     },
     "goalPicker": {
@@ -1257,13 +1261,13 @@
       "goalModeOnly": "practice in {mode}"
     },
     "assignmentsList": {
-      "noAssignmentsTitle": "No assignments yet",
-      "noAssignmentsBody": "Use the \"Assign Deck\" button to assign decks to your members.",
+      "noAssignmentsTitle": "No handouts yet",
+      "noAssignmentsBody": "Use the \"Hand Out Deck\" button to hand out decks to your members.",
       "unknownMember": "Unknown",
       "unknownDeck": "Unknown Deck",
       "dueOn": "Due {date}",
-      "editAssignmentAria": "Edit assignment for {deckName}",
-      "removeAssignmentAria": "Remove assignment for {deckName}",
+      "editAssignmentAria": "Edit handout for {deckName}",
+      "removeAssignmentAria": "Remove handout for {deckName}",
       "goalProgress": "🎯 Goal: {goal}{state, select, best { — Best so far: {accuracy}%} reached { — reached {accuracy}%} other {}}",
       "overdueBy": "Overdue by {days}d",
       "dueToday": "Due today",
@@ -1271,9 +1275,9 @@
       "dueInDays": "Due in {days}d",
       "doneCount": "{done}/{total} done",
       "goalLabel": "Goal: {goal}",
-      "removeTitle": "Remove assignment?",
+      "removeTitle": "Remove handout?",
       "removeBody": "{deck} will be removed for {count, plural, one {# member} other {all # members}}.",
-      "removeFailed": "Couldn't remove the assignment. Please try again.",
+      "removeFailed": "Couldn't remove the handout. Please try again.",
       "startsOn": "Starts {date}",
       "expandMembersAria": "Show who's done with {deckName}",
       "collapseMembersAria": "Hide who's done with {deckName}",
@@ -1333,26 +1337,26 @@
       "openFullPage": "Open full page"
     },
     "createAssignment": {
-      "title": "Assign Work",
+      "title": "Hand Out Work",
       "subtitle": "Choose a deck or a row of kana, and who gets it",
       "selectDeck": "Select Deck",
-      "selectWhat": "What to assign",
+      "selectWhat": "What to hand out",
       "targetDeck": "A deck",
       "targetKana": "Kana",
       "hiragana": "Hiragana",
       "katakana": "Katakana",
-      "assignTo": "Assign To",
+      "assignTo": "Hand Out To",
       "noteLabel": "Note (optional)",
       "notePlaceholder": "Focus on chapter 3 vocab",
       "dueDateLabel": "Due Date (optional)",
-      "assign": "Assign",
-      "assigning": "Assigning...",
-      "failedToCreate": "Failed to create assignment",
+      "assign": "Hand Out",
+      "assigning": "Handing out...",
+      "failedToCreate": "Failed to create handout",
       "availableOnLabel": "Starts showing on",
       "availableOnHelp": "Leave blank to show it right away."
     },
     "editAssignment": {
-      "title": "Edit Assignment",
+      "title": "Edit Handout",
       "subtitle": "{emoji} {deckName} — {memberName}",
       "deckFallback": "Deck",
       "memberFallback": "Member",
@@ -1360,17 +1364,17 @@
       "notePlaceholder": "Focus on chapter 3 vocab",
       "dueDateLabel": "Due Date (optional)",
       "saving": "Saving...",
-      "failedToUpdate": "Failed to update assignment",
+      "failedToUpdate": "Failed to update handout",
       "subtitleBatch": "{emoji} {deckName} · {count, plural, one {# member} other {# members}}",
       "availableOnLabel": "Starts showing on",
       "availableOnHelp": "Leave blank to show it right away."
     },
     "useAssignments": {
-      "failedToLoad": "Failed to load assignments",
-      "failedToCreate": "Failed to create assignment",
+      "failedToLoad": "Failed to load handouts",
+      "failedToCreate": "Failed to create handout",
       "updateFailed": "Couldn't save the changes. Please try again.",
       "updatePartial": "Saved for {ok} of {total} members — try again to finish the rest.",
-      "deleteFailed": "Couldn't remove the assignment. Please try again."
+      "deleteFailed": "Couldn't remove the handout. Please try again."
     },
     "createGroup": {
       "title": "Create Group",
@@ -1502,14 +1506,14 @@
       "renameGroup": "Rename group",
       "defaultTitle": "Group Dashboard",
       "memberCountInGroup": "{count, plural, one {# member} other {# members}} in this group",
-      "assignDeckButton": "Assign Deck",
+      "assignDeckButton": "Hand Out Deck",
       "weeklyLeaderboard": "Weekly leaderboard",
       "visible": "Visible",
       "hidden": "Hidden",
       "loadingLeaderboard": "Loading leaderboard...",
       "leaderboardHiddenBody": "Leaderboard is hidden from members.",
       "encouragementHeading": "Send encouragement",
-      "assignmentsHeading": "Assignments",
+      "assignmentsHeading": "Handouts",
       "recentActivityHeading": "Recent activity",
       "loadingActivity": "Loading activity...",
       "showAll": "Show all {count}",
@@ -1517,15 +1521,21 @@
       "quickActionsLabel": "Quick actions",
       "inviteLearnersTitle": "Invite learners",
       "inviteLearnersSubtitle": "Share link or QR",
-      "materialsBuilderTitle": "Open Materials Builder",
-      "materialsBuilderSubtitle": "Create decks, lessons, and assignments"
+      "addToPlanTitle": "Add to plan",
+      "addToPlanSubtitle": "Build a new week, deck, or kana goal"
     },
     "dashboardTabs": {
-      "overview": "Overview",
+      "today": "Today",
+      "plan": "Plan",
       "learners": "Learners",
-      "assignments": "Assignments",
-      "words": "Words",
-      "activity": "Activity"
+      "words": "Words"
+    },
+    "planTab": {
+      "planHeading": "Plan",
+      "handOutDeckButton": "Hand out a deck",
+      "kanaGoalsHeading": "Kana goals",
+      "emptyBody": "Nothing planned yet — add your first week.",
+      "addToPlanButton": "Add to plan"
     },
     "groupsPage": {
       "loadingGroups": "Loading groups...",
@@ -1534,7 +1544,8 @@
       "newGroupButton": "New Group",
       "noGroupsTitle": "No groups yet",
       "noGroupsBody": "Create a group to start organizing your members.",
-      "createFirstGroupButton": "Create your first group"
+      "createFirstGroupButton": "Create your first group",
+      "pickGroupForQuizlet": "Pick the group to import into"
     },
     "joinPage": {
       "invalidInviteCode": "Invalid invite code.",
@@ -1605,7 +1616,7 @@
       "deckFilterAriaLabel": "Filter tricky words by deck",
       "contextLine": "{count, plural, one {Across # learner in this group} other {Across # learners in this group}}",
       "loadingMessage": "Looking for tricky words…",
-      "noDecksBody": "Assign a deck to this group to see tricky words here.",
+      "noDecksBody": "Hand out a deck to this group to see tricky words here.",
       "noTrickyWords": "No tricky words right now 🎉 — check back after the group has studied more.",
       "learnersAffected": "{affected} of {total, plural, one {# learner} other {# learners}} affected",
       "percentRight": "{percent}% right",
@@ -1720,7 +1731,7 @@
       "assignmentDueInDaysHeadline": "{deck} is due in {days, plural, one {# day} other {# days}}",
       "assignmentDoneSubline": "{done} of {total, plural, one {# learner} other {# learners}} finished",
       "assignmentCloseSuffix": "{name} is close at {progress}% / {goal}% goal",
-      "viewAssignmentAction": "View assignment",
+      "viewAssignmentAction": "View handout",
       "viewAllCount": "{count, plural, one {View # thing needing attention →} other {View all # things needing attention →}}",
       "showLessAction": "Show less",
       "nudgeDialogTitle": "Send a nudge to {name}",
@@ -1784,14 +1795,14 @@
       "retryGoal": "{goal} — redo just this week's deck: {deck}",
       "dueDateLabel": "First deck due",
       "dueDateHint": "Each later week is due seven days after the one before it.",
-      "applyButton": "Create decks & assign",
+      "applyButton": "Create decks & hand out",
       "groupWideNotice": "Everyone in the group gets these decks and this schedule — including anyone who joins later.",
       "applying": "Creating…",
       "applyingMessage": "Creating the decks and their practice sentences — this takes a moment.",
       "startOverButton": "Start over",
-      "successMessage": "{count, plural, one {# deck was created and assigned to everyone in the group.} other {# decks were created and assigned to everyone in the group.}}",
+      "successMessage": "{count, plural, one {# deck was created and handed out to everyone in the group.} other {# decks were created and handed out to everyone in the group.}}",
       "deckFailed": "{name} had a problem: {reason}",
-      "backToGroupButton": "Back to the group",
+      "backToGroupButton": "See the plan",
       "printStudyButton": "Print study sheets",
       "printQuizButton": "Print quiz sheets",
       "printStudyTitle": "Study sheets",
@@ -1814,9 +1825,9 @@
       "kanaGapUntried": "Hasn't tried Learn Kana yet: {names}",
       "kanaNoDataNote": "Tip: your group hasn't tried Learn Kana yet, so there's no reading data to check this plan against.",
       "kanaCompanionTitle": "This lesson uses sounds your group hasn't mastered: {sounds}",
-      "kanaCompanionToggle": "Also assign these kana rows, due the same day",
-      "kanaAssignedMessage": "The kana rows {sounds} were assigned too, spread across the plan's weeks.",
-      "kanaAssignFailed": "The kana rows {sounds} couldn't be assigned. You can assign them from the group page.",
+      "kanaCompanionToggle": "Also hand out these kana rows, due the same day",
+      "kanaAssignedMessage": "The kana rows {sounds} were handed out too, spread across the plan's weeks.",
+      "kanaAssignFailed": "The kana rows {sounds} couldn't be handed out. You can hand them out from the group page.",
       "printKanaToggle": "Add a kana page for this lesson's sounds",
       "printKanaTitle": "Sounds in this lesson",
       "printKanaHint": "Just the rows this lesson uses — practise reading these out loud.",
@@ -1851,7 +1862,7 @@
     "deckReadiness": {
       "heading": "Deck readiness",
       "loading": "Loading deck progress…",
-      "empty": "Assign a deck to this group to see how ready it is.",
+      "empty": "Hand out a deck to this group to see how ready it is.",
       "legendStrong": "Strong",
       "legendLearning": "Learning",
       "legendUnseen": "Not started",
@@ -1875,29 +1886,52 @@
       "heading": "Where practice is weak",
       "accuracy": "{pct}% right",
       "lowSample": "Not enough practice yet"
+    },
+    "addToPlan": {
+      "dialogTitle": "Add to plan",
+      "chooseCta": "Choose",
+      "startCta": "Start",
+      "lesson": {
+        "title": "Make a lesson with AI",
+        "description": "Words, example sentences and a weekly schedule from a topic, a textbook page or a PDF."
+      },
+      "decks": {
+        "title": "Use one of my decks",
+        "description": "Hand out a deck you already made."
+      },
+      "quizlet": {
+        "title": "Import from Quizlet",
+        "description": "Bring over a set your group already uses."
+      },
+      "kana": {
+        "title": "Kana course",
+        "description": "Hiragana and katakana, a few rows a week."
+      },
+      "blank": {
+        "title": "Start a blank deck",
+        "description": "Type the words in yourself."
+      },
+      "groupNotFoundTitle": "Can't find that group",
+      "groupNotFoundBody": "It may have been deleted, or you may not have access to it.",
+      "backToGroupsButton": "Back to your groups",
+      "savedNotHandedOut": "Saved to your decks — not handed out yet.",
+      "handItOutButton": "Hand it out"
+    },
+    "addDeckToGroup": {
+      "dialogTitle": "Add to a group",
+      "loading": "Loading your groups…",
+      "openGroupAria": "Hand out to {name}",
+      "emptyMessage": "Make a group first, then you can hand this deck out.",
+      "makeGroupButton": "Make a group"
     }
   },
   "Materials": {
-    "meta": {
-      "title": "Materials Builder | Tangodachi",
-      "description": "Create complete lesson sets or single decks in seconds — decks, example sentences and a weekly schedule, pitched at the right level."
-    },
-    "title": "Materials Builder",
-    "subtitle": "Create complete lesson sets or single decks in seconds.",
-    "loadingMessage": "Loading…",
-    "tabs": {
-      "assigned": "Assigned",
-      "lessonSet": "Lesson set",
-      "deck": "Single deck",
-      "kana": "Kana",
-      "quizlet": "Quizlet"
-    },
     "library": {
       "loadError": "Couldn't load your lessons. Try again in a moment.",
-      "emptyTitle": "Nothing assigned to this group yet",
-      "emptyBody": "Build a lesson set and it will show up here, week by week.",
-      "buildButton": "Build a lesson set",
-      "untitledUnit": "Lesson set from {date}",
+      "emptyTitle": "Nothing handed out to this group yet",
+      "emptyBody": "Build a lesson and it will show up here, week by week.",
+      "buildButton": "Build a lesson",
+      "untitledUnit": "Lesson from {date}",
       "weekLabel": "Week {n}",
       "weekOfTotal": "Week {current} of {total}",
       "allWeeksDone": "All {total} weeks done",
@@ -1912,7 +1946,6 @@
       "otherHandouts": "Other handouts",
       "showWeeks": "Show weeks",
       "hideWeeks": "Hide weeks",
-      "seeInAssigned": "See it in Assigned",
       "retry": "Try again",
       "editWeekSubtitle": "Changes apply to everyone in {group}, including learners who join later.",
       "fieldTitle": "Title",
@@ -1974,8 +2007,8 @@
     },
     "handoutPage": {
       "metaTitle": "Handout",
-      "backToAssigned": "Back to Assigned",
-      "backToAssignedIn": "Back to Assigned · {group}",
+      "backToPlan": "Back to plan",
+      "backToPlanIn": "Back to plan · {group}",
       "notFound": "This isn't handed out to this group anymore. It may have been removed.",
       "noDueDate": "No due date",
       "goal": "Goal: {goal}",
@@ -2015,11 +2048,11 @@
       "lastPracticed": "Practiced {date}",
       "openLearner": "Open {name}'s page",
       "learnerViewTitle": "What {name} sees",
-      "notAssigned": "Not assigned",
+      "notAssigned": "Not handed out",
       "strongPercent": "{percent}% strong",
-      "assign": "Assign",
-      "assignedToast": "Assigned to {name}",
-      "assignError": "Couldn't assign that learner. Try again."
+      "assign": "Hand out",
+      "assignedToast": "Handed out to {name}",
+      "assignError": "Couldn't hand this out to them. Try again."
     },
     "step1Title": "What do you want to create?",
     "step1Subtitle": "Describe your goals, topics or vocabulary — or attach files for the plan to follow.",
@@ -2048,7 +2081,7 @@
     "styleNotesPlaceholder": "e.g. Casual speech between friends, or polite sentences set in an office",
     "styleNotesHint": "Optional — guide the style, topics or difficulty of the generated sentences.",
     "vocabularyDecksLabel": "Vocabulary decks",
-    "vocabularyDecksHint": "One deck per week, ready to study and assign.",
+    "vocabularyDecksHint": "One deck per week, ready to study and hand out.",
     "suggestions": {
       "dailyLifeLabel": "Daily life",
       "dailyLifeGoal": "Everyday routines — waking up, meals, school and getting around",
@@ -2058,20 +2091,6 @@
       "foodCultureGoal": "Food words and ordering at a restaurant, plus food culture and manners",
       "seasonsLabel": "Seasons & events",
       "seasonsGoal": "The four seasons, weather words and yearly events and festivals"
-    },
-    "noGroups": "Create a group first — then come back to build a lesson set. Learners can join any time.",
-    "createGroupButton": "Go to Groups",
-    "deckPanel": {
-      "title": "Create a deck",
-      "subtitle": "Build a single deck for any topic or vocabulary list.",
-      "aiRow": "Generate with AI",
-      "aiHint": "Describe a topic and get finished cards.",
-      "pdfRow": "Import from PDF",
-      "pdfHint": "Pull vocabulary out of a document.",
-      "copyRow": "Copy existing cards",
-      "copyHint": "Reuse cards from your other decks.",
-      "createButton": "Create a deck",
-      "seeDecksButton": "See your decks"
     },
     "kanaCourse": {
       "step1Title": "Who is reading?",
@@ -2169,7 +2188,7 @@
       "saveButton": "{count, plural, one {Save # deck} other {Save # decks}}",
       "saving": "Saving…",
       "saveFailed": "Something went wrong while saving. Sets that didn't save are still here — try again.",
-      "assignFailed": "The decks were saved, but some couldn't be handed out. Assign them from the group page.",
+      "assignFailed": "The decks were saved, but some couldn't be handed out. Hand them out from the group page.",
       "savedTitle": "{count, plural, one {Saved # deck} other {Saved # decks}}",
       "savedLine": "— {count, plural, one {# card} other {# cards}}",
       "savedLineAssigned": "— {count, plural, one {# card} other {# cards}}, handed out",
@@ -2186,7 +2205,6 @@
     "items": {
       "home": "Home",
       "decks": "Decks",
-      "materials": "Materials",
       "groups": "Groups",
       "speech": "Speech",
       "travel": "Travel",
@@ -2262,6 +2280,15 @@
       "loading": "Loading your groups…",
       "createGroup": "Create a group",
       "emptyPin": "Pin a group to see it here — tap the pin icon on any group ✨"
+    },
+    "teachingToday": {
+      "heading": "Teaching today",
+      "allGroups": "All groups →",
+      "allQuiet": "Everyone's on track today.",
+      "rowQuiet": "All caught up",
+      "rowError": "Couldn't load {name}",
+      "moreCount": "{count, plural, one {# more} other {# more}}",
+      "thisWeek": "This week: {title}"
     },
     "leaderboardSection": {
       "emptyCheckBack": "Check back when more people join!"
@@ -2484,10 +2511,10 @@
       "onSuccess": "Daily reminder is on!",
       "offSuccess": "Daily reminder is off."
     },
-    "inviteMembers": {
-      "title": "Invite Members",
-      "description": "Create invite links to onboard members to your study group via QR code.",
-      "createButton": "Create Invite Link"
+    "invites": {
+      "title": "Invites",
+      "description": "Invite learners from each group's page.",
+      "goToGroupsButton": "Go to my groups"
     },
     "password": {
       "title": "Password",

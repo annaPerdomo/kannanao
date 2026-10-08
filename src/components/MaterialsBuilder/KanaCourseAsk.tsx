@@ -38,6 +38,7 @@ interface KanaCourseAskProps {
   onGroupChange: (groupId: string) => void;
   onChange: (patch: Partial<KanaCourseForm>) => void;
   onSubmit: () => void;
+  hideGroupSelect?: boolean;
 }
 
 function SourceCard(props: {
@@ -92,6 +93,7 @@ export function KanaCourseAsk({
   onGroupChange,
   onChange,
   onSubmit,
+  hideGroupSelect = false,
 }: KanaCourseAskProps) {
   const t = useTranslations('Materials.kanaCourse');
   const fromLessons = form.sourceKind === 'lessons';
@@ -101,7 +103,9 @@ export function KanaCourseAsk({
     <Stack spacing={3}>
       <StepSection number={1} title={t('step1Title')} subtitle={t('step1Subtitle')}>
         <Stack spacing={1.5}>
-          <GroupSelect groups={groups} value={groupId} onChange={onGroupChange} />
+          {!hideGroupSelect && (
+            <GroupSelect groups={groups} value={groupId} onChange={onGroupChange} />
+          )}
 
           <Stack direction="row" flexWrap="wrap" gap={1.5}>
             <SourceCard

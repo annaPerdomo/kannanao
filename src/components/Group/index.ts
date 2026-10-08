@@ -1,4 +1,15 @@
 export { ActivityFeed } from './ActivityFeed';
+export { AddDeckToGroupDialog } from './AddDeckToGroupDialog';
+export {
+  ADD_SOURCE_ROUTES,
+  ADD_SOURCES,
+  AddMaterialPage,
+  type AddSource,
+  type AddToPlanDestination,
+  addToPlanDestination,
+  AddToPlanDialog,
+  isAddSource,
+} from './AddToPlan';
 export { AssignmentCard } from './AssignmentCard';
 export { AssignmentGoalPicker } from './AssignmentGoalPicker';
 export { type AssignmentBatch, AssignmentsList } from './AssignmentsList';
@@ -6,14 +17,17 @@ export { CreateAssignmentDialog } from './CreateAssignmentDialog';
 export { CreateGroupDialog } from './CreateGroupDialog';
 export { CreateInviteDialog } from './CreateInviteDialog';
 export {
-  ActivityTab,
-  AssignmentsTab,
+  DEFAULT_TAB,
   GROUP_DASHBOARD_TABS,
   type GroupDashboardTab,
   isGroupDashboardTab,
   LearnersTab,
-  OverviewTab,
+  LEGACY_TAB_ALIASES,
+  PlanTab,
+  resolveDashboardTab,
   TabBar,
+  TabContent,
+  TodayTab,
   WordsTab,
 } from './DashboardTabs';
 export { DeckPicker } from './DeckPicker';

@@ -1,37 +1,26 @@
 'use client';
 
-import type { DragEndEvent } from '@dnd-kit/core';
-import {
-  closestCenter,
-  DndContext,
-  MouseSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import { arrayMove, rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
 import CollectionsIcon from '@mui/icons-material/Collections';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 import { CreateDeckDialog } from '@/components/CreateDeckDialog';
 import { DataErrorState } from '@/components/DataErrorState';
-import { DeckCard } from '@/components/DeckCard';
+import { DeckGrid } from '@/components/DeckGrid';
+import { AddDeckToGroupDialog } from '@/components/Group';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { ReorderBanner } from '@/components/ReorderBanner';
 import { ShareEmbedDialog } from '@/components/ShareEmbedDialog';
-import { SortableDeckCard } from '@/components/SortableDeckCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDecks } from '@/hooks/useDecks';
 import { LAYOUT } from '@/theme';
@@ -59,41 +48,18 @@ export default function Decks() {
   const [createOpen, setCreateOpen] = useState(false);
   const [shareDeckId, setShareDeckId] = useState<string | null>(null);
   const [shareDeckName, setShareDeckName] = useState('');
+  const [addToGroupDeckId, setAddToGroupDeckId] = useState<string | null>(null);
   const [reordering, setReordering] = useState(false);
 
   const isOwner = (deck: { ownerId: string }) => deck.ownerId === user?.id;
   const canReorder = !isMemberAccount && decks.length > 1;
 
-  const sensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
-  );
+  const handleShare = (id: string) => {
+    setShareDeckId(id);
+    setShareDeckName(decks.find((d) => d.id === id)?.name ?? '');
+  };
 
-  const handlePinnedDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event;
-      if (!over || active.id === over.id) return;
-      const pinned = decks.filter((d) => d.pinned);
-      const oldIndex = pinned.findIndex((d) => d.id === active.id);
-      const newIndex = pinned.findIndex((d) => d.id === over.id);
-      if (oldIndex === -1 || newIndex === -1) return;
-      reorderDecks(arrayMove(pinned, oldIndex, newIndex));
-    },
-    [decks, reorderDecks],
-  );
-
-  const handleUnpinnedDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event;
-      if (!over || active.id === over.id) return;
-      const unpinned = decks.filter((d) => !d.pinned);
-      const oldIndex = unpinned.findIndex((d) => d.id === active.id);
-      const newIndex = unpinned.findIndex((d) => d.id === over.id);
-      if (oldIndex === -1 || newIndex === -1) return;
-      reorderDecks(arrayMove(unpinned, oldIndex, newIndex));
-    },
-    [decks, reorderDecks],
-  );
+  const handleAddToGroup = isMemberAccount ? undefined : setAddToGroupDeckId;
 
   if (loading) {
     return (
@@ -112,65 +78,7 @@ export default function Decks() {
 
   const pinnedDecks = decks.filter((d) => d.pinned);
   const unpinnedDecks = decks.filter((d) => !d.pinned);
-
-  const renderDeckGrid = (deckList: typeof decks) => (
-    <Grid container spacing={2}>
-      {deckList.map((deck) => {
-        const owned = isOwner(deck);
-        return (
-          <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2.4 }} key={deck.id}>
-            <DeckCard
-              deck={deck}
-              onOpen={(id) => router.push(`/deck/${id}`)}
-              onDelete={owned ? deleteDeck : () => {}}
-              onShare={
-                owned
-                  ? (id) => {
-                      setShareDeckId(id);
-                      setShareDeckName(deck.name);
-                    }
-                  : undefined
-              }
-              onPin={pinDeck}
-              onEmojiChange={owned ? updateDeckEmoji : undefined}
-              isOwner={owned}
-            />
-          </Grid>
-        );
-      })}
-    </Grid>
-  );
-
-  const renderSortableGrid = (deckList: typeof decks, onDragEnd: (event: DragEndEvent) => void) => (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-      <SortableContext items={deckList.map((d) => d.id)} strategy={rectSortingStrategy}>
-        <Grid container spacing={2}>
-          {deckList.map((deck) => {
-            const owned = isOwner(deck);
-            return (
-              <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2.4 }} key={deck.id}>
-                <SortableDeckCard
-                  deck={deck}
-                  onDelete={owned ? deleteDeck : () => {}}
-                  onShare={
-                    owned
-                      ? (id) => {
-                          setShareDeckId(id);
-                          setShareDeckName(deck.name);
-                        }
-                      : undefined
-                  }
-                  onPin={pinDeck}
-                  onEmojiChange={owned ? updateDeckEmoji : undefined}
-                  isOwner={owned}
-                />
-              </Grid>
-            );
-          })}
-        </Grid>
-      </SortableContext>
-    </DndContext>
-  );
+  const addToGroupDeck = decks.find((d) => d.id === addToGroupDeckId);
 
   return (
     <Box
@@ -288,9 +196,18 @@ export default function Decks() {
               >
                 {t('pinnedToHome')}
               </Typography>
-              {reordering
-                ? renderSortableGrid(pinnedDecks, handlePinnedDragEnd)
-                : renderDeckGrid(pinnedDecks)}
+              <DeckGrid
+                decks={pinnedDecks}
+                reordering={reordering}
+                onReorder={reorderDecks}
+                onOpen={(id) => router.push(`/deck/${id}`)}
+                onDelete={deleteDeck}
+                onShare={handleShare}
+                onPin={pinDeck}
+                onEmojiChange={updateDeckEmoji}
+                onAddToGroup={handleAddToGroup}
+                isOwner={isOwner}
+              />
             </Box>
           )}
 
@@ -312,9 +229,18 @@ export default function Decks() {
                   {t('allDecks')}
                 </Typography>
               )}
-              {reordering
-                ? renderSortableGrid(unpinnedDecks, handleUnpinnedDragEnd)
-                : renderDeckGrid(unpinnedDecks)}
+              <DeckGrid
+                decks={unpinnedDecks}
+                reordering={reordering}
+                onReorder={reorderDecks}
+                onOpen={(id) => router.push(`/deck/${id}`)}
+                onDelete={deleteDeck}
+                onShare={handleShare}
+                onPin={pinDeck}
+                onEmojiChange={updateDeckEmoji}
+                onAddToGroup={handleAddToGroup}
+                isOwner={isOwner}
+              />
             </Box>
           )}
         </>
@@ -332,6 +258,15 @@ export default function Decks() {
           if (shareDeckId) setDeckPublic(shareDeckId, val);
         }}
       />
+
+      {addToGroupDeck && (
+        <AddDeckToGroupDialog
+          open={Boolean(addToGroupDeckId)}
+          onClose={() => setAddToGroupDeckId(null)}
+          deckId={addToGroupDeck.id}
+          deckName={addToGroupDeck.name}
+        />
+      )}
     </Box>
   );
 }

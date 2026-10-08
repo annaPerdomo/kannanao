@@ -29,7 +29,7 @@ interface GroupDashboardHeaderProps {
   onRename: (name: string) => Promise<void>;
   onEmojiChange: (emoji: string) => void;
   onInvite: () => void;
-  onOpenMaterials: () => void;
+  onAddToPlan: () => void;
   /** Codes still open — shown on the invite card so the dashboard needn't list them. */
   activeInviteCount?: number;
 }
@@ -41,7 +41,7 @@ export function GroupDashboardHeader({
   onRename,
   onEmojiChange,
   onInvite,
-  onOpenMaterials,
+  onAddToPlan,
   activeInviteCount = 0,
 }: GroupDashboardHeaderProps) {
   const t = useTranslations('Group.groupPage');
@@ -225,9 +225,9 @@ export function GroupDashboardHeader({
         }
         action={
           <Stack
-            direction={{ xs: 'column', sm: 'row' }}
+            direction="row"
             spacing={1.25}
-            alignItems={{ xs: 'stretch', sm: 'center' }}
+            alignItems="center"
             sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
             <Typography
@@ -251,9 +251,9 @@ export function GroupDashboardHeader({
             />
             <QuickActionCard
               icon={<AutoStoriesIcon sx={{ fontSize: 18 }} />}
-              title={t('materialsBuilderTitle')}
-              subtitle={t('materialsBuilderSubtitle')}
-              onClick={onOpenMaterials}
+              title={t('addToPlanTitle')}
+              subtitle={t('addToPlanSubtitle')}
+              onClick={onAddToPlan}
             />
           </Stack>
         }

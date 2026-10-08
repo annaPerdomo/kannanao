@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger';
 import { rateLimit } from '../../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../../_lib/requireOrganizerAccount';
 import { KANA_PROGRESS_COLUMNS, memberReading, toKanaProgressMap } from '../../_lib/memberReading';
-import { isMemberOfOrganizer } from '../../_lib/membership';
+import { latestGroupOf } from '../../_lib/membership';
 import { backlogOf, reviewBacklogFor } from '../../_lib/reviewBacklog';
 import { getServiceSupabase } from '../../_lib/serviceSupabase';
 
@@ -24,7 +24,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id: memberId } = await params;
   const sb = getServiceSupabase();
 
-  if (!(await isMemberOfOrganizer(memberId, orgCheck.id))) {
+  const groupId = await latestGroupOf(memberId, orgCheck.id);
+  if (!groupId) {
     return NextResponse.json({ error: 'Member not found.' }, { status: 404 });
   }
 
@@ -383,6 +384,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       username: member.username,
       displayName: member.display_name,
     },
+    groupId,
     progress: {
       totalXp: prog?.total_xp ?? 0,
       level: prog?.level ?? 1,

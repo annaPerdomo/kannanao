@@ -84,7 +84,7 @@ const UNCROPPED_FROM = '@media (min-width:1240px)';
  * full 1600px of the dashboard and the upscale is visible as mush. A taller
  * source sheet is the only real fix; until then this is the limit.
  */
-const HERO_MAX_WIDTH = 1280;
+export const HERO_MAX_WIDTH = 1280;
 
 /**
  * The width the composition flips at, stated twice on purpose: once as a media
@@ -103,7 +103,9 @@ const OVERLAY_FROM = 'sm';
  * owns the middle, and a 290px card on top of that leaves the three of them
  * fighting over the same pixels.
  */
-const ASIDE_FLOATS_FROM = '@media (min-width:1040px)';
+/** Also the width Home switches `teachingToday` from an in-hero slot to an external sibling — see that prop below. */
+export const ASIDE_FLOATS_FROM_PX = 1040;
+const ASIDE_FLOATS_FROM = `@media (min-width:${ASIDE_FLOATS_FROM_PX}px)`;
 const ASIDE_WIDTH = 290;
 
 interface GreetingHeroProps {
@@ -116,6 +118,8 @@ interface GreetingHeroProps {
   children?: React.ReactNode;
   /** The XP card: floated over the banner's right edge on wide screens. */
   aside?: React.ReactNode;
+  /** Only below `ASIDE_FLOATS_FROM_PX` — above it Home renders this as its own sibling, so the floating `aside` never shares a containing box with it. */
+  teachingToday?: React.ReactNode;
 }
 
 /**
@@ -136,7 +140,7 @@ interface GreetingHeroProps {
  * hydration. They fade in instead, over a brand gradient that stands in for the
  * sky, so the greeting is never held back by them.
  */
-export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
+export function GreetingHero({ greeting, children, aside, teachingToday }: GreetingHeroProps) {
   const { palette, radii, breakpoints } = useTheme();
   const { brand, accent } = palette;
   const overlay = breakpoints.up(OVERLAY_FROM);
@@ -149,7 +153,15 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
   const banner = now ? BANNERS[resolveTimeOfDay(now)] : null;
 
   return (
-    <Box sx={{ position: 'relative', maxWidth: HERO_MAX_WIDTH, mx: 'auto' }}>
+    <Box
+      sx={{
+        position: 'relative',
+        maxWidth: HERO_MAX_WIDTH,
+        mx: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <Box
         sx={{
           position: 'relative',
@@ -281,9 +293,12 @@ export function GreetingHero({ greeting, children, aside }: GreetingHeroProps) {
         </Box>
       </Box>
 
+      {teachingToday && <Box sx={{ order: 1, mt: 1.75 }}>{teachingToday}</Box>}
+
       {aside && (
         <Box
           sx={{
+            order: 2,
             mt: 1.75,
             [ASIDE_FLOATS_FROM]: {
               position: 'absolute',

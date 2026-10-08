@@ -188,7 +188,7 @@ describe('groupAssignments', () => {
 describe('AssignmentsList', () => {
   it('shows the empty state when there is nothing assigned', () => {
     render([]);
-    expect(screen.getByText(/No assignments yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/No handouts yet/i)).toBeInTheDocument();
   });
 
   it('shows one row per handout with its completion count', () => {
@@ -234,7 +234,7 @@ describe('AssignmentsList', () => {
   // Removing a batch removes it for everyone, so it asks first.
   it('confirms before removing every copy of a handout', async () => {
     const onDeleteBatch = render(handout(3));
-    fireEvent.click(screen.getByRole('button', { name: /Remove assignment/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Remove handout/i }));
     expect(onDeleteBatch).not.toHaveBeenCalled();
 
     expect(screen.getByText(/will be removed for all 3 members/i)).toBeInTheDocument();
@@ -249,7 +249,7 @@ describe('AssignmentsList', () => {
   it('keeps the confirm dialog open and shows the error when removal fails', async () => {
     const onDeleteBatch = vi.fn().mockRejectedValue(new Error('Removed for 1 of 3 members'));
     render(handout(3), onDeleteBatch);
-    fireEvent.click(screen.getByRole('button', { name: /Remove assignment/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Remove handout/i }));
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
 
     expect(await screen.findByText('Removed for 1 of 3 members')).toBeInTheDocument();

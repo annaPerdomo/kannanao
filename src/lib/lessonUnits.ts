@@ -298,5 +298,5 @@ export function locateWeek(library: LessonLibrary | null, deckId: string): Locat
 }
 
 export function handoutPagePath(groupId: string, deckId: string): string {
-  return `/materials/assigned/${encodeURIComponent(groupId)}/${encodeURIComponent(deckId)}`;
+  return `/group/${encodeURIComponent(groupId)}/handout/${encodeURIComponent(deckId)}`;
 }

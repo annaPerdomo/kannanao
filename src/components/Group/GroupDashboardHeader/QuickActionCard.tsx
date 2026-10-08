@@ -41,6 +41,8 @@ export function QuickActionCard({ icon, title, subtitle, onClick, badge }: Quick
         px: 1.5,
         py: 1,
         width: { xs: '100%', sm: 'auto' },
+        flex: { xs: 1, sm: 'initial' },
+        minWidth: 0,
         cursor: 'pointer',
         borderRadius: theme.radii.md,
         border: `1.5px solid ${alpha(brand[300], 0.45)}`,
@@ -68,6 +70,7 @@ export function QuickActionCard({ icon, title, subtitle, onClick, badge }: Quick
       <Box sx={{ minWidth: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <Typography
+            noWrap
             sx={{ fontWeight: 700, fontSize: '0.85rem', color: 'text.primary', lineHeight: 1.2 }}
           >
             {title}
@@ -88,7 +91,14 @@ export function QuickActionCard({ icon, title, subtitle, onClick, badge }: Quick
             </Box>
           )}
         </Box>
-        <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary', lineHeight: 1.2 }}>
+        <Typography
+          sx={{
+            display: { xs: 'none', sm: 'block' },
+            fontSize: '0.72rem',
+            color: 'text.secondary',
+            lineHeight: 1.2,
+          }}
+        >
           {subtitle}
         </Typography>
       </Box>

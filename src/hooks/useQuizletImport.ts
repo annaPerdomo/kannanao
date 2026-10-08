@@ -2,21 +2,18 @@
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
+import { LESSON_LIBRARY_CACHE_PREFIX } from '@/hooks/useLessonLibrary';
 import { invalidateApiCache } from '@/lib/apiCache';
 import {
-  addToQueue,
-  decodeQuizletHash,
+  enqueueQuizletHash,
   isReadyToSave,
   keptCards,
   loadQuizletQueue,
   mainViewModeFor,
-  QUIZLET_HASH_KEY,
   QUIZLET_QUEUE_KEY,
   type QuizletDraftCard,
   type QuizletImportSet,
-  type QuizletSet,
   saveQuizletQueue,
-  toImportSet,
 } from '@/lib/quizlet';
 import { dbCreateDeck, dbDeleteDeck, dbInsertCards, sb } from '@/lib/supabase';
 import type { Flashcard } from '@/types/flashcard';
@@ -97,20 +94,17 @@ export function useQuizletImport() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const takeHash = (): QuizletSet | null => {
-      if (!window.location.hash.includes(`${QUIZLET_HASH_KEY}=`)) return null;
-      const incoming = decodeQuizletHash(window.location.hash);
-      if (!incoming) setError(t('badLink'));
-      window.history.replaceState(null, '', window.location.pathname + window.location.search);
-      return incoming;
+    const takeHash = () => {
+      const result = enqueueQuizletHash();
+      if (result === 'invalid') setError(t('badLink'));
+      return result;
     };
-    const first = takeHash();
-    setSets(first ? addToQueue(loadQuizletQueue(), toImportSet(first)) : loadQuizletQueue());
+    takeHash();
+    setSets(loadQuizletQueue());
     setLoading(false);
 
     const onHashChange = () => {
-      const incoming = takeHash();
-      if (incoming) setSets((prev) => addToQueue(prev, toImportSet(incoming)));
+      if (takeHash() === 'ok') setSets(loadQuizletQueue());
     };
     const onStorage = (e: StorageEvent) => {
       if (e.key === QUIZLET_QUEUE_KEY) setSets(loadQuizletQueue());
@@ -160,7 +154,10 @@ export function useQuizletImport() {
       } catch {
         setError(t('saveFailed'));
       } finally {
-        if (done.some((d) => d.assigned)) invalidateApiCache('/api/group/assignments');
+        if (done.some((d) => d.assigned)) {
+          invalidateApiCache('/api/group/assignments');
+          invalidateApiCache(LESSON_LIBRARY_CACHE_PREFIX);
+        }
         setSaved((prev) => [...prev, ...done]);
         setSaving(false);
       }

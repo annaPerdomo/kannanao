@@ -73,7 +73,7 @@ describe('CreateAssignmentDialog', () => {
     const onCreate = setup();
     fireEvent.click(screen.getByText(/Animals/));
     fireEvent.click(screen.getByRole('checkbox'));
-    fireEvent.click(screen.getByRole('button', { name: /^assign$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^hand out$/i }));
 
     await waitFor(() => expect(onCreate).toHaveBeenCalled());
     const arg = onCreate.mock.calls[0][0];
@@ -93,7 +93,7 @@ describe('CreateAssignmentDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: '80%' }));
     fireEvent.click(screen.getByRole('button', { name: 'Match' }));
 
-    fireEvent.click(screen.getByRole('button', { name: /^assign$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^hand out$/i }));
 
     await waitFor(() => expect(onCreate).toHaveBeenCalled());
     const arg = onCreate.mock.calls[0][0];
@@ -103,7 +103,7 @@ describe('CreateAssignmentDialog', () => {
 
   it('keeps Assign disabled until a deck and member are chosen', () => {
     setup();
-    const assign = screen.getByRole('button', { name: /^assign$/i });
+    const assign = screen.getByRole('button', { name: /^hand out$/i });
     expect(assign).toBeDisabled();
     fireEvent.click(screen.getByText(/Animals/));
     fireEvent.click(screen.getByRole('checkbox'));
@@ -115,7 +115,7 @@ describe('CreateAssignmentDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Kana' }));
     fireEvent.click(screen.getByRole('button', { name: 'か · き · く · け · こ' }));
     fireEvent.click(screen.getByRole('checkbox'));
-    fireEvent.click(screen.getByRole('button', { name: /^assign$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^hand out$/i }));
 
     await waitFor(() => expect(onCreate).toHaveBeenCalled());
     const arg = onCreate.mock.calls[0][0];
@@ -148,7 +148,7 @@ describe('CreateAssignmentDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Kana' }));
     fireEvent.click(screen.getByRole('button', { name: 'か · き · く · け · こ' }));
     fireEvent.click(screen.getByRole('checkbox'));
-    fireEvent.click(screen.getByRole('button', { name: /^assign$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^hand out$/i }));
 
     await waitFor(() => expect(onCreate).toHaveBeenCalled());
     expect(onCreate.mock.calls[0][0].requiredMode).toBeUndefined();
@@ -165,7 +165,7 @@ describe('CreateAssignmentDialog', () => {
       'true',
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /^assign$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^hand out$/i }));
 
     await waitFor(() => expect(onCreate).toHaveBeenCalled());
     const arg = onCreate.mock.calls[0][0];
@@ -181,7 +181,7 @@ describe('CreateAssignmentDialog', () => {
       preSelectedFields: { note: 'Chapter 3', dueDate: '2030-01-05', requiredAccuracy: 80 },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /^assign$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^hand out$/i }));
 
     await waitFor(() => expect(onCreate).toHaveBeenCalled());
     expect(onCreate.mock.calls[0][0]).toMatchObject({
@@ -197,7 +197,7 @@ describe('CreateAssignmentDialog', () => {
       preSelectedDeckId: 'd1',
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /^assign$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^hand out$/i }));
 
     await waitFor(() => expect(onCreate).toHaveBeenCalled());
     const arg = onCreate.mock.calls[0][0];

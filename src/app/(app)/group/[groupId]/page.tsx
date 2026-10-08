@@ -7,20 +7,18 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { DataErrorState, StaleDataHint } from '@/components/DataErrorState';
 import {
-  ActivityTab,
-  AssignmentsTab,
+  type AddSource,
+  addToPlanDestination,
+  AddToPlanDialog,
+  DEFAULT_TAB,
   GroupDashboardDialogs,
   GroupDashboardHeader,
   type GroupDashboardTab,
   isExpired,
-  isGroupDashboardTab,
-  LearnersTab,
-  NeedsAttention,
-  OverviewTab,
+  resolveDashboardTab,
   TabBar,
+  TabContent,
   useAssignDialog,
-  WeekStatStrip,
-  WordsTab,
 } from '@/components/Group';
 import { Loading } from '@/components/Loading';
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,11 +31,12 @@ import { useGroupActivity } from '@/hooks/useGroupActivity';
 import { useGroupLeaderboard } from '@/hooks/useGroupLeaderboard';
 import { useGroups } from '@/hooks/useGroups';
 import { type InviteCode, useInvites } from '@/hooks/useInvites';
+import { LESSON_LIBRARY_CACHE_PREFIX, useLessonLibrary } from '@/hooks/useLessonLibrary';
+import { invalidateApiCache } from '@/lib/apiCache';
 import { LAYOUT } from '@/theme';
 
 /** Two weeks of columns in the daily chart; its last week fills the heatmap. */
 const ACTIVITY_DAYS = 14;
-const DEFAULT_TAB: GroupDashboardTab = 'overview';
 
 export default function GroupDashboardPage() {
   const t = useTranslations('Group.groupPage');
@@ -55,7 +54,7 @@ export default function GroupDashboardPage() {
     loading: activityLoading,
     errorMessage: activityError,
   } = useGroupActivity(groupId, ACTIVITY_DAYS);
-  const { decks } = useDecks();
+  const { decks, retry: retryDecks } = useDecks();
   const {
     assignments,
     loading: assignmentsLoading,
@@ -63,7 +62,9 @@ export default function GroupDashboardPage() {
     createAssignment,
     updateAssignments,
     deleteAssignments,
+    refetch: refetchAssignments,
   } = useAssignments(groupId, true, 'given');
+  const library = useLessonLibrary(groupId);
   // All decks, matching the Words tab's default filter — the api cache serves
   // both from one request.
   const {
@@ -80,9 +81,10 @@ export default function GroupDashboardPage() {
   const assignDialog = useAssignDialog();
   const [createInviteOpen, setCreateInviteOpen] = useState(false);
   const [qrInvite, setQrInvite] = useState<InviteCode | null>(null);
+  const [addToPlanOpen, setAddToPlanOpen] = useState(false);
 
   const tabParam = searchParams?.get('tab') ?? null;
-  const tab: GroupDashboardTab = isGroupDashboardTab(tabParam) ? tabParam : DEFAULT_TAB;
+  const tab: GroupDashboardTab = resolveDashboardTab(tabParam);
 
   const handleTabChange = useCallback(
     (next: GroupDashboardTab) => {
@@ -98,9 +100,56 @@ export default function GroupDashboardPage() {
     [router, groupId, searchParams],
   );
 
-  const handleOpenMaterials = useCallback(() => {
-    router.push(`/materials?group=${groupId}`);
-  }, [router, groupId]);
+  const handleViewPlan = useCallback(() => handleTabChange('plan'), [handleTabChange]);
+
+  const handleOpenAddToPlan = useCallback(() => setAddToPlanOpen(true), []);
+
+  const handlePickAddToPlan = useCallback(
+    (source: AddSource) => {
+      setAddToPlanOpen(false);
+      const destination = addToPlanDestination(groupId, source);
+      if ('openAssign' in destination) {
+        assignDialog.openAssign();
+      } else {
+        router.push(destination.path);
+      }
+    },
+    [assignDialog, router, groupId],
+  );
+
+  // The new deck may not be here yet — AddMaterialPage creates it through
+  // its own separate `useDecks()` instance.
+  const assignDeckId = searchParams?.get('assign') ?? null;
+  const openAssignFor = assignDialog.openAssign;
+  useEffect(() => {
+    if (!assignDeckId) return;
+    if (!decks.some((d) => d.id === assignDeckId)) retryDecks();
+    openAssignFor({ deckId: assignDeckId });
+    const query = new URLSearchParams(searchParams?.toString());
+    query.delete('assign');
+    const qs = query.toString();
+    router.replace(`/group/${groupId}${qs ? `?${qs}` : ''}`, { scroll: false });
+    // Only re-run when the URL param itself changes — `decks`/`searchParams`
+    // would otherwise retrigger this after the very replace() above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assignDeckId]);
+
+  // The Lesson Library and the assignments list read overlapping handout data
+  // from separate caches, so a change on either side has to refresh the other.
+  const libraryRefetch = library.refetch;
+  const handleCreateAssignment = useCallback(
+    async (opts: Parameters<typeof createAssignment>[0]) => {
+      const result = await createAssignment(opts);
+      invalidateApiCache(LESSON_LIBRARY_CACHE_PREFIX);
+      await libraryRefetch();
+      return result;
+    },
+    [createAssignment, libraryRefetch],
+  );
+
+  const handleLibraryChanged = useCallback(() => {
+    void refetchAssignments();
+  }, [refetchAssignments]);
 
   const handleSendEncouragement = useCallback(
     async (memberId: string, message: string, emoji?: string) => {
@@ -181,7 +230,7 @@ export default function GroupDashboardPage() {
         onRename={handleRename}
         onEmojiChange={handleEmojiChange}
         onInvite={() => setCreateInviteOpen(true)}
-        onOpenMaterials={handleOpenMaterials}
+        onAddToPlan={handleOpenAddToPlan}
         activeInviteCount={activeInvites.length}
       />
 
@@ -193,95 +242,58 @@ export default function GroupDashboardPage() {
 
       <StaleDataHint show={stale && !error} />
 
-      <Box sx={{ mb: { xs: 2.5, sm: 3 } }}>
-        <NeedsAttention
-          groupId={groupId}
-          members={members}
-          assignments={assignments}
-          assignmentsLoading={assignmentsLoading}
-          assignmentsError={assignmentsError}
-          words={difficultWords?.words}
-          wordsLoading={difficultWordsLoading}
-          wordsError={difficultWordsError}
-          onSelectMember={(id) => router.push(`/group/${groupId}/members/${id}`)}
-          onViewAssignments={() => handleTabChange('assignments')}
-          onViewLearners={() => handleTabChange('learners')}
-          onViewWords={() => handleTabChange('words')}
-          onSendEncouragement={handleSendEncouragement}
-        />
-      </Box>
-
-      <WeekStatStrip members={members} activity={activity} />
-
       <TabBar value={tab} onChange={handleTabChange} />
 
-      {tab === 'overview' && (
-        <OverviewTab
-          groupId={groupId}
-          members={members}
-          activity={activity}
-          activityLoading={activityLoading}
-          activityError={activityError}
-          words={difficultWords?.words}
-          wordsLoading={difficultWordsLoading}
-          wordsError={difficultWordsError}
-          assignments={assignments}
-          assignmentsLoading={assignmentsLoading}
-          assignmentsError={assignmentsError}
-          ownDecks={ownDecks}
-          canAssign={members.length > 0}
-          onNavigateTab={handleTabChange}
-          onOpenMaterials={handleOpenMaterials}
-          onAssignDeck={(deckId) => assignDialog.openAssign({ deckId })}
-        />
-      )}
+      <TabContent
+        tab={tab}
+        groupId={groupId}
+        library={library}
+        members={members}
+        activity={activity}
+        activityLoading={activityLoading}
+        activityError={activityError}
+        words={difficultWords?.words}
+        wordsLoading={difficultWordsLoading}
+        wordsError={difficultWordsError}
+        assignments={assignments}
+        assignmentsLoading={assignmentsLoading}
+        assignmentsError={assignmentsError}
+        ownDecks={ownDecks}
+        canAssign={members.length > 0}
+        onNavigateTab={handleTabChange}
+        onViewPlan={handleViewPlan}
+        onAssignDeck={(deckId) => assignDialog.openAssign({ deckId })}
+        feed={feed}
+        feedLoading={feedLoading}
+        feedError={feedError}
+        leaderboard={leaderboard}
+        leaderboardLoading={lbLoading}
+        leaderboardError={leaderboardError}
+        leaderboardVisible={leaderboardVisible}
+        onLeaderboardVisibilityChange={handleLeaderboardVisibilityChange}
+        onSelectMember={(id) => router.push(`/group/${groupId}/members/${id}`)}
+        onSendEncouragement={handleSendEncouragement}
+        onEditAssignments={updateAssignments}
+        onDeleteAssignments={deleteAssignments}
+        onAssign={() => assignDialog.openAssign()}
+        onAssignMissing={assignDialog.assignMissing}
+        onBuild={handleOpenAddToPlan}
+        onLibraryChanged={handleLibraryChanged}
+      />
 
-      {tab === 'learners' && (
-        <LearnersTab
-          members={members}
-          leaderboard={leaderboard}
-          leaderboardLoading={lbLoading}
-          leaderboardError={leaderboardError}
-          leaderboardVisible={leaderboardVisible}
-          onLeaderboardVisibilityChange={handleLeaderboardVisibilityChange}
-          onSelectMember={(id) => router.push(`/group/${groupId}/members/${id}`)}
-          onSendEncouragement={handleSendEncouragement}
-        />
-      )}
-
-      {tab === 'assignments' && (
-        <AssignmentsTab
-          assignments={assignments}
-          onEditAssignments={updateAssignments}
-          onDeleteAssignments={deleteAssignments}
-          canAssign={members.length > 0}
-          onAssign={() => assignDialog.openAssign()}
-          ownDecks={ownDecks}
-          groupId={groupId}
-          onSendEncouragement={handleSendEncouragement}
-          members={members}
-          onAssignMissing={assignDialog.assignMissing}
-        />
-      )}
-
-      {tab === 'words' && <WordsTab groupId={groupId} />}
-
-      {tab === 'activity' && (
-        <ActivityTab
-          feed={feed}
-          feedLoading={feedLoading}
-          feedError={feedError}
-          activity={activity}
-          activityLoading={activityLoading}
-          activityError={activityError}
-        />
-      )}
+      <AddToPlanDialog
+        open={addToPlanOpen}
+        onClose={() => setAddToPlanOpen(false)}
+        groupId={groupId}
+        groupName={group?.name ?? ''}
+        onPick={handlePickAddToPlan}
+      />
 
       <GroupDashboardDialogs
         assignDialog={assignDialog}
         members={members}
         ownDecks={ownDecks}
-        onCreateAssignment={createAssignment}
+        onCreateAssignment={handleCreateAssignment}
         createInviteOpen={createInviteOpen}
         onCloseCreateInvite={() => setCreateInviteOpen(false)}
         onCreateInvite={createInvite}

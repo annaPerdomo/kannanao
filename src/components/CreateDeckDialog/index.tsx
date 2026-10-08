@@ -19,14 +19,28 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ToggleRow } from './ToggleRow';
 import { useCreateDeckFlow } from './useCreateDeckFlow';
 
-export function CreateDeckDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+interface CreateDeckDialogProps {
+  open: boolean;
+  onClose: () => void;
+  /** Takes over navigation after the deck is fully created, e.g. to assign it somewhere. */
+  onDeckCreated?: (deckId: string) => void;
+  /** Fires as soon as a (possibly still empty) deck row exists — before any cards. */
+  onDeckStarted?: (deckId: string) => void;
+}
+
+export function CreateDeckDialog({
+  open,
+  onClose,
+  onDeckCreated,
+  onDeckStarted,
+}: CreateDeckDialogProps) {
   const t = useTranslations('Deck.createDeckDialog');
   const tCommon = useTranslations('Common');
   const { palette } = useTheme();
   const { brand, surfaces } = palette;
   const { user } = useAuth();
 
-  const flow = useCreateDeckFlow(onClose);
+  const flow = useCreateDeckFlow(onClose, onDeckCreated, onDeckStarted);
   const { busy, creating, generating, canGenerate, review } = flow;
 
   return (

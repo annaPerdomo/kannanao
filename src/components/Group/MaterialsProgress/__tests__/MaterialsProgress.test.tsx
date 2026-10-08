@@ -66,7 +66,7 @@ describe('MaterialsProgress', () => {
   it('hides Assign when the group has no learners', () => {
     renderCard({ ownDecks: [deck({ id: 'd2', name: 'Colors' })], canAssign: false });
     expect(screen.getByText(/Colors/)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /assign colors/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /hand out colors/i })).not.toBeInTheDocument();
   });
 
   it('renders the three counts', () => {
@@ -86,7 +86,7 @@ describe('MaterialsProgress', () => {
       assignments: [assignment({ id: 'a1', deck_id: 'd1' })],
       ownDecks: [deck({ id: 'd1' }), notHandedOutDeck],
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Assign Verbs' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Hand out Verbs' }));
     expect(onAssignDeck).toHaveBeenCalledWith('d2');
   });
 
@@ -94,7 +94,7 @@ describe('MaterialsProgress', () => {
     const { onViewAssignments, onOpenMaterials } = renderCard({
       assignments: [assignment()],
     });
-    fireEvent.click(screen.getByText('See all assignments'));
+    fireEvent.click(screen.getByText('See the plan'));
     expect(onViewAssignments).toHaveBeenCalled();
     fireEvent.click(screen.getByText('Make new materials'));
     expect(onOpenMaterials).toHaveBeenCalled();

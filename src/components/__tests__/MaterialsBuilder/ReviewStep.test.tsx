@@ -115,14 +115,7 @@ const READINESS = {
 };
 
 function setup() {
-  renderWithProviders(
-    <LessonSetBuilder
-      groups={[GROUP]}
-      groupId="g1"
-      onGroupChange={vi.fn()}
-      onShowAssigned={vi.fn()}
-    />,
-  );
+  renderWithProviders(<LessonSetBuilder groups={[GROUP]} groupId="g1" onGroupChange={vi.fn()} />);
 }
 
 function typeGoal() {
@@ -171,7 +164,7 @@ describe('LessonSetBuilder review step', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Show details' }));
     fireEvent.change(screen.getByLabelText('Word'), { target: { value: 'うどん' } });
-    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create decks & hand out/i }));
 
     await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
 
@@ -189,7 +182,7 @@ describe('LessonSetBuilder review step', () => {
     fireEvent.click(screen.getByRole('checkbox', { name: 'Approve うどん' }));
     expect(screen.getByText(/2 decks, 2 cards/)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create decks & hand out/i }));
     await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
 
     const payload = applyLessonPlanMock.mock.calls[0][0];
@@ -213,7 +206,7 @@ describe('LessonSetBuilder review step', () => {
     fireEvent.click(screen.getByRole('switch', { name: 'Approve all of Snacks' }));
     expect(screen.getByText(/1 deck, 2 cards/)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create decks & hand out/i }));
     await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
 
     const payload = applyLessonPlanMock.mock.calls[0][0];
@@ -227,7 +220,7 @@ describe('LessonSetBuilder review step', () => {
     fireEvent.click(screen.getByRole('switch', { name: 'Approve all of Food words' }));
     fireEvent.click(screen.getByRole('switch', { name: 'Approve all of Snacks' }));
 
-    expect(screen.getByRole('button', { name: /create decks & assign/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /create decks & hand out/i })).toBeDisabled();
   });
 
   it('a card added in review reaches the payload; one left blank is dropped', async () => {
@@ -238,7 +231,7 @@ describe('LessonSetBuilder review step', () => {
     fireEvent.change(wordFields[wordFields.length - 1], { target: { value: 'たまご' } });
     fireEvent.click(screen.getByRole('button', { name: /add a card/i }));
 
-    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create decks & hand out/i }));
     await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
 
     const payload = applyLessonPlanMock.mock.calls[0][0];
@@ -252,7 +245,7 @@ describe('LessonSetBuilder review step', () => {
     applyLessonPlanMock.mockRejectedValueOnce(new Error('network died'));
     await reachTwoWeekReview();
 
-    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create decks & hand out/i }));
     await screen.findByText('network died');
 
     expect(screen.getByRole('switch', { name: 'Approve all of Snacks' })).toBeDisabled();
@@ -335,7 +328,7 @@ describe('LessonSetBuilder review step', () => {
     });
     await reachReviewStep();
 
-    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create decks & hand out/i }));
     await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
 
     const payload = applyLessonPlanMock.mock.calls[0][0];
@@ -375,7 +368,7 @@ describe('LessonSetBuilder review step', () => {
 
     await waitFor(() => expect(fetchImageMock).toHaveBeenCalledWith('ramen'));
 
-    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create decks & hand out/i }));
     await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
 
     const payload = applyLessonPlanMock.mock.calls[0][0];
@@ -422,7 +415,7 @@ describe('LessonSetBuilder kana support', () => {
   it('assigns the matching kana row alongside the decks, ahead of its own week', async () => {
     await reachReviewWithKanaGaps();
 
-    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create decks & hand out/i }));
 
     await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
     const rows = applyLessonPlanMock.mock.calls[0][0].kanaWeeks;
@@ -436,7 +429,7 @@ describe('LessonSetBuilder kana support', () => {
     await reachReviewWithKanaGaps();
 
     fireEvent.click(screen.getByRole('switch', { name: /hand out the sounds due/i }));
-    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create decks & hand out/i }));
 
     await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
     expect(applyLessonPlanMock.mock.calls[0][0].kanaWeeks).toEqual([]);
@@ -462,7 +455,7 @@ describe('LessonSetBuilder kana support', () => {
     });
     await reachReviewStep();
 
-    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create decks & hand out/i }));
     await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
     // An empty list is nobody having tried, not evidence the group reads.
     const rows = applyLessonPlanMock.mock.calls[0][0].kanaWeeks;
@@ -476,7 +469,7 @@ describe('LessonSetBuilder kana support', () => {
     });
     await reachReviewStep();
 
-    fireEvent.click(screen.getByRole('button', { name: /create decks & assign/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create decks & hand out/i }));
     await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
     expect(applyLessonPlanMock.mock.calls[0][0].kanaWeeks).toEqual([]);
   });

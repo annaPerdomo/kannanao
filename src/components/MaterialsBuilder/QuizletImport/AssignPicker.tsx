@@ -19,6 +19,7 @@ interface AssignPickerProps {
   memberIds: string[];
   onMemberIdsChange: (ids: string[]) => void;
   disabled: boolean;
+  hideGroupSelect?: boolean;
 }
 
 export function AssignPicker({
@@ -28,6 +29,7 @@ export function AssignPicker({
   memberIds,
   onMemberIdsChange,
   disabled,
+  hideGroupSelect = false,
 }: AssignPickerProps) {
   const t = useTranslations('Materials.quizlet');
   const { members, loading, error } = useGroupMembers(groupId, Boolean(groupId));
@@ -45,16 +47,18 @@ export function AssignPicker({
           {t('assignSubtitle')}
         </Typography>
       </Box>
-      <GroupSelect
-        groups={groups}
-        value={groupId}
-        disabled={disabled}
-        size="small"
-        onChange={(id) => {
-          onGroupChange(id);
-          onMemberIdsChange([]);
-        }}
-      />
+      {!hideGroupSelect && (
+        <GroupSelect
+          groups={groups}
+          value={groupId}
+          disabled={disabled}
+          size="small"
+          onChange={(id) => {
+            onGroupChange(id);
+            onMemberIdsChange([]);
+          }}
+        />
+      )}
       {loading && <CircularProgress size={24} aria-label={t('loadingMembers')} />}
       {error && <Alert severity="error">{t('membersFailed')}</Alert>}
       {!loading && !error && members.length === 0 && (

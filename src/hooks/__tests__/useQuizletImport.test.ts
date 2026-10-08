@@ -4,12 +4,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const mockCreateDeck = vi.fn();
 const mockInsertCards = vi.fn();
 const mockDeleteDeck = vi.fn();
+const mockInvalidateApiCache = vi.fn();
 
 vi.mock('@/lib/supabase', () => ({
   dbCreateDeck: (...args: unknown[]) => mockCreateDeck(...args),
   dbInsertCards: (...args: unknown[]) => mockInsertCards(...args),
   dbDeleteDeck: (...args: unknown[]) => mockDeleteDeck(...args),
   sb: { auth: { getSession: vi.fn(async () => ({ data: { session: { access_token: 'tok' } } })) } },
+}));
+
+vi.mock('@/lib/apiCache', () => ({
+  invalidateApiCache: (...args: unknown[]) => mockInvalidateApiCache(...args),
 }));
 
 import { useQuizletImport } from '@/hooks/useQuizletImport';
@@ -160,6 +165,8 @@ describe('useQuizletImport', () => {
     expect(init.headers.Authorization).toBe('Bearer tok');
     expect(result.current.saved[0].assigned).toBe(true);
     expect(result.current.error).toBeNull();
+    expect(mockInvalidateApiCache).toHaveBeenCalledWith('/api/group/assignments');
+    expect(mockInvalidateApiCache).toHaveBeenCalledWith('/api/group/lessons');
   });
 
   it('keeps the deck but flags it when the handout fails', async () => {

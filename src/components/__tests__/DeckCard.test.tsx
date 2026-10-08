@@ -78,4 +78,28 @@ describe('DeckCard', () => {
     );
     expect(screen.queryByRole('button', { name: 'Delete deck' })).not.toBeInTheDocument();
   });
+
+  it('should call onAddToGroup with deck id when the add-to-group button is clicked', () => {
+    const onAddToGroup = vi.fn();
+    const deck = makeDeck({ id: 'deck-add' });
+    renderWithProviders(
+      <DeckCard deck={deck} onOpen={vi.fn()} onDelete={vi.fn()} onAddToGroup={onAddToGroup} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: `Add ${deck.name} to a group` }));
+    expect(onAddToGroup).toHaveBeenCalledWith('deck-add');
+  });
+
+  it('should not show the add-to-group button when isOwner=false', () => {
+    const deck = makeDeck();
+    renderWithProviders(
+      <DeckCard
+        deck={deck}
+        onOpen={vi.fn()}
+        onDelete={vi.fn()}
+        onAddToGroup={vi.fn()}
+        isOwner={false}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: /to a group/ })).not.toBeInTheDocument();
+  });
 });
