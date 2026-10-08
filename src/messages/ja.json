@@ -2281,6 +2281,15 @@
       "createGroup": "グループを作成",
       "emptyPin": "ピン留めするとここに表示されます。グループのピンアイコンを押してください ✨"
     },
+    "teachingToday": {
+      "heading": "今日の様子",
+      "allGroups": "すべてのグループ →",
+      "allQuiet": "今日はみんな順調です。",
+      "rowQuiet": "順調です",
+      "rowError": "{name}を読み込めませんでした",
+      "moreCount": "ほか{count}件",
+      "thisWeek": "今週：{title}"
+    },
     "leaderboardSection": {
       "emptyCheckBack": "もっと人が参加したら見てみてね！"
     },

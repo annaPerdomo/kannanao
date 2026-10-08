@@ -2281,6 +2281,15 @@
       "createGroup": "Create a group",
       "emptyPin": "Pin a group to see it here — tap the pin icon on any group ✨"
     },
+    "teachingToday": {
+      "heading": "Teaching today",
+      "allGroups": "All groups →",
+      "allQuiet": "Everyone's on track today.",
+      "rowQuiet": "All caught up",
+      "rowError": "Couldn't load {name}",
+      "moreCount": "{count, plural, one {# more} other {# more}}",
+      "thisWeek": "This week: {title}"
+    },
     "leaderboardSection": {
       "emptyCheckBack": "Check back when more people join!"
     },

@@ -27,7 +27,15 @@ import { DataErrorState } from '@/components/DataErrorState';
 import { DeckTile } from '@/components/DeckCard';
 import { DECK_TILE_MIN_HEIGHT } from '@/components/DeckCard/DeckTile';
 import { AssignmentCard, GroupRow, LeaderboardWidget } from '@/components/Group';
-import { getGreeting, GreetingHero, SpeechRow, XpProgressCard } from '@/components/Home';
+import {
+  ASIDE_FLOATS_FROM_PX,
+  getGreeting,
+  GreetingHero,
+  HERO_MAX_WIDTH,
+  SpeechRow,
+  XpProgressCard,
+} from '@/components/Home';
+import { TeachingTodayCard } from '@/components/Home/TeachingToday';
 import { LoadingOverlay } from '@/components/Loading';
 import { TodayAdventureCard } from '@/components/TodayAdventureCard';
 import { TodoList } from '@/components/TodoList';
@@ -364,6 +372,8 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
     () => [...roleKeys].filter((k) => !homeSections[k]),
     [roleKeys, homeSections],
   );
+
+  const asideFloats = useMediaQuery(`(min-width:${ASIDE_FLOATS_FROM_PX}px)`, { noSsr: true });
 
   // ── Grid layout (drag + resize) ──
   const isMobile = useMediaQuery('(max-width:899px)', { noSsr: true });
@@ -730,6 +740,7 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
       <Box sx={{ mb: { xs: 1.5, sm: 2 } }}>
         <GreetingHero
           greeting={getGreeting(username, tGreeting)}
+          teachingToday={!isMemberAccount && !asideFloats ? <TeachingTodayCard /> : undefined}
           aside={
             progress ? (
               <XpProgressCard
@@ -753,6 +764,12 @@ export default function Home({ initialData }: { initialData?: HomeData }) {
           <TodayAdventureCard />
         </GreetingHero>
       </Box>
+
+      {!isMemberAccount && asideFloats && (
+        <Box sx={{ maxWidth: HERO_MAX_WIDTH, mx: 'auto', mb: { xs: 1.5, sm: 2 } }}>
+          <TeachingTodayCard />
+        </Box>
+      )}
 
       {/* ── Dashboard grid ── */}
       <GlobalStyles

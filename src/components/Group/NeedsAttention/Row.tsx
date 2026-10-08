@@ -108,10 +108,11 @@ function RowActions({
   );
 }
 
-function useRowText(item: AttentionItem): { headline: string; subline: string } {
-  const t = useTranslations('Group.needsAttention');
-  const tTime = useTranslations('Group.timeAgo');
-
+export function attentionItemText(
+  item: AttentionItem,
+  t: ReturnType<typeof useTranslations>,
+  tTime: ReturnType<typeof useTranslations>,
+): { headline: string; subline: string } {
   if (item.kind === 'inactiveLearner') {
     // Same predicate as the standalone row this suffix stands in for, so the
     // panel never names a backlog it wouldn't have flagged on its own.
@@ -201,6 +202,12 @@ function useRowText(item: AttentionItem): { headline: string; subline: string } 
   }
 
   return { headline, subline };
+}
+
+function useRowText(item: AttentionItem): { headline: string; subline: string } {
+  const t = useTranslations('Group.needsAttention');
+  const tTime = useTranslations('Group.timeAgo');
+  return attentionItemText(item, t, tTime);
 }
 
 const ROW_ICONS: Record<AttentionItem['kind'], typeof PersonOffOutlinedIcon> = {
