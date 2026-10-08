@@ -4,21 +4,20 @@ import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
-import { HandoutDetailDialog } from '@/components/Group/HandoutDetailDialog';
 import { SectionCard } from '@/components/Group/SectionCard';
 import { Loading } from '@/components/Loading';
 import { useDecks } from '@/hooks/useDecks';
 import { useGroups } from '@/hooks/useGroups';
 import { useLessonLibrary } from '@/hooks/useLessonLibrary';
-import { handoutRefFromWeek } from '@/types/handout';
+import { handoutPagePath } from '@/lib/lessonUnits';
 import type { LessonUnit, LessonUnitWeek } from '@/types/lessonUnit';
 
 import { AddWeekDialog, type AddWeekInput } from './AddWeekDialog';
 import { CopyUnitDialog } from './CopyUnitDialog';
-import { EditWeekDialog } from './EditWeekDialog';
 import { ShiftDialog } from './ShiftDialog';
 import { UnitCard } from './UnitCard';
 import { WeekRow } from './WeekRow';
@@ -31,25 +30,13 @@ interface LessonLibraryProps {
 
 export function LessonLibrary({ groupId, onBuild, onSwitchGroup }: LessonLibraryProps) {
   const t = useTranslations('Materials.library');
-  const {
-    library,
-    loading,
-    error,
-    saving,
-    refetch,
-    editWeek,
-    removeWeek,
-    renameUnit,
-    shiftFrom,
-    addWeek,
-    copyUnit,
-  } = useLessonLibrary(groupId);
+  const router = useRouter();
+  const { library, loading, error, saving, refetch, renameUnit, shiftFrom, addWeek, copyUnit } =
+    useLessonLibrary(groupId);
   const { groups } = useGroups();
   const [addingUnit, setAddingUnit] = useState<LessonUnit | null>(null);
   const { decks } = useDecks(addingUnit != null);
   const groupName = groups.find((g) => g.id === groupId)?.name ?? '';
-  const [activeWeek, setActiveWeek] = useState<LessonUnitWeek | null>(null);
-  const [editingWeek, setEditingWeek] = useState<LessonUnitWeek | null>(null);
   const [shiftingUnit, setShiftingUnit] = useState<LessonUnit | null>(null);
   const [shiftingWeek, setShiftingWeek] = useState<LessonUnitWeek | null>(null);
   const [copyingUnit, setCopyingUnit] = useState<LessonUnit | null>(null);
@@ -71,17 +58,7 @@ export function LessonLibrary({ groupId, onBuild, onSwitchGroup }: LessonLibrary
     [decks, usedDeckIds],
   );
 
-  const handleEditSave = async (deckId: string, patch: Parameters<typeof editWeek>[1]) => {
-    const ok = await editWeek(deckId, patch);
-    if (ok) setToast({ message: t('savedToast'), severity: 'success' });
-    return ok;
-  };
-
-  const handleRemove = async (deckId: string) => {
-    const ok = await removeWeek(deckId);
-    if (ok) setToast({ message: t('removedToast'), severity: 'success' });
-    return ok;
-  };
+  const openWeek = (week: LessonUnitWeek) => router.push(handoutPagePath(groupId, week.deckId));
 
   const handleShift = async (planId: string, fromDeckId: string, days: number) => {
     const ok = await shiftFrom(planId, fromDeckId, days);
@@ -142,8 +119,7 @@ export function LessonLibrary({ groupId, onBuild, onSwitchGroup }: LessonLibrary
             key={unit.id}
             unit={unit}
             groupName={groupName}
-            onOpenWeek={setActiveWeek}
-            onEditWeek={setEditingWeek}
+            onOpenWeek={openWeek}
             onShiftWeek={(week) => {
               setShiftingUnit(unit);
               setShiftingWeek(week);
@@ -159,39 +135,12 @@ export function LessonLibrary({ groupId, onBuild, onSwitchGroup }: LessonLibrary
           <SectionCard title={t('otherHandouts')}>
             <Stack spacing={1}>
               {library.loose.map((week) => (
-                <WeekRow
-                  key={week.deckId}
-                  week={week}
-                  onOpen={() => setActiveWeek(week)}
-                  onEdit={() => setEditingWeek(week)}
-                />
+                <WeekRow key={week.deckId} week={week} onOpen={() => openWeek(week)} />
               ))}
             </Stack>
           </SectionCard>
         )}
       </Stack>
-
-      <HandoutDetailDialog
-        open={activeWeek != null}
-        onClose={() => setActiveWeek(null)}
-        handout={activeWeek ? handoutRefFromWeek(activeWeek) : null}
-        groupId={groupId}
-      />
-
-      <EditWeekDialog
-        open={editingWeek != null}
-        onClose={() => setEditingWeek(null)}
-        week={editingWeek}
-        groupId={groupId}
-        groupName={groupName}
-        saving={saving}
-        onSave={handleEditSave}
-        onRemove={handleRemove}
-        onShowDetail={() => {
-          setEditingWeek(null);
-          setActiveWeek(editingWeek);
-        }}
-      />
 
       <ShiftDialog
         open={shiftingWeek != null}

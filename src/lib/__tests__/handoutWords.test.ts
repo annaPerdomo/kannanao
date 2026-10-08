@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   groupWordInsights,
+  handoutLearnerSummaries,
   isTricky,
   learnerWordInsights,
+  masteryOf,
   summarizeGroupWords,
   toCardProgress,
   type WordProgressRow,
@@ -212,6 +214,74 @@ describe('summarizeGroupWords', () => {
       seenByAnyone: 1,
       strongForMost: 1,
       trickyForAnyone: 1,
+    });
+  });
+});
+
+describe('handoutLearnerSummaries', () => {
+  it('counts strength, tricky and last practice per learner, keeping roster order', () => {
+    const cards = [card('c1'), card('c2'), card('c3')];
+    const rows = [
+      row({ userId: 'u1', cardId: 'c1', correctCount: 5, wrongCount: 0, intervalDays: 3 }),
+      row({
+        userId: 'u1',
+        cardId: 'c2',
+        correctCount: 1,
+        wrongCount: 3,
+        intervalDays: 0,
+        lastReviewedAt: '2026-10-04T00:00:00Z',
+      }),
+      row({ userId: 'u3', cardId: 'c9' }),
+    ];
+    const members = [
+      { id: 'u1', name: 'Hana' },
+      { id: 'u2', name: 'Ken' },
+    ];
+    const [hana, ken] = handoutLearnerSummaries(cards, rows, members, new Set(['u1']));
+
+    expect(hana).toEqual({
+      id: 'u1',
+      name: 'Hana',
+      assigned: true,
+      strong: 1,
+      learning: 1,
+      unseen: 1,
+      tricky: 1,
+      lastPracticedAt: '2026-10-04T00:00:00Z',
+    });
+    expect(ken).toMatchObject({
+      assigned: false,
+      strong: 0,
+      learning: 0,
+      unseen: 3,
+      tricky: 0,
+      lastPracticedAt: null,
+    });
+  });
+});
+
+describe('masteryOf', () => {
+  it('is not started until any word has been practiced', () => {
+    expect(masteryOf({ strong: 0, learning: 0, unseen: 5 })).toEqual({
+      level: 'notStarted',
+      percent: 0,
+    });
+    expect(masteryOf({ strong: 0, learning: 0, unseen: 0 }).level).toBe('notStarted');
+  });
+
+  it('buckets the strong share at 40% and 80%', () => {
+    expect(masteryOf({ strong: 3, learning: 7, unseen: 0 })).toEqual({
+      level: 'learning',
+      percent: 30,
+    });
+    expect(masteryOf({ strong: 4, learning: 6, unseen: 0 }).level).toBe('gettingThere');
+    expect(masteryOf({ strong: 8, learning: 2, unseen: 0 }).level).toBe('mastered');
+  });
+
+  it('counts a finished-once learner with few strong words as still learning', () => {
+    expect(masteryOf({ strong: 11, learning: 30, unseen: 28 })).toEqual({
+      level: 'learning',
+      percent: 16,
     });
   });
 });

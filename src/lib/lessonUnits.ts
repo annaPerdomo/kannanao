@@ -273,3 +273,30 @@ export function unitTitleFromGoal(goal: string): string | null {
   if (collapsed.length > GOAL_TITLE_MAX) return `${collapsed.slice(0, GOAL_TITLE_MAX - 1)}…`;
   return collapsed;
 }
+
+export interface LocatedWeek {
+  unit: LessonUnit | null;
+  week: LessonUnitWeek;
+  previous: LessonUnitWeek | null;
+  next: LessonUnitWeek | null;
+}
+
+export function locateWeek(library: LessonLibrary | null, deckId: string): LocatedWeek | null {
+  if (!library) return null;
+  for (const unit of library.units) {
+    const index = unit.weeks.findIndex((w) => w.deckId === deckId);
+    if (index === -1) continue;
+    return {
+      unit,
+      week: unit.weeks[index],
+      previous: unit.weeks[index - 1] ?? null,
+      next: unit.weeks[index + 1] ?? null,
+    };
+  }
+  const loose = library.loose.find((w) => w.deckId === deckId);
+  return loose ? { unit: null, week: loose, previous: null, next: null } : null;
+}
+
+export function handoutPagePath(groupId: string, deckId: string): string {
+  return `/materials/assigned/${encodeURIComponent(groupId)}/${encodeURIComponent(deckId)}`;
+}

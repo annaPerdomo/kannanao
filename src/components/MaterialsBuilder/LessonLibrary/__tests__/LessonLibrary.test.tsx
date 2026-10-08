@@ -25,44 +25,9 @@ vi.mock('@/hooks/useDecks', () => ({
   useDecks: (...args: unknown[]) => mockUseDecks(...args),
 }));
 
-const mockHandoutDetailDialog = vi.fn();
-vi.mock('@/components/Group/HandoutDetailDialog', () => ({
-  HandoutDetailDialog: (props: unknown) => {
-    mockHandoutDetailDialog(props);
-    return null;
-  },
-}));
-
-vi.mock('@/hooks/useHandoutWords', () => ({
-  useHandoutWords: () => ({
-    data: {
-      deck: { id: 'd1', name: 'Food', emoji: null },
-      learnerCount: 0,
-      words: [
-        {
-          card: {
-            id: 'c1',
-            word: '猫',
-            reading: 'ねこ',
-            meaning: 'cat',
-            image_query: '',
-            example_jp: '',
-            example_en: '',
-            mainViewMode: 'hiragana',
-            cardType: 'word',
-            deckId: 'd1',
-            position: 0,
-          },
-          seenCount: 0,
-          strongCount: 0,
-          trickyCount: 0,
-        },
-      ],
-      learner: null,
-    },
-    loading: false,
-    error: null,
-  }),
+const mockPush = vi.fn();
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush }),
 }));
 
 import { LessonLibrary } from '@/components/MaterialsBuilder/LessonLibrary';
@@ -107,7 +72,7 @@ describe('LessonLibrary', () => {
   beforeEach(() => {
     mockUseLessonLibrary.mockReset();
     mockRefetch.mockReset();
-    mockHandoutDetailDialog.mockReset();
+    mockPush.mockReset();
     mockEditWeek.mockReset().mockResolvedValue(true);
     mockRemoveWeek.mockReset().mockResolvedValue(true);
     mockRenameUnit.mockReset().mockResolvedValue(true);
@@ -139,7 +104,7 @@ describe('LessonLibrary', () => {
     expect(onBuild).toHaveBeenCalled();
   });
 
-  it('expands only the unit containing the current week, and opens the handout dialog on Enter', () => {
+  it('expands only the unit containing the current week, and opens the handout page on Enter', () => {
     setLibrary({
       units: [
         {
@@ -175,9 +140,7 @@ describe('LessonLibrary', () => {
     expect(animalsRow).toBeTruthy();
 
     fireEvent.keyDown(animalsRow as Element, { key: 'Enter' });
-    expect(mockHandoutDetailDialog).toHaveBeenCalledWith(
-      expect.objectContaining({ open: true, handout: expect.objectContaining({ deckId: 'd2' }) }),
-    );
+    expect(mockPush).toHaveBeenCalledWith('/materials/assigned/g1/d2');
   });
 
   it('shows the word count on the row, hiding it when zero', () => {
@@ -255,50 +218,6 @@ describe('LessonLibrary', () => {
     };
   }
 
-  it('has an edit icon with an aria-label and saves the patch from the edit dialog', () => {
-    setLibrary(oneUnitLibrary());
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
-
-    const editButton = screen.getByRole('button', { name: 'Edit week 1' });
-    fireEvent.click(editButton);
-
-    const titleInput = screen.getByLabelText('Title');
-    fireEvent.change(titleInput, { target: { value: 'New title' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-
-    expect(mockEditWeek).toHaveBeenCalledWith(
-      'd1',
-      expect.objectContaining({ title: 'New title' }),
-    );
-  });
-
-  it('closes the edit dialog and opens the detail dialog for the same week', () => {
-    setLibrary(oneUnitLibrary());
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Edit week 1' }));
-    mockHandoutDetailDialog.mockClear();
-
-    fireEvent.click(screen.getByRole('button', { name: 'See how learners are doing' }));
-
-    expect(screen.queryByLabelText('Title')).not.toBeInTheDocument();
-    expect(mockHandoutDetailDialog).toHaveBeenCalledWith(
-      expect.objectContaining({ open: true, handout: expect.objectContaining({ deckId: 'd1' }) }),
-    );
-  });
-
-  it('removes a week through the confirm view', () => {
-    setLibrary(oneUnitLibrary());
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Edit week 1' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Remove this week' }));
-    expect(screen.getByText(/Remove week 1 from this unit/)).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
-    expect(mockRemoveWeek).toHaveBeenCalledWith('d1');
-  });
-
   it('shows the shift preview text from the overflow menu', () => {
     setLibrary(oneUnitLibrary());
     renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
@@ -340,38 +259,16 @@ describe('LessonLibrary', () => {
     expect(await screen.findByText("Couldn't save. Try again.")).toBeInTheDocument();
   });
 
-  it('gives loose handouts an edit button but no move-week overflow', () => {
+  it('opens loose handouts on their page, with no move-week overflow', () => {
     setLibrary({
       units: [],
       loose: [week({ deckId: 'd3', deckName: 'Loose deck', week: null })],
     });
     renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
 
-    expect(screen.getByRole('button', { name: 'Edit week 1' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /More for week/ })).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Edit week 1' }));
-    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'New title' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    expect(mockEditWeek).toHaveBeenCalledWith(
-      'd3',
-      expect.objectContaining({ title: 'New title' }),
-    );
-  });
-
-  it('disables Save and shows a helper text when the open date is after the due date', () => {
-    setLibrary(oneUnitLibrary());
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Edit week 1' }));
-    fireEvent.change(screen.getByLabelText('Opens'), { target: { value: '2026-10-20' } });
-    fireEvent.change(screen.getByLabelText('Due'), { target: { value: '2026-10-13' } });
-
-    expect(
-      screen.getByText('The open date must be on or before the due date.'),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
-    expect(mockEditWeek).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText(/Loose deck/));
+    expect(mockPush).toHaveBeenCalledWith('/materials/assigned/g1/d3');
   });
 
   it('shows the can-do list in week order and hides it when no week has a note', () => {

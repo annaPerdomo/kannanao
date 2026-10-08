@@ -133,6 +133,7 @@ describe('HandoutDetailDialog', () => {
 
     expect(mockUseHandoutWords).not.toHaveBeenCalled();
     expect(mockUseDeckWords).toHaveBeenCalled();
+    expect(screen.queryByRole('link', { name: 'Open full page' })).not.toBeInTheDocument();
   });
 
   it('renders the group summary and per-word chips when groupId is given', () => {
@@ -155,6 +156,10 @@ describe('HandoutDetailDialog', () => {
     expect(screen.getByText('2/2 seen')).toBeInTheDocument();
     expect(screen.getByText('2 strong')).toBeInTheDocument();
     expect(screen.queryByText(/tricky/)).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open full page' })).toHaveAttribute(
+      'href',
+      `/materials/assigned/g1/${deckHandout().deckId}`,
+    );
   });
 
   it('shows the empty-deck message even with groupId and no learners', () => {

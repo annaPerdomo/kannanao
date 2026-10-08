@@ -53,7 +53,6 @@ function unit(): LessonUnit {
 
 const NOOP_PROPS = {
   onOpenWeek: vi.fn(),
-  onEditWeek: vi.fn(),
   onShiftWeek: vi.fn(),
   onRenameUnit: vi.fn(),
   onAddWeek: vi.fn(),

@@ -138,6 +138,7 @@ describe('GET /api/group/lessons/words', () => {
     expect(body.words.map((w: { card: { id: string } }) => w.card.id)).toEqual(['c1', 'c2']);
     expect(body.words[0]).toMatchObject({ seenCount: 1, strongCount: 1, trickyCount: 0 });
     expect(body.learner).toBeNull();
+    expect(body.learners).toEqual([]);
 
     expect(decksChain).toHaveBeenCalledWith('eq', 'user_id', 'org1');
     expect(cardProgressChain).toHaveBeenCalledWith('in', 'user_id', ['m1', 'm2']);
@@ -175,5 +176,53 @@ describe('GET /api/group/lessons/words', () => {
     const res = await GET(request('groupId=g1&deckId=d1'));
     expect(res.status).toBe(200);
     expect(cardProgressChain).not.toHaveBeenCalled();
+  });
+
+  it('summarizes each learner with names and assignment on the group view', async () => {
+    setTable('cards', [card('c1'), card('c2')]);
+    setTable('card_progress', [
+      {
+        user_id: 'm1',
+        card_id: 'c1',
+        correct_count: 5,
+        wrong_count: 0,
+        last_reviewed_at: '2026-10-01T00:00:00Z',
+        next_review_at: '2026-10-05T00:00:00Z',
+        interval_days: 3,
+        ease: 2.5,
+      },
+    ]);
+    setTable('profiles', [
+      { id: 'm1', username: 'hana', display_name: 'Hana' },
+      { id: 'm2', username: 'ken', display_name: null },
+    ]);
+    setTable('assignments', [{ member_id: 'm1' }]);
+
+    const res = await GET(request('groupId=g1&deckId=d1'));
+    const body = await res.json();
+    expect(body.learners).toEqual([
+      expect.objectContaining({
+        id: 'm1',
+        name: 'Hana',
+        assigned: true,
+        strong: 1,
+        unseen: 1,
+      }),
+      expect.objectContaining({ id: 'm2', name: 'ken', assigned: false, unseen: 2 }),
+    ]);
+  });
+
+  it('leaves learners null on the one-learner view', async () => {
+    setTable('cards', [card('c1')]);
+    const res = await GET(request('groupId=g1&deckId=d1&memberId=m1'));
+    const body = await res.json();
+    expect(body.learners).toBeNull();
+  });
+
+  it('500s when the learner names cannot be read', async () => {
+    setTable('cards', [card('c1')]);
+    setTable('profiles', null, { message: 'boom' });
+    const res = await GET(request('groupId=g1&deckId=d1'));
+    expect(res.status).toBe(500);
   });
 });

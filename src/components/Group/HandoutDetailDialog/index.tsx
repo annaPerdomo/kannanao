@@ -1,9 +1,12 @@
 'use client';
+import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { StyledDialog } from '@/components/StyledDialog';
+import { handoutPagePath } from '@/lib/lessonUnits';
 import type { HandoutRef } from '@/types/handout';
 
 import { formatDate } from '../dueDate';
@@ -56,6 +59,18 @@ export function HandoutDetailDialog({
       subtitle={subtitle}
       maxWidth="sm"
       titleId="handout-detail-title"
+      actions={
+        groupId && handout?.deckId ? (
+          <Button
+            component={Link}
+            href={handoutPagePath(groupId, handout.deckId)}
+            variant="contained"
+            sx={{ textTransform: 'none', fontWeight: 700 }}
+          >
+            {t('openFullPage')}
+          </Button>
+        ) : undefined
+      }
     >
       {handout && (
         <>

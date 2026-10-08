@@ -1,5 +1,5 @@
 'use client';
-import EditIcon from '@mui/icons-material/Edit';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -17,7 +17,6 @@ import type { LessonUnitWeek, LessonWeekStatus } from '@/types/lessonUnit';
 interface WeekRowProps {
   week: LessonUnitWeek;
   onOpen: () => void;
-  onEdit?: () => void;
   onShift?: () => void;
 }
 
@@ -27,7 +26,7 @@ const STATUS_KEY: Record<LessonWeekStatus, string> = {
   past: 'statusPast',
 };
 
-export function WeekRow({ week, onOpen, onEdit, onShift }: WeekRowProps) {
+export function WeekRow({ week, onOpen, onShift }: WeekRowProps) {
   const t = useTranslations('Materials.library');
   const locale = useLocale();
   const theme = useTheme();
@@ -102,19 +101,6 @@ export function WeekRow({ week, onOpen, onEdit, onShift }: WeekRowProps) {
           : t('finishedCount', { finished: week.finishedCount, learners: week.learnerCount })}
       </Typography>
 
-      {onEdit && (
-        <IconButton
-          aria-label={t('editWeek', { n: week.week ?? 1 })}
-          size="small"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit();
-          }}
-        >
-          <EditIcon sx={{ fontSize: 16 }} />
-        </IconButton>
-      )}
-
       {onShift && (
         <>
           <IconButton
@@ -144,6 +130,8 @@ export function WeekRow({ week, onOpen, onEdit, onShift }: WeekRowProps) {
           </Menu>
         </>
       )}
+
+      <ChevronRightIcon sx={{ fontSize: 20, color: 'text.secondary', flexShrink: 0 }} />
     </Box>
   );
 }

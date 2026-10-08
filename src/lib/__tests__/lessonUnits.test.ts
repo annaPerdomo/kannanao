@@ -5,6 +5,8 @@ import type { LessonUnit, LessonUnitWeek } from '@/types/lessonUnit';
 import {
   buildLessonLibrary,
   currentWeekSummary,
+  handoutPagePath,
+  locateWeek,
   nextWeekDates,
   rebaseSchedule,
   shiftDate,
@@ -454,5 +456,65 @@ describe('rebaseSchedule', () => {
       { dueDate: '2026-10-06', availableOn: '2026-09-29' },
       { dueDate: '2026-10-06', availableOn: '2026-09-29' },
     ]);
+  });
+});
+
+describe('locateWeek', () => {
+  const w = (deckId: string, week: number | null): LessonUnitWeek => ({
+    deckId,
+    deckName: deckId,
+    deckEmoji: null,
+    week,
+    title: null,
+    note: null,
+    dueDate: null,
+    availableOn: null,
+    requiredAccuracy: null,
+    requiredMode: null,
+    learnerCount: 0,
+    finishedCount: 0,
+    wordCount: 0,
+    status: 'upcoming',
+  });
+  const unit: LessonUnit = {
+    id: 'u1',
+    title: 'Unit',
+    level: null,
+    createdAt: '2026-09-01T00:00:00Z',
+    weeks: [w('d1', 1), w('d2', 2), w('d3', 3)],
+  };
+  const library = { units: [unit], loose: [w('d9', null)] };
+
+  it('returns the unit and both neighbours for a middle week', () => {
+    const found = locateWeek(library, 'd2');
+    expect(found?.unit?.id).toBe('u1');
+    expect(found?.week.deckId).toBe('d2');
+    expect(found?.previous?.deckId).toBe('d1');
+    expect(found?.next?.deckId).toBe('d3');
+  });
+
+  it('has no previous on the first week and no next on the last', () => {
+    expect(locateWeek(library, 'd1')?.previous).toBeNull();
+    expect(locateWeek(library, 'd3')?.next).toBeNull();
+  });
+
+  it('finds loose handouts with no unit and no neighbours', () => {
+    expect(locateWeek(library, 'd9')).toEqual({
+      unit: null,
+      week: library.loose[0],
+      previous: null,
+      next: null,
+    });
+  });
+
+  it('returns null for an unknown deck or a missing library', () => {
+    expect(locateWeek(library, 'nope')).toBeNull();
+    expect(locateWeek(null, 'd1')).toBeNull();
+  });
+});
+
+describe('handoutPagePath', () => {
+  it('builds the Materials handout URL', () => {
+    expect(handoutPagePath('g1', 'd1')).toBe('/materials/assigned/g1/d1');
   });
 });

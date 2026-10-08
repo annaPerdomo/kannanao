@@ -127,3 +127,78 @@ export function summarizeGroupWords(
   }
   return { total: insights.length, seenByAnyone, strongForMost, trickyForAnyone };
 }
+
+export interface HandoutLearnerSummary {
+  id: string;
+  name: string;
+  assigned: boolean;
+  strong: number;
+  learning: number;
+  unseen: number;
+  tricky: number;
+  lastPracticedAt: string | null;
+}
+
+export function handoutLearnerSummaries(
+  cards: Flashcard[],
+  rows: WordProgressRow[],
+  members: { id: string; name: string }[],
+  assignedIds: Set<string>,
+): HandoutLearnerSummary[] {
+  const byUser = new Map<string, WordProgressRow[]>();
+  for (const row of rows) {
+    const bucket = byUser.get(row.userId);
+    if (bucket) bucket.push(row);
+    else byUser.set(row.userId, [row]);
+  }
+
+  return members.map((member) => {
+    const insights = learnerWordInsights(cards, byUser.get(member.id) ?? []);
+    let strong = 0;
+    let learning = 0;
+    let unseen = 0;
+    let tricky = 0;
+    let lastPracticedAt: string | null = null;
+    for (const insight of insights) {
+      if (insight.strength === 'strong') strong++;
+      else if (insight.strength === 'learning') learning++;
+      else unseen++;
+      if (insight.tricky) tricky++;
+      if (
+        insight.lastReviewedAt &&
+        (!lastPracticedAt || insight.lastReviewedAt > lastPracticedAt)
+      ) {
+        lastPracticedAt = insight.lastReviewedAt;
+      }
+    }
+    return {
+      id: member.id,
+      name: member.name,
+      assigned: assignedIds.has(member.id),
+      strong,
+      learning,
+      unseen,
+      tricky,
+      lastPracticedAt,
+    };
+  });
+}
+
+export type MasteryLevel = 'notStarted' | 'learning' | 'gettingThere' | 'mastered';
+
+export const MASTERED_SHARE = 0.8;
+export const GETTING_THERE_SHARE = 0.4;
+
+/** Share of the handout's words that are strong; `percent` is 0–100, rounded. */
+export function masteryOf(summary: Pick<HandoutLearnerSummary, 'strong' | 'learning' | 'unseen'>): {
+  level: MasteryLevel;
+  percent: number;
+} {
+  const total = summary.strong + summary.learning + summary.unseen;
+  const share = total > 0 ? summary.strong / total : 0;
+  const percent = Math.round(share * 100);
+  if (summary.strong + summary.learning === 0) return { level: 'notStarted', percent };
+  if (share >= MASTERED_SHARE) return { level: 'mastered', percent };
+  if (share >= GETTING_THERE_SHARE) return { level: 'gettingThere', percent };
+  return { level: 'learning', percent };
+}

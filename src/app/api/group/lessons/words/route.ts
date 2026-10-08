@@ -1,7 +1,13 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { dbCardToApp, type SupabaseCardRow } from '@/lib/dbMappers';
-import { groupWordInsights, learnerWordInsights, type WordProgressRow } from '@/lib/handoutWords';
+import {
+  groupWordInsights,
+  handoutLearnerSummaries,
+  type HandoutLearnerSummary,
+  learnerWordInsights,
+  type WordProgressRow,
+} from '@/lib/handoutWords';
 import { logger } from '@/lib/logger';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -35,6 +41,43 @@ function toWordProgressRow(row: ProgressRow): WordProgressRow {
     intervalDays: row.interval_days,
     ease: row.ease,
   };
+}
+
+async function loadLearnerSummaries(args: {
+  organizerId: string;
+  groupId: string;
+  deckId: string;
+  cards: Flashcard[];
+  rows: WordProgressRow[];
+  memberIds: string[];
+}): Promise<HandoutLearnerSummary[]> {
+  if (args.memberIds.length === 0) return [];
+  const sb = getServiceSupabase();
+  const [{ data: profiles, error: profilesErr }, { data: assignments, error: assignErr }] =
+    await Promise.all([
+      sb.from('profiles').select('id, username, display_name').in('id', args.memberIds),
+      sb
+        .from('assignments')
+        .select('member_id')
+        .eq('organizer_id', args.organizerId)
+        .eq('group_id', args.groupId)
+        .eq('deck_id', args.deckId),
+    ]);
+  if (profilesErr) throw new Error(profilesErr.message);
+  if (assignErr) throw new Error(assignErr.message);
+
+  const names = new Map(
+    ((profiles ?? []) as { id: string; username: string; display_name: string | null }[]).map(
+      (p) => [p.id, p.display_name || p.username],
+    ),
+  );
+  const assignedIds = new Set(
+    ((assignments ?? []) as { member_id: string }[]).map((a) => a.member_id),
+  );
+  const members = args.memberIds
+    .filter((id) => names.has(id))
+    .map((id) => ({ id, name: names.get(id) as string }));
+  return handoutLearnerSummaries(args.cards, args.rows, members, assignedIds);
 }
 
 export async function GET(req: NextRequest) {
@@ -109,11 +152,23 @@ export async function GET(req: NextRequest) {
         )
       : null;
 
+    const learners = memberId
+      ? null
+      : await loadLearnerSummaries({
+          organizerId: organizer.id,
+          groupId: group.id,
+          deckId,
+          cards,
+          rows: groupRows,
+          memberIds,
+        });
+
     return NextResponse.json({
       deck: { id: deck.id, name: deck.name, emoji: deck.emoji },
       learnerCount: memberIds.length,
       words,
       learner,
+      learners,
     });
   } catch (err) {
     logger.error('Failed to load handout words', {

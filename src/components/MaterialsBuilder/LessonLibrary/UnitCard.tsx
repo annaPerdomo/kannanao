@@ -33,7 +33,6 @@ interface UnitCardProps {
   unit: LessonUnit;
   groupName: string;
   onOpenWeek: (week: LessonUnitWeek) => void;
-  onEditWeek: (week: LessonUnitWeek) => void;
   onShiftWeek: (week: LessonUnitWeek) => void;
   onRenameUnit: (title: string | null) => void;
   onAddWeek: () => void;
@@ -45,7 +44,6 @@ export function UnitCard({
   unit,
   groupName,
   onOpenWeek,
-  onEditWeek,
   onShiftWeek,
   onRenameUnit,
   onAddWeek,
@@ -290,7 +288,6 @@ export function UnitCard({
               key={week.deckId}
               week={week}
               onOpen={() => onOpenWeek(week)}
-              onEdit={() => onEditWeek(week)}
               onShift={() => onShiftWeek(week)}
             />
           ))}

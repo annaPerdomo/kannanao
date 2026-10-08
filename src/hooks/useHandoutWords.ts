@@ -3,7 +3,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { LESSON_LIBRARY_CACHE_PREFIX } from '@/hooks/useLessonLibrary';
 import { fetchJsonCached, peekApiCache } from '@/lib/apiCache';
-import type { GroupWordInsight, LearnerWordInsight } from '@/lib/handoutWords';
+import type {
+  GroupWordInsight,
+  HandoutLearnerSummary,
+  LearnerWordInsight,
+} from '@/lib/handoutWords';
 import { sb } from '@/lib/supabase';
 
 export interface HandoutWords {
@@ -11,6 +15,8 @@ export interface HandoutWords {
   learnerCount: number;
   words: GroupWordInsight[];
   learner: LearnerWordInsight[] | null;
+  /** Present on the group view (no memberId). */
+  learners?: HandoutLearnerSummary[] | null;
 }
 
 async function authHeaders(): Promise<Record<string, string>> {
@@ -35,6 +41,7 @@ export function useHandoutWords(args: {
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
+  mutate: (update: (data: HandoutWords) => HandoutWords) => void;
 } {
   const { groupId, deckId, memberId, enabled } = args;
   const url = enabled && groupId && deckId ? buildUrl(groupId, deckId, memberId) : null;
@@ -84,5 +91,9 @@ export function useHandoutWords(args: {
     await load(url, () => false, 0);
   }, [url, load]);
 
-  return { data, loading, error, refetch };
+  const mutate = useCallback((update: (data: HandoutWords) => HandoutWords) => {
+    setData((prev) => (prev ? update(prev) : prev));
+  }, []);
+
+  return { data, loading, error, refetch, mutate };
 }
