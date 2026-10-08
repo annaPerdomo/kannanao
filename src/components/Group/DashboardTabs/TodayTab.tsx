@@ -4,6 +4,7 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
@@ -88,6 +89,7 @@ export function TodayTab({
   const theme = useTheme();
   const t = useTranslations('Group.groupPage');
   const tc = useTranslations('Group.charts');
+  const router = useRouter();
   const [rangeDays, setRangeDays] = useState<ActivityRangeDays>(14);
 
   const studySecsThisWeek = sumLastDays(activity?.totals.durationSecs ?? []);
@@ -210,7 +212,7 @@ export function TodayTab({
               loading={wordsLoading}
               error={wordsError}
               onViewWords={() => onNavigateTab('words')}
-              onOpenMaterials={onBuild}
+              onOpenMaterials={() => router.push(`/group/${groupId}/add/lesson`)}
             />
           </Box>
         </Box>

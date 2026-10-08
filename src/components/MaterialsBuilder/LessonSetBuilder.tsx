@@ -35,7 +35,7 @@ interface LessonSetBuilderProps {
   groups: Group[];
   groupId: string;
   onGroupChange: (groupId: string) => void;
-  onShowAssigned: () => void;
+  hideGroupSelect?: boolean;
 }
 
 const EMPTY_FORM: LessonSetForm = {
@@ -60,10 +60,9 @@ export function LessonSetBuilder({
   groups,
   groupId,
   onGroupChange,
-  onShowAssigned,
+  hideGroupSelect = false,
 }: LessonSetBuilderProps) {
   const t = useTranslations('Group.lessonBuilder');
-  const tLibrary = useTranslations('Materials.library');
   const router = useRouter();
   const {
     plan,
@@ -177,17 +176,14 @@ export function LessonSetBuilder({
             </Alert>
           ))}
           <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
-            <Button variant="contained" onClick={() => router.push(`/group/${groupId}`)}>
-              {t('backToGroupButton')}
-            </Button>
             <Button
-              variant="outlined"
+              variant="contained"
               onClick={() => {
                 invalidateApiCache(LESSON_LIBRARY_CACHE_PREFIX);
-                onShowAssigned();
+                router.push(`/group/${groupId}?tab=plan`);
               }}
             >
-              {tLibrary('seeInAssigned')}
+              {t('backToGroupButton')}
             </Button>
             {plan && (
               <PrintButtons
@@ -210,6 +206,7 @@ export function LessonSetBuilder({
           groupId={groupId}
           form={form}
           onGroupChange={onGroupChange}
+          hideGroupSelect={hideGroupSelect}
           onChange={(patch) => {
             if (patch.readingLevel) setReadingAnswered(true);
             // The level is the only signal until the educator answers, so it

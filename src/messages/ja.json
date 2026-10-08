@@ -1517,8 +1517,8 @@
       "quickActionsLabel": "クイックアクション",
       "inviteLearnersTitle": "学習者を招待",
       "inviteLearnersSubtitle": "リンクまたはQRコードで共有",
-      "materialsBuilderTitle": "プランに追加",
-      "materialsBuilderSubtitle": "新しい週・デッキ・かな目標をつくる"
+      "addToPlanTitle": "プランに追加",
+      "addToPlanSubtitle": "新しい週・デッキ・かな目標をつくる"
     },
     "dashboardTabs": {
       "today": "今日",
@@ -1797,7 +1797,7 @@
       "startOverButton": "さいしょから",
       "successMessage": "デッキを{count}こつくって、グループのみんなにわりあてました。",
       "deckFailed": "{name}でもんだいがありました：{reason}",
-      "backToGroupButton": "グループにもどる",
+      "backToGroupButton": "プランを見る",
       "printStudyButton": "学習プリントを印刷",
       "printQuizButton": "テストプリントを印刷",
       "printStudyTitle": "学習プリント",
@@ -1881,6 +1881,36 @@
       "heading": "にがてな練習モード",
       "accuracy": "正解率 {pct}%",
       "lowSample": "まだ練習が足りません"
+    },
+    "addToPlan": {
+      "dialogTitle": "プランに追加",
+      "chooseCta": "選ぶ",
+      "startCta": "はじめる",
+      "lesson": {
+        "title": "AIでレッスンを作る",
+        "description": "テーマや教科書のページ、PDFから単語・例文・週ごとの予定を作ります。"
+      },
+      "decks": {
+        "title": "持っているデッキを使う",
+        "description": "すでに作ったデッキを配ります。"
+      },
+      "quizlet": {
+        "title": "Quizletからインポート",
+        "description": "グループがすでに使っているセットを取り込みます。"
+      },
+      "kana": {
+        "title": "かな講座",
+        "description": "ひらがな・カタカナを週に数行ずつ。"
+      },
+      "blank": {
+        "title": "白紙のデッキから作る",
+        "description": "自分で単語を入力します。"
+      },
+      "groupNotFoundTitle": "グループが見つかりません",
+      "groupNotFoundBody": "削除されたか、アクセスできない可能性があります。",
+      "backToGroupsButton": "グループ一覧へ",
+      "savedNotHandedOut": "デッキには保存されました — まだ配布はされていません。",
+      "handItOutButton": "配布する"
     }
   },
   "Materials": {
@@ -1918,7 +1948,6 @@
       "otherHandouts": "その他の配布物",
       "showWeeks": "週を表示",
       "hideWeeks": "週を隠す",
-      "seeInAssigned": "配布済みで見る",
       "retry": "再試行",
       "editWeekSubtitle": "変更は{group}の全員に適用されます。後から参加する学習者にも同じ内容が表示されます。",
       "fieldTitle": "タイトル",

@@ -7,6 +7,9 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { DataErrorState, StaleDataHint } from '@/components/DataErrorState';
 import {
+  type AddSource,
+  addToPlanDestination,
+  AddToPlanDialog,
   DEFAULT_TAB,
   GroupDashboardDialogs,
   GroupDashboardHeader,
@@ -51,7 +54,7 @@ export default function GroupDashboardPage() {
     loading: activityLoading,
     errorMessage: activityError,
   } = useGroupActivity(groupId, ACTIVITY_DAYS);
-  const { decks } = useDecks();
+  const { decks, retry: retryDecks } = useDecks();
   const {
     assignments,
     loading: assignmentsLoading,
@@ -78,6 +81,7 @@ export default function GroupDashboardPage() {
   const assignDialog = useAssignDialog();
   const [createInviteOpen, setCreateInviteOpen] = useState(false);
   const [qrInvite, setQrInvite] = useState<InviteCode | null>(null);
+  const [addToPlanOpen, setAddToPlanOpen] = useState(false);
 
   const tabParam = searchParams?.get('tab') ?? null;
   const tab: GroupDashboardTab = resolveDashboardTab(tabParam);
@@ -98,9 +102,37 @@ export default function GroupDashboardPage() {
 
   const handleViewPlan = useCallback(() => handleTabChange('plan'), [handleTabChange]);
 
-  const handleBuild = useCallback(() => {
-    router.push(`/materials?group=${groupId}&tab=lessonSet`);
-  }, [router, groupId]);
+  const handleOpenAddToPlan = useCallback(() => setAddToPlanOpen(true), []);
+
+  const handlePickAddToPlan = useCallback(
+    (source: AddSource) => {
+      setAddToPlanOpen(false);
+      const destination = addToPlanDestination(groupId, source);
+      if ('openAssign' in destination) {
+        assignDialog.openAssign();
+      } else {
+        router.push(destination.path);
+      }
+    },
+    [assignDialog, router, groupId],
+  );
+
+  // The new deck may not be here yet — AddMaterialPage creates it through
+  // its own separate `useDecks()` instance.
+  const assignDeckId = searchParams?.get('assign') ?? null;
+  const openAssignFor = assignDialog.openAssign;
+  useEffect(() => {
+    if (!assignDeckId) return;
+    if (!decks.some((d) => d.id === assignDeckId)) retryDecks();
+    openAssignFor({ deckId: assignDeckId });
+    const query = new URLSearchParams(searchParams?.toString());
+    query.delete('assign');
+    const qs = query.toString();
+    router.replace(`/group/${groupId}${qs ? `?${qs}` : ''}`, { scroll: false });
+    // Only re-run when the URL param itself changes — `decks`/`searchParams`
+    // would otherwise retrigger this after the very replace() above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assignDeckId]);
 
   // The Lesson Library and the assignments list read overlapping handout data
   // from separate caches, so a change on either side has to refresh the other.
@@ -198,7 +230,7 @@ export default function GroupDashboardPage() {
         onRename={handleRename}
         onEmojiChange={handleEmojiChange}
         onInvite={() => setCreateInviteOpen(true)}
-        onOpenMaterials={handleViewPlan}
+        onAddToPlan={handleOpenAddToPlan}
         activeInviteCount={activeInvites.length}
       />
 
@@ -245,8 +277,16 @@ export default function GroupDashboardPage() {
         onDeleteAssignments={deleteAssignments}
         onAssign={() => assignDialog.openAssign()}
         onAssignMissing={assignDialog.assignMissing}
-        onBuild={handleBuild}
+        onBuild={handleOpenAddToPlan}
         onLibraryChanged={handleLibraryChanged}
+      />
+
+      <AddToPlanDialog
+        open={addToPlanOpen}
+        onClose={() => setAddToPlanOpen(false)}
+        groupId={groupId}
+        groupName={group?.name ?? ''}
+        onPick={handlePickAddToPlan}
       />
 
       <GroupDashboardDialogs

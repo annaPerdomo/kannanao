@@ -1517,8 +1517,8 @@
       "quickActionsLabel": "Quick actions",
       "inviteLearnersTitle": "Invite learners",
       "inviteLearnersSubtitle": "Share link or QR",
-      "materialsBuilderTitle": "Add to plan",
-      "materialsBuilderSubtitle": "Build a new week, deck, or kana goal"
+      "addToPlanTitle": "Add to plan",
+      "addToPlanSubtitle": "Build a new week, deck, or kana goal"
     },
     "dashboardTabs": {
       "today": "Today",
@@ -1797,7 +1797,7 @@
       "startOverButton": "Start over",
       "successMessage": "{count, plural, one {# deck was created and assigned to everyone in the group.} other {# decks were created and assigned to everyone in the group.}}",
       "deckFailed": "{name} had a problem: {reason}",
-      "backToGroupButton": "Back to the group",
+      "backToGroupButton": "See the plan",
       "printStudyButton": "Print study sheets",
       "printQuizButton": "Print quiz sheets",
       "printStudyTitle": "Study sheets",
@@ -1881,6 +1881,36 @@
       "heading": "Where practice is weak",
       "accuracy": "{pct}% right",
       "lowSample": "Not enough practice yet"
+    },
+    "addToPlan": {
+      "dialogTitle": "Add to plan",
+      "chooseCta": "Choose",
+      "startCta": "Start",
+      "lesson": {
+        "title": "Make a lesson with AI",
+        "description": "Words, example sentences and a weekly schedule from a topic, a textbook page or a PDF."
+      },
+      "decks": {
+        "title": "Use one of my decks",
+        "description": "Hand out a deck you already made."
+      },
+      "quizlet": {
+        "title": "Import from Quizlet",
+        "description": "Bring over a set your group already uses."
+      },
+      "kana": {
+        "title": "Kana course",
+        "description": "Hiragana and katakana, a few rows a week."
+      },
+      "blank": {
+        "title": "Start a blank deck",
+        "description": "Type the words in yourself."
+      },
+      "groupNotFoundTitle": "Can't find that group",
+      "groupNotFoundBody": "It may have been deleted, or you may not have access to it.",
+      "backToGroupsButton": "Back to your groups",
+      "savedNotHandedOut": "Saved to your decks — not handed out yet.",
+      "handItOutButton": "Hand it out"
     }
   },
   "Materials": {
@@ -1918,7 +1948,6 @@
       "otherHandouts": "Other handouts",
       "showWeeks": "Show weeks",
       "hideWeeks": "Hide weeks",
-      "seeInAssigned": "See it in Assigned",
       "retry": "Try again",
       "editWeekSubtitle": "Changes apply to everyone in {group}, including learners who join later.",
       "fieldTitle": "Title",

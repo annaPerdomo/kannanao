@@ -1,4 +1,14 @@
 export { ActivityFeed } from './ActivityFeed';
+export {
+  ADD_SOURCE_ROUTES,
+  ADD_SOURCES,
+  AddMaterialPage,
+  type AddSource,
+  type AddToPlanDestination,
+  addToPlanDestination,
+  AddToPlanDialog,
+  isAddSource,
+} from './AddToPlan';
 export { AssignmentCard } from './AssignmentCard';
 export { AssignmentGoalPicker } from './AssignmentGoalPicker';
 export { type AssignmentBatch, AssignmentsList } from './AssignmentsList';

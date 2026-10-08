@@ -1,20 +1,15 @@
 import { fireEvent, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { LessonLibraryHook } from '@/hooks/useLessonLibrary';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import type { LessonLibrary as LessonLibraryData, LessonUnitWeek } from '@/types/lessonUnit';
 
-const mockUseLessonLibrary = vi.fn();
 const mockRefetch = vi.fn();
-const mockEditWeek = vi.fn();
-const mockRemoveWeek = vi.fn();
 const mockRenameUnit = vi.fn();
 const mockShiftFrom = vi.fn();
 const mockAddWeek = vi.fn();
-
-vi.mock('@/hooks/useLessonLibrary', () => ({
-  useLessonLibrary: (...args: unknown[]) => mockUseLessonLibrary(...args),
-}));
+const mockCopyUnit = vi.fn();
 
 vi.mock('@/hooks/useGroups', () => ({
   useGroups: () => ({ groups: [{ id: 'g1', name: 'Tuesday Club' }] }),
@@ -52,60 +47,74 @@ function week(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
   };
 }
 
-function setLibrary(data: LessonLibraryData | null, overrides: Record<string, unknown> = {}) {
-  mockUseLessonLibrary.mockReturnValue({
+function buildLibrary(
+  data: LessonLibraryData | null,
+  overrides: Partial<LessonLibraryHook> = {},
+): LessonLibraryHook {
+  return {
     library: data,
     loading: false,
     error: null,
     saving: false,
     refetch: mockRefetch,
-    editWeek: mockEditWeek,
-    removeWeek: mockRemoveWeek,
+    editWeek: vi.fn(),
+    removeWeek: vi.fn(),
     renameUnit: mockRenameUnit,
     shiftFrom: mockShiftFrom,
     addWeek: mockAddWeek,
+    copyUnit: mockCopyUnit,
     ...overrides,
-  });
+  };
+}
+
+function renderLibrary(
+  data: LessonLibraryData | null,
+  overrides: Partial<LessonLibraryHook> = {},
+  props: Partial<{ onBuild: () => void; onSwitchGroup: (id: string) => void }> = {},
+) {
+  return renderWithProviders(
+    <LessonLibrary
+      groupId="g1"
+      onBuild={props.onBuild ?? vi.fn()}
+      onSwitchGroup={props.onSwitchGroup}
+      library={buildLibrary(data, overrides)}
+    />,
+  );
 }
 
 describe('LessonLibrary', () => {
   beforeEach(() => {
-    mockUseLessonLibrary.mockReset();
     mockRefetch.mockReset();
     mockPush.mockReset();
-    mockEditWeek.mockReset().mockResolvedValue(true);
-    mockRemoveWeek.mockReset().mockResolvedValue(true);
     mockRenameUnit.mockReset().mockResolvedValue(true);
     mockShiftFrom.mockReset().mockResolvedValue(true);
     mockAddWeek.mockReset().mockResolvedValue('ok');
+    mockCopyUnit.mockReset().mockResolvedValue({ status: 'ok' });
     mockUseDecks.mockReset().mockReturnValue({ decks: [], loading: false, error: null });
   });
 
   it('shows the loading state', () => {
-    setLibrary(null, { loading: true });
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    renderLibrary(null, { loading: true });
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
   it('shows the error state and calls refetch on retry', () => {
-    setLibrary(null, { error: "Couldn't load your lessons. Try again in a moment." });
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    renderLibrary(null, { error: "Couldn't load your lessons. Try again in a moment." });
     expect(screen.getByText(/couldn't load your lessons/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
     expect(mockRefetch).toHaveBeenCalled();
   });
 
   it('shows the empty state and calls onBuild', () => {
-    setLibrary({ units: [], loose: [] });
     const onBuild = vi.fn();
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={onBuild} />);
+    renderLibrary({ units: [], loose: [] }, {}, { onBuild });
     expect(screen.getByText('Nothing assigned to this group yet')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /build a lesson set/i }));
     expect(onBuild).toHaveBeenCalled();
   });
 
   it('expands only the unit containing the current week, and opens the handout page on Enter', () => {
-    setLibrary({
+    renderLibrary({
       units: [
         {
           id: 'u-new',
@@ -125,8 +134,6 @@ describe('LessonLibrary', () => {
       loose: [],
     });
 
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
-
     expect(screen.getByRole('button', { name: 'Hide weeks' })).toHaveAttribute(
       'aria-expanded',
       'true',
@@ -144,7 +151,7 @@ describe('LessonLibrary', () => {
   });
 
   it('shows the word count on the row, hiding it when zero', () => {
-    setLibrary({
+    renderLibrary({
       units: [
         {
           id: 'u1',
@@ -159,13 +166,11 @@ describe('LessonLibrary', () => {
       ],
       loose: [],
     });
-
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
     expect(screen.getByText('12 words')).toBeInTheDocument();
   });
 
   it('shows "Waiting for learners to join" when a week has no learners', () => {
-    setLibrary({
+    renderLibrary({
       units: [
         {
           id: 'u1',
@@ -177,13 +182,11 @@ describe('LessonLibrary', () => {
       ],
       loose: [],
     });
-
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
     expect(screen.getByText('Waiting for learners to join')).toBeInTheDocument();
   });
 
   it('renders loose handouts under "Other handouts"', () => {
-    setLibrary({
+    renderLibrary({
       units: [],
       loose: [
         week({
@@ -196,8 +199,6 @@ describe('LessonLibrary', () => {
         }),
       ],
     });
-
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
     expect(screen.getByText('Other handouts')).toBeInTheDocument();
     expect(screen.getByText(/Loose deck/)).toBeInTheDocument();
     expect(screen.getByText('1/2 finished')).toBeInTheDocument();
@@ -219,8 +220,7 @@ describe('LessonLibrary', () => {
   }
 
   it('shows the shift preview text from the overflow menu', () => {
-    setLibrary(oneUnitLibrary());
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    renderLibrary(oneUnitLibrary());
 
     fireEvent.click(screen.getByRole('button', { name: 'More for week 1' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Move this week and later' }));
@@ -232,8 +232,7 @@ describe('LessonLibrary', () => {
   });
 
   it('renames the unit on Enter from the inline field', () => {
-    setLibrary(oneUnitLibrary());
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    renderLibrary(oneUnitLibrary());
 
     fireEvent.click(screen.getByRole('button', { name: 'Options for Unit 1' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Rename' }));
@@ -247,8 +246,7 @@ describe('LessonLibrary', () => {
 
   it('shows an error toast when renameUnit fails', async () => {
     mockRenameUnit.mockResolvedValueOnce(false);
-    setLibrary(oneUnitLibrary());
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    renderLibrary(oneUnitLibrary());
 
     fireEvent.click(screen.getByRole('button', { name: 'Options for Unit 1' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Rename' }));
@@ -260,11 +258,10 @@ describe('LessonLibrary', () => {
   });
 
   it('opens loose handouts on their page, with no move-week overflow', () => {
-    setLibrary({
+    renderLibrary({
       units: [],
       loose: [week({ deckId: 'd3', deckName: 'Loose deck', week: null })],
     });
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
 
     expect(screen.queryByRole('button', { name: /More for week/ })).not.toBeInTheDocument();
     fireEvent.click(screen.getByText(/Loose deck/));
@@ -272,7 +269,7 @@ describe('LessonLibrary', () => {
   });
 
   it('shows the can-do list in week order and hides it when no week has a note', () => {
-    setLibrary({
+    renderLibrary({
       units: [
         {
           id: 'u1',
@@ -288,7 +285,6 @@ describe('LessonLibrary', () => {
       ],
       loose: [],
     });
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
 
     expect(screen.getByText('By the end of this unit, learners can:')).toBeInTheDocument();
     const items = screen.getAllByRole('listitem').map((el) => el.textContent);
@@ -296,14 +292,12 @@ describe('LessonLibrary', () => {
   });
 
   it('hides the can-do list when no week in the unit has a note', () => {
-    setLibrary(oneUnitLibrary());
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    renderLibrary(oneUnitLibrary());
     expect(screen.queryByText('By the end of this unit, learners can:')).not.toBeInTheDocument();
   });
 
   it('opens the add-week dialog, selects the review tile with the keyboard, and adds it', async () => {
-    setLibrary(oneUnitLibrary());
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    renderLibrary(oneUnitLibrary());
 
     fireEvent.click(screen.getByRole('button', { name: 'Add a week' }));
     const reviewTile = screen.getByText('Review week').closest('[role="button"]') as Element;
@@ -317,8 +311,7 @@ describe('LessonLibrary', () => {
 
   it('shows the already-in-unit message instead of the generic save error', async () => {
     mockAddWeek.mockResolvedValue('already_in_unit');
-    setLibrary(oneUnitLibrary());
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    renderLibrary(oneUnitLibrary());
 
     fireEvent.click(screen.getByRole('button', { name: 'Add a week' }));
     const reviewTile = screen.getByText('Review week').closest('[role="button"]') as Element;
@@ -332,8 +325,7 @@ describe('LessonLibrary', () => {
 
   it('only enables the deck fetch while the add-week dialog is open', () => {
     mockUseDecks.mockReturnValue({ decks: [], loading: false, error: null });
-    setLibrary(oneUnitLibrary());
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    renderLibrary(oneUnitLibrary());
 
     expect(mockUseDecks).toHaveBeenLastCalledWith(false);
     fireEvent.click(screen.getByRole('button', { name: 'Add a week' }));
@@ -349,8 +341,7 @@ describe('LessonLibrary', () => {
       loading: false,
       error: null,
     });
-    setLibrary(oneUnitLibrary());
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    renderLibrary(oneUnitLibrary());
 
     fireEvent.click(screen.getByRole('button', { name: 'Add a week' }));
     fireEvent.click(screen.getByText('A deck I already have'));
@@ -366,8 +357,7 @@ describe('LessonLibrary', () => {
       loading: false,
       error: null,
     });
-    setLibrary(oneUnitLibrary());
-    renderWithProviders(<LessonLibrary groupId="g1" onBuild={vi.fn()} />);
+    renderLibrary(oneUnitLibrary());
 
     fireEvent.click(screen.getByRole('button', { name: 'Add a week' }));
     fireEvent.click(screen.getByText('A deck I already have'));

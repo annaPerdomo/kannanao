@@ -4,6 +4,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { DataError } from '@/lib/dataError';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
+const pushMock = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: pushMock }) }));
+
 import { TodayTab } from '../TodayTab';
 
 function baseProps(overrides: Partial<Parameters<typeof TodayTab>[0]> = {}) {
@@ -63,6 +66,14 @@ describe('TodayTab', () => {
     renderWithProviders(<TodayTab {...baseProps({ onBuild, onViewPlan })} />);
     fireEvent.click(screen.getByText('See the plan'));
     expect(onViewPlan).toHaveBeenCalled();
+    expect(onBuild).not.toHaveBeenCalled();
+  });
+
+  it('sends "Build a review lesson" straight to the lesson builder, bypassing the picker', () => {
+    const onBuild = vi.fn();
+    renderWithProviders(<TodayTab {...baseProps({ onBuild })} />);
+    fireEvent.click(screen.getByText('Build a review lesson'));
+    expect(pushMock).toHaveBeenCalledWith('/group/g1/add/lesson');
     expect(onBuild).not.toHaveBeenCalled();
   });
 });

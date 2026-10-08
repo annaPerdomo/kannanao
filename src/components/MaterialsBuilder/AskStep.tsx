@@ -39,6 +39,7 @@ interface AskStepProps {
   onGroupChange: (groupId: string) => void;
   onChange: (patch: Partial<LessonSetForm>) => void;
   onSubmit: () => void;
+  hideGroupSelect?: boolean;
 }
 
 function MaterialCard(props: {
@@ -89,6 +90,7 @@ export function AskStep({
   onGroupChange,
   onChange,
   onSubmit,
+  hideGroupSelect = false,
 }: AskStepProps) {
   const t = useTranslations('Group.lessonBuilder');
   const tm = useTranslations('Materials');
@@ -139,7 +141,9 @@ export function AskStep({
             gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' },
           }}
         >
-          <GroupSelect groups={groups} value={groupId} onChange={onGroupChange} />
+          {!hideGroupSelect && (
+            <GroupSelect groups={groups} value={groupId} onChange={onGroupChange} />
+          )}
 
           <TextField
             select

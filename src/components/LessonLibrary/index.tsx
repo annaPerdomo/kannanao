@@ -12,7 +12,7 @@ import { SectionCard } from '@/components/Group/SectionCard';
 import { Loading } from '@/components/Loading';
 import { useDecks } from '@/hooks/useDecks';
 import { useGroups } from '@/hooks/useGroups';
-import { type LessonLibraryHook, useLessonLibrary } from '@/hooks/useLessonLibrary';
+import type { LessonLibraryHook } from '@/hooks/useLessonLibrary';
 import { handoutPagePath } from '@/lib/lessonUnits';
 import type { LessonUnit, LessonUnitWeek } from '@/types/lessonUnit';
 
@@ -26,8 +26,8 @@ interface LessonLibraryProps {
   groupId: string;
   onBuild: () => void;
   onSwitchGroup?: (groupId: string) => void;
-  /** Pass an existing `useLessonLibrary(groupId)` instance to avoid a second fetch for the same group. */
-  library?: LessonLibraryHook;
+  /** The one `useLessonLibrary(groupId)` instance for this group — owned by the caller. */
+  library: LessonLibraryHook;
   hideEmptyState?: boolean;
   /** Fires after a mutation here succeeds, not on failure. */
   onChanged?: () => void;
@@ -37,15 +37,14 @@ export function LessonLibrary({
   groupId,
   onBuild,
   onSwitchGroup,
-  library: libraryProp,
+  library: libraryHook,
   hideEmptyState,
   onChanged,
 }: LessonLibraryProps) {
   const t = useTranslations('Materials.library');
   const router = useRouter();
-  const ownLibrary = useLessonLibrary(libraryProp ? null : groupId);
   const { library, loading, error, saving, refetch, renameUnit, shiftFrom, addWeek, copyUnit } =
-    libraryProp ?? ownLibrary;
+    libraryHook;
   const { groups } = useGroups();
   const [addingUnit, setAddingUnit] = useState<LessonUnit | null>(null);
   const { decks } = useDecks(addingUnit != null);
