@@ -8,15 +8,16 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { CreateGroupDialog, GroupCard } from '@/components/Group';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGroups } from '@/hooks/useGroups';
+import { enqueueQuizletHash, getRememberedQuizletGroup, rememberQuizletGroup } from '@/lib/quizlet';
 import { LAYOUT } from '@/theme';
 
 export default function GroupListPage() {
@@ -24,10 +25,25 @@ export default function GroupListPage() {
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isMemberAccount, loading: authLoading } = useAuth();
   const { groups, loading, error, errorMessage, createGroup, pinGroup } = useGroups();
 
   const [createOpen, setCreateOpen] = useState(false);
+  const nextQuizlet = searchParams?.get('next') === 'quizlet';
+
+  useEffect(() => {
+    if (!nextQuizlet || loading) return;
+    enqueueQuizletHash();
+    if (groups.length === 1) {
+      router.replace(`/group/${groups[0].id}/add/quizlet`);
+      return;
+    }
+    const remembered = getRememberedQuizletGroup();
+    if (remembered && groups.some((g) => g.id === remembered)) {
+      router.replace(`/group/${remembered}/add/quizlet`);
+    }
+  }, [nextQuizlet, loading, groups, router]);
 
   // Redirect members away
   if (!authLoading && isMemberAccount) {
@@ -102,6 +118,12 @@ export default function GroupListPage() {
         </Alert>
       )}
 
+      {nextQuizlet && groups.length > 1 && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          {t('pickGroupForQuizlet')}
+        </Alert>
+      )}
+
       {groups.length === 0 ? (
         <Paper
           elevation={0}
@@ -141,7 +163,14 @@ export default function GroupListPage() {
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={group.id}>
               <GroupCard
                 group={group}
-                onClick={(id) => router.push(`/group/${id}`)}
+                onClick={(id) => {
+                  if (nextQuizlet) {
+                    rememberQuizletGroup(id);
+                    router.push(`/group/${id}/add/quizlet`);
+                  } else {
+                    router.push(`/group/${id}`);
+                  }
+                }}
                 onPin={pinGroup}
               />
             </Grid>

@@ -1540,7 +1540,8 @@
       "newGroupButton": "New Group",
       "noGroupsTitle": "No groups yet",
       "noGroupsBody": "Create a group to start organizing your members.",
-      "createFirstGroupButton": "Create your first group"
+      "createFirstGroupButton": "Create your first group",
+      "pickGroupForQuizlet": "Pick the group to import into"
     },
     "joinPage": {
       "invalidInviteCode": "Invalid invite code.",
@@ -1914,20 +1915,6 @@
     }
   },
   "Materials": {
-    "meta": {
-      "title": "Materials Builder | Tangodachi",
-      "description": "Create complete lesson sets or single decks in seconds — decks, example sentences and a weekly schedule, pitched at the right level."
-    },
-    "title": "Materials Builder",
-    "subtitle": "Create complete lesson sets or single decks in seconds.",
-    "loadingMessage": "Loading…",
-    "tabs": {
-      "assigned": "Assigned",
-      "lessonSet": "Lesson set",
-      "deck": "Single deck",
-      "kana": "Kana",
-      "quizlet": "Quizlet"
-    },
     "library": {
       "loadError": "Couldn't load your lessons. Try again in a moment.",
       "emptyTitle": "Nothing assigned to this group yet",
@@ -2094,20 +2081,6 @@
       "seasonsLabel": "Seasons & events",
       "seasonsGoal": "The four seasons, weather words and yearly events and festivals"
     },
-    "noGroups": "Create a group first — then come back to build a lesson set. Learners can join any time.",
-    "createGroupButton": "Go to Groups",
-    "deckPanel": {
-      "title": "Create a deck",
-      "subtitle": "Build a single deck for any topic or vocabulary list.",
-      "aiRow": "Generate with AI",
-      "aiHint": "Describe a topic and get finished cards.",
-      "pdfRow": "Import from PDF",
-      "pdfHint": "Pull vocabulary out of a document.",
-      "copyRow": "Copy existing cards",
-      "copyHint": "Reuse cards from your other decks.",
-      "createButton": "Create a deck",
-      "seeDecksButton": "See your decks"
-    },
     "kanaCourse": {
       "step1Title": "Who is reading?",
       "step1Subtitle": "Pick the group and where the sounds come from.",
@@ -2221,7 +2194,6 @@
     "items": {
       "home": "Home",
       "decks": "Decks",
-      "materials": "Materials",
       "groups": "Groups",
       "speech": "Speech",
       "travel": "Travel",

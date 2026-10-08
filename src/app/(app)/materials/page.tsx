@@ -1,25 +1,21 @@
-import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+'use client';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 
-import { type BuilderTab, MaterialsBuilder } from '@/components/MaterialsBuilder';
+import { materialsRedirectTarget } from '@/lib/materialsRedirect';
+import { enqueueQuizletHash } from '@/lib/quizlet';
 
-const TABS: BuilderTab[] = ['assigned', 'lessonSet', 'kana', 'deck', 'quizlet'];
+/** A server redirect can't read a URL hash, and browsers don't reliably keep one across a redirect. */
+export default function MaterialsForwarder() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('Materials.meta');
-  return { title: t('title'), description: t('description') };
-}
+  useEffect(() => {
+    enqueueQuizletHash();
+    const group = searchParams?.get('group') ?? undefined;
+    const tab = searchParams?.get('tab') ?? undefined;
+    router.replace(materialsRedirectTarget({ group, tab }));
+  }, [router, searchParams]);
 
-export default async function MaterialsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ group?: string; tab?: string }>;
-}) {
-  const { group, tab } = await searchParams;
-  return (
-    <MaterialsBuilder
-      initialGroupId={typeof group === 'string' ? group : undefined}
-      initialTab={TABS.find((t) => t === tab)}
-    />
-  );
+  return null;
 }

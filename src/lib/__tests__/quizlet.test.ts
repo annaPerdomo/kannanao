@@ -205,7 +205,7 @@ describe('buildQuizletBookmarklet', () => {
     expect(code.startsWith('javascript:')).toBe(true);
     const source = decodeURIComponent(code.slice('javascript:'.length));
     expect(source).toContain('"https://www.tangodachi.app"');
-    expect(source).toContain('/materials?tab=quizlet#quizlet=');
+    expect(source).toContain('/group?next=quizlet#quizlet=');
     expect(() => new Function(source)).not.toThrow();
   });
 });

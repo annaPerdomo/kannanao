@@ -1540,7 +1540,8 @@
       "newGroupButton": "新しいグループ",
       "noGroupsTitle": "グループがまだありません",
       "noGroupsBody": "グループを作って、メンバーをまとめましょう。",
-      "createFirstGroupButton": "最初のグループを作成"
+      "createFirstGroupButton": "最初のグループを作成",
+      "pickGroupForQuizlet": "インポート先のグループを選んでください"
     },
     "joinPage": {
       "invalidInviteCode": "招待コードが正しくありません。",
@@ -1914,20 +1915,6 @@
     }
   },
   "Materials": {
-    "meta": {
-      "title": "教材づくり | Tangodachi",
-      "description": "レッスンセットもデッキ1つも、数秒で。デッキ・例文・週ごとの予定を、ちょうどいいレベルでつくれます。"
-    },
-    "title": "教材づくり",
-    "subtitle": "レッスンセットも、デッキ1つだけでも、数秒でつくれます。",
-    "loadingMessage": "よみこみ中…",
-    "tabs": {
-      "assigned": "配布済み",
-      "lessonSet": "レッスンセット",
-      "deck": "デッキだけ",
-      "kana": "もじ",
-      "quizlet": "Quizlet"
-    },
     "library": {
       "loadError": "レッスンを読み込めませんでした。少し待ってからもう一度お試しください。",
       "emptyTitle": "このグループにはまだ配布したものがありません",
@@ -2094,20 +2081,6 @@
       "seasonsLabel": "季節と行事",
       "seasonsGoal": "四季と天気のことば、一年の行事やおまつり"
     },
-    "noGroups": "さきにグループをつくってください。そのあとでレッスンセットをつくれます。学習者はいつでも入れます。",
-    "createGroupButton": "グループへ",
-    "deckPanel": {
-      "title": "デッキをつくる",
-      "subtitle": "すきなトピックや単語リストから、デッキを1つつくれます。",
-      "aiRow": "AIで生成",
-      "aiHint": "トピックを書くと、カードが自動でできあがります。",
-      "pdfRow": "PDFからとりこむ",
-      "pdfHint": "資料から単語をぬきだします。",
-      "copyRow": "もっているカードをコピー",
-      "copyHint": "ほかのデッキのカードをつかいまわせます。",
-      "createButton": "デッキをつくる",
-      "seeDecksButton": "デッキ一覧へ"
-    },
     "kanaCourse": {
       "step1Title": "だれが よむ？",
       "step1Subtitle": "グループと、もじの もとを えらびます。",
@@ -2221,7 +2194,6 @@
     "items": {
       "home": "ホーム",
       "decks": "デッキ",
-      "materials": "教材",
       "groups": "グループ",
       "speech": "スピーチ",
       "travel": "トラベル",

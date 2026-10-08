@@ -26,6 +26,7 @@ export interface QuizletImportSet {
 
 export const QUIZLET_HASH_KEY = 'quizlet';
 export const QUIZLET_QUEUE_KEY = 'tangodachi:quizlet-imports';
+export const QUIZLET_GROUP_KEY = 'tangodachi.quizletGroup';
 const MAX_CARDS = 1000;
 const MAX_FIELD = 500;
 const MAX_TITLE = 80;
@@ -94,6 +95,35 @@ export function decodeQuizletHash(hash: string): QuizletSet | null {
     return parseQuizletSet(JSON.parse(fromBase64Url(payload)));
   } catch {
     return null;
+  }
+}
+
+export type EnqueueHashResult = 'none' | 'ok' | 'invalid';
+
+/** Moves a bookmarklet hash into the shared import queue — old installs still point at `/materials`, so every entry page needs this, not a copy. */
+export function enqueueQuizletHash(): EnqueueHashResult {
+  if (typeof window === 'undefined') return 'none';
+  if (!window.location.hash.includes(`${QUIZLET_HASH_KEY}=`)) return 'none';
+  const incoming = decodeQuizletHash(window.location.hash);
+  window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  if (!incoming) return 'invalid';
+  saveQuizletQueue(addToQueue(loadQuizletQueue(), toImportSet(incoming)));
+  return 'ok';
+}
+
+export function getRememberedQuizletGroup(): string | null {
+  try {
+    return localStorage.getItem(QUIZLET_GROUP_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function rememberQuizletGroup(groupId: string): void {
+  try {
+    localStorage.setItem(QUIZLET_GROUP_KEY, groupId);
+  } catch {
+    // Private mode or full storage: the group just has to be picked again next time.
   }
 }
 
@@ -248,7 +278,7 @@ const cards=items.map(it=>{const f=side(it,'word',0),b=side(it,'definition',1);r
 const json=JSON.stringify({title:document.title,url:location.origin+location.pathname,cards});
 let bin='';new TextEncoder().encode(json).forEach(b=>{bin+=String.fromCharCode(b);});
 const b64=btoa(bin).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');
-location.href=${s(origin)}+'/materials?tab=quizlet#${QUIZLET_HASH_KEY}='+b64;
+location.href=${s(origin)}+'/group?next=quizlet#${QUIZLET_HASH_KEY}='+b64;
 }catch(e){alert(${s(messages.failed)}+' ('+e.message+')');}
 })();`;
   return `javascript:${encodeURIComponent(source.replace(/\n/g, ''))}`;
