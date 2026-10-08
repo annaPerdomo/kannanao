@@ -515,6 +515,6 @@ describe('locateWeek', () => {
 
 describe('handoutPagePath', () => {
   it('builds the Materials handout URL', () => {
-    expect(handoutPagePath('g1', 'd1')).toBe('/materials/assigned/g1/d1');
+    expect(handoutPagePath('g1', 'd1')).toBe('/group/g1/handout/d1');
   });
 });

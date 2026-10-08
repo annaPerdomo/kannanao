@@ -13,10 +13,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { LearnerWordList } from '@/components/Group/HandoutDetailDialog/LearnerWordList';
 import { SectionCard } from '@/components/Group/SectionCard';
+import { ShiftDialog } from '@/components/LessonLibrary/ShiftDialog';
 import { Loading } from '@/components/Loading';
-import { ShiftDialog } from '@/components/MaterialsBuilder/LessonLibrary/ShiftDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAssignments } from '@/hooks/useAssignments';
+import { useEncouragements } from '@/hooks/useEncouragements';
 import { useGroups } from '@/hooks/useGroups';
 import { useHandoutWordEdits } from '@/hooks/useHandoutWordEdits';
 import { useHandoutWords } from '@/hooks/useHandoutWords';
@@ -48,6 +49,7 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
   const words = useHandoutWords({ groupId, deckId, enabled: true });
   const edits = useHandoutWordEdits({ deckId, mutate: words.mutate, refetch: words.refetch });
   const { createAssignment } = useAssignments(groupId);
+  const { sendEncouragement } = useEncouragements();
   const [viewMember, setViewMember] = useState<ViewMember | null>(null);
   const [shiftOpen, setShiftOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -55,7 +57,7 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
   const [leaving, setLeaving] = useState(false);
   const [assigningId, setAssigningId] = useState<string | null>(null);
 
-  const backHref = `/materials?tab=assigned&group=${groupId}`;
+  const backHref = `/group/${groupId}?tab=plan`;
   const groupName = groups.find((g) => g.id === groupId)?.name ?? '';
   const located = useMemo(() => locateWeek(library.library, deckId), [library.library, deckId]);
   const cards = useMemo(() => words.data?.words.map((w) => w.card) ?? [], [words.data]);
@@ -145,7 +147,7 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
       startIcon={<ArrowBackIcon />}
       sx={{ textTransform: 'none', fontWeight: 700, mb: 1.5, alignSelf: 'flex-start' }}
     >
-      {groupName ? t('backToAssignedIn', { group: groupName }) : t('backToAssigned')}
+      {groupName ? t('backToPlanIn', { group: groupName }) : t('backToPlan')}
     </Button>
   );
 
@@ -217,6 +219,8 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
               onSelect={handleSelectLearner}
               onAssign={handleAssign}
               assigningId={assigningId}
+              deckName={week.deckName}
+              onSendEncouragement={sendEncouragement}
             />
           ) : (
             words.loading && (

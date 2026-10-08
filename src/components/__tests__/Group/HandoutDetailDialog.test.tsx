@@ -158,7 +158,7 @@ describe('HandoutDetailDialog', () => {
     expect(screen.queryByText(/tricky/)).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open full page' })).toHaveAttribute(
       'href',
-      `/materials/assigned/g1/${deckHandout().deckId}`,
+      `/group/g1/handout/${deckHandout().deckId}`,
     );
   });
 

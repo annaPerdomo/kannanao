@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { LearnersPanel } from '@/components/HandoutPage/LearnersPanel';
@@ -24,6 +24,8 @@ describe('LearnersPanel', () => {
         onSelect={vi.fn()}
         onAssign={vi.fn()}
         assigningId={null}
+        deckName="Animals"
+        onSendEncouragement={vi.fn()}
       />,
     );
     const names = screen.getAllByText(/^(Aki|Bo|Chi|Dai|Emi)$/).map((el) => el.textContent);
@@ -49,6 +51,8 @@ describe('LearnersPanel', () => {
         onSelect={onSelect}
         onAssign={vi.fn()}
         assigningId={null}
+        deckName="Animals"
+        onSendEncouragement={vi.fn()}
       />,
     );
     const bo = screen.getByText('Bo').closest('[role="button"]') as HTMLElement;
@@ -73,11 +77,43 @@ describe('LearnersPanel', () => {
         onSelect={onSelect}
         onAssign={onAssign}
         assigningId={null}
+        deckName="Animals"
+        onSendEncouragement={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Assign' }));
     expect(onAssign).toHaveBeenCalledWith(expect.objectContaining({ id: 'e' }));
     expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('shows a nudge only for assigned learners who have not finished, and sends it', async () => {
+    const onSendEncouragement = vi.fn().mockResolvedValue(undefined);
+    renderWithProviders(
+      <LearnersPanel
+        groupId="g1"
+        learners={learners}
+        selectedId={null}
+        onSelect={vi.fn()}
+        onAssign={vi.fn()}
+        assigningId={null}
+        deckName="Animals"
+        onSendEncouragement={onSendEncouragement}
+      />,
+    );
+
+    const akiRow = screen.getByText('Aki').closest('[role="button"]') as HTMLElement;
+    expect(within(akiRow).queryByRole('button', { name: /nudge/i })).not.toBeInTheDocument();
+    const emiRow = screen.getByText('Emi').closest('[role="button"]') as HTMLElement;
+    expect(within(emiRow).queryByRole('button', { name: /nudge/i })).not.toBeInTheDocument();
+
+    const boRow = screen.getByText('Bo').closest('[role="button"]') as HTMLElement;
+    const nudgeButton = within(boRow).getByRole('button', { name: /nudge/i });
+    fireEvent.click(nudgeButton);
+    expect(onSendEncouragement).toHaveBeenCalledWith(
+      'b',
+      expect.stringContaining('Animals'),
+      undefined,
+    );
   });
 
   it('says so when the group has no learners', () => {
@@ -89,6 +125,8 @@ describe('LearnersPanel', () => {
         onSelect={vi.fn()}
         onAssign={vi.fn()}
         assigningId={null}
+        deckName="Animals"
+        onSendEncouragement={vi.fn()}
       />,
     );
     expect(screen.getByText('No learners in this group yet.')).toBeInTheDocument();

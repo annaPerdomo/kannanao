@@ -12,10 +12,12 @@ import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
+import { NudgeButton } from '@/components/Group/AssignmentsList/NudgeButton';
 import { formatDate } from '@/components/Group/dueDate';
 import { SectionCard } from '@/components/Group/SectionCard';
+import { timeAgo } from '@/components/Group/timeAgo';
 import { type HandoutLearnerSummary, type MasteryLevel, masteryOf } from '@/lib/handoutWords';
 
 interface LearnersPanelProps {
@@ -25,6 +27,8 @@ interface LearnersPanelProps {
   onSelect: (learner: HandoutLearnerSummary) => void;
   onAssign: (learner: HandoutLearnerSummary) => void;
   assigningId: string | null;
+  deckName: string;
+  onSendEncouragement: (memberId: string, message: string, emoji?: string) => Promise<unknown>;
 }
 
 function sortKey(learner: HandoutLearnerSummary): number {
@@ -38,11 +42,18 @@ export function LearnersPanel({
   onSelect,
   onAssign,
   assigningId,
+  deckName,
+  onSendEncouragement,
 }: LearnersPanelProps) {
   const t = useTranslations('Materials.handoutPage');
+  const ta = useTranslations('Group.assignmentsList');
+  const tTime = useTranslations('Group.timeAgo');
   const locale = useLocale();
   const theme = useTheme();
   const { brand, success, warning, info, text } = theme.palette;
+  const nudgeMessage = ta('nudgeDefaultMessage', { deck: deckName });
+  // Overlays the server's last_nudged_at, which won't refresh until the next fetch.
+  const [justNudged, setJustNudged] = useState<Record<string, string>>({});
 
   const sorted = useMemo(() => [...learners].sort((a, b) => sortKey(a) - sortKey(b)), [learners]);
 
@@ -174,6 +185,30 @@ export function LearnersPanel({
                         .filter(Boolean)
                         .join(' · ')}
                     </Typography>
+                    {learner.assigned && mastery.level !== 'mastered' && (
+                      <Box
+                        onClick={(e) => e.stopPropagation()}
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}
+                      >
+                        <NudgeButton
+                          memberId={learner.id}
+                          memberName={learner.name}
+                          message={nudgeMessage}
+                          onSend={onSendEncouragement}
+                          onSent={() =>
+                            setJustNudged((prev) => ({
+                              ...prev,
+                              [learner.id]: new Date().toISOString(),
+                            }))
+                          }
+                        />
+                        {justNudged[learner.id] && (
+                          <Typography sx={{ fontSize: '0.68rem', color: 'text.secondary' }}>
+                            {ta('lastNudged', { date: timeAgo(justNudged[learner.id], tTime) })}
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
                   </Box>
                   <IconButton
                     size="small"

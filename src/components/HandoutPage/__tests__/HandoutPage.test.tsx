@@ -102,15 +102,15 @@ describe('HandoutPage', () => {
     expect(screen.getByText('Learners will be able to: Name ten animals')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Week 1' })).toHaveAttribute(
       'href',
-      '/materials/assigned/g1/d1',
+      '/group/g1/handout/d1',
     );
     expect(screen.getByRole('link', { name: 'Week 3' })).toHaveAttribute(
       'href',
-      '/materials/assigned/g1/d3',
+      '/group/g1/handout/d3',
     );
-    expect(screen.getByRole('link', { name: 'Back to Assigned · Tuesday Club' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Back to plan · Tuesday Club' })).toHaveAttribute(
       'href',
-      '/materials?tab=assigned&group=g1',
+      '/group/g1?tab=plan',
     );
     expect(screen.getByText('猫')).toBeInTheDocument();
   });
@@ -173,16 +173,14 @@ describe('HandoutPage', () => {
     expect(await screen.findByText('Saved')).toBeInTheDocument();
   });
 
-  it('returns to Assigned after removing the week', async () => {
+  it('returns to the plan after removing the week', async () => {
     setLibrary(libraryWithUnit());
     renderWithProviders(<HandoutPage groupId="g1" deckId="d2" />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Remove this week' }));
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
 
-    await vi.waitFor(() =>
-      expect(mockPush).toHaveBeenCalledWith('/materials?tab=assigned&group=g1'),
-    );
+    await vi.waitFor(() => expect(mockPush).toHaveBeenCalledWith('/group/g1?tab=plan'));
     expect(removeWeek).toHaveBeenCalledWith('d2');
   });
 
