@@ -94,7 +94,7 @@ describe('MaterialsProgress', () => {
     const { onViewAssignments, onOpenMaterials } = renderCard({
       assignments: [assignment()],
     });
-    fireEvent.click(screen.getByText('See all assignments'));
+    fireEvent.click(screen.getByText('See the plan'));
     expect(onViewAssignments).toHaveBeenCalled();
     fireEvent.click(screen.getByText('Make new materials'));
     expect(onOpenMaterials).toHaveBeenCalled();

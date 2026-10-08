@@ -1120,7 +1120,7 @@
       "assign": "Assign",
       "assignAria": "Assign {deck}",
       "emptyHint": "Make a deck, then hand it out here.",
-      "seeAllAssignments": "See all assignments",
+      "seeAllAssignments": "See the plan",
       "makeMaterials": "Make new materials",
       "loading": "Loading your plan..."
     },
@@ -1517,15 +1517,21 @@
       "quickActionsLabel": "Quick actions",
       "inviteLearnersTitle": "Invite learners",
       "inviteLearnersSubtitle": "Share link or QR",
-      "materialsBuilderTitle": "Open Materials Builder",
-      "materialsBuilderSubtitle": "Create decks, lessons, and assignments"
+      "materialsBuilderTitle": "Add to plan",
+      "materialsBuilderSubtitle": "Build a new week, deck, or kana goal"
     },
     "dashboardTabs": {
-      "overview": "Overview",
+      "today": "Today",
+      "plan": "Plan",
       "learners": "Learners",
-      "assignments": "Assignments",
-      "words": "Words",
-      "activity": "Activity"
+      "words": "Words"
+    },
+    "planTab": {
+      "planHeading": "Plan",
+      "handOutDeckButton": "Hand out a deck",
+      "kanaGoalsHeading": "Kana goals",
+      "emptyBody": "Nothing planned yet — add your first week.",
+      "addToPlanButton": "Add to plan"
     },
     "groupsPage": {
       "loadingGroups": "Loading groups...",
@@ -1974,8 +1980,8 @@
     },
     "handoutPage": {
       "metaTitle": "Handout",
-      "backToAssigned": "Back to Assigned",
-      "backToAssignedIn": "Back to Assigned · {group}",
+      "backToPlan": "Back to plan",
+      "backToPlanIn": "Back to plan · {group}",
       "notFound": "This isn't handed out to this group anymore. It may have been removed.",
       "noDueDate": "No due date",
       "goal": "Goal: {goal}",

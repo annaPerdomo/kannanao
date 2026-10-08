@@ -225,9 +225,9 @@ export function GroupDashboardHeader({
         }
         action={
           <Stack
-            direction={{ xs: 'column', sm: 'row' }}
+            direction="row"
             spacing={1.25}
-            alignItems={{ xs: 'stretch', sm: 'center' }}
+            alignItems="center"
             sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
             <Typography

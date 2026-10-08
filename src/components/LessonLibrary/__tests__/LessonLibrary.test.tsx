@@ -30,7 +30,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-import { LessonLibrary } from '@/components/MaterialsBuilder/LessonLibrary';
+import { LessonLibrary } from '@/components/LessonLibrary';
 
 function week(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
   return {
@@ -140,7 +140,7 @@ describe('LessonLibrary', () => {
     expect(animalsRow).toBeTruthy();
 
     fireEvent.keyDown(animalsRow as Element, { key: 'Enter' });
-    expect(mockPush).toHaveBeenCalledWith('/materials/assigned/g1/d2');
+    expect(mockPush).toHaveBeenCalledWith('/group/g1/handout/d2');
   });
 
   it('shows the word count on the row, hiding it when zero', () => {
@@ -268,7 +268,7 @@ describe('LessonLibrary', () => {
 
     expect(screen.queryByRole('button', { name: /More for week/ })).not.toBeInTheDocument();
     fireEvent.click(screen.getByText(/Loose deck/));
-    expect(mockPush).toHaveBeenCalledWith('/materials/assigned/g1/d3');
+    expect(mockPush).toHaveBeenCalledWith('/group/g1/handout/d3');
   });
 
   it('shows the can-do list in week order and hides it when no week has a note', () => {

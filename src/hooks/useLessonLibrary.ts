@@ -38,7 +38,7 @@ function applyWeekPatch(
   };
 }
 
-export function useLessonLibrary(groupId: string | null): {
+export interface LessonLibraryHook {
   library: LessonLibrary | null;
   loading: boolean;
   error: string | null;
@@ -53,7 +53,9 @@ export function useLessonLibrary(groupId: string | null): {
     input: { kind: 'deck'; deckId: string } | { kind: 'review' },
   ) => Promise<AddWeekResult>;
   copyUnit: (planId: string, groupId: string, firstDueDate: string) => Promise<CopyUnitHookResult>;
-} {
+}
+
+export function useLessonLibrary(groupId: string | null): LessonLibraryHook {
   const t = useTranslations('Materials.library');
   const url = groupId ? `${LESSON_LIBRARY_CACHE_PREFIX}?groupId=${groupId}` : null;
   // Mutated during render, not an effect: an in-flight action's background

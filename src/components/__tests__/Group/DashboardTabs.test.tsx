@@ -7,11 +7,10 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 
 describe('isGroupDashboardTab', () => {
   it('accepts every known tab key', () => {
-    expect(isGroupDashboardTab('overview')).toBe(true);
+    expect(isGroupDashboardTab('today')).toBe(true);
+    expect(isGroupDashboardTab('plan')).toBe(true);
     expect(isGroupDashboardTab('learners')).toBe(true);
-    expect(isGroupDashboardTab('assignments')).toBe(true);
     expect(isGroupDashboardTab('words')).toBe(true);
-    expect(isGroupDashboardTab('activity')).toBe(true);
   });
 
   it('rejects unknown or missing values', () => {
@@ -23,26 +22,25 @@ describe('isGroupDashboardTab', () => {
 
 describe('TabBar', () => {
   it('renders every tab with its label', () => {
-    renderWithProviders(<TabBar value="overview" onChange={vi.fn()} />);
+    renderWithProviders(<TabBar value="today" onChange={vi.fn()} />);
 
-    expect(screen.getByRole('tab', { name: 'Overview' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Today' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Plan' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Learners' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Assignments' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Words' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Activity' })).toBeInTheDocument();
   });
 
   it('marks the current value as selected', () => {
     renderWithProviders(<TabBar value="words" onChange={vi.fn()} />);
     expect(screen.getByRole('tab', { name: 'Words' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'false');
+    expect(screen.getByRole('tab', { name: 'Today' })).toHaveAttribute('aria-selected', 'false');
   });
 
   it('reports the clicked tab', () => {
     const onChange = vi.fn();
-    renderWithProviders(<TabBar value="overview" onChange={onChange} />);
+    renderWithProviders(<TabBar value="today" onChange={onChange} />);
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Assignments' }));
-    expect(onChange).toHaveBeenCalledWith('assignments');
+    fireEvent.click(screen.getByRole('tab', { name: 'Plan' }));
+    expect(onChange).toHaveBeenCalledWith('plan');
   });
 });

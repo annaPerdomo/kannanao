@@ -1120,7 +1120,7 @@
       "assign": "配る",
       "assignAria": "{deck} を配る",
       "emptyHint": "デッキを作って、ここから配りましょう。",
-      "seeAllAssignments": "課題をすべて見る",
+      "seeAllAssignments": "プランを見る",
       "makeMaterials": "新しい教材を作る",
       "loading": "予定を読み込み中..."
     },
@@ -1517,15 +1517,21 @@
       "quickActionsLabel": "クイックアクション",
       "inviteLearnersTitle": "学習者を招待",
       "inviteLearnersSubtitle": "リンクまたはQRコードで共有",
-      "materialsBuilderTitle": "教材ビルダーを開く",
-      "materialsBuilderSubtitle": "デッキ・レッスン・課題をつくる"
+      "materialsBuilderTitle": "プランに追加",
+      "materialsBuilderSubtitle": "新しい週・デッキ・かな目標をつくる"
     },
     "dashboardTabs": {
-      "overview": "概要",
+      "today": "今日",
+      "plan": "プラン",
       "learners": "学習者",
-      "assignments": "課題",
-      "words": "単語",
-      "activity": "活動"
+      "words": "単語"
+    },
+    "planTab": {
+      "planHeading": "プラン",
+      "handOutDeckButton": "デッキを配る",
+      "kanaGoalsHeading": "かな目標",
+      "emptyBody": "まだ何も計画されていません。最初の週を追加しましょう。",
+      "addToPlanButton": "プランに追加"
     },
     "groupsPage": {
       "loadingGroups": "グループを読み込み中...",
@@ -1974,8 +1980,8 @@
     },
     "handoutPage": {
       "metaTitle": "配布物",
-      "backToAssigned": "配布済みに戻る",
-      "backToAssignedIn": "配布済みに戻る・{group}",
+      "backToPlan": "プランに戻る",
+      "backToPlanIn": "プランに戻る・{group}",
       "notFound": "このグループには配布されていません。削除された可能性があります。",
       "noDueDate": "締切なし",
       "goal": "ゴール：{goal}",

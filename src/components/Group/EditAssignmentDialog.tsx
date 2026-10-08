@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
-import { WordStrip } from '@/components/MaterialsBuilder/LessonLibrary/WordStrip';
+import { WordStrip } from '@/components/LessonLibrary/WordStrip';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { Assignment } from '@/hooks/useAssignments';
 import { setCharacters } from '@/lib/kanaCurriculum';

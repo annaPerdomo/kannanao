@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
+import { LessonLibrary } from '@/components/LessonLibrary';
 import { Loading } from '@/components/Loading';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGroups } from '@/hooks/useGroups';
@@ -26,7 +27,6 @@ import { LAYOUT } from '@/theme';
 import { DeckPanel } from './DeckPanel';
 import { GroupSelect } from './GroupSelect';
 import { KanaCourseBuilder } from './KanaCourseBuilder';
-import { LessonLibrary } from './LessonLibrary';
 import { LessonSetBuilder } from './LessonSetBuilder';
 import { QuizletImport } from './QuizletImport';
 

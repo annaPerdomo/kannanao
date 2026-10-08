@@ -12,7 +12,7 @@ import { SectionCard } from '@/components/Group/SectionCard';
 import { Loading } from '@/components/Loading';
 import { useDecks } from '@/hooks/useDecks';
 import { useGroups } from '@/hooks/useGroups';
-import { useLessonLibrary } from '@/hooks/useLessonLibrary';
+import { type LessonLibraryHook, useLessonLibrary } from '@/hooks/useLessonLibrary';
 import { handoutPagePath } from '@/lib/lessonUnits';
 import type { LessonUnit, LessonUnitWeek } from '@/types/lessonUnit';
 
@@ -26,13 +26,26 @@ interface LessonLibraryProps {
   groupId: string;
   onBuild: () => void;
   onSwitchGroup?: (groupId: string) => void;
+  /** Pass an existing `useLessonLibrary(groupId)` instance to avoid a second fetch for the same group. */
+  library?: LessonLibraryHook;
+  hideEmptyState?: boolean;
+  /** Fires after a mutation here succeeds, not on failure. */
+  onChanged?: () => void;
 }
 
-export function LessonLibrary({ groupId, onBuild, onSwitchGroup }: LessonLibraryProps) {
+export function LessonLibrary({
+  groupId,
+  onBuild,
+  onSwitchGroup,
+  library: libraryProp,
+  hideEmptyState,
+  onChanged,
+}: LessonLibraryProps) {
   const t = useTranslations('Materials.library');
   const router = useRouter();
+  const ownLibrary = useLessonLibrary(libraryProp ? null : groupId);
   const { library, loading, error, saving, refetch, renameUnit, shiftFrom, addWeek, copyUnit } =
-    useLessonLibrary(groupId);
+    libraryProp ?? ownLibrary;
   const { groups } = useGroups();
   const [addingUnit, setAddingUnit] = useState<LessonUnit | null>(null);
   const { decks } = useDecks(addingUnit != null);
@@ -62,14 +75,20 @@ export function LessonLibrary({ groupId, onBuild, onSwitchGroup }: LessonLibrary
 
   const handleShift = async (planId: string, fromDeckId: string, days: number) => {
     const ok = await shiftFrom(planId, fromDeckId, days);
-    if (ok) setToast({ message: t('movedToast'), severity: 'success' });
+    if (ok) {
+      setToast({ message: t('movedToast'), severity: 'success' });
+      onChanged?.();
+    }
     return ok;
   };
 
   const handleAddWeek = async (input: AddWeekInput) => {
     if (!addingUnit) return 'error' as const;
     const result = await addWeek(addingUnit.id, input);
-    if (result === 'ok') setToast({ message: t('addedToast'), severity: 'success' });
+    if (result === 'ok') {
+      setToast({ message: t('addedToast'), severity: 'success' });
+      onChanged?.();
+    }
     return result;
   };
 
@@ -80,6 +99,13 @@ export function LessonLibrary({ groupId, onBuild, onSwitchGroup }: LessonLibrary
         ? { message: t('savedToast'), severity: 'success' }
         : { message: t('saveError'), severity: 'error' },
     );
+    if (ok) onChanged?.();
+  };
+
+  const handleCopyUnit = async (planId: string, targetGroupId: string, firstDueDate: string) => {
+    const result = await copyUnit(planId, targetGroupId, firstDueDate);
+    if (result.status === 'ok') onChanged?.();
+    return result;
   };
 
   if (loading && !library) return <Loading />;
@@ -98,6 +124,7 @@ export function LessonLibrary({ groupId, onBuild, onSwitchGroup }: LessonLibrary
   if (!library) return null;
 
   if (library.units.length === 0 && library.loose.length === 0) {
+    if (hideEmptyState) return null;
     return (
       <Stack spacing={1.5} sx={{ alignItems: 'flex-start', py: 2 }}>
         <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: 'text.primary' }}>
@@ -169,7 +196,7 @@ export function LessonLibrary({ groupId, onBuild, onSwitchGroup }: LessonLibrary
         groups={groups}
         sourceGroupId={groupId}
         saving={saving}
-        onCopy={copyUnit}
+        onCopy={handleCopyUnit}
         onSwitchGroup={(id) => onSwitchGroup?.(id)}
       />
 

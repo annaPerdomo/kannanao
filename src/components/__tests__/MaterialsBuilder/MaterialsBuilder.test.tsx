@@ -16,7 +16,7 @@ vi.mock('@/hooks/useGroups', () => ({
   }),
 }));
 
-vi.mock('@/components/MaterialsBuilder/LessonLibrary', () => ({
+vi.mock('@/components/LessonLibrary', () => ({
   LessonLibrary: ({ groupId }: { groupId: string }) => <div>lesson-library-{groupId}</div>,
 }));
 

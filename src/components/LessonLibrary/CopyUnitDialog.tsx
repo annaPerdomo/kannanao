@@ -9,12 +9,11 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { formatDate, todayIso } from '@/components/Group/dueDate';
+import { GroupSelect } from '@/components/MaterialsBuilder/GroupSelect';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { CopyUnitHookResult } from '@/hooks/useLessonLibrary';
 import { rebaseSchedule, shiftDate } from '@/lib/lessonUnits';
 import type { LessonUnit } from '@/types/lessonUnit';
-
-import { GroupSelect } from '../GroupSelect';
 
 interface CopyUnitDialogProps {
   open: boolean;
