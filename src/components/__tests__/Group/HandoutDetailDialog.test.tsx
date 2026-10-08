@@ -275,6 +275,18 @@ describe('HandoutDetailDialog', () => {
     );
     expect(chipLabels).toEqual(['learning-word', 'unseen-word', 'strong-word']);
     expect(screen.getByText('The goal round uses every word in this week.')).toBeInTheDocument();
+
+    const wordNames = screen
+      .getAllByText(/^(strong-word|learning-word|unseen-word)$/)
+      .map((el) => el.textContent);
+    expect(wordNames).toEqual([
+      'learning-word',
+      'unseen-word',
+      'strong-word',
+      'learning-word',
+      'unseen-word',
+      'strong-word',
+    ]);
   });
 
   it('switches from the group view to one learner and back', () => {

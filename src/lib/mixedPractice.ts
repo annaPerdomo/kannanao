@@ -70,6 +70,20 @@ function sessionRank(card: Flashcard, progress: CardProgress | undefined, nowMs:
   return base + (waiting ? 0.5 : 0);
 }
 
+/** Every card ranked in mixed-session order: weakest and due first. */
+export function rankCardsForSession(
+  cards: Flashcard[],
+  progress: CardProgress[],
+  now: Date = new Date(),
+): Flashcard[] {
+  const byCard = new Map(progress.map((row) => [row.cardId, row]));
+  const nowMs = now.getTime();
+  return [...cards]
+    .map((card, i) => ({ card, i, rank: sessionRank(card, byCard.get(card.id), nowMs) }))
+    .sort((a, b) => a.rank - b.rank || a.i - b.i)
+    .map((entry) => entry.card);
+}
+
 /** The cards one mixed session covers: weakest and due first, capped. */
 export function pickMixedSessionCards(
   cards: Flashcard[],
@@ -77,13 +91,7 @@ export function pickMixedSessionCards(
   now: Date = new Date(),
   limit: number = MIXED_SESSION_CARDS,
 ): Flashcard[] {
-  const byCard = new Map(progress.map((row) => [row.cardId, row]));
-  const nowMs = now.getTime();
-  return [...cards]
-    .map((card, i) => ({ card, i, rank: sessionRank(card, byCard.get(card.id), nowMs) }))
-    .sort((a, b) => a.rank - b.rank || a.i - b.i)
-    .slice(0, limit)
-    .map((entry) => entry.card);
+  return rankCardsForSession(cards, progress, now).slice(0, limit);
 }
 
 export interface MixedPlanInput {

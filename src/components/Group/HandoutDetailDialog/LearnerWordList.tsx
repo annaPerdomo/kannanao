@@ -13,8 +13,8 @@ import { Loading } from '@/components/Loading';
 import { useHandoutWords } from '@/hooks/useHandoutWords';
 import { isGoalMode } from '@/lib/assignmentMastery';
 import type { CardStrength } from '@/lib/cardStrength';
-import { toCardProgress } from '@/lib/handoutWords';
-import { pickMixedSessionCards } from '@/lib/mixedPractice';
+import { type LearnerWordInsight, toCardProgress } from '@/lib/handoutWords';
+import { MIXED_SESSION_CARDS, rankCardsForSession } from '@/lib/mixedPractice';
 
 import { formatDate } from '../dueDate';
 import { WordRow } from './WordRow';
@@ -26,6 +26,7 @@ interface LearnerWordListProps {
   memberName: string;
   requiredMode: string | null;
   onBack?: () => void;
+  scroll?: boolean;
 }
 
 function strengthColor(strength: CardStrength, theme: Theme): string {
@@ -41,6 +42,7 @@ export function LearnerWordList({
   memberName,
   requiredMode,
   onBack,
+  scroll = true,
 }: LearnerWordListProps) {
   const t = useTranslations('Group.handoutDetail');
   const theme = useTheme();
@@ -67,7 +69,11 @@ export function LearnerWordList({
 
   const cards = learner.map((insight) => insight.card);
   const progress = toCardProgress(learner);
-  const upNext = pickMixedSessionCards(cards, progress);
+  const byCardId = new Map(learner.map((insight) => [insight.card.id, insight]));
+  const ranked = rankCardsForSession(cards, progress)
+    .map((card) => byCardId.get(card.id))
+    .filter((insight): insight is LearnerWordInsight => insight != null);
+  const upNext = ranked.slice(0, MIXED_SESSION_CARDS);
   const showGoalPlaysAll = isGoalMode(requiredMode) && requiredMode !== 'review';
 
   return (
@@ -86,8 +92,13 @@ export function LearnerWordList({
             {t('upNext', { count: upNext.length })}
           </Typography>
           <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', mb: 0.5 }}>
-            {upNext.map((card) => (
-              <Chip key={card.id} size="small" label={card.word} sx={{ color: 'text.primary' }} />
+            {upNext.map((insight) => (
+              <Chip
+                key={insight.card.id}
+                size="small"
+                label={insight.card.word}
+                sx={{ color: 'text.primary' }}
+              />
             ))}
           </Stack>
           <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
@@ -102,9 +113,9 @@ export function LearnerWordList({
       )}
       <Stack
         divider={<Divider flexItem />}
-        sx={{ maxHeight: '50vh', overflowY: 'auto', gap: 0.75, pr: 0.5 }}
+        sx={scroll ? { maxHeight: '50vh', overflowY: 'auto', gap: 0.75, pr: 0.5 } : { gap: 0.75 }}
       >
-        {learner.map((insight) => (
+        {ranked.map((insight) => (
           <WordRow
             key={insight.card.id}
             card={insight.card}
