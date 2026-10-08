@@ -48,3 +48,39 @@ describe('message catalogs', () => {
     expect(untranslated).toEqual([]);
   });
 });
+
+describe('Group.* organizer copy — vocabulary sweep (prompt 03)', () => {
+  // Not allow-listed: a hit here means the sweep missed a string, not an exception to add.
+  it('uses "handout", never "assignment", in Group.* values', () => {
+    const hits: string[] = [];
+    const walk = (obj: Messages, path: string) => {
+      for (const [key, value] of Object.entries(obj)) {
+        const p = `${path}.${key}`;
+        if (typeof value === 'string') {
+          if (/assignment/i.test(value)) hits.push(`${p} => ${value}`);
+        } else if (value !== null && typeof value === 'object') {
+          walk(value as Messages, p);
+        }
+      }
+    };
+    walk((en as { Group: Messages }).Group, 'Group');
+    expect(hits).toEqual([]);
+  });
+
+  // 課題 ("assignment") is the pre-sweep term; organizer copy now uses 配布/配布物/配る.
+  it('uses 配布/配る, never 課題, in Japanese Group.* values', () => {
+    const hits: string[] = [];
+    const walk = (obj: Messages, path: string) => {
+      for (const [key, value] of Object.entries(obj)) {
+        const p = `${path}.${key}`;
+        if (typeof value === 'string') {
+          if (/課題/.test(value)) hits.push(`${p} => ${value}`);
+        } else if (value !== null && typeof value === 'object') {
+          walk(value as Messages, p);
+        }
+      }
+    };
+    walk((ja as { Group: Messages }).Group, 'Group');
+    expect(hits).toEqual([]);
+  });
+});

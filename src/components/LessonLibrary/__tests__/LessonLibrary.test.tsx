@@ -108,8 +108,8 @@ describe('LessonLibrary', () => {
   it('shows the empty state and calls onBuild', () => {
     const onBuild = vi.fn();
     renderLibrary({ units: [], loose: [] }, {}, { onBuild });
-    expect(screen.getByText('Nothing assigned to this group yet')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /build a lesson set/i }));
+    expect(screen.getByText('Nothing handed out to this group yet')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /build a lesson/i }));
     expect(onBuild).toHaveBeenCalled();
   });
 

@@ -62,7 +62,7 @@ describe('DifficultWords', () => {
   it('points the organizer at assigning a deck when the group has none', () => {
     mockData([], []);
     renderWithProviders(<DifficultWords groupId="group-1" />);
-    expect(screen.getByText(/assign a deck to this group/i)).toBeInTheDocument();
+    expect(screen.getByText(/hand out a deck to this group/i)).toBeInTheDocument();
   });
 
   it('celebrates a group with decks but nothing tricky in them', () => {

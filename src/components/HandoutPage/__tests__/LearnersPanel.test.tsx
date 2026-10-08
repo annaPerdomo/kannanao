@@ -35,7 +35,7 @@ describe('LearnersPanel', () => {
     expect(screen.getByText('50% strong')).toBeInTheDocument();
     expect(screen.getByText('10% strong')).toBeInTheDocument();
     expect(screen.getByText('0% strong')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Assign' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Hand out' })).toBeInTheDocument();
     expect(screen.queryByText('Finished')).not.toBeInTheDocument();
     expect(screen.getByText(/1 tricky/)).toBeInTheDocument();
     expect(screen.getByText(/^9 of 10 words strong/)).toBeInTheDocument();
@@ -81,7 +81,7 @@ describe('LearnersPanel', () => {
         onSendEncouragement={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Assign' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Hand out' }));
     expect(onAssign).toHaveBeenCalledWith(expect.objectContaining({ id: 'e' }));
     expect(onSelect).not.toHaveBeenCalled();
   });

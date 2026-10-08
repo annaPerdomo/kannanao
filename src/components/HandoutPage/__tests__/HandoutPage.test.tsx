@@ -138,14 +138,14 @@ describe('HandoutPage', () => {
     setLibrary(libraryWithUnit());
     renderWithProviders(<HandoutPage groupId="g1" deckId="d2" />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Assign' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Hand out' }));
 
     await vi.waitFor(() =>
       expect(createAssignment).toHaveBeenCalledWith(
         expect.objectContaining({ memberIds: ['m2'], deckId: 'd2' }),
       ),
     );
-    expect(await screen.findByText('Assigned to Taro')).toBeInTheDocument();
+    expect(await screen.findByText('Handed out to Taro')).toBeInTheDocument();
     // Without this, a stale cache hit on return shows the learner as
     // unassigned again and invites a duplicate assignment.
     await vi.waitFor(() => expect(wordsRefetch).toHaveBeenCalled());
@@ -156,10 +156,12 @@ describe('HandoutPage', () => {
     setLibrary(libraryWithUnit());
     renderWithProviders(<HandoutPage groupId="g1" deckId="d2" />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Assign' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Hand out' }));
 
-    expect(await screen.findByText("Couldn't assign that learner. Try again.")).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Assign' })).not.toBeDisabled();
+    expect(
+      await screen.findByText("Couldn't hand this out to them. Try again."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Hand out' })).not.toBeDisabled();
   });
 
   it('saves settings with a confirmation toast', async () => {
