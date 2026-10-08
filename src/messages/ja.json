@@ -2499,10 +2499,10 @@
       "onSuccess": "毎日のリマインダーをオンにしました！",
       "offSuccess": "毎日のリマインダーをオフにしました。"
     },
-    "inviteMembers": {
-      "title": "メンバーを招待",
-      "description": "招待リンクを作って、QRコードで学習グループにメンバーを迎えましょう。",
-      "createButton": "招待リンクを作成"
+    "invites": {
+      "title": "招待",
+      "description": "それぞれのグループのページから学習者を招待できます。",
+      "goToGroupsButton": "グループを見る"
     },
     "password": {
       "title": "パスワード",

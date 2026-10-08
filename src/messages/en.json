@@ -2502,10 +2502,10 @@
       "onSuccess": "Daily reminder is on!",
       "offSuccess": "Daily reminder is off."
     },
-    "inviteMembers": {
-      "title": "Invite Members",
-      "description": "Create invite links to onboard members to your study group via QR code.",
-      "createButton": "Create Invite Link"
+    "invites": {
+      "title": "Invites",
+      "description": "Invite learners from each group's page.",
+      "goToGroupsButton": "Go to my groups"
     },
     "password": {
       "title": "Password",

@@ -24,12 +24,10 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-import { CreateInviteDialog, InviteList, InviteQRCode } from '@/components/Group';
+import { SectionCard } from '@/components/Group';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { useAuth } from '@/contexts/AuthContext';
-import type { InviteCode } from '@/hooks/useInvites';
-import { useInvites } from '@/hooks/useInvites';
 import { LAYOUT } from '@/theme';
 
 import { CreditsSection } from './CreditsSection';
@@ -53,7 +51,6 @@ export default function SettingsPage() {
     updateReviewReminders,
   } = useAuth();
   const router = useRouter();
-  const { invites, createInvite, revokeInvite } = useInvites();
 
   const currentUsername = user?.email?.split('@')[0] ?? '';
 
@@ -75,10 +72,6 @@ export default function SettingsPage() {
 
   // Daily review reminder
   const [reminderSaving, setReminderSaving] = useState(false);
-
-  // Invite dialogs
-  const [createInviteOpen, setCreateInviteOpen] = useState(false);
-  const [qrInvite, setQrInvite] = useState<InviteCode | null>(null);
 
   const [snack, setSnack] = useState<{ msg: string; severity: 'success' | 'error' } | null>(null);
 
@@ -372,17 +365,15 @@ export default function SettingsPage() {
           <>
             <Divider />
 
-            {/* Invite Members */}
-            <Section
-              icon={<QrCode2Icon />}
-              title={t('inviteMembers.title')}
-              description={t('inviteMembers.description')}
-            >
-              <Stack gap={2}>
+            <SectionCard title={t('invites.title')} icon={<QrCode2Icon />}>
+              <Stack gap={1.5}>
+                <Typography sx={{ fontSize: '0.85rem', color: 'text.primary' }}>
+                  {t('invites.description')}
+                </Typography>
                 <Button
                   size="small"
                   variant="outlined"
-                  onClick={() => setCreateInviteOpen(true)}
+                  onClick={() => router.push('/group')}
                   sx={{
                     borderRadius: 6,
                     textTransform: 'none',
@@ -391,15 +382,10 @@ export default function SettingsPage() {
                     alignSelf: 'flex-start',
                   }}
                 >
-                  {t('inviteMembers.createButton')}
+                  {t('invites.goToGroupsButton')}
                 </Button>
-                <InviteList
-                  invites={invites}
-                  onRevoke={revokeInvite}
-                  onShowQR={(invite) => setQrInvite(invite)}
-                />
               </Stack>
-            </Section>
+            </SectionCard>
           </>
         )}
 
@@ -475,26 +461,6 @@ export default function SettingsPage() {
 
         <CreditsSection />
       </Stack>
-
-      <CreateInviteDialog
-        open={createInviteOpen}
-        onClose={() => setCreateInviteOpen(false)}
-        onCreate={createInvite}
-        onCreated={(invite) => {
-          setCreateInviteOpen(false);
-          setQrInvite(invite);
-        }}
-      />
-
-      {qrInvite && (
-        <InviteQRCode
-          open={Boolean(qrInvite)}
-          onClose={() => setQrInvite(null)}
-          code={qrInvite.code}
-          label={qrInvite.label}
-          organizerName={displayName ?? currentUsername}
-        />
-      )}
 
       <Snackbar
         open={Boolean(snack)}
