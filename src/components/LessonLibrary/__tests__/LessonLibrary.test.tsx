@@ -43,6 +43,8 @@ function week(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
     finishedCount: 0,
     wordCount: 0,
     status: 'current',
+    kanaSets: [],
+    handedOut: true,
     ...overrides,
   };
 }

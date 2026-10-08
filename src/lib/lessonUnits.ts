@@ -77,6 +77,16 @@ export function weekStatus(
   return 'current';
 }
 
+export function lessonStatus(args: {
+  handedOut: boolean;
+  availableOn: string | null;
+  dueDate: string | null;
+  today: string;
+}): LessonWeekStatus {
+  if (!args.handedOut) return 'draft';
+  return weekStatus(args.availableOn, args.dueDate, args.today);
+}
+
 interface ScheduleFields {
   title: string | null;
   note: string | null;
@@ -133,7 +143,12 @@ function mostCommonSchedule(rows: ScheduleFields[]): ScheduleFields | null {
 
 export function buildLessonLibrary(input: {
   plans: { id: string; title: string | null; jlpt_level: string | null; created_at: string }[];
-  planDecks: { plan_id: string; deck_id: string; position: number }[];
+  planDecks: {
+    plan_id: string;
+    deck_id: string;
+    position: number;
+    kana_sets?: string[] | null;
+  }[];
   decks: { id: string; name: string; emoji: string | null }[];
   cardCounts?: Record<string, number>;
   templates: {
@@ -161,6 +176,7 @@ export function buildLessonLibrary(input: {
 
   const deckById = new Map(decks.map((d) => [d.id, d]));
   const templateByDeck = new Map(templates.map((t) => [t.deck_id, t]));
+  const kanaSetsByDeck = new Map(planDecks.map((pd) => [pd.deck_id, pd.kana_sets ?? []]));
 
   const assignmentsByDeck = new Map<string, typeof assignments>();
   for (const row of assignments) {
@@ -182,6 +198,7 @@ export function buildLessonLibrary(input: {
     if (!deck) return null;
     const schedule = scheduleFor(deckId);
     const rows = assignmentsByDeck.get(deckId) ?? [];
+    const handedOut = templateByDeck.has(deckId) || rows.length > 0;
     return {
       deckId,
       deckName: deck.name,
@@ -196,7 +213,14 @@ export function buildLessonLibrary(input: {
       learnerCount: rows.length,
       finishedCount: rows.filter((r) => r.completed_at).length,
       wordCount: cardCounts[deckId] ?? 0,
-      status: weekStatus(schedule.available_on, schedule.due_date, today),
+      status: lessonStatus({
+        handedOut,
+        availableOn: schedule.available_on,
+        dueDate: schedule.due_date,
+        today,
+      }),
+      kanaSets: kanaSetsByDeck.get(deckId) ?? [],
+      handedOut,
     };
   }
 

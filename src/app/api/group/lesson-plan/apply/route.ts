@@ -4,6 +4,7 @@ import { isGoalMode } from '@/lib/assignmentMastery';
 import { isKanaSetId } from '@/lib/kanaCurriculum';
 import { MAX_COMPANION_KANA_ROWS } from '@/lib/kanaGaps';
 import { KNOWN_WORD_CAP, type KnownWord } from '@/lib/knownWords';
+import { sortKanaSets } from '@/lib/lessonKana';
 import {
   CARDS_MAX,
   isJlptLevel,
@@ -334,7 +335,14 @@ export async function POST(req: NextRequest) {
   }
 
   if (planId && planRowOk) {
-    await saveLessonPlanDecks({ planId, results });
+    const kanaSetsByDeck: Record<string, string[]> = {};
+    for (const [index, result] of results.entries()) {
+      if (!result.deckId) continue;
+      const deckDue = dueDateFor(firstDueDate, index);
+      const sets = companionRows.filter((row) => row.dueDate === deckDue).map((row) => row.setId);
+      if (sets.length > 0) kanaSetsByDeck[result.deckId] = sortKanaSets(sets);
+    }
+    await saveLessonPlanDecks({ planId, results, kanaSets: kanaSetsByDeck });
   }
 
   const kana =

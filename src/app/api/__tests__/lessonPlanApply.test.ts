@@ -554,6 +554,26 @@ describe('POST /api/group/lesson-plan/apply', () => {
     ]);
   });
 
+  it('matches a kanaWeeks row to the deck whose due date it shares, and no other', async () => {
+    reads.decks.push({ data: [], error: null });
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+    insertReturns.decks.push({ data: { id: 'd2' } });
+    reads.lesson_plans.push({ data: { organizer_id: 'org1', group_id: 'g1' }, error: null });
+
+    await POST(
+      makeRequest({
+        ...BASE,
+        planId: PLAN_ID,
+        plan: planWith(['Food', 'Counting']),
+        kanaWeeks: [{ setId: 'hira-ra', dueDate: '2026-08-16' }],
+      }),
+    );
+
+    const kanaRows = rowsFor('lesson_plan_decks').filter((r) => 'kana_sets' in r);
+    expect(kanaRows).toEqual([{ plan_id: PLAN_ID, deck_id: 'd2', kana_sets: ['hira-ra'] }]);
+  });
+
   it('trims a title to 80 characters', async () => {
     reads.decks.push({ data: [], error: null });
     seedAccess();

@@ -86,6 +86,8 @@ describe('handoutRefFromWeek', () => {
       finishedCount: 3,
       wordCount: 0,
       status: 'current',
+      kanaSets: [],
+      handedOut: true,
     };
 
     expect(handoutRefFromWeek(week)).toEqual({

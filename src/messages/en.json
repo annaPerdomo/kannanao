@@ -1938,6 +1938,7 @@
       "lastWeekFinished": "{finished} of {learners} finished last week",
       "opens": "Opens {date}",
       "due": "Due {date}",
+      "statusDraft": "Draft",
       "statusUpcoming": "Coming up",
       "statusCurrent": "This week",
       "statusPast": "Past due date",

@@ -184,7 +184,41 @@ describe('buildLessonLibrary', () => {
     expect(library.units[0].weeks[0].finishedCount).toBe(1);
   });
 
-  it('keeps a fully-unscheduled week with null dates and status current', () => {
+  it('passes a plan deck row kana_sets through and treats null as empty', () => {
+    const library = buildLessonLibrary({
+      plans: [{ id: 'p1', title: null, jlpt_level: null, created_at: '2026-09-01T00:00:00Z' }],
+      planDecks: [
+        { plan_id: 'p1', deck_id: 'd1', position: 0, kana_sets: ['hira-ka', 'hira-a'] },
+        { plan_id: 'p1', deck_id: 'd2', position: 1, kana_sets: null },
+      ],
+      decks: [
+        { id: 'd1', name: 'Food', emoji: null },
+        { id: 'd2', name: 'Travel', emoji: null },
+      ],
+      templates: [
+        { deck_id: 'd1', ...schedule },
+        { deck_id: 'd2', ...schedule },
+      ],
+      assignments: [],
+      today: TODAY,
+    });
+    expect(library.units[0].weeks[0].kanaSets).toEqual(['hira-ka', 'hira-a']);
+    expect(library.units[0].weeks[1].kanaSets).toEqual([]);
+  });
+
+  it('marks a plan deck with a template, but no assignments yet, as handed out', () => {
+    const library = buildLessonLibrary({
+      plans: [{ id: 'p1', title: null, jlpt_level: null, created_at: '2026-09-01T00:00:00Z' }],
+      planDecks: [{ plan_id: 'p1', deck_id: 'd1', position: 0 }],
+      decks: [{ id: 'd1', name: 'Food', emoji: null }],
+      templates: [{ deck_id: 'd1', ...schedule }],
+      assignments: [],
+      today: TODAY,
+    });
+    expect(library.units[0].weeks[0]).toMatchObject({ handedOut: true, status: 'current' });
+  });
+
+  it('keeps a fully-unscheduled week with null dates and status draft', () => {
     const library = buildLessonLibrary({
       plans: [{ id: 'p1', title: null, jlpt_level: null, created_at: '2026-09-01T00:00:00Z' }],
       planDecks: [{ plan_id: 'p1', deck_id: 'd1', position: 0 }],
@@ -196,7 +230,9 @@ describe('buildLessonLibrary', () => {
     expect(library.units[0].weeks[0]).toMatchObject({
       dueDate: null,
       availableOn: null,
-      status: 'current',
+      status: 'draft',
+      handedOut: false,
+      kanaSets: [],
       learnerCount: 0,
     });
   });
@@ -316,6 +352,8 @@ function makeWeek(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
     finishedCount: 0,
     wordCount: 0,
     status: 'current',
+    kanaSets: [],
+    handedOut: true,
     ...overrides,
   };
 }
@@ -377,6 +415,16 @@ describe('currentWeekSummary', () => {
       makeWeek({ week: 3, status: 'current', learnerCount: 10, finishedCount: 0 }),
     ]);
     expect(currentWeekSummary(unit).lastFinished).toBeNull();
+  });
+
+  it('skips a draft week when picking the current one, but still counts it in total', () => {
+    const unit = makeUnit([
+      makeWeek({ week: 1, status: 'past', learnerCount: 10, finishedCount: 10 }),
+      makeWeek({ week: 2, status: 'draft', handedOut: false, learnerCount: 0, finishedCount: 0 }),
+    ]);
+    const summary = currentWeekSummary(unit);
+    expect(summary.current).toBeNull();
+    expect(summary.total).toBe(2);
   });
 });
 
@@ -475,6 +523,8 @@ describe('locateWeek', () => {
     finishedCount: 0,
     wordCount: 0,
     status: 'upcoming',
+    kanaSets: [],
+    handedOut: true,
   });
   const unit: LessonUnit = {
     id: 'u1',

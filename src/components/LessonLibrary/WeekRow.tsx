@@ -21,6 +21,7 @@ interface WeekRowProps {
 }
 
 const STATUS_KEY: Record<LessonWeekStatus, string> = {
+  draft: 'statusDraft',
   upcoming: 'statusUpcoming',
   current: 'statusCurrent',
   past: 'statusPast',

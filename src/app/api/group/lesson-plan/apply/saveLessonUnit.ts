@@ -64,6 +64,8 @@ export async function saveLessonPlanRow(args: {
 export async function saveLessonPlanDecks(args: {
   planId: string;
   results: ApplyDeckResult[];
+  /** Deck id -> sound rows, from matching the plan's `kanaWeeks` schedule to each deck's due date. */
+  kanaSets?: Record<string, string[]>;
 }): Promise<void> {
   const rows = args.results
     .map((result, index) => ({ result, index }))
@@ -76,15 +78,42 @@ export async function saveLessonPlanDecks(args: {
 
   if (rows.length === 0) return;
 
-  const { error } = await getServiceSupabase()
-    .from('lesson_plan_decks')
-    .upsert(rows, { onConflict: 'plan_id,deck_id' });
+  const sb = getServiceSupabase();
+  const { error } = await sb.from('lesson_plan_decks').upsert(rows, {
+    onConflict: 'plan_id,deck_id',
+  });
 
   if (error) {
     logger.error('Failed to save lesson plan decks', {
       route: ROUTE,
       planId: args.planId,
       error: error.message,
+    });
+    return;
+  }
+
+  // A separate upsert with only plan_id/deck_id/kana_sets, so a deck with no
+  // mapped kanaWeeks row keeps whatever the kana PATCH route last set.
+  const kanaRows = rows
+    .map((row) => ({ row, kanaSets: args.kanaSets?.[row.deck_id] }))
+    .filter((entry): entry is { row: (typeof rows)[number]; kanaSets: string[] } =>
+      Boolean(entry.kanaSets),
+    )
+    .map(({ row, kanaSets }) => ({
+      plan_id: row.plan_id,
+      deck_id: row.deck_id,
+      kana_sets: kanaSets,
+    }));
+  if (kanaRows.length === 0) return;
+
+  const { error: kanaError } = await sb
+    .from('lesson_plan_decks')
+    .upsert(kanaRows, { onConflict: 'plan_id,deck_id' });
+  if (kanaError) {
+    logger.error('Failed to save lesson sound rows', {
+      route: ROUTE,
+      planId: args.planId,
+      error: kanaError.message,
     });
   }
 }

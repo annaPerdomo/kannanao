@@ -91,11 +91,42 @@ describe('saveLessonPlanDecks', () => {
         { name: 'Failed deck', status: 'failed' },
       ],
     });
-    const call = upserts.find((u) => u.table === 'lesson_plan_decks');
-    expect(call?.rows).toEqual([
+    const calls = upserts.filter((u) => u.table === 'lesson_plan_decks');
+    expect(calls).toHaveLength(1);
+    expect(calls[0].rows).toEqual([
       { plan_id: 'p1', deck_id: 'd1', position: 0 },
       { plan_id: 'p1', deck_id: 'd2', position: 1 },
     ]);
+  });
+
+  it('writes the matched sound rows for a deck when provided, leaving others untouched', async () => {
+    await saveLessonPlanDecks({
+      planId: 'p1',
+      results: [
+        { name: 'Food', deckId: 'd1', status: 'created' },
+        { name: 'Counting', deckId: 'd2', status: 'created' },
+      ],
+      kanaSets: { d1: ['hira-a', 'hira-ka'] },
+    });
+    const calls = upserts.filter((u) => u.table === 'lesson_plan_decks');
+    expect(calls).toHaveLength(2);
+    expect(calls[0].rows).toEqual([
+      { plan_id: 'p1', deck_id: 'd1', position: 0 },
+      { plan_id: 'p1', deck_id: 'd2', position: 1 },
+    ]);
+    expect(calls[1].rows).toEqual([
+      { plan_id: 'p1', deck_id: 'd1', kana_sets: ['hira-a', 'hira-ka'] },
+    ]);
+  });
+
+  it('writes no second upsert when no deck has a matched sound row', async () => {
+    await saveLessonPlanDecks({
+      planId: 'p1',
+      results: [{ name: 'Food', deckId: 'd1', status: 'created' }],
+      kanaSets: {},
+    });
+    const calls = upserts.filter((u) => u.table === 'lesson_plan_decks');
+    expect(calls).toHaveLength(1);
   });
 
   it('writes nothing when no result has a deckId', async () => {

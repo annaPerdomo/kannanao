@@ -1938,6 +1938,7 @@
       "lastWeekFinished": "先週は{learners}人中{finished}人が完了",
       "opens": "{date}から",
       "due": "締切 {date}",
+      "statusDraft": "下書き",
       "statusUpcoming": "予定",
       "statusCurrent": "今週",
       "statusPast": "締切済み",

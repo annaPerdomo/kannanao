@@ -45,6 +45,8 @@ function looseWeek() {
     finishedCount: 0,
     wordCount: 0,
     status: 'current' as const,
+    kanaSets: [],
+    handedOut: true,
   };
 }
 

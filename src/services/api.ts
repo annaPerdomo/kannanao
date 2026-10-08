@@ -3,6 +3,12 @@ import { LESSON_DOCUMENTS_BUCKET } from '@/lib/lessonDocuments';
 import { sb } from '@/lib/supabase';
 import type { GeneratedCard, GeneratePayload } from '@/types/flashcard';
 import type { ApplyDeckResult, LessonPlan, LessonPlanResponse } from '@/types/lessonPlan';
+import type {
+  CreateLessonPayload,
+  CreateLessonResult,
+  HandOutLessonPayload,
+  HandOutLessonResult,
+} from '@/types/lessonUnit';
 import type { DbPracticeSentence } from '@/types/practiceSentence';
 
 const BASE = '/api';
@@ -317,6 +323,49 @@ export async function applyLessonPlan(payload: {
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body?.error ?? 'Failed to create the decks');
+  }
+  return res.json();
+}
+
+export async function createLesson(payload: CreateLessonPayload): Promise<CreateLessonResult> {
+  const res = await fetch(`${BASE}/group/lessons`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to create the lesson');
+  }
+  return res.json();
+}
+
+export async function handOutLesson(payload: HandOutLessonPayload): Promise<HandOutLessonResult> {
+  const res = await fetch(`${BASE}/group/lessons/handout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to hand out the lesson');
+  }
+  return res.json();
+}
+
+export async function updateLessonKana(payload: {
+  groupId: string;
+  deckId: string;
+  kanaSets: string[];
+}): Promise<{ kanaSets: string[] }> {
+  const res = await fetch(`${BASE}/group/lessons/kana`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? 'Failed to update sound rows');
   }
   return res.json();
 }

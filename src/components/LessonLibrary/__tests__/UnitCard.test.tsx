@@ -46,6 +46,8 @@ function unit(): LessonUnit {
         finishedCount: 0,
         wordCount: 0,
         status: 'past',
+        kanaSets: [],
+        handedOut: true,
       },
     ],
   };
