@@ -27,9 +27,13 @@ vi.mock('@/components/Group/QuizScoresPanel', () => ({
   QuizScoresPanel: () => <div>quiz-scores-panel</div>,
 }));
 
-import { PlanTab } from '../PlanTab';
+import { LessonsTab } from '../LessonsTab';
 
-function looseWeek() {
+function looseWeek(overrides: Partial<ReturnType<typeof baseWeek>> = {}) {
+  return { ...baseWeek(), ...overrides };
+}
+
+function baseWeek() {
   return {
     deckId: 'd1',
     deckName: 'Food',
@@ -45,7 +49,7 @@ function looseWeek() {
     finishedCount: 0,
     wordCount: 0,
     status: 'current' as const,
-    kanaSets: [],
+    kanaSets: [] as string[],
     handedOut: true,
   };
 }
@@ -87,7 +91,7 @@ function makeLibrary(overrides: Partial<LessonLibraryHook> = {}): LessonLibraryH
   };
 }
 
-function baseProps(overrides: Partial<Parameters<typeof PlanTab>[0]> = {}) {
+function baseProps(overrides: Partial<Parameters<typeof LessonsTab>[0]> = {}) {
   return {
     groupId: 'g1',
     library: makeLibrary(),
@@ -108,10 +112,10 @@ function baseProps(overrides: Partial<Parameters<typeof PlanTab>[0]> = {}) {
   };
 }
 
-describe('PlanTab', () => {
+describe('LessonsTab', () => {
   it('renders the Lesson Library when there is something planned', () => {
     renderWithProviders(
-      <PlanTab
+      <LessonsTab
         {...baseProps({ library: makeLibrary({ library: { units: [], loose: [looseWeek()] } }) })}
       />,
     );
@@ -119,47 +123,80 @@ describe('PlanTab', () => {
   });
 
   it('shows the Kana goals section only when a deck-less assignment exists', () => {
-    const { rerender } = renderWithProviders(<PlanTab {...baseProps({ assignments: [] })} />);
+    const { rerender } = renderWithProviders(<LessonsTab {...baseProps({ assignments: [] })} />);
     expect(screen.queryByText('Kana goals')).not.toBeInTheDocument();
 
-    rerender(<PlanTab {...baseProps({ assignments: [assignment()] })} />);
+    rerender(<LessonsTab {...baseProps({ assignments: [assignment()] })} />);
     expect(screen.getByText('Kana goals')).toBeInTheDocument();
+  });
+
+  it('hides a kana goal already covered by a lesson week', () => {
+    renderWithProviders(
+      <LessonsTab
+        {...baseProps({
+          assignments: [assignment({ kana_set: 'hira-a' })],
+          library: makeLibrary({
+            library: { units: [], loose: [looseWeek({ kanaSets: ['hira-a'] })] },
+          }),
+        })}
+      />,
+    );
+    expect(screen.queryByText('Kana goals')).not.toBeInTheDocument();
   });
 
   it('shows an error instead of Kana goals when assignments failed to load', () => {
     renderWithProviders(
-      <PlanTab {...baseProps({ assignmentsError: 'Could not load assignments.' })} />,
+      <LessonsTab {...baseProps({ assignmentsError: 'Could not load assignments.' })} />,
     );
     expect(screen.getByText('Kana goals')).toBeInTheDocument();
     expect(screen.getByText('Could not load assignments.')).toBeInTheDocument();
   });
 
   it('does not show the empty state while assignments are loading', () => {
-    renderWithProviders(<PlanTab {...baseProps({ assignmentsLoading: true })} />);
-    expect(
-      screen.queryByText('Nothing planned yet — add your first week.'),
-    ).not.toBeInTheDocument();
+    renderWithProviders(<LessonsTab {...baseProps({ assignmentsLoading: true })} />);
+    expect(screen.queryByText('No lessons yet — make your first one.')).not.toBeInTheDocument();
   });
 
-  it('calls onAssign when "Hand out a deck" is clicked', () => {
+  it('empty state opens the new lesson flow', () => {
+    const onBuild = vi.fn();
+    renderWithProviders(<LessonsTab {...baseProps({ onBuild })} />);
+    fireEvent.click(screen.getByText('New lesson'));
+    expect(onBuild).toHaveBeenCalled();
+  });
+
+  it('"More ways to add" routes to the AI planner, Quizlet and kana course, and calls onAssign for a deck', () => {
     const onAssign = vi.fn();
     renderWithProviders(
-      <PlanTab
+      <LessonsTab
         {...baseProps({
           library: makeLibrary({ library: { units: [], loose: [looseWeek()] } }),
           onAssign,
         })}
       />,
     );
-    fireEvent.click(screen.getByText('Hand out a deck'));
+
+    fireEvent.click(screen.getByText('More ways to add'));
+    fireEvent.click(screen.getByText('Plan several lessons with AI'));
+    expect(mockPush).toHaveBeenCalledWith('/group/g1/add/lesson');
+
+    fireEvent.click(screen.getByText('More ways to add'));
+    fireEvent.click(screen.getByText('Hand out a deck I made'));
     expect(onAssign).toHaveBeenCalled();
+
+    fireEvent.click(screen.getByText('More ways to add'));
+    fireEvent.click(screen.getByText('Import from Quizlet'));
+    expect(mockPush).toHaveBeenCalledWith('/group/g1/add/quizlet');
+
+    fireEvent.click(screen.getByText('More ways to add'));
+    fireEvent.click(screen.getByText('Kana course'));
+    expect(mockPush).toHaveBeenCalledWith('/group/g1/add/kana');
   });
 
   it('calls onChanged after a successful Lesson Library mutation', async () => {
     const onChanged = vi.fn();
     const renameUnit = vi.fn().mockResolvedValue(true);
     renderWithProviders(
-      <PlanTab
+      <LessonsTab
         {...baseProps({
           library: makeLibrary({
             library: {

@@ -38,7 +38,7 @@ export function AddDeckToGroupDialog({
 
   const handlePick = (groupId: string) => {
     onClose();
-    router.push(`/group/${groupId}?tab=plan&assign=${deckId}`);
+    router.push(`/group/${groupId}?tab=lessons&assign=${deckId}`);
   };
 
   return (

@@ -7,14 +7,12 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { DataErrorState, StaleDataHint } from '@/components/DataErrorState';
 import {
-  type AddSource,
-  addToPlanDestination,
-  AddToPlanDialog,
   DEFAULT_TAB,
   GroupDashboardDialogs,
   GroupDashboardHeader,
   type GroupDashboardTab,
   isExpired,
+  NewLessonDialog,
   resolveDashboardTab,
   TabBar,
   TabContent,
@@ -81,7 +79,7 @@ export default function GroupDashboardPage() {
   const assignDialog = useAssignDialog();
   const [createInviteOpen, setCreateInviteOpen] = useState(false);
   const [qrInvite, setQrInvite] = useState<InviteCode | null>(null);
-  const [addToPlanOpen, setAddToPlanOpen] = useState(false);
+  const [newLessonOpen, setNewLessonOpen] = useState(false);
 
   const tabParam = searchParams?.get('tab') ?? null;
   const tab: GroupDashboardTab = resolveDashboardTab(tabParam);
@@ -100,22 +98,9 @@ export default function GroupDashboardPage() {
     [router, groupId, searchParams],
   );
 
-  const handleViewPlan = useCallback(() => handleTabChange('plan'), [handleTabChange]);
+  const handleViewPlan = useCallback(() => handleTabChange('lessons'), [handleTabChange]);
 
-  const handleOpenAddToPlan = useCallback(() => setAddToPlanOpen(true), []);
-
-  const handlePickAddToPlan = useCallback(
-    (source: AddSource) => {
-      setAddToPlanOpen(false);
-      const destination = addToPlanDestination(groupId, source);
-      if ('openAssign' in destination) {
-        assignDialog.openAssign();
-      } else {
-        router.push(destination.path);
-      }
-    },
-    [assignDialog, router, groupId],
-  );
+  const handleOpenNewLesson = useCallback(() => setNewLessonOpen(true), []);
 
   // The new deck may not be here yet — AddMaterialPage creates it through
   // its own separate `useDecks()` instance.
@@ -133,6 +118,20 @@ export default function GroupDashboardPage() {
     // would otherwise retrigger this after the very replace() above.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assignDeckId]);
+
+  // AddMaterialPage's old `/add/blank` redirects here with `new=1` so the
+  // new-lesson flow still starts from that link.
+  const wantsNewLesson = searchParams?.get('new') === '1';
+  useEffect(() => {
+    if (!wantsNewLesson) return;
+    setNewLessonOpen(true);
+    const query = new URLSearchParams(searchParams?.toString());
+    query.delete('new');
+    const qs = query.toString();
+    router.replace(`/group/${groupId}${qs ? `?${qs}` : ''}`, { scroll: false });
+    // Only re-run when the URL param itself changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wantsNewLesson]);
 
   // The Lesson Library and the assignments list read overlapping handout data
   // from separate caches, so a change on either side has to refresh the other.
@@ -230,7 +229,7 @@ export default function GroupDashboardPage() {
         onRename={handleRename}
         onEmojiChange={handleEmojiChange}
         onInvite={() => setCreateInviteOpen(true)}
-        onAddToPlan={handleOpenAddToPlan}
+        onNewLesson={handleOpenNewLesson}
         activeInviteCount={activeInvites.length}
       />
 
@@ -277,16 +276,15 @@ export default function GroupDashboardPage() {
         onDeleteAssignments={deleteAssignments}
         onAssign={() => assignDialog.openAssign()}
         onAssignMissing={assignDialog.assignMissing}
-        onBuild={handleOpenAddToPlan}
+        onBuild={handleOpenNewLesson}
         onLibraryChanged={handleLibraryChanged}
       />
 
-      <AddToPlanDialog
-        open={addToPlanOpen}
-        onClose={() => setAddToPlanOpen(false)}
+      <NewLessonDialog
+        open={newLessonOpen}
+        onClose={() => setNewLessonOpen(false)}
         groupId={groupId}
-        groupName={group?.name ?? ''}
-        onPick={handlePickAddToPlan}
+        units={library.library?.units ?? []}
       />
 
       <GroupDashboardDialogs

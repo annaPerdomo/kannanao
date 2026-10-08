@@ -11,7 +11,7 @@ import type { Deck } from '@/types/deck';
 import type { AssignmentBatch } from '../AssignmentsList';
 import type { GroupDashboardTab } from './constants';
 import { LearnersTab } from './LearnersTab';
-import { PlanTab } from './PlanTab';
+import { LessonsTab } from './LessonsTab';
 import { TodayTab } from './TodayTab';
 import { WordsTab } from './WordsTab';
 
@@ -120,9 +120,9 @@ export function TabContent({
     );
   }
 
-  if (tab === 'plan') {
+  if (tab === 'lessons') {
     return (
-      <PlanTab
+      <LessonsTab
         groupId={groupId}
         library={library}
         assignments={assignments}

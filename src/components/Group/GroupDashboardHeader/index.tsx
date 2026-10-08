@@ -1,5 +1,5 @@
 'use client';
-import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
@@ -29,7 +29,7 @@ interface GroupDashboardHeaderProps {
   onRename: (name: string) => Promise<void>;
   onEmojiChange: (emoji: string) => void;
   onInvite: () => void;
-  onAddToPlan: () => void;
+  onNewLesson: () => void;
   /** Codes still open — shown on the invite card so the dashboard needn't list them. */
   activeInviteCount?: number;
 }
@@ -41,11 +41,12 @@ export function GroupDashboardHeader({
   onRename,
   onEmojiChange,
   onInvite,
-  onAddToPlan,
+  onNewLesson,
   activeInviteCount = 0,
 }: GroupDashboardHeaderProps) {
   const t = useTranslations('Group.groupPage');
   const tc = useTranslations('Common');
+  const tq = useTranslations('Group.quickActions');
   const theme = useTheme();
   const { brand } = theme.palette;
 
@@ -250,10 +251,10 @@ export function GroupDashboardHeader({
               badge={activeInviteCount}
             />
             <QuickActionCard
-              icon={<AutoStoriesIcon sx={{ fontSize: 18 }} />}
-              title={t('addToPlanTitle')}
-              subtitle={t('addToPlanSubtitle')}
-              onClick={onAddToPlan}
+              icon={<AutoAwesomeRounded sx={{ fontSize: 18 }} />}
+              title={tq('newLessonTitle')}
+              subtitle={tq('newLessonSubtitle')}
+              onClick={onNewLesson}
             />
           </Stack>
         }

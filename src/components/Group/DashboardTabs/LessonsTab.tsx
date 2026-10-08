@@ -1,14 +1,21 @@
 'use client';
 import AddIcon from '@mui/icons-material/Add';
+import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import GroupsRounded from '@mui/icons-material/GroupsRounded';
+import ImportExportRounded from '@mui/icons-material/ImportExportRounded';
+import SpaRounded from '@mui/icons-material/SpaRounded';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { LessonLibrary } from '@/components/LessonLibrary';
 import type { Assignment } from '@/hooks/useAssignments';
@@ -20,7 +27,7 @@ import { type AssignmentBatch, AssignmentsList } from '../AssignmentsList';
 import { QuizScoresPanel } from '../QuizScoresPanel';
 import { SectionCard } from '../SectionCard';
 
-interface PlanTabProps {
+interface LessonsTabProps {
   groupId: string;
   library: LessonLibraryHook;
   assignments: Assignment[];
@@ -41,7 +48,21 @@ interface PlanTabProps {
   onChanged: () => void;
 }
 
-export function PlanTab({
+function coveredKanaSets(library: LessonLibraryHook['library']): Set<string> {
+  const covered = new Set<string>();
+  if (!library) return covered;
+  for (const unit of library.units) {
+    for (const week of unit.weeks) {
+      for (const setId of week.kanaSets) covered.add(setId);
+    }
+  }
+  for (const week of library.loose) {
+    for (const setId of week.kanaSets) covered.add(setId);
+  }
+  return covered;
+}
+
+export function LessonsTab({
   groupId,
   library,
   assignments,
@@ -57,14 +78,19 @@ export function PlanTab({
   onAssignMissing,
   onBuild,
   onChanged,
-}: PlanTabProps) {
-  const t = useTranslations('Group.planTab');
+}: LessonsTabProps) {
+  const t = useTranslations('Group.lessonsTab');
   const theme = useTheme();
   const { brand } = theme.palette;
   const router = useRouter();
   const libraryData = library.library;
+  const [moreWaysAnchor, setMoreWaysAnchor] = useState<HTMLElement | null>(null);
 
-  const kanaGoals = useMemo(() => assignments.filter((a) => a.deck_id == null), [assignments]);
+  const coveredSets = useMemo(() => coveredKanaSets(libraryData), [libraryData]);
+  const kanaGoals = useMemo(
+    () => assignments.filter((a) => a.deck_id == null && !coveredSets.has(a.kana_set ?? '')),
+    [assignments, coveredSets],
+  );
 
   const isEmpty =
     !!libraryData &&
@@ -73,6 +99,8 @@ export function PlanTab({
     kanaGoals.length === 0 &&
     !assignmentsLoading &&
     !assignmentsError;
+
+  const closeMoreWays = () => setMoreWaysAnchor(null);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 3 } }}>
@@ -85,17 +113,66 @@ export function PlanTab({
             color: 'text.primary',
           }}
         >
-          {t('planHeading')}
+          {t('heading')}
         </Typography>
-        <Button
-          variant="outlined"
-          disabled={!canAssign}
-          startIcon={<AddIcon sx={{ fontSize: 18 }} />}
-          onClick={onAssign}
-          sx={{ borderRadius: theme.radii.sm, textTransform: 'none', fontWeight: 700 }}
-        >
-          {t('handOutDeckButton')}
-        </Button>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Button
+            id="more-ways-to-add-button"
+            aria-haspopup="menu"
+            aria-controls={moreWaysAnchor ? 'more-ways-to-add-menu' : undefined}
+            aria-expanded={Boolean(moreWaysAnchor)}
+            onClick={(e) => setMoreWaysAnchor(e.currentTarget)}
+            endIcon={<ExpandMoreIcon sx={{ fontSize: 18 }} />}
+            sx={{ textTransform: 'none', fontWeight: 700, color: brand[700] }}
+          >
+            {t('moreWays')}
+          </Button>
+          <Menu
+            id="more-ways-to-add-menu"
+            anchorEl={moreWaysAnchor}
+            open={Boolean(moreWaysAnchor)}
+            onClose={closeMoreWays}
+            slotProps={{ list: { 'aria-labelledby': 'more-ways-to-add-button' } }}
+          >
+            <MenuItem
+              onClick={() => {
+                closeMoreWays();
+                router.push(`/group/${groupId}/add/lesson`);
+              }}
+            >
+              <AutoAwesomeRounded sx={{ fontSize: 18, mr: 1.25, color: brand[600] }} />
+              {t('moreWaysPlanAi')}
+            </MenuItem>
+            <MenuItem
+              disabled={!canAssign}
+              onClick={() => {
+                closeMoreWays();
+                onAssign();
+              }}
+            >
+              <GroupsRounded sx={{ fontSize: 18, mr: 1.25, color: brand[600] }} />
+              {t('moreWaysDeck')}
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                closeMoreWays();
+                router.push(`/group/${groupId}/add/quizlet`);
+              }}
+            >
+              <ImportExportRounded sx={{ fontSize: 18, mr: 1.25, color: brand[600] }} />
+              {t('moreWaysQuizlet')}
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                closeMoreWays();
+                router.push(`/group/${groupId}/add/kana`);
+              }}
+            >
+              <SpaRounded sx={{ fontSize: 18, mr: 1.25, color: brand[600] }} />
+              {t('moreWaysKana')}
+            </MenuItem>
+          </Menu>
+        </Box>
       </Box>
 
       {isEmpty ? (
@@ -113,15 +190,19 @@ export function PlanTab({
           <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', mb: 2 }}>
             {t('emptyBody')}
           </Typography>
-          <Button variant="outlined" onClick={onBuild}>
-            {t('addToPlanButton')}
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon sx={{ fontSize: 18 }} />}
+            onClick={onBuild}
+          >
+            {t('newLessonButton')}
           </Button>
         </Paper>
       ) : (
         <LessonLibrary
           groupId={groupId}
           onBuild={onBuild}
-          onSwitchGroup={(id) => router.push(`/group/${id}?tab=plan`)}
+          onSwitchGroup={(id) => router.push(`/group/${id}?tab=lessons`)}
           library={library}
           hideEmptyState
           onChanged={onChanged}

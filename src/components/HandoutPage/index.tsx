@@ -57,7 +57,7 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
   const [leaving, setLeaving] = useState(false);
   const [assigningId, setAssigningId] = useState<string | null>(null);
 
-  const backHref = `/group/${groupId}?tab=plan`;
+  const backHref = `/group/${groupId}?tab=lessons`;
   const groupName = groups.find((g) => g.id === groupId)?.name ?? '';
   const located = useMemo(() => locateWeek(library.library, deckId), [library.library, deckId]);
   const cards = useMemo(() => words.data?.words.map((w) => w.card) ?? [], [words.data]);

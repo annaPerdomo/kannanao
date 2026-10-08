@@ -108,9 +108,9 @@ describe('HandoutPage', () => {
       'href',
       '/group/g1/handout/d3',
     );
-    expect(screen.getByRole('link', { name: 'Back to plan · Tuesday Club' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Back to lessons · Tuesday Club' })).toHaveAttribute(
       'href',
-      '/group/g1?tab=plan',
+      '/group/g1?tab=lessons',
     );
     expect(screen.getByText('猫')).toBeInTheDocument();
   });
@@ -182,7 +182,7 @@ describe('HandoutPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Remove this week' }));
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
 
-    await vi.waitFor(() => expect(mockPush).toHaveBeenCalledWith('/group/g1?tab=plan'));
+    await vi.waitFor(() => expect(mockPush).toHaveBeenCalledWith('/group/g1?tab=lessons'));
     expect(removeWeek).toHaveBeenCalledWith('d2');
   });
 

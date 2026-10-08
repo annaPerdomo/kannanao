@@ -45,7 +45,7 @@ describe('AddDeckToGroupDialog', () => {
       <AddDeckToGroupDialog open onClose={onClose} deckId="d1" deckName="JLPT N5" />,
     );
     fireEvent.click(screen.getByText('Morning class'));
-    expect(pushMock).toHaveBeenCalledWith('/group/g1?tab=plan&assign=d1');
+    expect(pushMock).toHaveBeenCalledWith('/group/g1?tab=lessons&assign=d1');
     expect(onClose).toHaveBeenCalled();
   });
 

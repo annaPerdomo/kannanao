@@ -188,7 +188,10 @@ export function KanaCourseBuilder({
             </Button>
           ) : (
             <>
-              <Button variant="contained" onClick={() => router.push(`/group/${groupId}?tab=plan`)}>
+              <Button
+                variant="contained"
+                onClick={() => router.push(`/group/${groupId}?tab=lessons`)}
+              >
                 {t('backToGroupButton')}
               </Button>
               <Button onClick={startOver} sx={{ textTransform: 'none' }}>

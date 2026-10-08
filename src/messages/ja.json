@@ -1124,9 +1124,9 @@
       "assign": "配る",
       "assignAria": "{deck} を配る",
       "emptyHint": "デッキを作って、ここから配りましょう。",
-      "seeAllAssignments": "プランを見る",
+      "seeAllAssignments": "レッスンを見る",
       "makeMaterials": "新しい教材を作る",
-      "loading": "予定を読み込み中..."
+      "loading": "レッスンを読み込んでいます…"
     },
     "memberDetail": {
       "loadingMemberDetails": "メンバーの詳細を読み込み中...",
@@ -1235,7 +1235,7 @@
       "noAttempts": "まだ誰もこのクイズを受けていません。",
       "loadFailed": "クイズの成績を読み込めませんでした",
       "summary": "{total}人中{taken}人が受験・平均{average}%",
-      "noDecksBody": "「プランに追加」からデッキをつくると、ここにクイズの成績が表示されます。",
+      "noDecksBody": "レッスンをつくると、ここにクイズの成績が表示されます。",
       "lastTaken": "最終受験：{date}"
     },
     "goalPicker": {
@@ -1520,22 +1520,13 @@
       "showLess": "とじる",
       "quickActionsLabel": "クイックアクション",
       "inviteLearnersTitle": "学習者を招待",
-      "inviteLearnersSubtitle": "リンクまたはQRコードで共有",
-      "addToPlanTitle": "プランに追加",
-      "addToPlanSubtitle": "新しい週・デッキ・かな目標をつくる"
+      "inviteLearnersSubtitle": "リンクまたはQRコードで共有"
     },
     "dashboardTabs": {
       "today": "今日",
-      "plan": "プラン",
+      "lessons": "レッスン",
       "learners": "学習者",
       "words": "単語"
-    },
-    "planTab": {
-      "planHeading": "プラン",
-      "handOutDeckButton": "デッキを配る",
-      "kanaGoalsHeading": "かな目標",
-      "emptyBody": "まだ何も計画されていません。最初の週を追加しましょう。",
-      "addToPlanButton": "プランに追加"
     },
     "groupsPage": {
       "loadingGroups": "グループを読み込み中...",
@@ -1888,16 +1879,9 @@
       "lowSample": "まだ練習が足りません"
     },
     "addToPlan": {
-      "dialogTitle": "プランに追加",
-      "chooseCta": "選ぶ",
-      "startCta": "はじめる",
       "lesson": {
-        "title": "AIでレッスンを作る",
+        "title": "AIで複数レッスンを計画",
         "description": "テーマや教科書のページ、PDFから単語・例文・週ごとの予定を作ります。"
-      },
-      "decks": {
-        "title": "持っているデッキを使う",
-        "description": "すでに作ったデッキを配ります。"
       },
       "quizlet": {
         "title": "Quizletからインポート",
@@ -1907,15 +1891,9 @@
         "title": "かな講座",
         "description": "ひらがな・カタカナを週に数行ずつ。"
       },
-      "blank": {
-        "title": "白紙のデッキから作る",
-        "description": "自分で単語を入力します。"
-      },
       "groupNotFoundTitle": "グループが見つかりません",
       "groupNotFoundBody": "削除されたか、アクセスできない可能性があります。",
-      "backToGroupsButton": "グループ一覧へ",
-      "savedNotHandedOut": "デッキには保存されました — まだ配布はされていません。",
-      "handItOutButton": "配布する"
+      "backToGroupsButton": "グループ一覧へ"
     },
     "addDeckToGroup": {
       "dialogTitle": "グループに追加",
@@ -1923,6 +1901,31 @@
       "openGroupAria": "{name}に配る",
       "emptyMessage": "まずグループを作ると、このデッキを配れるようになります。",
       "makeGroupButton": "グループを作る"
+    },
+    "lessonsTab": {
+      "heading": "レッスン",
+      "emptyBody": "まだレッスンがありません。最初のレッスンをつくりましょう。",
+      "newLessonButton": "新しいレッスン",
+      "kanaGoalsHeading": "かな目標",
+      "moreWays": "ほかの追加方法",
+      "moreWaysPlanAi": "AIで複数レッスンを計画",
+      "moreWaysDeck": "作ったデッキを配る",
+      "moreWaysQuizlet": "Quizletから取り込む",
+      "moreWaysKana": "かなコース"
+    },
+    "quickActions": {
+      "newLessonTitle": "新しいレッスン",
+      "newLessonSubtitle": "単語・文字・期限。AIでも手作業でも"
+    },
+    "newLesson": {
+      "title": "新しいレッスン",
+      "subtitle": "まず名前をつけて、AIや手作業で中身をつくり、準備ができたら配ります。",
+      "titlePlaceholder": "第3週 — レストランで",
+      "unitLabel": "単元",
+      "newUnit": "新しい単元…",
+      "unitTitleLabel": "単元名",
+      "create": "レッスンをつくる",
+      "hint": "つぎは、トピック・教科書のページ・PDF・Quizlet・自分のデッキから単語と、必要な文字を追加します。"
     }
   },
   "Materials": {
@@ -1930,7 +1933,7 @@
       "loadError": "レッスンを読み込めませんでした。少し待ってからもう一度お試しください。",
       "emptyTitle": "このグループにはまだ配布したものがありません",
       "emptyBody": "レッスンを作ると、ここに週ごとに表示されます。",
-      "buildButton": "レッスンを作る",
+      "buildButton": "新しいレッスン",
       "untitledUnit": "{date}のレッスン",
       "weekLabel": "第{n}週",
       "weekOfTotal": "全{total}週中 第{current}週",
@@ -2004,12 +2007,15 @@
         "count": "{count}語",
         "inThisWeek": "この週の単語（{count}語）",
         "seeLearners": "学習者の様子を見る"
-      }
+      },
+      "draftHint": "まだ配っていません",
+      "soundsLabel": "文字",
+      "draftCount": "下書き{count}件"
     },
     "handoutPage": {
       "metaTitle": "配布物",
-      "backToPlan": "プランに戻る",
-      "backToPlanIn": "プランに戻る・{group}",
+      "backToPlan": "レッスンに戻る",
+      "backToPlanIn": "レッスンに戻る・{group}",
       "notFound": "このグループには配布されていません。削除された可能性があります。",
       "noDueDate": "締切なし",
       "goal": "ゴール：{goal}",
