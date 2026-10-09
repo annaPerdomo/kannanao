@@ -2055,6 +2055,34 @@
       "removeLooseConfirm": "このグループへの配布をやめますか？学習者の完了記録は削除されますが、単語の練習記録は残り、デッキはそのままデッキ一覧に残ります。",
       "wordsTitle": "{count}語",
       "addWords": "単語を追加",
+      "addWordsMenu": {
+        "topic": { "label": "トピックからAIで", "secondary": "レッスンの内容から単語と文を作る" },
+        "text": { "label": "教科書のページから", "secondary": "本文を貼ると、AIが単語を選ぶ" },
+        "pdf": { "label": "PDFから", "secondary": "文書から単語を取り出す" },
+        "list": { "label": "単語リストから", "secondary": "単語を入力すると、AIが残りを埋める" },
+        "decks": { "label": "自分のデッキから", "secondary": "ほかのデッキからコピーする" },
+        "quizlet": { "label": "Quizletから", "secondary": "すでに作ったセットを取り込む" },
+        "type": { "label": "1語を入力", "secondary": "単語を1つだけ手で追加する" }
+      },
+      "aiWords": {
+        "topicTitle": "トピックから単語",
+        "textTitle": "教科書のページから単語",
+        "topicPlaceholder": "レストランでの注文、ていねいな言い方、人の数え方",
+        "textPlaceholder": "ページの本文をここに貼り付け",
+        "howMany": "単語の数",
+        "levelLabel": "レベル",
+        "knownWordsHint": "このグループがすでに持っている単語は自動的に省かれます。",
+        "generate": "単語をつくる",
+        "aiWorking": "単語をつくっています…",
+        "aiBusy": "AIが混み合っています。1分ほどしてからもう一度。",
+        "warmUpNote": "すでに知っている{count}語を省きました。"
+      },
+      "quizletWords": {
+        "title": "Quizletから単語",
+        "empty": "取り込み待ちのQuizletセットがありません。まずQuizletでブックマークレットを使ってください。",
+        "setup": "ブックマークレットを設定"
+      },
+      "fillWithAi": "AIで埋める",
       "wordsSharedHint": "単語の変更は、このデッキを使っているすべての場所に反映されます。",
       "wordSaveError": "単語の変更を保存できませんでした。もう一度お試しください。",
       "wordSaved": "単語を保存しました",

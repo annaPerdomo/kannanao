@@ -51,6 +51,7 @@ function setup(overrides: Partial<Parameters<typeof HandoutWordsPanel>[0]> = {})
   const onSaved = vi.fn();
   renderWithProviders(
     <HandoutWordsPanel
+      groupId="g1"
       deckId="d1"
       data={data()}
       loading={false}

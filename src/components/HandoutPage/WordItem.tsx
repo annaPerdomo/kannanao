@@ -12,12 +12,16 @@ import { memo, type ReactNode } from 'react';
 import FuriganaText from '@/components/FuriganaText';
 import type { Flashcard } from '@/types/flashcard';
 
+import { FillWithAiButton } from './FillWithAiButton';
+
 interface WordItemProps {
   card: Flashcard;
   insight?: ReactNode;
   disabled?: boolean;
   onEdit: (card: Flashcard) => void;
   onRemove: (card: Flashcard) => void;
+  onFilled: (card: Flashcard) => void;
+  onFillError: (message: string) => void;
 }
 
 export const WordItem = memo(function WordItem({
@@ -26,9 +30,12 @@ export const WordItem = memo(function WordItem({
   disabled,
   onEdit,
   onRemove,
+  onFilled,
+  onFillError,
 }: WordItemProps) {
   const t = useTranslations('Materials.handoutPage');
   const theme = useTheme();
+  const missingField = !card.reading.trim() || !card.meaning.trim() || !card.example_jp.trim();
 
   return (
     <Stack direction="row" sx={{ py: 1.25, gap: 1.5, alignItems: 'flex-start' }}>
@@ -83,6 +90,14 @@ export const WordItem = memo(function WordItem({
         )}
       </Box>
       <Stack direction="row" sx={{ flexShrink: 0 }}>
+        {missingField && (
+          <FillWithAiButton
+            card={card}
+            disabled={disabled}
+            onFilled={onFilled}
+            onError={onFillError}
+          />
+        )}
         <IconButton
           size="small"
           aria-label={t('editWord', { word: card.word })}

@@ -1,5 +1,4 @@
 'use client';
-import AddIcon from '@mui/icons-material/Add';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -17,20 +16,24 @@ import { StyledDialog } from '@/components/StyledDialog';
 import type { useHandoutWordEdits } from '@/hooks/useHandoutWordEdits';
 import type { HandoutWords } from '@/hooks/useHandoutWords';
 import { type GroupWordInsight, summarizeGroupWords } from '@/lib/handoutWords';
+import { DEFAULT_LEVEL, dominantLevel } from '@/lib/lessonPrompts';
 import type { Flashcard } from '@/types/flashcard';
 
 import { AddWordsFlow } from './AddWordsFlow';
-import { matchesFilter, WORD_FILTERS, type WordFilter } from './constants';
+import { AddWordsMenu, type AddWordsSource } from './AddWordsMenu';
+import { matchesFilter, type ToastSeverity, WORD_FILTERS, type WordFilter } from './constants';
 import { WordItem } from './WordItem';
 
 interface HandoutWordsPanelProps {
+  groupId: string;
   deckId: string;
   data: HandoutWords | null;
   loading: boolean;
   error: string | null;
   edits: ReturnType<typeof useHandoutWordEdits>;
-  onSaved: (message: string) => void;
+  onSaved: (message: string, severity?: ToastSeverity) => void;
   isDraft?: boolean;
+  defaultGoal?: string;
 }
 
 function InsightChips({
@@ -69,6 +72,7 @@ function InsightChips({
 }
 
 export function HandoutWordsPanel({
+  groupId,
   deckId,
   data,
   loading,
@@ -76,16 +80,21 @@ export function HandoutWordsPanel({
   edits,
   onSaved,
   isDraft = false,
+  defaultGoal,
 }: HandoutWordsPanelProps) {
   const t = useTranslations('Materials.handoutPage');
   const tDetail = useTranslations('Group.handoutDetail');
   const [filter, setFilter] = useState<WordFilter>('all');
   const [editing, setEditing] = useState<Flashcard | null>(null);
   const [removing, setRemoving] = useState<Flashcard | null>(null);
-  const [adding, setAdding] = useState(false);
+  const [activeSource, setActiveSource] = useState<AddWordsSource | null>(null);
 
   const learnerCount = data?.learnerCount ?? 0;
   const words = useMemo(() => data?.words ?? [], [data]);
+  const level = useMemo(
+    () => dominantLevel(words.map((w) => w.card.jlptLevel)) ?? DEFAULT_LEVEL,
+    [words],
+  );
   const counts = useMemo(() => {
     const result = {} as Record<WordFilter, number>;
     for (const f of WORD_FILTERS) {
@@ -100,6 +109,20 @@ export function HandoutWordsPanel({
 
   const handleEdit = useCallback((card: Flashcard) => setEditing(card), []);
   const handleRemove = useCallback((card: Flashcard) => setRemoving(card), []);
+
+  const handleFilled = useCallback(
+    async (card: Flashcard) => {
+      if (await edits.updateWord(card)) onSaved(t('wordSaved'));
+    },
+    [edits, onSaved, t],
+  );
+
+  const handleFilledCard = useCallback(
+    (card: Flashcard) => void handleFilled(card),
+    [handleFilled],
+  );
+
+  const handleFillError = useCallback((message: string) => onSaved(message, 'error'), [onSaved]);
 
   const confirmRemove = async () => {
     if (!removing) return;
@@ -130,18 +153,7 @@ export function HandoutWordsPanel({
   return (
     <SectionCard
       title={t('wordsTitle', { count: words.length })}
-      action={
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={() => setAdding(true)}
-          disabled={edits.saving || !data}
-          sx={{ textTransform: 'none', fontWeight: 700 }}
-        >
-          {t('addWords')}
-        </Button>
-      }
+      action={<AddWordsMenu disabled={edits.saving || !data} onSelect={setActiveSource} />}
     >
       {summary && (
         <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: 'text.primary' }}>
@@ -204,6 +216,8 @@ export function HandoutWordsPanel({
               disabled={edits.saving}
               onEdit={handleEdit}
               onRemove={handleRemove}
+              onFilled={handleFilledCard}
+              onFillError={handleFillError}
               insight={
                 learnerCount > 0 ? (
                   <InsightChips insight={insight} learnerCount={learnerCount} />
@@ -249,11 +263,15 @@ export function HandoutWordsPanel({
       </StyledDialog>
 
       <AddWordsFlow
-        open={adding}
-        onClose={() => setAdding(false)}
+        activeSource={activeSource}
+        onClose={() => setActiveSource(null)}
+        groupId={groupId}
         deckId={deckId}
+        defaultLevel={level}
+        defaultGoal={defaultGoal}
         onAdd={handleAdd}
         onCopy={handleCopy}
+        onInfo={onSaved}
       />
     </SectionCard>
   );

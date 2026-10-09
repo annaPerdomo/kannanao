@@ -19,3 +19,5 @@ export interface ViewMember {
   id: string;
   name: string;
 }
+
+export type ToastSeverity = 'success' | 'error' | 'warning' | 'info';

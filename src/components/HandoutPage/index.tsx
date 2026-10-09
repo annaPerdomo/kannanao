@@ -27,7 +27,7 @@ import { handoutPagePath, locateWeek } from '@/lib/lessonUnits';
 import { LAYOUT } from '@/theme';
 import type { HandOutLessonResult, HandoutPatch } from '@/types/lessonUnit';
 
-import type { ViewMember } from './constants';
+import type { ToastSeverity, ViewMember } from './constants';
 import { DraftBanner } from './DraftBanner';
 import { HandOutDialog } from './HandOutDialog';
 import { HandoutHeader } from './HandoutHeader';
@@ -52,7 +52,7 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
   const [viewMember, setViewMember] = useState<ViewMember | null>(null);
   const [shiftOpen, setShiftOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [toastSeverity, setToastSeverity] = useState<'success' | 'error' | 'warning'>('success');
+  const [toastSeverity, setToastSeverity] = useState<ToastSeverity>('success');
   const [leaving, setLeaving] = useState(false);
   const [assigningId, setAssigningId] = useState<string | null>(null);
   const [handOutOpen, setHandOutOpen] = useState(false);
@@ -77,8 +77,8 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
     document.getElementById('handout-words')?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  const showToast = (message: string) => {
-    setToastSeverity('success');
+  const showToast = (message: string, severity: ToastSeverity = 'success') => {
+    setToastSeverity(severity);
     setToast(message);
   };
 

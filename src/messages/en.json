@@ -2055,6 +2055,40 @@
       "removeLooseConfirm": "Stop handing this out to the group? Learners' finished marks for it are removed. Their word practice is kept, and the deck stays in your decks.",
       "wordsTitle": "{count, plural, one {# word} other {# words}}",
       "addWords": "Add words",
+      "addWordsMenu": {
+        "topic": {
+          "label": "From a topic with AI",
+          "secondary": "Describe the lesson, get words and sentences"
+        },
+        "text": {
+          "label": "From a textbook page",
+          "secondary": "Paste the page, AI picks the words"
+        },
+        "pdf": { "label": "From a PDF", "secondary": "Extract vocabulary from a document" },
+        "list": { "label": "From a word list", "secondary": "Type words, AI fills in the rest" },
+        "decks": { "label": "From my decks", "secondary": "Copy from your other decks" },
+        "quizlet": { "label": "From Quizlet", "secondary": "Bring in a set you've already made" },
+        "type": { "label": "Type one word", "secondary": "Add a single word by hand" }
+      },
+      "aiWords": {
+        "topicTitle": "Words from a topic",
+        "textTitle": "Words from a textbook page",
+        "topicPlaceholder": "Ordering food at a restaurant, polite forms, counters for people",
+        "textPlaceholder": "Paste the page's text here",
+        "howMany": "How many words",
+        "levelLabel": "Level",
+        "knownWordsHint": "Words this group already has are skipped automatically.",
+        "generate": "Generate words",
+        "aiWorking": "Writing your words…",
+        "aiBusy": "AI is busy — try again in a minute.",
+        "warmUpNote": "{count} words were skipped because the group already knows them."
+      },
+      "quizletWords": {
+        "title": "Words from Quizlet",
+        "empty": "No Quizlet sets waiting. Use the bookmarklet on a Quizlet set first.",
+        "setup": "Set up the bookmarklet"
+      },
+      "fillWithAi": "Fill in with AI",
       "wordsSharedHint": "Word changes apply to this deck everywhere it's used.",
       "wordSaveError": "Couldn't save that word change. Try again.",
       "wordSaved": "Word saved",

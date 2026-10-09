@@ -9,10 +9,11 @@ import { Loading } from '@/components/Loading';
 import type { useHandoutWordEdits } from '@/hooks/useHandoutWordEdits';
 import type { HandoutWords } from '@/hooks/useHandoutWords';
 import type { HandoutLearnerSummary } from '@/lib/handoutWords';
+import { goalFromLessonTitle } from '@/lib/lessonAi';
 import type { Flashcard } from '@/types/flashcard';
 import type { HandoutPatch, LessonUnit, LessonUnitWeek } from '@/types/lessonUnit';
 
-import type { ViewMember } from './constants';
+import type { ToastSeverity, ViewMember } from './constants';
 import { HandoutSettings } from './HandoutSettings';
 import { HandoutWordsPanel } from './HandoutWordsPanel';
 import { LearnersPanel } from './LearnersPanel';
@@ -33,7 +34,7 @@ interface HandoutPageBodyProps {
     error: string | null;
   };
   edits: ReturnType<typeof useHandoutWordEdits>;
-  onWordsSaved: (message: string) => void;
+  onWordsSaved: (message: string, severity?: ToastSeverity) => void;
   onSoundsSaved: (message: string) => void;
   onSelectLearner: (learner: HandoutLearnerSummary) => void;
   onAssign: (learner: HandoutLearnerSummary) => void;
@@ -97,6 +98,7 @@ export function HandoutPageBody({
         ) : (
           <>
             <HandoutWordsPanel
+              groupId={groupId}
               deckId={deckId}
               data={words.data}
               loading={words.loading}
@@ -104,6 +106,7 @@ export function HandoutPageBody({
               edits={edits}
               onSaved={onWordsSaved}
               isDraft={isDraft}
+              defaultGoal={goalFromLessonTitle(week.title ?? week.deckName)}
             />
             <SoundsSection
               key={deckId}
