@@ -43,6 +43,8 @@ function week(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
     finishedCount: 0,
     wordCount: 0,
     status: 'current',
+    kanaSets: [],
+    handedOut: true,
     ...overrides,
   };
 }
@@ -109,7 +111,7 @@ describe('LessonLibrary', () => {
     const onBuild = vi.fn();
     renderLibrary({ units: [], loose: [] }, {}, { onBuild });
     expect(screen.getByText('Nothing handed out to this group yet')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /build a lesson/i }));
+    fireEvent.click(screen.getByRole('button', { name: /new lesson/i }));
     expect(onBuild).toHaveBeenCalled();
   });
 

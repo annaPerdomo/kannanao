@@ -8,7 +8,7 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 describe('isGroupDashboardTab', () => {
   it('accepts every known tab key', () => {
     expect(isGroupDashboardTab('today')).toBe(true);
-    expect(isGroupDashboardTab('plan')).toBe(true);
+    expect(isGroupDashboardTab('lessons')).toBe(true);
     expect(isGroupDashboardTab('learners')).toBe(true);
     expect(isGroupDashboardTab('words')).toBe(true);
   });
@@ -25,7 +25,7 @@ describe('TabBar', () => {
     renderWithProviders(<TabBar value="today" onChange={vi.fn()} />);
 
     expect(screen.getByRole('tab', { name: 'Today' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Plan' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Lessons' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Learners' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Words' })).toBeInTheDocument();
   });
@@ -40,7 +40,7 @@ describe('TabBar', () => {
     const onChange = vi.fn();
     renderWithProviders(<TabBar value="today" onChange={onChange} />);
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Plan' }));
-    expect(onChange).toHaveBeenCalledWith('plan');
+    fireEvent.click(screen.getByRole('tab', { name: 'Lessons' }));
+    expect(onChange).toHaveBeenCalledWith('lessons');
   });
 });

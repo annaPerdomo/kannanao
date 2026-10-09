@@ -1,21 +1,14 @@
 'use client';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import Collapse from '@mui/material/Collapse';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useLocale, useTranslations } from 'next-intl';
-import { type KeyboardEvent, useState } from 'react';
+import { useState } from 'react';
 
 import { formatDate } from '@/components/Group/dueDate';
 import { useGoalLabel } from '@/components/Group/useGoalLabel';
@@ -25,6 +18,7 @@ import { loadCards } from '@/lib/supabase';
 import { buildUnitPlanHtml } from '@/lib/unitPlanPrintable';
 import type { LessonUnit, LessonUnitWeek } from '@/types/lessonUnit';
 
+import { UnitCardHeader } from './UnitCardHeader';
 import { WeekRow } from './WeekRow';
 
 const CAN_DO_MAX = 8;
@@ -57,12 +51,10 @@ export function UnitCard({
   const theme = useTheme();
   const { brand } = theme.palette;
   const [expanded, setExpanded] = useState(defaultExpanded);
-  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
-  const [renaming, setRenaming] = useState(false);
-  const [draftTitle, setDraftTitle] = useState('');
   const [printPopupBlocked, setPrintPopupBlocked] = useState(false);
 
   const { current, total, lastFinished } = currentWeekSummary(unit);
+  const draftCount = unit.weeks.filter((w) => w.status === 'draft').length;
   const summary = [
     current != null
       ? t('weekOfTotal', { current, total })
@@ -70,33 +62,13 @@ export function UnitCard({
         ? t('allWeeksDone', { total })
         : null,
     lastFinished ? t('lastWeekFinished', lastFinished) : null,
+    draftCount > 0 ? t('draftCount', { count: draftCount }) : null,
   ]
     .filter((part): part is string => Boolean(part))
     .join(' · ');
 
   const title = unit.title ?? t('untitledUnit', { date: formatDate(unit.createdAt, locale) });
   const canDoNotes = unit.weeks.map((w) => w.note).filter((note): note is string => Boolean(note));
-
-  const startRename = () => {
-    setDraftTitle(unit.title ?? '');
-    setRenaming(true);
-  };
-
-  const commitRename = () => {
-    setRenaming(false);
-    const next = draftTitle.trim();
-    onRenameUnit(next || null);
-  };
-
-  const handleRenameKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      commitRename();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      setRenaming(false);
-    }
-  };
 
   const handlePrintUnit = async () => {
     const win = openBlankPrintWindow();
@@ -160,86 +132,22 @@ export function UnitCard({
         overflow: 'hidden',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: { xs: 1.5, sm: 2 } }}>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          {renaming ? (
-            <TextField
-              autoFocus
-              size="small"
-              value={draftTitle}
-              onChange={(e) => setDraftTitle(e.target.value)}
-              onKeyDown={handleRenameKeyDown}
-              slotProps={{ htmlInput: { maxLength: 80 } }}
-              sx={{ maxWidth: 260 }}
-            />
-          ) : (
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
-              <Typography
-                component="h3"
-                sx={{ fontWeight: 800, fontSize: '0.95rem', color: 'text.primary' }}
-                noWrap
-              >
-                {title}
-              </Typography>
-              {unit.level && (
-                <Chip
-                  size="small"
-                  label={unit.level}
-                  sx={{ fontWeight: 700, bgcolor: alpha(brand[300], 0.25), color: brand[800] }}
-                />
-              )}
-            </Stack>
-          )}
-          {summary && (
+      <UnitCardHeader
+        title={title}
+        level={unit.level}
+        subtitle={
+          summary && (
             <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', mt: 0.25 }}>
               {summary}
             </Typography>
-          )}
-        </Box>
-        <IconButton
-          aria-label={t('unitMenu', { title })}
-          onClick={(e) => setMenuAnchor(e.currentTarget)}
-        >
-          <MoreVertIcon />
-        </IconButton>
-        <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
-          <MenuItem
-            onClick={() => {
-              setMenuAnchor(null);
-              startRename();
-            }}
-          >
-            {t('rename')}
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              setMenuAnchor(null);
-              onCopyUnit();
-            }}
-          >
-            {t('copyUnit')}
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              setMenuAnchor(null);
-              void handlePrintUnit();
-            }}
-          >
-            {t('printPlan')}
-          </MenuItem>
-        </Menu>
-        <IconButton
-          aria-label={expanded ? t('hideWeeks') : t('showWeeks')}
-          aria-expanded={expanded}
-          onClick={() => setExpanded((v) => !v)}
-          sx={{
-            transform: expanded ? 'rotate(180deg)' : 'none',
-            transition: 'transform 0.15s ease',
-          }}
-        >
-          <ExpandMoreIcon />
-        </IconButton>
-      </Box>
+          )
+        }
+        expanded={expanded}
+        onToggleExpanded={() => setExpanded((v) => !v)}
+        onRenameUnit={onRenameUnit}
+        onCopyUnit={onCopyUnit}
+        onPrintUnit={() => void handlePrintUnit()}
+      />
 
       {printPopupBlocked && (
         <Alert severity="warning" sx={{ mx: { xs: 1.5, sm: 2 }, mb: 1.5 }}>

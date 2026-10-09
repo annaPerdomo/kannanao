@@ -7,7 +7,7 @@ export {
   resolveDashboardTab,
 } from './constants';
 export { LearnersTab } from './LearnersTab';
-export { PlanTab } from './PlanTab';
+export { LessonsTab } from './LessonsTab';
 export { TabBar } from './TabBar';
 export { TabContent } from './TabContent';
 export { TodayTab } from './TodayTab';

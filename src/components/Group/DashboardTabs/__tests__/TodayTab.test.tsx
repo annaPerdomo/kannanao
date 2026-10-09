@@ -60,11 +60,11 @@ describe('TodayTab', () => {
     expect(onViewPlan).not.toHaveBeenCalled();
   });
 
-  it('calls onViewPlan, not onBuild, when "See the plan" is clicked', () => {
+  it('calls onViewPlan, not onBuild, when "See lessons" is clicked', () => {
     const onBuild = vi.fn();
     const onViewPlan = vi.fn();
     renderWithProviders(<TodayTab {...baseProps({ onBuild, onViewPlan })} />);
-    fireEvent.click(screen.getByText('See the plan'));
+    fireEvent.click(screen.getByText('See lessons'));
     expect(onViewPlan).toHaveBeenCalled();
     expect(onBuild).not.toHaveBeenCalled();
   });

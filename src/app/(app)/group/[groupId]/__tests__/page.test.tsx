@@ -147,3 +147,26 @@ describe('GroupDashboardPage — ?assign=', () => {
     expect(replaceMock).not.toHaveBeenCalled();
   });
 });
+
+describe('GroupDashboardPage — ?new=1', () => {
+  it('opens the new-lesson dialog and strips the param', () => {
+    searchParams = new URLSearchParams('tab=lessons&new=1');
+    renderWithProviders(<GroupDashboardPage />);
+
+    expect(
+      screen.getByText("Name it now, fill it in with AI or by hand, hand it out when it's ready."),
+    ).toBeInTheDocument();
+    expect(replaceMock).toHaveBeenCalledWith('/group/g1?tab=lessons', { scroll: false });
+  });
+
+  it('does nothing when there is no new param', () => {
+    searchParams = new URLSearchParams();
+    renderWithProviders(<GroupDashboardPage />);
+
+    expect(
+      screen.queryByText(
+        "Name it now, fill it in with AI or by hand, hand it out when it's ready.",
+      ),
+    ).not.toBeInTheDocument();
+  });
+});

@@ -9,7 +9,7 @@ import { sb } from '@/lib/supabase';
 import type { HandoutPatch, LessonLibrary, LessonUnitWeek } from '@/types/lessonUnit';
 
 export const LESSON_LIBRARY_CACHE_PREFIX = '/api/group/lessons';
-const ASSIGNMENTS_CACHE_PREFIX = '/api/group/assignments';
+export const ASSIGNMENTS_CACHE_PREFIX = '/api/group/assignments';
 
 export type AddWeekResult = 'ok' | 'already_in_unit' | 'error';
 

@@ -1124,9 +1124,9 @@
       "assign": "Hand out",
       "assignAria": "Hand out {deck}",
       "emptyHint": "Make a deck, then hand it out here.",
-      "seeAllAssignments": "See the plan",
+      "seeAllAssignments": "See lessons",
       "makeMaterials": "Make new materials",
-      "loading": "Loading your plan..."
+      "loading": "Loading your lessons..."
     },
     "memberDetail": {
       "loadingMemberDetails": "Loading member details...",
@@ -1235,7 +1235,7 @@
       "noAttempts": "No one has taken this quiz yet.",
       "loadFailed": "Failed to load quiz scores",
       "summary": "{taken} of {total} have taken it · average {average}%",
-      "noDecksBody": "Make a deck from \"Add to plan\" to see quiz scores here.",
+      "noDecksBody": "Make a lesson to see quiz scores here.",
       "lastTaken": "Last taken {date}"
     },
     "goalPicker": {
@@ -1520,22 +1520,13 @@
       "showLess": "Show less",
       "quickActionsLabel": "Quick actions",
       "inviteLearnersTitle": "Invite learners",
-      "inviteLearnersSubtitle": "Share link or QR",
-      "addToPlanTitle": "Add to plan",
-      "addToPlanSubtitle": "Build a new week, deck, or kana goal"
+      "inviteLearnersSubtitle": "Share link or QR"
     },
     "dashboardTabs": {
       "today": "Today",
-      "plan": "Plan",
+      "lessons": "Lessons",
       "learners": "Learners",
       "words": "Words"
-    },
-    "planTab": {
-      "planHeading": "Plan",
-      "handOutDeckButton": "Hand out a deck",
-      "kanaGoalsHeading": "Kana goals",
-      "emptyBody": "Nothing planned yet — add your first week.",
-      "addToPlanButton": "Add to plan"
     },
     "groupsPage": {
       "loadingGroups": "Loading groups...",
@@ -1888,16 +1879,9 @@
       "lowSample": "Not enough practice yet"
     },
     "addToPlan": {
-      "dialogTitle": "Add to plan",
-      "chooseCta": "Choose",
-      "startCta": "Start",
       "lesson": {
-        "title": "Make a lesson with AI",
+        "title": "Plan several lessons with AI",
         "description": "Words, example sentences and a weekly schedule from a topic, a textbook page or a PDF."
-      },
-      "decks": {
-        "title": "Use one of my decks",
-        "description": "Hand out a deck you already made."
       },
       "quizlet": {
         "title": "Import from Quizlet",
@@ -1907,15 +1891,9 @@
         "title": "Kana course",
         "description": "Hiragana and katakana, a few rows a week."
       },
-      "blank": {
-        "title": "Start a blank deck",
-        "description": "Type the words in yourself."
-      },
       "groupNotFoundTitle": "Can't find that group",
       "groupNotFoundBody": "It may have been deleted, or you may not have access to it.",
-      "backToGroupsButton": "Back to your groups",
-      "savedNotHandedOut": "Saved to your decks — not handed out yet.",
-      "handItOutButton": "Hand it out"
+      "backToGroupsButton": "Back to your groups"
     },
     "addDeckToGroup": {
       "dialogTitle": "Add to a group",
@@ -1923,6 +1901,31 @@
       "openGroupAria": "Hand out to {name}",
       "emptyMessage": "Make a group first, then you can hand this deck out.",
       "makeGroupButton": "Make a group"
+    },
+    "lessonsTab": {
+      "heading": "Lessons",
+      "emptyBody": "No lessons yet — make your first one.",
+      "newLessonButton": "New lesson",
+      "kanaGoalsHeading": "Kana goals",
+      "moreWays": "More ways to add",
+      "moreWaysPlanAi": "Plan several lessons with AI",
+      "moreWaysDeck": "Hand out a deck I made",
+      "moreWaysQuizlet": "Import from Quizlet",
+      "moreWaysKana": "Kana course"
+    },
+    "quickActions": {
+      "newLessonTitle": "New lesson",
+      "newLessonSubtitle": "Words, sounds and a due date — with AI or by hand"
+    },
+    "newLesson": {
+      "title": "New lesson",
+      "subtitle": "Name it now, fill it in with AI or by hand, hand it out when it's ready.",
+      "titlePlaceholder": "Week 3 — At the restaurant",
+      "unitLabel": "Unit",
+      "newUnit": "New unit…",
+      "unitTitleLabel": "Unit name",
+      "create": "Create lesson",
+      "hint": "Next: add words from a topic, a textbook page, a PDF, Quizlet or your decks, and the sounds they need."
     }
   },
   "Materials": {
@@ -1930,7 +1933,7 @@
       "loadError": "Couldn't load your lessons. Try again in a moment.",
       "emptyTitle": "Nothing handed out to this group yet",
       "emptyBody": "Build a lesson and it will show up here, week by week.",
-      "buildButton": "Build a lesson",
+      "buildButton": "New lesson",
       "untitledUnit": "Lesson from {date}",
       "weekLabel": "Week {n}",
       "weekOfTotal": "Week {current} of {total}",
@@ -1938,6 +1941,7 @@
       "lastWeekFinished": "{finished} of {learners} finished last week",
       "opens": "Opens {date}",
       "due": "Due {date}",
+      "statusDraft": "Draft",
       "statusUpcoming": "Coming up",
       "statusCurrent": "This week",
       "statusPast": "Past due date",
@@ -2003,23 +2007,88 @@
         "count": "{count, plural, one {# word} other {# words}}",
         "inThisWeek": "Words in this week ({count})",
         "seeLearners": "See how learners are doing"
-      }
+      },
+      "draftHint": "Not handed out yet",
+      "soundsLabel": "Sounds",
+      "draftCount": "{count, plural, one {# draft} other {# drafts}}"
     },
     "handoutPage": {
       "metaTitle": "Handout",
-      "backToPlan": "Back to plan",
-      "backToPlanIn": "Back to plan · {group}",
+      "backToPlan": "Back to lessons",
+      "backToPlanIn": "Back to lessons · {group}",
       "notFound": "This isn't handed out to this group anymore. It may have been removed.",
       "noDueDate": "No due date",
       "goal": "Goal: {goal}",
       "canDo": "Learners will be able to: {note}",
       "openDeck": "Open deck",
+      "draftTitle": "This lesson is a draft",
+      "draftBody": "Add words and sounds, then hand it out to {count, plural, one {# learner} other {# learners}}.",
+      "handOutButton": "Hand out",
+      "needsWords": "Add at least one word first",
+      "deleteDraft": "Delete draft",
+      "deleteDraftConfirm": "Delete this draft? It hasn't been handed out yet, so nothing is lost.",
+      "handOutTitle": "Hand out this lesson",
+      "handOutSubtitle": "{group} · {count} words",
+      "dueDateLabel": "Due date",
+      "availableOnLabel": "Opens on",
+      "withSentences": "Add practice sentences with AI",
+      "withSentencesHint": "Learners see one short sentence per word in Practice.",
+      "soundsIncluded": "Sounds included: {list}",
+      "handOutConfirm": "Hand out to {count, plural, one {# learner} other {# learners}}",
+      "handedOutToast": "Handed out! Learners will see it in Practice.",
+      "kanaFailedToast": "Handed out, but some sounds could not be added: {list}",
+      "sentencesFailedToast": "Handed out, but practice sentences couldn't be added. You can add them from the deck page.",
+      "soundsTitle": "Sounds in this lesson",
+      "soundsEmpty": "No sounds picked yet.",
+      "soundsSuggested": "These rows appear in your words:",
+      "soundsMax": "Up to {max} rows per lesson",
+      "soundsAddAll": "Add all",
+      "soundsBrowse": "More rows",
+      "soundsLiveHint": "Changes reach learners who haven't finished that row yet.",
+      "soundsSaved": "Sounds updated",
+      "soundsHiragana": "Hiragana",
+      "soundsKatakana": "Katakana",
+      "wordsEmptyDraft": "No words yet. Add some from a topic, a PDF, Quizlet or your decks.",
       "settingsTitle": "Schedule & goal",
       "discardChanges": "Discard changes",
       "removeLoose": "Stop handing this out",
       "removeLooseConfirm": "Stop handing this out to the group? Learners' finished marks for it are removed. Their word practice is kept, and the deck stays in your decks.",
       "wordsTitle": "{count, plural, one {# word} other {# words}}",
       "addWords": "Add words",
+      "addWordsMenu": {
+        "topic": {
+          "label": "From a topic with AI",
+          "secondary": "Describe the lesson, get words and sentences"
+        },
+        "text": {
+          "label": "From a textbook page",
+          "secondary": "Paste the page, AI picks the words"
+        },
+        "pdf": { "label": "From a PDF", "secondary": "Extract vocabulary from a document" },
+        "list": { "label": "From a word list", "secondary": "Type words, AI fills in the rest" },
+        "decks": { "label": "From my decks", "secondary": "Copy from your other decks" },
+        "quizlet": { "label": "From Quizlet", "secondary": "Bring in a set you've already made" },
+        "type": { "label": "Type one word", "secondary": "Add a single word by hand" }
+      },
+      "aiWords": {
+        "topicTitle": "Words from a topic",
+        "textTitle": "Words from a textbook page",
+        "topicPlaceholder": "Ordering food at a restaurant, polite forms, counters for people",
+        "textPlaceholder": "Paste the page's text here",
+        "howMany": "How many words",
+        "levelLabel": "Level",
+        "knownWordsHint": "Words this group already has are skipped automatically.",
+        "generate": "Generate words",
+        "aiWorking": "Writing your words…",
+        "aiBusy": "AI is busy — try again in a minute.",
+        "warmUpNote": "{count} words were skipped because the group already knows them."
+      },
+      "quizletWords": {
+        "title": "Words from Quizlet",
+        "empty": "No Quizlet sets waiting. Use the bookmarklet on a Quizlet set first.",
+        "setup": "Set up the bookmarklet"
+      },
+      "fillWithAi": "Fill in with AI",
       "wordsSharedHint": "Word changes apply to this deck everywhere it's used.",
       "wordSaveError": "Couldn't save that word change. Try again.",
       "wordSaved": "Word saved",

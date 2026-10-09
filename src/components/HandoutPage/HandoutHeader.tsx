@@ -32,6 +32,7 @@ interface HandoutHeaderProps {
 }
 
 const STATUS_KEY: Record<LessonWeekStatus, string> = {
+  draft: 'statusDraft',
   upcoming: 'statusUpcoming',
   current: 'statusCurrent',
   past: 'statusPast',
@@ -85,13 +86,22 @@ export function HandoutHeader({ located, hrefFor, cards }: HandoutHeaderProps) {
     setPopupBlocked(!openPrintWindow(html));
   };
 
+  const isDraft = week.status === 'draft';
   const facts = [
-    week.availableOn ? tLib('opens', { date: formatDate(week.availableOn, locale) }) : null,
-    week.dueDate ? tLib('due', { date: formatDate(week.dueDate, locale) }) : t('noDueDate'),
+    !isDraft && week.availableOn
+      ? tLib('opens', { date: formatDate(week.availableOn, locale) })
+      : null,
+    !isDraft
+      ? week.dueDate
+        ? tLib('due', { date: formatDate(week.dueDate, locale) })
+        : t('noDueDate')
+      : null,
     goal ? t('goal', { goal }) : null,
-    week.learnerCount > 0
-      ? tLib('finishedCount', { finished: week.finishedCount, learners: week.learnerCount })
-      : tLib('waitingForLearners'),
+    !isDraft
+      ? week.learnerCount > 0
+        ? tLib('finishedCount', { finished: week.finishedCount, learners: week.learnerCount })
+        : tLib('waitingForLearners')
+      : null,
   ].filter((part): part is string => Boolean(part));
 
   return (

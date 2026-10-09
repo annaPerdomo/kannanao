@@ -28,6 +28,8 @@ function unit(overrides: Partial<LessonUnit> = {}): LessonUnit {
         finishedCount: 0,
         wordCount: 0,
         status: 'past',
+        kanaSets: [],
+        handedOut: true,
       },
     ],
     ...overrides,

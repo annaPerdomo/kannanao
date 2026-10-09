@@ -11,8 +11,6 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { LearnerWordList } from '@/components/Group/HandoutDetailDialog/LearnerWordList';
-import { SectionCard } from '@/components/Group/SectionCard';
 import { ShiftDialog } from '@/components/LessonLibrary/ShiftDialog';
 import { Loading } from '@/components/Loading';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,15 +22,16 @@ import { useHandoutWords } from '@/hooks/useHandoutWords';
 import { LESSON_LIBRARY_CACHE_PREFIX, useLessonLibrary } from '@/hooks/useLessonLibrary';
 import { invalidateApiCache } from '@/lib/apiCache';
 import type { HandoutLearnerSummary } from '@/lib/handoutWords';
+import { kanaSetLabel } from '@/lib/lessonKana';
 import { handoutPagePath, locateWeek } from '@/lib/lessonUnits';
 import { LAYOUT } from '@/theme';
-import type { HandoutPatch } from '@/types/lessonUnit';
+import type { HandOutLessonResult, HandoutPatch } from '@/types/lessonUnit';
 
-import type { ViewMember } from './constants';
+import type { ToastSeverity, ViewMember } from './constants';
+import { DraftBanner } from './DraftBanner';
+import { HandOutDialog } from './HandOutDialog';
 import { HandoutHeader } from './HandoutHeader';
-import { HandoutSettings } from './HandoutSettings';
-import { HandoutWordsPanel } from './HandoutWordsPanel';
-import { LearnersPanel } from './LearnersPanel';
+import { HandoutPageBody } from './HandoutPageBody';
 
 interface HandoutPageProps {
   groupId: string;
@@ -53,11 +52,12 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
   const [viewMember, setViewMember] = useState<ViewMember | null>(null);
   const [shiftOpen, setShiftOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [toastSeverity, setToastSeverity] = useState<'success' | 'error'>('success');
+  const [toastSeverity, setToastSeverity] = useState<ToastSeverity>('success');
   const [leaving, setLeaving] = useState(false);
   const [assigningId, setAssigningId] = useState<string | null>(null);
+  const [handOutOpen, setHandOutOpen] = useState(false);
 
-  const backHref = `/group/${groupId}?tab=plan`;
+  const backHref = `/group/${groupId}?tab=lessons`;
   const groupName = groups.find((g) => g.id === groupId)?.name ?? '';
   const located = useMemo(() => locateWeek(library.library, deckId), [library.library, deckId]);
   const cards = useMemo(() => words.data?.words.map((w) => w.card) ?? [], [words.data]);
@@ -77,9 +77,29 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
     document.getElementById('handout-words')?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  const showToast = (message: string) => {
-    setToastSeverity('success');
+  const showToast = (message: string, severity: ToastSeverity = 'success') => {
+    setToastSeverity(severity);
     setToast(message);
+  };
+
+  const handleSoundsSaved = (message: string) => {
+    showToast(message);
+    void library.refetch();
+  };
+
+  const handleHandOutDone = async (result: HandOutLessonResult) => {
+    setHandOutOpen(false);
+    if (result.kanaFailed.length > 0) {
+      setToastSeverity('warning');
+      setToast(t('kanaFailedToast', { list: result.kanaFailed.map(kanaSetLabel).join(', ') }));
+    } else if (result.sentences === 'failed') {
+      setToastSeverity('warning');
+      setToast(t('sentencesFailedToast'));
+    } else {
+      showToast(t('handedOutToast'));
+    }
+    await library.refetch();
+    await words.refetch();
   };
 
   const handleSave = async (patch: HandoutPatch) => {
@@ -170,76 +190,48 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
   }
 
   const { week, unit } = located;
+  const isDraft = week.status === 'draft';
+  const learnerCount = words.data?.learners?.length ?? words.data?.learnerCount ?? 0;
 
   return (
     <Container sx={{ py: LAYOUT.pagePy, maxWidth: LAYOUT.contentMaxWidth }}>
       {backButton}
       <HandoutHeader located={located} hrefFor={hrefFor} cards={cards} />
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) 360px' },
-          gap: 2.5,
-          mt: 2.5,
-          alignItems: 'start',
-        }}
-      >
-        <Box id="handout-words" sx={{ scrollMarginTop: 80 }}>
-          {viewMember ? (
-            <SectionCard title={t('learnerViewTitle', { name: viewMember.name })}>
-              <LearnerWordList
-                groupId={groupId}
-                deckId={deckId}
-                memberId={viewMember.id}
-                memberName={viewMember.name}
-                requiredMode={week.requiredMode}
-                onBack={() => setViewMember(null)}
-                scroll={false}
-              />
-            </SectionCard>
-          ) : (
-            <HandoutWordsPanel
-              deckId={deckId}
-              data={words.data}
-              loading={words.loading}
-              error={words.error}
-              edits={edits}
-              onSaved={showToast}
-            />
-          )}
-        </Box>
-
-        <Stack spacing={2.5} sx={{ position: { md: 'sticky' }, top: { md: 88 } }}>
-          {words.data?.learners ? (
-            <LearnersPanel
-              groupId={groupId}
-              learners={words.data.learners}
-              selectedId={viewMember?.id ?? null}
-              onSelect={handleSelectLearner}
-              onAssign={handleAssign}
-              assigningId={assigningId}
-              deckName={week.deckName}
-              onSendEncouragement={sendEncouragement}
-            />
-          ) : (
-            words.loading && (
-              <SectionCard title={t('learnersLoading')}>
-                <Loading />
-              </SectionCard>
-            )
-          )}
-          <HandoutSettings
-            key={deckId}
-            week={week}
-            groupName={groupName}
-            saving={library.saving}
-            onSave={handleSave}
-            onRemove={handleRemove}
-            onShift={unit ? () => setShiftOpen(true) : undefined}
+      {isDraft && (
+        <Box sx={{ mt: 2.5 }}>
+          <DraftBanner
+            learnerCount={learnerCount}
+            canHandOut={cards.length > 0}
+            onHandOut={() => setHandOutOpen(true)}
+            onDelete={handleRemove}
           />
-        </Stack>
-      </Box>
+        </Box>
+      )}
+
+      <HandoutPageBody
+        groupId={groupId}
+        deckId={deckId}
+        week={week}
+        unit={unit}
+        isDraft={isDraft}
+        cards={cards}
+        viewMember={viewMember}
+        onSetViewMember={setViewMember}
+        words={words}
+        edits={edits}
+        onWordsSaved={showToast}
+        onSoundsSaved={handleSoundsSaved}
+        onSelectLearner={handleSelectLearner}
+        onAssign={handleAssign}
+        assigningId={assigningId}
+        onSendEncouragement={sendEncouragement}
+        groupName={groupName}
+        savingSchedule={library.saving}
+        onSaveSchedule={handleSave}
+        onRemoveWeek={handleRemove}
+        onShift={() => setShiftOpen(true)}
+      />
 
       <ShiftDialog
         open={shiftOpen}
@@ -248,6 +240,17 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
         week={week}
         saving={library.saving}
         onShift={handleShift}
+      />
+
+      <HandOutDialog
+        open={handOutOpen}
+        onClose={() => setHandOutOpen(false)}
+        groupId={groupId}
+        deckId={deckId}
+        groupName={groupName}
+        wordCount={cards.length}
+        kanaSets={week.kanaSets}
+        onDone={(result) => void handleHandOutDone(result)}
       />
 
       <Snackbar open={toast != null} autoHideDuration={3000} onClose={() => setToast(null)}>

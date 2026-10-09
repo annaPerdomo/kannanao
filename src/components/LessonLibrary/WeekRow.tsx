@@ -14,6 +14,8 @@ import { useState } from 'react';
 import { formatDate } from '@/components/Group/dueDate';
 import type { LessonUnitWeek, LessonWeekStatus } from '@/types/lessonUnit';
 
+import { WeekKanaChips } from './WeekKanaChips';
+
 interface WeekRowProps {
   week: LessonUnitWeek;
   onOpen: () => void;
@@ -21,6 +23,7 @@ interface WeekRowProps {
 }
 
 const STATUS_KEY: Record<LessonWeekStatus, string> = {
+  draft: 'statusDraft',
   upcoming: 'statusUpcoming',
   current: 'statusCurrent',
   past: 'statusPast',
@@ -33,6 +36,7 @@ export function WeekRow({ week, onOpen, onShift }: WeekRowProps) {
   const { brand, success, warning } = theme.palette;
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
+  const isDraft = week.status === 'draft';
   const dateParts = [
     week.availableOn ? t('opens', { date: formatDate(week.availableOn, locale) }) : null,
     week.dueDate ? t('due', { date: formatDate(week.dueDate, locale) }) : null,
@@ -69,16 +73,23 @@ export function WeekRow({ week, onOpen, onShift }: WeekRowProps) {
           {week.deckEmoji ? `${week.deckEmoji} ` : ''}
           {week.deckName}
         </Typography>
-        {dateParts.length > 0 && (
+        {isDraft ? (
           <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.25 }} noWrap>
-            {dateParts.join(' · ')}
+            {t('draftHint')}
           </Typography>
+        ) : (
+          dateParts.length > 0 && (
+            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.25 }} noWrap>
+              {dateParts.join(' · ')}
+            </Typography>
+          )
         )}
         {week.wordCount > 0 && (
           <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.25 }} noWrap>
             {t('words.count', { count: week.wordCount })}
           </Typography>
         )}
+        <WeekKanaChips kanaSets={week.kanaSets} />
       </Box>
 
       <Chip

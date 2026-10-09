@@ -18,8 +18,22 @@ export function week(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
     finishedCount: 1,
     wordCount: 2,
     status: 'current',
+    kanaSets: [],
+    handedOut: true,
     ...overrides,
   };
+}
+
+export function draftWeek(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
+  return week({
+    dueDate: null,
+    availableOn: null,
+    learnerCount: 0,
+    finishedCount: 0,
+    status: 'draft',
+    handedOut: false,
+    ...overrides,
+  });
 }
 
 export function card(id: string, word = `word-${id}`): Flashcard {

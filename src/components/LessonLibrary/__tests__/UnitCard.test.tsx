@@ -46,6 +46,8 @@ function unit(): LessonUnit {
         finishedCount: 0,
         wordCount: 0,
         status: 'past',
+        kanaSets: [],
+        handedOut: true,
       },
     ],
   };
@@ -58,6 +60,23 @@ const NOOP_PROPS = {
   onAddWeek: vi.fn(),
   onCopyUnit: vi.fn(),
 };
+
+describe('UnitCard draft count', () => {
+  it('shows a draft count next to the week summary when any week is a draft', () => {
+    const base = unit();
+    const withDraft = {
+      ...base,
+      weeks: [...base.weeks, { ...base.weeks[0], deckId: 'd2', week: 2, status: 'draft' as const }],
+    };
+    renderWithProviders(<UnitCard unit={withDraft} groupName="Section A" {...NOOP_PROPS} />);
+    expect(screen.getByText(/1 draft/)).toBeInTheDocument();
+  });
+
+  it('shows no draft count when nothing is a draft', () => {
+    renderWithProviders(<UnitCard unit={unit()} groupName="Section A" {...NOOP_PROPS} />);
+    expect(screen.queryByText(/draft/)).not.toBeInTheDocument();
+  });
+});
 
 async function openPrintMenuItem() {
   fireEvent.click(screen.getByRole('button', { name: /Options for/ }));

@@ -1,4 +1,4 @@
-export const GROUP_DASHBOARD_TABS = ['today', 'plan', 'learners', 'words'] as const;
+export const GROUP_DASHBOARD_TABS = ['today', 'lessons', 'learners', 'words'] as const;
 
 export type GroupDashboardTab = (typeof GROUP_DASHBOARD_TABS)[number];
 
@@ -7,7 +7,8 @@ export const DEFAULT_TAB: GroupDashboardTab = 'today';
 export const LEGACY_TAB_ALIASES: Record<string, GroupDashboardTab> = {
   overview: 'today',
   activity: 'today',
-  assignments: 'plan',
+  plan: 'lessons',
+  assignments: 'lessons',
 };
 
 export function isGroupDashboardTab(value: string | null): value is GroupDashboardTab {

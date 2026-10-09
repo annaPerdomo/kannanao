@@ -180,7 +180,7 @@ export function LessonSetBuilder({
               variant="contained"
               onClick={() => {
                 invalidateApiCache(LESSON_LIBRARY_CACHE_PREFIX);
-                router.push(`/group/${groupId}?tab=plan`);
+                router.push(`/group/${groupId}?tab=lessons`);
               }}
             >
               {t('backToGroupButton')}

@@ -1,15 +1,6 @@
 export { ActivityFeed } from './ActivityFeed';
 export { AddDeckToGroupDialog } from './AddDeckToGroupDialog';
-export {
-  ADD_SOURCE_ROUTES,
-  ADD_SOURCES,
-  AddMaterialPage,
-  type AddSource,
-  type AddToPlanDestination,
-  addToPlanDestination,
-  AddToPlanDialog,
-  isAddSource,
-} from './AddToPlan';
+export { ADD_SOURCE_ROUTES, AddMaterialPage, type AddSource, isAddSource } from './AddToPlan';
 export { AssignmentCard } from './AssignmentCard';
 export { AssignmentGoalPicker } from './AssignmentGoalPicker';
 export { type AssignmentBatch, AssignmentsList } from './AssignmentsList';
@@ -23,7 +14,7 @@ export {
   isGroupDashboardTab,
   LearnersTab,
   LEGACY_TAB_ALIASES,
-  PlanTab,
+  LessonsTab,
   resolveDashboardTab,
   TabBar,
   TabContent,
@@ -54,6 +45,7 @@ export { daysSinceActive, STALE_DAYS } from './memberActivity';
 export { MemberDetail } from './MemberDetail';
 export { MessageBubble, TypingBubble } from './MessageThread';
 export { NeedsAttention } from './NeedsAttention';
+export { NewLessonDialog } from './NewLessonDialog';
 export { PracticeStrength } from './PracticeStrength';
 export { QuizScoresPanel } from './QuizScoresPanel';
 export { ReteachNext } from './ReteachNext';

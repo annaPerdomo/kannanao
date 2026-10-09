@@ -39,6 +39,8 @@ function week(overrides: Partial<LessonLibraryData['units'][number]['weeks'][num
     finishedCount: 0,
     wordCount: 0,
     status: 'current' as const,
+    kanaSets: [],
+    handedOut: true,
     ...overrides,
   };
 }
