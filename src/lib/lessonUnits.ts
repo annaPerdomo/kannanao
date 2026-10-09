@@ -15,6 +15,13 @@ export function shiftDate(date: string | null, days: number): string | null {
 
 const WEEK_DAYS = 7;
 
+export function nextFriday(today: string): string {
+  const FRIDAY = 5;
+  const day = new Date(`${today}T00:00:00Z`).getUTCDay();
+  const daysAhead = ((FRIDAY - day + WEEK_DAYS) % WEEK_DAYS) + (day === FRIDAY ? WEEK_DAYS : 0);
+  return shiftDate(today, daysAhead) ?? today;
+}
+
 /** Due a week after the unit's last week, or a week from today when there is no last week or it already passed. */
 export function nextWeekDates(
   lastDueDate: string | null,

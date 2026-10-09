@@ -7,6 +7,7 @@ import {
   currentWeekSummary,
   handoutPagePath,
   locateWeek,
+  nextFriday,
   nextWeekDates,
   rebaseSchedule,
   shiftDate,
@@ -35,6 +36,20 @@ describe('shiftDate', () => {
 
   it('returns null for an invalid date', () => {
     expect(shiftDate('not-a-date', 7)).toBeNull();
+  });
+});
+
+describe('nextFriday', () => {
+  it('skips to next week when today is already Friday', () => {
+    expect(nextFriday('2026-10-09')).toBe('2026-10-16');
+  });
+
+  it('is 6 days ahead on a Saturday', () => {
+    expect(nextFriday('2026-10-10')).toBe('2026-10-16');
+  });
+
+  it('is the upcoming Friday from a Tuesday', () => {
+    expect(nextFriday(TODAY)).toBe('2026-10-09');
   });
 });
 

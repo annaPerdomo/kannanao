@@ -1,5 +1,5 @@
 import type { Assignment } from '@/hooks/useAssignments';
-import type { LessonUnitWeek } from '@/types/lessonUnit';
+import type { LessonUnitWeek, LessonWeekStatus } from '@/types/lessonUnit';
 
 export interface HandoutRef {
   deckId: string | null;
@@ -12,6 +12,7 @@ export interface HandoutRef {
   dueDate: string | null;
   requiredAccuracy: number | null;
   requiredMode: string | null;
+  status?: LessonWeekStatus;
 }
 
 export function handoutRefFromAssignment(a: Assignment, name: string): HandoutRef {
@@ -39,5 +40,6 @@ export function handoutRefFromWeek(week: LessonUnitWeek): HandoutRef {
     dueDate: week.dueDate,
     requiredAccuracy: week.requiredAccuracy,
     requiredMode: week.requiredMode,
+    status: week.status,
   };
 }

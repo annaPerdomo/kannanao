@@ -1,5 +1,7 @@
 'use client';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
@@ -31,6 +33,7 @@ export function HandoutDetailDialog({
   memberName,
 }: HandoutDetailDialogProps) {
   const t = useTranslations('Group.handoutDetail');
+  const tLib = useTranslations('Materials.library');
   const locale = useLocale();
   const [viewMember, setViewMember] = useState<ViewMember | null>(null);
   const goal = useGoalLabel()({
@@ -39,11 +42,22 @@ export function HandoutDetailDialog({
     kana_set: handout?.kanaSet ?? null,
   });
 
-  const title = handout ? (handout.emoji ? `${handout.emoji} ${handout.name}` : handout.name) : '';
+  const isDraft = handout?.status === 'draft';
+  const name = handout ? (handout.emoji ? `${handout.emoji} ${handout.name}` : handout.name) : '';
+  const title = isDraft ? (
+    <Stack direction="row" sx={{ alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+      <span>{name}</span>
+      <Chip size="small" variant="outlined" label={tLib('statusDraft')} sx={{ fontWeight: 700 }} />
+    </Stack>
+  ) : (
+    name
+  );
   const subtitle = handout
-    ? handout.dueDate
-      ? t('dueOn', { date: formatDate(handout.dueDate, locale) })
-      : t('noDueDate')
+    ? isDraft
+      ? undefined
+      : handout.dueDate
+        ? t('dueOn', { date: formatDate(handout.dueDate, locale) })
+        : t('noDueDate')
     : undefined;
 
   const handleClose = () => {
@@ -97,6 +111,7 @@ export function HandoutDetailDialog({
             viewMember={viewMember}
             onPickLearner={setViewMember}
             onBackToGroup={() => setViewMember(null)}
+            isDraft={isDraft}
           />
         </>
       )}

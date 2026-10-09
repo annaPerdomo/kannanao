@@ -30,6 +30,7 @@ interface HandoutWordsPanelProps {
   error: string | null;
   edits: ReturnType<typeof useHandoutWordEdits>;
   onSaved: (message: string) => void;
+  isDraft?: boolean;
 }
 
 function InsightChips({
@@ -74,6 +75,7 @@ export function HandoutWordsPanel({
   error,
   edits,
   onSaved,
+  isDraft = false,
 }: HandoutWordsPanelProps) {
   const t = useTranslations('Materials.handoutPage');
   const tDetail = useTranslations('Group.handoutDetail');
@@ -186,7 +188,9 @@ export function HandoutWordsPanel({
       ) : error && !data ? (
         <Alert severity="error">{tDetail('loadError')}</Alert>
       ) : words.length === 0 ? (
-        <Typography sx={{ fontSize: '0.85rem', py: 2 }}>{t('noWordsYet')}</Typography>
+        <Typography sx={{ fontSize: '0.85rem', py: 2 }}>
+          {isDraft ? `📚 ${t('wordsEmptyDraft')}` : t('noWordsYet')}
+        </Typography>
       ) : visible.length === 0 ? (
         <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', py: 2 }}>
           {t('noWordsMatch')}

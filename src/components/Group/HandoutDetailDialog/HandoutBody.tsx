@@ -19,6 +19,7 @@ interface HandoutBodyProps {
   viewMember: ViewMember | null;
   onPickLearner: (member: ViewMember) => void;
   onBackToGroup: () => void;
+  isDraft?: boolean;
 }
 
 export function HandoutBody({
@@ -29,10 +30,13 @@ export function HandoutBody({
   viewMember,
   onPickLearner,
   onBackToGroup,
+  isDraft = false,
 }: HandoutBodyProps) {
   if (!handout.deckId) {
     return handout.kanaSet ? <KanaSetList kanaSet={handout.kanaSet} /> : null;
   }
+
+  if (isDraft) return <WordList deckId={handout.deckId} />;
 
   const effectiveMemberId = memberId ?? viewMember?.id ?? null;
   const effectiveMemberName = memberName ?? viewMember?.name ?? null;

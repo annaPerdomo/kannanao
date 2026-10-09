@@ -100,6 +100,30 @@ describe('handoutRefFromWeek', () => {
       dueDate: '2026-10-09',
       requiredAccuracy: 80,
       requiredMode: 'study',
+      status: 'current',
     });
+  });
+
+  it('carries a draft week through as a draft status', () => {
+    const week: LessonUnitWeek = {
+      deckId: 'deck2',
+      deckName: 'Food',
+      deckEmoji: null,
+      week: 1,
+      title: null,
+      note: null,
+      dueDate: null,
+      availableOn: null,
+      requiredAccuracy: null,
+      requiredMode: null,
+      learnerCount: 0,
+      finishedCount: 0,
+      wordCount: 3,
+      status: 'draft',
+      kanaSets: [],
+      handedOut: false,
+    };
+
+    expect(handoutRefFromWeek(week).status).toBe('draft');
   });
 });

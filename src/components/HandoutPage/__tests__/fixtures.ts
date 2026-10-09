@@ -24,6 +24,18 @@ export function week(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
   };
 }
 
+export function draftWeek(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
+  return week({
+    dueDate: null,
+    availableOn: null,
+    learnerCount: 0,
+    finishedCount: 0,
+    status: 'draft',
+    handedOut: false,
+    ...overrides,
+  });
+}
+
 export function card(id: string, word = `word-${id}`): Flashcard {
   return {
     id,

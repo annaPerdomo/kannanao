@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import type { LessonLibrary } from '@/types/lessonUnit';
 
-import { card, learner, week } from './fixtures';
+import { card, draftWeek, learner, week } from './fixtures';
 
 const mockPush = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: mockPush }) }));
@@ -49,6 +49,21 @@ vi.mock('@/components/HandoutPage/AddWordsFlow', () => ({ AddWordsFlow: () => nu
 vi.mock('@/components/Group/HandoutDetailDialog/LearnerWordList', () => ({
   LearnerWordList: ({ memberName }: { memberName: string }) => <p>learner view {memberName}</p>,
 }));
+vi.mock('@/components/HandoutPage/SoundsSection', () => ({ SoundsSection: () => null }));
+const handOutDone = vi.fn();
+vi.mock('@/components/HandoutPage/HandOutDialog', () => ({
+  HandOutDialog: ({ open, onDone }: { open: boolean; onDone: (r: unknown) => void }) =>
+    open ? (
+      <button
+        onClick={() => {
+          const result = handOutDone();
+          onDone(result);
+        }}
+      >
+        Confirm hand out
+      </button>
+    ) : null,
+}));
 
 import { HandoutPage } from '@/components/HandoutPage';
 
@@ -90,7 +105,77 @@ describe('HandoutPage', () => {
     vi.clearAllMocks();
     editWeek.mockResolvedValue(true);
     removeWeek.mockResolvedValue(true);
+    handOutDone.mockReturnValue({ assigned: 1, kanaAssigned: [], kanaFailed: [] });
     Element.prototype.scrollIntoView = vi.fn();
+  });
+
+  it('shows the draft banner and hides learners and settings for a draft week', () => {
+    const library = libraryWithUnit();
+    library.units[0].weeks[1] = draftWeek({ deckId: 'd2', deckName: 'Animals', week: 2 });
+    setLibrary(library);
+    renderWithProviders(<HandoutPage groupId="g1" deckId="d2" />);
+
+    expect(screen.getByText('This lesson is a draft')).toBeInTheDocument();
+    expect(screen.queryByText('Learners (2)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Schedule & goal')).not.toBeInTheDocument();
+  });
+
+  it('hides the draft banner for a handed-out week', () => {
+    setLibrary(libraryWithUnit());
+    renderWithProviders(<HandoutPage groupId="g1" deckId="d2" />);
+    expect(screen.queryByText('This lesson is a draft')).not.toBeInTheDocument();
+  });
+
+  it('deletes a draft and returns to lessons', async () => {
+    const library = libraryWithUnit();
+    library.units[0].weeks[1] = draftWeek({ deckId: 'd2', deckName: 'Animals', week: 2 });
+    setLibrary(library);
+    renderWithProviders(<HandoutPage groupId="g1" deckId="d2" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete draft' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+
+    await vi.waitFor(() => expect(mockPush).toHaveBeenCalledWith('/group/g1?tab=lessons'));
+    expect(removeWeek).toHaveBeenCalledWith('d2');
+  });
+
+  it('shows a warning toast when practice sentences failed to generate', async () => {
+    const library = libraryWithUnit();
+    library.units[0].weeks[1] = draftWeek({ deckId: 'd2', deckName: 'Animals', week: 2 });
+    setLibrary(library);
+    handOutDone.mockReturnValue({
+      assigned: 1,
+      kanaAssigned: [],
+      kanaFailed: [],
+      sentences: 'failed',
+    });
+    renderWithProviders(<HandoutPage groupId="g1" deckId="d2" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Hand out' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm hand out' }));
+
+    expect(
+      await screen.findByText(
+        "Handed out, but practice sentences couldn't be added. You can add them from the deck page.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('hands out a draft lesson and shows a confirmation toast', async () => {
+    const library = libraryWithUnit();
+    library.units[0].weeks[1] = draftWeek({ deckId: 'd2', deckName: 'Animals', week: 2 });
+    const refetch = vi.fn();
+    setLibrary(library, { refetch });
+    renderWithProviders(<HandoutPage groupId="g1" deckId="d2" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Hand out' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm hand out' }));
+
+    expect(
+      await screen.findByText('Handed out! Learners will see it in Practice.'),
+    ).toBeInTheDocument();
+    await vi.waitFor(() => expect(refetch).toHaveBeenCalled());
+    await vi.waitFor(() => expect(wordsRefetch).toHaveBeenCalled());
   });
 
   it('shows the week in its unit, with neighbours and a way back', () => {
