@@ -109,19 +109,48 @@ export interface MixedPlanInput {
   exclude?: readonly ChainMode[];
 }
 
-/**
- * The top rung: producing the word, not picking it. Kotoba Bubble must stay
- * above Fill: every sentence-seeded deck has example_jp, so Fill would win
- * every time from below and the rung would never fire.
- */
 function productionLeg({ support, counts }: MixedPlanInput): ChainLeg | null {
   if (counts.strong === 0) return null;
   if (support.readingUnlocked && support.readingCards >= MIN_READING_CARDS) {
     return { step: 'goal', mode: 'reading' };
   }
-  if (support.sentenceCount >= MIN_SENTENCES) return { step: 'goal', mode: 'kotoba-bubble' };
   if (support.fillCards >= MIN_FILL_CARDS) return { step: 'goal', mode: 'fill' };
   return null;
+}
+
+/** Grammar practice on brand-new words, so it carries no strength condition. */
+function sentenceLeg(support: MixedDeckSupport): ChainLeg | null {
+  return support.sentenceCount >= MIN_SENTENCES
+    ? { step: 'practice', mode: 'kotoba-bubble' }
+    : null;
+}
+
+export const VOCAB_DROP_ORDER: readonly ChainMode[] = ['match', 'listen', 'endings'];
+export const GRAMMAR_DROP_ORDER: readonly ChainMode[] = ['match', 'listen', 'recall'];
+
+export function trimLadder(
+  opening: ChainLeg[],
+  tail: ChainLeg[],
+  budget: number,
+  dropOrder: readonly ChainMode[],
+): ChainLeg[] {
+  const result = [...opening];
+  while (result.length + tail.length > budget) {
+    let removedIndex = -1;
+    for (const mode of dropOrder) {
+      const idx = result.findLastIndex((leg, i) => i >= 1 && leg.mode === mode);
+      if (idx !== -1) {
+        removedIndex = idx;
+        break;
+      }
+    }
+    if (removedIndex === -1) {
+      removedIndex = result.findLastIndex((leg, i) => i >= 1 && leg.mode !== 'kotoba-bubble');
+    }
+    if (removedIndex === -1) break;
+    result.splice(removedIndex, 1);
+  }
+  return [...result, ...tail];
 }
 
 /**
@@ -134,38 +163,39 @@ export function planMixedPractice(input: MixedPlanInput): ChainLeg[] {
 
   const keep = (leg: ChainLeg) => !exclude.includes(leg.mode);
   const production = productionLeg(input);
-  const opening: ChainLeg[] = [];
+  const sentence = sentenceLeg(support);
 
-  if (counts.new > 0) opening.push({ step: 'warmup', mode: 'study' });
-  opening.push({ step: 'practice', mode: 'recall' });
+  const unfiltered: ChainLeg[] = [];
+  if (counts.new > 0) unfiltered.push({ step: 'warmup', mode: 'study' });
+  unfiltered.push({ step: 'practice', mode: 'recall' });
+  if (sentence) unfiltered.push(sentence);
   // Hearing a word never seen written is guesswork, so Listen waits for a card
   // that has been answered at least once.
   if (support.ttsReady && counts.new < support.cardCount) {
-    opening.push({ step: 'practice', mode: 'listen' });
+    unfiltered.push({ step: 'practice', mode: 'listen' });
   }
-  if (support.cardCount >= MIXED_GAME_MIN_CARDS) opening.push({ step: 'practice', mode: 'match' });
+  if (support.cardCount >= MIXED_GAME_MIN_CARDS) {
+    unfiltered.push({ step: 'practice', mode: 'match' });
+  }
 
-  const kept = opening.filter(keep);
+  const opening = unfiltered.filter(keep);
   const tail = production && keep(production) ? [production] : [];
-  // Trim from the middle, never the end: the production rung is the point of
-  // the ladder, and meaning pick leads `opening` so it always survives.
-  const legs = [...kept.slice(0, MAX_MIXED_LEGS - tail.length), ...tail];
+  if (opening.length + tail.length === 0) return [];
 
   const endingsLeg: ChainLeg = { step: 'practice', mode: 'endings' };
-  if (support.endingItems < MIN_ENDING_ITEMS || !keep(endingsLeg) || legs.length === 0) {
-    return legs;
-  }
-
-  // A grammar deck (half+ of its session cards are drill cards) gets the leg
-  // right after the first leg; any other deck with enough items gets it
-  // last-but-one. Either way, Match is trimmed first if the ladder is full.
   const isGrammarDeck = support.drillItems * 2 >= support.cardCount;
-  const keptPortion = legs.slice(0, legs.length - tail.length);
-  const budget = Math.max(MAX_MIXED_LEGS - tail.length - 1, 0);
-  const trimmedKept = keptPortion.slice(0, budget);
-
-  if (isGrammarDeck) {
-    return [...trimmedKept.slice(0, 1), endingsLeg, ...trimmedKept.slice(1), ...tail];
+  if (support.endingItems >= MIN_ENDING_ITEMS && keep(endingsLeg)) {
+    if (isGrammarDeck) {
+      opening.splice(1, 0, endingsLeg);
+    } else {
+      opening.push(endingsLeg);
+    }
   }
-  return [...trimmedKept, endingsLeg, ...tail];
+
+  return trimLadder(
+    opening,
+    tail,
+    MAX_MIXED_LEGS,
+    isGrammarDeck ? GRAMMAR_DROP_ORDER : VOCAB_DROP_ORDER,
+  );
 }

@@ -206,7 +206,8 @@ describe('useStartMixedPractice', () => {
     });
 
     const legs = readChainState()?.legs?.map((leg) => leg.mode);
-    expect(legs?.[legs.length - 1]).toBe('kotoba-bubble');
+    const recallIndex = legs?.indexOf('recall') ?? -1;
+    expect(legs?.[recallIndex + 1]).toBe('kotoba-bubble');
   });
 
   it('counts a member against their own sentence set, not the shared one', async () => {

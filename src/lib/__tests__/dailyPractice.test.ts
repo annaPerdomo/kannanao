@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { MIN_SENTENCES } from '@/components/Practice/KotobaBubbleMode/constants';
 import type { Assignment } from '@/hooks/useAssignments';
 import {
   BASE_REVIEW_CAP,
@@ -7,6 +8,7 @@ import {
   dailyReviewCap,
   daysSince,
   estimateMinutes,
+  fitDaily,
   MAX_DAILY_LEGS,
   MAX_REVIEW_CAP,
   pickFocusDeck,
@@ -15,6 +17,7 @@ import {
   previewMinutes,
   readDailyRound,
 } from '@/lib/dailyPractice';
+import type { ChainLeg } from '@/lib/practiceChain';
 import type { CardProgress } from '@/lib/supabase';
 import type { Deck } from '@/types/deck';
 import type { Flashcard } from '@/types/flashcard';
@@ -174,6 +177,33 @@ describe('pickKanaRow', () => {
   });
 });
 
+describe('fitDaily', () => {
+  const leg = (mode: ChainLeg['mode']): ChainLeg => ({ step: 'practice', mode });
+
+  it('keeps the opener and the sentence leg over the rest', () => {
+    const legs = [leg('recall'), leg('kotoba-bubble'), leg('listen'), leg('reading')];
+    expect(fitDaily(legs, 2)).toEqual([leg('recall'), leg('kotoba-bubble')]);
+    expect(fitDaily(legs, 3)).toEqual([leg('recall'), leg('kotoba-bubble'), leg('reading')]);
+  });
+
+  it("keeps today's rule — opener and closer — when there is no sentence leg", () => {
+    const legs = [leg('recall'), leg('listen'), leg('match'), leg('fill')];
+    expect(fitDaily(legs, 2)).toEqual([leg('recall'), leg('fill')]);
+    expect(fitDaily(legs, 3)).toEqual([leg('recall'), leg('listen'), leg('fill')]);
+  });
+
+  it('never double-counts the sentence leg when it is also the opener', () => {
+    const legs = [leg('kotoba-bubble'), leg('match'), leg('fill')];
+    expect(fitDaily(legs, 2)).toEqual([leg('kotoba-bubble'), leg('fill')]);
+  });
+
+  it('handles the edges', () => {
+    const legs = [leg('recall'), leg('listen'), leg('match')];
+    expect(fitDaily(legs, 1)).toEqual([leg('recall')]);
+    expect(fitDaily(legs, 0)).toEqual([]);
+  });
+});
+
 describe('planDailyPractice', () => {
   const cards = Array.from({ length: 12 }, (_, i) => card(`c${i}`));
   const plan = (input: Partial<Parameters<typeof planDailyPractice>[0]>) =>
@@ -279,6 +309,65 @@ describe('planDailyPractice', () => {
       withKana.filter((leg) => leg.step !== 'review' && leg.mode !== 'kana-journey').length,
     ).toBe(
       withoutKana.filter((leg) => leg.step !== 'review' && leg.mode !== 'kana-journey').length - 1,
+    );
+  });
+
+  it('includes the sentence leg right after the deck opener, with deckId and cardIds', () => {
+    const progress = cards.map((c) => strong(c.id));
+    const legs = plan({
+      dueCount: 4,
+      kanaRow: 'hira-ka',
+      sentenceCount: MIN_SENTENCES,
+      ttsReady: true,
+      progress,
+      focus: focusFor(deck('d1'), assignment({ required_mode: 'quiz' })),
+    });
+    expect(legs.map((l) => l.mode)).toEqual([
+      'review',
+      'kana-journey',
+      'recall',
+      'kotoba-bubble',
+      'quiz',
+    ]);
+    expect(legs[2]).toMatchObject({ deckId: 'd1' });
+    expect(legs[2].cardIds).toHaveLength(12);
+    expect(legs[3]).toMatchObject({ deckId: 'd1' });
+    expect(legs[3].cardIds).toHaveLength(12);
+    expect(legs[4]).toEqual({ step: 'goal', mode: 'quiz', deckId: 'd1' });
+  });
+
+  it('opens on study instead of recall when every card is new', () => {
+    const legs = plan({
+      dueCount: 4,
+      kanaRow: 'hira-ka',
+      sentenceCount: MIN_SENTENCES,
+      ttsReady: true,
+      progress: [],
+      focus: focusFor(deck('d1'), assignment({ required_mode: 'quiz' })),
+    });
+    expect(legs.map((l) => l.mode)).toEqual([
+      'review',
+      'kana-journey',
+      'study',
+      'kotoba-bubble',
+      'quiz',
+    ]);
+  });
+
+  it('plays Sentence Builder exactly once when it is the assignment goal', () => {
+    const legs = plan({
+      sentenceCount: MIN_SENTENCES,
+      focus: focusFor(deck('d1'), assignment({ required_mode: 'kotoba-bubble' })),
+    });
+    const sentenceLegs = legs.filter((l) => l.mode === 'kotoba-bubble');
+    expect(sentenceLegs).toHaveLength(1);
+    expect(legs[legs.length - 1]).toMatchObject({ step: 'goal', mode: 'kotoba-bubble' });
+  });
+
+  it('includes Sentence Builder as an ordinary practice leg with no assignment', () => {
+    const legs = plan({ sentenceCount: MIN_SENTENCES });
+    expect(legs).toContainEqual(
+      expect.objectContaining({ step: 'practice', mode: 'kotoba-bubble' }),
     );
   });
 
