@@ -94,7 +94,7 @@ export function useDecks(enabled = true, initialDecks?: Deck[]) {
   }, []);
 
   const renameDeck = useCallback(
-    async (id: string, name: string, description?: string): Promise<void> => {
+    async (id: string, name: string, description?: string | null): Promise<void> => {
       if (!isConfigured()) {
         showConfigBanner();
         throw new Error(t('notConfiguredError'));
@@ -104,7 +104,13 @@ export function useDecks(enabled = true, initialDecks?: Deck[]) {
 
       setDecks((prev) =>
         prev.map((d) =>
-          d.id === id ? { ...d, name, description: description ?? d.description } : d,
+          d.id === id
+            ? {
+                ...d,
+                name,
+                description: description === undefined ? d.description : (description ?? undefined),
+              }
+            : d,
         ),
       );
     },

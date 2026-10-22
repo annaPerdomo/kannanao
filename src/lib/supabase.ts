@@ -522,7 +522,12 @@ export async function dbCopyCardsIntoDeck(
   return (data ?? []).map(dbCardToApp);
 }
 
-export async function dbRenameDeck(id: string, name: string, description?: string): Promise<Deck> {
+/** `description`: omitted keeps the stored one, `null` clears it. */
+export async function dbRenameDeck(
+  id: string,
+  name: string,
+  description?: string | null,
+): Promise<Deck> {
   if (!isConfigured()) {
     showConfigBanner();
     throw new Error('Supabase is not configured');
@@ -530,7 +535,7 @@ export async function dbRenameDeck(id: string, name: string, description?: strin
 
   const { data, error } = await sb
     .from('decks')
-    .update({ name, description: description ?? null })
+    .update(description === undefined ? { name } : { name, description })
     .eq('id', id)
     .select()
     .single();
