@@ -1,30 +1,22 @@
 'use client';
-import { Box, Button, Chip, LinearProgress, Typography } from '@mui/material';
+import { Box, Button, Chip, LinearProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import FuriganaText, { furiganaToKana } from '@/components/FuriganaText';
-import { SpeakButton } from '@/components/SpeakButton';
-import TitleFurigana from '@/components/TitleFurigana';
-import { UnsplashAttribution } from '@/components/UnsplashAttribution';
 import { useBuddyReaction } from '@/contexts/BuddyReactionContext';
 import { useXpAnimation } from '@/contexts/XpAnimationContext';
 import { useFuriganaMask } from '@/hooks/useFuriganaMask';
 import { usePracticeQueue } from '@/hooks/usePracticeQueue';
 import { useProgress, XP_PER_WRONG } from '@/hooks/useProgress';
 import { sampleBuddyWords } from '@/lib/buddyWords';
-import {
-  buildMeaningChoices,
-  cardXp,
-  getFlashcardDisplayText,
-  titleFontSize,
-} from '@/lib/flashcardUtils';
+import { buildMeaningChoices, cardXp } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
 import { CelebrationScreen, pickPraise } from './CelebrationScreen';
-import { ChoiceGrid } from './ChoiceGrid';
+import { MissExplainer } from './MissExplainer';
+import { RecallPrompt } from './RecallPrompt';
 import { RoundTransition } from './RoundTransition';
 import { XpEarnedPop } from './XpEarnedPop';
 
@@ -39,11 +31,10 @@ interface RecallModeProps {
 const AUTO_ADVANCE_MS = 1800;
 
 export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps) {
-  const t = useTranslations('Practice.recallMode');
   const tCommon = useTranslations('Practice.common');
   const isFuriganaMasked = useFuriganaMask(cards);
   const theme = useTheme();
-  const { brand, surfaces } = theme.palette;
+  const { brand } = theme.palette;
 
   const queue = usePracticeQueue(cards, batchSize);
 
@@ -235,9 +226,7 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
 
   // ── Quiz card ──────────────────────────────────────────────────────────────
   if (!card) return null;
-  const display = getFlashcardDisplayText(card);
-  const answeredCorrectly = selected === card.meaning;
-  const answeredWrong = !!selected && !answeredCorrectly;
+  const answeredWrong = !!selected && selected !== card.meaning;
 
   return (
     <Box
@@ -293,148 +282,21 @@ export function RecallMode({ cards, deckId, batchSize, onExit }: RecallModeProps
         }}
       />
 
-      {/* Word card — takes the height the choices below don't need, so the
-          answer image can appear without pushing anything off screen. Grow-only
-          (`1 0 auto`): it clips its overflow, so shrinking would cut off the
-          word rather than scroll the page. */}
-      <Box
-        sx={{
-          position: 'relative',
-          flex: '1 0 auto',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          border: '2px solid',
-          borderColor: selected
-            ? answeredCorrectly
-              ? 'success.main'
-              : 'error.main'
-            : alpha(brand[300], 0.45),
-          borderRadius: 3,
-          overflow: 'hidden',
-          mb: { xs: 1.5, sm: 2 },
-          boxShadow: `0 8px 24px ${alpha(brand[300], 0.12)}`,
-          transition: 'border-color 0.25s',
-        }}
-      >
-        {/* Image and example sentence would give the meaning away, so they only
-            appear after answering, as feedback that reinforces the word. The
-            image fills what the card has left, down to a floor below which it
-            reads as a smear rather than a picture. */}
-        {selected && card.imageUrl && imageReady && (
-          <Box sx={{ position: 'relative', flex: 1, minHeight: { xs: 120, sm: 160 } }}>
-            <Box
-              component="img"
-              src={card.imageUrl}
-              alt={card.word}
-              sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            />
-            <UnsplashAttribution url={card.imageUrl} />
-          </Box>
-        )}
-        <Box
-          sx={{
-            flexShrink: 0,
-            p: { xs: 1.5, sm: 2 },
-            textAlign: 'center',
-            bgcolor: surfaces.input,
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-            <Typography
-              sx={{
-                fontFamily: (t) => t.fonts.jp,
-                fontSize:
-                  card.cardType === 'phrase'
-                    ? { xs: '2.2rem', sm: '3rem' }
-                    : {
-                        xs: titleFontSize(display.titleText, 2.2, 1.1),
-                        sm: titleFontSize(display.titleText, 3.2, 1.4),
-                      },
-                fontWeight: 700,
-                color: 'text.primary',
-                mb: 0.5,
-                whiteSpace: card.cardType === 'phrase' ? undefined : 'nowrap',
-              }}
-            >
-              {display.titleFurigana ? (
-                <TitleFurigana markup={display.titleFurigana} masked={isFuriganaMasked(card.id)} />
-              ) : (
-                display.titleText
-              )}
-            </Typography>
-            <SpeakButton
-              text={display.speakText}
-              iconSize="1.4rem"
-              onSpeak={selected ? holdCard : undefined}
-              sx={{ mb: 0.5 }}
-            />
-          </Box>
-          {display.subtitleText && !display.titleFurigana && (
-            <Typography variant="body1" color="text.secondary">
-              {display.subtitleText}
-            </Typography>
-          )}
-          {selected && card.example_jp && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 0.5,
-                mt: 1,
-              }}
-            >
-              <FuriganaText
-                text={card.example_jp}
-                showFurigana
-                sx={{
-                  color: 'text.secondary',
-                  fontFamily: (t) => t.fonts.jp,
-                  fontSize: '0.9rem',
-                }}
-              />
-              <SpeakButton
-                text={furiganaToKana(card.example_jp)}
-                iconSize="1.1rem"
-                onSpeak={holdCard}
-              />
-            </Box>
-          )}
-          {!selected && (
-            <Typography
-              variant="caption"
-              sx={{ color: 'text.secondary', letterSpacing: '0.12em', display: 'block', mt: 1.5 }}
-            >
-              {t('whatDoesThisMean')}
-            </Typography>
-          )}
-        </Box>
-      </Box>
-
-      {/* Answer choices */}
-      <Box sx={{ flexShrink: 0 }}>
-        <ChoiceGrid
+      {answeredWrong ? (
+        <MissExplainer card={card} imageUrl={card.imageUrl} onContinue={next} />
+      ) : (
+        <RecallPrompt
+          card={card}
           choices={choices}
-          correct={card.meaning}
           selected={selected}
+          masked={isFuriganaMasked(card.id)}
+          imageReady={imageReady}
+          holdForReplay={holdForReplay}
+          isLast={index + 1 >= queue.currentCards.length}
           onSelect={handleSelect}
+          onSpeak={holdCard}
+          onNext={next}
         />
-      </Box>
-
-      {(answeredWrong || holdForReplay) && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1, flexShrink: 0 }}>
-          <Button variant="contained" onClick={next} size="large">
-            {index + 1 >= queue.currentCards.length ? t('seeResults') : t('nextArrow')}
-          </Button>
-        </Box>
-      )}
-      {answeredCorrectly && !holdForReplay && (
-        <Box sx={{ textAlign: 'center', mb: 1, flexShrink: 0 }}>
-          <Typography variant="body2" color="success.main" sx={{ fontStyle: 'italic' }}>
-            {tCommon('correctMovingOn')}
-          </Typography>
-        </Box>
       )}
 
       {/* Left, not right: the floating buddy parks over the bottom-right corner. */}

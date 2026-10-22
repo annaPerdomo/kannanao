@@ -851,6 +851,11 @@
       "seeResults": "結果を見る",
       "nextArrow": "次へ →"
     },
+    "missExplainer": {
+      "title": "もう いちど みてみよう",
+      "continue": "わかった!",
+      "example": "ぶんで みると"
+    },
     "readingMode": {
       "readPrompt": "なんて読む？",
       "incorrectAnswer": "おしい！ 読み方は「{reading}」",

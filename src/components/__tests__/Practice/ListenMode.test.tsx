@@ -48,6 +48,10 @@ vi.mock('@/contexts/BuddyReactionContext', () => ({
   useBuddyReaction: () => ({ reactionEvent: null, triggerReaction: vi.fn() }),
 }));
 
+vi.mock('@/components/SpeakButton', () => ({
+  SpeakButton: () => null,
+}));
+
 import { ListenMode } from '@/components/Practice/ListenMode';
 
 // ─── Test data ────────────────────────────────────────────────────────────────
@@ -235,7 +239,7 @@ describe('ListenMode', () => {
       );
     });
 
-    it('should ignore a second pick on an already-answered question', async () => {
+    it('should not record a second answer once the miss explainer is showing', async () => {
       renderMode();
       await waitFor(() => expect(mockSpeak).toHaveBeenCalled());
       await new Promise((r) => setTimeout(r, 0));
@@ -245,7 +249,7 @@ describe('ListenMode', () => {
       fireEvent.click(screen.getByRole('button', { name: new RegExp(`: ${wrong.meaning}$`) }));
       await waitFor(() => expect(mockRecordAnswer).toHaveBeenCalledTimes(1));
 
-      fireEvent.click(screen.getByRole('button', { name: new RegExp(`: ${card.meaning}$`) }));
+      expect(screen.queryByRole('button', { name: new RegExp(`: ${card.meaning}$`) })).toBeNull();
       expect(mockRecordAnswer).toHaveBeenCalledTimes(1);
     });
 
@@ -258,6 +262,34 @@ describe('ListenMode', () => {
 
       await waitFor(() => expect(mockEndSession).toHaveBeenCalled());
       expect(onExit).toHaveBeenCalled();
+    });
+  });
+
+  describe('teaching on a miss', () => {
+    it('shows the explainer and waits for "Got it" before moving on', async () => {
+      renderMode();
+      await waitFor(() => expect(mockSpeak).toHaveBeenCalled());
+      await new Promise((r) => setTimeout(r, 0));
+      const card = currentCard();
+      const wrong = CARDS.find((c) => c.id !== card.id)!;
+
+      fireEvent.click(screen.getByRole('button', { name: new RegExp(`: ${wrong.meaning}$`) }));
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument(),
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+      await waitFor(() => expect(screen.getByText('A')).toBeInTheDocument());
+    });
+
+    it('still advances on its own for a correct pick', async () => {
+      renderMode();
+      await waitFor(() => expect(mockSpeak).toHaveBeenCalled());
+      await new Promise((r) => setTimeout(r, 0));
+      const card = currentCard();
+
+      fireEvent.click(screen.getByRole('button', { name: new RegExp(`: ${card.meaning}$`) }));
+      expect(screen.queryByRole('button', { name: 'Got it' })).not.toBeInTheDocument();
     });
   });
 });

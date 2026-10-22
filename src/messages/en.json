@@ -851,6 +851,11 @@
       "seeResults": "See Results",
       "nextArrow": "Next →"
     },
+    "missExplainer": {
+      "title": "Let's look again",
+      "continue": "Got it",
+      "example": "In a sentence"
+    },
     "readingMode": {
       "readPrompt": "HOW DO YOU READ THIS?",
       "incorrectAnswer": "Not quite — it reads {reading}",

@@ -1,29 +1,20 @@
 'use client';
 
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import { Box, Grid, LinearProgress, Typography } from '@mui/material';
+import { Box, LinearProgress, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ComboChip } from '@/components/ComboChip';
+import { MissExplainer } from '@/components/Practice/MissExplainer';
 import { PracticeStage } from '@/components/PracticeStage';
-import { SpeakButton } from '@/components/SpeakButton';
-import TitleFurigana from '@/components/TitleFurigana';
 import { useFuriganaMask } from '@/hooks/useFuriganaMask';
-import {
-  buildMeaningChoices,
-  cardXp,
-  getFlashcardDisplayText,
-  speakTextFor,
-  titleFontSize,
-} from '@/lib/flashcardUtils';
+import { buildMeaningChoices, cardXp } from '@/lib/flashcardUtils';
 import type { Flashcard } from '@/types/flashcard';
 
+import { BossPrompt } from './BossPrompt';
 import type { QuestGrade } from './types';
 
-const CHOICE_LABELS = ['A', 'B', 'C', 'D'];
 const ADVANCE_MS = 1100;
 
 interface BossRoundProps {
@@ -57,13 +48,14 @@ export function BossRound({
   questMap,
 }: BossRoundProps) {
   const theme = useTheme();
-  const { brand, accent, surfaces } = theme.palette;
+  const { brand, accent } = theme.palette;
   const t = useTranslations('Review.bossRound');
   const isFuriganaMasked = useFuriganaMask(cards);
 
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const bonusRef = useRef(0);
+  const completedRef = useRef(false);
 
   const card = cards[index];
   const choices = useMemo(
@@ -76,11 +68,13 @@ export function BossRound({
     if (index < cards.length - 1) {
       setIndex((i) => i + 1);
       setSelected(null);
-    } else {
-      // Award the batched boss bonus once, then hand back to the quest.
-      onBossBonus(bonusRef.current);
-      onComplete();
+      return;
     }
+    // Guards a second "Got it" on the last card from paying the bonus twice.
+    if (completedRef.current) return;
+    completedRef.current = true;
+    onBossBonus(bonusRef.current);
+    onComplete();
   }, [index, cards.length, onBossBonus, onComplete]);
 
   const handleSelect = useCallback(
@@ -94,15 +88,16 @@ export function BossRound({
     [selected, card, grade],
   );
 
-  // Auto-advance after the reveal so the finale keeps moving.
+  const answeredWrong = !!selected && selected !== card?.meaning;
+
+  // Only a correct reveal auto-advances; a miss waits for the explainer's button.
   useEffect(() => {
-    if (!selected) return;
+    if (!selected || answeredWrong) return;
     const t = setTimeout(advance, ADVANCE_MS);
     return () => clearTimeout(t);
-  }, [selected, advance]);
+  }, [selected, answeredWrong, advance]);
 
   if (!card) return null;
-  const display = getFlashcardDisplayText(card);
 
   return (
     <PracticeStage>
@@ -155,133 +150,17 @@ export function BossRound({
         }}
       />
 
-      {/* Prompt word — takes the slack so the choices below never leave the
-          fold. Grow-only (`1 0 auto`): it clips its overflow, so shrinking
-          would cut the word in half instead of scrolling. */}
-      <Box
-        sx={{
-          flex: '1 0 auto',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          textAlign: 'center',
-          p: 3,
-          mb: 2,
-          borderRadius: 3,
-          border: `2px solid ${alpha(brand[300], 0.4)}`,
-          bgcolor: surfaces.input,
-          overflow: 'hidden',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-          <Typography
-            sx={{
-              fontFamily: (t) => t.fonts.jp,
-              fontSize:
-                card.cardType === 'phrase'
-                  ? { xs: '2.1rem', sm: '3rem' }
-                  : {
-                      xs: titleFontSize(display.titleText, 2.1, 1.1),
-                      sm: titleFontSize(display.titleText, 3.2, 1.4),
-                    },
-              fontWeight: 700,
-              color: 'text.primary',
-              whiteSpace: card.cardType === 'phrase' ? undefined : 'nowrap',
-            }}
-          >
-            {display.titleFurigana ? (
-              <TitleFurigana markup={display.titleFurigana} masked={isFuriganaMasked(card.id)} />
-            ) : (
-              display.titleText
-            )}
-          </Typography>
-          <SpeakButton text={speakTextFor(card)} iconSize="1.3rem" />
-        </Box>
-        {display.subtitleText && !display.titleFurigana && (
-          <Typography variant="body2" color="text.secondary">
-            {display.subtitleText}
-          </Typography>
-        )}
-        <Typography
-          variant="caption"
-          sx={{ color: 'text.secondary', letterSpacing: '0.12em', display: 'block', mt: 1 }}
-        >
-          {t('whatDoesThisMean')}
-        </Typography>
-      </Box>
-
-      <Grid container spacing={1.5} sx={{ flexShrink: 0 }}>
-        {choices.map((choice, i) => {
-          const isCorrect = choice === card.meaning;
-          const isSelected = selected === choice;
-          let borderColor: string = alpha(brand[200], 0.7);
-          let bgcolor: string = surfaces.input;
-          let icon: React.ReactNode = null;
-          if (selected) {
-            if (isCorrect) {
-              borderColor = theme.palette.success.main;
-              bgcolor = alpha(theme.palette.success.main, 0.1);
-              icon = <CheckIcon sx={{ color: 'success.main', flexShrink: 0 }} />;
-            } else if (isSelected) {
-              borderColor = theme.palette.error.main;
-              bgcolor = alpha(theme.palette.error.main, 0.08);
-              icon = <CloseIcon sx={{ color: 'error.main', flexShrink: 0 }} />;
-            }
-          }
-          return (
-            <Grid size={{ xs: 12, sm: 6 }} key={choice}>
-              <Box
-                role="button"
-                tabIndex={selected ? -1 : 0}
-                aria-label={choice}
-                onClick={() => handleSelect(choice)}
-                onKeyDown={(e) => {
-                  if (!selected && (e.key === 'Enter' || e.key === ' ')) {
-                    e.preventDefault();
-                    handleSelect(choice);
-                  }
-                }}
-                sx={{
-                  p: 2,
-                  border: '2px solid',
-                  borderRadius: 2,
-                  cursor: selected ? 'default' : 'pointer',
-                  borderColor,
-                  bgcolor,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                  minHeight: 60,
-                  transition: 'all 0.2s',
-                  '&:hover': !selected
-                    ? { borderColor: brand[500], bgcolor: alpha(brand[300], 0.15) }
-                    : {},
-                }}
-              >
-                {icon ?? (
-                  <Box
-                    sx={{
-                      width: 26,
-                      height: 26,
-                      borderRadius: '50%',
-                      border: `2px solid ${alpha(brand[300], 0.4)}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
-                      {CHOICE_LABELS[i]}
-                    </Typography>
-                  </Box>
-                )}
-                <Typography sx={{ color: 'text.primary', flexGrow: 1 }}>{choice}</Typography>
-              </Box>
-            </Grid>
-          );
-        })}
-      </Grid>
+      {answeredWrong ? (
+        <MissExplainer card={card} imageUrl={card.imageUrl} onContinue={advance} />
+      ) : (
+        <BossPrompt
+          card={card}
+          choices={choices}
+          selected={selected}
+          masked={isFuriganaMasked(card.id)}
+          onSelect={handleSelect}
+        />
+      )}
     </PracticeStage>
   );
 }
