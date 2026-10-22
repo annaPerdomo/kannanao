@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { isGoalMode } from '@/lib/assignmentMastery';
+import { HANDOUT_NOTE_MAX } from '@/lib/lessonUnits';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../../_lib/rateLimit';
@@ -158,6 +159,10 @@ export async function POST(req: NextRequest) {
   if (b.requiredMode != null && !isGoalMode(b.requiredMode)) {
     return NextResponse.json({ error: 'requiredMode is not a valid goal mode.' }, { status: 400 });
   }
+  if (b.note != null && typeof b.note !== 'string') {
+    return NextResponse.json({ error: 'note must be a string.' }, { status: 400 });
+  }
+  const note = typeof b.note === 'string' ? b.note.trim().slice(0, HANDOUT_NOTE_MAX) || null : null;
 
   const access = await requireGroupAccess(req, groupId);
   if (access instanceof NextResponse) return access;
@@ -207,7 +212,7 @@ export async function POST(req: NextRequest) {
     groupId: group.id,
     deckId,
     title: deck.name as string,
-    note: null,
+    note,
     dueDate: dueDate.value,
     availableOn: availableOn.value,
     requiredAccuracy: (b.requiredAccuracy as number | null | undefined) ?? null,

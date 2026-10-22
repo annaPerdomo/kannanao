@@ -1,11 +1,11 @@
 import { isGoalMode } from '@/lib/assignmentMastery';
+import { HANDOUT_NOTE_MAX } from '@/lib/lessonUnits';
 import type { HandoutPatch } from '@/types/lessonUnit';
 
 import { memberIdsFor } from './membership';
 import { type getServiceSupabase } from './serviceSupabase';
 
 const TITLE_MAX = 200;
-const NOTE_MAX = 500;
 const PLAIN_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Field rules extracted from `PATCH /api/group/assignments/[id]`, unchanged — that route now imports this instead of validating inline. */
@@ -18,7 +18,8 @@ export function parseHandoutPatch(body: unknown): { patch: HandoutPatch } | { er
     patch.title = typeof b.title === 'string' ? b.title.trim().slice(0, TITLE_MAX) || null : null;
   }
   if ('note' in b) {
-    patch.note = typeof b.note === 'string' ? b.note.trim().slice(0, NOTE_MAX) || null : null;
+    patch.note =
+      typeof b.note === 'string' ? b.note.trim().slice(0, HANDOUT_NOTE_MAX) || null : null;
   }
   if ('availableOn' in b) {
     const v = b.availableOn;

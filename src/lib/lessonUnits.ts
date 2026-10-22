@@ -14,6 +14,7 @@ export function shiftDate(date: string | null, days: number): string | null {
 }
 
 const WEEK_DAYS = 7;
+export const HANDOUT_NOTE_MAX = 500;
 
 export function nextFriday(today: string): string {
   const FRIDAY = 5;

@@ -315,6 +315,7 @@ describe('POST /api/group/lessons/handout', () => {
         deckId: 'd1',
         dueDate: '2026-10-20',
         availableOn: '2026-10-13',
+        note: '  Order a meal  ',
       }),
     );
     expect(res.status).toBe(200);
@@ -327,7 +328,12 @@ describe('POST /api/group/lessons/handout', () => {
     });
     expect(assignHandoutMock).toHaveBeenCalledWith(
       expect.anything(),
-      expect.objectContaining({ deckId: 'd1', dueDate: '2026-10-20', availableOn: '2026-10-13' }),
+      expect.objectContaining({
+        deckId: 'd1',
+        dueDate: '2026-10-20',
+        availableOn: '2026-10-13',
+        note: 'Order a meal',
+      }),
     );
     expect(assignCompanionKanaMock).toHaveBeenCalledWith(
       expect.objectContaining({ rows: [{ setId: 'hira-a', dueDate: '2026-10-20' }] }),

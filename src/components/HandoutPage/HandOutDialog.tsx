@@ -10,12 +10,14 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { AssignmentGoalPicker } from '@/components/Group/AssignmentGoalPicker';
 import { todayIso } from '@/components/Group/dueDate';
 import { StyledDialog } from '@/components/StyledDialog';
 import { useGroupMembers } from '@/hooks/useGroup';
 import { useLessonEdits } from '@/hooks/useLessonEdits';
+import type { GoalMode } from '@/lib/assignmentMastery';
 import { kanaSetLabel } from '@/lib/lessonKana';
-import { nextFriday } from '@/lib/lessonUnits';
+import { HANDOUT_NOTE_MAX, nextFriday } from '@/lib/lessonUnits';
 import type { HandOutLessonResult } from '@/types/lessonUnit';
 
 interface HandOutDialogProps {
@@ -46,6 +48,9 @@ export function HandOutDialog({
   const [dueDate, setDueDate] = useState(() => nextFriday(todayIso()));
   const [availableOn, setAvailableOn] = useState(() => todayIso());
   const [withSentences, setWithSentences] = useState(true);
+  const [note, setNote] = useState('');
+  const [accuracy, setAccuracy] = useState<number | null>(null);
+  const [mode, setMode] = useState<GoalMode | null>(null);
 
   const learnerCount = members.length;
   const datesOutOfOrder = Boolean(availableOn && dueDate && availableOn > dueDate);
@@ -56,6 +61,9 @@ export function HandOutDialog({
       deckId,
       dueDate: dueDate || null,
       availableOn: availableOn || null,
+      note: note.trim() || null,
+      requiredAccuracy: accuracy,
+      requiredMode: mode,
       withSentences,
     });
     if (result) onDone(result);
@@ -115,6 +123,22 @@ export function HandOutDialog({
             {tLib('datesOutOfOrder')}
           </Typography>
         )}
+        <TextField
+          label={tLib('fieldNote')}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          size="small"
+          fullWidth
+          multiline
+          minRows={2}
+          slotProps={{ htmlInput: { maxLength: HANDOUT_NOTE_MAX } }}
+        />
+        <AssignmentGoalPicker
+          accuracy={accuracy}
+          mode={mode}
+          onAccuracyChange={setAccuracy}
+          onModeChange={setMode}
+        />
         <Stack direction="row" sx={{ alignItems: 'flex-start', gap: 1 }}>
           <Switch
             checked={withSentences}
