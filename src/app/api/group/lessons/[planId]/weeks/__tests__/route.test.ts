@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetStore } from '@/app/api/_lib/rateLimit';
 
@@ -82,6 +82,8 @@ function params() {
 
 describe('POST /api/group/lessons/[planId]/weeks', () => {
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-08T12:00:00'));
     vi.clearAllMocks();
     _resetStore();
     for (const key of Object.keys(queues)) delete queues[key];
@@ -94,6 +96,10 @@ describe('POST /api/group/lessons/[planId]/weeks', () => {
     });
     queue('lesson_plan_decks', { data: [{ deck_id: 'd1', position: 0 }] });
     queue('planned_assignments', { data: { due_date: '2026-10-13' } });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('404s when the plan does not belong to this organizer', async () => {
