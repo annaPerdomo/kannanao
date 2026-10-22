@@ -77,6 +77,7 @@ export function useKanaProgress(enabled = true): {
         correct,
         intervalDays: before?.intervalDays ?? START_INTERVAL_DAYS,
         ease: before?.ease ?? START_EASE,
+        lastReviewedAt: before?.lastReviewedAt ? new Date(before.lastReviewedAt) : null,
       });
 
       const optimistic = new Map(prev);
