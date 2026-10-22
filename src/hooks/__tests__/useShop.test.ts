@@ -89,6 +89,20 @@ describe('useShop', () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
     });
 
+    it('should flag loadError, not error, when the ownership read fails', async () => {
+      setTable('user_purchases', null, { message: 'boom' });
+      const { result } = renderHook(() => useShop());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.loadError).toBe(true);
+      expect(result.current.error).toBeNull();
+    });
+
+    it('should not flag loadError after a successful read', async () => {
+      const { result } = renderHook(() => useShop());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.loadError).toBe(false);
+    });
+
     it('should start with empty equipped state when no rows', async () => {
       const { result } = renderHook(() => useShop());
       await waitFor(() => expect(result.current.loading).toBe(false));

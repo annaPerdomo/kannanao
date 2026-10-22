@@ -618,6 +618,9 @@ export function useShop(initialShop?: InitialShop | null) {
   // When the server already seeded the shop data, start resolved.
   const [loading, setLoading] = useState(!initialShop);
   const [error, setError] = useState<string | null>(null);
+  // Not folded into `error`: only mutations set that, and a failed read
+  // must not render as "owns nothing".
+  const [loadError, setLoadError] = useState(false);
 
   // Use the already-resolved user from AuthContext rather than auth.getUser(),
   // which makes an extra auth-server round-trip on the home critical path. RLS
@@ -634,6 +637,7 @@ export function useShop(initialShop?: InitialShop | null) {
       supabase.from('user_purchases').select('*').eq('user_id', user.id),
       supabase.from('user_equipped').select('*').eq('user_id', user.id),
     ]);
+    setLoadError(!purchaseRows || !equippedRows);
 
     if (purchaseRows) setPurchases(purchaseRows);
     if (equippedRows) {
@@ -883,6 +887,7 @@ export function useShop(initialShop?: InitialShop | null) {
     equipped,
     loading,
     error,
+    loadError,
     ownsItem,
     purchaseItem,
     equipItem,

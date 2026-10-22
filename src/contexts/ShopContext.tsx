@@ -14,6 +14,7 @@ const ShopCtx = createContext<ShopContextValue>({
   equipped: {},
   loading: true,
   error: null,
+  loadError: false,
   ownsItem: () => false,
   purchaseItem: noopAsync,
   equipItem: noopAsync,
