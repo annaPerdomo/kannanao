@@ -926,7 +926,10 @@
       "bestStreakInline": " · Best streak: {count}",
       "particleAria": "Particle {particle}",
       "reviewCount": "Review ({count})",
-      "regenerate": "Regenerate"
+      "regenerate": "Regenerate",
+      "praise": ["Yes!", "Nice!", "Got it!", "Great!", "Perfect!"],
+      "progressAria": "Sentence {current} of {total}",
+      "showCorrect": "Show the ones I got right ({count})"
     },
     "sentenceReview": {
       "title": "Review Sentences",

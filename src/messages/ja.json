@@ -926,7 +926,10 @@
       "bestStreakInline": " · 最高連続記録: {count}",
       "particleAria": "助詞 {particle}",
       "reviewCount": "確認（{count}）",
-      "regenerate": "作り直す"
+      "regenerate": "作り直す",
+      "praise": ["やった！", "いいね！", "せいかい！", "すごい！", "バッチリ！"],
+      "progressAria": "{total}文中{current}文目",
+      "showCorrect": "せいかいした文を見る（{count}）"
     },
     "sentenceReview": {
       "title": "文を確認",
