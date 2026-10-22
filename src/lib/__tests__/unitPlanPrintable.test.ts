@@ -16,6 +16,7 @@ function makeWeek(overrides: Partial<LessonUnitWeek> = {}): LessonUnitWeek {
     availableOn: '2026-10-06',
     requiredAccuracy: null,
     requiredMode: null,
+    baselineAccuracy: 80,
     learnerCount: 0,
     finishedCount: 0,
     wordCount: 0,

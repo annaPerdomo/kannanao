@@ -12,6 +12,7 @@ import { AssignmentGoalPicker } from '@/components/Group/AssignmentGoalPicker';
 import { SectionCard } from '@/components/Group/SectionCard';
 import { type GoalMode, isGoalMode } from '@/lib/assignmentMastery';
 import { HANDOUT_NOTE_MAX } from '@/lib/lessonUnits';
+import { DEFAULT_BASELINE } from '@/lib/wordProgress';
 import type { HandoutPatch, LessonUnitWeek } from '@/types/lessonUnit';
 
 interface HandoutSettingsProps {
@@ -28,6 +29,7 @@ interface Draft {
   dueDate: string;
   accuracy: number | null;
   mode: GoalMode | null;
+  baselineAccuracy: number;
 }
 
 function draftFrom(week: LessonUnitWeek): Draft {
@@ -37,6 +39,7 @@ function draftFrom(week: LessonUnitWeek): Draft {
     dueDate: week.dueDate ?? '',
     accuracy: week.requiredAccuracy,
     mode: isGoalMode(week.requiredMode) ? week.requiredMode : null,
+    baselineAccuracy: week.baselineAccuracy ?? DEFAULT_BASELINE,
   };
 }
 
@@ -46,7 +49,8 @@ function sameDraft(a: Draft, b: Draft): boolean {
     a.availableOn === b.availableOn &&
     a.dueDate === b.dueDate &&
     a.accuracy === b.accuracy &&
-    a.mode === b.mode
+    a.mode === b.mode &&
+    a.baselineAccuracy === b.baselineAccuracy
   );
 }
 
@@ -79,6 +83,7 @@ export function HandoutSettings({
       dueDate: draft.dueDate || null,
       requiredAccuracy: draft.accuracy,
       requiredMode: draft.mode,
+      baselineAccuracy: draft.baselineAccuracy,
     });
     if (!ok) setError(t('saveError'));
   };
@@ -167,6 +172,8 @@ export function HandoutSettings({
             mode={draft.mode}
             onAccuracyChange={(v) => set('accuracy', v)}
             onModeChange={(v) => set('mode', v)}
+            baselineAccuracy={draft.baselineAccuracy}
+            onBaselineChange={(v) => set('baselineAccuracy', v)}
           />
           <Stack direction="row" spacing={1} sx={{ justifyContent: 'space-between', pt: 1 }}>
             <Button

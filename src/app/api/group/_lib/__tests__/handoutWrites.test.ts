@@ -78,6 +78,18 @@ describe('parseHandoutPatch', () => {
       patch: { title: null, note: null },
     });
   });
+
+  it('accepts a baselineAccuracy from the offered choices', () => {
+    expect(parseHandoutPatch({ baselineAccuracy: 90 })).toEqual({
+      patch: { baselineAccuracy: 90 },
+    });
+  });
+
+  it('rejects a baselineAccuracy outside the offered choices', () => {
+    expect(parseHandoutPatch({ baselineAccuracy: 75 })).toEqual({
+      error: 'baselineAccuracy must be one of 70, 80, 90, 100.',
+    });
+  });
 });
 
 describe('checkDateOrder', () => {
@@ -105,6 +117,7 @@ describe('handoutPatchToDbUpdates', () => {
       available_on: null,
     });
     expect(handoutPatchToDbUpdates({})).toEqual({});
+    expect(handoutPatchToDbUpdates({ baselineAccuracy: 90 })).toEqual({ baseline_accuracy: 90 });
   });
 });
 
@@ -324,6 +337,33 @@ describe('assignHandout', () => {
     >[];
     expect(assignmentRows).toHaveLength(2);
     expect(assignmentRows.map((r) => r.member_id)).toEqual(['m1', 'm2']);
+  });
+
+  it('defaults baseline_accuracy to 80 when not given', async () => {
+    const sb = makeSb();
+    await assignHandout(sb, ARGS);
+    const upserts = calls.filter((c) => c.method === 'upsert');
+    const templateRow = upserts.find((c) => c.table === 'planned_assignments')?.args[0] as Record<
+      string,
+      unknown
+    >;
+    expect(templateRow.baseline_accuracy).toBe(80);
+  });
+
+  it('writes a given baseline_accuracy on both the template and member rows', async () => {
+    const sb = makeSb();
+    await assignHandout(sb, { ...ARGS, baselineAccuracy: 90 });
+    const upserts = calls.filter((c) => c.method === 'upsert');
+    const templateRow = upserts.find((c) => c.table === 'planned_assignments')?.args[0] as Record<
+      string,
+      unknown
+    >;
+    const assignmentRows = upserts.find((c) => c.table === 'assignments')?.args[0] as Record<
+      string,
+      unknown
+    >[];
+    expect(templateRow.baseline_accuracy).toBe(90);
+    expect(assignmentRows.every((r) => r.baseline_accuracy === 90)).toBe(true);
   });
 
   it('skips the assignments upsert when the group has no members yet', async () => {

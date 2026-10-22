@@ -17,6 +17,7 @@ import { useState } from 'react';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { GroupMember } from '@/hooks/useGroup';
 import { type GoalMode, isGoalMode } from '@/lib/assignmentMastery';
+import { DEFAULT_BASELINE } from '@/lib/wordProgress';
 
 import { AssignmentGoalPicker } from './AssignmentGoalPicker';
 import { KanaSetPicker } from './KanaSetPicker';
@@ -49,6 +50,7 @@ interface CreateAssignmentDialogProps {
     availableOn?: string;
     requiredAccuracy?: number;
     requiredMode?: string;
+    baselineAccuracy?: number;
   }) => Promise<void>;
 }
 
@@ -87,6 +89,7 @@ export function CreateAssignmentDialog({
   const [goalMode, setGoalMode] = useState<GoalMode | null>(
     isGoalMode(preSelectedFields?.requiredMode) ? preSelectedFields.requiredMode : null,
   );
+  const [baselineAccuracy, setBaselineAccuracy] = useState<number>(DEFAULT_BASELINE);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -126,6 +129,7 @@ export function CreateAssignmentDialog({
         availableOn: availableOn || undefined,
         requiredAccuracy: goalAccuracy ?? undefined,
         requiredMode: goalMode ?? undefined,
+        baselineAccuracy: isKana ? undefined : baselineAccuracy,
       });
       // Reset and close
       setSelectedMembers(new Set(preSelectedMembers ?? []));
@@ -136,6 +140,7 @@ export function CreateAssignmentDialog({
       setAvailableOn('');
       setGoalAccuracy(null);
       setGoalMode(null);
+      setBaselineAccuracy(DEFAULT_BASELINE);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('failedToCreate'));
@@ -328,6 +333,8 @@ export function CreateAssignmentDialog({
           onModeChange={setGoalMode}
           unavailableModes={readingUnavailable}
           hideModes={isKana}
+          baselineAccuracy={baselineAccuracy}
+          onBaselineChange={setBaselineAccuracy}
         />
       </Box>
     </StyledDialog>

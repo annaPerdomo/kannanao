@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { OrganizerProfile } from '@/app/api/_lib/requireOrganizerAccount';
 import { buildLessonLibrary, rebaseSchedule } from '@/lib/lessonUnits';
 import { logger } from '@/lib/logger';
+import { DEFAULT_BASELINE } from '@/lib/wordProgress';
 import type { LessonLibrary } from '@/types/lessonUnit';
 
 import { allRows } from './allRows';
@@ -28,6 +29,7 @@ interface SourceWeek {
   availableOn: string | null;
   requiredAccuracy: number | null;
   requiredMode: string | null;
+  baselineAccuracy: number;
 }
 
 function toSourceWeeks(
@@ -53,6 +55,7 @@ function toSourceWeeks(
       availableOn: week?.availableOn ?? null,
       requiredAccuracy: week?.requiredAccuracy ?? null,
       requiredMode: week?.requiredMode ?? null,
+      baselineAccuracy: week?.baselineAccuracy ?? DEFAULT_BASELINE,
     });
   }
   return weeks;
@@ -92,10 +95,13 @@ async function loadSourceWeeks(
       available_on: string | null;
       required_accuracy: number | null;
       required_mode: string | null;
+      baseline_accuracy: number;
     }>((from, to) =>
       sb
         .from('planned_assignments')
-        .select('deck_id, title, note, due_date, available_on, required_accuracy, required_mode')
+        .select(
+          'deck_id, title, note, due_date, available_on, required_accuracy, required_mode, baseline_accuracy',
+        )
         .eq('group_id', sourcePlan.group_id)
         .in('deck_id', deckIds)
         .range(from, to),
@@ -108,12 +114,13 @@ async function loadSourceWeeks(
       available_on: string | null;
       required_accuracy: number | null;
       required_mode: string | null;
+      baseline_accuracy: number;
       completed_at: string | null;
     }>((from, to) =>
       sb
         .from('assignments')
         .select(
-          'deck_id, title, note, due_date, available_on, required_accuracy, required_mode, completed_at',
+          'deck_id, title, note, due_date, available_on, required_accuracy, required_mode, baseline_accuracy, completed_at',
         )
         .eq('group_id', sourcePlan.group_id)
         .in('deck_id', deckIds)
@@ -208,6 +215,7 @@ async function assignAndLinkWeek(
     availableOn,
     requiredAccuracy: week.requiredAccuracy,
     requiredMode: week.requiredMode,
+    baselineAccuracy: week.baselineAccuracy,
   });
   if (assignResult.error) {
     logger.error('Failed to copy a handout', {

@@ -1258,7 +1258,10 @@
       },
       "goalBoth": "{mode}で{accuracy}%",
       "goalAccuracyOnly": "{accuracy}%",
-      "goalModeOnly": "{mode}で練習"
+      "goalModeOnly": "{mode}で練習",
+      "wordsToKnow": "クリアの めやす",
+      "wordsToKnowOption": "ことばの {pct}%",
+      "wordsToKnowHelp": "ぜんぶの ことばに いちどは こたえます。"
     },
     "assignmentsList": {
       "noAssignmentsTitle": "配布物がまだありません",
@@ -5587,7 +5590,10 @@
       "start": "はじめる",
       "bestSoFar": "いまのベスト {best}%",
       "goalProgressAria": "目標までの進み具合",
-      "pastDue": "期限をすぎたけど、まだできるよ！"
+      "pastDue": "期限をすぎたけど、まだできるよ！",
+      "wordsLine": "{total}こ中 {seen}こ チャレンジ · {needed, plural, =0 {クリアまで あと少し!} other {あと #こ おぼえよう}}",
+      "wordsLineTryRest": "{total}こ中 {seen}こ チャレンジ · のこりも やってみよう!",
+      "wordsProgressAria": "クリアまでの進み具合"
     },
     "collection": {
       "title": "カードコレクション",

@@ -51,7 +51,7 @@ async function scheduleExistingDeck(args: {
 
   const { data: anyAssignment } = await sb
     .from('assignments')
-    .select('title, note, required_accuracy, required_mode')
+    .select('title, note, required_accuracy, required_mode, baseline_accuracy')
     .eq('organizer_id', organizer.id)
     .eq('group_id', group.id)
     .eq('deck_id', deckId)
@@ -84,6 +84,7 @@ async function scheduleExistingDeck(args: {
         available_on: availableOn,
         required_accuracy: anyAssignment.required_accuracy,
         required_mode: anyAssignment.required_mode,
+        baseline_accuracy: anyAssignment.baseline_accuracy,
       },
       { onConflict: 'group_id,deck_id' },
     );

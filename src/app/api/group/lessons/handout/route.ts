@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { isGoalMode } from '@/lib/assignmentMastery';
 import { HANDOUT_NOTE_MAX } from '@/lib/lessonUnits';
 import { logger } from '@/lib/logger';
+import { BASELINE_CHOICES, DEFAULT_BASELINE } from '@/lib/wordProgress';
 
 import { rateLimit } from '../../../_lib/rateLimit';
 import { assignCompanionKana } from '../../_lib/assignCompanionKana';
@@ -159,6 +160,15 @@ export async function POST(req: NextRequest) {
   if (b.requiredMode != null && !isGoalMode(b.requiredMode)) {
     return NextResponse.json({ error: 'requiredMode is not a valid goal mode.' }, { status: 400 });
   }
+  if (
+    b.baselineAccuracy != null &&
+    !(BASELINE_CHOICES as readonly number[]).includes(b.baselineAccuracy as number)
+  ) {
+    return NextResponse.json(
+      { error: `baselineAccuracy must be one of ${BASELINE_CHOICES.join(', ')}.` },
+      { status: 400 },
+    );
+  }
   if (b.note != null && typeof b.note !== 'string') {
     return NextResponse.json({ error: 'note must be a string.' }, { status: 400 });
   }
@@ -217,6 +227,7 @@ export async function POST(req: NextRequest) {
     availableOn: availableOn.value,
     requiredAccuracy: (b.requiredAccuracy as number | null | undefined) ?? null,
     requiredMode: (b.requiredMode as string | null | undefined) ?? null,
+    baselineAccuracy: (b.baselineAccuracy as number | undefined) ?? DEFAULT_BASELINE,
   });
   if (assignError) {
     logger.error('Failed to hand out the lesson', { route: HANDOUT_ROUTE, error: assignError });

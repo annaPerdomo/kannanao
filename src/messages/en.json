@@ -1258,7 +1258,10 @@
       },
       "goalBoth": "{accuracy}% in {mode}",
       "goalAccuracyOnly": "{accuracy}%",
-      "goalModeOnly": "practice in {mode}"
+      "goalModeOnly": "practice in {mode}",
+      "wordsToKnow": "Done when they know",
+      "wordsToKnowOption": "{pct}% of the words",
+      "wordsToKnowHelp": "Every word must be answered at least once."
     },
     "assignmentsList": {
       "noAssignmentsTitle": "No handouts yet",
@@ -5596,7 +5599,10 @@
       "start": "Start",
       "bestSoFar": "best so far {best}%",
       "goalProgressAria": "Progress toward the goal",
-      "pastDue": "Past due — you can still do it!"
+      "pastDue": "Past due — you can still do it!",
+      "wordsLine": "{seen} of {total} words tried · {needed, plural, =0 {all set!} other {# more to learn}}",
+      "wordsLineTryRest": "{seen} of {total} words tried · try the rest!",
+      "wordsProgressAria": "Words known toward finishing"
     },
     "collection": {
       "title": "Your card collection",

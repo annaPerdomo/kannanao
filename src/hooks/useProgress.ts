@@ -656,11 +656,15 @@ export function useProgress(
             .select('deck_id, kana_set')
             .eq('id', sessionId)
             .single();
+          // A session carrying neither is the daily Review, which belongs to
+          // no deck — allDecks re-checks every open deck assignment instead.
           const target = session?.deck_id
             ? { deckId: session.deck_id }
             : session?.kana_set
               ? { kanaSet: session.kana_set }
-              : null;
+              : session
+                ? { allDecks: true as const }
+                : null;
           if (target) {
             const { data: authData } = await supabase.auth.getSession();
             const token = authData.session?.access_token;

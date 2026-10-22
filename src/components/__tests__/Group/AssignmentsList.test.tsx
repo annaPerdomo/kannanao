@@ -29,6 +29,8 @@ function assignment(overrides: Partial<Assignment> = {}): Assignment {
     required_accuracy: null,
     required_mode: null,
     progress_accuracy: null,
+    baseline_accuracy: 80,
+    goal_met_at: null,
     decks: { id: 'd1', name: 'Animals', emoji: '🐾' },
     profiles: { display_name: 'Mika', username: 'mika' },
     ...overrides,

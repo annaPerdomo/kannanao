@@ -6,7 +6,7 @@ import { allRows } from './allRows';
 import { type getServiceSupabase } from './serviceSupabase';
 
 const ASSIGNMENT_COLUMNS =
-  'deck_id, title, note, due_date, available_on, required_accuracy, required_mode, completed_at';
+  'deck_id, title, note, due_date, available_on, required_accuracy, required_mode, baseline_accuracy, completed_at';
 
 interface PlanRow {
   id: string;
@@ -28,6 +28,7 @@ interface TemplateRow {
   available_on: string | null;
   required_accuracy: number | null;
   required_mode: string | null;
+  baseline_accuracy: number;
 }
 interface AssignmentRow extends Omit<TemplateRow, 'deck_id'> {
   deck_id: string | null;
@@ -65,7 +66,9 @@ export async function loadLessonLibrary(
     allRows<TemplateRow>((from, to) =>
       sb
         .from('planned_assignments')
-        .select('deck_id, title, note, due_date, available_on, required_accuracy, required_mode')
+        .select(
+          'deck_id, title, note, due_date, available_on, required_accuracy, required_mode, baseline_accuracy',
+        )
         .eq('group_id', groupId)
         .order('deck_id')
         .range(from, to),

@@ -3,41 +3,40 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { availableNowFilter } from '@/lib/assignmentAvailability';
 import { evaluateMastery } from '@/lib/assignmentMastery';
 import { logger } from '@/lib/logger';
+import { type WordProgress, wordsDone } from '@/lib/wordProgress';
 
 import { getUserFromTokenResult } from '../../../_lib/authCache';
 import { backendUnavailable } from '../../../_lib/backendUnavailable';
 import { rateLimit } from '../../../_lib/rateLimit';
+import { assignmentWordProgress } from '../../_lib/assignmentWordProgress';
 import { getServiceSupabase } from '../../_lib/serviceSupabase';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 30 };
 
 interface PendingAssignment {
   id: string;
+  deck_id: string | null;
   kana_set: string | null;
   required_accuracy: number | null;
   required_mode: string | null;
   progress_accuracy: number | null;
+  baseline_accuracy: number;
+  goal_met_at: string | null;
+  created_at: string;
 }
 
+const SELECT_COLUMNS =
+  'id, deck_id, kana_set, required_accuracy, required_mode, progress_accuracy, baseline_accuracy, goal_met_at, created_at';
+
 /**
- * POST — auto-complete a pending assignment when a member finishes studying a
- * deck, or a kana row.
- *
- * Accepts { deckId, sessionId? } or { kanaSet, sessionId? }. Assignments without
- * mastery criteria complete on any study (legacy behavior). Assignments with
- * criteria are evaluated against the finished session's stats (mode + accuracy,
- * with a minimum card floor); sessions that qualify but fall short update
- * progress_accuracy so the student sees their best attempt so far. No-ops
- * gracefully if no matching assignment exists.
- *
- * A kana assignment has no "no criteria" shortcut — scoping is verified against
- * the server-side session row — so it always needs the sessionId.
+ * POST — completes a pending deck, kana row, or (via `allDecks`) every open
+ * deck after a Review session. A deck needs every word answered since handout
+ * at the baseline share known, plus any mode goal; kana keeps the old any-study rule.
  */
 export async function POST(req: NextRequest) {
   const limited = await rateLimit(req, RATE_LIMIT);
   if (limited) return limited;
 
-  // Authenticate the user (any account type)
   const authHeader = req.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
@@ -60,128 +59,311 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const deckId = typeof body?.deckId === 'string' ? body.deckId : null;
   const kanaSet = typeof body?.kanaSet === 'string' ? body.kanaSet : null;
+  const allDecks = body?.allDecks === true;
   const sessionId = typeof body?.sessionId === 'string' ? body.sessionId : null;
-  if (!deckId === !kanaSet) {
+
+  const shapeCount = [deckId, kanaSet, allDecks].filter(Boolean).length;
+  if (shapeCount !== 1) {
     return NextResponse.json(
-      { error: 'Exactly one of deckId or kanaSet is required.' },
+      { error: 'Exactly one of deckId, kanaSet or allDecks is required.' },
       { status: 400 },
     );
   }
 
   const sb = getServiceSupabase();
 
-  // Find pending assignment(s) for this user + deck (or kana row). An assignment
-  // that hasn't started yet can't be completed — otherwise studying a deck the
-  // learner reached some other way would tick off week 8 during week 1.
-  const pendingQuery = sb
+  if (allDecks) {
+    return completeAllDecks(sb, user.id);
+  }
+  if (deckId) {
+    return completeDeck(sb, user.id, deckId, sessionId);
+  }
+  return completeKana(sb, user.id, kanaSet as string, sessionId);
+}
+
+function pendingBase(sb: ReturnType<typeof getServiceSupabase>, userId: string) {
+  return sb
     .from('assignments')
-    .select('id, kana_set, required_accuracy, required_mode, progress_accuracy')
-    .eq('member_id', user.id)
+    .select(SELECT_COLUMNS)
+    .eq('member_id', userId)
     .is('completed_at', null)
     .or(availableNowFilter());
-  const { data: pending, error: findError } = await (deckId
-    ? pendingQuery.eq('deck_id', deckId)
-    : pendingQuery.eq('kana_set', kanaSet));
+}
 
-  if (findError) {
+async function findPending(
+  sb: ReturnType<typeof getServiceSupabase>,
+  userId: string,
+  filter: (q: ReturnType<typeof pendingBase>) => PromiseLike<{
+    data: PendingAssignment[] | null;
+    error: { message: string } | null;
+  }>,
+): Promise<{ rows: PendingAssignment[] } | { error: string }> {
+  const { data, error } = await filter(pendingBase(sb, userId));
+  if (error) return { error: error.message };
+  return { rows: data ?? [] };
+}
+
+async function recordProgress(
+  sb: ReturnType<typeof getServiceSupabase>,
+  progressUpdates: { id: string; accuracy: number }[],
+): Promise<void> {
+  if (progressUpdates.length === 0) return;
+  const results = await Promise.all(
+    progressUpdates.map(({ id, accuracy }) =>
+      sb.from('assignments').update({ progress_accuracy: accuracy }).eq('id', id),
+    ),
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) {
+    logger.error('Failed to update assignment progress', {
+      route: '/api/group/assignments/complete',
+      error: failed.error.message,
+    });
+  }
+}
+
+async function markGoalMet(
+  sb: ReturnType<typeof getServiceSupabase>,
+  ids: string[],
+): Promise<void> {
+  if (ids.length === 0) return;
+  const { error } = await sb
+    .from('assignments')
+    .update({ goal_met_at: new Date().toISOString() })
+    .in('id', ids);
+  if (error) {
+    logger.error('Failed to record a met mode goal', {
+      route: '/api/group/assignments/complete',
+      error: error.message,
+    });
+  }
+}
+
+async function markComplete(
+  sb: ReturnType<typeof getServiceSupabase>,
+  ids: string[],
+): Promise<{ error?: string }> {
+  if (ids.length === 0) return {};
+  const { error } = await sb
+    .from('assignments')
+    .update({ completed_at: new Date().toISOString() })
+    .in('id', ids);
+  if (error) {
+    logger.error('Failed to auto-complete assignments', {
+      route: '/api/group/assignments/complete',
+      error: error.message,
+    });
+    return { error: error.message };
+  }
+  return {};
+}
+
+async function wordsFor(
+  sb: ReturnType<typeof getServiceSupabase>,
+  userId: string,
+  rows: PendingAssignment[],
+): Promise<Map<string, WordProgress> | { error: true }> {
+  try {
+    return await assignmentWordProgress(sb, userId, rows);
+  } catch (err) {
+    logger.error('Failed to compute word progress for auto-complete', {
+      route: '/api/group/assignments/complete',
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return { error: true };
+  }
+}
+
+async function sessionStatsFor(
+  sb: ReturnType<typeof getServiceSupabase>,
+  userId: string,
+  sessionId: string | null,
+  deckId: string,
+): Promise<{
+  practice_mode: string | null;
+  cards_studied: number;
+  cards_correct: number;
+  kana_set: string | null;
+} | null> {
+  if (!sessionId) return null;
+  const { data: session } = await sb
+    .from('study_sessions')
+    .select('user_id, deck_id, kana_set, practice_mode, cards_studied, cards_correct')
+    .eq('id', sessionId)
+    .maybeSingle();
+  if (session && session.user_id === userId && session.deck_id === deckId) return session;
+  return null;
+}
+
+async function completeDeck(
+  sb: ReturnType<typeof getServiceSupabase>,
+  userId: string,
+  deckId: string,
+  sessionId: string | null,
+): Promise<NextResponse> {
+  const pending = await findPending(sb, userId, (q) => q.eq('deck_id', deckId));
+  if ('error' in pending) {
     logger.error('Failed to query assignments for auto-complete', {
       route: '/api/group/assignments/complete',
-      error: findError.message,
+      error: pending.error,
     });
     return NextResponse.json({ error: 'Failed to check assignments.' }, { status: 500 });
   }
-
-  if (!pending || pending.length === 0) {
+  if (pending.rows.length === 0) {
     return NextResponse.json({ completed: 0 });
   }
 
-  const assignments = pending as PendingAssignment[];
-  // A kana assignment always has a criterion — the session must have been
-  // scoped to its row — so it never takes the completes-on-any-study path.
-  const hasCriteria = (a: PendingAssignment) =>
-    a.kana_set != null || a.required_accuracy != null || a.required_mode != null;
+  const wordsMap = await wordsFor(sb, userId, pending.rows);
+  if ('error' in wordsMap) {
+    return NextResponse.json({ error: 'Failed to check assignments.' }, { status: 500 });
+  }
+  const sessionStats = await sessionStatsFor(sb, userId, sessionId, deckId);
 
-  // Criteria assignments need the session's stats. The session row is looked
-  // up server-side (not trusted from the request body) and must belong to the
-  // requester and the studied deck or kana row.
+  const toComplete: string[] = [];
+  const toMarkGoalMet: string[] = [];
+  const progressUpdates: { id: string; accuracy: number }[] = [];
+  const words: Record<string, WordProgress> = {};
+
+  for (const a of pending.rows) {
+    const progress = wordsMap.get(a.id) ?? { total: 0, seen: 0, known: 0 };
+    words[a.id] = progress;
+
+    const hasModeGoal = a.required_accuracy != null || a.required_mode != null;
+    let goalDone = !hasModeGoal || a.goal_met_at != null;
+    let masteryNow = false;
+
+    // Still graded once the goal is already met, so progress_accuracy keeps
+    // reflecting the best session even after the goal itself stops moving.
+    if (hasModeGoal && sessionStats) {
+      const outcome = evaluateMastery(a, sessionStats, progress.total);
+      if (a.goal_met_at == null) {
+        masteryNow = outcome.completes;
+        goalDone = outcome.completes;
+      }
+      if (
+        outcome.qualifyingAccuracy != null &&
+        outcome.qualifyingAccuracy > (a.progress_accuracy ?? -1)
+      ) {
+        progressUpdates.push({ id: a.id, accuracy: outcome.qualifyingAccuracy });
+      }
+    }
+
+    if (wordsDone(progress, a.baseline_accuracy) && goalDone) {
+      toComplete.push(a.id);
+    } else if (masteryNow && a.goal_met_at == null) {
+      toMarkGoalMet.push(a.id);
+    }
+  }
+
+  await recordProgress(sb, progressUpdates);
+  await markGoalMet(sb, toMarkGoalMet);
+  const { error } = await markComplete(sb, toComplete);
+  if (error) {
+    return NextResponse.json({ error: 'Failed to complete assignments.' }, { status: 500 });
+  }
+
+  return NextResponse.json({
+    completed: toComplete.length,
+    progressUpdated: progressUpdates.length,
+    words,
+  });
+}
+
+/** A Review session just ended: recheck every deck assignment whose mode goal (if any) is already satisfied. */
+async function completeAllDecks(
+  sb: ReturnType<typeof getServiceSupabase>,
+  userId: string,
+): Promise<NextResponse> {
+  const pending = await findPending(sb, userId, (q) =>
+    q
+      .not('deck_id', 'is', null)
+      .or('and(required_mode.is.null,required_accuracy.is.null),goal_met_at.not.is.null'),
+  );
+  if ('error' in pending) {
+    logger.error('Failed to query assignments for auto-complete', {
+      route: '/api/group/assignments/complete',
+      error: pending.error,
+    });
+    return NextResponse.json({ error: 'Failed to check assignments.' }, { status: 500 });
+  }
+  if (pending.rows.length === 0) {
+    return NextResponse.json({ completed: 0, progressUpdated: 0, words: {} });
+  }
+
+  const wordsMap = await wordsFor(sb, userId, pending.rows);
+  if ('error' in wordsMap) {
+    return NextResponse.json({ error: 'Failed to check assignments.' }, { status: 500 });
+  }
+  const toComplete: string[] = [];
+  const words: Record<string, WordProgress> = {};
+
+  for (const a of pending.rows) {
+    const progress = wordsMap.get(a.id) ?? { total: 0, seen: 0, known: 0 };
+    words[a.id] = progress;
+    if (wordsDone(progress, a.baseline_accuracy)) toComplete.push(a.id);
+  }
+
+  const { error } = await markComplete(sb, toComplete);
+  if (error) {
+    return NextResponse.json({ error: 'Failed to complete assignments.' }, { status: 500 });
+  }
+
+  return NextResponse.json({ completed: toComplete.length, progressUpdated: 0, words });
+}
+
+async function completeKana(
+  sb: ReturnType<typeof getServiceSupabase>,
+  userId: string,
+  kanaSet: string,
+  sessionId: string | null,
+): Promise<NextResponse> {
+  const pending = await findPending(sb, userId, (q) => q.eq('kana_set', kanaSet));
+  if ('error' in pending) {
+    logger.error('Failed to query assignments for auto-complete', {
+      route: '/api/group/assignments/complete',
+      error: pending.error,
+    });
+    return NextResponse.json({ error: 'Failed to check assignments.' }, { status: 500 });
+  }
+  if (pending.rows.length === 0) {
+    return NextResponse.json({ completed: 0 });
+  }
+
   let sessionStats: {
     practice_mode: string | null;
     cards_studied: number;
     cards_correct: number;
     kana_set: string | null;
   } | null = null;
-  if (assignments.some(hasCriteria) && sessionId) {
+  if (sessionId) {
     const { data: session } = await sb
       .from('study_sessions')
       .select('user_id, deck_id, kana_set, practice_mode, cards_studied, cards_correct')
       .eq('id', sessionId)
       .maybeSingle();
-    const targetMatches = deckId ? session?.deck_id === deckId : session?.kana_set === kanaSet;
-    if (session && session.user_id === user.id && targetMatches) {
+    if (session && session.user_id === userId && session.kana_set === kanaSet) {
       sessionStats = session;
     }
-  }
-
-  // Caps the card floor at the deck's size so a deck smaller than the floor can
-  // still be completed. Only fetched when a session actually has to be graded.
-  let deckCardCount: number | null = null;
-  if (sessionStats && deckId) {
-    const { data: deck } = await sb
-      .from('decks')
-      .select('card_count')
-      .eq('id', deckId)
-      .maybeSingle();
-    deckCardCount = deck?.card_count ?? null;
   }
 
   const toComplete: string[] = [];
   const progressUpdates: { id: string; accuracy: number }[] = [];
 
-  for (const a of assignments) {
-    if (!hasCriteria(a)) {
-      toComplete.push(a.id);
-      continue;
-    }
-    if (!sessionStats) continue; // can't evaluate criteria without session stats
-    const { completes, qualifyingAccuracy } = evaluateMastery(a, sessionStats, deckCardCount);
-    if (completes) toComplete.push(a.id);
-    if (qualifyingAccuracy != null && qualifyingAccuracy > (a.progress_accuracy ?? -1)) {
-      progressUpdates.push({ id: a.id, accuracy: qualifyingAccuracy });
-    }
-  }
-
-  // Record best-so-far accuracy (including for assignments completing now, so
-  // the final score shows on the completed card).
-  if (progressUpdates.length > 0) {
-    const results = await Promise.all(
-      progressUpdates.map(({ id, accuracy }) =>
-        sb.from('assignments').update({ progress_accuracy: accuracy }).eq('id', id),
-      ),
-    );
-    const failed = results.find((r) => r.error);
-    if (failed?.error) {
-      logger.error('Failed to update assignment progress', {
-        route: '/api/group/assignments/complete',
-        error: failed.error.message,
-      });
-      // Non-fatal: completion below is the part that must not be lost.
+  for (const a of pending.rows) {
+    if (!sessionStats) continue;
+    const outcome = evaluateMastery(a, sessionStats);
+    if (outcome.completes) toComplete.push(a.id);
+    if (
+      outcome.qualifyingAccuracy != null &&
+      outcome.qualifyingAccuracy > (a.progress_accuracy ?? -1)
+    ) {
+      progressUpdates.push({ id: a.id, accuracy: outcome.qualifyingAccuracy });
     }
   }
 
-  if (toComplete.length === 0) {
-    return NextResponse.json({ completed: 0, progressUpdated: progressUpdates.length });
-  }
-
-  const { error: updateError } = await sb
-    .from('assignments')
-    .update({ completed_at: new Date().toISOString() })
-    .in('id', toComplete);
-
-  if (updateError) {
-    logger.error('Failed to auto-complete assignments', {
-      route: '/api/group/assignments/complete',
-      error: updateError.message,
-    });
+  await recordProgress(sb, progressUpdates);
+  const { error } = await markComplete(sb, toComplete);
+  if (error) {
     return NextResponse.json({ error: 'Failed to complete assignments.' }, { status: 500 });
   }
 

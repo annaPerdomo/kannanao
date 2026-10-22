@@ -18,6 +18,7 @@ import { useLessonEdits } from '@/hooks/useLessonEdits';
 import type { GoalMode } from '@/lib/assignmentMastery';
 import { kanaSetLabel } from '@/lib/lessonKana';
 import { HANDOUT_NOTE_MAX, nextFriday } from '@/lib/lessonUnits';
+import { DEFAULT_BASELINE } from '@/lib/wordProgress';
 import type { HandOutLessonResult } from '@/types/lessonUnit';
 
 interface HandOutDialogProps {
@@ -51,6 +52,7 @@ export function HandOutDialog({
   const [note, setNote] = useState('');
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [mode, setMode] = useState<GoalMode | null>(null);
+  const [baselineAccuracy, setBaselineAccuracy] = useState<number>(DEFAULT_BASELINE);
 
   const learnerCount = members.length;
   const datesOutOfOrder = Boolean(availableOn && dueDate && availableOn > dueDate);
@@ -64,6 +66,7 @@ export function HandOutDialog({
       note: note.trim() || null,
       requiredAccuracy: accuracy,
       requiredMode: mode,
+      baselineAccuracy,
       withSentences,
     });
     if (result) onDone(result);
@@ -138,6 +141,8 @@ export function HandOutDialog({
           mode={mode}
           onAccuracyChange={setAccuracy}
           onModeChange={setMode}
+          baselineAccuracy={baselineAccuracy}
+          onBaselineChange={setBaselineAccuracy}
         />
         <Stack direction="row" sx={{ alignItems: 'flex-start', gap: 1 }}>
           <Switch

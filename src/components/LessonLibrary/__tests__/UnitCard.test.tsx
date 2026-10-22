@@ -42,6 +42,7 @@ function unit(): LessonUnit {
         availableOn: '2026-08-25',
         requiredAccuracy: null,
         requiredMode: null,
+        baselineAccuracy: 80,
         learnerCount: 0,
         finishedCount: 0,
         wordCount: 0,

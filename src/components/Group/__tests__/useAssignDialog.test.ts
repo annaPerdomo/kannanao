@@ -22,6 +22,8 @@ function batch(overrides: Partial<Assignment> = {}): AssignmentBatch {
     required_accuracy: null,
     required_mode: null,
     progress_accuracy: null,
+    baseline_accuracy: 80,
+    goal_met_at: null,
     ...overrides,
   };
   return {

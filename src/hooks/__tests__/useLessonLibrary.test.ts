@@ -35,6 +35,7 @@ function week(overrides: Partial<LessonLibraryData['units'][number]['weeks'][num
     availableOn: '2026-10-13',
     requiredAccuracy: null,
     requiredMode: null,
+    baselineAccuracy: 80,
     learnerCount: 2,
     finishedCount: 0,
     wordCount: 0,

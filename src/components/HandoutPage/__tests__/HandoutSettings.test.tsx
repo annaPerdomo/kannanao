@@ -37,6 +37,7 @@ describe('HandoutSettings', () => {
       dueDate: '2026-10-09',
       requiredAccuracy: null,
       requiredMode: null,
+      baselineAccuracy: 80,
     });
   });
 

@@ -1,3 +1,4 @@
+import { DEFAULT_BASELINE } from '@/lib/wordProgress';
 import type {
   LessonLibrary,
   LessonUnit,
@@ -102,6 +103,7 @@ interface ScheduleFields {
   available_on: string | null;
   required_accuracy: number | null;
   required_mode: string | null;
+  baseline_accuracy: number;
 }
 
 const EMPTY_SCHEDULE: ScheduleFields = {
@@ -111,6 +113,7 @@ const EMPTY_SCHEDULE: ScheduleFields = {
   available_on: null,
   required_accuracy: null,
   required_mode: null,
+  baseline_accuracy: DEFAULT_BASELINE,
 };
 
 function scheduleKey(fields: ScheduleFields): string {
@@ -121,6 +124,7 @@ function scheduleKey(fields: ScheduleFields): string {
     fields.available_on,
     fields.required_accuracy,
     fields.required_mode,
+    fields.baseline_accuracy,
   ]);
 }
 
@@ -167,6 +171,7 @@ export function buildLessonLibrary(input: {
     available_on: string | null;
     required_accuracy: number | null;
     required_mode: string | null;
+    baseline_accuracy?: number;
   }[];
   assignments: {
     deck_id: string | null;
@@ -176,6 +181,7 @@ export function buildLessonLibrary(input: {
     available_on: string | null;
     required_accuracy: number | null;
     required_mode: string | null;
+    baseline_accuracy?: number;
     completed_at: string | null;
   }[];
   today: string;
@@ -196,9 +202,14 @@ export function buildLessonLibrary(input: {
 
   function scheduleFor(deckId: string): ScheduleFields {
     const template = templateByDeck.get(deckId);
-    if (template) return template;
+    if (template)
+      return { ...template, baseline_accuracy: template.baseline_accuracy ?? DEFAULT_BASELINE };
     const rows = assignmentsByDeck.get(deckId) ?? [];
-    return mostCommonSchedule(rows.map((r) => ({ ...r }))) ?? EMPTY_SCHEDULE;
+    return (
+      mostCommonSchedule(
+        rows.map((r) => ({ ...r, baseline_accuracy: r.baseline_accuracy ?? DEFAULT_BASELINE })),
+      ) ?? EMPTY_SCHEDULE
+    );
   }
 
   function weekFor(deckId: string, week: number | null): LessonUnitWeek | null {
@@ -218,6 +229,7 @@ export function buildLessonLibrary(input: {
       availableOn: schedule.available_on,
       requiredAccuracy: schedule.required_accuracy,
       requiredMode: schedule.required_mode,
+      baselineAccuracy: schedule.baseline_accuracy,
       learnerCount: rows.length,
       finishedCount: rows.filter((r) => r.completed_at).length,
       wordCount: cardCounts[deckId] ?? 0,

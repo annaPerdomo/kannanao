@@ -252,6 +252,31 @@ describe('useProgress session tracking', () => {
     expect(seen).toEqual([5]);
   });
 
+  it('posts allDecks for a Review session with no deck_id and no kana_set', async () => {
+    // The default study_sessions mock row carries neither field — exactly a
+    // deckless, kana-less Review session.
+    sbMock.auth.getSession.mockResolvedValueOnce({
+      data: { session: { access_token: 'tok' } },
+    } as unknown as Awaited<ReturnType<typeof sbMock.auth.getSession>>);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({ json: async () => ({ completed: 0, progressUpdated: 0, words: {} }) });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderProgress();
+    await act(async () => {
+      await result.current.endSession('s1', PERFECT_RUN);
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/group/assignments/complete',
+      expect.objectContaining({
+        body: JSON.stringify({ allDecks: true, sessionId: 's1' }),
+      }),
+    );
+    vi.unstubAllGlobals();
+  });
+
   it('does not award the perfect bonus for an imperfect session', async () => {
     const { result } = renderProgress();
 
