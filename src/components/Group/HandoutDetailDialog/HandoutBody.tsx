@@ -1,4 +1,7 @@
 'use client';
+import Stack from '@mui/material/Stack';
+
+import { SentencesStatus } from '@/components/HandoutPage/SentencesStatus';
 import type { HandoutRef } from '@/types/handout';
 
 import { GroupWordList } from './GroupWordList';
@@ -56,7 +59,10 @@ export function HandoutBody({
 
   if (groupId) {
     return (
-      <GroupWordList groupId={groupId} deckId={handout.deckId} onPickLearner={onPickLearner} />
+      <Stack spacing={1.5}>
+        <SentencesStatus deckId={handout.deckId} compact />
+        <GroupWordList groupId={groupId} deckId={handout.deckId} onPickLearner={onPickLearner} />
+      </Stack>
     );
   }
 

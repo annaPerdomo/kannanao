@@ -2091,7 +2091,15 @@
       "handOutConfirm": "Hand out to {count, plural, one {# learner} other {# learners}}",
       "handedOutToast": "Handed out! Learners will see it in Practice.",
       "kanaFailedToast": "Handed out, but some sounds could not be added: {list}",
-      "sentencesFailedToast": "Handed out, but practice sentences couldn't be added. You can add them from the deck page.",
+      "sentencesFailedToast": "Handed out, but the sentences could not be made. Use \"Make sentences\" to try again.",
+      "sentences": {
+        "title": "Sentence Builder",
+        "ready": "{count, plural, one {# sentence ready} other {# sentences ready}} — plays in every practice",
+        "missing": "No sentences yet, so Sentence Builder is skipped in practice.",
+        "make": "Make sentences",
+        "made": "{count, plural, one {# sentence} other {# sentences}} made. Learners get them from their next practice.",
+        "open": "Try it"
+      },
       "soundsTitle": "Sounds in this lesson",
       "soundsEmpty": "No sounds picked yet.",
       "soundsSuggested": "These rows appear in your words:",

@@ -2091,7 +2091,15 @@
       "handOutConfirm": "{count}人に配る",
       "handedOutToast": "配りました！学ぶ人の練習に表示されます。",
       "kanaFailedToast": "配りましたが、追加できなかった文字があります：{list}",
-      "sentencesFailedToast": "配りましたが、練習文を追加できませんでした。デッキのページから追加できます。",
+      "sentencesFailedToast": "くばりましたが、文がつくれませんでした。「文をつくる」でもう一度ためしてください。",
+      "sentences": {
+        "title": "文づくり",
+        "ready": "れんしゅう用の文が{count}こあります。毎回の練習に出ます。",
+        "missing": "文がまだないので、練習に「文づくり」が出ません。",
+        "make": "文をつくる",
+        "made": "文を{count}こつくりました。次の練習から出ます。",
+        "open": "やってみる"
+      },
       "soundsTitle": "このレッスンの文字",
       "soundsEmpty": "まだ文字を選んでいません。",
       "soundsSuggested": "単語に出てくる行：",

@@ -21,6 +21,8 @@ vi.mock('@/hooks/useGroup', () => ({
   useGroupMembers: (...args: unknown[]) => mockUseGroupMembers(...args),
 }));
 
+vi.mock('@/components/HandoutPage/SentencesStatus', () => ({ SentencesStatus: () => null }));
+
 function card(overrides: Record<string, unknown> = {}) {
   return {
     id: 'c1',
