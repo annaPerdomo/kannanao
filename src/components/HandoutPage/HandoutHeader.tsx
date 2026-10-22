@@ -1,15 +1,15 @@
 'use client';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import EditIcon from '@mui/icons-material/Edit';
+import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import PrintIcon from '@mui/icons-material/Print';
 import QuizIcon from '@mui/icons-material/Quiz';
 import StyleIcon from '@mui/icons-material/Style';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
@@ -23,12 +23,16 @@ import type { LocatedWeek } from '@/lib/lessonUnits';
 import type { Flashcard } from '@/types/flashcard';
 import type { LessonWeekStatus } from '@/types/lessonUnit';
 
+import { HandoutTitle } from './HandoutTitle';
 import { handoutPrintHtml } from './printHandout';
 
 interface HandoutHeaderProps {
   located: LocatedWeek;
   hrefFor: (deckId: string) => string;
   cards: Flashcard[];
+  onRename?: (name: string) => Promise<boolean>;
+  onEditSchedule?: () => void;
+  onShift?: () => void;
 }
 
 const STATUS_KEY: Record<LessonWeekStatus, string> = {
@@ -38,7 +42,14 @@ const STATUS_KEY: Record<LessonWeekStatus, string> = {
   past: 'statusPast',
 };
 
-export function HandoutHeader({ located, hrefFor, cards }: HandoutHeaderProps) {
+export function HandoutHeader({
+  located,
+  hrefFor,
+  cards,
+  onRename,
+  onEditSchedule,
+  onShift,
+}: HandoutHeaderProps) {
   const t = useTranslations('Materials.handoutPage');
   const tLib = useTranslations('Materials.library');
   const tPrint = useTranslations('Group.lessonBuilder');
@@ -117,32 +128,40 @@ export function HandoutHeader({ located, hrefFor, cards }: HandoutHeaderProps) {
       <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: 'text.secondary' }}>
         {overline}
       </Typography>
-      <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, mt: 0.5, flexWrap: 'wrap' }}>
-        <Typography
-          component="h1"
-          sx={{ fontWeight: 800, fontSize: { xs: '1.4rem', sm: '1.7rem' }, color: 'text.primary' }}
-        >
-          {week.deckEmoji ? `${week.deckEmoji} ` : ''}
-          {week.deckName}
-        </Typography>
-        <Chip
-          size="small"
-          variant="outlined"
-          label={tLib(STATUS_KEY[week.status])}
-          sx={{
-            color: 'text.primary',
-            fontWeight: 700,
-            borderColor: alpha(statusColor, 0.4),
-            bgcolor: alpha(statusColor, 0.1),
-          }}
-        />
-      </Stack>
+      <HandoutTitle
+        name={week.deckName}
+        emoji={week.deckEmoji}
+        statusLabel={tLib(STATUS_KEY[week.status])}
+        statusColor={statusColor}
+        onRename={onRename}
+      />
       {week.title && week.title !== week.deckName && (
         <Typography sx={{ color: 'text.primary', mt: 0.5 }}>{week.title}</Typography>
       )}
-      <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', mt: 1 }}>
-        {facts.join(' · ')}
-      </Typography>
+      {facts.length > 0 &&
+        (onEditSchedule ? (
+          <Button
+            onClick={onEditSchedule}
+            endIcon={<EditIcon sx={{ fontSize: 14 }} />}
+            sx={{
+              mt: 0.5,
+              ml: -0.5,
+              px: 0.5,
+              justifyContent: 'flex-start',
+              textAlign: 'left',
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              color: 'text.secondary',
+            }}
+          >
+            {facts.join(' · ')}
+          </Button>
+        ) : (
+          <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', mt: 1 }}>
+            {facts.join(' · ')}
+          </Typography>
+        ))}
       {week.note && (
         <Typography sx={{ fontSize: '0.85rem', color: 'text.primary', mt: 0.5 }}>
           {t('canDo', { note: week.note })}
@@ -182,6 +201,15 @@ export function HandoutHeader({ located, hrefFor, cards }: HandoutHeaderProps) {
         >
           {t('openDeck')}
         </Button>
+        {onShift && (
+          <Button
+            startIcon={<EventRepeatIcon />}
+            onClick={onShift}
+            sx={{ textTransform: 'none', fontWeight: 700 }}
+          >
+            {tLib('moveLater')}
+          </Button>
+        )}
         <Box sx={{ flex: 1 }} />
         {previous && (
           <Button

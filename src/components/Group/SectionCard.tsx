@@ -14,6 +14,7 @@ interface SectionCardProps {
   footer?: React.ReactNode;
   /** Header-only mode: tightens padding and drops the body gap when `children` collapse to nothing. */
   compact?: boolean;
+  id?: string;
   children: React.ReactNode;
 }
 
@@ -27,6 +28,7 @@ export function SectionCard({
   action,
   footer,
   compact = false,
+  id,
   children,
 }: SectionCardProps) {
   const theme = useTheme();
@@ -34,6 +36,7 @@ export function SectionCard({
 
   return (
     <Paper
+      id={id}
       elevation={0}
       sx={{
         display: 'flex',

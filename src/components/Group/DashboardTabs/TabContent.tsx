@@ -49,7 +49,6 @@ interface TabContentProps {
     updates: { note?: string | null; dueDate?: string | null; availableOn?: string | null },
   ) => Promise<void>;
   onDeleteAssignments: (ids: string[]) => Promise<void>;
-  onAssign: () => void;
   onAssignMissing: (batch: AssignmentBatch, memberIds: string[]) => void;
   onBuild: () => void;
   onLibraryChanged: () => void;
@@ -86,7 +85,6 @@ export function TabContent({
   onSendEncouragement,
   onEditAssignments,
   onDeleteAssignments,
-  onAssign,
   onAssignMissing,
   onBuild,
   onLibraryChanged,
@@ -130,8 +128,6 @@ export function TabContent({
         assignmentsError={assignmentsError}
         onEditAssignments={onEditAssignments}
         onDeleteAssignments={onDeleteAssignments}
-        canAssign={canAssign}
-        onAssign={onAssign}
         ownDecks={ownDecks}
         onSendEncouragement={onSendEncouragement}
         members={members}

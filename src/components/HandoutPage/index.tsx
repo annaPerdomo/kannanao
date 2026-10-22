@@ -24,6 +24,7 @@ import { invalidateApiCache } from '@/lib/apiCache';
 import type { HandoutLearnerSummary } from '@/lib/handoutWords';
 import { kanaSetLabel } from '@/lib/lessonKana';
 import { handoutPagePath, locateWeek } from '@/lib/lessonUnits';
+import { dbRenameDeck } from '@/lib/supabase';
 import { LAYOUT } from '@/theme';
 import type { HandOutLessonResult, HandoutPatch } from '@/types/lessonUnit';
 
@@ -100,6 +101,36 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
     }
     await library.refetch();
     await words.refetch();
+  };
+
+  const handleRename = async (name: string) => {
+    const current = located?.week;
+    const syncTitle = Boolean(current?.handedOut) && current?.title !== name;
+    const renameDeck = current?.deckName !== name;
+    if (!syncTitle && !renameDeck) return true;
+    if (syncTitle && !(await library.editWeek(deckId, { title: name }))) {
+      showToast(tLib('saveError'), 'error');
+      return false;
+    }
+    if (renameDeck) {
+      try {
+        await dbRenameDeck(deckId, name);
+      } catch {
+        showToast(tLib('saveError'), 'error');
+        return false;
+      }
+      invalidateApiCache(LESSON_LIBRARY_CACHE_PREFIX);
+      await library.refetch();
+    }
+    await words.refetch();
+    showToast(tLib('savedToast'));
+    return true;
+  };
+
+  const scrollToSchedule = () => {
+    const card = document.getElementById('handout-settings');
+    card?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    card?.querySelector<HTMLElement>('textarea, input')?.focus({ preventScroll: true });
   };
 
   const handleSave = async (patch: HandoutPatch) => {
@@ -196,7 +227,14 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
   return (
     <Container sx={{ py: LAYOUT.pagePy, maxWidth: LAYOUT.contentMaxWidth }}>
       {backButton}
-      <HandoutHeader located={located} hrefFor={hrefFor} cards={cards} />
+      <HandoutHeader
+        located={located}
+        hrefFor={hrefFor}
+        cards={cards}
+        onRename={handleRename}
+        onEditSchedule={isDraft ? undefined : scrollToSchedule}
+        onShift={unit && !isDraft ? () => setShiftOpen(true) : undefined}
+      />
 
       {isDraft && (
         <Box sx={{ mt: 2.5 }}>
@@ -213,7 +251,6 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
         groupId={groupId}
         deckId={deckId}
         week={week}
-        unit={unit}
         isDraft={isDraft}
         cards={cards}
         viewMember={viewMember}
@@ -230,7 +267,6 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
         savingSchedule={library.saving}
         onSaveSchedule={handleSave}
         onRemoveWeek={handleRemove}
-        onShift={() => setShiftOpen(true)}
       />
 
       <ShiftDialog

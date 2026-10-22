@@ -100,8 +100,6 @@ function baseProps(overrides: Partial<Parameters<typeof LessonsTab>[0]> = {}) {
     assignmentsError: null,
     onEditAssignments: vi.fn(),
     onDeleteAssignments: vi.fn(),
-    canAssign: true,
-    onAssign: vi.fn(),
     ownDecks: [],
     onSendEncouragement: vi.fn(),
     members: [],
@@ -119,7 +117,7 @@ describe('LessonsTab', () => {
         {...baseProps({ library: makeLibrary({ library: { units: [], loose: [looseWeek()] } }) })}
       />,
     );
-    expect(screen.getByText('Other handouts')).toBeInTheDocument();
+    expect(screen.getByText('Other lessons')).toBeInTheDocument();
   });
 
   it('shows the Kana goals section only when a deck-less assignment exists', () => {
@@ -164,32 +162,19 @@ describe('LessonsTab', () => {
     expect(onBuild).toHaveBeenCalled();
   });
 
-  it('"More ways to add" routes to the AI planner, Quizlet and kana course, and calls onAssign for a deck', () => {
-    const onAssign = vi.fn();
+  it('the heading button opens the new lesson flow even when lessons exist', () => {
+    const onBuild = vi.fn();
     renderWithProviders(
       <LessonsTab
         {...baseProps({
           library: makeLibrary({ library: { units: [], loose: [looseWeek()] } }),
-          onAssign,
+          onBuild,
         })}
       />,
     );
-
-    fireEvent.click(screen.getByText('More ways to add'));
-    fireEvent.click(screen.getByText('Plan several lessons with AI'));
-    expect(mockPush).toHaveBeenCalledWith('/group/g1/add/lesson');
-
-    fireEvent.click(screen.getByText('More ways to add'));
-    fireEvent.click(screen.getByText('Hand out a deck I made'));
-    expect(onAssign).toHaveBeenCalled();
-
-    fireEvent.click(screen.getByText('More ways to add'));
-    fireEvent.click(screen.getByText('Import from Quizlet'));
-    expect(mockPush).toHaveBeenCalledWith('/group/g1/add/quizlet');
-
-    fireEvent.click(screen.getByText('More ways to add'));
-    fireEvent.click(screen.getByText('Kana course'));
-    expect(mockPush).toHaveBeenCalledWith('/group/g1/add/kana');
+    expect(screen.queryByText('More ways to add')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'New lesson' }));
+    expect(onBuild).toHaveBeenCalled();
   });
 
   it('calls onChanged after a successful Lesson Library mutation', async () => {

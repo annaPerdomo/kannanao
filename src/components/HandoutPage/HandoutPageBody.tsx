@@ -11,7 +11,7 @@ import type { HandoutWords } from '@/hooks/useHandoutWords';
 import type { HandoutLearnerSummary } from '@/lib/handoutWords';
 import { goalFromLessonTitle } from '@/lib/lessonAi';
 import type { Flashcard } from '@/types/flashcard';
-import type { HandoutPatch, LessonUnit, LessonUnitWeek } from '@/types/lessonUnit';
+import type { HandoutPatch, LessonUnitWeek } from '@/types/lessonUnit';
 
 import type { ToastSeverity, ViewMember } from './constants';
 import { HandoutSettings } from './HandoutSettings';
@@ -23,7 +23,6 @@ interface HandoutPageBodyProps {
   groupId: string;
   deckId: string;
   week: LessonUnitWeek;
-  unit: LessonUnit | null;
   isDraft: boolean;
   cards: Flashcard[];
   viewMember: ViewMember | null;
@@ -44,14 +43,12 @@ interface HandoutPageBodyProps {
   savingSchedule: boolean;
   onSaveSchedule: (patch: HandoutPatch) => Promise<boolean>;
   onRemoveWeek: () => Promise<boolean>;
-  onShift?: () => void;
 }
 
 export function HandoutPageBody({
   groupId,
   deckId,
   week,
-  unit,
   isDraft,
   cards,
   viewMember,
@@ -68,7 +65,6 @@ export function HandoutPageBody({
   savingSchedule,
   onSaveSchedule,
   onRemoveWeek,
-  onShift,
 }: HandoutPageBodyProps) {
   const t = useTranslations('Materials.handoutPage');
 
@@ -148,7 +144,6 @@ export function HandoutPageBody({
             saving={savingSchedule}
             onSave={onSaveSchedule}
             onRemove={onRemoveWeek}
-            onShift={unit ? onShift : undefined}
           />
         </Stack>
       )}

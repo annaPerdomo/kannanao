@@ -55,6 +55,9 @@ describe('HandOutDialog', () => {
       />,
     );
 
+    fireEvent.change(screen.getByLabelText('What learners will be able to do'), {
+      target: { value: ' Order a meal ' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Hand out to 2 learners' }));
 
     await vi.waitFor(() =>
@@ -62,6 +65,9 @@ describe('HandOutDialog', () => {
         deckId: 'd2',
         dueDate: nextFriday(todayIso()),
         availableOn: todayIso(),
+        note: 'Order a meal',
+        requiredAccuracy: null,
+        requiredMode: null,
         withSentences: true,
       }),
     );

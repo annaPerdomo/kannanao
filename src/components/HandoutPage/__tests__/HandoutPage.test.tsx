@@ -50,6 +50,9 @@ vi.mock('@/components/Group/HandoutDetailDialog/LearnerWordList', () => ({
   LearnerWordList: ({ memberName }: { memberName: string }) => <p>learner view {memberName}</p>,
 }));
 vi.mock('@/components/HandoutPage/SoundsSection', () => ({ SoundsSection: () => null }));
+const renameDeck = vi.fn().mockResolvedValue({});
+vi.mock('@/lib/supabase', () => ({ dbRenameDeck: (...args: unknown[]) => renameDeck(...args) }));
+vi.mock('@/lib/apiCache', () => ({ invalidateApiCache: vi.fn() }));
 const handOutDone = vi.fn();
 vi.mock('@/components/HandoutPage/HandOutDialog', () => ({
   HandOutDialog: ({ open, onDone }: { open: boolean; onDone: (r: unknown) => void }) =>
@@ -184,7 +187,7 @@ describe('HandoutPage', () => {
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Animals');
     expect(screen.getByText('Spring unit · Week 2 of 3')).toBeInTheDocument();
-    expect(screen.getByText('Learners will be able to: Name ten animals')).toBeInTheDocument();
+    expect(screen.getByText('By the end: Name ten animals')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Week 1' })).toHaveAttribute(
       'href',
       '/group/g1/handout/d1',
@@ -253,11 +256,91 @@ describe('HandoutPage', () => {
     setLibrary(libraryWithUnit());
     renderWithProviders(<HandoutPage groupId="g1" deckId="d2" />);
 
-    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Zoo trip' } });
+    fireEvent.change(screen.getByLabelText('What learners will be able to do'), {
+      target: { value: 'Name twelve animals' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
 
-    expect(editWeek).toHaveBeenCalledWith('d2', expect.objectContaining({ title: 'Zoo trip' }));
+    expect(editWeek).toHaveBeenCalledWith(
+      'd2',
+      expect.objectContaining({ note: 'Name twelve animals' }),
+    );
     expect(await screen.findByText('Saved')).toBeInTheDocument();
+  });
+
+  it('renames a handed-out lesson from the header and keeps the handout title in step', async () => {
+    setLibrary(libraryWithUnit());
+    renderWithProviders(<HandoutPage groupId="g1" deckId="d2" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rename lesson' }));
+    fireEvent.change(screen.getByLabelText('Lesson name'), { target: { value: 'Zoo trip' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save name' }));
+
+    await vi.waitFor(() => expect(renameDeck).toHaveBeenCalledWith('d2', 'Zoo trip'));
+    expect(editWeek).toHaveBeenCalledWith('d2', { title: 'Zoo trip' });
+    expect(await screen.findByText('Saved')).toBeInTheDocument();
+  });
+
+  it('renames a draft without touching handout rows', async () => {
+    const library = libraryWithUnit();
+    library.units[0].weeks[1] = draftWeek({ deckId: 'd2', deckName: 'Animals', week: 2 });
+    const refetch = vi.fn().mockResolvedValue(undefined);
+    setLibrary(library, { refetch });
+    renderWithProviders(<HandoutPage groupId="g1" deckId="d2" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rename lesson' }));
+    fireEvent.change(screen.getByLabelText('Lesson name'), {
+      target: { value: 'Farm animals' },
+    });
+    fireEvent.keyDown(screen.getByLabelText('Lesson name'), { key: 'Enter' });
+
+    await vi.waitFor(() => expect(renameDeck).toHaveBeenCalledWith('d2', 'Farm animals'));
+    expect(editWeek).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(refetch).toHaveBeenCalled());
+  });
+
+  it('keeps the deck name and says so when the handout title fails to sync', async () => {
+    editWeek.mockResolvedValue(false);
+    setLibrary(libraryWithUnit());
+    renderWithProviders(<HandoutPage groupId="g1" deckId="d2" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rename lesson' }));
+    fireEvent.change(screen.getByLabelText('Lesson name'), { target: { value: 'Zoo trip' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save name' }));
+
+    await vi.waitFor(() => expect(editWeek).toHaveBeenCalledWith('d2', { title: 'Zoo trip' }));
+    expect(renameDeck).not.toHaveBeenCalled();
+    expect(await screen.findByText("Couldn't save. Try again.")).toBeInTheDocument();
+    expect(screen.getByLabelText('Lesson name')).toBeInTheDocument();
+  });
+
+  it('shows a custom handout title and syncs it when saving the same deck name', async () => {
+    const library = libraryWithUnit();
+    library.units[0].weeks[1] = week({
+      deckId: 'd2',
+      deckName: 'Animals',
+      title: 'Zoo trip',
+      week: 2,
+    });
+    setLibrary(library);
+    renderWithProviders(<HandoutPage groupId="g1" deckId="d2" />);
+
+    expect(screen.getByText('Zoo trip')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Rename lesson' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save name' }));
+
+    await vi.waitFor(() => expect(editWeek).toHaveBeenCalledWith('d2', { title: 'Animals' }));
+    expect(renameDeck).not.toHaveBeenCalled();
+  });
+
+  it('moves the schedule shortcut and shift into the header', () => {
+    setLibrary(libraryWithUnit());
+    renderWithProviders(<HandoutPage groupId="g1" deckId="d2" />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Opens .* · Due .*finished/ }));
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Move this week and later' }));
+    expect(screen.getByText(/Move week 2 and everything after it/)).toBeInTheDocument();
   });
 
   it('returns to the plan after removing the week', async () => {

@@ -60,6 +60,7 @@ export interface HandOutLessonPayload {
   deckId: string;
   dueDate: string | null;
   availableOn: string | null;
+  note?: string | null;
   requiredAccuracy?: number | null;
   requiredMode?: string | null;
   withSentences?: boolean;

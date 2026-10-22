@@ -253,6 +253,25 @@ describe('useDecks', () => {
       expect(result.current.decks[0].name).toBe('New Name');
       expect(result.current.decks[0].description).toBe('New desc');
     });
+
+    it('keeps the description when omitted and clears it when null', async () => {
+      const deck = makeDeck({ id: 'deck-1', name: 'Old Name', description: 'Old desc' });
+      mockLoadDecks.mockResolvedValue([deck]);
+      mockRenameDeck.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useDecks());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.renameDeck('deck-1', 'New Name');
+      });
+      expect(result.current.decks[0].description).toBe('Old desc');
+
+      await act(async () => {
+        await result.current.renameDeck('deck-1', 'New Name', null);
+      });
+      expect(result.current.decks[0].description).toBeUndefined();
+    });
   });
 
   describe('updateDeckCount', () => {

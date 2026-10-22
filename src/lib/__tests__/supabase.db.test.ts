@@ -430,6 +430,20 @@ describe('dbRenameDeck', () => {
     setTable('decks', null, null);
     await expect(dbRenameDeck('deck-1', 'New Name')).rejects.toThrow('Unable to rename deck');
   });
+
+  it('keeps the stored description when none is passed', async () => {
+    setTable('decks', makeDeckRow({ name: 'New Name' }));
+    await dbRenameDeck('deck-1', 'New Name');
+    const chain = mockFrom.mock.results.at(-1)?.value as { update: ReturnType<typeof vi.fn> };
+    expect(chain.update).toHaveBeenCalledWith({ name: 'New Name' });
+  });
+
+  it('clears the description when passed null', async () => {
+    setTable('decks', makeDeckRow({ name: 'New Name' }));
+    await dbRenameDeck('deck-1', 'New Name', null);
+    const chain = mockFrom.mock.results.at(-1)?.value as { update: ReturnType<typeof vi.fn> };
+    expect(chain.update).toHaveBeenCalledWith({ name: 'New Name', description: null });
+  });
 });
 
 // ─── loadCards ────────────────────────────────────────────────────────────────

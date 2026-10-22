@@ -229,7 +229,6 @@ export default function GroupDashboardPage() {
         onRename={handleRename}
         onEmojiChange={handleEmojiChange}
         onInvite={() => setCreateInviteOpen(true)}
-        onNewLesson={handleOpenNewLesson}
         activeInviteCount={activeInvites.length}
       />
 
@@ -274,7 +273,6 @@ export default function GroupDashboardPage() {
         onSendEncouragement={handleSendEncouragement}
         onEditAssignments={updateAssignments}
         onDeleteAssignments={deleteAssignments}
-        onAssign={() => assignDialog.openAssign()}
         onAssignMissing={assignDialog.assignMissing}
         onBuild={handleOpenNewLesson}
         onLibraryChanged={handleLibraryChanged}
@@ -285,6 +283,8 @@ export default function GroupDashboardPage() {
         onClose={() => setNewLessonOpen(false)}
         groupId={groupId}
         units={library.library?.units ?? []}
+        canHandOutDeck={members.length > 0}
+        onHandOutDeck={() => assignDialog.openAssign()}
       />
 
       <GroupDashboardDialogs

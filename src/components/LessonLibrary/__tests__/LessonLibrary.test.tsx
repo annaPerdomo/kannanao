@@ -110,7 +110,7 @@ describe('LessonLibrary', () => {
   it('shows the empty state and calls onBuild', () => {
     const onBuild = vi.fn();
     renderLibrary({ units: [], loose: [] }, {}, { onBuild });
-    expect(screen.getByText('Nothing handed out to this group yet')).toBeInTheDocument();
+    expect(screen.getByText('No lessons for this group yet')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /new lesson/i }));
     expect(onBuild).toHaveBeenCalled();
   });
@@ -187,7 +187,7 @@ describe('LessonLibrary', () => {
     expect(screen.getByText('Waiting for learners to join')).toBeInTheDocument();
   });
 
-  it('renders loose handouts under "Other handouts"', () => {
+  it('renders loose handouts under "Other lessons"', () => {
     renderLibrary({
       units: [],
       loose: [
@@ -201,7 +201,7 @@ describe('LessonLibrary', () => {
         }),
       ],
     });
-    expect(screen.getByText('Other handouts')).toBeInTheDocument();
+    expect(screen.getByText('Other lessons')).toBeInTheDocument();
     expect(screen.getByText(/Loose deck/)).toBeInTheDocument();
     expect(screen.getByText('1/2 finished')).toBeInTheDocument();
   });

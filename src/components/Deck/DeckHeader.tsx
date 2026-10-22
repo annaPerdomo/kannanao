@@ -34,7 +34,7 @@ interface DeckHeaderProps {
   deck: Deck;
   cardCount: number;
   onBack: () => void;
-  onRename: (id: string, name: string, desc?: string) => Promise<void>;
+  onRename: (id: string, name: string, desc?: string | null) => Promise<void>;
   onPin: (id: string, pinned: boolean) => void;
   onSettingsOpen: () => void;
   onEmojiChange: (id: string, emoji: string | null) => void;
@@ -91,7 +91,7 @@ export function DeckHeader({
 
     setRenaming(true);
     try {
-      await onRename(deck.id, trimmedName, trimmedDesc || undefined);
+      await onRename(deck.id, trimmedName, trimmedDesc || null);
     } finally {
       setRenaming(false);
       setEditing(false);
