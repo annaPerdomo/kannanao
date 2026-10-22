@@ -143,7 +143,9 @@ export function fitDaily(legs: ChainLeg[], budget: number): ChainLeg[] {
   if (legs.length <= budget) return legs;
   if (budget <= 0) return [];
   const sentenceIndex = legs.findIndex((leg) => leg.mode === 'kotoba-bubble');
-  const priority = [0, sentenceIndex, legs.length - 1, ...legs.map((_, i) => i)];
+  const lastIndex = legs.length - 1;
+  const lastIsGoal = legs[lastIndex].step === 'goal';
+  const priority = [0, sentenceIndex, ...(lastIsGoal ? [lastIndex] : []), ...legs.map((_, i) => i)];
   const chosen = new Set<number>();
   for (const index of priority) {
     if (index < 0 || chosen.has(index)) continue;

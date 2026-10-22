@@ -183,22 +183,36 @@ describe('fitDaily', () => {
   it('keeps the opener and the sentence leg over the rest', () => {
     const legs = [leg('recall'), leg('kotoba-bubble'), leg('listen'), leg('reading')];
     expect(fitDaily(legs, 2)).toEqual([leg('recall'), leg('kotoba-bubble')]);
-    expect(fitDaily(legs, 3)).toEqual([leg('recall'), leg('kotoba-bubble'), leg('reading')]);
-  });
-
-  it("keeps today's rule — opener and closer — when there is no sentence leg", () => {
-    const legs = [leg('recall'), leg('listen'), leg('match'), leg('fill')];
-    expect(fitDaily(legs, 2)).toEqual([leg('recall'), leg('fill')]);
-    expect(fitDaily(legs, 3)).toEqual([leg('recall'), leg('listen'), leg('fill')]);
+    expect(fitDaily(legs, 3)).toEqual([leg('recall'), leg('kotoba-bubble'), leg('listen')]);
   });
 
   it('never double-counts the sentence leg when it is also the opener', () => {
     const legs = [leg('kotoba-bubble'), leg('match'), leg('fill')];
-    expect(fitDaily(legs, 2)).toEqual([leg('kotoba-bubble'), leg('fill')]);
+    expect(fitDaily(legs, 2)).toEqual([leg('kotoba-bubble'), leg('match')]);
+  });
+
+  it('only protects the last leg from trimming when it is a goal rung', () => {
+    const legs = [leg('study'), leg('recall'), leg('kotoba-bubble'), leg('listen')];
+    expect(fitDaily(legs, 3)).toEqual([leg('study'), leg('recall'), leg('kotoba-bubble')]);
+  });
+
+  it('still protects the closer when it is the assignment goal', () => {
+    const legs: ChainLeg[] = [
+      leg('recall'),
+      leg('kotoba-bubble'),
+      leg('listen'),
+      { step: 'goal', mode: 'reading' },
+    ];
+    expect(fitDaily(legs, 3)).toEqual([
+      leg('recall'),
+      leg('kotoba-bubble'),
+      { step: 'goal', mode: 'reading' },
+    ]);
   });
 
   it('handles the edges', () => {
     const legs = [leg('recall'), leg('listen'), leg('match')];
+    expect(fitDaily(legs, 2)).toEqual([leg('recall'), leg('listen')]);
     expect(fitDaily(legs, 1)).toEqual([leg('recall')]);
     expect(fitDaily(legs, 0)).toEqual([]);
   });
