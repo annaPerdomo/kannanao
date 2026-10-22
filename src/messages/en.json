@@ -2665,7 +2665,13 @@
     },
     "stickerPicker": {
       "title": "Stickers",
-      "openAriaLabel": "Send a sticker"
+      "openAriaLabel": "Send a sticker",
+      "loading": "Loading stickers…",
+      "loadError": "Couldn't check which buddies you have. Try again in a moment.",
+      "lockedTabAriaLabel": "{name} stickers (locked)",
+      "lockedHint": "Make friends with {name} in the shop to send these stickers!",
+      "unlockCta": "{price} XP",
+      "buddySticker": "{name} sticker {number}"
     },
     "stickerNames": {
       "wave": "Hello",

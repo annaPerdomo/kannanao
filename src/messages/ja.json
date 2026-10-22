@@ -2656,7 +2656,13 @@
     },
     "stickerPicker": {
       "title": "スタンプ",
-      "openAriaLabel": "スタンプを送る"
+      "openAriaLabel": "スタンプを送る",
+      "loading": "スタンプをよみこみ中…",
+      "loadError": "もっているバディをかくにんできませんでした。すこしたってからもういちどためしてね。",
+      "lockedTabAriaLabel": "{name}のスタンプ（ロック中）",
+      "lockedHint": "ショップで{name}となかよくなると、このスタンプがつかえるよ！",
+      "unlockCta": "{price} XP",
+      "buddySticker": "{name}のスタンプ {number}"
     },
     "stickerNames": {
       "wave": "こんにちは",

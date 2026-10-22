@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { EmojiPickerPopover } from '@/components/EmojiPickerPopover';
 import { UserAvatar } from '@/components/UserAvatar';
 import type { DirectMessage } from '@/hooks/useDirectMessages';
+import { useStickerName } from '@/hooks/useStickerName';
 import { parseSticker, stickerSrc } from '@/lib/stickers';
 
 import { splitLinks } from './constants';
@@ -45,7 +46,7 @@ export function MessageBubble({
   const { palette } = useTheme();
   const { brand } = palette;
   const t = useTranslations('Group.messageBubble');
-  const tStickers = useTranslations('Messages.stickerNames');
+  const stickerName = useStickerName();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const reactions = message.reactions || {};
@@ -111,7 +112,7 @@ export function MessageBubble({
             <Box
               component="img"
               src={stickerSrc(sticker.id)}
-              alt={tStickers(sticker.id)}
+              alt={stickerName(sticker)}
               decoding="async"
               width={128}
               height={128}
