@@ -16,6 +16,7 @@ import { GameTiles } from '@/components/Games';
 import { LeaderboardWidget } from '@/components/Group';
 import { getGreeting, GreetingHero, XpProgressCard } from '@/components/Home';
 import { TodayAdventureCard } from '@/components/TodayAdventureCard';
+import { TodoList } from '@/components/TodoList';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProgressCtx } from '@/contexts/ProgressContext';
 import { useAssignments } from '@/hooks/useAssignments';
@@ -39,8 +40,8 @@ export function LearnerHome() {
   const t = useTranslations('LearnerHome');
   const tGreeting = useTranslations('Home.greeting');
   const router = useRouter();
-  const { user, displayName, isInGroup, groupShowLeaderboard } = useAuth();
-  const { progress } = useProgressCtx();
+  const { user, displayName, isInGroup, groupShowLeaderboard, showTodo } = useAuth();
+  const { progress, addBonusXp } = useProgressCtx();
   const { decks, loading: decksLoading } = useDecks(true);
   const {
     assignments,
@@ -89,6 +90,12 @@ export function LearnerHome() {
           <TodayAdventureCard />
         </GreetingHero>
       </Box>
+
+      {showTodo && (
+        <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', mb: { xs: 3, sm: 4 } }}>
+          <TodoList onXpEarned={addBonusXp} />
+        </Box>
+      )}
 
       <Box sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', mb: { xs: 3, sm: 4 } }}>
         <CollectionTeaser decks={decks} decksLoading={decksLoading} />
