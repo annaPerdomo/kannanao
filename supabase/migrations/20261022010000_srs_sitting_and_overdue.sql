@@ -1,6 +1,8 @@
 -- Same-sitting answers don't grow ease, including repeat misses in a retry loop.
 -- An early correct answer keeps the current interval instead of interval×ease;
 -- an overdue one gets half credit for the overdue time. src/lib/srs.ts mirrors this.
+-- increment_card_progress is copied from prod, which counts lapses in lapse_count;
+-- 20260809020000's last_lapse_at body was never what prod ran.
 
 DROP FUNCTION IF EXISTS srs_next(real, real, boolean);
 
@@ -83,10 +85,8 @@ AS $$
     correct_count    = card_progress.correct_count + CASE WHEN p_correct THEN 1 ELSE 0 END,
     wrong_count      = card_progress.wrong_count + CASE WHEN p_correct THEN 0 ELSE 1 END,
     last_reviewed_at = now(),
-    last_lapse_at    = CASE
-                         WHEN NOT p_correct AND card_progress.interval_days >= 7 THEN now()
-                         ELSE card_progress.last_lapse_at
-                       END,
+    lapse_count      = card_progress.lapse_count
+                       + CASE WHEN NOT p_correct AND card_progress.interval_days >= 7 THEN 1 ELSE 0 END,
     interval_days    = (srs_next(card_progress.interval_days, card_progress.ease, p_correct, card_progress.last_reviewed_at)).interval_days,
     ease             = (srs_next(card_progress.interval_days, card_progress.ease, p_correct, card_progress.last_reviewed_at)).ease,
     next_review_at   = (srs_next(card_progress.interval_days, card_progress.ease, p_correct, card_progress.last_reviewed_at)).next_review_at;
