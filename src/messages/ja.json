@@ -5635,7 +5635,17 @@
     "checkFailed": "いま目標をかくにんできませんでした。",
     "checkAgain": "もう一度かくにん",
     "stopForNow": "ここでやめる",
-    "finishPractice": "ぜんぶ完了！ホームへ"
+    "finishPractice": "ぜんぶ完了！ホームへ",
+    "modeDescriptions": {
+      "review": "今日やることばです",
+      "kanaJourney": "もじをおぼえます"
+    },
+    "cheer": {
+      "start": "{name}：いいスタート！つづけよう！",
+      "half": "{name}：はんぶんきたよ！すごい！",
+      "almost": "{name}：あとひとつ！がんばれ！",
+      "going": "{name}：いいね！つぎもいこう！"
+    }
   },
   "LearnerHome": {
     "homeworkTitle": "📬 先生から",

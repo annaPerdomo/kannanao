@@ -1,6 +1,8 @@
 'use client';
 import { createContext, type ReactNode, useContext } from 'react';
 
+import type { ChainMode } from '@/lib/practiceChain';
+
 /** The next action an end-of-session screen offers inside a quest. */
 export interface QuestHandoff {
   label: string;
@@ -11,6 +13,9 @@ export interface QuestHandoff {
    */
   onStop: () => void;
   final?: boolean;
+  /** The next game's chrome for a progress card; null on the final hand-off. */
+  next?: { mode: ChainMode; emoji: string; description: string } | null;
+  progress?: { done: number; total: number };
 }
 
 const QuestHandoffCtx = createContext<QuestHandoff | null>(null);

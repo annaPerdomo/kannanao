@@ -5644,7 +5644,17 @@
     "checkFailed": "We couldn't check your goal just now.",
     "checkAgain": "Check again",
     "stopForNow": "Stop for now",
-    "finishPractice": "All done! Back home"
+    "finishPractice": "All done! Back home",
+    "modeDescriptions": {
+      "review": "Words that are due today",
+      "kanaJourney": "Meet and practice characters"
+    },
+    "cheer": {
+      "start": "{name}: Great start! Keep going!",
+      "half": "{name}: Halfway there — you're doing great!",
+      "almost": "{name}: Last one! You've got this!",
+      "going": "{name}: Nice work! On to the next one!"
+    }
   },
   "LearnerHome": {
     "homeworkTitle": "📬 From your teacher",

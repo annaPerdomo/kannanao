@@ -548,6 +548,56 @@ describe('useStartDailyPractice', () => {
   });
 });
 
+describe('usePracticeChain — next-up chrome', () => {
+  beforeEach(() => {
+    search = new URLSearchParams('chain=daily');
+  });
+
+  it('carries the next game emoji and progress on the first leg', async () => {
+    writeChainState({
+      kind: 'daily',
+      deckId: 'd1',
+      index: 0,
+      legs: [
+        { step: 'practice', mode: 'recall', deckId: 'd1', cardIds: ['c1'] },
+        { step: 'practice', mode: 'kotoba-bubble', deckId: 'd1' },
+      ],
+      cardIds: null,
+      assignmentId: null,
+      requiredMode: null,
+      requiredAccuracy: null,
+      cardCount: 12,
+    });
+    const { result } = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'recall' }));
+    await waitFor(() => expect(result.current).not.toBeNull());
+
+    expect(result.current?.handoff?.label).toBe('Next: Sentence Builder');
+    expect(result.current?.handoff?.next?.emoji).toBe('🫧');
+    expect(result.current?.handoff?.progress).toEqual({ done: 1, total: 2 });
+  });
+
+  it('has no next game on the last leg', async () => {
+    writeChainState({
+      kind: 'daily',
+      deckId: 'd1',
+      index: 1,
+      legs: [
+        { step: 'practice', mode: 'recall', deckId: 'd1', cardIds: ['c1'] },
+        { step: 'practice', mode: 'kotoba-bubble', deckId: 'd1' },
+      ],
+      cardIds: null,
+      assignmentId: null,
+      requiredMode: null,
+      requiredAccuracy: null,
+      cardCount: 12,
+    });
+    const { result } = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'kotoba-bubble' }));
+    await waitFor(() => expect(result.current).not.toBeNull());
+
+    expect(result.current?.handoff?.next).toBeNull();
+  });
+});
+
 describe('usePracticeChain — daily session', () => {
   const dailyState = (index = 0, assignmentId: string | null = null) => ({
     kind: 'daily' as const,

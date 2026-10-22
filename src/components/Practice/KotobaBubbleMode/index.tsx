@@ -29,7 +29,7 @@ import { useProgress } from '@/hooks/useProgress';
 import type { Flashcard } from '@/types/flashcard';
 import type { PracticeSentence } from '@/types/practiceSentence';
 
-import { CelebrationScreen, pickPraise } from '../CelebrationScreen';
+import { CelebrationScreen, NextUpCard, pickPraise } from '../CelebrationScreen';
 import { XpEarnedPop } from '../XpEarnedPop';
 import { BubbleButton } from './BubbleButton';
 import { MIN_SENTENCES, PARTICLE_HINTS, XP_CORRECT, XP_PERFECT_BONUS, XP_WRONG } from './constants';
@@ -434,7 +434,9 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
 
         <Divider sx={{ mb: 2.5 }} />
 
-        <Stack direction="row" spacing={2} justifyContent="center">
+        {handoff && !handoff.final && <NextUpCard handoff={handoff} surface="page" />}
+
+        <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 2.5 }}>
           <Button
             variant="contained"
             onClick={handleRestart}

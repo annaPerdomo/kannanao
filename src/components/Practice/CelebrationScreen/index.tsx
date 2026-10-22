@@ -18,6 +18,7 @@ import {
   type PracticeMode,
   THEME_CONFIGS,
 } from './constants';
+import { NextUpCard } from './NextUpCard';
 import {
   BubbleParticles,
   BunnyParticles,
@@ -38,6 +39,7 @@ export {
   PRAISE_GREAT,
   PRAISE_PERFECT,
 } from './constants';
+export { NextUpCard } from './NextUpCard';
 
 /** Optional daily-chest reward shown on the celebration screen. */
 export interface CelebrationChest {
@@ -373,6 +375,13 @@ export function CelebrationScreen({
 
         {activeHandoff?.final && (
           <BuddyMoment textColor={cfg.textColor} subTextColor={cfg.subTextColor} />
+        )}
+        {activeHandoff && !activeHandoff.final && (
+          <NextUpCard
+            handoff={activeHandoff}
+            textColor={cfg.textColor}
+            subTextColor={cfg.subTextColor}
+          />
         )}
 
         <Box sx={{ mt: 3, animation: 'fadeUp 0.5s 0.72s ease both' }}>

@@ -30,7 +30,9 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
         onBack={chain ? chain.abandon : () => router.push(`/deck/${id}`)}
         cardIds={chain?.cardIds}
         questBanner={
-          chain ? <QuestStepBanner legs={chain.legs} currentIndex={chain.index} /> : null
+          chain ? (
+            <QuestStepBanner legs={chain.legs} currentIndex={chain.index} kind={chain.state.kind} />
+          ) : null
         }
       />
     </QuestHandoffProvider>
