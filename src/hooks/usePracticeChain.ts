@@ -3,13 +3,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { PRACTICE_CONFIG } from '@/components/Deck/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
 import type { Assignment } from '@/hooks/useAssignments';
+import { useChainModeText } from '@/hooks/useChainModeText';
 import { isGoalMode } from '@/lib/assignmentMastery';
 import { planAssignmentQuest } from '@/lib/assignmentQuest';
 import { countStrengths } from '@/lib/cardStrength';
+import { MODE_EMOJI } from '@/lib/chainModes';
 import { localDateString } from '@/lib/chest';
 import { bumpDailyRound, type FocusPick, planDailyPractice } from '@/lib/dailyPractice';
 import { isMeaningfulSession } from '@/lib/friendship';
@@ -219,6 +220,9 @@ export interface ChainHandoff {
   /** Leave mid-chain. The finish screens cover the app's own back controls. */
   onStop: () => void;
   final: boolean;
+  /** The next game's chrome for a progress card; null on the final hand-off. */
+  next: { mode: ChainMode; emoji: string; description: string } | null;
+  progress: { done: number; total: number };
 }
 
 /** What a leg page needs to render chain chrome and hand off to the next leg. */
@@ -263,9 +267,7 @@ export function usePracticeChain({
   kanaSet?: string | null;
 }): ActiveChain | null {
   const t = useTranslations('AssignmentQuest');
-  const tModes = useTranslations('Deck.practiceModes');
-  const tHero = useTranslations('Deck.practiceHero');
-  const tKana = useTranslations('KanaJourney.journey');
+  const modeText = useChainModeText();
   const router = useRouter();
   const searchParams = useSearchParams();
   const marked = searchParams?.get(CHAIN_PARAM);
@@ -408,26 +410,48 @@ export function usePracticeChain({
   if (!state || !leg || !matches) return null;
 
   const nextLeg = legs[state.index + 1];
-  // A quest names the next leg by its role; a mixed session names the game,
-  // since nobody picked it and the label is the only warning of what's coming.
-  const nextLabel = nextLeg
-    ? state.kind === 'assignment' || nextLeg.mode === 'review'
-      ? t(`stepName.${nextLeg.step}`)
-      : nextLeg.mode === 'kana-journey'
-        ? tKana('title')
-        : modeLabel(nextLeg.mode, tModes, tHero)
-    : null;
+  const nextMeta = nextLeg ? modeText(nextLeg.mode) : null;
+  // A quest names the next leg by its role; a mixed/daily session names the
+  // game, since nobody picked it and the label is the only warning of what's
+  // coming.
+  const nextLabel =
+    nextLeg && nextMeta
+      ? state.kind === 'assignment' || nextLeg.mode === 'review'
+        ? t(`stepName.${nextLeg.step}`)
+        : nextMeta.label
+      : null;
+  const progress = { done: state.index + 1, total: legs.length };
+  const next =
+    nextLeg && nextMeta
+      ? { mode: nextLeg.mode, emoji: MODE_EMOJI[nextLeg.mode], description: nextMeta.description }
+      : null;
   const handoff: ChainHandoff | null = nextLabel
-    ? { label: t('nextStep', { step: nextLabel }), onNext: advance, onStop: abandon, final: false }
+    ? {
+        label: t('nextStep', { step: nextLabel }),
+        onNext: advance,
+        onStop: abandon,
+        final: false,
+        next,
+        progress,
+      }
     : state.assignmentId
       ? {
           label: t('seeHowYouDid'),
           onNext: () => setPhase('finish'),
           onStop: abandon,
           final: true,
+          next: null,
+          progress,
         }
       : state.kind === 'daily'
-        ? { label: t('finishPractice'), onNext: finishDaily, onStop: abandon, final: true }
+        ? {
+            label: t('finishPractice'),
+            onNext: finishDaily,
+            onStop: abandon,
+            final: true,
+            next: null,
+            progress,
+          }
         : null;
 
   return {
@@ -443,16 +467,4 @@ export function usePracticeChain({
     retry,
     goHome,
   };
-}
-
-type Translate = (key: string) => string;
-
-function modeLabel(
-  mode: Exclude<ChainMode, 'kana-journey'>,
-  tModes: Translate,
-  tHero: Translate,
-): string {
-  if (mode === 'study') return tHero('flashcardsTitle');
-  const tile = PRACTICE_CONFIG.find((t) => t.mode === mode);
-  return tile ? tModes(tile.labelKey) : mode;
 }

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { KotobaBubbleMode } from '@/components/Practice/KotobaBubbleMode';
 import { XP_PERFECT_BONUS } from '@/components/Practice/KotobaBubbleMode/constants';
+import { QuestHandoffProvider } from '@/contexts/QuestHandoffContext';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import type { Flashcard } from '@/types/flashcard';
 import type { PracticeSentence } from '@/types/practiceSentence';
@@ -226,5 +227,81 @@ describe('KotobaBubbleMode session accounting', () => {
     rerender(<KotobaBubbleMode cards={cards} deckId="d1" batchSize={10} onExit={() => {}} />);
 
     expect(startSession).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('KotobaBubbleMode answer feedback and review order', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    startSession.mockResolvedValue('sess-1');
+    recordAnswer.mockResolvedValue(undefined);
+    endSession.mockResolvedValue(undefined);
+    sentences.length = 0;
+    sentences.push(sentence('s1'), sentence('s2'), sentence('s3'));
+    sentencesOverride.current = null;
+  });
+
+  it('shows the first praise word on a correct tap', async () => {
+    renderWithProviders(
+      <KotobaBubbleMode cards={cards} deckId="d1" batchSize={3} onExit={() => {}} />,
+    );
+
+    const bubble = await screen.findByRole('button', { name: `Particle ${CORRECT}` });
+    fireEvent.click(bubble);
+
+    expect(await screen.findByText('Yes!')).toBeInTheDocument();
+  });
+
+  it('still shows the particle hint on a wrong tap', async () => {
+    renderWithProviders(
+      <KotobaBubbleMode cards={cards} deckId="d1" batchSize={3} onExit={() => {}} />,
+    );
+
+    const bubble = await screen.findByRole('button', { name: `Particle ${WRONG}` });
+    fireEvent.click(bubble);
+
+    expect(await screen.findByText(/tells us who or what we're talking about/)).toBeInTheDocument();
+  });
+
+  it('lists missed sentences before correct ones, and reveals correct ones on demand', async () => {
+    renderWithProviders(
+      <KotobaBubbleMode cards={cards} deckId="d1" batchSize={3} onExit={() => {}} />,
+    );
+
+    await answerWith(WRONG);
+    await answerWith(CORRECT);
+    await answerWith(CORRECT);
+
+    const toSummary = await screen.findByText('Sentence Review');
+    fireEvent.click(toSummary);
+
+    const showButton = await screen.findByText('Show the ones I got right (2)');
+    expect(showButton).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getAllByText('I like cats')).toHaveLength(1);
+
+    fireEvent.click(showButton);
+
+    expect(showButton).toHaveAttribute('aria-expanded', 'true');
+    await waitFor(() => expect(screen.getAllByText('I like cats')).toHaveLength(3));
+  });
+});
+
+describe('KotobaBubbleMode not-enough-sentences, mid chain', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    sentences.length = 0;
+    sentences.push(sentence('s1'));
+  });
+
+  it('advances the chain on Next instead of abandoning it', () => {
+    const onNext = vi.fn();
+    renderWithProviders(
+      <QuestHandoffProvider value={{ label: 'Next: Match', onNext, onStop: vi.fn(), final: false }}>
+        <KotobaBubbleMode cards={cards} deckId="d1" batchSize={1} onExit={() => {}} />
+      </QuestHandoffProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Next: Match' }));
+    expect(onNext).toHaveBeenCalledTimes(1);
   });
 });

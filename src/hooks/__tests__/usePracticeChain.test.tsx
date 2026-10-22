@@ -206,7 +206,8 @@ describe('useStartMixedPractice', () => {
     });
 
     const legs = readChainState()?.legs?.map((leg) => leg.mode);
-    expect(legs?.[legs.length - 1]).toBe('kotoba-bubble');
+    const recallIndex = legs?.indexOf('recall') ?? -1;
+    expect(legs?.[recallIndex + 1]).toBe('kotoba-bubble');
   });
 
   it('counts a member against their own sentence set, not the shared one', async () => {
@@ -544,6 +545,56 @@ describe('useStartDailyPractice', () => {
     });
     expect(ok).toBe(true);
     expect(replace).toHaveBeenCalledWith('/review/learn-kana?set=hira-ka&chain=daily');
+  });
+});
+
+describe('usePracticeChain — next-up chrome', () => {
+  beforeEach(() => {
+    search = new URLSearchParams('chain=daily');
+  });
+
+  it('carries the next game emoji and progress on the first leg', async () => {
+    writeChainState({
+      kind: 'daily',
+      deckId: 'd1',
+      index: 0,
+      legs: [
+        { step: 'practice', mode: 'recall', deckId: 'd1', cardIds: ['c1'] },
+        { step: 'practice', mode: 'kotoba-bubble', deckId: 'd1' },
+      ],
+      cardIds: null,
+      assignmentId: null,
+      requiredMode: null,
+      requiredAccuracy: null,
+      cardCount: 12,
+    });
+    const { result } = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'recall' }));
+    await waitFor(() => expect(result.current).not.toBeNull());
+
+    expect(result.current?.handoff?.label).toBe('Next: Sentence Builder');
+    expect(result.current?.handoff?.next?.emoji).toBe('🫧');
+    expect(result.current?.handoff?.progress).toEqual({ done: 1, total: 2 });
+  });
+
+  it('has no next game on the last leg', async () => {
+    writeChainState({
+      kind: 'daily',
+      deckId: 'd1',
+      index: 1,
+      legs: [
+        { step: 'practice', mode: 'recall', deckId: 'd1', cardIds: ['c1'] },
+        { step: 'practice', mode: 'kotoba-bubble', deckId: 'd1' },
+      ],
+      cardIds: null,
+      assignmentId: null,
+      requiredMode: null,
+      requiredAccuracy: null,
+      cardCount: 12,
+    });
+    const { result } = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'kotoba-bubble' }));
+    await waitFor(() => expect(result.current).not.toBeNull());
+
+    expect(result.current?.handoff?.next).toBeNull();
   });
 });
 

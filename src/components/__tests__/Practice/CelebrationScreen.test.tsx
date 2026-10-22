@@ -262,6 +262,8 @@ describe('CelebrationScreen inside an assignment quest', () => {
     label: 'Next: Practice',
     onNext: vi.fn(),
     onStop: vi.fn(),
+    next: null,
+    progress: { done: 1, total: 2 },
     ...over,
   });
 
@@ -318,5 +320,38 @@ describe('CelebrationScreen inside an assignment quest', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Review sentences' }));
     expect(onExit).toHaveBeenCalled();
     expect(onNext).not.toHaveBeenCalled();
+  });
+
+  it('shows the next game and a cheer on a non-final hand-off', () => {
+    shopState.equipped = { study_buddy: 'buddy_tango' };
+    try {
+      renderWithProviders(
+        <QuestHandoffProvider
+          value={handoff({
+            next: { mode: 'kotoba-bubble', emoji: '🫧', description: 'Build a sentence' },
+            progress: { done: 1, total: 2 },
+          })}
+        >
+          <CelebrationScreen heading="Done!" subheading="cleared" mode="study" onExit={vi.fn()} />
+        </QuestHandoffProvider>,
+      );
+
+      expect(screen.getByText('Build a sentence')).toBeInTheDocument();
+      // A 2-leg chain's first leg is also its last chance for a hand-off, so
+      // "Last one!" (not "Great start!") must win the tie with done === 1.
+      expect(screen.getByText(/Last one!/)).toBeInTheDocument();
+    } finally {
+      shopState.equipped = {};
+    }
+  });
+
+  it('shows no next-up card when the hand-off is final', () => {
+    renderWithProviders(
+      <QuestHandoffProvider value={handoff({ final: true, next: null })}>
+        <CelebrationScreen heading="Done!" subheading="cleared" mode="study" onExit={vi.fn()} />
+      </QuestHandoffProvider>,
+    );
+
+    expect(screen.queryByText('Build a sentence')).not.toBeInTheDocument();
   });
 });

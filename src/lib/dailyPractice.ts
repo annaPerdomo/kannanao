@@ -139,11 +139,20 @@ function focusGoal(focus: FocusPick): GoalMode | null {
   return mode;
 }
 
-function fit(legs: ChainLeg[], budget: number): ChainLeg[] {
+export function fitDaily(legs: ChainLeg[], budget: number): ChainLeg[] {
   if (legs.length <= budget) return legs;
   if (budget <= 0) return [];
-  if (budget === 1) return [legs[0]];
-  return [...legs.slice(0, budget - 1), legs[legs.length - 1]];
+  const sentenceIndex = legs.findIndex((leg) => leg.mode === 'kotoba-bubble');
+  const lastIndex = legs.length - 1;
+  const lastIsGoal = legs[lastIndex].step === 'goal';
+  const priority = [0, sentenceIndex, ...(lastIsGoal ? [lastIndex] : []), ...legs.map((_, i) => i)];
+  const chosen = new Set<number>();
+  for (const index of priority) {
+    if (index < 0 || chosen.has(index)) continue;
+    chosen.add(index);
+    if (chosen.size === budget) break;
+  }
+  return [...chosen].sort((a, b) => a - b).map((i) => legs[i]);
 }
 
 export function planDailyPractice({
@@ -175,7 +184,7 @@ export function planDailyPractice({
   });
 
   const budget = MAX_DAILY_LEGS - legs.length - (goal ? 1 : 0);
-  for (const leg of fit(mixed, budget)) {
+  for (const leg of fitDaily(mixed, budget)) {
     legs.push({ ...leg, deckId: focus.deckId, cardIds: sessionIds });
   }
   // The goal leg plays the whole deck: the trimmed session slice can fall under

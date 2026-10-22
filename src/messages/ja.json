@@ -926,7 +926,10 @@
       "bestStreakInline": " · 最高連続記録: {count}",
       "particleAria": "助詞 {particle}",
       "reviewCount": "確認（{count}）",
-      "regenerate": "作り直す"
+      "regenerate": "作り直す",
+      "praise": ["やった！", "いいね！", "せいかい！", "すごい！", "バッチリ！"],
+      "progressAria": "{total}文中{current}文目",
+      "showCorrect": "せいかいした文を見る（{count}）"
     },
     "sentenceReview": {
       "title": "文を確認",
@@ -2091,7 +2094,16 @@
       "handOutConfirm": "{count}人に配る",
       "handedOutToast": "配りました！学ぶ人の練習に表示されます。",
       "kanaFailedToast": "配りましたが、追加できなかった文字があります：{list}",
-      "sentencesFailedToast": "配りましたが、練習文を追加できませんでした。デッキのページから追加できます。",
+      "sentencesFailedToast": "配りましたが、文が作れませんでした。「文をつくる」でもう一度試してください。",
+      "sentences": {
+        "title": "文づくり",
+        "ready": "練習用の文が{count}文あります。毎日の練習に出ます。",
+        "missing": "文がまだないので、練習に「文づくり」が出ません。",
+        "few": "まだ{count}文だけなので、ぶんづくりには{min}文ひつようです。",
+        "make": "文をつくる",
+        "made": "文を{count}文つくりました。次の練習から出ます。",
+        "open": "やってみる"
+      },
       "soundsTitle": "このレッスンの文字",
       "soundsEmpty": "まだ文字を選んでいません。",
       "soundsSuggested": "単語に出てくる行：",
@@ -5627,7 +5639,18 @@
     "checkFailed": "いま目標をかくにんできませんでした。",
     "checkAgain": "もう一度かくにん",
     "stopForNow": "ここでやめる",
-    "finishPractice": "ぜんぶ完了！ホームへ"
+    "finishPractice": "ぜんぶ完了！ホームへ",
+    "modeDescriptions": {
+      "review": "今日ふくしゅうすることば",
+      "kanaJourney": "もじをおぼえます",
+      "kotobaBubble": "文に合うことばをえらぼう"
+    },
+    "cheer": {
+      "start": "{name}：いいスタート！つづけよう！",
+      "half": "{name}：はんぶんきたよ！すごい！",
+      "almost": "{name}：あとひとつ！がんばれ！",
+      "going": "{name}：いいね！つぎもいこう！"
+    }
   },
   "LearnerHome": {
     "homeworkTitle": "📬 先生から",

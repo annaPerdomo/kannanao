@@ -4,7 +4,9 @@ import { Box, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 
-import type { ChainLeg, ChainStep } from '@/lib/practiceChain';
+import { useChainModeText } from '@/hooks/useChainModeText';
+import { MODE_EMOJI } from '@/lib/chainModes';
+import type { ChainKind, ChainLeg, ChainStep } from '@/lib/practiceChain';
 
 const STEP_EMOJI: Record<ChainStep, string> = {
   review: '⚔️',
@@ -16,16 +18,21 @@ const STEP_EMOJI: Record<ChainStep, string> = {
 interface QuestStepBannerProps {
   legs: ChainLeg[];
   currentIndex: number;
+  kind: ChainKind;
 }
 
 /** The review quest's node path, shrunk to one line so the mode keeps the screen. */
-export function QuestStepBanner({ legs, currentIndex }: QuestStepBannerProps) {
+export function QuestStepBanner({ legs, currentIndex, kind }: QuestStepBannerProps) {
   const t = useTranslations('AssignmentQuest');
+  const modeText = useChainModeText();
   const theme = useTheme();
   const { brand, accent } = theme.palette;
   if (legs.length === 0) return null;
 
   const current = legs[currentIndex];
+  if (!current) return null;
+  const caption =
+    kind === 'assignment' ? t(`stepName.${current.step}`) : modeText(current.mode).label;
 
   return (
     <Box
@@ -64,12 +71,20 @@ export function QuestStepBanner({ legs, currentIndex }: QuestStepBannerProps) {
                   : active
                     ? alpha(accent[300], 0.25)
                     : alpha(brand[100], 0.5),
+                animation: active ? 'questDotPulse 1.6s ease-in-out infinite' : 'none',
+                '@keyframes questDotPulse': {
+                  '0%, 100%': { transform: 'scale(1)' },
+                  '50%': { transform: 'scale(1.12)' },
+                },
+                '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
               }}
             >
               {done ? (
                 <CheckIcon sx={{ fontSize: '1rem', color: 'success.main' }} />
-              ) : (
+              ) : kind === 'assignment' ? (
                 STEP_EMOJI[leg.step]
+              ) : (
+                MODE_EMOJI[leg.mode]
               )}
             </Box>
           );
@@ -79,8 +94,7 @@ export function QuestStepBanner({ legs, currentIndex }: QuestStepBannerProps) {
       <Typography
         sx={{ fontSize: { xs: '0.78rem', sm: '0.85rem' }, fontWeight: 700, color: 'text.primary' }}
       >
-        {t('stepOf', { current: currentIndex + 1, total: legs.length })}
-        {current ? ` · ${t(`stepName.${current.step}`)}` : ''}
+        {t('stepOf', { current: currentIndex + 1, total: legs.length })} · {caption}
       </Typography>
     </Box>
   );

@@ -10,6 +10,8 @@ vi.mock('@/hooks/useDeckWords', () => ({
   useDeckWords: () => ({ words: [], loading: false, error: null }),
 }));
 
+vi.mock('@/components/HandoutPage/SentencesStatus', () => ({ SentencesStatus: () => null }));
+
 const DAY = 24 * 60 * 60 * 1000;
 const iso = (offsetDays: number) => new Date(Date.now() + offsetDays * DAY).toISOString();
 

@@ -17,6 +17,7 @@ import type { ToastSeverity, ViewMember } from './constants';
 import { HandoutSettings } from './HandoutSettings';
 import { HandoutWordsPanel } from './HandoutWordsPanel';
 import { LearnersPanel } from './LearnersPanel';
+import { SentencesStatus } from './SentencesStatus';
 import { SoundsSection } from './SoundsSection';
 
 interface HandoutPageBodyProps {
@@ -113,6 +114,7 @@ export function HandoutPageBody({
               handedOut={week.handedOut}
               onSaved={onSoundsSaved}
             />
+            {!isDraft && <SentencesStatus deckId={deckId} />}
           </>
         )}
       </Stack>

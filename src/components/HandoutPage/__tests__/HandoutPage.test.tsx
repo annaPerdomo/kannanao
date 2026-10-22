@@ -50,6 +50,7 @@ vi.mock('@/components/Group/HandoutDetailDialog/LearnerWordList', () => ({
   LearnerWordList: ({ memberName }: { memberName: string }) => <p>learner view {memberName}</p>,
 }));
 vi.mock('@/components/HandoutPage/SoundsSection', () => ({ SoundsSection: () => null }));
+vi.mock('@/components/HandoutPage/SentencesStatus', () => ({ SentencesStatus: () => null }));
 const renameDeck = vi.fn().mockResolvedValue({});
 vi.mock('@/lib/supabase', () => ({ dbRenameDeck: (...args: unknown[]) => renameDeck(...args) }));
 vi.mock('@/lib/apiCache', () => ({ invalidateApiCache: vi.fn() }));
@@ -159,7 +160,7 @@ describe('HandoutPage', () => {
 
     expect(
       await screen.findByText(
-        "Handed out, but practice sentences couldn't be added. You can add them from the deck page.",
+        'Handed out, but the sentences could not be made. Use "Make sentences" to try again.',
       ),
     ).toBeInTheDocument();
   });
