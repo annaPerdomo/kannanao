@@ -1379,6 +1379,33 @@ describe('getDueCards', () => {
     setTable('card_progress', null, { message: 'DB error' });
     await expect(getDueCards('u1')).rejects.toThrow('DB error');
   });
+
+  it('should rank the priority deck first and slice to the limit when opts.priorityDeckIds is given', async () => {
+    setTable('card_progress', [
+      {
+        cards: makeCardRow({ id: 'card-other', deck_id: 'deck-1' }),
+        interval_days: 8,
+        next_review_at: '2026-01-01T00:00:00Z',
+      },
+      {
+        cards: makeCardRow({ id: 'card-priority', deck_id: 'deck-2' }),
+        interval_days: 8,
+        next_review_at: '2026-02-01T00:00:00Z',
+      },
+    ]);
+    const cards = await getDueCards('u1', 1, ['deck-1', 'deck-2'], {
+      priorityDeckIds: ['deck-2'],
+    });
+    expect(cards).toHaveLength(1);
+    expect(cards[0].id).toBe('card-priority');
+  });
+
+  it('should still throw on a query error when opts.priorityDeckIds is given', async () => {
+    setTable('card_progress', null, { message: 'DB error' });
+    await expect(
+      getDueCards('u1', 20, ['deck-1'], { priorityDeckIds: ['deck-1'] }),
+    ).rejects.toThrow('DB error');
+  });
 });
 
 // ─── getDueCount ──────────────────────────────────────────────────────────────

@@ -352,6 +352,45 @@ describe('RecallMode', () => {
     });
   });
 
+  describe('teaching on a miss', () => {
+    it('shows the explainer and does not advance until "Got it" is clicked', async () => {
+      renderWithProviders(
+        <RecallMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
+      );
+      await waitFor(() => expect(mockStartSession).toHaveBeenCalled());
+      await new Promise((r) => setTimeout(r, 0));
+
+      const body = document.body.textContent ?? '';
+      const current = CARDS.find((c) => body.includes(c.reading))!;
+      const wrong = CARDS.find((c) => c.id !== current.id)!;
+
+      fireEvent.click(choiceFor(wrong.meaning));
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument(),
+      );
+
+      expect(screen.queryByRole('button', { name: /^Answer/ })).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+      await waitFor(() => expect(screen.getByText('A')).toBeInTheDocument());
+    });
+
+    it('still advances on its own timer when the pick is correct', async () => {
+      renderWithProviders(
+        <RecallMode cards={CARDS} deckId="deck-1" batchSize={10} onExit={vi.fn()} />,
+      );
+      await waitFor(() => expect(mockStartSession).toHaveBeenCalled());
+      await new Promise((r) => setTimeout(r, 0));
+
+      const body = document.body.textContent ?? '';
+      const current = CARDS.find((c) => body.includes(c.reading))!;
+
+      fireEvent.click(choiceFor(current.meaning));
+      expect(screen.queryByRole('button', { name: 'Got it' })).not.toBeInTheDocument();
+      await waitFor(() => expect(screen.getByText('✓ Correct — moving on…')).toBeInTheDocument());
+    });
+  });
+
   describe('onExit callback', () => {
     it('should not throw during initial render with onExit provided', () => {
       const onExit = vi.fn();

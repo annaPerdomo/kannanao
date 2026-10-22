@@ -68,6 +68,7 @@ function makeChain(table: string) {
     upsertMock(table, ...args);
     return chain;
   });
+  chain.range = vi.fn(() => Promise.resolve(result()));
   chain.single = vi.fn(() => Promise.resolve(result()));
   chain.then = (onfulfilled: (v: unknown) => unknown, onrejected?: (e: unknown) => unknown) =>
     Promise.resolve(result()).then(onfulfilled, onrejected);
@@ -156,6 +157,26 @@ describe('POST /api/group/assignments (mastery goals)', () => {
       expect(upsertMock).not.toHaveBeenCalled();
     },
   );
+
+  it('defaults baseline_accuracy to 80 when not sent', async () => {
+    const res = await POST(makeRequest(BASE_BODY));
+    expect(res.status).toBe(201);
+    const rows = upsertMock.mock.calls[0][1] as Record<string, unknown>[];
+    expect(rows[0].baseline_accuracy).toBe(80);
+  });
+
+  it('rejects baselineAccuracy: 75 (not one of the offered choices)', async () => {
+    const res = await POST(makeRequest({ ...BASE_BODY, baselineAccuracy: 75 }));
+    expect(res.status).toBe(400);
+    expect(upsertMock).not.toHaveBeenCalled();
+  });
+
+  it('writes baseline_accuracy: 90', async () => {
+    const res = await POST(makeRequest({ ...BASE_BODY, baselineAccuracy: 90 }));
+    expect(res.status).toBe(201);
+    const rows = upsertMock.mock.calls[0][1] as Record<string, unknown>[];
+    expect(rows[0].baseline_accuracy).toBe(90);
+  });
 });
 
 describe('POST /api/group/assignments (kana goals)', () => {
@@ -217,6 +238,12 @@ describe('POST /api/group/assignments (kana goals)', () => {
     const rows = insertMock.mock.calls[0][1] as Record<string, unknown>[];
     expect(rows[0].required_accuracy).toBe(90);
   });
+
+  it('rejects a baselineAccuracy on a kana goal', async () => {
+    const res = await POST(makeRequest({ ...KANA_BODY, baselineAccuracy: 90 }));
+    expect(res.status).toBe(400);
+    expect(insertMock).not.toHaveBeenCalled();
+  });
 });
 
 describe('GET /api/group/assignments', () => {
@@ -264,6 +291,31 @@ describe('GET /api/group/assignments', () => {
     setTable('assignments', null, { message: 'boom' });
     const res = await GET(makeGetRequest());
     expect(res.status).toBe(500);
+  });
+
+  it('attaches word progress to a member’s open deck assignments', async () => {
+    getProfileForUserMock.mockResolvedValue({ account_type: 'member' });
+    setTable('assignments', [
+      { id: 'a1', deck_id: 'd1', completed_at: null, created_at: '2026-01-01T00:00:00Z' },
+    ]);
+    setTable('cards', [{ id: 'c1', deck_id: 'd1' }]);
+    setTable('card_progress', [
+      { card_id: 'c1', last_reviewed_at: '2026-02-01T00:00:00Z', interval_days: 1 },
+    ]);
+    const res = await GET(makeGetRequest());
+    const json = await res.json();
+    expect(json[0].words).toEqual({ total: 1, seen: 1, known: 1 });
+  });
+
+  it('never attaches words on the organizer scope', async () => {
+    getProfileForUserMock.mockResolvedValue({ account_type: 'organizer' });
+    setTable('assignments', [
+      { id: 'a1', deck_id: 'd1', completed_at: null, created_at: '2026-01-01T00:00:00Z' },
+    ]);
+    setTable('cards', [{ id: 'c1', deck_id: 'd1' }]);
+    const res = await GET(makeGetRequest());
+    const json = await res.json();
+    expect(json[0].words).toBeUndefined();
   });
 
   it('scopes a learner’s own list to the organizers whose groups they are in', async () => {

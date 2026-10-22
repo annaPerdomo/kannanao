@@ -13,6 +13,7 @@ import {
   STYLE_NOTES_MAX,
 } from '@/lib/lessonPrompts';
 import { logger } from '@/lib/logger';
+import { BASELINE_CHOICES, DEFAULT_BASELINE } from '@/lib/wordProgress';
 import type { ApplyDeckResult, LessonPlan, PlanDeck } from '@/types/lessonPlan';
 
 import { rateLimit } from '../../../_lib/rateLimit';
@@ -133,6 +134,7 @@ export async function POST(req: NextRequest) {
     firstDueDate,
     requiredAccuracy,
     requiredMode,
+    baselineAccuracy,
     planId,
     withSentences = true,
     level,
@@ -146,6 +148,7 @@ export async function POST(req: NextRequest) {
     firstDueDate?: string;
     requiredAccuracy?: number | null;
     requiredMode?: string | null;
+    baselineAccuracy?: number;
     planId?: string;
     /** Kotoba Bubble sentences alongside the decks — one Gemini call each. */
     withSentences?: boolean;
@@ -191,6 +194,15 @@ export async function POST(req: NextRequest) {
   }
   if (requiredMode != null && !isGoalMode(requiredMode)) {
     return NextResponse.json({ error: 'requiredMode is not a valid goal mode.' }, { status: 400 });
+  }
+  if (
+    baselineAccuracy != null &&
+    !(BASELINE_CHOICES as readonly number[]).includes(baselineAccuracy)
+  ) {
+    return NextResponse.json(
+      { error: `baselineAccuracy must be one of ${BASELINE_CHOICES.join(', ')}.` },
+      { status: 400 },
+    );
   }
   if (planId != null && !UUID_RE.test(planId)) {
     return NextResponse.json({ error: 'planId must be a UUID.' }, { status: 400 });
@@ -304,6 +316,7 @@ export async function POST(req: NextRequest) {
         availableOn: availableOnFor(firstDueDate, index),
         requiredAccuracy: requiredAccuracy ?? null,
         requiredMode: requiredMode ?? null,
+        baselineAccuracy: baselineAccuracy ?? DEFAULT_BASELINE,
       });
       results.push({
         name: existing.name,
@@ -329,6 +342,7 @@ export async function POST(req: NextRequest) {
       availableOn: availableOnFor(firstDueDate, index),
       requiredAccuracy: requiredAccuracy ?? null,
       requiredMode: requiredMode ?? null,
+      baselineAccuracy: baselineAccuracy ?? DEFAULT_BASELINE,
     });
     results.push(result);
     if (result.status === 'created' && result.deckId) deckIdsInOrder.push(result.deckId);
@@ -363,6 +377,7 @@ export async function POST(req: NextRequest) {
     firstDueDate,
     requiredAccuracy: requiredAccuracy ?? null,
     requiredMode: requiredMode ?? null,
+    baselineAccuracy: baselineAccuracy ?? DEFAULT_BASELINE,
     decks,
     results,
   });
@@ -412,6 +427,7 @@ async function createDeck(args: {
   availableOn: string | null;
   requiredAccuracy: number | null;
   requiredMode: string | null;
+  baselineAccuracy: number;
 }): Promise<ApplyDeckResult> {
   const { deck, index, position, organizerId, groupId, memberIds, planId, dueDate, availableOn } =
     args;
@@ -486,6 +502,7 @@ async function createDeck(args: {
     availableOn,
     requiredAccuracy: args.requiredAccuracy,
     requiredMode: args.requiredMode,
+    baselineAccuracy: args.baselineAccuracy,
   });
 
   return {
@@ -510,6 +527,7 @@ async function savePlannedSchedule(args: {
   firstDueDate: string | null;
   requiredAccuracy: number | null;
   requiredMode: string | null;
+  baselineAccuracy: number;
   decks: PlanDeck[];
   results: ApplyDeckResult[];
 }): Promise<void> {
@@ -526,6 +544,7 @@ async function savePlannedSchedule(args: {
       available_on: args.firstDueDate ? availableOnFor(args.firstDueDate, index) : null,
       required_accuracy: args.requiredAccuracy,
       required_mode: args.requiredMode,
+      baseline_accuracy: args.baselineAccuracy,
     }));
 
   if (rows.length === 0) return;
@@ -555,6 +574,7 @@ async function assignDeck(args: {
   availableOn: string | null;
   requiredAccuracy: number | null;
   requiredMode: string | null;
+  baselineAccuracy: number;
 }): Promise<string | null> {
   if (args.memberIds.length === 0) return null;
 
@@ -569,6 +589,7 @@ async function assignDeck(args: {
     available_on: args.availableOn,
     required_accuracy: args.requiredAccuracy,
     required_mode: args.requiredMode,
+    baseline_accuracy: args.baselineAccuracy,
   }));
 
   const { error } = await getServiceSupabase()

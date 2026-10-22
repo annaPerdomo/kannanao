@@ -3,19 +3,23 @@ import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Loading } from '@/components/Loading';
 import { ReviewQuest } from '@/components/ReviewQuest';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProgressCtx } from '@/contexts/ProgressContext';
 import { QuestHandoffProvider } from '@/contexts/QuestHandoffContext';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useKanaProgress } from '@/hooks/useKanaProgress';
 import { usePracticeChain } from '@/hooks/usePracticeChain';
 import { openKanaSetIds } from '@/lib/assignmentAvailability';
-import { DAILY_REVIEW_CAP } from '@/lib/dailyPractice';
+import { BONUS_ROUND_CARDS, bonusRoundsToday, MAX_BONUS_ROUNDS } from '@/lib/bonusRound';
+import { localDateString } from '@/lib/chest';
+import { dailyReviewCap, daysSince } from '@/lib/dailyPractice';
 import { CHAIN_PARAM } from '@/lib/practiceChain';
 import { KANA_MAX_DUE, KANA_WAIT_MS, pickQuestKana, planQuest } from '@/lib/quest';
+import { priorityDeckIds } from '@/lib/reviewPriority';
 import { getDueCards } from '@/lib/supabase';
 import { LAYOUT } from '@/theme';
 import type { Flashcard } from '@/types/flashcard';
@@ -84,13 +88,21 @@ export default function ReviewTodayPage() {
   const t = useTranslations('Review.todayPage');
   const router = useRouter();
   const { user } = useAuth();
+  const { progress } = useProgressCtx();
   const chain = usePracticeChain({ deckId: null, mode: 'review' });
+  const searchParams = useSearchParams();
   // Off the URL, not the chain: the chain resolves after mount, and the fetch
   // below would run twice with two different sizes.
-  const daily = useSearchParams()?.get(CHAIN_PARAM) === 'daily';
+  const daily = searchParams?.get(CHAIN_PARAM) === 'daily';
+  const bonus = searchParams?.get('bonus') === '1';
   const { byKana, error: kanaError, record: recordKana } = useKanaProgress();
   const { assignments, loading: assignmentsLoading } = useAssignments(undefined, true, 'mine');
   const assignedKanaSetIds = useMemo(() => openKanaSetIds(assignments), [assignments]);
+  const today = localDateString(new Date());
+  const priorityIds = useMemo(
+    () => (assignmentsLoading ? [] : priorityDeckIds(assignments, today)),
+    [assignments, assignmentsLoading, today],
+  );
   const [cards, setCards] = useState<Flashcard[] | null>(null);
   const [kanaChars, setKanaChars] = useState<string[] | null>(null);
   const [error, setError] = useState(false);
@@ -102,10 +114,37 @@ export default function ReviewTodayPage() {
     setAttempt((a) => a + 1);
   }, []);
 
+  // A back-navigated bonus URL must not re-pay past the daily cap.
+  const bonusExhausted = bonus && bonusRoundsToday(today) >= MAX_BONUS_ROUNDS;
   useEffect(() => {
-    if (!user) return;
+    if (bonusExhausted) router.replace('/review/done');
+  }, [bonusExhausted, router]);
+
+  // Read via refs, not effect deps: their identity changes on every render
+  // (a fresh assignments array, a new progress object), and depending on them
+  // would cancel the in-flight fetch below before it ever resolves.
+  const priorityIdsRef = useRef(priorityIds);
+  priorityIdsRef.current = priorityIds;
+  const lastStudyDateRef = useRef(progress?.last_study_date ?? null);
+  lastStudyDateRef.current = progress?.last_study_date ?? null;
+  const todayRef = useRef(today);
+  todayRef.current = today;
+
+  // Fetched at most once per `attempt` — only `retry()` bumps it. `cards`
+  // can't be the gate instead: it's still null while the fetch above is
+  // in flight, so an unrelated re-render would start a second one.
+  const fetchedAttemptRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!user || assignmentsLoading || bonusExhausted) return;
+    if (fetchedAttemptRef.current === attempt) return;
+    fetchedAttemptRef.current = attempt;
     let cancelled = false;
-    getDueCards(user.id, daily ? DAILY_REVIEW_CAP : undefined)
+    const cap = bonus
+      ? BONUS_ROUND_CARDS
+      : daily
+        ? dailyReviewCap(daysSince(lastStudyDateRef.current, todayRef.current))
+        : undefined;
+    getDueCards(user.id, cap, undefined, { priorityDeckIds: priorityIdsRef.current })
       .then((due) => {
         if (!cancelled) setCards(due);
       })
@@ -117,7 +156,7 @@ export default function ReviewTodayPage() {
     return () => {
       cancelled = true;
     };
-  }, [user, attempt, daily]);
+  }, [user?.id, attempt, assignmentsLoading, bonusExhausted, daily, bonus]);
 
   // Picked ONCE: a fresh array per render reshuffles the drills mid-node. A
   // failed, slow or irrelevant read means no characters, never a blocked queue.
@@ -148,6 +187,21 @@ export default function ReviewTodayPage() {
   useEffect(() => {
     skip?.();
   }, [skip]);
+
+  if (bonusExhausted) {
+    return (
+      <Box
+        sx={{
+          maxWidth: LAYOUT.narrowMaxWidth,
+          mx: 'auto',
+          px: LAYOUT.pagePx,
+          py: { xs: 3, sm: 6 },
+        }}
+      >
+        <Loading message={t('findingReviews')} />
+      </Box>
+    );
+  }
 
   if (error) {
     return (
@@ -203,7 +257,14 @@ export default function ReviewTodayPage() {
         kanaProgress={byKana}
         recordKana={recordKana}
         cappedSession={daily && chain !== null}
-        onExit={chain ? chain.abandon : () => router.push('/review')}
+        bonus={bonus}
+        onExit={
+          bonus
+            ? () => router.push('/review/done')
+            : chain
+              ? chain.abandon
+              : () => router.push('/review')
+        }
       />
     </QuestHandoffProvider>
   );

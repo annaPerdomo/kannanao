@@ -4,7 +4,7 @@
  * local YYYY-MM-DD string (streak/chest convention, see localDateString).
  */
 
-export type FriendshipSource = 'adventure' | 'session' | 'pet';
+export type FriendshipSource = 'adventure' | 'session' | 'pet' | 'bonus';
 
 /**
  * Hearts per source, each capped at once per LOCAL day across ALL of the
@@ -15,9 +15,16 @@ export const FRIENDSHIP_POINTS: Record<FriendshipSource, number> = {
   adventure: 3,
   session: 1,
   pet: 1,
+  bonus: 2,
 };
 
-export const HEARTS_PER_DAY = Object.values(FRIENDSHIP_POINTS).reduce((total, n) => total + n, 0);
+/** The three daily goals only — bonus rounds are extra, not part of this total. */
+const DAILY_GOAL_SOURCES: FriendshipSource[] = ['adventure', 'session', 'pet'];
+
+export const HEARTS_PER_DAY = DAILY_GOAL_SOURCES.reduce(
+  (total, source) => total + FRIENDSHIP_POINTS[source],
+  0,
+);
 
 /**
  * Cumulative hearts required to REACH level index+1. At the max pace of
@@ -65,6 +72,7 @@ export interface FriendshipDates {
   adventure?: string | null;
   session?: string | null;
   pet?: string | null;
+  bonus?: string | null;
 }
 
 export function canEarn(

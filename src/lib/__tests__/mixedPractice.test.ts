@@ -20,6 +20,8 @@ const support = (overrides: Partial<MixedDeckSupport> = {}): MixedDeckSupport =>
   readingUnlocked: false,
   ttsReady: false,
   sentenceCount: 0,
+  endingItems: 0,
+  drillItems: 0,
   ...overrides,
 });
 
@@ -190,6 +192,44 @@ describe('planMixedPractice', () => {
     });
     expect(modes(legs)).toEqual(['match']);
   });
+
+  it('puts the endings leg right after the first leg on a grammar deck', () => {
+    const legs = planMixedPractice({
+      support: support({
+        cardCount: 4,
+        fillCards: 4,
+        readingCards: 0,
+        endingItems: 4,
+        drillItems: 4,
+      }),
+      counts: counts({ learning: 0, strong: 4 }),
+    });
+    expect(modes(legs)).toEqual(['recall', 'endings', 'match', 'fill']);
+  });
+
+  it('puts the endings leg last-but-one on a deck with some drilled cards', () => {
+    const legs = planMixedPractice({
+      support: support({ endingItems: 4, drillItems: 1 }),
+      counts: counts({ learning: 0, strong: 4 }),
+    });
+    expect(modes(legs)).toEqual(['recall', 'match', 'endings', 'fill']);
+  });
+
+  it('puts the endings leg last-but-one even with no drilled cards at all', () => {
+    const legs = planMixedPractice({
+      support: support({ endingItems: 4, drillItems: 0 }),
+      counts: counts({ learning: 0, strong: 4 }),
+    });
+    expect(modes(legs)).toEqual(['recall', 'match', 'endings', 'fill']);
+  });
+
+  it('leaves out the endings leg under the minimum', () => {
+    const legs = planMixedPractice({
+      support: support({ endingItems: 3 }),
+      counts: counts({ learning: 0, strong: 4 }),
+    });
+    expect(modes(legs)).not.toContain('endings');
+  });
 });
 
 describe('deckSupport', () => {
@@ -208,6 +248,8 @@ describe('deckSupport', () => {
       readingUnlocked: true,
       ttsReady: false,
       sentenceCount: 8,
+      endingItems: 0,
+      drillItems: 0,
     });
   });
 });

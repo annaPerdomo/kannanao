@@ -86,8 +86,64 @@ describe('BossRound', () => {
     expect(grade).toHaveBeenCalledWith(false, 'N5', 'boss1');
 
     vi.advanceTimersByTime(1200);
+    expect(onComplete).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
     // Nothing correct → the batched bonus is zero.
     expect(onBossBonus).toHaveBeenCalledWith(0);
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the explainer on a miss', () => {
+    const boss = card({
+      id: 'boss1',
+      meaning: 'dog',
+      jlptLevel: 'N5',
+      example_jp: 'いぬがいます。',
+      example_en: 'There is a dog.',
+    });
+    const distractor = card({ id: 'd2', word: 'ねこ', reading: 'ねこ', meaning: 'cat' });
+
+    renderWithProviders(
+      <BossRound
+        cards={[boss]}
+        pool={[boss, distractor]}
+        comboCount={0}
+        grade={vi.fn(() => ({ count: 0, bonusAwarded: 0 }))}
+        onBossBonus={vi.fn()}
+        onComplete={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'cat' }));
+    expect(screen.getByText('dog')).toBeInTheDocument();
+    expect(screen.getByText('There is a dog.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument();
+  });
+
+  it('pays the bonus and completes only once when "Got it" on the last card is clicked twice', () => {
+    const boss = card({ id: 'boss1', meaning: 'dog', jlptLevel: 'N5' });
+    const distractor = card({ id: 'd2', word: 'ねこ', reading: 'ねこ', meaning: 'cat' });
+    const onBossBonus = vi.fn();
+    const onComplete = vi.fn();
+
+    renderWithProviders(
+      <BossRound
+        cards={[boss]}
+        pool={[boss, distractor]}
+        comboCount={0}
+        grade={vi.fn(() => ({ count: 0, bonusAwarded: 0 }))}
+        onBossBonus={onBossBonus}
+        onComplete={onComplete}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'cat' }));
+    const gotIt = screen.getByRole('button', { name: 'Got it' });
+    fireEvent.click(gotIt);
+    fireEvent.click(gotIt);
+
+    expect(onBossBonus).toHaveBeenCalledTimes(1);
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 });

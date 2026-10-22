@@ -45,6 +45,7 @@ function baseWeek() {
     availableOn: null,
     requiredAccuracy: null,
     requiredMode: null,
+    baselineAccuracy: 80,
     learnerCount: 0,
     finishedCount: 0,
     wordCount: 0,

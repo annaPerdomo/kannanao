@@ -4,11 +4,13 @@ import { availableNowFilter } from '@/lib/assignmentAvailability';
 import { isGoalMode } from '@/lib/assignmentMastery';
 import { isKanaSetId } from '@/lib/kanaCurriculum';
 import { logger } from '@/lib/logger';
+import { BASELINE_CHOICES, DEFAULT_BASELINE } from '@/lib/wordProgress';
 
 import { getProfileForUserResult, getUserFromTokenResult } from '../../_lib/authCache';
 import { backendUnavailable } from '../../_lib/backendUnavailable';
 import { rateLimit } from '../../_lib/rateLimit';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
+import { assignmentWordProgress } from '../_lib/assignmentWordProgress';
 import { type DeckHandout, dropOrphanedTemplates } from '../_lib/dropOrphanedTemplates';
 import { memberIdsFor, membershipsOf } from '../_lib/membership';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
@@ -48,6 +50,7 @@ export async function POST(req: NextRequest) {
     groupId,
     requiredAccuracy,
     requiredMode,
+    baselineAccuracy,
   } = body as {
     memberIds: string[];
     deckId?: string;
@@ -59,6 +62,7 @@ export async function POST(req: NextRequest) {
     groupId?: string;
     requiredAccuracy?: number | null;
     requiredMode?: string | null;
+    baselineAccuracy?: number;
   };
 
   if (!Array.isArray(memberIds) || memberIds.length === 0) {
@@ -78,6 +82,21 @@ export async function POST(req: NextRequest) {
   if (kanaSet && requiredMode != null) {
     return NextResponse.json(
       { error: 'requiredMode does not apply to a kana goal.' },
+      { status: 400 },
+    );
+  }
+  if (kanaSet && baselineAccuracy != null) {
+    return NextResponse.json(
+      { error: 'baselineAccuracy does not apply to a kana goal.' },
+      { status: 400 },
+    );
+  }
+  if (
+    baselineAccuracy != null &&
+    !(BASELINE_CHOICES as readonly number[]).includes(baselineAccuracy)
+  ) {
+    return NextResponse.json(
+      { error: `baselineAccuracy must be one of ${BASELINE_CHOICES.join(', ')}.` },
       { status: 400 },
     );
   }
@@ -148,6 +167,7 @@ export async function POST(req: NextRequest) {
     available_on: availableOn || null,
     required_accuracy: requiredAccuracy ?? null,
     required_mode: requiredMode ?? null,
+    ...(deck ? { baseline_accuracy: baselineAccuracy ?? DEFAULT_BASELINE } : {}),
   };
   const rows = targetIds.map((memberId) => ({
     organizer_id: orgCheck.id,
@@ -337,5 +357,34 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to load assignments.' }, { status: 500 });
   }
 
-  return NextResponse.json(data ?? []);
+  const rows = (data ?? []) as {
+    id: string;
+    deck_id: string | null;
+    completed_at: string | null;
+    created_at: string;
+  }[];
+
+  if (scope !== 'mine') {
+    return NextResponse.json(rows);
+  }
+
+  // Learner-facing word coverage, only for the member's own open deck
+  // assignments — never for the organizer's roster view.
+  const openDeckAssignments = rows.filter((a) => a.deck_id != null && a.completed_at == null);
+  if (openDeckAssignments.length === 0) {
+    return NextResponse.json(rows);
+  }
+
+  try {
+    const wordsMap = await assignmentWordProgress(sb, user.id, openDeckAssignments);
+    return NextResponse.json(
+      rows.map((a) => (wordsMap.has(a.id) ? { ...a, words: wordsMap.get(a.id) } : a)),
+    );
+  } catch (err) {
+    logger.error('Failed to compute word progress for assignments', {
+      route: '/api/group/assignments',
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return NextResponse.json(rows);
+  }
 }

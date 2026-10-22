@@ -9,19 +9,26 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 function Harness({
   onAccuracyChange = vi.fn(),
   onModeChange = vi.fn(),
+  onBaselineChange,
   unavailableModes,
+  hideModes,
 }: {
   onAccuracyChange?: (v: number | null) => void;
   onModeChange?: (v: GoalMode | null) => void;
+  onBaselineChange?: (v: number) => void;
   unavailableModes?: readonly GoalMode[];
+  hideModes?: boolean;
 }) {
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [mode, setMode] = useState<GoalMode | null>(null);
+  const [baselineAccuracy, setBaselineAccuracy] = useState(80);
   return (
     <AssignmentGoalPicker
       accuracy={accuracy}
       mode={mode}
       unavailableModes={unavailableModes}
+      hideModes={hideModes}
+      baselineAccuracy={baselineAccuracy}
       onAccuracyChange={(v) => {
         setAccuracy(v);
         onAccuracyChange(v);
@@ -30,6 +37,13 @@ function Harness({
         setMode(v);
         onModeChange(v);
       }}
+      onBaselineChange={
+        onBaselineChange &&
+        ((v) => {
+          setBaselineAccuracy(v);
+          onBaselineChange(v);
+        })
+      }
     />
   );
 }
@@ -91,5 +105,20 @@ describe('AssignmentGoalPicker', () => {
     fireEvent.keyDown(screen.getByRole('button', { name: /add a goal/i }), { key: 'Enter' });
     fireEvent.keyDown(screen.getByRole('button', { name: '90%' }), { key: ' ' });
     expect(onAccuracyChange).toHaveBeenCalledWith(90);
+  });
+
+  it('changing the words-to-know select calls onBaselineChange', () => {
+    const onBaselineChange = vi.fn();
+    renderWithProviders(<Harness onBaselineChange={onBaselineChange} />);
+    fireEvent.click(screen.getByRole('button', { name: /add a goal/i }));
+    fireEvent.click(screen.getByRole('button', { name: '90% of the words' }));
+    expect(onBaselineChange).toHaveBeenCalledWith(90);
+  });
+
+  it('hides the words-to-know select for a kana goal', () => {
+    const onBaselineChange = vi.fn();
+    renderWithProviders(<Harness onBaselineChange={onBaselineChange} hideModes />);
+    fireEvent.click(screen.getByRole('button', { name: /add a goal/i }));
+    expect(screen.queryByRole('button', { name: '90% of the words' })).not.toBeInTheDocument();
   });
 });

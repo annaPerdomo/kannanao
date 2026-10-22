@@ -35,6 +35,7 @@ import { KanaRound } from './KanaRound';
 import { QuestInterstitial } from './QuestInterstitial';
 import { QuestMap } from './QuestMap';
 import type { QuestGrade } from './types';
+import { useBonusRound } from './useBonusRound';
 import { useQuestKana } from './useQuestKana';
 
 export interface ReviewQuestProps {
@@ -47,6 +48,8 @@ export interface ReviewQuestProps {
   recordKana?: (kana: string, correct: boolean) => Promise<void>;
   onExit: () => void;
   cappedSession?: boolean;
+  /** An extra round played after the day's main practice is already done. */
+  bonus?: boolean;
 }
 
 /**
@@ -63,8 +66,10 @@ export function ReviewQuest({
   recordKana,
   onExit,
   cappedSession = false,
+  bonus = false,
 }: ReviewQuestProps) {
   const t = useTranslations('Review.reviewQuest');
+  const tDone = useTranslations('PracticeDone.done');
   const { user } = useAuth();
   const { startSession, recordAnswer, endSession, addBonusXp, openDailyChest, progress } =
     useProgress();
@@ -100,6 +105,10 @@ export function ReviewQuest({
   const endedRef = useRef(false);
   // The quest plans only a slice of `cards`, so the full list names unseen words.
   const gradedIdsRef = useRef<Set<string>>(new Set());
+  // Cards already SRS-advanced this quest — the Boss Round re-tests the last
+  // Word Match cards, and without this a repeat-correct would double-advance
+  // the schedule. Its size also counts unique words rescued for a bonus round.
+  const correctlyGradedRef = useRef<Set<string>>(new Set());
   // Snapshot last_chest_date every render so finishQuest reads the pre-open value
   // without a stale closure.
   const lastChestDateRef = useRef<string | null>(null);
@@ -115,6 +124,12 @@ export function ReviewQuest({
   const [chestEligible, setChestEligible] = useState(false);
   const [perfect, setPerfect] = useState(false);
   const [heartsEarned, setHeartsEarned] = useState(0);
+  const {
+    rewarded: bonusRewarded,
+    rescuedCount: bonusRescued,
+    heartsEarned: bonusHeartsEarned,
+    finish: finishBonusRound,
+  } = useBonusRound({ addBonusXp });
 
   // Open the one review session on mount. startSession is identity-stable, so
   // this fires exactly once even as progress updates.
@@ -149,6 +164,14 @@ export function ReviewQuest({
     }
     setPerfect(studied >= 5 && correct === studied);
 
+    // A bonus round pays its own reward and never touches the daily chest or
+    // the 'adventure' source — that one closed out the main session already.
+    if (bonus) {
+      finishBonusRound(studied, correctlyGradedRef.current.size);
+      setDone(true);
+      return;
+    }
+
     // Daily chest: only when clearing the due queue actually emptied it. Guard
     // the network read so a failure quietly skips the chest, never errors the
     // celebration.
@@ -177,13 +200,7 @@ export function ReviewQuest({
     }
 
     setDone(true);
-  }, [cards, endSession, user, awardFriendship, cappedSession]);
-
-  // Cards already SRS-advanced by a correct answer this quest. The Boss Round
-  // deliberately re-tests the last Word Match cards, and without this a card
-  // answered correctly in both nodes had its schedule advanced twice in one
-  // session (pushed days further out than one review should).
-  const correctlyGradedRef = useRef<Set<string>>(new Set());
+  }, [cards, endSession, user, awardFriendship, cappedSession, bonus, finishBonusRound]);
 
   // The single grading primitive every node calls.
   const grade = useCallback<QuestGrade>(
@@ -285,11 +302,13 @@ export function ReviewQuest({
       <CelebrationScreen
         heading={praise.jp}
         headingEn={praise.en}
-        subheading={t('clearedReview')}
+        subheading={
+          bonus && bonusRewarded ? tDone('bonusDone', { count: bonusRescued }) : t('clearedReview')
+        }
         extra={readsNow ? t('readsHiragana') : undefined}
         mode="study"
         exitLabel={t('backToReview')}
-        heartsEarned={heartsEarned}
+        heartsEarned={bonus ? bonusHeartsEarned : heartsEarned}
         chest={
           chestEligible
             ? {

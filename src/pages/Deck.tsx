@@ -42,6 +42,7 @@ import { useDecks } from '@/hooks/useDecks';
 import { useGenerateFlashcards } from '@/hooks/useGenerateFlashcards';
 import { useStartMixedPractice } from '@/hooks/usePracticeChain';
 import { useJapaneseVoice } from '@/hooks/useSpeech';
+import { endingItems } from '@/lib/grammarEndings';
 import { reuseThenFetch } from '@/services/cardPipeline';
 import { LAYOUT } from '@/theme';
 import type { PracticeMode } from '@/types/app';
@@ -111,6 +112,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
   const canReorder = !isMemberAccount && cards.length > 1;
   const readingCardCount = useMemo(() => eligibleReadingCards(cards).length, [cards]);
   const kanjiPairCount = useMemo(() => kanjiMatchPairs(cards).length, [cards]);
+  const endingItemCount = useMemo(() => endingItems(cards).length, [cards]);
   const deckViewMode = useMemo(
     () =>
       cards.length > 0 && cards.every((c) => c.mainViewMode === cards[0].mainViewMode)
@@ -295,6 +297,7 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
           onPractice={onPractice}
           readingUnlocked={deck.readingPractice === true}
           kanjiPairCount={kanjiPairCount}
+          endingItemCount={endingItemCount}
           onMixedPractice={() =>
             void startMixed(deckId, cards, {
               readingUnlocked: deck.readingPractice === true,

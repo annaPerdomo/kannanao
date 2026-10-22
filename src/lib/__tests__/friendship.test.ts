@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   canEarn,
   clampPoints,
+  FRIENDSHIP_POINTS,
   friendshipLevel,
   friendshipProgress,
   type FriendshipSource,
@@ -169,6 +170,12 @@ describe('reachableToday', () => {
 
   it('ignores stamps from yesterday', () => {
     expect(reachableToday(5, { adventure: YESTERDAY, session: YESTERDAY }, TODAY)).toBe(true);
+  });
+});
+
+describe('FRIENDSHIP_POINTS', () => {
+  it('pays 2 hearts for a bonus round', () => {
+    expect(FRIENDSHIP_POINTS.bonus).toBe(2);
   });
 });
 

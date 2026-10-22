@@ -15,6 +15,7 @@ import {
   type SupabaseCardRow,
   type UserProfile,
 } from '@/lib/dbMappers';
+import { type DueRow, rankDueCards } from '@/lib/dueOrder';
 import type { Deck } from '@/types/deck';
 import type { Flashcard, MainViewMode } from '@/types/flashcard';
 import type { HomeSections } from '@/types/homeSections';
@@ -1244,6 +1245,7 @@ export async function getDueCards(
   userId: string,
   limit = 20,
   deckIds?: string[],
+  opts?: { priorityDeckIds?: string[] },
 ): Promise<Flashcard[]> {
   if (!isConfigured()) {
     showConfigBanner();
@@ -1251,6 +1253,37 @@ export async function getDueCards(
   }
   const ids = deckIds ?? (await getAccessibleDeckIds(userId));
   if (ids.length === 0) return [];
+  if (opts?.priorityDeckIds) {
+    const { data, error } = await sb
+      .from('card_progress')
+      .select('interval_days, next_review_at, cards!inner(*)')
+      .eq('user_id', userId)
+      .in('cards.deck_id', ids)
+      .lte('next_review_at', new Date().toISOString())
+      .order('next_review_at', { ascending: true })
+      .limit(500);
+    if (error) {
+      console.error('Error loading due cards', error);
+      throw toDataError(error);
+    }
+    const rows = (data ?? [])
+      .map((row) => {
+        const r = row as unknown as {
+          cards: SupabaseCardRow | null;
+          interval_days: number | null;
+          next_review_at: string | null;
+        };
+        return r.cards
+          ? {
+              card: dbCardToApp(r.cards),
+              intervalDays: r.interval_days ?? 0,
+              nextReviewAt: r.next_review_at ?? '',
+            }
+          : null;
+      })
+      .filter((r): r is DueRow => r != null);
+    return rankDueCards(rows, new Set(opts.priorityDeckIds)).slice(0, limit);
+  }
   const { data, error } = await sb
     .from('card_progress')
     .select('cards!inner(*)')

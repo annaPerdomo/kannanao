@@ -1,12 +1,7 @@
-// SM-2-lite spaced-repetition scheduler — the readable, unit-tested reference
-// for the curve. The SAME curve is applied for real inside the `srs_next` SQL
-// function (migration 20260711000000_srs_scheduler.sql), where scheduling is
-// atomic; keep the two in sync — the constants (0→1→3, ease ±, floors/caps)
-// live in exactly one place per file so they can't silently drift.
-//
-// Curve: wrong → interval 0 (re-shown in ~10 min), ease −0.2 floored at 1.3.
-// correct → interval steps 0→1→3 days, then interval×ease; ease +0.05 capped
-// at 2.8. Interval is capped at 60 days.
+// SM-2-lite spaced-repetition scheduler, mirroring the `srs_next` SQL function
+// (migration 20261022010000_srs_sitting_and_overdue.sql) — keep the two in
+// sync. Same-sitting answers never change ease, so a retry loop's repeat
+// misses don't double-punish one miss; an early answer keeps the interval.
 
 export const MIN_EASE = 1.3;
 export const MAX_EASE = 2.8;
@@ -19,6 +14,8 @@ export const WRONG_REVIEW_DELAY_MIN = 10;
  * (migration 20260809020000) — changing this means editing that SQL literal too.
  */
 export const LAPSE_INTERVAL_DAYS = 7;
+/** 12 hours — the server has no learner-local day to compare against. */
+export const SAME_SITTING_DAYS = 0.5;
 
 const DAY_MS = 86_400_000;
 
@@ -26,6 +23,7 @@ export interface ScheduleInput {
   correct: boolean;
   intervalDays: number;
   ease: number;
+  lastReviewedAt?: Date | null;
 }
 
 export interface ScheduleResult {
@@ -34,23 +32,51 @@ export interface ScheduleResult {
   nextReviewAt: Date;
 }
 
+function elapsedDays(lastReviewedAt: Date | null | undefined, now: Date): number | null {
+  if (!lastReviewedAt) return null;
+  return (now.getTime() - lastReviewedAt.getTime()) / DAY_MS;
+}
+
 /** Given the current schedule and one graded answer, return the next schedule. */
 export function nextSchedule(
-  { correct, intervalDays, ease }: ScheduleInput,
+  { correct, intervalDays, ease, lastReviewedAt }: ScheduleInput,
   now: Date = new Date(),
 ): ScheduleResult {
+  const elapsed = elapsedDays(lastReviewedAt, now);
+  const sameSitting = elapsed !== null && elapsed < SAME_SITTING_DAYS;
+
   if (!correct) {
+    const alreadyMissedThisSitting = intervalDays <= 1 && sameSitting;
     return {
       intervalDays: 0,
-      ease: Math.max(MIN_EASE, ease - 0.2),
+      ease: alreadyMissedThisSitting ? ease : Math.max(MIN_EASE, ease - 0.2),
       nextReviewAt: new Date(now.getTime() + WRONG_REVIEW_DELAY_MIN * 60_000),
     };
   }
-  const grown = intervalDays < 1 ? 1 : intervalDays < 3 ? 3 : intervalDays * ease;
-  const nextInterval = Math.min(MAX_INTERVAL_DAYS, grown);
+
+  const onTime = elapsed === null || elapsed <= intervalDays;
+  let nextInterval: number;
+  if (intervalDays < 1) {
+    nextInterval = 1;
+  } else if (sameSitting) {
+    nextInterval = intervalDays;
+  } else if (intervalDays < 3 && onTime) {
+    nextInterval = 3;
+  } else if (
+    intervalDays >= 3 &&
+    elapsed !== null &&
+    elapsed >= SAME_SITTING_DAYS &&
+    elapsed < intervalDays
+  ) {
+    nextInterval = Math.min(MAX_INTERVAL_DAYS, Math.max(intervalDays, elapsed * ease));
+  } else {
+    const base = onTime ? intervalDays : intervalDays + (elapsed! - intervalDays) / 2;
+    nextInterval = Math.min(MAX_INTERVAL_DAYS, Math.max(3, base * ease));
+  }
+
   return {
     intervalDays: nextInterval,
-    ease: Math.min(MAX_EASE, ease + 0.05),
+    ease: sameSitting ? ease : Math.min(MAX_EASE, ease + 0.05),
     nextReviewAt: new Date(now.getTime() + nextInterval * DAY_MS),
   };
 }

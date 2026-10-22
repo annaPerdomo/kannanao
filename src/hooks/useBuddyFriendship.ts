@@ -29,6 +29,7 @@ export interface BuddyFriendship {
   lastAdventureDate: string | null;
   lastSessionDate: string | null;
   lastPetDate: string | null;
+  lastBonusDate: string | null;
 }
 
 export interface FriendshipAward {
@@ -65,6 +66,7 @@ interface DbBuddyFriendship {
   last_adventure_date: string | null;
   last_session_date: string | null;
   last_pet_date: string | null;
+  last_bonus_date: string | null;
 }
 
 type Stamps = Record<FriendshipSource, string | null>;
@@ -73,6 +75,7 @@ const SOURCE_FIELD: Record<FriendshipSource, keyof BuddyFriendship> = {
   adventure: 'lastAdventureDate',
   session: 'lastSessionDate',
   pet: 'lastPetDate',
+  bonus: 'lastBonusDate',
 };
 
 function dbFriendshipToApp(row: DbBuddyFriendship): BuddyFriendship {
@@ -82,6 +85,7 @@ function dbFriendshipToApp(row: DbBuddyFriendship): BuddyFriendship {
     lastAdventureDate: row.last_adventure_date,
     lastSessionDate: row.last_session_date,
     lastPetDate: row.last_pet_date,
+    lastBonusDate: row.last_bonus_date,
   };
 }
 
@@ -92,12 +96,19 @@ function emptyFriendship(buddyKey: string): BuddyFriendship {
     lastAdventureDate: null,
     lastSessionDate: null,
     lastPetDate: null,
+    lastBonusDate: null,
   };
 }
 
 /** A row a rollback emptied back out — indistinguishable from having no row. */
 function isBlank(row: BuddyFriendship): boolean {
-  return row.points <= 0 && !row.lastAdventureDate && !row.lastSessionDate && !row.lastPetDate;
+  return (
+    row.points <= 0 &&
+    !row.lastAdventureDate &&
+    !row.lastSessionDate &&
+    !row.lastPetDate &&
+    !row.lastBonusDate
+  );
 }
 
 /**
@@ -119,6 +130,7 @@ function mergeStamps(friendships: Record<string, BuddyFriendship>, today: string
     adventure: merge('lastAdventureDate'),
     session: merge('lastSessionDate'),
     pet: merge('lastPetDate'),
+    bonus: merge('lastBonusDate'),
   };
 }
 

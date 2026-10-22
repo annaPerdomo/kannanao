@@ -32,6 +32,8 @@ export function planAssignmentQuest({
       readingUnlocked: false,
       ttsReady: false,
       sentenceCount: 0,
+      endingItems: 0,
+      drillItems: 0,
     },
     counts: { new: cardCount, learning: 0, strong: 0 },
     // The warm-up below is already the study leg, and the goal is the finale.

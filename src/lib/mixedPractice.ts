@@ -15,6 +15,7 @@ import {
 import type { Flashcard } from '@/types/flashcard';
 
 import { cardStrength, type StrengthCounts } from './cardStrength';
+import { endingItems, MIN_ENDING_ITEMS } from './grammarEndings';
 import type { ChainLeg, ChainMode } from './practiceChain';
 import type { CardProgress } from './supabase';
 
@@ -30,6 +31,11 @@ export interface MixedDeckSupport {
   ttsReady: boolean;
   /** Deck-wide, unlike every other field here: sentences aren't tied to cards. */
   sentenceCount: number;
+  /** Conjugation cards the ending-picker mode can ask about. */
+  endingItems: number;
+  /** Of those, the ones whose own word/meaning drill the detected form —
+   * a deck built around the grammar point, not a vocab deck that has a few. */
+  drillItems: number;
 }
 
 /** The choice-based exercises need distractors, and Match needs a grid. */
@@ -55,6 +61,8 @@ export function deckSupport(
     readingUnlocked,
     ttsReady,
     sentenceCount,
+    endingItems: endingItems(cards).length,
+    drillItems: endingItems(cards).filter((item) => item.drillsCard).length,
   };
 }
 
@@ -141,5 +149,23 @@ export function planMixedPractice(input: MixedPlanInput): ChainLeg[] {
   const tail = production && keep(production) ? [production] : [];
   // Trim from the middle, never the end: the production rung is the point of
   // the ladder, and meaning pick leads `opening` so it always survives.
-  return [...kept.slice(0, MAX_MIXED_LEGS - tail.length), ...tail];
+  const legs = [...kept.slice(0, MAX_MIXED_LEGS - tail.length), ...tail];
+
+  const endingsLeg: ChainLeg = { step: 'practice', mode: 'endings' };
+  if (support.endingItems < MIN_ENDING_ITEMS || !keep(endingsLeg) || legs.length === 0) {
+    return legs;
+  }
+
+  // A grammar deck (half+ of its session cards are drill cards) gets the leg
+  // right after the first leg; any other deck with enough items gets it
+  // last-but-one. Either way, Match is trimmed first if the ladder is full.
+  const isGrammarDeck = support.drillItems * 2 >= support.cardCount;
+  const keptPortion = legs.slice(0, legs.length - tail.length);
+  const budget = Math.max(MAX_MIXED_LEGS - tail.length - 1, 0);
+  const trimmedKept = keptPortion.slice(0, budget);
+
+  if (isGrammarDeck) {
+    return [...trimmedKept.slice(0, 1), endingsLeg, ...trimmedKept.slice(1), ...tail];
+  }
+  return [...trimmedKept, endingsLeg, ...tail];
 }

@@ -68,6 +68,7 @@ describe('HandOutDialog', () => {
         note: 'Order a meal',
         requiredAccuracy: null,
         requiredMode: null,
+        baselineAccuracy: 80,
         withSentences: true,
       }),
     );

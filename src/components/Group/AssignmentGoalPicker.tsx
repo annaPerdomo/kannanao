@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { GOAL_ACCURACY_CHOICES, GOAL_MODES, type GoalMode } from '@/lib/assignmentMastery';
+import { BASELINE_CHOICES, DEFAULT_BASELINE } from '@/lib/wordProgress';
 
 import { goalModeMessageKey } from './useGoalLabel';
 
@@ -21,6 +22,9 @@ interface AssignmentGoalPickerProps {
   unavailableModes?: readonly GoalMode[];
   /** A kana goal's activity is fixed, so the whole mode question is dropped. */
   hideModes?: boolean;
+  /** Share of a deck's words that must be known to finish; ignored (and hidden) for a kana goal. */
+  baselineAccuracy?: number;
+  onBaselineChange?: (baseline: number) => void;
 }
 
 /**
@@ -35,6 +39,8 @@ export function AssignmentGoalPicker({
   onModeChange,
   unavailableModes = [],
   hideModes = false,
+  baselineAccuracy = DEFAULT_BASELINE,
+  onBaselineChange,
 }: AssignmentGoalPickerProps) {
   const theme = useTheme();
   const { brand } = theme.palette;
@@ -150,6 +156,33 @@ export function AssignmentGoalPicker({
                   chip(mode === m, t(`modes.${goalModeMessageKey(m)}`), () => onModeChange(m)),
                 )}
               </Box>
+            </Box>
+          )}
+
+          {!hideModes && onBaselineChange && (
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: '0.65rem',
+                  fontWeight: 800,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  color: brand[500],
+                  mb: 1,
+                }}
+              >
+                {t('wordsToKnow')}
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                {BASELINE_CHOICES.map((pct) =>
+                  chip(baselineAccuracy === pct, t('wordsToKnowOption', { pct }), () =>
+                    onBaselineChange(pct),
+                  ),
+                )}
+              </Box>
+              <Typography sx={{ fontSize: '0.7rem', color: brand[500], mt: 0.75 }}>
+                {t('wordsToKnowHelp')}
+              </Typography>
             </Box>
           )}
         </Box>

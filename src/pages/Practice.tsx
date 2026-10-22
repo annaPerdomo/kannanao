@@ -7,6 +7,7 @@ import { DataErrorState } from '@/components/DataErrorState';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
 import { BatchPicker, maxBatchForMode } from '@/components/Practice/BatchPicker';
+import { EndingsMode } from '@/components/Practice/EndingsMode';
 import { FillMode } from '@/components/Practice/FillMode';
 import { KanjiMatchMode, kanjiMatchPairs } from '@/components/Practice/KanjiMatchMode';
 import { KotobaBubbleMode } from '@/components/Practice/KotobaBubbleMode';
@@ -23,6 +24,7 @@ import { RecallMode } from '@/components/Practice/RecallMode';
 import { PracticeStage } from '@/components/PracticeStage';
 import { useCards } from '@/hooks/useCards';
 import { useDecks } from '@/hooks/useDecks';
+import { findEnding, MIN_ENDING_ITEMS } from '@/lib/grammarEndings';
 import { LAYOUT } from '@/theme';
 import type { PracticeMode } from '@/types/app';
 
@@ -75,6 +77,7 @@ export default function Practice({
     listen: t('modeTitles.listen'),
     reading: t('modeTitles.reading'),
     'kanji-match': t('modeTitles.kanjiMatch'),
+    endings: t('modeTitles.endings'),
   };
   // Fill-in-the-blank needs a sentence to blank out. A card with no example
   // (older Travel saves, or a generation that came back without one) rendered
@@ -83,9 +86,11 @@ export default function Practice({
   const modeCards =
     mode === 'fill'
       ? cards.filter((c) => c.example_jp.trim())
-      : needsKanji
-        ? eligibleReadingCards(cards)
-        : cards;
+      : mode === 'endings'
+        ? cards.filter((c) => findEnding(c) !== null)
+        : needsKanji
+          ? eligibleReadingCards(cards)
+          : cards;
   const badge = t('cardsBadge', { count: modeCards.length });
 
   if (loading || decksLoading) {
@@ -138,7 +143,7 @@ export default function Practice({
     );
   }
 
-  if (modeCards.length < 2) {
+  if (modeCards.length < (mode === 'endings' ? MIN_ENDING_ITEMS : 2)) {
     return (
       <Box
         sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
@@ -257,6 +262,14 @@ export default function Practice({
       )}
       {mode === 'kotoba-bubble' && (
         <KotobaBubbleMode
+          cards={modeCards}
+          deckId={deckId}
+          batchSize={effectiveBatchSize}
+          onExit={onBack}
+        />
+      )}
+      {mode === 'endings' && (
+        <EndingsMode
           cards={modeCards}
           deckId={deckId}
           batchSize={effectiveBatchSize}

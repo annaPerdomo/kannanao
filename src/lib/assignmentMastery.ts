@@ -23,7 +23,9 @@ export function masteryMinCards(deckCardCount?: number | null): number {
 
 /**
  * Modes a goal can require. Only sessions carrying a deck_id can complete a deck
- * goal, and the arcade games and speech modes start deckless sessions.
+ * goal, and the arcade games and speech modes start deckless sessions. `endings`
+ * (practiceChain.ts's `ChainMode`) is deliberately left off: a deck without
+ * enough drill cards would make that goal unwinnable.
  */
 export const GOAL_MODES = [
   'study',

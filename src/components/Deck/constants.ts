@@ -69,4 +69,11 @@ export const PRACTICE_CONFIG: PracticeTileConfig[] = [
     kanji: '試',
     color: '#DB2777',
   },
+  {
+    mode: 'endings',
+    labelKey: 'endings.label',
+    descriptionKey: 'endings.description',
+    kanji: '✏️',
+    color: '#9333EA',
+  },
 ];

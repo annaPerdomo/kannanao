@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl';
 import { daysUntilDue, dueDateLabel } from '@/components/Group/dueDate';
 import { useGoalLabel } from '@/components/Group/useGoalLabel';
 import type { Assignment } from '@/hooks/useAssignments';
+import { wordsNeeded } from '@/lib/wordProgress';
 import { amber } from '@/theme';
 
 interface LessonCardProps {
@@ -28,6 +29,22 @@ export function LessonCard({ assignment, onStart }: LessonCardProps) {
   const target = assignment.required_accuracy;
   const pct =
     target != null && best != null ? Math.min(100, Math.round((best / target) * 100)) : null;
+
+  const words = assignment.words;
+  const needed = words ? wordsNeeded(words, assignment.baseline_accuracy) : null;
+  const wordsGoalCards = words
+    ? Math.max(1, Math.ceil((assignment.baseline_accuracy * words.total) / 100))
+    : null;
+  const wordsPct =
+    words && wordsGoalCards
+      ? Math.min(100, Math.round((words.known / wordsGoalCards) * 100))
+      : null;
+  const wordsLine =
+    words && words.total > 0
+      ? needed === 0 && words.seen < words.total
+        ? t('wordsLineTryRest', { seen: words.seen, total: words.total })
+        : t('wordsLine', { seen: words.seen, total: words.total, needed: needed ?? 0 })
+      : null;
 
   return (
     <Box
@@ -100,6 +117,21 @@ export function LessonCard({ assignment, onStart }: LessonCardProps) {
                 variant="determinate"
                 value={pct}
                 aria-label={t('goalProgressAria')}
+                sx={{ mt: 0.5, height: 8, borderRadius: 999, maxWidth: 260 }}
+              />
+            )}
+          </Box>
+        )}
+        {wordsLine && (
+          <Box>
+            <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: 'text.primary' }}>
+              📖 {wordsLine}
+            </Typography>
+            {wordsPct != null && (
+              <LinearProgress
+                variant="determinate"
+                value={wordsPct}
+                aria-label={t('wordsProgressAria')}
                 sx={{ mt: 0.5, height: 8, borderRadius: 999, maxWidth: 260 }}
               />
             )}

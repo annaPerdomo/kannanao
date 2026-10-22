@@ -202,6 +202,10 @@
       "quiz": {
         "label": "クイズ",
         "description": "一発勝負で実力チェック"
+      },
+      "endings": {
+        "label": "おわりを えらぼう",
+        "description": "ただしい かたちを えらぼう"
       }
     },
     "deckCard": {
@@ -768,7 +772,8 @@
         "quiz": "クイズ",
         "listen": "リスニング",
         "reading": "よみかた",
-        "kanjiMatch": "かんじペア"
+        "kanjiMatch": "かんじペア",
+        "endings": "おわりを えらぼう"
       }
     },
     "batchPicker": {
@@ -851,6 +856,35 @@
       "seeResults": "結果を見る",
       "nextArrow": "次へ →"
     },
+    "missExplainer": {
+      "title": "もう いちど みてみよう",
+      "continue": "わかった!",
+      "example": "ぶんで みると"
+    },
+    "endings": {
+      "blank": "？",
+      "rules": {
+        "i-adj": {
+          "present": "そのまま: たかいです",
+          "negative": "〜ない: い を とって くないです",
+          "past": "〜た: い を とって かったです",
+          "pastNegative": "〜なかった: い を とって くなかったです"
+        },
+        "na-noun": {
+          "present": "です を つける",
+          "negative": "じゃないです を つける",
+          "past": "でした を つける",
+          "pastNegative": "じゃなかったです を つける"
+        },
+        "masu": {
+          "present": "〜ます (いま・これから)",
+          "negative": "〜ません",
+          "past": "〜ました",
+          "pastNegative": "〜ませんでした"
+        }
+      },
+      "ii": "いい は とくべつ: よ に かわるよ。"
+    },
     "readingMode": {
       "readPrompt": "なんて読む？",
       "incorrectAnswer": "おしい！ 読み方は「{reading}」",
@@ -925,6 +959,19 @@
       "failedToGenerate": "作成に失敗しました",
       "failedToRegenerate": "作り直しに失敗しました",
       "failedToSaveChanges": "変更の保存に失敗しました"
+    }
+  },
+  "PracticeDone": {
+    "done": {
+      "heading": "きょうの れんしゅう クリア!",
+      "waiting": "まだ {count}この ことばが まっているよ。",
+      "bonusButton": "ボーナスラウンド",
+      "bonusHearts": "{buddy}に +{n} ❤️",
+      "bonusXp": "+{xp} XP",
+      "bonusDone": "ボーナスラウンド クリア! {count}こ たすけたよ。",
+      "allCaught": "ぜんぶ おわったよ!",
+      "morePractice": "レッスンの ことばを れんしゅう",
+      "finish": "おわる"
     }
   },
   "Games": {
@@ -1258,7 +1305,10 @@
       },
       "goalBoth": "{mode}で{accuracy}%",
       "goalAccuracyOnly": "{accuracy}%",
-      "goalModeOnly": "{mode}で練習"
+      "goalModeOnly": "{mode}で練習",
+      "wordsToKnow": "クリアの めやす",
+      "wordsToKnowOption": "ことばの {pct}%",
+      "wordsToKnowHelp": "ぜんぶの ことばに いちどは こたえます。"
     },
     "assignmentsList": {
       "noAssignmentsTitle": "配布物がまだありません",
@@ -2448,6 +2498,7 @@
           "adventure": "+{count} ❤️ {name}は今日いっしょに勉強できてうれしそう！",
           "session": "+{count} ❤️ {name}は、練習を続けるあなたを見てうれしそう。",
           "pet": "+{count} ❤️ {name}は、あなたに会えてうれしかったみたい。",
+          "bonus": "+{count} ❤️ {name}は、ボーナスラウンドをおうえんしているよ！",
           "heartsEarned": "ハート{count, plural, other {#こ}}ゲット。"
         },
         "nearMilestone": {
@@ -5587,7 +5638,10 @@
       "start": "はじめる",
       "bestSoFar": "いまのベスト {best}%",
       "goalProgressAria": "目標までの進み具合",
-      "pastDue": "期限をすぎたけど、まだできるよ！"
+      "pastDue": "期限をすぎたけど、まだできるよ！",
+      "wordsLine": "{total}こ中 {seen}こ チャレンジ · {needed, plural, =0 {クリアまで あと少し!} other {あと #こ おぼえよう}}",
+      "wordsLineTryRest": "{total}こ中 {seen}こ チャレンジ · のこりも やってみよう!",
+      "wordsProgressAria": "クリアまでの進み具合"
     },
     "collection": {
       "title": "カードコレクション",

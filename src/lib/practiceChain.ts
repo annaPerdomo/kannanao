@@ -14,7 +14,10 @@ import type { GoalMode } from './assignmentMastery';
 
 export type ChainStep = 'review' | 'warmup' | 'practice' | 'goal';
 
-export type ChainMode = GoalMode | 'kana-journey';
+// 'endings' rides along as a practice leg (Mixed Practice) but, unlike every
+// other GoalMode, isn't offered as an organizer assignment goal — see
+// assignmentMastery.ts's GOAL_MODES comment.
+export type ChainMode = GoalMode | 'kana-journey' | 'endings';
 
 export interface ChainLeg {
   step: ChainStep;

@@ -202,6 +202,10 @@
       "quiz": {
         "label": "Quiz",
         "description": "Show what you know — one try each"
+      },
+      "endings": {
+        "label": "Pick the ending",
+        "description": "Choose the right form: is, isn't, was, wasn't."
       }
     },
     "deckCard": {
@@ -768,7 +772,8 @@
         "quiz": "Quiz",
         "listen": "Listen",
         "reading": "Reading",
-        "kanjiMatch": "Kanji Pairs"
+        "kanjiMatch": "Kanji Pairs",
+        "endings": "Pick the ending"
       }
     },
     "batchPicker": {
@@ -851,6 +856,35 @@
       "seeResults": "See Results",
       "nextArrow": "Next →"
     },
+    "missExplainer": {
+      "title": "Let's look again",
+      "continue": "Got it",
+      "example": "In a sentence"
+    },
+    "endings": {
+      "blank": "？",
+      "rules": {
+        "i-adj": {
+          "present": "Plain: keep い — たかいです",
+          "negative": "Not: drop い, add くないです",
+          "past": "Was: drop い, add かったです",
+          "pastNegative": "Wasn't: drop い, add くなかったです"
+        },
+        "na-noun": {
+          "present": "Is: add です",
+          "negative": "Isn't: add じゃないです",
+          "past": "Was: add でした",
+          "pastNegative": "Wasn't: add じゃなかったです"
+        },
+        "masu": {
+          "present": "Does / will: ます",
+          "negative": "Doesn't / won't: ません",
+          "past": "Did: ました",
+          "pastNegative": "Didn't: ませんでした"
+        }
+      },
+      "ii": "いい is special: it becomes よ before the ending."
+    },
     "readingMode": {
       "readPrompt": "HOW DO YOU READ THIS?",
       "incorrectAnswer": "Not quite — it reads {reading}",
@@ -925,6 +959,19 @@
       "failedToGenerate": "Failed to generate",
       "failedToRegenerate": "Failed to regenerate",
       "failedToSaveChanges": "Failed to save changes"
+    }
+  },
+  "PracticeDone": {
+    "done": {
+      "heading": "Today's practice is done!",
+      "waiting": "{count, plural, one {# word is} other {# words are}} still waiting to be reviewed.",
+      "bonusButton": "Bonus round",
+      "bonusHearts": "+{n} ❤️ for {buddy}",
+      "bonusXp": "+{xp} XP",
+      "bonusDone": "Bonus round cleared! {count, plural, one {# word} other {# words}} rescued.",
+      "allCaught": "All caught up — nothing waiting!",
+      "morePractice": "Practice my lesson words",
+      "finish": "Finish"
     }
   },
   "Games": {
@@ -1258,7 +1305,10 @@
       },
       "goalBoth": "{accuracy}% in {mode}",
       "goalAccuracyOnly": "{accuracy}%",
-      "goalModeOnly": "practice in {mode}"
+      "goalModeOnly": "practice in {mode}",
+      "wordsToKnow": "Done when they know",
+      "wordsToKnowOption": "{pct}% of the words",
+      "wordsToKnowHelp": "Every word must be answered at least once."
     },
     "assignmentsList": {
       "noAssignmentsTitle": "No handouts yet",
@@ -2454,6 +2504,7 @@
           "adventure": "+{count} ❤️ {name} loved studying with you today!",
           "session": "+{count} ❤️ {name} is glad you kept practicing.",
           "pet": "+{count} ❤️ {name} was happy to see you.",
+          "bonus": "+{count} ❤️ {name} is cheering for your bonus round!",
           "heartsEarned": "{count, plural, one {# heart} other {# hearts}} earned."
         },
         "nearMilestone": {
@@ -5596,7 +5647,10 @@
       "start": "Start",
       "bestSoFar": "best so far {best}%",
       "goalProgressAria": "Progress toward the goal",
-      "pastDue": "Past due — you can still do it!"
+      "pastDue": "Past due — you can still do it!",
+      "wordsLine": "{seen} of {total} words tried · {needed, plural, =0 {all set!} other {# more to learn}}",
+      "wordsLineTryRest": "{seen} of {total} words tried · try the rest!",
+      "wordsProgressAria": "Words known toward finishing"
     },
     "collection": {
       "title": "Your card collection",

@@ -11,6 +11,7 @@ import {
 } from '@/lib/apiCache';
 import { type DataError, toDataError } from '@/lib/dataError';
 import { sb } from '@/lib/supabase';
+import type { WordProgress } from '@/lib/wordProgress';
 
 export interface Assignment {
   id: string;
@@ -33,6 +34,12 @@ export interface Assignment {
   required_mode: string | null;
   /** Best qualifying-session accuracy so far (student feedback). */
   progress_accuracy: number | null;
+  /** Share of the deck's words that must be known, 0-100. Deck assignments only. */
+  baseline_accuracy: number;
+  /** When the mode/accuracy goal was first satisfied; null for none-yet or no goal. */
+  goal_met_at: string | null;
+  /** This learner's word coverage on the assignment's deck. Set only by the member-scoped GET. */
+  words?: WordProgress;
   decks?: { id: string; name: string; emoji: string | null } | null;
   profiles?: {
     display_name: string | null;
@@ -117,6 +124,7 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
       availableOn?: string;
       requiredAccuracy?: number;
       requiredMode?: string;
+      baselineAccuracy?: number;
     }) => {
       const res = await fetch('/api/group/assignments', {
         method: 'POST',
@@ -149,6 +157,7 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
         availableOn?: string | null;
         requiredAccuracy?: number | null;
         requiredMode?: string | null;
+        baselineAccuracy?: number;
       },
     ) => {
       const prev = assignments;
@@ -161,6 +170,8 @@ export function useAssignments(groupId?: string | null, enabled = true, scope?: 
       if ('requiredAccuracy' in updates)
         mapped.required_accuracy = updates.requiredAccuracy ?? null;
       if ('requiredMode' in updates) mapped.required_mode = updates.requiredMode ?? null;
+      if ('baselineAccuracy' in updates && updates.baselineAccuracy != null)
+        mapped.baseline_accuracy = updates.baselineAccuracy;
       setAssignments((a) => a.map((item) => (idSet.has(item.id) ? { ...item, ...mapped } : item)));
       const headers = { 'Content-Type': 'application/json', ...(await authHeaders()) };
       const results = await Promise.allSettled(

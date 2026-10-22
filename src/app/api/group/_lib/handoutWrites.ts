@@ -1,5 +1,6 @@
 import { isGoalMode } from '@/lib/assignmentMastery';
 import { HANDOUT_NOTE_MAX } from '@/lib/lessonUnits';
+import { BASELINE_CHOICES, DEFAULT_BASELINE } from '@/lib/wordProgress';
 import type { HandoutPatch } from '@/types/lessonUnit';
 
 import { memberIdsFor } from './membership';
@@ -49,6 +50,13 @@ export function parseHandoutPatch(body: unknown): { patch: HandoutPatch } | { er
     }
     patch.requiredMode = v as string | null;
   }
+  if ('baselineAccuracy' in b) {
+    const v = b.baselineAccuracy;
+    if (!(BASELINE_CHOICES as readonly number[]).includes(v as number)) {
+      return { error: `baselineAccuracy must be one of ${BASELINE_CHOICES.join(', ')}.` };
+    }
+    patch.baselineAccuracy = v as number;
+  }
 
   return { patch };
 }
@@ -69,6 +77,7 @@ export function handoutPatchToDbUpdates(patch: HandoutPatch): Record<string, unk
   if ('availableOn' in patch) updates.available_on = patch.availableOn;
   if ('requiredAccuracy' in patch) updates.required_accuracy = patch.requiredAccuracy;
   if ('requiredMode' in patch) updates.required_mode = patch.requiredMode;
+  if ('baselineAccuracy' in patch) updates.baseline_accuracy = patch.baselineAccuracy;
   return updates;
 }
 
@@ -113,6 +122,7 @@ export async function assignHandout(
     availableOn: string | null;
     requiredAccuracy: number | null;
     requiredMode: string | null;
+    baselineAccuracy?: number;
   },
 ): Promise<{ error: string | null }> {
   const {
@@ -125,6 +135,7 @@ export async function assignHandout(
     availableOn,
     requiredAccuracy,
     requiredMode,
+    baselineAccuracy = DEFAULT_BASELINE,
   } = args;
 
   const { error: templateError } = await sb.from('planned_assignments').upsert(
@@ -138,6 +149,7 @@ export async function assignHandout(
       available_on: availableOn,
       required_accuracy: requiredAccuracy,
       required_mode: requiredMode,
+      baseline_accuracy: baselineAccuracy,
     },
     { onConflict: 'group_id,deck_id' },
   );
@@ -157,6 +169,7 @@ export async function assignHandout(
     available_on: availableOn,
     required_accuracy: requiredAccuracy,
     required_mode: requiredMode,
+    baseline_accuracy: baselineAccuracy,
   }));
 
   const { error: assignmentsError } = await sb

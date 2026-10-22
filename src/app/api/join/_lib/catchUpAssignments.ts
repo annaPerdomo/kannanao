@@ -15,8 +15,10 @@ const GOAL_FIELDS = [
  * Fields that make two assignment rows "the same handout". Kept in step with
  * the key groupAssignments() batches on, so a caught-up learner joins the
  * existing row on the organizer's list instead of starting a new one.
+ *
+ * `baseline_accuracy` is deck-only — a kana row has no word coverage to track.
  */
-const HANDOUT_FIELDS = ['deck_id', ...GOAL_FIELDS] as const;
+const HANDOUT_FIELDS = ['deck_id', ...GOAL_FIELDS, 'baseline_accuracy'] as const;
 
 interface AssignmentRow {
   deck_id: string;
@@ -26,6 +28,7 @@ interface AssignmentRow {
   available_on: string | null;
   required_accuracy: number | null;
   required_mode: string | null;
+  baseline_accuracy: number;
 }
 
 function handoutKey(row: AssignmentRow): string {
@@ -127,6 +130,7 @@ export async function catchUpGroupAssignments(
     available_on: row.available_on,
     required_accuracy: row.required_accuracy,
     required_mode: row.required_mode,
+    baseline_accuracy: row.baseline_accuracy,
   }));
 
   let created = 0;

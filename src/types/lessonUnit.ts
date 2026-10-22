@@ -7,6 +7,7 @@ export interface HandoutPatch {
   availableOn?: string | null;
   requiredAccuracy?: number | null;
   requiredMode?: string | null;
+  baselineAccuracy?: number;
 }
 
 export interface LessonUnitWeek {
@@ -21,6 +22,7 @@ export interface LessonUnitWeek {
   availableOn: string | null;
   requiredAccuracy: number | null;
   requiredMode: string | null;
+  baselineAccuracy: number;
   learnerCount: number;
   finishedCount: number;
   wordCount: number;
@@ -63,6 +65,7 @@ export interface HandOutLessonPayload {
   note?: string | null;
   requiredAccuracy?: number | null;
   requiredMode?: string | null;
+  baselineAccuracy?: number;
   withSentences?: boolean;
 }
 

@@ -51,6 +51,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       { status: 400 },
     );
   }
+  if ('baselineAccuracy' in parsed.patch && existing.kana_set != null) {
+    return NextResponse.json(
+      { error: 'baselineAccuracy does not apply to a kana goal.' },
+      { status: 400 },
+    );
+  }
 
   const updates: Record<string, unknown> = handoutPatchToDbUpdates(parsed.patch);
   if ('completedAt' in body) {

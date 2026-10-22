@@ -12,8 +12,10 @@ import { useProgressCtx } from '@/contexts/ProgressContext';
 import { useShopCtx } from '@/contexts/ShopContext';
 import { useDueCount } from '@/hooks/useDueCount';
 import { useKanaProgress } from '@/hooks/useKanaProgress';
+import { bonusRoundsToday, MAX_BONUS_ROUNDS } from '@/lib/bonusRound';
 import { buddyFaceSrc, resolveBuddyKey } from '@/lib/buddies';
 import { localDateString } from '@/lib/chest';
+import { dailyReviewCap, daysSince } from '@/lib/dailyPractice';
 import { FRIENDSHIP_POINTS } from '@/lib/friendship';
 import { KANA_WAIT_MS, kanaNodeSize, pickQuestKana } from '@/lib/quest';
 import { isReturningAfterBreak } from '@/lib/studyWeek';
@@ -51,6 +53,7 @@ export function TodayAdventureCard() {
     friendships,
     equipped,
     todayGoals,
+    stamps,
     loadState: friendshipLoad,
     ensureLoaded,
   } = useBuddyFriendshipCtx();
@@ -141,10 +144,15 @@ export function TodayAdventureCard() {
     : null;
 
   const start = () => router.push('/review/start');
+  const startBonus = () => router.push('/review/today?daily=1&bonus=1');
   const playGame = () => router.push('/review?games=1');
   // Pointer convenience only, no role/tabIndex: a focusable button nested in a
   // role="button" makes its accessible name presentational. Start is the control.
   const clickable = state !== 'completed';
+
+  const cap = dailyReviewCap(daysSince(progress?.last_study_date ?? null, today));
+  const offerBonus = dueCount > 0 && bonusRoundsToday(today) < MAX_BONUS_ROUNDS;
+  const showBonusHearts = stamps.bonus !== today;
 
   return (
     <Box
@@ -164,7 +172,10 @@ export function TodayAdventureCard() {
           faceSrc={buddyFaceSrc(creditedKey, FACE_CELEBRATE)}
           // The chest fallback proves a cleared queue, not a paid heart.
           hearts={hasFriendship ? FRIENDSHIP_POINTS.adventure : 0}
+          offerBonus={offerBonus}
+          showBonusHearts={showBonusHearts}
           onPractice={start}
+          onBonus={startBonus}
           onPlayGame={playGame}
         />
       )}
@@ -174,6 +185,7 @@ export function TodayAdventureCard() {
           faceSrc={buddyFaceSrc(buddyKey, FACE_DEFAULT)}
           dueCount={dueCount}
           kanaCount={kanaCount}
+          cap={cap}
           friendshipLine={friendshipLine}
           onStart={start}
           onPlayGame={playGame}

@@ -8,7 +8,8 @@ export type PracticeMode =
   | 'quiz'
   | 'listen'
   | 'reading'
-  | 'kanji-match';
+  | 'kanji-match'
+  | 'endings';
 
 export interface AppState {
   screen: Screen;
