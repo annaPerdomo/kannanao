@@ -3,23 +3,55 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
 import { useAuth } from '@/contexts/AuthContext';
+import type { QuestHandoff } from '@/contexts/QuestHandoffContext';
 
 import { MIN_SENTENCES } from './constants';
 
-export function ErrorState({ error, onExit }: { error: string; onExit: () => void }) {
+function NextOrBack({ handoff, onExit }: { handoff?: QuestHandoff | null; onExit: () => void }) {
   const tBack = useTranslations('Common');
+  if (!handoff) {
+    return (
+      <Button onClick={onExit} variant="outlined">
+        {tBack('back')}
+      </Button>
+    );
+  }
+  return (
+    <Stack direction="row" spacing={1.5} justifyContent="center">
+      <Button
+        variant="contained"
+        onClick={handoff.onNext}
+        sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700 }}
+      >
+        {handoff.label}
+      </Button>
+      <Button onClick={onExit} variant="text">
+        {tBack('back')}
+      </Button>
+    </Stack>
+  );
+}
+
+export function ErrorState({
+  error,
+  onExit,
+  handoff,
+}: {
+  error: string;
+  onExit: () => void;
+  handoff?: QuestHandoff | null;
+}) {
   return (
     <Box sx={{ textAlign: 'center', py: 4 }}>
       <Alert severity="error" sx={{ mb: 2 }}>
         {error}
       </Alert>
-      <Button onClick={onExit} variant="outlined">
-        {tBack('back')}
-      </Button>
+      <NextOrBack handoff={handoff} onExit={onExit} />
     </Box>
   );
 }
@@ -28,10 +60,12 @@ export function EmptyState({
   onExit,
   onGenerate,
   error,
+  handoff,
 }: {
   onExit: () => void;
   onGenerate: () => void;
   error: string | null;
+  handoff?: QuestHandoff | null;
 }) {
   const t = useTranslations('Practice.kotobaBubble');
   const tBack = useTranslations('Common');
@@ -46,16 +80,26 @@ export function EmptyState({
       <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 360, mx: 'auto' }}>
         {isMemberAccount ? t('memberEmptyMsg') : t('organizerEmptyMsg')}
       </Typography>
-      {!isMemberAccount && (
+      {handoff ? (
         <Button
           variant="contained"
-          size="large"
-          onClick={onGenerate}
-          startIcon={<AutoAwesomeIcon />}
+          onClick={handoff.onNext}
           sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700, px: 4 }}
         >
-          {t('generatePractice')}
+          {handoff.label}
         </Button>
+      ) : (
+        !isMemberAccount && (
+          <Button
+            variant="contained"
+            size="large"
+            onClick={onGenerate}
+            startIcon={<AutoAwesomeIcon />}
+            sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700, px: 4 }}
+          >
+            {t('generatePractice')}
+          </Button>
+        )
       )}
       {error && (
         <Alert severity="error" sx={{ mt: 2, maxWidth: 400, mx: 'auto' }}>
@@ -71,17 +115,20 @@ export function EmptyState({
   );
 }
 
-export function NotEnoughState({ onExit }: { onExit: () => void }) {
+export function NotEnoughState({
+  onExit,
+  handoff,
+}: {
+  onExit: () => void;
+  handoff?: QuestHandoff | null;
+}) {
   const t = useTranslations('Practice.kotobaBubble');
-  const tBack = useTranslations('Common');
   return (
     <Box sx={{ textAlign: 'center', py: 6 }}>
-      <Typography color="text.secondary">
+      <Typography color="text.secondary" sx={{ mb: 2 }}>
         {t('notEnoughSentences', { count: MIN_SENTENCES })}
       </Typography>
-      <Button onClick={onExit} sx={{ mt: 2 }} variant="outlined">
-        {tBack('back')}
-      </Button>
+      <NextOrBack handoff={handoff} onExit={onExit} />
     </Box>
   );
 }

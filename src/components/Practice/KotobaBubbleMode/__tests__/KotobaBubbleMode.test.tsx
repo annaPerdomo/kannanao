@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { KotobaBubbleMode } from '@/components/Practice/KotobaBubbleMode';
 import { XP_PERFECT_BONUS } from '@/components/Practice/KotobaBubbleMode/constants';
+import { QuestHandoffProvider } from '@/contexts/QuestHandoffContext';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import type { Flashcard } from '@/types/flashcard';
 import type { PracticeSentence } from '@/types/practiceSentence';
@@ -282,5 +283,25 @@ describe('KotobaBubbleMode answer feedback and review order', () => {
 
     expect(showButton).toHaveAttribute('aria-expanded', 'true');
     await waitFor(() => expect(screen.getAllByText('I like cats')).toHaveLength(3));
+  });
+});
+
+describe('KotobaBubbleMode not-enough-sentences, mid chain', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    sentences.length = 0;
+    sentences.push(sentence('s1'));
+  });
+
+  it('advances the chain on Next instead of abandoning it', () => {
+    const onNext = vi.fn();
+    renderWithProviders(
+      <QuestHandoffProvider value={{ label: 'Next: Match', onNext, onStop: vi.fn(), final: false }}>
+        <KotobaBubbleMode cards={cards} deckId="d1" batchSize={1} onExit={() => {}} />
+      </QuestHandoffProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Next: Match' }));
+    expect(onNext).toHaveBeenCalledTimes(1);
   });
 });

@@ -30,17 +30,19 @@ export function KotobaBubbleMode({ cards, deckId, batchSize, onExit }: KotobaBub
   if (game.loading) return <Loading message={t('loadingBuilder')} />;
 
   if (game.error && !game.hasContent) {
-    return <ErrorState error={game.error} onExit={onExit} />;
+    return <ErrorState error={game.error} onExit={onExit} handoff={handoff} />;
   }
 
   if (game.generating) return <Loading message={t('generatingSentences')} />;
 
   if (!game.hasContent) {
-    return <EmptyState onExit={onExit} onGenerate={game.generate} error={game.error} />;
+    return (
+      <EmptyState onExit={onExit} onGenerate={game.generate} error={game.error} handoff={handoff} />
+    );
   }
 
   if (game.gameSentences.length < MIN_SENTENCES) {
-    return <NotEnoughState onExit={onExit} />;
+    return <NotEnoughState onExit={onExit} handoff={handoff} />;
   }
 
   if (game.gameComplete && !game.showSummary) {

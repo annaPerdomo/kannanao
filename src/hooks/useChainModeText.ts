@@ -26,9 +26,11 @@ export function useChainModeText(): (mode: ChainMode) => { label: string; descri
         };
       }
       const tile = PRACTICE_CONFIG.find((config) => config.mode === mode);
-      return tile
-        ? { label: tModes(tile.labelKey), description: tModes(tile.descriptionKey) }
-        : { label: mode, description: '' };
+      if (!tile) return { label: mode, description: '' };
+      const label = tModes(tile.labelKey);
+      const questKey = `modeDescriptions.${tile.labelKey.replace(/\.label$/, '')}`;
+      const description = tQuest.has(questKey) ? tQuest(questKey) : tModes(tile.descriptionKey);
+      return { label, description };
     },
     [tModes, tHero, tKana, tQuest],
   );

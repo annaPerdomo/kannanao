@@ -119,7 +119,7 @@ export function SessionSummary({
           <ResultRow key={r.sentence.id + i} r={r} />
         ))}
 
-        {missed.length > 0 && (
+        {missed.length > 0 && correct.length > 0 && (
           <Button
             onClick={() => setShowCorrect((s) => !s)}
             size="small"
@@ -146,16 +146,20 @@ export function SessionSummary({
 
       <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 2.5 }}>
         <Button
-          variant="contained"
+          variant={handoff ? 'outlined' : 'contained'}
           onClick={onRestart}
           sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700 }}
         >
           {t('practiceAgain')}
         </Button>
         <Button
-          variant="outlined"
+          variant={handoff ? 'contained' : 'outlined'}
           onClick={handoff ? handoff.onNext : onExit}
-          sx={{ borderRadius: 3, textTransform: 'none' }}
+          sx={{
+            borderRadius: 3,
+            textTransform: 'none',
+            fontWeight: handoff ? 700 : undefined,
+          }}
         >
           {handoff?.label ?? tCommon('backToDeck')}
         </Button>

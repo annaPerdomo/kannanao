@@ -96,15 +96,25 @@ describe('SentencesStatus', () => {
     expect(screen.getByRole('button', { name: 'Make sentences' })).toBeDisabled();
   });
 
-  it('shows an error alert', () => {
+  it('keeps the row and Make button visible after a failed generate', () => {
     sentencesState.error = 'Could not make sentences.';
     renderWithProviders(<SentencesStatus deckId="d1" />);
     expect(screen.getByText('Could not make sentences.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Make sentences' })).toBeInTheDocument();
+  });
+
+  it('shows the few-sentences copy when there are some but not enough', () => {
+    sentencesState.sentences = [sentence('s1'), sentence('s2')];
+    renderWithProviders(<SentencesStatus deckId="d1" />);
+    expect(screen.getByText(/Only 2 sentences so far/)).toBeInTheDocument();
   });
 
   it('shows only the error alert when the initial load failed, with no Make button', () => {
+    sentencesState.loading = true;
     sentencesState.error = 'Could not load sentences.';
-    renderWithProviders(<SentencesStatus deckId="d1" />);
+    const { rerender } = renderWithProviders(<SentencesStatus deckId="d1" />);
+    sentencesState.loading = false;
+    rerender(<SentencesStatus deckId="d1" />);
     expect(screen.getByText('Could not load sentences.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Make sentences' })).not.toBeInTheDocument();
     expect(screen.queryByText(/Sentence Builder is skipped/)).not.toBeInTheDocument();

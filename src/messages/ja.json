@@ -2094,13 +2094,14 @@
       "handOutConfirm": "{count}人に配る",
       "handedOutToast": "配りました！学ぶ人の練習に表示されます。",
       "kanaFailedToast": "配りましたが、追加できなかった文字があります：{list}",
-      "sentencesFailedToast": "くばりましたが、文がつくれませんでした。「文をつくる」でもう一度ためしてください。",
+      "sentencesFailedToast": "配りましたが、文が作れませんでした。「文をつくる」でもう一度試してください。",
       "sentences": {
         "title": "文づくり",
-        "ready": "れんしゅう用の文が{count}こあります。毎回の練習に出ます。",
+        "ready": "練習用の文が{count}文あります。毎日の練習に出ます。",
         "missing": "文がまだないので、練習に「文づくり」が出ません。",
+        "few": "まだ{count}文だけなので、ぶんづくりには{min}文ひつようです。",
         "make": "文をつくる",
-        "made": "文を{count}こつくりました。次の練習から出ます。",
+        "made": "文を{count}文つくりました。次の練習から出ます。",
         "open": "やってみる"
       },
       "soundsTitle": "このレッスンの文字",
@@ -5640,8 +5641,9 @@
     "stopForNow": "ここでやめる",
     "finishPractice": "ぜんぶ完了！ホームへ",
     "modeDescriptions": {
-      "review": "今日やることばです",
-      "kanaJourney": "もじをおぼえます"
+      "review": "今日ふくしゅうすることば",
+      "kanaJourney": "もじをおぼえます",
+      "kotobaBubble": "文に合うことばをえらぼう"
     },
     "cheer": {
       "start": "{name}：いいスタート！つづけよう！",

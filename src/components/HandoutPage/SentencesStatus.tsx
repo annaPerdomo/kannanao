@@ -7,7 +7,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { SectionCard } from '@/components/Group/SectionCard';
 import { MIN_SENTENCES } from '@/components/Practice/KotobaBubbleMode/constants';
@@ -39,9 +39,18 @@ export function SentencesStatus({ deckId, compact = false }: SentencesStatusProp
     return () => clearTimeout(id);
   }, [justGenerated, clearJustGenerated]);
 
-  if (isMemberAccount || loading) return null;
+  const [loadFailed, setLoadFailed] = useState(false);
+  const prevLoadingRef = useRef(loading);
+  const checkedLoadRef = useRef(false);
+  useEffect(() => {
+    const wasLoading = prevLoadingRef.current;
+    prevLoadingRef.current = loading;
+    if (checkedLoadRef.current || !wasLoading || loading) return;
+    checkedLoadRef.current = true;
+    if (error) setLoadFailed(true);
+  }, [loading, error]);
 
-  const loadFailed = !!error && sentences.length === 0 && !justGenerated && !generating;
+  if (isMemberAccount || loading) return null;
 
   if (loadFailed) {
     const alert = <Alert severity="error">{error}</Alert>;
@@ -80,7 +89,9 @@ export function SentencesStatus({ deckId, compact = false }: SentencesStatusProp
         sx={{ fontSize: compact ? undefined : '0.85rem' }}
       >
         {!compact && '💬 '}
-        {t('missing')}
+        {sentences.length > 0
+          ? t('few', { count: sentences.length, min: MIN_SENTENCES })
+          : t('missing')}
       </Typography>
       <Button
         variant="outlined"

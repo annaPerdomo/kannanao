@@ -2097,8 +2097,9 @@
       "sentencesFailedToast": "Handed out, but the sentences could not be made. Use \"Make sentences\" to try again.",
       "sentences": {
         "title": "Sentence Builder",
-        "ready": "{count, plural, one {# sentence ready} other {# sentences ready}} — plays in every practice",
+        "ready": "{count, plural, one {# sentence ready} other {# sentences ready}} — plays in daily practice",
         "missing": "No sentences yet, so Sentence Builder is skipped in practice.",
+        "few": "Only {count, plural, one {# sentence} other {# sentences}} so far; Sentence Builder needs {min}.",
         "make": "Make sentences",
         "made": "{count, plural, one {# sentence} other {# sentences}} made. Learners get them from their next practice.",
         "open": "Try it"
@@ -5650,7 +5651,8 @@
     "finishPractice": "All done! Back home",
     "modeDescriptions": {
       "review": "Words that are due today",
-      "kanaJourney": "Meet and practice characters"
+      "kanaJourney": "Meet and practice characters",
+      "kotobaBubble": "Pick the little word that fits the sentence"
     },
     "cheer": {
       "start": "{name}: Great start! Keep going!",

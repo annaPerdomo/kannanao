@@ -122,6 +122,7 @@ export function GameBoard({ game }: GameBoardProps) {
               mt: 2,
               animation: 'fadeIn 0.3s ease',
               '@keyframes fadeIn': { from: { opacity: 0 }, to: { opacity: 1 } },
+              '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
             }}
           >
             <Box
@@ -137,7 +138,7 @@ export function GameBoard({ game }: GameBoardProps) {
                 py: 1.2,
               }}
             >
-              <Typography sx={{ fontSize: '0.9rem', color: 'success.main', fontWeight: 700 }}>
+              <Typography sx={{ fontSize: '0.9rem', color: 'text.primary', fontWeight: 700 }}>
                 {praiseWord}
               </Typography>
             </Box>
