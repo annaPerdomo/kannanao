@@ -1,14 +1,14 @@
 'use client';
-import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
+import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
-import Stack from '@mui/material/Stack';
 import { alpha, useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
@@ -20,8 +20,6 @@ import { EmojiPickerPopover } from '@/components/EmojiPickerPopover';
 import { PageHeader } from '@/components/PageHeader';
 import type { Group } from '@/hooks/useGroups';
 
-import { QuickActionCard } from './QuickActionCard';
-
 interface GroupDashboardHeaderProps {
   group: Group | undefined;
   memberCount: number;
@@ -29,7 +27,6 @@ interface GroupDashboardHeaderProps {
   onRename: (name: string) => Promise<void>;
   onEmojiChange: (emoji: string) => void;
   onInvite: () => void;
-  onNewLesson: () => void;
   /** Codes still open — shown on the invite card so the dashboard needn't list them. */
   activeInviteCount?: number;
 }
@@ -41,12 +38,10 @@ export function GroupDashboardHeader({
   onRename,
   onEmojiChange,
   onInvite,
-  onNewLesson,
   activeInviteCount = 0,
 }: GroupDashboardHeaderProps) {
   const t = useTranslations('Group.groupPage');
   const tc = useTranslations('Common');
-  const tq = useTranslations('Group.quickActions');
   const theme = useTheme();
   const { brand } = theme.palette;
 
@@ -225,38 +220,21 @@ export function GroupDashboardHeader({
           </Box>
         }
         action={
-          <Stack
-            direction="row"
-            spacing={1.25}
-            alignItems="center"
+          <Badge
+            badgeContent={activeInviteCount}
+            color="primary"
+            overlap="rectangular"
             sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
-            <Typography
-              variant="overline"
-              sx={{
-                display: { xs: 'none', sm: 'block' },
-                color: 'text.secondary',
-                fontWeight: 700,
-                letterSpacing: '0.06em',
-                mr: 0.5,
-              }}
-            >
-              {t('quickActionsLabel')}
-            </Typography>
-            <QuickActionCard
-              icon={<PersonAddAlt1Icon sx={{ fontSize: 18 }} />}
-              title={t('inviteLearnersTitle')}
-              subtitle={t('inviteLearnersSubtitle')}
+            <Button
+              variant="outlined"
+              startIcon={<PersonAddAlt1Icon sx={{ fontSize: 18 }} />}
               onClick={onInvite}
-              badge={activeInviteCount}
-            />
-            <QuickActionCard
-              icon={<AutoAwesomeRounded sx={{ fontSize: 18 }} />}
-              title={tq('newLessonTitle')}
-              subtitle={tq('newLessonSubtitle')}
-              onClick={onNewLesson}
-            />
-          </Stack>
+              sx={{ width: { xs: '100%', sm: 'auto' }, whiteSpace: 'nowrap' }}
+            >
+              {t('inviteLearnersTitle')}
+            </Button>
+          </Badge>
         }
       />
 

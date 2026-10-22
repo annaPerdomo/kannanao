@@ -16,6 +16,8 @@ import { useLessonEdits } from '@/hooks/useLessonEdits';
 import { handoutPagePath } from '@/lib/lessonUnits';
 import type { LessonUnit } from '@/types/lessonUnit';
 
+import { OtherWaysToStart } from './OtherWaysToStart';
+
 const NEW_UNIT_VALUE = '__new_unit__';
 const TITLE_MAX = 200;
 const TITLE_ID = 'new-lesson-dialog-title';
@@ -26,6 +28,8 @@ export interface NewLessonDialogProps {
   groupId: string;
   units: LessonUnit[];
   defaultUnitId?: string | null;
+  onHandOutDeck?: () => void;
+  canHandOutDeck?: boolean;
 }
 
 export function NewLessonDialog({
@@ -34,6 +38,8 @@ export function NewLessonDialog({
   groupId,
   units,
   defaultUnitId,
+  onHandOutDeck,
+  canHandOutDeck = false,
 }: NewLessonDialogProps) {
   const t = useTranslations('Group.newLesson');
   const tLib = useTranslations('Materials.library');
@@ -90,7 +96,7 @@ export function NewLessonDialog({
         <TextField
           autoFocus
           fullWidth
-          label={t('title')}
+          label={t('nameLabel')}
           placeholder={t('titlePlaceholder')}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -131,6 +137,14 @@ export function NewLessonDialog({
           <AutoAwesomeRounded sx={{ fontSize: 14, mt: 0.1, flexShrink: 0 }} aria-hidden />
           {t('hint')}
         </Typography>
+
+        <OtherWaysToStart
+          groupId={groupId}
+          disabled={saving}
+          canHandOutDeck={canHandOutDeck}
+          onHandOutDeck={onHandOutDeck}
+          onClose={onClose}
+        />
       </Stack>
     </StyledDialog>
   );

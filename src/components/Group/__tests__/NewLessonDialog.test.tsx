@@ -132,4 +132,44 @@ describe('NewLessonDialog', () => {
     });
     expect(screen.getByRole('button', { name: 'Create lesson' })).not.toBeDisabled();
   });
+
+  it('offers the other start paths and closes before leaving', () => {
+    const onClose = vi.fn();
+    const onHandOutDeck = vi.fn();
+    renderWithProviders(
+      <NewLessonDialog
+        open
+        onClose={onClose}
+        groupId="g1"
+        units={units()}
+        canHandOutDeck
+        onHandOutDeck={onHandOutDeck}
+      />,
+    );
+
+    fireEvent.click(screen.getByText('Plan several weeks with AI'));
+    expect(pushMock).toHaveBeenCalledWith('/group/g1/add/lesson');
+    fireEvent.click(screen.getByText('Import Quizlet sets'));
+    expect(pushMock).toHaveBeenCalledWith('/group/g1/add/quizlet');
+    fireEvent.click(screen.getByText('Kana course'));
+    expect(pushMock).toHaveBeenCalledWith('/group/g1/add/kana');
+    fireEvent.click(screen.getByText('Hand out a deck I already made'));
+    expect(onHandOutDeck).toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledTimes(4);
+  });
+
+  it('disables handing out a deck until the group has learners', () => {
+    renderWithProviders(
+      <NewLessonDialog
+        open
+        onClose={vi.fn()}
+        groupId="g1"
+        units={units()}
+        canHandOutDeck={false}
+        onHandOutDeck={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('Invite learners first.')).toBeInTheDocument();
+    expect(screen.getByText('Hand out a deck I already made').closest('button')).toBeDisabled();
+  });
 });

@@ -1,21 +1,14 @@
 'use client';
 import AddIcon from '@mui/icons-material/Add';
-import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import GroupsRounded from '@mui/icons-material/GroupsRounded';
-import ImportExportRounded from '@mui/icons-material/ImportExportRounded';
-import SpaRounded from '@mui/icons-material/SpaRounded';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { LessonLibrary } from '@/components/LessonLibrary';
 import type { Assignment } from '@/hooks/useAssignments';
@@ -38,8 +31,6 @@ interface LessonsTabProps {
     updates: { note?: string | null; dueDate?: string | null; availableOn?: string | null },
   ) => Promise<void>;
   onDeleteAssignments: (ids: string[]) => Promise<void>;
-  canAssign: boolean;
-  onAssign: () => void;
   ownDecks: Deck[];
   onSendEncouragement: (memberId: string, message: string, emoji?: string) => Promise<unknown>;
   members: GroupMember[];
@@ -70,8 +61,6 @@ export function LessonsTab({
   assignmentsError,
   onEditAssignments,
   onDeleteAssignments,
-  canAssign,
-  onAssign,
   ownDecks,
   onSendEncouragement,
   members,
@@ -84,7 +73,6 @@ export function LessonsTab({
   const { brand } = theme.palette;
   const router = useRouter();
   const libraryData = library.library;
-  const [moreWaysAnchor, setMoreWaysAnchor] = useState<HTMLElement | null>(null);
 
   const coveredSets = useMemo(() => coveredKanaSets(libraryData), [libraryData]);
   const kanaGoals = useMemo(
@@ -100,8 +88,6 @@ export function LessonsTab({
     !assignmentsLoading &&
     !assignmentsError;
 
-  const closeMoreWays = () => setMoreWaysAnchor(null);
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 3 } }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
@@ -115,64 +101,14 @@ export function LessonsTab({
         >
           {t('heading')}
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Button
-            id="more-ways-to-add-button"
-            aria-haspopup="menu"
-            aria-controls={moreWaysAnchor ? 'more-ways-to-add-menu' : undefined}
-            aria-expanded={Boolean(moreWaysAnchor)}
-            onClick={(e) => setMoreWaysAnchor(e.currentTarget)}
-            endIcon={<ExpandMoreIcon sx={{ fontSize: 18 }} />}
-            sx={{ textTransform: 'none', fontWeight: 700, color: brand[700] }}
-          >
-            {t('moreWays')}
-          </Button>
-          <Menu
-            id="more-ways-to-add-menu"
-            anchorEl={moreWaysAnchor}
-            open={Boolean(moreWaysAnchor)}
-            onClose={closeMoreWays}
-            slotProps={{ list: { 'aria-labelledby': 'more-ways-to-add-button' } }}
-          >
-            <MenuItem
-              onClick={() => {
-                closeMoreWays();
-                router.push(`/group/${groupId}/add/lesson`);
-              }}
-            >
-              <AutoAwesomeRounded sx={{ fontSize: 18, mr: 1.25, color: brand[600] }} />
-              {t('moreWaysPlanAi')}
-            </MenuItem>
-            <MenuItem
-              disabled={!canAssign}
-              onClick={() => {
-                closeMoreWays();
-                onAssign();
-              }}
-            >
-              <GroupsRounded sx={{ fontSize: 18, mr: 1.25, color: brand[600] }} />
-              {t('moreWaysDeck')}
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                closeMoreWays();
-                router.push(`/group/${groupId}/add/quizlet`);
-              }}
-            >
-              <ImportExportRounded sx={{ fontSize: 18, mr: 1.25, color: brand[600] }} />
-              {t('moreWaysQuizlet')}
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                closeMoreWays();
-                router.push(`/group/${groupId}/add/kana`);
-              }}
-            >
-              <SpaRounded sx={{ fontSize: 18, mr: 1.25, color: brand[600] }} />
-              {t('moreWaysKana')}
-            </MenuItem>
-          </Menu>
-        </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon sx={{ fontSize: 18 }} />}
+          onClick={onBuild}
+          sx={{ flexShrink: 0 }}
+        >
+          {t('newLessonButton')}
+        </Button>
       </Box>
 
       {isEmpty ? (
@@ -187,16 +123,9 @@ export function LessonsTab({
           }}
         >
           <Typography sx={{ fontSize: '1.5rem', mb: 0.5 }}>🌱</Typography>
-          <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', mb: 2 }}>
+          <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
             {t('emptyBody')}
           </Typography>
-          <Button
-            variant="outlined"
-            startIcon={<AddIcon sx={{ fontSize: 18 }} />}
-            onClick={onBuild}
-          >
-            {t('newLessonButton')}
-          </Button>
         </Paper>
       ) : (
         <LessonLibrary
