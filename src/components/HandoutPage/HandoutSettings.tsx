@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { AssignmentGoalPicker } from '@/components/Group/AssignmentGoalPicker';
 import { SectionCard } from '@/components/Group/SectionCard';
 import { type GoalMode, isGoalMode } from '@/lib/assignmentMastery';
+import { HANDOUT_NOTE_MAX } from '@/lib/lessonUnits';
 import type { HandoutPatch, LessonUnitWeek } from '@/types/lessonUnit';
 
 interface HandoutSettingsProps {
@@ -19,11 +20,9 @@ interface HandoutSettingsProps {
   saving: boolean;
   onSave: (patch: HandoutPatch) => Promise<boolean>;
   onRemove: () => Promise<boolean>;
-  onShift?: () => void;
 }
 
 interface Draft {
-  title: string;
   note: string;
   availableOn: string;
   dueDate: string;
@@ -33,7 +32,6 @@ interface Draft {
 
 function draftFrom(week: LessonUnitWeek): Draft {
   return {
-    title: week.title ?? '',
     note: week.note ?? '',
     availableOn: week.availableOn ?? '',
     dueDate: week.dueDate ?? '',
@@ -44,7 +42,6 @@ function draftFrom(week: LessonUnitWeek): Draft {
 
 function sameDraft(a: Draft, b: Draft): boolean {
   return (
-    a.title.trim() === b.title.trim() &&
     a.note.trim() === b.note.trim() &&
     a.availableOn === b.availableOn &&
     a.dueDate === b.dueDate &&
@@ -59,7 +56,6 @@ export function HandoutSettings({
   saving,
   onSave,
   onRemove,
-  onShift,
 }: HandoutSettingsProps) {
   const t = useTranslations('Materials.library');
   const tPage = useTranslations('Materials.handoutPage');
@@ -78,7 +74,6 @@ export function HandoutSettings({
   const handleSave = async () => {
     setError(null);
     const ok = await onSave({
-      title: draft.title.trim() || null,
       note: draft.note.trim() || null,
       availableOn: draft.availableOn || null,
       dueDate: draft.dueDate || null,
@@ -95,7 +90,7 @@ export function HandoutSettings({
   };
 
   return (
-    <SectionCard title={tPage('settingsTitle')}>
+    <SectionCard title={tPage('settingsTitle')} id="handout-settings">
       <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', mb: 2 }}>
         {t('editWeekSubtitle', { group: groupName })}
       </Typography>
@@ -132,14 +127,6 @@ export function HandoutSettings({
       ) : (
         <Stack spacing={2}>
           <TextField
-            label={t('fieldTitle')}
-            value={draft.title}
-            onChange={(e) => set('title', e.target.value)}
-            size="small"
-            fullWidth
-            slotProps={{ htmlInput: { maxLength: 200 } }}
-          />
-          <TextField
             label={t('fieldNote')}
             value={draft.note}
             onChange={(e) => set('note', e.target.value)}
@@ -147,7 +134,7 @@ export function HandoutSettings({
             fullWidth
             multiline
             minRows={2}
-            slotProps={{ htmlInput: { maxLength: 500 } }}
+            slotProps={{ htmlInput: { maxLength: HANDOUT_NOTE_MAX } }}
           />
           <Stack direction="row" spacing={1.5}>
             <TextField
@@ -174,15 +161,6 @@ export function HandoutSettings({
             <Typography sx={{ fontSize: '0.75rem', color: 'error.main', mt: -1 }}>
               {t('datesOutOfOrder')}
             </Typography>
-          )}
-          {onShift && (
-            <Button
-              onClick={onShift}
-              disabled={saving}
-              sx={{ alignSelf: 'flex-start', textTransform: 'none', fontWeight: 700, px: 0 }}
-            >
-              {t('moveLater')}
-            </Button>
           )}
           <AssignmentGoalPicker
             accuracy={draft.accuracy}

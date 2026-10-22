@@ -13,7 +13,6 @@ function setup(overrides: Partial<Parameters<typeof HandoutSettings>[0]> = {}) {
     saving: false,
     onSave: vi.fn().mockResolvedValue(true),
     onRemove: vi.fn().mockResolvedValue(true),
-    onShift: vi.fn(),
     ...overrides,
   };
   renderWithProviders(<HandoutSettings {...props} />);
@@ -26,13 +25,14 @@ describe('HandoutSettings', () => {
     const save = screen.getByRole('button', { name: 'Save' });
     expect(save).toBeDisabled();
 
-    fireEvent.change(screen.getByLabelText('Title'), { target: { value: '  New title ' } });
+    fireEvent.change(screen.getByLabelText('What learners will be able to do'), {
+      target: { value: '  Order food ' },
+    });
     expect(save).toBeEnabled();
     fireEvent.click(save);
 
     expect(props.onSave).toHaveBeenCalledWith({
-      title: 'New title',
-      note: null,
+      note: 'Order food',
       availableOn: '2026-10-02',
       dueDate: '2026-10-09',
       requiredAccuracy: null,
@@ -42,9 +42,10 @@ describe('HandoutSettings', () => {
 
   it('discards unsaved changes back to the saved values', () => {
     setup();
-    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Draft' } });
+    const note = screen.getByLabelText('What learners will be able to do');
+    fireEvent.change(note, { target: { value: 'Draft' } });
     fireEvent.click(screen.getByRole('button', { name: 'Discard changes' }));
-    expect(screen.getByLabelText('Title')).toHaveValue('');
+    expect(note).toHaveValue('');
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
@@ -60,7 +61,9 @@ describe('HandoutSettings', () => {
 
   it('shows an error when saving fails', async () => {
     setup({ onSave: vi.fn().mockResolvedValue(false) });
-    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'x' } });
+    fireEvent.change(screen.getByLabelText('What learners will be able to do'), {
+      target: { value: 'x' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     expect(await screen.findByText("Couldn't save. Try again.")).toBeInTheDocument();
   });
@@ -73,18 +76,9 @@ describe('HandoutSettings', () => {
     expect(props.onRemove).toHaveBeenCalled();
   });
 
-  it('uses handout wording for a loose handout and hides the shift button', () => {
-    setup({ week: week({ week: null }), onShift: undefined });
-    expect(
-      screen.queryByRole('button', { name: 'Move this week and later' }),
-    ).not.toBeInTheDocument();
+  it('uses handout wording for a loose handout', () => {
+    setup({ week: week({ week: null }) });
     fireEvent.click(screen.getByRole('button', { name: 'Stop handing this out' }));
     expect(screen.getByText(/Stop handing this out to the group/)).toBeInTheDocument();
-  });
-
-  it('opens the shift flow for unit weeks', () => {
-    const props = setup();
-    fireEvent.click(screen.getByRole('button', { name: 'Move this week and later' }));
-    expect(props.onShift).toHaveBeenCalled();
   });
 });
