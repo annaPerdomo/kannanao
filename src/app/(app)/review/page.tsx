@@ -10,8 +10,10 @@ import { DataErrorState } from '@/components/DataErrorState';
 import { GameTiles } from '@/components/Games';
 import { Loading } from '@/components/Loading';
 import { PageHeader } from '@/components/PageHeader';
+import { useProgressCtx } from '@/contexts/ProgressContext';
 import { useDailyFocus } from '@/hooks/useDailyPractice';
-import { previewMinutes } from '@/lib/dailyPractice';
+import { localDateString } from '@/lib/chest';
+import { dailyReviewCap, daysSince, previewMinutes } from '@/lib/dailyPractice';
 import { LAYOUT } from '@/theme';
 
 const GAMES_PARAM = 'games';
@@ -27,11 +29,13 @@ function PracticeHero({
   dueCount,
   deckLabel,
   hasKanaRow,
+  cap,
   onStart,
 }: {
   dueCount: number;
   deckLabel: string | null;
   hasKanaRow: boolean;
+  cap: number;
   onStart: () => void;
 }) {
   const t = useTranslations('Review.hubPage');
@@ -67,7 +71,9 @@ function PracticeHero({
             ? t('soundsBody')
             : t('waitingBody')}
         {' · '}
-        {t('minutesEstimate', { min: previewMinutes(dueCount, deckLabel !== null, hasKanaRow) })}
+        {t('minutesEstimate', {
+          min: previewMinutes(dueCount, deckLabel !== null, hasKanaRow, cap),
+        })}
       </Typography>
       {/* Stock contained variant: the theme paints a gradient an sx bgcolor sits behind. */}
       <Button
@@ -112,9 +118,13 @@ export default function ReviewHubPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { dueCount, focus, kanaRow, empty, loading, error, retry } = useDailyFocus();
+  const { progress } = useProgressCtx();
   const [gamesOpen, setGamesOpen] = useState(searchParams?.get(GAMES_PARAM) === '1');
 
   const deckLabel = focus ? `${focus.emoji} ${focus.deckName}`.trim() : null;
+  const cap = dailyReviewCap(
+    daysSince(progress?.last_study_date ?? null, localDateString(new Date())),
+  );
 
   return (
     <Box
@@ -148,6 +158,7 @@ export default function ReviewHubPage() {
           dueCount={dueCount}
           deckLabel={deckLabel}
           hasKanaRow={kanaRow !== null}
+          cap={cap}
           onStart={() => router.push('/review/start')}
         />
       )}

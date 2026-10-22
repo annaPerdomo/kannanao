@@ -11,11 +11,27 @@ import type { CardProgress } from './supabase';
 
 /** Review leg included; five legs is roughly ten minutes. */
 export const MAX_DAILY_LEGS = 5;
-export const DAILY_REVIEW_CAP = 12;
+export const BASE_REVIEW_CAP = 20;
+export const MAX_REVIEW_CAP = 40;
+export const REVIEW_CAP_PER_DAY_AWAY = 5;
 /** Below this a deck can't serve the flip + meaning-pick floor. */
 export const MIN_FOCUS_CARDS = 2;
 const SECONDS_PER_REVIEW = 20;
 const MINUTES_PER_LEG = 1.5;
+
+export function dailyReviewCap(daysAway: number | null): number {
+  if (daysAway === null || daysAway <= 1) return BASE_REVIEW_CAP;
+  return Math.min(MAX_REVIEW_CAP, BASE_REVIEW_CAP + REVIEW_CAP_PER_DAY_AWAY * (daysAway - 1));
+}
+
+/** Whole days between two local YYYY-MM-DD dates; null in, null out, never negative. */
+export function daysSince(lastStudyDate: string | null, today: string): number | null {
+  if (lastStudyDate === null) return null;
+  const start = Date.parse(`${lastStudyDate}T00:00:00Z`);
+  const end = Date.parse(`${today}T00:00:00Z`);
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return null;
+  return Math.max(0, Math.round((end - start) / 86_400_000));
+}
 
 export interface FocusAssignment {
   id: string;
@@ -168,8 +184,12 @@ export function planDailyPractice({
   return legs;
 }
 
-export function estimateMinutes(legs: ChainLeg[], dueCount: number): number {
-  const played = Math.min(dueCount, DAILY_REVIEW_CAP);
+export function estimateMinutes(
+  legs: ChainLeg[],
+  dueCount: number,
+  cap: number = BASE_REVIEW_CAP,
+): number {
+  const played = Math.min(dueCount, cap);
   const review = legs.some((l) => l.step === 'review') ? (played * SECONDS_PER_REVIEW) / 60 : 0;
   const rest = legs.filter((l) => l.step !== 'review').length * MINUTES_PER_LEG;
   return Math.max(1, Math.round(review + rest));
@@ -202,11 +222,16 @@ export function bumpDailyRound(today: string): void {
 
 const PREVIEW_DECK_LEGS = 3;
 
-export function previewMinutes(dueCount: number, hasFocus: boolean, hasKanaRow = false): number {
+export function previewMinutes(
+  dueCount: number,
+  hasFocus: boolean,
+  hasKanaRow = false,
+  cap: number = BASE_REVIEW_CAP,
+): number {
   const legs: ChainLeg[] = [];
   if (dueCount > 0) legs.push({ step: 'review', mode: 'review' });
   if (hasKanaRow) legs.push({ step: 'goal', mode: 'kana-journey' });
   for (let i = 0; hasFocus && i < PREVIEW_DECK_LEGS; i++)
     legs.push({ step: 'practice', mode: 'recall' });
-  return estimateMinutes(legs, dueCount);
+  return estimateMinutes(legs, dueCount, cap);
 }

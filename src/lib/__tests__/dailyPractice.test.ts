@@ -2,10 +2,13 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { Assignment } from '@/hooks/useAssignments';
 import {
+  BASE_REVIEW_CAP,
   bumpDailyRound,
-  DAILY_REVIEW_CAP,
+  dailyReviewCap,
+  daysSince,
   estimateMinutes,
   MAX_DAILY_LEGS,
+  MAX_REVIEW_CAP,
   pickFocusDeck,
   pickKanaRow,
   planDailyPractice,
@@ -292,7 +295,7 @@ describe('estimates', () => {
   it('scales with due words and legs', () => {
     expect(estimateMinutes([{ step: 'review', mode: 'review' }], 6)).toBe(2);
     expect(estimateMinutes([{ step: 'review', mode: 'review' }], 60)).toBe(
-      estimateMinutes([{ step: 'review', mode: 'review' }], DAILY_REVIEW_CAP),
+      estimateMinutes([{ step: 'review', mode: 'review' }], BASE_REVIEW_CAP),
     );
     expect(estimateMinutes([{ step: 'practice', mode: 'recall' }], 0)).toBe(2);
     expect(estimateMinutes([], 0)).toBe(1);
@@ -306,6 +309,30 @@ describe('estimates', () => {
   it('prices in an assigned kana row when one is open', () => {
     expect(previewMinutes(0, false, true)).toBeGreaterThan(previewMinutes(0, false, false));
     expect(previewMinutes(0, true, true)).toBeGreaterThan(previewMinutes(0, true, false));
+  });
+});
+
+describe('dailyReviewCap', () => {
+  it('sizes the review to how long it has been', () => {
+    expect(dailyReviewCap(null)).toBe(20);
+    expect(dailyReviewCap(1)).toBe(20);
+    expect(dailyReviewCap(2)).toBe(25);
+    expect(dailyReviewCap(5)).toBe(40);
+    expect(dailyReviewCap(30)).toBe(MAX_REVIEW_CAP);
+  });
+});
+
+describe('daysSince', () => {
+  it('is 0 for the same local day', () => {
+    expect(daysSince('2026-09-02', '2026-09-02')).toBe(0);
+  });
+
+  it('passes null through both ways', () => {
+    expect(daysSince(null, '2026-09-02')).toBeNull();
+  });
+
+  it('never goes negative', () => {
+    expect(daysSince('2026-09-05', '2026-09-02')).toBe(0);
   });
 });
 
