@@ -927,6 +927,19 @@
       "failedToSaveChanges": "Failed to save changes"
     }
   },
+  "PracticeDone": {
+    "done": {
+      "heading": "Today's practice is done!",
+      "waiting": "{count, plural, one {# word is} other {# words are}} still waiting to be reviewed.",
+      "bonusButton": "Bonus round",
+      "bonusHearts": "+{n} ❤️ for {buddy}",
+      "bonusXp": "+{xp} XP",
+      "bonusDone": "Bonus round cleared! {count, plural, one {# word} other {# words}} rescued.",
+      "allCaught": "All caught up — nothing waiting!",
+      "morePractice": "Practice my lesson words",
+      "finish": "Finish"
+    }
+  },
   "Games": {
     "shell": {
       "progress": "{current} / {total}",
@@ -2457,6 +2470,7 @@
           "adventure": "+{count} ❤️ {name} loved studying with you today!",
           "session": "+{count} ❤️ {name} is glad you kept practicing.",
           "pet": "+{count} ❤️ {name} was happy to see you.",
+          "bonus": "+{count} ❤️ {name} is cheering for your bonus round!",
           "heartsEarned": "{count, plural, one {# heart} other {# hearts}} earned."
         },
         "nearMilestone": {

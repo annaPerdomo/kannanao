@@ -670,13 +670,13 @@ describe('usePracticeChain — daily session', () => {
     expect(readChainState()?.index).toBe(2);
   });
 
-  it('sends the last leg home, and leaves to the hub', async () => {
+  it('sends the last leg of a daily chain to /review/done, and leaves to the hub', async () => {
     writeChainState(dailyState(2));
     const { result } = renderHook(() => usePracticeChain({ deckId: 'd1', mode: 'match' }));
     await waitFor(() => expect(result.current).not.toBeNull());
 
     act(() => result.current?.handoff?.onNext());
-    expect(push).toHaveBeenCalledWith('/');
+    expect(push).toHaveBeenCalledWith('/review/done');
     expect(readChainState()).toBeNull();
 
     writeChainState(dailyState(2));
@@ -716,7 +716,7 @@ describe('usePracticeChain — daily session', () => {
     expect(mockAward).not.toHaveBeenCalled();
     act(() => result.current?.handoff?.onNext());
     expect(mockAward).toHaveBeenCalledWith('adventure');
-    expect(push).toHaveBeenCalledWith('/');
+    expect(push).toHaveBeenCalledWith('/review/done');
   });
 
   it('pays nothing when the learner quits out of the last leg', async () => {

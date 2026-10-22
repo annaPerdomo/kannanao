@@ -927,6 +927,19 @@
       "failedToSaveChanges": "変更の保存に失敗しました"
     }
   },
+  "PracticeDone": {
+    "done": {
+      "heading": "きょうの れんしゅう クリア!",
+      "waiting": "まだ {count}この ことばが まっているよ。",
+      "bonusButton": "ボーナスラウンド",
+      "bonusHearts": "{buddy}に +{n} ❤️",
+      "bonusXp": "+{xp} XP",
+      "bonusDone": "ボーナスラウンド クリア! {count}こ たすけたよ。",
+      "allCaught": "ぜんぶ おわったよ!",
+      "morePractice": "レッスンの ことばを れんしゅう",
+      "finish": "おわる"
+    }
+  },
   "Games": {
     "shell": {
       "progress": "{current} / {total}",
@@ -2451,6 +2464,7 @@
           "adventure": "+{count} ❤️ {name}は今日いっしょに勉強できてうれしそう！",
           "session": "+{count} ❤️ {name}は、練習を続けるあなたを見てうれしそう。",
           "pet": "+{count} ❤️ {name}は、あなたに会えてうれしかったみたい。",
+          "bonus": "+{count} ❤️ {name}は、ボーナスラウンドをおうえんしているよ！",
           "heartsEarned": "ハート{count, plural, other {#こ}}ゲット。"
         },
         "nearMilestone": {

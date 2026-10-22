@@ -75,6 +75,7 @@ function row(overrides: Record<string, unknown> = {}) {
     last_adventure_date: null,
     last_session_date: null,
     last_pet_date: null,
+    last_bonus_date: null,
     ...overrides,
   };
 }
@@ -260,6 +261,7 @@ describe('useBuddyFriendship', () => {
         lastAdventureDate: null,
         lastSessionDate: null,
         lastPetDate: todayLocal(),
+        lastBonusDate: null,
       });
     });
 

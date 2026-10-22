@@ -18,7 +18,7 @@ export function daysBetween(from: string, to: string): number {
 }
 
 export function lastActiveDate(stamps: FriendshipDates): string | null {
-  const dates = [stamps.adventure, stamps.session, stamps.pet].filter(
+  const dates = [stamps.adventure, stamps.session, stamps.pet, stamps.bonus].filter(
     (date): date is string => typeof date === 'string' && date !== '',
   );
   if (!dates.length) return null;

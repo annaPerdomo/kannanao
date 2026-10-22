@@ -6,7 +6,8 @@ import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 
-import { DAILY_REVIEW_CAP } from '@/lib/dailyPractice';
+import { BonusChips } from '@/components/PracticeDone';
+import { BASE_REVIEW_CAP } from '@/lib/dailyPractice';
 
 import { FACE_SIZE } from './styles';
 
@@ -16,13 +17,13 @@ const SECONDS_PER_CARD = 20;
 /** KanaRound drills every character twice — recognize, then recall. */
 const KANA_QUESTIONS = 2;
 
-export function minutesFor(dueCount: number): number {
-  const played = Math.min(dueCount, DAILY_REVIEW_CAP);
+export function minutesFor(dueCount: number, cap: number = BASE_REVIEW_CAP): number {
+  const played = Math.min(dueCount, cap);
   return Math.max(1, Math.ceil((played * SECONDS_PER_CARD) / 60));
 }
 
-/** Decorative — the buddy's name is already in the copy, hence the empty alt. */
-function BuddyFace({ src }: { src: string }) {
+/** Decorative — the buddy's name is already in the copy, hence the empty alt. Reused by /review/done. */
+export function BuddyFace({ src }: { src: string }) {
   return (
     <Box
       sx={{
@@ -96,10 +97,22 @@ export function CompletedState({
   buddyName,
   faceSrc,
   hearts,
+  offerBonus,
+  showBonusHearts,
   onPractice,
+  onBonus,
   onPlayGame,
-}: StateProps & { hearts: number; onPractice: () => void; onPlayGame: () => void }) {
+}: StateProps & {
+  hearts: number;
+  /** Words are still due and today's bonus rounds aren't used up. */
+  offerBonus: boolean;
+  showBonusHearts: boolean;
+  onPractice: () => void;
+  onBonus: () => void;
+  onPlayGame: () => void;
+}) {
   const t = useTranslations('Home.adventure');
+  const tDone = useTranslations('PracticeDone.done');
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
@@ -113,13 +126,18 @@ export function CompletedState({
               ? t('completedHearts', { count: hearts, name: buddyName })
               : t('completedBody')}
           </Typography>
+          {offerBonus && (
+            <Box sx={{ mt: 0.75 }}>
+              <BonusChips buddyName={buddyName} showHearts={showBonusHearts} />
+            </Box>
+          )}
         </Box>
         <Button
           variant="contained"
-          onClick={handle(onPractice)}
+          onClick={handle(offerBonus ? onBonus : onPractice)}
           sx={{ flexShrink: 0, fontWeight: 800, px: 2.5 }}
         >
-          {t('practiceMore')}
+          {offerBonus ? tDone('bonusButton') : t('practiceMore')}
         </Button>
       </Box>
       <Button size="small" variant="text" onClick={handle(onPlayGame)} sx={linkSx}>
@@ -134,12 +152,14 @@ export function DueState({
   faceSrc,
   dueCount,
   kanaCount,
+  cap,
   friendshipLine,
   onStart,
   onPlayGame,
 }: StateProps & {
   dueCount: number;
   kanaCount?: number;
+  cap?: number;
   friendshipLine?: string | null;
   onStart: () => void;
   onPlayGame: () => void;
@@ -161,7 +181,7 @@ export function DueState({
             {[
               ...(dueCount > 0 ? [t('reviewsCount', { count: dueCount })] : []),
               ...(kana > 0 || dueCount === 0 ? [t('charactersCount', { count: kana })] : []),
-              t('minutesEstimate', { min: minutesFor(dueCount + kana * KANA_QUESTIONS) }),
+              t('minutesEstimate', { min: minutesFor(dueCount + kana * KANA_QUESTIONS, cap) }),
             ].join(' · ')}
           </Typography>
         </Box>

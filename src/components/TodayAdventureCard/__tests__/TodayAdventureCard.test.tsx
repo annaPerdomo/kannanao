@@ -83,6 +83,7 @@ const friendship = (
     points: source === 'adventure' ? 3 : 1,
     done: goalsDone.includes(source),
   })),
+  stamps: { adventure: null, session: null, pet: null, bonus: null },
   loadState,
   ensureLoaded: vi.fn().mockResolvedValue(undefined),
 });
@@ -176,6 +177,7 @@ describe('TodayAdventureCard', () => {
 
     // The chest proves a cleared queue, not a paid heart.
     it('should not promise hearts on the chest fallback', async () => {
+      dueState.mockReturnValue(due({ dueCount: 0 }));
       progressState.mockReturnValue(progress({ last_chest_date: TODAY }));
       renderWithProviders(<TodayAdventureCard />);
       await screen.findByText('Adventure complete!');
@@ -196,14 +198,23 @@ describe('TodayAdventureCard', () => {
       expect(screen.getByText(/6 reviews · ~2 min/)).toBeInTheDocument();
     });
 
-    it('should still offer more practice after the adventure is done', async () => {
+    it('should offer a bonus round after the adventure is done while words are still due', async () => {
+      friendshipState.mockReturnValue(friendship({ buddy_bunny: TODAY }));
+      renderWithProviders(<TodayAdventureCard />);
+      await screen.findByText('Adventure complete!');
+      fireEvent.click(screen.getByRole('button', { name: 'Bonus round' }));
+      expect(push).toHaveBeenCalledWith('/review/today?daily=1&bonus=1');
+      fireEvent.click(screen.getByRole('button', { name: 'Play a game' }));
+      expect(push).toHaveBeenCalledWith('/review?games=1');
+    });
+
+    it('should offer plain practice once nothing is due and the adventure is done', async () => {
+      dueState.mockReturnValue(due({ dueCount: 0 }));
       friendshipState.mockReturnValue(friendship({ buddy_bunny: TODAY }));
       renderWithProviders(<TodayAdventureCard />);
       await screen.findByText('Adventure complete!');
       fireEvent.click(screen.getByRole('button', { name: 'Practice more' }));
       expect(push).toHaveBeenCalledWith('/review/start');
-      fireEvent.click(screen.getByRole('button', { name: 'Play a game' }));
-      expect(push).toHaveBeenCalledWith('/review?games=1');
     });
 
     it('should start the assigned words when nothing is due', async () => {
@@ -467,7 +478,7 @@ describe('minutesFor', () => {
   });
 
   it('should stop growing once the queue passes the review cap', () => {
-    expect(minutesFor(30)).toBe(minutesFor(12));
-    expect(minutesFor(30)).toBe(4);
+    expect(minutesFor(30, 12)).toBe(minutesFor(12, 12));
+    expect(minutesFor(30, 12)).toBe(4);
   });
 });

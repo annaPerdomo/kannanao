@@ -376,7 +376,7 @@ export function usePracticeChain({
       void awardFriendship('adventure').catch(() => {});
     }
     stop();
-    router.push('/');
+    router.push('/review/done');
   }, [state?.kind, awardFriendship, stop, router]);
 
   const goHome = useCallback(() => {
