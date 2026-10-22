@@ -7,7 +7,7 @@ import { PRACTICE_CONFIG } from '@/components/Deck/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBuddyFriendshipCtx } from '@/contexts/BuddyFriendshipContext';
 import type { Assignment } from '@/hooks/useAssignments';
-import { type GoalMode, isGoalMode } from '@/lib/assignmentMastery';
+import { isGoalMode } from '@/lib/assignmentMastery';
 import { planAssignmentQuest } from '@/lib/assignmentQuest';
 import { countStrengths } from '@/lib/cardStrength';
 import { localDateString } from '@/lib/chest';
@@ -447,7 +447,11 @@ export function usePracticeChain({
 
 type Translate = (key: string) => string;
 
-function modeLabel(mode: GoalMode, tModes: Translate, tHero: Translate): string {
+function modeLabel(
+  mode: Exclude<ChainMode, 'kana-journey'>,
+  tModes: Translate,
+  tHero: Translate,
+): string {
   if (mode === 'study') return tHero('flashcardsTitle');
   const tile = PRACTICE_CONFIG.find((t) => t.mode === mode);
   return tile ? tModes(tile.labelKey) : mode;

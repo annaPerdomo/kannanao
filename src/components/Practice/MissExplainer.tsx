@@ -13,7 +13,7 @@ import type { Flashcard } from '@/types/flashcard';
 
 interface MissExplainerProps {
   card: Flashcard;
-  /** Optional rule line shown above the sentence (prompt 05 passes the grammar rule). */
+  /** Grammar rule shown above the sentence; EndingsMode passes the correct form's rule. */
   rule?: string;
   /** Overrides `card.imageUrl` — RecallMode only preloads the image once it has actually loaded. */
   imageUrl?: string;

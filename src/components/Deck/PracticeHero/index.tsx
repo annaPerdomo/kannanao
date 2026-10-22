@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { MIN_READING_CARDS } from '@/components/Practice/ReadingMode/eligibility';
+import { MIN_ENDING_ITEMS } from '@/lib/grammarEndings';
 import type { PracticeMode } from '@/types/app';
 
 import { PRACTICE_CONFIG } from '../constants';
@@ -24,6 +25,8 @@ interface PracticeHeroProps {
   readingUnlocked?: boolean;
   /** Word ↔ reading pairs the deck can deal — Kanji Pairs needs a boardful. */
   kanjiPairCount?: number;
+  /** Conjugation cards the ending-picker mode can ask about. */
+  endingItemCount?: number;
   /** Start a mixed session. Absent (or on a deck too small) leaves the plain grid. */
   onMixedPractice?: () => void;
   /** The mixed session is being planned — the progress read has not landed yet. */
@@ -38,6 +41,7 @@ export function PracticeHero({
   onPractice,
   readingUnlocked = false,
   kanjiPairCount = 0,
+  endingItemCount = 0,
   onMixedPractice,
   mixedStarting = false,
   mixedError = false,
@@ -47,9 +51,12 @@ export function PracticeHero({
   const { brand } = useTheme().palette;
   const practiceDisabled = cardCount < 2;
   // Absent, not locked, until the owner unlocks it: kana comes long before kanji.
-  const tiles = PRACTICE_CONFIG.filter(
-    (tile) => (tile.mode !== 'reading' && tile.mode !== 'kanji-match') || readingUnlocked,
-  );
+  // Endings is absent the same way — most decks have no conjugation cards at all.
+  const tiles = PRACTICE_CONFIG.filter((tile) => {
+    if (tile.mode === 'reading' || tile.mode === 'kanji-match') return readingUnlocked;
+    if (tile.mode === 'endings') return endingItemCount >= MIN_ENDING_ITEMS;
+    return true;
+  });
   const noKanji = kanjiPairCount < MIN_READING_CARDS;
   const mixed = !!onMixedPractice && !practiceDisabled;
   // Demoted, never deleted: for some learners one game is the whole hook.

@@ -40,6 +40,7 @@ export type SessionMode =
   | 'listen'
   | 'reading'
   | 'kanji-match'
+  | 'endings'
   | 'speech_read'
   | 'speech_recall'
   | 'kotoba-bubble'

@@ -84,6 +84,31 @@ describe('kanji match mode registration', () => {
   });
 });
 
+describe('endings mode registration', () => {
+  it('should have a tile on the deck practice picker', () => {
+    const tile = PRACTICE_CONFIG.find((t) => t.mode === 'endings');
+    expect(tile).toBeDefined();
+    expect(tile?.kanji).toBe('✏️');
+    expect(tile?.labelKey).toBe('endings.label');
+  });
+
+  it('should have a stats label and colour', () => {
+    expect(MODE_LABELS.endings).toBe('Pick the Ending');
+    expect(MODE_COLORS.endings).toMatch(/^#[0-9A-F]{6}$/i);
+  });
+
+  it('should have celebration emojis', () => {
+    expect(MODE_EMOJIS.endings.length).toBeGreaterThan(0);
+  });
+
+  // Not a goal mode (yet): a deck without enough drill cards would make an
+  // assignment unwinnable, and that availability check isn't built.
+  it('is not offered as an organizer goal mode', () => {
+    expect(GOAL_MODES).not.toContain('endings');
+    expect(isGoalMode('endings')).toBe(false);
+  });
+});
+
 // A missing message key throws only when the mode is opened, so walk every
 // registered mode in both locales rather than trusting the newest one.
 const LOCALES = { en, ja } as const;

@@ -202,6 +202,10 @@
       "quiz": {
         "label": "Quiz",
         "description": "Show what you know — one try each"
+      },
+      "endings": {
+        "label": "Pick the ending",
+        "description": "Choose the right form: is, isn't, was, wasn't."
       }
     },
     "deckCard": {
@@ -768,7 +772,8 @@
         "quiz": "Quiz",
         "listen": "Listen",
         "reading": "Reading",
-        "kanjiMatch": "Kanji Pairs"
+        "kanjiMatch": "Kanji Pairs",
+        "endings": "Pick the ending"
       }
     },
     "batchPicker": {
@@ -855,6 +860,30 @@
       "title": "Let's look again",
       "continue": "Got it",
       "example": "In a sentence"
+    },
+    "endings": {
+      "blank": "？",
+      "rules": {
+        "i-adj": {
+          "present": "Plain: keep い — たかいです",
+          "negative": "Not: drop い, add くないです",
+          "past": "Was: drop い, add かったです",
+          "pastNegative": "Wasn't: drop い, add くなかったです"
+        },
+        "na-noun": {
+          "present": "Is: add です",
+          "negative": "Isn't: add じゃないです",
+          "past": "Was: add でした",
+          "pastNegative": "Wasn't: add じゃなかったです"
+        },
+        "masu": {
+          "present": "Does / will: ます",
+          "negative": "Doesn't / won't: ません",
+          "past": "Did: ました",
+          "pastNegative": "Didn't: ませんでした"
+        }
+      },
+      "ii": "いい is special: it becomes よ before the ending."
     },
     "readingMode": {
       "readPrompt": "HOW DO YOU READ THIS?",

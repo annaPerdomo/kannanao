@@ -202,6 +202,10 @@
       "quiz": {
         "label": "クイズ",
         "description": "一発勝負で実力チェック"
+      },
+      "endings": {
+        "label": "おわりを えらぼう",
+        "description": "ただしい かたちを えらぼう"
       }
     },
     "deckCard": {
@@ -768,7 +772,8 @@
         "quiz": "クイズ",
         "listen": "リスニング",
         "reading": "よみかた",
-        "kanjiMatch": "かんじペア"
+        "kanjiMatch": "かんじペア",
+        "endings": "おわりを えらぼう"
       }
     },
     "batchPicker": {
@@ -855,6 +860,30 @@
       "title": "もう いちど みてみよう",
       "continue": "わかった!",
       "example": "ぶんで みると"
+    },
+    "endings": {
+      "blank": "？",
+      "rules": {
+        "i-adj": {
+          "present": "そのまま: たかいです",
+          "negative": "〜ない: い を とって くないです",
+          "past": "〜た: い を とって かったです",
+          "pastNegative": "〜なかった: い を とって くなかったです"
+        },
+        "na-noun": {
+          "present": "です を つける",
+          "negative": "じゃないです を つける",
+          "past": "でした を つける",
+          "pastNegative": "じゃなかったです を つける"
+        },
+        "masu": {
+          "present": "〜ます (いま・これから)",
+          "negative": "〜ません",
+          "past": "〜ました",
+          "pastNegative": "〜ませんでした"
+        }
+      },
+      "ii": "いい は とくべつ: よ に かわるよ。"
     },
     "readingMode": {
       "readPrompt": "なんて読む？",
