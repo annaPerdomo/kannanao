@@ -79,7 +79,7 @@ export interface PracticeChainState {
   cardCount: number | null;
 }
 
-const STORAGE_KEY = 'kannanao:practice-chain';
+export const CHAIN_STORAGE_KEY = 'kannanao:practice-chain';
 
 function readLegs(value: unknown): ChainLeg[] | null {
   if (!Array.isArray(value)) return null;
@@ -105,7 +105,7 @@ function readLegs(value: unknown): ChainLeg[] | null {
 export function readChainState(): PracticeChainState | null {
   if (typeof window === 'undefined') return null;
   try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY);
+    const raw = window.sessionStorage.getItem(CHAIN_STORAGE_KEY);
     if (!raw) return null;
     const parsed: unknown = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return null;
@@ -139,7 +139,7 @@ export function readChainState(): PracticeChainState | null {
 export function writeChainState(state: PracticeChainState): void {
   if (typeof window === 'undefined') return;
   try {
-    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    window.sessionStorage.setItem(CHAIN_STORAGE_KEY, JSON.stringify(state));
   } catch {
     // A private-mode quota failure just means no chain chrome — never a crash.
   }
@@ -148,7 +148,7 @@ export function writeChainState(state: PracticeChainState): void {
 export function clearChainState(): void {
   if (typeof window === 'undefined') return;
   try {
-    window.sessionStorage.removeItem(STORAGE_KEY);
+    window.sessionStorage.removeItem(CHAIN_STORAGE_KEY);
   } catch {
     // ignore
   }
